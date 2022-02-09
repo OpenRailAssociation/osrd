@@ -43,6 +43,12 @@ public class RJSStandaloneTrainScheduleParser {
         return new StandaloneTrainSchedule(rollingStock, initialSpeed, stops, allowances);
     }
 
+    private static double getPositiveDoubleOrDefault(double rjsInput, double defaultValue) {
+        if (Double.isNaN(rjsInput) || rjsInput < 0)
+            return defaultValue;
+        return rjsInput;
+    }
+
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
     private static MarecoAllowance parseAllowance(
             double timeStep,
@@ -59,7 +65,7 @@ public class RJSStandaloneTrainScheduleParser {
             return new MarecoAllowance(
                     rollingStock, envelopePath, timeStep,
                     rjsConstruction.beginPosition, rjsConstruction.endPosition,
-                    30 / 3.6,
+                    getPositiveDoubleOrDefault(rjsConstruction.capacitySpeedLimit, 30 / 3.6),
                     parseAllowanceValue(rjsConstruction.value)
             );
         }
@@ -72,7 +78,7 @@ public class RJSStandaloneTrainScheduleParser {
             return new MarecoAllowance(
                     rollingStock, envelopePath, timeStep,
                     0, envelopePath.getLength(),
-                    30 / 3.6,
+                    getPositiveDoubleOrDefault(rjsMareco.capacitySpeedLimit, 30 / 3.6),
                     parseAllowanceValue(rjsMareco.defaultValue)
             );
         }

@@ -1,14 +1,10 @@
 package fr.sncf.osrd.envelope_sim.pipelines;
 
-import com.carrotsearch.hppc.DoubleArrayList;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.*;
 import fr.sncf.osrd.envelope_sim.PhysicsPath;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
-import fr.sncf.osrd.train.RollingStock;
-import fr.sncf.osrd.train.TrainStop;
-import java.util.ArrayList;
 
 /** Max speed envelope = MRSP + braking curves
  * It is the max speed allowed at any given point, ignoring allowances
@@ -66,6 +62,11 @@ public class MaxSpeedEnvelope {
             // if the stopPosition is zero, no need to build a deceleration curve
             if (stopPosition == 0.0)
                 continue;
+            if (stopPosition > path.getLength())
+                throw new RuntimeException(String.format(
+                        "Stop at index %d is out of bounds (position = %f, path length = %f)",
+                        i, stopPosition, path.getLength()
+                ));
             var builder = OverlayEnvelopeBuilder.backward(curveWithDecelerations);
             var cursor = EnvelopeCursor.backward(curveWithDecelerations);
             cursor.findPosition(stopPosition);

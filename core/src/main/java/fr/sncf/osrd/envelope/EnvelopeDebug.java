@@ -11,7 +11,7 @@ import java.util.Locale;
 
 public class EnvelopeDebug {
     /** Export envelope as csv. */
-    public void saveCSV(Envelope envelope, String path) {
+    public static void saveCSV(Envelope envelope, String path) {
         try {
             PrintWriter writer = new PrintWriter(path, StandardCharsets.UTF_8);
             writer.println("position,speed");

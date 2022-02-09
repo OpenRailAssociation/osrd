@@ -16,6 +16,8 @@ public class RJSAllowance {
         public double beginPosition = Double.NaN;
         @Json(name = "end_position")
         public double endPosition = Double.NaN;
+        @Json(name = "capacity_speed_limit")
+        public double capacitySpeedLimit = -1;
         public RJSAllowanceValue value = null;
     }
 
@@ -24,6 +26,9 @@ public class RJSAllowance {
         public RJSAllowanceValue defaultValue = null;
 
         public RJSRangeAllowance[] ranges = null;
+
+        @Json(name = "capacity_speed_limit")
+        public double capacitySpeedLimit = -1;
 
         public Mareco(RJSAllowanceValue defaultValue) {
             this.defaultValue = defaultValue;

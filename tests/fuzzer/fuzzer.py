@@ -6,6 +6,7 @@ import time
 from collections import defaultdict
 
 import requests
+from pathlib import Path
 
 URL = "http://127.0.0.1:8000/"
 TIMEOUT = 10
@@ -42,6 +43,10 @@ def run_test(infra: InfraGraph, base_url: str, infra_id: int):
     schedule_payload = make_payload_schedule(base_url, infra_id, path_id, rolling_stock, path_length)
     r = requests.post(base_url + "train_schedule/standalone_simulation/", json=schedule_payload, timeout=TIMEOUT)
     if r.status_code // 100 != 2:
+        detail = r.json()["detail"]
+        if "can't lose" in detail:  # TODO: filter based on 4xx answers when those will be implemented
+            print("ignore: invalid user input")
+            return
         raise RuntimeError(f"Schedule error {r.status_code}: {r.content}, payload={json.dumps(schedule_payload)}")
 
     schedule_id = r.json()["ids"][0]
@@ -52,12 +57,13 @@ def run_test(infra: InfraGraph, base_url: str, infra_id: int):
     print("test PASSED")
 
 
-def run(base_url: str, infra_id: int, n_test: int = 1000):
+def run(base_url: str, infra_id: int, n_test: int = 1000, log_folder: Path = None):
     """
     Runs every test
     :param base_url: url to reach the api
     :param infra_id: infra id
     :param n_test: number of tests to run
+    :param log_folder: (optional) path to a folder to log errors in
     """
     seed = 0
     infra_graph = make_graph(base_url, infra_id)
@@ -65,8 +71,18 @@ def run(base_url: str, infra_id: int, n_test: int = 1000):
         seed += 1
         print("seed:", seed)
         random.seed(seed)
-        run_test(infra_graph, base_url, infra_id)
         time.sleep(0.1)
+
+        try:
+            run_test(infra_graph, base_url, infra_id)
+        except Exception as e:
+            if log_folder is None:
+                raise e
+            else:
+                print(e)
+                log_folder.mkdir(exist_ok=True)
+                with open(str(log_folder / f"{i}.txt"), "w") as f:
+                    print(e, file=f)
 
 
 def get_random_rolling_stock(base_url: str) -> str:
@@ -143,6 +159,8 @@ def make_steps_on_route(route: Dict, distance_from_start: [float]) -> Iterable[T
         if random.randint(0, 5) == 0:
             begin = track_range["begin"]
             end = track_range["end"]
+            if track_range["direction"] == "STOP_TO_START":
+                begin, end = end, begin
             offset = begin + random.random() * (end - begin)
             yield track_range["track"]["id"], offset, distance_from_start[0] + abs(offset - begin)
             distance_from_start[0] += abs(end - begin)
@@ -271,6 +289,7 @@ def make_random_allowances(path_length: float) -> List[Dict]:
                 "allowance_type": "mareco",
                 "default_value": make_random_allowances_value(path_length),
                 "ranges": [],
+                "capacity_speed_limit": 1
             }
         )
     for _ in range(3):
@@ -283,6 +302,7 @@ def make_random_allowances(path_length: float) -> List[Dict]:
                 "begin_position": min(positions),
                 "end_position": max(positions),
                 "value": make_random_allowances_value(max(positions) - min(positions)),
+                "capacity_speed_limit": 1
             }
         )
     return res
@@ -315,4 +335,4 @@ def make_payload_schedule(base_url: str, infra: int, path: int, rolling_stock: s
 
 
 if __name__ == "__main__":
-    run(URL, 1)
+    run(URL, 1, 1000, Path(__file__).parent / "errors")
