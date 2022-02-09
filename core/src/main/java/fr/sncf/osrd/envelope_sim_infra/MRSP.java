@@ -47,11 +47,15 @@ public class MRSP {
                 var speedRangeBegin = min(speedRange.begin, speedRange.end);
                 var speedRangeEnd = max(speedRange.begin, speedRange.end);
                 var beginOnRange = 0.;
-                if (trackSectionRange.direction == EdgeDirection.START_TO_STOP)
-                    beginOnRange = CustomMath.clamp(speedRangeBegin - trackSectionRange.getBeginPosition(), 0, trackSectionRange.length());
-                else
-                    beginOnRange = CustomMath.clamp(trackSectionRange.getBeginPosition() - speedRangeEnd, 0, trackSectionRange.length());
-                var endOnRange = CustomMath.clamp(beginOnRange + speedRangeEnd - speedRangeBegin, 0, trackSectionRange.length());
+                if (trackSectionRange.direction == EdgeDirection.START_TO_STOP) {
+                    beginOnRange = CustomMath.clamp(
+                            speedRangeBegin - trackSectionRange.getBeginPosition(), 0, trackSectionRange.length());
+                } else {
+                    beginOnRange = CustomMath.clamp(
+                            trackSectionRange.getBeginPosition() - speedRangeEnd, 0, trackSectionRange.length());
+                }
+                var endOnRange = CustomMath.clamp(
+                        beginOnRange + speedRangeEnd - speedRangeBegin, 0, trackSectionRange.length());
 
                 if (Double.compare(beginOnRange, endOnRange) == 0)
                     continue;

@@ -87,9 +87,6 @@ class StandaloneSimulationTest extends ApiTest {
         var positions = trainResult.headPositions.toArray(new StandaloneSimulationEndpoint.SimulationResultPosition[0]);
         for (int i = 1; i < positions.length; i++)
             assertTrue(positions[i - 1].time <= positions[i].time);
-        positions = trainResult.tailPositions.toArray(new StandaloneSimulationEndpoint.SimulationResultPosition[0]);
-        for (int i = 1; i < positions.length; i++)
-            assertTrue(positions[i - 1].time <= positions[i].time);
 
         // ensure the speed is always increasing
         var speeds = trainResult.speeds.toArray(new StandaloneSimulationEndpoint.SimulationResultSpeed[0]);
