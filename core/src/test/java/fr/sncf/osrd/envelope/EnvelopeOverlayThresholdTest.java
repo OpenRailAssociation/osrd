@@ -24,8 +24,7 @@ public class EnvelopeOverlayThresholdTest {
 
         cursor.findPosition(3);
         {
-            var partBuilder = builder.startContinuousOverlay(null);
-            partBuilder.addSpeedThreshold(1, CmpOperator.LOWER);
+            var partBuilder = builder.startContinuousOverlay(null, 1, CmpOperator.LOWER);
             assertTrue(partBuilder.addStep(4, 0));
             builder.addPart(partBuilder);
         }
@@ -52,8 +51,7 @@ public class EnvelopeOverlayThresholdTest {
 
         cursor.findPosition(3);
         {
-            var partBuilder = builder.startContinuousOverlay(null);
-            partBuilder.addSpeedThreshold(1, CmpOperator.LOWER);
+            var partBuilder = builder.startContinuousOverlay(null, 1, CmpOperator.LOWER);
             assertTrue(partBuilder.addStep(4, 1));
             builder.addPart(partBuilder);
         }
@@ -80,8 +78,7 @@ public class EnvelopeOverlayThresholdTest {
 
         cursor.findPosition(3);
         {
-            var partBuilder = builder.startDiscontinuousOverlay(null, 0);
-            partBuilder.addSpeedThreshold(1, CmpOperator.HIGHER);
+            var partBuilder = builder.startDiscontinuousOverlay(null, 0, 1, CmpOperator.HIGHER);
             assertTrue(partBuilder.addStep(4, 2));
             builder.addPart(partBuilder);
         }
@@ -107,8 +104,7 @@ public class EnvelopeOverlayThresholdTest {
 
         cursor.findPosition(3);
         {
-            var partBuilder = builder.startDiscontinuousOverlay(null, 0);
-            partBuilder.addSpeedThreshold(1, CmpOperator.HIGHER);
+            var partBuilder = builder.startDiscontinuousOverlay(null, 0, 1, CmpOperator.HIGHER);
             assertTrue(partBuilder.addStep(4, 1));
             builder.addPart(partBuilder);
         }
@@ -135,8 +131,7 @@ public class EnvelopeOverlayThresholdTest {
         cursor.findPosition(position);
         var speed = cursor.getSpeed();
         {
-            var partBuilder = builder.startContinuousOverlay(null);
-            partBuilder.addSpeedThreshold(10, CmpOperator.LOWER);
+            var partBuilder = builder.startContinuousOverlay(null, 10, CmpOperator.LOWER);
             do {
                 position++;
                 speed--;

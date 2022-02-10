@@ -284,6 +284,7 @@ public class EnvelopeCursor {
 
         // ensure the new position is in the step
         assert comparePos(getStepBeginPos(), newPosition) <= 0;
+        assert comparePos(newPosition, getStepEndPos()) <= 0;
 
         setPosition(newPosition);
         return true;

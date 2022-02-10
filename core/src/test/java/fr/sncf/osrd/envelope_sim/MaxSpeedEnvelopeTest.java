@@ -65,7 +65,7 @@ public class MaxSpeedEnvelopeTest {
         var maxSpeedEnvelope = MaxSpeedEnvelope.from(testRollingStock, testPath, stops, flatMRSP, TIME_STEP);
         EnvelopeShape.check(maxSpeedEnvelope, CONSTANT, DECREASING, CONSTANT);
         var delta = 2 * maxSpeedEnvelope.getMaxSpeed() * TIME_STEP;
-        // don't modify these values, they have been calculated with a 0.01s timestep so they can be considered as
+        // don't modify these values, they have been calculated with a 0.1s timestep so they can be considered as
         // reference, the delta is supposed to absorb the difference for higher timesteps
         EnvelopeTransitions.checkPositions(maxSpeedEnvelope, delta, 6529, 8500);
         EnvelopeTransitions.checkContinuity(maxSpeedEnvelope, true, false);
@@ -81,7 +81,7 @@ public class MaxSpeedEnvelopeTest {
         var maxSpeedEnvelope = MaxSpeedEnvelope.from(testRollingStock, testPath, stops, flatMRSP, TIME_STEP);
         EnvelopeShape.check(maxSpeedEnvelope, CONSTANT, DECREASING, CONSTANT);
         var delta = 2 * maxSpeedEnvelope.getMaxSpeed() * TIME_STEP;
-        // don't modify these values, they have been calculated with a 0.01s timestep so they can be considered as
+        // don't modify these values, they have been calculated with a 0.1s timestep so they can be considered as
         // reference, the delta is supposed to absorb the difference for higher timesteps
         EnvelopeTransitions.checkPositions(maxSpeedEnvelope, delta, 6529, 8500);
         EnvelopeTransitions.checkContinuity(maxSpeedEnvelope, true, false);
@@ -108,7 +108,7 @@ public class MaxSpeedEnvelopeTest {
         var maxSpeedEnvelope = MaxSpeedEnvelope.from(testRollingStock, testPath, stops, flatMRSP, TIME_STEP);
         EnvelopeShape.check(maxSpeedEnvelope, CONSTANT, DECREASING, CONSTANT);
         var delta = 2 * maxSpeedEnvelope.getMaxSpeed() * TIME_STEP;
-        // don't modify these values, they have been calculated with a 0.01s timestep so they can be considered as
+        // don't modify these values, they have been calculated with a 0.1s timestep so they can be considered as
         // reference, the delta is supposed to absorb the difference for higher timesteps
         EnvelopeTransitions.checkPositions(maxSpeedEnvelope, delta, 7493, 8500);
         EnvelopeTransitions.checkContinuity(maxSpeedEnvelope, true, false);

@@ -1,6 +1,7 @@
 package fr.sncf.osrd.envelope;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.utils.CmpOperator;
 
 /**
  * <p>Creates an overlay over an envelope by combining slices of the base envelope and overlay envelope parts</p>
@@ -52,6 +53,16 @@ public final class OverlayEnvelopeBuilder {
     }
     // endregion
 
+    /** Starts an overlay at the given position, speed and threshold */
+    public OverlayEnvelopePartBuilder startDiscontinuousOverlay(
+            EnvelopePartMeta meta,
+            double initialSpeed,
+            double threshold,
+            CmpOperator cmpOperator
+    ) {
+        return OverlayEnvelopePartBuilder.startDiscontinuousOverlay(cursor, meta, initialSpeed, threshold, cmpOperator);
+    }
+
     /** Starts an overlay at the given position and speed */
     public OverlayEnvelopePartBuilder startDiscontinuousOverlay(
             EnvelopePartMeta meta,
@@ -60,11 +71,19 @@ public final class OverlayEnvelopeBuilder {
         return OverlayEnvelopePartBuilder.startDiscontinuousOverlay(cursor, meta, initialSpeed);
     }
 
+    /** Starts an overlay at the given position and speed threshold, keeping the envelope continuous */
+    public OverlayEnvelopePartBuilder startContinuousOverlay(
+            EnvelopePartMeta meta,
+            double speedThreshold,
+            CmpOperator cmpOperator
+    ) {
+        return OverlayEnvelopePartBuilder.startContinuousOverlay(cursor, meta, speedThreshold, cmpOperator);
+    }
+
     /** Starts an overlay at the given position, keeping the envelope continuous */
     public OverlayEnvelopePartBuilder startContinuousOverlay(EnvelopePartMeta meta) {
         return OverlayEnvelopePartBuilder.startContinuousOverlay(cursor, meta);
     }
-
 
     /** Add parts to the result, taking direction into account */
     private void addParts(EnvelopePart[] parts) {
