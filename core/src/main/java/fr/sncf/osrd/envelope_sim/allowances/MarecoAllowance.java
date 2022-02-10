@@ -317,23 +317,6 @@ public class MarecoAllowance implements Allowance {
         return result;
     }
 
-    /** compute where the coasting phase is supposed to start, given the initial and target speed */
-    private double computeCoastingBeginSpeed(double initialSpeed,
-                                             double targetSpeed,
-                                             ArrayList<EnvelopePart> physicalLimits) {
-        var coastingBeginSpeed = initialSpeed;
-        var minPhysicalSpeed = initialSpeed;
-        for (var part : physicalLimits) {
-            if (part.getMinSpeed() < minPhysicalSpeed)
-                minPhysicalSpeed = part.getMinSpeed();
-        }
-        // transform the target speed into a coasting begin speed, located between initialSpeed and minPhyscialSpeed
-        if (targetSpeed < minPhysicalSpeed && minPhysicalSpeed != 0)
-            coastingBeginSpeed = targetSpeed * ((initialSpeed - minPhysicalSpeed) / minPhysicalSpeed)
-                    + minPhysicalSpeed;
-        return coastingBeginSpeed;
-    }
-
     /** compute the physical limits on the Region of Interest (RoI)
      * these limits are a composed of a braking curve at the beginning, an accelerating curve at the end,
      * with a 30km/h limit in between if it exists */
@@ -364,28 +347,16 @@ public class MarecoAllowance implements Allowance {
     private EnvelopePart generateDecelerationPart(Envelope base, double initialSpeed) {
         var builder = OverlayEnvelopeBuilder.forward(base);
         builder.cursor.findPosition(sectionBegin);
-        var partBuilder = builder.startContinuousOverlay(DECELERATION);
-        partBuilder.addSpeedThreshold(capacitySpeedLimit, CmpOperator.LOWER);
+        var partBuilder = builder.startContinuousOverlay(DECELERATION, capacitySpeedLimit, CmpOperator.LOWER);
         decelerate(rollingStock, path, TIME_STEP, sectionBegin, initialSpeed, partBuilder, 1);
         var decelerationPart = partBuilder.build();
         return decelerationPart.slice(sectionBegin, sectionEnd);
     }
 
-    private EnvelopePart generateCoastingPart(Envelope base, double initialPosition, double initialSpeed) {
-        var builder = OverlayEnvelopeBuilder.forward(base);
-        builder.cursor.findPosition(initialPosition);
-        var partBuilder = builder.startDiscontinuousOverlay(COASTING, initialSpeed);
-        partBuilder.addSpeedThreshold(capacitySpeedLimit, CmpOperator.LOWER);
-        coast(rollingStock, path, TIME_STEP, initialPosition, initialSpeed, partBuilder, 1);
-        var coastingPart = partBuilder.build();
-        return coastingPart.slice(sectionBegin, sectionEnd);
-    }
-
     private EnvelopePart generateAccelerationPart(Envelope base, double finalSpeed) {
         var builder = OverlayEnvelopeBuilder.backward(base);
         builder.cursor.findPosition(sectionEnd);
-        var partBuilder = builder.startContinuousOverlay(ACCELERATION);
-        partBuilder.addSpeedThreshold(capacitySpeedLimit, CmpOperator.LOWER);
+        var partBuilder = builder.startContinuousOverlay(ACCELERATION, capacitySpeedLimit, CmpOperator.LOWER);
         accelerate(rollingStock, path, TIME_STEP, sectionEnd, finalSpeed, partBuilder, -1);
         var acceleratingPart = partBuilder.build();
         return acceleratingPart.slice(sectionBegin, sectionEnd);

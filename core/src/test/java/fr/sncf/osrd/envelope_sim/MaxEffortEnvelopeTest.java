@@ -52,7 +52,7 @@ public class MaxEffortEnvelopeTest {
         var delta = 2 * maxEffortEnvelope.getMaxSpeed() * TIME_STEP;
         // don't modify these values, they have been calculated with a 0.01s timestep so they can be considered as
         // reference, the delta is supposed to absorb the difference for higher timesteps
-        EnvelopeTransitions.checkPositions(maxEffortEnvelope, delta, 2774, 5343, 6000, 8774, 9343);
+        EnvelopeTransitions.checkPositions(maxEffortEnvelope, delta, 2726, 4993, 6000, 8727, 8993);
         assertTrue(maxEffortEnvelope.continuous);
     }
 

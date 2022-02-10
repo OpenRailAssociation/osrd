@@ -12,7 +12,7 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
     /** This cursor is updated as the overlay is built. It must not be modified elsewhere until build is called */
     public final EnvelopeCursor cursor;
 
-    /** The maximum / minimum speed allowed for this overlay, or NaN. */
+    /** The maximum / minimum speed allowed for this overlay. */
     private double speedThreshold = 0;
     /** How to compare the overlay speed to the threshold speed. */
     private CmpOperator speedThresholdOperator = CmpOperator.LOWER;
@@ -54,7 +54,13 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
         }
     }
 
-    private OverlayEnvelopePartBuilder(EnvelopeCursor cursor, EnvelopePartMeta meta, double initialSpeed) {
+    private OverlayEnvelopePartBuilder(
+            EnvelopeCursor cursor,
+            EnvelopePartMeta meta,
+            double initialSpeed,
+            double speedThreshold,
+            CmpOperator cmpOperator
+    ) {
         this.cursor = cursor;
         var initialPosition = cursor.getPosition();
         this.partBuilder = new EnvelopePartBuilder(meta, initialPosition, initialSpeed);
@@ -64,13 +70,17 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
         this.startStepIndex = cursor.getStepIndex();
         this.startPosition = cursor.getPosition();
         this.startSpeed = cursor.getSpeed();
+        this.speedThreshold = speedThreshold;
+        this.speedThresholdOperator = cmpOperator;
     }
 
     /** Starts an overlay at the given position and speed */
     public static OverlayEnvelopePartBuilder startDiscontinuousOverlay(
             EnvelopeCursor cursor,
             EnvelopePartMeta meta,
-            double initialSpeed
+            double initialSpeed,
+            double speedThreshold,
+            CmpOperator cmpOperator
     ) {
         var startPosition = cursor.getPosition();
 
@@ -82,12 +92,32 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
         }
 
         assert initialSpeed <= cursor.getSpeed();
-        return new OverlayEnvelopePartBuilder(cursor, meta, initialSpeed);
+        assert !CmpOperator.compare(initialSpeed, cmpOperator.strict(), speedThreshold);
+        return new OverlayEnvelopePartBuilder(cursor, meta, initialSpeed, speedThreshold, cmpOperator);
+    }
+
+    /** Starts an overlay at the given position and speed */
+    public static OverlayEnvelopePartBuilder startDiscontinuousOverlay(
+            EnvelopeCursor cursor,
+            EnvelopePartMeta meta,
+            double initialSpeed
+    ) {
+        return startDiscontinuousOverlay(cursor, meta, initialSpeed, 0, CmpOperator.LOWER);
+    }
+
+    /** Starts an overlay at the given position, keeping the envelope continuous */
+    public static OverlayEnvelopePartBuilder startContinuousOverlay(
+            EnvelopeCursor cursor,
+            EnvelopePartMeta meta,
+            double speedThreshold,
+            CmpOperator cmpOperator
+    ) {
+        return startDiscontinuousOverlay(cursor, meta, cursor.getSpeed(), speedThreshold, cmpOperator);
     }
 
     /** Starts an overlay at the given position, keeping the envelope continuous */
     public static OverlayEnvelopePartBuilder startContinuousOverlay(EnvelopeCursor cursor, EnvelopePartMeta meta) {
-        return startDiscontinuousOverlay(cursor, meta, cursor.getSpeed());
+        return startContinuousOverlay(cursor, meta, 0, CmpOperator.LOWER);
     }
 
     public double getLastPos() {
@@ -229,8 +259,7 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
 
     /** Return whether this step had an intersection */
     private boolean addOverlayStep(double position, double speed, double time, StepKind kind) {
-        if (hasSpeedThreshold() && CmpOperator.compare(speed, speedThresholdOperator, speedThreshold)
-                && !CmpOperator.compare(lastOverlaySpeed, speedThresholdOperator, speedThreshold)) {
+        if (hasSpeedThreshold() && CmpOperator.compare(speed, speedThresholdOperator, speedThreshold)) {
             position = intersectStepWithSpeed(lastOverlayPos, lastOverlaySpeed, position, speed, speedThreshold);
             speed = speedThreshold;
             time = interpolateStepTime(lastOverlayPos, position, lastOverlaySpeed, speed);
@@ -273,13 +302,6 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
         return !Double.isNaN(speedThreshold);
     }
 
-    /** Adds a speed threshold which stops the overlay */
-    public void addSpeedThreshold(double speed, CmpOperator operator) {
-        assert !operator.strict;
-        this.speedThreshold = speed;
-        this.speedThresholdOperator = operator;
-    }
-
     @Override
     public boolean addStep(double position, double speed) {
         assert !getHadIntersection() : "called addStep on a complete overlay";
@@ -300,6 +322,11 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
                 && cursor.comparePos(lastOverlayPos, cursor.getStepEndPos()) <= 0;
         assert cursor.comparePos(lastOverlayPos, position) < 0;
 
+        // Compute the intersection position with threshold
+        var intersectPos = Double.NaN;
+        if (CmpOperator.compare(speed, speedThresholdOperator, speedThreshold))
+            intersectPos = intersectStepWithSpeed(lastOverlayPos, lastOverlaySpeed, position, speed, speedThreshold);
+
         while (cursor.comparePos(position, cursor.getStepBeginPos()) > 0) {
             // attempt to find an intersection
             if (intersect(position, speed, time))
@@ -307,6 +334,10 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
 
             var stepEndPos = cursor.getStepEndPos();
             if (cursor.comparePos(position, stepEndPos) < 0)
+                break;
+
+            // We intersect the threshold before the next step position
+            if (!Double.isNaN(intersectPos)  && cursor.comparePos(intersectPos, stepEndPos) <= 0)
                 break;
 
             var stepRes = cursor.nextStep();
