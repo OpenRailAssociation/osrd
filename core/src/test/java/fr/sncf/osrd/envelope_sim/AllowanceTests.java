@@ -36,9 +36,9 @@ public class AllowanceTests {
                 testRollingStock, testPath, 44.4, new AllowanceValue.Percentage(10));
         EnvelopeShape.check(marecoEnvelope, INCREASING, DECREASING, DECREASING, INCREASING, DECREASING, DECREASING);
         var delta = 2 * marecoEnvelope.getMaxSpeed() * TIME_STEP;
-        // don't modify these values, they have been calculated with a 0.01s timestep so they can be considered as
+        // don't modify these values, they have been calculated with a 0.1s timestep so they can be considered as
         // reference, the delta is supposed to absorb the difference for higher timesteps
-        EnvelopeTransitions.checkPositions(marecoEnvelope, delta, 901, 5452, 6000, 6783, 9452);
+        EnvelopeTransitions.checkPositions(marecoEnvelope, delta, 1257, 5202, 6000, 7109, 9202);
         assertTrue(marecoEnvelope.continuous);
     }
 
@@ -54,7 +54,7 @@ public class AllowanceTests {
         // don't modify these values, they have been calculated with a 0.01s timestep so they can be considered as
         // reference, the delta is supposed to absorb the difference for higher timesteps
         EnvelopeTransitions.checkPositions(marecoEnvelope, delta,
-                1238, 4780, 5833, 6000, 7238, 8780, 9833);
+                1595, 4518, 5781, 6000, 7595, 8518, 9781);
         assertTrue(marecoEnvelope.continuous);
     }
 
@@ -116,7 +116,7 @@ public class AllowanceTests {
                 INCREASING, DECREASING, CONSTANT, INCREASING, DECREASING, INCREASING, DECREASING);
         var delta = 2 * constructionEnvelope.getMaxSpeed() * TIME_STEP;
         EnvelopeTransitions.checkPositions(constructionEnvelope, delta,
-                1000, 1285, 4210, 5000, 6000, 8400, 9294);
+                1000, 1247, 4446, 5000, 6000, 8292, 9294);
         assertTrue(constructionEnvelope.continuous);
     }
 
@@ -130,7 +130,7 @@ public class AllowanceTests {
                 INCREASING, DECREASING, CONSTANT, INCREASING, DECREASING, INCREASING, DECREASING);
         var delta = 2 * constructionEnvelope.getMaxSpeed() * TIME_STEP;
         EnvelopeTransitions.checkPositions(constructionEnvelope, delta,
-                1500, 1743, 5198, 5500, 6000, 8924);
+                1500, 1717, 5464, 5500, 6000, 8827);
         assertTrue(constructionEnvelope.continuous);
     }
 

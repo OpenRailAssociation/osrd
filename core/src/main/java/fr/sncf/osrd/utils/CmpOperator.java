@@ -9,11 +9,11 @@ public enum CmpOperator {
     HIGHER(false, 1),
     ;
 
-    public final boolean strict;
+    public final boolean isStrict;
     public final double expectedSign;
 
-    CmpOperator(boolean strict, double expectedSign) {
-        this.strict = strict;
+    CmpOperator(boolean isStrict, double expectedSign) {
+        this.isStrict = isStrict;
         this.expectedSign = expectedSign;
     }
 
@@ -22,7 +22,14 @@ public enum CmpOperator {
     public static boolean compare(double valueA, CmpOperator operator, double valueB) {
         var resSign = Math.signum(valueA - valueB);
         if (resSign == 0.0)
-            return !operator.strict;
+            return !operator.isStrict;
         return resSign == operator.expectedSign;
+    }
+
+    /** Create a strict version of the operator */
+    public CmpOperator strict() {
+        if (expectedSign > 0)
+            return STRICTLY_HIGHER;
+        return STRICTLY_LOWER;
     }
 }
