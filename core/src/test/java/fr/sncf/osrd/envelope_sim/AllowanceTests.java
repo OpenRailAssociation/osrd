@@ -17,7 +17,6 @@ import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
 import fr.sncf.osrd.train.TestTrains;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -258,7 +257,6 @@ public class AllowanceTests {
     }
 
     @Test
-    @Disabled("This test fails because of: https://github.com/DGEXSolutions/osrd/issues/574")
     public void testConstructionOnMarecoAllowance() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var testPath = new FlatPath(100_000, 0);
@@ -471,7 +469,6 @@ public class AllowanceTests {
     }
 
     @Test
-    @Disabled("https://github.com/DGEXSolutions/osrd/issues/565")
     public void testMarecoHighSlopeAtEnd() {
         var testRollingStock = TestTrains.VERY_SHORT_FAST_TRAIN;
 
@@ -490,7 +487,6 @@ public class AllowanceTests {
     }
 
     @Test
-    @Disabled("https://github.com/DGEXSolutions/osrd/issues/574")
     public void testMarecoDiscontinuity() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
 
