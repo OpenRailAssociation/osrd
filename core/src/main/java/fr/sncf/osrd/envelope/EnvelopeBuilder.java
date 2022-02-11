@@ -6,15 +6,29 @@ import java.util.ArrayList;
 public final class EnvelopeBuilder {
     private ArrayList<EnvelopePart> parts = new ArrayList<>();
 
+    /** Concatenates multiple envelopes together */
+    public static Envelope concatenate(Envelope... envelopes) {
+        var res = new EnvelopeBuilder();
+        for (var envelope : envelopes)
+            res.addEnvelope(envelope);
+        return res.build();
+    }
+
     /** Adds a part to the envelope */
     public void addPart(EnvelopePart part) {
         assert parts != null : "build() was already called";
         parts.add(part);
     }
 
-    /** Adds all parts of an envelope */
+    /** Adds a list of parts */
     public void addParts(EnvelopePart[] parts) {
         for (var part : parts)
+            addPart(part);
+    }
+
+    /** Adds all parts of an envelope */
+    public void addEnvelope(Envelope envelope) {
+        for (var part : envelope)
             addPart(part);
     }
 
