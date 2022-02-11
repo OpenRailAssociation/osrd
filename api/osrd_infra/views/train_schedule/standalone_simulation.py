@@ -88,6 +88,7 @@ def process_simulation_response(train_schedules, response_payload):
 
         # Skip if no eco simulation is available
         if not eco_simulations[i]:
+            train_schedule.eco_simulation = None
             continue
 
         # Update stops (adding id and name when available)
