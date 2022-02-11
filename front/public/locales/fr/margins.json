@@ -1,4 +1,5 @@
 {
+  "apply": "Appliquer",
   "baseTrainSchedule": "Base",
   "blocks": "Blocks",
   "ecoTrainSchedule": "Économique",
@@ -9,7 +10,9 @@
   },
   "from": "De",
   "begin_position": "Début",
+  "marecoWholePath": "Marche économique (trajet complet)",
   "margedTrainSchedule": "Avec marges",
+  "marginByInterval": "Marges par intervalles",
   "marginModified": "Marges modifiées",
   "marginType": "Type de marge",
   "marginTypes": {
