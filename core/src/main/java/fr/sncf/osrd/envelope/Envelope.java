@@ -108,6 +108,10 @@ public final class Envelope implements Iterable<EnvelopePart> {
         return parts[parts.length - 1].getEndPos();
     }
 
+    public double getTotalDistance() {
+        return getEndPos() - getBeginPos();
+    }
+
     public double getBeginSpeed() {
         return parts[0].getBeginSpeed();
     }
