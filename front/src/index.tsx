@@ -21,16 +21,13 @@ import { version } from '../package.json';
 
 // Must be required and not imported to be included in production build (strange bug ?)
 require('@sncf/bootstrap-sncf.metier.reseau');
-/*
+
 Sentry.init({
   dsn: 'https://c810d004df0446b7b7a5bbfee21541cc@sentry-testing.shared.dgexsol.fr/36',
   environment: 'dev',
   autoSessionTracking: true,
-  integrations: [
-    new Integrations.BrowserTracing(),
-  ],
+  integrations: [new Integrations.BrowserTracing()],
 });
-*/
 
 export default function Container() {
   console.log('OSRD VERSION', version);
