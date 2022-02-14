@@ -1,63 +1,64 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
-import { useParams } from 'react-router-dom';
-import { get } from 'common/requests';
-import ReactMapGL, {
-  ScaleControl, AttributionControl, FlyToInterpolator, WebMercatorViewport,
-} from 'react-map-gl';
-import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
-import colors from 'common/Map/Consts/colors.ts';
-import { useSelector, useDispatch } from 'react-redux';
-import { updateViewport } from 'reducers/map';
-import { datetime2sec } from 'utils/timeManipulation';
-import bbox from '@turf/bbox';
-import along from '@turf/along';
-import lineSlice from '@turf/line-slice';
-import lineLength from '@turf/length';
-import { lineString, point } from '@turf/helpers';
-import { useTranslation } from 'react-i18next';
-
 import 'common/Map/Map.scss';
 
-/* Settings & Buttons */
-import ButtonMapSearch from 'common/Map/ButtonMapSearch';
-import ButtonResetViewport from 'common/Map/ButtonResetViewport';
-import ButtonMapSettings from 'common/Map/ButtonMapSettings';
-import MapSearch from 'common/Map/Search/MapSearch';
-import MapSettings from 'common/Map/Settings/MapSettings';
-import MapSettingsLayers from 'common/Map/Settings/MapSettingsLayers';
-import MapSettingsSignals from 'common/Map/Settings/MapSettingsSignals';
-import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
-import MapSettingsTrackSources from 'common/Map/Settings/MapSettingsTrackSources';
-import MapSettingsShowOSM from 'common/Map/Settings/MapSettingsShowOSM';
-
-/* Interactions */
-import TrainHoverPosition from 'applications/osrd/components/SimulationMap/TrainHoverPosition';
-import TrainHoverPositionOthers from 'applications/osrd/components/SimulationMap/TrainHoverPositionOthers';
+import React, { useCallback, useEffect, useState } from 'react';
+import ReactMapGL, {
+  AttributionControl,
+  FlyToInterpolator,
+  ScaleControl,
+  WebMercatorViewport,
+} from 'react-map-gl';
+import {
+  getDirection,
+  interpolateOnPosition,
+  interpolateOnTime,
+} from 'applications/osrd/components/Helpers/ChartHelpers';
+import { lineString, point } from '@turf/helpers';
+import { useDispatch, useSelector } from 'react-redux';
 
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
-import OSM from 'common/Map/Layers/OSM';
+/* Settings & Buttons */
+import ButtonMapSearch from 'common/Map/ButtonMapSearch';
+import ButtonMapSettings from 'common/Map/ButtonMapSettings';
+import ButtonResetViewport from 'common/Map/ButtonResetViewport';
+import ElectrificationType from 'common/Map/Layers/ElectrificationType';
 import Hillshade from 'common/Map/Layers/Hillshade';
-import Platform from 'common/Map/Layers/Platform';
-import TracksSchematic from 'common/Map/Layers/TracksSchematic';
-import TracksGeographic from 'common/Map/Layers/TracksGeographic';
-
-/* Objects & various */
-import TVDs from 'common/Map/Layers/TVDs';
+import MapSearch from 'common/Map/Search/MapSearch';
+import MapSettings from 'common/Map/Settings/MapSettings';
+import MapSettingsLayers from 'common/Map/Settings/MapSettingsLayers';
+import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
+import MapSettingsShowOSM from 'common/Map/Settings/MapSettingsShowOSM';
+import MapSettingsSignals from 'common/Map/Settings/MapSettingsSignals';
+import MapSettingsTrackSources from 'common/Map/Settings/MapSettingsTrackSources';
+import OSM from 'common/Map/Layers/OSM';
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
+import Platform from 'common/Map/Layers/Platform';
+import PropTypes from 'prop-types';
+import RenderItinerary from 'applications/osrd/components/SimulationMap/RenderItinerary';
+import SearchMarker from 'common/Map/Layers/SearchMarker';
 import SignalingType from 'common/Map/Layers/SignalingType';
+import Signals from 'common/Map/Layers/Signals';
 import SpeedLimits from 'common/Map/Layers/SpeedLimits';
 import SpeedLimitsColors from 'common/Map/Layers/SpeedLimitsColors';
-import ElectrificationType from 'common/Map/Layers/ElectrificationType';
-import Signals from 'common/Map/Layers/Signals';
-import SearchMarker from 'common/Map/Layers/SearchMarker';
-import RenderItinerary from 'applications/osrd/components/SimulationMap/RenderItinerary';
-
-import {
-  getDirection, interpolateOnPosition, interpolateOnTime,
-} from 'applications/osrd/components/Helpers/ChartHelpers';
-import { updateTimePosition } from 'reducers/osrdsimulation';
+/* Objects & various */
+import TVDs from 'common/Map/Layers/TVDs';
+import TracksGeographic from 'common/Map/Layers/TracksGeographic';
+import TracksSchematic from 'common/Map/Layers/TracksSchematic';
+/* Interactions */
+import TrainHoverPosition from 'applications/osrd/components/SimulationMap/TrainHoverPosition';
+import TrainHoverPositionOthers from 'applications/osrd/components/SimulationMap/TrainHoverPositionOthers';
+import along from '@turf/along';
+import bbox from '@turf/bbox';
+import colors from 'common/Map/Consts/colors.ts';
+import { datetime2sec } from 'utils/timeManipulation';
+import { get } from 'common/requests';
+import lineLength from '@turf/length';
+import lineSlice from '@turf/line-slice';
+import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
+import { updateTimePositionValues } from 'reducers/osrdsimulation';
+import { updateViewport } from 'reducers/map';
+import { useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const PATHFINDING_URI = '/pathfinding/';
 
@@ -222,7 +223,7 @@ const Map = (props) => {
         ['position', 'speed'],
         positionLocal,
       );
-      dispatch(updateTimePosition(timePositionLocal));
+      dispatch(updateTimePositionValues(timePositionLocal));
     }
     if (e.features[0]) {
       setIdHover(e.features[0].properties.id);
