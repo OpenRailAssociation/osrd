@@ -75,7 +75,6 @@ export default function SpaceTimeChart(props) {
   };
 
   const offsetTimeByDragging = (offset) => {
-    console.log('call offsetTimeByDragging');
     const trains = Array.from(simulation.trains);
     trains[selectedTrain] = timeShiftTrain(trains[selectedTrain], offset);
     dispatch(updateSimulation({ ...simulation, trains }));
@@ -117,8 +116,6 @@ export default function SpaceTimeChart(props) {
 
   const drawAllTrains = (reset) => {
     if (mustRedraw) {
-      console.log('drawAllTrains');
-
       const chartLocal = createChart(
         chart,
         CHART_ID,
@@ -182,7 +179,6 @@ export default function SpaceTimeChart(props) {
   }, []);
 
   useEffect(() => {
-    console.log('effect call offsetTimeByDragging');
     // ADN, entire fonction operation is subject to one condition, so aopply this condition before OR write clear and first condition to return (do nothing)
     if (dragOffset !== 0) {
       offsetTimeByDragging(dragOffset);
@@ -207,9 +203,10 @@ export default function SpaceTimeChart(props) {
     setDataSimulation(createTrain(dispatch, keyValues, simulation.trains, t));
     if (dataSimulation) {
       // ADN: No need to redo all this on a simple drag
-      // ADN drawAllTrain do something only if mustRedraw = true, so delete the cond in it and call if mustRadrw = true it is far more redable
+      /* ADN drawAllTrain do something only if mustRedraw = true,
+      so delete the condo in it and call if mustRadrw = true
+      it is far more redable */
       // ADN drawAllTrain should be
-      console.log('call draw All trains');
       drawAllTrains(resetChart);
       handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
     }
@@ -228,17 +225,6 @@ export default function SpaceTimeChart(props) {
             timePosition,
           ),
         ),
-      );
-
-      traceVerticalLine(
-        chart,
-        dataSimulation[selectedTrain],
-        keyValues,
-        LIST_VALUES_NAME_SPACE_TIME,
-        positionValues,
-        'headPosition',
-        rotate,
-        timePosition,
       );
     }
   }, [chart, mustRedraw, timePosition]);

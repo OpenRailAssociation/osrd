@@ -135,6 +135,7 @@ const updateChart = (chart, keyValues, rotate) => {
   return { newX, newY };
 };
 
+// Factorizes func to update VerticalLine on 3 charts: SpaceTime, SpeedSpaceChart, SpaceCurvesSlopes
 export const traceVerticalLine = (
   chart,
   dataSimulation,
@@ -186,7 +187,7 @@ export const traceVerticalLine = (
           ),
         );
     }
-    console.log('call updatePointers from traceVerticalLine');
+
     updatePointers(chart, keyValues, listValues, positionValues, rotate);
   }
 };
