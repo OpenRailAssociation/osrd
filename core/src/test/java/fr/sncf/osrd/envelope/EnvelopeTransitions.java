@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class EnvelopeTransitions {
     /** Validates the position and space continuity of envelope part transitions */
     public static void checkPositions(Envelope envelope, double delta, double... expectedTransitions) {
+        assert expectedTransitions.length == envelope.size() - 1 : "Expected number of transitions does not match";
         for (int i = 0; i < envelope.size() - 1; i++) {
             var curPart = envelope.get(i);
             var nextPart = envelope.get(i + 1);
