@@ -12,7 +12,8 @@ const trainscheduleURI = '/train_schedule/';
 
 export default function MarecoGlobal(props) {
   const {
-    allowancesTypes, setIsUpdating, trainDetail, TYPES_UNITS,
+    allowanceTypes, getAllowances, setIsUpdating,
+    trainDetail, TYPES_UNITS,
   } = props;
   const { selectedTrain, simulation } = useSelector((state) => state.osrdsimulation);
   const { t } = useTranslation(['allowances']);
@@ -32,12 +33,12 @@ export default function MarecoGlobal(props) {
   const updateTrain = async () => {
     const newSimulationTrains = Array.from(simulation.trains);
     newSimulationTrains[selectedTrain] = await get(`${trainscheduleURI}${simulation.trains[selectedTrain].id}/result/`);
+    getAllowances();
     dispatch(updateSimulation({ ...simulation, trains: newSimulationTrains }));
     dispatch(updateMustRedraw(true));
   };
 
   const addMareco = async () => {
-    setIsUpdating(true);
     const marecoConf = {
       allowance_type: 'mareco',
       default_value: {
@@ -56,15 +57,16 @@ export default function MarecoGlobal(props) {
     });
     newAllowances.push({ ...marecoConf, ranges });
     try {
+      setIsUpdating(true);
       await patch(`${trainscheduleURI}${trainDetail.id}/`, {
         ...trainDetail,
         allowances: newAllowances,
       });
-      updateTrain();
       dispatch(setSuccess({
-        title: t('allowanceModified'),
-        text: 'Hop hop hop',
+        title: t('allowanceModified.marecoAdd'),
+        text: '',
       }));
+      updateTrain();
     } catch (e) {
       console.log('ERROR', e);
       dispatch(setFailure({
@@ -76,7 +78,6 @@ export default function MarecoGlobal(props) {
   };
 
   const delMareco = async () => {
-    setIsUpdating(true);
     const newAllowances = [];
     trainDetail.allowances.forEach((allowance) => {
       if (allowance.allowance_type !== 'mareco') {
@@ -84,19 +85,20 @@ export default function MarecoGlobal(props) {
       }
     });
     try {
+      setIsUpdating(true);
       await patch(`${trainscheduleURI}${trainDetail.id}/`, {
         ...trainDetail,
         allowances: newAllowances,
       });
-      updateTrain();
       setValue({
         type: 'time',
         value: 0,
       });
       dispatch(setSuccess({
-        title: t('allowanceModified'),
-        text: 'Hop hop hop',
+        title: t('allowanceModified.marecoDel'),
+        text: '',
       }));
+      updateTrain();
     } catch (e) {
       console.log('ERROR', e);
       dispatch(setFailure({
@@ -120,20 +122,20 @@ export default function MarecoGlobal(props) {
 
   return (
     <>
-      <div className="row w-100">
-        <div className="col-md-5 text-normal">
+      <div className="row w-100 mareco">
+        <div className="col-md-4 text-normal">
           {t('marecoWholePath')}
         </div>
         <div className="col-md-4">
           <InputGroupSNCF
             id="allowanceTypeSelect"
-            options={allowancesTypes}
+            options={allowanceTypes}
             handleType={handleType}
             value={value.value}
             sm
           />
         </div>
-        <div className="col-md-2">
+        <div className="col-md-3">
           <button
             type="button"
             onClick={addMareco}
@@ -160,7 +162,8 @@ export default function MarecoGlobal(props) {
 
 MarecoGlobal.propTypes = {
   TYPES_UNITS: PropTypes.object.isRequired,
-  allowancesTypes: PropTypes.array.isRequired,
+  allowanceTypes: PropTypes.array.isRequired,
+  getAllowances: PropTypes.func.isRequired,
   setIsUpdating: PropTypes.func.isRequired,
   trainDetail: PropTypes.object.isRequired,
 };

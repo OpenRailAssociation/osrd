@@ -13,7 +13,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { get, patch } from 'common/requests';
 import { setFailure, setSuccess } from 'reducers/main.ts';
 import { updateAllowancesSettings, updateSimulation, updateMustRedraw } from 'reducers/osrdsimulation';
-import { FaPencilAlt, FaTrash } from 'react-icons/fa';
+import { FaTrash } from 'react-icons/fa';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 
 const trainscheduleURI = '/train_schedule/';
@@ -32,10 +32,10 @@ const TYPES_UNITS = {
 
 const EmptyLine = (props) => {
   const {
-    allowancesTypes, allowances, setAllowances, setUpdateAllowances,
+    allowanceTypes, allowances, setAllowances, setUpdateAllowances,
   } = props;
   const { selectedTrain, simulation } = useSelector((state) => state.osrdsimulation);
-  const marginNewDatas = {
+  const allowanceNewDatas = {
     allowance_type: 'construction',
     begin_position: 0,
     end_position: simulation.trains[selectedTrain].base.stops[
@@ -45,7 +45,7 @@ const EmptyLine = (props) => {
       seconds: 0,
     },
   };
-  const [values, setValues] = useState(marginNewDatas);
+  const [values, setValues] = useState(allowanceNewDatas);
   const [fromTo, setFromTo] = useState('from');
   const { t } = useTranslation(['allowances']);
 
@@ -67,13 +67,13 @@ const EmptyLine = (props) => {
   };
 
   const addAllowance = (allowance) => {
-    /* if (values.begin_position < values.end_position && values.value > 0) {
+    if (values.begin_position < values.end_position
+      && values.value[TYPES_UNITS[values.value.value_type]] > 0) {
       const newAllowances = (allowances !== null) ? Array.from(allowances) : [];
       newAllowances.push(allowance);
       setAllowances(newAllowances);
       setUpdateAllowances(true);
-    } */
-    console.log(allowance);
+    }
   };
 
   return (
@@ -131,11 +131,11 @@ const EmptyLine = (props) => {
             options={[
               {
                 id: 'construction',
-                name: 'Contruction',
+                name: t('allowanceGlobalType.construction'),
               },
               {
                 id: 'mareco',
-                name: 'Marge de régularité',
+                name: t('allowanceGlobalType.mareco'),
               },
             ]}
             labelKey="name"
@@ -145,8 +145,8 @@ const EmptyLine = (props) => {
         </div>
         <div className="col-md-3">
           <InputGroupSNCF
-            id="allowancesTypesSelect"
-            options={allowancesTypes}
+            id="allowanceTypesSelect"
+            options={allowanceTypes}
             handleType={handleType}
             value={values.value[TYPES_UNITS[values.value.value_type]] === ''
               ? ''
@@ -189,12 +189,12 @@ const Allowance = (props) => {
     const place = simulation.trains[selectedTrain].base.stops.find(
       (element) => element.position === position,
     );
-    return place && place.name !== 'Unknown' ? `${place.name} (${Math.round(position)}m)` : `${position}m`;
+    return place && place.name !== null ? `${place.name} (${Math.round(position)}m)` : `${position}m`;
   };
 
   return (
     <div className="allowance-line">
-      <div className="row">
+      <div className="row align-items-center">
         <div className="col-md-1">
           <small>{idx + 1}</small>
         </div>
@@ -205,16 +205,15 @@ const Allowance = (props) => {
           {position2name(data.end_position)}
         </div>
         <div className="col-md-2">
-          {t(`allowancesTypes.${data.allowance_type}`)}
+          {t(`allowanceGlobalType.${data.allowance_type}`)}
+          /
+          {t(`allowanceTypes.${data.value.value_type}`)}
         </div>
-        <div className="col-md-2">
-          {data.value}
-          {TYPEUNITS[data.allowance_type]}
+        <div className="col-md-2 text-center">
+          {data.value[TYPES_UNITS[data.value.value_type]]}
+          {TYPEUNITS[data.value.value_type]}
         </div>
-        <div className="col-md-1 d-flex">
-          <button type="button" className="btn btn-sm btn-only-icon btn-white mr-1 ml-auto">
-            <FaPencilAlt />
-          </button>
+        <div className="col-md-1 d-flex align-items-center">
           <button
             type="button"
             className="btn btn-sm btn-only-icon btn-white text-danger"
@@ -240,20 +239,20 @@ export default function Allowances(props) {
   const dispatch = useDispatch();
   const { t } = useTranslation(['allowances']);
 
-  const allowancesTypes = [
+  const allowanceTypes = [
     {
       id: 'time',
-      label: t('marginTypes.time'),
+      label: t('allowanceTypes.time'),
       unit: TYPEUNITS.time,
     },
     {
       id: 'percentage',
-      label: t('marginTypes.percentage'),
+      label: t('allowanceTypes.percentage'),
       unit: TYPEUNITS.percentage,
     },
     {
       id: 'time_per_distance',
-      label: t('marginTypes.time_per_distance'),
+      label: t('allowanceTypes.time_per_distance'),
       unit: TYPEUNITS.time_per_distance,
     },
   ];
@@ -288,8 +287,8 @@ export default function Allowances(props) {
       dispatch(updateSimulation({ ...simulation, trains: newSimulationTrains }));
       dispatch(updateMustRedraw(true));
       dispatch(setSuccess({
-        title: t('allowanceModified'),
-        text: 'Hop hop hop',
+        title: t('allowanceModified.construction'),
+        text: '',
       }));
       setIsUpdating(false);
     } catch (e) {
@@ -341,7 +340,8 @@ export default function Allowances(props) {
         <>
           <div className="h2 d-flex">
             <MarecoGlobal
-              allowancesTypes={allowancesTypes}
+              allowanceTypes={allowanceTypes}
+              getAllowances={getAllowances}
               setIsUpdating={setIsUpdating}
               trainDetail={trainDetail}
               TYPES_UNITS={TYPES_UNITS}
@@ -355,7 +355,7 @@ export default function Allowances(props) {
             </button>
           </div>
           <div>
-            {t('marginByInterval')}
+            {t('allowanceByInterval')}
           </div>
           <div className="row my-1 small">
             <div className="col-md-1">
@@ -368,7 +368,7 @@ export default function Allowances(props) {
               {t('to')}
             </div>
             <div className="col-md-4">
-              {t('marginType')}
+              {t('allowanceType')}
             </div>
           </div>
           {trainDetail.allowances.map((allowance, idx) => {
@@ -386,7 +386,7 @@ export default function Allowances(props) {
         setAllowances={setAllowances}
         setUpdateAllowances={setUpdateAllowances}
         allowances={allowances}
-        allowancesTypes={allowancesTypes}
+        allowanceTypes={allowanceTypes}
       />
     </div>
   );
@@ -404,7 +404,7 @@ Allowance.propTypes = {
 
 EmptyLine.propTypes = {
   allowances: PropTypes.array,
-  allowancesTypes: PropTypes.array.isRequired,
+  allowanceTypes: PropTypes.array.isRequired,
   setAllowances: PropTypes.func.isRequired,
   setUpdateAllowances: PropTypes.func.isRequired,
 };

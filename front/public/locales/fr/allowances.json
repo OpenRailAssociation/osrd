@@ -12,10 +12,18 @@
   "begin_position": "Début",
   "marecoWholePath": "Marche économique (trajet complet)",
   "margedTrainSchedule": "Avec marges",
-  "marginByInterval": "Marges par intervalles",
-  "marginModified": "Marges modifiées",
-  "marginType": "Type de marge",
-  "marginTypes": {
+  "allowanceByInterval": "Marges par intervalles",
+  "allowanceModified": {
+    "marecoAdd": "Marche économique ajoutée",
+    "marecoDel": "Marche économique supprimée",
+    "construction": "Marche de construction modifiée"
+  },
+  "allowanceGlobalType": {
+    "mareco": "Mareco",
+    "construction": "Construction"
+  },
+  "allowanceType": "Type de marge",
+  "allowanceTypes": {
     "time": "Temps",
     "percentage": "Pourcentage",
     "time_per_distance": "Distance"

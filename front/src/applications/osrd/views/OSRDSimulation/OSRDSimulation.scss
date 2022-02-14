@@ -7,11 +7,15 @@ select.sm {
   padding: .2rem 1.25rem;
 }
 
+.toast {
+  z-index: 3;
+}
+
 .osrd-simulation-sticky-bar {
   position: fixed;
   background: var(--primary);
   width: calc(100% - 6rem);
-  z-index: 100;
+  z-index: 2;
   bottom: 0;
   left: 6rem;
   padding: .5rem 1rem .3rem;
@@ -27,7 +31,7 @@ select.sm {
   background: var(--primary);
   display: flex;
   bottom: 0;
-  z-index: 100;
+  z-index: 2;
   padding: .5rem .5rem .3rem;
   right: 0;
   border-radius: 4px 0 0 4px;
@@ -206,7 +210,10 @@ select.sm {
   fill: var(--coolgray7);
 }
 
-/* allowances */
+/* ALLOWANCES */
+.mareco {
+  z-index: 2;
+}
 .allowance-line {
   padding: .25rem;
   border-radius: 4px;
