@@ -89,20 +89,4 @@ public class MaxSpeedEnvelope {
         maxSpeedEnvelope = addStopBrakingCurves(rollingStock, path, stopPositions, maxSpeedEnvelope, timeStep);
         return maxSpeedEnvelope;
     }
-
-    /** Generate a max speed envelope given a mrsp */
-    public static Envelope from(
-            PhysicsRollingStock rollingStock,
-            PhysicsPath path,
-            ArrayList<TrainStop> stops,
-            Envelope mrsp,
-            double timeStep
-    ) {
-        var stopPositions = new DoubleArrayList();
-        for (var stop : stops) {
-            if (stop.duration > 0)
-                stopPositions.add(stop.position);
-        }
-        return from(rollingStock, path, stopPositions.toArray(), mrsp, timeStep);
-    }
 }
