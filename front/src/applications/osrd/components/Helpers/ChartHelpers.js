@@ -251,11 +251,7 @@ export const interpolateOnPosition = (dataSimulation, keyValues, positionLocal) 
 
 // Interpolation of cursor based on time position
 export const interpolateOnTime = (dataSimulation, keyValues, listValues, timePositionLocal) => {
-  console.log("-----> Call interpolate on time")
-  console.log(dataSimulation)
-  console.log(keyValues[0])
-  console.log(listValues)
-  console.log(timePositionLocal)
+
   const bisect = d3.bisector((d) => d[keyValues[0]]).left;
   const positionInterpolated = {};
   listValues.forEach((listValue) => {

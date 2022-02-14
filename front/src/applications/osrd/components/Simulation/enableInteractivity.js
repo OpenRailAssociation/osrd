@@ -15,6 +15,7 @@ import {
 } from 'reducers/osrdsimulation';
 
 import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/osrd/components/Simulation/consts';
+import createTrain from './SpaceTimeChart/createTrain';
 import drawGuideLines from 'applications/osrd/components/Simulation/drawGuideLines';
 import { store } from 'Store';
 
