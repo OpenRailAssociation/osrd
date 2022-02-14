@@ -137,6 +137,7 @@ export default function SpaceTimeChart(props) {
   }, []);
 
   useEffect(() => {
+    // ADN, entire fonction operation is subject to one condition, so aopply this condition before OR write clear and first condition to return (do nothing)
     if (dragOffset !== 0) {
       offsetTimeByDragging(dragOffset);
     }
@@ -144,9 +145,12 @@ export default function SpaceTimeChart(props) {
 
   useEffect(() => {
     if (dragEnding) {
-      changeTrain({
-        departure_time: simulation.trains[selectedTrain].base.stops[0].time,
-      }, simulation.trains[selectedTrain].id);
+      changeTrain(
+        {
+          departure_time: simulation.trains[selectedTrain].base.stops[0].timADe,
+        },
+        simulation.trains[selectedTrain].id,
+      );
       setDragEnding(false);
     }
   }, [dragEnding]);
@@ -154,6 +158,11 @@ export default function SpaceTimeChart(props) {
   useEffect(() => {
     setDataSimulation(createTrain(dispatch, keyValues, simulation.trains, t));
     if (dataSimulation) {
+      // ADN: No need to redo all this on a simple drag
+      /* ADN drawAllTrain do something only if mustRedraw = true,
+      so delete the condo in it and call if mustRadrw = true
+      it is far more redable */
+      // ADN drawAllTrain already traceVerticalLines
       drawAllTrains(resetChart);
       handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
     }
@@ -161,17 +170,16 @@ export default function SpaceTimeChart(props) {
 
   useEffect(() => {
     if (timePosition && dataSimulation && dataSimulation[selectedTrain]) {
-      dispatch(updatePositionValues(
-        interpolateOnTime(
-          dataSimulation[selectedTrain], keyValues, LIST_VALUES_NAME_SPACE_TIME, timePosition,
-        ),
-      ));
-      traceVerticalLine(
-        chart, dataSimulation[selectedTrain], keyValues,
-        LIST_VALUES_NAME_SPACE_TIME, positionValues, 'headPosition', rotate, timePosition,
+      // ADN: too heavy, dispatch on release (dragEnd), careful with dispatch !
+      const newPositionValues = interpolateOnTime(
+        dataSimulation[selectedTrain],
+        keyValues,
+        LIST_VALUES_NAME_SPACE_TIME,
+        timePosition,
       );
+      dispatch(updatePositionValues(newPositionValues));
     }
-  }, [chart, mustRedraw, timePosition]);
+  }, [chart, mustRedraw]);
 
   useEffect(() => {
     if (dataSimulation) {

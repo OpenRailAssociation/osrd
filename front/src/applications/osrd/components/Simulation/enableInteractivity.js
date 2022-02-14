@@ -3,7 +3,11 @@ import { store } from 'Store';
 import drawGuideLines from 'applications/osrd/components/Simulation/drawGuideLines';
 import { gridX, gridY, interpolateOnPosition } from 'applications/osrd/components/Helpers/ChartHelpers';
 import {
-  updateChartXGEV, updateMustRedraw, updateTimePosition, updateContextMenu,
+  updateChartXGEV,
+  updateContextMenu,
+  updateMustRedraw,
+  updateTimePosition,
+  updateTimePositionValues,
 } from 'reducers/osrdsimulation';
 
 export const displayGuide = (chart, opacity) => {
@@ -122,6 +126,7 @@ const updateChart = (chart, keyValues, rotate) => {
   return { newX, newY };
 };
 
+// Factorizes func to update VerticalLine on 3 charts: SpaceTime, SpeedSpaceChart, SpaceCurvesSlopes
 export const traceVerticalLine = (
   chart, dataSimulation, keyValues, listValues,
   positionValues, refValueName, rotate, timePosition,
@@ -138,10 +143,8 @@ export const traceVerticalLine = (
         .attr('x1', chart.x(keyValues[0] !== 'time' && positionValues.speed ? positionValues.speed.position : timePosition))
         .attr('x2', chart.x(keyValues[0] !== 'time' && positionValues.speed ? positionValues.speed.position : timePosition));
     }
-    updatePointers(
-      chart, keyValues,
-      listValues, positionValues, rotate,
-    );
+
+    updatePointers(chart, keyValues, listValues, positionValues, rotate);
   }
 };
 
@@ -179,6 +182,21 @@ const enableInteractivity = (
       dispatch(updateMustRedraw(true));
     });
 
+  // ADN: to move in helpers
+  function debounceUpdateTimePosition(timePositionLocal, interval) {
+    clearTimeout(debounceTimeoutId);
+    debounceTimeoutId = setTimeout(() => {
+      dispatch(updateTimePosition(timePositionLocal));
+    }, interval);
+  }
+
+  function debounceUpdateTimePositionValues(timePositionLocal, immediatePositionsValues, interval) {
+    clearTimeout(debounceTimeoutId);
+    debounceTimeoutId = setTimeout(() => {
+      dispatch(updateTimePositionValues(timePositionLocal, immediatePositionsValues));
+    }, interval);
+  }
+
   const mousemove = () => {
     // If GET && not playing
     const { osrdsimulation } = store.getState();
@@ -188,7 +206,20 @@ const enableInteractivity = (
         const timePositionLocal = rotate
           ? chart.y.invert(d3.mouse(d3.event.currentTarget)[1])
           : chart.x.invert(d3.mouse(d3.event.currentTarget)[0]);
-        dispatch(updateTimePosition(timePositionLocal));
+        // ADN do that after debounce
+        //dispatch(updateTimePosition(timePositionLocal));
+
+        //debounceUpdateTimePosition(timePositionLocal, 150);
+        const immediatePositionsValues = interpolateOnTime(
+          dataSimulation,
+          keyValues,
+          LIST_VALUES_NAME_SPACE_TIME,
+          timePositionLocal,
+        );
+
+        debounceUpdateTimePositionValues(timePositionLocal, immediatePositionsValues, 5);
+
+        updatePointers(chart, keyValues, listValues, immediatePositionsValues, rotate);
       } else {
         // If GEV
         const positionLocal = rotate
@@ -196,7 +227,19 @@ const enableInteractivity = (
           : chart.x.invert(d3.mouse(d3.event.currentTarget)[0]);
         const timePositionLocal = interpolateOnPosition(dataSimulation, keyValues, positionLocal);
         if (timePositionLocal) {
-          dispatch(updateTimePosition(timePositionLocal));
+          // ADN do that after debounce
+          //dispatch(updateTimePosition(timePositionLocal));
+
+          //debounceUpdateTimePosition(timePositionLocal, 150);
+          const immediatePositionsValues = interpolateOnTime(
+            dataSimulation,
+            keyValues,
+            LIST_VALUES_NAME_SPACE_TIME,
+            timePositionLocal,
+          );
+
+          debounceUpdateTimePositionValues(timePositionLocal, immediatePositionsValues, 5);
+          updatePointers(chart, keyValues, listValues, immediatePositionsValues, rotate);
         }
       }
 
