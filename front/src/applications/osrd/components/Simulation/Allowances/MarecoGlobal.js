@@ -110,14 +110,22 @@ export default function MarecoGlobal(props) {
   };
 
   useEffect(() => {
+    let thereIsMareco = false;
     trainDetail.allowances.forEach((allowance) => {
       if (allowance.allowance_type === 'mareco') {
         setValue({
           type: allowance.default_value.value_type,
           value: allowance.default_value[TYPES_UNITS[allowance.default_value.value_type]],
         });
+        thereIsMareco = true;
       }
     });
+    if (!thereIsMareco) {
+      setValue({
+        type: 'time',
+        value: 0,
+      });
+    }
   }, [trainDetail]);
 
   return (
