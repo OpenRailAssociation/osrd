@@ -1,9 +1,17 @@
 import * as d3 from 'd3';
+
 import { sec2time } from 'utils/timeManipulation';
 import { updateMustRedraw } from 'reducers/osrdsimulation';
 
 export const sec2d3datetime = (time) => d3.timeParse('%H:%M:%S')(sec2time(time));
 
+
+/**
+ * returns Contextualized offset not depending on days ahead
+ *
+ * @param {*} seconds
+ * @return {*}
+ */
 const offsetSeconds = (seconds) => {
   if (seconds > 85399) {
     return seconds - 86400;
@@ -243,6 +251,7 @@ export const interpolateOnPosition = (dataSimulation, keyValues, positionLocal) 
 
 // Interpolation of cursor based on time position
 export const interpolateOnTime = (dataSimulation, keyValues, listValues, timePositionLocal) => {
+
   const bisect = d3.bisector((d) => d[keyValues[0]]).left;
   const positionInterpolated = {};
   listValues.forEach((listValue) => {
@@ -279,5 +288,6 @@ export const interpolateOnTime = (dataSimulation, keyValues, listValues, timePos
       };
     }
   });
+
   return positionInterpolated;
 };

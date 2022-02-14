@@ -1,7 +1,9 @@
-import { ThunkAction as ReduxThunkAction } from 'redux-thunk';
 import { Action } from 'redux';
-import { Position } from 'geojson';
 import { JSONSchema7 } from 'json-schema';
+import { Position } from 'geojson';
+import { ThunkAction as ReduxThunkAction } from 'redux-thunk';
+
+export type EditorModelsDefinition = any
 
 //
 //  Redux types
@@ -76,7 +78,7 @@ export type EditorOperation =
 // Editor data model
 //
 export type EditorComponentsDefintion = { [key: string]: JSONSchema7 };
-export type EditorEntitiesDefinition = { [key: string]: Array<keyof EditorComponentDefintion> };
+export type EditorEntitiesDefinition = { [key: string]: Array<keyof EditorComponentsDefintion> };
 
 //
 //  Misc

@@ -38,7 +38,7 @@ export const initialState = {
   vias: [],
   suggeredVias: [],
   trainCompo: undefined,
-  geojson: undefined,
+  geojson: [],
   featureInfoClick: { displayPopup: false },
 };
 
