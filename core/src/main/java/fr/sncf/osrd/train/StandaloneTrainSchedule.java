@@ -1,5 +1,6 @@
 package fr.sncf.osrd.train;
 
+import com.carrotsearch.hppc.DoubleArrayList;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -43,5 +44,17 @@ public class StandaloneTrainSchedule {
     @Override
     public int hashCode() {
         return Objects.hash(rollingStock, initialSpeed, stops, allowances);
+    }
+
+    /**
+     * Returns an array of stop positions (stop with a duration of 0 are ignored)
+     */
+    public double[] getStopsPositions() {
+        var stopPositions = new DoubleArrayList();
+        for (var stop : stops) {
+            if (stop.duration > 0)
+                stopPositions.add(stop.position);
+        }
+        return stopPositions.toArray();
     }
 }

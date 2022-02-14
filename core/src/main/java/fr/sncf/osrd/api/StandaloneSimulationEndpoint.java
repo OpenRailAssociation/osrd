@@ -138,8 +138,9 @@ public class StandaloneSimulationEndpoint implements Take {
             StandaloneTrainSchedule schedule
     ) {
         var result = maxEffortEnvelope;
+        var stopsPositions = schedule.getStopsPositions();
         for (var allowance : schedule.allowances)
-            result = allowance.apply(result);
+            result = allowance.apply(result, stopsPositions);
         return result;
     }
 
@@ -149,9 +150,10 @@ public class StandaloneSimulationEndpoint implements Take {
             EnvelopePath envelopePath,
             StandaloneTrainSchedule schedule
     ) {
-        var rollingStock = schedule.rollingStock;
-        var mrsp = MRSP.from(trainsPath, rollingStock);
-        var maxSpeedEnvelope = MaxSpeedEnvelope.from(rollingStock, envelopePath, schedule.stops, mrsp, timeStep);
+        final var rollingStock = schedule.rollingStock;
+        final var mrsp = MRSP.from(trainsPath, rollingStock);
+        final var stops = schedule.getStopsPositions();
+        final var maxSpeedEnvelope = MaxSpeedEnvelope.from(rollingStock, envelopePath, stops, mrsp, timeStep);
         return MaxEffortEnvelope.from(
                 rollingStock,
                 envelopePath,

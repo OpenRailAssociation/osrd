@@ -291,8 +291,7 @@ public class MarecoAllowance implements Allowance {
 
 
     /** Returns the total envelope after applying an allowance with target speed v1 */
-    public Envelope getEnvelope(Envelope base, ArrayList<EnvelopePart> physicalLimits, double v1) {
-        var baseRoIEnvelope = Envelope.make(base.slice(sectionBegin, sectionEnd));
+    public Envelope getEnvelope(Envelope baseRoIEnvelope, ArrayList<EnvelopePart> physicalLimits, double v1) {
         var envelopeCapped = EnvelopeSpeedCap.from(baseRoIEnvelope, null, v1);
         var endOfCoastingPositions = findEndOfCoastingPositions(envelopeCapped, v1);
         var marecoEnvelope = addCoastingCurvesAtPositions(envelopeCapped, endOfCoastingPositions);
@@ -300,18 +299,7 @@ public class MarecoAllowance implements Allowance {
         physicalLimits.iterator().forEachRemaining(builder::addPart);
         marecoEnvelope.iterator().forEachRemaining(builder::addPart);
         // TODO : find a way to include coasting part into the final result without bugs
-        var roiEnvelope = builder.build();
-
-        var partsBefore = base.slice(Double.NEGATIVE_INFINITY, sectionBegin);
-        var partsAfter = base.slice(sectionEnd, Double.POSITIVE_INFINITY);
-        var totalBuilder = new EnvelopeBuilder();
-        for (var part : partsBefore)
-            totalBuilder.addPart(part);
-        for (int i = 0; i < roiEnvelope.size(); i++)
-            totalBuilder.addPart(roiEnvelope.get(i));
-        for (var part : partsAfter)
-            totalBuilder.addPart(part);
-        var result = totalBuilder.build();
+        var result = builder.build();
         assert result.spaceContinuous : "Envelope with allowance is not space continuous";
         assert result.continuous : "Envelope with allowance is not continuous";
         return result;
@@ -322,8 +310,8 @@ public class MarecoAllowance implements Allowance {
      * with a 30km/h limit in between if it exists */
     private ArrayList<EnvelopePart> generatePhysicalLimits(Envelope base) {
 
-        double initialSpeed = base.interpolateSpeed(sectionBegin);
-        double finalSpeed = base.interpolateSpeed(sectionEnd);
+        double initialSpeed = base.getBeginSpeed();
+        double finalSpeed = base.getEndSpeed();
 
         var res = new ArrayList<EnvelopePart>();
         if (initialSpeed > capacitySpeedLimit) {
@@ -335,8 +323,7 @@ public class MarecoAllowance implements Allowance {
             res.add(accelerationPart);
         }
         if (capacitySpeedLimit > 0) {
-            var baseSliced = Envelope.make(base.slice(sectionBegin, sectionEnd));
-            var baseCapped = EnvelopeSpeedCap.from(baseSliced, null, capacitySpeedLimit);
+            var baseCapped = EnvelopeSpeedCap.from(base, null, capacitySpeedLimit);
             for (var i = 0; i < baseCapped.size(); i++)
                 res.add(baseCapped.get(i));
         }
@@ -346,24 +333,25 @@ public class MarecoAllowance implements Allowance {
 
     private EnvelopePart generateDecelerationPart(Envelope base, double initialSpeed) {
         var builder = OverlayEnvelopeBuilder.forward(base);
-        builder.cursor.findPosition(sectionBegin);
+        builder.cursor.findPosition(base.getBeginPos());
         var partBuilder = builder.startContinuousOverlay(DECELERATION, capacitySpeedLimit, CmpOperator.LOWER);
         decelerate(rollingStock, path, TIME_STEP, sectionBegin, initialSpeed, partBuilder, 1);
         var decelerationPart = partBuilder.build();
-        return decelerationPart.slice(sectionBegin, sectionEnd);
+        return decelerationPart.slice(base.getBeginPos(), base.getEndPos());
     }
 
     private EnvelopePart generateAccelerationPart(Envelope base, double finalSpeed) {
         var builder = OverlayEnvelopeBuilder.backward(base);
-        builder.cursor.findPosition(sectionEnd);
+        builder.cursor.findPosition(base.getEndPos());
         var partBuilder = builder.startContinuousOverlay(ACCELERATION, capacitySpeedLimit, CmpOperator.LOWER);
         accelerate(rollingStock, path, TIME_STEP, sectionEnd, finalSpeed, partBuilder, -1);
+
         var acceleratingPart = partBuilder.build();
-        return acceleratingPart.slice(sectionBegin, sectionEnd);
+        return acceleratingPart.slice(base.getBeginPos(), base.getEndPos());
     }
 
     private double getMarginTime(Envelope envelope) {
-        return envelope.interpolateTotalTime(sectionEnd) - envelope.interpolateTotalTime(sectionBegin);
+        return envelope.getTotalTime();
     }
 
     // get the high boundary for the binary search, corresponding to vf = max
@@ -389,22 +377,64 @@ public class MarecoAllowance implements Allowance {
     }
 
     @Override
-    public Envelope apply(Envelope base) {
-        var baseTime = getMarginTime(base);
-        var distance = sectionEnd - sectionBegin;
-        var allowanceAddedTime = allowanceValue.getAllowanceTime(baseTime, distance);
-        // if no time is added, just return the base envelope without performing binary search
-        if (allowanceAddedTime == 0.0)
-            return base;
-        var targetTime = baseTime + allowanceAddedTime;
+    public Envelope apply(Envelope base, double[] stopPositions) {
+        var totalBuilder = new EnvelopeBuilder();
 
-        var physicalLimits = generatePhysicalLimits(base);
+        // Add preceding parts
+        var partsBefore = base.slice(Double.NEGATIVE_INFINITY, sectionBegin);
+        for (var part : partsBefore)
+            totalBuilder.addPart(part);
 
-        logger.debug("total time {}, trying to get to {}", baseTime, targetTime);
+        // Loop to decompose the envelope between stops
+        var cursor = sectionBegin;
+        for (double stopPosition : stopPositions) {
+            if (stopPosition <= sectionBegin)
+                continue;
+            if (stopPosition >= sectionEnd)
+                break;
 
-        Envelope curEnvelope = base;
+            applyMarecoToSection(base, totalBuilder, cursor, stopPosition);
+            cursor = stopPosition;
+        }
+        // Handle last section
+        applyMarecoToSection(base, totalBuilder, cursor, sectionEnd);
+
+        // Add following parts
+        var partsAfter = base.slice(sectionEnd, Double.POSITIVE_INFINITY);
+        for (var part : partsAfter)
+            totalBuilder.addPart(part);
+        return totalBuilder.build();
+    }
+
+    private void applyMarecoToSection(Envelope base, EnvelopeBuilder totalBuilder, double begin, double end) {
+        var newBase = Envelope.make(base.slice(begin, end));
+        var physicalLimits = generatePhysicalLimits(newBase);
+        var search = initializeBinarySearch(newBase);
+        // loop to run binarySearch for this ROI
+        var resultEnvelope = binarySearchLoop(search, newBase, physicalLimits);
+        for (int i = 0; i < resultEnvelope.size(); i++)
+            totalBuilder.addPart(resultEnvelope.get(i));
+    }
+
+    private DoubleBinarySearch initializeBinarySearch(Envelope base) {
+        var targetTime = computeTargetTime(base);
         var initialHighBound = getFirstHighEstimate(base) * 1.05;
-        var search = new DoubleBinarySearch(0, initialHighBound, targetTime, timeStep, true);
+        return new DoubleBinarySearch(0, initialHighBound, targetTime, timeStep, true);
+    }
+
+    private double computeTargetTime(Envelope base) {
+        var baseTime = getMarginTime(base);
+        var distance = base.getEndPos() - base.getBeginPos();
+        var totalDistance = sectionEnd - sectionBegin;
+        var targetTime = baseTime + allowanceValue.getAllowanceTime(baseTime, distance, totalDistance);
+        logger.debug("total time {}, trying to get to {}", baseTime, targetTime);
+        return targetTime;
+    }
+
+    private Envelope binarySearchLoop(DoubleBinarySearch search,
+                                      Envelope base,
+                                      ArrayList<EnvelopePart> physicalLimits) {
+        Envelope curEnvelope = base;
         for (int i = 1; i < 21 && !search.complete(); i++) {
             var input = search.getInput();
             logger.debug("starting attempt {} with v1 = {}", i, input);
@@ -413,10 +443,8 @@ public class MarecoAllowance implements Allowance {
             logger.debug("envelope time {}", output);
             search.feedback(output);
         }
-
         if (!search.complete())
             throw new RuntimeException("mareco simulation did not converge");
-
         return curEnvelope;
     }
 }
