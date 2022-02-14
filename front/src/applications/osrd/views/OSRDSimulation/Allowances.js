@@ -7,12 +7,12 @@ import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
-import OPModal from 'applications/osrd/components/Simulation/Margins/OPModal';
-import MarecoGlobal from 'applications/osrd/components/Simulation/Margins/MarecoGlobal';
+import OPModal from 'applications/osrd/components/Simulation/Allowances/OPModal';
+import MarecoGlobal from 'applications/osrd/components/Simulation/Allowances/MarecoGlobal';
 import { useSelector, useDispatch } from 'react-redux';
 import { get, patch } from 'common/requests';
 import { setFailure, setSuccess } from 'reducers/main.ts';
-import { updateMarginsSettings, updateSimulation, updateMustRedraw } from 'reducers/osrdsimulation';
+import { updateAllowancesSettings, updateSimulation, updateMustRedraw } from 'reducers/osrdsimulation';
 import { FaPencilAlt, FaTrash } from 'react-icons/fa';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 
@@ -32,7 +32,7 @@ const TYPES_UNITS = {
 
 const EmptyLine = (props) => {
   const {
-    marginTypes, margins, setMargins, setUpdateMargins,
+    allowancesTypes, allowances, setAllowances, setUpdateAllowances,
   } = props;
   const { selectedTrain, simulation } = useSelector((state) => state.osrdsimulation);
   const marginNewDatas = {
@@ -47,7 +47,7 @@ const EmptyLine = (props) => {
   };
   const [values, setValues] = useState(marginNewDatas);
   const [fromTo, setFromTo] = useState('from');
-  const { t } = useTranslation(['margins']);
+  const { t } = useTranslation(['allowances']);
 
   const handleType = (type) => {
     setValues({
@@ -68,10 +68,10 @@ const EmptyLine = (props) => {
 
   const addAllowance = (allowance) => {
     /* if (values.begin_position < values.end_position && values.value > 0) {
-      const newMargins = (margins !== null) ? Array.from(margins) : [];
-      newMargins.push(allowance);
-      setMargins(newMargins);
-      setUpdateMargins(true);
+      const newAllowances = (allowances !== null) ? Array.from(allowances) : [];
+      newAllowances.push(allowance);
+      setAllowances(newAllowances);
+      setUpdateAllowances(true);
     } */
     console.log(allowance);
   };
@@ -82,7 +82,7 @@ const EmptyLine = (props) => {
         <div className="col-md-3 d-flex align-items-center">
           <span className="mr-1">{t('from')}</span>
           <InputSNCF
-            id="input-margins-begin_position"
+            id="input-allowances-begin_position"
             type="number"
             onChange={(e) => setValues({ ...values, begin_position: parseInt(e.target.value, 10) })}
             value={values.begin_position}
@@ -105,7 +105,7 @@ const EmptyLine = (props) => {
         <div className="col-md-3 d-flex align-items-center">
           <span className="mr-1">{t('to')}</span>
           <InputSNCF
-            id="input-margins-end_position"
+            id="input-allowances-end_position"
             type="number"
             onChange={(e) => setValues({ ...values, end_position: parseInt(e.target.value, 10) })}
             value={values.end_position}
@@ -145,8 +145,8 @@ const EmptyLine = (props) => {
         </div>
         <div className="col-md-3">
           <InputGroupSNCF
-            id="marginTypeSelect"
-            options={marginTypes}
+            id="allowancesTypesSelect"
+            options={allowancesTypes}
             handleType={handleType}
             value={values.value[TYPES_UNITS[values.value.value_type]] === ''
               ? ''
@@ -180,9 +180,9 @@ const EmptyLine = (props) => {
   );
 };
 
-const Margin = (props) => {
-  const { data, delMargin, idx } = props;
-  const { t } = useTranslation(['margins']);
+const Allowance = (props) => {
+  const { data, delAllowance, idx } = props;
+  const { t } = useTranslation(['allowances']);
   const { selectedTrain, simulation } = useSelector((state) => state.osrdsimulation);
 
   const position2name = (position) => {
@@ -193,7 +193,7 @@ const Margin = (props) => {
   };
 
   return (
-    <div className="margin-line">
+    <div className="allowance-line">
       <div className="row">
         <div className="col-md-1">
           <small>{idx + 1}</small>
@@ -205,7 +205,7 @@ const Margin = (props) => {
           {position2name(data.end_position)}
         </div>
         <div className="col-md-2">
-          {t(`marginTypes.${data.allowance_type}`)}
+          {t(`allowancesTypes.${data.allowance_type}`)}
         </div>
         <div className="col-md-2">
           {data.value}
@@ -218,7 +218,7 @@ const Margin = (props) => {
           <button
             type="button"
             className="btn btn-sm btn-only-icon btn-white text-danger"
-            onClick={() => delMargin(idx)}
+            onClick={() => delAllowance(idx)}
           >
             <FaTrash />
           </button>
@@ -228,19 +228,19 @@ const Margin = (props) => {
   );
 };
 
-export default function Margins(props) {
-  const { toggleMarginsDisplay } = props;
+export default function Allowances(props) {
+  const { toggleAllowancesDisplay } = props;
   const {
-    marginsSettings, selectedTrain, simulation,
+    allowancesSettings, selectedTrain, simulation,
   } = useSelector((state) => state.osrdsimulation);
   const [trainDetail, setTrainDetail] = useState(undefined);
-  const [margins, setMargins] = useState([]);
-  const [updateMargins, setUpdateMargins] = useState(false);
+  const [allowances, setAllowances] = useState([]);
+  const [updateAllowances, setUpdateAllowances] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const dispatch = useDispatch();
-  const { t } = useTranslation(['margins']);
+  const { t } = useTranslation(['allowances']);
 
-  const marginTypes = [
+  const allowancesTypes = [
     {
       id: 'time',
       label: t('marginTypes.time'),
@@ -258,12 +258,12 @@ export default function Margins(props) {
     },
   ];
 
-  const getMargins = async () => {
+  const getAllowances = async () => {
     try {
       setIsUpdating(true);
       const result = await get(`${trainscheduleURI}${simulation.trains[selectedTrain].id}/`);
       setTrainDetail(result);
-      setMargins(result.allowances);
+      setAllowances(result.allowances);
       setIsUpdating(false);
     } catch (e) {
       console.log('ERROR', e);
@@ -274,21 +274,21 @@ export default function Margins(props) {
     }
   };
 
-  const changeMargins = async (newMargins) => {
+  const changeAllowances = async (newAllowances) => {
     try {
       setIsUpdating(true);
       await patch(`${trainscheduleURI}${simulation.trains[selectedTrain].id}/`, {
         ...trainDetail,
-        margins: newMargins,
+        allowances: newAllowances,
       });
       const newSimulationTrains = Array.from(simulation.trains);
       newSimulationTrains[selectedTrain] = await get(`${trainscheduleURI}${simulation.trains[selectedTrain].id}/result/`);
 
-      getMargins();
+      getAllowances();
       dispatch(updateSimulation({ ...simulation, trains: newSimulationTrains }));
       dispatch(updateMustRedraw(true));
       dispatch(setSuccess({
-        title: t('marginModified'),
+        title: t('allowanceModified'),
         text: 'Hop hop hop',
       }));
       setIsUpdating(false);
@@ -301,39 +301,39 @@ export default function Margins(props) {
     }
   };
 
-  const delMargin = (idx) => {
-    const newMargins = Array.from(margins);
-    newMargins.splice(idx, 1);
-    if (newMargins.length === 0) {
-      const newMarginsSettings = { ...marginsSettings };
-      dispatch(updateMarginsSettings({
-        ...newMarginsSettings,
+  const delAllowance = (idx) => {
+    const newAllowances = Array.from(allowances);
+    newAllowances.splice(idx, 1);
+    if (newAllowances.length === 0) {
+      const newAllowancesSettings = { ...allowancesSettings };
+      dispatch(updateAllowancesSettings({
+        ...newAllowancesSettings,
         [simulation.trains[selectedTrain].id]: {
-          ...newMarginsSettings[simulation.trains[selectedTrain].id],
+          ...newAllowancesSettings[simulation.trains[selectedTrain].id],
           ecoBlocks: false,
           baseBlocks: true,
         },
       }));
     }
-    setMargins(newMargins);
-    setUpdateMargins(true);
+    setAllowances(newAllowances);
+    setUpdateAllowances(true);
   };
 
   useEffect(() => {
-    if (updateMargins) {
-      changeMargins(margins);
-      setUpdateMargins(false);
+    if (updateAllowances) {
+      changeAllowances(allowances);
+      setUpdateAllowances(false);
     }
-  }, [margins]);
+  }, [allowances]);
 
   useEffect(() => {
-    getMargins();
+    getAllowances();
   }, [selectedTrain]);
 
   return (
     <div className="osrd-simulation-container">
       {isUpdating && (
-        <div className="margins-updating-loader">
+        <div className="allowances-updating-loader">
           <DotsLoader />
         </div>
       )}
@@ -341,7 +341,7 @@ export default function Margins(props) {
         <>
           <div className="h2 d-flex">
             <MarecoGlobal
-              marginTypes={marginTypes}
+              allowancesTypes={allowancesTypes}
               setIsUpdating={setIsUpdating}
               trainDetail={trainDetail}
               TYPES_UNITS={TYPES_UNITS}
@@ -349,7 +349,7 @@ export default function Margins(props) {
             <button
               type="button"
               className="ml-auto btn btn-primary btn-only-icon btn-sm"
-              onClick={toggleMarginsDisplay}
+              onClick={toggleAllowancesDisplay}
             >
               <i className="icons-arrow-up" />
             </button>
@@ -374,7 +374,7 @@ export default function Margins(props) {
           {trainDetail.allowances.map((allowance, idx) => {
             if (allowance.allowance_type !== 'mareco') {
               return (
-                <Margin data={allowance} delMargin={delMargin} idx={idx} key={nextId()} />
+                <Allowance data={allowance} delAllowance={delAllowance} idx={idx} key={nextId()} />
               );
             }
             return null;
@@ -383,31 +383,31 @@ export default function Margins(props) {
         </>
       )}
       <EmptyLine
-        setMargins={setMargins}
-        setUpdateMargins={setUpdateMargins}
-        margins={margins}
-        marginTypes={marginTypes}
+        setAllowances={setAllowances}
+        setUpdateAllowances={setUpdateAllowances}
+        allowances={allowances}
+        allowancesTypes={allowancesTypes}
       />
     </div>
   );
 }
 
-Margins.propTypes = {
-  toggleMarginsDisplay: PropTypes.func.isRequired,
+Allowances.propTypes = {
+  toggleAllowancesDisplay: PropTypes.func.isRequired,
 };
 
-Margin.propTypes = {
+Allowance.propTypes = {
   data: PropTypes.object.isRequired,
-  delMargin: PropTypes.func.isRequired,
+  delAllowance: PropTypes.func.isRequired,
   idx: PropTypes.number.isRequired,
 };
 
 EmptyLine.propTypes = {
-  margins: PropTypes.array,
-  marginTypes: PropTypes.func.isRequired,
-  setMargins: PropTypes.func.isRequired,
-  setUpdateMargins: PropTypes.func.isRequired,
+  allowances: PropTypes.array,
+  allowancesTypes: PropTypes.array.isRequired,
+  setAllowances: PropTypes.func.isRequired,
+  setUpdateAllowances: PropTypes.func.isRequired,
 };
 EmptyLine.defaultProps = {
-  margins: [],
+  allowances: [],
 };

@@ -182,7 +182,7 @@ select.sm {
     stroke: var(--coolgray7);
     &.selected {
       stroke: var(--blue);
-      &.margins {
+      &.allowances {
         stroke: var(--orange);
       }
       &.eco {
@@ -191,7 +191,7 @@ select.sm {
     }
     &.pointer {
       fill: var(--blue);
-      &.margins {
+      &.allowances {
         fill: var(--orange);
       }
       &.eco {
@@ -206,8 +206,8 @@ select.sm {
   fill: var(--coolgray7);
 }
 
-/* MARGINS */
-.margin-line {
+/* allowances */
+.allowance-line {
   padding: .25rem;
   border-radius: 4px;
   transition: .2s;
@@ -215,7 +215,7 @@ select.sm {
     background-color: var(--coolgray1);
   }
 }
-.margins-updating-loader {
+.allowances-updating-loader {
   position: absolute;
   text-align: center;
   background-color: rgba(255, 255, 255, 0.75);
@@ -267,14 +267,14 @@ select.sm {
       stroke-width: 1;
       &.pointer {
         fill: var(--blue);
-        &.margins {
+        &.allowances {
           fill: var(--orange);
         }
         &.eco {
           fill: var(--green);
         }
       }
-      &.margins {
+      &.allowances {
         stroke: var(--orange);
       }
       &.eco {

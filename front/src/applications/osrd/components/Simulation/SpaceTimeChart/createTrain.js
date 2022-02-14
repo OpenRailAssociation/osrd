@@ -26,32 +26,6 @@ export default function createTrain(dispatch, keyValues, simulationTrains, t) {
     );
     dataSimulationTrain.speed = formatStepsWithTime(train.base.speeds);
 
-    /* MARGINS */
-    if (train.margins && !train.margins.error) {
-      dataSimulationTrain.margins_headPosition = formatStepsWithTimeMulti(
-        train.margins.head_positions,
-      );
-      dataSimulationTrain.margins_tailPosition = formatStepsWithTimeMulti(
-        train.margins.tail_positions,
-      );
-      dataSimulationTrain.margins_routeEndOccupancy = formatStepsWithTimeMulti(
-        train.margins.route_end_occupancy,
-      );
-      dataSimulationTrain.margins_routeBeginOccupancy = formatStepsWithTimeMulti(
-        train.margins.route_begin_occupancy,
-      );
-      dataSimulationTrain.margins_areaBlock = mergeDatasArea(
-        dataSimulationTrain.margins_routeEndOccupancy,
-        dataSimulationTrain.margins_routeBeginOccupancy,
-        keyValues,
-      );
-      dataSimulationTrain.margins_speed = formatStepsWithTime(train.margins.speeds);
-    } else if (train.margins && train.margins.error) {
-      dispatch(setFailure({
-        name: t('errors.margins'),
-        message: train.margins.error,
-      }));
-    }
     /* MARECO */
     if (train.eco && !train.eco.error) {
       dataSimulationTrain.eco_headPosition = formatStepsWithTimeMulti(

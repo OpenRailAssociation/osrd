@@ -12,10 +12,10 @@ const trainscheduleURI = '/train_schedule/';
 
 export default function MarecoGlobal(props) {
   const {
-    marginTypes, setIsUpdating, trainDetail, TYPES_UNITS,
+    allowancesTypes, setIsUpdating, trainDetail, TYPES_UNITS,
   } = props;
   const { selectedTrain, simulation } = useSelector((state) => state.osrdsimulation);
-  const { t } = useTranslation(['margins']);
+  const { t } = useTranslation(['allowances']);
   const dispatch = useDispatch();
   const [value, setValue] = useState({
     type: 'time',
@@ -62,7 +62,7 @@ export default function MarecoGlobal(props) {
       });
       updateTrain();
       dispatch(setSuccess({
-        title: t('marginModified'),
+        title: t('allowanceModified'),
         text: 'Hop hop hop',
       }));
     } catch (e) {
@@ -94,7 +94,7 @@ export default function MarecoGlobal(props) {
         value: 0,
       });
       dispatch(setSuccess({
-        title: t('marginModified'),
+        title: t('allowanceModified'),
         text: 'Hop hop hop',
       }));
     } catch (e) {
@@ -126,8 +126,8 @@ export default function MarecoGlobal(props) {
         </div>
         <div className="col-md-4">
           <InputGroupSNCF
-            id="marginTypeSelect"
-            options={marginTypes}
+            id="allowanceTypeSelect"
+            options={allowancesTypes}
             handleType={handleType}
             value={value.value}
             sm
@@ -160,7 +160,7 @@ export default function MarecoGlobal(props) {
 
 MarecoGlobal.propTypes = {
   TYPES_UNITS: PropTypes.object.isRequired,
-  marginTypes: PropTypes.array.isRequired,
+  allowancesTypes: PropTypes.array.isRequired,
   setIsUpdating: PropTypes.func.isRequired,
   trainDetail: PropTypes.object.isRequired,
 };

@@ -5,7 +5,7 @@
   "ecoTrainSchedule": "Économique",
   "end_position": "Fin",
   "errors": {
-    "margins": "Erreur de tracé de marge",
+    "allowances": "Erreur de tracé de marge",
     "eco": "Erreur de tracé de marge ECO"
   },
   "from": "De",
