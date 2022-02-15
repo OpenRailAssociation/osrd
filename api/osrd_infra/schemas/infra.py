@@ -193,9 +193,18 @@ class Signal(BaseObjectTrait, TrackLocationTrait, GeometryPointTrait):
     direction: Direction
     sight_distance: float
     linked_detector: Optional[ObjectReference]
-    angle: float
     expr: RailScript
     aspects: Optional[List[str]]
+    angle_sch: Optional[float]
+    angle_geo: Optional[float]
+    type_code: Optional[str]
+    support_type: Optional[str]
+    is_in_service: Optional[bool]
+    is_lightable: Optional[bool]
+    is_operational: Optional[bool]
+    comment: Optional[str]
+    physical_organization_group: Optional[str]
+    responsible_group: Optional[str]
 
 
 class BufferStop(BaseObjectTrait, TrackLocationTrait, GeometryPointTrait):
