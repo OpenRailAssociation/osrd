@@ -1,7 +1,9 @@
 import './OSRDSimulation.scss';
+import './OSRDSimulation.scss';
 
 import React, { useEffect, useState } from 'react';
 import {
+  updateAllowancesSettings,
   updateMarginsSettings,
   updateMustRedraw,
   updateSelectedProjection,
@@ -11,10 +13,14 @@ import {
 } from 'reducers/osrdsimulation';
 import { useDispatch, useSelector } from 'react-redux';
 
+import Allowances from 'applications/osrd/views/OSRDSimulation/Allowances';
 import ButtonFullscreen from 'common/ButtonFullscreen';
 import CenterLoader from 'common/CenterLoader/CenterLoader';
 import ContextMenu from 'applications/osrd/components/Simulation/ContextMenu';
-import Allowances from 'applications/osrd/views/OSRDSimulation/Allowances';
+import { FlyToInterpolator } from 'react-map-gl';
+import Map from 'applications/osrd/views/OSRDSimulation/Map';
+import { Rnd } from 'react-rnd';
+import SpaceCurvesSlopes from 'applications/osrd/views/OSRDSimulation/SpaceCurvesSlopes';
 import SpaceTimeChart from 'applications/osrd/views/OSRDSimulation/SpaceTimeChart';
 import SpeedSpaceChart from 'applications/osrd/views/OSRDSimulation/SpeedSpaceChart';
 import TimeButtons from 'applications/osrd/views/OSRDSimulation/TimeButtons';
@@ -22,14 +28,7 @@ import TimeLine from 'applications/osrd/components/TimeLine/TimeLine';
 import TimeTable from 'applications/osrd/views/OSRDSimulation/TimeTable';
 import TrainDetails from 'applications/osrd/views/OSRDSimulation/TrainDetails';
 import TrainList from 'applications/osrd/views/OSRDSimulation/TrainList';
-import TimeButtons from 'applications/osrd/views/OSRDSimulation/TimeButtons';
-import TimeLine from 'applications/osrd/components/TimeLine/TimeLine';
-import { updateViewport } from 'reducers/map';
-import {
-  updateAllowancesSettings, updateMustRedraw, updateSelectedProjection,
-  updateSelectedTrain, updateSimulation, updateStickyBar,
-} from 'reducers/osrdsimulation';
-import './OSRDSimulation.scss';
+import { get } from 'common/requests';
 import { sec2time } from 'utils/timeManipulation';
 import { setFailure } from 'reducers/main.ts';
 import { updateViewport } from 'reducers/map';
@@ -59,9 +58,8 @@ const OSRDSimulation = () => {
     useState(heightOfSpaceCurvesSlopesChart);
 
   const { timetableID } = useSelector((state) => state.osrdconf);
-  const {
-    allowancesSettings, selectedProjection, selectedTrain, simulation, stickyBar,
-  } = useSelector((state) => state.osrdsimulation);
+  const { allowancesSettings, selectedProjection, selectedTrain, simulation, stickyBar } =
+    useSelector((state) => state.osrdsimulation);
   const dispatch = useDispatch();
 
   if (darkmode) {
@@ -92,7 +90,7 @@ const OSRDSimulation = () => {
           updateSelectedProjection({
             id: trainSchedulesIDs[0],
             path: firstTrain.path,
-          }),
+          })
         );
       }
       try {
@@ -120,7 +118,7 @@ const OSRDSimulation = () => {
           setFailure({
             name: t('simulation:errorMessages.unableToRetrieveTrainSchedule'),
             message: `${e.message} : ${e.response.data.detail}`,
-          }),
+          })
         );
         console.log('ERROR', e);
       }
@@ -160,7 +158,7 @@ const OSRDSimulation = () => {
           ...extViewport,
           transitionDuration: 1000,
           transitionInterpolator: new FlyToInterpolator(),
-        }),
+        })
       );
     }
   }, [extViewport]);
@@ -201,7 +199,7 @@ const OSRDSimulation = () => {
                   {sec2time(
                     simulation.trains[selectedTrain].base.stops[
                       simulation.trains[selectedTrain].base.stops.length - 1
-                    ].time,
+                    ].time
                   )}
                 </div>
                 <div className="ml-auto d-flex align-items-center">
@@ -314,7 +312,7 @@ const OSRDSimulation = () => {
                     }
                     onResize={(e, dir, refToElement, delta) => {
                       setHeightOfSpaceCurvesSlopesChart(
-                        initialHeightOfSpaceCurvesSlopesChart + delta.height,
+                        initialHeightOfSpaceCurvesSlopesChart + delta.height
                       );
                     }}
                     onResizeStop={() => {
@@ -328,33 +326,31 @@ const OSRDSimulation = () => {
                 )}
               </div>
             </div>
-            {displayMargins ? (
+
+            {displayAllowances ? (
               <div className="mb-2">
-                <Margins toggleMarginsDisplay={toggleMarginsDisplay} />
+                <Allowances toggleAllowancesDisplay={toggleAllowancesDisplay} />
               </div>
             ) : (
               <div
                 role="button"
                 tabIndex="-1"
                 className="btn-selected-train d-flex align-items-center mb-2"
-                onClick={toggleMarginsDisplay}
+                onClick={toggleAllowancesDisplay}
               >
-                {t('simulation:margins')}
+                {t('simulation:allowances')}
                 <i className="icons-arrow-down ml-auto" />
               </div>
-              {displayAllowances ? (
-                <div className="mb-2">
-                  <Allowances toggleAllowancesDisplay={toggleAllowancesDisplay} />
+            )}
+            <div className="row">
+              <div className="col-md-6">
+                <div className="osrd-simulation-container mb-2">
+                  {simulation.trains.length > 0 ? <TimeTable /> : null}
                 </div>
-              ) : (
-                <div
-                  role="button"
-                  tabIndex="-1"
-                  className="btn-selected-train d-flex align-items-center mb-2"
-                  onClick={toggleAllowancesDisplay}
-                >
-                  {t('simulation:allowances')}
-                  <i className="icons-arrow-down ml-auto" />
+              </div>
+              <div className="col-md-6">
+                <div className="osrd-simulation-container osrd-simulation-map mb-2">
+                  <Map setExtViewport={setExtViewport} />
                 </div>
               </div>
             </div>
