@@ -1,5 +1,6 @@
 package fr.sncf.osrd.railjson.schema.schedule;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.RJSTrackLocation;
 
 /** This class represents a stop on the train path */
@@ -12,15 +13,20 @@ public class RJSTrainStop {
 
     /** Stop location, as a position on a track
      * One must be specified between position and location */
+    @SuppressFBWarnings("UWF_NULL_FIELD")
     public RJSTrackLocation location;
 
     /** Stop duration */
     public double duration;
 
-    /** Constructor */
-    public RJSTrainStop(Double position, RJSTrackLocation location, double duration) {
+    /** Constructor with position */
+    public RJSTrainStop(Double position, double duration) {
         this.position = position;
-        this.location = location;
+        this.location = null;
         this.duration = duration;
+    }
+
+    public static RJSTrainStop lastStop(double duration) {
+        return new RJSTrainStop(-1., duration);
     }
 }

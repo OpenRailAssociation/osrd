@@ -70,7 +70,7 @@ class StandaloneSimulationTest extends ApiTest {
         var trainSchedules = new ArrayList<RJSStandaloneTrainSchedule>();
         trainSchedules.add(new RJSStandaloneTrainSchedule("Test.", "fast_rolling_stock", 0,
                 new RJSAllowance[0],
-                new RJSTrainStop[] { new RJSTrainStop(-1., null, 0.1) }));
+                new RJSTrainStop[] { RJSTrainStop.lastStop(0.1) }));
         var query = new StandaloneSimulationRequest(
                 "tiny_infra/infra.json",
                 2,
@@ -105,7 +105,7 @@ class StandaloneSimulationTest extends ApiTest {
             var trainID = String.format("Test.%d", i);
             trainSchedules.add(new RJSStandaloneTrainSchedule(trainID, "fast_rolling_stock", 0,
                     new RJSAllowance[0],
-                    new RJSTrainStop[]{new RJSTrainStop(-1., null, 0.1)}));
+                    new RJSTrainStop[]{ RJSTrainStop.lastStop(0.1) }));
         }
 
         var query = new StandaloneSimulationRequest(
@@ -121,16 +121,54 @@ class StandaloneSimulationTest extends ApiTest {
     }
 
     @Test
+    public void withStops() throws Exception {
+        // load the example infrastructure and build a test path
+        final var rjsSimulation = loadExampleSimulationResource(getClass(), "tiny_infra/simulation.json");
+        final var rjsTrainPath = tinyInfraTrainPath();
+
+        // build the simulation request
+        var noStops = new RJSTrainStop[] {
+                new RJSTrainStop(2000., 0),
+                new RJSTrainStop(5000., 1),
+                RJSTrainStop.lastStop(0.1)
+        };
+        var stops = new RJSTrainStop[] {
+                new RJSTrainStop(2000., 0),
+                new RJSTrainStop(5000., 121),
+                RJSTrainStop.lastStop(0.1)
+        };
+        var trains = new ArrayList<RJSStandaloneTrainSchedule>();
+        trains.add(new RJSStandaloneTrainSchedule("no_stops", "fast_rolling_stock",
+                0, null, noStops));
+        trains.add(new RJSStandaloneTrainSchedule("stops", "fast_rolling_stock",
+                0, null, stops));
+
+        var query = new StandaloneSimulationRequest(
+                "tiny_infra/infra.json",
+                2,
+                rjsSimulation.rollingStocks,
+                trains,
+                rjsTrainPath
+        );
+
+        // parse back the simulation result
+        var simResult = runStandaloneSimulation(query);
+
+        var noStopsResult = simResult.baseSimulations.get(0);
+        var noStopsTime = noStopsResult.headPositions.get(noStopsResult.headPositions.size() - 1).time;
+        var stopsResult = simResult.baseSimulations.get(1);
+        var stopsTime = stopsResult.headPositions.get(stopsResult.headPositions.size() - 1).time;
+        assertEquals(noStopsTime + 120, stopsTime, 0.00001);
+    }
+
+    @Test
     public void withAllowance() throws Exception {
         // load the example infrastructure and build a test path
         final var rjsSimulation = loadExampleSimulationResource(getClass(), "tiny_infra/simulation.json");
         final var rjsTrainPath = tinyInfraTrainPath();
 
         // build the simulation request
-        var stops = new RJSTrainStop[] {
-                // -1 is a special value which encodes the end of the path
-                new RJSTrainStop(-1., null, 0.1),
-        };
+        var stops = new RJSTrainStop[] { RJSTrainStop.lastStop(0.1) };
         var allowance = new RJSAllowance[] {
                 new RJSAllowance.Mareco(new RJSAllowanceValue.Percent(5)),
         };

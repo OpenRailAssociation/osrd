@@ -1,12 +1,13 @@
 package fr.sncf.osrd.api;
 
+import static fr.sncf.osrd.api.StandaloneSimulationEndpoint.SimulationResultPosition.interpolateTime;
+
 import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.api.InfraManager.InfraLoadException;
 import fr.sncf.osrd.envelope.Envelope;
-import fr.sncf.osrd.envelope.EnvelopeDebug;
 import fr.sncf.osrd.envelope_sim.EnvelopePath;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
@@ -36,6 +37,7 @@ import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
 import java.io.IOException;
 import java.util.*;
+
 
 public class StandaloneSimulationEndpoint implements Take {
     private final InfraManager infraManager;
@@ -283,6 +285,7 @@ public class StandaloneSimulationEndpoint implements Take {
             var headPositions = new ArrayList<SimulationResultPosition>();
             double time = 0;
             for (var part : envelope) {
+                // Add head position points
                 for (int i = 0; i < part.pointCount(); i++) {
                     var pos = part.getPointPos(i);
                     var speed = part.getPointSpeed(i);
@@ -290,6 +293,19 @@ public class StandaloneSimulationEndpoint implements Take {
                     headPositions.add(new SimulationResultPosition(time, pos, trainPath));
                     if (i < part.stepCount())
                         time += part.getStepTime(i);
+                }
+
+                if (part.getEndSpeed() > 0)
+                    continue;
+
+                // Add stop duration
+                for (var stop : schedule.stops) {
+                    if (stop.duration == 0. || stop.position < part.getEndPos())
+                        continue;
+                    if (stop.position > part.getEndPos())
+                        break;
+                    time += stop.duration;
+                    headPositions.add(new SimulationResultPosition(time, part.getEndPos(), trainPath));
                 }
             }
 
@@ -300,7 +316,7 @@ public class StandaloneSimulationEndpoint implements Take {
             // Compute stops
             var stops = new ArrayList<SimulationResultStops>();
             for (var stop : schedule.stops) {
-                var stopTime = envelope.interpolateTotalTime(stop.position);
+                var stopTime = interpolateTime(stop.position, headPositions);
                 stops.add(new SimulationResultStops(stopTime, stop.position, stop.duration));
             }
 
@@ -314,7 +330,7 @@ public class StandaloneSimulationEndpoint implements Take {
                 for (var trackRange : routePath.trackSections)
                     newPosition += Math.abs(trackRange.end - trackRange.begin);
                 var routeOccupancy =
-                        SimulationResultRouteOccupancy.from(lastPosition, newPosition, envelope, trainLength);
+                        SimulationResultRouteOccupancy.from(lastPosition, newPosition, headPositions, trainLength);
 
                 for (var conflictedRoute : conflictedRoutes) {
                     if (!routeOccupancies.containsKey(conflictedRoute.id)) {
@@ -364,6 +380,31 @@ public class StandaloneSimulationEndpoint implements Take {
             this.trackSection = location.edge.id;
             this.offset = location.offset;
         }
+
+        /** Interpolate in a list of positions the time associated to a given position.
+         * Note: Using envelope is not possible since the stop duration is not taken into account in envelopes.
+         * @param position between 0 and last position
+         * @param headPositions list of positions
+         */
+        public static double interpolateTime(double position, ArrayList<SimulationResultPosition> headPositions) {
+            int leftIndex = 0;
+            int rightIndex = headPositions.size() - 1;
+            assert position >= 0;
+            assert position <= headPositions.get(rightIndex).pathOffset;
+            // Binary search to find the interval to use for interpolation
+            while (rightIndex - leftIndex > 1) {
+                int median = (rightIndex + leftIndex) / 2;
+                if (position > headPositions.get(median).pathOffset)
+                    leftIndex = median;
+                else
+                    rightIndex = median;
+            }
+
+            var a = headPositions.get(leftIndex);
+            var b = headPositions.get(rightIndex);
+            return a.time + (position - a.pathOffset) * (b.time - a.time) / (b.pathOffset - a.pathOffset);
+        }
+
     }
 
     @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
@@ -405,17 +446,17 @@ public class StandaloneSimulationEndpoint implements Take {
         static SimulationResultRouteOccupancy from(
                 double startPosition,
                 double endPosition,
-                Envelope envelope,
+                ArrayList<SimulationResultPosition> headPositions,
                 double trainLength
         ) {
-            var timeHeadFree = envelope.interpolateTotalTime(endPosition);
-            var timeHeadOccupy = envelope.interpolateTotalTime(startPosition);
-            var pathLength = envelope.getEndPos();
-            var timeTailFree = envelope.interpolateTotalTime(Math.min(pathLength, endPosition + trainLength));
+            var timeHeadFree = interpolateTime(endPosition, headPositions);
+            var timeHeadOccupy = interpolateTime(startPosition, headPositions);
+            var pathLength = headPositions.get(headPositions.size() - 1).pathOffset;
+            var timeTailFree = interpolateTime(Math.min(pathLength, endPosition + trainLength), headPositions);
             double timeTailOccupy = 0;
             // Special case for first route
             if (startPosition > 0)
-                timeTailOccupy = envelope.interpolateTotalTime(Math.min(pathLength, startPosition + trainLength));
+                timeTailOccupy = interpolateTime(Math.min(pathLength, startPosition + trainLength), headPositions);
             return new SimulationResultRouteOccupancy(timeHeadOccupy, timeHeadFree, timeTailOccupy, timeTailFree);
         }
     }
