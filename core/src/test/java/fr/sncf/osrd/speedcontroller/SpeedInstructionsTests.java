@@ -199,8 +199,8 @@ public class SpeedInstructionsTests {
         final var config = TestConfig.readResource("tiny_infra/config_railjson.json");
         for (var train : config.rjsSimulation.trainSchedules)
             train.stops = new RJSTrainStop[]{
-                    new RJSTrainStop(10., null, 120),
-                    new RJSTrainStop(-1., null, 1)
+                    new RJSTrainStop(10., 120),
+                    RJSTrainStop.lastStop(1)
             };
 
         var prepared = config.prepare();
