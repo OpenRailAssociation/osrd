@@ -219,7 +219,7 @@ export default function SpeedSpaceChart(props) {
         <i className={showSettings ? 'icons-arrow-prev' : 'icons-arrow-next'} />
       </button>
       <SpeedSpaceSettings showSettings={showSettings} />
-      <div ref={ref} />
+      <div ref={ref} className="w-100" />
       <button
         type="button"
         className="btn-rounded btn-rounded-white box-shadow btn-rotate mr-5"
