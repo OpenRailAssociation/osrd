@@ -16,6 +16,7 @@ export const UPDATE_SIMULATION = 'osrdsimu/UPDATE_SIMULATION';
 export const UPDATE_SPEEDSPACE_SETTINGS = 'osrdsimu/UPDATE_SPEEDSPACE_SETTINGS';
 export const UPDATE_STICKYBAR = 'osrdsimu/UPDATE_STICKYBAR';
 export const UPDATE_TIME_POSITION = 'osrdsimu/UPDATE_TIME_POSITION';
+export const UPDATE_TIME_POSITION_VALUES = 'osrdsimu/UPDATE_TIME_POSITION_VALUES';
 
 // Reducer
 export const initialState = {
@@ -91,6 +92,10 @@ export default function reducer(state = initialState, action) {
         break;
       case UPDATE_TIME_POSITION:
         draft.timePosition = action.timePosition;
+        break;
+      case UPDATE_TIME_POSITION_VALUES:
+        draft.timePosition = action.timePosition;
+        draft.positionValues = action.positionValues;
         break;
     }
   });
@@ -206,6 +211,15 @@ export function updateTimePosition(timePosition) {
     dispatch({
       type: UPDATE_TIME_POSITION,
       timePosition,
+    });
+  };
+}
+export function updateTimePositionValues(timePosition, positionValues) {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_TIME_POSITION_VALUES,
+      timePosition,
+      positionValues,
     });
   };
 }

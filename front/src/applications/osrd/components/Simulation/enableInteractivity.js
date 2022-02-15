@@ -11,6 +11,7 @@ import {
   updateContextMenu,
   updateMustRedraw,
   updateTimePosition,
+  updateTimePositionValues,
 } from 'reducers/osrdsimulation';
 
 import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/osrd/components/Simulation/consts';
@@ -249,6 +250,13 @@ const enableInteractivity = (
     }, interval);
   }
 
+  function debounceUpdateTimePositionValues(timePositionLocal, immediatePositionsValues, interval) {
+    clearTimeout(debounceTimeoutId);
+    debounceTimeoutId = setTimeout(() => {
+      dispatch(updateTimePositionValues(timePositionLocal, immediatePositionsValues));
+    }, interval);
+  }
+
   const mousemove = () => {
     // If GET && not playing
     const { osrdsimulation } = store.getState();
@@ -261,13 +269,15 @@ const enableInteractivity = (
         // ADN do that after debounce
         //dispatch(updateTimePosition(timePositionLocal));
 
-        debounceUpdateTimePosition(timePositionLocal, 300);
+        //debounceUpdateTimePosition(timePositionLocal, 150);
         const immediatePositionsValues = interpolateOnTime(
           dataSimulation,
           keyValues,
           LIST_VALUES_NAME_SPACE_TIME,
           timePositionLocal,
         );
+
+        debounceUpdateTimePositionValues(timePositionLocal, immediatePositionsValues, 5);
 
         updatePointers(chart, keyValues, listValues, immediatePositionsValues, rotate);
       } else {
@@ -280,13 +290,15 @@ const enableInteractivity = (
           // ADN do that after debounce
           //dispatch(updateTimePosition(timePositionLocal));
 
-          debounceUpdateTimePosition(timePositionLocal, 300);
+          //debounceUpdateTimePosition(timePositionLocal, 150);
           const immediatePositionsValues = interpolateOnTime(
             dataSimulation,
             keyValues,
             LIST_VALUES_NAME_SPACE_TIME,
             timePositionLocal,
           );
+
+          debounceUpdateTimePositionValues(timePositionLocal, immediatePositionsValues, 5);
           updatePointers(chart, keyValues, listValues, immediatePositionsValues, rotate);
         }
       }

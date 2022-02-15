@@ -191,7 +191,7 @@ export default function SpaceTimeChart(props) {
     if (dragEnding) {
       changeTrain(
         {
-          departure_time: simulation.trains[selectedTrain].base.stops[0].time,
+          departure_time: simulation.trains[selectedTrain].base.stops[0].timADe,
         },
         simulation.trains[selectedTrain].id,
       );
@@ -206,7 +206,7 @@ export default function SpaceTimeChart(props) {
       /* ADN drawAllTrain do something only if mustRedraw = true,
       so delete the condo in it and call if mustRadrw = true
       it is far more redable */
-      // ADN drawAllTrain should be
+      // ADN drawAllTrain already traceVerticalLines
       drawAllTrains(resetChart);
       handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
     }
@@ -215,19 +215,15 @@ export default function SpaceTimeChart(props) {
   useEffect(() => {
     if (timePosition && dataSimulation && dataSimulation[selectedTrain]) {
       // ADN: too heavy, dispatch on release (dragEnd), careful with dispatch !
-
-      dispatch(
-        updatePositionValues(
-          interpolateOnTime(
-            dataSimulation[selectedTrain],
-            keyValues,
-            LIST_VALUES_NAME_SPACE_TIME,
-            timePosition,
-          ),
-        ),
+      const newPositionValues = interpolateOnTime(
+        dataSimulation[selectedTrain],
+        keyValues,
+        LIST_VALUES_NAME_SPACE_TIME,
+        timePosition,
       );
+      dispatch(updatePositionValues(newPositionValues));
     }
-  }, [chart, mustRedraw, timePosition]);
+  }, [chart, mustRedraw]);
 
   useEffect(() => {
     if (dataSimulation) {
