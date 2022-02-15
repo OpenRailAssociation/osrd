@@ -24,9 +24,7 @@ plugins {
     id 'jacoco'
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_11
-}
+// region DEPENDENCIES
 
 repositories {
     mavenCentral()
@@ -94,6 +92,14 @@ dependencies {
     testCompileOnly 'com.github.spotbugs:spotbugs-annotations:4.5.0'  // LGPLv2.1
 }
 
+// endregion
+
+// region MAIN
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+}
+
 application {
     mainClass = 'fr.sncf.osrd.App'
 }
@@ -112,11 +118,28 @@ run {
     enableAssertions = true
 }
 
+// endregion
+
+// region TESTS
+
 test {
     useJUnitPlatform {
         includeEngines 'jqwik', 'junit-jupiter'
     }
 }
+
+def genExamples = tasks.register("genExamples", Exec) {
+    def python = isFamily(FAMILY_WINDOWS) ? "python.exe" : "python3"
+    commandLine python, "examples/generate.py"
+}
+
+genExamples.configure {
+    onlyIf { !project.hasProperty('skipGenExamples') }
+}
+
+// endregion
+
+// region CODE_QUALITY
 
 checkstyle {
     toolVersion '8.37'
@@ -149,27 +172,12 @@ spotbugs {
     maxHeapSize = '1g'
 }
 
-tasks.register("printSettings", DefaultTask) {
-    doLast {
-        println "java.home " + System.getProperty('java.home')
-    }
-}
-
 tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
     if (project.hasProperty("spotbugs_report_xml")) {
         reports { xml.required = true }
     } else {
         reports { html.required = true }
     }
-}
-
-def genExamples = tasks.register("genExamples", Exec) {
-    def python = isFamily(FAMILY_WINDOWS) ? "python.exe" : "python3"
-    commandLine python, "examples/generate.py"
-}
-
-genExamples.configure {
-    onlyIf { !project.hasProperty('skipGenExamples') }
 }
 
 test {
@@ -181,3 +189,12 @@ jacocoTestReport {
         xml.required = true
     }
 }
+
+// endregion
+
+tasks.register("printSettings", DefaultTask) {
+    doLast {
+        println "java.home " + System.getProperty('java.home')
+    }
+}
+
