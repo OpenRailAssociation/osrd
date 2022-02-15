@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux';
 const TrainHoverPosition = (props) => {
   const { point } = props;
   const {
-    selectedTrain, simulation, marginsSettings,
+    selectedTrain, simulation, allowancesSettings,
   } = useSelector((state) => state.osrdsimulation);
   const trainID = simulation.trains[selectedTrain].id;
 
@@ -20,7 +20,7 @@ const TrainHoverPosition = (props) => {
       <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
         <circle
           style={{
-            fill: marginsSettings[trainID].ecoBlocks ? '#82be00' : '#303383',
+            fill: allowancesSettings[trainID].ecoBlocks ? '#82be00' : '#303383',
             fillOpacity: '0.75',
           }}
           cx="16"
@@ -29,7 +29,7 @@ const TrainHoverPosition = (props) => {
         />
       </svg>
       <span
-        className={`small font-weight-bold ${marginsSettings[trainID].ecoBlocks ? 'text-secondary' : 'text-primary'}`}
+        className={`small font-weight-bold ${allowancesSettings[trainID].ecoBlocks ? 'text-secondary' : 'text-primary'}`}
       >
         {point.properties && Math.round(point.properties.speed)}
         km/h

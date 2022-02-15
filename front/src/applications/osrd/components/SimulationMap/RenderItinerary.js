@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 export default function RenderItinerary(props) {
   const { geojsonPath } = props;
   const {
-    selectedTrain, simulation, marginsSettings,
+    selectedTrain, simulation, allowancesSettings,
   } = useSelector((state) => state.osrdsimulation);
   const trainID = simulation.trains[selectedTrain].id;
   return (
@@ -17,7 +17,7 @@ export default function RenderItinerary(props) {
           type="line"
           paint={{
             'line-width': 3,
-            'line-color': marginsSettings[trainID].ecoBlocks ? '#82be00' : '#303383',
+            'line-color': allowancesSettings[trainID].ecoBlocks ? '#82be00' : '#303383',
           }}
         />
       </Source>

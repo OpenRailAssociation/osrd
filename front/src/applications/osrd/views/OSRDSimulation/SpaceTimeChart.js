@@ -36,9 +36,9 @@ export default function SpaceTimeChart(props) {
   const { heightOfSpaceTimeChart } = props;
   const ref = useRef();
   const dispatch = useDispatch();
-  const { t } = useTranslation(['margins']);
+  const { t } = useTranslation(['allowances']);
   const {
-    marginsSettings, mustRedraw, positionValues, selectedProjection,
+    allowancesSettings, mustRedraw, positionValues, selectedProjection,
     selectedTrain, simulation, timePosition,
   } = useSelector((state) => state.osrdsimulation);
   const keyValues = ['time', 'position'];
@@ -112,7 +112,7 @@ export default function SpaceTimeChart(props) {
         drawTrain(
           chartLocal, dispatch, train,
           (train.id === selectedProjection.id),
-          (idx === selectedTrain), keyValues, marginsSettings,
+          (idx === selectedTrain), keyValues, allowancesSettings,
           offsetTimeByDragging, rotate, setDragEnding, setDragOffset,
         );
       });

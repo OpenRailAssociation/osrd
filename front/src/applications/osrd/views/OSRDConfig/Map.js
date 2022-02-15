@@ -242,7 +242,7 @@ const Map = () => {
             <ElectrificationType geomType="geo" colors={colors[mapStyle]} />
             <Platform colors={colors[mapStyle]} />
             <TracksGeographic colors={colors[mapStyle]} />
-            <OperationalPoints geomType="geo" />
+            <OperationalPoints geomType="geo" colors={colors[mapStyle]} />
             <SignalingType geomType="geo" />
             <SpeedLimits geomType="geo" colors={colors[mapStyle]} />
             <Signals sourceTable="map_midi_signal" colors={colors[mapStyle]} sourceLayer="geo" />

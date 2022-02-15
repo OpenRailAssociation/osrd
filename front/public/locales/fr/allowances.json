@@ -1,0 +1,34 @@
+{
+  "apply": "Appliquer",
+  "baseTrainSchedule": "Base",
+  "blocks": "Blocks",
+  "ecoTrainSchedule": "Économique",
+  "end_position": "Fin",
+  "errors": {
+    "allowances": "Erreur de tracé de marge",
+    "eco": "Erreur de tracé de marge ECO"
+  },
+  "from": "De",
+  "begin_position": "Début",
+  "marecoWholePath": "Marche économique (trajet complet)",
+  "margedTrainSchedule": "Avec marges",
+  "allowanceByInterval": "Marges par intervalles",
+  "allowanceModified": {
+    "marecoAdd": "Marche économique ajoutée",
+    "marecoDel": "Marche économique supprimée",
+    "construction": "Marche de construction modifiée"
+  },
+  "allowanceGlobalType": {
+    "mareco": "Mareco",
+    "construction": "Construction"
+  },
+  "allowanceType": "Type de marge",
+  "allowanceTypes": {
+    "time": "Temps",
+    "percentage": "Pourcentage",
+    "time_per_distance": "Distance"
+  },
+  "op": "pr",
+  "to": "à",
+  "trainSchedules": "Type de marche"
+}

@@ -7,7 +7,6 @@ import PopupInfosCustomTitle from 'applications/osrd/components/OSRDConfMap/Popu
 
 export default function RenderPopup() {
   const { featureInfoClick } = useSelector((state) => state.osrdconf);
-  console.log(featureInfoClick);
   if (featureInfoClick.displayPopup) {
     let backgroundColor;
     switch (featureInfoClick.feature.properties.typeVoie) {

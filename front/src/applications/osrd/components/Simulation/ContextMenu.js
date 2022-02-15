@@ -7,15 +7,13 @@ import { MdContentCopy, MdDelete } from 'react-icons/md';
 import { GiPathDistance } from 'react-icons/gi';
 import { get, post, deleteRequest } from 'common/requests';
 import {
-  updateContextMenu, updateMarginsSettings, updateSimulation, updateSelectedProjection,
+  updateContextMenu, updateAllowancesSettings, updateSimulation, updateSelectedProjection,
   updateSelectedTrain, updateMustRedraw,
 } from 'reducers/osrdsimulation';
 import { setSuccess, setFailure } from 'reducers/main.ts';
-import { timeShiftTrain } from 'applications/osrd/components/Helpers/ChartHelpers';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import trainNameWithNum from 'applications/osrd/components/AddTrainSchedule/trainNameHelper';
-import { sec2time } from 'utils/timeManipulation';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 
 const TRAINSCHEDULE_URI = '/train_schedule/';
@@ -23,9 +21,9 @@ const TRAINSCHEDULE_URI = '/train_schedule/';
 export default function ContextMenu(props) {
   const { getTimetable } = props;
   const {
-    contextMenu, marginsSettings, selectedTrain, simulation,
+    contextMenu, allowancesSettings, selectedTrain, simulation,
   } = useSelector((state) => state.osrdsimulation);
-  const { t } = useTranslation(['translation', 'simulation', 'osrdconf', 'margins']);
+  const { t } = useTranslation(['translation', 'simulation', 'osrdconf', 'allowances']);
   const dispatch = useDispatch();
   const [goUpdate, setGoUpdate] = useState(false);
   const [trainName, setTrainName] = useState(simulation.trains[selectedTrain].name);
@@ -113,24 +111,24 @@ export default function ContextMenu(props) {
     dispatch(updateContextMenu(undefined));
   };
 
-  const changeMarginsSettings = (type) => {
-    dispatch(updateMarginsSettings({
-      ...marginsSettings,
+  const changeAllowancesSettings = (type) => {
+    dispatch(updateAllowancesSettings({
+      ...allowancesSettings,
       [simulation.trains[selectedTrain].id]: {
-        ...marginsSettings[simulation.trains[selectedTrain].id],
-        [type]: !marginsSettings[simulation.trains[selectedTrain].id][type],
+        ...allowancesSettings[simulation.trains[selectedTrain].id],
+        [type]: !allowancesSettings[simulation.trains[selectedTrain].id][type],
       },
     }));
     dispatch(updateMustRedraw(true));
   };
 
-  const changeMarginsSettingsRadio = (type) => {
-    dispatch(updateMarginsSettings({
-      ...marginsSettings,
+  const changeAllowancesSettingsRadio = (type) => {
+    dispatch(updateAllowancesSettings({
+      ...allowancesSettings,
       [simulation.trains[selectedTrain].id]: {
-        ...marginsSettings[simulation.trains[selectedTrain].id],
+        ...allowancesSettings[simulation.trains[selectedTrain].id],
         baseBlocks: (type === 'baseBlocks'),
-        marginsBlocks: (type === 'marginsBlocks'),
+        allowancesBlocks: (type === 'allowancesBlocks'),
         ecoBlocks: (type === 'ecoBlocks'),
       },
     }));
@@ -158,14 +156,14 @@ export default function ContextMenu(props) {
       }}
     >
       <div className="dropdown-menu show">
-        {simulation.trains[selectedTrain].margins
+        {simulation.trains[selectedTrain].allowances
           || simulation.trains[selectedTrain].eco ? (
             <div className="row">
               <div className="col-3 font-weight-medium mb-1">
-                {t('margins:blocks')}
+                {t('allowances:blocks')}
               </div>
               <div className="col-9 font-weight-medium mb-1">
-                {t('margins:trainSchedules')}
+                {t('allowances:trainSchedules')}
               </div>
               <div className="col-3">
                 <CheckboxRadioSNCF
@@ -173,9 +171,9 @@ export default function ContextMenu(props) {
                   name="occupation-blocks"
                   type="radio"
                   label="&nbsp;"
-                  onChange={() => changeMarginsSettingsRadio('baseBlocks')}
+                  onChange={() => changeAllowancesSettingsRadio('baseBlocks')}
                   checked={
-                    marginsSettings[simulation.trains[selectedTrain].id].baseBlocks
+                    allowancesSettings[simulation.trains[selectedTrain].id].baseBlocks
                   }
                 />
               </div>
@@ -184,36 +182,36 @@ export default function ContextMenu(props) {
                   id="occupation-base"
                   name="occupation-base"
                   type="checkbox"
-                  onChange={() => changeMarginsSettings('base')}
-                  label={t('margins:baseTrainSchedule')}
+                  onChange={() => changeAllowancesSettings('base')}
+                  label={t('allowances:baseTrainSchedule')}
                   checked={
-                    marginsSettings[simulation.trains[selectedTrain].id].base
+                    allowancesSettings[simulation.trains[selectedTrain].id].base
                   }
                 />
               </div>
-              {simulation.trains[selectedTrain].margins && (
+              {simulation.trains[selectedTrain].allowances && (
                 <>
                   <div className="col-3">
                     <CheckboxRadioSNCF
-                      id="occupation-margins-blocks"
+                      id="occupation-allowances-blocks"
                       name="occupation-blocks"
                       type="radio"
                       label="&nbsp;"
-                      onChange={() => changeMarginsSettingsRadio('marginsBlocks')}
+                      onChange={() => changeAllowancesSettingsRadio('allowancesBlocks')}
                       checked={
-                        marginsSettings[simulation.trains[selectedTrain].id].marginsBlocks
+                        allowancesSettings[simulation.trains[selectedTrain].id].allowancesBlocks
                       }
                     />
                   </div>
                   <div className="col-9">
                     <CheckboxRadioSNCF
-                      id="occupation-margins"
-                      name="occupation-margins"
+                      id="occupation-allowances"
+                      name="occupation-allowances"
                       type="checkbox"
-                      onChange={() => changeMarginsSettings('margins')}
-                      label={t('margins:margedTrainSchedule')}
+                      onChange={() => changeAllowancesSettings('allowances')}
+                      label={t('allowances:margedTrainSchedule')}
                       checked={
-                        marginsSettings[simulation.trains[selectedTrain].id].margins
+                        allowancesSettings[simulation.trains[selectedTrain].id].allowances
                       }
                     />
                   </div>
@@ -227,9 +225,9 @@ export default function ContextMenu(props) {
                       name="occupation-blocks"
                       type="radio"
                       label="&nbsp;"
-                      onChange={() => changeMarginsSettingsRadio('ecoBlocks')}
+                      onChange={() => changeAllowancesSettingsRadio('ecoBlocks')}
                       checked={
-                        marginsSettings[simulation.trains[selectedTrain].id].ecoBlocks
+                        allowancesSettings[simulation.trains[selectedTrain].id].ecoBlocks
                       }
                     />
                   </div>
@@ -238,10 +236,10 @@ export default function ContextMenu(props) {
                       id="occupation-eco"
                       name="occupation-eco"
                       type="checkbox"
-                      onChange={() => changeMarginsSettings('eco')}
-                      label={t('margins:ecoTrainSchedule')}
+                      onChange={() => changeAllowancesSettings('eco')}
+                      label={t('allowances:ecoTrainSchedule')}
                       checked={
-                        marginsSettings[simulation.trains[selectedTrain].id].eco
+                        allowancesSettings[simulation.trains[selectedTrain].id].eco
                       }
                     />
                   </div>
