@@ -20,7 +20,7 @@ plugins {
     id 'application'
     id 'checkstyle'
     id 'com.github.spotbugs' version '4.6.0'
-    id 'com.github.johnrengelman.shadow' version '6.1.0'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
     id 'jacoco'
 }
 
@@ -95,7 +95,7 @@ dependencies {
 }
 
 application {
-    mainClassName = 'fr.sncf.osrd.App'
+    mainClass = 'fr.sncf.osrd.App'
 }
 
 sourceSets {
@@ -106,9 +106,7 @@ sourceSets {
     }
 }
 
-shadowJar {
-    archiveBaseName = 'osrd'
-}
+archivesBaseName = "osrd"
 
 run {
     enableAssertions = true
@@ -130,7 +128,7 @@ checkstyle {
 
 tasks.withType(Checkstyle) {
     reports {
-        xml.enabled true
+        xml.required = true
     }
 }
 
@@ -151,24 +149,28 @@ spotbugs {
     maxHeapSize = '1g'
 }
 
-task printSettings(type: DefaultTask) {
-    println "java.home " + System.getProperty('java.home')
+tasks.register("printSettings", DefaultTask) {
+    doLast {
+        println "java.home " + System.getProperty('java.home')
+    }
 }
 
 tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
     if (project.hasProperty("spotbugs_report_xml")) {
-        reports {xml.enabled = true}
+        reports { xml.required = true }
     } else {
-        reports {html.enabled = true}
+        reports { html.required = true }
     }
 }
 
-tasks.register("genExamples", Exec) {
+def genExamples = tasks.register("genExamples", Exec) {
     def python = isFamily(FAMILY_WINDOWS) ? "python.exe" : "python3"
     commandLine python, "examples/generate.py"
 }
 
-compileTestJava.dependsOn(genExamples)
+genExamples.configure {
+    onlyIf { !project.hasProperty('skipGenExamples') }
+}
 
 test {
     finalizedBy jacocoTestReport
