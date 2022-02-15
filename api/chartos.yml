@@ -81,9 +81,6 @@ layers:
       - name: linked_detector
         type: json
         description: Linked detector reference (can be null)
-      - name: angle
-        type: double
-        description: Signal angle
       - name: expr
         type: json
         description: Railscript expression
@@ -96,6 +93,36 @@ layers:
       - name: aspects
         type: json
         description: List of aspects
+      - name: angle_sch
+        type: double
+        description: Schematic angle
+      - name: angle_geo
+        type: double
+        description: Geographic angle
+      - name: type_code
+        type: string(max_len=255)
+        description: Signal type code
+      - name: support_type
+        type: string(max_len=255)
+        description: Type of physical support
+      - name: is_in_service
+        type: bool
+        description: Whether the signal is in service
+      - name: is_lightable
+        type: bool
+        description: Whether the signal is lightable
+      - name: is_operational
+        type: bool
+        description: Whether the signal is operational
+      - name: comment
+        type: string(max_len=1024)
+        description: Comment
+      - name: physical_organization_group
+        type: string(max_len=256)
+        description: Physical organization group (line, track)
+      - name: responsible_group
+        type: string(max_len=256)
+        description: The group responsible for the signal
     id_field_name: id
     views:
       - name: sch
