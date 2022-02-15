@@ -8,7 +8,7 @@ import { FlyToInterpolator } from 'react-map-gl';
 import ButtonFullscreen from 'common/ButtonFullscreen';
 import CenterLoader from 'common/CenterLoader/CenterLoader';
 import ContextMenu from 'applications/osrd/components/Simulation/ContextMenu';
-import Margins from 'applications/osrd/views/OSRDSimulation/Margins';
+import Allowances from 'applications/osrd/views/OSRDSimulation/Allowances';
 import SpaceTimeChart from 'applications/osrd/views/OSRDSimulation/SpaceTimeChart';
 import SpeedSpaceChart from 'applications/osrd/views/OSRDSimulation/SpeedSpaceChart';
 import SpaceCurvesSlopes from 'applications/osrd/views/OSRDSimulation/SpaceCurvesSlopes';
@@ -20,7 +20,7 @@ import TimeButtons from 'applications/osrd/views/OSRDSimulation/TimeButtons';
 import TimeLine from 'applications/osrd/components/TimeLine/TimeLine';
 import { updateViewport } from 'reducers/map';
 import {
-  updateMarginsSettings, updateMustRedraw, updateSelectedProjection,
+  updateAllowancesSettings, updateMustRedraw, updateSelectedProjection,
   updateSelectedTrain, updateSimulation, updateStickyBar,
 } from 'reducers/osrdsimulation';
 import './OSRDSimulation.scss';
@@ -35,7 +35,7 @@ const OSRDSimulation = () => {
   const [extViewport, setExtViewport] = useState(undefined);
   const [isEmpty, setIsEmpty] = useState(true);
   const [displayTrainList, setDisplayTrainList] = useState(false);
-  const [displayMargins, setDisplayMargins] = useState(false);
+  const [displayAllowances, setDisplayAllowances] = useState(false);
 
   const [heightOfSpaceTimeChart, setHeightOfSpaceTimeChart] = useState(400);
   const [
@@ -54,7 +54,7 @@ const OSRDSimulation = () => {
 
   const { timetableID } = useSelector((state) => state.osrdconf);
   const {
-    marginsSettings, selectedProjection, selectedTrain, simulation, stickyBar,
+    allowancesSettings, selectedProjection, selectedTrain, simulation, stickyBar,
   } = useSelector((state) => state.osrdsimulation);
   const dispatch = useDispatch();
 
@@ -96,20 +96,18 @@ const OSRDSimulation = () => {
         simulationLocal.sort((a, b) => a.base.stops[0].time > b.base.stops[0].time);
         dispatch(updateSimulation({ trains: simulationLocal }));
         // Create margins settings for each train if not set
-        const newMarginsSettings = { ...marginsSettings };
+        const newAllowancesSettings = { ...allowancesSettings };
         simulationLocal.forEach((train) => {
-          if (!newMarginsSettings[train.id]) {
-            newMarginsSettings[train.id] = {
+          if (!newAllowancesSettings[train.id]) {
+            newAllowancesSettings[train.id] = {
               base: true,
               baseBlocks: false,
-              margins: true,
-              marginsBlocks: false,
               eco: true,
               ecoBlocks: true,
             };
           }
         });
-        dispatch(updateMarginsSettings(newMarginsSettings));
+        dispatch(updateAllowancesSettings(newAllowancesSettings));
       } catch (e) {
         dispatch(setFailure({
           name: t('simulation:errorMessages.unableToRetrieveTrainSchedule'),
@@ -127,8 +125,8 @@ const OSRDSimulation = () => {
     setTimeout(() => dispatch(updateMustRedraw(true)), 200);
   };
 
-  const toggleMarginsDisplay = () => {
-    setDisplayMargins(!displayMargins);
+  const toggleAllowancesDisplay = () => {
+    setDisplayAllowances(!displayAllowances);
   };
 
   useEffect(() => {
@@ -308,18 +306,18 @@ const OSRDSimulation = () => {
                   )}
                 </div>
               </div>
-              {displayMargins ? (
+              {displayAllowances ? (
                 <div className="mb-2">
-                  <Margins toggleMarginsDisplay={toggleMarginsDisplay} />
+                  <Allowances toggleAllowancesDisplay={toggleAllowancesDisplay} />
                 </div>
               ) : (
                 <div
                   role="button"
                   tabIndex="-1"
                   className="btn-selected-train d-flex align-items-center mb-2"
-                  onClick={toggleMarginsDisplay}
+                  onClick={toggleAllowancesDisplay}
                 >
-                  {t('simulation:margins')}
+                  {t('simulation:allowances')}
                   <i className="icons-arrow-down ml-auto" />
                 </div>
               )}

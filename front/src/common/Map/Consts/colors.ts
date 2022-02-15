@@ -35,6 +35,10 @@ const colors: Record<string, Theme> = {
       text: '#0088ce',
       circle: '#0088ce',
     },
+    op: {
+      text: '#202258',
+      halo: '#eee',
+    },
     panel: {
       text: '#333333',
       halo: '#ffffff',
@@ -141,6 +145,10 @@ const colors: Record<string, Theme> = {
       text: '#ffaa39',
       circle: '#ffaa39',
     },
+    op: {
+      text: '#4895ef',
+      halo: '#0b011d',
+    },
     panel: {
       text: '#eeeeee',
       halo: '#333333',
@@ -246,6 +254,10 @@ const colors: Record<string, Theme> = {
     mapmarker: {
       text: bpMedium,
       circle: bpLight,
+    },
+    op: {
+      text: bpLight,
+      halo: bpBg,
     },
     panel: {
       text: bpLight,

@@ -7,7 +7,7 @@ export const UPDATE_CHARTXGEV = 'osrdsimu/UPDATE_CHARTXGEV';
 export const UPDATE_CONTEXTMENU = 'osrdsimu/UPDATE_CONTEXTMENU';
 export const UPDATE_HOVER_POSITION = 'osrdsimu/UPDATE_HOVER_POSITION';
 export const UPDATE_IS_PLAYING = 'osrdsimu/UPDATE_IS_PLAYING';
-export const UPDATE_MARGINS_SETTINGS = 'osrdsimu/UPDATE_MARGINS_SETTINGS';
+export const UPDATE_ALLOWANCES_SETTINGS = 'osrdsimu/UPDATE_ALLOWANCES_SETTINGS';
 export const UPDATE_MUST_REDRAW = 'osrdsimu/UPDATE_MUST_REDRAW';
 export const UPDATE_POSITION_VALUES = 'osrdsimu/UPDATE_POSITION_VALUES';
 export const UPDATE_SELECTED_PROJECTION = 'osrdsimu/UPDATE_SELECTED_PROJECTION';
@@ -24,7 +24,7 @@ export const initialState = {
   contextMenu: undefined,
   hoverPosition: undefined,
   isPlaying: false,
-  marginsSettings: undefined,
+  allowancesSettings: undefined,
   mustRedraw: true,
   positionValues: {
     headPosition: 0,
@@ -65,8 +65,8 @@ export default function reducer(state = initialState, action) {
       case UPDATE_IS_PLAYING:
         draft.isPlaying = action.isPlaying;
         break;
-      case UPDATE_MARGINS_SETTINGS:
-        draft.marginsSettings = action.marginsSettings;
+      case UPDATE_ALLOWANCES_SETTINGS:
+        draft.allowancesSettings = action.allowancesSettings;
         break;
       case UPDATE_MUST_REDRAW:
         draft.mustRedraw = action.mustRedraw;
@@ -137,11 +137,11 @@ export function updateIsPlaying(isPlaying) {
     });
   };
 }
-export function updateMarginsSettings(marginsSettings) {
+export function updateAllowancesSettings(allowancesSettings) {
   return (dispatch) => {
     dispatch({
-      type: UPDATE_MARGINS_SETTINGS,
-      marginsSettings,
+      type: UPDATE_ALLOWANCES_SETTINGS,
+      allowancesSettings,
     });
   };
 }

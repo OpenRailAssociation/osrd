@@ -7,7 +7,7 @@ import { MAP_URL } from 'common/Map/const';
 export default function OperationalPoints(props) {
   const { layersSettings } = useSelector((state) => state.map);
   const { infraID } = useSelector((state) => state.osrdconf);
-  const { geomType } = props;
+  const { geomType, colors } = props;
   const layerPoint = {
     type: 'circle',
     'source-layer': 'operational_points',
@@ -35,9 +35,32 @@ export default function OperationalPoints(props) {
       visibility: 'visible',
     },
     paint: {
-      'text-color': '#202258',
+      'text-color': colors.op.text,
       'text-halo-width': 2,
-      'text-halo-color': 'rgba(255,255,255,0.75)',
+      'text-halo-color': colors.op.halo,
+      'text-halo-blur': 1,
+    },
+  };
+
+  const layerNameCH = {
+    type: 'symbol',
+    'source-layer': 'operational_points',
+    layout: {
+      'text-field': '{ch_long_label}',
+      'text-font': [
+        'Roboto Condensed',
+      ],
+      'text-size': 9,
+      'text-anchor': 'left',
+      'text-allow-overlap': true,
+      'text-ignore-placement': true,
+      'text-offset': [1, 1.25],
+      visibility: 'visible',
+    },
+    paint: {
+      'text-color': colors.op.text,
+      'text-halo-width': 2,
+      'text-halo-color': colors.op.halo,
       'text-halo-blur': 1,
     },
   };
@@ -50,10 +73,12 @@ export default function OperationalPoints(props) {
     >
       <Layer {...layerPoint} id={`chartis/osrd_operational_point/${geomType}`} />
       <Layer {...layerName} id={`chartis/osrd_operational_point_name/${geomType}`} />
+      <Layer {...layerNameCH} id={`chartis/osrd_operational_point_name_CH/${geomType}`} />
     </Source>
   );
 }
 
 OperationalPoints.propTypes = {
   geomType: PropTypes.string.isRequired,
+  colors: PropTypes.object.isRequired,
 };
