@@ -3,6 +3,7 @@ package fr.sncf.osrd.envelope;
 import static fr.sncf.osrd.envelope.EnvelopePhysics.intersectStepWithSpeed;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.Arrays;
 
 /**
@@ -56,6 +57,7 @@ public final class EnvelopePart {
 
     /** Creates an EnvelopePart */
     @SuppressFBWarnings({"EI_EXPOSE_REP2"})
+    @ExcludeFromGeneratedCodeCoverage
     public EnvelopePart(
             EnvelopePartMeta meta,
             double[] positions,

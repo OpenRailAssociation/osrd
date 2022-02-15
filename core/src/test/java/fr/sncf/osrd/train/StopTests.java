@@ -30,8 +30,8 @@ public class StopTests {
         var configWithStops = TestConfig.readResource("tiny_infra/config_railjson.json");
         for (var schedule : configWithStops.rjsSimulation.trainSchedules)
             schedule.stops = new RJSTrainStop[]{
-                    new RJSTrainStop(1000., null, 10),
-                    new RJSTrainStop(-1., null, 1)
+                    new RJSTrainStop(1000., 10),
+                    RJSTrainStop.lastStop(1)
             };
         var eventsWithStops = configWithStops.run();
         var lastPositionWithStop = lastTrainPosition(eventsWithStops);
@@ -51,15 +51,15 @@ public class StopTests {
         final var configShort = TestConfig.readResource("tiny_infra/config_railjson.json");
         for (var train : configShort.rjsSimulation.trainSchedules)
             train.stops = new RJSTrainStop[]{
-                    new RJSTrainStop(1000., null, durationStopShort),
-                    new RJSTrainStop(-1., null, 1)
+                    new RJSTrainStop(1000., durationStopShort),
+                    RJSTrainStop.lastStop(1)
             };
 
         final var configLong = TestConfig.readResource("tiny_infra/config_railjson.json");
         for (var train : configLong.rjsSimulation.trainSchedules)
             train.stops = new RJSTrainStop[]{
-                    new RJSTrainStop(1000., null, durationStopLong),
-                    new RJSTrainStop(-1., null, 1)
+                    new RJSTrainStop(1000., durationStopLong),
+                    RJSTrainStop.lastStop(1)
             };
 
         var preparedShort = configShort.prepare();
@@ -78,15 +78,15 @@ public class StopTests {
         final var configStop = TestConfig.readResource("tiny_infra/config_railjson.json");
         for (var train : configStop.rjsSimulation.trainSchedules)
             train.stops = new RJSTrainStop[]{
-                    new RJSTrainStop(2000., null, 100),
-                    new RJSTrainStop(1000., null, 0),
-                    new RJSTrainStop(-1., null, 1)
+                    new RJSTrainStop(2000., 100),
+                    new RJSTrainStop(1000., 0),
+                    RJSTrainStop.lastStop(1)
             };
         final var configNoStop = TestConfig.readResource("tiny_infra/config_railjson.json");
         for (var train : configNoStop.rjsSimulation.trainSchedules)
                 train.stops = new RJSTrainStop[]{
-                        new RJSTrainStop(2000., null, 100),
-                        new RJSTrainStop(-1., null, 1)
+                        new RJSTrainStop(2000., 100),
+                        RJSTrainStop.lastStop(1)
                 };
         var preparedStops = configStop.prepare();
         preparedStops.run();
@@ -104,8 +104,8 @@ public class StopTests {
         final var config = TestConfig.readResource("tiny_infra/config_railjson.json");
         for (var train : config.rjsSimulation.trainSchedules)
             train.stops = new RJSTrainStop[]{
-                    new RJSTrainStop(1000., null, 0),
-                    new RJSTrainStop(-1., null, 0)
+                    new RJSTrainStop(1000., 0),
+                    RJSTrainStop.lastStop(0)
             };
 
         var prepared = config.prepare();
@@ -120,11 +120,11 @@ public class StopTests {
         final var config = TestConfig.readResource("tiny_infra/config_railjson.json");
         for (var train : config.rjsSimulation.trainSchedules)
             train.stops = new RJSTrainStop[]{
-                    new RJSTrainStop(200., null, 10),
-                    new RJSTrainStop(1000., null, 10),
-                    new RJSTrainStop(3000., null, 0),
-                    new RJSTrainStop(5000., null, 60),
-                    new RJSTrainStop(-1., null, 1)
+                    new RJSTrainStop(200., 10),
+                    new RJSTrainStop(1000., 10),
+                    new RJSTrainStop(3000., 0),
+                    new RJSTrainStop(5000., 60),
+                    RJSTrainStop.lastStop(1)
             };
 
         var preparedSim = config.prepare();
@@ -140,11 +140,11 @@ public class StopTests {
         final var configWithStops = TestConfig.readResource("tiny_infra/config_railjson.json");
         for (var schedule : configWithStops.rjsSimulation.trainSchedules)
             schedule.stops = new RJSTrainStop[] {
-                    new RJSTrainStop(200., null, -1),
-                    new RJSTrainStop(1000., null, 0),
-                    new RJSTrainStop(3000., null, -1),
-                    new RJSTrainStop(5000., null, 0),
-                    new RJSTrainStop(-1., null, 1)
+                    new RJSTrainStop(200., -1),
+                    new RJSTrainStop(1000., 0),
+                    new RJSTrainStop(3000., -1),
+                    new RJSTrainStop(5000., 0),
+                    RJSTrainStop.lastStop(1)
             };
         var preparedWithStops = configWithStops.prepare();
         var eventsWithStops = preparedWithStops.run();
@@ -166,12 +166,12 @@ public class StopTests {
         final var config = TestConfig.readResource("tiny_infra/config_railjson.json");
         for (var schedule : config.rjsSimulation.trainSchedules)
             schedule.stops = new RJSTrainStop[]{
-                    new RJSTrainStop(200., null, -1),
-                    new RJSTrainStop(1000., null, 0),
-                    new RJSTrainStop(3000., null, 10),
-                    new RJSTrainStop(5000., null, -1),
-                    new RJSTrainStop(6000., null, 0),
-                    new RJSTrainStop(-1., null, 1)
+                    new RJSTrainStop(200., -1),
+                    new RJSTrainStop(1000., 0),
+                    new RJSTrainStop(3000., 10),
+                    new RJSTrainStop(5000., -1),
+                    new RJSTrainStop(6000., 0),
+                    RJSTrainStop.lastStop(1)
             };
 
         var events = config.run();
@@ -194,8 +194,8 @@ public class StopTests {
 
         for (var schedule : configWithShortStop.rjsSimulation.trainSchedules)
             schedule.stops = new RJSTrainStop[]{
-                    new RJSTrainStop(5000., null, durationStopShort),
-                    new RJSTrainStop(-1., null, 1)
+                    new RJSTrainStop(5000., durationStopShort),
+                    RJSTrainStop.lastStop(1)
             };
 
         var testWithShortStop =
@@ -208,8 +208,8 @@ public class StopTests {
 
         for (var schedule : configWithLongStop.rjsSimulation.trainSchedules)
             schedule.stops = new RJSTrainStop[]{
-                    new RJSTrainStop(5000., null, durationStopLong),
-                    new RJSTrainStop(-1., null, 1)
+                    new RJSTrainStop(5000., durationStopLong),
+                    RJSTrainStop.lastStop(1)
             };
 
         var testWithLongStop =
@@ -256,8 +256,8 @@ public class StopTests {
 
         for (var schedule : configWithShortStop.rjsSimulation.trainSchedules)
             schedule.stops = new RJSTrainStop[]{
-                    new RJSTrainStop(5000., null, durationStopShort),
-                    new RJSTrainStop(-1., null, 1)
+                    new RJSTrainStop(5000., durationStopShort),
+                    RJSTrainStop.lastStop(1)
             };
 
         var testWithShortStop =
@@ -270,8 +270,8 @@ public class StopTests {
 
         for (var schedule : configWithLongStop.rjsSimulation.trainSchedules)
             schedule.stops = new RJSTrainStop[]{
-                    new RJSTrainStop(5000., null, durationStopLong),
-                    new RJSTrainStop(-1., null, 1)
+                    new RJSTrainStop(5000., durationStopLong),
+                    RJSTrainStop.lastStop(1)
             };
 
         var testWithLongStop =
@@ -302,8 +302,8 @@ public class StopTests {
         final var baseConfig = TestConfig.readResource("tiny_infra/config_railjson.json").clearAllowances();
         for (var schedule : baseConfig.rjsSimulation.trainSchedules)
             schedule.stops = new RJSTrainStop[]{
-                    new RJSTrainStop(5000., null, 1e-3),
-                    new RJSTrainStop(-1., null, 1)
+                    new RJSTrainStop(5000., 1e-3),
+                    RJSTrainStop.lastStop(1)
             };
         final var test = baseConfig.prepare();
         test.run();
@@ -313,8 +313,8 @@ public class StopTests {
 
         for (var schedule : configWithShortStop.rjsSimulation.trainSchedules)
             schedule.stops = new RJSTrainStop[]{
-                    new RJSTrainStop(5000., null, durationStopShort),
-                    new RJSTrainStop(-1., null, 1)
+                    new RJSTrainStop(5000., durationStopShort),
+                    RJSTrainStop.lastStop(1)
             };
 
         var testWithShortStop =
@@ -327,8 +327,8 @@ public class StopTests {
 
         for (var schedule : configWithLongStop.rjsSimulation.trainSchedules)
             schedule.stops = new RJSTrainStop[]{
-                    new RJSTrainStop(5000., null, durationStopLong),
-                    new RJSTrainStop(-1., null, 1)
+                    new RJSTrainStop(5000., durationStopLong),
+                    RJSTrainStop.lastStop(1)
             };
 
         var testWithLongStop =
@@ -378,12 +378,12 @@ public class StopTests {
 
         for (var schedule : config.rjsSimulation.trainSchedules)
             schedule.stops = new RJSTrainStop[]{
-                    new RJSTrainStop(2000., null, durationStop),
-                    new RJSTrainStop(3000., null, durationStop),
-                    new RJSTrainStop(4000., null, durationStop),
-                    new RJSTrainStop(5000., null, durationStop),
-                    new RJSTrainStop(7000., null, durationStop),
-                    new RJSTrainStop(-1., null, 1)
+                    new RJSTrainStop(2000., durationStop),
+                    new RJSTrainStop(3000., durationStop),
+                    new RJSTrainStop(4000., durationStop),
+                    new RJSTrainStop(5000., durationStop),
+                    new RJSTrainStop(7000., durationStop),
+                    RJSTrainStop.lastStop(1)
             };
 
         var test = MarginTests.ComparativeTest.from(
@@ -414,12 +414,12 @@ public class StopTests {
 
         for (var schedule : config.rjsSimulation.trainSchedules)
             schedule.stops = new RJSTrainStop[]{
-                    new RJSTrainStop(2000., null, durationStop),
-                    new RJSTrainStop(3000., null, durationStop),
-                    new RJSTrainStop(4000., null, durationStop),
-                    new RJSTrainStop(5000., null, durationStop),
-                    new RJSTrainStop(7000., null, durationStop),
-                    new RJSTrainStop(-1., null, 1)
+                    new RJSTrainStop(2000., durationStop),
+                    new RJSTrainStop(3000., durationStop),
+                    new RJSTrainStop(4000., durationStop),
+                    new RJSTrainStop(5000., durationStop),
+                    new RJSTrainStop(7000., durationStop),
+                    RJSTrainStop.lastStop(1)
             };
 
         var test = MarginTests.ComparativeTest.from(
