@@ -30,13 +30,17 @@ Many of these goals currently aren't _yet_ fulfilled: the simulation is pretty s
 
 You'll need:
  - Java 11
- - Gradle 7
- - Python >= 3.8 (Only used for tests generation)
+ - Python >= 3.8 (For generating example / test files)
 
 ```sh
-gradle shadowJar
+# on Linux / MacOS
+./gradlew processTestResources shadowJar
+
+# on Windows
+gradlew.bat processTestResources shadowJar
+
 java -jar build/libs/osrd-all.jar \
     simulate \
-    --config examples/tiny_infra/config_railjson.json \
+    --config build/resources/test/tiny_infra/config_railjson.json \
     -o sim_changelog_output.json
 ```
