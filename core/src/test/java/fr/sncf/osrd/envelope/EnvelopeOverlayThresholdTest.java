@@ -20,13 +20,13 @@ public class EnvelopeOverlayThresholdTest {
                 new double[]{2, 2}
         ));
         var cursor = EnvelopeCursor.forward(constSpeedEnvelope);
-        var builder = new OverlayEnvelopeBuilder(cursor);
+        var builder = OverlayEnvelopeBuilder.forward(constSpeedEnvelope);
 
         cursor.findPosition(3);
         {
-            var partBuilder = builder.startContinuousOverlay(null, 1, CmpOperator.LOWER);
+            var partBuilder = OverlayEnvelopePartBuilder.startContinuousOverlay(cursor, null, 1, CmpOperator.LOWER);
             assertTrue(partBuilder.addStep(4, 0));
-            builder.addPart(partBuilder);
+            builder.addPart(partBuilder.build());
         }
         var envelope = builder.build();
         assertEquals(1.0, envelope.getMinSpeed());
@@ -47,13 +47,13 @@ public class EnvelopeOverlayThresholdTest {
                 new double[]{2, 2}
         ));
         var cursor = EnvelopeCursor.forward(constSpeedEnvelope);
-        var builder = new OverlayEnvelopeBuilder(cursor);
+        var builder = OverlayEnvelopeBuilder.forward(constSpeedEnvelope);
 
         cursor.findPosition(3);
         {
-            var partBuilder = builder.startContinuousOverlay(null, 1, CmpOperator.LOWER);
+            var partBuilder = OverlayEnvelopePartBuilder.startContinuousOverlay(cursor, null, 1, CmpOperator.LOWER);
             assertTrue(partBuilder.addStep(4, 1));
-            builder.addPart(partBuilder);
+            builder.addPart(partBuilder.build());
         }
         var envelope = builder.build();
         assertEquals(1.0, envelope.getMinSpeed());
@@ -74,13 +74,14 @@ public class EnvelopeOverlayThresholdTest {
                 new double[]{2, 2}
         ));
         var cursor = EnvelopeCursor.forward(constSpeedEnvelope);
-        var builder = new OverlayEnvelopeBuilder(cursor);
+        var builder = OverlayEnvelopeBuilder.forward(constSpeedEnvelope);
 
         cursor.findPosition(3);
         {
-            var partBuilder = builder.startDiscontinuousOverlay(null, 0, 1, CmpOperator.HIGHER);
+            var partBuilder = OverlayEnvelopePartBuilder.startDiscontinuousOverlay(
+                    cursor, null, 0, 1, CmpOperator.HIGHER);
             assertTrue(partBuilder.addStep(4, 2));
-            builder.addPart(partBuilder);
+            builder.addPart(partBuilder.build());
         }
         var envelope = builder.build();
         EnvelopeShape.check(envelope, CONSTANT, INCREASING, CONSTANT);
@@ -100,13 +101,14 @@ public class EnvelopeOverlayThresholdTest {
                 new double[]{2, 2}
         ));
         var cursor = EnvelopeCursor.forward(constSpeedEnvelope);
-        var builder = new OverlayEnvelopeBuilder(cursor);
+        var builder = OverlayEnvelopeBuilder.forward(constSpeedEnvelope);
 
         cursor.findPosition(3);
         {
-            var partBuilder = builder.startDiscontinuousOverlay(null, 0, 1, CmpOperator.HIGHER);
+            var partBuilder = OverlayEnvelopePartBuilder.startDiscontinuousOverlay(
+                    cursor, null, 0, 1, CmpOperator.HIGHER);
             assertTrue(partBuilder.addStep(4, 1));
-            builder.addPart(partBuilder);
+            builder.addPart(partBuilder.build());
         }
         var envelope = builder.build();
         EnvelopeShape.check(envelope, CONSTANT, INCREASING, CONSTANT);
@@ -125,18 +127,18 @@ public class EnvelopeOverlayThresholdTest {
                 new double[]{20, 20}
         ));
         var cursor = EnvelopeCursor.forward(constSpeedEnvelope);
-        var builder = new OverlayEnvelopeBuilder(cursor);
+        var builder = OverlayEnvelopeBuilder.forward(constSpeedEnvelope);
 
         var position = 10.0;
         cursor.findPosition(position);
         var speed = cursor.getSpeed();
         {
-            var partBuilder = builder.startContinuousOverlay(null, 10, CmpOperator.LOWER);
+            var partBuilder = OverlayEnvelopePartBuilder.startContinuousOverlay(cursor, null, 10, CmpOperator.LOWER);
             do {
                 position++;
                 speed--;
             } while (!partBuilder.addStep(position, speed));
-            builder.addPart(partBuilder);
+            builder.addPart(partBuilder.build());
         }
         var envelope = builder.build();
         assertEquals(10.0, envelope.getMinSpeed());

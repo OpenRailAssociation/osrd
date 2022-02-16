@@ -108,22 +108,6 @@ public class EnvelopeCursor {
         }
     }
 
-    /** Cuts the envelope part we're iterating over, taking direction into account */
-    public EnvelopePart[] smartSlice(
-            int beginPartIndex, int beginStepIndex, double beginPosition, double beginSpeed,
-            int endPartIndex, int endStepIndex, double endPosition, double endSpeed
-    ) {
-        if (reverse)
-            return envelope.smartSlice(
-                    endPartIndex, endStepIndex, endPosition, endSpeed,
-                    beginPartIndex, beginStepIndex, beginPosition, beginSpeed
-            );
-        return envelope.smartSlice(
-                beginPartIndex, beginStepIndex, beginPosition, beginSpeed,
-                endPartIndex, endStepIndex, endPosition, endSpeed
-        );
-    }
-
     private double getStepBeginPos(EnvelopePart part, int stepIndex) {
         if (reverse)
             return part.getEndPos(stepIndex);
