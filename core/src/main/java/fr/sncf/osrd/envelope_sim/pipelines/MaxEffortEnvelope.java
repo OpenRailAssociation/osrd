@@ -30,17 +30,18 @@ public class MaxEffortEnvelope {
             double timeStep,
             double initialSpeed) {
         var builder = OverlayEnvelopeBuilder.forward(maxSpeedProfile);
+        var cursor = EnvelopeCursor.forward(maxSpeedProfile);
         {
-            var partBuilder = builder.startDiscontinuousOverlay(ACCELERATION, initialSpeed);
+            var partBuilder = OverlayEnvelopePartBuilder.startDiscontinuousOverlay(cursor, ACCELERATION, initialSpeed);
             EnvelopeAcceleration.accelerate(rollingStock, path, timeStep, 0, initialSpeed, partBuilder, 1);
-            builder.addPart(partBuilder);
+            builder.addPart(partBuilder.build());
         }
-        while (builder.cursor.findPartTransition(MaxSpeedEnvelope::increase)) {
-            var partBuilder = builder.startContinuousOverlay(ACCELERATION);
+        while (cursor.findPartTransition(MaxSpeedEnvelope::increase)) {
+            var partBuilder = OverlayEnvelopePartBuilder.startContinuousOverlay(cursor, ACCELERATION);
             var startSpeed = partBuilder.getLastSpeed();
-            var startPosition = builder.cursor.getPosition();
+            var startPosition = cursor.getPosition();
             EnvelopeAcceleration.accelerate(rollingStock, path, timeStep, startPosition, startSpeed, partBuilder, 1);
-            builder.addPart(partBuilder);
+            builder.addPart(partBuilder.build());
         }
         return builder.build();
     }
@@ -53,7 +54,7 @@ public class MaxEffortEnvelope {
             double timeStep
     ) {
         var builder = OverlayEnvelopeBuilder.forward(maxSpeedProfile);
-        var cursor = builder.cursor;
+        var cursor = EnvelopeCursor.forward(maxSpeedProfile);
         while (cursor.findPart(MaxEffortEnvelope::maxEffortPlateau)) {
             double speed = cursor.getStepBeginSpeed();
             double maxTractionForce = rollingStock.getMaxEffort(speed);
@@ -67,7 +68,7 @@ public class MaxEffortEnvelope {
                 cursor.findPosition(highRampPosition);
                 if (cursor.getPosition() == envelopePart.getEndPos())
                     break;
-                var partBuilder = builder.startContinuousOverlay(MAINTAIN);
+                var partBuilder = OverlayEnvelopePartBuilder.startContinuousOverlay(cursor, MAINTAIN);
                 var startPosition = cursor.getPosition();
                 var startSpeed = partBuilder.getLastSpeed();
                 EnvelopeAcceleration.accelerate(
@@ -76,7 +77,7 @@ public class MaxEffortEnvelope {
 
                 // Check that the high grade position can't be maintained
                 if (partBuilder.stepCount() > 1)
-                    builder.addPart(partBuilder);
+                    builder.addPart(partBuilder.build());
                 else
                     cursor.findPosition(cursor.getPosition()  + 1);
             }

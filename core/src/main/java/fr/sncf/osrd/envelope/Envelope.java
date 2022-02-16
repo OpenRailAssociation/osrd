@@ -137,6 +137,26 @@ public final class Envelope implements Iterable<EnvelopePart> {
         return -1;
     }
 
+    /** Returns the first envelope part which contains this position. */
+    public int findEnvelopePartIndexLeft(double position) {
+        for (int i = 0; i < parts.length; i++) {
+            var part = parts[i];
+            if (position >= part.getBeginPos() && position <= part.getEndPos())
+                return i;
+        }
+        return -1;
+    }
+
+    /** Returns the last envelope part which contains this position. */
+    public int findEnvelopePartIndexRight(double position) {
+        for (int i = parts.length - 1; i >= 0; i--) {
+            var part = parts[i];
+            if (position >= part.getBeginPos() && position <= part.getEndPos())
+                return i;
+        }
+        return -1;
+    }
+
     // region INTERPOLATION
 
     /** Returns the interpolated speed at a given position */
@@ -211,6 +231,13 @@ public final class Envelope implements Iterable<EnvelopePart> {
      * @return a list of envelope parts spanning from beginPosition to endPosition
      */
     public EnvelopePart[] slice(double beginPosition, double endPosition) {
+        return slice(beginPosition, Double.NaN, endPosition, Double.NaN);
+    }
+
+    /** Cuts an envelope, interpolating new points if required.
+     * @return a list of envelope parts spanning from beginPosition to endPosition
+     */
+    public EnvelopePart[] slice(double beginPosition, double beginSpeed, double endPosition, double endSpeed) {
         int beginIndex = 0;
         var beginPartIndex = 0;
         if (beginPosition != Double.NEGATIVE_INFINITY) {
@@ -226,8 +253,8 @@ public final class Envelope implements Iterable<EnvelopePart> {
             endPart = parts[endPartIndex];
             endIndex = endPart.findStep(endPosition);
         }
-        return slice(beginPartIndex, beginIndex, beginPosition, Double.NaN,
-                endPartIndex, endIndex, endPosition, Double.NaN);
+        return slice(beginPartIndex, beginIndex, beginPosition, beginSpeed,
+                endPartIndex, endIndex, endPosition, endSpeed);
     }
 
     /** Cuts an envelope */
