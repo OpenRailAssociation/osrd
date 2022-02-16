@@ -104,10 +104,14 @@ application {
     mainClass = 'fr.sncf.osrd.App'
 }
 
+def genExamplesDir = "$buildDir/generated_examples"
+
 sourceSets {
     test {
         resources {
-            srcDirs = ["examples"]
+            // TODO: figure out the proper way to add generated resources to a source set
+            //  https://docs.gradle.org/current/dsl/org.gradle.api.tasks.SourceSetOutput.html
+            srcDirs = ["examples", genExamplesDir]
         }
     }
 }
@@ -129,12 +133,18 @@ test {
 }
 
 def genExamples = tasks.register("genExamples", Exec) {
+    inputs.files(fileTree('examples/generated/')).withPropertyName('sourceFiles')
+    outputs.dir(genExamplesDir).withPropertyName('outputDir')
     def python = isFamily(FAMILY_WINDOWS) ? "python.exe" : "python3"
-    commandLine python, "examples/generate.py"
+    commandLine python, "examples/generated/generate.py", genExamplesDir
 }
 
 genExamples.configure {
     onlyIf { !project.hasProperty('skipGenExamples') }
+}
+
+processTestResources.configure {
+    dependsOn genExamples
 }
 
 // endregion

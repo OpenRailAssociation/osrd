@@ -7,7 +7,12 @@ from railjson_generator import (
     Location,
 )
 
-CURRENT_DIR = Path(__file__).parent
+
+from railjson_generator import get_output_dir
+
+
+OUTPUT_DIR = get_output_dir()
+
 
 # GENERATE INFRA
 builder = InfraBuilder()
@@ -48,7 +53,7 @@ for i in (0, 1, 2, 4):
 infra = builder.build()
 
 # Save railjson
-infra.save(CURRENT_DIR / Path("infra.json"))
+infra.save(OUTPUT_DIR / Path("infra.json"))
 
 # GENERATE SIMULATION
 builder = SimulationBuilder(infra)
@@ -71,4 +76,4 @@ builder.add_tst(switch_2, train_1, train_0)
 sim = builder.build()
 
 # Save railjson
-sim.save(CURRENT_DIR / Path("simulation.json"))
+sim.save(OUTPUT_DIR / Path("simulation.json"))
