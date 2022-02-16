@@ -241,12 +241,6 @@ const enableInteractivity = (
     });
 
   let debounceTimeoutId;
-  function debounceUpdateTimePosition(timePositionLocal, interval) {
-    clearTimeout(debounceTimeoutId);
-    debounceTimeoutId = setTimeout(() => {
-      dispatch(updateTimePosition(timePositionLocal));
-    }, interval);
-  }
 
   function debounceUpdateTimePositionValues(timePositionLocal, immediatePositionsValues, interval) {
     clearTimeout(debounceTimeoutId);
