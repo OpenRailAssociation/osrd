@@ -1,29 +1,39 @@
-import React, {
-  useState, useEffect, useRef,
-} from 'react';
-import PropTypes from 'prop-types';
-import { useSelector, useDispatch } from 'react-redux';
-import { useTranslation } from 'react-i18next';
 import * as d3 from 'd3';
-import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/osrd/components/Simulation/consts';
-import { handleWindowResize, interpolateOnTime, timeShiftTrain } from 'applications/osrd/components/Helpers/ChartHelpers';
+
+import React, { useEffect, useRef, useState } from 'react';
+import enableInteractivity, {
+  traceVerticalLine,
+} from 'applications/osrd/components/Simulation/enableInteractivity';
 import {
-  updateChart, updateContextMenu, updateMustRedraw,
-  updatePositionValues, updateSimulation,
+  handleWindowResize,
+  interpolateOnTime,
+  timeShiftTrain,
+} from 'applications/osrd/components/Helpers/ChartHelpers';
+import {
+  updateChart,
+  updateContextMenu,
+  updateMustRedraw,
+  updatePositionValues,
+  updateSimulation,
 } from 'reducers/osrdsimulation';
+import { useDispatch, useSelector } from 'react-redux';
+
+import { CgLoadbar } from 'react-icons/cg';
 import ChartModal from 'applications/osrd/components/Simulation/ChartModal';
-import enableInteractivity, { traceVerticalLine } from 'applications/osrd/components/Simulation/enableInteractivity';
+import { GiResize } from 'react-icons/gi';
+import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/osrd/components/Simulation/consts';
+import PropTypes from 'prop-types';
 import { changeTrain } from 'applications/osrd/components/TrainList/TrainListHelpers';
 import createChart from 'applications/osrd/components/Simulation/SpaceTimeChart/createChart';
 import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/createTrain';
 import drawTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/drawTrain';
-import { CgLoadbar } from 'react-icons/cg';
-import { GiResize } from 'react-icons/gi';
+import { useTranslation } from 'react-i18next';
 
 const CHART_ID = 'SpaceTimeChart';
 
 const drawAxisTitle = (chart, rotate) => {
-  chart.drawZone.append('text')
+  chart.drawZone
+    .append('text')
     .attr('class', 'axis-unit')
     .attr('text-anchor', 'end')
     .attr('transform', rotate ? 'rotate(0)' : 'rotate(-90)')
@@ -38,8 +48,13 @@ export default function SpaceTimeChart(props) {
   const dispatch = useDispatch();
   const { t } = useTranslation(['allowances']);
   const {
-    allowancesSettings, mustRedraw, positionValues, selectedProjection,
-    selectedTrain, simulation, timePosition,
+    allowancesSettings,
+    mustRedraw,
+    positionValues,
+    selectedProjection,
+    selectedTrain,
+    simulation,
+    timePosition,
   } = useSelector((state) => state.osrdsimulation);
   const keyValues = ['time', 'position'];
   const [rotate, setRotate] = useState(false);
@@ -73,9 +88,12 @@ export default function SpaceTimeChart(props) {
   };
 
   const drawOPs = (chartLocal) => {
-    const operationalPointsZone = chartLocal.drawZone.append('g').attr('id', 'get-operationalPointsZone');
+    const operationalPointsZone = chartLocal.drawZone
+      .append('g')
+      .attr('id', 'get-operationalPointsZone');
     simulation.trains[selectedTrain].base.stops.forEach((stop) => {
-      operationalPointsZone.append('line')
+      operationalPointsZone
+        .append('line')
         .datum(stop.position)
         .attr('id', `op-${stop.id}`)
         .attr('class', 'op-line')
@@ -83,7 +101,8 @@ export default function SpaceTimeChart(props) {
         .attr('y1', rotate ? 0 : (d) => chartLocal.y(d))
         .attr('x2', rotate ? (d) => chartLocal.x(d) : chartLocal.width)
         .attr('y2', rotate ? chartLocal.height : (d) => chartLocal.y(d));
-      operationalPointsZone.append('text')
+      operationalPointsZone
+        .append('text')
         .datum(stop.position)
         .attr('class', 'op-text')
         .text(`${stop.name || 'Unknown'} ${Math.round(stop.position) / 1000}`)
@@ -98,7 +117,14 @@ export default function SpaceTimeChart(props) {
   const drawAllTrains = (reset) => {
     if (mustRedraw) {
       const chartLocal = createChart(
-        chart, CHART_ID, dataSimulation, heightOfSpaceTimeChart, keyValues, ref, reset, rotate,
+        chart,
+        CHART_ID,
+        dataSimulation,
+        heightOfSpaceTimeChart,
+        keyValues,
+        ref,
+        reset,
+        rotate
       );
 
       chartLocal.svg.on('click', () => {
@@ -110,16 +136,32 @@ export default function SpaceTimeChart(props) {
       drawAxisTitle(chartLocal, rotate);
       dataSimulation.forEach((train, idx) => {
         drawTrain(
-          chartLocal, dispatch, train,
-          (train.id === selectedProjection.id),
-          (idx === selectedTrain), keyValues, allowancesSettings,
-          offsetTimeByDragging, rotate, setDragEnding, setDragOffset,
+          chartLocal,
+          dispatch,
+          train,
+          train.id === selectedProjection.id,
+          idx === selectedTrain,
+          keyValues,
+          allowancesSettings,
+          offsetTimeByDragging,
+          rotate,
+          setDragEnding,
+          setDragOffset
         );
       });
       enableInteractivity(
-        chartLocal, dataSimulation[selectedTrain], dispatch, keyValues,
-        LIST_VALUES_NAME_SPACE_TIME, positionValues, rotate,
-        setChart, setYPosition, setZoomLevel, yPosition, zoomLevel,
+        chartLocal,
+        dataSimulation[selectedTrain],
+        dispatch,
+        keyValues,
+        LIST_VALUES_NAME_SPACE_TIME,
+        positionValues,
+        rotate,
+        setChart,
+        setYPosition,
+        setZoomLevel,
+        yPosition,
+        zoomLevel
       );
       // findConflicts(chartLocal, dataSimulation, rotate);
       setChart(chartLocal);
@@ -139,8 +181,8 @@ export default function SpaceTimeChart(props) {
   useEffect(() => {
     // ADN, entire fonction operation is subject to one condition, so aopply this condition before OR write clear and first condition to return (do nothing)
     if (dragOffset !== 0) {
-      offsetTimeByDragging(dragOffset);
     }
+    offsetTimeByDragging(dragOffset);
   }, [dragOffset]);
 
   useEffect(() => {
@@ -149,7 +191,7 @@ export default function SpaceTimeChart(props) {
         {
           departure_time: simulation.trains[selectedTrain].base.stops[0].timADe,
         },
-        simulation.trains[selectedTrain].id,
+        simulation.trains[selectedTrain].id
       );
       setDragEnding(false);
     }
@@ -175,7 +217,7 @@ export default function SpaceTimeChart(props) {
         dataSimulation[selectedTrain],
         keyValues,
         LIST_VALUES_NAME_SPACE_TIME,
-        timePosition,
+        timePosition
       );
       dispatch(updatePositionValues(newPositionValues));
     }
@@ -184,8 +226,14 @@ export default function SpaceTimeChart(props) {
   useEffect(() => {
     if (dataSimulation) {
       traceVerticalLine(
-        chart, dataSimulation[selectedTrain], keyValues,
-        LIST_VALUES_NAME_SPACE_TIME, positionValues, 'headPosition', rotate, timePosition,
+        chart,
+        dataSimulation[selectedTrain],
+        keyValues,
+        LIST_VALUES_NAME_SPACE_TIME,
+        positionValues,
+        'headPosition',
+        rotate,
+        timePosition
       );
     }
   }, [positionValues]);
@@ -198,17 +246,19 @@ export default function SpaceTimeChart(props) {
   }, []);
 
   return (
-    <div id={`container-${CHART_ID}`} className="spacetime-chart w-100" style={{ height: `${heightOfSpaceTimeChart}px` }}>
-      {showModal !== ''
-        ? (
-          <ChartModal
-            type={showModal}
-            setShowModal={setShowModal}
-            trainName={dataSimulation[selectedTrain].name}
-            offsetTimeByDragging={offsetTimeByDragging}
-          />
-        )
-        : null}
+    <div
+      id={`container-${CHART_ID}`}
+      className="spacetime-chart w-100"
+      style={{ height: `${heightOfSpaceTimeChart}px` }}
+    >
+      {showModal !== '' ? (
+        <ChartModal
+          type={showModal}
+          setShowModal={setShowModal}
+          trainName={dataSimulation[selectedTrain].name}
+          offsetTimeByDragging={offsetTimeByDragging}
+        />
+      ) : null}
       <div ref={ref} />
       <button
         type="button"
