@@ -34,7 +34,7 @@ jobs:
           DOCKER_BUILDKIT: 1
           COMPOSE_DOCKER_CLI_BUILD: 1
 
-      - run: pip install -r core/examples/generator/railjson_generator/requirements.txt
+      - run: pip install -r core/examples/generated/lib/requirements.txt
 
       - name: Run tests
         run: "python3 tests/run_integration_tests.py"

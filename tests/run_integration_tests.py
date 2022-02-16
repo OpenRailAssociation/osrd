@@ -30,10 +30,10 @@ def setup() -> Dict[str, int]:
 
 
 def _load_tiny_infra() -> int:
-    examples_path = Path(__file__).parents[1] / "core/examples/"
-    generator = examples_path / "generate.py"
-    tiny_infra = examples_path / "tiny_infra/infra.json"
-    subprocess.check_call(["python3", str(generator)])
+    generator = Path(__file__).parents[1] / "core/examples/generated/generate.py"
+    output = Path("/tmp/osrd-generated-examples")
+    tiny_infra = output / "tiny_infra/infra.json"
+    subprocess.check_call(["python3", str(generator), str(output), "tiny_infra"])
     subprocess.check_call(["docker", "cp", str(tiny_infra), "osrd-api:/infra.json"])
     result = subprocess.check_output(
         ["docker", "exec", "osrd-api", "python", "manage.py", "import_railjson", "tiny_infra", "/infra.json"],
