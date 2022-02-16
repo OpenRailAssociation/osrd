@@ -7,8 +7,11 @@ from railjson_generator import (
     Location
 )
 from railjson_generator.schema.infra.direction import Direction
+from railjson_generator import get_output_dir
 
-CURRENT_DIR = Path(__file__).parent
+
+OUTPUT_DIR = get_output_dir()
+
 
 # GENERATE INFRA
 builder = InfraBuilder()
@@ -64,7 +67,7 @@ builder.add_switch(ne_micro_foo_to_bar.begin(), ne_micro_foo_b.end(), ne_micro_f
 infra = builder.build()
 
 # Save railjson
-infra.save(CURRENT_DIR / "infra.json")
+infra.save(OUTPUT_DIR / "infra.json")
 
 # GENERATE SIMULATION
 builder = SimulationBuilder(infra)
@@ -72,7 +75,7 @@ builder.add_train_schedule(
     Location(ne_micro_foo_b, 100), Location(ne_micro_bar_a, 100), label="Test."
 )
 sim = builder.build()
-sim.save(CURRENT_DIR / Path("simulation.json"))
+sim.save(OUTPUT_DIR / Path("simulation.json"))
 
 # Simulation with 2 trains
 builder_2trains = SimulationBuilder(infra)
@@ -83,4 +86,4 @@ builder_2trains.add_train_schedule(
     Location(ne_micro_foo_a, 100), Location(ne_micro_bar_a, 100), label="Second"
 )
 sim2 = builder_2trains.build()
-sim2.save(CURRENT_DIR / Path("simulation_2trains.json"))
+sim2.save(OUTPUT_DIR / Path("simulation_2trains.json"))

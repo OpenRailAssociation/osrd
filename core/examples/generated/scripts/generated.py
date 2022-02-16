@@ -12,6 +12,10 @@ from railjson_generator import (
 from railjson_generator.schema.infra.direction import Direction
 from railjson_generator.schema.infra.endpoint import TrackEndpoint, Endpoint
 from railjson_generator.schema.infra.track_section import TrackSection
+from railjson_generator import get_output_dir
+
+
+OUTPUT_DIR = get_output_dir()
 
 
 def _random_endpoint(track: TrackSection):
@@ -163,8 +167,7 @@ def generate_random_infra(seed, n_tracks, n_trains, n_speed_categories, infra_pa
     sim.save(Path(sim_path))
 
 
-CURRENT_DIR = Path(__file__).parent
 for i in range(10):
-    root = (CURRENT_DIR / str(i)).resolve()
+    root = (OUTPUT_DIR / str(i)).resolve()
     root.mkdir(exist_ok=True, parents=True)
     generate_random_infra(i, 35, 3, 10, root / "infra.json", root / "simulation.json")
