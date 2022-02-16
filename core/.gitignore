@@ -1,8 +1,6 @@
 .gradle
-gradle
 .idea
 build
-gradlew*
 *.iml
 *.jar
 .jqwik-database
