@@ -350,10 +350,6 @@ public class MarecoAllowance implements Allowance {
         return acceleratingPart.slice(base.getBeginPos(), base.getEndPos());
     }
 
-    private double getMarginTime(Envelope envelope) {
-        return envelope.getTotalTime();
-    }
-
     // get the high boundary for the binary search, corresponding to vf = max
     protected double getFirstHighEstimate(Envelope envelope) {
         double maxSpeed = envelope.getMaxSpeed();
@@ -406,28 +402,31 @@ public class MarecoAllowance implements Allowance {
         return totalBuilder.build();
     }
 
+    private double getTotalTime(Envelope base) {
+        return base.interpolateTotalTime(sectionEnd) - base.interpolateTotalTime(sectionBegin);
+    }
+
     private void applyMarecoToSection(Envelope base, EnvelopeBuilder totalBuilder, double begin, double end) {
         var newBase = Envelope.make(base.slice(begin, end));
         var physicalLimits = generatePhysicalLimits(newBase);
-        var search = initializeBinarySearch(newBase);
+        var search = initializeBinarySearch(newBase, getTotalTime(base));
         // loop to run binarySearch for this ROI
         var resultEnvelope = binarySearchLoop(search, newBase, physicalLimits);
         for (int i = 0; i < resultEnvelope.size(); i++)
             totalBuilder.addPart(resultEnvelope.get(i));
     }
 
-    private DoubleBinarySearch initializeBinarySearch(Envelope base) {
-        var targetTime = computeTargetTime(base);
-        var initialHighBound = getFirstHighEstimate(base) * 1.05;
+    private DoubleBinarySearch initializeBinarySearch(Envelope section, double totalTime) {
+        var targetTime = computeTargetTime(section, totalTime);
+        var initialHighBound = getFirstHighEstimate(section) * 1.05;
         return new DoubleBinarySearch(0, initialHighBound, targetTime, timeStep, true);
     }
 
-    private double computeTargetTime(Envelope base) {
-        var baseTime = getMarginTime(base);
-        var distance = base.getEndPos() - base.getBeginPos();
+    private double computeTargetTime(Envelope section, double totalTime) {
+        var sectionTime = section.getTotalTime();
         var totalDistance = sectionEnd - sectionBegin;
-        var targetTime = baseTime + allowanceValue.getAllowanceTime(baseTime, distance, totalDistance);
-        logger.debug("total time {}, trying to get to {}", baseTime, targetTime);
+        var targetTime = sectionTime + allowanceValue.getPartialAllowanceTime(sectionTime, totalTime, totalDistance);
+        logger.debug("section time {}, trying to get to {}", sectionTime, targetTime);
         return targetTime;
     }
 
@@ -439,7 +438,7 @@ public class MarecoAllowance implements Allowance {
             var input = search.getInput();
             logger.debug("starting attempt {} with v1 = {}", i, input);
             curEnvelope = getEnvelope(base, physicalLimits, input);
-            var output = getMarginTime(curEnvelope);
+            var output = curEnvelope.getTotalTime();
             logger.debug("envelope time {}", output);
             search.feedback(output);
         }

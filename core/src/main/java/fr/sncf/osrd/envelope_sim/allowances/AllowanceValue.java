@@ -1,7 +1,15 @@
 package fr.sncf.osrd.envelope_sim.allowances;
 
 public abstract class AllowanceValue {
-    public abstract double getAllowanceTime(double baseTime, double distance, double totalDistance);
+    /** Returns the allowance, given the total time and distance of the trip */
+    public abstract double getAllowanceTime(double baseTime, double distance);
+
+    /** Returns the allowance for a part of a trip, divided over time */
+    public final double getPartialAllowanceTime(double sectionTime, double totalTime, double totalDistance) {
+        var totalAllowance = getAllowanceTime(totalTime, totalDistance);
+        var ratio = sectionTime / totalTime;
+        return totalAllowance * ratio;
+    }
 
     /** A fixed time allowance */
     public static class FixedTime extends AllowanceValue {
@@ -12,10 +20,8 @@ public abstract class AllowanceValue {
         }
 
         @Override
-        public double getAllowanceTime(double baseTime, double distance, double totalDistance) {
-            var thisTime = distance * time / totalDistance;
-            assert thisTime >= 0;
-            return thisTime;
+        public double getAllowanceTime(double baseTime, double distance) {
+            return time;
         }
     }
 
@@ -28,7 +34,7 @@ public abstract class AllowanceValue {
         }
 
         @Override
-        public double getAllowanceTime(double baseTime, double distance, double totalDistance) {
+        public double getAllowanceTime(double baseTime, double distance) {
             assert percentage >= 0;
             return baseTime * (percentage / 100);
         }
@@ -43,7 +49,7 @@ public abstract class AllowanceValue {
         }
 
         @Override
-        public double getAllowanceTime(double baseTime, double distance, double totalDistance) {
+        public double getAllowanceTime(double baseTime, double distance) {
             var n = distance / 100000; // number of portions of 100km in the train journey
             return timePerDistance * n * 60;
         }
