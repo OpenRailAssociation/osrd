@@ -77,7 +77,7 @@ public class AllowanceTests {
         var marecoEnvelope = allowance.apply(maxEffortEnvelope, stops);
         var baseTime = maxEffortEnvelope.getTotalTime();
         var distance = allowance.sectionEnd - allowance.sectionBegin;
-        var targetTime = baseTime + allowanceValue.getAllowanceTime(baseTime, distance, distance);
+        var targetTime = baseTime + allowanceValue.getAllowanceTime(baseTime, distance);
         var marginTime = marecoEnvelope.getTotalTime();
         assertEquals(marginTime, targetTime, 2 * TIME_STEP);
     }
@@ -96,7 +96,7 @@ public class AllowanceTests {
         var marecoEnvelope = allowance.apply(maxEffortEnvelope, stops);
         var baseTime = maxEffortEnvelope.getTotalTime();
         var distance = allowance.sectionEnd - allowance.sectionBegin;
-        var targetTime = baseTime + allowanceValue.getAllowanceTime(baseTime, distance, distance);
+        var targetTime = baseTime + allowanceValue.getAllowanceTime(baseTime, distance);
         var marginTime = marecoEnvelope.getTotalTime();
         assertEquals(marginTime, targetTime, 2 * TIME_STEP);
     }
@@ -166,7 +166,7 @@ public class AllowanceTests {
         var constructionEnvelope = allowance.apply(maxEffortEnvelope, stops);
         var baseTime = maxEffortEnvelope.getTotalTime();
         var distance = end - begin;
-        var targetTime = baseTime + allowanceValue.getAllowanceTime(baseTime, distance, distance);
+        var targetTime = baseTime + allowanceValue.getAllowanceTime(baseTime, distance);
         var marginTime = constructionEnvelope.getTotalTime();
         assertEquals(marginTime, targetTime, 2 * TIME_STEP);
 
@@ -199,7 +199,7 @@ public class AllowanceTests {
         var constructionEnvelope = allowance.apply(maxEffortEnvelope, stops);
         var baseTime = maxEffortEnvelope.getTotalTime();
         var distance = end - begin;
-        var targetTime = baseTime + allowanceValue.getAllowanceTime(baseTime, distance, distance);
+        var targetTime = baseTime + allowanceValue.getAllowanceTime(baseTime, distance);
         var marginTime = constructionEnvelope.getTotalTime();
         assertEquals(marginTime, targetTime, 2 * TIME_STEP);
 
@@ -209,7 +209,7 @@ public class AllowanceTests {
         var timeFirstPoint = constructionEnvelope.interpolateTotalTime(begin);
         var timeSecondPoint = constructionEnvelope.interpolateTotalTime(end);
         var expectedTimeSecondPoint = timeSecondPointBase
-                + allowanceValue.getAllowanceTime(baseTime, distance, distance);
+                + allowanceValue.getAllowanceTime(baseTime, distance);
 
         // make sure begin has the same time before and after margin, and that end is offset by the proper value
         assertEquals(timeFirstPointBase, timeFirstPoint, 5 * TIME_STEP);
@@ -270,8 +270,8 @@ public class AllowanceTests {
         var baseTime = maxEffortEnvelope.getTotalTime();
         var constructionDistance = end - begin;
         var constructionAllowanceTime =
-                constructionAllowanceValue.getAllowanceTime(baseTime, constructionDistance, constructionDistance);
-        var marecoAllowanceTime = marecoAllowanceValue.getAllowanceTime(baseTime, marecoDistance, marecoDistance);
+                constructionAllowanceValue.getAllowanceTime(baseTime, constructionDistance);
+        var marecoAllowanceTime = marecoAllowanceValue.getAllowanceTime(baseTime, marecoDistance);
         var targetTime = baseTime + marecoAllowanceTime + constructionAllowanceTime;
         var marginTime = constructionEnvelope.getTotalTime();
         assertEquals(marginTime, targetTime, 2 * TIME_STEP);
@@ -301,8 +301,8 @@ public class AllowanceTests {
         var baseTime = maxEffortEnvelope.getTotalTime();
         var firstDistance = firstAllowanceEnd - firstAllowanceBegin;
         var secondDistance = secondAllowanceEnd - secondAllowanceBegin;
-        var targetTime = baseTime + fistAllowanceValue.getAllowanceTime(baseTime, firstDistance, firstDistance)
-                + secondAllowanceValue.getAllowanceTime(baseTime, secondDistance, secondDistance);
+        var targetTime = baseTime + fistAllowanceValue.getAllowanceTime(baseTime, firstDistance)
+                + secondAllowanceValue.getAllowanceTime(baseTime, secondDistance);
         var marginTime = secondConstructionEnvelope.getTotalTime();
         assertEquals(marginTime, targetTime, 2 * TIME_STEP);
     }
@@ -363,7 +363,7 @@ public class AllowanceTests {
         var marecoEnvelope = allowance.apply(maxEffortEnvelope, stops);
 
         var baseTime = maxEffortEnvelope.getTotalTime();
-        var targetTime = baseTime + allowanceValue.getAllowanceTime(baseTime, pathLength, pathLength);
+        var targetTime = baseTime + allowanceValue.getAllowanceTime(baseTime, pathLength);
         var marginTime = marecoEnvelope.getTotalTime();
         assertEquals(marginTime, targetTime, 2 * TIME_STEP);
     }
@@ -395,7 +395,7 @@ public class AllowanceTests {
                 0, testPath.getLength(), 0, allowanceValue);
         var marecoEnvelope = allowance.apply(maxEffortEnvelope, stops);
         var baseTime = maxEffortEnvelope.getTotalTime();
-        var targetTime = baseTime + allowanceValue.getAllowanceTime(baseTime, pathLength, pathLength);
+        var targetTime = baseTime + allowanceValue.getAllowanceTime(baseTime, pathLength);
         var marginTime = marecoEnvelope.getTotalTime();
         assertEquals(marginTime, targetTime, 2 * TIME_STEP);
     }
