@@ -1,6 +1,7 @@
 package fr.sncf.osrd.envelope_sim.allowances;
 
 import static fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration.accelerate;
+import static fr.sncf.osrd.envelope_sim.overlays.EnvelopeCoasting.COASTING;
 import static fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration.decelerate;
 import static fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope.ACCELERATION;
 import static fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope.*;
@@ -35,11 +36,6 @@ public class MarecoAllowance implements Allowance {
 
     // potential speed limit under which the train would use too much capacity
     public final double capacitySpeedLimit;
-
-    public static final class CoastingMeta extends EnvelopePartMeta {
-    }
-
-    public static final EnvelopePartMeta COASTING = new CoastingMeta();
 
     /** Constructor */
     public MarecoAllowance(
@@ -255,10 +251,10 @@ public class MarecoAllowance implements Allowance {
             List<Double> endOfCoastingPositions
     ) {
         for (var position : endOfCoastingPositions) {
-            var builder = OverlayEnvelopeBuilder.backward(envelope);
-            builder.cursor.findPosition(position);
+            var cursor = EnvelopeCursor.backward(envelope);
+            cursor.findPosition(position);
             var speed = envelope.interpolateSpeed(position);
-            var partBuilder = builder.startContinuousOverlay(COASTING);
+            var partBuilder = OverlayEnvelopePartBuilder.startContinuousOverlay(cursor, COASTING);
             EnvelopeCoasting.coast(rollingStock, path, timeStep, position, speed, partBuilder, -1);
 
             // skip anything that's not an intersection with the base curve
@@ -269,8 +265,10 @@ public class MarecoAllowance implements Allowance {
             if (partBuilder.stepCount() == 0)
                 continue;
 
-            builder.addPart(partBuilder);
+            var builder = OverlayEnvelopeBuilder.backward(envelope);
+            builder.addPart(partBuilder.build());
             envelope = builder.build();
+            assert envelope.continuous;
         }
         return envelope;
     }
@@ -332,18 +330,20 @@ public class MarecoAllowance implements Allowance {
 
 
     private EnvelopePart generateDecelerationPart(Envelope base, double initialSpeed) {
-        var builder = OverlayEnvelopeBuilder.forward(base);
-        builder.cursor.findPosition(base.getBeginPos());
-        var partBuilder = builder.startContinuousOverlay(DECELERATION, capacitySpeedLimit, CmpOperator.LOWER);
+        var cursor = EnvelopeCursor.forward(base);
+        cursor.findPosition(base.getBeginPos());
+        var partBuilder = OverlayEnvelopePartBuilder.startContinuousOverlay(
+                cursor, DECELERATION, capacitySpeedLimit, CmpOperator.LOWER);
         decelerate(rollingStock, path, TIME_STEP, sectionBegin, initialSpeed, partBuilder, 1);
         var decelerationPart = partBuilder.build();
         return decelerationPart.slice(base.getBeginPos(), base.getEndPos());
     }
 
     private EnvelopePart generateAccelerationPart(Envelope base, double finalSpeed) {
-        var builder = OverlayEnvelopeBuilder.backward(base);
-        builder.cursor.findPosition(base.getEndPos());
-        var partBuilder = builder.startContinuousOverlay(ACCELERATION, capacitySpeedLimit, CmpOperator.LOWER);
+        var cursor = EnvelopeCursor.backward(base);
+        cursor.findPosition(base.getEndPos());
+        var partBuilder = OverlayEnvelopePartBuilder.startContinuousOverlay(
+                cursor, ACCELERATION, capacitySpeedLimit, CmpOperator.LOWER);
         accelerate(rollingStock, path, TIME_STEP, sectionEnd, finalSpeed, partBuilder, -1);
 
         var acceleratingPart = partBuilder.build();

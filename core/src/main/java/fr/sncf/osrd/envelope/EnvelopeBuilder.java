@@ -12,6 +12,12 @@ public final class EnvelopeBuilder {
         parts.add(part);
     }
 
+    /** Adds all parts of an envelope */
+    public void addParts(EnvelopePart[] parts) {
+        for (var part : parts)
+            addPart(part);
+    }
+
     /** Reverses the order of the parts */
     public void reverse() {
         assert parts != null : "build() was already called";

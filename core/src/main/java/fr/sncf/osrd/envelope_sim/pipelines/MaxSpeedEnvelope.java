@@ -2,9 +2,7 @@ package fr.sncf.osrd.envelope_sim.pipelines;
 
 import com.carrotsearch.hppc.DoubleArrayList;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.envelope.Envelope;
-import fr.sncf.osrd.envelope.OverlayEnvelopeBuilder;
-import fr.sncf.osrd.envelope.EnvelopePartMeta;
+import fr.sncf.osrd.envelope.*;
 import fr.sncf.osrd.envelope_sim.PhysicsPath;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
@@ -43,13 +41,14 @@ public class MaxSpeedEnvelope {
             double timeStep
     ) {
         var builder = OverlayEnvelopeBuilder.backward(mrsp);
-        while (builder.cursor.findPartTransition(MaxSpeedEnvelope::increase)) {
-            var partBuilder = builder.startContinuousOverlay(DECELERATION);
+        var cursor = EnvelopeCursor.backward(mrsp);
+        while (cursor.findPartTransition(MaxSpeedEnvelope::increase)) {
+            var partBuilder = OverlayEnvelopePartBuilder.startContinuousOverlay(cursor, DECELERATION);
             var startSpeed = partBuilder.getLastSpeed();
-            var startPosition = builder.cursor.getPosition();
+            var startPosition = cursor.getPosition();
             // TODO: link directionSign to cursor boolean reverse
             EnvelopeDeceleration.decelerate(rollingStock, path, timeStep, startPosition, startSpeed, partBuilder, -1);
-            builder.addPart(partBuilder);
+            builder.addPart(partBuilder.build());
         }
         return builder.build();
     }
@@ -68,10 +67,12 @@ public class MaxSpeedEnvelope {
             if (stopPosition == 0.0)
                 continue;
             var builder = OverlayEnvelopeBuilder.backward(curveWithDecelerations);
-            builder.cursor.findPosition(stopPosition);
-            var partBuilder = builder.startDiscontinuousOverlay(new StopMeta(i), 0);
+            var cursor = EnvelopeCursor.backward(curveWithDecelerations);
+            cursor.findPosition(stopPosition);
+            var partBuilder = OverlayEnvelopePartBuilder.startDiscontinuousOverlay(
+                    cursor, new StopMeta(i), 0);
             EnvelopeDeceleration.decelerate(rollingStock, path, timeStep, stopPosition, 0, partBuilder, -1);
-            builder.addPart(partBuilder);
+            builder.addPart(partBuilder.build());
             curveWithDecelerations = builder.build();
         }
         return curveWithDecelerations;
