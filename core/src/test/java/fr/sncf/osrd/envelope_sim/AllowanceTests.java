@@ -434,7 +434,7 @@ public class AllowanceTests {
         var allowanceValue = new AllowanceValue.TimePerDistance(TIME_RATIO, 10);
         var allowance = new MarecoAllowance(testRollingStock, testPath, TIME_STEP,
                 start, testPath.getLength(), 0, allowanceValue);
-        allowance.apply(maxEffortEnvelope, stops);
+        allowance.apply(maxEffortEnvelope);
     }
 
     /** Test mareco ending in an acceleration section */
@@ -455,7 +455,7 @@ public class AllowanceTests {
         var allowanceValue = new AllowanceValue.TimePerDistance(TIME_RATIO, 10);
         var allowance = new MarecoAllowance(testRollingStock, testPath, TIME_STEP,
                 0, end, 0, allowanceValue);
-        allowance.apply(maxEffortEnvelope, stops);
+        allowance.apply(maxEffortEnvelope);
     }
 
     @Test
@@ -473,7 +473,7 @@ public class AllowanceTests {
         var allowanceValue = new AllowanceValue.FixedTime(TIME_RATIO, 10);
         var allowance = new MarecoAllowance(testRollingStock, testPath, TIME_STEP,
                 3000, 8000, 10, allowanceValue);
-        allowance.apply(maxEffortEnvelope, stops);
+        allowance.apply(maxEffortEnvelope);
     }
 
     @Test
@@ -489,6 +489,6 @@ public class AllowanceTests {
         var allowanceValue = new AllowanceValue.Percentage(TIME_RATIO, 90);
         var allowance = new MarecoAllowance(testRollingStock, testPath, TIME_STEP,
                 2000, length, 10, allowanceValue);
-        allowance.apply(maxEffortEnvelope, stops);
+        allowance.apply(maxEffortEnvelope);
     }
 }
