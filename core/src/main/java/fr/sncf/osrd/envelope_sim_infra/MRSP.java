@@ -10,7 +10,7 @@ import fr.sncf.osrd.envelope.EnvelopePartMeta;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.TrainPath;
-import fr.sncf.osrd.utils.CustomMath;
+import fr.sncf.osrd.utils.DoubleUtils;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 
 /** MRSP = most restrictive speed profile: maximum speed allowed at any given point */
@@ -48,13 +48,13 @@ public class MRSP {
                 var speedRangeEnd = max(speedRange.begin, speedRange.end);
                 var beginOnRange = 0.;
                 if (trackSectionRange.direction == EdgeDirection.START_TO_STOP) {
-                    beginOnRange = CustomMath.clamp(
+                    beginOnRange = DoubleUtils.clamp(
                             speedRangeBegin - trackSectionRange.getBeginPosition(), 0, trackSectionRange.length());
                 } else {
-                    beginOnRange = CustomMath.clamp(
+                    beginOnRange = DoubleUtils.clamp(
                             trackSectionRange.getBeginPosition() - speedRangeEnd, 0, trackSectionRange.length());
                 }
-                var endOnRange = CustomMath.clamp(
+                var endOnRange = DoubleUtils.clamp(
                         beginOnRange + speedRangeEnd - speedRangeBegin, 0, trackSectionRange.length());
 
                 if (Double.compare(beginOnRange, endOnRange) == 0)

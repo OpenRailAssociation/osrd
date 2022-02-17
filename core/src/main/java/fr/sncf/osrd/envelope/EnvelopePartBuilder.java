@@ -1,59 +1,75 @@
 package fr.sncf.osrd.envelope;
 
 import com.carrotsearch.hppc.DoubleArrayList;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
-public final class EnvelopePartBuilder implements StepConsumer {
+public class EnvelopePartBuilder implements EnvelopePartConsumer {
     private final DoubleArrayList positions;
     private final DoubleArrayList speeds;
     private final DoubleArrayList times;
-    private final EnvelopePartMeta meta;
+    private EnvelopePartMeta meta;
+    private double direction;
+
+    private double lastPos;
+    private double lastSpeed;
 
     /** Prepares an envelope builder */
-    public EnvelopePartBuilder(
-            EnvelopePartMeta meta,
-            double initialPosition,
-            double initialSpeed) {
-        this.meta = meta;
-        var positions = new DoubleArrayList();
-        var speeds = new DoubleArrayList();
-        positions.add(initialPosition);
-        speeds.add(initialSpeed);
-        this.positions = positions;
-        this.speeds = speeds;
+    public EnvelopePartBuilder() {
+        this.positions = new DoubleArrayList();
+        this.speeds = new DoubleArrayList();
         this.times = new DoubleArrayList();
+        this.meta = null;
+        this.direction = Double.NaN;
     }
 
     public boolean isEmpty() {
         return positions.isEmpty();
     }
 
+    private void addPoint(double position, double speed) {
+        assert !Double.isNaN(position);
+        assert !Double.isNaN(speed);
+        this.positions.add(position);
+        this.speeds.add(speed);
+        this.lastPos = position;
+        this.lastSpeed = speed;
+    }
+
+    @Override
+    public void initEnvelopePart(double position, double speed, double direction) {
+        assert !Double.isNaN(direction);
+        assert isEmpty();
+        addPoint(position, speed);
+        this.direction = direction;
+    }
+
     /** Add a point to the envelope part, computing the step time */
     @Override
-    public boolean addStep(double position, double speed) {
-        var lastPos = positions.get(positions.size() - 1);
-        var lastSpeed = speeds.get(positions.size() - 1);
+    public void addStep(double position, double speed) {
         var stepTime = EnvelopePhysics.interpolateStepTime(lastPos, position, lastSpeed, speed);
-        return addStep(position, speed, stepTime);
+        addStep(position, speed, stepTime);
     }
 
     /** Add a point to the envelope part */
     @Override
-    public boolean addStep(double position, double speed, double timeDelta) {
+    @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
+    public void addStep(double position, double speed, double timeDelta) {
         assert !Double.isNaN(position);
         assert !Double.isNaN(speed);
         assert !Double.isNaN(timeDelta);
         assert times.size() == positions.size() - 1;
-        var lastPos = positions.get(positions.size() - 1);
-        var lastSpeed = speeds.get(positions.size() - 1);
         if (position == lastPos && speed == lastSpeed) {
             assert timeDelta == 0.0;
-            return false;
+            return;
         }
 
-        positions.add(position);
-        speeds.add(speed);
+        addPoint(position, speed);
         times.add(timeDelta);
-        return false;
+    }
+
+    @Override
+    public void setEnvelopePartMeta(EnvelopePartMeta meta) {
+        this.meta = meta;
     }
 
     private static void reverse(DoubleArrayList arr) {
@@ -64,15 +80,13 @@ public final class EnvelopePartBuilder implements StepConsumer {
         }
     }
 
-    /** Reverse all the pending steps */
-    public void reverse() {
-        reverse(positions);
-        reverse(speeds);
-        reverse(times);
-    }
-
     /** Creates an envelope part */
     public EnvelopePart build() {
+        if (direction < 0) {
+            reverse(positions);
+            reverse(speeds);
+            reverse(times);
+        }
         return new EnvelopePart(meta, positions.toArray(), speeds.toArray(), times.toArray());
     }
 

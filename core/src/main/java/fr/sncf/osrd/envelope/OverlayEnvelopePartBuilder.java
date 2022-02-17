@@ -37,7 +37,6 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
     /** @see #startPartIndex */
     public final double startSpeed;
 
-
     /** Encodes the kind of step which was last performed */
     public enum StepKind {
         INTERMEDIATE(false, false),
@@ -63,7 +62,9 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
     ) {
         this.cursor = cursor;
         var initialPosition = cursor.getPosition();
-        this.partBuilder = new EnvelopePartBuilder(meta, initialPosition, initialSpeed);
+        this.partBuilder = new EnvelopePartBuilder();
+        this.partBuilder.initEnvelopePart(initialPosition, initialSpeed, cursor.reverse ? -1 : 1);
+        this.partBuilder.setEnvelopePartMeta(meta);
         this.lastOverlayPos = initialPosition;
         this.lastOverlaySpeed = initialSpeed;
         this.startPartIndex = cursor.getPartIndex();
@@ -398,9 +399,6 @@ public class OverlayEnvelopePartBuilder implements StepConsumer {
     /** Create the overlay-ed envelope part, making the builder unusable */
     public EnvelopePart build() {
         // add the overlay part
-        if (cursor.reverse)
-            partBuilder.reverse();
-
         var result = partBuilder.build();
         partBuilder = null;
         return result;

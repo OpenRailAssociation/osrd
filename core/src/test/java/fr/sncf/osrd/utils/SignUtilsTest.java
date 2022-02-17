@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 
 public class SignUtilsTest {
     public void checkCondNegate(double value) {
-        assertEquals(value, SignUtils.conditionalNegate(value, 1));
-        assertEquals(-value, SignUtils.conditionalNegate(value, -1));
+        assertEquals(value, DoubleUtils.conditionalNegate(value, 1));
+        assertEquals(-value, DoubleUtils.conditionalNegate(value, -1));
     }
 
     @Test

@@ -1,6 +1,6 @@
 package fr.sncf.osrd.envelope;
 
-import fr.sncf.osrd.utils.CustomMath;
+import fr.sncf.osrd.utils.DoubleUtils;
 
 public class EnvelopePhysics {
     /** Compute the constant acceleration between two space / speed points. */
@@ -62,7 +62,7 @@ public class EnvelopePhysics {
         var minB = Math.min(b1, b2);
         var maxA = Math.max(a1, a2);
         var maxB = Math.max(b1, b2);
-        return CustomMath.clamp(val, Math.max(minA, minB), Math.min(maxA, maxB));
+        return DoubleUtils.clamp(val, Math.max(minA, minB), Math.min(maxA, maxB));
     }
 
     /** Clamps a point to the intersection coordinate range of two 2D segments */
@@ -172,13 +172,5 @@ public class EnvelopePhysics {
         if (interpolatedPosition < minPos)
             interpolatedPosition = minPos;
         return interpolatedPosition;
-    }
-
-    public static final class EnvelopePoint {
-        public double position;
-        public double speed;
-
-        private EnvelopePoint() {
-        }
     }
 }

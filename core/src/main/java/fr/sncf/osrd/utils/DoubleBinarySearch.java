@@ -89,7 +89,7 @@ public final class DoubleBinarySearch {
             return;
         }
 
-        if (SignUtils.conditionalNegate(delta, direction) < 0) {
+        if (DoubleUtils.conditionalNegate(delta, direction) < 0) {
             lowBound = input;
             hasRaisedLowBound = true;
         } else {

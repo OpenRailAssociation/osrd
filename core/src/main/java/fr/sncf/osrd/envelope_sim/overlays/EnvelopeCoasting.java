@@ -6,7 +6,6 @@ import fr.sncf.osrd.envelope_sim.Action;
 import fr.sncf.osrd.envelope_sim.PhysicsPath;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator;
-import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
 
 public class EnvelopeCoasting {
     public static final class CoastingMeta extends EnvelopePartMeta {
