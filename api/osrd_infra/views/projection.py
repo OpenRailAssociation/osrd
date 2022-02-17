@@ -28,7 +28,7 @@ class Projection:
     def _path_to_tracks(path_payload: PathPayload):
         tracks = []
         for route_path in path_payload.route_paths:
-            tracks += route_path.track_sections
+            tracks += [track for track in route_path.track_sections if track.begin != track.end]
         return tracks
 
     def _init_tracks(self, dir_track_ranges: List[DirectionalTrackRange]):
@@ -85,10 +85,12 @@ class Projection:
 
             # Check if there is no intersections
             if track_id not in self.tracks:
+                assert range_begin is None
                 continue
             b_begin = min(self.tracks[track_id][0], self.tracks[track_id][1])
             b_end = max(self.tracks[track_id][0], self.tracks[track_id][1])
-            if min(a_begin, a_end) >= b_end:
+            if min(a_begin, a_end) >= b_end or max(a_begin, a_end) <= b_begin:
+                assert range_begin is None
                 continue
 
             # New intersection, creation of the begin location
