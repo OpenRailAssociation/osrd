@@ -39,7 +39,12 @@ def create_simulation_report(train_schedule: TrainScheduleModel, projection_path
     # Add margins and eco results if available
     sim_log = train_schedule.eco_simulation
     res["eco"] = convert_simulation_results(
-        sim_log, train_path_payload, projection, projection_path_payload, train_schedule.departure_time, train_length,
+        sim_log,
+        train_path_payload,
+        projection,
+        projection_path_payload,
+        train_schedule.departure_time,
+        train_length,
     )
     return res
 
@@ -143,10 +148,15 @@ def project_head_positions(train_locations, projection, train_path_payload: Path
 def compute_tail_positions(head_positions, train_length: float):
     results = []
     for curve in head_positions:
-        min_pos = curve[0]["position"]
+        ascending = curve[0]["position"] < curve[-1]["position"]
+        first_pos = curve[0]["position"]
         current_curve = []
-        for point in curve:
-            current_curve.append({**point, "position": max(min_pos, point["position"] - train_length)})
+        if ascending:
+            for point in curve:
+                current_curve.append({**point, "position": max(first_pos, point["position"] - train_length)})
+        else:
+            for point in curve:
+                current_curve.append({**point, "position": min(first_pos, point["position"] + train_length)})
         results.append(current_curve)
     return results
 
