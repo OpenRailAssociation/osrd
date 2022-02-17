@@ -424,8 +424,10 @@ public class MarecoAllowance implements Allowance {
 
     private double computeTargetTime(Envelope section, double totalTime) {
         var sectionTime = section.getTotalTime();
+        var sectionDistance = section.getEndPos() - section.getBeginPos();
         var totalDistance = sectionEnd - sectionBegin;
-        var targetTime = sectionTime + allowanceValue.getPartialAllowanceTime(sectionTime, totalTime, totalDistance);
+        var targetTime = sectionTime + allowanceValue.getSectionAllowanceTime(
+                sectionTime, totalTime, sectionDistance, totalDistance);
         logger.debug("section time {}, trying to get to {}", sectionTime, targetTime);
         return targetTime;
     }

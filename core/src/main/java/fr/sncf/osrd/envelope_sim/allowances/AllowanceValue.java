@@ -1,21 +1,34 @@
 package fr.sncf.osrd.envelope_sim.allowances;
 
 public abstract class AllowanceValue {
+    /** Defines how the allowance is internally distributed when the trip is subdivided */
+    public final AllowanceDistribution distribution;
+
+    protected AllowanceValue(AllowanceDistribution distribution) {
+        this.distribution = distribution;
+    }
+
+    /** Returns the allowance for a section of a trip, divided over time */
+    public final double getSectionAllowanceTime(
+            double sectionTime, double totalTime,
+            double sectionDistance, double totalDistance
+    ) {
+        var ratio = distribution.getSectionRatio(sectionTime, totalTime, sectionDistance, totalDistance);
+        var totalAllowance = getAllowanceTime(totalTime, totalDistance);
+        return ratio * totalAllowance;
+    }
+
+
     /** Returns the allowance, given the total time and distance of the trip */
     public abstract double getAllowanceTime(double baseTime, double distance);
 
-    /** Returns the allowance for a part of a trip, divided over time */
-    public final double getPartialAllowanceTime(double sectionTime, double totalTime, double totalDistance) {
-        var totalAllowance = getAllowanceTime(totalTime, totalDistance);
-        var ratio = sectionTime / totalTime;
-        return totalAllowance * ratio;
-    }
 
     /** A fixed time allowance */
     public static class FixedTime extends AllowanceValue {
         public double time;
 
-        public FixedTime(double time) {
+        public FixedTime(AllowanceDistribution distribution, double time) {
+            super(distribution);
             this.time = time;
         }
 
@@ -29,7 +42,8 @@ public abstract class AllowanceValue {
     public static class Percentage extends AllowanceValue {
         public double percentage;
 
-        public Percentage(double percentage) {
+        public Percentage(AllowanceDistribution distribution, double percentage) {
+            super(distribution);
             this.percentage = percentage;
         }
 
@@ -44,7 +58,8 @@ public abstract class AllowanceValue {
     public static class TimePerDistance extends AllowanceValue {
         public double timePerDistance;
 
-        public TimePerDistance(double timePerDistance) {
+        public TimePerDistance(AllowanceDistribution distribution, double timePerDistance) {
+            super(distribution);
             this.timePerDistance = timePerDistance;
         }
 
