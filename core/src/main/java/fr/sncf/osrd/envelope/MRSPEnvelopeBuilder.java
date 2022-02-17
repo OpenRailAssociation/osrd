@@ -75,11 +75,9 @@ public final class MRSPEnvelopeBuilder {
 
     private void newResultPart(EnvelopePart newMinPart, double initialPosition, double initialSpeed) {
         flushResultPart();
-        currentPartBuilder = new EnvelopePartBuilder(
-                newMinPart.meta,
-                initialPosition,
-                initialSpeed
-        );
+        currentPartBuilder = new EnvelopePartBuilder();
+        currentPartBuilder.initEnvelopePart(initialPosition, initialSpeed, 1);
+        currentPartBuilder.setEnvelopePartMeta(newMinPart.meta);
     }
 
     /** Build the envelope from all the given parts. This function should be call only once. */

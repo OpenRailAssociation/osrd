@@ -1,6 +1,6 @@
 package fr.sncf.osrd.envelope_sim_infra;
 
-import static fr.sncf.osrd.utils.CustomMath.clamp;
+import static fr.sncf.osrd.utils.DoubleUtils.clamp;
 
 import com.carrotsearch.hppc.DoubleArrayList;
 import fr.sncf.osrd.envelope_sim.EnvelopePath;
