@@ -159,6 +159,20 @@ public final class Envelope implements Iterable<EnvelopePart> {
         return -1;
     }
 
+    /** Returns the first envelope part index along the given direction. */
+    public int findEnvelopePartIndexLeftDir(double position, double direction) {
+        if (direction > 0)
+            return findEnvelopePartIndexLeft(position);
+        return findEnvelopePartIndexRight(position);
+    }
+
+    /** Returns the last envelope part index along the given direction. */
+    public int findEnvelopePartIndexRightDir(double position, double direction) {
+        if (direction > 0)
+            return findEnvelopePartIndexRight(position);
+        return findEnvelopePartIndexLeft(position);
+    }
+
     /** Returns the first envelope part which contains this position */
     public EnvelopePart getEnvelopePartLeft(double position) {
         var index = findEnvelopePartIndexLeft(position);

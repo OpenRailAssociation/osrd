@@ -320,6 +320,20 @@ public final class EnvelopePart {
         return insertionPoint - 1;
     }
 
+    /** Returns the first step which contains a position along a given direction */
+    public int findStepLeftDir(double position, double direction) {
+        if (direction < 0)
+            return findStepRight(position);
+        return findStepLeft(position);
+    }
+
+    /** Returns the last step which contains a position along a given direction */
+    public int findStepRightDir(double position, double direction) {
+        if (direction < 0)
+            return findStepLeft(position);
+        return findStepRight(position);
+    }
+
     // endregion
 
     // region INTERPOLATION

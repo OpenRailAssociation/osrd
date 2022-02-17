@@ -74,11 +74,9 @@ public final class MaxEnvelopeBuilder {
 
     private void newResultPart(EnvelopePart newMaxPart, double initialPosition, double initialSpeed) {
         flushResultPart();
-        currentPartBuilder = new EnvelopePartBuilder(
-                newMaxPart.meta,
-                initialPosition,
-                initialSpeed
-        );
+        currentPartBuilder = new EnvelopePartBuilder();
+        currentPartBuilder.initEnvelopePart(initialPosition, initialSpeed, 1);
+        currentPartBuilder.setEnvelopePartMeta(newMaxPart.meta);
     }
 
     private void updateMaxPoint(double position) {

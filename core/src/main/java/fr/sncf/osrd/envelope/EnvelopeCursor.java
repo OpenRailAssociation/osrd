@@ -38,6 +38,19 @@ public class EnvelopeCursor {
     }
 
     /** Creates a new envelope cursor */
+    public EnvelopeCursor(Envelope envelope, boolean reverse,
+                          int partIndex, int stepIndex, double position) {
+        this.envelope = envelope;
+        this.reverse = reverse;
+        this.partIndex = partIndex;
+        this.part = envelope.get(this.partIndex);
+        this.stepIndex = stepIndex;
+        this.position = position;
+        this.speed = Double.NaN;
+        this.revision = 0;
+    }
+
+    /** Creates a new envelope cursor */
     public EnvelopeCursor(Envelope envelope, boolean reverse) {
         this.envelope = envelope;
         this.reverse = reverse;
