@@ -3,5 +3,5 @@ package fr.sncf.osrd.envelope_sim.allowances;
 import fr.sncf.osrd.envelope.Envelope;
 
 public interface Allowance {
-    Envelope apply(Envelope base, double[] stopPositions);
+    Envelope apply(Envelope base);
 }

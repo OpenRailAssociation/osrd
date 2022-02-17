@@ -373,7 +373,7 @@ public class MarecoAllowance implements Allowance {
     }
 
     @Override
-    public Envelope apply(Envelope base, double[] stopPositions) {
+    public Envelope apply(Envelope base) {
         var totalBuilder = new EnvelopeBuilder();
 
         // Add preceding parts
@@ -383,7 +383,10 @@ public class MarecoAllowance implements Allowance {
 
         // Loop to decompose the envelope between stops
         var cursor = sectionBegin;
-        for (double stopPosition : stopPositions) {
+        for (var envelopePart : base) {
+            if (envelopePart.getEndSpeed() != 0)
+                continue;
+            var stopPosition = envelopePart.getEndPos();
             if (stopPosition <= sectionBegin)
                 continue;
             if (stopPosition >= sectionEnd)
