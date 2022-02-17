@@ -140,9 +140,8 @@ public class StandaloneSimulationEndpoint implements Take {
             StandaloneTrainSchedule schedule
     ) {
         var result = maxEffortEnvelope;
-        var stopsPositions = schedule.getStopsPositions();
         for (var allowance : schedule.allowances)
-            result = allowance.apply(result, stopsPositions);
+            result = allowance.apply(result);
         return result;
     }
 
