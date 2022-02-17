@@ -5,12 +5,14 @@ import static fr.sncf.osrd.envelope.EnvelopeShape.DECREASING;
 import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeTest.makeComplexMaxEffortEnvelope;
 import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeTest.makeSimpleMaxEffortEnvelope;
 import static fr.sncf.osrd.envelope_sim.MaxSpeedEnvelopeTest.TIME_STEP;
+import static fr.sncf.osrd.envelope_sim.allowances.AllowanceDistribution.TIME_RATIO;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.carrotsearch.hppc.DoubleArrayList;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.EnvelopeShape;
 import fr.sncf.osrd.envelope.EnvelopeTransitions;
+import fr.sncf.osrd.envelope_sim.allowances.AllowanceDistribution;
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
 import fr.sncf.osrd.train.TestTrains;
@@ -39,7 +41,7 @@ public class AllowanceTests {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var testPath = new FlatPath(10000, 0);
         var marecoEnvelope = makeSimpleMarecoEnvelope(
-                testRollingStock, testPath, 44.4, new AllowanceValue.Percentage(10));
+                testRollingStock, testPath, 44.4, new AllowanceValue.Percentage(TIME_RATIO, 10));
         EnvelopeShape.check(marecoEnvelope, INCREASING, DECREASING, DECREASING, INCREASING, DECREASING, DECREASING);
         var delta = 2 * marecoEnvelope.getMaxSpeed() * TIME_STEP;
         // don't modify these values, they have been calculated with a 0.1s timestep so they can be considered as
@@ -53,7 +55,7 @@ public class AllowanceTests {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var testPath = new FlatPath(10000, 20);
         var marecoEnvelope = makeSimpleMarecoEnvelope(
-                testRollingStock, testPath, 44.4, new AllowanceValue.Percentage(10));
+                testRollingStock, testPath, 44.4, new AllowanceValue.Percentage(TIME_RATIO, 10));
         EnvelopeShape.check(marecoEnvelope,
                 INCREASING, CONSTANT, DECREASING, DECREASING, INCREASING, CONSTANT, DECREASING, DECREASING);
         var delta = 2 * marecoEnvelope.getMaxSpeed() * TIME_STEP;
@@ -71,7 +73,7 @@ public class AllowanceTests {
         var testPath = new FlatPath(100000, 0);
         var stops = new double[] { 50000, testPath.getLength() };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testRollingStock, testPath, stops);
-        var allowanceValue = new AllowanceValue.Percentage(value);
+        var allowanceValue = new AllowanceValue.Percentage(TIME_RATIO, value);
         var allowance = new MarecoAllowance(testRollingStock, testPath, TIME_STEP,
                 0, testPath.getLength(), 0, allowanceValue);
         var marecoEnvelope = allowance.apply(maxEffortEnvelope, stops);
@@ -90,7 +92,7 @@ public class AllowanceTests {
         var testPath = new FlatPath(100000, 0);
         var stops = new double[] { 50000, testPath.getLength() };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testRollingStock, testPath, stops);
-        var allowanceValue = new AllowanceValue.TimePerDistance(value);
+        var allowanceValue = new AllowanceValue.TimePerDistance(TIME_RATIO, value);
         var allowance = new MarecoAllowance(testRollingStock, testPath, TIME_STEP,
                 0, testPath.getLength(), 0, allowanceValue);
         var marecoEnvelope = allowance.apply(maxEffortEnvelope, stops);
@@ -122,7 +124,7 @@ public class AllowanceTests {
         var testPath = new FlatPath(10000, 0);
         var stops = new double[] { testPath.getLength() };
         var constructionEnvelope = makeSimpleConstructionEnvelope(
-                testRollingStock, testPath, stops, 44.4, 1000, 5000, new AllowanceValue.FixedTime(60));
+                testRollingStock, testPath, stops, 44.4, 1000, 5000, new AllowanceValue.FixedTime(TIME_RATIO, 60));
         EnvelopeShape.check(constructionEnvelope,
                 INCREASING, DECREASING, CONSTANT, INCREASING, CONSTANT, DECREASING);
         var delta = 2 * constructionEnvelope.getMaxSpeed() * TIME_STEP;
@@ -138,7 +140,7 @@ public class AllowanceTests {
         var testPath = new FlatPath(10000, 20);
         var stops = new double[] { 8000, testPath.getLength() };
         var constructionEnvelope = makeSimpleConstructionEnvelope(
-                testRollingStock, testPath, stops, 44.4, 1500, 6500, new AllowanceValue.FixedTime(60));
+                testRollingStock, testPath, stops, 44.4, 1500, 6500, new AllowanceValue.FixedTime(TIME_RATIO, 60));
         EnvelopeShape.check(constructionEnvelope,
                 INCREASING, DECREASING, CONSTANT, INCREASING, DECREASING, INCREASING, DECREASING);
         var delta = 2 * constructionEnvelope.getMaxSpeed() * TIME_STEP;
@@ -160,7 +162,7 @@ public class AllowanceTests {
         final double tolerance = 0.02; // percentage
         var stops = new double[] { 50000, testPath.getLength() };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testRollingStock, testPath, stops);
-        var allowanceValue = new AllowanceValue.FixedTime(value);
+        var allowanceValue = new AllowanceValue.FixedTime(TIME_RATIO, value);
         var allowance = new MarecoAllowance(testRollingStock, testPath, TIME_STEP,
                 begin, end, capacitySpeedLimit, allowanceValue);
         var constructionEnvelope = allowance.apply(maxEffortEnvelope, stops);
@@ -193,7 +195,7 @@ public class AllowanceTests {
         final double tolerance = 0.02; // percentage
         var stops = new double[] { 2_000, 50_000, testPath.getLength() };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testRollingStock, testPath, stops);
-        var allowanceValue = new AllowanceValue.FixedTime(value);
+        var allowanceValue = new AllowanceValue.FixedTime(TIME_RATIO, value);
         var allowance = new MarecoAllowance(testRollingStock, testPath, TIME_STEP,
                 begin, end, capacitySpeedLimit, allowanceValue);
         var constructionEnvelope = allowance.apply(maxEffortEnvelope, stops);
@@ -236,7 +238,7 @@ public class AllowanceTests {
         double end = 40_000;
         var stops = new double[] { 50_000, testPath.getLength() };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testRollingStock, testPath, stops);
-        var allowanceValue = new AllowanceValue.FixedTime(20_000);
+        var allowanceValue = new AllowanceValue.FixedTime(TIME_RATIO, 20_000);
         var allowance = new MarecoAllowance(testRollingStock, testPath, TIME_STEP,
                 begin, end, capacitySpeedLimit, allowanceValue);
 
@@ -256,13 +258,13 @@ public class AllowanceTests {
         var stops = new double[] { 50_000, testPath.getLength() };
         // put mareco allowance
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testRollingStock, testPath, stops);
-        var marecoAllowanceValue = new AllowanceValue.Percentage(10);
+        var marecoAllowanceValue = new AllowanceValue.Percentage(TIME_RATIO, 10);
         var marecoAllowance = new MarecoAllowance(testRollingStock, testPath, TIME_STEP,
                 0, testPath.getLength(), 0, marecoAllowanceValue);
         var marecoDistance = marecoAllowance.sectionEnd - marecoAllowance.sectionBegin;
         var marecoEnvelope = marecoAllowance.apply(maxEffortEnvelope, stops);
         // put construction allowance
-        var constructionAllowanceValue = new AllowanceValue.FixedTime(30);
+        var constructionAllowanceValue = new AllowanceValue.FixedTime(TIME_RATIO, 30);
         var constructionAllowance = new MarecoAllowance(testRollingStock, testPath, TIME_STEP,
                 begin, end, capacitySpeedLimit, constructionAllowanceValue);
         var constructionEnvelope = constructionAllowance.apply(marecoEnvelope, stops);
@@ -285,10 +287,10 @@ public class AllowanceTests {
         double capacitySpeedLimit = 30 / 3.6;
         var firstAllowanceBegin = 0.;
         var firstAllowanceEnd = 50000;
-        var fistAllowanceValue = new AllowanceValue.FixedTime(15);
+        var fistAllowanceValue = new AllowanceValue.FixedTime(TIME_RATIO, 15);
         var secondAllowanceBegin = 50000;
         var secondAllowanceEnd = testPath.getLength();
-        var secondAllowanceValue = new AllowanceValue.FixedTime(30);
+        var secondAllowanceValue = new AllowanceValue.FixedTime(TIME_RATIO, 30);
         var stops = new double[] { 50_000, testPath.getLength() };
 
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testRollingStock, testPath, stops);
@@ -357,7 +359,7 @@ public class AllowanceTests {
         var stops = new double[] { 50_000, pathLength };
 
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testRollingStock, testPath, stops);
-        var allowanceValue = new AllowanceValue.Percentage(40);
+        var allowanceValue = new AllowanceValue.Percentage(TIME_RATIO, 40);
         var allowance = new MarecoAllowance(testRollingStock, testPath, TIME_STEP,
                 0, testPath.getLength(), 0, allowanceValue);
         var marecoEnvelope = allowance.apply(maxEffortEnvelope, stops);
@@ -390,7 +392,7 @@ public class AllowanceTests {
         var testPath = new EnvelopePath(pathLength, gradePositions.toArray(), gradeValues.toArray());
         var stops = new double[] { 50_000, pathLength };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testRollingStock, testPath, stops);
-        var allowanceValue = new AllowanceValue.Percentage(10);
+        var allowanceValue = new AllowanceValue.Percentage(TIME_RATIO, 10);
         var allowance = new MarecoAllowance(testRollingStock, testPath, TIME_STEP,
                 0, testPath.getLength(), 0, allowanceValue);
         var marecoEnvelope = allowance.apply(maxEffortEnvelope, stops);
