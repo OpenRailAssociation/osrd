@@ -1,4 +1,4 @@
-import { get, put } from 'common/requests';
+import { get, patch } from 'common/requests';
 
 const trainScheduleURI = '/train_schedule';
 
@@ -16,7 +16,7 @@ export async function changeTrain(details, id) {
         timetable: details.timetable || trainDetail.timetable,
         train_name: details.train_name || trainDetail.train_name,
       };
-      await put(`${trainScheduleURI}/${id}/`, params);
+      await patch(`${trainScheduleURI}/${id}/`, params);
     } catch (e) {
       console.log('ERROR', e);
     }
