@@ -1,5 +1,6 @@
 package fr.sncf.osrd.api;
 
+import fr.sncf.osrd.exceptions.OSRDError;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
@@ -25,18 +26,19 @@ public class InfraManager {
         infraCache.forEach(action);
     }
 
-    public static final class InfraLoadException extends Exception {
+    public static final class InfraLoadException extends OSRDError {
         private static final long serialVersionUID = 4291184310194002894L;
+        public static final String osrdErrorType = "infra_loading";
 
         public final InfraStatus sourceOperation;
 
         InfraLoadException(String message, InfraStatus sourceOperation, Throwable cause) {
-            super(message, cause);
+            super(message, ErrorCause.USER, cause);
             this.sourceOperation = sourceOperation;
         }
 
         InfraLoadException(String message, InfraStatus sourceOperation) {
-            super(message);
+            super(message, ErrorCause.USER);
             this.sourceOperation = sourceOperation;
         }
 

@@ -10,8 +10,10 @@ import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.BrakingPhaseCoast;
 import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.CoastingOpportunity;
 import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.AcceleratingSlopeCoast;
+import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.MarecoConvergenceException;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
+import fr.sncf.osrd.exceptions.NotImplemented;
 import fr.sncf.osrd.utils.DoubleBinarySearch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,8 +51,7 @@ public class HardenedMarecoAllowance implements Allowance {
     }
 
     private Envelope intersectSlowdownSpeedup(EnvelopePart slowdown, EnvelopePart speedup) {
-        // TODO: implement
-        return null;
+        throw new NotImplemented();
     }
 
     public static final class MarecoSpeedLimit implements EnvelopeAttr {
@@ -177,6 +178,7 @@ public class HardenedMarecoAllowance implements Allowance {
 
         Envelope marecoResult = null;
         var search = new DoubleBinarySearch(capacitySpeedLimit, initialHighBound, targetTime, context.timeStep, true);
+        logger.debug("target time = {}", targetTime);
         for (int i = 1; i < 21 && !search.complete(); i++) {
             var v1 = search.getInput();
             logger.debug("starting attempt {} with v1 = {}", i, v1);
@@ -193,14 +195,12 @@ public class HardenedMarecoAllowance implements Allowance {
     }
 
     private static RuntimeException makeMarecoError(DoubleBinarySearch search) {
-        String error;
         if (!search.hasRaisedLowBound())
-            error = "we can't lose the requested time in this setting";
+            throw MarecoConvergenceException.tooMuchTime();
         else if (!search.hasLoweredHighBound())
-            error = "we can't go fast enough in this setting"; // Should not happen in normal settings
+            throw MarecoConvergenceException.notEnoughTime();
         else
-            error = "discontinuity in the search space"; // Should not happen in normal settings
-        return new RuntimeException(String.format("Mareco simulation did not converge (%s)", error));
+            throw MarecoConvergenceException.discontinuity();
     }
 
     private DoubleArrayList findStops(Envelope base) {
