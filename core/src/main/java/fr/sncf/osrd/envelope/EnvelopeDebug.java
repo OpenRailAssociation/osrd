@@ -1,6 +1,7 @@
 package fr.sncf.osrd.envelope;
 
 import fr.sncf.osrd.utils.SwingUtils;
+import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import org.math.plot.Plot2DPanel;
 import javax.swing.JPanel;
 import java.io.IOException;
@@ -9,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Locale;
 
+@ExcludeFromGeneratedCodeCoverage
 public class EnvelopeDebug {
     /** Export envelope as csv. */
     public static void saveCSV(Envelope envelope, String path) {
@@ -73,6 +75,7 @@ public class EnvelopeDebug {
     }
 
     /** A tool to plot multiple envelopes in the same graph */
+    @ExcludeFromGeneratedCodeCoverage
     public static final class PlotBuilder {
         private final ArrayList<Envelope> envelopes = new ArrayList<>();
         private final ArrayList<String> names = new ArrayList<>();
