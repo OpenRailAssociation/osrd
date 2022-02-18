@@ -96,3 +96,17 @@ class Benchmarker:
 
     def __exit__(self, *args):
         self.stop()
+
+
+def make_exception_from_error(response, user_error_type, internal_error_type):
+
+    # Most formatted errors are in json format, but other (asserts) are plain strings
+    if "json" in response.headers.get("Content-Type", ""):
+        content = response.json()
+    else:
+        content = response.content
+
+    if response.status_code == 400:
+        return user_error_type(content)
+    else:
+        return internal_error_type(content)

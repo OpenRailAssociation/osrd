@@ -7,7 +7,7 @@ from django.conf import settings
 from django.contrib.gis.geos import LineString, Point
 from intervaltree import IntervalTree
 from rest_framework import mixins
-from rest_framework.exceptions import ParseError
+from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
@@ -16,19 +16,19 @@ from osrd_infra.models import OperationalPointModel, PathModel, TrackSectionMode
 from osrd_infra.schemas.infra import Direction, TrackSection
 from osrd_infra.schemas.path import PathPayload
 from osrd_infra.serializers import PathInputSerializer, PathSerializer
-from osrd_infra.utils import line_string_slice_points
+from osrd_infra.utils import line_string_slice_points, make_exception_from_error
 
 
-def status_missing_field_keyerror(key_error: KeyError):
-    (key,) = key_error.args
-    raise ParseError(f"missing field: {key}")
+class InternalPathfindingError(APIException):
+    status_code = 500
+    default_detail = "An internal pathfinding error occurred"
+    default_code = "internal_pathfinding_error"
 
 
-def try_get_field(manifest, field):
-    try:
-        return manifest[field]
-    except KeyError as e:
-        return status_missing_field_keyerror(e)
+class InvalidPathfindingInput(APIException):
+    status_code = 400
+    default_detail = "The pathfinding had invalid inputs"
+    default_code = "pathfinding_invalid_input"
 
 
 def compute_path_payload(infra, back_payload, step_durations, track_map) -> PathPayload:
@@ -65,7 +65,7 @@ def request_pathfinding(payload):
         json=payload,
     )
     if not response:
-        raise ParseError(response.content)
+        raise make_exception_from_error(response, InvalidPathfindingInput, InternalPathfindingError)
     return response.json()
 
 
@@ -121,14 +121,14 @@ def parse_steps_input(steps, infra):
             try:
                 track = track_map[waypoint["track_section"]]
             except KeyError:
-                raise ParseError(f"Track section '{waypoint['track_section']}' doesn't exists")
+                raise InvalidPathfindingInput(f"Track section '{waypoint['track_section']}' doesn't exists")
             if "geo_coordinate" in waypoint:
                 offset = track["geo"].project_normalized(Point(waypoint["geo_coordinate"]))
                 offset = offset * track["length"]
             elif "offset" in waypoint:
                 offset = waypoint["offset"]
             else:
-                raise ParseError("waypoint missing offset or geo_coordinate")
+                raise InvalidPathfindingInput("waypoint missing offset or geo_coordinate")
             parsed_waypoint = {
                 "track_section": track["id"],
                 "offset": offset,

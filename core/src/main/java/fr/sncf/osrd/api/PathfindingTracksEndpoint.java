@@ -3,7 +3,6 @@ package fr.sncf.osrd.api;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.api.InfraManager.InfraLoadException;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.railjson.schema.common.ID;
@@ -47,13 +46,7 @@ public class PathfindingTracksEndpoint extends PathfindingEndpoint {
             var reqWaypoints = request.waypoints;
 
             // load infra
-            Infra infra;
-            try {
-                infra = infraManager.load(request.infra);
-            } catch (InfraLoadException | InterruptedException e) {
-                return new RsWithStatus(new RsText(
-                        String.format("Error loading infrastructure '%s'%n%s", request.infra, e.getMessage())), 400);
-            }
+            var infra = infraManager.load(request.infra);
 
             // parse the waypoints
             @SuppressWarnings({"unchecked", "rawtypes"})
@@ -125,8 +118,7 @@ public class PathfindingTracksEndpoint extends PathfindingEndpoint {
             }
             return new RsJson(new RsWithBody(adapterResult.toJson(result)));
         } catch (Throwable ex) {
-            ex.printStackTrace(System.err);
-            throw ex;
+            return ExceptionHandler.handle(ex);
         }
     }
 

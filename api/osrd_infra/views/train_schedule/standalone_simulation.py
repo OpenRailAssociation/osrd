@@ -5,6 +5,7 @@ from django.conf import settings
 from rest_framework.exceptions import APIException
 
 from osrd_infra.models import TrainScheduleModel
+from osrd_infra.utils import make_exception_from_error
 
 
 class ServiceUnavailable(APIException):
@@ -13,10 +14,16 @@ class ServiceUnavailable(APIException):
     default_code = "service_unavailable"
 
 
-class SimulationError(APIException):
+class InternalSimulationError(APIException):
     status_code = 500
-    default_detail = "A simulation error occurred"
-    default_code = "simulation_error"
+    default_detail = "An internal simulation error occurred"
+    default_code = "internal_simulation_error"
+
+
+class InvalidSimulationInput(APIException):
+    status_code = 400
+    default_detail = "The simulation had invalid inputs"
+    default_code = "simulation_invalid_input"
 
 
 def create_backend_request_payload(train_schedules: List[TrainScheduleModel]):
@@ -63,7 +70,7 @@ def run_simulation(request_payload):
         raise ServiceUnavailable("Service OSRD backend unavailable") from e
 
     if not response:
-        raise SimulationError(response.content)
+        raise make_exception_from_error(response, InvalidSimulationInput, InternalSimulationError)
     return response.json()
 
 

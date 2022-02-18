@@ -6,7 +6,6 @@ import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.api.InfraManager.InfraLoadException;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.EnvelopePath;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
@@ -14,6 +13,8 @@ import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.envelope_sim_infra.MRSP;
+import fr.sncf.osrd.exceptions.OSRDError;
+import fr.sncf.osrd.exceptions.ErrorContext;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
@@ -73,13 +74,7 @@ public class StandaloneSimulationEndpoint implements Take {
                 return new RsWithStatus(new RsText("missing request body"), 400);
 
             // load infra
-            Infra infra;
-            try {
-                infra = infraManager.load(request.infra);
-            } catch (InfraLoadException | InterruptedException e) {
-                return new RsWithStatus(new RsText(
-                        String.format("Error loading infrastructure '%s'%n%s", request.infra, e.getMessage())), 400);
-            }
+            var infra = infraManager.load(request.infra);
 
             // Parse rolling stocks
             var rollingStocks = new HashMap<String, RollingStock>();
@@ -134,8 +129,7 @@ public class StandaloneSimulationEndpoint implements Take {
 
             return new RsJson(new RsWithBody(adapterResult.toJson(result)));
         } catch (Throwable ex) {
-            ex.printStackTrace(System.err);
-            throw ex;
+            return ExceptionHandler.handle(ex);
         }
     }
 
@@ -157,8 +151,13 @@ public class StandaloneSimulationEndpoint implements Take {
             StandaloneTrainSchedule schedule
     ) {
         var result = maxEffortEnvelope;
-        for (var allowance : schedule.allowances)
-            result = allowance.apply(result);
+        for (int i = 0; i < schedule.allowances.size(); i++) {
+            try {
+                result = schedule.allowances.get(i).apply(result);
+            } catch (OSRDError e) {
+                throw e.withContext(new ErrorContext.Allowance(i));
+            }
+        }
         return result;
     }
 

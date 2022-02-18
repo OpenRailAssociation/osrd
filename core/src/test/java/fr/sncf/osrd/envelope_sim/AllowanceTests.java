@@ -9,11 +9,13 @@ import static fr.sncf.osrd.envelope_sim.allowances.AllowanceDistribution.TIME_RA
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.carrotsearch.hppc.DoubleArrayList;
+import fr.sncf.osrd.exceptions.OSRDError;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.EnvelopeShape;
 import fr.sncf.osrd.envelope.EnvelopeTransitions;
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.allowances.HardenedMarecoAllowance;
+import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.MarecoConvergenceException;
 import fr.sncf.osrd.train.TestTrains;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -260,10 +262,9 @@ public class AllowanceTests {
                 new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP),
                 begin, end, capacitySpeedLimit, allowanceValue);
 
-        var thrown = assertThrows(RuntimeException.class, () -> allowance.apply(maxEffortEnvelope));
+        var thrown = assertThrows(MarecoConvergenceException.class, () -> allowance.apply(maxEffortEnvelope));
 
-        assertEquals("Mareco simulation did not converge (we can't lose the requested time in this setting)",
-                thrown.getMessage());
+        assertEquals("too_much_time", thrown.marecoErrorType);
     }
 
     @Test
@@ -510,5 +511,18 @@ public class AllowanceTests {
                 new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP),
                 2000, length, 10, allowanceValue);
         allowance.apply(maxEffortEnvelope);
+    }
+
+    @Test
+    public void testMarecoErrors() {
+        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
+        var testPath = new FlatPath(10000, 0);
+
+        var ex = assertThrows(MarecoConvergenceException.class, () ->
+                makeSimpleMarecoEnvelope(testRollingStock, testPath, 44.4,
+                        new AllowanceValue.Percentage(TIME_RATIO, 1e10), true)
+        );
+        assert ex.marecoErrorType.equals("too_much_time");
+        assert ex.cause == OSRDError.ErrorCause.USER;
     }
 }
