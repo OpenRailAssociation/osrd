@@ -1,7 +1,8 @@
 package fr.sncf.osrd.railjson.parser.exceptions;
 
 public final class InvalidRollingStockField extends InvalidRollingStock {
-    static final long serialVersionUID = -1568988911854634262L;
+    private static final long serialVersionUID = -1551144603639349811L;
+    public static final String osrdErrorType = "field";
 
     public final String fieldName;
 

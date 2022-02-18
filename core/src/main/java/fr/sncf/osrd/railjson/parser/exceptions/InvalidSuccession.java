@@ -1,13 +1,16 @@
 package fr.sncf.osrd.railjson.parser.exceptions;
 
-public class InvalidSuccession extends Exception {
-    static final long serialVersionUID = 1068679247089984566L;
+import fr.sncf.osrd.exceptions.OSRDError;
+
+public class InvalidSuccession extends OSRDError {
+    private static final long serialVersionUID = -3695562224328844732L;
+    public static final String osrdErrorType = "invalid_succession";
 
     public InvalidSuccession(String message) {
-        super(message);
+        super(message, ErrorCause.USER);
     }
 
     public InvalidSuccession() {
-        super();
+        this("invalid succession");
     }
 }

@@ -1,7 +1,8 @@
 package fr.sncf.osrd.railjson.parser.exceptions;
 
 public class UnknownRollingStock extends InvalidSchedule {
-    static final long serialVersionUID = -4584084079930478390L;
+    private static final long serialVersionUID = 7255918937277778058L;
+    public static final String osrdErrorType = "unknown_stock";
 
     public final String rollingStockID;
 
