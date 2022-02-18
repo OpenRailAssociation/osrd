@@ -15,7 +15,9 @@ export default function MarecoGlobal(props) {
     allowanceTypes, getAllowances, setIsUpdating,
     trainDetail, TYPES_UNITS,
   } = props;
-  const { selectedTrain, simulation } = useSelector((state) => state.osrdsimulation);
+  const {
+    selectedProjection, selectedTrain, simulation,
+  } = useSelector((state) => state.osrdsimulation);
   const { t } = useTranslation(['allowances']);
   const dispatch = useDispatch();
   const [value, setValue] = useState({
@@ -32,7 +34,11 @@ export default function MarecoGlobal(props) {
 
   const updateTrain = async () => {
     const newSimulationTrains = Array.from(simulation.trains);
-    newSimulationTrains[selectedTrain] = await get(`${trainscheduleURI}${simulation.trains[selectedTrain].id}/result/`);
+    newSimulationTrains[selectedTrain] = await get(`${trainscheduleURI}${simulation.trains[selectedTrain].id}/result/`,
+      {
+        id: simulation.trains[selectedTrain].id,
+        path: selectedProjection.path,
+      });
     getAllowances();
     dispatch(updateSimulation({ ...simulation, trains: newSimulationTrains }));
     dispatch(updateMustRedraw(true));
