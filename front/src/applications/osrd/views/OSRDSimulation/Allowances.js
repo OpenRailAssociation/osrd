@@ -230,7 +230,7 @@ const Allowance = (props) => {
 export default function Allowances(props) {
   const { toggleAllowancesDisplay } = props;
   const {
-    allowancesSettings, selectedTrain, simulation,
+    allowancesSettings, selectedProjection, selectedTrain, simulation,
   } = useSelector((state) => state.osrdsimulation);
   const [trainDetail, setTrainDetail] = useState(undefined);
   const [allowances, setAllowances] = useState([]);
@@ -281,7 +281,11 @@ export default function Allowances(props) {
         allowances: newAllowances,
       });
       const newSimulationTrains = Array.from(simulation.trains);
-      newSimulationTrains[selectedTrain] = await get(`${trainscheduleURI}${simulation.trains[selectedTrain].id}/result/`);
+      newSimulationTrains[selectedTrain] = await get(`${trainscheduleURI}${simulation.trains[selectedTrain].id}/result/`,
+        {
+          id: simulation.trains[selectedTrain].id,
+          path: selectedProjection.path,
+        });
 
       getAllowances();
       dispatch(updateSimulation({ ...simulation, trains: newSimulationTrains }));
