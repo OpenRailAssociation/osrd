@@ -15,6 +15,7 @@ import fr.sncf.osrd.train.events.TrainMoveEvent;
 import fr.sncf.osrd.train.events.TrainReachesActionPoint;
 import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
+import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.AdjacencyListGraph;
@@ -42,6 +43,7 @@ import java.util.stream.Collectors;
 
 // caused by the temporary opRef.begin == opRef.end
 @SuppressFBWarnings({"SIC_INNER_SHOULD_BE_STATIC_ANON"})
+@ExcludeFromGeneratedCodeCoverage
 public class DebugViewer extends ChangeConsumer {
     static final Logger logger = LoggerFactory.getLogger(DebugViewer.class);
 

@@ -25,6 +25,7 @@ import fr.sncf.osrd.train.decisions.TrainDecisionMaker;
 import fr.sncf.osrd.train.events.TrainCreatedEvent;
 import fr.sncf.osrd.train.phases.SignalNavigatePhase;
 import fr.sncf.osrd.utils.graph.FloydWarshall;
+import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 @Parameters(commandDescription = "Runs a simulation on a given infra, generates a simulation config")
+@ExcludeFromGeneratedCodeCoverage
 public final class TestInfraCommand implements CliCommand {
     static final Logger logger = LoggerFactory.getLogger(TestInfraCommand.class);
 
