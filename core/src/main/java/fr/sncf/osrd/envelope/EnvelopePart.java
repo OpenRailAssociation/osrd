@@ -282,23 +282,42 @@ public final class EnvelopePart {
 
     // endregion
 
-    // region SCAN
+    // region FIND
 
-    /** Scan the envelope from startIndex to find the first step which contains pos */
-    public int findStep(int startIndex, double pos) {
-        assert pos >= getBeginPos();
-        assert pos <= getEndPos();
-        for (int i = startIndex; i < positions.length - 1; i++) {
-            var stepBegin = positions[i];
-            var stepEnd = positions[i + 1];
-            if (pos >= stepBegin && pos <= stepEnd)
-                return i;
+    /** Find the leftmost step (with the lowest position) which contains the given position */
+    public int findStepLeft(double position) {
+        assert position >= getBeginPos();
+        assert position <= getEndPos();
+        var pointIndex = Arrays.binarySearch(positions, position);
+        // if the position matches one of the data points, return the range on the left, if any
+        if (pointIndex >= 0) {
+            if (pointIndex == 0)
+                return 0;
+            return pointIndex - 1;
         }
-        return -1;
+
+        // when the position isn't found, binarySearch returns -(insertion point) - 1
+        var insertionPoint = -(pointIndex + 1);
+        // the index of the step is the index of the point which starts the range
+        return insertionPoint - 1;
     }
 
-    public int findStep(double pos) {
-        return findStep(0, pos);
+    /** Find the leftmost step (with the lowest position) which contains the given position */
+    public int findStepRight(double position) {
+        assert position >= getBeginPos();
+        assert position <= getEndPos();
+        var pointIndex = Arrays.binarySearch(positions, position);
+        // if the position matches one of the data points, return the range on the left, if any
+        if (pointIndex >= 0) {
+            if (pointIndex == positions.length - 1)
+                return pointIndex - 1;
+            return pointIndex;
+        }
+
+        // when the position isn't found, binarySearch returns -(insertion point) - 1
+        var insertionPoint = -(pointIndex + 1);
+        // the index of the step is the index of the point which starts the range
+        return insertionPoint - 1;
     }
 
     // endregion
@@ -307,8 +326,21 @@ public final class EnvelopePart {
 
     /** Given a position return the interpolated speed. */
     public double interpolateSpeed(double position) {
-        var stepIndex = findStep(position);
-        return interpolateSpeed(stepIndex, position);
+        assert position >= getBeginPos() && position <= getEndPos();
+        var pointIndex = Arrays.binarySearch(positions, position);
+        // if the position matches one of the data points
+        if (pointIndex >= 0)
+            return speeds[pointIndex];
+
+        // when the position isn't found, binarySearch returns -(insertion point) - 1
+        var insertionPoint = -(pointIndex + 1);
+        // the index of the step is the index of the point which starts the range
+        var stepIndex = insertionPoint - 1;
+        return EnvelopePhysics.interpolateStepSpeed(
+                positions[stepIndex], positions[stepIndex + 1],
+                speeds[stepIndex], speeds[stepIndex + 1],
+                position - positions[stepIndex]
+        );
     }
 
     /** Given a position return the interpolated speed. */
@@ -342,7 +374,18 @@ public final class EnvelopePart {
     /** Returns the time required to get from the start of the envelope part
      * to the given position, in milliseconds.
      */
-    public long interpolateTotalTimeMS(int stepIndex, double position) {
+    public long interpolateTotalTimeMS(double position) {
+        assert position >= getBeginPos();
+        assert position <= getEndPos();
+        var pointIndex = Arrays.binarySearch(positions, position);
+        // if the position matches one of the data points
+        if (pointIndex >= 0)
+            return getTotalTimeMS(pointIndex);
+
+        // when the position isn't found, binarySearch returns -(insertion point) - 1
+        var insertionPoint = -(pointIndex + 1);
+        // the index of the step is the index of the point which starts the range
+        var stepIndex = insertionPoint - 1;
         long timeToStepStart = getTotalTimeMS(stepIndex);
         var interpolatedTime = interpolateTimeDelta(stepIndex, position);
         return timeToStepStart + (long) (interpolatedTime * 1000);
@@ -351,8 +394,8 @@ public final class EnvelopePart {
     /** Returns the time required to get from the start of the envelope part
      * to the given position, in seconds
      */
-    public double interpolateTotalTime(int stepIndex, double position) {
-        return ((double) interpolateTotalTimeMS(stepIndex, position)) / 1000;
+    public double interpolateTotalTime(double position) {
+        return ((double) interpolateTotalTimeMS(position)) / 1000;
     }
 
     /** Compute the time deltas between positions */
@@ -389,12 +432,6 @@ public final class EnvelopePart {
     /** Given a speed return a position. The envelopePart must be bijective in order for this method to work*/
     public Double interpolatePosition(double speed) {
         return interpolatePosition(0, speed);
-    }
-
-    /** Given a position return the interpolated acceleration. */
-    public double interpolateAcceleration(double position) {
-        var stepIndex = findStep(position);
-        return interpolateAcceleration(stepIndex, position);
     }
 
     /** Given a position and a step index return the interpolated acceleration. */
@@ -454,12 +491,12 @@ public final class EnvelopePart {
         if (beginPosition <= getBeginPos())
             beginPosition = Double.NEGATIVE_INFINITY;
         if (beginPosition != Double.NEGATIVE_INFINITY)
-            beginIndex = findStep(beginPosition);
+            beginIndex = findStepRight(beginPosition);
         int endIndex = stepCount() - 1;
         if (endPosition >= getEndPos())
             endPosition = Double.POSITIVE_INFINITY;
         if (endPosition != Double.POSITIVE_INFINITY)
-            endIndex = findStep(endPosition);
+            endIndex = findStepLeft(endPosition);
         return slice(beginIndex, beginPosition, endIndex, endPosition);
     }
 

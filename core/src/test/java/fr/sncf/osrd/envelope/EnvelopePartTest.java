@@ -19,18 +19,29 @@ class EnvelopePartTest {
     }
 
     @Test
-    void getRangeIndex() {
+    void findStep() {
         var ep = EnvelopePart.generateTimes(
                 null,
                 new double[] {1.5, 3, 5},
                 new double[] {3, 4, 4}
         );
-        assertEquals(0, ep.findStep(1.5));
-        assertEquals(0, ep.findStep(3));
-        assertEquals(1, ep.findStep(3.5));
-        assertEquals(1, ep.findStep(5));
-        assertThrows(AssertionError.class, () -> ep.findStep(1));
-        assertThrows(AssertionError.class, () -> ep.findStep(5.1));
+
+        assertEquals(0, ep.findStepLeft(1.5));
+        assertEquals(0, ep.findStepRight(1.5));
+
+        assertEquals(0, ep.findStepLeft(3));
+        assertEquals(1, ep.findStepRight(3));
+
+        assertEquals(1, ep.findStepLeft(3.5));
+        assertEquals(1, ep.findStepRight(3.5));
+
+        assertEquals(1, ep.findStepLeft(5));
+        assertEquals(1, ep.findStepRight(5));
+
+        assertThrows(AssertionError.class, () -> ep.findStepLeft(1));
+        assertThrows(AssertionError.class, () -> ep.findStepLeft(5.1));
+        assertThrows(AssertionError.class, () -> ep.findStepRight(1));
+        assertThrows(AssertionError.class, () -> ep.findStepRight(5.1));
     }
 
     @Test

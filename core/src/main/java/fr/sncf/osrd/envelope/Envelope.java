@@ -183,8 +183,7 @@ public final class Envelope implements Iterable<EnvelopePart> {
         var envelopePartIndex = findEnvelopePartIndex(position);
         assert envelopePartIndex != -1 : "Trying to interpolate time outside of the envelope";
         var envelopePart = get(envelopePartIndex);
-        var stepIndex = envelopePart.findStep(position);
-        return getCumulativeTimeMS(envelopePartIndex) + envelopePart.interpolateTotalTimeMS(stepIndex, position);
+        return getCumulativeTimeMS(envelopePartIndex) + envelopePart.interpolateTotalTimeMS(position);
     }
 
     /** Computes the time required to get to a given point of the envelope */
@@ -253,7 +252,7 @@ public final class Envelope implements Iterable<EnvelopePart> {
         if (beginPosition != Double.NEGATIVE_INFINITY) {
             beginPartIndex = findEnvelopePartIndex(beginPosition);
             var beginPart = parts[beginPartIndex];
-            beginIndex = beginPart.findStep(beginPosition);
+            beginIndex = beginPart.findStepRight(beginPosition);
         }
         var endPartIndex = parts.length - 1;
         var endPart = parts[endPartIndex];
@@ -261,7 +260,7 @@ public final class Envelope implements Iterable<EnvelopePart> {
         if (endPosition != Double.POSITIVE_INFINITY) {
             endPartIndex = findEnvelopePartIndex(endPosition);
             endPart = parts[endPartIndex];
-            endIndex = endPart.findStep(endPosition);
+            endIndex = endPart.findStepLeft(endPosition);
         }
         return slice(beginPartIndex, beginIndex, beginPosition, beginSpeed,
                 endPartIndex, endIndex, endPosition, endSpeed);

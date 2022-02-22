@@ -108,7 +108,8 @@ public final class MaxEnvelopeBuilder {
         for (var part : activeParts) {
             var speed = part.interpolateSpeed(position);
             if (Math.abs(speed - currentMaxSpeed) < 1E-6) {
-                var acceleration = part.interpolateAcceleration(position);
+                var stepIndex = part.findStepRight(position);
+                var acceleration = part.interpolateAcceleration(stepIndex, position);
                 if (acceleration <= currentMaxAcceleration)
                     continue;
                 currentMaxAcceleration = acceleration;
