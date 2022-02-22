@@ -91,8 +91,8 @@ public class EnvelopePhysics {
 
     /** @see #intersectSteps(EnvelopePart, int, EnvelopePart, int) */
     public static EnvelopePoint intersectSteps(EnvelopePart a, EnvelopePart b, double position) {
-        var stepIndexA = a.findStep(position);
-        var stepIndexB = b.findStep(position);
+        var stepIndexA = a.findStepLeft(position);
+        var stepIndexB = b.findStepLeft(position);
         return intersectSteps(a, stepIndexA, b, stepIndexB);
     }
 
