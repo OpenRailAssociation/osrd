@@ -8,8 +8,24 @@ public class EnvelopeSpeedCap {
         var cursor = new EnvelopeCursor(base, false);
         var builder = OverlayEnvelopeBuilder.forward(base);
         while (cursor.findSpeed(speedLimit, CmpOperator.STRICTLY_HIGHER)) {
-            var partBuilder = OverlayEnvelopePartBuilder.startDiscontinuousOverlay(cursor, meta, speedLimit);
-            partBuilder.addPlateau();
+            var startPos = cursor.getPosition();
+
+            var partBuilder = new EnvelopePartBuilder();
+            partBuilder.setEnvelopePartMeta(meta);
+            partBuilder.initEnvelopePart(startPos, speedLimit, 1);
+
+            var hasNotReachedEnd = cursor.findSpeed(speedLimit, CmpOperator.STRICTLY_LOWER);
+            assert hasNotReachedEnd != cursor.hasReachedEnd();
+            double endPosition;
+            if (hasNotReachedEnd)
+                endPosition = cursor.getPosition();
+            else
+                endPosition = cursor.getEnvelopeEndPos();
+
+            var plateauLength = Math.abs(endPosition - startPos);
+            var plateauDuration = plateauLength / speedLimit;
+            partBuilder.addStep(endPosition, speedLimit, plateauDuration);
+            cursor.findPosition(endPosition);
             builder.addPart(partBuilder.build());
         }
         var res = builder.build();
