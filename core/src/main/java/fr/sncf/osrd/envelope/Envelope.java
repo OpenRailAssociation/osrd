@@ -128,17 +128,6 @@ public final class Envelope implements Iterable<EnvelopePart> {
 
     // endregion
 
-
-    /** Returns the first envelope part which contains this position. */
-    public int findEnvelopePartIndex(double position) {
-        for (int i = 0; i < parts.length; i++) {
-            var part = parts[i];
-            if (position >= part.getBeginPos() && position <= part.getEndPos())
-                return i;
-        }
-        return -1;
-    }
-
     /** Returns the first envelope part which contains this position. */
     public int findEnvelopePartIndexLeft(double position) {
         for (int i = 0; i < parts.length; i++) {
@@ -183,18 +172,30 @@ public final class Envelope implements Iterable<EnvelopePart> {
 
     // region INTERPOLATION
 
-    /** Returns the interpolated speed at a given position */
+    /** Returns the interpolated speed at a given position. Assumes the envelope is continuous. */
     public double interpolateSpeed(double position) {
         assert continuous : "interpolating speeds on a non continuous envelope is a risky business";
-        var envelopePartIndex = findEnvelopePartIndex(position);
+        var envelopePartIndex = findEnvelopePartIndexLeft(position);
         assert envelopePartIndex != -1;
         return get(envelopePartIndex).interpolateSpeed(position);
+    }
+
+    /** Interpolates speeds, prefers EnvelopeParts coming from the left, along the given direction */
+    public double interpolateSpeedLeftDir(double position, double direction) {
+        var partIndex = findEnvelopePartIndexLeftDir(position, direction);
+        return get(partIndex).interpolateSpeed(position);
+    }
+
+    /** Interpolates speeds, prefers EnvelopeParts coming from the right, along the given direction */
+    public double interpolateSpeedRightDir(double position, double direction) {
+        var partIndex = findEnvelopePartIndexRightDir(position, direction);
+        return get(partIndex).interpolateSpeed(position);
     }
 
     /** Computes the time required to get to a given point of the envelope */
     public long interpolateTotalTimeMS(double position) {
         assert continuous : "interpolating times on a non continuous envelope is a risky business";
-        var envelopePartIndex = findEnvelopePartIndex(position);
+        var envelopePartIndex = findEnvelopePartIndexLeft(position);
         assert envelopePartIndex != -1 : "Trying to interpolate time outside of the envelope";
         var envelopePart = get(envelopePartIndex);
         return getCumulativeTimeMS(envelopePartIndex) + envelopePart.interpolateTotalTimeMS(position);
@@ -264,7 +265,7 @@ public final class Envelope implements Iterable<EnvelopePart> {
         int beginIndex = 0;
         var beginPartIndex = 0;
         if (beginPosition != Double.NEGATIVE_INFINITY) {
-            beginPartIndex = findEnvelopePartIndex(beginPosition);
+            beginPartIndex = findEnvelopePartIndexRight(beginPosition);
             var beginPart = parts[beginPartIndex];
             beginIndex = beginPart.findStepRight(beginPosition);
         }
@@ -272,7 +273,7 @@ public final class Envelope implements Iterable<EnvelopePart> {
         var endPart = parts[endPartIndex];
         int endIndex = endPart.stepCount() - 1;
         if (endPosition != Double.POSITIVE_INFINITY) {
-            endPartIndex = findEnvelopePartIndex(endPosition);
+            endPartIndex = findEnvelopePartIndexLeft(endPosition);
             endPart = parts[endPartIndex];
             endIndex = endPart.findStepLeft(endPosition);
         }

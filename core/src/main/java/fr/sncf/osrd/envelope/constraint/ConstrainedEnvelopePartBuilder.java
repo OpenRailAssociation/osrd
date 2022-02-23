@@ -52,7 +52,18 @@ public final class ConstrainedEnvelopePartBuilder implements InteractiveEnvelope
         this.lastPos = position;
         this.lastSpeed = speed;
         this.direction = direction;
+        sink.initEnvelopePart(position, speed, direction);
         return true;
+    }
+
+    @Override
+    public double getLastPos() {
+        return lastPos;
+    }
+
+    @Override
+    public double getLastSpeed() {
+        return lastSpeed;
     }
 
     @Override

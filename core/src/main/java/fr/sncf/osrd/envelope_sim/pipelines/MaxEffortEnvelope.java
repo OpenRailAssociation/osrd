@@ -1,6 +1,9 @@
 package fr.sncf.osrd.envelope_sim.pipelines;
 
 import fr.sncf.osrd.envelope.*;
+import fr.sncf.osrd.envelope.constraint.ConstrainedEnvelopePartBuilder;
+import fr.sncf.osrd.envelope.constraint.EnvelopeCeiling;
+import fr.sncf.osrd.envelope.constraint.SpeedFloor;
 import fr.sncf.osrd.envelope_sim.PhysicsPath;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration;
@@ -32,15 +35,29 @@ public class MaxEffortEnvelope {
         var builder = OverlayEnvelopeBuilder.forward(maxSpeedProfile);
         var cursor = EnvelopeCursor.forward(maxSpeedProfile);
         {
-            var partBuilder = OverlayEnvelopePartBuilder.startDiscontinuousOverlay(cursor, ACCELERATION, initialSpeed);
-            EnvelopeAcceleration.accelerate(rollingStock, path, timeStep, 0, initialSpeed, partBuilder, 1);
+            var partBuilder = new EnvelopePartBuilder();
+            partBuilder.setEnvelopePartMeta(ACCELERATION);
+            var overlayBuilder = new ConstrainedEnvelopePartBuilder(
+                    partBuilder,
+                    new SpeedFloor(0),
+                    new EnvelopeCeiling(maxSpeedProfile)
+            );
+            EnvelopeAcceleration.accelerate(rollingStock, path, timeStep, 0, initialSpeed, overlayBuilder, 1);
+            cursor.findPosition(overlayBuilder.getLastPos());
             builder.addPart(partBuilder.build());
         }
         while (cursor.findPartTransition(MaxSpeedEnvelope::increase)) {
-            var partBuilder = OverlayEnvelopePartBuilder.startContinuousOverlay(cursor, ACCELERATION);
-            var startSpeed = partBuilder.getLastSpeed();
+            var partBuilder = new EnvelopePartBuilder();
+            partBuilder.setEnvelopePartMeta(ACCELERATION);
+            var overlayBuilder = new ConstrainedEnvelopePartBuilder(
+                    partBuilder,
+                    new SpeedFloor(0),
+                    new EnvelopeCeiling(maxSpeedProfile)
+            );
+            var startSpeed = maxSpeedProfile.interpolateSpeedLeftDir(cursor.getPosition(), 1);
             var startPosition = cursor.getPosition();
-            EnvelopeAcceleration.accelerate(rollingStock, path, timeStep, startPosition, startSpeed, partBuilder, 1);
+            EnvelopeAcceleration.accelerate(rollingStock, path, timeStep, startPosition, startSpeed, overlayBuilder, 1);
+            cursor.findPosition(overlayBuilder.getLastPos());
             builder.addPart(partBuilder.build());
         }
         return builder.build();
@@ -68,12 +85,20 @@ public class MaxEffortEnvelope {
                 cursor.findPosition(highRampPosition);
                 if (cursor.getPosition() == envelopePart.getEndPos())
                     break;
-                var partBuilder = OverlayEnvelopePartBuilder.startContinuousOverlay(cursor, MAINTAIN);
-                var startPosition = cursor.getPosition();
-                var startSpeed = partBuilder.getLastSpeed();
-                EnvelopeAcceleration.accelerate(
-                        rollingStock, path, timeStep, startPosition, startSpeed, partBuilder, 1
+
+                var partBuilder = new EnvelopePartBuilder();
+                partBuilder.setEnvelopePartMeta(MAINTAIN);
+                var overlayBuilder = new ConstrainedEnvelopePartBuilder(
+                        partBuilder,
+                        new SpeedFloor(0),
+                        new EnvelopeCeiling(maxSpeedProfile)
                 );
+                var startPosition = cursor.getPosition();
+                var startSpeed = maxSpeedProfile.interpolateSpeedLeftDir(startPosition, 1);
+                EnvelopeAcceleration.accelerate(
+                        rollingStock, path, timeStep, startPosition, startSpeed, overlayBuilder, 1
+                );
+                cursor.findPosition(overlayBuilder.getLastPos());
 
                 // Check that the high grade position can't be maintained
                 if (partBuilder.stepCount() > 1)

@@ -9,6 +9,9 @@ import static fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator.T
 import static java.lang.Math.*;
 
 import fr.sncf.osrd.envelope.*;
+import fr.sncf.osrd.envelope.constraint.ConstrainedEnvelopePartBuilder;
+import fr.sncf.osrd.envelope.constraint.EnvelopeCeiling;
+import fr.sncf.osrd.envelope.constraint.SpeedFloor;
 import fr.sncf.osrd.envelope_sim.PhysicsPath;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeCoasting;
@@ -254,18 +257,24 @@ public class MarecoAllowance implements Allowance {
             var part = envelope.getEnvelopePartLeft(position);
             if (part == null || (part.meta instanceof AccelerationMeta && part.getBeginPos() < position))
                 continue; // Starting a coasting curve in an acceleration part would stop instantly and trigger asserts
-            var cursor = EnvelopeCursor.backward(envelope);
-            cursor.findPosition(position);
+
+            var partBuilder = new EnvelopePartBuilder();
+            partBuilder.setEnvelopePartMeta(COASTING);
+            var overlayBuilder = new ConstrainedEnvelopePartBuilder(
+                    partBuilder,
+                    new SpeedFloor(0),  // 0
+                    new EnvelopeCeiling(envelope)  // 1
+            );
+
             var speed = envelope.interpolateSpeed(position);
-            var partBuilder = OverlayEnvelopePartBuilder.startContinuousOverlay(cursor, COASTING);
-            EnvelopeCoasting.coast(rollingStock, path, timeStep, position, speed, partBuilder, -1);
+            EnvelopeCoasting.coast(rollingStock, path, timeStep, position, speed, overlayBuilder, -1);
 
             // skip anything that's not an intersection with the base curve
-            if (partBuilder.getLastStepKind() != OverlayEnvelopePartBuilder.StepKind.BASE_INTERSECTION)
+            if (overlayBuilder.lastIntersection != 1)
                 continue;
 
             // if coasting immediately intersected with the base curve, stop right away
-            if (partBuilder.stepCount() == 0)
+            if (partBuilder.isEmpty())
                 continue;
 
             var builder = OverlayEnvelopeBuilder.backward(envelope);
@@ -327,7 +336,7 @@ public class MarecoAllowance implements Allowance {
     /** Moves the position forward until it's not in a braking section,
      * returns -1 if it reaches the end of the path*/
     private double moveForwardUntilNotBraking(Envelope base, double position) {
-        var envelopeIndex = base.findEnvelopePartIndex(position);
+        var envelopeIndex = base.findEnvelopePartIndexLeft(position);
         while (envelopeIndex < base.size() && isBraking(base.get(envelopeIndex)))
             envelopeIndex++;
         if (envelopeIndex >= base.size())
@@ -339,7 +348,7 @@ public class MarecoAllowance implements Allowance {
     /** Moves the position backwards until it's not in an accelerating section,
      * returns -1 if it reaches the beginning of the path*/
     private double moveBackwardsUntilNotAccelerating(Envelope base, double position) {
-        var envelopeIndex = base.findEnvelopePartIndex(position);
+        var envelopeIndex = base.findEnvelopePartIndexLeft(position);
         while (envelopeIndex >= 0 && base.get(envelopeIndex).meta instanceof AccelerationMeta)
             envelopeIndex--;
         if (envelopeIndex < 0)
@@ -359,13 +368,16 @@ public class MarecoAllowance implements Allowance {
         var speed = base.interpolateSpeed(position);
         if (speed <= capacitySpeedLimit)
             return res;
-        var cursor = EnvelopeCursor.forward(base);
-        cursor.findPosition(position);
-        var partBuilder = OverlayEnvelopePartBuilder.startContinuousOverlay(
-                cursor, DECELERATION, capacitySpeedLimit, CmpOperator.LOWER);
 
-        decelerate(rollingStock, path, TIME_STEP, position, speed, partBuilder, 1);
-        var decelerationPart = partBuilder.build();
+        var builder = new EnvelopePartBuilder();
+        builder.setEnvelopePartMeta(DECELERATION);
+        var overlayBuilder = new ConstrainedEnvelopePartBuilder(
+                builder,
+                new SpeedFloor(capacitySpeedLimit),
+                new EnvelopeCeiling(base)
+        );
+        decelerate(rollingStock, path, TIME_STEP, position, speed, overlayBuilder, 1);
+        var decelerationPart = builder.build();
         res.add(decelerationPart.slice(base.getBeginPos(), base.getEndPos()));
         return res;
     }
@@ -381,11 +393,16 @@ public class MarecoAllowance implements Allowance {
         var speed = base.interpolateSpeed(position);
         if (speed <= capacitySpeedLimit)
             return res;
-        var cursor = EnvelopeCursor.backward(base);
-        cursor.findPosition(position);
-        var partBuilder = OverlayEnvelopePartBuilder.startContinuousOverlay(
-                cursor, ACCELERATION, capacitySpeedLimit, CmpOperator.LOWER);
-        accelerate(rollingStock, path, TIME_STEP, position, speed, partBuilder, -1);
+
+        var partBuilder = new EnvelopePartBuilder();
+        partBuilder.setEnvelopePartMeta(ACCELERATION);
+        var overlayBuilder = new ConstrainedEnvelopePartBuilder(
+                partBuilder,
+                new SpeedFloor(capacitySpeedLimit),  // 0
+                new EnvelopeCeiling(base)  // 1
+        );
+
+        accelerate(rollingStock, path, TIME_STEP, position, speed, overlayBuilder, -1);
         var acceleratingPart = partBuilder.build();
         res.add(acceleratingPart.slice(base.getBeginPos(), base.getEndPos()));
         return res;
