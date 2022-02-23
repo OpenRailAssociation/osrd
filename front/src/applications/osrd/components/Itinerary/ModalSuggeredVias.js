@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
@@ -21,7 +21,6 @@ export default function ModalSugerredVias(props) {
   const {
     convertPathfindingVias, inverseOD, removeAllVias, pathfindingInProgress,
   } = props;
-  const dispatch = useDispatch();
   const { t } = useTranslation('osrdconf');
   const nbVias = suggeredVias.length - 1;
 
@@ -34,7 +33,7 @@ export default function ModalSugerredVias(props) {
         <button
           className="btn btn-sm btn-only-icon ml-auto"
           type="button"
-          onClick={() => convertPathfindingVias(suggeredVias, dispatch, idx)}
+          onClick={() => convertPathfindingVias(suggeredVias, idx)}
         >
           <i className="icons-add" />
         </button>

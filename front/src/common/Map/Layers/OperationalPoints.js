@@ -45,6 +45,7 @@ export default function OperationalPoints(props) {
   const layerNameCH = {
     type: 'symbol',
     'source-layer': 'operational_points',
+    minzoom: 9,
     layout: {
       'text-field': '{ch_long_label}',
       'text-font': [

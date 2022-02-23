@@ -15,7 +15,6 @@ const TracksGeographic = (props) => {
     <Source
       id="tracksGeographic"
       type="vector"
-      // url={`${MAP_URL}/chartis/layer/map_midi_tronconditinerairevoie/mvt/geo/`}
       url={`${MAP_URL}/layer/track_sections/mvt/geo/${infraVersion}`}
       source-layer={MAP_TRACK_SOURCES.geographic}
     >
