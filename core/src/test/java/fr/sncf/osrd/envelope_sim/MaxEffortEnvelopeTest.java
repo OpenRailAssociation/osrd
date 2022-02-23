@@ -18,9 +18,10 @@ public class MaxEffortEnvelopeTest {
             double speed,
             double[] stops
     ) {
+        var context = new EnvelopeSimContext(rollingStock, path, TIME_STEP);
         var flatMRSP = makeSimpleMRSP(rollingStock, path, speed);
-        var maxSpeedEnvelope = MaxSpeedEnvelope.from(rollingStock, path, stops, flatMRSP, TIME_STEP);
-        return MaxEffortEnvelope.from(rollingStock, path, 0, maxSpeedEnvelope, TIME_STEP);
+        var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, flatMRSP);
+        return MaxEffortEnvelope.from(context, 0, maxSpeedEnvelope);
     }
 
     /** Builds max effort envelope with one stop in the middle, one at the end, on a flat MRSP */
@@ -36,8 +37,9 @@ public class MaxEffortEnvelopeTest {
             double[] stops
     ) {
         var mrsp = makeComplexMRSP(rollingStock, path);
-        var maxSpeedEnvelope = MaxSpeedEnvelope.from(rollingStock, path, stops, mrsp, TIME_STEP);
-        return MaxEffortEnvelope.from(rollingStock, path, 0, maxSpeedEnvelope, TIME_STEP);
+        var context = new EnvelopeSimContext(rollingStock, path, TIME_STEP);
+        var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, mrsp);
+        return MaxEffortEnvelope.from(context, 0, maxSpeedEnvelope);
     }
 
     @Test

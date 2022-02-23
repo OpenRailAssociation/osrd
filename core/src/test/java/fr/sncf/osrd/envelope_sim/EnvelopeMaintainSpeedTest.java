@@ -22,13 +22,13 @@ public class EnvelopeMaintainSpeedTest {
                 new double[] { 0, 40, -40, 0, 50, -50, 0 }
         );
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
+        var context = new EnvelopeSimContext(testRollingStock, envelopePath, TIME_STEP);
 
         var flatMRSP = Envelope.make(
                 EnvelopePart.generateTimes(null, new double[] { 0, 10000 }, new double[] { 44.4, 44.4})
         );
-        var maxSpeedEnvelope = MaxSpeedEnvelope.from(testRollingStock, envelopePath, stops, flatMRSP, TIME_STEP);
-        var maxEffortEnvelope =
-                MaxEffortEnvelope.from(testRollingStock, envelopePath, 0, maxSpeedEnvelope, TIME_STEP);
+        var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, flatMRSP);
+        var maxEffortEnvelope = MaxEffortEnvelope.from(context, 0, maxSpeedEnvelope);
         EnvelopeShape.check(maxEffortEnvelope, new EnvelopeShape[][] {
                 {INCREASING}, {CONSTANT},
                 {DECREASING, INCREASING}, {CONSTANT},
