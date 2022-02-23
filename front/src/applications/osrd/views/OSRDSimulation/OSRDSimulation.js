@@ -121,6 +121,7 @@ const OSRDSimulation = () => {
         });
         dispatch(updateAllowancesSettings(newAllowancesSettings));
       } catch (e) {
+        console.log(e);
         dispatch(
           setFailure({
             name: t('simulation:errorMessages.unableToRetrieveTrainSchedule'),
