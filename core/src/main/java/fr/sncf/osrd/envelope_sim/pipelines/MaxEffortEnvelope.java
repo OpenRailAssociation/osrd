@@ -4,6 +4,7 @@ import fr.sncf.osrd.envelope.*;
 import fr.sncf.osrd.envelope.constraint.ConstrainedEnvelopePartBuilder;
 import fr.sncf.osrd.envelope.constraint.EnvelopeCeiling;
 import fr.sncf.osrd.envelope.constraint.SpeedFloor;
+import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.PhysicsPath;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration;
@@ -27,11 +28,10 @@ public class MaxEffortEnvelope {
 
     /** Generate acceleration curves overlay everywhere the max speed envelope increase with a discontinuity */
     public static Envelope addAccelerationCurves(
-            PhysicsRollingStock rollingStock,
-            PhysicsPath path,
+            EnvelopeSimContext context,
             Envelope maxSpeedProfile,
-            double timeStep,
-            double initialSpeed) {
+            double initialSpeed
+    ) {
         var builder = OverlayEnvelopeBuilder.forward(maxSpeedProfile);
         var cursor = EnvelopeCursor.forward(maxSpeedProfile);
         {
@@ -42,7 +42,7 @@ public class MaxEffortEnvelope {
                     new SpeedFloor(0),
                     new EnvelopeCeiling(maxSpeedProfile)
             );
-            EnvelopeAcceleration.accelerate(rollingStock, path, timeStep, 0, initialSpeed, overlayBuilder, 1);
+            EnvelopeAcceleration.accelerate(context, 0, initialSpeed, overlayBuilder, 1);
             cursor.findPosition(overlayBuilder.getLastPos());
             builder.addPart(partBuilder.build());
         }
@@ -56,7 +56,7 @@ public class MaxEffortEnvelope {
             );
             var startSpeed = maxSpeedProfile.interpolateSpeedLeftDir(cursor.getPosition(), 1);
             var startPosition = cursor.getPosition();
-            EnvelopeAcceleration.accelerate(rollingStock, path, timeStep, startPosition, startSpeed, overlayBuilder, 1);
+            EnvelopeAcceleration.accelerate(context, startPosition, startSpeed, overlayBuilder, 1);
             cursor.findPosition(overlayBuilder.getLastPos());
             builder.addPart(partBuilder.build());
         }
@@ -65,11 +65,11 @@ public class MaxEffortEnvelope {
 
     /** Generate overlays everywhere the train cannot physically maintain the target speed */
     public static Envelope addMaintainSpeedCurves(
-            PhysicsRollingStock rollingStock,
-            PhysicsPath path,
-            Envelope maxSpeedProfile,
-            double timeStep
+            EnvelopeSimContext context,
+            Envelope maxSpeedProfile
     ) {
+        var rollingStock = context.rollingStock;
+        var path = context.path;
         var builder = OverlayEnvelopeBuilder.forward(maxSpeedProfile);
         var cursor = EnvelopeCursor.forward(maxSpeedProfile);
         while (cursor.findPart(MaxEffortEnvelope::maxEffortPlateau)) {
@@ -95,9 +95,7 @@ public class MaxEffortEnvelope {
                 );
                 var startPosition = cursor.getPosition();
                 var startSpeed = maxSpeedProfile.interpolateSpeedLeftDir(startPosition, 1);
-                EnvelopeAcceleration.accelerate(
-                        rollingStock, path, timeStep, startPosition, startSpeed, overlayBuilder, 1
-                );
+                EnvelopeAcceleration.accelerate(context, startPosition, startSpeed, overlayBuilder, 1);
                 cursor.findPosition(overlayBuilder.getLastPos());
 
                 // Check that the high grade position can't be maintained
@@ -113,15 +111,12 @@ public class MaxEffortEnvelope {
 
     /** Generate a max effort envelope given a max speed envelope */
     public static Envelope from(
-            PhysicsRollingStock rollingStock,
-            PhysicsPath path,
+            EnvelopeSimContext context,
             double initialSpeed,
-            Envelope maxSpeedProfile,
-            double timeStep
+            Envelope maxSpeedProfile
     ) {
-        var maxEffortEnvelope =
-                addAccelerationCurves(rollingStock, path, maxSpeedProfile, timeStep, initialSpeed);
-        maxEffortEnvelope = addMaintainSpeedCurves(rollingStock, path, maxEffortEnvelope, timeStep);
+        var maxEffortEnvelope = addAccelerationCurves(context, maxSpeedProfile, initialSpeed);
+        maxEffortEnvelope = addMaintainSpeedCurves(context, maxEffortEnvelope);
         assert maxEffortEnvelope.continuous;
         assert maxEffortEnvelope.getBeginPos() == 0;
         return maxEffortEnvelope;
