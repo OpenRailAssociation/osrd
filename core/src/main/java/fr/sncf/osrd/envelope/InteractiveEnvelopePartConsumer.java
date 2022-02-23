@@ -5,6 +5,12 @@ public interface InteractiveEnvelopePartConsumer {
     /** Initializes the envelope part metadata */
     boolean initEnvelopePart(double position, double speed, double direction);
 
+    /** Returns the position of the last data point */
+    double getLastPos();
+
+    /** Returns the speed of the last data point */
+    double getLastSpeed();
+
     /**
      * Adds an integration step to the result,
      * computing the time delta using the previous step.

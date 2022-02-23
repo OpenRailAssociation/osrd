@@ -3,6 +3,9 @@ package fr.sncf.osrd.envelope;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import fr.sncf.osrd.envelope.constraint.ConstrainedEnvelopePartBuilder;
+import fr.sncf.osrd.envelope.constraint.EnvelopeCeiling;
+import fr.sncf.osrd.envelope.constraint.SpeedFloor;
 import org.junit.jupiter.api.Assertions;
 
 public class EnvelopeTestUtils {
@@ -14,22 +17,34 @@ public class EnvelopeTestUtils {
             double[] positions, double[] speeds, boolean isBackward
     ) {
         var lastIndex = positions.length - 1;
+        double direction = isBackward ? -1 : 1;
+        var partBuilder = new EnvelopePartBuilder();
+        partBuilder.setEnvelopePartMeta(meta);
         if (!isBackward) {
             cursor.findPosition(positions[0]);
 
-            var partBuilder = OverlayEnvelopePartBuilder.startContinuousOverlay(cursor, meta);
+            var overlayBuilder = new ConstrainedEnvelopePartBuilder(
+                    partBuilder, new SpeedFloor(0), new EnvelopeCeiling(cursor.envelope)
+            );
+            assertTrue(overlayBuilder.initEnvelopePart(cursor.getPosition(), cursor.getSpeed(), direction));
+
             for (int i = 1; i < positions.length - 1; i++)
-                assertFalse(partBuilder.addStep(positions[i], speeds[i]));
-            assertTrue(partBuilder.addStep(positions[lastIndex], speeds[lastIndex]));
-            return partBuilder.build();
+                assertTrue(overlayBuilder.addStep(positions[i], speeds[i]));
+            assertFalse(overlayBuilder.addStep(positions[lastIndex], speeds[lastIndex]));
+            cursor.findPosition(overlayBuilder.getLastPos());
         } else {
             cursor.findPosition(positions[lastIndex]);
-            var partBuilder = OverlayEnvelopePartBuilder.startContinuousOverlay(cursor, meta);
+            var overlayBuilder = new ConstrainedEnvelopePartBuilder(
+                    partBuilder, new SpeedFloor(0), new EnvelopeCeiling(cursor.envelope)
+            );
+            assertTrue(overlayBuilder.initEnvelopePart(cursor.getPosition(), cursor.getSpeed(), direction));
+
             for (int i = lastIndex - 1; i > 0; i--)
-                assertFalse(partBuilder.addStep(positions[i], speeds[i]));
-            assertTrue(partBuilder.addStep(positions[0], speeds[0]));
-            return partBuilder.build();
+                assertTrue(overlayBuilder.addStep(positions[i], speeds[i]));
+            assertFalse(overlayBuilder.addStep(positions[0], speeds[0]));
+            cursor.findPosition(overlayBuilder.getLastPos());
         }
+        return partBuilder.build();
     }
 
     static void assertEquals(EnvelopePart expected, EnvelopePart actual) {

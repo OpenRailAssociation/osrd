@@ -2,6 +2,10 @@ package fr.sncf.osrd.envelope_sim.pipelines;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.*;
+import fr.sncf.osrd.envelope.constraint.ConstrainedEnvelopePartBuilder;
+import fr.sncf.osrd.envelope.constraint.EnvelopeCeiling;
+import fr.sncf.osrd.envelope.constraint.SpeedCeiling;
+import fr.sncf.osrd.envelope.constraint.SpeedFloor;
 import fr.sncf.osrd.envelope_sim.PhysicsPath;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
@@ -39,12 +43,20 @@ public class MaxSpeedEnvelope {
         var builder = OverlayEnvelopeBuilder.backward(mrsp);
         var cursor = EnvelopeCursor.backward(mrsp);
         while (cursor.findPartTransition(MaxSpeedEnvelope::increase)) {
-            var partBuilder = OverlayEnvelopePartBuilder.startContinuousOverlay(cursor, DECELERATION);
-            var startSpeed = partBuilder.getLastSpeed();
+            var partBuilder = new EnvelopePartBuilder();
+            partBuilder.setEnvelopePartMeta(DECELERATION);
+            var overlayBuilder = new ConstrainedEnvelopePartBuilder(
+                    partBuilder,
+                    new SpeedFloor(0),
+                    new EnvelopeCeiling(mrsp)
+            );
+            var startSpeed = cursor.getSpeed();
             var startPosition = cursor.getPosition();
             // TODO: link directionSign to cursor boolean reverse
-            EnvelopeDeceleration.decelerate(rollingStock, path, timeStep, startPosition, startSpeed, partBuilder, -1);
+            EnvelopeDeceleration.decelerate(
+                    rollingStock, path, timeStep, startPosition, startSpeed, overlayBuilder, -1);
             builder.addPart(partBuilder.build());
+            cursor.nextPart();
         }
         return builder.build();
     }
@@ -67,12 +79,16 @@ public class MaxSpeedEnvelope {
                         "Stop at index %d is out of bounds (position = %f, path length = %f)",
                         i, stopPosition, path.getLength()
                 ));
+            var partBuilder = new EnvelopePartBuilder();
+            partBuilder.setEnvelopePartMeta(new StopMeta(i));
+            var overlayBuilder = new ConstrainedEnvelopePartBuilder(
+                    partBuilder,
+                    new SpeedFloor(0),
+                    new EnvelopeCeiling(curveWithDecelerations)
+            );
+            EnvelopeDeceleration.decelerate(rollingStock, path, timeStep, stopPosition, 0, overlayBuilder, -1);
+
             var builder = OverlayEnvelopeBuilder.backward(curveWithDecelerations);
-            var cursor = EnvelopeCursor.backward(curveWithDecelerations);
-            cursor.findPosition(stopPosition);
-            var partBuilder = OverlayEnvelopePartBuilder.startDiscontinuousOverlay(
-                    cursor, new StopMeta(i), 0);
-            EnvelopeDeceleration.decelerate(rollingStock, path, timeStep, stopPosition, 0, partBuilder, -1);
             builder.addPart(partBuilder.build());
             curveWithDecelerations = builder.build();
         }

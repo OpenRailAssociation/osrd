@@ -23,7 +23,7 @@ public class EnvelopePartBuilder implements EnvelopePartConsumer {
     }
 
     public boolean isEmpty() {
-        return positions.isEmpty();
+        return positions.size() < 2;
     }
 
     private void addPoint(double position, double speed) {
