@@ -2,6 +2,7 @@ package fr.sncf.osrd.railjson.parser;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope_sim.EnvelopePath;
+import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceDistribution;
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
@@ -63,7 +64,7 @@ public class RJSStandaloneTrainScheduleParser {
             if (Double.isNaN(rjsConstruction.endPosition))
                 throw new InvalidSchedule("missing construction allowance end_position");
             return new MarecoAllowance(
-                    rollingStock, envelopePath, timeStep,
+                    new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
                     rjsConstruction.beginPosition, rjsConstruction.endPosition,
                     getPositiveDoubleOrDefault(rjsConstruction.capacitySpeedLimit, 30 / 3.6),
                     parseAllowanceValue(rjsConstruction.value)
@@ -76,7 +77,7 @@ public class RJSStandaloneTrainScheduleParser {
             if (rjsMareco.defaultValue == null)
                 throw new InvalidSchedule("missing mareco default_value");
             return new MarecoAllowance(
-                    rollingStock, envelopePath, timeStep,
+                    new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
                     0, envelopePath.getLength(),
                     getPositiveDoubleOrDefault(rjsMareco.capacitySpeedLimit, 30 / 3.6),
                     parseAllowanceValue(rjsMareco.defaultValue)

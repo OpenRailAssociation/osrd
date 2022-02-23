@@ -5,20 +5,17 @@ import static fr.sncf.osrd.envelope_sim.overlays.EnvelopeCoasting.COASTING;
 import static fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration.decelerate;
 import static fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope.ACCELERATION;
 import static fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope.*;
-import static fr.sncf.osrd.speedcontroller.generators.SpeedControllerGenerator.TIME_STEP;
 import static java.lang.Math.*;
 
 import fr.sncf.osrd.envelope.*;
 import fr.sncf.osrd.envelope.constraint.ConstrainedEnvelopePartBuilder;
 import fr.sncf.osrd.envelope.constraint.EnvelopeCeiling;
 import fr.sncf.osrd.envelope.constraint.SpeedFloor;
-import fr.sncf.osrd.envelope_sim.PhysicsPath;
-import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
+import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeCoasting;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope.AccelerationMeta;
-import fr.sncf.osrd.utils.CmpOperator;
 import fr.sncf.osrd.utils.DoubleBinarySearch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,9 +25,7 @@ import java.util.stream.Collectors;
 public class MarecoAllowance implements Allowance {
     private final Logger logger = LoggerFactory.getLogger(MarecoAllowance.class);
 
-    public final PhysicsRollingStock rollingStock;
-    public final PhysicsPath path;
-    public final double timeStep;
+    public final EnvelopeSimContext context;
 
     public final double sectionBegin;
     public final double sectionEnd;
@@ -42,17 +37,13 @@ public class MarecoAllowance implements Allowance {
 
     /** Constructor */
     public MarecoAllowance(
-            PhysicsRollingStock rollingStock,
-            PhysicsPath path,
-            double timeStep,
+            EnvelopeSimContext context,
             double begin,
             double end,
             double capacitySpeedLimit,
             AllowanceValue allowanceValue
     ) {
-        this.rollingStock = rollingStock;
-        this.path = path;
-        this.timeStep = timeStep;
+        this.context = context;
         this.sectionBegin = begin;
         this.sectionEnd = end;
         this.capacitySpeedLimit = capacitySpeedLimit;
@@ -88,8 +79,8 @@ public class MarecoAllowance implements Allowance {
      */
     public double vf(double v1) {
         // formulas given by MARECO
-        var wle = v1 * v1 * rollingStock.getRollingResistanceDeriv(v1);
-        return wle * v1 / (wle + rollingStock.getRollingResistance(v1) * v1);
+        var wle = v1 * v1 * context.rollingStock.getRollingResistanceDeriv(v1);
+        return wle * v1 / (wle + context.rollingStock.getRollingResistance(v1) * v1);
     }
 
     // we will try to find v1 so that f(v1, vmax) == 0
@@ -103,15 +94,15 @@ public class MarecoAllowance implements Allowance {
      */
     public double newtonsMethodDerivative(double v1) {
         // formulas given by MARECO
-        var wle = v1 * v1 * rollingStock.getRollingResistanceDeriv(v1);
-        var wleDerivative = v1 * (2 * rollingStock.getRollingResistanceDeriv(v1)
-                + v1 * rollingStock.getRollingResistanceSecDeriv(v1));
+        var wle = v1 * v1 * context.rollingStock.getRollingResistanceDeriv(v1);
+        var wleDerivative = v1 * (2 * context.rollingStock.getRollingResistanceDeriv(v1)
+                + v1 * context.rollingStock.getRollingResistanceSecDeriv(v1));
 
         var u = wle * v1;
         var du = wleDerivative * v1 + wle;
-        var v = wle + rollingStock.getRollingResistance(v1) * v1;
-        var dv = wleDerivative + rollingStock.getRollingResistanceDeriv(v1) * v1
-                + rollingStock.getRollingResistance(v1);
+        var v = wle + context.rollingStock.getRollingResistance(v1) * v1;
+        var dv = wleDerivative + context.rollingStock.getRollingResistanceDeriv(v1) * v1
+                + context.rollingStock.getRollingResistance(v1);
         return (du * v - dv * u) / (v * v);
     }
 
@@ -144,14 +135,14 @@ public class MarecoAllowance implements Allowance {
 
         // coasting before accelerating slopes
         var acceleratingSlopes =
-                findAcceleratingSlopes(envelope, rollingStock, vf);
-        double wle = rollingStock.getRollingResistance(v1) * v1 * vf / (v1 - vf);
+                findAcceleratingSlopes(envelope, vf);
+        double wle = context.rollingStock.getRollingResistance(v1) * v1 * vf / (v1 - vf);
         for (var slope : acceleratingSlopes) {
             // formulas given my MARECO
             // giving the optimized speed v the train should have when entering the accelerating slope
             // this speed v might not be reached if the slope is not long enough, then we just enter the slope with
             // the lowest possible speed that will catch up with target speed at the end
-            double v = 1 / (rollingStock.getRollingResistance(v1)
+            double v = 1 / (context.rollingStock.getRollingResistance(v1)
                     / (wle * (1 - slope.previousAcceleration / slope.acceleration)) + 1 / v1);
             double target = slope.targetSpeed;
             double requiredAcceleratingDistance = max((target * target - v * v) / (2 * slope.acceleration), 0);
@@ -165,7 +156,6 @@ public class MarecoAllowance implements Allowance {
     }
 
     private ArrayList<AcceleratingSlope> findAcceleratingSlopes(Envelope envelope,
-                                                                PhysicsRollingStock rollingStock,
                                                                 double vf) {
         var res = new ArrayList<AcceleratingSlope>();
         double previousPosition = envelope.getBeginPos();
@@ -186,14 +176,14 @@ public class MarecoAllowance implements Allowance {
             }
 
             // constant variables for this plateau
-            double rollingResistance = rollingStock.getRollingResistance(speed);
+            double rollingResistance = context.rollingStock.getRollingResistance(speed);
             var envelopePart = cursor.getPart();
-            var positionStep = this.timeStep * speed;
+            var positionStep = context.timeStep * speed;
 
             // initializing variables
             double position = cursor.getPosition();
-            double weightForce = TrainPhysicsIntegrator.getWeightForce(rollingStock, path, position);
-            var naturalAcceleration = TrainPhysicsIntegrator.computeAcceleration(rollingStock,
+            double weightForce = TrainPhysicsIntegrator.getWeightForce(context.rollingStock, context.path, position);
+            var naturalAcceleration = TrainPhysicsIntegrator.computeAcceleration(context.rollingStock,
                     rollingResistance, weightForce, speed, 0, 0, 1);
 
             while (cursor.getPosition() <= envelopePart.getEndPos()) {
@@ -227,8 +217,8 @@ public class MarecoAllowance implements Allowance {
                 if (cursor.hasReachedEnd())
                     break;
                 position = cursor.getPosition();
-                weightForce = TrainPhysicsIntegrator.getWeightForce(rollingStock, path, position);
-                naturalAcceleration = TrainPhysicsIntegrator.computeAcceleration(rollingStock,
+                weightForce = TrainPhysicsIntegrator.getWeightForce(context.rollingStock, context.path, position);
+                naturalAcceleration = TrainPhysicsIntegrator.computeAcceleration(context.rollingStock,
                         rollingResistance, weightForce, speed, 0, 0, 1);
             }
             // if the end of the plateau is an accelerating slope
@@ -267,7 +257,7 @@ public class MarecoAllowance implements Allowance {
             );
 
             var speed = envelope.interpolateSpeed(position);
-            EnvelopeCoasting.coast(rollingStock, path, timeStep, position, speed, overlayBuilder, -1);
+            EnvelopeCoasting.coast(context, position, speed, overlayBuilder, -1);
 
             // skip anything that's not an intersection with the base curve
             if (overlayBuilder.lastIntersection != 1)
@@ -376,7 +366,7 @@ public class MarecoAllowance implements Allowance {
                 new SpeedFloor(capacitySpeedLimit),
                 new EnvelopeCeiling(base)
         );
-        decelerate(rollingStock, path, TIME_STEP, position, speed, overlayBuilder, 1);
+        decelerate(context, position, speed, overlayBuilder, 1);
         var decelerationPart = builder.build();
         res.add(decelerationPart.slice(base.getBeginPos(), base.getEndPos()));
         return res;
@@ -402,7 +392,7 @@ public class MarecoAllowance implements Allowance {
                 new EnvelopeCeiling(base)  // 1
         );
 
-        accelerate(rollingStock, path, TIME_STEP, position, speed, overlayBuilder, -1);
+        accelerate(context, position, speed, overlayBuilder, -1);
         var acceleratingPart = partBuilder.build();
         res.add(acceleratingPart.slice(base.getBeginPos(), base.getEndPos()));
         return res;
@@ -480,7 +470,7 @@ public class MarecoAllowance implements Allowance {
     private DoubleBinarySearch initializeBinarySearch(Envelope section, double totalTime) {
         var targetTime = computeTargetTime(section, totalTime);
         var initialHighBound = getFirstHighEstimate(section) * 1.05;
-        return new DoubleBinarySearch(0, initialHighBound, targetTime, timeStep, true);
+        return new DoubleBinarySearch(0, initialHighBound, targetTime, context.timeStep, true);
     }
 
     private double computeTargetTime(Envelope section, double totalTime) {

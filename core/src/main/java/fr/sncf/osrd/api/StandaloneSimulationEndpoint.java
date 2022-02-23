@@ -9,6 +9,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.api.InfraManager.InfraLoadException;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.EnvelopePath;
+import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
@@ -154,14 +155,9 @@ public class StandaloneSimulationEndpoint implements Take {
         final var rollingStock = schedule.rollingStock;
         final var mrsp = MRSP.from(trainsPath, rollingStock);
         final var stops = schedule.getStopsPositions();
-        final var maxSpeedEnvelope = MaxSpeedEnvelope.from(rollingStock, envelopePath, stops, mrsp, timeStep);
-        return MaxEffortEnvelope.from(
-                rollingStock,
-                envelopePath,
-                schedule.initialSpeed,
-                maxSpeedEnvelope,
-                timeStep
-        );
+        final var context = new EnvelopeSimContext(rollingStock, envelopePath, timeStep);
+        final var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, mrsp);
+        return MaxEffortEnvelope.from(context, schedule.initialSpeed, maxSpeedEnvelope);
     }
 
     @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")

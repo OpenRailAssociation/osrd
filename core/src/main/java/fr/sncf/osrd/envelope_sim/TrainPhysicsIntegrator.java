@@ -33,6 +33,20 @@ public final class TrainPhysicsIntegrator {
 
     /** Simulates train movement */
     public static IntegrationStep step(
+            EnvelopeSimContext context,
+            double initialLocation,
+            double initialSpeed,
+            Action action,
+            double directionSign
+    ) {
+        return step(
+                context.rollingStock, context.path, context.timeStep,
+                initialLocation, initialSpeed, action, directionSign
+        );
+    }
+
+    /** Simulates train movement */
+    private static IntegrationStep step(
             PhysicsRollingStock rollingStock,
             PhysicsPath path,
             double timeStep,
