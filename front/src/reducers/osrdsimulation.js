@@ -1,7 +1,7 @@
 /* eslint-disable default-case */
 import produce from 'immer';
 
-import { combineReducers } from 'redux';
+import { combineReducers } from 'redux-immer';
 
 import simulation from './osrdsimulation/simulation';
 import positionValues from './osrdsimulation/positionValues';
@@ -39,7 +39,7 @@ export const initialState = {
   selectedProjection: undefined,
   selectedTrain: 0,
   stickyBar: true,
-  timePosition: undefined,
+  timePosition: null,
 };
 /*
 function createReducerWithInitialState(state, action) {
@@ -52,24 +52,37 @@ function createReducerWithInitialState(state, action) {
 }
 */
 
-function createReducerWithInitialState(state, action) {
-  console.log('finalReducer, action', action);
-  if (action.payload === undefined) return state;
-  return action.payload;
+function createReducerWithInitialState(state = null, action) {
+  if (action.payload !== undefined) return action.payload;
+  return state;
+}
+
+// create another file
+function timePosition(state = initialState.timePosition, action) {
+  switch (action.type) {
+    case UPDATE_TIME_POSITION_VALUES:
+      return action.timePosition;
+    case UPDATE_TIME_POSITION:
+      return action.payload;
+    default:
+      return state;
+  }
 }
 
 function createFilteredReducer(reducerFunction, reducerPredicate, initialStateIn) {
   return (state, action) => {
     const isInitializationCall = state === undefined;
-    if (isInitializationCall) action = { type: '', payload: initialStateIn };
-    console.log('action on reducer', action);
-    console.log(isInitializationCall);
-    console.log(reducerPredicate(action));
+    if (isInitializationCall) action = { type: '', payload: initialStateIn }; // AWFUL !!!
+
     const shouldRunWrappedReducer = reducerPredicate(action) || isInitializationCall;
-    return shouldRunWrappedReducer ? reducerFunction(state, action) : state;
+
+    return shouldRunWrappedReducer
+      ? reducerFunction(isInitializationCall ? initialStateIn : state, action)
+      : state;
   };
 }
 
+/*
 export function commonReducer(state = initialState, action) {
   return produce(state, (draft) => {
     switch (action.type) {
@@ -101,8 +114,9 @@ export function commonReducer(state = initialState, action) {
     }
   });
 }
+*/
 
-export default combineReducers({
+export default combineReducers(produce, {
   chart: createFilteredReducer(
     createReducerWithInitialState,
     (action) => action.type.endsWith('_CHART'),
@@ -154,8 +168,9 @@ export default combineReducers({
     true
   ),
   timePosition: createFilteredReducer(
-    createReducerWithInitialState,
-    (action) => action.type.endsWith('_TIME_POSITION'), // improve predicate
+    timePosition,
+    (action) =>
+      action.type.endsWith('_TIME_POSITION') || action.type.endsWith('_TIME_POSITION_VALUES'), // improve predicate
     null
   ),
   speedSpaceSettings,

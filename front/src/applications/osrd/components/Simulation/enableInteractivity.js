@@ -147,6 +147,10 @@ export const traceVerticalLine = (
   rotate,
   timePosition
 ) => {
+  console.log(d3.event);
+  console.log(chart);
+  console.log(keyValues);
+  console.log(timePosition);
   if (chart !== undefined && d3.event === null) {
     displayGuide(chart, 1);
     if (rotate) {

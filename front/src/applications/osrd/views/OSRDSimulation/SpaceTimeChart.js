@@ -199,7 +199,7 @@ export default function SpaceTimeChart(props) {
 
   useEffect(() => {
     setDataSimulation(createTrain(dispatch, keyValues, simulation.trains, t));
-    if (dataSimulation) {
+    if (dataSimulation !== null && allowancesSettings !== null) {
       // ADN: No need to redo all this on a simple drag
       /* ADN drawAllTrain do something only if mustRedraw = true,
       so delete the condo in it and call if mustRadrw = true
