@@ -76,7 +76,7 @@ public class RouteGraphTest {
         var trackGraph = new TrackGraph();
         var nodeA = trackGraph.makePlaceholderNode("A");
         var nodeB = trackGraph.makePlaceholderNode("B");
-        var trackSection = trackGraph.makeTrackSection(nodeA.index, nodeB.index, "e1", 100, null);
+        var trackSection = trackGraph.makeTrackSection(nodeA.index, nodeB.index, "e1", 100);
         var detectorBuilder = trackSection.waypoints.builder();
         var d1 = new Detector(0, "D1");
         var d2 = new Detector(1, "D2");
@@ -138,9 +138,9 @@ public class RouteGraphTest {
         var nodeB = trackGraph.makePlaceholderNode("B");
         var nodeC = trackGraph.makePlaceholderNode("C");
         var nodeD = trackGraph.makePlaceholderNode("D");
-        var fooA = trackGraph.makeTrackSection(nodeA.index, nodeC.index, "foo_a", 75, null);
-        var fooB = trackGraph.makeTrackSection(nodeB.index, nodeC.index, "foo_b", 75, null);
-        var track = trackGraph.makeTrackSection(nodeC.index, nodeD.index, "track", 100, null);
+        var fooA = trackGraph.makeTrackSection(nodeA.index, nodeC.index, "foo_a", 75);
+        var fooB = trackGraph.makeTrackSection(nodeB.index, nodeC.index, "foo_b", 75);
+        var track = trackGraph.makeTrackSection(nodeC.index, nodeD.index, "track", 100);
 
         linkEdges(fooA, EdgeEndpoint.END, track, EdgeEndpoint.BEGIN);
         linkEdges(fooB, EdgeEndpoint.END, track, EdgeEndpoint.BEGIN);
@@ -290,12 +290,12 @@ public class RouteGraphTest {
         var nodeOuterA = trackGraph.makePlaceholderNode("outerA");
         var nodeOuterB = trackGraph.makePlaceholderNode("outerB");
         var nodeOuterC = trackGraph.makePlaceholderNode("outerC");
-        var trackSectionA = trackGraph.makeTrackSection(nodeOuterA.index, nodeInnerA.index, "eA", 100, null);
-        var trackSectionB = trackGraph.makeTrackSection(nodeOuterB.index, nodeInnerB.index, "eB", 100, null);
-        var trackSectionC = trackGraph.makeTrackSection(nodeOuterC.index, nodeInnerC.index, "eC", 100, null);
-        var trackSectionAB = trackGraph.makeTrackSection(nodeInnerA.index, nodeInnerB.index, "AB", 100, null);
-        var trackSectionBC = trackGraph.makeTrackSection(nodeInnerB.index, nodeInnerC.index, "BC", 100, null);
-        var trackSectionAC = trackGraph.makeTrackSection(nodeInnerC.index, nodeInnerA.index, "CA", 100, null);
+        var trackSectionA = trackGraph.makeTrackSection(nodeOuterA.index, nodeInnerA.index, "eA", 100);
+        var trackSectionB = trackGraph.makeTrackSection(nodeOuterB.index, nodeInnerB.index, "eB", 100);
+        var trackSectionC = trackGraph.makeTrackSection(nodeOuterC.index, nodeInnerC.index, "eC", 100);
+        var trackSectionAB = trackGraph.makeTrackSection(nodeInnerA.index, nodeInnerB.index, "AB", 100);
+        var trackSectionBC = trackGraph.makeTrackSection(nodeInnerB.index, nodeInnerC.index, "BC", 100);
+        var trackSectionAC = trackGraph.makeTrackSection(nodeInnerC.index, nodeInnerA.index, "CA", 100);
 
         var detectorBuilderA = trackSectionA.waypoints.builder();
         var da = new Detector(0, "DA");

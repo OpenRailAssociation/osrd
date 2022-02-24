@@ -1,11 +1,8 @@
-
 package fr.sncf.osrd.utils.geom;
 
 import com.carrotsearch.hppc.DoubleArrayList;
 import com.squareup.moshi.*;
-
 import java.io.IOException;
-import java.sql.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,12 +36,21 @@ public class LineString {
     }
 
 
+    /**
+     * Compute the distance between two points
+     */
     private static double computeDistance(double x1, double y1, double x2, double y2) {
         var dx2 = (x1 - x2) * (x1 - x2);
         var dy2 = (y1 - y2) * (y1 - y2);
         return Math.sqrt(dx2 + dy2);
     }
 
+    /**
+     * Create a LineString from the coordinates buffers (no need to give lengths and cumulativeLength)
+     * @param bufferX a double array with x coordinates
+     * @param bufferY a double array with y coordinates
+     * @return a new LineString
+     */
     public static LineString make(double[] bufferX, double[] bufferY) {
         var lengths = new double[bufferX.length - 1];
         double cumulativeLength = 0;
@@ -59,6 +65,22 @@ public class LineString {
         return cumulativeLength;
     }
 
+    /**
+     * Create a list of points from the buffers of a LineString
+     * @return a list of points
+     */
+    public ArrayList<Point> getPoints() {
+        var points = new ArrayList<Point>();
+        for (int i = 0; i < bufferX.length; i++) {
+            points.add(new Point(bufferX[i], bufferY[i]));
+        }
+        return points;
+    }
+
+    /**
+     * Reverse a LineString
+     * @return a new reverse LineString
+     */
     public LineString reverse() {
         var newBufferX = new double[bufferX.length];
         var newBufferY = new double[bufferY.length];
@@ -76,6 +98,13 @@ public class LineString {
         return new LineString(newBufferX, newBufferY, newLengths, cumulativeLength);
     }
 
+    /**
+     * Concatenate many LineStrings and Compute the new cumulativeLength
+     * remove useless values (if 2 values are the same)
+     * and compute the new length to fill the gap between two LineStrings
+     * @param lineStringList is a list that contains LineStrings
+     * @return a new LineString
+     */
     public static LineString concatenate(List<LineString> lineStringList) {
 
         var newBufferX = new DoubleArrayList();
@@ -108,19 +137,16 @@ public class LineString {
         return new LineString(newBufferX.toArray(), newBufferY.toArray(), newLengths.toArray(), newCumulativeLength);
     }
 
-    public ArrayList<Point> getPoints() {
-        var points = new ArrayList<Point>();
-        for (int i = 0; i < bufferX.length; i++) {
-            points.add(new Point(bufferX[i], bufferY[i]));
-        }
-        return points;
-    }
-
+    /**
+     * Interpolate a LineString
+     * @param distance a distance between 0 and cumulativeLength
+     * @return the point within the geometry at the given distance
+     */
     private Point interpolate(double distance) {
         assert distance >= 0.;
         assert distance <= cumulativeLength;
         int interval = 0;
-        while (distance <= lengths[interval]) {
+        while (distance > lengths[interval]) {
             distance -= lengths[interval];
             interval++;
         }
@@ -131,7 +157,7 @@ public class LineString {
         var y2 = bufferY[interval + 1];
         var ratio = distance / lengths[interval];
 
-        return new Point(x1 + ratio * (x2 -x1),y1 + ratio * (y2- y1));
+        return new Point(x1 + ratio * (x2 - x1), y1 + ratio * (y2 - y1));
     }
 
     /**
@@ -147,6 +173,9 @@ public class LineString {
 
     public static class Adapter extends JsonAdapter<LineString> {
 
+        /**
+         * Deserialize a GeoJson file into a LineString
+         */
         @FromJson
         public LineString fromJson(JsonReader reader) throws IOException {
             LineString lineString = null;
@@ -188,6 +217,9 @@ public class LineString {
             return lineString;
         }
 
+        /**
+         * Serialize a LineString into a GeoJson file
+         */
         @ToJson
         public void toJson(JsonWriter writer, LineString value) throws IOException {
             if (value == null) {

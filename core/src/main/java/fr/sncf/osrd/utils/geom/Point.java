@@ -1,7 +1,6 @@
 package fr.sncf.osrd.utils.geom;
 
 import com.squareup.moshi.*;
-
 import java.io.IOException;
 import java.util.Objects;
 
@@ -30,8 +29,11 @@ public final class Point {
         return Objects.hash(x, y);
     }
 
-    public static class Adapter extends JsonAdapter<Point>{
+    public static class Adapter extends JsonAdapter<Point> {
 
+        /**
+         * Deserialize a GeoJson file into a point
+         */
         @FromJson
         public Point fromJson(JsonReader reader) throws IOException {
             Point point = null;
@@ -66,6 +68,9 @@ public final class Point {
             return point;
         }
 
+        /**
+         * Serialize a Point into a GeoJson file
+         */
         @ToJson
         public void toJson(JsonWriter writer, Point value) throws IOException {
             if (value == null) {

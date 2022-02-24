@@ -25,7 +25,7 @@ public class TVDSectionBuilderTest {
         var trackGraph = new TrackGraph();
         var nodeA = trackGraph.makePlaceholderNode("A");
         var nodeB = trackGraph.makePlaceholderNode("B");
-        var trackSection = trackGraph.makeTrackSection(nodeA.index, nodeB.index, "e1", 100, null);
+        var trackSection = trackGraph.makeTrackSection(nodeA.index, nodeB.index, "e1", 100);
         var detectorBuilder = trackSection.waypoints.builder();
         var d1 = new Detector(0, "D1");
         var d2 = new Detector(0, "D2");
@@ -66,7 +66,7 @@ public class TVDSectionBuilderTest {
         var nodeD = trackGraph.makePlaceholderNode("D");
 
         // forward
-        var fooA = trackGraph.makeTrackSection(nodeA.index, nodeC.index, "foo_a", 100, null);
+        var fooA = trackGraph.makeTrackSection(nodeA.index, nodeC.index, "foo_a", 100);
         var detectorsFooA = fooA.waypoints.builder();
         var d1 = new Detector(0, "D1");
         detectorsFooA.add(75, d1);
@@ -75,7 +75,7 @@ public class TVDSectionBuilderTest {
         detectorsFooA.build();
 
         // forward
-        var fooB = trackGraph.makeTrackSection(nodeB.index, nodeC.index, "foo_b", 100, null);
+        var fooB = trackGraph.makeTrackSection(nodeB.index, nodeC.index, "foo_b", 100);
         var detectorsFooB = fooB.waypoints.builder();
         var d2 = new Detector(2, "D2");
         detectorsFooB.add(50, d2);
@@ -84,7 +84,7 @@ public class TVDSectionBuilderTest {
         detectorsFooB.build();
 
         // backward
-        var track = trackGraph.makeTrackSection(nodeD.index, nodeC.index, "track", 500, null);
+        var track = trackGraph.makeTrackSection(nodeD.index, nodeC.index, "track", 500);
         var detectorsTrack = track.waypoints.builder();
         var d4 = new Detector(4, "D4");
         detectorsTrack.add(50, d4);
@@ -133,19 +133,19 @@ public class TVDSectionBuilderTest {
         var nodeB = trackGraph.makePlaceholderNode("B");
         var nodeC = trackGraph.makePlaceholderNode("C");
 
-        var trackAB = trackGraph.makeTrackSection(nodeA.index, nodeB.index, "track_a_b", 100, null);
+        var trackAB = trackGraph.makeTrackSection(nodeA.index, nodeB.index, "track_a_b", 100);
         var detectorsAB = trackAB.waypoints.builder();
         var d1 = new Detector(0, "D1");
         detectorsAB.add(50, d1);
         detectorsAB.build();
 
-        var trackBC = trackGraph.makeTrackSection(nodeB.index, nodeC.index, "track_b_c", 100, null);
+        var trackBC = trackGraph.makeTrackSection(nodeB.index, nodeC.index, "track_b_c", 100);
         var detectorsBC = trackBC.waypoints.builder();
         var d2 = new Detector(1, "D2");
         detectorsBC.add(50, d2);
         detectorsBC.build();
 
-        var trackCA = trackGraph.makeTrackSection(nodeC.index, nodeA.index, "track_c_a", 100, null);
+        var trackCA = trackGraph.makeTrackSection(nodeC.index, nodeA.index, "track_c_a", 100);
         var detectorsCA = trackCA.waypoints.builder();
         var d3 = new Detector(2, "D3");
         detectorsCA.add(50, d3);
@@ -184,9 +184,9 @@ public class TVDSectionBuilderTest {
         var nodeB = trackGraph.makePlaceholderNode("B");
         var nodeC = trackGraph.makePlaceholderNode("C");
 
-        var trackAB = trackGraph.makeTrackSection(nodeA.index, nodeB.index, "track_a_b", 100, null);
-        var trackBC = trackGraph.makeTrackSection(nodeB.index, nodeC.index, "track_b_c", 100, null);
-        var trackCA = trackGraph.makeTrackSection(nodeC.index, nodeA.index, "track_c_a", 100, null);
+        var trackAB = trackGraph.makeTrackSection(nodeA.index, nodeB.index, "track_a_b", 100);
+        var trackBC = trackGraph.makeTrackSection(nodeB.index, nodeC.index, "track_b_c", 100);
+        var trackCA = trackGraph.makeTrackSection(nodeC.index, nodeA.index, "track_c_a", 100);
 
         linkEdges(trackAB, EdgeEndpoint.END, trackBC, EdgeEndpoint.BEGIN);
         linkEdges(trackBC, EdgeEndpoint.END, trackCA, EdgeEndpoint.BEGIN);
@@ -224,10 +224,10 @@ public class TVDSectionBuilderTest {
         var nodeC = trackGraph.makePlaceholderNode("C");
         var nodeD = trackGraph.makePlaceholderNode("D");
 
-        final var trackAB = trackGraph.makeTrackSection(nodeA.index, nodeB.index, "track_a_b", 100, null);
-        final var trackCA = trackGraph.makeTrackSection(nodeC.index, nodeA.index, "track_c_a", 100, null);
-        final var trackBC = trackGraph.makeTrackSection(nodeB.index, nodeC.index, "track_b_c", 100, null);
-        final var trackCD = trackGraph.makeTrackSection(nodeC.index, nodeD.index, "track_c_d", 100, null);
+        final var trackAB = trackGraph.makeTrackSection(nodeA.index, nodeB.index, "track_a_b", 100);
+        final var trackCA = trackGraph.makeTrackSection(nodeC.index, nodeA.index, "track_c_a", 100);
+        final var trackBC = trackGraph.makeTrackSection(nodeB.index, nodeC.index, "track_b_c", 100);
+        final var trackCD = trackGraph.makeTrackSection(nodeC.index, nodeD.index, "track_c_d", 100);
 
         linkEdges(trackAB, EdgeEndpoint.END, trackBC, EdgeEndpoint.BEGIN);
         linkEdges(trackCA, EdgeEndpoint.END, trackAB, EdgeEndpoint.BEGIN);
