@@ -238,9 +238,7 @@ public class RailJSONParser {
             TrackGraph trackGraph,
             TrackNodeIDs nodeIDs,
             RJSTrackSection trackSection
-    )
-            throws InvalidInfraException {
-
+    ) throws InvalidInfraException {
         // Parse slopes and curves
         if (trackSection.slopes == null)
             trackSection.slopes = new ArrayList<>();
