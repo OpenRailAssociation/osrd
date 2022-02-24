@@ -9,6 +9,7 @@ export const initialState = {
   tailPosition: 0,
   routeEndOccupancy: 0,
   routeBeginOccupancy: 0,
+  speed: 0,
 };
 
 export default function reducer(state = initialState, action) {
@@ -21,6 +22,7 @@ export default function reducer(state = initialState, action) {
         draft.tailPosition = action.positionValues.tailPosition;
         draft.routeEndOccupancy = action.positionValues.routeEndOccupancy;
         draft.routeBeginOccupancy = action.positionValues.routeBeginOccupancy;
+        draft.speed = action.positionValues.speed;
         break;
       default:
         return draft;

@@ -225,10 +225,6 @@ export default function SpaceCurvesSlopes(props) {
   }, [chart, mustRedraw, rotate]);
 
   useEffect(() => {
-    console.log('SpaceCurvesSlope');
-    console.log(keyValues);
-    console.log(timePosition);
-    console.log(positionValues);
     traceVerticalLine(
       chart,
       dataSimulation,
