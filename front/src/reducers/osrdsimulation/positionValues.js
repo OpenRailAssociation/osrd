@@ -12,7 +12,6 @@ export const initialState = {
 };
 
 export default function reducer(state = initialState, action) {
-  console.log('UPDATE_TIME_POSITION_VALUES', UPDATE_TIME_POSITION_VALUES);
   return produce(state, (draft) => {
     // eslint-disable-next-line default-case
     switch (action.type) {

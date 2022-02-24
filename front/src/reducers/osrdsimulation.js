@@ -41,16 +41,6 @@ export const initialState = {
   stickyBar: true,
   timePosition: null,
 };
-/*
-function createReducerWithInitialState(state, action) {
-  console.log('finalReducer, action', action);
-  return produce(state, (draft) => {
-    draft = action.payload;
-    console.log(draft);
-    draft.done = true;
-  });
-}
-*/
 
 function createReducerWithInitialState(state = null, action) {
   if (action.payload !== undefined) return action.payload;
