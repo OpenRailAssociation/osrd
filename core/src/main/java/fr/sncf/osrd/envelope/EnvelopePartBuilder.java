@@ -72,22 +72,25 @@ public class EnvelopePartBuilder implements EnvelopePartConsumer {
         this.meta = meta;
     }
 
-    private static void reverse(DoubleArrayList arr) {
-        for (int i = 0; i < arr.size() / 2; i++) {
-            double tmp = arr.get(i);
-            arr.set(i, arr.get(arr.size() - 1 - i));
-            arr.set(arr.size() - 1 - i, tmp);
+    private static void reverse(double[] arr) {
+        for (int i = 0; i < arr.length / 2; i++) {
+            double tmp = arr[i];
+            arr[i] = arr[arr.length - 1 - i];
+            arr[arr.length - 1 - i] = tmp;
         }
     }
 
     /** Creates an envelope part */
     public EnvelopePart build() {
+        var positions = this.positions.toArray();
+        var speeds = this.speeds.toArray();
+        var times = this.times.toArray();
         if (direction < 0) {
             reverse(positions);
             reverse(speeds);
             reverse(times);
         }
-        return new EnvelopePart(meta, positions.toArray(), speeds.toArray(), times.toArray());
+        return new EnvelopePart(meta, positions, speeds, times);
     }
 
     /** Return the number of steps currently in the envelope part builder*/
