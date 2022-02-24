@@ -6,6 +6,7 @@ import fr.sncf.osrd.infra.SpeedSection;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.Signal;
 import fr.sncf.osrd.utils.*;
+import fr.sncf.osrd.utils.geom.LineString;
 import fr.sncf.osrd.utils.graph.ApplicableDirection;
 import fr.sncf.osrd.utils.graph.BiNEdge;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
@@ -19,8 +20,8 @@ import java.util.List;
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public final class TrackSection extends BiNEdge<TrackSection> {
     public final String id;
-
-    public final List<List<Double>> endpointCoords;
+    public final LineString geo;
+    public final LineString sch;
 
     public final ArrayList<TrackSection> startNeighbors = new ArrayList<>();
     public final ArrayList<TrackSection> endNeighbors = new ArrayList<>();
@@ -118,12 +119,14 @@ public final class TrackSection extends BiNEdge<TrackSection> {
             int startNodeIndex,
             int endNodeIndex,
             double length,
-            List<List<Double>> endpointCoords
+            LineString geo,
+            LineString sch
     ) {
         super(index, startNodeIndex, endNodeIndex, length);
+        this.geo = geo;
+        this.sch = sch;
         graph.registerEdge(this);
         this.id = id;
-        this.endpointCoords = endpointCoords;
     }
 
     public static void linkEdges(

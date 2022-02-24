@@ -1,6 +1,7 @@
 package fr.sncf.osrd.infra.trackgraph;
 
 import fr.sncf.osrd.infra.OperationalPoint;
+import fr.sncf.osrd.utils.geom.LineString;
 import fr.sncf.osrd.utils.graph.BiNGraph;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import java.util.HashMap;
@@ -57,7 +58,8 @@ public final class TrackGraph extends BiNGraph<TrackSection, TrackNode> {
      * @param endNodeIndex   end end node of the track
      * @param id             the track section ID
      * @param length         the length of the track
-     * @param endpointCoords endpoint coordinates
+     * @param geo            geographic geometry
+     * @param sch            schematic geometry
      * @return the new track section
      */
     public TrackSection makeTrackSection(
@@ -65,11 +67,21 @@ public final class TrackGraph extends BiNGraph<TrackSection, TrackNode> {
             int endNodeIndex,
             String id,
             double length,
-            List<List<Double>> endpointCoords
+            LineString geo,
+            LineString sch
     ) {
-        var edge = new TrackSection(this, nextEdgeIndex(), id, startNodeIndex, endNodeIndex, length, endpointCoords);
+        var edge = new TrackSection(this, nextEdgeIndex(), id, startNodeIndex, endNodeIndex, length, geo, sch);
         trackSectionMap.put(edge.id, edge);
         return edge;
+    }
+
+    public TrackSection makeTrackSection(
+            int startNodeIndex,
+            int endNodeIndex,
+            String id,
+            double length
+    ) {
+        return makeTrackSection(startNodeIndex, endNodeIndex, id, length, null, null);
     }
 
     /**
