@@ -2,14 +2,34 @@ package fr.sncf.osrd.envelope;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import fr.sncf.osrd.envelope.EnvelopeTestUtils.EnvelopeTestMeta;
+import fr.sncf.osrd.envelope.EnvelopeTestUtils.TestAttr;
 import org.junit.jupiter.api.Test;
+import java.util.List;
 
 class EnvelopePartTest {
     @Test
+    void toStringTest() {
+        var part = EnvelopePart.generateTimes(
+                List.of(TestAttr.A),
+                new double[] {1.5, 5},
+                new double[] {3, 4}
+        );
+        assertEquals("EnvelopePart { TestAttr=A }", part.toString());
+    }
+
+    @Test
+    void getAttrTest() {
+        var part = EnvelopePart.generateTimes(
+                List.of(TestAttr.A),
+                new double[] {1.5, 5},
+                new double[] {3, 4}
+        );
+        assertEquals(TestAttr.A, part.getAttr(TestAttr.class));
+    }
+
+    @Test
     void interpolateSpeedTest() {
         var ep = EnvelopePart.generateTimes(
-                null,
                 new double[] {1.5, 5},
                 new double[] {3, 4}
         );
@@ -21,7 +41,6 @@ class EnvelopePartTest {
     @Test
     void findStep() {
         var ep = EnvelopePart.generateTimes(
-                null,
                 new double[] {1.5, 3, 5},
                 new double[] {3, 4, 4}
         );
@@ -47,17 +66,17 @@ class EnvelopePartTest {
     @Test
     void testEquals() {
         var ep1 = EnvelopePart.generateTimes(
-                null,
+                List.of(TestAttr.A),
                 new double[] {1.5, 3, 5},
                 new double[] {3, 4, 4}
         );
         var ep2 = EnvelopePart.generateTimes(
-                null,
+                List.of(TestAttr.A),
                 new double[] {1.5, 3, 5},
                 new double[] {3, 4, 4}
         );
         var ep3 = EnvelopePart.generateTimes(
-                new EnvelopeTestMeta(),
+                List.of(TestAttr.B),
                 new double[] {1.5, 3, 5},
                 new double[] {3, 4, 4}
         );

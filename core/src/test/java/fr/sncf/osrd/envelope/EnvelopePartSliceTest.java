@@ -4,20 +4,21 @@ import static fr.sncf.osrd.envelope.EnvelopeTestUtils.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import fr.sncf.osrd.envelope.EnvelopeTestUtils.EnvelopeTestMeta;
+import fr.sncf.osrd.envelope.EnvelopeTestUtils.TestAttr;
 import org.junit.jupiter.api.Test;
+import java.util.List;
+
 
 public class EnvelopePartSliceTest {
     @Test
     void sliceIndex() {
-        var testMeta = new EnvelopeTestMeta();
         var ep1 = EnvelopePart.generateTimes(
-                testMeta,
+                List.of(TestAttr.A),
                 new double[] {1.5, 3, 5},
                 new double[] {3, 4, 4}
         );
         var ep2 = EnvelopePart.generateTimes(
-                testMeta,
+                List.of(TestAttr.A),
                 new double[] {1.5, 3},
                 new double[] {3, 4}
         );
@@ -28,9 +29,8 @@ public class EnvelopePartSliceTest {
 
     @Test
     void sliceIndexFull() {
-        var testMeta = new EnvelopeTestMeta();
         var ep1 = EnvelopePart.generateTimes(
-                testMeta,
+                List.of(TestAttr.A),
                 new double[] {1.5, 3, 5},
                 new double[] {3, 3, 4}
         );
@@ -41,9 +41,8 @@ public class EnvelopePartSliceTest {
 
     @Test
     void sliceIndexEmpty() {
-        var testMeta = new EnvelopeTestMeta();
         var ep1 = EnvelopePart.generateTimes(
-                testMeta,
+                List.of(TestAttr.A),
                 new double[] {1.5, 3, 5},
                 new double[] {3, 3, 4}
         );
@@ -53,9 +52,8 @@ public class EnvelopePartSliceTest {
 
     @Test
     void sliceOffsetEmpty() {
-        var testMeta = new EnvelopeTestMeta();
         var ep1 = EnvelopePart.generateTimes(
-                testMeta,
+                List.of(TestAttr.A),
                 new double[] {1.5, 3, 5},
                 new double[] {3, 3, 4}
         );
@@ -65,9 +63,8 @@ public class EnvelopePartSliceTest {
 
     @Test
     void sliceOffsetFull() {
-        var testMeta = new EnvelopeTestMeta();
         var ep1 = EnvelopePart.generateTimes(
-                testMeta,
+                List.of(TestAttr.A),
                 new double[] {1.5, 3, 5},
                 new double[] {3, 3, 4}
         );
@@ -77,15 +74,14 @@ public class EnvelopePartSliceTest {
 
     @Test
     void sliceOffsetInterpolate() {
-        var testMeta = new EnvelopeTestMeta();
         var ep1 = EnvelopePart.generateTimes(
-                testMeta,
+                List.of(TestAttr.A),
                 new double[] {0, 3},
                 new double[] {3.46, 0}
         );
         var slice = ep1.slice(Double.NEGATIVE_INFINITY, 2);
         var expectedSlice = new EnvelopePart(
-                testMeta,
+                List.of(TestAttr.A),
                 new double[] {0, 2},
                 new double[] {3.46, 2},
                 new double[] {0.73}

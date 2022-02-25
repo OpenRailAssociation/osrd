@@ -3,26 +3,27 @@ package fr.sncf.osrd.envelope_sim_infra;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
-import fr.sncf.osrd.envelope.Envelope;
-import fr.sncf.osrd.envelope.MRSPEnvelopeBuilder;
-import fr.sncf.osrd.envelope.EnvelopePart;
-import fr.sncf.osrd.envelope.EnvelopePartMeta;
+import fr.sncf.osrd.envelope.*;
+import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.TrainPath;
 import fr.sncf.osrd.utils.DoubleUtils;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
+import java.util.List;
 
 /** MRSP = most restrictive speed profile: maximum speed allowed at any given point */
 public class MRSP {
-    public static final class SpeedLimitMeta extends EnvelopePartMeta {
-    }
+    public enum LimitKind implements EnvelopeAttr {
+        SPEED_LIMIT,
+        TRAIN_LIMIT,
+        ;
 
-    public static final class TrainLimitMeta extends EnvelopePartMeta {
+        @Override
+        public Class<? extends EnvelopeAttr> getAttrType() {
+            return LimitKind.class;
+        }
     }
-
-    public static final EnvelopePartMeta SPEED_LIMIT = new SpeedLimitMeta();
-    public static final EnvelopePartMeta TRAIN_LIMIT = new TrainLimitMeta();
 
     /** Computes the most restricted speed profile */
     public static Envelope from(TrainPath trainPath, RollingStock rollingStock) {
@@ -30,7 +31,7 @@ public class MRSP {
 
         // add a limit for the maximum speed the hardware is rated for
         builder.addPart(EnvelopePart.generateTimes(
-                TRAIN_LIMIT,
+                List.of(EnvelopeProfile.CONSTANT_SPEED, LimitKind.TRAIN_LIMIT),
                 new double[] { 0, trainPath.length },
                 new double[] { rollingStock.maxSpeed, rollingStock.maxSpeed }
         ));
@@ -66,7 +67,7 @@ public class MRSP {
 
                 // Add the envelope part corresponding to the restricted speed section
                 builder.addPart(EnvelopePart.generateTimes(
-                        SPEED_LIMIT,
+                        List.of(EnvelopeProfile.CONSTANT_SPEED, LimitKind.SPEED_LIMIT),
                         new double[] { begin, end },
                         new double[] { speedSection.speedLimit, speedSection.speedLimit }
                 ));

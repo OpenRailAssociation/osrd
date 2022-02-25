@@ -10,6 +10,13 @@ import fr.sncf.osrd.envelope.EnvelopeAttr;
 public enum EnvelopeProfile implements EnvelopeAttr {
     ACCELERATING,
     CONSTANT_SPEED,
+    CATCHING_UP,
     COASTING,
     BRAKING,
+    ;
+
+    @Override
+    public Class<? extends EnvelopeAttr> getAttrType() {
+        return EnvelopeProfile.class;
+    }
 }

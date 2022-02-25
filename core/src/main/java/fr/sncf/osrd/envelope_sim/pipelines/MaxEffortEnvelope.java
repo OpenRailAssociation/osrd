@@ -4,21 +4,13 @@ import fr.sncf.osrd.envelope.*;
 import fr.sncf.osrd.envelope.constraint.ConstrainedEnvelopePartBuilder;
 import fr.sncf.osrd.envelope.constraint.EnvelopeCeiling;
 import fr.sncf.osrd.envelope.constraint.SpeedFloor;
+import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
-import fr.sncf.osrd.envelope_sim.PhysicsPath;
-import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration;
 
 /** Max effort envelope = Max speed envelope + acceleration curves + check maintain speed
  * It is the max physical speed at any given point, ignoring allowances */
 public class MaxEffortEnvelope {
-    public static final class AccelerationMeta extends EnvelopePartMeta {}
-
-    public static final class MaintainMeta extends EnvelopePartMeta {}
-
-    public static final EnvelopePartMeta ACCELERATION = new AccelerationMeta();
-    public static final EnvelopePartMeta MAINTAIN = new MaintainMeta();
-
     /** Detects if an envelope parts is a plateau */
     public static boolean maxEffortPlateau(EnvelopePart part) {
         if (part.stepCount() != 1)
@@ -36,7 +28,7 @@ public class MaxEffortEnvelope {
         var cursor = EnvelopeCursor.forward(maxSpeedProfile);
         {
             var partBuilder = new EnvelopePartBuilder();
-            partBuilder.setEnvelopePartMeta(ACCELERATION);
+            partBuilder.setAttr(EnvelopeProfile.ACCELERATING);
             var overlayBuilder = new ConstrainedEnvelopePartBuilder(
                     partBuilder,
                     new SpeedFloor(0),
@@ -48,7 +40,7 @@ public class MaxEffortEnvelope {
         }
         while (cursor.findPartTransition(MaxSpeedEnvelope::increase)) {
             var partBuilder = new EnvelopePartBuilder();
-            partBuilder.setEnvelopePartMeta(ACCELERATION);
+            partBuilder.setAttr(EnvelopeProfile.ACCELERATING);
             var overlayBuilder = new ConstrainedEnvelopePartBuilder(
                     partBuilder,
                     new SpeedFloor(0),
@@ -87,7 +79,7 @@ public class MaxEffortEnvelope {
                     break;
 
                 var partBuilder = new EnvelopePartBuilder();
-                partBuilder.setEnvelopePartMeta(MAINTAIN);
+                partBuilder.setAttr(EnvelopeProfile.CATCHING_UP);
                 var overlayBuilder = new ConstrainedEnvelopePartBuilder(
                         partBuilder,
                         new SpeedFloor(0),

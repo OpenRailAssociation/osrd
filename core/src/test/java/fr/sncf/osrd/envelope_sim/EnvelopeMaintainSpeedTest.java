@@ -2,6 +2,7 @@ package fr.sncf.osrd.envelope_sim;
 
 import static fr.sncf.osrd.envelope.EnvelopeShape.*;
 import static fr.sncf.osrd.envelope_sim.MaxSpeedEnvelopeTest.TIME_STEP;
+import static fr.sncf.osrd.envelope_sim_infra.MRSP.LimitKind.SPEED_LIMIT;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.envelope.Envelope;
@@ -11,6 +12,7 @@ import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
 import fr.sncf.osrd.train.TestTrains;
 import org.junit.jupiter.api.Test;
+import java.util.List;
 
 public class EnvelopeMaintainSpeedTest {
     @Test
@@ -24,9 +26,10 @@ public class EnvelopeMaintainSpeedTest {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var context = new EnvelopeSimContext(testRollingStock, envelopePath, TIME_STEP);
 
-        var flatMRSP = Envelope.make(
-                EnvelopePart.generateTimes(null, new double[] { 0, 10000 }, new double[] { 44.4, 44.4})
-        );
+        var flatMRSP = Envelope.make(EnvelopePart.generateTimes(
+                List.of(EnvelopeProfile.CONSTANT_SPEED, SPEED_LIMIT),
+                new double[] { 0, 10000 }, new double[] { 44.4, 44.4}
+        ));
         var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, flatMRSP);
         var maxEffortEnvelope = MaxEffortEnvelope.from(context, 0, maxSpeedEnvelope);
         EnvelopeShape.check(maxEffortEnvelope, new EnvelopeShape[][] {
