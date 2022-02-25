@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
 public class HardenedMarecoAllowance implements Allowance {
     private final Logger logger = LoggerFactory.getLogger(HardenedMarecoAllowance.class);
@@ -50,11 +51,14 @@ public class HardenedMarecoAllowance implements Allowance {
         return null;
     }
 
-    public static final class MarecoSpeedLimit extends EnvelopePartMeta {
+    public static final class MarecoSpeedLimit implements EnvelopeAttr {
         private MarecoSpeedLimit() {
         }
 
-        public static final MarecoSpeedLimit MARECO_SPEED_LIMIT = new MarecoSpeedLimit();
+        @Override
+        public Class<? extends EnvelopeAttr> getAttrType() {
+            return MarecoSpeedLimit.class;
+        }
     }
 
     private double computeVf(double v1) {
@@ -67,7 +71,7 @@ public class HardenedMarecoAllowance implements Allowance {
         double vf = computeVf(v1);
 
         // 1) cap the core base envelope at v1
-        var cappedEnvelope = EnvelopeSpeedCap.from(coreBase, MarecoSpeedLimit.MARECO_SPEED_LIMIT, v1);
+        var cappedEnvelope = EnvelopeSpeedCap.from(coreBase, List.of(new MarecoSpeedLimit()), v1);
 
         // 2) find accelerating slopes on constant speed limit regions
         var coastingOpportunities = new ArrayList<CoastingOpportunity>();

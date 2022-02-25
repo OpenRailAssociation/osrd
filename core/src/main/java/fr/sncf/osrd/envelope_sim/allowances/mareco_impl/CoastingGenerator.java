@@ -16,7 +16,7 @@ public final class CoastingGenerator {
             double startPos
     ) {
         var partBuilder = new EnvelopePartBuilder();
-        partBuilder.setEnvelopePartMeta(COASTING);
+        partBuilder.setAttr(EnvelopeProfile.COASTING);
         var constrainedBuilder = new ConstrainedEnvelopePartBuilder(
                 partBuilder,
                 new SpeedFloor(0),

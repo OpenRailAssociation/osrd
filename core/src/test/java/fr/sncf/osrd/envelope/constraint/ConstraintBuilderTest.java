@@ -3,12 +3,14 @@ package fr.sncf.osrd.envelope.constraint;
 import static org.junit.jupiter.api.Assertions.*;
 
 import fr.sncf.osrd.envelope.*;
+import fr.sncf.osrd.envelope.EnvelopeTestUtils.TestAttr;
 import org.junit.jupiter.api.Test;
+import java.util.List;
 
 public class ConstraintBuilderTest {
     private ConstrainedEnvelopePartBuilder wrap(EnvelopePartConsumer sink) {
         var envelopeCeiling = Envelope.make(EnvelopePart.generateTimes(
-                null,
+                List.of(),
                 new double[] {0, 3, 6},
                 new double[] {0, 3, 0}
         ));
@@ -22,12 +24,29 @@ public class ConstraintBuilderTest {
     }
 
     @Test
+    void testAttrs() {
+        var partBuilder = new EnvelopePartBuilder();
+        var builder = wrap(partBuilder);
+        builder.setAttrs(List.of(TestAttr.A));
+        builder.setAttr(TestAttr.B);
+        assertTrue(builder.initEnvelopePart(2, 0, 1));
+        assertFalse(builder.addStep(3.5, 3));
+        var part = partBuilder.build();
+        assertEquals(TestAttr.B, part.getAttr(TestAttr.class));
+    }
+
+    @Test
     void testCeilingConstraint() {
-        var builder = wrap(new NullEnvelopePartConsumer());
+        var partBuilder = new EnvelopePartBuilder();
+        var builder = wrap(partBuilder);
+        builder.setAttrs(List.of(TestAttr.A));
+        builder.setAttr(TestAttr.B);
         assertTrue(builder.initEnvelopePart(2, 0, 1));
         assertTrue(builder.addStep(3, 1));
         assertFalse(builder.addStep(3.5, 3));
         assertEquals(1, builder.lastIntersection);
+        var part = partBuilder.build();
+        assertEquals(TestAttr.B, part.getAttr(TestAttr.class));
     }
 
     @Test

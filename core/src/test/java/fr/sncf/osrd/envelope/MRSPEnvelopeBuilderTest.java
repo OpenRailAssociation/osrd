@@ -2,18 +2,14 @@ package fr.sncf.osrd.envelope;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import fr.sncf.osrd.envelope.EnvelopeTestUtils.EnvelopeTestMeta;
+import fr.sncf.osrd.envelope.EnvelopeTestUtils.TestAttr;
 import org.junit.jupiter.api.Test;
+import java.util.List;
 
 class MRSPEnvelopeBuilderTest {
-    public static final EnvelopePartMeta meta1 = new EnvelopeTestMeta();
-    public static final EnvelopePartMeta meta2 = new EnvelopeTestMeta();
-    public static final EnvelopePartMeta meta3 = new EnvelopeTestMeta();
-
-
-    public static EnvelopePart makeFlatPart(EnvelopePartMeta meta, double beginPos, double endPos, double speed) {
+    public static EnvelopePart makeFlatPart(TestAttr attr, double beginPos, double endPos, double speed) {
         return EnvelopePart.generateTimes(
-                meta,
+                List.of(attr),
                 new double[]{beginPos, endPos},
                 new double[]{speed, speed}
         );
@@ -25,9 +21,9 @@ class MRSPEnvelopeBuilderTest {
          *  +--------+        +-------+
          *           +--------+
          */
-        var ep1 = makeFlatPart(meta1, 0, 1, 2);
-        var ep2 = makeFlatPart(meta2, 1, 2, 1);
-        var ep3 = makeFlatPart(meta3, 2, 3, 2);
+        var ep1 = makeFlatPart(TestAttr.A, 0, 1, 2);
+        var ep2 = makeFlatPart(TestAttr.B, 1, 2, 1);
+        var ep3 = makeFlatPart(TestAttr.C, 2, 3, 2);
 
         var envelope = new MRSPEnvelopeBuilder()
                 .addPart(ep1)
@@ -45,8 +41,8 @@ class MRSPEnvelopeBuilderTest {
          *  +--------+
          *                 +--------+
          */
-        var ep1 = makeFlatPart(meta1, 0, 1, 3);
-        var ep2 = makeFlatPart(meta2, 4, 6, 2);
+        var ep1 = makeFlatPart(TestAttr.A, 0, 1, 3);
+        var ep2 = makeFlatPart(TestAttr.B, 4, 6, 2);
 
         var envelope = new MRSPEnvelopeBuilder()
                 .addPart(ep1)
@@ -67,9 +63,9 @@ class MRSPEnvelopeBuilderTest {
          *              +-----------+
          *  0     1     2     3     4     5
          */
-        var ep1 = makeFlatPart(meta1, 0, 5, 3);
-        var ep2 = makeFlatPart(meta2, 1, 3, 2);
-        var ep3 = makeFlatPart(meta3, 2, 4, 1);
+        var ep1 = makeFlatPart(TestAttr.A, 0, 5, 3);
+        var ep2 = makeFlatPart(TestAttr.B, 1, 3, 2);
+        var ep3 = makeFlatPart(TestAttr.C, 2, 4, 1);
 
         var envelope = new MRSPEnvelopeBuilder()
                 .addPart(ep1)
@@ -84,10 +80,10 @@ class MRSPEnvelopeBuilderTest {
          *  0     1     2     3     4     5
          */
         var expectedEnvelope = Envelope.make(
-                makeFlatPart(meta1, 0, 1, 3),
-                makeFlatPart(meta2, 1, 2, 2),
-                makeFlatPart(meta3, 2, 4, 1),
-                makeFlatPart(meta1, 4, 5, 3)
+                makeFlatPart(TestAttr.A, 0, 1, 3),
+                makeFlatPart(TestAttr.B, 1, 2, 2),
+                makeFlatPart(TestAttr.C, 2, 4, 1),
+                makeFlatPart(TestAttr.A, 4, 5, 3)
         );
         EnvelopeTestUtils.assertEquals(expectedEnvelope, envelope, 0.001);
     }
@@ -98,8 +94,8 @@ class MRSPEnvelopeBuilderTest {
          *  +-----+=====+-----+
          *  0     1     2     3
          */
-        var ep1 = makeFlatPart(meta1, 0, 2, 2);
-        var ep2 = makeFlatPart(meta2, 1, 3, 2);
+        var ep1 = makeFlatPart(TestAttr.A, 0, 2, 2);
+        var ep2 = makeFlatPart(TestAttr.B, 1, 3, 2);
 
         var envelope = new MRSPEnvelopeBuilder()
                 .addPart(ep1)
@@ -119,8 +115,8 @@ class MRSPEnvelopeBuilderTest {
          * the other case.
          */
         var expectedEnvelope = Envelope.make(
-                makeFlatPart(meta1, 0, 2, 2),
-                makeFlatPart(meta2, 2, 3, 2)
+                makeFlatPart(TestAttr.A, 0, 2, 2),
+                makeFlatPart(TestAttr.B, 2, 3, 2)
         );
         EnvelopeTestUtils.assertEquals(expectedEnvelope, envelope, 0.001);
     }

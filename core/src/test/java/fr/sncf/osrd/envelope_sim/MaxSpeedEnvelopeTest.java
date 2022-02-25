@@ -1,11 +1,15 @@
 package fr.sncf.osrd.envelope_sim;
 
 import static fr.sncf.osrd.envelope.EnvelopeShape.*;
+import static fr.sncf.osrd.envelope_sim_infra.MRSP.LimitKind.SPEED_LIMIT;
 
 import fr.sncf.osrd.envelope.*;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
+import fr.sncf.osrd.envelope_sim_infra.MRSP.LimitKind;
 import fr.sncf.osrd.train.TestTrains;
 import org.junit.jupiter.api.Test;
+import java.util.List;
+import java.util.function.BiConsumer;
 
 
 public class MaxSpeedEnvelopeTest {
@@ -18,14 +22,16 @@ public class MaxSpeedEnvelopeTest {
                                           double speed) {
         var builder = new MRSPEnvelopeBuilder();
         var maxSpeedRS = rollingStock.getMaxSpeed();
-        builder.addPart(
-                EnvelopePart.generateTimes(
-                        null, new double[] {0, path.getLength()}, new double[] {maxSpeedRS, maxSpeedRS}
-                )
-        );
-        builder.addPart(
-                EnvelopePart.generateTimes(null, new double[] {0, path.getLength()}, new double[] {speed, speed})
-        );
+        builder.addPart(EnvelopePart.generateTimes(
+                List.of(EnvelopeProfile.CONSTANT_SPEED, LimitKind.TRAIN_LIMIT),
+                new double[] {0, path.getLength()},
+                new double[] {maxSpeedRS, maxSpeedRS}
+        ));
+        builder.addPart(EnvelopePart.generateTimes(
+                List.of(EnvelopeProfile.CONSTANT_SPEED, LimitKind.SPEED_LIMIT),
+                new double[] {0, path.getLength()},
+                new double[] {speed, speed}
+        ));
         return builder.build();
     }
 
@@ -35,23 +41,25 @@ public class MaxSpeedEnvelopeTest {
         assert path.getLength() >= 100000 : "Path length must be greater than 100km to generate a complex MRSP";
         var builder = new MRSPEnvelopeBuilder();
         var maxSpeedRS = rollingStock.getMaxSpeed();
-        builder.addPart(
-                EnvelopePart.generateTimes(null, new double[] {0, path.getLength()},
-                        new double[] {maxSpeedRS, maxSpeedRS}));
-        builder.addPart(
-                EnvelopePart.generateTimes(null, new double[] {0, 10000 }, new double[] {44.4, 44.4}));
-        builder.addPart(
-                EnvelopePart.generateTimes(null, new double[] {10000, 20000 }, new double[] {64.4, 64.4}));
-        builder.addPart(
-                EnvelopePart.generateTimes(null, new double[] {20000, 50000 }, new double[] {54.4, 54.4}));
-        builder.addPart(
-                EnvelopePart.generateTimes(null, new double[] {50000, 55000 }, new double[] {14.4, 14.4}));
-        builder.addPart(
-                EnvelopePart.generateTimes(null, new double[] {55000, 70000 }, new double[] {54.4, 54.4}));
-        builder.addPart(
-                EnvelopePart.generateTimes(null, new double[] {70000, 75000 }, new double[] {74.4, 74.4}));
-        builder.addPart(
-                EnvelopePart.generateTimes(null, new double[] {75000, path.getLength() }, new double[] {44.4, 44.4}));
+        builder.addPart(EnvelopePart.generateTimes(
+                List.of(EnvelopeProfile.CONSTANT_SPEED, LimitKind.TRAIN_LIMIT),
+                new double[]{0, path.getLength()},
+                new double[]{maxSpeedRS, maxSpeedRS}
+        ));
+
+        BiConsumer<double[], double[]> addSpeedLimit = (double[] positions, double[] speeds) ->
+                builder.addPart(EnvelopePart.generateTimes(
+                        List.of(EnvelopeProfile.CONSTANT_SPEED, SPEED_LIMIT),
+                        positions, speeds
+                ));
+
+        addSpeedLimit.accept(new double[] {0, 10000 }, new double[] {44.4, 44.4});
+        addSpeedLimit.accept(new double[] {10000, 20000 }, new double[] {64.4, 64.4});
+        addSpeedLimit.accept(new double[] {20000, 50000 }, new double[] {54.4, 54.4});
+        addSpeedLimit.accept(new double[] {50000, 55000 }, new double[] {14.4, 14.4});
+        addSpeedLimit.accept(new double[] {55000, 70000 }, new double[] {54.4, 54.4});
+        addSpeedLimit.accept(new double[] {70000, 75000 }, new double[] {74.4, 74.4});
+        addSpeedLimit.accept(new double[] {75000, path.getLength() }, new double[] {44.4, 44.4});
         return builder.build();
     }
 
