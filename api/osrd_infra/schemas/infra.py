@@ -8,7 +8,7 @@ RailScript = NewType("RailScript", Any)
 Aspect = NewType("Aspect", Any)
 
 ALL_OBJECT_TYPES = []
-RAILJSON_VERSION = "2.0.0"
+RAILJSON_VERSION = "2.1.0"
 
 
 class Direction(str, Enum):
@@ -116,7 +116,7 @@ class TrackEndpoint(BaseModel):
 class Route(BaseObjectTrait, GeometryLineTrait):
     entry_point: ObjectReference
     exit_point: ObjectReference
-    release_groups: List[List[ObjectReference]]
+    release_detectors: List[ObjectReference]
     path: List[DirectionalTrackRange]
 
 
@@ -215,11 +215,6 @@ class Detector(BaseObjectTrait, TrackLocationTrait, GeometryPointTrait):
     applicable_directions: ApplicableDirections
 
 
-class TVDSection(BaseObjectTrait, GeometryMultiLineTrait):
-    detectors: List[ObjectReference]
-    buffer_stops: List[ObjectReference]
-
-
 class RailJsonInfra(BaseModel):
     version: Literal[RAILJSON_VERSION]
     operational_points: List[OperationalPoint]
@@ -231,7 +226,6 @@ class RailJsonInfra(BaseModel):
     signals: List[Signal]
     buffer_stops: List[BufferStop]
     detectors: List[Detector]
-    tvd_sections: List[TVDSection]
     script_functions: List[RailScript]
     aspects: List[Aspect]
 

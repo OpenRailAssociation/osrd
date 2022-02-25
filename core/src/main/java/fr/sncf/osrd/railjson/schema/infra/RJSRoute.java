@@ -4,9 +4,9 @@ import com.squareup.moshi.Json;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
+import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrainDetector;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.SingleDirectionalRJSTrackRange;
 import java.util.List;
-import java.util.Set;
 
 public class RJSRoute implements Identified {
     public String id;
@@ -14,8 +14,8 @@ public class RJSRoute implements Identified {
     /** List of the track ranges on the route */
     public List<SingleDirectionalRJSTrackRange> path;
 
-    @Json(name = "release_groups")
-    public List<Set<RJSObjectRef<RJSTVDSection>>> releaseGroups;
+    @Json(name = "release_detectors")
+    public List<RJSObjectRef<RJSTrainDetector>> releaseDetectors;
 
     /** Waypoint placed just before the route, either a buffer stop or a detector attached to a signal */
     @Json(name = "entry_point")
@@ -29,13 +29,13 @@ public class RJSRoute implements Identified {
     public RJSRoute(
             String id,
             List<SingleDirectionalRJSTrackRange> path,
-            List<Set<RJSObjectRef<RJSTVDSection>>> releaseGroups,
+            List<RJSObjectRef<RJSTrainDetector>> releaseDetectors,
             RJSObjectRef<RJSRouteWaypoint> entryPoint,
             RJSObjectRef<RJSRouteWaypoint> exitPoint
     ) {
         this.id = id;
         this.path = path;
-        this.releaseGroups = releaseGroups;
+        this.releaseDetectors = releaseDetectors;
         this.entryPoint = entryPoint;
         this.exitPoint = exitPoint;
     }

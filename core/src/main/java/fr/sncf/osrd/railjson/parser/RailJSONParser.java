@@ -228,22 +228,18 @@ public class RailJSONParser {
         // Build tvd sections
         var tvdSections = TvdSectionBuilder.build(trackGraph);
 
-        // Link tvd sections created with tvd sections parsed
-        var tvdSectionsMap = finalizeTvdSection(tvdSections, railJSON.tvdSections, waypointsMap);
-
         // Build route Graph
         var routeGraphBuilder = new RouteGraph.Builder(trackGraph, waypointsMap.size());
 
         for (var rjsRoute : railJSON.routes)
-            parseRoute(routeGraphBuilder, tvdSectionsMap, infraTrackSections, trackGraph,
+            parseRoute(routeGraphBuilder, infraTrackSections, trackGraph,
                     waypointsMap, detectorIdToSignalNormalMap, detectorIdToSignalReverseMap, rjsRoute);
 
         var routeGraph = routeGraphBuilder.build();
 
         resolveRailscript(signalNames, switchNames, scriptFunctions, signals, routeGraph);
 
-        return Infra.build(trackGraph, routeGraphBuilder.build(),
-                tvdSectionsMap, aspectsMap, signals, switches);
+        return Infra.build(trackGraph, routeGraphBuilder.build(), aspectsMap, tvdSections, signals, switches);
     }
 
     /** Resolves name of routes and signals*/
@@ -278,42 +274,6 @@ public class RailJSONParser {
         for (var signal : signals)
             signal.expr.accept(nameResolver);
 
-    }
-
-    private static HashMap<String, TVDSection> finalizeTvdSection(
-            ArrayList<TVDSection> tvdSections,
-            Collection<RJSTVDSection> rjstvdSections,
-            HashMap<String, Waypoint> waypointMap
-    ) throws InvalidInfraException {
-        var tvdSectionsMap = new HashMap<String, TVDSection>();
-
-        // Setup map
-        var waypointsToRJSTvd = new HashMap<ArrayList<Integer>, RJSTVDSection>();
-        for (var rjsTVD : rjstvdSections) {
-            var indexKeys = new ArrayList<Integer>();
-            for (var rjsDetector : rjsTVD.trainDetectors)
-                indexKeys.add(rjsDetector.getDetector(waypointMap).index);
-            for (var rjsBufferStop : rjsTVD.bufferStops)
-                indexKeys.add(rjsBufferStop.getBufferStop(waypointMap).index);
-            Collections.sort(indexKeys);
-            waypointsToRJSTvd.put(indexKeys, rjsTVD);
-        }
-
-        // Link tvdSection with rjsTvdSection
-        for (var tvd : tvdSections) {
-            var indexKeys = new ArrayList<Integer>();
-            for (var waypoint : tvd.waypoints)
-                indexKeys.add(waypoint.index);
-            Collections.sort(indexKeys);
-            var rjsTvdSection = waypointsToRJSTvd.get(indexKeys);
-            if (rjsTvdSection == null)
-                throw new InvalidInfraException("TVD section waypoint don't match any tvd section in railjson");
-            tvd.id = rjsTvdSection.id;
-            tvd.isBerthingTrack = rjsTvdSection.isBerthingTrack;
-            tvdSectionsMap.put(tvd.id, tvd);
-        }
-
-        return tvdSectionsMap;
     }
 
     private static void addCurvesToGradients(DoubleRangeMap gradients, RJSTrackSection trackSection) {
@@ -388,31 +348,14 @@ public class RailJSONParser {
 
     private static void parseRoute(
             RouteGraph.Builder routeGraphBuilder,
-            HashMap<String, TVDSection> tvdSectionsMap,
             HashMap<String, TrackSection> infraTrackSections,
-            TrackGraph trackGraph, HashMap<String, Waypoint> waypointsMap,
+            TrackGraph trackGraph,
+            HashMap<String, Waypoint> waypointsMap,
             HashMap<String, Signal> detectorIdToSignalNormalMap,
             HashMap<String, Signal> detectorIdToSignalReverseMap,
             RJSRoute rjsRoute
     ) throws InvalidInfraException {
-        // Parse release groups
-        var releaseGroups = new ArrayList<SortedArraySet<TVDSection>>();
-        var routeTvdSections = new SortedArraySet<TVDSection>();
-        for (var rjsReleaseGroup : rjsRoute.releaseGroups) {
-            var releaseGroup = new SortedArraySet<TVDSection>();
-            for (var rjsTvdSection : rjsReleaseGroup) {
-                var tvdSection = rjsTvdSection.getTVDSection(tvdSectionsMap);
-                routeTvdSections.add(tvdSection);
-                if (tvdSection == null)
-                    throw new InvalidInfraException(String.format(
-                            "A release group contains an unknown tvd section (%s)",
-                            rjsTvdSection.id
-                    ));
-                releaseGroup.add(tvdSection);
-            }
-            releaseGroups.add(releaseGroup);
-        }
-
+        // Parse route path
         var path = new ArrayList<TrackSectionRange>();
         for (var step : rjsRoute.path) {
             var track = step.track.getTrack(infraTrackSections);
@@ -427,6 +370,7 @@ public class RailJSONParser {
             addSwitchPosition(prev, next, trackGraph, switchesGroup);
         }
 
+        // Parse entry and exit point
         var entryPoint = rjsRoute.entryPoint.getWaypoint(waypointsMap);
         var exitPoint = rjsRoute.exitPoint.getWaypoint(waypointsMap);
 
@@ -434,16 +378,20 @@ public class RailJSONParser {
         if (path.get(0).direction == EdgeDirection.STOP_TO_START)
             entrySignal = detectorIdToSignalReverseMap.getOrDefault(entryPoint.id, null);
 
+        // Parse release detectors
+        var releaseDetectors = new HashSet<Waypoint>();
+        for (var rjsDetector : rjsRoute.releaseDetectors)
+            releaseDetectors.add(waypointsMap.get(rjsDetector.id.id));
+
         // TODO simplify makeRoute with the new parameters we have (path)
         routeGraphBuilder.makeRoute(
                 rjsRoute.id,
-                routeTvdSections,
-                releaseGroups,
                 switchesGroup,
                 entryPoint,
                 exitPoint,
                 entrySignal,
-                path.get(0).direction
+                path.get(0).direction,
+                releaseDetectors
         );
     }
 

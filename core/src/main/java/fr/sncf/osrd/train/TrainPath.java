@@ -160,10 +160,10 @@ public class TrainPath {
             var prevRoute = routePath.get(i - 1);
             var nextRoute = routePath.get(i);
             var prevRouteTVDs = prevRoute.tvdSectionsPaths.stream()
-                    .map(path -> path.tvdSection.id)
+                    .map(path -> path.tvdSection.index)
                     .collect(Collectors.toSet());
             var nextRouteTVDs = nextRoute.tvdSectionsPaths.stream()
-                    .map(path -> path.tvdSection.id)
+                    .map(path -> path.tvdSection.index)
                     .collect(Collectors.toSet());
             prevRouteTVDs.retainAll(nextRouteTVDs);
             for (var conflict : prevRouteTVDs) {
