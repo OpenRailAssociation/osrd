@@ -4,7 +4,8 @@ import static fr.sncf.osrd.envelope.EnvelopePhysics.intersectStepWithSpeed;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
-import java.util.Arrays;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * <p>Envelope parts are polylines over speed and space, defined as a sequence of points.</p>
@@ -17,8 +18,8 @@ import java.util.Arrays;
 public final class EnvelopePart {
     // region INTRINSIC DATA FIELDS
 
-    /** Metadata about his envelope part */
-    public final EnvelopePartMeta meta;
+    /** Metadata about this envelope part */
+    private final Map<Class<? extends EnvelopeAttr>, EnvelopeAttr> attrs;
 
     /* !!! These arrays must stay private, as even public final arrays are mutable !!! */
 
@@ -59,11 +60,12 @@ public final class EnvelopePart {
     @SuppressFBWarnings({"EI_EXPOSE_REP2"})
     @ExcludeFromGeneratedCodeCoverage
     public EnvelopePart(
-            EnvelopePartMeta meta,
+            Map<Class<? extends EnvelopeAttr>, EnvelopeAttr> attrs,
             double[] positions,
             double[] speeds,
             double[] timeDeltas
     ) {
+        assert attrs != null : "missing attributes";
         assert positions.length >= 2 : "attempted to create a single point EnvelopePart";
         assert positions.length == speeds.length : "there must be the same number of point and speeds";
         assert timeDeltas.length == positions.length - 1 : "there must be as many timeDeltas as gaps between points";
@@ -74,25 +76,86 @@ public final class EnvelopePart {
         assert checkPositive(speeds) : "negative speeds";
         assert checkPositive(timeDeltas) : "negative timeDeltas";
         assert checkNonZero(timeDeltas) : "zero timeDeltas";
-        this.meta = meta;
+        this.attrs = attrs;
         this.positions = positions;
         this.speeds = speeds;
         this.timeDeltas = timeDeltas;
         this.strictlyMonotonicSpeeds = checkStrictlyMonotonic(speeds);
     }
 
+    /** Creates an EnvelopePart */
+    @SuppressFBWarnings({"EI_EXPOSE_REP2"})
+    @ExcludeFromGeneratedCodeCoverage
+    public EnvelopePart(
+            Iterable<EnvelopeAttr> attrs,
+            double[] positions,
+            double[] speeds,
+            double[] timeDeltas
+    ) {
+        this(makeAttrs(attrs), positions, speeds, timeDeltas);
+    }
+
     /** Creates an envelope part by generating step times from speeds and positions */
     public static EnvelopePart generateTimes(
-            EnvelopePartMeta meta,
+            Iterable<EnvelopeAttr> attrs,
             double[] positions,
             double[] speeds
     ) {
         return new EnvelopePart(
-                meta,
+                attrs,
                 positions,
                 speeds,
                 computeTimes(positions, speeds)
         );
+    }
+
+    /** Creates an envelope part by generating step times from speeds and positions */
+    public static EnvelopePart generateTimes(
+            double[] positions,
+            double[] speeds
+    ) {
+        return new EnvelopePart(
+                new HashMap<>(),
+                positions,
+                speeds,
+                computeTimes(positions, speeds)
+        );
+    }
+
+    // endregion
+
+    // region ATTRS
+
+    /** Create an attribute map from the given attributes */
+    public static Map<Class<? extends EnvelopeAttr>, EnvelopeAttr> makeAttrs(Iterable<EnvelopeAttr> attrs) {
+        var res = new HashMap<Class<? extends EnvelopeAttr>, EnvelopeAttr>();
+        for (var attr : attrs)
+            res.put(attr.getAttrType(), attr);
+        return res;
+    }
+
+    /** Return the given metadata attribute */
+    @SuppressWarnings({"unchecked"})
+    public <T extends EnvelopeAttr> T getAttr(Class<T> attrType) {
+        return (T) attrs.get(attrType);
+    }
+
+    /** Returns whether this envelope part has a given attribute */
+    public boolean hasAttr(Class<? extends EnvelopeAttr> attrType) {
+        return attrs.containsKey(attrType);
+    }
+
+    /**
+     * Returns whether the envelope has the given attribute value. Usually, we can't deduce the attribute type
+     * from the attribute value, but we can for enums.
+     */
+    public <T extends EnvelopeAttr> boolean hasAttr(T attr) {
+        return attrs.get(attr.getAttrType()) == attr;
+    }
+
+    /** Returns a view of the envelope part attributes */
+    public Map<Class<? extends EnvelopeAttr>, EnvelopeAttr> getAttrs() {
+        return Collections.unmodifiableMap(attrs);
     }
 
     // endregion
@@ -482,7 +545,7 @@ public final class EnvelopePart {
         var sliceSpeeds = Arrays.copyOfRange(speeds, beginStepIndex, endStepIndex + 1);
         var sliceTimes = Arrays.copyOfRange(timeDeltas, beginStepIndex, endStepIndex);
         return new EnvelopePart(
-                meta,
+                attrs,
                 slicePos,
                 sliceSpeeds,
                 sliceTimes
@@ -596,7 +659,7 @@ public final class EnvelopePart {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         EnvelopePart that = (EnvelopePart) o;
-        return (meta == that.meta
+        return (attrs.equals(that.attrs)
                 && Arrays.equals(positions, that.positions)
                 && Arrays.equals(speeds, that.speeds)
                 && Arrays.equals(timeDeltas, that.timeDeltas));
@@ -604,11 +667,20 @@ public final class EnvelopePart {
 
     @Override
     public int hashCode() {
-        int result = System.identityHashCode(meta);
+        int result = attrs.hashCode();
         result = 31 * result + Arrays.hashCode(positions);
         result = 31 * result + Arrays.hashCode(speeds);
         result = 31 * result + Arrays.hashCode(timeDeltas);
         return result;
     }
+
+    @Override
+    public String toString() {
+        var attrsRepr = attrs.entrySet().stream()
+                .map((item) -> String.format("%s=%s", item.getKey().getSimpleName(), item.getValue()))
+                .collect(Collectors.joining(", "));
+        return String.format("EnvelopePart { %s }", attrsRepr);
+    }
+
     // endregion
 }
