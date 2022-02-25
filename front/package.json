@@ -69,6 +69,7 @@
     "react-scripts": "^4.0.3",
     "react-transition-group": "^4.4.2",
     "redux": "^4.0.5",
+    "redux-immer": "^1.0.5",
     "redux-mock-store": "^1.5.4",
     "redux-persist": "^6.0.0",
     "redux-persist-transform-compress": "^4.2.0",

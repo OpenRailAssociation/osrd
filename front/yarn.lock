@@ -13236,6 +13236,11 @@ redent@^3.0.0:
     indent-string "^4.0.0"
     strip-indent "^3.0.0"
 
+redux-immer@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/redux-immer/-/redux-immer-1.0.5.tgz#7ef375a3a06397fcc8575a2d017b3bedc07e25e2"
+  integrity sha512-sjYgK2a7aFm0Mx8dmBZ3jfSjIsWmPqIkVjQQIn7VLiDPMNrphjcAIZ8C3L75LxidkJDolHcj/MSbBVlllO/CXg==
+
 redux-mock-store@^1.5.4:
   version "1.5.4"
   resolved "https://registry.yarnpkg.com/redux-mock-store/-/redux-mock-store-1.5.4.tgz#90d02495fd918ddbaa96b83aef626287c9ab5872"
