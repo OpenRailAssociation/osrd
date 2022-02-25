@@ -25,7 +25,7 @@ public class RJSInfra {
             .build()
             .adapter(RJSInfra.class);
 
-    public static final transient String CURRENT_VERSION = "2.0.0";
+    public static final transient String CURRENT_VERSION = "2.1.0";
 
     /** The version of the infra format used */
     public String version;
@@ -46,13 +46,6 @@ public class RJSInfra {
      */
     @Json(name = "operational_points")
     public Collection<RJSOperationalPoint> operationalPoints;
-
-    /**
-     * Track vacancy detection sections
-     * Finding reverse dependencies is up to the user.
-     */
-    @Json(name = "tvd_sections")
-    public Collection<RJSTVDSection> tvdSections;
 
     /** The list of routes */
     public Collection<RJSRoute> routes;
@@ -81,7 +74,6 @@ public class RJSInfra {
             Collection<RJSTrackSectionLink> trackSectionLinks,
             Collection<RJSSwitch> switches,
             Collection<RJSOperationalPoint> operationalPoints,
-            Collection<RJSTVDSection> tvdSections,
             Collection<RJSRoute> routes,
             Collection<RJSAspect> aspects,
             List<RJSRSFunction> signalFunctions,
@@ -95,7 +87,6 @@ public class RJSInfra {
         this.trackSectionLinks = trackSectionLinks;
         this.switches = switches;
         this.operationalPoints = operationalPoints;
-        this.tvdSections = tvdSections;
         this.routes = routes;
         this.aspects = aspects;
         this.scriptFunctions = signalFunctions;
@@ -110,7 +101,6 @@ public class RJSInfra {
      */
     public RJSInfra() {
         this(
-                new ArrayList<>(),
                 new ArrayList<>(),
                 new ArrayList<>(),
                 new ArrayList<>(),

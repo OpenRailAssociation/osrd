@@ -54,35 +54,16 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
         }
 
         /**
-         * Add a route to the Route Graph without specifying isControlled
-         */
-        public Route makeRoute(
-                String id,
-                SortedArraySet<TVDSection> tvdSections,
-                List<SortedArraySet<TVDSection>> releaseGroups,
-                HashMap<Switch, String> switchesGroup,
-                Waypoint entryPoint,
-                Waypoint exitPoint,
-                Signal entrySignal,
-                EdgeDirection entryDirection
-        ) throws InvalidInfraException {
-            return makeRoute(id, tvdSections, releaseGroups, switchesGroup, entryPoint,
-                    exitPoint, entrySignal, entryDirection, null);
-        }
-
-        /**
          * Add a route to the Route Graph
          */
         public Route makeRoute(
                 String id,
-                SortedArraySet<TVDSection> tvdSections,
-                List<SortedArraySet<TVDSection>> releaseGroups,
                 HashMap<Switch, String> switchesGroup,
                 Waypoint entryPoint,
                 Waypoint exitPoint,
                 Signal entrySignal,
                 EdgeDirection entryDirection,
-                Boolean isControlled
+                Set<Waypoint> releaseDetectors
         ) throws InvalidInfraException {
             try {
                 var tvdSectionsPath = generatePath(id, entryPoint, exitPoint, entryDirection, switchesGroup);
@@ -90,14 +71,6 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                 var length = 0;
                 for (var tvdSectionPath : tvdSectionsPath)
                     length += tvdSectionPath.length;
-
-                // Checks the path goes through all TVDSections
-                var pathTvdSections = new SortedArraySet<TVDSection>();
-                for (var tvdSectionPath : tvdSectionsPath)
-                    pathTvdSections.add(tvdSectionPath.tvdSection);
-                if (pathTvdSections.size() != tvdSections.size())
-                    throw new InvalidInfraException(
-                            "Route has a tvd section that is not part of any of its release groups");
 
                 // Get start waypoint and start direction
                 var firstTVDSectionPath = tvdSectionsPath.get(0);
@@ -108,6 +81,9 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                 var lastTVDSectionPath = tvdSectionsPath.get(tvdSectionsPath.size() - 1);
                 var endWaypoint = lastTVDSectionPath.endWaypoint;
                 var endWaypointDirection = lastTVDSectionPath.getEndTrackDirection();
+
+                // Compute release groups from release detectors
+                var releaseGroups = computeReleaseGroups(tvdSectionsPath, releaseDetectors);
 
                 // Create route
                 var route = new Route(id, routeGraph, length, releaseGroups, tvdSectionsPath,
@@ -218,6 +194,28 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
                 curWaypoint = pathEndWaypoint;
             }
             return res;
+        }
+
+        private static List<SortedArraySet<TVDSection>> computeReleaseGroups(
+                List<TVDSectionPath> tvdSectionPaths,
+                Set<Waypoint> releaseDetectors
+        ) {
+            var releaseGroups = new ArrayList<SortedArraySet<TVDSection>>();
+            var currentReleaseGroup = new SortedArraySet<TVDSection>();
+            releaseGroups.add(currentReleaseGroup);
+
+            for (var tvdSectionPath : tvdSectionPaths) {
+                var tvd = tvdSectionPath.tvdSection;
+                currentReleaseGroup.add(tvd);
+
+                // Check if the tvd section is the last of its group
+                if (releaseDetectors.contains(tvdSectionPath.endWaypoint)) {
+                    currentReleaseGroup = new SortedArraySet<>();
+                    releaseGroups.add(currentReleaseGroup);
+                }
+            }
+
+            return releaseGroups;
         }
 
         private static Waypoint findEdgeNextWaypoint(

@@ -226,7 +226,7 @@ public class ChangeSerializer {
     private static class TVDSectionAdapter {
         @ToJson
         IdentifiedObject toJson(TVDSection tvdSection) {
-            return new IdentifiedObject(tvdSection.id);
+            return new IdentifiedObject(String.format("tvd_section.%d", tvdSection.index));
         }
 
         @FromJson

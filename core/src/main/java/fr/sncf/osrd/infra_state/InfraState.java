@@ -91,7 +91,7 @@ public final class InfraState implements DeepComparable<InfraState> {
 
         var tvdSectionCount = infra.tvdSections.size();
         var tvdSectionStates = new TVDSectionState[tvdSectionCount];
-        for (var tvdSection : infra.tvdSections.values())
+        for (var tvdSection : infra.tvdSections)
             tvdSectionStates[tvdSection.index] = new TVDSectionState(tvdSection);
 
         var towerState = TowerState.makeTowerState(infra, initTables);
