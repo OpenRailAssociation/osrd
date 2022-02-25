@@ -14,8 +14,6 @@ import fr.sncf.osrd.envelope.EnvelopeShape;
 import fr.sncf.osrd.envelope.EnvelopeTransitions;
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.allowances.HardenedMarecoAllowance;
-import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
-import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
 import fr.sncf.osrd.train.TestTrains;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -446,7 +444,7 @@ public class AllowanceTests {
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testRollingStock, testPath, stops);
         double start = 0;
         for (var part : maxEffortEnvelope) {
-            if (part.meta instanceof MaxSpeedEnvelope.DecelerationMeta) {
+            if (part.hasAttr(EnvelopeProfile.BRAKING) && !part.hasAttr(StopMeta.class)) {
                 start = (part.getBeginPos() + part.getEndPos()) / 2;
                 break;
             }
@@ -468,7 +466,7 @@ public class AllowanceTests {
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testRollingStock, testPath, stops);
         double end = 0;
         for (var part : maxEffortEnvelope) {
-            if (part.meta instanceof MaxEffortEnvelope.AccelerationMeta) {
+            if (part.hasAttr(EnvelopeProfile.ACCELERATING)) {
                 end = (part.getBeginPos() + part.getEndPos()) / 2;
             }
         }

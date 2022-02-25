@@ -4,14 +4,18 @@ import fr.sncf.osrd.utils.CmpOperator;
 
 public class EnvelopeSpeedCap {
     /** Adds a global speed limit to an envelope */
-    public static Envelope from(Envelope base, EnvelopePartMeta meta, double speedLimit) {
+    public static Envelope from(
+            Envelope base,
+            Iterable<EnvelopeAttr> attrs,
+            double speedLimit
+    ) {
         var cursor = new EnvelopeCursor(base, false);
         var builder = OverlayEnvelopeBuilder.forward(base);
         while (cursor.findSpeed(speedLimit, CmpOperator.STRICTLY_HIGHER)) {
             var startPos = cursor.getPosition();
 
             var partBuilder = new EnvelopePartBuilder();
-            partBuilder.setEnvelopePartMeta(meta);
+            partBuilder.setAttrs(attrs);
             partBuilder.initEnvelopePart(startPos, speedLimit, 1);
 
             var hasNotReachedEnd = cursor.findSpeed(speedLimit, CmpOperator.STRICTLY_LOWER);

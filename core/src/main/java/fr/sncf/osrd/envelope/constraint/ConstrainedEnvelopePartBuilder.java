@@ -106,8 +106,13 @@ public final class ConstrainedEnvelopePartBuilder implements InteractiveEnvelope
     }
 
     @Override
-    public void setEnvelopePartMeta(EnvelopePartMeta meta) {
-        sink.setEnvelopePartMeta(meta);
+    public <T extends EnvelopeAttr> void setAttr(T attr) {
+        sink.setAttr(attr);
+    }
+
+    @Override
+    public void setAttrs(Iterable<EnvelopeAttr> attrs) {
+        sink.setAttrs(attrs);
     }
 }
 

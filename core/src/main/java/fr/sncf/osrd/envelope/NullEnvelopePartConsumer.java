@@ -1,5 +1,7 @@
 package fr.sncf.osrd.envelope;
 
+import java.util.Map;
+
 public class NullEnvelopePartConsumer implements EnvelopePartConsumer {
     @Override
     public void initEnvelopePart(double position, double speed, double direction) {
@@ -14,6 +16,10 @@ public class NullEnvelopePartConsumer implements EnvelopePartConsumer {
     }
 
     @Override
-    public void setEnvelopePartMeta(EnvelopePartMeta meta) {
+    public <T extends EnvelopeAttr> void setAttr(T attr) {
+    }
+
+    @Override
+    public void setAttrs(Iterable<EnvelopeAttr> attrs) {
     }
 }

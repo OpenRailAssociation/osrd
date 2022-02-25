@@ -7,19 +7,29 @@ import fr.sncf.osrd.envelope.constraint.ConstrainedEnvelopePartBuilder;
 import fr.sncf.osrd.envelope.constraint.EnvelopeCeiling;
 import fr.sncf.osrd.envelope.constraint.SpeedFloor;
 import org.junit.jupiter.api.Assertions;
+import java.util.Map;
 
 public class EnvelopeTestUtils {
-    public static final class EnvelopeTestMeta extends EnvelopePartMeta {
+    public enum TestAttr implements EnvelopeAttr {
+        A,
+        B,
+        C,
+        ;
+
+        @Override
+        public Class<? extends EnvelopeAttr> getAttrType() {
+            return TestAttr.class;
+        }
     }
 
     static EnvelopePart buildContinuous(
-            EnvelopeCursor cursor, EnvelopePartMeta meta,
+            EnvelopeCursor cursor, Iterable<EnvelopeAttr> attrs,
             double[] positions, double[] speeds, boolean isBackward
     ) {
         var lastIndex = positions.length - 1;
         double direction = isBackward ? -1 : 1;
         var partBuilder = new EnvelopePartBuilder();
-        partBuilder.setEnvelopePartMeta(meta);
+        partBuilder.setAttrs(attrs);
         if (!isBackward) {
             cursor.findPosition(positions[0]);
 
@@ -52,7 +62,7 @@ public class EnvelopeTestUtils {
     }
 
     static void assertEquals(EnvelopePart expected, EnvelopePart actual, double delta) {
-        Assertions.assertSame(expected.meta, actual.meta);
+        Assertions.assertEquals(expected.getAttrs(), actual.getAttrs());
 
         Assertions.assertArrayEquals(expected.clonePositions(), actual.clonePositions(), delta);
         Assertions.assertArrayEquals(expected.cloneSpeeds(), actual.cloneSpeeds(), delta);

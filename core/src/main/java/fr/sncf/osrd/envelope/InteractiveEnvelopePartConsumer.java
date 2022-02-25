@@ -1,5 +1,7 @@
 package fr.sncf.osrd.envelope;
 
+import java.util.Map;
+
 /** An object capable of consuming integration steps. */
 public interface InteractiveEnvelopePartConsumer {
     /** Initializes the envelope part metadata */
@@ -24,6 +26,9 @@ public interface InteractiveEnvelopePartConsumer {
      */
     boolean addStep(double position, double speed, double timeDelta);
 
-    /** Sets the envelope part metadata */
-    void setEnvelopePartMeta(EnvelopePartMeta meta);
+    /** Sets an envelope part attribute */
+    <T extends EnvelopeAttr> void setAttr(T attr);
+
+    /** Sets envelope part attributes */
+    void setAttrs(Iterable<EnvelopeAttr> attrs);
 }

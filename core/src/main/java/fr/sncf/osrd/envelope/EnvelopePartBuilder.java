@@ -2,12 +2,14 @@ package fr.sncf.osrd.envelope;
 
 import com.carrotsearch.hppc.DoubleArrayList;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.HashMap;
+import java.util.Map;
 
 public class EnvelopePartBuilder implements EnvelopePartConsumer {
     private final DoubleArrayList positions;
     private final DoubleArrayList speeds;
     private final DoubleArrayList times;
-    private EnvelopePartMeta meta;
+    private final Map<Class<? extends EnvelopeAttr>, EnvelopeAttr> attrs;
     private double direction;
 
     private double lastPos;
@@ -18,7 +20,7 @@ public class EnvelopePartBuilder implements EnvelopePartConsumer {
         this.positions = new DoubleArrayList();
         this.speeds = new DoubleArrayList();
         this.times = new DoubleArrayList();
-        this.meta = null;
+        this.attrs = new HashMap<>();
         this.direction = Double.NaN;
     }
 
@@ -68,8 +70,15 @@ public class EnvelopePartBuilder implements EnvelopePartConsumer {
     }
 
     @Override
-    public void setEnvelopePartMeta(EnvelopePartMeta meta) {
-        this.meta = meta;
+    public <T extends EnvelopeAttr> void setAttr(T attr) {
+        assert attr != null : "called setAttr with attr == null";
+        attrs.put(attr.getAttrType(), attr);
+    }
+
+    @Override
+    public void setAttrs(Iterable<EnvelopeAttr> newAttrs) {
+        for (var attr : newAttrs)
+            attrs.put(attr.getAttrType(), attr);
     }
 
     private static void reverse(double[] arr) {
@@ -90,7 +99,7 @@ public class EnvelopePartBuilder implements EnvelopePartConsumer {
             reverse(speeds);
             reverse(times);
         }
-        return new EnvelopePart(meta, positions, speeds, times);
+        return new EnvelopePart(attrs, positions, speeds, times);
     }
 
     /** Return the number of steps currently in the envelope part builder*/

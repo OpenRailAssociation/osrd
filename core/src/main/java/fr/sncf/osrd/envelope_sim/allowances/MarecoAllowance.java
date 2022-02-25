@@ -1,21 +1,19 @@
 package fr.sncf.osrd.envelope_sim.allowances;
 
 import static fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration.accelerate;
-import static fr.sncf.osrd.envelope_sim.overlays.EnvelopeCoasting.COASTING;
 import static fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration.decelerate;
-import static fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope.ACCELERATION;
-import static fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope.*;
 import static java.lang.Math.*;
 
 import fr.sncf.osrd.envelope.*;
 import fr.sncf.osrd.envelope.constraint.ConstrainedEnvelopePartBuilder;
 import fr.sncf.osrd.envelope.constraint.EnvelopeCeiling;
 import fr.sncf.osrd.envelope.constraint.SpeedFloor;
+import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeCoasting;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator;
-import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope.AccelerationMeta;
+import fr.sncf.osrd.envelope_sim.StopMeta;
 import fr.sncf.osrd.utils.DoubleBinarySearch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -245,11 +243,11 @@ public class MarecoAllowance implements Allowance {
     ) {
         for (var position : endOfCoastingPositions) {
             var part = envelope.getEnvelopePartLeft(position);
-            if (part == null || (part.meta instanceof AccelerationMeta && part.getBeginPos() < position))
+            if (part == null || (part.hasAttr(EnvelopeProfile.ACCELERATING) && part.getBeginPos() < position))
                 continue; // Starting a coasting curve in an acceleration part would stop instantly and trigger asserts
 
             var partBuilder = new EnvelopePartBuilder();
-            partBuilder.setEnvelopePartMeta(COASTING);
+            partBuilder.setAttr(EnvelopeProfile.COASTING);
             var overlayBuilder = new ConstrainedEnvelopePartBuilder(
                     partBuilder,
                     new SpeedFloor(0),  // 0
@@ -278,7 +276,7 @@ public class MarecoAllowance implements Allowance {
 
     /** Returns true if the envelope part is a braking envelope */
     private static boolean isBraking(EnvelopePart part) {
-        return part.meta instanceof DecelerationMeta || part.meta instanceof StopMeta;
+        return part.hasAttr(EnvelopeProfile.BRAKING) || part.hasAttr(StopMeta.class);
     }
 
 
@@ -292,7 +290,11 @@ public class MarecoAllowance implements Allowance {
 
     /** Returns the total envelope after applying an allowance with target speed v1 */
     public Envelope getEnvelope(Envelope baseRoIEnvelope, List<EnvelopePart> physicalLimits, double v1) {
-        var envelopeCapped = EnvelopeSpeedCap.from(baseRoIEnvelope, null, v1);
+        var envelopeCapped = EnvelopeSpeedCap.from(
+                baseRoIEnvelope,
+                List.of(EnvelopeProfile.CONSTANT_SPEED),
+                v1
+        );
         var endOfCoastingPositions = findEndOfCoastingPositions(envelopeCapped, v1);
         var marecoEnvelope = addCoastingCurvesAtPositions(envelopeCapped, endOfCoastingPositions);
         var builder = new MaxEnvelopeBuilder();
@@ -315,7 +317,7 @@ public class MarecoAllowance implements Allowance {
             var begin = Math.max(sectionBegin, base.getBeginPos());
             var end = Math.min(sectionEnd, base.getEndPos());
             var baseSliced = Envelope.make(base.slice(begin, end));
-            var baseCapped = EnvelopeSpeedCap.from(baseSliced, null, capacitySpeedLimit);
+            var baseCapped = EnvelopeSpeedCap.from(baseSliced, List.of(), capacitySpeedLimit);
             for (var i = 0; i < baseCapped.size(); i++)
                 res.add(baseCapped.get(i));
         }
@@ -339,7 +341,7 @@ public class MarecoAllowance implements Allowance {
      * returns -1 if it reaches the beginning of the path*/
     private double moveBackwardsUntilNotAccelerating(Envelope base, double position) {
         var envelopeIndex = base.findEnvelopePartIndexLeft(position);
-        while (envelopeIndex >= 0 && base.get(envelopeIndex).meta instanceof AccelerationMeta)
+        while (envelopeIndex >= 0 && base.get(envelopeIndex).hasAttr(EnvelopeProfile.ACCELERATING))
             envelopeIndex--;
         if (envelopeIndex < 0)
             return -1;
@@ -360,7 +362,7 @@ public class MarecoAllowance implements Allowance {
             return res;
 
         var builder = new EnvelopePartBuilder();
-        builder.setEnvelopePartMeta(DECELERATION);
+        builder.setAttr(EnvelopeProfile.BRAKING);
         var overlayBuilder = new ConstrainedEnvelopePartBuilder(
                 builder,
                 new SpeedFloor(capacitySpeedLimit),
@@ -385,7 +387,7 @@ public class MarecoAllowance implements Allowance {
             return res;
 
         var partBuilder = new EnvelopePartBuilder();
-        partBuilder.setEnvelopePartMeta(ACCELERATION);
+        partBuilder.setAttr(EnvelopeProfile.ACCELERATING);
         var overlayBuilder = new ConstrainedEnvelopePartBuilder(
                 partBuilder,
                 new SpeedFloor(capacitySpeedLimit),  // 0
