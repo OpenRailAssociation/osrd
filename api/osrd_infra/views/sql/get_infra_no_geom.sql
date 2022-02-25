@@ -82,15 +82,6 @@ detectors AS (
 		infra
 	WHERE x.infra_id = infra.id
 ),
-tvd_sections AS (
-	SELECT coalesce(json_agg(x.data - 'geo' - 'sch'), '[]'::json) AS railjson
-	FROM (
-			SELECT *
-			FROM public.osrd_infra_tvdsectionmodel
-		) x,
-		infra
-	WHERE x.infra_id = infra.id
-),
 script_functions AS (
 	SELECT coalesce(json_agg(x.data), '[]'::json) AS railjson
 	FROM (
@@ -111,7 +102,7 @@ aspects AS (
 )
 SELECT json_build_object(
 		'version',
-		'2.0.0',
+		'2.1.0',
 		'operational_points',
 		operational_points.railjson,
 		'routes',
@@ -130,8 +121,6 @@ SELECT json_build_object(
 		buffer_stops.railjson,
 		'detectors',
 		detectors.railjson,
-		'tvd_sections',
-		tvd_sections.railjson,
 		'script_functions',
 		script_functions.railjson,
 		'aspects',
@@ -145,7 +134,6 @@ FROM routes
 	CROSS JOIN signals
 	CROSS JOIN buffer_stops
 	CROSS JOIN detectors
-	CROSS JOIN tvd_sections
 	CROSS JOIN script_functions
 	CROSS JOIN aspects
 	CROSS JOIN operational_points;

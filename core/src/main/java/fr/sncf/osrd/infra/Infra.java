@@ -79,23 +79,23 @@ import java.util.HashMap;
 public final class Infra {
     public final TrackGraph trackGraph;
     public final RouteGraph routeGraph;
-    public final HashMap<String, TVDSection> tvdSections;
     public final HashMap<String, Aspect> aspects;
+    public final ArrayList<TVDSection> tvdSections;
     public final ArrayList<Signal> signals;
     public final ArrayList<Switch> switches;
 
     private Infra(
             TrackGraph trackGraph,
             RouteGraph routeGraph,
-            HashMap<String, TVDSection> tvdSections,
             HashMap<String, Aspect> aspects,
+            ArrayList<TVDSection> tvdSections,
             ArrayList<Signal> signals,
             ArrayList<Switch> switches
     ) {
         this.trackGraph = trackGraph;
         this.routeGraph = routeGraph;
-        this.tvdSections = tvdSections;
         this.aspects = aspects;
+        this.tvdSections = tvdSections;
         this.signals = signals;
         this.switches = switches;
     }
@@ -104,12 +104,12 @@ public final class Infra {
     public static Infra build(
             TrackGraph trackGraph,
             RouteGraph routeGraph,
-            HashMap<String, TVDSection> tvdSections,
             HashMap<String, Aspect> aspects,
+            ArrayList<TVDSection> tvdSections,
             ArrayList<Signal> signals,
             ArrayList<Switch> switches
     ) throws InvalidInfraException {
-        var infra = new Infra(trackGraph, routeGraph, tvdSections, aspects, signals, switches);
+        var infra = new Infra(trackGraph, routeGraph, aspects, tvdSections, signals, switches);
 
         for (var trackSection : trackGraph.iterEdges()) {
             var forwardBuilder = trackSection.forwardActionPoints.builder();
@@ -189,7 +189,7 @@ public final class Infra {
     public static RJSInfra parseRailJSONFromFile(
             JsonConfig.InfraType infraType,
             String path
-    ) throws InvalidInfraException, IOException {
+    ) throws IOException {
         // autodetect the infrastructure type
         if (infraType == null || infraType == JsonConfig.InfraType.UNKNOWN) {
             if (path.endsWith(".json"))

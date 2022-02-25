@@ -1,27 +1,23 @@
 package fr.sncf.osrd.infra;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import java.util.ArrayList;
+import java.util.Objects;
 
 public final class TVDSection implements Comparable<TVDSection> {
-    public String id = null;
     public int index = -1;
     public final ArrayList<Waypoint> waypoints = new ArrayList<>();
     public final ArrayList<Route> routeSubscribers = new ArrayList<>();
 
-    @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-    public boolean isBerthingTrack = false;
-
     @Override
     public int compareTo(TVDSection o) {
-        return id.compareTo(o.id);
+        return index - o.index;
     }
 
     @Override
     public int hashCode() {
-        return id.hashCode();
+        return Objects.hashCode(index);
     }
 
     @Override
@@ -30,11 +26,11 @@ public final class TVDSection implements Comparable<TVDSection> {
             return false;
         if (obj.getClass() != TVDSection.class)
             return false;
-        return id.equals(((TVDSection) obj).id);
+        return index == ((TVDSection) obj).index;
     }
 
     @Override
     public String toString() {
-        return String.format("TVD section {id=%s, index=%d, waypoints=%s}", id, index, waypoints);
+        return String.format("TVD section {index=%d, waypoints=%s}", index, waypoints);
     }
 }

@@ -9,7 +9,6 @@ from osrd_infra.models import (
     OperationalPointModel,
     SignalModel,
     TrackSectionModel,
-    TVDSectionModel,
 )
 from osrd_infra.schemas.infra import TrackSection
 from osrd_infra.utils import track_section_range_geom
@@ -27,7 +26,6 @@ class CachedTrackSection:
 def generate_layers(infra: Infra):
     generate_generic_layer(infra, TrackSectionModel)
     generate_generic_layer(infra, SignalModel)
-    generate_generic_layer(infra, TVDSectionModel)
 
     generate_operational_point_layer(infra)
 

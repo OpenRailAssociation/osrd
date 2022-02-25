@@ -11,7 +11,6 @@ from osrd_infra.schemas.infra import (
     SwitchType,
     TrackSection,
     TrackSectionLink,
-    TVDSection,
 )
 from osrd_infra.utils import JSONSchemaValidator
 
@@ -116,16 +115,6 @@ class DetectorModel(models.Model):
 
     class Meta:
         verbose_name_plural = "detectors"
-        unique_together = (("infra", "obj_id"),)
-
-
-class TVDSectionModel(models.Model):
-    infra = models.ForeignKey(Infra, on_delete=models.CASCADE)
-    obj_id = models.CharField(max_length=255)
-    data = models.JSONField(validators=[JSONSchemaValidator(limit_value=TVDSection.schema())])
-
-    class Meta:
-        verbose_name_plural = "tvd sections"
         unique_together = (("infra", "obj_id"),)
 
 
