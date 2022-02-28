@@ -1,11 +1,22 @@
 package fr.sncf.osrd.envelope;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 
 public class EnvelopeTest {
+    @Test
+    void testContinuity() {
+        var partA = EnvelopePart.generateTimes(new double[] {0, 1}, new double[] {1, 1});
+        var partB = EnvelopePart.generateTimes(new double[] {2, 3}, new double[] {1, 1});
+        var partC = EnvelopePart.generateTimes(new double[] {1, 2}, new double[] {2, 2});
+        var partD = EnvelopePart.generateTimes(new double[] {1, 2}, new double[] {1, 1});
+        assertThrows(RuntimeException.class, () -> Envelope.make(partA, partB));
+        assertTrue(Envelope.make(partA, partD).continuous);
+        assertFalse(Envelope.make(partA, partC).continuous);
+    }
+
     @Test
     void testIterator() {
         var a = EnvelopePart.generateTimes(new double[] { 0, 2 }, new double[] { 2, 2 });

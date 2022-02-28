@@ -73,7 +73,6 @@ public class EnvelopeTestUtils {
 
     static void assertEquals(Envelope expected, Envelope actual, double delta) {
         Assertions.assertEquals(expected.size(), actual.size());
-        Assertions.assertEquals(expected.spaceContinuous, actual.spaceContinuous);
         Assertions.assertEquals(expected.continuous, actual.continuous);
         Assertions.assertEquals(expected.getMaxSpeed(), actual.getMaxSpeed(), delta);
         Assertions.assertEquals(expected.getMinSpeed(), actual.getMinSpeed(), delta);

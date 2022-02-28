@@ -10,7 +10,6 @@ import java.util.stream.Stream;
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public final class Envelope implements Iterable<EnvelopePart> {
     private final EnvelopePart[] parts;
-    public final boolean spaceContinuous;
     public final boolean continuous;
 
     // region CACHE FIELDS
@@ -30,34 +29,39 @@ public final class Envelope implements Iterable<EnvelopePart> {
 
     // region CONSTRUCTORS
 
-    private Envelope(EnvelopePart[] parts, boolean spaceContinuous, boolean continuous) {
+    private Envelope(EnvelopePart[] parts) {
         assert parts.length != 0;
-        this.parts = parts;
-        this.spaceContinuous = spaceContinuous;
-        this.continuous = continuous;
 
-        var maxSpeed = Double.NEGATIVE_INFINITY;
-        for (var part : parts) {
-            var partMaxSpeed = part.getMaxSpeed();
-            if (partMaxSpeed > maxSpeed)
-                maxSpeed = partMaxSpeed;
+        // check for space and speed continuity. space continuity is mandatory, speed continuity is not
+        boolean continuous = true;
+        for (int i = 0; i < parts.length - 1; i++) {
+            if (parts[i].getEndPos() != parts[i + 1].getBeginPos())
+                throw new RuntimeException("invalid envelope, envelope parts are not contiguous");
+            if (parts[i].getEndSpeed() != parts[i + 1].getBeginSpeed())
+                continuous = false;
         }
-        this.maxSpeed = maxSpeed;
 
+        // find the minimum and maximum speeds for all envelope parts
         var minSpeed = Double.POSITIVE_INFINITY;
+        var maxSpeed = Double.NEGATIVE_INFINITY;
         for (var part : parts) {
             var partMinSpeed = part.getMinSpeed();
             if (partMinSpeed < minSpeed)
                 minSpeed = partMinSpeed;
+            var partMaxSpeed = part.getMaxSpeed();
+            if (partMaxSpeed > maxSpeed)
+                maxSpeed = partMaxSpeed;
         }
+
+        this.parts = parts;
+        this.continuous = continuous;
         this.minSpeed = minSpeed;
+        this.maxSpeed = maxSpeed;
     }
 
     /** Create a new Envelope */
     public static Envelope make(EnvelopePart... parts) {
-        boolean spaceContinuous = allPartTransitions(Envelope::areSpaceContinuous, parts);
-        boolean continuous = spaceContinuous && allPartTransitions(Envelope::areSpeedContinuous, parts);
-        return new Envelope(parts, spaceContinuous, continuous);
+        return new Envelope(parts);
     }
 
     /** A predicate which applies to a transition between two points */

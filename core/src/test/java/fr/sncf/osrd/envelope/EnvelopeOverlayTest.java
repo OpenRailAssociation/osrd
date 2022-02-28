@@ -239,7 +239,6 @@ public class EnvelopeOverlayTest {
 
         var forwardEnvelope = builder.build();
         assertEquals(6, forwardEnvelope.size());
-        assertTrue(forwardEnvelope.spaceContinuous);
         assertFalse(forwardEnvelope.continuous);
     }
 

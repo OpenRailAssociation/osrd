@@ -1,7 +1,8 @@
 package fr.sncf.osrd.envelope;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.Test;
-import java.util.List;
 
 public class EnvelopeBuilderTest {
     @Test
@@ -16,8 +17,7 @@ public class EnvelopeBuilderTest {
                 new double[]{20, 30}
         ));
         var env = builder.build();
-        assert env.continuous;
-        assert env.spaceContinuous;
+        assertTrue(env.continuous);
     }
 
     @Test
@@ -33,7 +33,6 @@ public class EnvelopeBuilderTest {
         ));
         builder.reverse();
         var env = builder.build();
-        assert env.continuous;
-        assert env.spaceContinuous;
+        assertTrue(env.continuous);
     }
 }
