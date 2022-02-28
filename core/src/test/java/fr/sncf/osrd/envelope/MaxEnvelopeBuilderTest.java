@@ -46,29 +46,6 @@ class MaxEnvelopeBuilderTest {
     }
 
     @Test
-    void disjointEnvelopePartsSameOutput() {
-        var ep1 = EnvelopePart.generateTimes(
-                List.of(TestAttr.A),
-                new double[]{0, 1},
-                new double[]{3, 2}
-        );
-        var ep2 = EnvelopePart.generateTimes(
-                List.of(TestAttr.A),
-                new double[]{4, 6},
-                new double[]{0, 2}
-        );
-
-        var builder = new MaxEnvelopeBuilder();
-        builder.addPart(ep1);
-        builder.addPart(ep2);
-        var envelope = builder.build();
-
-        assertEquals(2, envelope.size());
-        assertEquals(ep1, envelope.get(0));
-        assertEquals(ep2, envelope.get(1));
-    }
-
-    @Test
     void disjointContinuation() {
         /*
          *  simultaneous start and disjoint continuation
