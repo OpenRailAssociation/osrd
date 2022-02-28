@@ -286,18 +286,6 @@ public class EnvelopeCursor {
         return true;
     }
 
-    /** Attempts to find a step which matches the given predicate */
-    public boolean findStep(Envelope.TransitionPredicate predicate) {
-        if (hasReachedEnd())
-            return false;
-
-        do {
-            if (predicate.test(getStepBeginPos(), getStepBeginSpeed(), getStepEndPos(), getStepEndSpeed()))
-                return true;
-        } while (nextStep() != NEXT_REACHED_END);
-        return false;
-    }
-
     /** Set the position / speed and bumps the revision */
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
     private void setPosition(double newPosition, double newSpeed) {
@@ -319,7 +307,7 @@ public class EnvelopeCursor {
     }
 
     /** Attempts to find a transition between envelope parts which matches a predicate */
-    public boolean findPartTransition(Envelope.TransitionPredicate predicate) {
+    public boolean findPartTransition(TransitionPredicate predicate) {
         if (hasReachedEnd())
             return false;
 
@@ -412,5 +400,10 @@ public class EnvelopeCursor {
         );
         setPosition(intersectionPos, speed);
         return true;
+    }
+
+    /** A predicate which applies to a transition between two points */
+    public interface TransitionPredicate {
+        boolean test(double prevPos, double prevSpeed, double nextPos, double nextSpeed);
     }
 }
