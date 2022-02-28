@@ -302,7 +302,6 @@ public class MarecoAllowance implements Allowance {
         marecoEnvelope.iterator().forEachRemaining(builder::addPart);
         // TODO : find a way to include coasting part into the final result without bugs
         var result = builder.build();
-        assert result.spaceContinuous : "Envelope with allowance is not space continuous";
         assert result.continuous : "Envelope with allowance is not continuous";
         return result;
     }

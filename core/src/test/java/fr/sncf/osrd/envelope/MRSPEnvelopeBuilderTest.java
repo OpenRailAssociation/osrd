@@ -36,26 +36,6 @@ class MRSPEnvelopeBuilderTest {
     }
 
     @Test
-    void disjointGapLimits() {
-        /*
-         *  +--------+
-         *                 +--------+
-         */
-        var ep1 = makeFlatPart(TestAttr.A, 0, 1, 3);
-        var ep2 = makeFlatPart(TestAttr.B, 4, 6, 2);
-
-        var envelope = new MRSPEnvelopeBuilder()
-                .addPart(ep1)
-                .addPart(ep2)
-                .build();
-
-        assertEquals(2, envelope.size());
-        assertEquals(ep1, envelope.get(0));
-        assertEquals(ep2, envelope.get(1));
-    }
-
-
-    @Test
     void overlappingLimits() {
         /*
          *  +-----------------------------+
