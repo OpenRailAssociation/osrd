@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 from django.core.management.base import BaseCommand
-from geojson_pydantic import LineString, MultiLineString, Point
+from geojson_pydantic import LineString, Point
 
 from osrd_infra.models import Infra, RollingStock
 from osrd_infra.schemas.infra import (
@@ -12,7 +12,6 @@ from osrd_infra.schemas.infra import (
     DirectionalTrackRange,
     Route,
     TrackSection,
-    TVDSection,
 )
 
 
@@ -65,22 +64,12 @@ class Command(BaseCommand):
             bf.into_model(infra).save()
             waypoints.append(bf)
 
-        # Create tvd section
-        tvd_section = TVDSection(
-            id="tvd.1",
-            detectors=[],
-            buffer_stops=[w.ref() for w in waypoints],
-            geo=MultiLineString(coordinates=[[(0, 0), (1000, 1000)]]),
-            sch=MultiLineString(coordinates=[[(0, 0), (1000, 1000)]]),
-        )
-        tvd_section.into_model(infra).save()
-
         # Create route
         route = Route(
             id="route.1",
             entry_point=waypoints[0].ref(),
             exit_point=waypoints[1].ref(),
-            release_groups=[[tvd_section.ref()]],
+            release_detectors=[],
             path=[
                 DirectionalTrackRange(track=track_section.ref(), begin=0, end=1000, direction=Direction.START_TO_STOP)
             ],

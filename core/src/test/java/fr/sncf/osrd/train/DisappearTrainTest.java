@@ -32,10 +32,7 @@ import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
 import org.junit.jupiter.api.Test;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.*;
 
 
 public class DisappearTrainTest {
@@ -64,27 +61,21 @@ public class DisappearTrainTest {
         opEnd.addRef(edge, edgeLength, opBuilder);
         opBuilder.build();
 
-        final var tvdSections = new HashMap<String, TVDSection>();
+        final var tvdSections = new ArrayList<TVDSection>();
 
         var tvdSection = makeTVDSection(bufferStopA, bufferStopB);
         tvdSection.index = 0;
         assignAfterTVDSection(tvdSection, bufferStopA);
         assignBeforeTVDSection(tvdSection, bufferStopB);
-        tvdSections.put(tvdSection.id, tvdSection);
+        tvdSections.add(tvdSection);
 
         final var routeGraphBuilder = new RouteGraph.Builder(trackGraph, 2);
 
-        var tvdSectionsR1 = new SortedArraySet<TVDSection>();
-        tvdSectionsR1.add(tvdSection);
-        var releaseGroups = new ArrayList<SortedArraySet<TVDSection>>();
-        var releaseGroup = new SortedArraySet<TVDSection>();
-        releaseGroup.add(tvdSection);
-        releaseGroups.add(releaseGroup);
-        var route = routeGraphBuilder.makeRoute("R1", tvdSectionsR1, releaseGroups,
-                new HashMap<>(), bufferStopA, bufferStopB, null, EdgeDirection.START_TO_STOP);
+        var route = routeGraphBuilder.makeRoute("R1", new HashMap<>(), bufferStopA, bufferStopB,
+                null, EdgeDirection.START_TO_STOP, new HashSet<>());
 
         final var infra = Infra.build(trackGraph, routeGraphBuilder.build(),
-                tvdSections, new HashMap<>(), new ArrayList<>(), new ArrayList<>());
+                new HashMap<>(), tvdSections, new ArrayList<>(), new ArrayList<>());
 
         // initialize the simulation
         var changelog = new ArrayChangeLog();

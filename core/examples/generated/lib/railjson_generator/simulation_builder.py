@@ -9,7 +9,7 @@ from railjson_generator.schema.location import Location
 from railjson_generator.schema.simulation.simulation import Simulation
 from railjson_generator.schema.simulation.train_schedule import TrainSchedule
 from railjson_generator.schema.simulation.train_succession_table import TST
-from railjson_generator.utils.pathfinding import RoutePathfindingStep, find_route_path, PathElement
+from railjson_generator.utils.pathfinding import PathElement, RoutePathfindingStep, find_route_path
 
 
 @dataclass
@@ -75,9 +75,7 @@ class SimulationBuilder:
             for path_element in route.path_elements:
                 track_name = path_element.track_section.label
                 node = self.route_to_nodes[route.label]
-                self.track_to_routes[track_name].append(
-                    RangeRoute(node, path_element.begin, path_element.end, offset)
-                )
+                self.track_to_routes[track_name].append(RangeRoute(node, path_element.begin, path_element.end, offset))
                 offset += path_element.length()
 
     def _find_route_path(self, locations: List[Location]):
@@ -89,8 +87,7 @@ class SimulationBuilder:
             origins.append(
                 RoutePathfindingStep(
                     range_route.route_node,
-                    offset=range_route.offset
-                    + abs(range_route.track_begin - locations[0].offset),
+                    offset=range_route.offset + abs(range_route.track_begin - locations[0].offset),
                 )
             )
         for loc_end in locations[1:]:

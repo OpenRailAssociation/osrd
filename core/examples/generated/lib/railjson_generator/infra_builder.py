@@ -7,16 +7,13 @@ from railjson_generator.schema.infra.link import Link
 from railjson_generator.schema.infra.operational_point import OperationalPoint
 from railjson_generator.schema.infra.switch import Switch
 from railjson_generator.schema.infra.track_section import TrackSection
-from railjson_generator.utils import generate_tvd_sections
 from railjson_generator.utils import generate_routes
 
 
 @dataclass
 class InfraBuilder:
     infra: Infra = field(default_factory=Infra)
-    switches_group_map: Mapping[Tuple[int, Endpoint, int], Tuple[Switch, str]] = field(
-        default_factory=dict
-    )
+    switches_group_map: Mapping[Tuple[int, Endpoint, int], Tuple[Switch, str]] = field(default_factory=dict)
 
     def add_track_section(self, *args, **kwargs):
         track = TrackSection(index=len(self.infra.track_sections), *args, **kwargs)
@@ -59,9 +56,6 @@ class InfraBuilder:
         for track in self.infra.track_sections:
             track.sort_signals()
             track.sort_waypoints()
-
-        # Generate tvd sections
-        generate_tvd_sections(self.infra)
 
         # Generate routes
         generate_routes(self)
