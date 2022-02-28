@@ -330,31 +330,6 @@ public final class Envelope implements Iterable<EnvelopePart> {
         return res;
     }
 
-    /** Cuts the envelope */
-    public EnvelopePart[] smartSlice(
-            int beginPartIndex, int beginStepIndex, double beginPosition, double beginSpeed,
-            int endPartIndex, int endStepIndex, double endPosition, double endSpeed
-    ) {
-        if (beginPartIndex == -1) {
-            beginPartIndex = 0;
-            var beginPart = parts[beginPartIndex];
-            beginStepIndex = 0;
-            beginPosition = beginPart.getBeginPos();
-            beginSpeed = beginPart.getBeginSpeed();
-        }
-        if (endPartIndex == -1) {
-            endPartIndex = parts.length - 1;
-            var endPart = parts[endPartIndex];
-            endStepIndex = endPart.stepCount() - 1;
-            endPosition = endPart.getEndPos();
-            endSpeed = endPart.getEndSpeed();
-        }
-        return slice(
-                beginPartIndex, beginStepIndex, beginPosition, beginSpeed,
-                endPartIndex, endStepIndex, endPosition, endSpeed
-        );
-    }
-
     // endregion
 
     @Override
