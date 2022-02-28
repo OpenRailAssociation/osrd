@@ -3,7 +3,6 @@ package fr.sncf.osrd.envelope;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
-import java.util.List;
 
 
 public class EnvelopeCursorTest {
@@ -38,17 +37,6 @@ public class EnvelopeCursorTest {
         assertEquals(0, cursor.getPartIndex());
         assertEquals(0, cursor.getStepIndex());
 
-        // findStep doesn't move the cursor if the current step matches the predicate
-        assertTrue(cursor.findStep((a, b, c, d) -> true));
-        assertEquals(lastRevision, cursor.getRevision());
-        assertEquals(0, cursor.getPartIndex());
-
-        assertTrue(cursor.findStep(((prevPos, prevSpeed, nextPos, nextSpeed) -> prevPos == 3)));
-        assertNotEquals(lastRevision, cursor.getRevision());
-        lastRevision = cursor.getRevision();
-        assertEquals(0, cursor.getPartIndex());
-        assertEquals(1, cursor.getStepIndex());
-
         cursor.findPartTransition((prevPos, prevSpeed, nextPos, nextSpeed) -> prevPos == 6.0);
         assertNotEquals(lastRevision, cursor.getRevision());
         lastRevision = cursor.getRevision();
@@ -80,16 +68,6 @@ public class EnvelopeCursorTest {
         assertEquals(9, cursor.getPosition());
         assertEquals(2, cursor.getPartIndex());
         assertEquals(1, cursor.getStepIndex());
-
-        // findStep doesn't move the cursor if the current step matches the predicate
-        assertTrue(cursor.findStep((a, b, c, d) -> true));
-        assertEquals(lastRevision, cursor.getRevision());
-
-        assertTrue(cursor.findStep(((prevPos, prevSpeed, nextPos, nextSpeed) -> prevPos == 8)));
-        assertNotEquals(lastRevision, cursor.getRevision());
-        lastRevision = cursor.getRevision();
-        assertEquals(2, cursor.getPartIndex());
-        assertEquals(0, cursor.getStepIndex());
 
         cursor.findPartTransition((prevPos, prevSpeed, nextPos, nextSpeed) -> prevPos == 4);
         assertNotEquals(lastRevision, cursor.getRevision());

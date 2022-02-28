@@ -64,34 +64,6 @@ public final class Envelope implements Iterable<EnvelopePart> {
         return new Envelope(parts);
     }
 
-    /** A predicate which applies to a transition between two points */
-    public interface TransitionPredicate {
-        boolean test(double prevPos, double prevSpeed, double nextPos, double nextSpeed);
-    }
-
-    /** Checks that all transitions between envelope part match a predicate */
-    private static boolean allPartTransitions(TransitionPredicate predicate, EnvelopePart[] parts) {
-        for (int i = 0; i < parts.length - 1; i++) {
-            var prevPart = parts[i];
-            var nextPart = parts[i + 1];
-            var prevPos = prevPart.getEndPos();
-            var prevSpeed = prevPart.getEndSpeed();
-            var nextPos = nextPart.getBeginPos();
-            var nextSpeed = nextPart.getBeginSpeed();
-            if (!predicate.test(prevPos, prevSpeed, nextPos, nextSpeed))
-                return false;
-        }
-        return true;
-    }
-
-    public static boolean areSpaceContinuous(double prevPos, double prevSpeed, double nextPos, double nextSpeed) {
-        return Math.abs(prevPos - nextPos) < 1E-10;
-    }
-
-    public static boolean areSpeedContinuous(double prevPos, double prevSpeed, double nextPos, double nextSpeed) {
-        return Math.abs(prevSpeed - nextSpeed) < 1E-10;
-    }
-
     // endregion
 
     // region GETTERS
