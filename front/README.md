@@ -1,3 +1,36 @@
+# Dependencies
+
+### Cross project
+* [i18n](https://www.i18next.com/) internationalization framework for javascript. Please keep it simple.
+
+### Module osrdsimulation
+
+* [nivo](https://nivo.rocks/) Dataviz lib built on top of d3 and react. For certain generic viz. Could be used as a basis to render our special viz more adapted to react & d3- packages nivo/circle-packing and nivo/line
+* [turf.js](https:/turf.js) Javascript geospatial and analysis. Imported on a per-package basis
+* [react-rnd](https://github.com/bokuweb/react-rnd) Excellent container for resizable - movable visual component
+* immer - simplified immutable state control
+
+### Module editor
+
+* https://www.npmjs.com/package/@rjsf/core
+* https://www.npmjs.com/package/reselect
+* https://github.com/reduxjs/redux-thunk
+
+### Do not know where it is used
+
+* debounce
+* jwt-decode
+
+### devDependencies
+
+* Better docs: still in use ? with
+* jsdocs
+
+
+### Module editor
+
+# Create-react-app
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts

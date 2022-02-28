@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 
 import Loader from 'common/Loader';
 import HomeOSRD from 'applications/osrd/Home';
-import HomeSmartFlows from 'applications/smartflows/Home';
+
 import HomeCarto from 'applications/carto/Home';
 import HomeEditor from 'applications/editor/Home';
 
@@ -46,9 +46,6 @@ export default function App() {
             <Route path="/osrd">
               <HomeOSRD />
             </Route>
-            <Route path="/smartflows">
-              <HomeSmartFlows />
-            </Route>
             <Route path="/carto">
               <HomeCarto />
             </Route>
@@ -58,10 +55,7 @@ export default function App() {
           </Switch>
         </Router>
       )}
-      {(!user.isLogged && !process.env.REACT_APP_LOCAL_BACKEND) && (
-        <Loader />
-      )}
-
+      {!user.isLogged && !process.env.REACT_APP_LOCAL_BACKEND && <Loader />}
     </Suspense>
   );
 }
