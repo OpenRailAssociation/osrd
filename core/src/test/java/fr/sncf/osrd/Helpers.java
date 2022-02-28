@@ -404,7 +404,6 @@ public class Helpers {
     public static TVDSection makeTVDSection(Waypoint...waypoints) {
         var tvd = new TVDSection();
         tvd.waypoints.addAll(Arrays.asList(waypoints));
-        tvd.id = RandomString.make();
         return tvd;
     }
 

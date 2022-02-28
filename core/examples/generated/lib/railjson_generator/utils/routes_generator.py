@@ -1,8 +1,7 @@
 from railjson_generator.schema.infra.direction import Direction
 from railjson_generator.schema.infra.endpoint import Endpoint, TrackEndpoint
 from railjson_generator.schema.infra.link import Link
-
-from railjson_generator.utils.pathfinding import explore_paths, PathfindingStep
+from railjson_generator.utils.pathfinding import PathfindingStep, explore_paths
 
 
 def create_route_from_path(builder, path):
@@ -24,10 +23,9 @@ def create_route_from_path(builder, path):
         for waypoint in waypoints:
             waypoint_list.append((waypoint, path_element.direction))
 
-    entry_point, entry_direction = waypoint_list[0]
-    exit_point, _ = waypoint_list[-1]
-
-    path[0].begin = entry_point.position
+    waypoints = [w for w, _ in waypoint_list]
+    entry_direction = waypoint_list[0][1]
+    path[0].begin = waypoints[0].position
 
     tvd_sections = []
     for waypoint, direction in waypoint_list[:-1]:
@@ -49,10 +47,8 @@ def create_route_from_path(builder, path):
         switches_group[switch.label] = group
 
     builder.infra.add_route(
-        entry_point,
-        exit_point,
+        waypoints,
         entry_direction,
-        tvd_sections=tvd_sections,
         switches_group=switches_group,
         path_elements=path,
     )
