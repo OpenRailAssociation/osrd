@@ -45,15 +45,12 @@ public class RouteGraphTest {
             HashMap<Switch, String> switchGroups
     ) throws InvalidInfraException {
         // Create a "flexible transit" release group
-        var releaseGroups = new ArrayList<SortedArraySet<TVDSection>>();
-        for (var tvdSection : tvdSections) {
-            var releaseGroup = new SortedArraySet<TVDSection>();
-            releaseGroup.add(tvdSection);
-            releaseGroups.add(releaseGroup);
-        }
+        var releaseDetectors = new HashSet<Waypoint>();
+        for (int i = 1; i < waypoints.size() - 1; i++)
+            releaseDetectors.add(waypoints.get(i));
 
-        return builder.makeRoute(id, tvdSections, releaseGroups, switchGroups, waypoints.get(0),
-                waypoints.get(waypoints.size() - 1), null, entryDirection);
+        return builder.makeRoute(id, switchGroups, waypoints.get(0),
+                waypoints.get(waypoints.size() - 1), null, entryDirection, releaseDetectors);
     }
 
     private static Route makeRoute(
@@ -362,11 +359,8 @@ public class RouteGraphTest {
         var switchC = trackGraph.makeSwitchNode(nodeInnerC.index, "switchC", 2, 0, portsC, groupsC);
 
         // Craft tvdSections
-        var tvdSectionsSet = new SortedArraySet<TVDSection>();
         var tvdSection123 = makeTVDSection(da, db, dc);
-        tvdSectionsSet.add(tvdSection123);
         assignAfterTVDSection(tvdSection123, da, db, dc);
-        var releaseGroups = Collections.singletonList(tvdSectionsSet);
 
         // Build RouteGraph
         var routeGraphBuilder = new RouteGraph.Builder(trackGraph, 3);
@@ -374,17 +368,14 @@ public class RouteGraphTest {
         var switchGroupsR1 = new HashMap<Switch, String>();
         switchGroupsR1.put(switchA, "LEFT");
         switchGroupsR1.put(switchB, "RIGHT");
-        routeGraphBuilder.makeRoute("R1", tvdSectionsSet, releaseGroups, switchGroupsR1,
-                da, db, null, START_TO_STOP);
+        routeGraphBuilder.makeRoute("R1", switchGroupsR1, da, db, null, START_TO_STOP, new HashSet<>());
         var switchGroupsR2 = new HashMap<Switch, String>();
         switchGroupsR2.put(switchB, "LEFT");
         switchGroupsR2.put(switchC, "RIGHT");
-        routeGraphBuilder.makeRoute("R2", tvdSectionsSet, releaseGroups, switchGroupsR2,
-                db, dc, null, START_TO_STOP);
+        routeGraphBuilder.makeRoute("R2", switchGroupsR2, db, dc, null, START_TO_STOP, new HashSet<>());
         var switchGroupsR3 = new HashMap<Switch, String>();
         switchGroupsR3.put(switchC, "LEFT");
         switchGroupsR3.put(switchA, "RIGHT");
-        routeGraphBuilder.makeRoute("R3", tvdSectionsSet, releaseGroups, switchGroupsR3,
-                dc, da, null, START_TO_STOP);
+        routeGraphBuilder.makeRoute("R3", switchGroupsR3, dc, da, null, START_TO_STOP, new HashSet<>());
     }
 }
