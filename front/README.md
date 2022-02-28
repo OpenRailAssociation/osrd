@@ -1,12 +1,16 @@
 # Dependencies
 
+### Cross project
+* [i18n](https://www.i18next.com/) internationalization framework for javascript. Please keep it simple.
+
 ### Module osrdsimulation
 
 * [nivo](https://nivo.rocks/) Dataviz lib built on top of d3 and react. For certain generic viz. Could be used as a basis to render our special viz more adapted to react & d3- packages nivo/circle-packing and nivo/line
 * [turf.js](https:/turf.js) Javascript geospatial and analysis. Imported on a per-package basis
+* [react-rnd](https://github.com/bokuweb/react-rnd) Excellent container for resizable - movable visual component
 * immer - simplified immutable state control
 
-### Module osrdsimulation
+### Module editor
 
 * https://www.npmjs.com/package/@rjsf/core
 * https://www.npmjs.com/package/reselect
@@ -14,11 +18,13 @@
 
 ### Do not know where it is used
 
-* [deck.gl](https://deck.gl/) Fantatic webGl layered dataViz library. Can't find where the dep is used
-* [three.js](https://three.js) fantastic 3D lib (webGL) for WebGL. Can't find where the dep is used
-* [react-three](https://github.com/pmndrs/react-three-fiber) Fine React renderer for three.js . Can't find where the dep is used
 * debounce
+* jwt-decode
 
+### devDependencies
+
+* Better docs: still in use ? with
+* jsdocs
 
 
 ### Module editor
