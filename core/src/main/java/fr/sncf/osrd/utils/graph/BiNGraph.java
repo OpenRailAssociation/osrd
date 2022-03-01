@@ -24,7 +24,7 @@ public abstract class BiNGraph<
     }
 
     @Override
-    public void registerNode(NodeT node) {
+    public final void registerNode(NodeT node) {
         if (node.index == nodes.size())
             nodes.add(node);
         else
