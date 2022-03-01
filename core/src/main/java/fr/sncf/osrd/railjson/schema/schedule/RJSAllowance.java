@@ -50,9 +50,9 @@ public class RJSAllowance {
     @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
     public static final class RJSAllowanceRange {
         @Json(name = "begin_position")
-        public double beginPosition = Double.NaN;
+        public double beginPos = Double.NaN;
         @Json(name = "end_position")
-        public double endPosition = Double.NaN;
+        public double endPos = Double.NaN;
         @Json(name = "value")
         public RJSAllowanceValue value = null;
     }

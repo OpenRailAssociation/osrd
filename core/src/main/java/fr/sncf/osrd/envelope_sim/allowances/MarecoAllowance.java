@@ -29,7 +29,6 @@ public class MarecoAllowance implements Allowance {
     public final double beginPos;
     public final double endPos;
 
-    public final AllowanceValue allowanceValue;
     public final AllowanceRange[] ranges;
 
     // potential speed limit under which the train would use too much capacity
@@ -41,14 +40,12 @@ public class MarecoAllowance implements Allowance {
             double beginPos,
             double endPos,
             double capacitySpeedLimit,
-            AllowanceValue allowanceValue,
             AllowanceRange[] ranges
     ) {
         this.context = context;
         this.beginPos = beginPos;
         this.endPos = endPos;
         this.capacitySpeedLimit = capacitySpeedLimit;
-        this.allowanceValue = allowanceValue;
         this.ranges = ranges;
     }
 
@@ -110,18 +107,10 @@ public class MarecoAllowance implements Allowance {
         // get only the region on which the allowance applies
         var region = Envelope.make(base.slice(beginPos, endPos));
 
-        // compute the added time for all the allowance region
-        var distance = endPos - beginPos;
-        var allowanceAddedTime = allowanceValue.getAllowanceTime(region.getTotalTime(), distance);
-        // if no time is added, just return the base envelope without performing binary search
-        if (allowanceAddedTime == 0.0)
-            return base;
-        assert allowanceAddedTime > 0;
-
         // run the allowance algorithm on the
         var builder = new EnvelopeBuilder();
         builder.addParts(base.slice(Double.NEGATIVE_INFINITY, beginPos));
-        applyAllowanceRegion(builder, region, allowanceAddedTime);
+        applyAllowanceRegion(builder, region);
         builder.addParts(base.slice(endPos, Double.POSITIVE_INFINITY));
         var res = builder.build();
         assert res.continuous;
@@ -132,28 +121,49 @@ public class MarecoAllowance implements Allowance {
      * Apply the allowance to the region affected by the allowance.
      * Split the region into section which can be independently computed.
      */
-    private void applyAllowanceRegion(EnvelopeBuilder builder, Envelope allowanceRegion, double addedTime) {
-        var baseTime = allowanceRegion.getTotalTime();
-        var baseDistance = allowanceRegion.getTotalDistance();
+    private void applyAllowanceRegion(EnvelopeBuilder builder, Envelope envelopeRegion) {
+
+        for (var range : ranges) {
+            var envelopeRange = Envelope.make(envelopeRegion.slice(range.beginPos, range.endPos));
+            applyAllowanceRange(builder, envelopeRange, range.value);
+        }
+    }
+
+    /**
+     * Apply the allowance to the given range.
+     * Split the range into sections which can be independently computed.
+     */
+    private void applyAllowanceRange(EnvelopeBuilder builder, Envelope envelopeRange, AllowanceValue value) {
+
+        // compute the added time for all the allowance range
+        var baseTime = envelopeRange.getTotalTime();
+        var baseDistance = envelopeRange.getTotalDistance();
+        var addedTime = value.getAllowanceTime(baseTime, baseDistance);
+        // if no time is added, just return the base envelope without performing binary search
+        if (addedTime == 0.0) {
+            builder.addEnvelope(envelopeRange);
+            return;
+        }
+        assert addedTime > 0;
 
         // TODO: compute the slowest possible trip, and ensure the target time is within the realms of possibility
 
         // build a list of point between which the computation is divided
         // each division is a section
         var splitPoints = new DoubleArrayList();
-        splitPoints.add(allowanceRegion.getBeginPos());
-        splitPoints.addAll(findStops(allowanceRegion));
-        if (splitPoints.get(splitPoints.size() - 1) != allowanceRegion.getEndPos())
-            splitPoints.add(allowanceRegion.getEndPos());
+        splitPoints.add(envelopeRange.getBeginPos());
+        splitPoints.addAll(findStops(envelopeRange));
+        if (splitPoints.get(splitPoints.size() - 1) != envelopeRange.getEndPos())
+            splitPoints.add(envelopeRange.getEndPos());
 
         // run mareco on each section of the allowance region
         for (int i = 0; i < splitPoints.size() - 1; i++) {
             double sectionBegin = splitPoints.get(i);
             double sectionEnd = splitPoints.get(i + 1);
-            var section = Envelope.make(allowanceRegion.slice(sectionBegin, sectionEnd));
+            var section = Envelope.make(envelopeRange.slice(sectionBegin, sectionEnd));
             var sectionTime = section.getTotalTime();
             var sectionDistance = section.getTotalDistance();
-            var sectionRatio = allowanceValue.distribution.getSectionRatio(
+            var sectionRatio = value.distribution.getSectionRatio(
                     sectionTime, baseTime, sectionDistance, baseDistance);
             var targetTime = sectionTime + addedTime * sectionRatio;
             var marecoResult = applyAllowanceSection(section, targetTime);
@@ -263,6 +273,7 @@ public class MarecoAllowance implements Allowance {
         return res;
     }
 
+
     private EnvelopePart computeSlowdown(Envelope base, double v1) {
         var startSpeed = base.getBeginSpeed();
         if (startSpeed <= v1)
@@ -276,6 +287,7 @@ public class MarecoAllowance implements Allowance {
         EnvelopeDeceleration.decelerate(context, base.getBeginPos(), startSpeed, constrainedBuilder, 1);
         return partBuilder.build();
     }
+
 
     private EnvelopePart computeSpeedup(Envelope base, double v1) {
         var endSpeed = base.getEndSpeed();
