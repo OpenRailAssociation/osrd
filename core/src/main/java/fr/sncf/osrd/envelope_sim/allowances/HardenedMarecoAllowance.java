@@ -31,6 +31,7 @@ public class HardenedMarecoAllowance implements Allowance {
     public final double endPos;
 
     public final AllowanceValue allowanceValue;
+    public final AllowanceRange[] ranges;
 
     // potential speed limit under which the train would use too much capacity
     public final double capacitySpeedLimit;
@@ -41,13 +42,15 @@ public class HardenedMarecoAllowance implements Allowance {
             double beginPos,
             double endPos,
             double capacitySpeedLimit,
-            AllowanceValue allowanceValue
+            AllowanceValue allowanceValue,
+            AllowanceRange[] ranges
     ) {
         this.context = context;
         this.beginPos = beginPos;
         this.endPos = endPos;
         this.capacitySpeedLimit = capacitySpeedLimit;
         this.allowanceValue = allowanceValue;
+        this.ranges = ranges;
     }
 
     private Envelope intersectSlowdownSpeedup(EnvelopePart slowdown, EnvelopePart speedup) {

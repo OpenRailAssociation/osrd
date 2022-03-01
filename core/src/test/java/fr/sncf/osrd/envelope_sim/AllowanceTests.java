@@ -29,7 +29,7 @@ public class AllowanceTests {
             double capacitySpeedLimit,
             AllowanceValue value
     ) {
-        return new HardenedMarecoAllowance(context, beginPos, endPos, capacitySpeedLimit, value);
+        return new HardenedMarecoAllowance(context, beginPos, endPos, capacitySpeedLimit, value, null);
     }
 
     public static double getDistance(HardenedMarecoAllowance allowance) {
