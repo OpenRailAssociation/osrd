@@ -25,7 +25,8 @@ public class RJSAllowance {
         @Json(name = "default_value")
         public RJSAllowanceValue defaultValue = null;
 
-        public RJSRangeAllowance[] ranges = null;
+        @Json(name = "ranges")
+        public RJSAllowanceRange[] ranges = null;
 
         @Json(name = "capacity_speed_limit")
         public double capacitySpeedLimit = -1;
@@ -35,6 +36,11 @@ public class RJSAllowance {
             this.ranges = null;
         }
 
+        public Mareco(RJSAllowanceValue defaultValue, RJSAllowanceRange[] ranges) {
+            this.defaultValue = defaultValue;
+            this.ranges = ranges;
+        }
+
         public Mareco() {
             this.defaultValue = null;
             this.ranges = null;
@@ -42,11 +48,12 @@ public class RJSAllowance {
     }
 
     @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-    public static final class RJSRangeAllowance {
+    public static final class RJSAllowanceRange {
         @Json(name = "begin_position")
         public double beginPosition = Double.NaN;
         @Json(name = "end_position")
         public double endPosition = Double.NaN;
+        @Json(name = "value")
         public RJSAllowanceValue value = null;
     }
 }

@@ -6,6 +6,7 @@ import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceDistribution;
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
+import fr.sncf.osrd.envelope_sim.allowances.*;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.parser.exceptions.UnknownRollingStock;
@@ -67,22 +68,45 @@ public class RJSStandaloneTrainScheduleParser {
                     new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
                     rjsConstruction.beginPosition, rjsConstruction.endPosition,
                     getPositiveDoubleOrDefault(rjsConstruction.capacitySpeedLimit, 30 / 3.6),
-                    parseAllowanceValue(rjsConstruction.value));
+                    parseAllowanceValue(rjsConstruction.value),
+                    null
+            );
         }
         if (rjsAllowance.getClass() == RJSAllowance.Mareco.class) {
             var rjsMareco = (RJSAllowance.Mareco) rjsAllowance;
-            if (rjsMareco.ranges != null && rjsMareco.ranges.length > 0)
-                throw new InvalidSchedule("mareco value ranges aren't yet implemented");
             if (rjsMareco.defaultValue == null)
                 throw new InvalidSchedule("missing mareco default_value");
+            if (rjsMareco.ranges != null && rjsMareco.ranges.length > 0)
+                return new MarecoAllowance(
+                        new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
+                        0, envelopePath.getLength(),
+                        getPositiveDoubleOrDefault(rjsMareco.capacitySpeedLimit, 30 / 3.6),
+                        parseAllowanceValue(rjsMareco.defaultValue),
+                        parseAllowanceRanges(rjsMareco.ranges)
+                );
             return new MarecoAllowance(
                     new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
                     0, envelopePath.getLength(),
                     getPositiveDoubleOrDefault(rjsMareco.capacitySpeedLimit, 30 / 3.6),
-                    parseAllowanceValue(rjsMareco.defaultValue));
+                    parseAllowanceValue(rjsMareco.defaultValue),
+                    null
+            );
         }
 
         throw new RuntimeException("unknown allowance type");
+    }
+
+    private static AllowanceRange[] parseAllowanceRanges(RJSAllowance.RJSAllowanceRange[] ranges)
+            throws InvalidSchedule {
+        AllowanceRange[] res = new AllowanceRange[ranges.length];
+        for (var i = 0; i < ranges.length; i++) {
+            res[i] = parseAllowanceRange(ranges[i]);
+        }
+        return res;
+    }
+
+    private static AllowanceRange parseAllowanceRange(RJSAllowance.RJSAllowanceRange range) throws InvalidSchedule {
+        return new AllowanceRange(range.beginPosition, range.endPosition, parseAllowanceValue(range.value));
     }
 
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
