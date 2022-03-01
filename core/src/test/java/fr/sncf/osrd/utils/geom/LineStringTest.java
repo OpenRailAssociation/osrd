@@ -96,4 +96,56 @@ class LineStringTest {
         var expectedPoint = new Point(2.0, 3.0);
         assertEquals(expectedPoint, lineString.interpolateNormalized(0.5));
     }
+
+    @Test
+    public void testInterpolateNormalized4() {
+        var lineString = LineString.make(new double[]{1.0, 2.0, 3.0, 4.0}, new double[]{2.0, 3.0, 4.0, 5.0});
+        var expectedPoint = new Point(4.0, 5.0);
+        assertEquals(expectedPoint, lineString.interpolateNormalized(1.0));
+    }
+
+    @Test
+    public void testLineStringSlicePoints1() {
+        var lineString = LineString.make(new double[]{1.0, 2.0, 3.0}, new double[]{2.0, 3.0, 4.0});
+        var newLineString = lineString.slice(0, 1);
+        var expectedLinestring = LineString.make(new double[]{1.0, 2.0, 3.0}, new double[]{2.0, 3.0, 4.0});
+        assertEquals(expectedLinestring.getPoints(), newLineString.getPoints());
+        assertEquals(expectedLinestring.getLength(), newLineString.getLength());
+    }
+
+    @Test
+    public void testLineStringSlicePoints2() {
+        var lineString = LineString.make(new double[]{1.0, 2.0, 3.0, 4.0, 5.0}, new double[]{2.0, 3.0, 4.0, 5.0, 6.0});
+        var newLineString = lineString.slice(0.25, 1);
+        var expectedLinestring = LineString.make(new double[]{2.0, 3.0, 4.0, 5.0}, new double[]{3.0, 4.0, 5.0, 6.0});
+        assertEquals(expectedLinestring.getPoints(), newLineString.getPoints());
+        assertEquals(expectedLinestring.getLength(), newLineString.getLength());
+    }
+
+    @Test
+    public void testLineStringSlicePoints3() {
+        var lineString = LineString.make(new double[]{1.0, 2.0, 3.0, 4.0, 5.0}, new double[]{2.0, 3.0, 4.0, 5.0, 6.0});
+        var newLineString = lineString.slice(0, 0.75);
+        var expectedLinestring = LineString.make(new double[]{1.0, 2.0, 3.0, 4.0}, new double[]{2.0, 3.0, 4.0, 5.0});
+        assertEquals(expectedLinestring.getPoints(), newLineString.getPoints());
+        assertEquals(expectedLinestring.getLength(), newLineString.getLength());
+    }
+
+    @Test
+    public void testLineStringSlicePoints4() {
+        var lineString = LineString.make(new double[]{1.0, 2.0, 3.0, 4.0, 5.0}, new double[]{2.0, 3.0, 4.0, 5.0, 6.0});
+        var newLineString = lineString.slice(0.25, 0.75);
+        var expectedLinestring = LineString.make(new double[]{2.0, 3.0, 4.0}, new double[]{3.0, 4.0, 5.0});
+        assertEquals(expectedLinestring.getPoints(), newLineString.getPoints());
+        assertEquals(expectedLinestring.getLength(), newLineString.getLength());
+    }
+
+    @Test
+    public void testLineStringSlicePointsReverse() {
+        var lineString = LineString.make(new double[]{1.0, 2.0, 3.0, 4.0, 5.0}, new double[]{2.0, 3.0, 4.0, 5.0, 6.0});
+        var newLineString = lineString.slice(0.75, 0.25);
+        var expectedLinestring = LineString.make(new double[]{4.0, 3.0, 2.0}, new double[]{5.0, 4.0, 3.0});
+        assertEquals(expectedLinestring.getPoints(), newLineString.getPoints());
+        assertEquals(expectedLinestring.getLength(), newLineString.getLength());
+    }
 }
