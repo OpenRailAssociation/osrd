@@ -266,6 +266,8 @@ const enableInteractivity = (
           timePositionLocal
         );
 
+
+
         debounceUpdateTimePositionValues(timePositionLocal, immediatePositionsValues, 5);
 
         updatePointers(chart, keyValues, listValues, immediatePositionsValues, rotate);
@@ -276,15 +278,18 @@ const enableInteractivity = (
           : chart.x.invert(d3.mouse(d3.event.currentTarget)[0]);
         const timePositionLocal = interpolateOnPosition(dataSimulation, keyValues, positionLocal);
         if (timePositionLocal) {
+
+
+          // Move all this logic on redux
           const immediatePositionsValues = interpolateOnTime(
             dataSimulation,
-            keyValues,
+            ['time'],
             LIST_VALUES_NAME_SPACE_TIME,
-            timePositionLocal
-          );
+            timePositionLocal);
 
-          debounceUpdateTimePositionValues(timePositionLocal, immediatePositionsValues, 5);
+          debounceUpdateTimePositionValues(timePositionLocal, immediatePositionsValues, 500);
           updatePointers(chart, keyValues, listValues, immediatePositionsValues, rotate);
+
         }
       }
 

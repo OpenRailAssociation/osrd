@@ -26,31 +26,43 @@ export default function drawTrain(
   const initialDrag = rotate ? chart.y.invert(0) : chart.x.invert(0);
   let dragValue = 0;
 
-  const dragTimeOffset = (unDrillValue = false) => {
-    dragValue += rotate ? d3.event.dy : d3.event.dx;
-    console.log('dragValue', dragValue);
-    const translation = rotate ? `0,${dragValue}` : `${dragValue},0`;
-    d3.select(`#${groupID}`).attr('transform', `translate(${translation})`);
+  let dragFullOffset = 0;
+  /**
+   * Compute, in sceonds, the offset to drill down to the parent through setDragOffset passed hook
+   *
+   */
+  const dragTimeOffset = () => {
     const value = rotate
-      ? Math.floor((chart.y.invert(d3.event.dy) - initialDrag) / 1000)
-      : Math.floor((chart.x.invert(d3.event.dx) - initialDrag) / 1000);
-    console.log('value', value);
-    if (unDrillValue) setDragOffset(value);
+      ? Math.floor((chart.y.invert(dragFullOffset) - initialDrag) / 1000)
+      : Math.floor((chart.x.invert(dragFullOffset) - initialDrag) / 1000);
     setDragOffset(value);
+  };
+
+  /**
+   * Apply a contextual translation on a viz group on the chart.
+   * @todo pure it, pass chartID, rotate as params
+   *
+   * @param {int} offset
+   */
+  const applyTrainCurveTranslation = (offset) => {
+    const translation = rotate ? `0,${offset}` : `${offset},0`;
+    d3.select(`#${groupID}`).attr('transform', `translate(${translation})`);
   };
 
   const drag = d3
     .drag()
     .on('end', () => {
-      dragTimeOffset(true);
+      dragTimeOffset();
       setDragEnding(true);
       dispatch(updateMustRedraw(true));
     })
     .on('start', () => {
+      dragFullOffset = 0
       dispatch(updateSelectedTrain(dataSimulation.trainNumber));
     })
     .on('drag', () => {
-      dragTimeOffset();
+      dragFullOffset += rotate ? d3.event.dy : d3.event.dx;
+      applyTrainCurveTranslation(dragFullOffset)
     });
 
   chart.drawZone
