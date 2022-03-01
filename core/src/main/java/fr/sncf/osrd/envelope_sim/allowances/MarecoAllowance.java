@@ -242,7 +242,8 @@ public class MarecoAllowance implements Allowance {
             List<Double> endOfCoastingPositions
     ) {
         for (var position : endOfCoastingPositions) {
-            var part = envelope.getEnvelopePartLeft(position);
+            var partIndex = envelope.findLeft(position);
+            var part = partIndex < 0 ? null : envelope.get(partIndex);
             if (part == null || (part.hasAttr(EnvelopeProfile.ACCELERATING) && part.getBeginPos() < position))
                 continue; // Starting a coasting curve in an acceleration part would stop instantly and trigger asserts
 
@@ -327,7 +328,7 @@ public class MarecoAllowance implements Allowance {
     /** Moves the position forward until it's not in a braking section,
      * returns -1 if it reaches the end of the path*/
     private double moveForwardUntilNotBraking(Envelope base, double position) {
-        var envelopeIndex = base.findEnvelopePartIndexLeft(position);
+        var envelopeIndex = base.findLeft(position);
         while (envelopeIndex < base.size() && isBraking(base.get(envelopeIndex)))
             envelopeIndex++;
         if (envelopeIndex >= base.size())
@@ -339,7 +340,7 @@ public class MarecoAllowance implements Allowance {
     /** Moves the position backwards until it's not in an accelerating section,
      * returns -1 if it reaches the beginning of the path*/
     private double moveBackwardsUntilNotAccelerating(Envelope base, double position) {
-        var envelopeIndex = base.findEnvelopePartIndexLeft(position);
+        var envelopeIndex = base.findLeft(position);
         while (envelopeIndex >= 0 && base.get(envelopeIndex).hasAttr(EnvelopeProfile.ACCELERATING))
             envelopeIndex--;
         if (envelopeIndex < 0)

@@ -1,6 +1,7 @@
 package fr.sncf.osrd.envelope;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import fr.sncf.osrd.envelope.EnvelopeTestUtils.TestAttr;
 import org.junit.jupiter.api.Test;
@@ -45,22 +46,22 @@ class EnvelopePartTest {
                 new double[] {3, 4, 4}
         );
 
-        assertEquals(0, ep.findStepLeft(1.5));
-        assertEquals(0, ep.findStepRight(1.5));
+        assertEquals(0, ep.findLeft(1.5));
+        assertEquals(0, ep.findRight(1.5));
 
-        assertEquals(0, ep.findStepLeft(3));
-        assertEquals(1, ep.findStepRight(3));
+        assertEquals(0, ep.findLeft(3));
+        assertEquals(1, ep.findRight(3));
 
-        assertEquals(1, ep.findStepLeft(3.5));
-        assertEquals(1, ep.findStepRight(3.5));
+        assertEquals(1, ep.findLeft(3.5));
+        assertEquals(1, ep.findRight(3.5));
 
-        assertEquals(1, ep.findStepLeft(5));
-        assertEquals(1, ep.findStepRight(5));
+        assertEquals(1, ep.findLeft(5));
+        assertEquals(1, ep.findRight(5));
 
-        assertThrows(AssertionError.class, () -> ep.findStepLeft(1));
-        assertThrows(AssertionError.class, () -> ep.findStepLeft(5.1));
-        assertThrows(AssertionError.class, () -> ep.findStepRight(1));
-        assertThrows(AssertionError.class, () -> ep.findStepRight(5.1));
+        assertEquals(-1,  ep.findLeft(1));
+        assertEquals(-4,  ep.findLeft(5.1));
+        assertEquals(-1,  ep.findRight(1));
+        assertEquals(-4, ep.findRight(5.1));
     }
 
     @Test
