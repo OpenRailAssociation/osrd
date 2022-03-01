@@ -7,7 +7,7 @@ import fr.sncf.osrd.utils.CmpOperator;
 import java.util.function.Predicate;
 
 
-public class EnvelopeCursor {
+public final class EnvelopeCursor {
     /** The number of times this cursor was moved */
     private int revision;
 
