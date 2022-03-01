@@ -5,7 +5,7 @@ import fr.sncf.osrd.envelope_sim.EnvelopePath;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceDistribution;
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue;
-import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
+import fr.sncf.osrd.envelope_sim.allowances.HardenedMarecoAllowance;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.parser.exceptions.UnknownRollingStock;
@@ -36,7 +36,7 @@ public class RJSStandaloneTrainScheduleParser {
             throw new InvalidSchedule("invalid initial speed");
 
         // parse allowances
-        var allowances = new ArrayList<MarecoAllowance>();
+        var allowances = new ArrayList<HardenedMarecoAllowance>();
         if (rjsTrainSchedule.allowances != null)
             for (var rjsAllowance : rjsTrainSchedule.allowances)
                 allowances.add(parseAllowance(timeStep, rollingStock, envelopePath, rjsAllowance));
@@ -51,7 +51,7 @@ public class RJSStandaloneTrainScheduleParser {
     }
 
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
-    private static MarecoAllowance parseAllowance(
+    private static HardenedMarecoAllowance parseAllowance(
             double timeStep,
             RollingStock rollingStock,
             EnvelopePath envelopePath,
@@ -63,7 +63,7 @@ public class RJSStandaloneTrainScheduleParser {
                 throw new InvalidSchedule("missing construction allowance begin_position");
             if (Double.isNaN(rjsConstruction.endPosition))
                 throw new InvalidSchedule("missing construction allowance end_position");
-            return new MarecoAllowance(
+            return new HardenedMarecoAllowance(
                     new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
                     rjsConstruction.beginPosition, rjsConstruction.endPosition,
                     getPositiveDoubleOrDefault(rjsConstruction.capacitySpeedLimit, 30 / 3.6),
@@ -76,7 +76,7 @@ public class RJSStandaloneTrainScheduleParser {
                 throw new InvalidSchedule("mareco value ranges aren't yet implemented");
             if (rjsMareco.defaultValue == null)
                 throw new InvalidSchedule("missing mareco default_value");
-            return new MarecoAllowance(
+            return new HardenedMarecoAllowance(
                     new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
                     0, envelopePath.getLength(),
                     getPositiveDoubleOrDefault(rjsMareco.capacitySpeedLimit, 30 / 3.6),
