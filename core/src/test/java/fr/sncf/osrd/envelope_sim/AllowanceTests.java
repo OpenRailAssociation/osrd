@@ -13,6 +13,7 @@ import fr.sncf.osrd.exceptions.OSRDError;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.EnvelopeShape;
 import fr.sncf.osrd.envelope.EnvelopeTransitions;
+import fr.sncf.osrd.envelope_sim.allowances.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.allowances.HardenedMarecoAllowance;
 import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.MarecoConvergenceException;
@@ -28,7 +29,9 @@ public class AllowanceTests {
             double capacitySpeedLimit,
             AllowanceValue value
     ) {
-        return new HardenedMarecoAllowance(context, beginPos, endPos, capacitySpeedLimit, value, null);
+        AllowanceRange[] defaultRange = new AllowanceRange[1];
+        defaultRange[0] = new AllowanceRange(beginPos, endPos, value);
+        return new HardenedMarecoAllowance(context, beginPos, endPos, capacitySpeedLimit, defaultRange);
     }
 
     public static double getDistance(HardenedMarecoAllowance allowance) {
