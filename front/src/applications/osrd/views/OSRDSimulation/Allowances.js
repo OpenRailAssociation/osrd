@@ -296,10 +296,11 @@ export default function Allowances(props) {
       }));
       setIsUpdating(false);
     } catch (e) {
+      setIsUpdating(false);
       console.log('ERROR', e);
       dispatch(setFailure({
         name: e.name,
-        message: e.message,
+        message: e.request.responseText,
       }));
     }
   };
