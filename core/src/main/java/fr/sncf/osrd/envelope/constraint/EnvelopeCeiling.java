@@ -15,14 +15,14 @@ public class EnvelopeCeiling implements EnvelopePartConstraint {
 
     @Override
     public boolean initCheck(double direction, double position, double speed) {
-        var partIndex = envelope.findEnvelopePartIndexRightDir(position, direction);
+        var partIndex = envelope.findRightDir(position, direction);
 
         // if the position is off the envelope, fail
         if (partIndex == -1)
             return false;
 
         var part = envelope.get(partIndex);
-        var stepIndex = part.findStepRightDir(position, direction);
+        var stepIndex = part.findRightDir(position, direction);
         var envelopeSpeed = part.interpolateSpeed(stepIndex, position);
         cursor = new EnvelopeCursor(envelope, direction < 0, partIndex, stepIndex, position);
         return envelopeSpeed >= speed;

@@ -62,7 +62,7 @@ public final class OverlayEnvelopeBuilder {
         double sliceBeginSpeed = Double.NaN;
         if (previousOverlay != null) {
             sliceBeginPos = previousOverlay.getEndPos();
-            int partIndex = base.findEnvelopePartIndexRight(sliceBeginPos);
+            int partIndex = base.findRight(sliceBeginPos);
             var baseSpeed = base.get(partIndex).interpolateSpeed(sliceBeginPos);
             if (Math.abs(baseSpeed - previousOverlay.getEndSpeed()) < 1e-6)
                 sliceBeginSpeed = previousOverlay.getEndSpeed();
@@ -71,7 +71,7 @@ public final class OverlayEnvelopeBuilder {
         double sliceEndSpeed = Double.NaN;
         if (currentOverlay != null) {
             sliceEndPos = currentOverlay.getBeginPos();
-            int partIndex = base.findEnvelopePartIndexLeft(sliceEndPos);
+            int partIndex = base.findLeft(sliceEndPos);
             var baseSpeed = base.get(partIndex).interpolateSpeed(sliceEndPos);
             if (Math.abs(baseSpeed - currentOverlay.getBeginSpeed()) < 1e-6)
                 sliceEndSpeed = currentOverlay.getBeginSpeed();

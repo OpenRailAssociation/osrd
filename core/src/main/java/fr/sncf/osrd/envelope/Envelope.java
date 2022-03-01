@@ -8,11 +8,14 @@ import java.util.stream.Stream;
 
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-public final class Envelope implements Iterable<EnvelopePart> {
+public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelope {
     private final EnvelopePart[] parts;
     public final boolean continuous;
 
     // region CACHE FIELDS
+
+    /** Contains the position of all transitions, including the beginning and end positions */
+    private final double[] partPositions;
 
     // these two fields could be public, but aren't for the sake of keeping the ability to compute these values lazily
     /** The highest speed */
@@ -52,6 +55,13 @@ public final class Envelope implements Iterable<EnvelopePart> {
             if (partMaxSpeed > maxSpeed)
                 maxSpeed = partMaxSpeed;
         }
+
+        // fill the part transition positions cache
+        var partPositions = new double[parts.length + 1];
+        partPositions[0] = parts[0].getBeginPos();
+        for (int i = 0; i < parts.length; i++)
+            partPositions[i + 1] = parts[i].getEndPos();
+        this.partPositions = partPositions;
 
         this.parts = parts;
         this.continuous = continuous;
@@ -108,74 +118,46 @@ public final class Envelope implements Iterable<EnvelopePart> {
 
     // endregion
 
-    /** Returns the first envelope part which contains this position. */
-    public int findEnvelopePartIndexLeft(double position) {
-        for (int i = 0; i < parts.length; i++) {
-            var part = parts[i];
-            if (position >= part.getBeginPos() && position <= part.getEndPos())
-                return i;
-        }
-        return -1;
+    // region SEARCH
+
+    @Override
+    public int binarySearchPositions(double position) {
+        return Arrays.binarySearch(partPositions, position);
     }
 
-    /** Returns the last envelope part which contains this position. */
-    public int findEnvelopePartIndexRight(double position) {
-        for (int i = parts.length - 1; i >= 0; i--) {
-            var part = parts[i];
-            if (position >= part.getBeginPos() && position <= part.getEndPos())
-                return i;
-        }
-        return -1;
+    @Override
+    public int positionPointsCount() {
+        return partPositions.length;
     }
 
-    /** Returns the first envelope part index along the given direction. */
-    public int findEnvelopePartIndexLeftDir(double position, double direction) {
-        if (direction > 0)
-            return findEnvelopePartIndexLeft(position);
-        return findEnvelopePartIndexRight(position);
-    }
-
-    /** Returns the last envelope part index along the given direction. */
-    public int findEnvelopePartIndexRightDir(double position, double direction) {
-        if (direction > 0)
-            return findEnvelopePartIndexRight(position);
-        return findEnvelopePartIndexLeft(position);
-    }
-
-    /** Returns the first envelope part which contains this position */
-    public EnvelopePart getEnvelopePartLeft(double position) {
-        var index = findEnvelopePartIndexLeft(position);
-        if (index == -1)
-            return null;
-        return get(index);
-    }
+    // endregion
 
     // region INTERPOLATION
 
     /** Returns the interpolated speed at a given position. Assumes the envelope is continuous. */
     public double interpolateSpeed(double position) {
         assert continuous : "interpolating speeds on a non continuous envelope is a risky business";
-        var envelopePartIndex = findEnvelopePartIndexLeft(position);
+        var envelopePartIndex = findLeft(position);
         assert envelopePartIndex != -1;
         return get(envelopePartIndex).interpolateSpeed(position);
     }
 
     /** Interpolates speeds, prefers EnvelopeParts coming from the left, along the given direction */
     public double interpolateSpeedLeftDir(double position, double direction) {
-        var partIndex = findEnvelopePartIndexLeftDir(position, direction);
+        var partIndex = findLeftDir(position, direction);
         return get(partIndex).interpolateSpeed(position);
     }
 
     /** Interpolates speeds, prefers EnvelopeParts coming from the right, along the given direction */
     public double interpolateSpeedRightDir(double position, double direction) {
-        var partIndex = findEnvelopePartIndexRightDir(position, direction);
+        var partIndex = findRightDir(position, direction);
         return get(partIndex).interpolateSpeed(position);
     }
 
     /** Computes the time required to get to a given point of the envelope */
     public long interpolateTotalTimeMS(double position) {
         assert continuous : "interpolating times on a non continuous envelope is a risky business";
-        var envelopePartIndex = findEnvelopePartIndexLeft(position);
+        var envelopePartIndex = findLeft(position);
         assert envelopePartIndex != -1 : "Trying to interpolate time outside of the envelope";
         var envelopePart = get(envelopePartIndex);
         return getCumulativeTimeMS(envelopePartIndex) + envelopePart.interpolateTotalTimeMS(position);
@@ -245,17 +227,17 @@ public final class Envelope implements Iterable<EnvelopePart> {
         int beginIndex = 0;
         var beginPartIndex = 0;
         if (beginPosition != Double.NEGATIVE_INFINITY) {
-            beginPartIndex = findEnvelopePartIndexRight(beginPosition);
+            beginPartIndex = findRight(beginPosition);
             var beginPart = parts[beginPartIndex];
-            beginIndex = beginPart.findStepRight(beginPosition);
+            beginIndex = beginPart.findRight(beginPosition);
         }
         var endPartIndex = parts.length - 1;
         var endPart = parts[endPartIndex];
         int endIndex = endPart.stepCount() - 1;
         if (endPosition != Double.POSITIVE_INFINITY) {
-            endPartIndex = findEnvelopePartIndexLeft(endPosition);
+            endPartIndex = findLeft(endPosition);
             endPart = parts[endPartIndex];
-            endIndex = endPart.findStepLeft(endPosition);
+            endIndex = endPart.findLeft(endPosition);
         }
         return slice(beginPartIndex, beginIndex, beginPosition, beginSpeed,
                 endPartIndex, endIndex, endPosition, endSpeed);
