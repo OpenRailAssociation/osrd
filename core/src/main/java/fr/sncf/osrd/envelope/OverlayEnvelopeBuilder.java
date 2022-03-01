@@ -1,5 +1,6 @@
 package fr.sncf.osrd.envelope;
 
+import fr.sncf.osrd.envelope.part.EnvelopePart;
 import java.util.ArrayDeque;
 
 /**

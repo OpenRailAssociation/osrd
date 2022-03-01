@@ -34,7 +34,7 @@
  *     <li>An envelope can be be overlayed with a new envelope part:
  *     {@link fr.sncf.osrd.envelope.OverlayEnvelopeBuilder}</li>
  *     <li>Each envelope part can store arbitrary metadata:
- *     {@link fr.sncf.osrd.envelope.EnvelopePartMeta}</li>
+ *     {@link fr.sncf.osrd.envelope.EnvelopeAttr}</li>
  * </ul>
  */
 package fr.sncf.osrd.envelope;

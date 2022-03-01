@@ -2,6 +2,7 @@ package fr.sncf.osrd.envelope;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import fr.sncf.osrd.envelope.part.EnvelopePart;
 import org.junit.jupiter.api.Test;
 
 public class EnvelopeBuilderTest {

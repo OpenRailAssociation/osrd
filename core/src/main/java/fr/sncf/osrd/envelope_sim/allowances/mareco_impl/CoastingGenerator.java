@@ -1,11 +1,11 @@
 package fr.sncf.osrd.envelope_sim.allowances.mareco_impl;
 
-import static fr.sncf.osrd.envelope_sim.overlays.EnvelopeCoasting.COASTING;
-
 import fr.sncf.osrd.envelope.*;
-import fr.sncf.osrd.envelope.constraint.ConstrainedEnvelopePartBuilder;
-import fr.sncf.osrd.envelope.constraint.EnvelopeCeiling;
-import fr.sncf.osrd.envelope.constraint.SpeedFloor;
+import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
+import fr.sncf.osrd.envelope.part.constraints.EnvelopeCeiling;
+import fr.sncf.osrd.envelope.part.constraints.SpeedFloor;
+import fr.sncf.osrd.envelope.part.EnvelopePart;
+import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
 import fr.sncf.osrd.envelope_sim.*;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeCoasting;
 

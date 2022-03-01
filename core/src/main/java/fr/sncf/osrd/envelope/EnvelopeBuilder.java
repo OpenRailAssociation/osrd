@@ -1,5 +1,6 @@
 package fr.sncf.osrd.envelope;
 
+import fr.sncf.osrd.envelope.part.EnvelopePart;
 import java.util.ArrayList;
 
 /** Creates an envelope by concatenating envelope parts. Envelope parts must not overlap. */

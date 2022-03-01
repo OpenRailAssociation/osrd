@@ -1,10 +1,8 @@
 package fr.sncf.osrd.envelope_sim.allowances.mareco_impl;
 
 import fr.sncf.osrd.envelope.Envelope;
-import fr.sncf.osrd.envelope.EnvelopePart;
+import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
-import fr.sncf.osrd.envelope_sim.PhysicsPath;
-import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import java.util.ArrayList;
 
 public class BrakingPhaseCoast implements CoastingOpportunity {

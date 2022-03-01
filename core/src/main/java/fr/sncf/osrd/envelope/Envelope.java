@@ -1,6 +1,7 @@
 package fr.sncf.osrd.envelope;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.envelope.part.EnvelopePart;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;

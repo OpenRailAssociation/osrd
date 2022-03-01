@@ -3,6 +3,8 @@ package fr.sncf.osrd.envelope;
 import static fr.sncf.osrd.envelope.MaxEnvelopeBuilder.EnvelopeChangeType.*;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.envelope.part.EnvelopePart;
+import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
 import java.util.ArrayList;
 import java.util.Collections;
 
