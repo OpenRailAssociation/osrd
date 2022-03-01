@@ -1,5 +1,7 @@
 package fr.sncf.osrd.simulation;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 public abstract class Change {
     public enum State {
         // the simulation doesn't yet know about this change
@@ -13,6 +15,7 @@ public abstract class Change {
     // this state is only for debug, serializing it makes no sense at all
     public transient State state = State.UNREGISTERED;
 
+    @SuppressFBWarnings("MC_OVERRIDABLE_METHOD_CALL_IN_CONSTRUCTOR")
     protected Change(Simulation sim) {
         sim.onChangeCreated(this);
     }

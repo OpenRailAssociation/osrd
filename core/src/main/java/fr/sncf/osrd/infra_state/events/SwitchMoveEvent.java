@@ -7,11 +7,8 @@ import fr.sncf.osrd.simulation.Simulation;
 import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.simulation.TimelineEvent;
 import fr.sncf.osrd.simulation.TimelineEventId;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class SwitchMoveEvent extends TimelineEvent {
-    static final Logger logger = LoggerFactory.getLogger(SwitchMoveEvent.class);
+public final class SwitchMoveEvent extends TimelineEvent {
     private final String newGroup;
     public final SwitchState switchState;
     private final RouteState routeState;
@@ -43,7 +40,7 @@ public class SwitchMoveEvent extends TimelineEvent {
         if (other.getClass() != SwitchMoveEvent.class)
             return false;
         var o = (SwitchMoveEvent) other;
-        return o.newGroup == newGroup && o.switchState.equals(switchState) && o.routeState.equals(routeState);
+        return o.newGroup.equals(newGroup) && o.switchState.equals(switchState) && o.routeState.equals(routeState);
     }
 
     /** Plan a SwitchMoveEvent creating a change that schedule it */

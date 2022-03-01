@@ -13,7 +13,7 @@ import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.DirNEdge;
 import java.util.*;
 
-public class Route extends DirNEdge {
+public final class Route extends DirNEdge {
     public final String id;
     /** List of tvdSectionPath forming the route */
     public final List<TVDSectionPath> tvdSectionsPaths;

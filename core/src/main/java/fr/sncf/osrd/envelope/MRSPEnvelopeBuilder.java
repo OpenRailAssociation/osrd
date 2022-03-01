@@ -99,22 +99,22 @@ public final class MRSPEnvelopeBuilder {
     }
 
     private void updateMinPart(double currentPosition) {
-        var oldMinSpeed = currentMinSpeed;
-        var oldMinPart = currentMinPart;
+        if (activeParts.isEmpty()) {
+            assert currentMinPart == null;
+            return;
+        }
 
         // find the minimum curve
-        if (activeParts.isEmpty())
-            assert currentMinPart == null;
-        else {
-            currentMinSpeed = Double.POSITIVE_INFINITY;
-            for (var env : activeParts) {
-                var envSpeed = env.getMinSpeed();
-                if (envSpeed >= currentMinSpeed)
-                    continue;
+        var oldMinSpeed = currentMinSpeed;
+        var oldMinPart = currentMinPart;
+        currentMinSpeed = Double.POSITIVE_INFINITY;
+        for (var env : activeParts) {
+            var envSpeed = env.getMinSpeed();
+            if (envSpeed >= currentMinSpeed)
+                continue;
 
-                currentMinSpeed = envSpeed;
-                currentMinPart = env;
-            }
+            currentMinSpeed = envSpeed;
+            currentMinPart = env;
         }
 
         if (oldMinPart == currentMinPart)
@@ -127,6 +127,7 @@ public final class MRSPEnvelopeBuilder {
          */
         if (oldMinPart != null)
             currentPartBuilder.addStep(currentPosition, oldMinSpeed);
+        assert currentMinPart != null;
         newResultPart(currentMinPart, currentPosition, currentMinSpeed);
     }
 
