@@ -146,7 +146,7 @@ public class LineString {
         assert distance >= 0.;
         assert distance <= cumulativeLength;
         int interval = 0;
-        while (distance > lengths[interval]) {
+        while (interval < lengths.length - 1 && distance > lengths[interval]) {
             distance -= lengths[interval];
             interval++;
         }
@@ -169,6 +169,51 @@ public class LineString {
         assert distance <= 1;
         assert distance >= 0;
         return interpolate(distance * cumulativeLength);
+    }
+
+    /**
+     * A troncate a LineString from begin to end
+     * begin and end are distance on the LineString
+     * begin and end are between 0.0 and 1.0
+     */
+    public LineString slice(double begin, double end) {
+        assert begin >= 0 && begin <= 1;
+        assert end >= 0 && end <= 1;
+
+        if (begin > end)
+            return slice(end, begin).reverse();
+
+        if (Double.compare(begin, 0) == 0 && Double.compare(end, 1) == 0)
+            return this;
+
+        var newBufferX = new DoubleArrayList();
+        var newBufferY = new DoubleArrayList();
+
+        var firstPoint = interpolateNormalized(begin);
+        newBufferX.add(firstPoint.x);
+        newBufferY.add(firstPoint.y);
+
+        var intervalIndex = 1;
+        var currentLength = lengths[0];
+        // skip first points
+        while (begin >= currentLength / cumulativeLength && intervalIndex < lengths.length) {
+            currentLength += lengths[intervalIndex];
+            intervalIndex++;
+        }
+        // add intermediate points
+        while (currentLength / cumulativeLength < end && intervalIndex < lengths.length) {
+            newBufferX.add(bufferX[intervalIndex]);
+            newBufferY.add(bufferY[intervalIndex]);
+            currentLength += lengths[intervalIndex];
+            intervalIndex++;
+        }
+        // add the last point
+
+        var lastPoint = interpolateNormalized(end);
+        newBufferX.add(lastPoint.x);
+        newBufferY.add(lastPoint.y);
+
+        return LineString.make(newBufferX.toArray(), newBufferY.toArray());
     }
 
     public static class Adapter extends JsonAdapter<LineString> {
