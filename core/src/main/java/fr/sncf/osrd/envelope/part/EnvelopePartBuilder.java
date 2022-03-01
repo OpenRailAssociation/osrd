@@ -1,7 +1,9 @@
-package fr.sncf.osrd.envelope;
+package fr.sncf.osrd.envelope.part;
 
 import com.carrotsearch.hppc.DoubleArrayList;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.envelope.EnvelopeAttr;
+import fr.sncf.osrd.envelope.EnvelopePhysics;
 import java.util.HashMap;
 import java.util.Map;
 

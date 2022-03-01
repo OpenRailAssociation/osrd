@@ -6,7 +6,7 @@ import static fr.sncf.osrd.envelope_sim_infra.MRSP.LimitKind.SPEED_LIMIT;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.envelope.Envelope;
-import fr.sncf.osrd.envelope.EnvelopePart;
+import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope.EnvelopeShape;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;

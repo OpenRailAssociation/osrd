@@ -2,8 +2,10 @@ package fr.sncf.osrd.envelope_sim.allowances;
 
 import com.carrotsearch.hppc.DoubleArrayList;
 import fr.sncf.osrd.envelope.*;
-import fr.sncf.osrd.envelope.constraint.ConstrainedEnvelopePartBuilder;
-import fr.sncf.osrd.envelope.constraint.SpeedFloor;
+import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
+import fr.sncf.osrd.envelope.part.constraints.SpeedFloor;
+import fr.sncf.osrd.envelope.part.EnvelopePart;
+import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.BrakingPhaseCoast;
 import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.CoastingOpportunity;

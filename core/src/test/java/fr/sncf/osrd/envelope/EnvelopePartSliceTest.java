@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import fr.sncf.osrd.envelope.EnvelopeTestUtils.TestAttr;
+import fr.sncf.osrd.envelope.part.EnvelopePart;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 

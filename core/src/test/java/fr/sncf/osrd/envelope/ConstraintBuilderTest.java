@@ -1,9 +1,10 @@
-package fr.sncf.osrd.envelope.constraint;
+package fr.sncf.osrd.envelope;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import fr.sncf.osrd.envelope.*;
 import fr.sncf.osrd.envelope.EnvelopeTestUtils.TestAttr;
+import fr.sncf.osrd.envelope.part.*;
+import fr.sncf.osrd.envelope.part.constraints.*;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 

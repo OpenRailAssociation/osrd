@@ -3,8 +3,10 @@ package fr.sncf.osrd.envelope;
 import static org.junit.jupiter.api.Assertions.*;
 
 import fr.sncf.osrd.envelope.EnvelopeTestUtils.TestAttr;
-import fr.sncf.osrd.envelope.constraint.ConstrainedEnvelopePartBuilder;
-import fr.sncf.osrd.envelope.constraint.EnvelopeCeiling;
+import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
+import fr.sncf.osrd.envelope.part.constraints.EnvelopeCeiling;
+import fr.sncf.osrd.envelope.part.EnvelopePart;
+import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;

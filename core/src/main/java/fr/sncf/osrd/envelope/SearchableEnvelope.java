@@ -11,7 +11,7 @@ package fr.sncf.osrd.envelope;
  *     0            1        2          3
  * </pre>
  */
-interface SearchableEnvelope {
+public interface SearchableEnvelope {
     /** Runs a binary search on the positions array */
     int binarySearchPositions(double position);
 

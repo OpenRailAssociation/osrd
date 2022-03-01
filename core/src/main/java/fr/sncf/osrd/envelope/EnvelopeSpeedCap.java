@@ -1,5 +1,6 @@
 package fr.sncf.osrd.envelope;
 
+import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
 import fr.sncf.osrd.utils.CmpOperator;
 
 public class EnvelopeSpeedCap {

@@ -3,6 +3,7 @@ package fr.sncf.osrd.envelope;
 import static fr.sncf.osrd.envelope.EnvelopeCursor.NextStepResult.*;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.utils.CmpOperator;
 import java.util.function.Predicate;
 

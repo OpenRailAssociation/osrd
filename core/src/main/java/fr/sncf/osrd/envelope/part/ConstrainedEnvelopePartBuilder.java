@@ -1,6 +1,7 @@
-package fr.sncf.osrd.envelope.constraint;
+package fr.sncf.osrd.envelope.part;
 
 import fr.sncf.osrd.envelope.*;
+import fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraint;
 import fr.sncf.osrd.utils.DoubleUtils;
 
 public final class ConstrainedEnvelopePartBuilder implements InteractiveEnvelopePartConsumer {

@@ -4,6 +4,8 @@ import static fr.sncf.osrd.envelope.MRSPEnvelopeBuilder.EnvelopeChangeType.*;
 
 import java.util.ArrayList;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.envelope.part.EnvelopePart;
+import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
 import java.util.Collections;
 
 /** Given a set of overlapping envelope parts, this structure finds the minimum speed envelope. */
