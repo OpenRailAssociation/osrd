@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import java.util.List;
-import java.util.Map;
 
 public class EnvelopeOverlayTest {
     @ParameterizedTest
@@ -77,7 +76,7 @@ public class EnvelopeOverlayTest {
         assertEquals(2, envelope.get(1).getMaxSpeed());
         assertTrue(envelope.continuous);
 
-        var expectedFirst = constSpeedPart.sliceBeginning(constSpeedPart.findStepLeft(3), 3, Double.NaN);
+        var expectedFirst = constSpeedPart.sliceBeginning(constSpeedPart.findLeft(3), 3, Double.NaN);
         EnvelopeTestUtils.assertEquals(expectedFirst, envelope.get(0));
     }
 
@@ -144,7 +143,7 @@ public class EnvelopeOverlayTest {
         assertEquals(3, envelope.size());
         assertTrue(envelope.continuous);
 
-        var expectedFirst = constSpeedPart.sliceBeginning(constSpeedPart.findStepLeft(3), 3, Double.NaN);
+        var expectedFirst = constSpeedPart.sliceBeginning(constSpeedPart.findLeft(3), 3, Double.NaN);
         EnvelopeTestUtils.assertEquals(expectedFirst, envelope.get(0));
         var expectedMid = EnvelopePart.generateTimes(
                 List.of(TestAttr.A),
@@ -152,7 +151,7 @@ public class EnvelopeOverlayTest {
                 new double[]{2, 1, 2}
         );
         EnvelopeTestUtils.assertEquals(expectedMid, envelope.get(1));
-        var expectedLast = constSpeedPart.sliceEnd(constSpeedPart.findStepRight(5), 5, Double.NaN);
+        var expectedLast = constSpeedPart.sliceEnd(constSpeedPart.findRight(5), 5, Double.NaN);
         EnvelopeTestUtils.assertEquals(expectedLast, envelope.get(2));
     }
 

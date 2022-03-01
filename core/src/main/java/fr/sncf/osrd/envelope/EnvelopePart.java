@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
  *  <li>each segment of the line is thus a step over space, which is indexed from 0 to stepCount()</li>
  * </ul>
  */
-public final class EnvelopePart {
+public final class EnvelopePart implements SearchableEnvelope {
     // region INTRINSIC DATA FIELDS
 
     /** Metadata about this envelope part */
@@ -347,54 +347,14 @@ public final class EnvelopePart {
 
     // region FIND
 
-    /** Find the leftmost step (with the lowest position) which contains the given position */
-    public int findStepLeft(double position) {
-        assert position >= getBeginPos();
-        assert position <= getEndPos();
-        var pointIndex = Arrays.binarySearch(positions, position);
-        // if the position matches one of the data points, return the range on the left, if any
-        if (pointIndex >= 0) {
-            if (pointIndex == 0)
-                return 0;
-            return pointIndex - 1;
-        }
-
-        // when the position isn't found, binarySearch returns -(insertion point) - 1
-        var insertionPoint = -(pointIndex + 1);
-        // the index of the step is the index of the point which starts the range
-        return insertionPoint - 1;
+    @Override
+    public int binarySearchPositions(double position) {
+        return Arrays.binarySearch(positions, position);
     }
 
-    /** Find the leftmost step (with the lowest position) which contains the given position */
-    public int findStepRight(double position) {
-        assert position >= getBeginPos();
-        assert position <= getEndPos();
-        var pointIndex = Arrays.binarySearch(positions, position);
-        // if the position matches one of the data points, return the range on the left, if any
-        if (pointIndex >= 0) {
-            if (pointIndex == positions.length - 1)
-                return pointIndex - 1;
-            return pointIndex;
-        }
-
-        // when the position isn't found, binarySearch returns -(insertion point) - 1
-        var insertionPoint = -(pointIndex + 1);
-        // the index of the step is the index of the point which starts the range
-        return insertionPoint - 1;
-    }
-
-    /** Returns the first step which contains a position along a given direction */
-    public int findStepLeftDir(double position, double direction) {
-        if (direction < 0)
-            return findStepRight(position);
-        return findStepLeft(position);
-    }
-
-    /** Returns the last step which contains a position along a given direction */
-    public int findStepRightDir(double position, double direction) {
-        if (direction < 0)
-            return findStepLeft(position);
-        return findStepRight(position);
+    @Override
+    public int positionPointsCount() {
+        return positions.length;
     }
 
     // endregion
@@ -568,12 +528,12 @@ public final class EnvelopePart {
         if (beginPosition <= getBeginPos())
             beginPosition = Double.NEGATIVE_INFINITY;
         if (beginPosition != Double.NEGATIVE_INFINITY)
-            beginIndex = findStepRight(beginPosition);
+            beginIndex = findRight(beginPosition);
         int endIndex = stepCount() - 1;
         if (endPosition >= getEndPos())
             endPosition = Double.POSITIVE_INFINITY;
         if (endPosition != Double.POSITIVE_INFINITY)
-            endIndex = findStepLeft(endPosition);
+            endIndex = findLeft(endPosition);
         return slice(beginIndex, beginPosition, endIndex, endPosition);
     }
 
