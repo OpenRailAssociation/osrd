@@ -1,19 +1,19 @@
 package fr.sncf.osrd.railjson.schema.common;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.routegraph.Route;
-import fr.sncf.osrd.infra.trackgraph.BufferStop;
 import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.railjson.parser.TrackBuilder;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitchType;
+import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+@ExcludeFromGeneratedCodeCoverage
 public final class RJSObjectRef<T extends Identified> {
     public ID<T> id;
     public String type;
@@ -77,16 +77,8 @@ public final class RJSObjectRef<T extends Identified> {
         return (Detector) parseRef(waypoints, "Detector");
     }
 
-    public BufferStop getBufferStop(HashMap<String, Waypoint> waypoints) throws InvalidInfraException {
-        return (BufferStop) parseRef(waypoints, "BufferStop");
-    }
-
     public Waypoint getWaypoint(HashMap<String, Waypoint> waypoints) throws InvalidInfraException {
         return parseRef(waypoints, Set.of("Detector", "BufferStop"));
-    }
-
-    public TVDSection getTVDSection(HashMap<String, TVDSection> tvdSectionsMap) throws InvalidInfraException {
-        return parseRef(tvdSectionsMap, "TVDSection");
     }
 
     public RJSSwitchType getSwitchType(HashMap<String, RJSSwitchType> switchTypeMap) throws InvalidInfraException {
