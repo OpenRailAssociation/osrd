@@ -2,12 +2,13 @@ package fr.sncf.osrd.railjson.schema.common;
 
 import com.squareup.moshi.*;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Set;
 
-public final class ID<T extends Identified> implements Comparable<ID<T>> {
+public final class ID<T extends Identified> {
     public String id;
 
     public ID(String id) {
@@ -24,6 +25,7 @@ public final class ID<T extends Identified> implements Comparable<ID<T>> {
     }
 
     @Override
+    @ExcludeFromGeneratedCodeCoverage
     public boolean equals(Object obj) {
         if (obj == null)
             return false;
@@ -33,11 +35,6 @@ public final class ID<T extends Identified> implements Comparable<ID<T>> {
 
         var o = (ID<?>) obj;
         return id.equals(o.id);
-    }
-
-    @Override
-    public int compareTo(ID<T> o) {
-        return id.compareTo(o.id);
     }
 
     /** A moshi adapter for ID serialization */
