@@ -75,13 +75,13 @@ export default function SpaceCurvesSlopes(props) {
   dataSimulation.slopesCurve = createSlopeCurve(
     simulation.trains[selectedTrain].slopes,
     dataSimulation.slopesHistogram,
-    'gradient',
+    'gradient'
   );
   // Curves
   dataSimulation.curvesHistogram = createCurveCurve(
     simulation.trains[selectedTrain].curves,
     dataSimulation.slopesHistogram,
-    'gradient',
+    'gradient'
   );
 
   const createChart = () => {
@@ -92,8 +92,8 @@ export default function SpaceCurvesSlopes(props) {
         ? defineLinear(
             d3.max(
               dataSimulation.slopesHistogram,
-              (d) => d[rotate ? keyValues[1] : keyValues[0]] + 100,
-            ),
+              (d) => d[rotate ? keyValues[1] : keyValues[0]] + 100
+            )
           )
         : chart.x;
     const defineY =
@@ -101,7 +101,7 @@ export default function SpaceCurvesSlopes(props) {
         ? defineLinear(
             d3.max(dataSimulation.slopesHistogram, (d) => d[rotate ? keyValues[0] : keyValues[1]]),
             0,
-            d3.min(dataSimulation.slopesHistogram, (d) => d[rotate ? keyValues[0] : keyValues[1]]),
+            d3.min(dataSimulation.slopesHistogram, (d) => d[rotate ? keyValues[0] : keyValues[1]])
           )
         : chart.y;
 
@@ -114,7 +114,7 @@ export default function SpaceCurvesSlopes(props) {
       ref,
       rotate,
       keyValues,
-      CHART_ID,
+      CHART_ID
     );
   };
 
@@ -160,7 +160,7 @@ export default function SpaceCurvesSlopes(props) {
           'curveMonotoneX',
           ['position', 'gradient'],
           'slopesHistogram',
-          rotate,
+          rotate
         );
         drawArea(
           chartLocal,
@@ -169,7 +169,7 @@ export default function SpaceCurvesSlopes(props) {
           'curvesSlopesChart',
           'curveMonotoneX',
           ['position', 'gradient'],
-          rotate,
+          rotate
         );
       }
       if (dataSimulation.curvesHistogram) {
@@ -181,7 +181,7 @@ export default function SpaceCurvesSlopes(props) {
           'curveLinear',
           ['position', 'radius'],
           'curvesHistogram',
-          rotate,
+          rotate
         );
       }
       if (dataSimulation.slopesCurve) {
@@ -193,7 +193,7 @@ export default function SpaceCurvesSlopes(props) {
           'curveLinear',
           ['position', 'height'],
           'slopes',
-          rotate,
+          rotate
         );
       }
 
@@ -212,7 +212,7 @@ export default function SpaceCurvesSlopes(props) {
         setYPosition,
         setZoomLevel,
         yPosition,
-        zoomLevel,
+        zoomLevel
       );
       setChart(chartLocal);
       dispatch(updateMustRedraw(false));
@@ -225,7 +225,6 @@ export default function SpaceCurvesSlopes(props) {
   }, [chart, mustRedraw, rotate]);
 
   useEffect(() => {
-    console.log('useEffect chart, mustRedraw, positionValues, timePosition on SpaceCurvesSlopes');
     traceVerticalLine(
       chart,
       dataSimulation,
@@ -234,7 +233,7 @@ export default function SpaceCurvesSlopes(props) {
       positionValues,
       'slopesCurve',
       rotate,
-      timePosition,
+      timePosition
     );
   }, [chart, mustRedraw, positionValues, timePosition]);
 
