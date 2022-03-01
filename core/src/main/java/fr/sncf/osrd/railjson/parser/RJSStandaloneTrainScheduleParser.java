@@ -10,6 +10,8 @@ import fr.sncf.osrd.railjson.parser.exceptions.UnknownRollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.*;
 import fr.sncf.osrd.train.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.function.Function;
 
 public class RJSStandaloneTrainScheduleParser {
@@ -65,45 +67,67 @@ public class RJSStandaloneTrainScheduleParser {
                     new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
                     rjsConstruction.beginPosition, rjsConstruction.endPosition,
                     getPositiveDoubleOrDefault(rjsConstruction.capacitySpeedLimit, 30 / 3.6),
-                    parseAllowanceValue(rjsConstruction.value),
-                    null
+                    parseAllowanceRanges(envelopePath, rjsConstruction.value, null)
             );
         }
         if (rjsAllowance.getClass() == RJSAllowance.Mareco.class) {
             var rjsMareco = (RJSAllowance.Mareco) rjsAllowance;
             if (rjsMareco.defaultValue == null)
                 throw new InvalidSchedule("missing mareco default_value");
-            if (rjsMareco.ranges != null && rjsMareco.ranges.length > 0)
-                return new HardenedMarecoAllowance(
-                        new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
-                        0, envelopePath.getLength(),
-                        getPositiveDoubleOrDefault(rjsMareco.capacitySpeedLimit, 30 / 3.6),
-                        parseAllowanceValue(rjsMareco.defaultValue),
-                        parseAllowanceRanges(rjsMareco.ranges)
-                );
             return new HardenedMarecoAllowance(
                     new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
                     0, envelopePath.getLength(),
                     getPositiveDoubleOrDefault(rjsMareco.capacitySpeedLimit, 30 / 3.6),
-                    parseAllowanceValue(rjsMareco.defaultValue),
-                    null
+                    parseAllowanceRanges(envelopePath, rjsMareco.defaultValue, rjsMareco.ranges)
             );
         }
 
         throw new RuntimeException("unknown allowance type");
     }
 
-    private static AllowanceRange[] parseAllowanceRanges(RJSAllowance.RJSAllowanceRange[] ranges)
-            throws InvalidSchedule {
-        AllowanceRange[] res = new AllowanceRange[ranges.length];
-        for (var i = 0; i < ranges.length; i++) {
-            res[i] = parseAllowanceRange(ranges[i]);
+    // Helper class used to sort ranges by begin position
+    static class SortByBeginPos implements Comparator<RJSAllowance.RJSAllowanceRange> {
+        // Used for sorting in ascending order of begin pos
+        public int compare(RJSAllowance.RJSAllowanceRange a, RJSAllowance.RJSAllowanceRange b) {
+            return (int) (a.beginPos - b.beginPos);
         }
-        return res;
+    }
+
+    private static AllowanceRange[] parseAllowanceRanges(
+            EnvelopePath envelopePath,
+            RJSAllowanceValue defaultValue,
+            RJSAllowance.RJSAllowanceRange[] ranges
+    ) throws InvalidSchedule {
+        // if no ranges have been defined, just return the default value
+        if (ranges == null || ranges.length == 0) {
+            AllowanceRange[] defaultRange = new AllowanceRange[1];
+            defaultRange[0] =
+                    new AllowanceRange(0, envelopePath.getLength(), parseAllowanceValue(defaultValue));
+            return defaultRange;
+        }
+
+        // sort the range list by begin position
+        Arrays.stream(ranges).sorted(new SortByBeginPos());
+        var res = new ArrayList<AllowanceRange>();
+        var lastEndPos = 0.0;
+        for (var range : ranges) {
+            // if some ranges are overlapping, return an error
+            if (range.beginPos < lastEndPos)
+                throw new InvalidSchedule("overlapping allowance ranges");
+            // if there is a gap between two ranges, fill it with default value
+            if (range.beginPos > lastEndPos) {
+                res.add(new AllowanceRange(lastEndPos, range.beginPos, parseAllowanceValue(defaultValue)));
+            }
+            lastEndPos = range.endPos;
+            res.add(parseAllowanceRange(range));
+        }
+        if (lastEndPos < envelopePath.getLength())
+            res.add(new AllowanceRange(lastEndPos, envelopePath.getLength(), parseAllowanceValue(defaultValue)));
+        return (AllowanceRange[]) res.toArray();
     }
 
     private static AllowanceRange parseAllowanceRange(RJSAllowance.RJSAllowanceRange range) throws InvalidSchedule {
-        return new AllowanceRange(range.beginPosition, range.endPosition, parseAllowanceValue(range.value));
+        return new AllowanceRange(range.beginPos, range.endPos, parseAllowanceValue(range.value));
     }
 
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
