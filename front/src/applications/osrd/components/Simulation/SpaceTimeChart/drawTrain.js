@@ -28,12 +28,15 @@ export default function drawTrain(
 
   const dragTimeOffset = (unDrillValue = false) => {
     dragValue += rotate ? d3.event.dy : d3.event.dx;
+    console.log('dragValue', dragValue);
     const translation = rotate ? `0,${dragValue}` : `${dragValue},0`;
     d3.select(`#${groupID}`).attr('transform', `translate(${translation})`);
     const value = rotate
       ? Math.floor((chart.y.invert(d3.event.dy) - initialDrag) / 1000)
       : Math.floor((chart.x.invert(d3.event.dx) - initialDrag) / 1000);
+    console.log('value', value);
     if (unDrillValue) setDragOffset(value);
+    setDragOffset(value);
   };
 
   const drag = d3
