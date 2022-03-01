@@ -1,15 +1,9 @@
 package fr.sncf.osrd.envelope_sim.overlays;
 
-import fr.sncf.osrd.envelope.EnvelopePartMeta;
-import fr.sncf.osrd.envelope.InteractiveEnvelopePartConsumer;
+import fr.sncf.osrd.envelope.part.InteractiveEnvelopePartConsumer;
 import fr.sncf.osrd.envelope_sim.*;
 
 public class EnvelopeCoasting {
-    public static final class CoastingMeta extends EnvelopePartMeta {
-    }
-
-    public static final EnvelopePartMeta COASTING = new CoastingMeta();
-
     /** Generate a coasting curve overlay */
     public static void coast(
             EnvelopeSimContext context,

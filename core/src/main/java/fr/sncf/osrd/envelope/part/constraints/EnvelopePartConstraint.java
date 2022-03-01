@@ -1,4 +1,4 @@
-package fr.sncf.osrd.envelope.constraint;
+package fr.sncf.osrd.envelope.part.constraints;
 
 import fr.sncf.osrd.envelope.EnvelopePoint;
 

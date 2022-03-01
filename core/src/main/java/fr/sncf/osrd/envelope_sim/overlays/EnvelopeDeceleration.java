@@ -1,6 +1,6 @@
 package fr.sncf.osrd.envelope_sim.overlays;
 
-import fr.sncf.osrd.envelope.InteractiveEnvelopePartConsumer;
+import fr.sncf.osrd.envelope.part.InteractiveEnvelopePartConsumer;
 import fr.sncf.osrd.envelope_sim.*;
 
 public class EnvelopeDeceleration {

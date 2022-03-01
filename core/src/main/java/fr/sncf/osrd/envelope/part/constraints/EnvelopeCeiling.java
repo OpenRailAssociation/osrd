@@ -1,4 +1,4 @@
-package fr.sncf.osrd.envelope.constraint;
+package fr.sncf.osrd.envelope.part.constraints;
 
 import static fr.sncf.osrd.envelope.EnvelopeCursor.NextStepResult.*;
 

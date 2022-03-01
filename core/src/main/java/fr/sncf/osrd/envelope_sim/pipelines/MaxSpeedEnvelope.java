@@ -1,9 +1,10 @@
 package fr.sncf.osrd.envelope_sim.pipelines;
 
 import fr.sncf.osrd.envelope.*;
-import fr.sncf.osrd.envelope.constraint.ConstrainedEnvelopePartBuilder;
-import fr.sncf.osrd.envelope.constraint.EnvelopeCeiling;
-import fr.sncf.osrd.envelope.constraint.SpeedFloor;
+import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
+import fr.sncf.osrd.envelope.part.constraints.EnvelopeCeiling;
+import fr.sncf.osrd.envelope.part.constraints.SpeedFloor;
+import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.StopMeta;

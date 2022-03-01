@@ -1,4 +1,4 @@
-package fr.sncf.osrd.envelope.constraint;
+package fr.sncf.osrd.envelope.part.constraints;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.EnvelopePhysics;

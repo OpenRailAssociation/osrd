@@ -1,8 +1,7 @@
 package fr.sncf.osrd.envelope;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import fr.sncf.osrd.envelope.EnvelopeTestUtils.TestAttr;
+import fr.sncf.osrd.envelope.part.EnvelopePart;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 

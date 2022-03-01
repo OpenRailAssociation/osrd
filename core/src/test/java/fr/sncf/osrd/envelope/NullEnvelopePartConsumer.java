@@ -1,6 +1,7 @@
 package fr.sncf.osrd.envelope;
 
-import java.util.Map;
+import fr.sncf.osrd.envelope.EnvelopeAttr;
+import fr.sncf.osrd.envelope.part.EnvelopePartConsumer;
 
 public class NullEnvelopePartConsumer implements EnvelopePartConsumer {
     @Override

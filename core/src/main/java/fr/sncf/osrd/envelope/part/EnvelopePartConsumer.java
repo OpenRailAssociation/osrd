@@ -1,6 +1,6 @@
-package fr.sncf.osrd.envelope;
+package fr.sncf.osrd.envelope.part;
 
-import java.util.Map;
+import fr.sncf.osrd.envelope.EnvelopeAttr;
 
 public interface EnvelopePartConsumer {
     /** Initializes the envelope part */

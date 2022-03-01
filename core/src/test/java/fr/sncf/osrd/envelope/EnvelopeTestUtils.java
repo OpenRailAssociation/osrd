@@ -3,11 +3,12 @@ package fr.sncf.osrd.envelope;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import fr.sncf.osrd.envelope.constraint.ConstrainedEnvelopePartBuilder;
-import fr.sncf.osrd.envelope.constraint.EnvelopeCeiling;
-import fr.sncf.osrd.envelope.constraint.SpeedFloor;
+import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
+import fr.sncf.osrd.envelope.part.constraints.EnvelopeCeiling;
+import fr.sncf.osrd.envelope.part.constraints.SpeedFloor;
+import fr.sncf.osrd.envelope.part.EnvelopePart;
+import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
 import org.junit.jupiter.api.Assertions;
-import java.util.Map;
 
 public class EnvelopeTestUtils {
     public enum TestAttr implements EnvelopeAttr {
