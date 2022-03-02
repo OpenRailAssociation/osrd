@@ -62,8 +62,6 @@ public class RollingStock implements PhysicsRollingStock {
      */
     public final double inertiaCoefficient;
 
-    public final TrainFeature[] features;
-
     /**
      * Associates a speed to a force.
      * https://en.wikipedia.org/wiki/Tractive_force#Tractive_effort_curves
@@ -175,7 +173,6 @@ public class RollingStock implements PhysicsRollingStock {
             double a,
             double b,
             double c,
-            TrainFeature[] features,
             double maxSpeed,
             double startUpTime,
             double startUpAcceleration,
@@ -199,7 +196,6 @@ public class RollingStock implements PhysicsRollingStock {
         this.gammaType = gammaType;
         this.mass = mass;
         this.inertiaCoefficient = inertiaCoefficient;
-        this.features = features;
         this.tractiveEffortCurve = tractiveEffortCurve;
         this.inertia = mass * inertiaCoefficient;
     }

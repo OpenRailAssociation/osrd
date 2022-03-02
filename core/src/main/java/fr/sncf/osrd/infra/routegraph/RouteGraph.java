@@ -5,7 +5,7 @@ import static fr.sncf.osrd.utils.graph.EdgeDirection.STOP_TO_START;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.TVDSection;
-import fr.sncf.osrd.infra.signaling.Signal;
+import fr.sncf.osrd.infra.Signal;
 import fr.sncf.osrd.infra.trackgraph.*;
 import fr.sncf.osrd.infra.TVDSectionPath;
 import fr.sncf.osrd.infra.trackgraph.Switch;

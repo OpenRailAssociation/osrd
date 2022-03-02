@@ -65,7 +65,6 @@ public final class ApiServerCommand implements CliCommand {
                     new FkRegex("/health", ""),
                     new FkRegex("/pathfinding/routes", new PathfindingRoutesEndpoint(infraManager)),
                     new FkRegex("/pathfinding/tracks", new PathfindingTracksEndpoint(infraManager)),
-                    new FkRegex("/simulation", new SimulationEndpoint(infraManager)),
                     new FkRegex("/standalone_simulation", new StandaloneSimulationEndpoint(infraManager)),
                     new FkRegex("/cache_status", new InfraCacheStatusEndpoint(infraManager))
             );

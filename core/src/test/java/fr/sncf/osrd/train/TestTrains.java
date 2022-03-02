@@ -10,12 +10,6 @@ public class TestTrains {
             200, 1, 1, 0,
             0,
             0,
-            new TrainFeature[] {
-                    TrainFeature.TVM430,
-                    TrainFeature.TVM300,
-                    TrainFeature.ETCS1,
-                    TrainFeature.ETCS2
-            },
             300,
             0,
             1,
@@ -53,12 +47,7 @@ public class TestTrains {
                 1, trainMass, 1.05, (0.65 * trainMass) / 100,
                 ((0.008 * trainMass) / 100) * 3.6,
                 (((0.00012 * trainMass) / 100) * 3.6) * 3.6,
-                new TrainFeature[] {
-                        TrainFeature.TVM430,
-                        TrainFeature.TVM300,
-                        TrainFeature.ETCS1,
-                        TrainFeature.ETCS2
-                }, maxSpeed,
+                maxSpeed,
                 30,
                 0.05,
                 0.25,
@@ -74,12 +63,7 @@ public class TestTrains {
                 400, trainMass, 1.05, (0.65 * trainMass) / 100,
                 ((0.008 * trainMass) / 100) * 3.6,
                 (((0.00012 * trainMass) / 100) * 3.6) * 3.6,
-                new TrainFeature[] {
-                        TrainFeature.TVM430,
-                        TrainFeature.TVM300,
-                        TrainFeature.ETCS1,
-                        TrainFeature.ETCS2
-                }, maxSpeed,
+                maxSpeed,
                 30,
                 0.05,
                 0.25,
@@ -95,12 +79,7 @@ public class TestTrains {
                 400, trainMass, 1.05, (0.65 * trainMass) / 100,
                 ((0.008 * trainMass) / 100) * 3.6,
                 (((0.00012 * trainMass) / 100) * 3.6) * 3.6,
-                new TrainFeature[] {
-                        TrainFeature.TVM430,
-                        TrainFeature.TVM300,
-                        TrainFeature.ETCS1,
-                        TrainFeature.ETCS2
-                }, maxSpeed,
+                maxSpeed,
                 30,
                 0.05,
                 0.25,

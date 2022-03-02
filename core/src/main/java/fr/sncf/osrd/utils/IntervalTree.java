@@ -1,6 +1,5 @@
 package fr.sncf.osrd.utils;
 
-
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 

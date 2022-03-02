@@ -1,6 +1,6 @@
 package fr.sncf.osrd.api;
 
-import static fr.sncf.osrd.Helpers.loadExampleSimulationResource;
+import static fr.sncf.osrd.Helpers.getExampleRollingStocks;
 import static org.junit.jupiter.api.Assertions.*;
 
 import fr.sncf.osrd.api.StandaloneSimulationEndpoint.StandaloneSimulationRequest;
@@ -8,9 +8,7 @@ import fr.sncf.osrd.api.StandaloneSimulationEndpoint.StandaloneSimulationResult;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
-import fr.sncf.osrd.railjson.parser.exceptions.InvalidSuccession;
 import fr.sncf.osrd.railjson.schema.schedule.*;
-import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import org.junit.jupiter.api.Test;
 import org.takes.rq.RqFake;
@@ -41,10 +39,8 @@ class StandaloneSimulationTest extends ApiTest {
 
     public static StandaloneSimulationResult runStandaloneSimulation(StandaloneSimulationRequest request) throws
             InvalidRollingStock,
-            InvalidSuccession,
             InvalidSchedule,
             IOException,
-            SimulationError,
             InvalidInfraException {
         // serialize the request
         var requestBody = StandaloneSimulationEndpoint.adapterRequest.toJson(request);
@@ -63,7 +59,6 @@ class StandaloneSimulationTest extends ApiTest {
     @Test
     public void simple() throws Exception {
         // load the example infrastructure and build a test path
-        final var rjsSimulation = loadExampleSimulationResource(getClass(), "tiny_infra/simulation.json");
         final var rjsTrainPath = tinyInfraTrainPath();
 
         // build the simulation request
@@ -74,7 +69,7 @@ class StandaloneSimulationTest extends ApiTest {
         var query = new StandaloneSimulationRequest(
                 "tiny_infra/infra.json",
                 2,
-                rjsSimulation.rollingStocks,
+                getExampleRollingStocks(),
                 trainSchedules,
                 rjsTrainPath
         );
@@ -97,7 +92,6 @@ class StandaloneSimulationTest extends ApiTest {
 
     @Test
     public void multiple() throws Exception {
-        final var rjsSimulation = loadExampleSimulationResource(getClass(), "tiny_infra/simulation.json");
         final var rjsTrainPath = tinyInfraTrainPath();
 
         var trainSchedules = new ArrayList<RJSStandaloneTrainSchedule>();
@@ -111,7 +105,7 @@ class StandaloneSimulationTest extends ApiTest {
         var query = new StandaloneSimulationRequest(
                 "tiny_infra/infra.json",
                 2,
-                rjsSimulation.rollingStocks,
+                getExampleRollingStocks(),
                 trainSchedules,
                 rjsTrainPath
         );
@@ -123,7 +117,6 @@ class StandaloneSimulationTest extends ApiTest {
     @Test
     public void withStops() throws Exception {
         // load the example infrastructure and build a test path
-        final var rjsSimulation = loadExampleSimulationResource(getClass(), "tiny_infra/simulation.json");
         final var rjsTrainPath = tinyInfraTrainPath();
 
         // build the simulation request
@@ -146,7 +139,7 @@ class StandaloneSimulationTest extends ApiTest {
         var query = new StandaloneSimulationRequest(
                 "tiny_infra/infra.json",
                 2,
-                rjsSimulation.rollingStocks,
+                getExampleRollingStocks(),
                 trains,
                 rjsTrainPath
         );
@@ -164,7 +157,6 @@ class StandaloneSimulationTest extends ApiTest {
     @Test
     public void withAllowance() throws Exception {
         // load the example infrastructure and build a test path
-        final var rjsSimulation = loadExampleSimulationResource(getClass(), "tiny_infra/simulation.json");
         final var rjsTrainPath = tinyInfraTrainPath();
 
         // build the simulation request
@@ -181,7 +173,7 @@ class StandaloneSimulationTest extends ApiTest {
         var query = new StandaloneSimulationRequest(
                 "tiny_infra/infra.json",
                 2,
-                rjsSimulation.rollingStocks,
+                getExampleRollingStocks(),
                 trains,
                 rjsTrainPath
         );

@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import java.util.*;
 
 public class RouteGraphTest {
-
     private static void checkRoute(
             Route route,
             int expectedTvdSectionPath,

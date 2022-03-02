@@ -1,6 +1,6 @@
 package fr.sncf.osrd.infra.trackgraph;
 
-import fr.sncf.osrd.infra.signaling.Signal;
+import fr.sncf.osrd.infra.Signal;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import java.util.List;
 import java.util.Map;

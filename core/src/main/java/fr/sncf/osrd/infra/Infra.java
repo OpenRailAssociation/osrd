@@ -1,23 +1,15 @@
 package fr.sncf.osrd.infra;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.config.JsonConfig;
-import fr.sncf.osrd.infra.railscript.DependencyBinder;
-import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.routegraph.RouteGraph;
-import fr.sncf.osrd.infra.signaling.Aspect;
-import fr.sncf.osrd.infra.signaling.Signal;
 import fr.sncf.osrd.infra.trackgraph.Switch;
 import fr.sncf.osrd.infra.trackgraph.TrackGraph;
-import fr.sncf.osrd.infra_state.InfraState;
 import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
-import fr.sncf.osrd.utils.graph.EdgeDirection;
 import okio.Okio;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * <p>A data structure meant to store the immutable part of a railroad infrastructure.</p>
@@ -79,7 +71,6 @@ import java.util.HashMap;
 public final class Infra {
     public final TrackGraph trackGraph;
     public final RouteGraph routeGraph;
-    public final HashMap<String, Aspect> aspects;
     public final ArrayList<TVDSection> tvdSections;
     public final ArrayList<Signal> signals;
     public final ArrayList<Switch> switches;
@@ -87,14 +78,12 @@ public final class Infra {
     private Infra(
             TrackGraph trackGraph,
             RouteGraph routeGraph,
-            HashMap<String, Aspect> aspects,
             ArrayList<TVDSection> tvdSections,
             ArrayList<Signal> signals,
             ArrayList<Switch> switches
     ) {
         this.trackGraph = trackGraph;
         this.routeGraph = routeGraph;
-        this.aspects = aspects;
         this.tvdSections = tvdSections;
         this.signals = signals;
         this.switches = switches;
@@ -104,112 +93,27 @@ public final class Infra {
     public static Infra build(
             TrackGraph trackGraph,
             RouteGraph routeGraph,
-            HashMap<String, Aspect> aspects,
             ArrayList<TVDSection> tvdSections,
             ArrayList<Signal> signals,
             ArrayList<Switch> switches
     ) throws InvalidInfraException {
-        var infra = new Infra(trackGraph, routeGraph, aspects, tvdSections, signals, switches);
-
-        for (var trackSection : trackGraph.iterEdges()) {
-            var forwardBuilder = trackSection.forwardActionPoints.builder();
-            var backwardBuilder = trackSection.backwardActionPoints.builder();
-
-            for (var signal : trackSection.signals) {
-                if (signal.value.direction == EdgeDirection.START_TO_STOP)
-                    forwardBuilder.add(signal.position, signal.value);
-                if (signal.value.direction == EdgeDirection.STOP_TO_START)
-                    backwardBuilder.add(signal.position, signal.value);
-            }
-            for (var waypoint : trackSection.waypoints) {
-                forwardBuilder.add(waypoint.position, waypoint.value);
-                backwardBuilder.add(waypoint.position, waypoint.value);
-            }
-            trackSection.operationalPoints.forEach(op -> {
-                        forwardBuilder.add(op.position, op.value);
-                        backwardBuilder.add(op.position, op.value);
-                    }
-            );
-            forwardBuilder.build();
-            backwardBuilder.build();
-        }
-
-        routeGraph.routeMap.values().forEach(Route::resolveSignals);
-        signals.forEach(signal -> DependencyBinder.bind(signal, infra));
-
-        // Evaluate initial aspects of signals
-        var topologicalSignalOrder = buildTopologicalSignalOrder(signals);
-        var initialState = InfraState.from(infra);
-        for (var signal : topologicalSignalOrder) {
-            signal.evalInitialAspect(initialState);
-        }
-
-        return infra;
+        return new Infra(trackGraph, routeGraph, tvdSections, signals, switches);
     }
 
-    private static ArrayList<Signal> buildTopologicalSignalOrder(
-            ArrayList<Signal> signals
-    ) throws InvalidInfraException {
-        var order = new ArrayList<Signal>();
-        var indeg = new int[signals.size()];
-        for (Signal signal : signals) {
-            for (var neighbor : signal.signalSubscribers)
-                indeg[neighbor.index] += 1;
-        }
-
-        var toVisit = new ArrayList<Signal>();
-        for (var node = 0; node < signals.size(); node++) {
-            if (indeg[node] == 0)
-                toVisit.add(signals.get(node));
-        }
-
-        while (!toVisit.isEmpty()) {
-            var node = toVisit.remove(toVisit.size() - 1); // pop()
-            order.add(node);
-            for (var neighbor : node.signalSubscribers) {
-                indeg[neighbor.index] -= 1;
-                if (indeg[neighbor.index] == 0)
-                    toVisit.add(neighbor);
-            }
-        }
-
-        for (var deg : indeg) {
-            if (deg != 0)
-                throw new InvalidInfraException("The signal dependency graph has a cycle.");
-        }
-
-        return order;
-    }
 
     /** Parse the RailJSON file at the given Path */
     @SuppressFBWarnings(
             value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
             justification = "that's a spotbugs bug :)"
     )
-    public static RJSInfra parseRailJSONFromFile(
-            JsonConfig.InfraType infraType,
-            String path
-    ) throws IOException {
-        // autodetect the infrastructure type
-        if (infraType == null || infraType == JsonConfig.InfraType.UNKNOWN) {
-            if (path.endsWith(".json"))
-                infraType = JsonConfig.InfraType.RAILJSON;
-            else
-                infraType = JsonConfig.InfraType.UNKNOWN;
-        }
-
-        switch (infraType) {
-            case RAILJSON:
-                try (
-                        var fileSource = Okio.source(Path.of(path));
-                        var bufferedSource = Okio.buffer(fileSource)
-                ) {
-                    var rjsRoot = RJSInfra.adapter.fromJson(bufferedSource);
-                    assert rjsRoot != null;
-                    return rjsRoot;
-                }
-            default:
-                throw new RuntimeException("invalid infrastructure type value");
+    public static RJSInfra parseRailJSONFromFile(String path) throws IOException {
+        try (
+                var fileSource = Okio.source(Path.of(path));
+                var bufferedSource = Okio.buffer(fileSource)
+        ) {
+            var rjsRoot = RJSInfra.adapter.fromJson(bufferedSource);
+            assert rjsRoot != null;
+            return rjsRoot;
         }
     }
 
@@ -218,11 +122,8 @@ public final class Infra {
             value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
             justification = "that's a spotbugs bug :)"
     )
-    public static Infra parseFromFile(
-            JsonConfig.InfraType infraType,
-            String path
-    ) throws InvalidInfraException, IOException {
-        var rjsInfra = parseRailJSONFromFile(infraType, path);
+    public static Infra parseFromFile(String path) throws InvalidInfraException, IOException {
+        var rjsInfra = parseRailJSONFromFile(path);
         return RailJSONParser.parse(rjsInfra);
     }
 }
