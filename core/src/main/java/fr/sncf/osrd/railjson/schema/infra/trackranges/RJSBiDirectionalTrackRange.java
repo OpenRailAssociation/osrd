@@ -2,8 +2,8 @@ package fr.sncf.osrd.railjson.schema.infra.trackranges;
 
 import fr.sncf.osrd.utils.graph.ApplicableDirection;
 
-public class BiDirectionalRJSTrackRange extends RJSTrackRange {
-    BiDirectionalRJSTrackRange(double begin, double end) {
+public class RJSBiDirectionalTrackRange extends RJSTrackRange {
+    RJSBiDirectionalTrackRange(double begin, double end) {
         this.begin = begin;
         this.end = end;
     }

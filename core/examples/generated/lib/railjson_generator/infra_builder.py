@@ -5,6 +5,7 @@ from railjson_generator.schema.infra.endpoint import Endpoint
 from railjson_generator.schema.infra.infra import Infra
 from railjson_generator.schema.infra.link import Link
 from railjson_generator.schema.infra.operational_point import OperationalPoint
+from railjson_generator.schema.infra.speed_section import SpeedSection
 from railjson_generator.schema.infra.switch import Switch
 from railjson_generator.schema.infra.track_section import TrackSection
 from railjson_generator.utils import generate_routes
@@ -38,6 +39,10 @@ class InfraBuilder:
     def add_operational_point(self, *args, **kwargs):
         self.infra.operational_points.append(OperationalPoint(*args, **kwargs))
         return self.infra.operational_points[-1]
+
+    def add_speed_section(self, *args, **kwargs):
+        self.infra.speed_sections.append(SpeedSection(*args, **kwargs))
+        return self.infra.speed_sections[-1]
 
     def _auto_gen_buffer_stops(self):
         for track in self.infra.track_sections:

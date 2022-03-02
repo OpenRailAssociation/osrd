@@ -94,6 +94,19 @@ public class RailJSONParser {
             infraTrackBuilders.put(trackSection.id, new TrackBuilder(track));
         }
 
+        // parse speed sections
+        for (var rjsSpeedSection : railJSON.speedSections) {
+            var speedSection = new SpeedSection(true, rjsSpeedSection.speed);
+            for (var rjsTrackRange : rjsSpeedSection.trackRanges) {
+                var trackSection = rjsTrackRange.track.getTrack(infraTrackSections);
+                var rangeSpeedLimit = new RangeValue<>(rjsTrackRange.begin, rjsTrackRange.end, speedSection);
+                if (rjsTrackRange.applicableDirections.appliesToNormal())
+                    trackSection.forwardSpeedSections.add(rangeSpeedLimit);
+                if (rjsTrackRange.applicableDirections.appliesToReverse())
+                    trackSection.backwardSpeedSections.add(rangeSpeedLimit);
+            }
+        }
+
         // register operational points
         for (var operationalPoint : railJSON.operationalPoints) {
             for (var part : operationalPoint.parts) {
@@ -227,21 +240,6 @@ public class RailJSONParser {
             RJSTrackSection trackSection
     )
             throws InvalidInfraException {
-        var beginID = nodeIDs.get(trackSection.beginEndpoint());
-        var endID = nodeIDs.get(trackSection.endEndpoint());
-        var trackLine = trackSection.sch == null ? null : trackSection.sch.getLine();
-        var infraTrackSection = trackGraph.makeTrackSection(beginID, endID, trackSection.id,
-                trackSection.length, trackLine);
-
-        // Parse speed limits
-        for (var rjsSpeedLimits : trackSection.speedSections) {
-            var speedSection = new SpeedSection(true, rjsSpeedLimits.speed); // TODO figure out if we keep this
-            var rangeSpeedLimit = new RangeValue<>(rjsSpeedLimits.begin, rjsSpeedLimits.end, speedSection);
-            if (rjsSpeedLimits.applicableDirections.appliesToNormal())
-                infraTrackSection.forwardSpeedSections.add(rangeSpeedLimit);
-            if (rjsSpeedLimits.applicableDirections.appliesToReverse())
-                infraTrackSection.backwardSpeedSections.add(rangeSpeedLimit);
-        }
 
         // Parse slopes and curves
         if (trackSection.slopes == null)
@@ -257,6 +255,11 @@ public class RailJSONParser {
         }
 
         // Add an initial flat gradient slope
+        var beginID = nodeIDs.get(trackSection.beginEndpoint());
+        var endID = nodeIDs.get(trackSection.endEndpoint());
+        var trackLine = trackSection.sch == null ? null : trackSection.sch.getLine();
+        var infraTrackSection = trackGraph.makeTrackSection(beginID, endID, trackSection.id,
+                trackSection.length, trackLine);
         infraTrackSection.forwardGradients.addRange(0., infraTrackSection.length, 0.);
         infraTrackSection.backwardGradients.addRange(0., infraTrackSection.length, 0.);
 

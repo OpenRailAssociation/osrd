@@ -1,10 +1,11 @@
-import infra
 from copy import deepcopy
 from dataclasses import dataclass, field
 
 from railjson_generator.rjs_static import SIGNAL_EXPR
 from railjson_generator.schema.infra.direction import ApplicableDirection, Direction
 from railjson_generator.schema.infra.waypoint import Detector
+
+import infra
 
 
 def _signal_id():
@@ -26,10 +27,6 @@ class Signal:
     def to_rjs(self, track):
         expr = deepcopy(SIGNAL_EXPR)
         expr["arguments"][0]["signal"] = self.label
-        if self.direction == ApplicableDirection.NORMAL:
-            self.direction = Direction.START_TO_STOP
-        elif self.direction == ApplicableDirection.REVERSE:
-            self.direction = Direction.STOP_TO_START
         return infra.Signal(
             id=self.label,
             direction=infra.Direction[self.direction.name],
@@ -39,5 +36,5 @@ class Signal:
             expr=expr,
             track=track.make_rjs_ref(),
             position=self.position,
-            **track.geo_from_track_offset(self.position)
+            **track.geo_from_track_offset(self.position),
         )

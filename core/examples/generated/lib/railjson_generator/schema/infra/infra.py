@@ -6,6 +6,7 @@ from railjson_generator.rjs_static import ASPECTS, SCRIPT_FUNCTIONS, SWITCH_TYPE
 from railjson_generator.schema.infra.link import Link
 from railjson_generator.schema.infra.operational_point import OperationalPoint
 from railjson_generator.schema.infra.route import Route
+from railjson_generator.schema.infra.speed_section import SpeedSection
 from railjson_generator.schema.infra.switch import Switch
 from railjson_generator.schema.infra.track_section import TrackSection
 
@@ -19,8 +20,9 @@ class Infra:
     links: List[Link] = field(default_factory=list)
     operational_points: List[OperationalPoint] = field(default_factory=list)
     routes: List[Route] = field(default_factory=list)
+    speed_sections: List[SpeedSection] = field(default_factory=list)
 
-    VERSION = "2.1.0"
+    VERSION = "2.2.0"
 
     def add_route(self, *args, **kwargs):
         self.routes.append(Route(*args, **kwargs))
@@ -37,9 +39,9 @@ class Infra:
             buffer_stops=self.make_rjs_buffer_stops(),
             detectors=self.make_rjs_detectors(),
             operational_points=self.make_rjs_operational_points(),
-            aspects=ASPECTS,
             switch_types=SWITCH_TYPES,
-            script_functions=SCRIPT_FUNCTIONS,
+            speed_sections=[speed_section.to_rjs() for speed_section in self.speed_sections],
+            catenaries=[],
         )
 
     def save(self, path):

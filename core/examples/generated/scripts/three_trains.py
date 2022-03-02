@@ -40,14 +40,14 @@ switch_2.set_coords(3030, -250)
 for i in (2, 3, 4, 5, 6):
     track = tracks[i]
     detector = track.add_detector(position=200)
-    track.add_signal(detector.position - 25, ApplicableDirection.NORMAL, detector)
-    track.add_signal(detector.position + 25, ApplicableDirection.REVERSE, detector)
+    track.add_signal(detector.position - 25, ApplicableDirection.START_TO_STOP, detector)
+    track.add_signal(detector.position + 25, ApplicableDirection.STOP_TO_START, detector)
 
 for i in (0, 1, 2, 4):
     track = tracks[i]
     detector = track.add_detector(position=800)
-    track.add_signal(detector.position - 25, ApplicableDirection.NORMAL, detector)
-    track.add_signal(detector.position + 25, ApplicableDirection.REVERSE, detector)
+    track.add_signal(detector.position - 25, ApplicableDirection.START_TO_STOP, detector)
+    track.add_signal(detector.position + 25, ApplicableDirection.STOP_TO_START, detector)
 
 # Build infra: Generate BufferStops, TVDSections and Routes
 infra = builder.build()
