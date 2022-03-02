@@ -44,7 +44,6 @@ INSTALLED_APPS = [
     'rest_framework_gis',
 
     # osrd apps
-    'osrd.apps.MainServiceAppConfig',
     'osrd_infra.apps.OsrdInfraConfig',
 ]
 

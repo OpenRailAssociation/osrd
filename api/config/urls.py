@@ -17,7 +17,6 @@ def prefix_path(path):
 
 
 service_urlpatterns = [
-    path('', include('osrd.urls')),
     # this app exports multiple features at once,
     # hence the lack of prefix
     path('', include('osrd_infra.urls')),

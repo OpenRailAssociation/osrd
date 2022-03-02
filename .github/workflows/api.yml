@@ -67,7 +67,7 @@ jobs:
         run: |
           cd api
           source .venv/bin/activate
-          python manage.py test
+          python manage.py test --pattern="unit_test*.py"
 
   linter:
     runs-on: ubuntu-latest
