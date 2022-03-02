@@ -218,7 +218,11 @@ def compute_path(path, request_data, owner):
     path.payload = payload.dict()
     path.geographic = geographic
     path.schematic = schematic
-    path.vmax = compute_vmax(payload, track_map)
+
+    # TODO: This is a hotfix, the function is moved in osrd-core by: https://github.com/DGEXSolutions/osrd/issues/634
+    # path.vmax = compute_vmax(payload, track_map)
+    path.vmax = []
+
     path.curves = compute_curves(payload, track_map)
     path.slopes = compute_slopes(payload, track_map)
 

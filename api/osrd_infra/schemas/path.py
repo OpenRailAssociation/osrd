@@ -1,13 +1,18 @@
 from typing import List, Optional
 
+from geojson_pydantic import Point
 from pydantic import BaseModel
 
 from osrd_infra.schemas.infra import (
     DirectionalTrackRange,
-    GeometryPointTrait,
     ObjectReference,
     TrackLocationTrait,
 )
+
+
+class GeometryPointTrait(BaseModel):
+    geo: Point
+    sch: Point
 
 
 class RoutePath(BaseModel):

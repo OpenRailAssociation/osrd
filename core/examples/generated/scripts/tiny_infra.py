@@ -6,7 +6,7 @@ from railjson_generator import (
     ApplicableDirection,
     Location
 )
-from railjson_generator.schema.infra.direction import Direction
+from railjson_generator.schema.infra.direction import Direction, ApplicableDirection
 from railjson_generator import get_output_dir
 
 
@@ -54,7 +54,10 @@ ne_micro_foo_to_bar.add_slope(5000, 10000, -10)
 tde_switch_foo_track = ne_micro_foo_to_bar.add_detector(label="tde.switch_foo-track", position=25)
 ne_micro_foo_to_bar.add_signal(label="il.sig.C6", position=50, direction=Direction.STOP_TO_START,
                                linked_detector=tde_switch_foo_track)
-ne_micro_foo_to_bar.add_speed_limit(2000, 6000, 16.666666666666668)
+
+speed_section = builder.add_speed_section(60.0 / 3.6)
+speed_section.add_track_range(ne_micro_foo_to_bar, 2_000, 6_000, ApplicableDirection.BOTH)
+
 # TODO catenaries on ne_micro_foo_to_bar
 
 

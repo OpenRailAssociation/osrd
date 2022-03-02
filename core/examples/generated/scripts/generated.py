@@ -32,8 +32,8 @@ def _rand_range(a, b):
 def _add_detector_at(track: TrackSection, position: float):
     detector = track.add_detector(position=position)
     length = track.length
-    track.add_signal(max(0, detector.position - 25), ApplicableDirection.NORMAL, detector)
-    track.add_signal(min(length, detector.position + 25), ApplicableDirection.REVERSE, detector)
+    track.add_signal(max(0, detector.position - 25), ApplicableDirection.START_TO_STOP, detector)
+    track.add_signal(min(length, detector.position + 25), ApplicableDirection.STOP_TO_START, detector)
 
 
 def _endpoint_offset(endpoint: TrackEndpoint, offset: float):
@@ -106,11 +106,13 @@ def _add_random_curves_slopes(tracks: List[TrackSection]):
                 track.add_slope(begin, end, _rand_range(-20, 20))
 
 
-def _add_random_speed_limits(tracks: List[TrackSection], n_categories: int):
+def _add_random_speed_sections(tracks: List[TrackSection], infra_builder: InfraBuilder):
+    speed_sections = [infra_builder.add_speed_section(_rand_range(5, 30)) for _ in range(10)]
     for track in tracks:
         for begin, end in _make_random_ranges(random.randint(0, 5), track.length):
             if random.randint(0, 3) == 0:
-                track.add_speed_limit(begin, end, _rand_range(5, 50))
+                speed_section = random.choice(speed_sections)
+                speed_section.add_track_range(track, begin, end, ApplicableDirection.BOTH)
 
 
 def _generate_random_schedule(builder: SimulationBuilder, tracks: List[TrackSection], label: str):
@@ -146,7 +148,7 @@ def generate_random_infra(seed, n_tracks, n_trains, n_speed_categories, infra_pa
     _link_all_tracks(builder, tracks)
     _add_random_detectors(tracks)
     _add_random_curves_slopes(tracks)
-    _add_random_speed_limits(tracks, n_speed_categories)
+    _add_random_speed_sections(tracks, builder)
 
     # Build infra: Generate BufferStops, TVDSections and Routes
     infra = builder.build()

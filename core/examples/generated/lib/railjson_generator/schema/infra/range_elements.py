@@ -1,5 +1,8 @@
-import infra
 from dataclasses import dataclass
+
+from railjson_generator.schema.infra.direction import ApplicableDirection
+
+import infra
 
 
 @dataclass
@@ -20,11 +23,7 @@ class Slope(RangeElement):
         self.gradient = gradient
 
     def to_rjs(self):
-        return infra.Slope(
-            gradient=self.gradient,
-            begin=self.begin,
-            end=self.end
-        )
+        return infra.Slope(gradient=self.gradient, begin=self.begin, end=self.end)
 
 
 class Curve(RangeElement):
@@ -35,24 +34,18 @@ class Curve(RangeElement):
         self.radius = radius
 
     def to_rjs(self):
-        return infra.Curve(
-            radius=self.radius,
-            begin=self.begin,
-            end=self.end
-        )
+        return infra.Curve(radius=self.radius, begin=self.begin, end=self.end)
 
 
-class SpeedSection(RangeElement):
-    max_speed: float
-
-    def __init__(self, begin, end, max_speed):
-        super().__init__(begin, end)
-        self.max_speed = max_speed
+@dataclass
+class ApplicableDirectionsTrackRange(RangeElement):
+    track: "TrackSection"
+    applicable_directions: ApplicableDirection
 
     def to_rjs(self):
-        return infra.SpeedSection(
-            speed=self.max_speed,
+        return infra.ApplicableDirectionsTrackRange(
+            track=self.track.make_rjs_ref(),
+            applicable_directions=infra.ApplicableDirections[self.applicable_directions.name],
             begin=self.begin,
             end=self.end,
-            applicable_directions=infra.ApplicableDirections.BOTH
         )

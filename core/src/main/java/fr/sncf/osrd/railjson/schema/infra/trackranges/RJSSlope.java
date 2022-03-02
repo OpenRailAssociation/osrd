@@ -1,6 +1,6 @@
 package fr.sncf.osrd.railjson.schema.infra.trackranges;
 
-public class RJSSlope extends BiDirectionalRJSTrackRange {
+public class RJSSlope extends RJSBiDirectionalTrackRange {
     // Gradient (m)
     public double gradient;
 
