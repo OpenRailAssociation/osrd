@@ -21,17 +21,6 @@ public abstract class SortedSequence<E> {
     }
 
     /**
-     * Gets the index of the first element of this sequence along dir, or NaN
-     * @param dir the reference direction
-     * @return the index of the first element of this sequence, or NaN
-     */
-    public double getFirstPosition(EdgeDirection dir) {
-        if (dir == EdgeDirection.START_TO_STOP)
-            return getFirstPosition();
-        return getLastPosition();
-    }
-
-    /**
      * Gets the index of the last element of this sequence, or NaN
      * @return the index of the last element of this sequence, or NaN
      */
@@ -47,17 +36,6 @@ public abstract class SortedSequence<E> {
         if (size == 1)
             return Double.NaN;
         return data.get(size - 2).position;
-    }
-
-    /**
-     * Gets the index of the last element of this sequence along dir, or NaN
-     * @param dir the reference direction
-     * @return the index of the last element of this sequence, or NaN
-     */
-    public double getLastPosition(EdgeDirection dir) {
-        if (dir == EdgeDirection.START_TO_STOP)
-            return getLastPosition();
-        return getFirstPosition();
     }
 
     /** Iterate forward on a slice, from start (included) to end (excluded). */

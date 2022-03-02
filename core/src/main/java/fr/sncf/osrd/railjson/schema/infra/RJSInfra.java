@@ -4,10 +4,6 @@ import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import fr.sncf.osrd.railjson.schema.common.ID;
-import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSExpr;
-import fr.sncf.osrd.railjson.schema.infra.railscript.RJSRSFunction;
-import fr.sncf.osrd.railjson.schema.infra.signaling.RJSAspect;
-import fr.sncf.osrd.railjson.schema.infra.signaling.RJSAspectConstraint;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSBufferStop;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrainDetector;
@@ -20,8 +16,6 @@ public class RJSInfra {
     public static final JsonAdapter<RJSInfra> adapter = new Moshi
             .Builder()
             .add(ID.Adapter.FACTORY)
-            .add(RJSRSExpr.adapter)
-            .add(RJSAspectConstraint.adapter)
             .build()
             .adapter(RJSInfra.class);
 
@@ -50,13 +44,6 @@ public class RJSInfra {
     /** The list of routes */
     public Collection<RJSRoute> routes;
 
-    /** The list of all the aspects signals can take */
-    public Collection<RJSAspect> aspects;
-
-    /** The list of function definitions */
-    @Json(name = "script_functions")
-    public List<RJSRSFunction> scriptFunctions;
-
     /** The map of switch types */
     @Json(name = "switch_types")
     public List<RJSSwitchType> switchTypes;
@@ -75,8 +62,6 @@ public class RJSInfra {
             Collection<RJSSwitch> switches,
             Collection<RJSOperationalPoint> operationalPoints,
             Collection<RJSRoute> routes,
-            Collection<RJSAspect> aspects,
-            List<RJSRSFunction> signalFunctions,
             List<RJSSwitchType> switchTypes,
             List<RJSSignal> signals,
             List<RJSBufferStop> bufferStops,
@@ -88,8 +73,6 @@ public class RJSInfra {
         this.switches = switches;
         this.operationalPoints = operationalPoints;
         this.routes = routes;
-        this.aspects = aspects;
-        this.scriptFunctions = signalFunctions;
         this.switchTypes = switchTypes;
         this.signals = signals;
         this.bufferStops = bufferStops;
@@ -101,8 +84,6 @@ public class RJSInfra {
      */
     public RJSInfra() {
         this(
-                new ArrayList<>(),
-                new ArrayList<>(),
                 new ArrayList<>(),
                 new ArrayList<>(),
                 new ArrayList<>(),

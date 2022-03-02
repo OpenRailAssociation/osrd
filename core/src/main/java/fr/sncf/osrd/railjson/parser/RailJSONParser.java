@@ -6,21 +6,14 @@ import static java.lang.Math.abs;
 import com.squareup.moshi.JsonReader;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.*;
-import fr.sncf.osrd.infra.railscript.RSExpr;
-import fr.sncf.osrd.infra.railscript.RSExprVisitor;
-import fr.sncf.osrd.infra.railscript.RSFunction;
-import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.routegraph.RouteGraph;
-import fr.sncf.osrd.infra.signaling.Aspect;
-import fr.sncf.osrd.infra.signaling.AspectConstraint;
-import fr.sncf.osrd.infra.signaling.Signal;
+import fr.sncf.osrd.infra.Signal;
 import fr.sncf.osrd.infra.trackgraph.*;
 import fr.sncf.osrd.railjson.schema.infra.*;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSTrackRange;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.utils.DoubleRangeMap;
 import fr.sncf.osrd.utils.RangeValue;
-import fr.sncf.osrd.utils.SortedArraySet;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import okio.BufferedSource;
 import java.io.IOException;
@@ -112,25 +105,6 @@ public class RailJSONParser {
             }
         }
 
-        // parse aspects
-        int aspectIndex = 0;
-        var aspectsMap = new HashMap<String, Aspect>();
-        for (var rjsAspect : railJSON.aspects) {
-            var constraints = new ArrayList<AspectConstraint>();
-            for (var constraint : rjsAspect.constraints)
-                constraints.add(constraint.parse());
-            var aspect = new Aspect(aspectIndex++, rjsAspect.id, rjsAspect.color, constraints);
-            aspectsMap.put(aspect.id, aspect);
-        }
-
-        // parse signal functions
-        var scriptFunctions = new HashMap<String, RSFunction<?>>();
-        for (var rjsScriptFunction : railJSON.scriptFunctions) {
-            var scriptFunction = RailScriptExprParser.parseFunction(
-                    aspectsMap, scriptFunctions, rjsScriptFunction);
-            scriptFunctions.put(scriptFunction.functionName, scriptFunction);
-        }
-
         var waypointsMap = new HashMap<String, Waypoint>();
         int waypointIndex = 0;
         var detectorIdToSignalNormalMap = new HashMap<String, Signal>();
@@ -154,8 +128,6 @@ public class RailJSONParser {
 
         var signals = new ArrayList<Signal>();
         for (var rjsSignal : railJSON.signals) {
-            var expr = RailScriptExprParser.parseStatefulSignalExpr(aspectsMap, scriptFunctions, rjsSignal.expr);
-
             // get linked detector
             Detector linkedDetector = null;
             if (rjsSignal.linkedDetector != null)
@@ -164,11 +136,9 @@ public class RailJSONParser {
             var signal = new Signal(
                     signals.size(),
                     rjsSignal.id,
-                    expr,
                     rjsSignal.direction,
                     rjsSignal.sightDistance,
-                    linkedDetector,
-                    rjsSignal.aspects
+                    linkedDetector
             );
             var trackBuilder = rjsSignal.track.getTrackBuilder(infraTrackBuilders);
             trackBuilder.signalsBuilder.add(rjsSignal.position, signal);
@@ -220,11 +190,6 @@ public class RailJSONParser {
             linkEdges(beginEdge, begin.endpoint, endEdge, end.endpoint, direction);
         }
 
-        // build name maps to prepare resolving names in expressions
-        var signalNames = new HashMap<String, Signal>();
-        for (var signal : signals)
-            signalNames.put(signal.id, signal);
-
         // Build tvd sections
         var tvdSections = TvdSectionBuilder.build(trackGraph);
 
@@ -235,45 +200,7 @@ public class RailJSONParser {
             parseRoute(routeGraphBuilder, infraTrackSections, trackGraph,
                     waypointsMap, detectorIdToSignalNormalMap, detectorIdToSignalReverseMap, rjsRoute);
 
-        var routeGraph = routeGraphBuilder.build();
-
-        resolveRailscript(signalNames, switchNames, scriptFunctions, signals, routeGraph);
-
-        return Infra.build(trackGraph, routeGraphBuilder.build(), aspectsMap, tvdSections, signals, switches);
-    }
-
-    /** Resolves name of routes and signals*/
-    private static void resolveRailscript(
-            HashMap<String, Signal> signalNames,
-            HashMap<String, Switch> switchNames,
-            HashMap<String, RSFunction<?>> scriptFunctions,
-            ArrayList<Signal> signals,
-            RouteGraph routeGraph
-    ) throws InvalidInfraException {
-        var routeNames = new HashMap<String, Route>();
-        for (var route : routeGraph.iterEdges())
-            routeNames.put(route.id, route);
-        var nameResolver = new RSExprVisitor() {
-            @Override
-            public void visit(RSExpr.SignalRef expr) throws InvalidInfraException {
-                expr.resolve(signalNames);
-            }
-
-            @Override
-            public void visit(RSExpr.RouteRef expr) throws InvalidInfraException {
-                expr.resolve(routeNames);
-            }
-
-            @Override
-            public void visit(RSExpr.SwitchRef expr) throws InvalidInfraException {
-                expr.resolve(switchNames);
-            }
-        };
-        for (var function : scriptFunctions.values())
-            function.body.accept(nameResolver);
-        for (var signal : signals)
-            signal.expr.accept(nameResolver);
-
+        return Infra.build(trackGraph, routeGraphBuilder.build(), tvdSections, signals, switches);
     }
 
     private static void addCurvesToGradients(DoubleRangeMap gradients, RJSTrackSection trackSection) {

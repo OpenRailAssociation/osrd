@@ -25,11 +25,4 @@ public enum CmpOperator {
             return !operator.isStrict;
         return resSign == operator.expectedSign;
     }
-
-    /** Create a strict version of the operator */
-    public CmpOperator strict() {
-        if (expectedSign > 0)
-            return STRICTLY_HIGHER;
-        return STRICTLY_LOWER;
-    }
 }

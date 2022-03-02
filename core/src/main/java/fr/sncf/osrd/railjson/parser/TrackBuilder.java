@@ -2,7 +2,7 @@ package fr.sncf.osrd.railjson.parser;
 
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
-import fr.sncf.osrd.infra.signaling.Signal;
+import fr.sncf.osrd.infra.Signal;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.utils.PointSequence;

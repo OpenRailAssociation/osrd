@@ -20,12 +20,10 @@ import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
 import fr.sncf.osrd.railjson.parser.RJSStandaloneTrainScheduleParser;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
-import fr.sncf.osrd.railjson.parser.exceptions.InvalidSuccession;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.*;
-import fr.sncf.osrd.simulation.SimulationError;
 import fr.sncf.osrd.train.*;
 import fr.sncf.osrd.utils.CurveSimplification;
 import org.takes.Request;
@@ -66,8 +64,6 @@ public class StandaloneSimulationEndpoint implements Take {
             IOException,
             InvalidRollingStock,
             InvalidSchedule,
-            InvalidSuccession,
-            SimulationError,
             InvalidInfraException {
         try {
             // Parse request input

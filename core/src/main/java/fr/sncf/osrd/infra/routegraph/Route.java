@@ -2,10 +2,8 @@ package fr.sncf.osrd.infra.routegraph;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.TVDSection;
-import fr.sncf.osrd.infra.signaling.ActionPoint;
-import fr.sncf.osrd.infra.signaling.Signal;
+import fr.sncf.osrd.infra.Signal;
 import fr.sncf.osrd.infra.trackgraph.Switch;
-import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.infra.TVDSectionPath;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.utils.SortedArraySet;
@@ -13,6 +11,7 @@ import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.graph.DirNEdge;
 import java.util.*;
 
+@SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public final class Route extends DirNEdge {
     public final String id;
     /** List of tvdSectionPath forming the route */
@@ -25,13 +24,6 @@ public final class Route extends DirNEdge {
 
     /** Signal placed before the route and reflecting its state*/
     public final Signal entrySignal;
-
-    /** List of all signals on the route, including the entry signal. Used to determine the next signal in railscript */
-    @SuppressFBWarnings(
-            value = {"UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR"},
-            justification = "Initialized calling resolveSignals"
-    )
-    public List<Signal> signalsWithEntry;
 
     /** Set of signals to be updated on route change */
     public ArrayList<Signal> signalSubscribers;
@@ -71,22 +63,6 @@ public final class Route extends DirNEdge {
         return res;
     }
 
-    private ArrayList<ActionPoint> getActionPoints() {
-        var res = new ArrayList<ActionPoint>();
-        for (var range : getTrackSectionRanges()) {
-            var pointSequence = TrackSection.getInteractables(range.edge, range.direction);
-            var it = pointSequence.iterate(range.direction, range.getBeginPosition(), range.getEndPosition(), null);
-            while (it.hasNext()) {
-                var point = it.next();
-                var location = new TrackSectionLocation(range.edge, point.position);
-                if (range.containsLocation(location)) {
-                    res.add(point.value);
-                }
-            }
-        }
-        return res;
-    }
-
     /** Return a HashSet with all routes which share a TVDSection */
     public HashSet<Route> getConflictedRoutes() {
         var conflictedRoutes = new HashSet<Route>();
@@ -94,19 +70,6 @@ public final class Route extends DirNEdge {
             conflictedRoutes.addAll(tvdSectionPath.tvdSection.routeSubscribers);
 
         return conflictedRoutes;
-    }
-
-    /** Builds the list of signals present on the route.
-     * This cannot be done in the constructor because the track sections are empty, it has to be done later. */
-    public void resolveSignals() {
-        signalsWithEntry = new ArrayList<>();
-        if (entrySignal != null)
-            signalsWithEntry.add(entrySignal);
-        for (var actionPoint : getActionPoints())
-            if (actionPoint instanceof Signal && actionPoint != entrySignal) {
-                var signal = (Signal) actionPoint;
-                signalsWithEntry.add(signal);
-            }
     }
 
     /** Build track section path. Need to concatenate all track section of all TvdSectionPath.

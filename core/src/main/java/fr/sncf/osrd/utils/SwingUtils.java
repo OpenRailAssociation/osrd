@@ -1,6 +1,7 @@
 package fr.sncf.osrd.utils;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import javax.swing.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -8,6 +9,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
 
+@ExcludeFromGeneratedCodeCoverage
 @SuppressFBWarnings({"WA_AWAIT_NOT_IN_LOOP"})
 public class SwingUtils {
     /** Creates a new frame, adds a pane and synchronously wait for the frame to be closed */

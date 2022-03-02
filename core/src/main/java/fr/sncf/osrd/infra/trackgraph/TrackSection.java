@@ -1,13 +1,10 @@
 package fr.sncf.osrd.infra.trackgraph;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.CatenaryType;
-import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.SpeedSection;
 import fr.sncf.osrd.infra.routegraph.Route;
-import fr.sncf.osrd.infra.signaling.ActionPoint;
-import fr.sncf.osrd.infra.signaling.Signal;
+import fr.sncf.osrd.infra.Signal;
 import fr.sncf.osrd.utils.*;
 import fr.sncf.osrd.utils.graph.ApplicableDirection;
 import fr.sncf.osrd.utils.graph.BiNEdge;
@@ -19,6 +16,7 @@ import java.util.List;
 /**
  * An edge in the topological graph.
  */
+@SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public final class TrackSection extends BiNEdge<TrackSection> {
     public final String id;
 
@@ -55,13 +53,9 @@ public final class TrackSection extends BiNEdge<TrackSection> {
     public final DoubleRangeMap backwardGradients = new DoubleRangeMap();
     public final ArrayList<RangeValue<SpeedSection>> forwardSpeedSections = new ArrayList<>();
     public final ArrayList<RangeValue<SpeedSection>> backwardSpeedSections = new ArrayList<>();
-    public final ArrayList<RangeValue<CatenaryType>> forwardCatenarySections = new ArrayList<>();
-    public final ArrayList<RangeValue<CatenaryType>> backwardCatenarySections = new ArrayList<>();
     public final PointSequence<OperationalPoint> operationalPoints = new PointSequence<>();
     public final PointSequence<Waypoint> waypoints = new PointSequence<>();
     public final PointSequence<Signal> signals = new PointSequence<>();
-    public final PointSequence<ActionPoint> forwardActionPoints = new PointSequence<>();
-    public final PointSequence<ActionPoint> backwardActionPoints = new PointSequence<>();
 
     /** Clamp an offset between 0 and the length of the track section */
     public double clamp(double offset) {
@@ -155,29 +149,6 @@ public final class TrackSection extends BiNEdge<TrackSection> {
             edgeB.getNeighbors(positionOnB).add(edgeA);
     }
 
-
-    /**
-     * Gets the last valid edge position along a direction
-     * @param direction the direction to consider positioning from
-     * @return the last valid edge position
-     */
-    public double lastPosition(EdgeDirection direction) {
-        if (direction == EdgeDirection.START_TO_STOP)
-            return length;
-        return 0.0;
-    }
-
-    /**
-     * Gets the first valid edge position along a direction
-     * @param direction the direction to consider positioning from
-     * @return the first valid edge position
-     */
-    public double firstPosition(EdgeDirection direction) {
-        if (direction == EdgeDirection.START_TO_STOP)
-            return 0.0;
-        return length;
-    }
-
     /**
      * Gets the position in the edge along a direction
      * @param direction the direction to consider positioning from
@@ -186,14 +157,6 @@ public final class TrackSection extends BiNEdge<TrackSection> {
         if (direction == EdgeDirection.START_TO_STOP)
             return pos;
         return length - pos;
-    }
-
-    @SuppressFBWarnings({"UPM_UNCALLED_PRIVATE_METHOD"})
-    private <ValueT> void validatePoints(PointSequence<ValueT> points) throws InvalidInfraException {
-        if (points.getFirstPosition() < 0.)
-            throw new InvalidInfraException(String.format("invalid PointSequence start for %s", id));
-        if (points.getLastPosition() > length)
-            throw new InvalidInfraException(String.format("invalid PointSequence end for %s", id));
     }
 
     /*
@@ -211,29 +174,5 @@ public final class TrackSection extends BiNEdge<TrackSection> {
         if (direction == EdgeDirection.START_TO_STOP)
             return edge.forwardSpeedSections;
         return edge.backwardSpeedSections;
-    }
-
-    /**
-     * Gets the type of catenary on a given track section, according to a given direction.
-     * @param edge the track section
-     * @param direction the direction
-     * @return type of catenary
-     */
-    public static ArrayList<RangeValue<CatenaryType>> getCatenarySections(TrackSection edge, EdgeDirection direction) {
-        if (direction == EdgeDirection.START_TO_STOP)
-            return edge.forwardCatenarySections;
-        return edge.backwardCatenarySections;
-    }
-
-    /**
-     * Gets visible track objects on a given section of track, along a given direction.
-     * @param edge the section of track
-     * @param direction the direction
-     * @return visible track objects
-     */
-    public static PointSequence<ActionPoint> getInteractables(TrackSection edge, EdgeDirection direction) {
-        if (direction == EdgeDirection.START_TO_STOP)
-            return edge.forwardActionPoints;
-        return edge.backwardActionPoints;
     }
 }
