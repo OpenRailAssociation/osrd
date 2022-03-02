@@ -43,8 +43,7 @@ def run_test(infra: InfraGraph, base_url: str, infra_id: int):
     schedule_payload = make_payload_schedule(base_url, infra_id, path_id, rolling_stock, path_length)
     r = requests.post(base_url + "train_schedule/standalone_simulation/", json=schedule_payload, timeout=TIMEOUT)
     if r.status_code // 100 != 2:
-        detail = r.json()["detail"]
-        if "can't lose" in detail:  # TODO: filter based on 4xx answers when those will be implemented
+        if r.status_code // 100 == 4:
             print("ignore: invalid user input")
             return
         raise RuntimeError(f"Schedule error {r.status_code}: {r.content}, payload={json.dumps(schedule_payload)}")
