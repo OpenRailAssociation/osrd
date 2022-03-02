@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import static java.lang.Math.abs;
+
 public class HardenedMarecoAllowance implements Allowance {
     private final Logger logger = LoggerFactory.getLogger(HardenedMarecoAllowance.class);
 
@@ -104,46 +106,60 @@ public class HardenedMarecoAllowance implements Allowance {
         return res;
     }
 
-    private EnvelopePart computeSlowdown(Envelope base, double v1) {
-        var startSpeed = base.getBeginSpeed();
-        if (startSpeed <= v1)
-            return null;
-
+    private EnvelopePart computeSlowdown(Envelope envelopeSection, double v1, double targetBeginSpeed) {
+        double beginSpeed;
+        // if no begin speed has been imposed by the previous range
+        if (targetBeginSpeed == 0) {
+            // if the section is not at the beginning of the allowance region, there will be no slowdown phase
+            if (envelopeSection.getBeginPos() > beginPos)
+                return null;
+            beginSpeed = envelopeSection.getBeginSpeed();
+            if (beginSpeed <= v1)
+                return null;
+        } else
+            beginSpeed = targetBeginSpeed;
         var partBuilder = new EnvelopePartBuilder();
         var constrainedBuilder = new ConstrainedEnvelopePartBuilder(
                 partBuilder,
                 new SpeedFloor(v1)
         );
-        EnvelopeDeceleration.decelerate(context, base.getBeginPos(), startSpeed, constrainedBuilder, 1);
+        EnvelopeDeceleration.decelerate(context, envelopeSection.getBeginPos(), beginSpeed, constrainedBuilder, 1);
         return partBuilder.build();
     }
 
-    private EnvelopePart computeSpeedup(Envelope base, double v1) {
-        var endSpeed = base.getEndSpeed();
-        if (endSpeed <= v1)
-            return null;
-
+    private EnvelopePart computeSpeedup(Envelope envelopeSection, double v1, double targetEndSpeed) {
+        double endSpeed;
+        // if no begin speed has been imposed by the next range
+        if (targetEndSpeed == 0) {
+            // if the section is not at the end of the allowance region, there will be no speedup phase
+            if (envelopeSection.getEndPos() < endPos)
+                return null;
+            endSpeed = envelopeSection.getEndSpeed();
+            if (endSpeed <= v1)
+                return null;
+        } else
+            endSpeed = targetEndSpeed;
         var partBuilder = new EnvelopePartBuilder();
         var constrainedBuilder = new ConstrainedEnvelopePartBuilder(
                 partBuilder,
                 new SpeedFloor(v1)
         );
-        EnvelopeAcceleration.accelerate(context, base.getEndPos(), endSpeed, constrainedBuilder, -1);
+        EnvelopeAcceleration.accelerate(context, envelopeSection.getEndPos(), endSpeed, constrainedBuilder, -1);
         return partBuilder.build();
     }
 
-    private Envelope computeMarecoIteration(Envelope base, double v1) {
-        // The part of the envelope on which the margin is applied is split in 3:
+    private Envelope computeMarecoIteration(Envelope envelopeSection, double v1, double beginSpeed, double endSpeed) {
+        // The section of the envelope on which the margin is applied is split in 3:
         // slowdown, then core, then speedup. The slowdown / speedup parts are needed to transition to / from v1 when
         // the begin / end speeds are above v1. These phases are empty / can be ignored when the begin / end speeds
         // are below v1.
 
-        // 1) compute the slowdown and speedup regions, so that the rest of this function can assume all speeds are
-        // below v1
-        var slowdownPhase = computeSlowdown(base, v1);
-        var speedupPhase = computeSpeedup(base, v1);
-        var slowdownEnd = slowdownPhase != null ? slowdownPhase.getEndPos() : base.getBeginPos();
-        var speedupBegin = speedupPhase != null ? speedupPhase.getBeginPos() : base.getEndPos();
+        // 1) compute the potential slowdown and speedup regions,
+        // so that the rest of this function can assume all speeds are below v1
+        var slowdownPhase = computeSlowdown(envelopeSection, v1, beginSpeed);
+        var speedupPhase = computeSpeedup(envelopeSection, v1, endSpeed);
+        var slowdownEnd = slowdownPhase != null ? slowdownPhase.getEndPos() : envelopeSection.getBeginPos();
+        var speedupBegin = speedupPhase != null ? speedupPhase.getBeginPos() : envelopeSection.getEndPos();
 
         // if the slowdown / speedup phases touch or intersect, there is no core phase
         if (speedupBegin < slowdownEnd)
@@ -152,7 +168,7 @@ public class HardenedMarecoAllowance implements Allowance {
             return Envelope.make(slowdownPhase, speedupPhase);
 
         // otherwise, compute the core phase
-        var coreBase = Envelope.make(base.slice(slowdownEnd, speedupBegin));
+        var coreBase = Envelope.make(envelopeSection.slice(slowdownEnd, speedupBegin));
         var corePhase = computeMarecoCore(coreBase, v1);
 
         // 2) stick phases back together
@@ -169,12 +185,12 @@ public class HardenedMarecoAllowance implements Allowance {
         return result;
     }
 
-    /** Iteratively run MARECO on the given envelope, until the target time is reached */
-    private Envelope computeMareco(Envelope base, double targetTime) {
+    /** Iteratively run MARECO on the given envelope section, until the target time is reached */
+    private Envelope computeMareco(Envelope envelopeSection, double targetTime, double beginSpeed, double endSpeed) {
         // perform a binary search
         // low bound: capacitySpeedLimit
         // high bound: compute v1 for which vf is the max speed of the envelope region
-        var initialHighBound = base.getMaxSpeed() * 2;
+        var initialHighBound = envelopeSection.getMaxSpeed() * 2;
 
         Envelope marecoResult = null;
         var search = new DoubleBinarySearch(capacitySpeedLimit, initialHighBound, targetTime, context.timeStep, true);
@@ -182,7 +198,7 @@ public class HardenedMarecoAllowance implements Allowance {
         for (int i = 1; i < 21 && !search.complete(); i++) {
             var v1 = search.getInput();
             logger.debug("starting attempt {} with v1 = {}", i, v1);
-            marecoResult = computeMarecoIteration(base, v1);
+            marecoResult = computeMarecoIteration(envelopeSection, v1, beginSpeed, endSpeed);
             if (marecoResult == null) {
                 // We reached the slowdown / speedup intersection case (not implemented) and need to speed up
                 search.feedback(0);
@@ -224,18 +240,59 @@ public class HardenedMarecoAllowance implements Allowance {
      */
     private void applyAllowanceRegion(EnvelopeBuilder builder, Envelope envelopeRegion) {
 
+        // 1) - Apply the allowance on every range independently without dealing with the transitions
+        var firstTry = new ArrayList<Envelope>();
         for (var range : ranges) {
-            var envelopeRange = Envelope.make(envelopeRegion.slice(range.beginPos, range.endPos));
-            applyAllowanceRange(builder, envelopeRange, range.value);
+            var indEnvelopeRange = Envelope.make(envelopeRegion.slice(range.beginPos, range.endPos));
+            var withAllowance = computeEnvelopeRange(indEnvelopeRange, range.value);
+            firstTry.add(withAllowance);
         }
+        var nRanges = firstTry.size();
+        assert nRanges >= 1;
 
+        // 2) - Update every range
+        //      At each transition between two ranges, the one that has the lowest speed is modified
+        //      by adding the slowdown or speedup phase to restore the continuity of the final envelope
+        for (var i = 0; i < nRanges; i++) {
+            var rangeBeginPos = firstTry.get(i).getBeginPos();
+            var rangeEndPos = firstTry.get(i).getEndPos();
+            var targetBeginSpeed = getTargetBeginSpeed(i, firstTry);
+            var targetEndSpeed = getTargetEndSpeed(i, firstTry);
+            var baseEnvelopeRange = Envelope.make(envelopeRegion.slice(rangeBeginPos, rangeEndPos));
+            var envelopeRange =
+                    computeEnvelopeRange(baseEnvelopeRange, ranges[0].value, targetBeginSpeed, targetEndSpeed);
+            builder.addEnvelope(envelopeRange);
+        }
+    }
+
+    private double getTargetBeginSpeed(int i, ArrayList<Envelope> firstTry) {
+        var previousEndSpeed = i >= 1 ? firstTry.get(i - 1).getEndSpeed() : 0.0;
+        var envelope = firstTry.get(i);
+        return previousEndSpeed > envelope.getBeginSpeed() ? previousEndSpeed : 0.0;
+    }
+
+    private double getTargetEndSpeed(int i, ArrayList<Envelope> firstTry) {
+        var nextBeginSpeed = i < firstTry.size() - 1 ? firstTry.get(i + 1).getBeginSpeed() : 0.0;
+        var envelope = firstTry.get(i);
+        return nextBeginSpeed > envelope.getBeginSpeed() ? nextBeginSpeed : 0.0;
     }
 
     /**
-     * Apply the allowance to the given range.
+     * Apply the allowance to the given range, without specified speeds on the sides.
      * Split the range into sections which can be independently computed.
      */
-    private void applyAllowanceRange(EnvelopeBuilder builder, Envelope envelopeRange, AllowanceValue value) {
+    private Envelope computeEnvelopeRange(Envelope envelopeRange, AllowanceValue value) {
+        return computeEnvelopeRange(envelopeRange, value, 0, 0);
+    }
+
+    /**
+     * Apply the allowance to the given range, with specified speeds on the sides.
+     * Split the range into sections which can be independently computed.
+     */
+    private Envelope computeEnvelopeRange(Envelope envelopeRange,
+                                          AllowanceValue value,
+                                          double imposedBeginSpeed,
+                                          double imposedEndSpeed) {
 
         // compute the added time for all the allowance range
         var baseTime = envelopeRange.getTotalTime();
@@ -243,8 +300,7 @@ public class HardenedMarecoAllowance implements Allowance {
         var addedTime = value.getAllowanceTime(baseTime, baseDistance);
         // if no time is added, just return the base envelope without performing binary search
         if (addedTime == 0.0) {
-            builder.addEnvelope(envelopeRange);
-            return;
+            return envelopeRange;
         }
         assert addedTime > 0;
 
@@ -258,22 +314,28 @@ public class HardenedMarecoAllowance implements Allowance {
         if (splitPoints.get(splitPoints.size() - 1) != envelopeRange.getEndPos())
             splitPoints.add(envelopeRange.getEndPos());
 
+        var builder = new EnvelopeBuilder();
         // run mareco on each section of the allowance region
         for (int i = 0; i < splitPoints.size() - 1; i++) {
             double sectionBegin = splitPoints.get(i);
             double sectionEnd = splitPoints.get(i + 1);
-            var section = Envelope.make(envelopeRange.slice(sectionBegin, sectionEnd));
-            var sectionTime = section.getTotalTime();
-            var sectionDistance = section.getTotalDistance();
+            var envelopeSection = Envelope.make(envelopeRange.slice(sectionBegin, sectionEnd));
+            var sectionTime = envelopeSection.getTotalTime();
+            var sectionDistance = envelopeSection.getTotalDistance();
             var sectionRatio = value.distribution.getSectionRatio(
                     sectionTime, baseTime, sectionDistance, baseDistance);
             var targetTime = sectionTime + addedTime * sectionRatio;
-            var marecoResult = computeMareco(section, targetTime);
+            var marecoResult = computeMareco(envelopeSection, targetTime, imposedBeginSpeed, imposedEndSpeed);
+            assert abs(marecoResult.getTotalTime() - targetTime) < context.timeStep;
             builder.addEnvelope(marecoResult);
         }
+        return builder.build();
     }
 
-    /** Apply the allowance to the entire envelope. */
+    /** Apply the allowance to the given envelope.
+     *  The allowance will be applied in the region asked by the user, between beginPos and endPos.
+     *  In case of operation allowance the region is the entire path.
+     *  In case of an engineering allowance the region can be shorter.*/
     @Override
     public Envelope apply(Envelope base) {
         assert base.continuous;
