@@ -5,6 +5,7 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.routegraph.RouteLocation;
@@ -16,6 +17,8 @@ import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.utils.PointValue;
 import fr.sncf.osrd.utils.TrackSectionLocation;
+import fr.sncf.osrd.utils.geom.LineString;
+import fr.sncf.osrd.utils.geom.Point;
 import fr.sncf.osrd.utils.graph.Dijkstra;
 import fr.sncf.osrd.utils.graph.DistCostFunction;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
@@ -35,6 +38,8 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
     public static final JsonAdapter<PathfindingResult> adapterResult = new Moshi
             .Builder()
             .add(ID.Adapter.FACTORY)
+            .add(new LineString.Adapter())
+            .add(new Point.Adapter())
             .build()
             .adapter(PathfindingResult.class)
             .failOnUnknown();
@@ -81,7 +86,7 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
-    public Response act(Request req) throws IOException {
+    public Response act(Request req) throws IOException, InvalidInfraException {
         try {
             var body = new RqPrint(req).printBody();
             var request = adapterRequest.fromJson(body);
@@ -172,46 +177,9 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
 
             var finalPathsToGoal = filterPathSteps(pathsToGoal);
 
-            var res = new PathfindingResult();
-            for (var path : finalPathsToGoal) {
-                var routeBeginLoc = pathNodeToRouteLocation(path.pathNodes.get(0));
-                var beginLoc = routeBeginLoc.getTrackSectionLocation();
-                var routeEndLoc = pathNodeToRouteLocation(path.pathNodes.get(path.pathNodes.size() - 1));
-                var endLoc = routeEndLoc.getTrackSectionLocation();
+            var res = PathfindingResult.PathfindingResultMake(finalPathsToGoal, infra);
 
-                var routes = new ArrayList<Route>();
-                for (var node : path.pathNodes) {
-                    if (routes.isEmpty() || routes.get(routes.size() - 1) != node.edge)
-                        routes.add(node.edge);
-                }
-
-                for (int j = 0; j < routes.size(); j++) {
-                    TrackSectionLocation begin = null;
-                    TrackSectionLocation end = null;
-                    if (j == 0)
-                        begin = beginLoc;
-                    if (j == routes.size() - 1)
-                        end = endLoc;
-                    var route = routes.get(j);
-                    var trackSections = Route.routesToTrackSectionRange(
-                            Collections.singletonList(route), begin, end);
-                    if (j == 0) {
-                        // Add the given origin location to the steps output
-                        var firstTrack = trackSections.get(0);
-                        var newStep = new PathfindingResult.PathWaypointResult(firstTrack.edge,
-                                firstTrack.getBeginPosition());
-                        res.addStep(newStep);
-                    }
-                    res.add(route, trackSections);
-                    if (j == routes.size() - 1) {
-                        // Add the given destination location to the steps output
-                        var lastTrack = trackSections.get(trackSections.size() - 1);
-                        var newStep = new PathfindingResult.PathWaypointResult(lastTrack.edge,
-                                lastTrack.getEndPosition());
-                        res.addStep(newStep);
-                    }
-                }
-            }
+            //res.addGeometry(infra);
             return new RsJson(new RsWithBody(adapterResult.toJson(res)));
         } catch (Throwable ex) {
             return ExceptionHandler.handle(ex);
@@ -244,138 +212,5 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
             assert res.size() == pathsToGoal.size() - i;
         }
         return res;
-    }
-
-    @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
-    private RouteLocation pathNodeToRouteLocation(BasicPathNode<Route> node) {
-        return new RouteLocation(node.edge, node.position);
-    }
-
-    @SuppressFBWarnings({"URF_UNREAD_FIELD", "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-    public static class PathfindingResult {
-        @Json(name = "route_paths")
-        public final List<RoutePathResult> routePaths;
-        @Json(name = "path_waypoints")
-        public final List<PathWaypointResult> pathWaypoints;
-
-        private PathfindingResult() {
-            routePaths = new ArrayList<>();
-            pathWaypoints = new ArrayList<>();
-        }
-
-        void add(Route route, List<TrackSectionRange> trackSections) {
-            var routeResult = new RoutePathResult();
-            routeResult.route = new RJSObjectRef<>(route.id, "Route");
-            routeResult.trackSections = new ArrayList<>();
-            for (var trackSection : trackSections) {
-                if (trackSection.direction == EdgeDirection.START_TO_STOP)
-                    assert trackSection.getBeginPosition() <= trackSection.getEndPosition();
-                else
-                    assert trackSection.getBeginPosition() >= trackSection.getEndPosition();
-                var trackSectionResult = new DirectionalTrackRangeResult(trackSection.edge.id,
-                        trackSection.getBeginPosition(),
-                        trackSection.getEndPosition());
-                routeResult.trackSections.add(trackSectionResult);
-                var opIterator = trackSection.edge.operationalPoints.iterate(
-                        trackSection.direction,
-                        trackSection.getBeginPosition(),
-                        trackSection.getEndPosition(),
-                        null);
-                while (opIterator.hasNext())
-                    addStep(new PathWaypointResult(opIterator.next(), trackSection.edge));
-            }
-
-            if (!routePaths.isEmpty() && routePaths.get(routePaths.size() - 1).route.id.equals(routeResult.route.id)) {
-                routePaths.get(routePaths.size() - 1).addTrackSections(routeResult.trackSections);
-            } else {
-                routePaths.add(routeResult);
-            }
-        }
-
-        void addStep(PathWaypointResult newStep) {
-            if (pathWaypoints.isEmpty()) {
-                pathWaypoints.add(newStep);
-                return;
-            }
-            var lastStep = pathWaypoints.get(pathWaypoints.size() - 1);
-            if (lastStep.isDuplicate(newStep)) {
-                lastStep.merge(newStep);
-                return;
-            }
-            pathWaypoints.add(newStep);
-        }
-
-        public static class RoutePathResult {
-            public RJSObjectRef<RJSRoute> route;
-            @Json(name = "track_sections")
-            public List<DirectionalTrackRangeResult> trackSections = new ArrayList<>();
-
-            /** This function adds trackSectionRanges by concatenating them to the existing ones */
-            public void addTrackSections(List<DirectionalTrackRangeResult> newTracks) {
-                if (trackSections.isEmpty()) {
-                    trackSections = newTracks;
-                    return;
-                }
-
-                var lastTrack = trackSections.get(trackSections.size() - 1);
-                var firstNewTrack = newTracks.get(0);
-
-                // If no intersection we simply add all new tracks
-                if (!lastTrack.trackSection.id.equals(firstNewTrack.trackSection.id)) {
-                    trackSections.addAll(newTracks);
-                    return;
-                }
-
-                // If same track we must merge the last track with the first new one
-                trackSections.remove(trackSections.size() - 1);
-                trackSections.add(new DirectionalTrackRangeResult(
-                        lastTrack.trackSection.id.id,
-                        lastTrack.begin,
-                        firstNewTrack.end)
-                );
-
-                // Add the rest of them
-                for (int i = 1; i < newTracks.size(); i++)
-                    trackSections.add(newTracks.get(i));
-            }
-        }
-
-        public static class PathWaypointResult {
-            public String id;
-            public boolean suggestion;
-            public RJSObjectRef<RJSTrackSection> track;
-            public double position;
-
-            /** Suggested operational points */
-            PathWaypointResult(PointValue<OperationalPoint> op, TrackSection trackSection) {
-                this.id = op.value.id;
-                this.suggestion = true;
-                this.track = new RJSObjectRef<>(trackSection.id, "TrackSection");
-                this.position = op.position;
-            }
-
-            /** Given step */
-            PathWaypointResult(TrackSection trackSection, double position) {
-                this.suggestion = false;
-                this.track = new RJSObjectRef<>(trackSection.id, "TrackSection");
-                this.position = position;
-            }
-
-            /** Check if two step result are at the same location */
-            public boolean isDuplicate(PathWaypointResult other) {
-                if (!track.equals(other.track))
-                    return false;
-                return Math.abs(position - other.position) < 0.001;
-            }
-
-            /** Merge a suggested with a give step */
-            public void merge(PathWaypointResult other) {
-                suggestion &= other.suggestion;
-                if (!other.suggestion)
-                    return;
-                position = other.position;
-                id = other.id;
-            }
-        }
     }
 }
