@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.contrib.gis.db import models
 
-# from osrd_infra.models.infra import Infra
 from osrd_infra.models import Infra
 from osrd_infra.schemas.path import Curves, PathPayload, Slopes, Vmax
 from osrd_infra.utils import JSONSchemaValidator

@@ -6,7 +6,7 @@ from railjson_generator.schema.infra.endpoint import Endpoint, TrackEndpoint
 from railjson_generator.schema.infra.link import Link
 from railjson_generator.schema.infra.make_geo_data import make_geo_lines, make_geo_points
 from railjson_generator.schema.infra.operational_point import OperationalPointPart
-from railjson_generator.schema.infra.range_elements import Curve, Slope, SpeedSection
+from railjson_generator.schema.infra.range_elements import Curve, Slope
 from railjson_generator.schema.infra.signal import Signal
 from railjson_generator.schema.infra.waypoint import BufferStop, Detector, Waypoint
 
@@ -35,7 +35,6 @@ class TrackSection:
     end_links: List[TrackEndpoint] = field(default_factory=list, repr=False)
     slopes: List[Slope] = field(default_factory=list)
     curves: List[Curve] = field(default_factory=list)
-    speed_limits: List[SpeedSection] = field(default_factory=list)
 
     def begin(self):
         return TrackEndpoint(self, Endpoint.BEGIN)
@@ -64,9 +63,6 @@ class TrackSection:
     def add_curve(self, begin, end, curve):
         self.curves.append(Curve(begin, end, curve))
 
-    def add_speed_limit(self, begin, end, speed):
-        self.speed_limits.append(SpeedSection(begin, end, speed))
-
     def sort_waypoints(self):
         self.waypoints.sort(key=lambda w: w.position)
 
@@ -81,9 +77,9 @@ class TrackSection:
 
     @staticmethod
     def register_link(link: Link):
-        if link.navigability != ApplicableDirection.REVERSE:
+        if link.navigability != ApplicableDirection.STOP_TO_START:
             link.begin.get_neighbors().append(link.end)
-        if link.navigability != ApplicableDirection.NORMAL:
+        if link.navigability != ApplicableDirection.START_TO_STOP:
             link.end.get_neighbors().append(link.begin)
 
     def neighbors(self, direction: Direction):
@@ -106,9 +102,6 @@ class TrackSection:
             navigability=infra.ApplicableDirections[ApplicableDirection.BOTH.name],
             slopes=[slope.to_rjs() for slope in self.slopes],
             curves=[curve.to_rjs() for curve in self.curves],
-            speed_sections=[speed_limit.to_rjs() for speed_limit in self.speed_limits],
-            catenary_sections=[],
-            signaling_sections=[],
             **geo_data,
         )
 

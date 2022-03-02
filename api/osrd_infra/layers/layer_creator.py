@@ -5,7 +5,7 @@ from requests import post
 class LayerCreator:
     __slots__ = ("name", "layer", "version", "payload_size")
 
-    def __init__(self, name, version, payload_size=512):
+    def __init__(self, name, version, payload_size=2048):
         self.name = name
         self.version = version
         self.layer = []

@@ -7,12 +7,12 @@ class Direction(IntEnum):
 
 
 class ApplicableDirection(IntEnum):
-    NORMAL = 0
-    REVERSE = 1
+    START_TO_STOP = 0
+    STOP_TO_START = 1
     BOTH = 2
 
     def directions(self):
-        if self != ApplicableDirection.REVERSE:
+        if self != ApplicableDirection.STOP_TO_START:
             yield Direction.START_TO_STOP
-        if self != ApplicableDirection.NORMAL:
+        if self != ApplicableDirection.START_TO_STOP:
             yield Direction.STOP_TO_START

@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from railjson_generator import (
     InfraBuilder,
     SimulationBuilder,
@@ -37,8 +35,8 @@ for first_track, second_track in zip(tracks[:-1], tracks[1:]):
 # Add detector and signals
 for track in tracks:
     detector = track.add_detector(position=500)
-    track.add_signal(detector.position, ApplicableDirection.NORMAL, detector)
-    track.add_signal(detector.position, ApplicableDirection.REVERSE, detector)
+    track.add_signal(detector.position, ApplicableDirection.START_TO_STOP, detector)
+    track.add_signal(detector.position, ApplicableDirection.STOP_TO_START, detector)
 
 # Build infra
 infra = builder.build()

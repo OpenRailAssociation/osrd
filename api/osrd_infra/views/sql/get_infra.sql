@@ -1,6 +1,12 @@
 WITH infra AS (
 	SELECT %s AS id
 ),
+railjson_version AS (
+	SELECT railjson_version
+	FROM public.osrd_infra_infra,
+		infra
+	WHERE public.osrd_infra_infra.id = infra.id
+),
 routes AS (
 	SELECT coalesce(json_agg(x.data), '[]'::json) AS railjson
 	FROM (
@@ -82,27 +88,27 @@ detectors AS (
 		infra
 	WHERE x.infra_id = infra.id
 ),
-script_functions AS (
+catenaries AS (
 	SELECT coalesce(json_agg(x.data), '[]'::json) AS railjson
 	FROM (
 			SELECT *
-			FROM public.osrd_infra_railscriptfunctionmodel
+			FROM public.osrd_infra_catenarymodel
 		) x,
 		infra
 	WHERE x.infra_id = infra.id
 ),
-aspects AS (
+speed_sections AS (
 	SELECT coalesce(json_agg(x.data), '[]'::json) AS railjson
 	FROM (
 			SELECT *
-			FROM public.osrd_infra_aspectmodel
+			FROM public.osrd_infra_speedsectionmodel
 		) x,
 		infra
 	WHERE x.infra_id = infra.id
 )
 SELECT json_build_object(
 		'version',
-		'2.1.0',
+		railjson_version.railjson_version,
 		'operational_points',
 		operational_points.railjson,
 		'routes',
@@ -121,12 +127,13 @@ SELECT json_build_object(
 		buffer_stops.railjson,
 		'detectors',
 		detectors.railjson,
-		'script_functions',
-		script_functions.railjson,
-		'aspects',
-		aspects.railjson
+		'catenaries',
+		catenaries.railjson,
+		'speed_sections',
+		speed_sections.railjson
 	)::TEXT
 FROM routes
+	CROSS JOIN railjson_version
 	CROSS JOIN switch_types
 	CROSS JOIN switches
 	CROSS JOIN track_section_links
@@ -134,6 +141,6 @@ FROM routes
 	CROSS JOIN signals
 	CROSS JOIN buffer_stops
 	CROSS JOIN detectors
-	CROSS JOIN script_functions
-	CROSS JOIN aspects
-	CROSS JOIN operational_points;
+	CROSS JOIN operational_points
+	CROSS JOIN catenaries
+	CROSS JOIN speed_sections;

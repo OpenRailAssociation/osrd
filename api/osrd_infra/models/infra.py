@@ -2,11 +2,14 @@ from django.contrib.gis.db import models
 
 from osrd_infra.schemas.infra import (
     ALL_OBJECT_TYPES,
+    RAILJSON_VERSION,
     BufferStop,
+    Catenary,
     Detector,
     OperationalPoint,
     Route,
     Signal,
+    SpeedSection,
     Switch,
     SwitchType,
     TrackSection,
@@ -20,6 +23,7 @@ OBJ_TO_MODEL = {}
 
 class Infra(models.Model):
     name = models.CharField(max_length=128)
+    railjson_version = models.CharField(max_length=16, default=RAILJSON_VERSION)
     owner = models.UUIDField(editable=False, default="00000000-0000-0000-0000-000000000000")
     created = models.DateTimeField(editable=False, auto_now_add=True)
     modified = models.DateTimeField(editable=False, auto_now=True)
@@ -88,6 +92,26 @@ class TrackSectionModel(models.Model):
         unique_together = (("infra", "obj_id"),)
 
 
+class SpeedSectionModel(models.Model):
+    infra = models.ForeignKey(Infra, on_delete=models.CASCADE)
+    obj_id = models.CharField(max_length=255)
+    data = models.JSONField(validators=[JSONSchemaValidator(limit_value=SpeedSection.schema())])
+
+    class Meta:
+        verbose_name_plural = "speed sections"
+        unique_together = (("infra", "obj_id"),)
+
+
+class CatenaryModel(models.Model):
+    infra = models.ForeignKey(Infra, on_delete=models.CASCADE)
+    obj_id = models.CharField(max_length=255)
+    data = models.JSONField(validators=[JSONSchemaValidator(limit_value=Catenary.schema())])
+
+    class Meta:
+        verbose_name_plural = "catenaries"
+        unique_together = (("infra", "obj_id"),)
+
+
 class SignalModel(models.Model):
     infra = models.ForeignKey(Infra, on_delete=models.CASCADE)
     obj_id = models.CharField(max_length=255)
@@ -116,22 +140,6 @@ class DetectorModel(models.Model):
     class Meta:
         verbose_name_plural = "detectors"
         unique_together = (("infra", "obj_id"),)
-
-
-class RailScriptFunctionModel(models.Model):
-    infra = models.ForeignKey(Infra, on_delete=models.CASCADE)
-    data = models.JSONField()
-
-    class Meta:
-        verbose_name_plural = "rail script functions"
-
-
-class AspectModel(models.Model):
-    infra = models.ForeignKey(Infra, on_delete=models.CASCADE)
-    data = models.JSONField()
-
-    class Meta:
-        verbose_name_plural = "aspects"
 
 
 def _into_model(obj, infra=None):
