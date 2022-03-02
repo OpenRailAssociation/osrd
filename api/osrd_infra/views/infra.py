@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from osrd_infra.models import Infra
+from osrd_infra.schemas.infra import RAILJSON_VERSION
 from osrd_infra.serializers import InfraSerializer
 from osrd_infra.views.railjson import import_infra, serialize_infra
 
@@ -27,7 +28,7 @@ class InfraView(
     @action(url_path="railjson", detail=True, methods=["get"])
     def get_railjson(self, request, pk=None):
         include_geom = request.query_params.get("include_geom", "false").lower() == "true"
-        cache_key = f"osrd.infra.{pk}.{include_geom}"
+        cache_key = f"osrd.infra.{pk}.v{RAILJSON_VERSION}.{include_geom}"
         railjson = cache.get(cache_key)
         if railjson is not None:
             return HttpResponse(railjson, content_type="application/json")
