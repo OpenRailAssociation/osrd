@@ -2,13 +2,12 @@ package fr.sncf.osrd.infra.trackgraph;
 
 import fr.sncf.osrd.infra.TVDSection;
 import fr.sncf.osrd.infra.routegraph.Route;
-import fr.sncf.osrd.infra.signaling.ActionPoint;
 import fr.sncf.osrd.infra.TVDSectionPath;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.Node;
 import java.util.ArrayList;
 
-public abstract class Waypoint extends Node implements ActionPoint {
+public abstract class Waypoint extends Node {
     public final String id;
 
     /** List of neighbors seen when moving across the detector from the beginning of the track section to the end */

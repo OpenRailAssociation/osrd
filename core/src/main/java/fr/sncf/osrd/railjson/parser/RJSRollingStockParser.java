@@ -5,7 +5,6 @@ import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStockField;
 import fr.sncf.osrd.railjson.parser.exceptions.MissingRollingStockField;
 import fr.sncf.osrd.railjson.schema.rollingstock.*;
-import fr.sncf.osrd.train.TrainFeature;
 import java.util.*;
 
 
@@ -90,10 +89,6 @@ public class RJSRollingStockParser {
         var resistanceProfile = rjsRollingStock.rollingResistanceProfiles.get(firstMode.rollingResistanceProfile);
         var rollingResistance = parseRollingResistance(resistanceProfile[0].resistance);
 
-        var features = new TrainFeature[rjsRollingStock.features.length];
-        for (int i = 0; i < rjsRollingStock.features.length; i++)
-            features[i] = parseFeature(rjsRollingStock.features[i]);
-
         // TODO properly handle load states
         Double mass = masses.get(LoadState.NORMAL_LOAD);
         if (mass == null)
@@ -109,7 +104,6 @@ public class RJSRollingStockParser {
             rollingResistance.A,
             rollingResistance.B,
             rollingResistance.C,
-            features,
             rjsRollingStock.maxSpeed,
             rjsRollingStock.startUpTime,
             rjsRollingStock.startUpAcceleration,
@@ -154,26 +148,6 @@ public class RJSRollingStockParser {
                 throw new InvalidRollingStockField(
                         "load_state",
                         "unsupported train load_state: " + loadState.toString()
-                );
-        }
-    }
-
-    private static TrainFeature parseFeature(RJSTrainFeature feature) throws InvalidRollingStock {
-        switch (feature) {
-            case TVM300:
-                return TrainFeature.TVM300;
-            case TVM430:
-                return TrainFeature.TVM430;
-            case ETCS1:
-                return TrainFeature.ETCS1;
-            case ETCS2:
-                return TrainFeature.ETCS2;
-            case KVB:
-                return TrainFeature.KVB;
-            default:
-                throw new InvalidRollingStockField(
-                        "features",
-                        "unsupported train feature: " + feature.toString()
                 );
         }
     }

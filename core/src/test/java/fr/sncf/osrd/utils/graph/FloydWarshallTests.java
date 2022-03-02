@@ -1,18 +1,19 @@
 package fr.sncf.osrd.utils.graph;
 
-import fr.sncf.osrd.TestConfig;
+import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.infra.routegraph.RouteGraph;
+import fr.sncf.osrd.railjson.parser.RailJSONParser;
 import org.junit.jupiter.api.Test;
 
 public class FloydWarshallTests {
 
-    private static RouteGraph getGraph() {
-        var testConfig = TestConfig.readResource("tiny_infra/config_railjson.json").prepare();
-        return testConfig.infra.routeGraph;
+    private static RouteGraph getGraph() throws Exception {
+        var infra = RailJSONParser.parse(Helpers.getExampleInfra("tiny_infra/infra.json"));
+        return infra.routeGraph;
     }
 
     @Test
-    public void testDistanceNoLongerThanRoute() {
+    public void testDistanceNoLongerThanRoute() throws Exception {
         var graph = getGraph();
         var fw = FloydWarshall.from(graph);
         for (var route : graph.routeMap.values()) {
@@ -23,7 +24,7 @@ public class FloydWarshallTests {
     }
 
     @Test
-    public void testLongestPath() {
+    public void testLongestPath() throws Exception {
         var graph = getGraph();
         var fw = FloydWarshall.from(graph);
         var path = fw.getLongestPath();
@@ -34,7 +35,7 @@ public class FloydWarshallTests {
     }
 
     @Test
-    public void testNoPath() {
+    public void testNoPath() throws Exception {
         var graph = getGraph();
         var fw = FloydWarshall.from(graph);
         var route1 = graph.routeMap.get("rt.buffer_stop_a->tde.foo_a-switch_foo");

@@ -12,11 +12,7 @@ public class App {
      */
     public static void main(String[] args) {
         var commands = new HashMap<String, CliCommand>();
-        commands.put("simulate", new SimulateCommand());
-        commands.put("pretty-print-signals", new PrettyPrintCommand());
         commands.put("api", new ApiServerCommand());
-        commands.put("interactive", new InteractiveCommand());
-        commands.put("test-infra", new TestInfraCommand());
 
         // prepare the command line parser
         var argsParserBuilder = JCommander.newBuilder();
