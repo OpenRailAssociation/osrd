@@ -1,5 +1,8 @@
 package fr.sncf.osrd.envelope_sim.allowances;
 
+import static java.lang.Math.abs;
+import static java.lang.Math.min;
+
 import com.carrotsearch.hppc.DoubleArrayList;
 import fr.sncf.osrd.envelope.*;
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
@@ -56,6 +59,16 @@ public class MarecoAllowance implements Allowance {
         @Override
         public Class<? extends EnvelopeAttr> getAttrType() {
             return MarecoSpeedLimit.class;
+        }
+    }
+
+    public static final class CapacitySpeedLimit implements EnvelopeAttr {
+        private CapacitySpeedLimit() {
+        }
+
+        @Override
+        public Class<? extends EnvelopeAttr> getAttrType() {
+            return CapacitySpeedLimit.class;
         }
     }
 
@@ -146,8 +159,17 @@ public class MarecoAllowance implements Allowance {
         }
         assert addedTime > 0;
 
-        // TODO: compute the slowest possible trip, and ensure the target time is within the realms of possibility
-
+        var totalTargetTime = baseTime + addedTime;
+        var slowestRunningTime = Double.POSITIVE_INFINITY;
+        if (capacitySpeedLimit > 0) {
+            var slowestEnvelope = EnvelopeSpeedCap.from(envelopeRange, List.of(new CapacitySpeedLimit()), capacitySpeedLimit);
+            slowestRunningTime = slowestEnvelope.getTotalTime();
+        }
+        // if the total target time isn't actually reachable, throw error
+        if (totalTargetTime > slowestRunningTime)
+            throw new RuntimeException(
+                    "Mareco simulation did not converge (we can't lose the requested time in this setting)"
+            );
         // build a list of point between which the computation is divided
         // each division is a section
         var splitPoints = new DoubleArrayList();
