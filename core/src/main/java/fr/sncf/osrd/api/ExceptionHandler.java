@@ -6,6 +6,9 @@ import org.takes.Response;
 import org.takes.rs.RsJson;
 import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ExceptionHandler {
 
@@ -15,6 +18,8 @@ public class ExceptionHandler {
         Sentry.captureException(ex);
         if (ex instanceof OSRDError)
             return convertOSRDErrorToResponse((OSRDError) ex);
+        else if (ex instanceof AssertionError)
+            return convertOSRDErrorToResponse(new AssertWrapper((AssertionError) ex));
         else {
             return new RsWithStatus(
                     new RsWithBody(ex.toString()),
@@ -31,5 +36,25 @@ public class ExceptionHandler {
                 ),
                 code
         );
+    }
+
+    /** Wraps an assertion error as an OSRDError, to report the stack trace with the same formatting as other errors */
+    public static class AssertWrapper extends OSRDError {
+        public static final String osrdErrorType = "assert_error";
+        private static final long serialVersionUID = 1662852082101020410L;
+
+        public final List<String> stackTrace;
+
+        protected AssertWrapper(AssertionError ex) {
+            super(ex.getMessage(), ErrorCause.INTERNAL);
+            stackTrace = convertStackTrace(ex.getStackTrace());
+        }
+
+        private List<String> convertStackTrace(StackTraceElement[] stackTrace) {
+            // A StackTraceElement can't be serialized as it is, we convert it to a list of strings
+            return Arrays.stream(stackTrace)
+                    .map(e -> String.format("%s:%d", e.getFileName(), e.getLineNumber()))
+                    .collect(Collectors.toList());
+        }
     }
 }
