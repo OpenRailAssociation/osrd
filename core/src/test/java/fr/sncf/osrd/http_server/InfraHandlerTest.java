@@ -1,8 +1,8 @@
-package fr.sncf.osrd.api;
+package fr.sncf.osrd.http_server;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import fr.sncf.osrd.api.InfraManager.InfraLoadException;
+import fr.sncf.osrd.http_server.InfraManager.InfraLoadException;
 
 public class InfraHandlerTest {
     @Test

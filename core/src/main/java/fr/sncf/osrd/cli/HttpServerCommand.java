@@ -2,7 +2,7 @@ package fr.sncf.osrd.cli;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import fr.sncf.osrd.api.*;
+import fr.sncf.osrd.http_server.*;
 import io.sentry.Sentry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

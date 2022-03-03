@@ -1,9 +1,9 @@
-package fr.sncf.osrd.api;
+package fr.sncf.osrd.http_server;
 
 import static org.mockito.Mockito.when;
 
 import fr.sncf.osrd.Helpers;
-import fr.sncf.osrd.api.InfraManager.InfraLoadException;
+import fr.sncf.osrd.http_server.InfraManager.InfraLoadException;
 import fr.sncf.osrd.infra.Infra;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;

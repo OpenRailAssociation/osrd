@@ -1,8 +1,8 @@
-package fr.sncf.osrd.api;
+package fr.sncf.osrd.http_server;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import fr.sncf.osrd.api.PathfindingEndpoint.PathfindingWaypoint;
+import fr.sncf.osrd.http_server.PathfindingEndpoint.PathfindingWaypoint;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.provider.ValueSource;

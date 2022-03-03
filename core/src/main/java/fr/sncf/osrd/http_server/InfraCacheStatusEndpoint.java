@@ -1,4 +1,4 @@
-package fr.sncf.osrd.api;
+package fr.sncf.osrd.http_server;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,8 +11,8 @@ import org.takes.Response;
 import org.takes.Take;
 import org.takes.rs.RsJson;
 import org.takes.rs.RsWithBody;
-import fr.sncf.osrd.api.InfraManager.InfraCacheEntry;
-import fr.sncf.osrd.api.InfraManager.InfraStatus;
+import fr.sncf.osrd.http_server.InfraManager.InfraCacheEntry;
+import fr.sncf.osrd.http_server.InfraManager.InfraStatus;
 
 public final class InfraCacheStatusEndpoint implements Take {
     private InfraManager infraManager;

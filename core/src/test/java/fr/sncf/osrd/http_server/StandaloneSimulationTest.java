@@ -1,10 +1,10 @@
-package fr.sncf.osrd.api;
+package fr.sncf.osrd.http_server;
 
 import static fr.sncf.osrd.Helpers.getExampleRollingStocks;
 import static org.junit.jupiter.api.Assertions.*;
 
-import fr.sncf.osrd.api.StandaloneSimulationEndpoint.StandaloneSimulationRequest;
-import fr.sncf.osrd.api.StandaloneSimulationEndpoint.StandaloneSimulationResult;
+import fr.sncf.osrd.http_server.StandaloneSimulationEndpoint.StandaloneSimulationRequest;
+import fr.sncf.osrd.http_server.StandaloneSimulationEndpoint.StandaloneSimulationResult;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;

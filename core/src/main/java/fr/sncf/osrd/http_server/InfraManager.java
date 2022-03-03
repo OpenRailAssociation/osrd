@@ -1,4 +1,4 @@
-package fr.sncf.osrd.api;
+package fr.sncf.osrd.http_server;
 
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;

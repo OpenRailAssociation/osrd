@@ -1,12 +1,12 @@
-package fr.sncf.osrd.api;
+package fr.sncf.osrd.http_server;
 
-import static fr.sncf.osrd.api.StandaloneSimulationEndpoint.SimulationResultPosition.interpolateTime;
+import static fr.sncf.osrd.http_server.StandaloneSimulationEndpoint.SimulationResultPosition.interpolateTime;
 
 import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.api.InfraManager.InfraLoadException;
+import fr.sncf.osrd.http_server.InfraManager.InfraLoadException;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.EnvelopePath;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;

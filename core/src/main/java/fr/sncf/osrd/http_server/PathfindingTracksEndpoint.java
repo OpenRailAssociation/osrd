@@ -1,9 +1,9 @@
-package fr.sncf.osrd.api;
+package fr.sncf.osrd.http_server;
 
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.api.InfraManager.InfraLoadException;
+import fr.sncf.osrd.http_server.InfraManager.InfraLoadException;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.railjson.schema.common.ID;
