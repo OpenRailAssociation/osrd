@@ -136,7 +136,7 @@ def genExamples = tasks.register("genExamples", Exec) {
     inputs.files(fileTree('examples/generated/')).withPropertyName('sourceFiles')
     outputs.dir(genExamplesDir).withPropertyName('outputDir')
     def python = isFamily(FAMILY_WINDOWS) ? "python.exe" : "python3"
-    commandLine python, "examples/generated/generate.py", genExamplesDir
+    commandLine python, "$projectDir/examples/generated/generate.py", genExamplesDir
 }
 
 genExamples.configure {
@@ -180,7 +180,7 @@ spotbugs {
     // report all diagnosed bugs
     reportLevel = 'low'
     maxHeapSize = '1g'
-    excludeFilter = file('config/spotbugs/exclude.xml')
+    excludeFilter = file('../config/spotbugs/exclude.xml')
 }
 
 tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {

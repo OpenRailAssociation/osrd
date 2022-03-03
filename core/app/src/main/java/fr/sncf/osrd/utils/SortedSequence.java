@@ -1,6 +1,5 @@
 package fr.sncf.osrd.utils;
 
-import fr.sncf.osrd.utils.graph.EdgeDirection;
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
 import java.util.function.DoubleUnaryOperator;

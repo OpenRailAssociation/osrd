@@ -3,7 +3,6 @@ package fr.sncf.osrd.infra;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
-import java.util.List;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public final class Signal {
