@@ -12,7 +12,7 @@ public class App {
      */
     public static void main(String[] args) {
         var commands = new HashMap<String, CliCommand>();
-        commands.put("api", new ApiServerCommand());
+        commands.put("http-server", new HttpServerCommand());
 
         // prepare the command line parser
         var argsParserBuilder = JCommander.newBuilder();

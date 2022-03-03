@@ -22,8 +22,8 @@ import org.takes.http.BkBasic;
 import java.io.IOException;
 
 @Parameters(commandDescription = "HTTP API server mode")
-public final class ApiServerCommand implements CliCommand {
-    static final Logger logger = LoggerFactory.getLogger(ApiServerCommand.class);
+public final class HttpServerCommand implements CliCommand {
+    static final Logger logger = LoggerFactory.getLogger(HttpServerCommand.class);
 
     static final int DEFAULT_API_THREADS = 4;
 

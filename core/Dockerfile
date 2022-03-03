@@ -7,4 +7,4 @@ RUN gradle shadowJar --no-daemon
 FROM amazoncorretto:11
 
 COPY --from=build /home/gradle/src/build/libs/osrd-all.jar /app/osrd_core.jar
-CMD ["java", "-ea", "-jar", "/app/osrd_core.jar", "api"]
+CMD ["java", "-ea", "-jar", "/app/osrd_core.jar", "http-server"]

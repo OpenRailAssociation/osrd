@@ -23,5 +23,5 @@ You'll need:
 # on Windows
 gradlew.bat processTestResources shadowJar
 
-java -jar build/libs/osrd-all.jar api -p 8080
+java -jar build/libs/osrd-all.jar http-server -p 8080
 ```
