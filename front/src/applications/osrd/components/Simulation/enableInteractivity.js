@@ -15,6 +15,7 @@ import {
 } from 'reducers/osrdsimulation';
 
 import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/osrd/components/Simulation/consts';
+import createTrain from './SpaceTimeChart/createTrain';
 import drawGuideLines from 'applications/osrd/components/Simulation/drawGuideLines';
 import { store } from 'Store';
 
@@ -268,7 +269,7 @@ const enableInteractivity = (
 
 
 
-        debounceUpdateTimePositionValues(timePositionLocal, immediatePositionsValues, 5);
+        debounceUpdateTimePositionValues(timePositionLocal, immediatePositionsValues, 15);
 
         updatePointers(chart, keyValues, listValues, immediatePositionsValues, rotate);
       } else {
@@ -280,14 +281,14 @@ const enableInteractivity = (
         if (timePositionLocal) {
 
 
-          // Move all this logic on redux
+          // Move all this logic on redux - done
           const immediatePositionsValues = interpolateOnTime(
             dataSimulation,
             ['time'],
             LIST_VALUES_NAME_SPACE_TIME,
             timePositionLocal);
 
-          debounceUpdateTimePositionValues(timePositionLocal, immediatePositionsValues, 500);
+          debounceUpdateTimePositionValues(timePositionLocal, immediatePositionsValues, 15);
           updatePointers(chart, keyValues, listValues, immediatePositionsValues, rotate);
 
         }

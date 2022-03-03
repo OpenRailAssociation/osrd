@@ -1,3 +1,7 @@
+import { LIST_VALUES_NAME_SPACE_TIME } from '../applications/osrd/components/Simulation/consts';
+import {
+interpolateOnTime,
+} from '../applications/osrd/components/Helpers/ChartHelpers';
 /* eslint-disable default-case */
 import produce from 'immer';
 
@@ -17,6 +21,8 @@ export const UPDATE_SPEEDSPACE_SETTINGS = 'osrdsimu/UPDATE_SPEEDSPACE_SETTINGS';
 export const UPDATE_STICKYBAR = 'osrdsimu/UPDATE_STICKYBAR';
 export const UPDATE_TIME_POSITION = 'osrdsimu/UPDATE_TIME_POSITION';
 export const UPDATE_TIME_POSITION_VALUES = 'osrdsimu/UPDATE_TIME_POSITION_VALUES';
+export const UPDATE_CONSOLIDATED_SIMULATION = 'osrdsimu/UPDATE_CONSOLIDATED_SIMULATION';
+
 
 // Reducer
 export const initialState = {
@@ -46,6 +52,7 @@ export const initialState = {
   },
   stickyBar: true,
   timePosition: undefined,
+  consolidatedSimulation: null,
 };
 
 export default function reducer(state = initialState, action) {
@@ -93,10 +100,25 @@ export default function reducer(state = initialState, action) {
       case UPDATE_TIME_POSITION:
         draft.timePosition = action.timePosition;
         break;
-      case UPDATE_TIME_POSITION_VALUES:
-        draft.timePosition = action.timePosition;
-        draft.positionValues = action.positionValues;
+      case UPDATE_CONSOLIDATED_SIMULATION:
+        draft.consolidatedSimulation = action.consolidatedSimulation;
         break;
+      case UPDATE_TIME_POSITION_VALUES: {
+        draft.timePosition = action.timePosition;
+        // position value will be computed depending on current data simulation
+        // eslint-disable-next-line no-case-declarations
+
+        const currentTrainSimulation = state.consolidatedSimulation.find(consolidatedSimulation => consolidatedSimulation.trainNumber === state.selectedTrain)
+        const positionsValues = interpolateOnTime(
+          currentTrainSimulation,
+          ['time'],
+          LIST_VALUES_NAME_SPACE_TIME,
+          action.timePosition,
+        );
+
+        draft.positionValues = positionsValues;
+        break;
+      }
     }
   });
 }
@@ -211,6 +233,14 @@ export function updateTimePosition(timePosition) {
     dispatch({
       type: UPDATE_TIME_POSITION,
       timePosition,
+    });
+  };
+}
+export function updateConsolidatedSimulation(consolidatedSimulation) {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_CONSOLIDATED_SIMULATION,
+      consolidatedSimulation,
     });
   };
 }
