@@ -1,0 +1,35 @@
+// this project is licensed under LGPLv3.
+// DO NOT ADD any dependency which isn't compatible with LGPLv3, such as:
+//  - GPLv2, GPLv2+
+//  - GPLv3, GPLv3+
+//  - EPL 1.0
+//
+// The following licenses were checked for compatibility for use as libraries:
+//  - Apache 2.0
+//  - MIT
+//  - BSD licenses
+//  - EPL2.0 (see https://www.eclipse.org/legal/epl-2.0/faq.php#h.hsnsfg4e0htq)
+//  - LGPLv2, LGPLv2+, LGPLv3
+//  - GPLv2 with classpath exception
+//  - CC Attribution
+
+plugins {
+    id 'java-library'
+    id 'osrd.java-conventions'
+    id 'osrd.java-testing'
+}
+
+dependencies {
+    // fast primitive collections
+    api group: 'com.carrotsearch', name: 'hppc', version: '0.9.0'  // Apache 2.0
+
+    // JSON parsing
+    api 'com.squareup.moshi:moshi:1.13.0' // Apache 2.0
+    api 'com.squareup.moshi:moshi-adapters:1.13.0'  // Apache 2.0
+
+    // for debug UI
+    api 'com.github.yannrichet:JMathPlot:1.0.1' // BSD
+
+    // the logging API stub
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.+'  // MIT
+}

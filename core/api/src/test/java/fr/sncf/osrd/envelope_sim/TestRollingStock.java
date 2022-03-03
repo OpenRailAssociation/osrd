@@ -1,19 +1,8 @@
-package fr.sncf.osrd.train;
+package fr.sncf.osrd.envelope_sim;
 
-import com.squareup.moshi.Json;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 
-
-/**
- * The immutable characteristics of a specific train.
- * There must be a RollingStock instance per train on the network.
- */
-@SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-public class RollingStock implements PhysicsRollingStock {
-    public final String id;
-
+public class TestRollingStock implements PhysicsRollingStock {
     public final double A; // in newtons
     public final double B; // in newtons / (m/s)
     public final double C; // in newtons / (m/s^2)
@@ -25,11 +14,6 @@ public class RollingStock implements PhysicsRollingStock {
 
     /** the deceleration of the train, in m/s^2 */
     public final double gamma;
-
-    public final String source;
-
-    @Json(name = "verbose_name")
-    public final String verboseName;
 
     /** the length of the train, in meters. */
     public final double length;
@@ -156,13 +140,8 @@ public class RollingStock implements PhysicsRollingStock {
         return previousEffort;
     }
 
-    // TODO masses
-
     /** Creates a new rolling stock (a physical train inventory item). */
-    public RollingStock(
-            String id,
-            String source,
-            String verboseName,
+    public TestRollingStock(
             double length,
             double mass,
             double inertiaCoefficient,
@@ -177,9 +156,6 @@ public class RollingStock implements PhysicsRollingStock {
             RJSRollingStock.RJSGammaType gammaType,
             TractiveEffortPoint[] tractiveEffortCurve
     ) {
-        this.id = id;
-        this.source = source;
-        this.verboseName = verboseName;
         this.A = a;
         this.B = b;
         this.C = c;

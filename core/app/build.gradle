@@ -24,6 +24,8 @@ plugins {
 // region DEPENDENCIES
 
 dependencies {
+    implementation project(':api')
+
     // command line parsing
     implementation group: 'com.beust', name: 'jcommander', version: '1.78'  // Apache 2.0
 

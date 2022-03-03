@@ -1,2 +1,3 @@
 rootProject.name = 'osrd'
+include 'api'
 include 'app'

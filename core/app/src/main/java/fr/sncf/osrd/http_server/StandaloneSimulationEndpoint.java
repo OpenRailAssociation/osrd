@@ -315,7 +315,7 @@ public class StandaloneSimulationEndpoint implements Take {
             var routeOccupancies = new HashMap<String, SimulationResultRouteOccupancy>();
             double lastPosition = 0;
             for (var routePath : rjsTrainPath.routePath) {
-                var route = routePath.route.getRoute(infra.routeGraph.routeMap);
+                var route = routePath.route.parseRef(infra.routeGraph.routeMap, "Route");
                 var conflictedRoutes = route.getConflictedRoutes();
                 var newPosition = lastPosition;
                 for (var trackRange : routePath.trackSections)

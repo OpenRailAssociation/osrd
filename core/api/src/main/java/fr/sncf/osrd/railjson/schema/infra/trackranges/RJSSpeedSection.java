@@ -1,0 +1,19 @@
+package fr.sncf.osrd.railjson.schema.infra.trackranges;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.railjson.schema.common.RJSApplicableDirection;
+
+@SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
+public class RJSSpeedSection extends DirectionalRJSTrackRange {
+    public double speed;
+
+    public RJSSpeedSection(
+            RJSApplicableDirection applicableDirection,
+            double begin,
+            double end,
+            double speed
+    ) {
+        super(applicableDirection, begin, end);
+        this.speed = speed;
+    }
+}

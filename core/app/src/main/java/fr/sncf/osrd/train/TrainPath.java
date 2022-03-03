@@ -73,19 +73,19 @@ public class TrainPath {
         try {
             var routePath = new ArrayList<Route>();
             for (var rjsRoutePath : rjsTrainPath.routePath)
-                routePath.add(rjsRoutePath.route.getRoute(infra.routeGraph.routeMap));
+                routePath.add(rjsRoutePath.route.parseRef(infra.routeGraph.routeMap, "Route"));
 
             var rjsStartTrackRange = rjsTrainPath.routePath.get(0).trackSections.get(0);
-            var startLocation = new TrackSectionLocation(
-                    rjsStartTrackRange.track.getTrack(infra.trackGraph.trackSectionMap), rjsStartTrackRange.begin);
+            var startTrack = rjsStartTrackRange.track.parseRef(infra.trackGraph.trackSectionMap, "TrackSection");
+            var startLocation = new TrackSectionLocation(startTrack, rjsStartTrackRange.begin);
 
             var rjsEndRoutePath = rjsTrainPath.routePath.get(rjsTrainPath.routePath.size() - 1);
             var rjsEndTrackRange = rjsEndRoutePath.trackSections.get(rjsEndRoutePath.trackSections.size() - 1);
-            var endLocation = new TrackSectionLocation(
-                    rjsEndTrackRange.track.getTrack(infra.trackGraph.trackSectionMap), rjsEndTrackRange.end);
+            var endTrack = rjsEndTrackRange.track.parseRef(infra.trackGraph.trackSectionMap, "TrackSection");
+            var endLocation = new TrackSectionLocation(endTrack, rjsEndTrackRange.end);
 
             return from(routePath, startLocation, endLocation);
-        } catch (InvalidInfraException e) {
+        } catch (RuntimeException e) {
             throw new InvalidSchedule(e.getMessage());
         }
     }
