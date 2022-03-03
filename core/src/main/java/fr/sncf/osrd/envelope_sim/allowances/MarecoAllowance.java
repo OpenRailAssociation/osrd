@@ -178,7 +178,7 @@ public class MarecoAllowance implements Allowance {
         if (splitPoints.get(splitPoints.size() - 1) != envelopeRange.getEndPos())
             splitPoints.add(envelopeRange.getEndPos());
 
-        // run mareco on each section of the allowance region
+        // run mareco on each section of the allowance range
         for (int i = 0; i < splitPoints.size() - 1; i++) {
             double sectionBegin = splitPoints.get(i);
             double sectionEnd = splitPoints.get(i + 1);
@@ -188,7 +188,9 @@ public class MarecoAllowance implements Allowance {
             var sectionRatio = value.distribution.getSectionRatio(
                     sectionTime, baseTime, sectionDistance, baseDistance);
             var targetTime = sectionTime + addedTime * sectionRatio;
+            logger.debug("  computing section n°{}", i + 1);
             var marecoResult = applyAllowanceSection(section, targetTime);
+            assert abs(marecoResult.getTotalTime() - targetTime) < context.timeStep;
             builder.addEnvelope(marecoResult);
         }
     }

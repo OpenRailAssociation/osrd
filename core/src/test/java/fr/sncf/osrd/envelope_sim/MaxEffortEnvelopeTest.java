@@ -13,31 +13,27 @@ import org.junit.jupiter.api.Test;
 public class MaxEffortEnvelopeTest {
     /** Builds max effort envelope with the specified stops, on a flat MRSP */
     static Envelope makeSimpleMaxEffortEnvelope(
-            PhysicsRollingStock rollingStock,
-            PhysicsPath path,
+            EnvelopeSimContext context,
             double speed,
             double[] stops
     ) {
-        var context = new EnvelopeSimContext(rollingStock, path, TIME_STEP);
-        var flatMRSP = makeSimpleMRSP(rollingStock, path, speed);
+        var flatMRSP = makeSimpleMRSP(context, speed);
         var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, flatMRSP);
         return MaxEffortEnvelope.from(context, 0, maxSpeedEnvelope);
     }
 
     /** Builds max effort envelope with one stop in the middle, one at the end, on a flat MRSP */
-    static Envelope makeSimpleMaxEffortEnvelope(PhysicsRollingStock rollingStock, PhysicsPath path, double speed) {
-        var stops = new double[] { 6000, path.getLength() };
-        return makeSimpleMaxEffortEnvelope(rollingStock, path, speed, stops);
+    static Envelope makeSimpleMaxEffortEnvelope(EnvelopeSimContext context, double speed) {
+        var stops = new double[] { 6000, context.path.getLength() };
+        return makeSimpleMaxEffortEnvelope(context, speed, stops);
     }
 
     /** Builds max effort envelope with one stop in the middle, one at the end, on a funky MRSP */
     static Envelope makeComplexMaxEffortEnvelope(
-            PhysicsRollingStock rollingStock,
-            PhysicsPath path,
+            EnvelopeSimContext context,
             double[] stops
     ) {
-        var mrsp = makeComplexMRSP(rollingStock, path);
-        var context = new EnvelopeSimContext(rollingStock, path, TIME_STEP);
+        var mrsp = makeComplexMRSP(context);
         var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, mrsp);
         return MaxEffortEnvelope.from(context, 0, maxSpeedEnvelope);
     }
@@ -46,8 +42,9 @@ public class MaxEffortEnvelopeTest {
     public void testFlat() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var testPath = new FlatPath(10000, 0);
+        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
         var stops = new double[] { 6000, testPath.getLength() };
-        var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testRollingStock, testPath, 44.4, stops);
+        var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 44.4, stops);
         EnvelopeShape.check(maxEffortEnvelope, INCREASING, CONSTANT, DECREASING, INCREASING, DECREASING);
         var delta = 2 * maxEffortEnvelope.getMaxSpeed() * TIME_STEP;
         // don't modify these values, they have been calculated with a 0.01s timestep so they can be considered as
@@ -60,8 +57,9 @@ public class MaxEffortEnvelopeTest {
     public void testFlatNonConstDec() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN_MAX_DEC_TYPE;
         var testPath = new FlatPath(10000, 0);
+        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
         var stops = new double[] { 6000, testPath.getLength() };
-        var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testRollingStock, testPath, 44.4, stops);
+        var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 44.4, stops);
         EnvelopeShape.check(maxEffortEnvelope, INCREASING, CONSTANT, DECREASING, INCREASING, CONSTANT, DECREASING);
         var delta = 2 * maxEffortEnvelope.getMaxSpeed() * TIME_STEP;
         // don't modify these values, they have been calculated with a 0.01s timestep so they can be considered as
@@ -74,8 +72,9 @@ public class MaxEffortEnvelopeTest {
     public void testSteep() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var testPath = new FlatPath(10000, 20);
+        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
         var stops = new double[] { 6000, testPath.getLength() };
-        var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testRollingStock, testPath, 44.4, stops);
+        var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 44.4, stops);
         EnvelopeShape.check(maxEffortEnvelope, INCREASING, DECREASING, INCREASING, DECREASING);
         var delta = 2 * maxEffortEnvelope.getMaxSpeed() * TIME_STEP;
         // don't modify these values, they have been calculated with a 0.01s timestep so they can be considered as
@@ -88,8 +87,9 @@ public class MaxEffortEnvelopeTest {
     public void testSteepNonConstDec() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN_MAX_DEC_TYPE;
         var testPath = new FlatPath(10000, 20);
+        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
         var stops = new double[] { 6000, testPath.getLength() };
-        var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testRollingStock, testPath, 44.4, stops);
+        var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 44.4, stops);
         EnvelopeShape.check(maxEffortEnvelope, INCREASING, DECREASING, INCREASING, DECREASING);
         var delta = 2 * maxEffortEnvelope.getMaxSpeed() * TIME_STEP;
         // don't modify these values, they have been calculated with a 0.01s timestep so they can be considered as
@@ -102,8 +102,9 @@ public class MaxEffortEnvelopeTest {
     public void testWithComplexMRSP() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var testPath = new FlatPath(100000, 0);
+        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
         var stops = new double[] { 50000, testPath.getLength() };
-        var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testRollingStock, testPath, stops);
+        var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         EnvelopeShape.check(maxEffortEnvelope, INCREASING, CONSTANT, INCREASING, CONSTANT, DECREASING, CONSTANT,
                 DECREASING, INCREASING, CONSTANT, INCREASING, CONSTANT, INCREASING, DECREASING, CONSTANT, DECREASING);
         assertTrue(maxEffortEnvelope.continuous);
@@ -113,7 +114,8 @@ public class MaxEffortEnvelopeTest {
     public void testAccelerationInShortPart() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var testPath = new FlatPath(10000, 0);
+        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
         var stops = new double[] { testPath.getLength() - 1, testPath.getLength() };
-        makeSimpleMaxEffortEnvelope(testRollingStock, testPath, 10000, stops);
+        makeSimpleMaxEffortEnvelope(testContext, 10000, stops);
     }
 }
