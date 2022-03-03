@@ -1,0 +1,87 @@
+plugins {
+    id 'java'
+    id 'checkstyle'
+    id 'com.github.spotbugs'
+    id 'com.github.johnrengelman.shadow'
+    id 'jacoco'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // for linter annotations
+    compileOnly 'net.jcip:jcip-annotations:1.0'  // CC Attribution
+    compileOnly 'com.github.spotbugs:spotbugs-annotations:4.5.3'  // LGPLv2.1
+    testCompileOnly 'net.jcip:jcip-annotations:1.0'  // CC Attribution
+    testCompileOnly 'com.github.spotbugs:spotbugs-annotations:4.5.3'  // LGPLv2.1
+}
+
+// region CODE_QUALITY
+
+checkstyle {
+    toolVersion '9.2'
+    configFile rootProject.file('config/checkstyle/checkstyle.xml')
+    ignoreFailures false
+    maxWarnings 0
+    showViolations true
+}
+
+tasks.withType(Checkstyle) {
+    reports {
+        xml.required = true
+    }
+}
+
+// enable all linter warnings, and error out on warnings
+tasks.withType(JavaCompile) {
+    options.compilerArgs << "-Xlint:all" << "-Werror"
+    options.encoding = "UTF-8"
+}
+
+spotbugs {
+    ignoreFailures = false
+    showStackTraces = true
+    showProgress = true
+    // can also be 'more' or 'default'
+    effort = 'max'
+    // report all diagnosed bugs
+    reportLevel = 'low'
+    maxHeapSize = '1g'
+    excludeFilter = file('../config/spotbugs/exclude.xml')
+}
+
+tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
+    if (project.hasProperty("spotbugs_report_xml")) {
+        reports { xml.required = true }
+    } else {
+        reports { html.required = true }
+    }
+}
+
+test {
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    reports {
+        xml.required = true
+    }
+}
+
+// endregion
+
+// region MISC
+
+tasks.register("printSettings", DefaultTask) {
+    doLast {
+        println "java.home " + System.getProperty('java.home')
+    }
+}
+
+//endregion
