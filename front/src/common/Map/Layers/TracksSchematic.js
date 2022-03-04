@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
 import { Source, Layer } from 'react-map-gl';
 import { schematicMainLayer, schematicServiceLayer } from 'common/Map/Layers/schematiclayers';
 import { trackNameLayer, lineNumberLayer, lineNameLayer } from 'common/Map/Layers/commonlayers';
@@ -7,14 +8,23 @@ import { MAP_TRACK_SOURCES, MAP_URL } from 'common/Map/const';
 
 const TracksSchematic = (props) => {
   const { colors, idHover } = props;
+  const { infraID } = useSelector((state) => state.osrdconf);
+  const infraVersion = infraID !== undefined ? `?version=${infraID}` : null;
   return (
-    <Source type="vector" url={`${MAP_URL}/layer/map_midi_tronconditinerairevoie/mvt/sch/`} source-layer={MAP_TRACK_SOURCES.schematic}>
+    <Source
+      id="tracksSchematic"
+      type="vector"
+      url={`${MAP_URL}/layer/track_sections/mvt/sch/${infraVersion}`}
+      source-layer={MAP_TRACK_SOURCES.schematic}
+    >
       <Layer
         {...schematicServiceLayer(colors)}
+        id="chartis/tracks-sch/service"
         source-layer={MAP_TRACK_SOURCES.schematic}
       />
       <Layer
         {...schematicMainLayer(colors)}
+        id="chartis/tracks-sch/main"
         source-layer={MAP_TRACK_SOURCES.schematic}
       />
       <Layer
@@ -22,31 +32,18 @@ const TracksSchematic = (props) => {
           ...trackNameLayer(colors),
           layout: {
             ...trackNameLayer(colors).layout,
-            'text-field': '{V_nom}',
+            'text-field': '{track_name}',
             'text-size': 12,
           },
         }}
         source-layer={MAP_TRACK_SOURCES.schematic}
-        filter={['==', 'type_voie', 'VP']}
-      />
-      <Layer
-        {...{
-          ...trackNameLayer(colors),
-          layout: {
-            ...trackNameLayer(colors).layout,
-            'text-field': '{V_nom}',
-            'text-size': 10,
-          },
-        }}
-        source-layer={MAP_TRACK_SOURCES.schematic}
-        filter={['!=', 'type_voie', 'VP']}
       />
       <Layer
         {...{
           ...lineNumberLayer(colors),
           layout: {
             ...lineNumberLayer(colors).layout,
-            'text-field': '{L_code}',
+            'text-field': '{line_code}',
           },
         }}
         source-layer={MAP_TRACK_SOURCES.schematic}

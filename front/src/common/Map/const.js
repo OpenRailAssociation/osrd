@@ -13,7 +13,7 @@ export const MAP_MODES = {
 };
 
 export const MAP_TRACK_SOURCES = {
-  schematic: 'map_midi_tronconditinerairevoie',
+  schematic: 'track_sections',
   geographic: 'track_sections',
 };
 

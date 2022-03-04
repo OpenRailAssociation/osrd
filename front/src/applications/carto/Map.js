@@ -182,7 +182,7 @@ const Map = () => {
         ) : (
           <>
             <TracksSchematic colors={colors[mapStyle]} idHover={idHover} />
-            <JointsDeZones geomType="sch" />
+            <OperationalPoints geomType="sch" colors={colors[mapStyle]} />
             <Signals sourceTable="map_midi_signal" colors={colors[mapStyle]} sourceLayer="sch" />
           </>
         )}

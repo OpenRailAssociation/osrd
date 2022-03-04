@@ -16,23 +16,6 @@ import ModalSugerredVias from 'applications/osrd/components/Itinerary/ModalSugge
 
 const itineraryURI = '/pathfinding/';
 
-// Obtain only asked vias
-const convertPathfindingVias = (steps, dispatch, idxToAdd) => {
-  const count = steps.length - 1;
-  const vias = [];
-  steps.forEach((step, idx) => {
-    if (idx !== 0 && idx !== count && (!step.suggestion || idxToAdd === idx)) {
-      vias.push({
-        ...step,
-        id: step.track.id,
-        clickLngLat: [step.geo.coordinates[0], step.geo.coordinates[1]],
-      });
-    }
-  });
-  dispatch(replaceVias(vias));
-  dispatch(updateSuggeredVias(steps));
-};
-
 const Itinerary = (props) => {
   const [launchPathfinding, setLaunchPathfinding] = useState(false);
   const [pathfindingInProgress, setPathfindingInProgress] = useState(false);
@@ -75,20 +58,40 @@ const Itinerary = (props) => {
     }
   };
 
+  // Obtain only asked vias
+  const convertPathfindingVias = (steps, idxToAdd) => {
+    const count = steps.length - 1;
+    const vias = [];
+    steps.forEach((step, idx) => {
+      if (idx !== 0 && idx !== count && (!step.suggestion || idxToAdd === idx)) {
+        vias.push({
+          ...step,
+          id: step.track.id,
+          clickLngLat: [step[map.mapTrackSources.substr(0, 3)].coordinates[0],
+            step[map.mapTrackSources.substr(0, 3)].coordinates[1]],
+        });
+      }
+    });
+    dispatch(replaceVias(vias));
+    dispatch(updateSuggeredVias(steps));
+  };
+
   // Way to ensure marker position on track
   const correctWaypointsGPS = (pathfindingData) => {
     setLaunchPathfinding(false);
     dispatch(updateOrigin({
-      ...osrdconf.origin, clickLngLat: pathfindingData.steps[0].geo.coordinates,
+      ...osrdconf.origin,
+      clickLngLat: pathfindingData.steps[0][map.mapTrackSources.substr(0, 3)].coordinates,
     }));
 
     if (osrdconf.vias.length > 0 || pathfindingData.steps.length > 2) {
-      convertPathfindingVias(pathfindingData.steps, dispatch);
+      convertPathfindingVias(pathfindingData.steps);
     }
 
     dispatch(updateDestination({
       ...osrdconf.destination,
-      clickLngLat: pathfindingData.steps[pathfindingData.steps.length - 1].geo.coordinates,
+      clickLngLat: pathfindingData
+        .steps[pathfindingData.steps.length - 1][map.mapTrackSources.substr(0, 3)].coordinates,
     }));
     setLaunchPathfinding(true);
   };
@@ -98,9 +101,9 @@ const Itinerary = (props) => {
       setPathfindingInProgress(true);
       const itineraryCreated = await post(itineraryURI, params, {}, true);
       correctWaypointsGPS(itineraryCreated);
-      dispatch(updateItinerary(itineraryCreated.geographic));
+      dispatch(updateItinerary(itineraryCreated));
       dispatch(updatePathfindingID(itineraryCreated.id));
-      if (zoom) zoomToFeature(bbox(itineraryCreated.geographic));
+      if (zoom) zoomToFeature(bbox(itineraryCreated[map.mapTrackSources]));
       setPathfindingInProgress(false);
     } catch (e) {
       dispatch(setFailure({
@@ -174,10 +177,11 @@ const Itinerary = (props) => {
   };
 
   useEffect(() => {
-    if (osrdconf.pathfindingID === undefined || osrdconf.geojson === undefined) {
+    if (osrdconf.pathfindingID === undefined
+      || osrdconf.geojson[map.mapTrackSources] === undefined) {
       mapItinerary();
     } else {
-      zoomToFeature(bbox(osrdconf.geojson));
+      zoomToFeature(bbox(osrdconf.geojson[map.mapTrackSources]));
     }
     setLaunchPathfinding(true);
   }, []);
