@@ -34,10 +34,11 @@ public class IntegrationStep {
         // if the end of the step dips below 0, cut the step in half
         if (endSpeed < 0.0) {
             assert directionSign * acceleration < 0.0;
-            timeDelta = -startSpeed / (directionSign * acceleration);
+            endSpeed = 0.0;
+            // generic formula timeDelta = (endSpeed - startSpeed) / (directionSign * acceleration);
+            timeDelta =  - startSpeed / (directionSign * acceleration);
             positionDelta = startSpeed * timeDelta + 0.5 * acceleration * timeDelta * timeDelta;
             positionDelta = Math.copySign(positionDelta, directionSign);
-            endSpeed = 0.0;
         }
         assert Math.abs(endSpeed - (startSpeed + directionSign * acceleration * timeDelta)) < 0.00000001;
         return new IntegrationStep(timeDelta, positionDelta, startSpeed, endSpeed, acceleration, directionSign);
