@@ -292,6 +292,6 @@ export const interpolateOnTime = (dataSimulation, keyValues, listValues, timePos
       };
     }
   });
-  console.log(positionInterpolated)
+
   return positionInterpolated;
 };

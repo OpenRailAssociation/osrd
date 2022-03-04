@@ -95,7 +95,20 @@ export default function reducer(state = initialState, action) {
         break;
       case UPDATE_TIME_POSITION_VALUES:
         draft.timePosition = action.timePosition;
-        draft.positionValues = action.positionValues;
+        // position value will be computed depending on current data simulation
+        // eslint-disable-next-line no-case-declarations
+
+        const currentTrainSimulation = state.consolidatedSimulation.find(consolidatedSimulation => consolidatedSimulation.trainNumber === state.selectedTrain)
+        const positionsValues = interpolateOnTime(
+          currentTrainSimulation,
+          ['time'],
+          LIST_VALUES_NAME_SPACE_TIME,
+          action.timePosition,
+        );
+
+        draft.positionValues = positionsValues
+
+        //draft.positionValues = action.positionValues ? action.positionValues : positionsValues;
         break;
     }
   });
