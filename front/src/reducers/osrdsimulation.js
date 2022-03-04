@@ -116,7 +116,9 @@ export default function reducer(state = initialState, action) {
           action.timePosition,
         );
 
-        draft.positionValues = positionsValues;
+        draft.positionValues = positionsValues
+
+        //draft.positionValues = action.positionValues ? action.positionValues : positionsValues;
         break;
       }
     }

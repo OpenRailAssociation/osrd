@@ -267,10 +267,9 @@ const enableInteractivity = (
           timePositionLocal
         );
 
+        debounceUpdateTimePositionValues(timePositionLocal, null, 15);
 
-
-        debounceUpdateTimePositionValues(timePositionLocal, immediatePositionsValues, 15);
-
+        // useless: will be called by traceVerticalLine on positionValue useEffect
         updatePointers(chart, keyValues, listValues, immediatePositionsValues, rotate);
       } else {
         // If GEV
@@ -280,16 +279,16 @@ const enableInteractivity = (
         const timePositionLocal = interpolateOnPosition(dataSimulation, keyValues, positionLocal);
         if (timePositionLocal) {
 
-
-          // Move all this logic on redux - done
-          const immediatePositionsValues = interpolateOnTime(
+         const immediatePositionsValues = interpolateOnTime(
             dataSimulation,
             ['time'],
             LIST_VALUES_NAME_SPACE_TIME,
             timePositionLocal);
 
-          debounceUpdateTimePositionValues(timePositionLocal, immediatePositionsValues, 15);
-          updatePointers(chart, keyValues, listValues, immediatePositionsValues, rotate);
+          debounceUpdateTimePositionValues(timePositionLocal, null, 15);
+
+          // useless: will be called by traceVerticalLine on positionValue useEffect
+          //updatePointers(chart, keyValues, listValues, immediatePositionsValues, rotate);
 
         }
       }
