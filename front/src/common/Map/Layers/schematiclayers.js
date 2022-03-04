@@ -1,13 +1,8 @@
 export const schematicMainLayer = (colors) => ({
   id: 'schematicMainLayer',
   type: 'line',
-  filter: ['==', 'type_voie', 'VP'],
   paint: {
-    'line-color': ['match', ['get', 'TDV_mnemonique'],
-      'VPL', colors.track.major,
-      'VPA', colors.track.major,
-      '#cd0037',
-    ],
+    'line-color': colors.track.major,
     'line-width': ['match', ['get', 'TDV_mnemonique'],
       'VPL', 2,
       1,

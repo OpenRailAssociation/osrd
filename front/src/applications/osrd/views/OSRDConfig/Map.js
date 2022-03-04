@@ -126,7 +126,9 @@ const Map = () => {
     const features = mapRef.current.queryRenderedFeatures([
       [e.point[0] - width / 2, e.point[1] - height / 2],
       [e.point[0] + width / 2, e.point[1] + height / 2],
-    ], { layers: ['chartis/tracks-geo/service'] });
+    ], {
+      layers: mapTrackSources === 'geographic' ? ['chartis/tracks-geo/main'] : ['chartis/tracks-sch/main'],
+    });
     if (features[0] !== undefined) {
       setTrackSectionGeoJSON(features[0].geometry);
     }
@@ -150,8 +152,12 @@ const Map = () => {
       if (layersSettings.operationalpoints) {
         interactiveLayersLocal.push('chartis/osrd_operational_point/geo');
       }
-    } else {
-      interactiveLayersLocal.push('schematicMainLayer');
+    }
+    if (mapTrackSources === 'schematic') {
+      interactiveLayersLocal.push('chartis/tracks-sch/main');
+      if (layersSettings.operationalpoints) {
+        interactiveLayersLocal.push('chartis/osrd_operational_point/sch');
+      }
     }
     if (layersSettings.tvds) {
       interactiveLayersLocal.push('chartis/osrd_tvd_section/geo');
@@ -251,6 +257,7 @@ const Map = () => {
         ) : (
           <>
             <TracksSchematic colors={colors[mapStyle]} idHover={idHover} />
+            <OperationalPoints geomType="sch" colors={colors[mapStyle]} />
             <Signals sourceTable="map_midi_signal" colors={colors[mapStyle]} sourceLayer="sch" />
           </>
         )}

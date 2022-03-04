@@ -4,11 +4,12 @@ import { useSelector } from 'react-redux';
 
 export default function RenderItinerary() {
   const { geojson, origin, destination } = useSelector((state) => state.osrdconf);
-  if (geojson !== undefined
+  const { mapTrackSources } = useSelector((state) => state.map);
+  if (geojson && geojson[mapTrackSources]
     && origin !== undefined
     && destination !== undefined) {
     return (
-      <Source type="geojson" data={geojson}>
+      <Source type="geojson" data={geojson[mapTrackSources]}>
         <Layer
           type="line"
           paint={{
