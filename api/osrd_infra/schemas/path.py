@@ -31,15 +31,6 @@ class PathPayload(BaseModel):
     path_waypoints: List[PathWaypoint]
 
 
-class VmaxPoint(BaseModel):
-    position: float
-    speed: float
-
-
-class Vmax(BaseModel):
-    __root__: List[VmaxPoint]
-
-
 class SlopePoint(BaseModel):
     position: float
     gradient: float

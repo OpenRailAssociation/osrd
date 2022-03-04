@@ -20,13 +20,12 @@ def create_simulation_report(train_schedule: TrainScheduleModel, projection_path
         train_schedule.departure_time,
         train_length,
     )
-    vmax = convert_vmax(train_path, train_schedule)
     res = {
         "id": train_schedule.pk,
         "labels": train_schedule.labels,
         "path": train_schedule.path_id,
         "name": train_schedule.train_name,
-        "vmax": vmax,
+        "vmax": train_schedule.mrsp,
         "slopes": train_path.slopes,
         "curves": train_path.curves,
         "base": base,
@@ -77,16 +76,6 @@ def convert_simulation_results(
         "speeds": speeds,
         "stops": stops,
     }
-
-
-def convert_vmax(path: PathModel, train_schedule: TrainScheduleModel):
-    vmax = path.vmax
-    rolling_stock_vmax = train_schedule.rolling_stock.max_speed
-    # Replace -1 speeds (no vmax) to the rolling stock max speed
-    for point in vmax:
-        if point["speed"] == -1:
-            point["speed"] = rolling_stock_vmax
-    return vmax
 
 
 def interpolate_locations(loc_a, loc_b, path_position):

@@ -169,17 +169,6 @@ def create_chart(path_steps, track_to_tree, field_name, direction_sensitive=Fals
     return result
 
 
-def compute_vmax(payload: PathPayload, track_map: Mapping[str, TrackSection]):
-    trees = defaultdict(IntervalTree)
-    for track_id, track in track_map.items():
-        trees[track_id].addi(0, track["length"], -1)
-        for speed_section in track["speed_sections"]:
-            if speed_section["begin"] < speed_section["end"]:
-                trees[track_id].chop(speed_section["begin"], speed_section["end"])
-                trees[track_id].addi(speed_section["begin"], speed_section["end"], speed_section["speed"])
-    return create_chart(payload.route_paths, trees, "speed")
-
-
 def compute_slopes(payload: PathPayload, track_map: Mapping[str, TrackSection]):
     trees = defaultdict(IntervalTree)
     for track_id, track in track_map.items():
@@ -218,11 +207,6 @@ def compute_path(path, request_data, owner):
     path.payload = payload.dict()
     path.geographic = geographic
     path.schematic = schematic
-
-    # TODO: This is a hotfix, the function is moved in osrd-core by: https://github.com/DGEXSolutions/osrd/issues/634
-    # path.vmax = compute_vmax(payload, track_map)
-    path.vmax = []
-
     path.curves = compute_curves(payload, track_map)
     path.slopes = compute_slopes(payload, track_map)
 
