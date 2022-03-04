@@ -92,6 +92,7 @@ public class StandaloneSimulationEndpoint implements Take {
 
             // Compute envelopes
             var result = new StandaloneSimulationResult();
+            var cacheMRSP = new HashMap<StandaloneTrainSchedule, List<MRSPPointResult>>();
             var cacheMaxEffort = new HashMap<StandaloneTrainSchedule, SimulationResultTrain>();
             var cacheEco = new HashMap<StandaloneTrainSchedule, SimulationResultTrain>();
             for (var rjsTrainSchedule : request.trainSchedules) {
@@ -99,8 +100,12 @@ public class StandaloneSimulationEndpoint implements Take {
                         infra, request.timeStep, rollingStocks::get, rjsTrainSchedule, trainsPath, envelopePath);
 
                 if (!cacheMaxEffort.containsKey(trainSchedule)) {
+                    // MRSP
+                    var mrsp = MRSP.from(trainsPath, trainSchedule.rollingStock);
+                    cacheMRSP.put(trainSchedule, MRSPPointResult.from(mrsp));
+
                     // Base
-                    var envelope = computeEnvelope(request.timeStep, trainsPath, envelopePath, trainSchedule);
+                    var envelope = computeMaxEffortEnvelope(mrsp, request.timeStep, envelopePath, trainSchedule);
                     var simResultTrain = SimulationResultTrain.from(
                             envelope,
                             trainsPath,
@@ -108,6 +113,7 @@ public class StandaloneSimulationEndpoint implements Take {
                             trainSchedule,
                             infra);
                     cacheMaxEffort.put(trainSchedule, simResultTrain);
+
                     // Eco
                     if (!trainSchedule.allowances.isEmpty()) {
                         var ecoEnvelope = applyAllowances(envelope, trainSchedule);
@@ -121,6 +127,7 @@ public class StandaloneSimulationEndpoint implements Take {
                     }
                 }
 
+                result.mrsps.add(cacheMRSP.get(trainSchedule));
                 result.baseSimulations.add(cacheMaxEffort.get(trainSchedule));
                 result.ecoSimulations.add(cacheEco.getOrDefault(trainSchedule, null));
             }
@@ -132,6 +139,19 @@ public class StandaloneSimulationEndpoint implements Take {
         }
     }
 
+    private static Envelope computeMaxEffortEnvelope(
+            Envelope mrsp,
+            double timeStep,
+            EnvelopePath envelopePath,
+            StandaloneTrainSchedule schedule
+    ) {
+        final var rollingStock = schedule.rollingStock;
+        final var stops = schedule.getStopsPositions();
+        final var context = new EnvelopeSimContext(rollingStock, envelopePath, timeStep);
+        final var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, mrsp);
+        return MaxEffortEnvelope.from(context, schedule.initialSpeed, maxSpeedEnvelope);
+    }
+
     private static Envelope applyAllowances(
             Envelope maxEffortEnvelope,
             StandaloneTrainSchedule schedule
@@ -140,20 +160,6 @@ public class StandaloneSimulationEndpoint implements Take {
         for (var allowance : schedule.allowances)
             result = allowance.apply(result);
         return result;
-    }
-
-    private static Envelope computeEnvelope(
-            double timeStep,
-            TrainPath trainsPath,
-            EnvelopePath envelopePath,
-            StandaloneTrainSchedule schedule
-    ) {
-        final var rollingStock = schedule.rollingStock;
-        final var mrsp = MRSP.from(trainsPath, rollingStock);
-        final var stops = schedule.getStopsPositions();
-        final var context = new EnvelopeSimContext(rollingStock, envelopePath, timeStep);
-        final var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, mrsp);
-        return MaxEffortEnvelope.from(context, schedule.initialSpeed, maxSpeedEnvelope);
     }
 
     @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
@@ -239,6 +245,7 @@ public class StandaloneSimulationEndpoint implements Take {
         public List<SimulationResultTrain> baseSimulations = new ArrayList<>();
         @Json(name = "eco_simulations")
         public List<SimulationResultTrain> ecoSimulations = new ArrayList<>();
+        public List<List<MRSPPointResult>> mrsps = new ArrayList<>();
     }
 
     @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
@@ -449,6 +456,26 @@ public class StandaloneSimulationEndpoint implements Take {
             if (startPosition > 0)
                 timeTailOccupy = interpolateTime(Math.min(pathLength, startPosition + trainLength), headPositions);
             return new SimulationResultRouteOccupancy(timeHeadOccupy, timeHeadFree, timeTailOccupy, timeTailFree);
+        }
+    }
+
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
+    private static class MRSPPointResult {
+        public final double position;
+        public final double speed;
+
+        public MRSPPointResult(double position, double speed) {
+            this.position = position;
+            this.speed = speed;
+        }
+
+        public static List<MRSPPointResult> from(Envelope mrsp) {
+            var res = new ArrayList<MRSPPointResult>();
+            for (var mrspPart : mrsp) {
+                for (int i = 0; i < mrspPart.pointCount(); i++)
+                    res.add(new MRSPPointResult(mrspPart.getPointPos(i), mrspPart.getPointSpeed(i)));
+            }
+            return res;
         }
     }
 }
