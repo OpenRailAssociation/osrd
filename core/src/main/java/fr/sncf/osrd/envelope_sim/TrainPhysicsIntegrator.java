@@ -138,7 +138,8 @@ public final class TrainPhysicsIntegrator {
         }
     }
 
-    private static IntegrationStep newtonStep(
+    /** Integrate the Newton movement equations*/
+    public static IntegrationStep newtonStep(
             double timeStep,
             double currentSpeed,
             double acceleration,
