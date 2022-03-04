@@ -68,7 +68,7 @@ class PathInputSerializer(Serializer):
 class PathSerializer(ModelSerializer):
     class Meta:
         model = PathModel
-        exclude = ["infra", "payload", "vmax", "slopes", "curves"]
+        exclude = ["infra", "payload", "slopes", "curves"]
 
 
 # TIMETABLE / SIMULATION
@@ -84,6 +84,7 @@ class TrainScheduleSerializer(ModelSerializer):
     class Meta:
         model = TrainScheduleModel
         exclude = [
+            "mrsp",
             "base_simulation",
             "eco_simulation",
         ]
@@ -96,6 +97,7 @@ class StandaloneSimulationSerializer(Serializer):
             exclude = [
                 "timetable",
                 "path",
+                "mrsp",
                 "base_simulation",
                 "eco_simulation",
             ]

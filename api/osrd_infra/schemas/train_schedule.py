@@ -9,6 +9,18 @@ class TrainScheduleLabels(BaseModel):
     __root__: List[constr(max_length=128)]
 
 
+# MRSP
+
+
+class MRSPPoint(BaseModel):
+    position: float
+    speed: float
+
+
+class MRPS(BaseModel):
+    __root__: List[MRSPPoint]
+
+
 # Allowances
 
 

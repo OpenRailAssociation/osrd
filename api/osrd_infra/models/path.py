@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib.gis.db import models
 
 from osrd_infra.models import Infra
-from osrd_infra.schemas.path import Curves, PathPayload, Slopes, Vmax
+from osrd_infra.schemas.path import Curves, PathPayload, Slopes
 from osrd_infra.utils import JSONSchemaValidator
 
 
@@ -11,7 +11,6 @@ class PathModel(models.Model):
     infra = models.ForeignKey(Infra, on_delete=models.CASCADE)
     created = models.DateTimeField(editable=False, auto_now_add=True)
     payload = models.JSONField(validators=[JSONSchemaValidator(limit_value=PathPayload.schema())])
-    vmax = models.JSONField(validators=[JSONSchemaValidator(limit_value=Vmax.schema())])
     slopes = models.JSONField(validators=[JSONSchemaValidator(limit_value=Slopes.schema())])
     curves = models.JSONField(validators=[JSONSchemaValidator(limit_value=Curves.schema())])
     geographic = models.LineStringField(srid=settings.OSRD_INFRA_SRID)
