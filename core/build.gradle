@@ -97,7 +97,7 @@ dependencies {
 // region MAIN
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
 }
 
 application {

@@ -27,7 +27,7 @@ jobs:
       - run: pip install -r core/examples/generated/lib/requirements.txt
       - uses: actions/setup-java@v1
         with:
-          java-version: 11
+          java-version: 17
       - uses: reviewdog/action-setup@v1
         with:
           reviewdog_version: latest
