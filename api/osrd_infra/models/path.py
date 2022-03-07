@@ -13,8 +13,8 @@ class PathModel(models.Model):
     payload = models.JSONField(validators=[JSONSchemaValidator(limit_value=PathPayload.schema())])
     slopes = models.JSONField(validators=[JSONSchemaValidator(limit_value=Slopes.schema())])
     curves = models.JSONField(validators=[JSONSchemaValidator(limit_value=Curves.schema())])
-    geographic = models.LineStringField(srid=settings.OSRD_INFRA_SRID)
-    schematic = models.LineStringField(srid=settings.OSRD_INFRA_SRID)
+    geographic = models.LineStringField(srid=settings.RAILJSON_SRID)
+    schematic = models.LineStringField(srid=settings.RAILJSON_SRID)
 
     class Meta:
         verbose_name_plural = "paths"
