@@ -31,6 +31,9 @@ repositories {
 }
 
 dependencies {
+    // base primitives
+    implementation group: 'com.google.guava', name: 'guava', version: '31.1-jre'
+
     // command line parsing
     implementation group: 'com.beust', name: 'jcommander', version: '1.78'  // Apache 2.0
 

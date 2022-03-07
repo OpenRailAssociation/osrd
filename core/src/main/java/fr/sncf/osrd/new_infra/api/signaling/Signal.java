@@ -1,4 +1,4 @@
-package fr.sncf.osrd.signaling;
+package fr.sncf.osrd.new_infra.api.signaling;
 
 import fr.sncf.osrd.infra.routegraph.Route;
 import java.util.List;
