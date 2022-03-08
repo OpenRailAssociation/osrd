@@ -1,6 +1,7 @@
 package fr.sncf.osrd.utils.geom;
 
 import com.squareup.moshi.*;
+import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.io.IOException;
 import java.util.Objects;
 
@@ -25,6 +26,7 @@ public final class Point {
     }
 
     @Override
+    @ExcludeFromGeneratedCodeCoverage
     public int hashCode() {
         return Objects.hash(x, y);
     }
