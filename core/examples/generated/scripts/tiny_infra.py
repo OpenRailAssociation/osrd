@@ -62,9 +62,16 @@ speed_section.add_track_range(ne_micro_foo_to_bar, 2_000, 6_000, ApplicableDirec
 
 
 # Add links
-builder.add_link(ne_micro_foo_to_bar.end(), ne_micro_bar_a.begin(), ApplicableDirection.BOTH)
-builder.add_switch(ne_micro_foo_to_bar.begin(), ne_micro_foo_b.end(), ne_micro_foo_a.end(),
+link = builder.add_link(ne_micro_foo_to_bar.end(), ne_micro_bar_a.begin(), ApplicableDirection.BOTH)
+switch = builder.add_switch(ne_micro_foo_to_bar.begin(), ne_micro_foo_b.end(), ne_micro_foo_a.end(),
                    label="il.switch_foo")
+
+# Set coordinates
+
+switch.set_coords(0, 1)
+link.set_coords(0, 2)
+ne_micro_foo_b.begin().set_coords(1, 0)
+ne_micro_bar_a.end().set_coords(0, 3)
 
 # Build infra
 infra = builder.build()
