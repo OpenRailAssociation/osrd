@@ -1,15 +1,15 @@
 package fr.sncf.osrd.new_infra.implementation;
 
+import fr.sncf.osrd.new_infra.api.reservation.Detector;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackInfra;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackSection;
-import fr.sncf.osrd.new_infra.implementation.reservation.DetectorImpl;
 import fr.sncf.osrd.new_infra.implementation.tracks.undirected.TrackSectionImpl;
 import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
 import java.util.Map;
 import java.util.Set;
 
 public class RJSObjectParsing {
-    public static DetectorImpl getDetector(RJSObjectRef<?> object, Map<String, DetectorImpl> cachedObjects) {
+    public static Detector getDetector(RJSObjectRef<?> object, Map<String, ? extends Detector> cachedObjects) {
         return parseRef(object, cachedObjects, Set.of("Detector"));
     }
 
