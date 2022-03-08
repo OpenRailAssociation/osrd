@@ -22,7 +22,6 @@ import org.takes.rs.RsJson;
 import org.takes.rs.RsText;
 import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
-import java.io.IOException;
 import java.util.*;
 
 public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
@@ -168,7 +167,7 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
 
             var finalPathsToGoal = filterPathSteps(pathsToGoal);
 
-            var res = PathfindingResult.pathfindingResultMake(finalPathsToGoal, infra);
+            var res = PathfindingResult.make(finalPathsToGoal, infra);
 
             return new RsJson(new RsWithBody(adapterResult.toJson(res)));
         } catch (Throwable ex) {

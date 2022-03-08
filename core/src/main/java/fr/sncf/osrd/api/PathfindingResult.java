@@ -29,25 +29,29 @@ public class PathfindingResult {
     @Json(name = "path_waypoints")
     public final List<PathWaypointResult> pathWaypoints = new ArrayList<>();
 
-    // make them private final
     public LineString geographic = null;
     public LineString schematic = null;
 
     /**
      * pathfindingResultMake is used to create a class PathfindingResult with a good format to be sent to the middleware
      * during this function, we add geometric information in the PathfindingResult
-     * @param finalPathsToGoal contains the routes that are use after the pathfinding
-     * @param infra current infra
-     * @return A pathfindingResult object ready to be sent to the middleware
+     * @param finalPathsToGoal contains the pathfinding's result
      */
-    @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
-    public static PathfindingResult pathfindingResultMake(
+    public static PathfindingResult make(
             ArrayDeque<FullPathArray<Route, BasicPathNode<Route>>> finalPathsToGoal,
             Infra infra
     ) throws InvalidInfraException {
-
         var res = new PathfindingResult();
+        fillRoutePath(finalPathsToGoal, res);
+        res.addGeometry(infra);
+        return res;
+    }
 
+    @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
+    private static void fillRoutePath(
+            ArrayDeque<FullPathArray<Route, BasicPathNode<Route>>> finalPathsToGoal,
+            PathfindingResult pathfindingResult
+    ) {
         for (var path : finalPathsToGoal) {
             var routeBeginLoc = pathNodeToRouteLocation(path.pathNodes.get(0));
             var beginLoc = routeBeginLoc.getTrackSectionLocation();
@@ -75,20 +79,18 @@ public class PathfindingResult {
                     var firstTrack = trackSections.get(0);
                     var newStep = new PathWaypointResult(firstTrack.edge,
                             firstTrack.getBeginPosition());
-                    res.addStep(newStep);
+                    pathfindingResult.addStep(newStep);
                 }
-                res.add(route, trackSections);
+                pathfindingResult.add(route, trackSections);
                 if (j == routes.size() - 1) {
                     // Add the given destination location to the steps output
                     var lastTrack = trackSections.get(trackSections.size() - 1);
                     var newStep = new PathWaypointResult(lastTrack.edge,
                             lastTrack.getEndPosition());
-                    res.addStep(newStep);
+                    pathfindingResult.addStep(newStep);
                 }
             }
         }
-        res.addGeometry(infra);
-        return res;
     }
 
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
@@ -96,7 +98,7 @@ public class PathfindingResult {
         return new RouteLocation(node.edge, node.position);
     }
 
-    void add(Route route, List<TrackSectionRange> trackSections) {
+    private void add(Route route, List<TrackSectionRange> trackSections) {
         var routeResult = new RoutePathResult();
         routeResult.route = new RJSObjectRef<>(route.id, "Route");
         routeResult.trackSections = new ArrayList<>();
