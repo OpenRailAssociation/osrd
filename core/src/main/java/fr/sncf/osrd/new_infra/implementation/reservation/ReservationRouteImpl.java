@@ -36,6 +36,11 @@ public class ReservationRouteImpl implements ReservationRoute {
     }
 
     @Override
+    public String getID() {
+        return id;
+    }
+
+    @Override
     public ImmutableList<DiDetector> getDetectorPath() {
         return detectorPath;
     }

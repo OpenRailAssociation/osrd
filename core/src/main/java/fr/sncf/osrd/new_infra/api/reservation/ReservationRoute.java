@@ -3,6 +3,9 @@ package fr.sncf.osrd.new_infra.api.reservation;
 import com.google.common.collect.ImmutableList;
 
 public interface ReservationRoute {
+    /** Returns the route id */
+    String getID();
+
     /** Returns the path the route takes in the detector graph */
     ImmutableList<DiDetector> getDetectorPath();
 
