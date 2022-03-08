@@ -75,7 +75,8 @@ public class EnvelopePath implements PhysicsPath {
     public double findHighGradePosition(double position, double endPos, double length, double gradeThreshold) {
         // TODO: skip sections which don't have high enough slopes
         while (position <= endPos) {
-            var grade = getAverageGrade(position - length, position);
+            var tailPosition = Math.max(0., position - length);
+            var grade = getAverageGrade(tailPosition, position);
             if (grade >= gradeThreshold)
                 return position;
             position += 1.0;
