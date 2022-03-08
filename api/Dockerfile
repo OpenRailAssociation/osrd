@@ -3,7 +3,7 @@ FROM python:3.9.7-buster
 RUN useradd --create-home service
 
 RUN apt-get update -yqq
-RUN apt-get install -yqq --no-install-recommends binutils libproj-dev gdal-bin
+RUN apt-get install -yqq --no-install-recommends binutils libproj-dev gdal-bin curl
 RUN apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
   && rm -rf /var/lib/apt/lists/*
 
