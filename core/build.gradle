@@ -19,7 +19,7 @@ plugins {
     id 'java'
     id 'application'
     id 'checkstyle'
-    id 'com.github.spotbugs' version '5.0.6'
+    id 'net.ltgt.errorprone' version '2.0.2'
     id 'com.github.johnrengelman.shadow' version '7.1.2'
     id 'jacoco'
 }
@@ -31,6 +31,9 @@ repositories {
 }
 
 dependencies {
+    // linter
+    errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: '2.11.0'
+
     // base primitives
     implementation group: 'com.google.guava', name: 'guava', version: '31.1-jre'
 
@@ -168,30 +171,10 @@ tasks.withType(Checkstyle) {
     }
 }
 
-// enable all linter warnings, and error out on warnings
+// enable all builtin linter warnings
 tasks.withType(JavaCompile) {
-    options.compilerArgs << "-Xlint:all" << "-Werror"
+    options.compilerArgs << "-Xlint:all"
     options.encoding = "UTF-8"
-}
-
-spotbugs {
-    ignoreFailures = false
-    showStackTraces = true
-    showProgress = true
-    // can also be 'more' or 'default'
-    effort = 'max'
-    // report all diagnosed bugs
-    reportLevel = 'low'
-    maxHeapSize = '1g'
-    excludeFilter = file('config/spotbugs/exclude.xml')
-}
-
-tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
-    if (project.hasProperty("spotbugs_report_xml")) {
-        reports { xml.required = true }
-    } else {
-        reports { html.required = true }
-    }
 }
 
 test {
