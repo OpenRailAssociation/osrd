@@ -127,7 +127,10 @@ services:
       dockerfile: Dockerfile
     network_mode: host
     restart: unless-stopped
-    command: "editoast"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8090/health"]
+      start_period: 4s
+      interval: 5s
 
   wait-healthy:
     depends_on:
