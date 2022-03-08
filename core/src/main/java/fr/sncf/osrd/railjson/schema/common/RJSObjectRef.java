@@ -48,7 +48,7 @@ public final class RJSObjectRef<T extends Identified> {
     }
 
 
-    private <U> U parseRef(Map<String, U> cachedObjects, String expectedType) throws InvalidInfraException {
+    private <U> U parseRef(Map<String, ? extends U> cachedObjects, String expectedType) throws InvalidInfraException {
         return parseRef(cachedObjects, Set.of(expectedType));
     }
 

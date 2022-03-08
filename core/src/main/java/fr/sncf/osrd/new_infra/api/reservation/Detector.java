@@ -8,4 +8,7 @@ public interface Detector {
 
     /** Returns the DetectionSection after the given direction */
     DetectionSection getNextDetectionSection(Direction direction);
+
+    /** Directed detector instance linked to this detector */
+    DiDetector getDiDetector(Direction direction);
 }

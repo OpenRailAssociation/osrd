@@ -1,7 +1,9 @@
 package fr.sncf.osrd.new_infra.api.signaling;
 
 import fr.sncf.osrd.new_infra.api.reservation.ReservationRoute;
-import java.util.List;
+import fr.sncf.osrd.new_infra_state.api.InfraStateView;
+import fr.sncf.osrd.new_infra_state.api.SignalizationStateView;
+import java.util.Set;
 
 /**
  * The stateless, static and immutable infrastructure signal.
@@ -12,11 +14,11 @@ public interface Signal<StateT extends SignalState> {
     StateT getInitialState();
 
     /** When something this signal depends on changes, this function is called */
-    StateT processDependencyUpdate(Void infraState);
+    StateT processDependencyUpdate(InfraStateView infraState, SignalizationStateView signalization);
 
     /** Returns a list of signals whose state change triggers an update */
-    List<? extends Signal<?>> getSignalDependencies();
+    Set<? extends Signal<?>> getSignalDependencies();
 
     /** Returns a list of routes whose state change triggers an update */
-    List<? extends ReservationRoute> getRouteDependencies();
+    Set<? extends ReservationRoute> getRouteDependencies();
 }

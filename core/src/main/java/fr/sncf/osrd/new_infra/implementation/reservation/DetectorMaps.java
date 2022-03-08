@@ -31,8 +31,14 @@ class DetectorMaps {
             for (var object : track.getTrackObjects()) {
                 var newDetector = new DetectorImpl(object.getID());
                 detectors.put(object.getID(), newDetector);
-                for (var dir : Direction.values())
-                    diDetectors.get(dir).put(object.getID(), new DiDetectorImpl(newDetector, dir));
+                var diDetectorForward = new DiDetectorImpl(newDetector, Direction.FORWARD);
+                diDetectors.get(Direction.FORWARD).put(object.getID(), diDetectorForward);
+                var diDetectorBackward = new DiDetectorImpl(newDetector, Direction.BACKWARD);
+                diDetectors.get(Direction.BACKWARD).put(object.getID(), diDetectorBackward);
+                newDetector.setDiDetectors(Map.of(
+                        Direction.FORWARD, diDetectorForward,
+                        Direction.BACKWARD, diDetectorBackward
+                ));
             }
         }
         return new DetectorMaps(detectors, diDetectors);
