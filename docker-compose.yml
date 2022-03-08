@@ -21,7 +21,7 @@ services:
 
   redis:
     image: redis
-    container_name: redis
+    container_name: osrd-redis
     network_mode: host
     restart: unless-stopped
     volumes:
@@ -55,12 +55,11 @@ services:
       start_period: 4s
       interval: 5s
 
-  osrd-api:
-    image: osrd/osrd-api
+  api:
+    image: osrd/api
     container_name: osrd-api
     depends_on:
       postgres: {condition: service_healthy}
-      redis: {condition: service_healthy}
     network_mode: host
     restart: unless-stopped
     build:
@@ -71,7 +70,6 @@ services:
     environment:
       DJANGO_SETTINGS_MODULE: "config.test"
       PSQL_HOST: "localhost"
-      CHARTIS_URL: "http://localhost:7000"
       OSRD_BACKEND_URL: "http://localhost:8080"
     command:
       - /bin/sh
@@ -87,8 +85,8 @@ services:
       start_period: 4s
       interval: 5s
 
-  osrd-core:
-    image: osrd/osrd-core
+  core:
+    image: osrd/core
     container_name: osrd-core
     build:
       context: core
@@ -103,8 +101,8 @@ services:
       start_period: 4s
       interval: 5s
 
-  osrd-front:
-    image: osrd/osrd-front
+  front:
+    image: osrd/front
     container_name: osrd-front
     build:
       context: front
@@ -121,10 +119,21 @@ services:
       start_period: 4s
       interval: 5s
 
+  editoast:
+    image: osrd/editoast
+    container_name: osrd-editoast
+    build:
+      context: editoast
+      dockerfile: Dockerfile
+    network_mode: host
+    restart: unless-stopped
+    command: "editoast"
+
   wait-healthy:
     depends_on:
-      osrd-api: {condition: service_healthy}
+      api: {condition: service_healthy}
       chartos: {condition: service_healthy}
+      editoast: {condition: service_healthy}
     restart: "no"
     image: alpine:latest
     command: "true"

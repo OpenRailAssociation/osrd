@@ -9,7 +9,7 @@ jobs:
     uses: DGEXSolutions/osrd/.github/workflows/docker-build-push-template.yml@dev
     with:
       context: core
-      image_name: osrd/osrd-core
+      image_name: osrd/core
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -18,7 +18,7 @@ jobs:
     uses: DGEXSolutions/osrd/.github/workflows/docker-build-push-template.yml@dev
     with:
       context: api
-      image_name: osrd/osrd-api
+      image_name: osrd/api
       build_args: |
         environment=test
     secrets:
@@ -38,13 +38,21 @@ jobs:
     uses: DGEXSolutions/osrd/.github/workflows/docker-build-push-template.yml@dev
     with:
       context: front
-      image_name: osrd/osrd-front
+      image_name: osrd/front
       build_args: |
         NGINX_CONFIG=nginx-dev.conf
         REACT_APP_LOCAL_BACKEND=True
         REACT_APP_API_URL=http://localhost:8000
         REACT_APP_CHARTIS_URL=http://localhost:7000
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
+  build_push_editoast:
+    uses: DGEXSolutions/osrd/.github/workflows/docker-build-push-template.yml@dev
+    with:
+      context: editoast
+      image_name: osrd/editoast
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
