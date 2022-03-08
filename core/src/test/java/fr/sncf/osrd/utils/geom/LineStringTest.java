@@ -3,6 +3,7 @@ package fr.sncf.osrd.utils.geom;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.squareup.moshi.JsonDataException;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ class LineStringTest {
     public void testInvalidDeserialize() {
         var geoJson = "{\"type\": \"LineString\",\"type\": \"LineString\"}";
         var adapter = new LineString.Adapter();
-        var thrown = assertThrows(JsonDataException.class, () -> adapter.fromJson(geoJson));
+        var thrown = assertThrows(JsonDataException.class, () -> assertNotNull(adapter.fromJson(geoJson)));
         assertEquals("Missing coordinates property", thrown.getMessage());
     }
 

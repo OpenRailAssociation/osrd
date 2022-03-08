@@ -255,9 +255,8 @@ public class RailJSONParser {
         // Add an initial flat gradient slope
         var beginID = nodeIDs.get(trackSection.beginEndpoint());
         var endID = nodeIDs.get(trackSection.endEndpoint());
-        var trackLine = trackSection.sch == null ? null : trackSection.sch.getLine();
         var infraTrackSection = trackGraph.makeTrackSection(beginID, endID, trackSection.id,
-                trackSection.length, trackLine);
+                trackSection.length, trackSection.geo, trackSection.sch);
         infraTrackSection.forwardGradients.addRange(0., infraTrackSection.length, 0.);
         infraTrackSection.backwardGradients.addRange(0., infraTrackSection.length, 0.);
 

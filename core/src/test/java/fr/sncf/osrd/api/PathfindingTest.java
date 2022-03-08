@@ -17,7 +17,7 @@ public class PathfindingTest extends ApiTest {
     }
 
     private static void expectWaypointInPathResult(
-            PathfindingRoutesEndpoint.PathfindingResult result,
+            PathfindingResult result,
             PathfindingWaypoint waypoint
     ) {
         for (var route : result.routePaths) {
