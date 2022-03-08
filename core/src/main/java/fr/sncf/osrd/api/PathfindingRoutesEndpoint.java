@@ -1,22 +1,13 @@
 package fr.sncf.osrd.api;
 
-import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.OperationalPoint;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.routegraph.RouteLocation;
-import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.railjson.schema.common.ID;
-import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
-import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
-import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
-import fr.sncf.osrd.train.TrackSectionRange;
-import fr.sncf.osrd.utils.PointValue;
-import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.geom.LineString;
 import fr.sncf.osrd.utils.geom.Point;
 import fr.sncf.osrd.utils.graph.Dijkstra;
@@ -84,9 +75,9 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
     }
 
     @Override
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
-    public Response act(Request req) throws IOException, InvalidInfraException {
+    public Response act(Request req) throws InvalidInfraException {
         try {
             var body = new RqPrint(req).printBody();
             var request = adapterRequest.fromJson(body);
@@ -177,9 +168,8 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
 
             var finalPathsToGoal = filterPathSteps(pathsToGoal);
 
-            var res = PathfindingResult.PathfindingResultMake(finalPathsToGoal, infra);
+            var res = PathfindingResult.pathfindingResultMake(finalPathsToGoal, infra);
 
-            //res.addGeometry(infra);
             return new RsJson(new RsWithBody(adapterResult.toJson(res)));
         } catch (Throwable ex) {
             return ExceptionHandler.handle(ex);

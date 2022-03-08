@@ -1,7 +1,6 @@
 import json
 from collections import defaultdict
 from typing import Mapping
-from pydantic import Json
 
 import requests
 from django.conf import settings
@@ -197,13 +196,12 @@ def compute_path(path, request_data, owner):
 
     waypoints, step_durations = parse_steps_input(request_data["steps"], infra)
     payload = request_pathfinding({"infra": infra.pk, "waypoints": waypoints})
-    path.geographic = json.dumps(payload.pop("geo_geom"))
-    path.schematic = json.dumps(payload.pop("sch_geom"))
+    path.geographic = json.dumps(payload.pop("geographic"))
+    path.schematic = json.dumps(payload.pop("schematic"))
 
     # Post treatment
     track_map = fetch_track_sections_from_payload(infra, payload)
     payload = compute_path_payload(infra, payload, step_durations, track_map)
-    # geographic, schematic = get_geojson_path(payload, track_map)
 
     path.owner = owner
     path.infra = infra

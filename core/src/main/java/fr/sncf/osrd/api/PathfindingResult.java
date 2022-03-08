@@ -18,34 +18,36 @@ import fr.sncf.osrd.utils.geom.LineString;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.graph.path.BasicPathNode;
 import fr.sncf.osrd.utils.graph.path.FullPathArray;
-
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-
-
 public class PathfindingResult {
     @Json(name = "route_paths")
-    public final List<RoutePathResult> routePaths;
+    public final List<RoutePathResult> routePaths = new ArrayList<>();
     @Json(name = "path_waypoints")
-    public final List<PathWaypointResult> pathWaypoints;
+    public final List<PathWaypointResult> pathWaypoints = new ArrayList<>();
 
     // make them private final
-    public LineString geographic;
-    public LineString schematic;
+    public LineString geographic = null;
+    public LineString schematic = null;
 
-    private PathfindingResult(ArrayList<RoutePathResult> routePaths, ArrayList<PathWaypointResult> pathWaypoints, LineString geographic, LineString schematic) {
-        this.routePaths = routePaths;
-        this.pathWaypoints = pathWaypoints;
-        this.geographic = geographic;
-        this.schematic = schematic;
-    }
+    /**
+     * pathfindingResultMake is used to create a class PathfindingResult with a good format to be sent to the middleware
+     * during this function, we add geometric information in the PathfindingResult
+     * @param finalPathsToGoal contains the routes that are use after the pathfinding
+     * @param infra current infra
+     * @return A pathfindingResult object ready to be sent to the middleware
+     */
+    @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
+    public static PathfindingResult pathfindingResultMake(
+            ArrayDeque<FullPathArray<Route, BasicPathNode<Route>>> finalPathsToGoal,
+            Infra infra
+    ) throws InvalidInfraException {
 
-    public static PathfindingResult PathfindingResultMake(ArrayDeque<FullPathArray<Route, BasicPathNode<Route>>> finalPathsToGoal, Infra infra) throws InvalidInfraException {
+        var res = new PathfindingResult();
 
-        // how about res ? global variable, reference, ...
         for (var path : finalPathsToGoal) {
             var routeBeginLoc = pathNodeToRouteLocation(path.pathNodes.get(0));
             var beginLoc = routeBeginLoc.getTrackSectionLocation();
@@ -71,27 +73,22 @@ public class PathfindingResult {
                 if (j == 0) {
                     // Add the given origin location to the steps output
                     var firstTrack = trackSections.get(0);
-                    var newStep = new PathfindingResult.PathWaypointResult(firstTrack.edge,
+                    var newStep = new PathWaypointResult(firstTrack.edge,
                             firstTrack.getBeginPosition());
-                    // TODO
-                    //res.addStep(newStep);
+                    res.addStep(newStep);
                 }
-                // TODO
-                //res.add(route, trackSections);
+                res.add(route, trackSections);
                 if (j == routes.size() - 1) {
                     // Add the given destination location to the steps output
                     var lastTrack = trackSections.get(trackSections.size() - 1);
-                    var newStep = new PathfindingResult.PathWaypointResult(lastTrack.edge,
+                    var newStep = new PathWaypointResult(lastTrack.edge,
                             lastTrack.getEndPosition());
-                    // TODO
-                    //res.addStep(newStep);
+                    res.addStep(newStep);
                 }
             }
         }
-
-        ArrayList<RoutePathResult>routePath = null;
-        var geometry = addGeometry(infra, routePath);
-        return new PathfindingResult(null, null, geometry.get(0), geometry.get(1));
+        res.addGeometry(infra);
+        return res;
     }
 
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
@@ -141,6 +138,48 @@ public class PathfindingResult {
         pathWaypoints.add(newStep);
     }
 
+    void addGeometry(Infra infra) throws InvalidInfraException {
+        var geoList = new ArrayList<LineString>();
+        var schList = new ArrayList<LineString>();
+
+        PathfindingEndpoint.DirectionalTrackRangeResult previousTrack = null;
+        double previousBegin = 0;
+        double previousEnd = 0;
+
+        for (var routePath : routePaths) {
+            for (var trackSection : routePath.trackSections) {
+
+                if (previousTrack == null) {
+                    previousTrack = trackSection;
+                    previousBegin = trackSection.begin;
+                    previousEnd = trackSection.end;
+                    continue;
+                }
+
+                if (previousTrack.trackSection.id.id.compareTo(trackSection.trackSection.id.id) != 0) {
+                    if (Double.compare(previousBegin, previousEnd) != 0) {
+                        var track = previousTrack.trackSection.getTrack(infra.trackGraph.trackSectionMap);
+                        geoList.add(track.geo.slice(previousBegin / track.length, previousEnd / track.length));
+                        schList.add(track.sch.slice(previousBegin / track.length, previousEnd / track.length));
+                    }
+                    previousTrack = trackSection;
+                    previousBegin = trackSection.begin;
+                }
+                previousEnd = trackSection.end;
+            }
+        }
+
+        assert previousTrack != null;
+        var track = previousTrack.trackSection.getTrack(infra.trackGraph.trackSectionMap);
+        geoList.add(track.geo.slice(previousBegin / track.length, previousEnd / track.length));
+        schList.add(track.sch.slice(previousBegin / track.length, previousEnd / track.length));
+
+        geographic = LineString.concatenate(geoList);
+        schematic = LineString.concatenate(schList);
+    }
+
+
+
     public static class RoutePathResult {
         public RJSObjectRef<RJSRoute> route;
         @Json(name = "track_sections")
@@ -175,6 +214,8 @@ public class PathfindingResult {
                 trackSections.add(newTracks.get(i));
         }
     }
+
+
 
     public static class PathWaypointResult {
         public String id;
@@ -212,45 +253,6 @@ public class PathfindingResult {
             position = other.position;
             id = other.id;
         }
-    }
-
-    public static ArrayList<LineString> addGeometry(Infra infra, ArrayList<RoutePathResult> routePaths)
-            throws InvalidInfraException {
-        var geo_list = new ArrayList<LineString>();
-        var sch_list = new ArrayList<LineString>();
-
-        PathfindingEndpoint.DirectionalTrackRangeResult previousTrack = null;
-        double previousBegin = 0;
-        double previousEnd = 0;
-
-        for (var routePath : routePaths) {
-            for (var trackSection : routePath.trackSections) {
-
-                if (previousTrack == null) {
-                    previousTrack = trackSection;
-                    previousBegin = trackSection.begin;
-                    previousEnd = trackSection.end;
-                    continue;
-                }
-
-                if (previousTrack.trackSection.id.id.compareTo(trackSection.trackSection.id.id) != 0) {
-                    if (Double.compare(previousBegin, previousEnd) != 0) {
-                        var track = previousTrack.trackSection.getTrack(infra.trackGraph.trackSectionMap);
-                        geo_list.add(track.geo.slice(previousBegin / track.length, previousEnd / track.length));
-                        sch_list.add(track.sch.slice(previousBegin / track.length, previousEnd / track.length));
-                    }
-                    previousTrack = trackSection;
-                    previousBegin = trackSection.begin;
-                    previousEnd = trackSection.end;
-                } else
-                    previousEnd += trackSection.end;
-
-            }
-        }
-        var res = new ArrayList<LineString>();
-        res.add(LineString.concatenate(geo_list));
-        res.add(LineString.concatenate(sch_list));
-        return res;
     }
 }
 
