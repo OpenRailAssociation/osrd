@@ -27,11 +27,21 @@ class InfraView(
 
     @action(url_path="railjson", detail=True, methods=["get"])
     def get_railjson(self, request, pk=None):
-        cache_key = f"osrd.infra.{pk}.v{RAILJSON_VERSION}"
+        infra = self.get_object()
+        # Check version
+        if infra.railjson_version != RAILJSON_VERSION:
+            return Response(
+                f"Invalid infra version expected: '{RAILJSON_VERSION}' got '{infra.railjson_version}'", status=500
+            )
+
+        # Check redis cache
+        cache_key = f"osrd.infra.{pk}"
         railjson = cache.get(cache_key)
         if railjson is not None:
             return HttpResponse(railjson, content_type="application/json")
-        railjson = serialize_infra(self.get_object())
+
+        # Serialize infra
+        railjson = serialize_infra(infra)
         cache.set(cache_key, railjson, timeout=settings.CACHE_TIMEOUT)
         return HttpResponse(railjson, content_type="application/json")
 
