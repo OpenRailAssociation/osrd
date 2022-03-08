@@ -13,4 +13,4 @@ RUN apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false
 
 COPY --from=builder /usr/local/cargo/bin/editoast /usr/local/bin/editoast
 
-CMD ["editoast"]
+CMD ["editoast", "runserver"]

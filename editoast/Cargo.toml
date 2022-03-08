@@ -7,4 +7,5 @@ edition = "2021"
 
 [dependencies]
 rocket = "0.5.0-rc.1"
-clap = "3.1.6"
+clap = { version = "3.1.6", features = ["derive", "env"] }
+postgres = "0.19.2"
