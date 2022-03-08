@@ -11,8 +11,11 @@ class LayerCreator:
         self.layer = []
         self.payload_size = payload_size
 
-    def add(self, object):
-        self.layer.append(object)
+    def add(self, obj):
+        self.layer.append(obj)
+
+    def add_all(self, objects):
+        self.layer += objects
 
     def create(self):
         for i in range(0, len(self.layer), self.payload_size):
