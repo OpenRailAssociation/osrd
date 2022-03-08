@@ -51,7 +51,7 @@ public class HardenedMarecoAllowance implements Allowance {
     }
 
     private Envelope intersectSlowdownSpeedup(EnvelopePart slowdown, EnvelopePart speedup) {
-        throw new NotImplemented();
+        return null; // TODO
     }
 
     public static final class MarecoSpeedLimit implements EnvelopeAttr {
@@ -183,11 +183,15 @@ public class HardenedMarecoAllowance implements Allowance {
             var v1 = search.getInput();
             logger.debug("starting attempt {} with v1 = {}", i, v1);
             marecoResult = computeMarecoIteration(base, v1);
+            if (marecoResult == null) {
+                // We reached the slowdown / speedup intersection case (not implemented) and need to speed up
+                search.feedback(0);
+                continue;
+            }
             var regionTime = marecoResult.getTotalTime();
             logger.debug("envelope time {}", regionTime);
             search.feedback(regionTime);
         }
-        assert marecoResult != null;
 
         if (!search.complete())
             throw makeMarecoError(search);

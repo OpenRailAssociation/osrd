@@ -525,4 +525,22 @@ public class AllowanceTests {
         assert ex.marecoErrorType.equals("too_much_time");
         assert ex.cause == OSRDError.ErrorCause.USER;
     }
+
+    @Test
+    public void testConstructionImpossibleMargin() {
+        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
+        var testPath = new FlatPath(10000, 0);
+
+        var allowanceValue = new AllowanceValue.Percentage(TIME_RATIO, 1e10);
+        var stops = new double[] { testPath.getLength() };
+        var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testRollingStock, testPath, 50, stops);
+        var allowance = makeMarecoAllowance(
+                new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP),
+                5000, 5300, 0, allowanceValue);
+        var ex = assertThrows(MarecoConvergenceException.class, () ->
+                allowance.apply(maxEffortEnvelope)
+        );
+        assert ex.marecoErrorType.equals("too_much_time");
+        assert ex.cause == OSRDError.ErrorCause.USER;
+    }
 }
