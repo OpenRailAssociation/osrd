@@ -1,6 +1,6 @@
 package fr.sncf.osrd.new_infra.api.signaling;
 
-import fr.sncf.osrd.infra.routegraph.Route;
+import fr.sncf.osrd.new_infra.api.detection.Route;
 import java.util.List;
 
 /**
@@ -15,7 +15,7 @@ public interface Signal<StateT extends SignalState> {
     StateT processDependencyUpdate(Void state, StateT previousSignalState);
 
     /** Returns a list of signals whose state change triggers an update */
-    List<Signal<?>> getSignalDependencies();
+    List<? extends Signal<?>> getSignalDependencies();
 
     /** Returns a list of routes whose state change triggers an update */
     List<Route> getRouteDependencies();
