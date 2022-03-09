@@ -11,8 +11,8 @@ class PointTest {
         var geoJson = "{\"type\": \"Point\", \"coordinates\": [6.3281, 46.6192]}";
         var adapter = new Point.Adapter();
         var point = adapter.fromJson(geoJson);
-        assertEquals(point.x, 6.3281);
-        assertEquals(point.y, 46.6192);
+        assertEquals(point.x(), 6.3281);
+        assertEquals(point.y(), 46.6192);
     }
 
     @Test
