@@ -1,6 +1,6 @@
 package fr.sncf.osrd.new_infra.api.signaling;
 
-import fr.sncf.osrd.new_infra.api.detection.DetectionRoute;
+import fr.sncf.osrd.new_infra.api.reservation.ReservationRoute;
 import java.util.List;
 
 /**
@@ -18,5 +18,5 @@ public interface Signal<StateT extends SignalState> {
     List<? extends Signal<?>> getSignalDependencies();
 
     /** Returns a list of routes whose state change triggers an update */
-    List<? extends DetectionRoute> getRouteDependencies();
+    List<? extends ReservationRoute> getRouteDependencies();
 }
