@@ -1,30 +1,56 @@
 #[macro_use]
 extern crate rocket;
+#[macro_use]
+extern crate diesel;
 
 mod client;
+mod schema;
 mod views;
 
 use clap::Parser;
-use client::{Client, RunserverCommand};
+use client::{Client, Commands, GenerateArgs, PostgresConfig, RunserverArgs};
+use rocket_sync_db_pools::database;
+use std::error::Error;
+use std::process::exit;
+
+#[database("postgres")]
+pub struct DBConnection(diesel::PgConnection);
 
 #[rocket::main]
 async fn main() {
-    let client = Client::parse();
-    match client {
-        Client::Runserver(args) => runserver(args).await.expect("An error occured..."),
-    };
+    match parse_client().await {
+        Ok(_) => (),
+        Err(e) => {
+            eprintln!("{}", e);
+            exit(2);
+        }
+    }
 }
 
-async fn runserver(command: RunserverCommand) -> Result<(), rocket::Error> {
-    let config = rocket::Config::figment().merge(("port", command.port));
-    let root_url = if command.root_url.starts_with('/') {
-        command.root_url
-    } else {
-        String::from("/") + command.root_url.as_str()
-    };
+async fn parse_client() -> Result<(), Box<dyn Error>> {
+    let client = Client::parse();
+    let pg_config = client.postgres_config;
+
+    match client.command {
+        Commands::Runserver(args) => runserver(args, pg_config).await,
+        Commands::Generate(args) => generate(args),
+    }
+}
+
+async fn runserver(args: RunserverArgs, pg_config: PostgresConfig) -> Result<(), Box<dyn Error>> {
+    let config = rocket::Config::figment()
+        .merge(("port", args.port))
+        .merge(("databases.postgres.url", pg_config.url()));
 
     rocket::custom(config)
-        .mount(root_url, views::routes())
+        .attach(DBConnection::fairing())
+        .mount(args.get_root_url(), views::routes())
         .launch()
-        .await
+        .await?;
+
+    Ok(())
+}
+
+fn generate(args: GenerateArgs) -> Result<(), Box<dyn Error>> {
+    Ok(())
 }
