@@ -2,10 +2,13 @@
 name = "editoast"
 version = "0.1.0"
 edition = "2021"
+authors = ["Florian Amsallem <florian.amsallem@epita.fr>"]
+
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rocket = "0.5.0-rc.1"
 clap = { version = "3.1.6", features = ["derive", "env"] }
-postgres = "0.19.2"
+diesel = { version = "1.4.8", features = ["postgres", "uuidv07"] }
+rocket = { version = "0.5.0-rc.1", features = ["json", "uuid"] }
+rocket_sync_db_pools = {version="0.1.0-rc.1", features=["diesel_postgres_pool"]}
