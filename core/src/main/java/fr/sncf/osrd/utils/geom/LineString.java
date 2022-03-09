@@ -4,6 +4,7 @@ import com.carrotsearch.hppc.DoubleArrayList;
 import com.squareup.moshi.*;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class LineString {
@@ -19,22 +20,16 @@ public class LineString {
     /**
      * A list of N-1 distances between coordinates
      */
-    private final double[] lengths;
-    /**
-     * Cached sum of distances
-     */
-    private final double cumulativeLength;
+    private final double[] cumulativeLengths;
 
-    private LineString(double[] bufferX, double[] bufferY, double[] lengths, double cumulativeLength) {
+    private LineString(double[] bufferX, double[] bufferY, double[] cumulativeLengths) {
         assert bufferX.length == bufferY.length : "Expected the same length";
         assert bufferX.length >= 2 : "LineString should contain at least 2 points";
-        assert lengths.length == bufferX.length - 1;
+        assert cumulativeLengths.length == bufferX.length - 1;
         this.bufferX = bufferX;
         this.bufferY = bufferY;
-        this.lengths = lengths;
-        this.cumulativeLength = cumulativeLength;
+        this.cumulativeLengths = cumulativeLengths;
     }
-
 
     /**
      * Compute the distance between two points
@@ -52,17 +47,17 @@ public class LineString {
      * @return a new LineString
      */
     public static LineString make(double[] bufferX, double[] bufferY) {
-        var lengths = new double[bufferX.length - 1];
+        var cumulativeLengths = new double[bufferX.length - 1];
         double cumulativeLength = 0;
         for (int i = 0; i < bufferX.length - 1; i++) {
-            lengths[i] = computeDistance(bufferX[i], bufferY[i], bufferX[i + 1], bufferY[i + 1]);
-            cumulativeLength += lengths[i];
+            cumulativeLength += computeDistance(bufferX[i], bufferY[i], bufferX[i + 1], bufferY[i + 1]);
+            cumulativeLengths[i] = cumulativeLength;
         }
-        return new LineString(bufferX, bufferY, lengths, cumulativeLength);
+        return new LineString(bufferX, bufferY, cumulativeLengths);
     }
 
     public double getLength() {
-        return cumulativeLength;
+        return cumulativeLengths[cumulativeLengths.length - 1];
     }
 
     /**
@@ -91,11 +86,17 @@ public class LineString {
             newBufferY[i] = bufferY[revertI];
         }
 
-        var newLengths = new double[lengths.length];
-        for (int i = 0; i < lengths.length; i++)
-            newLengths[i] = lengths[lengths.length - i - 1];
+        var newCumulativeLengths = new double[cumulativeLengths.length];
+        double newCumulativeLength = 0;
+        for (int i = 0; i < cumulativeLengths.length - 1; i++) {
+            newCumulativeLength += cumulativeLengths[cumulativeLengths.length - i - 1]
+                    - cumulativeLengths[cumulativeLengths.length - i - 2];
+            newCumulativeLengths[i] = newCumulativeLength;
+        }
+        newCumulativeLength += cumulativeLengths[0];
+        newCumulativeLengths[newCumulativeLengths.length - 1] = newCumulativeLength;
 
-        return new LineString(newBufferX, newBufferY, newLengths, cumulativeLength);
+        return new LineString(newBufferX, newBufferY, newCumulativeLengths);
     }
 
     /**
@@ -109,8 +110,7 @@ public class LineString {
 
         var newBufferX = new DoubleArrayList();
         var newBufferY = new DoubleArrayList();
-        var newLengths = new DoubleArrayList();
-        double newCumulativeLength = 0;
+        var newCumulativeLengths = new DoubleArrayList();
 
         for (var lineString : lineStringList) {
             if (!newBufferX.isEmpty()) {
@@ -124,17 +124,20 @@ public class LineString {
                     newBufferX.remove(newBufferX.size() - 1);
                     newBufferY.remove(newBufferY.size() - 1);
                 } else {
-                    newLengths.add(distance);
-                    newCumulativeLength += distance;
+                    newCumulativeLengths.add(distance + newCumulativeLengths.get(newCumulativeLengths.size() - 1));
                 }
             }
             newBufferX.add(lineString.bufferX);
             newBufferY.add(lineString.bufferY);
-            newLengths.add(lineString.lengths);
-            newCumulativeLength += lineString.cumulativeLength;
+            for (int i = 0; i < lineString.cumulativeLengths.length; i++) {
+                if (newCumulativeLengths.isEmpty())
+                    newCumulativeLengths.add(lineString.cumulativeLengths[i]);
+                else
+                    newCumulativeLengths.add(lineString.cumulativeLengths[i]
+                        + newCumulativeLengths.get(newCumulativeLengths.size() - 1));
+            }
         }
-
-        return new LineString(newBufferX.toArray(), newBufferY.toArray(), newLengths.toArray(), newCumulativeLength);
+        return new LineString(newBufferX.toArray(), newBufferY.toArray(), newCumulativeLengths.toArray());
     }
 
     /**
@@ -144,18 +147,23 @@ public class LineString {
      */
     private Point interpolate(double distance) {
         assert distance >= 0.;
-        assert distance <= cumulativeLength;
-        int interval = 0;
-        while (interval < lengths.length - 1 && distance > lengths[interval]) {
-            distance -= lengths[interval];
-            interval++;
-        }
+        assert distance <= cumulativeLengths[cumulativeLengths.length - 1];
+        var interval = Arrays.binarySearch(cumulativeLengths, distance);
+
+        if (interval < 0)
+            interval = Math.abs(interval) - 1;
 
         var x1 = bufferX[interval];
         var y1 = bufferY[interval];
         var x2 = bufferX[interval + 1];
         var y2 = bufferY[interval + 1];
-        var ratio = distance / lengths[interval];
+
+        double ratio = distance / cumulativeLengths[0];
+
+        if (interval > 0) {
+            ratio = (distance - cumulativeLengths[interval - 1])
+                    / (cumulativeLengths[interval] - cumulativeLengths[interval - 1]);
+        }
 
         return new Point(x1 + ratio * (x2 - x1), y1 + ratio * (y2 - y1));
     }
@@ -168,7 +176,7 @@ public class LineString {
     public Point interpolateNormalized(double distance) {
         assert distance <= 1;
         assert distance >= 0;
-        return interpolate(distance * cumulativeLength);
+        return interpolate(distance * cumulativeLengths[cumulativeLengths.length - 1]);
     }
 
     /**
@@ -191,28 +199,35 @@ public class LineString {
         var newBufferY = new DoubleArrayList();
 
         var firstPoint = interpolateNormalized(begin);
-        newBufferX.add(firstPoint.x);
-        newBufferY.add(firstPoint.y);
+        newBufferX.add(firstPoint.x());
+        newBufferY.add(firstPoint.y());
 
-        var intervalIndex = 1;
-        var currentLength = lengths[0];
-        // skip first points
-        while (begin >= currentLength / cumulativeLength && intervalIndex < lengths.length) {
-            currentLength += lengths[intervalIndex];
-            intervalIndex++;
-        }
+        var intervalBegin = Arrays.binarySearch(
+                cumulativeLengths,
+                begin * cumulativeLengths[cumulativeLengths.length - 1]
+        );
+        if (intervalBegin >= 0)
+            intervalBegin += 2;
+        else
+            intervalBegin = Math.abs(intervalBegin);
+
+        var intervalEnd = Arrays.binarySearch(
+                cumulativeLengths,
+                end * cumulativeLengths[cumulativeLengths.length - 1]
+        );
+        if (intervalEnd < 0)
+            intervalEnd = Math.abs(intervalEnd) - 1;
+
         // add intermediate points
-        while (currentLength / cumulativeLength < end && intervalIndex < lengths.length) {
-            newBufferX.add(bufferX[intervalIndex]);
-            newBufferY.add(bufferY[intervalIndex]);
-            currentLength += lengths[intervalIndex];
-            intervalIndex++;
+        for (int i = intervalBegin; i <= intervalEnd; i++) {
+            newBufferX.add(bufferX[i]);
+            newBufferY.add(bufferY[i]);
         }
-        // add the last point
 
+        // add the last point
         var lastPoint = interpolateNormalized(end);
-        newBufferX.add(lastPoint.x);
-        newBufferY.add(lastPoint.y);
+        newBufferX.add(lastPoint.x());
+        newBufferY.add(lastPoint.y());
 
         return LineString.make(newBufferX.toArray(), newBufferY.toArray());
     }
