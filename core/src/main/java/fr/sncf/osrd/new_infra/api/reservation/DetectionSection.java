@@ -1,4 +1,4 @@
-package fr.sncf.osrd.new_infra.api.detection;
+package fr.sncf.osrd.new_infra.api.reservation;
 
 import com.google.common.collect.ImmutableSet;
 

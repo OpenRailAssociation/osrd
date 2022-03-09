@@ -12,22 +12,6 @@ import java.util.Locale;
 
 @ExcludeFromGeneratedCodeCoverage
 public class EnvelopeDebug {
-    /** Export envelope as csv. */
-    public static void saveCSV(Envelope envelope, String path) {
-        try {
-            PrintWriter writer = new PrintWriter(path, StandardCharsets.UTF_8);
-            writer.println("position,speed");
-            for (var part : envelope) {
-                for (int i = 0; i < part.pointCount(); i++) {
-                    writer.println(String.format(Locale.US, "%f,%f", part.getPointPos(i), part.getPointSpeed(i)));
-                }
-            }
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     private static void plotEnvelope(Plot2DPanel plot, Envelope envelope, String envelopeName) {
         // add a line plot to the PlotPanel
         for (int i = 0; i < envelope.size(); i++) {
