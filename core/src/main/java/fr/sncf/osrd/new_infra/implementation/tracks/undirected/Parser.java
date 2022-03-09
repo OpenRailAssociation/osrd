@@ -25,7 +25,7 @@ public class Parser {
 
     private TrackInfra parse(RJSInfra infra) {
         builder = NetworkBuilder
-                .undirected()
+                .directed()
                 .immutable();
 
         // Creates switches
@@ -83,9 +83,10 @@ public class Parser {
             RJSSwitch rjsSwitch,
             HashMap<String, RJSSwitchType> switchTypeMap
     ) throws InvalidInfraException {
-        var networkBuilder = NetworkBuilder.undirected()
+        var networkBuilder = NetworkBuilder.directed()
                 .<SwitchPort, SwitchBranch>immutable();
         var portMap = ImmutableMap.<String, SwitchPort>builder();
+        var allPorts = new HashSet<InfraSwitchPort>();
         for (var entry : rjsSwitch.ports.entrySet()) {
             var portName = entry.getKey();
             var port = entry.getValue();
@@ -93,10 +94,12 @@ public class Parser {
             portMap.put(portName, newNode);
             networkBuilder.addNode(newNode);
             addNode(port.track.id.id, port.endpoint, newNode);
+            allPorts.add(newNode);
         }
         var finalPortMap = portMap.build();
         var switchType = rjsSwitch.switchType.getSwitchType(switchTypeMap);
         var groups = ImmutableMultimap.<String, SwitchBranch>builder();
+        var allBranches = new HashSet<InfraSwitchBranch>();
         for (var entry : switchType.groups.entrySet()) {
             for (var e : entry.getValue()) {
                 var src = finalPortMap.get(e.src);
@@ -107,6 +110,7 @@ public class Parser {
                 assert dst != null;
                 networkBuilder.addEdge(src, dst, branch);
                 builder.addEdge(src, dst, branch);
+                allBranches.add(branch);
             }
         }
         var switchTypePorts = new HashSet<>(switchType.ports);
@@ -118,6 +122,10 @@ public class Parser {
             ));
 
         var res = new InfraSwitch(rjsSwitch.id, networkBuilder.build(), groups.build(), finalPortMap, "");
+        for (var branch : allBranches)
+            branch.switchRef = res;
+        for (var port : allPorts)
+            port.switchRef = res;
         return res;
     }
 }

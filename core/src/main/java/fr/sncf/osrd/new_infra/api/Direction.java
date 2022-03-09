@@ -10,4 +10,11 @@ public enum Direction {
     Direction(double sign) {
         this.sign = sign;
     }
+
+    /** Returns the opposite direction */
+    public Direction opposite() {
+        if (this == FORWARD)
+            return BACKWARD;
+        return FORWARD;
+    }
 }

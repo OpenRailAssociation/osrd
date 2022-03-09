@@ -14,6 +14,7 @@ public class InfraSwitch implements Switch {
     private final ImmutableMap<String, SwitchPort> ports;
     private final String defaultGroup;
 
+    /** Constructor */
     public InfraSwitch(
             String id,
             ImmutableNetwork<SwitchPort, SwitchBranch> graph,
