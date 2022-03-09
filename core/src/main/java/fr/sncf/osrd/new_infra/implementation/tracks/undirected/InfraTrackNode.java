@@ -6,6 +6,7 @@ public class InfraTrackNode {
     public static class End implements TrackNode.End {
 
     }
+
     public static class Joint implements TrackNode.Joint {
 
     }

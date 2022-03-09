@@ -13,4 +13,9 @@ public class InfraTrackSection implements fr.sncf.osrd.new_infra.api.tracks.undi
     public double getLength() {
         return length;
     }
+
+    @Override
+    public String toString() {
+        return id;
+    }
 }
