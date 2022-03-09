@@ -1,35 +1,9 @@
 package fr.sncf.osrd.utils.geom;
 
 import com.squareup.moshi.*;
-import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.io.IOException;
-import java.util.Objects;
 
-public final class Point {
-    /** Point x of coordinates */
-    public final double x;
-
-    /** Point y of coordinates */
-    public final double y;
-
-    public Point(double x, double y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || Point.class != o.getClass()) return false;
-        var point = (Point) o;
-        return Double.compare(point.x, x) == 0 && Double.compare(point.y, y) == 0;
-    }
-
-    @Override
-    @ExcludeFromGeneratedCodeCoverage
-    public int hashCode() {
-        return Objects.hash(x, y);
-    }
+public record Point (double x, double y) {
 
     public static class Adapter extends JsonAdapter<Point> {
 
