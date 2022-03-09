@@ -42,7 +42,6 @@ services:
     depends_on:
       postgres: {condition: service_healthy}
       redis: {condition: service_healthy}
-    container_name: chartos
     restart: unless-stopped
     command: "uvicorn --factory chartos:make_app --host 0.0.0.0 --port 7000"
     environment:

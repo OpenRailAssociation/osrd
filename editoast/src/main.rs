@@ -4,17 +4,16 @@ extern crate rocket;
 extern crate diesel;
 
 mod client;
+mod models;
 mod schema;
 mod views;
 
 use clap::Parser;
 use client::{Client, Commands, GenerateArgs, PostgresConfig, RunserverArgs};
-use rocket_sync_db_pools::database;
+use diesel::{Connection, PgConnection};
+use models::{DBConnection, Infra};
 use std::error::Error;
 use std::process::exit;
-
-#[database("postgres")]
-pub struct DBConnection(diesel::PgConnection);
 
 #[rocket::main]
 async fn main() {
@@ -33,7 +32,7 @@ async fn parse_client() -> Result<(), Box<dyn Error>> {
 
     match client.command {
         Commands::Runserver(args) => runserver(args, pg_config).await,
-        Commands::Generate(args) => generate(args),
+        Commands::Generate(args) => generate(args, pg_config),
     }
 }
 
@@ -51,6 +50,20 @@ async fn runserver(args: RunserverArgs, pg_config: PostgresConfig) -> Result<(),
     Ok(())
 }
 
-fn generate(args: GenerateArgs) -> Result<(), Box<dyn Error>> {
+fn generate(args: GenerateArgs, pg_config: PostgresConfig) -> Result<(), Box<dyn Error>> {
+    let conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
+
+    let mut infras = vec![];
+    if args.infra_ids.is_empty() {
+        for infra in Infra::list(&conn)? {
+            infras.push(infra);
+        }
+    } else {
+        args.infra_ids
+            .iter()
+            .map(|infra_id| Infra::retrieve(*infra_id as i32, &conn))
+            .for_each(|infra| infras.push(infra.expect("Couldn't retrieve infra")));
+    }
+    println!("{:?}", infras);
     Ok(())
 }
