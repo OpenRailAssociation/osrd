@@ -1,20 +1,30 @@
+use crate::schema::osrd_infra_infra;
 use crate::schema::osrd_infra_infra::dsl::*;
 use diesel::prelude::*;
 use diesel::result::Error;
-use diesel::update;
-use diesel::{PgConnection, QueryDsl, RunQueryDsl};
+use diesel::{sql_query, update, PgConnection, QueryDsl, RunQueryDsl};
 use rocket::serde::Serialize;
 
-#[derive(Queryable, Debug, Serialize)]
+#[derive(QueryableByName, Queryable, Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
+#[table_name = "osrd_infra_infra"]
 pub struct Infra {
     pub id: i32,
     pub name: String,
 }
 
 impl Infra {
-    pub fn retrieve(infra_id: i32, conn: &PgConnection) -> Result<Infra, Error> {
-        osrd_infra_infra.filter(id.eq(infra_id)).first(conn)
+    pub fn retrieve_list(conn: &PgConnection, ids: &Vec<i32>) -> Result<Vec<Infra>, Error> {
+        let ids: Vec<String> = ids.iter().map(|i| i.to_string()).collect();
+        sql_query(format!(
+            "SELECT id, name FROM osrd_infra_infra WHERE id IN ({})",
+            ids.join(",")
+        ))
+        .load(conn)
+    }
+
+    pub fn retrieve(conn: &PgConnection, infra_id: i32) -> Result<Infra, Error> {
+        osrd_infra_infra.find(infra_id).first(conn)
     }
 
     pub fn list(conn: &PgConnection) -> Result<Vec<Infra>, Error> {

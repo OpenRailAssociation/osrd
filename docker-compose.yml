@@ -121,6 +121,8 @@ services:
   editoast:
     image: osrd/editoast
     container_name: osrd-editoast
+    depends_on:
+      postgres: {condition: service_healthy}
     build:
       context: editoast
       dockerfile: Dockerfile
