@@ -9,17 +9,11 @@ import java.util.List;
 
 public class LineString {
 
-    /**
-     * A list of N coordinates (X component)
-     */
+    /** A list of N coordinates (X component) */
     private final double[] bufferX;
-    /**
-     * A list of N coordinates (Y component)
-     */
+    /** A list of N coordinates (Y component) */
     private final double[] bufferY;
-    /**
-     * A list of N-1 distances between coordinates
-     */
+    /** A cumulative list of N-1 distances between coordinates */
     private final double[] cumulativeLengths;
 
     private LineString(double[] bufferX, double[] bufferY, double[] cumulativeLengths) {
@@ -129,13 +123,12 @@ public class LineString {
             }
             newBufferX.add(lineString.bufferX);
             newBufferY.add(lineString.bufferY);
-            for (int i = 0; i < lineString.cumulativeLengths.length; i++) {
-                if (newCumulativeLengths.isEmpty())
-                    newCumulativeLengths.add(lineString.cumulativeLengths[i]);
-                else
-                    newCumulativeLengths.add(lineString.cumulativeLengths[i]
-                        + newCumulativeLengths.get(newCumulativeLengths.size() - 1));
-            }
+            double lastCumulativeLength = 0;
+            if (!newCumulativeLengths.isEmpty())
+                lastCumulativeLength = newCumulativeLengths.get(newCumulativeLengths.size() - 1);
+            for (var cumLength : lineString.cumulativeLengths)
+                newCumulativeLengths.add(cumLength + lastCumulativeLength);
+
         }
         return new LineString(newBufferX.toArray(), newBufferY.toArray(), newCumulativeLengths.toArray());
     }
@@ -151,7 +144,7 @@ public class LineString {
         var interval = Arrays.binarySearch(cumulativeLengths, distance);
 
         if (interval < 0)
-            interval = Math.abs(interval) - 1;
+            interval = - interval - 1;
 
         var x1 = bufferX[interval];
         var y1 = bufferY[interval];
@@ -209,14 +202,14 @@ public class LineString {
         if (intervalBegin >= 0)
             intervalBegin += 2;
         else
-            intervalBegin = Math.abs(intervalBegin);
+            intervalBegin = - intervalBegin;
 
         var intervalEnd = Arrays.binarySearch(
                 cumulativeLengths,
                 end * cumulativeLengths[cumulativeLengths.length - 1]
         );
         if (intervalEnd < 0)
-            intervalEnd = Math.abs(intervalEnd) - 1;
+            intervalEnd = - intervalEnd - 1;
 
         // add intermediate points
         for (int i = intervalBegin; i <= intervalEnd; i++) {
