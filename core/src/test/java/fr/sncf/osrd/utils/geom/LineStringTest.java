@@ -67,6 +67,7 @@ class LineStringTest {
                 new double[]{1.0, 4.0, 3.0, 3.0, 4.0, 3.0},
                 new double[]{2.0, 4.0, 3.0, 1.0, 4.0, 3.0});
         assertEquals(expectedLineString.getPoints(), LineString.concatenate(list).getPoints());
+        assertEquals(expectedLineString.getLength(), LineString.concatenate(list).getLength());
     }
 
     @Test
@@ -75,6 +76,7 @@ class LineStringTest {
         list.add(LineString.make(new double[]{1.0, 4.0}, new double[]{2.0, 4.0}));
         var expectedLineString = LineString.make(new double[]{1.0, 4.0}, new double[]{2.0, 4.0});
         assertEquals(expectedLineString.getPoints(), LineString.concatenate(list).getPoints());
+        assertEquals(expectedLineString.getLength(), LineString.concatenate(list).getLength());
     }
 
     @Test
