@@ -80,6 +80,10 @@ const OSRDSimulation = () => {
     return <CenterLoader message={t('simulation:waiting')} />;
   };
 
+
+  /**
+   * Recover the time table for all the trains
+   */
   const getTimetable = async () => {
     try {
       if (!simulation.trains[selectedTrain]) {
