@@ -1,12 +1,12 @@
 import * as d3 from 'd3';
 
-import { updateContextMenu, updateMustRedraw, updateSelectedTrain } from 'reducers/osrdsimulation';
+import { getDirection, timeShiftTrain } from 'applications/osrd/components/Helpers/ChartHelpers';
+import { updateContextMenu, updateMustRedraw, updateSelectedTrain, updateSimulation, } from 'reducers/osrdsimulation';
 
 import React from 'react';
 import drawArea from 'applications/osrd/components/Simulation/drawArea';
 import drawCurve from 'applications/osrd/components/Simulation/drawCurve';
 import drawText from 'applications/osrd/components/Simulation/drawText';
-import { getDirection } from 'applications/osrd/components/Helpers/ChartHelpers';
 
 export default function drawTrain(
   chart,
@@ -19,7 +19,8 @@ export default function drawTrain(
   offsetTimeByDragging,
   rotate,
   setDragEnding,
-  setDragOffset
+  setDragOffset,
+  simulation
 ) {
   const groupID = `spaceTime-${dataSimulation.trainNumber}`;
 
@@ -31,10 +32,10 @@ export default function drawTrain(
    * Compute, in sceonds, the offset to drill down to the parent through setDragOffset passed hook
    *
    */
-  const dragTimeOffset = () => {
+  const dragTimeOffset = (offset) => {
     const value = rotate
-      ? Math.floor((chart.y.invert(dragFullOffset) - initialDrag) / 1000)
-      : Math.floor((chart.x.invert(dragFullOffset) - initialDrag) / 1000);
+      ? Math.floor((chart.y.invert(offset) - initialDrag) / 1000)
+      : Math.floor((chart.x.invert(offset) - initialDrag) / 1000);
     setDragOffset(value);
   };
 
@@ -52,7 +53,6 @@ export default function drawTrain(
   const drag = d3
     .drag()
     .on('end', () => {
-      dragTimeOffset();
       setDragEnding(true);
       dispatch(updateMustRedraw(true));
     })
@@ -61,8 +61,10 @@ export default function drawTrain(
       dispatch(updateSelectedTrain(dataSimulation.trainNumber));
     })
     .on('drag', () => {
+      const dragSingleOffset = rotate ? d3.event.dy : d3.event.dx;
       dragFullOffset += rotate ? d3.event.dy : d3.event.dx;
-      applyTrainCurveTranslation(dragFullOffset)
+      dragTimeOffset(dragSingleOffset, true);
+      applyTrainCurveTranslation(dragFullOffset);
     });
 
   chart.drawZone

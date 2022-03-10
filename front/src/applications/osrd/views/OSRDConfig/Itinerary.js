@@ -1,18 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
-import { setFailure } from 'reducers/main.ts';
+import React, { useEffect, useState } from 'react';
 import {
-  updateItinerary, updatePathfindingID, updateOrigin,
-  updateDestination, replaceVias, updateSuggeredVias,
+  replaceVias,
+  updateDestination,
+  updateItinerary,
+  updateOrigin,
+  updatePathfindingID,
+  updateSuggeredVias,
 } from 'reducers/osrdconf';
-import { updateFeatureInfoClick } from 'reducers/map';
-import { post } from 'common/requests';
-import bbox from '@turf/bbox';
-import { WebMercatorViewport } from 'react-map-gl';
+import { useDispatch, useSelector } from 'react-redux';
+
 import DisplayItinerary from 'applications/osrd/components/Itinerary/DisplayItinerary';
 import ModalSugerredVias from 'applications/osrd/components/Itinerary/ModalSuggeredVias';
+import PropTypes from 'prop-types';
+import { WebMercatorViewport } from 'react-map-gl';
+import bbox from '@turf/bbox';
+import { post } from 'common/requests';
+import { setFailure } from 'reducers/main.ts';
+import { updateFeatureInfoClick } from 'reducers/map';
+import { useTranslation } from 'react-i18next';
 
 const itineraryURI = '/pathfinding/';
 
@@ -177,13 +182,19 @@ const Itinerary = (props) => {
   };
 
   useEffect(() => {
-    if (osrdconf.pathfindingID === undefined
-      || osrdconf.geojson[map.mapTrackSources] === undefined) {
-      mapItinerary();
-    } else {
-      zoomToFeature(bbox(osrdconf.geojson[map.mapTrackSources]));
-    }
-    setLaunchPathfinding(true);
+    console.log('OSRDCONF', osrdconf)
+
+      if (osrdconf.pathfindingID === undefined
+        || osrdconf.geojson[map.mapTrackSources] === undefined) {
+          console.log('map itinerary')
+        mapItinerary();
+      } else {
+        zoomToFeature(bbox(osrdconf.geojson[map.mapTrackSources]));
+      }
+      setLaunchPathfinding(true);
+
+
+
   }, []);
 
   useEffect(() => {

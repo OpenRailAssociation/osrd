@@ -146,7 +146,8 @@ export default function SpaceTimeChart(props) {
           offsetTimeByDragging,
           rotate,
           setDragEnding,
-          setDragOffset
+          setDragOffset,
+          simulation
         );
       });
       enableInteractivity(
@@ -180,8 +181,6 @@ export default function SpaceTimeChart(props) {
 
   useEffect(() => {
     // ADN, entire fonction operation is subject to one condition, so aopply this condition before OR write clear and first condition to return (do nothing)
-    if (dragOffset !== 0) {
-    }
     offsetTimeByDragging(dragOffset);
   }, [dragOffset]);
 
@@ -189,7 +188,7 @@ export default function SpaceTimeChart(props) {
     if (dragEnding) {
       changeTrain(
         {
-          departure_time: simulation.trains[selectedTrain].base.stops[0].timADe,
+          departure_time: simulation.trains[selectedTrain].base.stops[0].time,
         },
         simulation.trains[selectedTrain].id
       );
@@ -236,6 +235,7 @@ export default function SpaceTimeChart(props) {
         timePosition
       );
     }
+
   }, [positionValues]);
 
   useEffect(() => {

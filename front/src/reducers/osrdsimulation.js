@@ -104,6 +104,7 @@ export default function reducer(state = initialState, action) {
         draft.consolidatedSimulation = action.consolidatedSimulation;
         break;
       case UPDATE_TIME_POSITION_VALUES: {
+        const currentTimePosition = state.timePosition
         draft.timePosition = action.timePosition;
         // position value will be computed depending on current data simulation
         // eslint-disable-next-line no-case-declarations
@@ -117,6 +118,10 @@ export default function reducer(state = initialState, action) {
         );
 
         draft.positionValues = positionsValues
+
+        // ADAPT Simulation
+        //console.log(currentTimePosition)
+        //console.log(action.timePosition)
 
         //draft.positionValues = action.positionValues ? action.positionValues : positionsValues;
         break;
