@@ -6,13 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.Network;
 import com.google.common.graph.NetworkBuilder;
-import fr.sncf.osrd.new_infra.api.Direction;
-import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackEdge;
-import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackInfra;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackInfra;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackNode;
-import fr.sncf.osrd.new_infra.implementation.tracks.undirected.InfraTrackSection;
+import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackSection;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -20,30 +17,8 @@ import java.util.stream.StreamSupport;
 public class InfraHelpers {
 
     /** Returns the InfraTrackSection with the given ID, throws if it can't be found */
-    public static InfraTrackSection getTrack(TrackInfra infra, String id) {
-        return infra
-                .getTrackGraph()
-                .edges()
-                .stream()
-                .filter(edge -> edge instanceof InfraTrackSection)
-                .map(edge -> (InfraTrackSection) edge)
-                .filter(edge -> edge.id.equals(id))
-                .findFirst()
-                .orElseThrow();
-    }
-
-    /** Returns the DiTrackEdge matching the InfraTrackSection with the given ID, throws if it can't be found.
-     * Returns the edge going the same way as the TrackInfra if dir == Forward, otherwise the opposite. */
-    public static DiTrackEdge getDiTrack(DiTrackInfra infra, String id, Direction dir) {
-        return infra
-                .getDiTrackGraph()
-                .edges()
-                .stream()
-                .filter(edge -> edge.edge() instanceof InfraTrackSection)
-                .filter(edge -> ((InfraTrackSection) edge.edge()).id.equals(id))
-                .filter(edge -> edge.direction().equals(dir))
-                .findFirst()
-                .orElseThrow();
+    public static TrackSection getTrack(TrackInfra infra, String id) {
+        return infra.getTrackSection(id);
     }
 
     /** Returns the same graph as g, but undirected */
