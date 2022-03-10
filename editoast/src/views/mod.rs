@@ -1,9 +1,11 @@
-use crate::models::{DBConnection, Infra};
+use crate::models::{DBConnection, Infra, InfraError};
+use rocket::http::Status;
+use rocket::response::status::Custom;
 use rocket::serde::json::Json;
 use rocket::Route;
 
 pub fn routes() -> Vec<Route> {
-    routes![health, infra_list]
+    routes![health, infra_list, edit_infra]
 }
 
 #[get("/health")]

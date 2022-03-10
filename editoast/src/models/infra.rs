@@ -14,16 +14,18 @@ pub struct Infra {
     pub name: String,
 }
 
-#[derive(Debug, Clone)]
-enum InfraError {
+#[derive(Debug)]
+pub enum InfraError {
     /// Couldn't found the infra with the given id
     NotFound(i32),
+    Other(diesel::result::Error),
 }
 
 impl fmt::Display for InfraError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             InfraError::NotFound(infra_id) => write!(f, "Infra '{}' could not be found.", infra_id),
+            InfraError::Other(diesel_error) => write!(f, "{}", diesel_error),
         }
     }
 }
@@ -44,14 +46,11 @@ impl Infra {
         .load(conn)
     }
 
-    pub fn retrieve(
-        conn: &PgConnection,
-        infra_id: i32,
-    ) -> Result<Infra, Box<dyn std::error::Error>> {
+    pub fn retrieve(conn: &PgConnection, infra_id: i32) -> Result<Infra, InfraError> {
         match osrd_infra_infra.find(infra_id).first(conn) {
             Ok(infra) => Ok(infra),
-            Err(diesel::result::Error::NotFound) => Err(Box::new(InfraError::NotFound(infra_id))),
-            Err(e) => Err(Box::new(e)),
+            Err(diesel::result::Error::NotFound) => Err(InfraError::NotFound(infra_id)),
+            Err(e) => Err(InfraError::Other(e)),
         }
     }
 
