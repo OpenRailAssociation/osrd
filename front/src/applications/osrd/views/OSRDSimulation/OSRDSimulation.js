@@ -36,13 +36,16 @@ import { setFailure } from 'reducers/main.ts';
 import { updateViewport } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
 
+// Function called to update consolidatedPosition (positions for curent train) need this pair
 const KEY_VALUES_FOR_CONSOLIDATED_SIMULATION = ["time", "position"]
-
-
 
 const timetableURI = '/timetable/';
 const trainscheduleURI = '/train_schedule/';
-
+/**
+ * This component aggregates all the component necessaey to get a comprehensive view of a simulation
+ *
+ * @return {ReactElement} The simulation page
+ */
 const OSRDSimulation = () => {
   const { t } = useTranslation(['translation', 'simulation', 'allowances']);
   const { fullscreen, darkmode } = useSelector((state) => state.main);
@@ -68,7 +71,7 @@ const OSRDSimulation = () => {
     useSelector((state) => state.osrdsimulation);
   const dispatch = useDispatch();
 
-
+  // Override with daark css in cas of dark mode
   if (darkmode) {
     import('./OSRDSimulationDarkMode.scss');
   }
@@ -79,8 +82,11 @@ const OSRDSimulation = () => {
     }
     return <CenterLoader message={t('simulation:waiting')} />;
   };
-
-  const getTimetable = async () => {
+/**
+ *
+ *
+ */
+const getTimetable = async () => {
     try {
       if (!simulation.trains[selectedTrain]) {
         dispatch(updateSelectedTrain(0));
@@ -121,7 +127,6 @@ const OSRDSimulation = () => {
         });
         dispatch(updateAllowancesSettings(newAllowancesSettings));
       } catch (e) {
-        console.log(e);
         dispatch(
           setFailure({
             name: t('simulation:errorMessages.unableToRetrieveTrainSchedule'),
