@@ -33,7 +33,7 @@ impl RunserverArgs {
         if self.root_url.starts_with('/') {
             self.root_url.clone()
         } else {
-            String::from("/") + self.root_url.as_str()
+            format!("/{}", self.root_url)
         }
     }
 }

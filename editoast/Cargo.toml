@@ -9,6 +9,7 @@ authors = ["Florian Amsallem <florian.amsallem@epita.fr>"]
 
 [dependencies]
 clap = { version = "3.1.6", features = ["derive", "env"] }
+colored = "2.0.0"
 diesel = { version = "1.4.8", features = ["postgres", "uuidv07"] }
 rocket = { version = "0.5.0-rc.1", features = ["json", "uuid"] }
 rocket_sync_db_pools = {version="0.1.0-rc.1", features=["diesel_postgres_pool"]}
