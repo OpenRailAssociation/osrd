@@ -2,6 +2,13 @@ import { get, patch } from 'common/requests';
 
 const trainScheduleURI = '/train_schedule';
 
+/**
+ * Use the trainScheduleAPI to update train details on a specific computation
+ *
+ * @export
+ * @param {object} details
+ * @param {int} id
+ */
 export async function changeTrain(details, id) {
   try {
     const trainDetail = await get(`${trainScheduleURI}/${id}/`);
