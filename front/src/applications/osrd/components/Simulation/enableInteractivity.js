@@ -287,9 +287,6 @@ const enableInteractivity = (
 
           debounceUpdateTimePositionValues(timePositionLocal, null, 15);
 
-          // useless: will be called by traceVerticalLine on positionValue useEffect
-          //updatePointers(chart, keyValues, listValues, immediatePositionsValues, rotate);
-
         }
       }
 
