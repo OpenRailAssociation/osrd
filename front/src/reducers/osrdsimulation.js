@@ -45,6 +45,7 @@ export const initialState = {
   selectedProjection: undefined,
   selectedTrain: 0,
   stickyBar: true,
+  timePosition: null,
   timePosition: undefined,
   consolidatedSimulation: null,
 };
