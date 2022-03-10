@@ -7,6 +7,8 @@ import com.google.common.graph.NetworkBuilder;
 import com.google.common.graph.Traverser;
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.new_infra.api.Direction;
+import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackEdge;
+import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackInfra;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.*;
 import fr.sncf.osrd.new_infra.implementation.tracks.undirected.*;
 import org.junit.jupiter.api.Test;
@@ -68,18 +70,12 @@ public class DirectedRJSParsingTests {
         var graph = directedInfra.getDiTrackGraph();
 
         // Tests that we can reach exactly the right endpoints
-        final var endpoint_1_in = graph.incidentNodes(getDiTrack(directedInfra,
-                "1", Direction.BACKWARD)).nodeU();
-        final var endpoint_1_out = graph.incidentNodes(getDiTrack(directedInfra,
-                "1", Direction.FORWARD)).nodeU();
-        final var endpoint_2_in = graph.incidentNodes(getDiTrack(directedInfra,
-                "2", Direction.BACKWARD)).nodeU();
-        final var endpoint_2_out = graph.incidentNodes(getDiTrack(directedInfra,
-                "2", Direction.FORWARD)).nodeU();
-        final var endpoint_3_in = graph.incidentNodes(getDiTrack(directedInfra,
-                "3", Direction.BACKWARD)).nodeU();
-        final var endpoint_3_out = graph.incidentNodes(getDiTrack(directedInfra,
-                "3", Direction.FORWARD)).nodeU();
+        final var endpoint_1_in = graph.incidentNodes(directedInfra.getEdge("1", Direction.BACKWARD)).nodeU();
+        final var endpoint_1_out = graph.incidentNodes(directedInfra.getEdge("1", Direction.FORWARD)).nodeU();
+        final var endpoint_2_in = graph.incidentNodes(directedInfra.getEdge("2", Direction.BACKWARD)).nodeU();
+        final var endpoint_2_out = graph.incidentNodes(directedInfra.getEdge("2", Direction.FORWARD)).nodeU();
+        final var endpoint_3_in = graph.incidentNodes(directedInfra.getEdge("3", Direction.BACKWARD)).nodeU();
+        final var endpoint_3_out = graph.incidentNodes(directedInfra.getEdge("3", Direction.FORWARD)).nodeU();
         final var allTrackEnds = Set.of(
                 endpoint_1_in,
                 endpoint_1_out,

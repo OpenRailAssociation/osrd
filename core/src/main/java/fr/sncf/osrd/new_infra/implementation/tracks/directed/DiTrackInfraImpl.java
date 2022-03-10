@@ -1,24 +1,43 @@
 package fr.sncf.osrd.new_infra.implementation.tracks.directed;
 
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Multimap;
 import com.google.common.graph.ImmutableNetwork;
-import com.google.common.graph.NetworkBuilder;
 import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackEdge;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackInfra;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackNode;
-import fr.sncf.osrd.new_infra.api.tracks.undirected.*;
-import java.util.HashMap;
+import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackInfra;
+import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackSection;
+import fr.sncf.osrd.new_infra.implementation.tracks.undirected.InfraTrackInfra;
 
-public class DiTrackInfraImpl implements fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackInfra {
+public class DiTrackInfraImpl extends InfraTrackInfra implements DiTrackInfra {
 
     private final ImmutableNetwork<DiTrackNode, DiTrackEdge> graph;
+    private final ImmutableListMultimap<String, DiTrackEdge> trackEdgesByID;
 
-    public DiTrackInfraImpl(ImmutableNetwork<DiTrackNode, DiTrackEdge> graph) {
+    DiTrackInfraImpl(TrackInfra trackInfra, ImmutableNetwork<DiTrackNode, DiTrackEdge> graph) {
+        super(trackInfra.getSwitches(), trackInfra.getTrackGraph());
         this.graph = graph;
+        var builder = ImmutableListMultimap.<String, DiTrackEdge>builder();
+        for (var edge : graph.edges()) {
+            if (edge.edge() instanceof TrackSection trackSection) {
+                builder.put(trackSection.getID(), edge);
+            }
+        }
+        trackEdgesByID = builder.build();
     }
 
     @Override
     public ImmutableNetwork<DiTrackNode, DiTrackEdge> getDiTrackGraph() {
         return graph;
+    }
+
+    @Override
+    public DiTrackEdge getEdge(String id, Direction direction) {
+        for (var edge : trackEdgesByID.get(id))
+            if (edge.direction() == direction)
+                return edge;
+        throw new RuntimeException("Missing oriented edge for the given direction");
     }
 }

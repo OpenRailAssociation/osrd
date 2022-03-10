@@ -1,8 +1,12 @@
 package fr.sncf.osrd.new_infra.implementation.tracks.undirected;
 
-public class InfraTrackSection implements fr.sncf.osrd.new_infra.api.tracks.undirected.TrackSection {
-    public final double length;
-    public final String id;
+import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackSection;
+import fr.sncf.osrd.new_infra.implementation.BaseAttributes;
+
+public class InfraTrackSection extends BaseAttributes implements TrackSection {
+
+    private final double length;
+    private final String id;
 
     public InfraTrackSection(double length, String id) {
         this.length = length;
@@ -15,7 +19,7 @@ public class InfraTrackSection implements fr.sncf.osrd.new_infra.api.tracks.undi
     }
 
     @Override
-    public String toString() {
+    public String getID() {
         return id;
     }
 }

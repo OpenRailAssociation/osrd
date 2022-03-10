@@ -15,19 +15,21 @@ import java.util.HashSet;
 
 public class Parser {
 
+    private Parser() {
+        builder = NetworkBuilder
+                .directed()
+                .immutable();
+    }
+
     public static TrackInfra parseInfra(RJSInfra infra) {
         return new Parser().parse(infra);
     }
 
     private final HashMap<String, TrackNode> beginEndpoints = new HashMap<>();
     private final HashMap<String, TrackNode> endEndpoints = new HashMap<>();
-    private ImmutableNetwork.Builder<TrackNode, TrackEdge> builder;
+    private final ImmutableNetwork.Builder<TrackNode, TrackEdge> builder;
 
     private TrackInfra parse(RJSInfra infra) {
-        builder = NetworkBuilder
-                .directed()
-                .immutable();
-
         // Creates switches
         var switchTypeMap = new HashMap<String, RJSSwitchType>();
         for (var rjsSwitchType : infra.switchTypes)

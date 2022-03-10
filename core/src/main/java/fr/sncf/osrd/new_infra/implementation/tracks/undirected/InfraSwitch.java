@@ -6,8 +6,9 @@ import com.google.common.graph.ImmutableNetwork;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.Switch;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.SwitchBranch;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.SwitchPort;
+import fr.sncf.osrd.new_infra.implementation.BaseAttributes;
 
-public class InfraSwitch implements Switch {
+public class InfraSwitch extends BaseAttributes implements Switch {
     private final String id;
     private final ImmutableNetwork<SwitchPort, SwitchBranch> graph;
     private final ImmutableMultimap<String, SwitchBranch> groups;
