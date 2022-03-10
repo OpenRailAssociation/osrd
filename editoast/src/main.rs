@@ -57,16 +57,17 @@ async fn runserver(args: RunserverArgs, pg_config: PostgresConfig) -> Result<(),
 fn generate(args: GenerateArgs, pg_config: PostgresConfig) -> Result<(), Box<dyn Error>> {
     let conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
 
-    let infras = if args.infra_ids.is_empty() {
+    let mut infras = vec![];
+    if args.infra_ids.is_empty() {
         // Retrieve all available infra
-        let mut infras = vec![];
         for infra in Infra::list(&conn)? {
             infras.push(infra);
         }
-        infras
     } else {
-        // Retrieve given infra
-        Infra::retrieve_list(&conn, &args.infra_ids.iter().map(|id| *id as i32).collect())?
+        // Retrieve given infras
+        for id in args.infra_ids {
+            infras.push(Infra::retrieve(&conn, id as i32)?);
+        }
     };
 
     // Refresh each infras
