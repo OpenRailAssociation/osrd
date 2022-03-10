@@ -1,7 +1,10 @@
 import {
-  formatStepsWithTime, formatStepsWithTimeMulti,
-  makeStairCase, mergeDatasArea,
+  formatStepsWithTime,
+  formatStepsWithTimeMulti,
+  makeStairCase,
+  mergeDatasArea,
 } from 'applications/osrd/components/Helpers/ChartHelpers';
+
 import { setFailure } from 'reducers/main.ts';
 
 export default function createTrain(dispatch, keyValues, simulationTrains, t) {
@@ -46,7 +49,7 @@ export default function createTrain(dispatch, keyValues, simulationTrains, t) {
         keyValues,
       );
       dataSimulationTrain.eco_speed = formatStepsWithTime(train.eco.speeds);
-    } else if (train.eco && train.eco.error) {
+    } else if (train.eco && train.eco.error) { // Tbe removed, useless
       dispatch(setFailure({
         name: t('errors.eco'),
         message: train.eco.error,
