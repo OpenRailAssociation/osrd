@@ -21,6 +21,7 @@ impl SignalLayer {
         delete(osrd_infra_signallayer.filter(infra_id.eq(infra))).execute(conn)
     }
 
+    /// Generate signal layer of a given infra id
     pub fn generate(conn: &PgConnection, infra: i32) -> Result<usize, Error> {
         sql_query(include_str!("sql/generate_signal_layer.sql"))
             .bind::<Integer, _>(infra)

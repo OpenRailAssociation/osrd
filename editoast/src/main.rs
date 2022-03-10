@@ -73,7 +73,7 @@ fn generate(args: GenerateArgs, pg_config: PostgresConfig) -> Result<(), Box<dyn
     // Refresh each infras
     for infra in infras {
         println!(
-            "🍞 Infra {}[{}] is generating...",
+            "🍞 Infra {}[{}] is generating:",
             infra.name.bold(),
             infra.id
         );
