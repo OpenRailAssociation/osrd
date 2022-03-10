@@ -1,9 +1,10 @@
 use crate::schema::osrd_infra_infra;
 use crate::schema::osrd_infra_infra::dsl::*;
 use diesel::prelude::*;
-use diesel::result::Error;
 use diesel::{sql_query, update, PgConnection, QueryDsl, RunQueryDsl};
 use rocket::serde::Serialize;
+use std::error::Error;
+use std::fmt;
 
 #[derive(QueryableByName, Queryable, Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -13,8 +14,28 @@ pub struct Infra {
     pub name: String,
 }
 
+#[derive(Debug, Clone)]
+enum InfraError {
+    /// Couldn't found the infra with the given id
+    NotFound(i32),
+}
+
+impl fmt::Display for InfraError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            InfraError::NotFound(infra_id) => write!(f, "Infra '{}' could not be found.", infra_id),
+        }
+    }
+}
+
+impl Error for InfraError {}
+
 impl Infra {
-    pub fn retrieve_list(conn: &PgConnection, ids: &Vec<i32>) -> Result<Vec<Infra>, Error> {
+    pub fn _retrieve_list(
+        conn: &PgConnection,
+        ids: &Vec<i32>,
+    ) -> Result<Vec<Infra>, diesel::result::Error> {
+        println!("{:?}", vec![3, 4]);
         let ids: Vec<String> = ids.iter().map(|i| i.to_string()).collect();
         sql_query(format!(
             "SELECT id, name FROM osrd_infra_infra WHERE id IN ({})",
@@ -23,15 +44,26 @@ impl Infra {
         .load(conn)
     }
 
-    pub fn retrieve(conn: &PgConnection, infra_id: i32) -> Result<Infra, Error> {
-        osrd_infra_infra.find(infra_id).first(conn)
+    pub fn retrieve(
+        conn: &PgConnection,
+        infra_id: i32,
+    ) -> Result<Infra, Box<dyn std::error::Error>> {
+        match osrd_infra_infra.find(infra_id).first(conn) {
+            Ok(infra) => Ok(infra),
+            Err(diesel::result::Error::NotFound) => Err(Box::new(InfraError::NotFound(infra_id))),
+            Err(e) => Err(Box::new(e)),
+        }
     }
 
-    pub fn list(conn: &PgConnection) -> Result<Vec<Infra>, Error> {
+    pub fn list(conn: &PgConnection) -> Result<Vec<Infra>, diesel::result::Error> {
         osrd_infra_infra.load::<Self>(conn)
     }
 
-    pub fn rename(&mut self, new_name: String, conn: &PgConnection) -> Result<(), Error> {
+    pub fn _rename(
+        &mut self,
+        new_name: String,
+        conn: &PgConnection,
+    ) -> Result<(), diesel::result::Error> {
         let new_infra = update(osrd_infra_infra.find(self.id))
             .set(name.eq(new_name))
             .get_result::<Self>(conn)?;
