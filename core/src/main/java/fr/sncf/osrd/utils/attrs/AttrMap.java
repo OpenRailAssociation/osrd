@@ -8,6 +8,12 @@ public interface AttrMap<B> {
     @Nullable
     <T extends B> T getAttr(Attr<T> attr);
 
+    /** Returns the value of the attribute, or the given default if absent */
+    <T extends B> T getAttr(Attr<T> attr, T defaultValue);
+
+    /** Returns the value of the attribute, or throw an OSRDError if absent */
+    <T extends B> T getAttrOrThrow(Attr<T> attr);
+
     /** Sets the value of this attribute */
     <T extends B> void putAttr(Attr<T> attr, @NonNull T value);
 

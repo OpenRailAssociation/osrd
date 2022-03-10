@@ -25,6 +25,8 @@ public class Parser {
     private final HashMap<TrackNode, DiTrackNode> backwardNodeMap = new HashMap<>();
     /** Reference undirected graph*/
     private final ImmutableNetwork<TrackNode, TrackEdge> undirectedGraph;
+    /** Reference undirected infra */
+    private final TrackInfra trackInfra;
     /** Union find used to link directed nodes together*/
     private final UnionFind uf;
     /** List of undirected edge, the order is used for the union find*/
@@ -33,16 +35,17 @@ public class Parser {
     private final ImmutableNetwork.Builder<DiTrackNode, DiTrackEdge> graph;
 
     /** Constructor */
-    private Parser(ImmutableNetwork<TrackNode, TrackEdge> undirectedGraph) {
-        this.undirectedGraph = undirectedGraph;
+    private Parser(TrackInfra infra) {
+        this.undirectedGraph = infra.getTrackGraph();
         undirectedEdges = new ArrayList<>(undirectedGraph.edges());
         uf = new UnionFind(undirectedEdges.size() * 4);
         graph = NetworkBuilder.directed().immutable();
+        trackInfra = infra;
     }
 
     /** Builds a directed infra from an undirected infra */
     public static DiTrackInfra fromUndirected(TrackInfra infra) {
-        return new Parser(infra.getTrackGraph()).convert();
+        return new Parser(infra).convert();
     }
 
     /** Private function to call to convert the infra, with everything initialized */
@@ -70,7 +73,7 @@ public class Parser {
         }
         // Creates the edges and build the graph
         makeEdges();
-        return new DiTrackInfraImpl(graph.build());
+        return new DiTrackInfraImpl(trackInfra, graph.build());
     }
 
     /** Builds every directed edge and registers them in the graph builder */
