@@ -124,6 +124,7 @@ public class LineString {
             newBufferX.add(lineString.bufferX);
             newBufferY.add(lineString.bufferY);
             double lastCumulativeLength = 0;
+            // used to add the length of the previous Linestring to make the lengths of the next one cumulatives
             if (!newCumulativeLengths.isEmpty())
                 lastCumulativeLength = newCumulativeLengths.get(newCumulativeLengths.size() - 1);
             for (var cumLength : lineString.cumulativeLengths)
@@ -143,6 +144,7 @@ public class LineString {
         assert distance <= cumulativeLengths[cumulativeLengths.length - 1];
         var interval = Arrays.binarySearch(cumulativeLengths, distance);
 
+        // binarySearch returns a negative position if it doesn't find the element
         if (interval < 0)
             interval = - interval - 1;
 
@@ -199,6 +201,10 @@ public class LineString {
                 cumulativeLengths,
                 begin * cumulativeLengths[cumulativeLengths.length - 1]
         );
+
+        // binarySearch returns a negative position if it doesn't find the element, else it returns a positive index
+        // interval + 1 gives us the index of the first element we wanted to add in our slicedLinestring
+        // But we already add the firstPoint above, so we go for the second element
         if (intervalBegin >= 0)
             intervalBegin += 2;
         else
