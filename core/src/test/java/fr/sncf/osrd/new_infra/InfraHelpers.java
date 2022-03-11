@@ -1,5 +1,6 @@
 package fr.sncf.osrd.new_infra;
 
+import static fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge.TRACK_OBJECTS;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -10,6 +11,8 @@ import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackInfra;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackNode;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackSection;
+import fr.sncf.osrd.new_infra.implementation.tracks.undirected.*;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -41,5 +44,47 @@ public class InfraHelpers {
             assertTrue(valuesSet.contains(x));
         for (var x : excluded)
             assertFalse(valuesSet.contains(x));
+    }
+
+    /** Make a switch infra with the following configuration:
+    *      Out1
+    *       ^
+    *       |
+    *      In1
+    *      /  ^
+    *     /    \
+    *    v      \
+    *   In2     In3
+    *    |       |
+    *    v       v
+    *    3       3
+     */
+    public static TrackInfra makeSwitchInfra() {
+        var builder = NetworkBuilder
+                .directed()
+                .<TrackNode, TrackEdge>immutable();
+
+        final var nodeIn1 = new InfraSwitchPort("1");
+        final var nodeIn2 = new InfraSwitchPort("2");
+        final var nodeIn3 = new InfraSwitchPort("3");
+        final var nodeOut1 = new InfraTrackNode.Joint();
+        final var nodeOut2 = new InfraTrackNode.Joint();
+        final var nodeOut3 = new InfraTrackNode.Joint();
+        builder.addNode(nodeIn1);
+        builder.addNode(nodeIn2);
+        builder.addNode(nodeIn3);
+        builder.addNode(nodeOut1);
+        builder.addNode(nodeOut2);
+        builder.addNode(nodeOut3);
+        builder.addEdge(nodeIn1, nodeOut1, new InfraTrackSection(0, "1"));
+        builder.addEdge(nodeIn2, nodeOut2, new InfraTrackSection(0, "2"));
+        builder.addEdge(nodeIn3, nodeOut3, new InfraTrackSection(0, "3"));
+        builder.addEdge(nodeIn1, nodeIn2, new InfraSwitchBranch());
+        builder.addEdge(nodeIn3, nodeIn1, new InfraSwitchBranch());
+
+        var res = new InfraTrackInfra(null, builder.build());
+        for (var edge : res.getTrackGraph().edges())
+            edge.getAttrs().putAttr(TRACK_OBJECTS, new ArrayList<>());
+        return res;
     }
 }

@@ -44,12 +44,12 @@ public class TvdSectionBuilder {
 
             for (var neighbor : track.startNeighbors) {
                 var neighborDir = neighbor.getDirection(track, EdgeDirection.STOP_TO_START);
-                uf.union(beginIndex, getEndpointIndex(neighbor, EdgeEndpoint.startEndpoint(neighborDir)));
+                uf.union(beginIndex, getEndpointIndex(neighbor, EdgeEndpoint.startEndpointOld(neighborDir)));
             }
 
             for (var neighbor : track.endNeighbors) {
                 var neighborDir = neighbor.getDirection(track, EdgeDirection.START_TO_STOP);
-                uf.union(endIndex, getEndpointIndex(neighbor, EdgeEndpoint.startEndpoint(neighborDir)));
+                uf.union(endIndex, getEndpointIndex(neighbor, EdgeEndpoint.startEndpointOld(neighborDir)));
             }
         }
 

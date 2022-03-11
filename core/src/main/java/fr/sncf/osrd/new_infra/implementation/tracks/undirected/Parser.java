@@ -1,5 +1,6 @@
 package fr.sncf.osrd.new_infra.implementation.tracks.undirected;
 
+import static fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge.INDEX;
 import static fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge.TRACK_OBJECTS;
 import static fr.sncf.osrd.new_infra.implementation.tracks.undirected.InfraTrackObject.TrackObjectType;
 
@@ -138,13 +139,14 @@ public class Parser {
             for (var e : entry.getValue()) {
                 var src = finalPortMap.get(e.src);
                 var dst = finalPortMap.get(e.dst);
-                var branch = new InfraSwitchBranch(0);
+                var branch = new InfraSwitchBranch();
                 groups.put(entry.getKey(), branch);
                 assert src != null;
                 assert dst != null;
                 networkBuilder.addEdge(src, dst, branch);
                 builder.addEdge(src, dst, branch);
                 allBranches.add(branch);
+                branch.getAttrs().putAttr(TRACK_OBJECTS, new ArrayList<>());
             }
         }
         var switchTypePorts = new HashSet<>(switchType.ports);

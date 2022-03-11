@@ -1,4 +1,4 @@
-package fr.sncf.osrd.new_infra.undirected;
+package fr.sncf.osrd.new_infra.tracks.undirected;
 
 import static com.google.common.collect.Iterables.contains;
 import static fr.sncf.osrd.new_infra.InfraHelpers.*;
