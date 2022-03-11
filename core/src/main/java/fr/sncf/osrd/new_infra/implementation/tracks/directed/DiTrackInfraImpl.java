@@ -1,7 +1,6 @@
 package fr.sncf.osrd.new_infra.implementation.tracks.directed;
 
 import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.Multimap;
 import com.google.common.graph.ImmutableNetwork;
 import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackEdge;
@@ -21,7 +20,7 @@ public class DiTrackInfraImpl extends InfraTrackInfra implements DiTrackInfra {
         this.graph = graph;
         var builder = ImmutableListMultimap.<String, DiTrackEdge>builder();
         for (var edge : graph.edges()) {
-            if (edge.edge() instanceof TrackSection trackSection) {
+            if (edge.getEdge() instanceof TrackSection trackSection) {
                 builder.put(trackSection.getID(), edge);
             }
         }
@@ -36,7 +35,7 @@ public class DiTrackInfraImpl extends InfraTrackInfra implements DiTrackInfra {
     @Override
     public DiTrackEdge getEdge(String id, Direction direction) {
         for (var edge : trackEdgesByID.get(id))
-            if (edge.direction() == direction)
+            if (edge.getDirection() == direction)
                 return edge;
         throw new RuntimeException("Missing oriented edge for the given direction");
     }

@@ -1,17 +1,20 @@
 package fr.sncf.osrd.new_infra.directed;
 
 import static fr.sncf.osrd.new_infra.InfraHelpers.*;
+import static fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackEdge.ORIENTED_TRACK_OBJECTS;
+import static fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge.TRACK_OBJECTS;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.Sets;
 import com.google.common.graph.NetworkBuilder;
 import com.google.common.graph.Traverser;
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.new_infra.api.Direction;
-import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackEdge;
-import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackInfra;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.*;
 import fr.sncf.osrd.new_infra.implementation.tracks.undirected.*;
 import org.junit.jupiter.api.Test;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 public class DirectedRJSParsingTests {
@@ -114,5 +117,58 @@ public class DirectedRJSParsingTests {
                 reachableFrom3,
                 Sets.difference(allTrackEnds, reachableFrom3)
         );
+    }
+
+    @Test
+    public void testTrackObjects() {
+        // Build the undirected graph
+        var builder = NetworkBuilder
+                .directed()
+                .<TrackNode, TrackEdge>immutable();
+
+        final var node1 = new InfraSwitchPort("1");
+        final var node2 = new InfraSwitchPort("2");
+        final var node3 = new InfraSwitchPort("3");
+        builder.addNode(node1);
+        builder.addNode(node2);
+        builder.addNode(node3);
+        var edge12 = new InfraTrackSection(100, "1-2");
+        var edge32 = new InfraTrackSection(100, "3-2");
+        builder.addEdge(node1, node2, edge12);
+        builder.addEdge(node3, node2, edge32);
+        var detector1 = new InfraTrackObject(edge12, 30, TrackObject.TrackObjectType.DETECTOR, "d1");
+        var detector2 = new InfraTrackObject(edge12, 60, TrackObject.TrackObjectType.DETECTOR, "d2");
+        var bs1 = new InfraTrackObject(edge12, 0, TrackObject.TrackObjectType.BUFFER_STOP, "bs1");
+        var detector3 = new InfraTrackObject(edge32, 65, TrackObject.TrackObjectType.DETECTOR, "d3");
+        var detector4 = new InfraTrackObject(edge32, 35, TrackObject.TrackObjectType.DETECTOR, "d4");
+        edge12.getAttrs().putAttr(TRACK_OBJECTS, List.of(
+                detector1,
+                detector2,
+                bs1
+        ));
+        edge32.getAttrs().putAttr(TRACK_OBJECTS, List.of(
+                detector3,
+                detector4
+        ));
+
+        // Converts to directed graph
+        var infra = new InfraTrackInfra(null, builder.build());
+        var directedInfra = fr.sncf.osrd.new_infra.implementation.tracks.directed.Parser.fromUndirected(infra);
+
+        // Tests that we see the waypoints in the right order when going from 1 to 3
+        final var edge1 = directedInfra.getEdge("1-2", Direction.FORWARD);
+        final var edge2 = directedInfra.getEdge("3-2", Direction.BACKWARD);
+        var allObjects = new ArrayList<TrackObject>();
+        for (var object : edge1.getAttrs().getAttrOrThrow(ORIENTED_TRACK_OBJECTS))
+            allObjects.add(object.object());
+        for (var object : edge2.getAttrs().getAttrOrThrow(ORIENTED_TRACK_OBJECTS))
+            allObjects.add(object.object());
+        assertEquals(List.of(
+                bs1,
+                detector1,
+                detector2,
+                detector3,
+                detector4
+        ), allObjects);
     }
 }

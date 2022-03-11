@@ -1,5 +1,8 @@
 package fr.sncf.osrd.new_infra.implementation.tracks.directed;
 
+import static fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackEdge.ORIENTED_TRACK_OBJECTS;
+import static fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge.TRACK_OBJECTS;
+
 import com.google.common.collect.HashBiMap;
 import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.NetworkBuilder;
@@ -7,16 +10,14 @@ import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackEdge;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackInfra;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackNode;
+import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackObject;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.SwitchBranch;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackInfra;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackNode;
 import fr.sncf.osrd.utils.UnionFind;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class Parser {
     /** Map from undirected node to directed node (forward) */
@@ -81,12 +82,27 @@ public class Parser {
         var nodes = HashBiMap.<Integer, DiTrackNode>create();
         for (var edge : undirectedEdges) {
             for (var dir : Direction.values()) {
-                var begin = findNode(nodes, edge, dir, endEndpoint(dir.opposite()));
-                var end = findNode(nodes, edge, dir, endEndpoint(dir));
-                var newEdge = new DiTrackEdge(edge, dir);
-                graph.addEdge(begin, end, newEdge);
+                makeEdge(nodes, edge, dir);
             }
         }
+    }
+
+    private void makeEdge(HashBiMap<Integer, DiTrackNode> nodes, TrackEdge edge, Direction dir) {
+        var begin = findNode(nodes, edge, dir, endEndpoint(dir.opposite()));
+        var end = findNode(nodes, edge, dir, endEndpoint(dir));
+        var newEdge = new DiTrackEdgeImpl(edge, dir);
+        graph.addEdge(begin, end, newEdge);
+        var waypoints = edge.getAttrs().getAttr(TRACK_OBJECTS, List.of());
+        var orientedWaypoints = new ArrayList<DiTrackObject>();
+        for (var w : waypoints) {
+            var offset = w.getOffset();
+            if (dir == Direction.BACKWARD) {
+                offset = w.getTrackSection().getLength() - offset;
+            }
+            orientedWaypoints.add(new DiTrackObject(w, offset, dir));
+        }
+        orientedWaypoints.sort(Comparator.comparingDouble(DiTrackObject::offset));
+        newEdge.getAttrs().putAttr(ORIENTED_TRACK_OBJECTS, orientedWaypoints);
     }
 
     /** Finds the node matching the edge / endpoint / direction.

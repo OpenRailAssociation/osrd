@@ -65,6 +65,12 @@ public final class RJSObjectRef<T extends Identified> {
         return parseRef(tracks, "TrackSection");
     }
 
+    public fr.sncf.osrd.new_infra.api.tracks.undirected.TrackSection getTrack(
+            HashMap<String, fr.sncf.osrd.new_infra.api.tracks.undirected.TrackSection> tracks
+    ) {
+        return parseRef(tracks, "TrackSection");
+    }
+
     public Route getRoute(Map<String, Route> routes) throws InvalidInfraException {
         return parseRef(routes, "Route");
     }
