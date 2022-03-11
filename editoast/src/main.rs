@@ -6,6 +6,7 @@ extern crate diesel;
 mod client;
 mod generate;
 mod models;
+mod railjson;
 mod schema;
 mod views;
 
