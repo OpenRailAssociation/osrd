@@ -42,4 +42,6 @@ impl RunserverArgs {
 #[clap(about, long_about = "Refresh infra generated data")]
 pub struct GenerateArgs {
     pub infra_ids: Vec<u32>,
+    #[clap(short, long, help = "Force refresh")]
+    pub force: bool,
 }

@@ -77,7 +77,7 @@ fn generate(args: GenerateArgs, pg_config: PostgresConfig) -> Result<(), Box<dyn
             infra.name.bold(),
             infra.id
         );
-        generate::refresh(&conn, infra.id)?;
+        generate::refresh(&conn, &infra, args.force)?;
         println!("✅ Infra {}[{}] generated!", infra.name.bold(), infra.id);
     }
     Ok(())
