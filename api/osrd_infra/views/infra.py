@@ -10,13 +10,11 @@ from osrd_infra.views.railjson import import_infra, serialize_infra
 
 
 class InfraView(
-    mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
-    mixins.DestroyModelMixin,
     mixins.ListModelMixin,
     GenericViewSet,
 ):
-    queryset = Infra.objects.order_by("-modified")
+    queryset = Infra.objects.order_by("-pk")
     serializer_class = InfraSerializer
 
     def perform_create(self, serializer):

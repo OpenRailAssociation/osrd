@@ -195,7 +195,7 @@ def compute_path(path, request_data, owner):
     infra = request_data["infra"]
 
     waypoints, step_durations = parse_steps_input(request_data["steps"], infra)
-    payload = request_pathfinding({"infra": infra.pk, "waypoints": waypoints})
+    payload = request_pathfinding({"infra": infra.pk, "version": infra.version, "waypoints": waypoints})
     path.geographic = json.dumps(payload.pop("geographic"))
     path.schematic = json.dumps(payload.pop("schematic"))
 
