@@ -1,5 +1,8 @@
 package fr.sncf.osrd.utils.graph;
 
+import com.google.common.graph.EndpointPair;
+import fr.sncf.osrd.new_infra.api.Direction;
+
 /** Encodes an end, an endpoint, the tip of an edge. */
 public enum EdgeEndpoint {
     BEGIN(0),
@@ -12,14 +15,21 @@ public enum EdgeEndpoint {
     }
 
     /** Return the first met endpoint along the edge in the given direction */
-    public static EdgeEndpoint startEndpoint(EdgeDirection dir) {
+    public static EdgeEndpoint startEndpoint(Direction dir) {
+        if (dir == Direction.FORWARD)
+            return BEGIN;
+        return END;
+    }
+
+    /** deprecated */
+    public static EdgeEndpoint startEndpointOld(EdgeDirection dir) {
         if (dir == EdgeDirection.START_TO_STOP)
             return BEGIN;
         return END;
     }
 
     /** Return the last met endpoint along the edge in the given direction */
-    public static EdgeEndpoint endEndpoint(EdgeDirection dir) {
+    public static EdgeEndpoint endEndpoint(Direction dir) {
         return startEndpoint(dir.opposite());
     }
 }
