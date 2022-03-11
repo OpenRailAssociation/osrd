@@ -1,18 +1,31 @@
+use crate::models::GeneratedInfra;
+use crate::models::Infra;
 use crate::models::SignalLayer;
 use crate::models::SpeedSectionLayer;
 use crate::models::TrackSectionLayer;
 use diesel::PgConnection;
 use std::error::Error;
 
-pub fn refresh(conn: &PgConnection, infra_id: i32) -> Result<(), Box<dyn Error>> {
+pub fn refresh(conn: &PgConnection, infra: &Infra, force: bool) -> Result<(), Box<dyn Error>> {
+    // Check if refresh is needed
+    let mut gen_infra = GeneratedInfra::retrieve(conn, infra.id);
+    if !force && infra.version == gen_infra.version {
+        println!("  Already up to date!");
+        return Ok(());
+    }
+
+    // Generate layers
     println!("  Track sections...");
-    TrackSectionLayer::clear(conn, infra_id)?;
-    TrackSectionLayer::generate(conn, infra_id)?;
+    TrackSectionLayer::clear(conn, infra.id)?;
+    TrackSectionLayer::generate(conn, infra.id)?;
     println!("  Signals...");
-    SignalLayer::clear(conn, infra_id)?;
-    SignalLayer::generate(conn, infra_id)?;
+    SignalLayer::clear(conn, infra.id)?;
+    SignalLayer::generate(conn, infra.id)?;
     println!("  Speed sections...");
-    SpeedSectionLayer::clear(conn, infra_id)?;
-    SpeedSectionLayer::generate(conn, infra_id)?;
-    Ok(())
+    SpeedSectionLayer::clear(conn, infra.id)?;
+    SpeedSectionLayer::generate(conn, infra.id)?;
+
+    // Update generated infra version
+    gen_infra.version = infra.version;
+    Ok(gen_infra.save(conn))
 }
