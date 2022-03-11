@@ -3,10 +3,10 @@ use crate::models::Infra;
 use crate::models::SignalLayer;
 use crate::models::SpeedSectionLayer;
 use crate::models::TrackSectionLayer;
+use diesel::result::Error;
 use diesel::PgConnection;
-use std::error::Error;
 
-pub fn refresh(conn: &PgConnection, infra: &Infra, force: bool) -> Result<(), Box<dyn Error>> {
+pub fn refresh(conn: &PgConnection, infra: &Infra, force: bool) -> Result<(), Error> {
     // Check if refresh is needed
     let mut gen_infra = GeneratedInfra::retrieve(conn, infra.id);
     if !force && infra.version == gen_infra.version {
