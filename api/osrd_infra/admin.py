@@ -13,7 +13,7 @@ from osrd_infra.models import (  # misc; timetable
 @admin.register(Infra)
 class InfraAdmin(admin.ModelAdmin):
     list_display = ("name",)
-    readonly_fields = ("created", "modified")
+    readonly_fields = ("version", "railjson_version")
 
 
 admin.site.register(

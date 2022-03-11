@@ -46,7 +46,7 @@ public class PathfindingTracksEndpoint extends PathfindingEndpoint {
             var reqWaypoints = request.waypoints;
 
             // load infra
-            var infra = infraManager.load(request.infra);
+            var infra = infraManager.load(request.infra, request.version);
 
             // parse the waypoints
             @SuppressWarnings({"unchecked", "rawtypes"})

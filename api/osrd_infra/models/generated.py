@@ -2,6 +2,11 @@ from django.conf import settings
 from django.contrib.gis.db import models
 
 
+class GeneratedInfra(models.Model):
+    version = models.PositiveBigIntegerField(editable=False, default=0)
+    infra = models.OneToOneField("Infra", on_delete=models.CASCADE, related_name="generated")
+
+
 class TrackSectionLayer(models.Model):
     infra = models.ForeignKey("Infra", on_delete=models.CASCADE)
     obj_id = models.CharField(max_length=255)
