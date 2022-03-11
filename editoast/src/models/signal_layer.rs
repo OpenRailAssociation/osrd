@@ -2,7 +2,7 @@ use crate::schema::osrd_infra_signallayer;
 use crate::schema::osrd_infra_signallayer::dsl::*;
 use diesel::prelude::*;
 use diesel::result::Error;
-use diesel::sql_types::Integer;
+use diesel::sql_types::{Integer, Text};
 use diesel::{delete, sql_query};
 use rocket::serde::Serialize;
 
@@ -25,6 +25,18 @@ impl SignalLayer {
     pub fn generate(conn: &PgConnection, infra: i32) -> Result<usize, Error> {
         sql_query(include_str!("sql/generate_signal_layer.sql"))
             .bind::<Integer, _>(infra)
+            .execute(conn)
+    }
+
+    pub fn update(conn: &PgConnection, infra: i32, obj_ids: &Vec<String>) -> Result<usize, Error> {
+        let obj_ids = obj_ids.join(",");
+        sql_query("DELETE FROM osrd_infra_signallayer WHERE infra_id = $1 AND obj_id in ($2)")
+            .bind::<Integer, _>(infra)
+            .bind::<Text, _>(&obj_ids)
+            .execute(conn)?;
+        sql_query(include_str!("sql/update_signal_layer.sql"))
+            .bind::<Integer, _>(infra)
+            .bind::<Text, _>(&obj_ids)
             .execute(conn)
     }
 }
