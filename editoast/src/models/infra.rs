@@ -6,7 +6,7 @@ use rocket::serde::Serialize;
 use std::error::Error;
 use std::fmt;
 
-#[derive(QueryableByName, Queryable, Debug, Serialize)]
+#[derive(Clone, QueryableByName, Queryable, Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
 #[table_name = "osrd_infra_infra"]
 pub struct Infra {
