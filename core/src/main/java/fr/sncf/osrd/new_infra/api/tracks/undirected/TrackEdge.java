@@ -11,4 +11,7 @@ public sealed interface TrackEdge extends WithAttributes permits SwitchBranch, T
 
     /** List of objects on the track */
     Attr<List<TrackObject>> TRACK_OBJECTS = new Attr<>();
+
+    /** Global unique index starting at 0, used for union finds */
+    Attr<Integer> INDEX = new Attr<>();
 }

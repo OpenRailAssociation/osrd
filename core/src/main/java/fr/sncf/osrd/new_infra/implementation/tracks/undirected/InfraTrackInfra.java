@@ -1,5 +1,7 @@
 package fr.sncf.osrd.new_infra.implementation.tracks.undirected;
 
+import static fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge.INDEX;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.graph.ImmutableNetwork;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.*;
@@ -23,6 +25,13 @@ public class InfraTrackInfra implements TrackInfra {
                 trackSections.put(trackSection.getID(), trackSection);
             }
         }
+        setIndexToEdges(trackGraph);
+    }
+
+    private static void setIndexToEdges(ImmutableNetwork<TrackNode, TrackEdge> trackGraph) {
+        var trackID = 0;
+        for (var edge : trackGraph.edges())
+            edge.getAttrs().putAttr(INDEX, trackID++);
     }
 
     @Override

@@ -1,4 +1,4 @@
-package fr.sncf.osrd.new_infra.directed;
+package fr.sncf.osrd.new_infra.tracks.directed;
 
 import static fr.sncf.osrd.new_infra.InfraHelpers.*;
 import static fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackEdge.ORIENTED_TRACK_OBJECTS;
@@ -45,30 +45,7 @@ public class DirectedRJSParsingTests {
          */
 
         // Build the undirected graph
-        var builder = NetworkBuilder
-                .directed()
-                .<TrackNode, TrackEdge>immutable();
-
-        final var nodeIn1 = new InfraSwitchPort("1");
-        final var nodeIn2 = new InfraSwitchPort("2");
-        final var nodeIn3 = new InfraSwitchPort("3");
-        final var nodeOut1 = new InfraTrackNode.Joint();
-        final var nodeOut2 = new InfraTrackNode.Joint();
-        final var nodeOut3 = new InfraTrackNode.Joint();
-        builder.addNode(nodeIn1);
-        builder.addNode(nodeIn2);
-        builder.addNode(nodeIn3);
-        builder.addNode(nodeOut1);
-        builder.addNode(nodeOut2);
-        builder.addNode(nodeOut3);
-        builder.addEdge(nodeIn1, nodeOut1, new InfraTrackSection(0, "1"));
-        builder.addEdge(nodeIn2, nodeOut2, new InfraTrackSection(0, "2"));
-        builder.addEdge(nodeIn3, nodeOut3, new InfraTrackSection(0, "3"));
-        builder.addEdge(nodeIn1, nodeIn2, new InfraSwitchBranch(0));
-        builder.addEdge(nodeIn3, nodeIn1, new InfraSwitchBranch(0));
-
-        // Converts to directed graph
-        var infra = new InfraTrackInfra(null, builder.build());
+        var infra = makeSwitchInfra();
         var directedInfra = fr.sncf.osrd.new_infra.implementation.tracks.directed.Parser.fromUndirected(infra);
         var graph = directedInfra.getDiTrackGraph();
 

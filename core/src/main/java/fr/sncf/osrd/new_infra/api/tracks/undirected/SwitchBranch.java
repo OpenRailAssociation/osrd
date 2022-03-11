@@ -5,6 +5,8 @@ public non-sealed interface SwitchBranch extends TrackEdge {
     /** Returns the switch this branch is associated to */
     Switch getSwitch();
 
-    /** Returns the length of the switch branch. It can be 0 */
-    double getLength();
+    /** Returns the length of the switch branch. For a switch branch, it's always 0 */
+    default double getLength() {
+        return 0;
+    }
 }
