@@ -51,7 +51,7 @@ public class PathfindingTest extends ApiTest {
         waypoints[0] = waypointsStart;
         waypoints[1] = waypointsEnd;
         var requestBody = PathfindingEndpoint.adapterRequest.toJson(
-                new PathfindingEndpoint.PathfindingRequest(waypoints, "tiny_infra/infra.json"));
+                new PathfindingEndpoint.PathfindingRequest(waypoints, "tiny_infra/infra.json", 1));
 
         var result = new RsPrint(
                 new PathfindingRoutesEndpoint(infraHandlerMock).act(
@@ -88,7 +88,7 @@ public class PathfindingTest extends ApiTest {
         waypoints[0] = waypointsStart;
         waypoints[1] = waypointsEnd;
         var requestBody = PathfindingEndpoint.adapterRequest.toJson(
-                new PathfindingEndpoint.PathfindingRequest(waypoints, "tiny_infra/infra.json"));
+                new PathfindingEndpoint.PathfindingRequest(waypoints, "tiny_infra/infra.json", 1));
 
         var result = new RsPrint(
                 new PathfindingRoutesEndpoint(infraHandlerMock).act(
@@ -126,7 +126,7 @@ public class PathfindingTest extends ApiTest {
         waypoints[0] = waypointsStart;
         waypoints[1] = waypointsEnd;
         var requestBody = PathfindingEndpoint.adapterRequest.toJson(
-                new PathfindingEndpoint.PathfindingRequest(waypoints, "tiny_infra/infra.json"));
+                new PathfindingEndpoint.PathfindingRequest(waypoints, "tiny_infra/infra.json", 1));
 
         var result = new RsPrint(
                 new PathfindingRoutesEndpoint(infraHandlerMock).act(
@@ -157,7 +157,7 @@ public class PathfindingTest extends ApiTest {
         waypoints[0] = waypointsStart;
         waypoints[1] = waypointsEnd;
         var requestBody = PathfindingRoutesEndpoint.adapterRequest.toJson(
-                new PathfindingRoutesEndpoint.PathfindingRequest(waypoints, "tiny_infra/infra.json"));
+                new PathfindingRoutesEndpoint.PathfindingRequest(waypoints, "tiny_infra/infra.json", 1));
 
         var result = new RsPrint(
                 new PathfindingTracksEndpoint(infraHandlerMock).act(
@@ -195,7 +195,7 @@ public class PathfindingTest extends ApiTest {
         waypoints[0] = waypointsStart;
         waypoints[1] = waypointsEnd;
         var requestBody = PathfindingRoutesEndpoint.adapterRequest.toJson(
-                new PathfindingRoutesEndpoint.PathfindingRequest(waypoints, "tiny_infra/infra.json"));
+                new PathfindingRoutesEndpoint.PathfindingRequest(waypoints, "tiny_infra/infra.json", 1));
 
         var result = new RsPrint(
                 new PathfindingTracksEndpoint(infraHandlerMock).act(

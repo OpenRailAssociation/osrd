@@ -22,7 +22,7 @@ public class ApiTest {
     @BeforeEach
     public void setUp() throws InfraLoadException, InterruptedException {
         ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
-        when(infraHandlerMock.load(argument.capture())).thenAnswer(
+        when(infraHandlerMock.load(argument.capture(), 1)).thenAnswer(
                 invocation ->
                         Infra.parseFromFile(
                                 Helpers.getResourcePath(argument.getValue()).toString()

@@ -6,7 +6,6 @@ import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
-import fr.sncf.osrd.utils.graph.ApplicableDirection;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import org.takes.Take;
 
@@ -44,10 +43,12 @@ public abstract class PathfindingEndpoint implements Take {
          */
         public final PathfindingWaypoint[][] waypoints;
         public final String infra;
+        public final long version;
 
-        public PathfindingRequest(PathfindingWaypoint[][] waypoints, String infra) {
+        public PathfindingRequest(PathfindingWaypoint[][] waypoints, String infra, long version) {
             this.waypoints = waypoints;
             this.infra = infra;
+            this.version = version;
         }
     }
 
