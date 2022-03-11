@@ -1,5 +1,8 @@
 package fr.sncf.osrd.new_infra.implementation.tracks.undirected;
 
+import static fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge.TRACK_OBJECTS;
+import static fr.sncf.osrd.new_infra.implementation.tracks.undirected.InfraTrackObject.TrackObjectType;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.graph.ImmutableNetwork;
@@ -9,7 +12,11 @@ import fr.sncf.osrd.new_infra.api.tracks.undirected.*;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitch;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitchType;
+import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
+import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -46,14 +53,39 @@ public class Parser {
             addNode(link.dst.track.id.id, link.dst.endpoint, newNode);
         }
 
+        var trackSectionsByID = new HashMap<String, TrackSection>();
         for (var track : infra.trackSections) {
-            var begin = getNode(track.id, EdgeEndpoint.BEGIN);
-            var end = getNode(track.id, EdgeEndpoint.END);
-            var edge = new InfraTrackSection(track.length, track.id);
-            builder.addEdge(begin, end, edge);
+            var newTrack = makeTrackSection(track);
+            trackSectionsByID.put(newTrack.getID(), newTrack);
         }
 
+        for (var detector : infra.detectors) {
+            makeWaypoint(trackSectionsByID, detector, TrackObjectType.DETECTOR);
+        }
+        for (var bufferStop : infra.bufferStops) {
+            makeWaypoint(trackSectionsByID, bufferStop, TrackObjectType.BUFFER_STOP);
+        }
+
+        for (var track : trackSectionsByID.values())
+            track.getAttrs().getAttrOrThrow(TRACK_OBJECTS).sort(Comparator.comparingDouble(TrackObject::getOffset));
+
         return new InfraTrackInfra(switches.build(), builder.build());
+    }
+
+    private void makeWaypoint(HashMap<String, TrackSection> trackSectionsByID,
+                            RJSRouteWaypoint waypoint, TrackObjectType trackObjectType) {
+        var track = waypoint.track.getTrack(trackSectionsByID);
+        var newWaypoint = new InfraTrackObject(track, waypoint.position, trackObjectType, waypoint.id);
+        track.getAttrs().getAttrOrThrow(TRACK_OBJECTS).add(newWaypoint);
+    }
+
+    private TrackSection makeTrackSection(RJSTrackSection track) {
+        var begin = getNode(track.id, EdgeEndpoint.BEGIN);
+        var end = getNode(track.id, EdgeEndpoint.END);
+        var edge = new InfraTrackSection(track.length, track.id);
+        builder.addEdge(begin, end, edge);
+        edge.getAttrs().putAttr(TRACK_OBJECTS, new ArrayList<>());
+        return edge;
     }
 
     private void addNode(String trackId, EdgeEndpoint endpoint, TrackNode node) {

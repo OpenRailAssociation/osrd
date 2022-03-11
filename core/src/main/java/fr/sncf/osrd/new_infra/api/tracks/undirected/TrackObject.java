@@ -7,6 +7,17 @@ public interface TrackObject extends WithAttributes {
     /** Returns the track section this object is on */
     TrackSection getTrackSection();
 
-    /** Return the offset of the object inside the track section */
+    /** Returns the offset of the object inside the track section */
     double getOffset();
+
+    /** Returns the ID of the object */
+    String getID();
+
+    /** Returns the type of the object */
+    TrackObjectType getType();
+
+    enum TrackObjectType {
+        DETECTOR,
+        BUFFER_STOP
+    }
 }
