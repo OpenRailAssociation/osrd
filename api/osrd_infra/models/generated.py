@@ -3,8 +3,8 @@ from django.contrib.gis.db import models
 
 
 class GeneratedInfra(models.Model):
+    infra = models.OneToOneField("Infra", on_delete=models.CASCADE, primary_key=True, related_name="generated")
     version = models.PositiveBigIntegerField(editable=False, default=0)
-    infra = models.OneToOneField("Infra", on_delete=models.CASCADE, related_name="generated")
 
 
 class TrackSectionLayer(models.Model):

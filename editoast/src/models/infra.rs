@@ -12,6 +12,7 @@ use std::fmt;
 pub struct Infra {
     pub id: i32,
     pub name: String,
+    pub version: i64,
 }
 
 #[derive(Debug)]
@@ -68,5 +69,12 @@ impl Infra {
             .get_result::<Self>(conn)?;
         self.name = new_infra.name;
         Ok(())
+    }
+
+    pub fn bump_version(&self, conn: &PgConnection) -> Self {
+        diesel::update(osrd_infra_infra.filter(id.eq(self.id)))
+            .set(version.eq(self.version + 1))
+            .get_result(conn)
+            .expect("Bump infra version failed")
     }
 }
