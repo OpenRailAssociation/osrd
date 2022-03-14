@@ -1,6 +1,6 @@
 pub mod operation;
 
-use rocket::serde::Deserialize;
+use rocket::serde::{Deserialize, Serialize};
 
 #[derive(Clone, Deserialize, Hash, Eq, PartialEq)]
 #[serde(crate = "rocket::serde")]
@@ -16,7 +16,7 @@ impl ObjectType {
     }
 }
 
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 pub struct TrackSection {
     pub id: String,
@@ -28,9 +28,17 @@ pub struct TrackSection {
     pub navigability: ApplicableDirections,
     pub slopes: Vec<Slope>,
     pub curves: Vec<Curve>,
+    pub geo: LineString,
+    pub sch: LineString,
 }
 
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Deserialize, Serialize)]
+#[serde(crate = "rocket::serde", tag = "type")]
+pub enum LineString {
+    LineString { coordinates: Vec<[f32; 2]> },
+}
+
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 pub enum ApplicableDirections {
     #[serde(rename = "START_TO_STOP")]
@@ -41,7 +49,7 @@ pub enum ApplicableDirections {
     Both,
 }
 
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 pub struct Curve {
     pub radius: f32,
@@ -49,7 +57,7 @@ pub struct Curve {
     pub end: f32,
 }
 
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 pub struct Slope {
     pub gradient: f32,

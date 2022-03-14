@@ -4,7 +4,7 @@ use crate::railjson::operation::Operation;
 use rocket::http::Status;
 use rocket::response::status::Custom;
 use rocket::serde::json::Json;
-use rocket::Route;
+use rocket::{routes, Route};
 use std::collections::HashMap;
 
 pub fn routes() -> Vec<Route> {
@@ -12,7 +12,7 @@ pub fn routes() -> Vec<Route> {
 }
 
 #[get("/health")]
-async fn health() {}
+pub async fn health() {}
 
 #[get("/infra")]
 /// Return a list of infras
@@ -55,15 +55,15 @@ async fn edit_infra(
             .await
     }
 
+    // Bump version
+    let _infra = infra.clone();
+    connection.run(move |c| _infra.bump_version(c)).await;
+
     // List objects that needs to be reloaded
     let mut update_lists = HashMap::new();
     for operation in operations.iter() {
         operation.get_updated_objects(&mut update_lists);
     }
-
-    // Bump version
-    let _infra = infra.clone();
-    connection.run(move |c| _infra.bump_version(c)).await;
 
     // Refresh layers
     connection
