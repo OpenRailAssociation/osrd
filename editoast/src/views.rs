@@ -1,10 +1,11 @@
 use crate::generate;
+use crate::infra_cache::InfraCache;
 use crate::models::{DBConnection, GeneratedInfra, Infra, InfraError};
 use crate::railjson::operation::Operation;
 use rocket::http::Status;
 use rocket::response::status::Custom;
 use rocket::serde::json::Json;
-use rocket::{routes, Route};
+use rocket::{routes, Route, State};
 use std::collections::HashMap;
 
 pub fn routes() -> Vec<Route> {
@@ -29,6 +30,7 @@ async fn infra_list(connection: DBConnection) -> Json<Vec<Infra>> {
 async fn edit_infra(
     infra: u32,
     operations: Json<Vec<Operation>>,
+    infra_caches: &State<HashMap<i32, InfraCache>>,
     connection: DBConnection,
 ) -> Result<String, Custom<String>> {
     // TODO: Fix lifetime issue ?
@@ -59,10 +61,13 @@ async fn edit_infra(
     let _infra = infra.clone();
     connection.run(move |c| _infra.bump_version(c)).await;
 
-    // List objects that needs to be reloaded
+    // List objects that needs to be refreshed
+    let infra_cache = infra_caches
+        .get(&infra.id)
+        .expect(format!("Infra cache does not contain infra '{}'", infra.id).as_str());
     let mut update_lists = HashMap::new();
     for operation in operations.iter() {
-        operation.get_updated_objects(&mut update_lists);
+        operation.get_updated_objects(&mut update_lists, &infra_cache);
     }
 
     // Refresh layers
