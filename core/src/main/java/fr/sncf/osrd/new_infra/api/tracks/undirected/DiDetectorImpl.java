@@ -23,4 +23,10 @@ public class DiDetectorImpl extends BaseAttributes implements DiDetector {
     public Direction getDirection() {
         return direction;
     }
+
+    @Override
+    public String toString() {
+        return String.format("DiDetector { detector=%s, direction=%s }", detector, direction);
+    }
+
 }
