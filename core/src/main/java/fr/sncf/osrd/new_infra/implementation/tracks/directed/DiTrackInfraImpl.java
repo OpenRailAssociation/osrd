@@ -1,6 +1,7 @@
 package fr.sncf.osrd.new_infra.implementation.tracks.directed;
 
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.graph.ImmutableNetwork;
 import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackEdge;
@@ -13,7 +14,7 @@ import fr.sncf.osrd.new_infra.implementation.tracks.undirected.InfraTrackInfra;
 public class DiTrackInfraImpl extends InfraTrackInfra implements DiTrackInfra {
 
     private final ImmutableNetwork<DiTrackNode, DiTrackEdge> graph;
-    private final ImmutableListMultimap<String, DiTrackEdge> trackEdgesByID;
+    private final ImmutableMultimap<String, DiTrackEdge> trackEdgesByID;
 
     protected DiTrackInfraImpl(TrackInfra trackInfra, ImmutableNetwork<DiTrackNode, DiTrackEdge> graph) {
         super(trackInfra.getSwitches(), trackInfra.getTrackGraph());

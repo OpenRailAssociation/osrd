@@ -29,4 +29,9 @@ public class DetectorImpl implements fr.sncf.osrd.new_infra.api.reservation.Dete
             nextSection = section;
         prevSection = section;
     }
+
+    @Override
+    public String toString() {
+        return String.format("Detector { id=%s }", id);
+    }
 }
