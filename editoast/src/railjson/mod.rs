@@ -2,7 +2,7 @@ pub mod operation;
 
 use rocket::serde::Deserialize;
 
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Deserialize, Hash, Eq, PartialEq)]
 #[serde(crate = "rocket::serde")]
 pub enum ObjectType {
     TrackSection,

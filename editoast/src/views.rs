@@ -1,10 +1,11 @@
 use crate::generate;
-use crate::models::{DBConnection, Infra, InfraError};
+use crate::models::{DBConnection, GeneratedInfra, Infra, InfraError};
 use crate::railjson::operation::Operation;
 use rocket::http::Status;
 use rocket::response::status::Custom;
 use rocket::serde::json::Json;
 use rocket::Route;
+use std::collections::HashMap;
 
 pub fn routes() -> Vec<Route> {
     routes![health, infra_list, edit_infra]
@@ -54,16 +55,29 @@ async fn edit_infra(
             .await
     }
 
+    // List objects that needs to be reloaded
+    let mut update_lists = HashMap::new();
+    for operation in operations.iter() {
+        operation.get_updated_objects(&mut update_lists);
+    }
+
     // Bump version
     let _infra = infra.clone();
     connection.run(move |c| _infra.bump_version(c)).await;
 
     // Refresh layers
-    let _infra = infra.clone();
-
-    // TODO: Make it work async
     connection
-        .run(move |c| generate::refresh(c, &_infra, false))
+        .run(move |c| generate::update(c, infra.id, &update_lists))
+        .await
+        .expect("Update generated data failed");
+
+    // Bump generated infra version to the infra version
+    connection
+        .run(move |c| {
+            let mut gen_infra = GeneratedInfra::retrieve(c, infra.id);
+            gen_infra.version = infra.version;
+            gen_infra.save(c);
+        })
         .await;
 
     // Check for warnings and errors
