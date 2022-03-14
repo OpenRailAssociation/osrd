@@ -5,6 +5,7 @@ extern crate diesel;
 
 mod client;
 mod generate;
+mod infra_cache;
 mod models;
 mod railjson;
 mod schema;
@@ -14,7 +15,9 @@ use clap::Parser;
 use client::{Client, Commands, GenerateArgs, PostgresConfig, RunserverArgs};
 use colored::*;
 use diesel::{Connection, PgConnection};
+use infra_cache::InfraCache;
 use models::{DBConnection, Infra};
+use std::collections::HashMap;
 use std::error::Error;
 use std::process::exit;
 
@@ -40,12 +43,29 @@ async fn run() -> Result<(), Box<dyn Error>> {
 }
 
 async fn runserver(args: RunserverArgs, pg_config: PostgresConfig) -> Result<(), Box<dyn Error>> {
+    let conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
+    let infras = Infra::list(&conn)?;
+
+    // Check generated data is up to date
+    for infra in infras.iter() {
+        generate::refresh(&conn, &infra, false)?;
+    }
+
+    // Initialize infra caches
+    let mut infra_caches = HashMap::<i32, InfraCache>::new();
+    for infra in infras.iter() {
+        infra_caches.insert(infra.id, InfraCache::init(&conn, infra.id));
+    }
+
+    // Config and run server
+
     let config = rocket::Config::figment()
         .merge(("port", args.port))
         .merge(("databases.postgres.url", pg_config.url()));
 
     rocket::custom(config)
         .attach(DBConnection::fairing())
+        .manage(infra_caches)
         .mount(args.get_root_url(), views::routes())
         .launch()
         .await?;

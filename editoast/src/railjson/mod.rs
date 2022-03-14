@@ -1,17 +1,34 @@
+pub mod change;
 pub mod operation;
 
 use rocket::serde::{Deserialize, Serialize};
 
-#[derive(Clone, Deserialize, Hash, Eq, PartialEq)]
+#[derive(Debug, Clone, Deserialize, Hash, Eq, PartialEq)]
 #[serde(crate = "rocket::serde")]
 pub enum ObjectType {
     TrackSection,
+    Signal,
+    SpeedSection,
+}
+
+#[derive(Debug)]
+pub struct ObjectRef {
+    pub obj_type: ObjectType,
+    pub obj_id: String,
+}
+
+impl ObjectRef {
+    pub fn new(obj_type: ObjectType, obj_id: String) -> Self {
+        ObjectRef { obj_type, obj_id }
+    }
 }
 
 impl ObjectType {
     pub fn get_table(&self) -> &str {
-        match self {
-            &ObjectType::TrackSection => "osrd_infra_tracksectionmodel",
+        match *self {
+            ObjectType::TrackSection => "osrd_infra_tracksectionmodel",
+            ObjectType::Signal => "osrd_infra_signalmodel",
+            ObjectType::SpeedSection => "osrd_infra_speedsectionmodel",
         }
     }
 }
