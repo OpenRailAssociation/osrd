@@ -1,6 +1,7 @@
 use super::{ObjectType, TrackSection};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
 use rocket::serde::Deserialize;
+use std::collections::HashMap;
 
 #[derive(Clone, Deserialize)]
 #[serde(crate = "rocket::serde", tag = "type")]
@@ -19,6 +20,14 @@ impl Operation {
             Operation::Delete(delete) => delete.apply(infra_id, conn),
             Operation::Create(create) => create.apply(infra_id, conn),
             Operation::Update(update) => update.apply(infra_id, conn),
+        }
+    }
+
+    pub fn get_updated_objects(&self, update_lists: &mut HashMap<ObjectType, Vec<String>>) {
+        match self {
+            Operation::Delete(delete) => delete.get_updated_objects(update_lists),
+            Operation::Create(create) => create.get_updated_objects(update_lists),
+            Operation::Update(update) => update.get_updated_objects(update_lists),
         }
     }
 }
@@ -41,6 +50,12 @@ impl DeleteOperation {
         .execute(conn)
         .expect("An error occured while applying a deletion");
     }
+    pub fn get_updated_objects(&self, update_lists: &mut HashMap<ObjectType, Vec<String>>) {
+        update_lists
+            .entry(self.obj_type.clone())
+            .or_insert(Vec::new())
+            .push(self.obj_id.clone());
+    }
 }
 
 #[derive(Clone, Deserialize)]
@@ -50,8 +65,27 @@ pub enum CreateOperation {
 }
 
 impl CreateOperation {
-    pub fn apply(&self, infra_id: i32, conn: &PgConnection) {
+    pub fn apply(&self, _infra_id: i32, _conn: &PgConnection) {
         unimplemented!()
+    }
+
+    pub fn get_obj_type(&self) -> ObjectType {
+        match self {
+            CreateOperation::TrackSection { railjson: _ } => ObjectType::TrackSection,
+        }
+    }
+
+    pub fn get_obj_id(&self) -> String {
+        match self {
+            CreateOperation::TrackSection { railjson } => railjson.id.clone(),
+        }
+    }
+
+    pub fn get_updated_objects(&self, update_lists: &mut HashMap<ObjectType, Vec<String>>) {
+        update_lists
+            .entry(self.get_obj_type())
+            .or_insert(Vec::new())
+            .push(self.get_obj_id());
     }
 }
 
@@ -60,7 +94,9 @@ impl CreateOperation {
 pub struct UpdateOperation {}
 
 impl UpdateOperation {
-    pub fn apply(&self, infra_id: i32, conn: &PgConnection) {
+    pub fn apply(&self, _infra_id: i32, _conn: &PgConnection) {
         unimplemented!()
     }
+
+    pub fn get_updated_objects(&self, _update_lists: &mut HashMap<ObjectType, Vec<String>>) {}
 }
