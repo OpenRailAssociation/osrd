@@ -13,18 +13,16 @@ pub fn refresh(conn: &PgConnection, infra: &Infra, force: bool) -> Result<(), Er
     // Check if refresh is needed
     let mut gen_infra = GeneratedInfra::retrieve(conn, infra.id);
     if !force && infra.version == gen_infra.version {
-        println!("  Already up to date!");
         return Ok(());
     }
 
     // Generate layers
-    println!("  Track sections...");
     TrackSectionLayer::clear(conn, infra.id)?;
     TrackSectionLayer::generate(conn, infra.id)?;
-    println!("  Signals...");
+
     SignalLayer::clear(conn, infra.id)?;
     SignalLayer::generate(conn, infra.id)?;
-    println!("  Speed sections...");
+
     SpeedSectionLayer::clear(conn, infra.id)?;
     SpeedSectionLayer::generate(conn, infra.id)?;
 
@@ -42,6 +40,8 @@ pub fn update(
     for (obj_type, obj_ids) in update_lists.iter() {
         match *obj_type {
             ObjectType::TrackSection => TrackSectionLayer::update(conn, infra_id, obj_ids)?,
+            ObjectType::Signal => SignalLayer::update(conn, infra_id, obj_ids)?,
+            ObjectType::SpeedSection => SpeedSectionLayer::update(conn, infra_id, obj_ids)?,
         };
     }
     Ok(())

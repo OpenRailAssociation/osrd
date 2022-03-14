@@ -3,7 +3,9 @@ use crate::schema::osrd_infra_speedsectionlayer::dsl::*;
 use diesel::result::Error;
 use diesel::sql_types::{Integer, Text};
 use diesel::{delete, prelude::*, sql_query};
+use itertools::Itertools;
 use rocket::serde::Serialize;
+use std::collections::HashSet;
 
 #[derive(QueryableByName, Queryable, Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -27,8 +29,12 @@ impl SpeedSectionLayer {
             .execute(conn)
     }
 
-    pub fn _update(conn: &PgConnection, infra: i32, obj_ids: &Vec<String>) -> Result<usize, Error> {
-        let obj_ids = obj_ids.join(",");
+    pub fn update(
+        conn: &PgConnection,
+        infra: i32,
+        obj_ids: &HashSet<String>,
+    ) -> Result<usize, Error> {
+        let obj_ids = obj_ids.iter().join(",");
         sql_query(
             "DELETE FROM osrd_infra_speedsectionlayer WHERE infra_id = $1 AND obj_id in ($2)",
         )
