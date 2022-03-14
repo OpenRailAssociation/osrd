@@ -7,6 +7,7 @@ use crate::railjson::ObjectType;
 use diesel::result::Error;
 use diesel::PgConnection;
 use std::collections::HashMap;
+use std::collections::HashSet;
 
 pub fn refresh(conn: &PgConnection, infra: &Infra, force: bool) -> Result<(), Error> {
     // Check if refresh is needed
@@ -35,7 +36,7 @@ pub fn refresh(conn: &PgConnection, infra: &Infra, force: bool) -> Result<(), Er
 pub fn update(
     conn: &PgConnection,
     infra_id: i32,
-    update_lists: &HashMap<ObjectType, Vec<String>>,
+    update_lists: &HashMap<ObjectType, HashSet<String>>,
 ) -> Result<(), Error> {
     // Update layers
     for (obj_type, obj_ids) in update_lists.iter() {
