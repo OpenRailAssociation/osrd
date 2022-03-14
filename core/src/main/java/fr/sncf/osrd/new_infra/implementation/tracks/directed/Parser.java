@@ -18,6 +18,7 @@ import fr.sncf.osrd.new_infra.api.tracks.undirected.SwitchBranch;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackInfra;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackNode;
+import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.utils.UnionFind;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import java.util.*;
@@ -47,6 +48,12 @@ public class Parser {
     /** Builds a directed infra from an undirected infra */
     public static DiTrackInfra fromUndirected(TrackInfra infra) {
         return new Parser(infra).convert();
+    }
+
+    /** Builds a directed infra from a RJS infra */
+    public static DiTrackInfra fromRJS(RJSInfra infra) {
+        var undirected = fr.sncf.osrd.new_infra.implementation.tracks.undirected.Parser.parseInfra(infra);
+        return fromUndirected(undirected);
     }
 
     /** Private function to call to convert the infra, with everything initialized */

@@ -31,28 +31,48 @@ public class DetectionSectionBuilder {
         }
     }
 
+    private record DetectorMaps(
+            Map<String, DetectorImpl> detectors,
+            Map<Direction, Map<String, DiDetector>> diDetectors
+    ) {}
+
     private final ArrayList<DetectionSection> detectionSections = new ArrayList<>();
-    private final HashMap<String, DetectorImpl> detectors = new HashMap<>();
-    private final HashMap<Direction, Map<String, DiDetector>> diDetectors = new HashMap<>();
-    private final HashMap<DiDetector, DetectionSection> diDetectorToNextSection = new HashMap<>();
+    private final Map<String, DetectorImpl> detectors;
+    private final Map<Direction, Map<String, DiDetector>> diDetectors;
+    private final Map<DiDetector, DetectionSection> diDetectorToNextSection = new HashMap<>();
     private final DiTrackInfra infra;
 
-    public DetectionSectionBuilder(DiTrackInfra infra) {
+    public DetectionSectionBuilder(
+            DiTrackInfra infra,
+            Map<String, DetectorImpl> detectors,
+            Map<Direction, Map<String, DiDetector>> diDetectors
+    ) {
         this.infra = infra;
+        this.detectors = detectors;
+        this.diDetectors = diDetectors;
     }
 
     /**
      * Build all detection sections and link them to waypoints
      */
     public static ArrayList<DetectionSection> build(DiTrackInfra infra) {
-        return new DetectionSectionBuilder(infra).build();
+        var detectorMaps = createDetectors(infra);
+        return new DetectionSectionBuilder(infra, detectorMaps.detectors, detectorMaps.diDetectors).build();
+    }
+
+    /**
+     * Build all detection sections and link them to waypoints, with detectors already instantiated
+     */
+    public static ArrayList<DetectionSection> build(
+            DiTrackInfra infra,
+            Map<String, DetectorImpl> detectors,
+            Map<Direction, Map<String, DiDetector>> diDetectors
+    ) {
+        return new DetectionSectionBuilder(infra, detectors, diDetectors).build();
     }
 
 
     private ArrayList<DetectionSection> build() {
-
-        createDetectors();
-
         createSectionsInsideTracks();
 
         createSectionsOverSeveralTracks();
@@ -61,7 +81,9 @@ public class DetectionSectionBuilder {
     }
 
     /** Creates the detectors and initialize the maps */
-    private void createDetectors() {
+    private static DetectorMaps createDetectors(DiTrackInfra infra) {
+        var detectors = new HashMap<String, DetectorImpl>();
+        var diDetectors = new HashMap<Direction, Map<String, DiDetector>>();
         for (var dir : Direction.values())
             diDetectors.put(dir, new HashMap<>());
         for (var track : infra.getTrackGraph().edges()) {
@@ -72,6 +94,7 @@ public class DetectionSectionBuilder {
                     diDetectors.get(dir).put(object.getID(), new DiDetectorImpl(newDetector, dir));
             }
         }
+        return new DetectorMaps(detectors, diDetectors);
     }
 
     /** Creates all the sections that are inside a single track */
@@ -108,7 +131,10 @@ public class DetectionSectionBuilder {
                 assert neighbor != track;
                 var commonNode = getCommonNode(infra.getTrackGraph(), neighbor, track);
                 var neighborDir = getDirectionFromEndpoint(infra.getTrackGraph(), neighbor, commonNode);
-                uf.union(beginIndex, getEndpointIndex(neighbor, EdgeEndpoint.startEndpoint(neighborDir)));
+                var linkIndex = beginIndex;
+                if (getDirectionFromEndpoint(infra.getTrackGraph(), track, commonNode) == BACKWARD)
+                    linkIndex = endIndex;
+                uf.union(linkIndex, getEndpointIndex(neighbor, EdgeEndpoint.startEndpoint(neighborDir)));
             }
         }
 
