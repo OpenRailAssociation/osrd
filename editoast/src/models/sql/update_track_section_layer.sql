@@ -1,4 +1,4 @@
-INSERT INTO osrd_infra_signallayer (obj_id, infra_id, geographic, schematic)
+INSERT INTO osrd_infra_tracksectionlayer (obj_id, infra_id, geographic, schematic)
 SELECT obj_id,
     $1,
     ST_Transform(ST_GeomFromGeoJSON(data->'geo'), 3857),

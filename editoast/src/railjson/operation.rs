@@ -1,7 +1,7 @@
 use super::{ObjectType, TrackSection};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
 use rocket::serde::Deserialize;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Deserialize)]
 #[serde(crate = "rocket::serde", tag = "type")]
@@ -23,7 +23,7 @@ impl Operation {
         }
     }
 
-    pub fn get_updated_objects(&self, update_lists: &mut HashMap<ObjectType, Vec<String>>) {
+    pub fn get_updated_objects(&self, update_lists: &mut HashMap<ObjectType, HashSet<String>>) {
         match self {
             Operation::Delete(delete) => delete.get_updated_objects(update_lists),
             Operation::Create(create) => create.get_updated_objects(update_lists),
@@ -50,11 +50,11 @@ impl DeleteOperation {
         .execute(conn)
         .expect("An error occured while applying a deletion");
     }
-    pub fn get_updated_objects(&self, update_lists: &mut HashMap<ObjectType, Vec<String>>) {
+    pub fn get_updated_objects(&self, update_lists: &mut HashMap<ObjectType, HashSet<String>>) {
         update_lists
             .entry(self.obj_type.clone())
-            .or_insert(Vec::new())
-            .push(self.obj_id.clone());
+            .or_insert(Default::default())
+            .insert(self.obj_id.clone());
     }
 }
 
@@ -65,8 +65,16 @@ pub enum CreateOperation {
 }
 
 impl CreateOperation {
-    pub fn apply(&self, _infra_id: i32, _conn: &PgConnection) {
-        unimplemented!()
+    pub fn apply(&self, infra_id: i32, conn: &PgConnection) {
+        sql_query(format!(
+            "INSERT INTO {} (infra_id, obj_id, data) VALUES ({}, '{}', '{}')",
+            self.get_obj_type().get_table(),
+            infra_id,
+            self.get_obj_id(),
+            self.get_data(),
+        ))
+        .execute(conn)
+        .expect("An error occured while applying a deletion");
     }
 
     pub fn get_obj_type(&self) -> ObjectType {
@@ -81,11 +89,17 @@ impl CreateOperation {
         }
     }
 
-    pub fn get_updated_objects(&self, update_lists: &mut HashMap<ObjectType, Vec<String>>) {
+    pub fn get_data(&self) -> String {
+        match self {
+            CreateOperation::TrackSection { railjson } => serde_json::to_string(railjson).unwrap(),
+        }
+    }
+
+    pub fn get_updated_objects(&self, update_lists: &mut HashMap<ObjectType, HashSet<String>>) {
         update_lists
             .entry(self.get_obj_type())
-            .or_insert(Vec::new())
-            .push(self.get_obj_id());
+            .or_insert(Default::default())
+            .insert(self.get_obj_id());
     }
 }
 
@@ -98,5 +112,7 @@ impl UpdateOperation {
         unimplemented!()
     }
 
-    pub fn get_updated_objects(&self, _update_lists: &mut HashMap<ObjectType, Vec<String>>) {}
+    pub fn get_updated_objects(&self, _update_lists: &mut HashMap<ObjectType, HashSet<String>>) {
+        unimplemented!()
+    }
 }

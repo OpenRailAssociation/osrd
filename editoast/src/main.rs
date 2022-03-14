@@ -83,3 +83,19 @@ fn generate(args: GenerateArgs, pg_config: PostgresConfig) -> Result<(), Box<dyn
     }
     Ok(())
 }
+
+#[cfg(test)]
+mod test {
+    use super::views;
+    use rocket::http::Status;
+    use rocket::local::blocking::Client;
+    use rocket::routes;
+
+    #[test]
+    fn health() {
+        let serv = rocket::build().mount("/", routes![views::health]);
+        let client = Client::tracked(serv).expect("valid rocket instance");
+        let response = client.get("/health").dispatch();
+        assert_eq!(response.status(), Status::Ok);
+    }
+}
