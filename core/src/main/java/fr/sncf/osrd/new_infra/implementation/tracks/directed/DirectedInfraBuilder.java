@@ -94,6 +94,7 @@ public class DirectedInfraBuilder {
         }
     }
 
+    /** Creates an edge and registers it in the graph */
     private void makeEdge(HashBiMap<Integer, DiTrackNode> nodes, TrackEdge edge, Direction dir) {
         var begin = findNode(nodes, edge, dir, endEndpoint(dir.opposite()));
         var end = findNode(nodes, edge, dir, endEndpoint(dir));
@@ -150,14 +151,14 @@ public class DirectedInfraBuilder {
                 + (endpoint == EdgeEndpoint.END ? 1 : 0);
     }
 
-    /** Is the edge a switch branch */
-    private static boolean isSwitchBranch(TrackEdge edge) {
-        return edge instanceof SwitchBranch;
-    }
-
     /** Returns whether we can link the two edges together */
     private static boolean canGoFromAToB(TrackEdge a, TrackEdge b) {
-        return (!isSwitchBranch(a)) || (!isSwitchBranch(b));
+        return (isNotSwitchBranch(a)) || (isNotSwitchBranch(b));
+    }
+
+    /** Is the edge something other than a switch branch */
+    private static boolean isNotSwitchBranch(TrackEdge edge) {
+        return !(edge instanceof SwitchBranch);
     }
 
     /** Returns either (node -> directed node) map matching the given direction */

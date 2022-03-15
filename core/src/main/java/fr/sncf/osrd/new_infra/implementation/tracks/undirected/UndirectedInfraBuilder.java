@@ -22,12 +22,14 @@ import java.util.HashSet;
 
 public class UndirectedInfraBuilder {
 
+    /** Constructor */
     private UndirectedInfraBuilder() {
         builder = NetworkBuilder
                 .directed()
                 .immutable();
     }
 
+    /** Creates a TrackInfra from a railjson infra */
     public static TrackInfra parseInfra(RJSInfra infra) {
         return new UndirectedInfraBuilder().parse(infra);
     }
@@ -36,6 +38,7 @@ public class UndirectedInfraBuilder {
     private final HashMap<String, TrackNode> endEndpoints = new HashMap<>();
     private final ImmutableNetwork.Builder<TrackNode, TrackEdge> builder;
 
+    /** Parse the railjson to build an infra */
     private TrackInfra parse(RJSInfra infra) {
         // Creates switches
         var switchTypeMap = new HashMap<String, RJSSwitchType>();
@@ -72,6 +75,7 @@ public class UndirectedInfraBuilder {
         return new InfraTrackInfra(switches.build(), builder.build());
     }
 
+    /** Creates a waypoint and add it to the corresponding track */
     private void makeWaypoint(HashMap<String, TrackSection> trackSectionsByID,
                             RJSRouteWaypoint waypoint, TrackObjectType trackObjectType) {
         var track = waypoint.track.getTrack(trackSectionsByID);
@@ -79,6 +83,7 @@ public class UndirectedInfraBuilder {
         track.getAttrs().getAttrOrThrow(TRACK_OBJECTS).add(newWaypoint);
     }
 
+    /** Creates a track section and registers it in the graph */
     private TrackSection makeTrackSection(RJSTrackSection track) {
         var begin = getNode(track.id, EdgeEndpoint.BEGIN);
         var end = getNode(track.id, EdgeEndpoint.END);
@@ -88,6 +93,7 @@ public class UndirectedInfraBuilder {
         return edge;
     }
 
+    /** Creates a node and registers it in the graph */
     private void addNode(String trackId, EdgeEndpoint endpoint, TrackNode node) {
         var map = beginEndpoints;
         if (endpoint == EdgeEndpoint.END)
@@ -101,6 +107,7 @@ public class UndirectedInfraBuilder {
         builder.addNode(node);
     }
 
+    /** Returns the node at the given end of the track */
     private TrackNode getNode(String trackId, EdgeEndpoint endpoint) {
         var map = beginEndpoints;
         if (endpoint == EdgeEndpoint.END)

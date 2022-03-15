@@ -1,5 +1,6 @@
 package fr.sncf.osrd.new_infra.implementation.signaling;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.NetworkBuilder;
@@ -11,6 +12,7 @@ import fr.sncf.osrd.new_infra.implementation.reservation.ReservationInfraBuilder
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
 import java.util.Set;
+import java.util.function.Function;
 
 public class SignalingInfraBuilder {
 
@@ -20,6 +22,7 @@ public class SignalingInfraBuilder {
     private ImmutableMultimap<RJSSignal, Signal<? extends SignalState>> signalMap;
     private ImmutableMultimap<ReservationRoute, SignalingRoute> routeMap;
 
+    /** Constructor */
     public SignalingInfraBuilder(
             RJSInfra rjsInfra,
             ReservationInfra reservationInfra,
@@ -30,30 +33,29 @@ public class SignalingInfraBuilder {
         this.signalingModules = signalingModules;
     }
 
+    /** Creates a signaling infra from railjson data and a reservation infra */
     public static SignalingInfra fromReservationInfra(
             RJSInfra rjsInfra,
-            ReservationInfra reservationInfra
+            ReservationInfra reservationInfra,
+            Set<SignalingModule> signalingModules
     ) {
-        var signalingModules = loadSignalingModules();
         return new SignalingInfraBuilder(rjsInfra, reservationInfra, signalingModules).build();
     }
 
-    private static Set<SignalingModule> loadSignalingModules() {
-        // TODO
-        return Set.of();
+    /** Creates a signaling infra from a railjson infra */
+    public static SignalingInfra fromRJSInfra(RJSInfra rjsInfra, Set<SignalingModule> signalingModules) {
+        return fromReservationInfra(rjsInfra, ReservationInfraBuilder.fromRJS(rjsInfra), signalingModules);
     }
 
-    public static SignalingInfra fromRJSInfra(RJSInfra rjsInfra) {
-        return fromReservationInfra(rjsInfra, ReservationInfraBuilder.fromRJS(rjsInfra));
-    }
-
-    public SignalingInfra build() {
+    /** Builds the signaling infra */
+    private SignalingInfra build() {
         signalMap = makeSignalMap();
         routeMap = makeRouteMap();
         ImmutableNetwork<DiDetector, SignalingRoute> signalingRouteGraph = makeSignalingRouteGraph();
         return new SignalingInfraImpl(reservationInfra, signalMap, routeMap, signalingRouteGraph);
     }
 
+    /** Creates the signaling route graph */
     private ImmutableNetwork<DiDetector, SignalingRoute> makeSignalingRouteGraph() {
         var networkBuilder = NetworkBuilder
                 .directed()
@@ -69,20 +71,21 @@ public class SignalingInfraBuilder {
         return networkBuilder.build();
     }
 
+    /** Creates the route multimap, calling each module and merging the results */
     private ImmutableMultimap<ReservationRoute, SignalingRoute> makeRouteMap() {
-        var res = ImmutableMultimap.<ReservationRoute, SignalingRoute>builder();
-        for (var module : signalingModules) {
-            var moduleResults = module.createRoutes(reservationInfra, signalMap);
-            for (var entry : moduleResults.entrySet())
-                res.put(entry.getKey(), entry.getValue());
-        }
-        return res.build();
+        return loadAndMergeMultimap(module -> module.createRoutes(reservationInfra, signalMap));
     }
 
+    /** Creates the signal multimap, calling each module and merging the results */
     private ImmutableMultimap<RJSSignal, Signal<? extends SignalState>> makeSignalMap() {
-        var res = ImmutableMultimap.<RJSSignal, Signal<? extends SignalState>>builder();
+        return loadAndMergeMultimap(module -> module.createSignals(reservationInfra, rjsInfra));
+    }
+
+    /** Runs a module method and merges the results as a multimap */
+    private <T, U> ImmutableMultimap<T, U> loadAndMergeMultimap(Function<SignalingModule, ImmutableMap<T, U>> f) {
+        var res = ImmutableMultimap.<T, U>builder();
         for (var module : signalingModules) {
-            var moduleResults = module.createSignals(reservationInfra, rjsInfra);
+            var moduleResults = f.apply(module);
             for (var entry : moduleResults.entrySet())
                 res.put(entry.getKey(), entry.getValue());
         }

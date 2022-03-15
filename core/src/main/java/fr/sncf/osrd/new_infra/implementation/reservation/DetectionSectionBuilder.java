@@ -11,7 +11,6 @@ import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.reservation.DetectionSection;
 import fr.sncf.osrd.new_infra.api.reservation.DiDetector;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackInfra;
-import fr.sncf.osrd.new_infra.api.tracks.undirected.DiDetectorImpl;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge;
 import fr.sncf.osrd.utils.UnionFind;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
@@ -19,22 +18,15 @@ import java.util.*;
 
 public class DetectionSectionBuilder {
 
-    private static int getEndpointIndex(TrackEdge track, EdgeEndpoint endpoint) {
-        return track.getAttrs().getAttrOrThrow(INDEX) * 2 + endpoint.id;
-    }
-
+    /** Represents a DetectionSection that isn't complete yet */
     private static class SectionBuilder {
         public final ImmutableSet.Builder<DiDetector> detectors = new ImmutableSet.Builder<>();
 
+        /** Builds the DetectionSection */
         DetectionSection build() {
             return new DetectionSectionImpl(detectors.build());
         }
     }
-
-    private record DetectorMaps(
-            Map<String, DetectorImpl> detectors,
-            Map<Direction, Map<String, DiDetector>> diDetectors
-    ) {}
 
     private final ArrayList<DetectionSection> detectionSections = new ArrayList<>();
     private final Map<String, DetectorImpl> detectors;
@@ -42,6 +34,7 @@ public class DetectionSectionBuilder {
     private final Map<DiDetector, DetectionSection> diDetectorToNextSection = new HashMap<>();
     private final DiTrackInfra infra;
 
+    /** Constructor */
     public DetectionSectionBuilder(
             DiTrackInfra infra,
             Map<String, DetectorImpl> detectors,
@@ -56,8 +49,8 @@ public class DetectionSectionBuilder {
      * Build all detection sections and link them to waypoints
      */
     public static ArrayList<DetectionSection> build(DiTrackInfra infra) {
-        var detectorMaps = createDetectors(infra);
-        return new DetectionSectionBuilder(infra, detectorMaps.detectors, detectorMaps.diDetectors).build();
+        var detectorMaps = DetectorMaps.from(infra);
+        return new DetectionSectionBuilder(infra, detectorMaps.detectorMap, detectorMaps.diDetectorMap).build();
     }
 
     /**
@@ -72,29 +65,13 @@ public class DetectionSectionBuilder {
     }
 
 
+    /** Builds all the results */
     private ArrayList<DetectionSection> build() {
         createSectionsInsideTracks();
 
         createSectionsOverSeveralTracks();
 
         return buildResult();
-    }
-
-    /** Creates the detectors and initialize the maps */
-    private static DetectorMaps createDetectors(DiTrackInfra infra) {
-        var detectors = new HashMap<String, DetectorImpl>();
-        var diDetectors = new HashMap<Direction, Map<String, DiDetector>>();
-        for (var dir : Direction.values())
-            diDetectors.put(dir, new HashMap<>());
-        for (var track : infra.getTrackGraph().edges()) {
-            for (var object : track.getAttrs().getAttrOrThrow(TRACK_OBJECTS)) {
-                var newDetector = new DetectorImpl(object.getID());
-                detectors.put(object.getID(), newDetector);
-                for (var dir : Direction.values())
-                    diDetectors.get(dir).put(object.getID(), new DiDetectorImpl(newDetector, dir));
-            }
-        }
-        return new DetectorMaps(detectors, diDetectors);
     }
 
     /** Creates all the sections that are inside a single track */
@@ -146,12 +123,13 @@ public class DetectionSectionBuilder {
 
             var beginGroupIndex = uf.findRoot(getEndpointIndex(track, EdgeEndpoint.BEGIN));
             var startDetectionSection = detectionSectionsMap.computeIfAbsent(beginGroupIndex,
-                    DetectionSectionBuilder::createBuilder);
+                    (x) -> new SectionBuilder());
+
             var firstWaypoint = waypoints.get(0);
 
             var endGroupIndex = uf.findRoot(getEndpointIndex(track, EdgeEndpoint.END));
             var endDetectionSection = detectionSectionsMap.computeIfAbsent(endGroupIndex,
-                    DetectionSectionBuilder::createBuilder);
+                    (x) -> new SectionBuilder());
             var lastWaypoint = waypoints.get(waypoints.size() - 1);
 
             startDetectionSection.detectors.add(diDetectors.get(BACKWARD).get(firstWaypoint.getID()));
@@ -205,10 +183,7 @@ public class DetectionSectionBuilder {
         diDetectorToNextSection.put(diDetector, section);
     }
 
-    private static SectionBuilder createBuilder(int group) {
-        return new SectionBuilder();
-    }
-
+    /** Removes a detection section */
     private void deleteSection(DetectionSection section) {
         for (var detector : section.getDetectors()) {
             for (var dir : Direction.values()) {
@@ -217,5 +192,10 @@ public class DetectionSectionBuilder {
                 }
             }
         }
+    }
+
+    /** Returns the index of a track + endpoint as a unique integer, used in the union find */
+    private static int getEndpointIndex(TrackEdge track, EdgeEndpoint endpoint) {
+        return track.getAttrs().getAttrOrThrow(INDEX) * 2 + endpoint.id;
     }
 }

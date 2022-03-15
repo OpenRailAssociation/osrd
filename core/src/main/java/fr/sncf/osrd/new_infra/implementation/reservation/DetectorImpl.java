@@ -8,6 +8,7 @@ public class DetectorImpl implements fr.sncf.osrd.new_infra.api.reservation.Dete
     private DetectionSection nextSection;
     private DetectionSection prevSection;
 
+    /** Constructor */
     public DetectorImpl(String id) {
         this.id = id;
     }
@@ -24,6 +25,7 @@ public class DetectorImpl implements fr.sncf.osrd.new_infra.api.reservation.Dete
         return prevSection;
     }
 
+    /** Sets the next detection section toward the given direction (package private) */
     void setDetectionSection(Direction direction, DetectionSection section) {
         if (direction == Direction.FORWARD)
             nextSection = section;
