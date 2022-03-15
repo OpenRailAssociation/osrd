@@ -17,4 +17,9 @@ public class SingleDirectionalRJSTrackRange extends RJSTrackRange {
             return ApplicableDirection.NORMAL;
         return ApplicableDirection.REVERSE;
     }
+
+    public SingleDirectionalRJSTrackRange(EdgeDirection direction, RJSObjectRef<RJSTrackSection> track) {
+        this.direction = direction;
+        this.track = track;
+    }
 }

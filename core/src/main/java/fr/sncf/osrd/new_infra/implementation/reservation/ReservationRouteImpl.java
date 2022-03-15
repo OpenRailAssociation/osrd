@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import fr.sncf.osrd.new_infra.api.reservation.Detector;
 import fr.sncf.osrd.new_infra.api.reservation.DiDetector;
 import fr.sncf.osrd.new_infra.api.reservation.ReservationRoute;
-
 import java.util.Collection;
 
 public class ReservationRouteImpl implements ReservationRoute {
@@ -41,15 +40,21 @@ public class ReservationRouteImpl implements ReservationRoute {
         return conflictingRoutes;
     }
 
-    /** Registers a collection of conflicting routes (module private) */
+    /** Registers a collection of conflicting routes (package private).
+     * Ignores `this` if present in the collection */
     void registerConflict(Collection<ReservationRouteImpl> routes) {
         for (var route : routes)
             if (route != this)
                 conflictingRoutesBuilder.add(route);
     }
 
-    /** Builds the conflicting route list (module private) */
+    /** Builds the conflicting route list (package private) */
     void build() {
         conflictingRoutes = conflictingRoutesBuilder.build();
+    }
+
+    @Override
+    public String toString() {
+        return String.format("ReservationRoute { id=%s }", id);
     }
 }

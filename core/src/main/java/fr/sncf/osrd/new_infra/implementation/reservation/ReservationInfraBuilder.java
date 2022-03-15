@@ -1,5 +1,9 @@
 package fr.sncf.osrd.new_infra.implementation.reservation;
 
+import static fr.sncf.osrd.new_infra.api.Direction.BACKWARD;
+import static fr.sncf.osrd.new_infra.api.Direction.FORWARD;
+import static fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge.TRACK_OBJECTS;
+
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -13,12 +17,10 @@ import fr.sncf.osrd.new_infra.implementation.tracks.directed.DirectedInfraBuilde
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
-
-import java.util.*;
-
-import static fr.sncf.osrd.new_infra.api.Direction.BACKWARD;
-import static fr.sncf.osrd.new_infra.api.Direction.FORWARD;
-import static fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge.TRACK_OBJECTS;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class ReservationInfraBuilder {
 
@@ -27,21 +29,25 @@ public class ReservationInfraBuilder {
     private Map<String, DetectorImpl> detectorMap;
     private Map<Direction, Map<String, DiDetector>> diDetectorMap;
 
-    public ReservationInfraBuilder(RJSInfra rjsInfra, DiTrackInfra infra) {
+    /** Constructor */
+    private ReservationInfraBuilder(RJSInfra rjsInfra, DiTrackInfra infra) {
         this.rjsInfra = rjsInfra;
         this.diTrackInfra = infra;
     }
 
+    /** Builds a ReservationInfra from railjson data and a DiTrackInfra */
     public static ReservationInfra fromDiTrackInfra(RJSInfra rjsInfra, DiTrackInfra diTrackInfra) {
-        return new ReservationInfraBuilder(rjsInfra, diTrackInfra).convert();
+        return new ReservationInfraBuilder(rjsInfra, diTrackInfra).build();
     }
 
+    /** Builds a ReservationInfra from a railjson infra */
     public static ReservationInfra fromRJS(RJSInfra rjsInfra) {
         var diInfra = DirectedInfraBuilder.fromRJS(rjsInfra);
         return fromDiTrackInfra(rjsInfra, diInfra);
     }
 
-    private ReservationInfra convert() {
+    /** Builds everything */
+    private ReservationInfra build() {
         var detectorMaps = DetectorMaps.from(diTrackInfra);
         detectorMap = detectorMaps.detectorMap;
         diDetectorMap = detectorMaps.diDetectorMap;
@@ -66,6 +72,7 @@ public class ReservationInfraBuilder {
         return builder.build();
     }
 
+    /** Instantiates the routes and links them together in the graph */
     private ImmutableNetwork<DiDetector, ReservationRoute> makeRouteGraph() {
         var networkBuilder = NetworkBuilder
                 .directed()
@@ -96,6 +103,7 @@ public class ReservationInfraBuilder {
         return networkBuilder.build();
     }
 
+    /** Lists the release points on a given route (in order) */
     private ImmutableList<Detector> releasePoints(RJSRoute rjsRoute) {
         var builder = ImmutableList.<Detector>builder();
         for (var detector : rjsRoute.releaseDetectors) {
@@ -104,6 +112,7 @@ public class ReservationInfraBuilder {
         return builder.build();
     }
 
+    /** Creates a set of detection section present in the route */
     private Set<DetectionSection> sectionsOnRoute(RJSRoute route) {
         var res = new HashSet<DetectionSection>();
         for (var d : detectorsOnRoute(route))
@@ -111,16 +120,7 @@ public class ReservationInfraBuilder {
         return res;
     }
 
-    private static void addIfDifferent(List<DiDetector> list, DiDetector d) {
-        if (list.size() == 0) {
-            list.add(d);
-            return;
-        }
-        var last = list.get(list.size() - 1);
-        if (!last.getDetector().getID().equals(d.getDetector().getID()))
-            list.add(d);
-    }
-
+    /** Creates the list of DiDetectors present on the route */
     private ImmutableList<DiDetector> detectorsOnRoute(RJSRoute route) {
         var res = new ArrayList<DiDetector>();
         for (var trackRange : route.path) {
@@ -134,15 +134,16 @@ public class ReservationInfraBuilder {
             }
             if (trackRange.direction.equals(EdgeDirection.START_TO_STOP)) {
                 for (var o : objectsOnTrack)
-                    addIfDifferent(res, diDetectorMap.get(FORWARD).get(o.getID()));
+                    res.add(diDetectorMap.get(FORWARD).get(o.getID()));
             } else {
                 for (int i = objectsOnTrack.size() - 1; i >= 0; i--)
-                    addIfDifferent(res, diDetectorMap.get(BACKWARD).get(objectsOnTrack.get(i).getID()));
+                    res.add(diDetectorMap.get(BACKWARD).get(objectsOnTrack.get(i).getID()));
             }
         }
         return ImmutableList.copyOf(res);
     }
 
+    /** Creates a mapping from a directed detector to its next detection section */
     private ImmutableMap<DiDetector, DetectionSection> makeSectionMap(ArrayList<DetectionSection> sections) {
         var builder = ImmutableMap.<DiDetector, DetectionSection>builder();
         for (var section : sections) {
