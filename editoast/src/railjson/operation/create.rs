@@ -56,3 +56,33 @@ impl CreateOperation {
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use crate::client::PostgresConfig;
+    use crate::models::Infra;
+    use diesel::result::Error;
+    use diesel::{Connection, PgConnection};
+
+    use super::CreateOperation;
+    use crate::railjson::TrackSection;
+
+    #[test]
+    fn create_track() {
+        let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
+        conn.test_transaction::<_, Error, _>(|| {
+            let track_creation = CreateOperation::TrackSection {
+                railjson: TrackSection {
+                    id: "my_track".to_string(),
+                    length: 100.,
+                    line_name: "line_test".to_string(),
+                    track_name: "track_test".to_string(),
+                    ..Default::default()
+                },
+            };
+            let infra = Infra::_create(&"test".to_string(), &conn);
+            track_creation.apply(infra.id, &conn);
+            Ok(())
+        });
+    }
+}

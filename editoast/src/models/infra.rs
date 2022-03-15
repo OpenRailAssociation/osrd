@@ -6,6 +6,8 @@ use rocket::serde::Serialize;
 use std::error::Error;
 use std::fmt;
 
+static _RAILJSON_VERSION: &'static str = "2.2.0";
+
 #[derive(Clone, QueryableByName, Queryable, Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
 #[table_name = "osrd_infra_infra"]
@@ -76,5 +78,34 @@ impl Infra {
             .set(version.eq(self.version + 1))
             .get_result(conn)
             .expect("Bump infra version failed")
+    }
+
+    pub fn _create(infra_name: &String, conn: &PgConnection) -> Infra {
+        sql_query(format!(
+            "INSERT INTO osrd_infra_infra (name, railjson_version, owner, version)
+             VALUES ('{}', '{}', '00000000-0000-0000-0000-000000000000', 1)
+             RETURNING *",
+            infra_name, _RAILJSON_VERSION
+        ))
+        .load::<Infra>(conn)
+        .expect("Fail to create an Infra")[0]
+            .clone()
+    }
+}
+#[cfg(test)]
+mod test {
+    use super::Infra;
+    use crate::client::PostgresConfig;
+    use diesel::result::Error;
+    use diesel::{Connection, PgConnection};
+
+    #[test]
+    fn create_infra() {
+        let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
+        conn.test_transaction::<_, Error, _>(|| {
+            let infra = Infra::_create(&"test".to_string(), &conn);
+            assert_eq!("test", infra.name);
+            Ok(())
+        });
     }
 }
