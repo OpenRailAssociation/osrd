@@ -35,8 +35,8 @@ public class ReservationInfraImpl extends DiTrackInfraImpl implements Reservatio
     }
 
     @Override
-    public DiDetector getDiDetector(String id, Direction dir) {
-        return diDetectorMap.get(dir).get(id);
+    public ImmutableMap<Direction, ImmutableMap<String, DiDetector>> getDiDetectorMap() {
+        return diDetectorMap;
     }
 
     @Override

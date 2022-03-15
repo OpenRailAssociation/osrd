@@ -9,6 +9,7 @@ import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.reservation.*;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackInfra;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackObject;
+import fr.sncf.osrd.new_infra.implementation.tracks.directed.DirectedInfraBuilder;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
@@ -19,24 +20,24 @@ import static fr.sncf.osrd.new_infra.api.Direction.BACKWARD;
 import static fr.sncf.osrd.new_infra.api.Direction.FORWARD;
 import static fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge.TRACK_OBJECTS;
 
-public class Parser {
+public class ReservationInfraBuilder {
 
     private final DiTrackInfra diTrackInfra;
     private final RJSInfra rjsInfra;
     private Map<String, DetectorImpl> detectorMap;
     private Map<Direction, Map<String, DiDetector>> diDetectorMap;
 
-    public Parser(RJSInfra rjsInfra, DiTrackInfra infra) {
+    public ReservationInfraBuilder(RJSInfra rjsInfra, DiTrackInfra infra) {
         this.rjsInfra = rjsInfra;
         this.diTrackInfra = infra;
     }
 
     public static ReservationInfra fromDiTrackInfra(RJSInfra rjsInfra, DiTrackInfra diTrackInfra) {
-        return new Parser(rjsInfra, diTrackInfra).convert();
+        return new ReservationInfraBuilder(rjsInfra, diTrackInfra).convert();
     }
 
     public static ReservationInfra fromRJS(RJSInfra rjsInfra) {
-        var diInfra = fr.sncf.osrd.new_infra.implementation.tracks.directed.Parser.fromRJS(rjsInfra);
+        var diInfra = DirectedInfraBuilder.fromRJS(rjsInfra);
         return fromDiTrackInfra(rjsInfra, diInfra);
     }
 

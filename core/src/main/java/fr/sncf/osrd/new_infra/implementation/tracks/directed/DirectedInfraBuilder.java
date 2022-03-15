@@ -18,12 +18,13 @@ import fr.sncf.osrd.new_infra.api.tracks.undirected.SwitchBranch;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackInfra;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackNode;
+import fr.sncf.osrd.new_infra.implementation.tracks.undirected.UndirectedInfraBuilder;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.utils.UnionFind;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import java.util.*;
 
-public class Parser {
+public class DirectedInfraBuilder {
     /** Map from undirected node to directed node (forward) */
     private final HashMap<TrackNode, DiTrackNode> forwardNodeMap = new HashMap<>();
     /** Map from undirected node to directed node (backward) */
@@ -38,7 +39,7 @@ public class Parser {
     private final ImmutableNetwork.Builder<DiTrackNode, DiTrackEdge> graph;
 
     /** Constructor */
-    private Parser(TrackInfra infra) {
+    private DirectedInfraBuilder(TrackInfra infra) {
         this.undirectedGraph = infra.getTrackGraph();
         uf = new UnionFind(undirectedGraph.edges().size() * 4);
         graph = NetworkBuilder.directed().immutable();
@@ -47,12 +48,12 @@ public class Parser {
 
     /** Builds a directed infra from an undirected infra */
     public static DiTrackInfra fromUndirected(TrackInfra infra) {
-        return new Parser(infra).convert();
+        return new DirectedInfraBuilder(infra).convert();
     }
 
     /** Builds a directed infra from a RJS infra */
     public static DiTrackInfra fromRJS(RJSInfra infra) {
-        var undirected = fr.sncf.osrd.new_infra.implementation.tracks.undirected.Parser.parseInfra(infra);
+        var undirected = UndirectedInfraBuilder.parseInfra(infra);
         return fromUndirected(undirected);
     }
 
