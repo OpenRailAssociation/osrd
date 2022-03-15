@@ -25,6 +25,15 @@ jobs:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
+  build_push_chartos:
+    uses: DGEXSolutions/osrd/.github/workflows/docker-build-push-template.yml@dev
+    with:
+      context: chartos
+      image_name: osrd/osrd-chartos
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
   build_push_front:
     uses: DGEXSolutions/osrd/.github/workflows/docker-build-push-template.yml@dev
     with:
