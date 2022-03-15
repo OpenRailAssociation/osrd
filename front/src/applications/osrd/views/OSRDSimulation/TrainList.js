@@ -67,7 +67,7 @@ const InputTime = (props) => {
 export default function TrainsList(props) {
   const { toggleTrainList } = props;
   const {
-    selectedProjection, selectedTrain,
+    selectedProjection, selectedTrain, departureArrivalTimes
   } = useSelector((state) => state.osrdsimulation);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
@@ -116,7 +116,7 @@ export default function TrainsList(props) {
   const debouncedInputTime = useDebounce(inputTime, 500);
 
   const formatTrainsList = () => {
-    const newFormattedList = simulation.trains.map((train, idx) => {
+    const newFormattedList = departureArrivalTimes.map((train, idx) => {
       if (filter === '' || (train.labels !== undefined && train.labels.join().toLowerCase().includes(filter.toLowerCase()))) {
         return (
           <tr
@@ -140,7 +140,7 @@ export default function TrainsList(props) {
               <div
                 className="cell-inner cell-inner-button"
                 role="button"
-                onClick={() => changeSelectedTrain(idx, 'name', train.name, sec2time(train.base.stops[0].time))}
+                onClick={() => changeSelectedTrain(idx, 'name', train.name, sec2time(train.departure))}
                 tabIndex={0}
               >
                 {trainNameClickedIDX === idx ? (
@@ -157,20 +157,20 @@ export default function TrainsList(props) {
               <div
                 className="cell-inner cell-inner-button"
                 role="button"
-                onClick={() => changeSelectedTrain(idx, 'time', train.name, sec2time(train.base.stops[0].time))}
+                onClick={() => changeSelectedTrain(idx, 'time', train.name, sec2time(train.departure))}
                 tabIndex={0}
               >
                 {trainNameClickedIDX === idx ? (
                   <InputTime
                     idx={idx}
                     changeTrainStartTime={changeTrainStartTime}
-                    time={sec2time(train.base.stops[0].time)}
+                    time={sec2time(train.departure)}
                     typeOfInputFocused={typeOfInputFocused}
                   />
-                ) : sec2time(train.base.stops[0].time)}
+                ) : sec2time(train.departure)}
               </div>
             </td>
-            <td><div className="cell-inner">{sec2time(train.base.stops[train.base.stops.length - 1].time)}</div></td>
+            <td><div className="cell-inner">{sec2time(train.arrival)}</div></td>
             <td><div className="cell-inner">{train.labels && train.labels.join(' / ')}</div></td>
             <td>
               <div className="cell-inner">
@@ -224,7 +224,7 @@ export default function TrainsList(props) {
     if (!onInput) {
       setFormattedList(formatTrainsList());
     }
-  }, [selectedTrain, simulation, filter, trainNameClickedIDX, typeOfInputFocused]);
+  }, [selectedTrain, departureArrivalTimes, filter, trainNameClickedIDX, typeOfInputFocused]);
 
   return (
     <>

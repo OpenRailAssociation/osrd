@@ -246,7 +246,8 @@ const enableInteractivity = (
   function debounceUpdateTimePositionValues(timePositionLocal, immediatePositionsValues, interval) {
     clearTimeout(debounceTimeoutId);
     debounceTimeoutId = setTimeout(() => {
-      dispatch(updateTimePositionValues(timePositionLocal, immediatePositionsValues));
+      dispatch(updateTimePositionValues(timePositionLocal, null));
+
     }, interval);
   }
 
@@ -260,17 +261,18 @@ const enableInteractivity = (
           ? chart.y.invert(d3.mouse(d3.event.currentTarget)[1])
           : chart.x.invert(d3.mouse(d3.event.currentTarget)[0]);
 
-        const immediatePositionsValues = interpolateOnTime(
+
+
+        debounceUpdateTimePositionValues(timePositionLocal, null, 15);
+        const immediatePositionsValuesForPointer = interpolateOnTime(
           dataSimulation,
           keyValues,
           LIST_VALUES_NAME_SPACE_TIME,
           timePositionLocal
         );
-
-        debounceUpdateTimePositionValues(timePositionLocal, null, 15);
-
+        updatePointers(chart, keyValues, listValues, immediatePositionsValuesForPointer, rotate);
         // useless: will be called by traceVerticalLine on positionValue useEffect
-        updatePointers(chart, keyValues, listValues, immediatePositionsValues, rotate);
+       //
       } else {
         // If GEV
         const positionLocal = rotate

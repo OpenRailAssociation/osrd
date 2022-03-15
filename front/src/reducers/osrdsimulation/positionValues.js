@@ -31,25 +31,8 @@ export default function reducer(state = initialState, action, rootState) {
         draft.routeEndOccupancy = positionsValues.routeEndOccupancy;
         draft.routeBeginOccupancy = positionsValues.routeBeginOccupancy;
         draft.speed = positionsValues.speed;
-
-
-          // ADAPT Simulation
-          //console.log(currentTimePosition)
-          //console.log(action.timePosition)
-
-          //draft.positionValues = action.positionValues ? action.positionValues : positionsValues;
-          break;
-        }
-        /*
-      draft.headPosition = action.positionValues.headPosition;
-        draft.tailPosition = action.positionValues.tailPosition;
-        draft.routeEndOccupancy = action.positionValues.routeEndOccupancy;
-        draft.routeBeginOccupancy = action.positionValues.routeBeginOccupancy;
-        draft.speed = action.positionValues.speed;
-        break;
-      default:
-        return draft;
-        */
+       break;
+      }
 
   });
 }
