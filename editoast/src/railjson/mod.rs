@@ -33,7 +33,7 @@ impl ObjectType {
     }
 }
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize, Default)]
 #[serde(crate = "rocket::serde")]
 pub struct TrackSection {
     pub id: String,
@@ -55,6 +55,14 @@ pub enum LineString {
     LineString { coordinates: Vec<[f32; 2]> },
 }
 
+impl Default for LineString {
+    fn default() -> Self {
+        LineString::LineString {
+            coordinates: vec![[0., 0.], [1., 1.]],
+        }
+    }
+}
+
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 pub enum ApplicableDirections {
@@ -64,6 +72,12 @@ pub enum ApplicableDirections {
     StopToStart,
     #[serde(rename = "BOTH")]
     Both,
+}
+
+impl Default for ApplicableDirections {
+    fn default() -> Self {
+        ApplicableDirections::Both
+    }
 }
 
 #[derive(Clone, Deserialize, Serialize)]
