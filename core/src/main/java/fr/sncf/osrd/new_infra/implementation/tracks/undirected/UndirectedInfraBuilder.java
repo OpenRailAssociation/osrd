@@ -1,8 +1,7 @@
 package fr.sncf.osrd.new_infra.implementation.tracks.undirected;
 
-import static fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge.INDEX;
 import static fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge.TRACK_OBJECTS;
-import static fr.sncf.osrd.new_infra.implementation.tracks.undirected.InfraTrackObject.TrackObjectType;
+import static fr.sncf.osrd.new_infra.api.tracks.undirected.TrackObject.TrackObjectType;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
@@ -21,16 +20,16 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 
-public class Parser {
+public class UndirectedInfraBuilder {
 
-    private Parser() {
+    private UndirectedInfraBuilder() {
         builder = NetworkBuilder
                 .directed()
                 .immutable();
     }
 
     public static TrackInfra parseInfra(RJSInfra infra) {
-        return new Parser().parse(infra);
+        return new UndirectedInfraBuilder().parse(infra);
     }
 
     private final HashMap<String, TrackNode> beginEndpoints = new HashMap<>();

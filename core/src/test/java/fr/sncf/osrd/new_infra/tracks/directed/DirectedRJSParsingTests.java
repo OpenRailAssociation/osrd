@@ -11,6 +11,7 @@ import com.google.common.graph.Traverser;
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.*;
+import fr.sncf.osrd.new_infra.implementation.tracks.directed.DirectedInfraBuilder;
 import fr.sncf.osrd.new_infra.implementation.tracks.undirected.*;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
@@ -23,8 +24,8 @@ public class DirectedRJSParsingTests {
     public void testTinyInfra() throws Exception {
         // This test only checks that no assertion is thrown
         var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
-        var infra = Parser.parseInfra(rjsInfra);
-        fr.sncf.osrd.new_infra.implementation.tracks.directed.Parser.fromUndirected(infra);
+        var infra = UndirectedInfraBuilder.parseInfra(rjsInfra);
+        DirectedInfraBuilder.fromUndirected(infra);
     }
 
     @Test
@@ -46,7 +47,7 @@ public class DirectedRJSParsingTests {
 
         // Build the undirected graph
         var infra = makeSwitchInfra();
-        var directedInfra = fr.sncf.osrd.new_infra.implementation.tracks.directed.Parser.fromUndirected(infra);
+        var directedInfra = DirectedInfraBuilder.fromUndirected(infra);
         var graph = directedInfra.getDiTrackGraph();
 
         // Tests that we can reach exactly the right endpoints
@@ -130,7 +131,7 @@ public class DirectedRJSParsingTests {
 
         // Converts to directed graph
         var infra = new InfraTrackInfra(null, builder.build());
-        var directedInfra = fr.sncf.osrd.new_infra.implementation.tracks.directed.Parser.fromUndirected(infra);
+        var directedInfra = DirectedInfraBuilder.fromUndirected(infra);
 
         // Tests that we see the waypoints in the right order when going from 1 to 3
         final var edge1 = directedInfra.getEdge("1-2", Direction.FORWARD);
