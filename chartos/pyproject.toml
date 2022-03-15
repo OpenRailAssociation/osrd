@@ -1,0 +1,77 @@
+[tool.poetry]
+name = "chartos"
+version = "0.1.0"
+description = ""
+authors = ["DGEX Solutions <contact@dgexsol.fr>"]
+
+[tool.poetry.dependencies]
+# base
+python = "^3.8"
+fastapi = "^0"
+aioredis = "^2"
+asyncpg = { version = "^0" }
+uvicorn = { version = "^0", extras = ["standard"] }
+
+# shapes and stuff
+shapely = "^1"
+pyproj = "^3"  # CRS transformations
+
+
+# production
+gunicorn = {version = "20.1.0", optional = true}
+sentry-sdk = {version = "0.20.2", optional = true}
+
+[tool.poetry.extras]
+production = [
+    "gunicorn",
+    "sentry-sdk",
+]
+
+[tool.poetry.dev-dependencies]
+mypy = "*"
+pytest = "*"
+pytest-asyncio = "*"
+
+# used for starting the app without an asgi server during tests
+asgi-lifespan = "^1"
+# used for querying the server during tests
+httpx = "*"
+
+# ikp3db = "1.4.1"
+# coverage = "5.5"
+# black = "21.9b0"
+# isort = "^5"
+# pyproject-flake8 = "0.0.1a2"
+
+[tool.coverage.run]
+omit = [
+    ".*",
+    "*/*-packages/*",
+    "venv/*",
+    "*/config/*",
+    "*/tests/*",
+]
+
+[tool.coverage.report]
+fail_under = 70
+
+[tool.flake8]
+ignore = "W503,E203"
+max-line-length = 120
+exclude = [
+    "__pycache__",
+    "*/migrations/*",
+    "venv/",
+    "config/",
+]
+
+[tool.black]
+line-length = 120
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

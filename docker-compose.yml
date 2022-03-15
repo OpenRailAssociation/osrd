@@ -33,21 +33,22 @@ services:
       interval: 5s
 
   chartos:
-    image: osrd/chartos:v2.0.3
+    image: osrd/osrd-chartos
     container_name: osrd-chartos
     network_mode: host
+    build:
+      context: chartos
+      dockerfile: Dockerfile
     depends_on:
       postgres: {condition: service_healthy}
       redis: {condition: service_healthy}
-    volumes:
-      - "./api/chartos.yml:/config.yml"
     container_name: chartos
     restart: unless-stopped
     command: "uvicorn --factory chartos:make_app --host 0.0.0.0 --port 7000"
     environment:
       ROOT_URL: "http://localhost:7000"
-      CONFIG_PATH: "/config.yml"
-      PSQL_DSN: "postgres://chartos:password@localhost:5432/chartos"
+      CONFIG_PATH: "/code/chartos.yml"
+      PSQL_DSN: "postgres://osrd:password@localhost:5432/osrd"
       REDIS_URL: "redis://localhost:6379"
     healthcheck:
       test: ["CMD", "python", "-c", "from urllib.request import urlopen; exit(0 if urlopen('http://localhost:7000/health').status == 200 else 1)"]
