@@ -3,7 +3,7 @@ package fr.sncf.osrd.new_infra.reservation;
 import com.google.common.collect.Sets;
 import com.google.common.graph.Traverser;
 import fr.sncf.osrd.Helpers;
-import fr.sncf.osrd.new_infra.implementation.reservation.Parser;
+import fr.sncf.osrd.new_infra.implementation.reservation.ReservationInfraBuilder;
 import org.junit.jupiter.api.Test;
 import java.util.Set;
 import static fr.sncf.osrd.new_infra.InfraHelpers.assertSetMatch;
@@ -15,15 +15,16 @@ public class ReservationInfraTests {
     @Test
     public void testTinyInfra() throws Exception {
         var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
-        var reservationInfra = Parser.fromRJS(rjsInfra);
+        var reservationInfra = ReservationInfraBuilder.fromRJS(rjsInfra);
         var graph = reservationInfra.getInfraRouteGraph();
         assertEquals(rjsInfra.routes.size(), graph.edges().size());
-        var bufferStopA = reservationInfra.getDiDetector("buffer_stop_a", FORWARD);
-        var bufferStopB = reservationInfra.getDiDetector("buffer_stop_b", FORWARD);
-        var bufferStopC = reservationInfra.getDiDetector("buffer_stop_c", FORWARD);
-        var bufferStopABackward = reservationInfra.getDiDetector("buffer_stop_a", BACKWARD);
-        var bufferStopBBackward = reservationInfra.getDiDetector("buffer_stop_b", BACKWARD);
-        var bufferStopCBackward = reservationInfra.getDiDetector("buffer_stop_c", BACKWARD);
+        var diDetectors = reservationInfra.getDiDetectorMap();
+        var bufferStopA = diDetectors.get(FORWARD).get("buffer_stop_a");
+        var bufferStopB = diDetectors.get(FORWARD).get("buffer_stop_b");
+        var bufferStopC = diDetectors.get(FORWARD).get("buffer_stop_c");
+        var bufferStopABackward = diDetectors.get(BACKWARD).get("buffer_stop_a");
+        var bufferStopBBackward = diDetectors.get(BACKWARD).get("buffer_stop_b");
+        var bufferStopCBackward = diDetectors.get(BACKWARD).get("buffer_stop_c");
         var allDirectedBufferStops = Set.of(
                 bufferStopA,
                 bufferStopB,

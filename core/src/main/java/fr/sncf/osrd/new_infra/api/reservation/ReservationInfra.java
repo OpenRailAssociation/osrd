@@ -11,11 +11,12 @@ public interface ReservationInfra extends TrackInfra, DiTrackInfra {
     ImmutableMap<String, Detector> getDetectorMap();
 
     /** Looks up a directed detector by ID and direction */
-    DiDetector getDiDetector(String id, Direction dir);
+    ImmutableMap<Direction, ImmutableMap<String, DiDetector>> getDiDetectorMap();
 
     /** Returns a map from detector directions to their next detection section */
     ImmutableMap<DiDetector, DetectionSection> getSectionMap();
 
     /** Returns the detection routes infrastructure graph */
     ImmutableNetwork<DiDetector, ReservationRoute> getInfraRouteGraph();
+
 }
