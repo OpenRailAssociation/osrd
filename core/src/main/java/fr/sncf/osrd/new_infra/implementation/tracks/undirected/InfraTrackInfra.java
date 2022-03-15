@@ -28,6 +28,7 @@ public class InfraTrackInfra implements TrackInfra {
         setIndexToEdges(trackGraph);
     }
 
+    /** Sets the attribute INDEX to each edge, from 0 to n_edges. Used later on for union finds */
     private static void setIndexToEdges(ImmutableNetwork<TrackNode, TrackEdge> trackGraph) {
         var trackID = 0;
         for (var edge : trackGraph.edges())
