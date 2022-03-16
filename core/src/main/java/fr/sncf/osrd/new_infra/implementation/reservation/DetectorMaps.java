@@ -30,6 +30,7 @@ class DetectorMaps {
         for (var track : infra.getTrackGraph().edges()) {
             for (var object : track.getTrackObjects()) {
                 var newDetector = new DetectorImpl(object.getID());
+                object.setDetector(newDetector);
                 detectors.put(object.getID(), newDetector);
                 var diDetectorForward = new DiDetectorImpl(newDetector, Direction.FORWARD);
                 diDetectors.get(Direction.FORWARD).put(object.getID(), diDetectorForward);

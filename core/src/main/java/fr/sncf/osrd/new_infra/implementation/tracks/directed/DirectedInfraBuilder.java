@@ -11,7 +11,6 @@ import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackEdge;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackInfra;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackNode;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackNode.Side;
-import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackObject;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.SwitchBranch;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackInfra;

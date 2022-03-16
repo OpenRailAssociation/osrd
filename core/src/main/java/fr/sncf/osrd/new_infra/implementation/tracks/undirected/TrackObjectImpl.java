@@ -1,6 +1,7 @@
 package fr.sncf.osrd.new_infra.implementation.tracks.undirected;
 
 import com.google.common.base.MoreObjects;
+import fr.sncf.osrd.new_infra.api.reservation.Detector;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackObject;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackSection;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
@@ -15,6 +16,8 @@ public class TrackObjectImpl implements TrackObject {
     public final TrackObjectType type;
     /** ID of the object */
     public final String id;
+    /** Detector object corresponding to this track object (if any) */
+    private Detector detector;
 
     @Override
     @ExcludeFromGeneratedCodeCoverage
@@ -53,5 +56,15 @@ public class TrackObjectImpl implements TrackObject {
     @Override
     public TrackObjectType getType() {
         return type;
+    }
+
+    @Override
+    public Detector getDetector() {
+        return detector;
+    }
+
+    @Override
+    public void setDetector(Detector detector) {
+        this.detector = detector;
     }
 }

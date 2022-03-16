@@ -14,7 +14,15 @@ public class RJSTrainPath {
      * Full train path as a list of routes
      */
     @Json(name = "route_paths")
-    public final List<RJSRoutePath> routePath = new ArrayList<>();
+    public final List<RJSRoutePath> routePath;
+
+    public RJSTrainPath(List<RJSRoutePath> path) {
+        this.routePath = path;
+    }
+
+    public RJSTrainPath() {
+        this.routePath = new ArrayList<>();
+    }
 
     public static class RJSRoutePath {
         public final RJSObjectRef<RJSRoute> route;

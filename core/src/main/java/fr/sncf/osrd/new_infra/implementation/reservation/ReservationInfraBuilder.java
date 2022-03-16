@@ -14,6 +14,7 @@ import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackInfra;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackObject;
 import fr.sncf.osrd.new_infra.implementation.RJSObjectParsing;
 import fr.sncf.osrd.new_infra.implementation.tracks.directed.DirectedInfraBuilder;
+import fr.sncf.osrd.new_infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
@@ -50,15 +51,27 @@ public class ReservationInfraBuilder {
         diDetectorMap = detectorMaps.diDetectorMap;
         var reservationSections = DetectionSectionBuilder.build(
                 diTrackInfra,
-                detectorMap,
                 diDetectorMap
         );
+        var routeGraph = makeRouteGraph();
         return new ReservationInfraImpl(
                 diTrackInfra,
                 ImmutableMap.copyOf(detectorMap),
                 convertDiDetectorMap(),
                 makeSectionMap(reservationSections),
-                makeRouteGraph());
+                routeGraph,
+                makeReservationRouteMap(routeGraph)
+        );
+    }
+
+    /** Builds an ID to route mapping */
+    private ImmutableMap<String, ReservationRoute> makeReservationRouteMap(
+            ImmutableNetwork<DiDetector, ReservationRoute> routeGraph
+    ) {
+        var res = ImmutableMap.<String, ReservationRoute>builder();
+        for (var route : routeGraph.edges())
+            res.put(route.getID(), route);
+        return res.build();
     }
 
     /** Converts the map of map into an immutableMap of immutableMap */
@@ -78,7 +91,8 @@ public class ReservationInfraBuilder {
                 = HashMultimap.<DetectionSection, ReservationRouteImpl>create();
         var routes = new ArrayList<ReservationRouteImpl>();
         for (var rjsRoute : rjsInfra.routes) {
-            var route = new ReservationRouteImpl(detectorsOnRoute(rjsRoute), releasePoints(rjsRoute), rjsRoute.id);
+            var route = new ReservationRouteImpl(detectorsOnRoute(rjsRoute), releasePoints(rjsRoute),
+                    rjsRoute.id, makeTrackRanges(rjsRoute));
             routes.add(route);
             for (var section : sectionsOnRoute(rjsRoute)) {
                 routesPerSection.put(section, route);
@@ -102,6 +116,19 @@ public class ReservationInfraBuilder {
             );
         }
         return networkBuilder.build();
+    }
+
+    private ImmutableList<TrackRangeView> makeTrackRanges(RJSRoute rjsRoute) {
+        var res = ImmutableList.<TrackRangeView>builder();
+        for (var range : rjsRoute.path) {
+            range.track.checkType(Set.of("TrackSection"));
+            res.add(new TrackRangeView(
+                    range.begin,
+                    range.end,
+                    diTrackInfra.getEdge(range.track.id.id, Direction.fromEdgeDir(range.direction))
+            ));
+        }
+        return res.build();
     }
 
     /** Lists the release points on a given route (in order) */

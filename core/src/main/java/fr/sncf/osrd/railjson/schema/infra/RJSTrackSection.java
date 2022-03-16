@@ -26,6 +26,11 @@ public class RJSTrackSection implements Identified {
     public LineString geo;
     public LineString sch;
 
+    public RJSTrackSection(String id, double length) {
+        this.id = id;
+        this.length = length;
+    }
+
     @Override
     public String getID() {
         return id;
