@@ -4,7 +4,7 @@ import fr.sncf.osrd.new_infra.api.tracks.undirected.Switch;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.SwitchBranch;
 import fr.sncf.osrd.new_infra.implementation.BaseAttributes;
 
-public class InfraSwitchBranch extends BaseAttributes implements SwitchBranch {
+public class SwitchBranchImpl extends BaseAttributes implements SwitchBranch {
 
     public Switch switchRef;
 

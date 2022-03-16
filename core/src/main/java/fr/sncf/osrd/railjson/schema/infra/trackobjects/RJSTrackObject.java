@@ -10,11 +10,4 @@ public abstract class RJSTrackObject {
     /** Position from the beginning of the RJSTrackSection */
     public double position;
     public RJSObjectRef<RJSTrackSection> track;
-
-    public RJSTrackObject(double position, RJSObjectRef<RJSTrackSection> track) {
-        this.position = position;
-        this.track = track;
-    }
-
-    public RJSTrackObject() {}
 }

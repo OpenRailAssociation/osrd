@@ -3,12 +3,12 @@ package fr.sncf.osrd.new_infra.implementation.tracks.undirected;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackSection;
 import fr.sncf.osrd.new_infra.implementation.BaseAttributes;
 
-public class InfraTrackSection extends BaseAttributes implements TrackSection {
+public class TrackSectionImpl extends BaseAttributes implements TrackSection {
 
     private final double length;
     private final String id;
 
-    public InfraTrackSection(double length, String id) {
+    public TrackSectionImpl(double length, String id) {
         this.length = length;
         this.id = id;
     }

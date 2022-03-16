@@ -64,25 +64,25 @@ public class InfraHelpers {
                 .directed()
                 .<TrackNode, TrackEdge>immutable();
 
-        final var nodeIn1 = new InfraSwitchPort("1");
-        final var nodeIn2 = new InfraSwitchPort("2");
-        final var nodeIn3 = new InfraSwitchPort("3");
-        final var nodeOut1 = new InfraTrackNode.Joint();
-        final var nodeOut2 = new InfraTrackNode.Joint();
-        final var nodeOut3 = new InfraTrackNode.Joint();
+        final var nodeIn1 = new SwitchPortImpl("1");
+        final var nodeIn2 = new SwitchPortImpl("2");
+        final var nodeIn3 = new SwitchPortImpl("3");
+        final var nodeOut1 = new TrackNodeImpl.Joint();
+        final var nodeOut2 = new TrackNodeImpl.Joint();
+        final var nodeOut3 = new TrackNodeImpl.Joint();
         builder.addNode(nodeIn1);
         builder.addNode(nodeIn2);
         builder.addNode(nodeIn3);
         builder.addNode(nodeOut1);
         builder.addNode(nodeOut2);
         builder.addNode(nodeOut3);
-        builder.addEdge(nodeIn1, nodeOut1, new InfraTrackSection(0, "1"));
-        builder.addEdge(nodeIn2, nodeOut2, new InfraTrackSection(0, "2"));
-        builder.addEdge(nodeIn3, nodeOut3, new InfraTrackSection(0, "3"));
-        builder.addEdge(nodeIn1, nodeIn2, new InfraSwitchBranch());
-        builder.addEdge(nodeIn3, nodeIn1, new InfraSwitchBranch());
+        builder.addEdge(nodeIn1, nodeOut1, new TrackSectionImpl(0, "1"));
+        builder.addEdge(nodeIn2, nodeOut2, new TrackSectionImpl(0, "2"));
+        builder.addEdge(nodeIn3, nodeOut3, new TrackSectionImpl(0, "3"));
+        builder.addEdge(nodeIn1, nodeIn2, new SwitchBranchImpl());
+        builder.addEdge(nodeIn3, nodeIn1, new SwitchBranchImpl());
 
-        var res = new InfraTrackInfra(null, builder.build());
+        var res = TrackInfraImpl.from(null, builder.build());
         for (var edge : res.getTrackGraph().edges())
             edge.getAttrs().putAttr(TRACK_OBJECTS, new ArrayList<>());
         return res;

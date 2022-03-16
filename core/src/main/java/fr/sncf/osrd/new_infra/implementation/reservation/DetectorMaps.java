@@ -5,7 +5,7 @@ import static fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge.TRACK_OBJEC
 import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.reservation.DiDetector;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackInfra;
-import fr.sncf.osrd.new_infra.api.tracks.undirected.DiDetectorImpl;
+import fr.sncf.osrd.new_infra.implementation.tracks.directed.DiDetectorImpl;
 import java.util.HashMap;
 import java.util.Map;
 

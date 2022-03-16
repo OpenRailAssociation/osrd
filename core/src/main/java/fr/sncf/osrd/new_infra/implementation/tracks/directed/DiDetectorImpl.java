@@ -1,4 +1,4 @@
-package fr.sncf.osrd.new_infra.api.tracks.undirected;
+package fr.sncf.osrd.new_infra.implementation.tracks.directed;
 
 import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.reservation.Detector;

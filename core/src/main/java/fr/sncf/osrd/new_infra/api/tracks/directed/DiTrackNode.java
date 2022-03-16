@@ -9,5 +9,10 @@ import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackNode;
  * how the pieces of track were linked in the first place.
  * Each TrackNode has two DiTrackNode, one for each direction.
  */
-public record DiTrackNode(TrackNode node, Direction direction) {
+public record DiTrackNode(TrackNode node, Side direction) {
+    /** This is a binary enum where values are arbitrary and carry no information */
+    public enum Side {
+        A,
+        B
+    }
 }
