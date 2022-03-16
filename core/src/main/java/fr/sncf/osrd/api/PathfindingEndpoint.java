@@ -45,7 +45,7 @@ public abstract class PathfindingEndpoint implements Take {
         public final String infra;
         public final long version;
 
-        public PathfindingRequest(PathfindingWaypoint[][] waypoints, String infra, long version) {
+        PathfindingRequest(PathfindingWaypoint[][] waypoints, String infra, long version) {
             this.waypoints = waypoints;
             this.infra = infra;
             this.version = version;
