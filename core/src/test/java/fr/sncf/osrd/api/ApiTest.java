@@ -1,5 +1,6 @@
 package fr.sncf.osrd.api;
 
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
 import fr.sncf.osrd.Helpers;
@@ -22,7 +23,7 @@ public class ApiTest {
     @BeforeEach
     public void setUp() throws InfraLoadException, InterruptedException {
         ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
-        when(infraHandlerMock.load(argument.capture(), 1)).thenAnswer(
+        when(infraHandlerMock.load(argument.capture(), anyLong())).thenAnswer(
                 invocation ->
                         Infra.parseFromFile(
                                 Helpers.getResourcePath(argument.getValue()).toString()
