@@ -1,6 +1,8 @@
 package fr.sncf.osrd.utils;
 
+import com.google.common.base.MoreObjects;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.Objects;
 
 public class Range implements Comparable<Range> {
@@ -64,5 +66,14 @@ public class Range implements Comparable<Range> {
         if (Double.min(begin, end) > position)
             return false;
         return Double.max(begin, end) >= position;
+    }
+
+    @Override
+    @ExcludeFromGeneratedCodeCoverage
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("begin", begin)
+                .add("end", end)
+                .toString();
     }
 }

@@ -24,6 +24,8 @@ public class EnvelopePath implements PhysicsPath {
         assert gradePositions.length == gradeValues.length + 1;
         assert gradePositions[0] == 0.0;
         assert gradePositions[gradePositions.length - 1] == length;
+        for (int i = 0; i < gradePositions.length - 1; i++)
+            assert gradePositions[i] < gradePositions[i + 1];
         this.gradePositions = gradePositions;
         this.gradeValues = gradeValues;
         this.length = length;

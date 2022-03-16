@@ -1,5 +1,7 @@
 package fr.sncf.osrd.new_infra.api.tracks.undirected;
 
+import fr.sncf.osrd.new_infra.api.reservation.Detector;
+
 /** An object located on a track section */
 public interface TrackObject {
     /** Returns the track section this object is on */
@@ -13,6 +15,12 @@ public interface TrackObject {
 
     /** Returns the type of the object */
     TrackObjectType getType();
+
+    /** Linked Detector object (null if there isn't any) */
+    Detector getDetector();
+
+    /** Sets the detector */
+    void setDetector(Detector detector);
 
     enum TrackObjectType {
         DETECTOR,

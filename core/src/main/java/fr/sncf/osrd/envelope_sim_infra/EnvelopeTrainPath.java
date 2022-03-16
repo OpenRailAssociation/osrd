@@ -4,12 +4,14 @@ import static fr.sncf.osrd.utils.DoubleUtils.clamp;
 
 import com.carrotsearch.hppc.DoubleArrayList;
 import fr.sncf.osrd.envelope_sim.EnvelopePath;
+import fr.sncf.osrd.new_infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.train.TrainPath;
 import fr.sncf.osrd.utils.Range;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import java.util.List;
 import java.util.NavigableSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 public class EnvelopeTrainPath {
@@ -65,10 +67,25 @@ public class EnvelopeTrainPath {
             gradePositions.add(length);
             gradeValues.add(0);
         }
+        return new EnvelopePath(length, gradePositions.toArray(), gradeValues.toArray());
+    }
 
-        for (int i = 0; i < gradePositions.size() - 1; i++)
-            assert gradePositions.get(i) < gradePositions.get(i + 1);
+    /** Create EnvelopePath from a list of TrackRangeView */
+    public static EnvelopePath fromNew(List<TrackRangeView> trackSectionPath) {
+        var gradePositions = new DoubleArrayList();
+        gradePositions.add(0);
+        var gradeValues = new DoubleArrayList();
+        var length = 0.;
 
+        for (var range : trackSectionPath) {
+            var grades = range.getGradients().getValuesInRange(0, range.getLength());
+            for (var interval : new TreeSet<>(grades.keySet())) {
+                gradePositions.add(length + interval.getEndPosition());
+                gradeValues.add(grades.get(interval));
+
+            }
+            length += range.getLength();
+        }
         return new EnvelopePath(length, gradePositions.toArray(), gradeValues.toArray());
     }
 }

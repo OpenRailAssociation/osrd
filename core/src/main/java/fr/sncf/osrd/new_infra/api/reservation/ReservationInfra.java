@@ -19,4 +19,6 @@ public interface ReservationInfra extends TrackInfra, DiTrackInfra {
     /** Returns the detection routes infrastructure graph */
     ImmutableNetwork<DiDetector, ReservationRoute> getInfraRouteGraph();
 
+    /** Returns a mapping from route ID to route */
+    ImmutableMap<String, ReservationRoute> getReservationRouteMap();
 }

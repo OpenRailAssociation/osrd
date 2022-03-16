@@ -23,8 +23,14 @@ public class SignalingInfraImpl extends ReservationInfraImpl implements Signalin
             ImmutableMultimap<ReservationRoute, SignalingRoute> routeMap,
             ImmutableNetwork<DiDetector, SignalingRoute> signalingRouteGraph
     ) {
-        super(reservationInfra, reservationInfra.getDetectorMap(), reservationInfra.getDiDetectorMap(),
-                reservationInfra.getSectionMap(), reservationInfra.getInfraRouteGraph());
+        super(
+                reservationInfra,
+                reservationInfra.getDetectorMap(),
+                reservationInfra.getDiDetectorMap(),
+                reservationInfra.getSectionMap(),
+                reservationInfra.getInfraRouteGraph(),
+                reservationInfra.getReservationRouteMap()
+        );
         this.signalMap = signalMap;
         this.routeMap = routeMap;
         this.signalingRouteGraph = signalingRouteGraph;

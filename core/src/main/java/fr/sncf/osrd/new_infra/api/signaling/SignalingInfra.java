@@ -1,5 +1,6 @@
 package fr.sncf.osrd.new_infra.api.signaling;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.graph.ImmutableNetwork;
 import fr.sncf.osrd.new_infra.api.reservation.DiDetector;

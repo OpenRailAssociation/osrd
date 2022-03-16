@@ -1,6 +1,7 @@
 package fr.sncf.osrd.new_infra.reservation;
 
 import static fr.sncf.osrd.new_infra.InfraHelpers.makeSwitchInfra;
+import static fr.sncf.osrd.new_infra.InfraHelpers.setTrackObjects;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
@@ -110,17 +111,9 @@ public class DetectionSectionBuilderTests {
 
     private void setObjects(TrackInfra infra, String tracKID, List<OffsetIDPair> objects) {
         var track = infra.getTrackSection(tracKID);
-        var builder = ImmutableList.<TrackObject>builder();
+        var list = new ArrayList<TrackObject>();
         for (var object : objects)
-            builder.add(new TrackObjectImpl(track, object.offset, TrackObject.TrackObjectType.DETECTOR, object.id));
-        if (track instanceof TrackSectionImpl impl) {
-            try {
-                var field = TrackSectionImpl.class.getDeclaredField("trackObjects");
-                field.setAccessible(true);
-                field.set(impl, builder.build());
-            } catch (NoSuchFieldException | IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-        }
+            list.add(new TrackObjectImpl(track, object.offset, TrackObject.TrackObjectType.DETECTOR, object.id));
+        setTrackObjects(track, ImmutableList.copyOf(list));
     }
 }

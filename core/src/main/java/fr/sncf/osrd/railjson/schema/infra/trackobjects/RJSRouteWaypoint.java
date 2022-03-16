@@ -6,6 +6,14 @@ import fr.sncf.osrd.utils.graph.IPointValue;
 
 @SuppressFBWarnings({"UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSRouteWaypoint extends RJSTrackObject implements Identified, IPointValue<RJSRouteWaypoint> {
+    public RJSRouteWaypoint(String id) {
+        this.id = id;
+    }
+
+    public RJSRouteWaypoint() {
+        this.id = null;
+    }
+
     public String id;
 
     @Override

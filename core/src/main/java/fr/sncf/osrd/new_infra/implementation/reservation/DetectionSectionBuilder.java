@@ -27,19 +27,15 @@ public class DetectionSectionBuilder {
     }
 
     private final ArrayList<DetectionSection> detectionSections = new ArrayList<>();
-    private final Map<String, DetectorImpl> detectors;
     private final Map<Direction, Map<String, DiDetector>> diDetectors;
-    private final Map<DiDetector, DetectionSection> diDetectorToNextSection = new HashMap<>();
     private final DiTrackInfra infra;
 
     /** Constructor */
     public DetectionSectionBuilder(
             DiTrackInfra infra,
-            Map<String, DetectorImpl> detectors,
             Map<Direction, Map<String, DiDetector>> diDetectors
     ) {
         this.infra = infra;
-        this.detectors = detectors;
         this.diDetectors = diDetectors;
     }
 
@@ -48,7 +44,7 @@ public class DetectionSectionBuilder {
      */
     public static ArrayList<DetectionSection> build(DiTrackInfra infra) {
         var detectorMaps = DetectorMaps.from(infra);
-        return new DetectionSectionBuilder(infra, detectorMaps.detectorMap, detectorMaps.diDetectorMap).build();
+        return new DetectionSectionBuilder(infra, detectorMaps.diDetectorMap).build();
     }
 
     /**
@@ -56,10 +52,9 @@ public class DetectionSectionBuilder {
      */
     public static ArrayList<DetectionSection> build(
             DiTrackInfra infra,
-            Map<String, DetectorImpl> detectors,
             Map<Direction, Map<String, DiDetector>> diDetectors
     ) {
-        return new DetectionSectionBuilder(infra, detectors, diDetectors).build();
+        return new DetectionSectionBuilder(infra, diDetectors).build();
     }
 
 
@@ -83,8 +78,6 @@ public class DetectionSectionBuilder {
                         diDetectors.get(BACKWARD).get(cur.getID())
                 ));
                 detectionSections.add(detectionSection);
-                setNextSection(prev.getID(), FORWARD, detectionSection);
-                setNextSection(cur.getID(), BACKWARD, detectionSection);
             }
         }
     }
@@ -135,9 +128,6 @@ public class DetectionSectionBuilder {
         for (var builder : detectionSectionsMap.values()) {
             var section = builder.build();
             detectionSections.add(section);
-            for (var diDetector : section.getDetectors()) {
-                setNextSection(diDetector.getDetector().getID(), diDetector.getDirection(), section);
-            }
         }
     }
 
@@ -146,48 +136,19 @@ public class DetectionSectionBuilder {
         var res = new ArrayList<DetectionSection>();
         for (var section : detectionSections) {
             assert section.getDetectors().size() != 0;
-            if (section.getDetectors().size() == 1) {
-                // filter out detection sections with a single waypoint
-                // (those are the tiny space behind buffer stops)
-                deleteSection(section);
-            } else {
-                // make a new array for kept sections, and allocate indexes
+            if (section.getDetectors().size() > 1)
                 res.add(section);
-            }
         }
-        setNextSections();
+        setNextSections(res);
         return res;
     }
 
     /** Registers all the detection sections in the detectors */
-    private void setNextSections() {
-        for (var entry : diDetectorToNextSection.entrySet()) {
-            if (entry.getValue() == null)
-                continue;
-            var detector = detectors.get(entry.getKey().getDetector().getID());
-            detector.setDetectionSection(entry.getKey().getDirection(), entry.getValue());
-        }
-    }
-
-    /** Sets the next section for the given directed detector */
-    private void setNextSection(
-            String detectorID,
-            Direction dir,
-            DetectionSection section
-    ) {
-        var diDetector = diDetectors.get(dir).get(detectorID);
-        diDetectorToNextSection.put(diDetector, section);
-    }
-
-    /** Removes a detection section */
-    private void deleteSection(DetectionSection section) {
-        for (var detector : section.getDetectors()) {
-            for (var dir : Direction.values()) {
-                if (detector.getDetector().getNextDetectionSection(dir) == section) {
-                    setNextSection(detector.getDetector().getID(), dir, null);
-                }
-            }
-        }
+    private void setNextSections(ArrayList<DetectionSection> detectionSections) {
+        for (var detectionSection : detectionSections)
+            for (var diDetector : detectionSection.getDetectors())
+                if (diDetector.getDetector() instanceof DetectorImpl detector)
+                    detector.setDetectionSection(diDetector.getDirection(), detectionSection);
     }
 
     /** Returns the index of a track + endpoint as a unique integer, used in the union find */
