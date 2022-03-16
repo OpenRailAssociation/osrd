@@ -66,8 +66,8 @@ public class AllowanceTests {
                 testContext, 44.4, new AllowanceValue.Percentage(TIME_RATIO, 10), true);
         EnvelopeShape.check(marecoEnvelope, INCREASING, DECREASING, DECREASING, INCREASING, DECREASING, DECREASING);
         var delta = 2 * marecoEnvelope.getMaxSpeed() * TIME_STEP;
-        // don't modify these values, they have been calculated with a 0.1s timestep so they can be considered as
-        // reference, the delta is supposed to absorb the difference for higher timesteps
+        // don't modify these values, they have been calculated with a 0.1s time step so they can be considered as
+        // reference, the delta is supposed to absorb the difference for higher time steps
         EnvelopeTransitions.checkPositions(marecoEnvelope, delta, 1411, 5094, 6000, 6931, 9339);
         assertTrue(marecoEnvelope.continuous);
     }
@@ -544,9 +544,10 @@ public class AllowanceTests {
     public void testMarecoErrors() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var testPath = new FlatPath(10000, 0);
+        var context = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
 
         var ex = assertThrows(MarecoConvergenceException.class, () ->
-                makeSimpleMarecoEnvelope(testRollingStock, testPath, 44.4,
+                makeSimpleMarecoEnvelope(context, 44.4,
                         new AllowanceValue.Percentage(TIME_RATIO, 1e10), true)
         );
         assert ex.marecoErrorType.equals("too_much_time");
@@ -557,10 +558,11 @@ public class AllowanceTests {
     public void testConstructionImpossibleMargin() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var testPath = new FlatPath(10000, 0);
+        var context = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
 
         var allowanceValue = new AllowanceValue.Percentage(TIME_RATIO, 1e10);
         var stops = new double[] { testPath.getLength() };
-        var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testRollingStock, testPath, 50, stops);
+        var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(context, 50, stops);
         var allowance = makeMarecoAllowance(
                 new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP),
                 5000, 5300, 0, allowanceValue);
