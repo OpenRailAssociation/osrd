@@ -262,8 +262,6 @@ public class HardenedMarecoAllowance implements Allowance {
             nRanges++;
         }
         assert nRanges >= 1;
-        if (nRanges == 1)
-            return;
 
         // 2) - Update every range
         //      At each transition between two ranges, the one that has the lowest speed is modified
@@ -329,9 +327,7 @@ public class HardenedMarecoAllowance implements Allowance {
         }
         // if the total target time isn't actually reachable, throw error
         if (totalTargetTime > slowestRunningTime)
-            throw new RuntimeException(
-                    "Mareco simulation did not converge (we can't lose the requested time in this setting)"
-            );
+            throw MarecoConvergenceException.tooMuchTime();
         // build a list of point between which the computation is divided
         // each division is a section
         var splitPoints = new DoubleArrayList();
