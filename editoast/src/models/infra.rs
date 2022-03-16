@@ -87,9 +87,9 @@ impl Infra {
              RETURNING *",
             infra_name, _RAILJSON_VERSION
         ))
-        .load::<Infra>(conn)
-        .expect("Fail to create an Infra")[0]
-            .clone()
+        .get_result::<Infra>(conn)
+        .expect("Fail to create an Infra")
+        .clone()
     }
 }
 #[cfg(test)]

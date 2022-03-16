@@ -80,7 +80,7 @@ async fn edit_infra(
     connection
         .run(move |c| {
             let mut gen_infra = GeneratedInfra::retrieve(c, infra.id);
-            gen_infra.version = infra.version;
+            gen_infra.version = infra.version + 1;
             gen_infra.save(c);
         })
         .await;
