@@ -104,21 +104,21 @@ public class DirectedRJSParsingTests {
                 .directed()
                 .<TrackNode, TrackEdge>immutable();
 
-        final var node1 = new InfraSwitchPort("1");
-        final var node2 = new InfraSwitchPort("2");
-        final var node3 = new InfraSwitchPort("3");
+        final var node1 = new SwitchPortImpl("1");
+        final var node2 = new SwitchPortImpl("2");
+        final var node3 = new SwitchPortImpl("3");
         builder.addNode(node1);
         builder.addNode(node2);
         builder.addNode(node3);
-        var edge12 = new InfraTrackSection(100, "1-2");
-        var edge32 = new InfraTrackSection(100, "3-2");
+        var edge12 = new TrackSectionImpl(100, "1-2");
+        var edge32 = new TrackSectionImpl(100, "3-2");
         builder.addEdge(node1, node2, edge12);
         builder.addEdge(node3, node2, edge32);
-        var detector1 = new InfraTrackObject(edge12, 30, TrackObject.TrackObjectType.DETECTOR, "d1");
-        var detector2 = new InfraTrackObject(edge12, 60, TrackObject.TrackObjectType.DETECTOR, "d2");
-        var bs1 = new InfraTrackObject(edge12, 0, TrackObject.TrackObjectType.BUFFER_STOP, "bs1");
-        var detector3 = new InfraTrackObject(edge32, 65, TrackObject.TrackObjectType.DETECTOR, "d3");
-        var detector4 = new InfraTrackObject(edge32, 35, TrackObject.TrackObjectType.DETECTOR, "d4");
+        var detector1 = new TrackObjectImpl(edge12, 30, TrackObject.TrackObjectType.DETECTOR, "d1");
+        var detector2 = new TrackObjectImpl(edge12, 60, TrackObject.TrackObjectType.DETECTOR, "d2");
+        var bs1 = new TrackObjectImpl(edge12, 0, TrackObject.TrackObjectType.BUFFER_STOP, "bs1");
+        var detector3 = new TrackObjectImpl(edge32, 65, TrackObject.TrackObjectType.DETECTOR, "d3");
+        var detector4 = new TrackObjectImpl(edge32, 35, TrackObject.TrackObjectType.DETECTOR, "d4");
         edge12.getAttrs().putAttr(TRACK_OBJECTS, List.of(
                 detector1,
                 detector2,
@@ -130,7 +130,7 @@ public class DirectedRJSParsingTests {
         ));
 
         // Converts to directed graph
-        var infra = new InfraTrackInfra(null, builder.build());
+        var infra = TrackInfraImpl.from(null, builder.build());
         var directedInfra = DirectedInfraBuilder.fromUndirected(infra);
 
         // Tests that we see the waypoints in the right order when going from 1 to 3

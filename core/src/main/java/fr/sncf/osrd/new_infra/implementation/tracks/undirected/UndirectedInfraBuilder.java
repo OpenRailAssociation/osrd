@@ -7,20 +7,24 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.NetworkBuilder;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.*;
+import fr.sncf.osrd.new_infra.implementation.RJSObjectParsing;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitch;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitchType;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
+@SuppressFBWarnings({"NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD"})
 public class UndirectedInfraBuilder {
+
+    private final HashMap<String, TrackNode> beginEndpoints = new HashMap<>();
+    private final HashMap<String, TrackNode> endEndpoints = new HashMap<>();
+    private final ImmutableNetwork.Builder<TrackNode, TrackEdge> builder;
 
     /** Constructor */
     private UndirectedInfraBuilder() {
@@ -33,10 +37,6 @@ public class UndirectedInfraBuilder {
     public static TrackInfra parseInfra(RJSInfra infra) {
         return new UndirectedInfraBuilder().parse(infra);
     }
-
-    private final HashMap<String, TrackNode> beginEndpoints = new HashMap<>();
-    private final HashMap<String, TrackNode> endEndpoints = new HashMap<>();
-    private final ImmutableNetwork.Builder<TrackNode, TrackEdge> builder;
 
     /** Parse the railjson to build an infra */
     private TrackInfra parse(RJSInfra infra) {
@@ -51,7 +51,7 @@ public class UndirectedInfraBuilder {
 
         // Create remaining links
         for (var link : infra.trackSectionLinks) {
-            var newNode = new InfraTrackNode.Joint();
+            var newNode = new TrackNodeImpl.Joint();
             addNode(link.src.track.id.id, link.src.endpoint, newNode);
             addNode(link.dst.track.id.id, link.dst.endpoint, newNode);
         }
@@ -72,14 +72,14 @@ public class UndirectedInfraBuilder {
         for (var track : trackSectionsByID.values())
             track.getAttrs().getAttrOrThrow(TRACK_OBJECTS).sort(Comparator.comparingDouble(TrackObject::getOffset));
 
-        return new InfraTrackInfra(switches.build(), builder.build());
+        return TrackInfraImpl.from(switches.build(), builder.build());
     }
 
     /** Creates a waypoint and add it to the corresponding track */
     private void makeWaypoint(HashMap<String, TrackSection> trackSectionsByID,
                             RJSRouteWaypoint waypoint, TrackObjectType trackObjectType) {
-        var track = waypoint.track.getTrack(trackSectionsByID);
-        var newWaypoint = new InfraTrackObject(track, waypoint.position, trackObjectType, waypoint.id);
+        var track = RJSObjectParsing.getTrackSection(waypoint.track, trackSectionsByID);
+        var newWaypoint = new TrackObjectImpl(track, waypoint.position, trackObjectType, waypoint.id);
         track.getAttrs().getAttrOrThrow(TRACK_OBJECTS).add(newWaypoint);
     }
 
@@ -87,7 +87,7 @@ public class UndirectedInfraBuilder {
     private TrackSection makeTrackSection(RJSTrackSection track) {
         var begin = getNode(track.id, EdgeEndpoint.BEGIN);
         var end = getNode(track.id, EdgeEndpoint.END);
-        var edge = new InfraTrackSection(track.length, track.id);
+        var edge = new TrackSectionImpl(track.length, track.id);
         builder.addEdge(begin, end, edge);
         edge.getAttrs().putAttr(TRACK_OBJECTS, new ArrayList<>());
         return edge;
@@ -114,7 +114,7 @@ public class UndirectedInfraBuilder {
             map = endEndpoints;
         if (map.containsKey(trackId))
             return map.get(trackId);
-        var res = new InfraTrackNode.End();
+        var res = new TrackNodeImpl.End();
         addNode(trackId, endpoint, res);
         return res;
     }
@@ -127,11 +127,11 @@ public class UndirectedInfraBuilder {
         var networkBuilder = NetworkBuilder.directed()
                 .<SwitchPort, SwitchBranch>immutable();
         var portMap = ImmutableMap.<String, SwitchPort>builder();
-        var allPorts = new HashSet<InfraSwitchPort>();
+        var allPorts = new HashSet<SwitchPortImpl>();
         for (var entry : rjsSwitch.ports.entrySet()) {
             var portName = entry.getKey();
             var port = entry.getValue();
-            var newNode = new InfraSwitchPort(portName);
+            var newNode = new SwitchPortImpl(portName);
             portMap.put(portName, newNode);
             networkBuilder.addNode(newNode);
             addNode(port.track.id.id, port.endpoint, newNode);
@@ -140,19 +140,19 @@ public class UndirectedInfraBuilder {
         var finalPortMap = portMap.build();
         var switchType = rjsSwitch.switchType.getSwitchType(switchTypeMap);
         var groups = ImmutableMultimap.<String, SwitchBranch>builder();
-        var allBranches = new HashSet<InfraSwitchBranch>();
+        var allBranches = new HashSet<SwitchBranchImpl>();
         for (var entry : switchType.groups.entrySet()) {
             for (var e : entry.getValue()) {
                 var src = finalPortMap.get(e.src);
                 var dst = finalPortMap.get(e.dst);
-                var branch = new InfraSwitchBranch();
+                var branch = new SwitchBranchImpl();
                 groups.put(entry.getKey(), branch);
                 assert src != null;
                 assert dst != null;
                 networkBuilder.addEdge(src, dst, branch);
                 builder.addEdge(src, dst, branch);
                 allBranches.add(branch);
-                branch.getAttrs().putAttr(TRACK_OBJECTS, new ArrayList<>());
+                branch.getAttrs().putAttr(TRACK_OBJECTS, Collections.emptyList());
             }
         }
         var switchTypePorts = new HashSet<>(switchType.ports);
@@ -163,7 +163,7 @@ public class UndirectedInfraBuilder {
                     rjsSwitch.id, switchType.id, switchTypePorts, switchPorts
             ));
 
-        var res = new InfraSwitch(rjsSwitch.id, networkBuilder.build(), groups.build(), finalPortMap, "");
+        var res = new SwitchImpl(rjsSwitch.id, networkBuilder.build(), groups.build(), finalPortMap, "");
         for (var branch : allBranches)
             branch.switchRef = res;
         for (var port : allPorts)

@@ -1,13 +1,10 @@
 package fr.sncf.osrd.railjson.schema.common;
 
-import com.google.common.collect.ImmutableMap;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.infra.routegraph.Route;
 import fr.sncf.osrd.infra.trackgraph.Detector;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.infra.trackgraph.Waypoint;
-import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackInfra;
-import fr.sncf.osrd.new_infra.implementation.reservation.DetectorImpl;
 import fr.sncf.osrd.railjson.parser.TrackBuilder;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitchType;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
@@ -60,7 +57,8 @@ public final class RJSObjectRef<T extends Identified> {
         return cachedObjects.get(id.id);
     }
 
-    private void checkType(Set<String> expectedTypes) {
+    /** Checks that the type of the object matches one of the given expected types */
+    public void checkType(Set<String> expectedTypes) {
         if (!expectedTypes.contains(type))
             throw new InvalidInfraException(String.format(
                     "Mismatched ref type: expected %s, got (type=%s, id=%s)",
@@ -70,17 +68,6 @@ public final class RJSObjectRef<T extends Identified> {
 
     public TrackSection getTrack(Map<String, TrackSection> tracks) throws InvalidInfraException {
         return parseRef(tracks, "TrackSection");
-    }
-
-    public fr.sncf.osrd.new_infra.api.tracks.undirected.TrackSection getTrack(
-            HashMap<String, fr.sncf.osrd.new_infra.api.tracks.undirected.TrackSection> tracks
-    ) {
-        return parseRef(tracks, "TrackSection");
-    }
-
-    public fr.sncf.osrd.new_infra.api.tracks.undirected.TrackSection getTrack(TrackInfra trackInfra) {
-        checkType(Set.of("TrackSection"));
-        return trackInfra.getTrackSection(id.id);
     }
 
     public Route getRoute(Map<String, Route> routes) throws InvalidInfraException {
@@ -93,10 +80,6 @@ public final class RJSObjectRef<T extends Identified> {
 
     public Detector getDetector(HashMap<String, Waypoint> waypoints) throws InvalidInfraException {
         return (Detector) parseRef(waypoints, "Detector");
-    }
-
-    public fr.sncf.osrd.new_infra.api.reservation.Detector getDetector(Map<String, DetectorImpl> detectors) {
-        return parseRef(detectors, "Detector");
     }
 
     public Waypoint getWaypoint(HashMap<String, Waypoint> waypoints) throws InvalidInfraException {

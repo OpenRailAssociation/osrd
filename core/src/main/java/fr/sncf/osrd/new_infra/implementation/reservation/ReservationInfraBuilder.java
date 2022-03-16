@@ -13,6 +13,7 @@ import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.reservation.*;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackInfra;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackObject;
+import fr.sncf.osrd.new_infra.implementation.RJSObjectParsing;
 import fr.sncf.osrd.new_infra.implementation.tracks.directed.DirectedInfraBuilder;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
@@ -107,7 +108,7 @@ public class ReservationInfraBuilder {
     private ImmutableList<Detector> releasePoints(RJSRoute rjsRoute) {
         var builder = ImmutableList.<Detector>builder();
         for (var detector : rjsRoute.releaseDetectors) {
-            builder.add(detector.getDetector(detectorMap));
+            builder.add(RJSObjectParsing.getDetector(detector, detectorMap));
         }
         return builder.build();
     }
@@ -126,7 +127,7 @@ public class ReservationInfraBuilder {
         for (var trackRange : route.path) {
             var min = Math.min(trackRange.begin, trackRange.end);
             var max = Math.max(trackRange.begin, trackRange.end);
-            var track = trackRange.track.getTrack(diTrackInfra);
+            var track = RJSObjectParsing.getTrackSection(trackRange.track, diTrackInfra);
             var objectsOnTrack = new ArrayList<TrackObject>();
             for (var object : track.getAttrs().getAttrOrThrow(TRACK_OBJECTS)) {
                 if (min <= object.getOffset() && object.getOffset() <= max)

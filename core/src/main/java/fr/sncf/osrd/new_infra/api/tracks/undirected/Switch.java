@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.graph.ImmutableNetwork;
 import fr.sncf.osrd.new_infra.api.WithAttributes;
 
-public interface Switch extends WithAttributes {
+public interface Switch {
     /** Returns the unique switch identifier */
     String getID();
 

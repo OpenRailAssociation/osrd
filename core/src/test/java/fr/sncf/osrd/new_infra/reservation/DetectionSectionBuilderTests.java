@@ -11,7 +11,7 @@ import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackInfra;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackObject;
 import fr.sncf.osrd.new_infra.implementation.reservation.DetectionSectionBuilder;
 import fr.sncf.osrd.new_infra.implementation.tracks.directed.DirectedInfraBuilder;
-import fr.sncf.osrd.new_infra.implementation.tracks.undirected.InfraTrackObject;
+import fr.sncf.osrd.new_infra.implementation.tracks.undirected.TrackObjectImpl;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -100,7 +100,7 @@ public class DetectionSectionBuilderTests {
 
     private static void addObject(TrackInfra infra, String trackID, double offset, String id) {
         var track = infra.getTrackSection(trackID);
-        var object = new InfraTrackObject(track, offset, TrackObject.TrackObjectType.DETECTOR, id);
+        var object = new TrackObjectImpl(track, offset, TrackObject.TrackObjectType.DETECTOR, id);
         track.getAttrs().getAttrOrThrow(TRACK_OBJECTS).add(object);
     }
 }
