@@ -22,4 +22,16 @@ public class SingleDirectionalRJSTrackRange extends RJSTrackRange {
         this.direction = direction;
         this.track = track;
     }
+
+    /** Constructor */
+    public SingleDirectionalRJSTrackRange(
+            EdgeDirection direction,
+            RJSObjectRef<RJSTrackSection> track,
+            double begin,
+            double end
+    ) {
+        this(direction, track);
+        this.begin = begin;
+        this.end = end;
+    }
 }

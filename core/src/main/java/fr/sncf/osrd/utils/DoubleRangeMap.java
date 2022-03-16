@@ -1,13 +1,13 @@
 package fr.sncf.osrd.utils;
 
-import java.util.HashMap;
-import java.util.TreeMap;
+import java.util.*;
 
 public class DoubleRangeMap extends TreeMap<Double, Double> {
     private static final long serialVersionUID = -4311554160237448509L;
 
     /** Add a value in a given range */
     public void addRange(double begin, double end, double value) {
+        assert begin != end : "Can't add an empty range";
         put(begin, value);
         if (!containsKey(end))
             put(end, 0.);
@@ -35,5 +35,21 @@ public class DoubleRangeMap extends TreeMap<Double, Double> {
 
         res.put(new Range(begin, end), lastValue);
         return res;
+    }
+
+    /** Merges identical adjacent ranges */
+    public DoubleRangeMap simplify() {
+        var entries = new ArrayList<>(entrySet());
+        if (entries.size() == 0)
+            return this;
+        entries.sort(Comparator.comparingDouble(Map.Entry::getKey));
+        var lastValue = entries.get(0).getValue();
+        for (int i = 1; i < entries.size(); i++) {
+            var value = entries.get(i).getValue();
+            if (value.equals(lastValue))
+                remove(entries.get(i).getKey());
+            lastValue = value;
+        }
+        return this;
     }
 }

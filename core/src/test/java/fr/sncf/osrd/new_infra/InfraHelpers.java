@@ -5,19 +5,31 @@ import static fr.sncf.osrd.new_infra.api.Direction.FORWARD;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.Network;
 import com.google.common.graph.NetworkBuilder;
 import com.google.common.graph.Traverser;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.reservation.DiDetector;
-import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge;
-import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackInfra;
-import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackNode;
-import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackSection;
+import fr.sncf.osrd.new_infra.api.tracks.undirected.*;
 import fr.sncf.osrd.new_infra.implementation.tracks.undirected.*;
+import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
+import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
+import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
+import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
+import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSBufferStop;
+import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
+import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrainDetector;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.SingleDirectionalRJSTrackRange;
+import fr.sncf.osrd.utils.DoubleRangeMap;
+import fr.sncf.osrd.utils.graph.EdgeDirection;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -147,5 +159,99 @@ public class InfraHelpers {
                 reachableFromC,
                 Sets.difference(allDirectedBufferStops, reachableFromC)
         );
+    }
+
+    private static RJSObjectRef<RJSTrackSection> makeTrackRef(String id) {
+        return new RJSObjectRef<>(id, "TrackSection");
+    }
+
+    private static RJSObjectRef<RJSRouteWaypoint> makeDetectorRef(String id) {
+        return new RJSObjectRef<>(id, "Detector");
+    }
+
+    /** Make a single track infra.
+     * The track has two detectors, d1 at 50 and d2 at 75.
+     * It has two routes going from bs to bs either way, and two going to and from d1 */
+    public static RJSInfra makeSingleTrackRJSInfra() {
+        return new RJSInfra(
+                List.of(new RJSTrackSection("track", 100)),
+                new ArrayList<>(),
+                new ArrayList<>(),
+                new ArrayList<>(),
+                List.of(
+                        new RJSRoute(
+                                "route_forward",
+                                List.of(new SingleDirectionalRJSTrackRange(EdgeDirection.START_TO_STOP,
+                                        makeTrackRef("track"), 0, 100)),
+                                List.of(),
+                                makeDetectorRef("bs_start"),
+                                makeDetectorRef("bs_end")
+                        ),
+                        new RJSRoute(
+                                "route_backward",
+                                List.of(new SingleDirectionalRJSTrackRange(EdgeDirection.STOP_TO_START,
+                                        makeTrackRef("track"), 100, 0)),
+                                List.of(),
+                                makeDetectorRef("bs_end"),
+                                makeDetectorRef("bs_start")
+                        ),
+                        new RJSRoute(
+                                "route_forward_first_half",
+                                List.of(new SingleDirectionalRJSTrackRange(EdgeDirection.START_TO_STOP,
+                                        makeTrackRef("track"), 0, 50)),
+                                List.of(),
+                                makeDetectorRef("bs_start"),
+                                makeDetectorRef("d1")
+                        ),
+                        new RJSRoute(
+                                "route_forward_second_half",
+                                List.of(new SingleDirectionalRJSTrackRange(EdgeDirection.START_TO_STOP,
+                                        makeTrackRef("track"), 50, 100)),
+                                List.of(),
+                                makeDetectorRef("d1"),
+                                makeDetectorRef("bs_end")
+                        )
+                ),
+                new ArrayList<>(),
+                new ArrayList<>(),
+                List.of(
+                        new RJSBufferStop("bs_start", 0, makeTrackRef("track")),
+                        new RJSBufferStop("bs_end", 100, makeTrackRef("track"))
+                ),
+                List.of(
+                        new RJSTrainDetector("d1", 50, makeTrackRef("track")),
+                        new RJSTrainDetector("d2", 75, makeTrackRef("track"))
+                ),
+                new ArrayList<>()
+        );
+    }
+
+    /** Sets the objects on the track, bypassing visibility */
+    public static void setTrackObjects(TrackSection track, List<TrackObject> objects) {
+        setPrivateField(track, "trackObjects", ImmutableList.copyOf(objects));
+    }
+
+    /** Sets the speed sections on the track, bypassing visibility */
+    public static void setTrackSpeedSections(TrackSection track, EnumMap<Direction, DoubleRangeMap> speedSections) {
+        setPrivateField(track, "speedSections", speedSections);
+    }
+
+    /** Sets the gradients on the track, bypassing visibility */
+    public static void setGradient(TrackSection track, EnumMap<Direction, DoubleRangeMap> gradients) {
+        setPrivateField(track, "gradients", gradients);
+    }
+
+    /** Sets a field on the track, bypassing visibility */
+    @SuppressFBWarnings({"DP_DO_INSIDE_DO_PRIVILEGED", "REFLF_REFLECTION_MAY_INCREASE_ACCESSIBILITY_OF_FIELD"})
+    public static <T> void setPrivateField(TrackSection track, String name, T value) {
+        if (track instanceof TrackSectionImpl impl) {
+            try {
+                var field = TrackSectionImpl.class.getDeclaredField(name);
+                field.setAccessible(true);
+                field.set(impl, value);
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 }

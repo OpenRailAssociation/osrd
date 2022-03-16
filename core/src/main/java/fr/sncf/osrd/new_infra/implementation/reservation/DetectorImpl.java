@@ -46,7 +46,8 @@ public class DetectorImpl implements Detector {
     void setDetectionSection(Direction direction, DetectionSection section) {
         if (direction == Direction.FORWARD)
             nextSection = section;
-        prevSection = section;
+        else
+            prevSection = section;
     }
 
     /**

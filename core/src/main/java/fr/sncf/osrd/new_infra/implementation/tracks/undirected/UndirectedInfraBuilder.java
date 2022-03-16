@@ -1,6 +1,7 @@
 package fr.sncf.osrd.new_infra.implementation.tracks.undirected;
 
 import static fr.sncf.osrd.new_infra.api.tracks.undirected.TrackObject.TrackObjectType;
+import static java.lang.Math.abs;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -9,6 +10,7 @@ import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.NetworkBuilder;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.*;
 import fr.sncf.osrd.new_infra.implementation.RJSObjectParsing;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
@@ -16,6 +18,8 @@ import fr.sncf.osrd.railjson.schema.infra.RJSSwitch;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitchType;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
+import fr.sncf.osrd.utils.DoubleRangeMap;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import java.util.*;
 
@@ -78,7 +82,41 @@ public class UndirectedInfraBuilder {
             track.trackObjects = ImmutableList.copyOf(objects);
         }
 
+        addSpeedSections(infra.speedSections, trackSectionsByID);
+
         return TrackInfraImpl.from(switches.build(), builder.build());
+    }
+
+    /** Adds all the speed sections to track attributes */
+    private void addSpeedSections(
+            List<RJSSpeedSection> speedSections,
+            HashMap<String, TrackSectionImpl> trackSectionsByID
+    ) {
+        // Creates the maps and fills them with 0
+        for (var track : trackSectionsByID.values()) {
+            var trackSpeedSections = new EnumMap<Direction, DoubleRangeMap>(Direction.class);
+            for (var dir : Direction.values()) {
+                var newMap = new DoubleRangeMap();
+                newMap.addRange(0., track.getLength(), 0.);
+                trackSpeedSections.put(dir, newMap);
+            }
+            track.speedSections = trackSpeedSections;
+        }
+
+        // Reads all the speed sections and adds the values to the tracks
+        for (var speedSection : speedSections) {
+            var value = speedSection.speed;
+            for (var trackRange : speedSection.trackRanges) {
+                var track = RJSObjectParsing.getTrackSection(trackRange.track, trackSectionsByID);
+                var speedSectionMaps = track.getSpeedSections();
+                if (trackRange.applicableDirections.appliesToNormal()) {
+                    speedSectionMaps.get(Direction.FORWARD).addRange(trackRange.begin, trackRange.end, value);
+                }
+                if (trackRange.applicableDirections.appliesToReverse()) {
+                    speedSectionMaps.get(Direction.BACKWARD).addRange(trackRange.begin, trackRange.end, value);
+                }
+            }
+        }
     }
 
     /** Creates a waypoint and add it to the corresponding track */
@@ -95,7 +133,48 @@ public class UndirectedInfraBuilder {
         var end = getNode(track.id, EdgeEndpoint.END);
         var edge = new TrackSectionImpl(track.length, track.id);
         builder.addEdge(begin, end, edge);
+        edge.gradients = makeGradients(track);
         return edge;
+    }
+
+    /** Creates the two DoubleRangeMaps with gradient values */
+    private EnumMap<Direction, DoubleRangeMap> makeGradients(RJSTrackSection track) {
+        var res = new EnumMap<Direction, DoubleRangeMap>(Direction.class);
+        for (var dir : Direction.values()) {
+            var newMap = new DoubleRangeMap();
+            newMap.addRange(0., track.length, 0.);
+            res.put(dir, newMap);
+        }
+
+        // Insert railjson slopes
+        if (track.slopes != null)
+            for (var rjsSlope : track.slopes)
+                if (rjsSlope.gradient != 0.)
+                    for (var dir : Direction.values())
+                        res.get(dir).addRange(rjsSlope.begin, rjsSlope.end, rjsSlope.gradient * dir.sign);
+        for (var dir : Direction.values())
+            addCurvesToGradients(res.get(dir), track);
+        return res;
+    }
+
+    /** Inserts curves as extra gradient values */
+    private static void addCurvesToGradients(DoubleRangeMap gradients, RJSTrackSection trackSection) {
+        // Insert curves: gradient + 800 / radius
+        if (trackSection.curves != null)
+            for (var rjsCurve : trackSection.curves) {
+                if (rjsCurve.radius == 0.)
+                    continue;
+
+                var floorEndEntry = gradients.floorEntry(rjsCurve.end);
+                gradients.put(rjsCurve.end, floorEndEntry.getValue());
+
+                var floorBeginEntry = gradients.floorEntry(rjsCurve.begin);
+                if (floorBeginEntry.getKey() < rjsCurve.begin)
+                    gradients.put(rjsCurve.begin, floorBeginEntry.getValue() + 800. / abs(rjsCurve.radius));
+
+                for (var slopeEntry : gradients.subMap(rjsCurve.begin, rjsCurve.end).entrySet())
+                    gradients.put(slopeEntry.getKey(), slopeEntry.getValue() + 800. / abs(rjsCurve.radius));
+            }
     }
 
     /** Creates a node and registers it in the graph */

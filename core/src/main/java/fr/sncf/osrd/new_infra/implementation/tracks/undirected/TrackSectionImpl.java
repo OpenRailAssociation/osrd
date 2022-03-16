@@ -2,14 +2,19 @@ package fr.sncf.osrd.new_infra.implementation.tracks.undirected;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackObject;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackSection;
+import fr.sncf.osrd.utils.DoubleRangeMap;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
+import java.util.EnumMap;
 
 public class TrackSectionImpl implements TrackSection {
 
     private final double length;
     private final String id;
+    EnumMap<Direction, DoubleRangeMap> speedSections;
+    EnumMap<Direction, DoubleRangeMap> gradients;
     ImmutableList<TrackObject> trackObjects;
     int index;
 
@@ -35,6 +40,16 @@ public class TrackSectionImpl implements TrackSection {
     @Override
     public ImmutableList<TrackObject> getTrackObjects() {
         return trackObjects;
+    }
+
+    @Override
+    public EnumMap<Direction, DoubleRangeMap> getGradients() {
+        return gradients;
+    }
+
+    @Override
+    public EnumMap<Direction, DoubleRangeMap> getSpeedSections() {
+        return speedSections;
     }
 
     @Override
