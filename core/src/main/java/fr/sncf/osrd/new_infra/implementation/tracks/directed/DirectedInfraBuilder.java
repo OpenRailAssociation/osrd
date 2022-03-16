@@ -13,6 +13,7 @@ import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackEdge;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackInfra;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackNode;
+import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackNode.Side;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackObject;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.SwitchBranch;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge;
@@ -62,9 +63,9 @@ public class DirectedInfraBuilder {
 
         // Creates the nodes
         for (var node : undirectedGraph.nodes()) {
-            for (var direction : Direction.values()) {
-                var newNode = new DiTrackNode(node, direction);
-                getMap(direction).put(node, newNode);
+            for (var side : Side.values()) {
+                var newNode = new DiTrackNode(node, side);
+                getMap(side).put(node, newNode);
                 graph.addNode(newNode);
             }
         }
@@ -122,9 +123,9 @@ public class DirectedInfraBuilder {
         if (nodes.containsKey(group))
             return nodes.get(group);
         var node = nodeFromEdgeEndpoint(undirectedGraph, edge, endpoint);
-        var diNode = getMap(Direction.FORWARD).get(node);
+        var diNode = getMap(Side.A).get(node);
         if (nodes.containsValue(diNode))
-            diNode = getMap(Direction.BACKWARD).get(node);
+            diNode = getMap(Side.B).get(node);
         assert !nodes.containsValue(diNode);
         nodes.put(group, diNode);
         return diNode;
@@ -153,7 +154,7 @@ public class DirectedInfraBuilder {
 
     /** Returns whether we can link the two edges together */
     private static boolean canGoFromAToB(TrackEdge a, TrackEdge b) {
-        return (isNotSwitchBranch(a)) || (isNotSwitchBranch(b));
+        return isNotSwitchBranch(a) || isNotSwitchBranch(b);
     }
 
     /** Is the edge something other than a switch branch */
@@ -161,9 +162,9 @@ public class DirectedInfraBuilder {
         return !(edge instanceof SwitchBranch);
     }
 
-    /** Returns either (node -> directed node) map matching the given direction */
-    private HashMap<TrackNode, DiTrackNode> getMap(Direction dir) {
-        if (dir == Direction.FORWARD)
+    /** Returns either (node -> directed node) map matching the given side */
+    private HashMap<TrackNode, DiTrackNode> getMap(Side side) {
+        if (side == Side.A)
             return forwardNodeMap;
         else
             return backwardNodeMap;

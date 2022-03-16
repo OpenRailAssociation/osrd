@@ -1,6 +1,5 @@
 package fr.sncf.osrd.utils.graph;
 
-import com.google.common.graph.EndpointPair;
 import fr.sncf.osrd.new_infra.api.Direction;
 
 /** Encodes an end, an endpoint, the tip of an edge. */

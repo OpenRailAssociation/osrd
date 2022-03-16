@@ -68,9 +68,7 @@ public class DetectionSectionBuilder {
     /** Builds all the results */
     private ArrayList<DetectionSection> build() {
         createSectionsInsideTracks();
-
         createSectionsOverSeveralTracks();
-
         return buildResult();
     }
 

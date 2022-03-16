@@ -9,15 +9,15 @@ import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackInfra;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackNode;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackInfra;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackSection;
-import fr.sncf.osrd.new_infra.implementation.tracks.undirected.InfraTrackInfra;
+import fr.sncf.osrd.new_infra.implementation.tracks.undirected.TrackInfraImpl;
 
-public class DiTrackInfraImpl extends InfraTrackInfra implements DiTrackInfra {
+public class DiTrackInfraImpl extends TrackInfraImpl implements DiTrackInfra {
 
     private final ImmutableNetwork<DiTrackNode, DiTrackEdge> graph;
     private final ImmutableMultimap<String, DiTrackEdge> trackEdgesByID;
 
     protected DiTrackInfraImpl(TrackInfra trackInfra, ImmutableNetwork<DiTrackNode, DiTrackEdge> graph) {
-        super(trackInfra.getSwitches(), trackInfra.getTrackGraph());
+        super(trackInfra.getSwitches(), trackInfra.getTrackGraph(), makeTrackSections(trackInfra.getTrackGraph()));
         this.graph = graph;
         var builder = ImmutableListMultimap.<String, DiTrackEdge>builder();
         for (var edge : graph.edges()) {
