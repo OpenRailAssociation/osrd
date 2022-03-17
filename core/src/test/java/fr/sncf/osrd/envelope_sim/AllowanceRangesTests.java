@@ -9,17 +9,13 @@ import static fr.sncf.osrd.envelope_sim.allowances.AllowanceDistribution.TIME_RA
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import fr.sncf.osrd.envelope.Envelope;
-import fr.sncf.osrd.envelope.EnvelopeBuilder;
-import fr.sncf.osrd.envelope.EnvelopeShape;
-import fr.sncf.osrd.envelope.EnvelopeTransitions;
+import fr.sncf.osrd.envelope.*;
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.allowances.HardenedMarecoAllowance;
 import fr.sncf.osrd.train.TestTrains;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import java.util.List;
 
 public class AllowanceRangesTests {
 
@@ -35,9 +31,10 @@ public class AllowanceRangesTests {
         else
             stops = new double[] { path.getLength() };
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(context, speed, stops);
-        AllowanceRange[] ranges = new AllowanceRange[2];
-        ranges[0] = new AllowanceRange(0, 3000, value1);
-        ranges[1] = new AllowanceRange(3000, path.getLength(), value2);
+        var ranges = List.of(
+                new AllowanceRange(0, 0.3 * path.getLength(), value1),
+                new AllowanceRange(0.3 * path.getLength(), path.getLength(), value2)
+        );
         var allowance = new HardenedMarecoAllowance(
                 context,
                 0, path.getLength(), 0, ranges);
@@ -51,20 +48,20 @@ public class AllowanceRangesTests {
     @Test
     public void testRangesFlat() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testPath = new FlatPath(10000, 0);
+        var testPath = new FlatPath(100000, 0);
         var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
         var marecoEnvelope = makeSimpleMarecoEnvelopeWithRanges(
                 testContext,
                 44.4,
-                true,
+                false,
                 new AllowanceValue.Percentage(TIME_RATIO, 10),
                 new AllowanceValue.Percentage(TIME_RATIO, 20));
         EnvelopeShape.check(marecoEnvelope,
-                INCREASING, CONSTANT, DECREASING, DECREASING, INCREASING, DECREASING, DECREASING);
+                INCREASING, CONSTANT, DECREASING, CONSTANT, DECREASING, DECREASING);
         assertTrue(marecoEnvelope.continuous);
     }
 
-    /** Test ranges with time ratio then ditance ratio allowance */
+    /** Test ranges with time ratio then distance ratio allowance */
     @Test
     public void testRangesOfDifferentTypes() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
@@ -74,10 +71,11 @@ public class AllowanceRangesTests {
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         var value1 = new AllowanceValue.Percentage(TIME_RATIO, 10);
         var value2 = new AllowanceValue.TimePerDistance(DISTANCE_RATIO, 4.5);
-        AllowanceRange[] ranges = new AllowanceRange[2];
         var rangesTransition = 70_000;
-        ranges[0] = new AllowanceRange(0, rangesTransition, value1);
-        ranges[1] = new AllowanceRange(rangesTransition, testPath.getLength(), value2);
+        var ranges = List.of(
+                new AllowanceRange(0, rangesTransition, value1),
+                new AllowanceRange(rangesTransition, testPath.getLength(), value2)
+        );
         var allowance = new HardenedMarecoAllowance(
                 testContext, 0, testPath.getLength(), 30 / 3.6, ranges
         );

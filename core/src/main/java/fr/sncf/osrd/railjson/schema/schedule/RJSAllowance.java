@@ -18,6 +18,7 @@ public class RJSAllowance {
         public double endPosition = Double.NaN;
         @Json(name = "capacity_speed_limit")
         public double capacitySpeedLimit = -1;
+        @Json(name = "value")
         public RJSAllowanceValue value = null;
     }
 
@@ -47,13 +48,22 @@ public class RJSAllowance {
         }
     }
 
-    @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
     public static final class RJSAllowanceRange {
         @Json(name = "begin_position")
-        public double beginPos = Double.NaN;
+        public double beginPos;
         @Json(name = "end_position")
-        public double endPos = Double.NaN;
+        public double endPos;
         @Json(name = "value")
-        public RJSAllowanceValue value = null;
+        public RJSAllowanceValue value;
+
+        /** Constructor */
+        public RJSAllowanceRange(
+                double beginPos,
+                double endPos,
+                RJSAllowanceValue value) {
+            this.beginPos = beginPos;
+            this.endPos = endPos;
+            this.value = value;
+        }
     }
 }
