@@ -1,10 +1,10 @@
 package fr.sncf.osrd.new_infra.implementation.reservation;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 import fr.sncf.osrd.new_infra.api.reservation.DetectionSection;
 import fr.sncf.osrd.new_infra.api.reservation.DiDetector;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
-import java.util.StringJoiner;
 
 public class DetectionSectionImpl implements DetectionSection {
 
@@ -23,9 +23,8 @@ public class DetectionSectionImpl implements DetectionSection {
     @Override
     @ExcludeFromGeneratedCodeCoverage
     public String toString() {
-        var builder = new StringJoiner(", ", "DetectionSection { ", " }");
-        for (var d : detectors)
-            builder.add(d.toString());
-        return builder.toString();
+        return MoreObjects.toStringHelper(this)
+                .add("detectors", detectors)
+                .toString();
     }
 }

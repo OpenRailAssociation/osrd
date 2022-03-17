@@ -1,7 +1,9 @@
 package fr.sncf.osrd.new_infra.implementation.reservation;
 
+import com.google.common.base.MoreObjects;
 import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.reservation.DetectionSection;
+import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 
 public class DetectorImpl implements fr.sncf.osrd.new_infra.api.reservation.Detector {
     private final String id;
@@ -33,7 +35,10 @@ public class DetectorImpl implements fr.sncf.osrd.new_infra.api.reservation.Dete
     }
 
     @Override
+    @ExcludeFromGeneratedCodeCoverage
     public String toString() {
-        return String.format("Detector { id=%s }", id);
+        return MoreObjects.toStringHelper(this)
+                .add("id", id)
+                .toString();
     }
 }

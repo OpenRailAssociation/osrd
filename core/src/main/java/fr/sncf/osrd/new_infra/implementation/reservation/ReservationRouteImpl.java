@@ -1,9 +1,11 @@
 package fr.sncf.osrd.new_infra.implementation.reservation;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import fr.sncf.osrd.new_infra.api.reservation.Detector;
 import fr.sncf.osrd.new_infra.api.reservation.DiDetector;
 import fr.sncf.osrd.new_infra.api.reservation.ReservationRoute;
+import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.Collection;
 
 public class ReservationRouteImpl implements ReservationRoute {
@@ -12,6 +14,16 @@ public class ReservationRouteImpl implements ReservationRoute {
     private final ImmutableList<Detector> releasePoints;
     private final ImmutableList.Builder<ReservationRoute> conflictingRoutesBuilder;
     public final String id;
+
+    @Override
+    @ExcludeFromGeneratedCodeCoverage
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("detectorPath", detectorPath)
+                .add("releasePoints", releasePoints)
+                .add("id", id)
+                .toString();
+    }
 
     /** Constructor */
     public ReservationRouteImpl(
@@ -53,8 +65,4 @@ public class ReservationRouteImpl implements ReservationRoute {
         conflictingRoutes = conflictingRoutesBuilder.build();
     }
 
-    @Override
-    public String toString() {
-        return String.format("ReservationRoute { id=%s }", id);
-    }
 }
