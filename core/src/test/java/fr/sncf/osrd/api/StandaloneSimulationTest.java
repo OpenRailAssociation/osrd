@@ -199,4 +199,53 @@ class StandaloneSimulationTest extends ApiTest {
         assertEquals(noAllowanceTime * 1.05, marecoTime, noAllowanceTime * 0.001);
         assertNull(simResult.ecoSimulations.get(0));
     }
+
+
+    @Test
+    public void withAllowanceRanges() throws Exception {
+        // load the example infrastructure and build a test path
+        final var rjsTrainPath = tinyInfraTrainPath();
+
+        // build the simulation request
+        var stops = new RJSTrainStop[] { RJSTrainStop.lastStop(0.1) };
+        var rangeEndPos = 5000;
+        var allowance = new RJSAllowance[] {
+                new RJSAllowance.Mareco(
+                        new RJSAllowanceValue.TimePerDistance(4.5),
+                        new RJSAllowanceRange[] {
+                                new RJSAllowanceRange(
+                                        0,
+                                        rangeEndPos,
+                                        new RJSAllowanceValue.TimePerDistance(5.5)
+                                )
+                        }
+                )
+        };
+        var trains = new ArrayList<RJSStandaloneTrainSchedule>();
+        trains.add(new RJSStandaloneTrainSchedule("no_allowance", "fast_rolling_stock",
+                0, null, stops));
+        trains.add(new RJSStandaloneTrainSchedule("allowance", "fast_rolling_stock",
+                0, allowance, stops));
+
+        var query = new StandaloneSimulationRequest(
+                "tiny_infra/infra.json",
+                2,
+                getExampleRollingStocks(),
+                trains,
+                rjsTrainPath
+        );
+
+        // parse back the simulation result
+        var simResult = runStandaloneSimulation(query);
+
+        var noAllowanceResult = simResult.baseSimulations.get(0);
+        var noAllowanceTime =
+                noAllowanceResult.headPositions.get(noAllowanceResult.headPositions.size() - 1).time;
+        var marecoResult = simResult.ecoSimulations.get(1);
+        var marecoTime = marecoResult.headPositions.get(marecoResult.headPositions.size() - 1).time;
+        assertEquals(noAllowanceTime + 4.5 * 60 * rangeEndPos / 1E5 + 5.5 * 60 * (10000 - rangeEndPos) / 1E5,
+                marecoTime,
+                noAllowanceTime * 0.01);
+        assertNull(simResult.ecoSimulations.get(0));
+    }
 }

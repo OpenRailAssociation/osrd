@@ -99,7 +99,7 @@ public class RJSStandaloneTrainScheduleParser {
     private static AllowanceRange[] parseAllowanceRanges(
             EnvelopePath envelopePath,
             RJSAllowanceValue defaultValue,
-            RJSAllowance.RJSAllowanceRange[] ranges
+            RJSAllowanceRange[] ranges
     ) throws InvalidSchedule {
         // if no ranges have been defined, just return the default value
         if (ranges == null || ranges.length == 0) {
@@ -129,7 +129,7 @@ public class RJSStandaloneTrainScheduleParser {
         return (AllowanceRange[]) res.toArray();
     }
 
-    private static AllowanceRange parseAllowanceRange(RJSAllowance.RJSAllowanceRange range) throws InvalidSchedule {
+    private static AllowanceRange parseAllowanceRange(RJSAllowanceRange range) throws InvalidSchedule {
         return new AllowanceRange(range.beginPos, range.endPos, parseAllowanceValue(range.value));
     }
 
