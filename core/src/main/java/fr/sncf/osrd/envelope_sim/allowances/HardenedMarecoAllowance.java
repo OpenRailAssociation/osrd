@@ -214,7 +214,7 @@ public class HardenedMarecoAllowance implements Allowance {
                 continue;
             }
             var regionTime = marecoResult.getTotalTime();
-            logger.debug("    envelope time {}, target time {}", regionTime, targetTime);
+            logger.debug("    envelope time {}", regionTime);
             search.feedback(regionTime);
         }
 
