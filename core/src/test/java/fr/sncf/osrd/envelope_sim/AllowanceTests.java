@@ -20,6 +20,7 @@ import fr.sncf.osrd.train.TestTrains;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import java.util.List;
 
 public class AllowanceTests {
     private static HardenedMarecoAllowance makeMarecoAllowance(
@@ -47,6 +48,31 @@ public class AllowanceTests {
                 new EnvelopeSimContext(rollingStock, path, TIME_STEP),
                 0, path.getLength(), 0, value);
         return allowance.apply(maxEffortEnvelope);
+    }
+
+    @Test
+    public void testMarecoContinuity() {
+        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
+        var length = 100_000;
+        var testPath = new FlatPath(length, 0);
+        var stops = new double[] { 0.5 * length, testPath.getLength() };
+        var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testRollingStock, testPath, stops);
+        var allowanceValue = new AllowanceValue.Percentage(TIME_RATIO, 10);
+        var allowance = makeMarecoAllowance(
+                new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP),
+                0, testPath.getLength(), 0, allowanceValue);
+        var marecoIteration = allowance.computeMarecoIteration(maxEffortEnvelope, 10);
+        var previousTime = marecoIteration.getTotalTime();
+        for (double v1 = 10; v1 < 80; v1 = v1 + 0.1) {
+            marecoIteration = allowance.computeMarecoIteration(maxEffortEnvelope, v1);
+            // as v1 is a speed cap the difference between two consecutive times must be approximately
+            // the time delta between the total length travelled at v1 and v1 - 0.1 m/s
+            var timeDelta = length / (v1 - 0.1) - length / v1;
+            var iterationTime = marecoIteration.getTotalTime();
+            assertEquals(iterationTime, previousTime, timeDelta * 1.1);
+            previousTime = iterationTime;
+        }
+
     }
 
     @Test

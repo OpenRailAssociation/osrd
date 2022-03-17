@@ -132,7 +132,8 @@ public class HardenedMarecoAllowance implements Allowance {
         return partBuilder.build();
     }
 
-    private Envelope computeMarecoIteration(Envelope base, double v1) {
+    /** Compute one iteration of the binary search */
+    public Envelope computeMarecoIteration(Envelope base, double v1) {
         // The part of the envelope on which the margin is applied is split in 3:
         // slowdown, then core, then speedup. The slowdown / speedup parts are needed to transition to / from v1 when
         // the begin / end speeds are above v1. These phases are empty / can be ignored when the begin / end speeds
