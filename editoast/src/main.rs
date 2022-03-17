@@ -8,6 +8,7 @@ mod generate;
 mod infra_cache;
 mod models;
 mod railjson;
+mod response;
 mod schema;
 mod views;
 
@@ -44,7 +45,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
 
 async fn runserver(args: RunserverArgs, pg_config: PostgresConfig) -> Result<(), Box<dyn Error>> {
     let conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
-    let infras = Infra::list(&conn)?;
+    let infras = Infra::list(&conn);
 
     // Check generated data is up to date
     for infra in infras.iter() {
@@ -81,13 +82,13 @@ fn generate(args: GenerateArgs, pg_config: PostgresConfig) -> Result<(), Box<dyn
     let mut infras = vec![];
     if args.infra_ids.is_empty() {
         // Retrieve all available infra
-        for infra in Infra::list(&conn)? {
+        for infra in Infra::list(&conn) {
             infras.push(infra);
         }
     } else {
         // Retrieve given infras
         for id in args.infra_ids {
-            infras.push(Infra::retrieve(&conn, id as i32)?);
+            infras.push(Infra::retrieve(&conn, id as i32).unwrap());
         }
     };
 

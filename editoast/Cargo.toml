@@ -16,3 +16,4 @@ json-patch = "0.2.6"
 rocket = { version = "0.5.0-rc.1", features = ["json", "uuid"] }
 rocket_sync_db_pools = {version="0.1.0-rc.1", features=["diesel_postgres_pool"]}
 serde_json = "1.0.79"
+thiserror = "1.0.30"
