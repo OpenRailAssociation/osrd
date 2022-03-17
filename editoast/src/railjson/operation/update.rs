@@ -3,7 +3,7 @@ use crate::infra_cache::InfraCache;
 use crate::railjson::TrackSection;
 use diesel::sql_types::Jsonb;
 use diesel::{sql_query, PgConnection, QueryableByName, RunQueryDsl};
-use json_patch::{Patch, PatchError};
+use json_patch::Patch;
 use rocket::serde::Deserialize;
 use serde_json::{from_value, to_string, Value};
 use std::collections::{HashMap, HashSet};

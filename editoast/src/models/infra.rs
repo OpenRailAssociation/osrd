@@ -1,10 +1,11 @@
+use crate::response::ApiError;
 use crate::schema::osrd_infra_infra;
 use crate::schema::osrd_infra_infra::dsl::*;
 use diesel::prelude::*;
+use diesel::result::Error as DieselError;
 use diesel::{sql_query, update, PgConnection, QueryDsl, RunQueryDsl};
 use rocket::serde::Serialize;
-use std::error::Error;
-use std::fmt;
+use thiserror::Error;
 
 static _RAILJSON_VERSION: &'static str = "2.2.0";
 
@@ -17,23 +18,30 @@ pub struct Infra {
     pub version: i64,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum InfraError {
     /// Couldn't found the infra with the given id
+    #[error("Infra '{0}', could not be found")]
     NotFound(i32),
-    Other(diesel::result::Error),
+    #[error("An internal diesel error occurred: '{}'", .0.to_string())]
+    Other(DieselError),
 }
 
-impl fmt::Display for InfraError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl ApiError for InfraError {
+    fn get_code(&self) -> u16 {
         match self {
-            InfraError::NotFound(infra_id) => write!(f, "Infra '{}' could not be found.", infra_id),
-            InfraError::Other(diesel_error) => write!(f, "{}", diesel_error),
+            InfraError::NotFound(_) => 404,
+            InfraError::Other(_) => 500,
+        }
+    }
+
+    fn get_type(&self) -> &'static str {
+        match self {
+            InfraError::NotFound(_) => "editoast:infra:NotFound",
+            InfraError::Other(_) => "editoast:infra:Other",
         }
     }
 }
-
-impl Error for InfraError {}
 
 impl Infra {
     pub fn _retrieve_list(
@@ -49,16 +57,18 @@ impl Infra {
         .load(conn)
     }
 
-    pub fn retrieve(conn: &PgConnection, infra_id: i32) -> Result<Infra, InfraError> {
+    pub fn retrieve(conn: &PgConnection, infra_id: i32) -> Result<Infra, Box<dyn ApiError>> {
         match osrd_infra_infra.find(infra_id).first(conn) {
             Ok(infra) => Ok(infra),
-            Err(diesel::result::Error::NotFound) => Err(InfraError::NotFound(infra_id)),
-            Err(e) => Err(InfraError::Other(e)),
+            Err(DieselError::NotFound) => Err(Box::new(InfraError::NotFound(infra_id))),
+            Err(e) => Err(Box::new(InfraError::Other(e))),
         }
     }
 
-    pub fn list(conn: &PgConnection) -> Result<Vec<Infra>, diesel::result::Error> {
-        osrd_infra_infra.load::<Self>(conn)
+    pub fn list(conn: &PgConnection) -> Vec<Infra> {
+        osrd_infra_infra
+            .load::<Self>(conn)
+            .expect("List infra query failed")
     }
 
     pub fn _rename(
@@ -73,11 +83,15 @@ impl Infra {
         Ok(())
     }
 
-    pub fn bump_version(&self, conn: &PgConnection) -> Self {
-        diesel::update(osrd_infra_infra.filter(id.eq(self.id)))
+    pub fn bump_version(&self, conn: &PgConnection) -> Result<Self, Box<dyn ApiError>> {
+        match diesel::update(osrd_infra_infra.filter(id.eq(self.id)))
             .set(version.eq(self.version + 1))
-            .get_result(conn)
-            .expect("Bump infra version failed")
+            .get_result::<Infra>(conn)
+        {
+            Ok(infra) => Ok(infra),
+            Err(DieselError::NotFound) => Err(Box::new(InfraError::NotFound(self.id))),
+            Err(err) => Err(Box::new(InfraError::Other(err))),
+        }
     }
 
     pub fn _create(infra_name: &String, conn: &PgConnection) -> Infra {
