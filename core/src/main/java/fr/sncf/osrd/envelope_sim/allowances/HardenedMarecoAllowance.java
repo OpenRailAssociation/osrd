@@ -1,5 +1,7 @@
 package fr.sncf.osrd.envelope_sim.allowances;
 
+import static java.lang.Math.abs;
+
 import com.carrotsearch.hppc.DoubleArrayList;
 import fr.sncf.osrd.envelope.*;
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
@@ -13,7 +15,6 @@ import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.AcceleratingSlopeCoast;
 import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.MarecoConvergenceException;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
-import fr.sncf.osrd.exceptions.NotImplemented;
 import fr.sncf.osrd.utils.DoubleBinarySearch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,9 +22,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import static java.lang.Math.abs;
-import static java.lang.Math.min;
 
 public class HardenedMarecoAllowance implements Allowance {
     private final Logger logger = LoggerFactory.getLogger(HardenedMarecoAllowance.class);
@@ -33,7 +31,7 @@ public class HardenedMarecoAllowance implements Allowance {
     public final double beginPos;
     public final double endPos;
 
-    public final AllowanceRange[] ranges;
+    public final List<AllowanceRange> ranges;
 
     // potential speed limit under which the train would use too much capacity
     public final double capacitySpeedLimit;
@@ -44,7 +42,7 @@ public class HardenedMarecoAllowance implements Allowance {
             double beginPos,
             double endPos,
             double capacitySpeedLimit,
-            AllowanceRange[] ranges
+            List<AllowanceRange> ranges
     ) {
         this.context = context;
         this.beginPos = beginPos;
@@ -274,7 +272,7 @@ public class HardenedMarecoAllowance implements Allowance {
             var baseEnvelopeRange = Envelope.make(envelopeRegion.slice(rangeBeginPos, rangeEndPos));
             logger.debug("re-computing range n°{}", i + 1);
             var envelopeRange =
-                    computeEnvelopeRange(baseEnvelopeRange, ranges[i].value, targetBeginSpeed, targetEndSpeed);
+                    computeEnvelopeRange(baseEnvelopeRange, ranges.get(i).value, targetBeginSpeed, targetEndSpeed);
             builder.addEnvelope(envelopeRange);
         }
     }
@@ -322,7 +320,8 @@ public class HardenedMarecoAllowance implements Allowance {
         var totalTargetTime = baseTime + addedTime;
         var slowestRunningTime = Double.POSITIVE_INFINITY;
         if (capacitySpeedLimit > 0) {
-            var slowestEnvelope = EnvelopeSpeedCap.from(envelopeRange, List.of(new CapacitySpeedLimit()), capacitySpeedLimit);
+            var slowestEnvelope =
+                    EnvelopeSpeedCap.from(envelopeRange, List.of(new CapacitySpeedLimit()), capacitySpeedLimit);
             slowestRunningTime = slowestEnvelope.getTotalTime();
         }
         // if the total target time isn't actually reachable, throw error

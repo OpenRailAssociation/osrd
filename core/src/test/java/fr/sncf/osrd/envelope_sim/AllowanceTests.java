@@ -31,8 +31,7 @@ public class AllowanceTests {
             double capacitySpeedLimit,
             AllowanceValue value
     ) {
-        AllowanceRange[] defaultRange = new AllowanceRange[1];
-        defaultRange[0] = new AllowanceRange(beginPos, endPos, value);
+        var defaultRange = List.of(new AllowanceRange(beginPos, endPos, value));
         return new HardenedMarecoAllowance(context, beginPos, endPos, capacitySpeedLimit, defaultRange);
     }
 
@@ -44,7 +43,6 @@ public class AllowanceTests {
                                                     double speed,
                                                     AllowanceValue value,
                                                     boolean stop) {
-        var rollingStock = context.rollingStock;
         var path = context.path;
         double[] stops;
         if (stop)
@@ -157,20 +155,16 @@ public class AllowanceTests {
     }
 
     private Envelope makeSimpleConstructionEnvelope(
-            PhysicsRollingStock rollingStock,
-            PhysicsPath path,
+            EnvelopeSimContext context,
             double[] stops,
             double speed,
             double begin,
             double end,
             AllowanceValue value
     ) {
-        var context = new EnvelopeSimContext(rollingStock, path, TIME_STEP);
         double capacitySpeedLimit = 30 / 3.6;
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(context, speed, stops);
-        var allowance = makeMarecoAllowance(
-                new EnvelopeSimContext(rollingStock, path, TIME_STEP),
-                begin, end, capacitySpeedLimit, value);
+        var allowance = makeMarecoAllowance(context, begin, end, capacitySpeedLimit, value);
         return allowance.apply(maxEffortEnvelope);
     }
 
@@ -181,7 +175,7 @@ public class AllowanceTests {
         var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
         var stops = new double[] { testPath.getLength() };
         var constructionEnvelope = makeSimpleConstructionEnvelope(
-                testRollingStock, testPath, stops, 44.4, 1000, 5000, new AllowanceValue.FixedTime(TIME_RATIO, 60));
+                testContext, stops, 44.4, 1000, 5000, new AllowanceValue.FixedTime(TIME_RATIO, 60));
         EnvelopeShape.check(constructionEnvelope,
                 INCREASING, DECREASING, CONSTANT, INCREASING, CONSTANT, DECREASING);
         var delta = 2 * constructionEnvelope.getMaxSpeed() * TIME_STEP;
@@ -198,7 +192,7 @@ public class AllowanceTests {
         var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
         var stops = new double[] { 8000, testPath.getLength() };
         var constructionEnvelope = makeSimpleConstructionEnvelope(
-                testRollingStock, testPath, stops, 44.4, 1500, 6500, new AllowanceValue.FixedTime(TIME_RATIO, 60));
+                testContext, stops, 44.4, 1500, 6500, new AllowanceValue.FixedTime(TIME_RATIO, 60));
         EnvelopeShape.check(constructionEnvelope,
                 INCREASING, DECREASING, CONSTANT, INCREASING, DECREASING, INCREASING, DECREASING);
         var delta = 2 * constructionEnvelope.getMaxSpeed() * TIME_STEP;
