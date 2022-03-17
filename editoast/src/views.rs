@@ -1,9 +1,8 @@
 use crate::generate;
 use crate::infra_cache::InfraCache;
-use crate::models::{DBConnection, GeneratedInfra, Infra, InfraError};
+use crate::models::{DBConnection, GeneratedInfra, Infra};
 use crate::railjson::operation::Operation;
-use rocket::http::Status;
-use rocket::response::status::Custom;
+use crate::response::ApiResult;
 use rocket::serde::json::Json;
 use rocket::{routes, Route, State};
 use std::collections::HashMap;
@@ -18,11 +17,7 @@ pub async fn health() {}
 #[get("/infra")]
 /// Return a list of infras
 async fn infra_list(connection: DBConnection) -> Json<Vec<Infra>> {
-    connection
-        .run(|c| Infra::list(c))
-        .await
-        .map(Json)
-        .expect("An error occurred")
+    Json(connection.run(|c| Infra::list(c)).await)
 }
 
 #[post("/infra/<infra>", data = "<operations>")]
@@ -32,19 +27,12 @@ async fn edit_infra(
     operations: Json<Vec<Operation>>,
     infra_caches: &State<HashMap<i32, InfraCache>>,
     connection: DBConnection,
-) -> Result<String, Custom<String>> {
+) -> ApiResult<String> {
     // TODO: Fix lifetime issue ?
     // Retrieve infra
-    let infra = match connection
+    let infra = connection
         .run(move |c| Infra::retrieve(c, infra as i32))
-        .await
-    {
-        Ok(infra) => infra,
-        Err(error) => match error {
-            InfraError::NotFound(_) => return Err(Custom(Status::NotFound, error.to_string())),
-            e => return Err(Custom(Status::InternalServerError, e.to_string())),
-        },
-    };
+        .await?;
 
     // Apply modifications
     for operation in operations.iter() {
@@ -58,8 +46,7 @@ async fn edit_infra(
     }
 
     // Bump version
-    let _infra = infra.clone();
-    connection.run(move |c| _infra.bump_version(c)).await;
+    let infra = connection.run(move |c| infra.bump_version(c)).await?;
 
     // List objects that needs to be refreshed
     let infra_cache = infra_caches
@@ -80,11 +67,11 @@ async fn edit_infra(
     connection
         .run(move |c| {
             let mut gen_infra = GeneratedInfra::retrieve(c, infra.id);
-            gen_infra.version = infra.version + 1;
+            gen_infra.version = infra.version;
             gen_infra.save(c);
         })
         .await;
 
     // Check for warnings and errors
-    Ok(format!("OK!"))
+    Ok(Json(String::from("ok")))
 }
