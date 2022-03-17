@@ -36,6 +36,7 @@ public class ReservationInfraTests {
         var bufferStopABackward = safeGet(safeGet(diDetectors, BACKWARD), "buffer_stop_a");
         var bufferStopBBackward = safeGet(safeGet(diDetectors, BACKWARD), "buffer_stop_b");
         var bufferStopCBackward = safeGet(safeGet(diDetectors, BACKWARD), "buffer_stop_c");
+        System.out.println(graph);
         var allDirectedBufferStops = Set.of(
                 bufferStopA,
                 bufferStopB,
