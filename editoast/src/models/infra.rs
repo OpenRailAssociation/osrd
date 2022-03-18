@@ -3,11 +3,11 @@ use crate::schema::osrd_infra_infra;
 use crate::schema::osrd_infra_infra::dsl::*;
 use diesel::prelude::*;
 use diesel::result::Error as DieselError;
-use diesel::{sql_query, update, PgConnection, QueryDsl, RunQueryDsl};
-use rocket::serde::Serialize;
+use diesel::{delete, sql_query, update, PgConnection, QueryDsl, RunQueryDsl};
+use rocket::serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-static _RAILJSON_VERSION: &'static str = "2.2.0";
+static RAILJSON_VERSION: &'static str = "2.2.0";
 
 #[derive(Clone, QueryableByName, Queryable, Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -16,6 +16,12 @@ pub struct Infra {
     pub id: i32,
     pub name: String,
     pub version: i64,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(crate = "rocket::serde")]
+pub struct CreateInfra {
+    pub name: String,
 }
 
 #[derive(Debug, Error)]
@@ -84,7 +90,7 @@ impl Infra {
     }
 
     pub fn bump_version(&self, conn: &PgConnection) -> Result<Self, Box<dyn ApiError>> {
-        match diesel::update(osrd_infra_infra.filter(id.eq(self.id)))
+        match update(osrd_infra_infra.filter(id.eq(self.id)))
             .set(version.eq(self.version + 1))
             .get_result::<Infra>(conn)
         {
@@ -94,18 +100,29 @@ impl Infra {
         }
     }
 
-    pub fn _create(infra_name: &String, conn: &PgConnection) -> Infra {
-        sql_query(format!(
+    pub fn create(infra_name: &String, conn: &PgConnection) -> Result<Infra, Box<dyn ApiError>> {
+        match sql_query(format!(
             "INSERT INTO osrd_infra_infra (name, railjson_version, owner, version)
              VALUES ('{}', '{}', '00000000-0000-0000-0000-000000000000', 1)
              RETURNING *",
-            infra_name, _RAILJSON_VERSION
+            infra_name, RAILJSON_VERSION
         ))
         .get_result::<Infra>(conn)
-        .expect("Fail to create an Infra")
-        .clone()
+        {
+            Ok(infra) => Ok(infra),
+            Err(err) => Err(Box::new(InfraError::Other(err))),
+        }
+    }
+
+    pub fn delete(infra_id: i32, conn: &PgConnection) -> Result<(), Box<dyn ApiError>> {
+        match delete(osrd_infra_infra.filter(id.eq(infra_id))).execute(conn) {
+            Ok(1) => Ok(()),
+            Ok(_) => Err(Box::new(InfraError::NotFound(infra_id))),
+            Err(err) => Err(Box::new(InfraError::Other(err))),
+        }
     }
 }
+
 #[cfg(test)]
 mod test {
     use super::Infra;
@@ -117,8 +134,20 @@ mod test {
     fn create_infra() {
         let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
         conn.test_transaction::<_, Error, _>(|| {
-            let infra = Infra::_create(&"test".to_string(), &conn);
+            let infra = Infra::create(&"test".to_string(), &conn).unwrap();
             assert_eq!("test", infra.name);
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn delete_infra() {
+        let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
+        conn.test_transaction::<_, Error, _>(|| {
+            let infra = Infra::create(&"test".to_string(), &conn).unwrap();
+            assert!(Infra::delete(infra.id, &conn).is_ok());
+            let err = Infra::delete(infra.id, &conn).unwrap_err();
+            assert_eq!(err.get_code(), 404);
             Ok(())
         });
     }

@@ -1,6 +1,6 @@
 use crate::generate;
 use crate::infra_cache::InfraCache;
-use crate::models::{DBConnection, GeneratedInfra, Infra};
+use crate::models::{CreateInfra, DBConnection, GeneratedInfra, Infra};
 use crate::railjson::operation::Operation;
 use crate::response::ApiResult;
 use rocket::serde::json::Json;
@@ -8,7 +8,7 @@ use rocket::{routes, Route, State};
 use std::collections::HashMap;
 
 pub fn routes() -> Vec<Route> {
-    routes![health, infra_list, edit_infra]
+    routes![health, infra_list, edit_infra, create_infra, delete_infra]
 }
 
 #[get("/health")]
@@ -16,19 +16,34 @@ pub async fn health() {}
 
 #[get("/infra")]
 /// Return a list of infras
-async fn infra_list(connection: DBConnection) -> Json<Vec<Infra>> {
-    Json(connection.run(|c| Infra::list(c)).await)
+async fn infra_list(connection: DBConnection) -> ApiResult<Vec<Infra>> {
+    Ok(Json(connection.run(|c| Infra::list(c)).await))
+}
+
+#[post("/infra", data = "<data>")]
+async fn create_infra(data: Json<CreateInfra>, connection: DBConnection) -> ApiResult<i32> {
+    let infra = connection
+        .run(move |c| Infra::create(&data.name, c))
+        .await?;
+    Ok(Json(infra.id))
+}
+
+#[delete("/infra/<infra>")]
+async fn delete_infra(infra: u32, connection: DBConnection) -> ApiResult<()> {
+    connection
+        .run(move |c| Infra::delete(infra as i32, c))
+        .await?;
+    Ok(Json(()))
 }
 
 #[post("/infra/<infra>", data = "<operations>")]
-/// CRUD for edit an infrastructure. Takes a batch of
+/// CRUD for edit an infrastructure. Takes a batch of operations
 async fn edit_infra(
     infra: u32,
     operations: Json<Vec<Operation>>,
     infra_caches: &State<HashMap<i32, InfraCache>>,
     connection: DBConnection,
 ) -> ApiResult<String> {
-    // TODO: Fix lifetime issue ?
     // Retrieve infra
     let infra = connection
         .run(move |c| Infra::retrieve(c, infra as i32))

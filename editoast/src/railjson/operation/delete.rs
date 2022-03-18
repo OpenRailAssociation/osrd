@@ -36,6 +36,7 @@ mod test {
     use crate::client::PostgresConfig;
     use crate::models::Infra;
     use crate::railjson::operation::CreateOperation;
+    use crate::railjson::ObjectType;
     use crate::railjson::TrackSection;
     use diesel::result::Error;
     use diesel::sql_types::BigInt;
@@ -61,11 +62,11 @@ mod test {
                 },
             };
 
-            let infra = Infra::_create(&"test".to_string(), &conn);
+            let infra = Infra::create(&"test".to_string(), &conn).unwrap();
             track_creation.apply(infra.id, &conn);
 
             let track_deletion = DeleteOperation {
-                obj_type: crate::railjson::ObjectType::TrackSection,
+                obj_type: ObjectType::TrackSection,
                 obj_id: "my_track".to_string(),
             };
 
@@ -75,9 +76,9 @@ mod test {
                 "SELECT COUNT (*) AS nb FROM osrd_infra_tracksectionmodel WHERE obj_id = 'my_track' AND infra_id = {}",
                 infra.id
             ))
-            .load::<Count>(&conn);
+            .load::<Count>(&conn).unwrap();
 
-            assert_eq!(res_del.unwrap()[0].nb, 0);
+            assert_eq!(res_del[0].nb, 0);
 
             Ok(())
         });

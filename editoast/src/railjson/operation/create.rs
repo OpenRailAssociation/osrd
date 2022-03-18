@@ -80,7 +80,7 @@ mod test {
                     ..Default::default()
                 },
             };
-            let infra = Infra::_create(&"test".to_string(), &conn);
+            let infra = Infra::create(&"test".to_string(), &conn).unwrap();
             track_creation.apply(infra.id, &conn);
             Ok(())
         });
