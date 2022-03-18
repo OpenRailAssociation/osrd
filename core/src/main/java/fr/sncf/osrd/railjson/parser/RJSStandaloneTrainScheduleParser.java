@@ -69,7 +69,13 @@ public class RJSStandaloneTrainScheduleParser {
                     new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
                     rjsConstruction.beginPosition, rjsConstruction.endPosition,
                     getPositiveDoubleOrDefault(rjsConstruction.capacitySpeedLimit, 30 / 3.6),
-                    parseAllowanceRanges(envelopePath, rjsConstruction.value, null)
+                    List.of(
+                            new AllowanceRange(
+                                    rjsConstruction.beginPosition,
+                                    rjsConstruction.endPosition,
+                                    parseAllowanceValue(rjsConstruction.value)
+                            )
+                    )
             );
         }
         if (rjsAllowance.getClass() == RJSAllowance.Mareco.class) {
