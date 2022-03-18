@@ -5,7 +5,7 @@ mod speed_section_layer;
 mod track_section_layer;
 
 pub use generated_infra::GeneratedInfra;
-pub use infra::{Infra, InfraError};
+pub use infra::{CreateInfra, Infra, InfraError};
 pub use signal_layer::SignalLayer;
 pub use speed_section_layer::SpeedSectionLayer;
 pub use track_section_layer::TrackSectionLayer;
