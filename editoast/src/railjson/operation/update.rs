@@ -1,6 +1,7 @@
-use super::ObjectType;
+use super::{ObjectType, OperationError};
 use crate::infra_cache::InfraCache;
 use crate::railjson::TrackSection;
+use crate::response::ApiError;
 use diesel::sql_types::Jsonb;
 use diesel::{sql_query, PgConnection, QueryableByName, RunQueryDsl};
 use json_patch::Patch;
@@ -19,23 +20,26 @@ pub struct UpdateOperation {
 }
 
 impl UpdateOperation {
-    pub fn apply(&self, infra_id: i32, conn: &PgConnection) {
+    pub fn apply(&self, infra_id: i32, conn: &PgConnection) -> Result<(), Box<dyn ApiError>> {
         // Load object
-        let mut obj: DataObject = sql_query(format!(
+        let mut obj: DataObject = match sql_query(format!(
             "SELECT data FROM {} WHERE infra_id = {} AND obj_id = '{}'",
             self.obj_type.get_table(),
             infra_id,
             self.obj_id
         ))
         .get_result(conn)
-        .expect("An error occured looking for the object to update.");
+        {
+            Ok(obj) => obj,
+            Err(err) => return Err(Box::new(OperationError::Other(err))),
+        };
 
         // Apply and check patch
         obj.patch_and_check(self)
             .expect("An error occurred patching object");
 
         // Save new object
-        sql_query(format!(
+        match sql_query(format!(
             "UPDATE {} SET data = '{}' WHERE infra_id = {} AND obj_id = '{}'",
             self.obj_type.get_table(),
             to_string(&obj.data).unwrap(),
@@ -43,7 +47,11 @@ impl UpdateOperation {
             self.obj_id,
         ))
         .execute(conn)
-        .expect("Object update failed");
+        {
+            Ok(1) => Ok(()),
+            Ok(_) => Err(Box::new(OperationError::NotFound(self.obj_id.clone()))),
+            Err(err) => Err(Box::new(OperationError::Other(err))),
+        }
     }
 
     pub fn get_updated_objects(
