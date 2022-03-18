@@ -1,7 +1,7 @@
 package fr.sncf.osrd.train;
 
 import com.carrotsearch.hppc.DoubleArrayList;
-import fr.sncf.osrd.envelope_sim.allowances.HardenedMarecoAllowance;
+import fr.sncf.osrd.envelope_sim.allowances.Allowance;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -13,14 +13,14 @@ public class StandaloneTrainSchedule {
 
     public final ArrayList<TrainStop> stops;
 
-    public final ArrayList<HardenedMarecoAllowance> allowances;
+    public final ArrayList<? extends Allowance> allowances;
 
     /** Standalone Train Schedule constructor */
     public StandaloneTrainSchedule(
             RollingStock rollingStock,
             double initialSpeed,
             ArrayList<TrainStop> stops,
-            ArrayList<HardenedMarecoAllowance> allowances
+            ArrayList<? extends Allowance> allowances
     ) {
         this.rollingStock = rollingStock;
         this.initialSpeed = initialSpeed;

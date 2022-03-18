@@ -1,5 +1,6 @@
 package fr.sncf.osrd.envelope_sim.allowances;
 
+import static java.lang.Double.NaN;
 import static java.lang.Math.abs;
 
 import com.carrotsearch.hppc.DoubleArrayList;
@@ -56,9 +57,6 @@ public class HardenedMarecoAllowance implements Allowance {
     }
 
     public static final class MarecoSpeedLimit implements EnvelopeAttr {
-        private MarecoSpeedLimit() {
-        }
-
         @Override
         public Class<? extends EnvelopeAttr> getAttrType() {
             return MarecoSpeedLimit.class;
@@ -66,9 +64,6 @@ public class HardenedMarecoAllowance implements Allowance {
     }
 
     public static final class CapacitySpeedLimit implements EnvelopeAttr {
-        private CapacitySpeedLimit() {
-        }
-
         @Override
         public Class<? extends EnvelopeAttr> getAttrType() {
             return CapacitySpeedLimit.class;
@@ -117,8 +112,9 @@ public class HardenedMarecoAllowance implements Allowance {
 
     private EnvelopePart computeSlowdown(Envelope envelopeSection, double v1, double targetBeginSpeed) {
         double beginSpeed;
-        // if no begin speed has been imposed by the previous range
-        if (targetBeginSpeed == 0) {
+        // if there is no target begin speed, that means there is no transition between ranges to compute here
+        // this is done later when the range is re-computed
+        if (Double.isNaN(targetBeginSpeed)) {
             // if the section is not at the beginning of the allowance region, there will be no slowdown phase
             if (envelopeSection.getBeginPos() > beginPos)
                 return null;
@@ -138,8 +134,9 @@ public class HardenedMarecoAllowance implements Allowance {
 
     private EnvelopePart computeSpeedup(Envelope envelopeSection, double v1, double targetEndSpeed) {
         double endSpeed;
-        // if no begin speed has been imposed by the next range
-        if (targetEndSpeed == 0) {
+        // if there is no target end speed, that means there is no transition between ranges to compute here
+        // this is done later when the range is re-computed
+        if (Double.isNaN(targetEndSpeed)) {
             // if the section is not at the end of the allowance region, there will be no speedup phase
             if (envelopeSection.getEndPos() < endPos)
                 return null;
@@ -295,7 +292,7 @@ public class HardenedMarecoAllowance implements Allowance {
      * Split the range into sections which can be independently computed.
      */
     private Envelope computeEnvelopeRange(Envelope envelopeRange, AllowanceValue value) {
-        return computeEnvelopeRange(envelopeRange, value, 0, 0);
+        return computeEnvelopeRange(envelopeRange, value, NaN, NaN);
     }
 
     /**
