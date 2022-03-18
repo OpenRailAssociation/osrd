@@ -585,7 +585,9 @@ public final class EnvelopePart implements SearchableEnvelope {
         // if the slice spans all the envelope part, don't make a copy
         if (beginStepIndex == 0 && endStepIndex == stepCount() - 1
                 && beginPosition == Double.NEGATIVE_INFINITY
-                && endPosition == Double.POSITIVE_INFINITY)
+                && endPosition == Double.POSITIVE_INFINITY
+                && Double.isNaN(beginSpeed)
+                && Double.isNaN(endSpeed))
             return this;
 
         // copy affected steps
@@ -599,7 +601,6 @@ public final class EnvelopePart implements SearchableEnvelope {
                 endSpeed = interpolateSpeed(endStepIndex, endPosition);
             double interpolatedTimeDelta = interpolateTimeDelta(endStepIndex, endPosition);
             sliced.positions[sliced.pointCount() - 1] = endPosition;
-            sliced.speeds[sliced.pointCount() - 1] = endSpeed;
             sliced.timeDeltas[sliced.stepCount() - 1] = interpolatedTimeDelta;
         }
         if (beginPosition != Double.NEGATIVE_INFINITY) {
@@ -607,9 +608,12 @@ public final class EnvelopePart implements SearchableEnvelope {
                 beginSpeed = interpolateSpeed(beginStepIndex, beginPosition);
             double interpolatedTimeDelta = interpolateTimeDelta(beginStepIndex, beginPosition);
             sliced.positions[0] = beginPosition;
-            sliced.speeds[0] = beginSpeed;
             sliced.timeDeltas[0] -= interpolatedTimeDelta; // notice the -= here
         }
+        if (!Double.isNaN(beginSpeed))
+            sliced.speeds[0] = beginSpeed;
+        if (!Double.isNaN(endSpeed))
+            sliced.speeds[sliced.pointCount() - 1] = endSpeed;
         return sliced;
     }
 
