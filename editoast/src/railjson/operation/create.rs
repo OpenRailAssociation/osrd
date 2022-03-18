@@ -1,5 +1,5 @@
-use super::{ObjectType, TrackSection};
-use crate::infra_cache::InfraCache;
+use super::{ObjectType, OperationError, TrackSection};
+use crate::{infra_cache::InfraCache, response::ApiError};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
 use rocket::serde::Deserialize;
 use std::collections::{HashMap, HashSet};
@@ -11,8 +11,8 @@ pub enum CreateOperation {
 }
 
 impl CreateOperation {
-    pub fn apply(&self, infra_id: i32, conn: &PgConnection) {
-        sql_query(format!(
+    pub fn apply(&self, infra_id: i32, conn: &PgConnection) -> Result<(), Box<dyn ApiError>> {
+        match sql_query(format!(
             "INSERT INTO {} (infra_id, obj_id, data) VALUES ({}, '{}', '{}')",
             self.get_obj_type().get_table(),
             infra_id,
@@ -20,7 +20,10 @@ impl CreateOperation {
             self.get_data(),
         ))
         .execute(conn)
-        .expect("An error occured while applying a deletion");
+        {
+            Ok(_) => Ok(()),
+            Err(err) => Err(Box::new(OperationError::Other(err))),
+        }
     }
 
     pub fn get_updated_objects(
@@ -81,7 +84,8 @@ mod test {
                 },
             };
             let infra = Infra::create(&"test".to_string(), &conn).unwrap();
-            track_creation.apply(infra.id, &conn);
+
+            assert!(track_creation.apply(infra.id, &conn).is_ok());
             Ok(())
         });
     }

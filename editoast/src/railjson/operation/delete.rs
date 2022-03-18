@@ -1,4 +1,5 @@
-use super::ObjectType;
+use super::{ObjectType, OperationError};
+use crate::response::ApiError;
 use diesel::{sql_query, PgConnection, RunQueryDsl};
 use rocket::serde::Deserialize;
 use std::collections::{HashMap, HashSet};
@@ -11,15 +12,19 @@ pub struct DeleteOperation {
 }
 
 impl DeleteOperation {
-    pub fn apply(&self, infra_id: i32, conn: &PgConnection) {
-        sql_query(format!(
+    pub fn apply(&self, infra_id: i32, conn: &PgConnection) -> Result<(), Box<dyn ApiError>> {
+        match sql_query(format!(
             "DELETE FROM {} WHERE obj_id = '{}' AND infra_id = {}",
             self.obj_type.get_table(),
             self.obj_id,
             infra_id
         ))
         .execute(conn)
-        .expect("An error occured while applying a deletion");
+        {
+            Ok(1) => Ok(()),
+            Ok(_) => Err(Box::new(OperationError::NotFound(self.obj_id.clone()))),
+            Err(err) => Err(Box::new(OperationError::Other(err))),
+        }
     }
 
     pub fn get_updated_objects(&self, update_lists: &mut HashMap<ObjectType, HashSet<String>>) {
@@ -63,14 +68,14 @@ mod test {
             };
 
             let infra = Infra::create(&"test".to_string(), &conn).unwrap();
-            track_creation.apply(infra.id, &conn);
+            assert!(track_creation.apply(infra.id, &conn).is_ok());
 
             let track_deletion = DeleteOperation {
                 obj_type: ObjectType::TrackSection,
                 obj_id: "my_track".to_string(),
             };
 
-            track_deletion.apply(infra.id, &conn);
+            assert!(track_deletion.apply(infra.id, &conn).is_ok());
 
             let res_del = sql_query(format!(
                 "SELECT COUNT (*) AS nb FROM osrd_infra_tracksectionmodel WHERE obj_id = 'my_track' AND infra_id = {}",
