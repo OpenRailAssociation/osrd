@@ -7,6 +7,7 @@ import static fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge.TRACK_OBJEC
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.NetworkBuilder;
 import fr.sncf.osrd.new_infra.api.Direction;
@@ -18,10 +19,7 @@ import fr.sncf.osrd.new_infra.implementation.tracks.directed.DirectedInfraBuilde
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ReservationInfraBuilder {
 
@@ -88,13 +86,17 @@ public class ReservationInfraBuilder {
                 routesPerSection.put(section, route);
             }
         }
+        Map<ReservationRouteImpl, Set<ReservationRoute>> routeConflictBuilders = new HashMap<>();
         for (var routesSharingSection : routesPerSection.asMap().values()) {
             for (var route : routesSharingSection) {
-                route.registerConflict(routesSharingSection);
+                var conflictSet = routeConflictBuilders.computeIfAbsent(route, r -> new HashSet<>());
+                for (var otherRoute : routesSharingSection)
+                    if (otherRoute != route)
+                        conflictSet.add(otherRoute);
             }
         }
         for (var route : routes) {
-            route.build();
+            route.setConflictingRoutes(routeConflictBuilders.get(route));
             networkBuilder.addEdge(
                     route.getDetectorPath().get(0),
                     route.getDetectorPath().get(route.getDetectorPath().size() - 1),
