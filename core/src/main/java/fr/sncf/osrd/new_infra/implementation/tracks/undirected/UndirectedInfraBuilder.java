@@ -1,8 +1,8 @@
 package fr.sncf.osrd.new_infra.implementation.tracks.undirected;
 
-import static fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge.TRACK_OBJECTS;
 import static fr.sncf.osrd.new_infra.api.tracks.undirected.TrackObject.TrackObjectType;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.graph.ImmutableNetwork;
@@ -24,6 +24,7 @@ public class UndirectedInfraBuilder {
 
     private final HashMap<String, TrackNode> beginEndpoints = new HashMap<>();
     private final HashMap<String, TrackNode> endEndpoints = new HashMap<>();
+    private final HashMap<TrackSectionImpl, ArrayList<TrackObject>> objectLists = new HashMap<>();
     private final ImmutableNetwork.Builder<TrackNode, TrackEdge> builder;
 
     /** Constructor */
@@ -56,10 +57,11 @@ public class UndirectedInfraBuilder {
             addNode(link.dst.track.id.id, link.dst.endpoint, newNode);
         }
 
-        var trackSectionsByID = new HashMap<String, TrackSection>();
+        var trackSectionsByID = new HashMap<String, TrackSectionImpl>();
         for (var track : infra.trackSections) {
             var newTrack = makeTrackSection(track);
             trackSectionsByID.put(newTrack.getID(), newTrack);
+            objectLists.put(newTrack, new ArrayList<>());
         }
 
         for (var detector : infra.detectors) {
@@ -69,27 +71,30 @@ public class UndirectedInfraBuilder {
             makeWaypoint(trackSectionsByID, bufferStop, TrackObjectType.BUFFER_STOP);
         }
 
-        for (var track : trackSectionsByID.values())
-            track.getAttrs().getAttrOrThrow(TRACK_OBJECTS).sort(Comparator.comparingDouble(TrackObject::getOffset));
+        for (var entry : objectLists.entrySet()) {
+            var track = entry.getKey();
+            var objects = entry.getValue();
+            objects.sort(Comparator.comparingDouble(TrackObject::getOffset));
+            track.trackObjects = ImmutableList.copyOf(objects);
+        }
 
         return TrackInfraImpl.from(switches.build(), builder.build());
     }
 
     /** Creates a waypoint and add it to the corresponding track */
-    private void makeWaypoint(HashMap<String, TrackSection> trackSectionsByID,
+    private void makeWaypoint(HashMap<String, TrackSectionImpl> trackSectionsByID,
                             RJSRouteWaypoint waypoint, TrackObjectType trackObjectType) {
         var track = RJSObjectParsing.getTrackSection(waypoint.track, trackSectionsByID);
         var newWaypoint = new TrackObjectImpl(track, waypoint.position, trackObjectType, waypoint.id);
-        track.getAttrs().getAttrOrThrow(TRACK_OBJECTS).add(newWaypoint);
+        objectLists.get(track).add(newWaypoint);
     }
 
     /** Creates a track section and registers it in the graph */
-    private TrackSection makeTrackSection(RJSTrackSection track) {
+    private TrackSectionImpl makeTrackSection(RJSTrackSection track) {
         var begin = getNode(track.id, EdgeEndpoint.BEGIN);
         var end = getNode(track.id, EdgeEndpoint.END);
         var edge = new TrackSectionImpl(track.length, track.id);
         builder.addEdge(begin, end, edge);
-        edge.getAttrs().putAttr(TRACK_OBJECTS, new ArrayList<>());
         return edge;
     }
 
@@ -152,7 +157,6 @@ public class UndirectedInfraBuilder {
                 networkBuilder.addEdge(src, dst, branch);
                 builder.addEdge(src, dst, branch);
                 allBranches.add(branch);
-                branch.getAttrs().putAttr(TRACK_OBJECTS, Collections.emptyList());
             }
         }
         var switchTypePorts = new HashSet<>(switchType.ports);

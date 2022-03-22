@@ -1,6 +1,5 @@
 package fr.sncf.osrd.new_infra;
 
-import static fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge.TRACK_OBJECTS;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -82,9 +81,6 @@ public class InfraHelpers {
         builder.addEdge(nodeIn1, nodeIn2, new SwitchBranchImpl());
         builder.addEdge(nodeIn3, nodeIn1, new SwitchBranchImpl());
 
-        var res = TrackInfraImpl.from(null, builder.build());
-        for (var edge : res.getTrackGraph().edges())
-            edge.getAttrs().putAttr(TRACK_OBJECTS, new ArrayList<>());
-        return res;
+        return TrackInfraImpl.from(null, builder.build());
     }
 }

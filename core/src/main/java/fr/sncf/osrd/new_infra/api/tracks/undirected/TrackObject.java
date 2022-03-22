@@ -1,9 +1,7 @@
 package fr.sncf.osrd.new_infra.api.tracks.undirected;
 
-import fr.sncf.osrd.new_infra.api.WithAttributes;
-
 /** An object located on a track section */
-public interface TrackObject extends WithAttributes {
+public interface TrackObject {
     /** Returns the track section this object is on */
     TrackSection getTrackSection();
 

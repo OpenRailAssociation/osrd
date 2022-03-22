@@ -2,7 +2,6 @@ package fr.sncf.osrd.new_infra.api.tracks.undirected;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.graph.ImmutableNetwork;
-import fr.sncf.osrd.new_infra.api.WithAttributes;
 
 public interface Switch {
     /** Returns the unique switch identifier */
