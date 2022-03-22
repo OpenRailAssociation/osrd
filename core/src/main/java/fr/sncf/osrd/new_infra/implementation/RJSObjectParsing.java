@@ -3,6 +3,7 @@ package fr.sncf.osrd.new_infra.implementation;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackInfra;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackSection;
 import fr.sncf.osrd.new_infra.implementation.reservation.DetectorImpl;
+import fr.sncf.osrd.new_infra.implementation.tracks.undirected.TrackSectionImpl;
 import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
 import java.util.Map;
 import java.util.Set;
@@ -17,7 +18,8 @@ public class RJSObjectParsing {
         return diTrackInfra.getTrackSection(object.id.id);
     }
 
-    public static TrackSection getTrackSection(RJSObjectRef<?> object, Map<String, TrackSection> cachedObjects) {
+    public static TrackSectionImpl getTrackSection(RJSObjectRef<?> object,
+                                                   Map<String, TrackSectionImpl> cachedObjects) {
         return parseRef(object, cachedObjects, Set.of("TrackSection"));
     }
 

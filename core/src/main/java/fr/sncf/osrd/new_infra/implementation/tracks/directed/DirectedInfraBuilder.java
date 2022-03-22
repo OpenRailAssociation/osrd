@@ -1,8 +1,5 @@
 package fr.sncf.osrd.new_infra.implementation.tracks.directed;
 
-import static fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackEdge.ORIENTED_TRACK_OBJECTS;
-import static fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge.INDEX;
-import static fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge.TRACK_OBJECTS;
 import static fr.sncf.osrd.new_infra.implementation.GraphHelpers.*;
 import static fr.sncf.osrd.utils.graph.EdgeEndpoint.endEndpoint;
 
@@ -101,17 +98,6 @@ public class DirectedInfraBuilder {
         var end = findNode(nodes, edge, dir, endEndpoint(dir));
         var newEdge = new DiTrackEdgeImpl(edge, dir);
         graph.addEdge(begin, end, newEdge);
-        var waypoints = edge.getAttrs().getAttr(TRACK_OBJECTS, List.of());
-        var orientedWaypoints = new ArrayList<DiTrackObject>();
-        for (var w : waypoints) {
-            var offset = w.getOffset();
-            if (dir == Direction.BACKWARD) {
-                offset = w.getTrackSection().getLength() - offset;
-            }
-            orientedWaypoints.add(new DiTrackObject(w, offset, dir));
-        }
-        orientedWaypoints.sort(Comparator.comparingDouble(DiTrackObject::offset));
-        newEdge.getAttrs().putAttr(ORIENTED_TRACK_OBJECTS, orientedWaypoints);
     }
 
     /** Finds the node matching the edge / endpoint / direction.
@@ -147,7 +133,7 @@ public class DirectedInfraBuilder {
 
     /** Returns the union find ID for the given (edge, direction, endpoint) */
     private int getEndpointGroup(TrackEdge edge, Direction direction, EdgeEndpoint endpoint) {
-        return edge.getAttrs().getAttrOrThrow(INDEX) * 4
+        return edge.getIndex() * 4
                 + (direction == Direction.FORWARD ? 2 : 0)
                 + (endpoint == EdgeEndpoint.END ? 1 : 0);
     }

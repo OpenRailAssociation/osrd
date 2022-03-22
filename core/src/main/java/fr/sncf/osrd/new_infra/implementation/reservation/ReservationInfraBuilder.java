@@ -2,12 +2,10 @@ package fr.sncf.osrd.new_infra.implementation.reservation;
 
 import static fr.sncf.osrd.new_infra.api.Direction.BACKWARD;
 import static fr.sncf.osrd.new_infra.api.Direction.FORWARD;
-import static fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge.TRACK_OBJECTS;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.NetworkBuilder;
 import fr.sncf.osrd.new_infra.api.Direction;
@@ -131,7 +129,7 @@ public class ReservationInfraBuilder {
             var max = Math.max(trackRange.begin, trackRange.end);
             var track = RJSObjectParsing.getTrackSection(trackRange.track, diTrackInfra);
             var objectsOnTrack = new ArrayList<TrackObject>();
-            for (var object : track.getAttrs().getAttrOrThrow(TRACK_OBJECTS)) {
+            for (var object : track.getTrackObjects()) {
                 if (min <= object.getOffset() && object.getOffset() <= max)
                     objectsOnTrack.add(object);
             }

@@ -1,7 +1,5 @@
 package fr.sncf.osrd.new_infra.implementation.reservation;
 
-import static fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge.TRACK_OBJECTS;
-
 import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.reservation.DiDetector;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackInfra;
@@ -30,7 +28,7 @@ class DetectorMaps {
         for (var dir : Direction.values())
             diDetectors.put(dir, new HashMap<>());
         for (var track : infra.getTrackGraph().edges()) {
-            for (var object : track.getAttrs().getAttrOrThrow(TRACK_OBJECTS)) {
+            for (var object : track.getTrackObjects()) {
                 var newDetector = new DetectorImpl(object.getID());
                 detectors.put(object.getID(), newDetector);
                 for (var dir : Direction.values())
