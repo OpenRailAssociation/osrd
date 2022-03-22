@@ -12,7 +12,6 @@ public class ReservationRouteImpl implements ReservationRoute {
     private ImmutableList<ReservationRoute> conflictingRoutes;
     private final ImmutableList<DiDetector> detectorPath;
     private final ImmutableList<Detector> releasePoints;
-    private final ImmutableList.Builder<ReservationRoute> conflictingRoutesBuilder;
     public final String id;
 
     @Override
@@ -33,7 +32,6 @@ public class ReservationRouteImpl implements ReservationRoute {
     ) {
         this.detectorPath = detectorPath;
         this.releasePoints = releasePoints;
-        conflictingRoutesBuilder = new ImmutableList.Builder<>();
         this.id = id;
     }
 
@@ -52,17 +50,8 @@ public class ReservationRouteImpl implements ReservationRoute {
         return conflictingRoutes;
     }
 
-    /** Registers a collection of conflicting routes (package private).
-     * Ignores `this` if present in the collection */
-    void registerConflict(Collection<ReservationRouteImpl> routes) {
-        for (var route : routes)
-            if (route != this)
-                conflictingRoutesBuilder.add(route);
+    /** Sets the conflicting routes (package private). */
+    void setConflictingRoutes(Collection<ReservationRoute> routes) {
+        conflictingRoutes = ImmutableList.copyOf(routes);
     }
-
-    /** Builds the conflicting route list (package private) */
-    void build() {
-        conflictingRoutes = conflictingRoutesBuilder.build();
-    }
-
 }
