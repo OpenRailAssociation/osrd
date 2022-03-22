@@ -2,8 +2,6 @@ package fr.sncf.osrd.new_infra.implementation.reservation;
 
 import static fr.sncf.osrd.new_infra.api.Direction.BACKWARD;
 import static fr.sncf.osrd.new_infra.api.Direction.FORWARD;
-import static fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge.INDEX;
-import static fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge.TRACK_OBJECTS;
 import static fr.sncf.osrd.new_infra.implementation.GraphHelpers.*;
 
 import com.google.common.collect.ImmutableSet;
@@ -76,7 +74,7 @@ public class DetectionSectionBuilder {
     private void createSectionsInsideTracks() {
         // Create detection section inside a track section
         for (var track : infra.getTrackGraph().edges()) {
-            var waypoints = track.getAttrs().getAttrOrThrow(TRACK_OBJECTS);
+            var waypoints = track.getTrackObjects();
             for (int i = 1; i < waypoints.size(); i++) {
                 var prev = waypoints.get(i - 1);
                 var cur = waypoints.get(i);
@@ -99,7 +97,7 @@ public class DetectionSectionBuilder {
         for (var track : infra.getTrackGraph().edges()) {
             var beginIndex = getEndpointIndex(track, EdgeEndpoint.BEGIN);
             var endIndex = getEndpointIndex(track, EdgeEndpoint.END);
-            if (track.getAttrs().getAttrOrThrow(TRACK_OBJECTS).size() == 0)
+            if (track.getTrackObjects().size() == 0)
                 uf.union(beginIndex, endIndex);
 
             for (var neighbor : infra.getTrackGraph().adjacentEdges(track)) {
@@ -115,7 +113,7 @@ public class DetectionSectionBuilder {
 
         var detectionSectionsMap = new HashMap<Integer, SectionBuilder>();
         for (var track : infra.getTrackGraph().edges()) {
-            var waypoints = track.getAttrs().getAttrOrThrow(TRACK_OBJECTS);
+            var waypoints = track.getTrackObjects();
             if (waypoints.size() == 0)
                 continue;
 
@@ -194,6 +192,6 @@ public class DetectionSectionBuilder {
 
     /** Returns the index of a track + endpoint as a unique integer, used in the union find */
     private static int getEndpointIndex(TrackEdge track, EdgeEndpoint endpoint) {
-        return track.getAttrs().getAttrOrThrow(INDEX) * 2 + endpoint.id;
+        return track.getIndex() * 2 + endpoint.id;
     }
 }

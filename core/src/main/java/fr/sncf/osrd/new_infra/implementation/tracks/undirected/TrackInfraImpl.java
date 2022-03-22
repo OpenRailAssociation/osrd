@@ -1,7 +1,5 @@
 package fr.sncf.osrd.new_infra.implementation.tracks.undirected;
 
-import static fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge.INDEX;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.graph.ImmutableNetwork;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.*;
@@ -42,11 +40,15 @@ public class TrackInfraImpl implements TrackInfra {
         return new TrackInfraImpl(switches, trackGraph, makeTrackSections(trackGraph));
     }
 
-    /** Sets the attribute INDEX to each edge, from 0 to n_edges. Used later on for union finds */
+    /** Sets the index to each edge, from 0 to n_edges. Used later on for union finds */
     private static void setIndexToEdges(ImmutableNetwork<TrackNode, TrackEdge> trackGraph) {
         var trackID = 0;
-        for (var edge : trackGraph.edges())
-            edge.getAttrs().putAttr(INDEX, trackID++);
+        for (var edge : trackGraph.edges()) {
+            if (edge instanceof SwitchBranchImpl branch)
+                branch.index = trackID++;
+            else if (edge instanceof TrackSectionImpl track)
+                track.index = trackID++;
+        }
     }
 
     @Override

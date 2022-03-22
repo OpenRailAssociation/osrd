@@ -1,9 +1,8 @@
 package fr.sncf.osrd.new_infra.api.reservation;
 
 import fr.sncf.osrd.new_infra.api.Direction;
-import fr.sncf.osrd.new_infra.api.WithAttributes;
 
-public interface DiDetector extends WithAttributes {
+public interface DiDetector {
 
     /** Returns the detector */
     Detector getDetector();

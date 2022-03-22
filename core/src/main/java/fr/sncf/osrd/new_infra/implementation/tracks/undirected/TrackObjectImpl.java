@@ -3,7 +3,6 @@ package fr.sncf.osrd.new_infra.implementation.tracks.undirected;
 import com.google.common.base.MoreObjects;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackObject;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackSection;
-import fr.sncf.osrd.utils.attrs.MutableAttrMap;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 
 public class TrackObjectImpl implements TrackObject {
@@ -25,12 +24,8 @@ public class TrackObjectImpl implements TrackObject {
                 .add("offset", offset)
                 .add("type", type)
                 .add("id", id)
-                .add("attrs", attrs)
                 .toString();
     }
-
-    /** Object attributes */
-    private final MutableAttrMap<Object> attrs = new MutableAttrMap<>();
 
     /** Constructor */
     public TrackObjectImpl(TrackSection trackSection, double offset, TrackObjectType type, String id) {
@@ -58,10 +53,5 @@ public class TrackObjectImpl implements TrackObject {
     @Override
     public TrackObjectType getType() {
         return type;
-    }
-
-    @Override
-    public MutableAttrMap<Object> getAttrs() {
-        return attrs;
     }
 }
