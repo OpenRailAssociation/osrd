@@ -67,8 +67,9 @@ const InputTime = (props) => {
 export default function TrainsList(props) {
   const { toggleTrainList } = props;
   const {
-    selectedProjection, selectedTrain, simulation,
+    selectedProjection, selectedTrain,
   } = useSelector((state) => state.osrdsimulation);
+  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
   const [formattedList, setFormattedList] = useState(null);
   const [filter, setFilter] = useState('');
@@ -90,10 +91,10 @@ export default function TrainsList(props) {
   const changeTrainName = (newName, idx) => {
     setOnInput(true);
     setInputName(newName);
-    const newTrain = { ...simulation.present.trains[idx], name: newName };
+    const newTrain = { ...simulation.trains[idx], name: newName };
     dispatch(updateSimulation({
       ...simulation,
-      trains: simulation.present.trains.map((train, currentIdx) => (
+      trains: simulation.trains.map((train, currentIdx) => (
         (idx === currentIdx) ? newTrain : train)),
     }));
   };
@@ -103,10 +104,10 @@ export default function TrainsList(props) {
     setInputTime(newStartTime);
     const offset = Math.floor(
       (time2datetime(newStartTime) - sec2datetime(
-        simulation.present.trains[idx].base.stops[0].time,
+        simulation.trains[idx].base.stops[0].time,
       )) / 1000,
     );
-    const trains = Array.from(simulation.present.trains);
+    const trains = Array.from(simulation.trains);
     trains[idx] = timeShiftTrain(trains[selectedTrain], offset);
     dispatch(updateSimulation({ ...simulation, trains }));
   };
@@ -115,7 +116,7 @@ export default function TrainsList(props) {
   const debouncedInputTime = useDebounce(inputTime, 500);
 
   const formatTrainsList = () => {
-    const newFormattedList = simulation.present.trains.map((train, idx) => {
+    const newFormattedList = simulation.trains.map((train, idx) => {
       if (filter === '' || (train.labels !== undefined && train.labels.join().toLowerCase().includes(filter.toLowerCase()))) {
         return (
           <tr
@@ -202,7 +203,7 @@ export default function TrainsList(props) {
       setOnInput(false);
       changeTrain(
         { train_name: debouncedInputName },
-        simulation.present.trains[trainNameClickedIDX].id,
+        simulation.trains[trainNameClickedIDX].id,
       );
       dispatch(updateMustRedraw(true));
     }
@@ -213,7 +214,7 @@ export default function TrainsList(props) {
       setOnInput(false);
       changeTrain(
         { departure_time: time2sec(debouncedInputTime) },
-        simulation.present.trains[trainNameClickedIDX].id,
+        simulation.trains[trainNameClickedIDX].id,
       );
       dispatch(updateMustRedraw(true));
     }

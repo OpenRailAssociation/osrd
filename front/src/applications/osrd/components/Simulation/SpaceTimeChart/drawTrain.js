@@ -23,8 +23,6 @@ export default function drawTrain(
   simulation
 ) {
 
-  console.log("DRAWTRAINS", allowancesSettings)
-
   const groupID = `spaceTime-${dataSimulation.trainNumber}`;
 
   const initialDrag = rotate ? chart.y.invert(0) : chart.x.invert(0);

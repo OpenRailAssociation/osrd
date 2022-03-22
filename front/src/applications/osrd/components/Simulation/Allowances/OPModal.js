@@ -5,7 +5,8 @@ import { useSelector } from 'react-redux';
 
 export default function OPModal(props) {
   const { values, setValues, fromTo } = props;
-  const { selectedTrain, simulation } = useSelector((state) => state.osrdsimulation);
+  const { selectedTrain } = useSelector((state) => state.osrdsimulation);
+  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   return (
     <table className="table table-condensed table-hover">
       <thead>
@@ -15,7 +16,7 @@ export default function OPModal(props) {
         </tr>
       </thead>
       <tbody>
-        {simulation.present.trains[selectedTrain].base.stops.map((stop, idx) => (
+        {simulation.trains[selectedTrain].base.stops.map((stop, idx) => (
           <tr
             role="button"
             data-dismiss="modal"

@@ -35,12 +35,13 @@ const EmptyLine = (props) => {
   const {
     allowanceTypes, allowances, setAllowances, setUpdateAllowances,
   } = props;
-  const { selectedTrain, simulation } = useSelector((state) => state.osrdsimulation);
+  const { selectedTrain } = useSelector((state) => state.osrdsimulation);
+  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const allowanceNewDatas = {
     allowance_type: 'construction',
     begin_position: 0,
-    end_position: simulation.present.trains[selectedTrain].base.stops[
-      simulation.present.trains[selectedTrain].base.stops.length - 1].position,
+    end_position: simulation.trains[selectedTrain].base.stops[
+      simulation.trains[selectedTrain].base.stops.length - 1].position,
     value: {
       value_type: 'time',
       seconds: 0,
@@ -184,10 +185,11 @@ const EmptyLine = (props) => {
 const Allowance = (props) => {
   const { data, delAllowance, idx } = props;
   const { t } = useTranslation(['allowances']);
-  const { selectedTrain, simulation } = useSelector((state) => state.osrdsimulation);
+  const { selectedTrain } = useSelector((state) => state.osrdsimulation);
+  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
 
   const position2name = (position) => {
-    const place = simulation.present.trains[selectedTrain].base.stops.find(
+    const place = simulation.trains[selectedTrain].base.stops.find(
       (element) => element.position === position,
     );
     return place && place.name !== null ? `${place.name} (${Math.round(position)}m)` : `${position}m`;
@@ -261,7 +263,7 @@ export default function Allowances(props) {
   const getAllowances = async () => {
     try {
       setIsUpdating(true);
-      const result = await get(`${trainscheduleURI}${simulation.present.trains[selectedTrain].id}/`);
+      const result = await get(`${trainscheduleURI}${simulation.trains[selectedTrain].id}/`);
       setTrainDetail(result);
       setAllowances(result.allowances);
       setIsUpdating(false);
@@ -277,14 +279,14 @@ export default function Allowances(props) {
   const changeAllowances = async (newAllowances) => {
     try {
       setIsUpdating(true);
-      await patch(`${trainscheduleURI}${simulation.present.trains[selectedTrain].id}/`, {
+      await patch(`${trainscheduleURI}${simulation.trains[selectedTrain].id}/`, {
         ...trainDetail,
         allowances: newAllowances,
       });
-      const newSimulationTrains = Array.from(simulation.present.trains);
-      newSimulationTrains[selectedTrain] = await get(`${trainscheduleURI}${simulation.present.trains[selectedTrain].id}/result/`,
+      const newSimulationTrains = Array.from(simulation.trains);
+      newSimulationTrains[selectedTrain] = await get(`${trainscheduleURI}${simulation.trains[selectedTrain].id}/result/`,
         {
-          id: simulation.present.trains[selectedTrain].id,
+          id: simulation.trains[selectedTrain].id,
           path: selectedProjection.path,
         });
 
@@ -313,8 +315,8 @@ export default function Allowances(props) {
       const newAllowancesSettings = { ...allowancesSettings };
       dispatch(updateAllowancesSettings({
         ...newAllowancesSettings,
-        [simulation.present.trains[selectedTrain].id]: {
-          ...newAllowancesSettings[simulation.present.trains[selectedTrain].id],
+        [simulation.trains[selectedTrain].id]: {
+          ...newAllowancesSettings[simulation.trains[selectedTrain].id],
           ecoBlocks: false,
           baseBlocks: true,
         },

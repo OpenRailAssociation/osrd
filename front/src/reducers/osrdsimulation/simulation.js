@@ -1,7 +1,12 @@
-import produce from 'immer';
+export const UPDATE_SIMULATION = 'osrdsimu/UPDATE_SIMULATION';
+export const UNDO_SIMULATION = 'osrdsimu/UNDO_SIMULATION';
+export const REDO_SIMULATION = 'osrdsimu/REDO_SIMULATION';
 
 function undoable(simulationReducer) {
   // Call the reducer with empty action to populate the initial state
+
+
+
   const initialStateU = {
     past: [],
     present: simulationReducer(undefined, {}),
@@ -13,7 +18,7 @@ function undoable(simulationReducer) {
     const { past, present, future } = state
 
     switch (action.type) {
-      case 'UNDO_SIMULATION':
+      case UNDO_SIMULATION:
         const previous = past[past.length - 1]
         const newPast = past.slice(0, past.length - 1)
         return {
@@ -21,7 +26,7 @@ function undoable(simulationReducer) {
           present: previous,
           future: [present, ...future]
         }
-      case 'REDO_SIMULATION':
+      case REDO_SIMULATION:
         const next = future[0]
         const newFuture = future.slice(1)
         return {
@@ -32,6 +37,7 @@ function undoable(simulationReducer) {
       default:
         // Delegate handling the action to the passed reducer
         const newPresent = simulationReducer(present, action)
+
         if (present === newPresent) {
           return state
         }
@@ -44,21 +50,24 @@ function undoable(simulationReducer) {
   }
 }
 
-export const UPDATE_SIMULATION = 'osrdsimu/UPDATE_SIMULATION';
+
 
 // Reducer
 const initialState = {
   trains: [],
 };
 
-function reducer(state = initialState, action) {
+function reducer(state = { trains: []}, action) {
   // eslint-disable-next-line default-case
+
   switch (action.type) {
     case UPDATE_SIMULATION:
       return action.simulation;
     default:
       return state;
   }
+
+
 }
 
 const undoableSimulation = undoable(reducer)
@@ -70,6 +79,22 @@ export function updateSimulation(simulation) {
     dispatch({
       type: UPDATE_SIMULATION,
       simulation,
+    });
+  };
+}
+
+export function undoSimulation() {
+  return (dispatch) => {
+    dispatch({
+      type: UNDO_SIMULATION,
+    });
+  };
+}
+
+export function redoSimulation() {
+  return (dispatch) => {
+    dispatch({
+      type: REDO_SIMULATION,
     });
   };
 }

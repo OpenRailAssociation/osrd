@@ -64,8 +64,9 @@ const OSRDSimulation = () => {
     useState(heightOfSpaceCurvesSlopesChart);
 
   const { timetableID } = useSelector((state) => state.osrdconf);
-  const { allowancesSettings, selectedProjection, selectedTrain, simulation, stickyBar } =
+  const { allowancesSettings, selectedProjection, selectedTrain, stickyBar } =
     useSelector((state) => state.osrdsimulation);
+  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
 
 
@@ -85,8 +86,9 @@ const OSRDSimulation = () => {
    * Recover the time table for all the trains
    */
   const getTimetable = async () => {
+
     try {
-      if (!simulation.present || !simulation.present.trains[selectedTrain]) {
+      if (!simulation.present || !simulation.trains[selectedTrain]) {
         dispatch(updateSelectedTrain(0));
       }
       dispatch(updateSimulation({ trains: [] }));
@@ -176,15 +178,16 @@ const OSRDSimulation = () => {
 
   // With this hook we update and store the consolidatedSimuation (simualtion stucture for the selected train)
   useEffect(() => {
-    const consolidatedSimulation = (createTrain(dispatch, KEY_VALUES_FOR_CONSOLIDATED_SIMULATION, simulation.present.trains, t));
+    const consolidatedSimulation = (createTrain(dispatch, KEY_VALUES_FOR_CONSOLIDATED_SIMULATION, simulation.trains, t));
     // Store it to allow time->position logic to be hosted by redux
     dispatch(updateConsolidatedSimulation(consolidatedSimulation));
   }, [simulation]);
 
+
   return (
     <>
       <main className={`mastcontainer ${fullscreen ? ' fullscreen' : ''}`}>
-        {!simulation || simulation.present?.trains.length === 0 ? (
+        {!simulation || simulation.trains.length === 0 ? (
           <div className="pt-5 mt-5">
             <WaitingLoader />
           </div>
@@ -208,15 +211,15 @@ const OSRDSimulation = () => {
               >
                 <div className="mr-2">
                   {t('simulation:train')}
-                  <span className="ml-2">{simulation.present?.trains[selectedTrain].name}</span>
+                  <span className="ml-2">{simulation.trains[selectedTrain].name}</span>
                 </div>
                 <div className="small mr-1">
-                  {sec2time(simulation.present?.trains[selectedTrain].base.stops[0].time)}
+                  {sec2time(simulation.trains[selectedTrain].base.stops[0].time)}
                 </div>
                 <div className="small">
                   {sec2time(
-                    simulation.present?.trains[selectedTrain].base.stops[
-                      simulation.present?.trains[selectedTrain].base.stops.length - 1
+                    simulation.trains[selectedTrain].base.stops[
+                      simulation.trains[selectedTrain].base.stops.length - 1
                     ].time
                   )}
                 </div>
@@ -231,7 +234,7 @@ const OSRDSimulation = () => {
                 className="spacetimechart-container"
                 style={{ height: `${heightOfSpaceTimeChart}px` }}
               >
-                {simulation.present.trains.length > 0 && (
+                {simulation.trains.length > 0 && (
                   <Rnd
                     default={{
                       x: 0,
@@ -269,7 +272,7 @@ const OSRDSimulation = () => {
                 className="speedspacechart-container"
                 style={{ height: `${heightOfSpeedSpaceChart}px` }}
               >
-                {simulation.present.trains.length > 0 && (
+                {simulation.trains.length > 0 && (
                   <Rnd
                     default={{
                       x: 0,
@@ -306,7 +309,7 @@ const OSRDSimulation = () => {
                 className="spacecurvesslopes-container"
                 style={{ height: `${heightOfSpaceCurvesSlopesChart}px` }}
               >
-                {simulation.present.trains.length > 0 && (
+                {simulation.trains.length > 0 && (
                   <Rnd
                     default={{
                       x: 0,
@@ -363,7 +366,7 @@ const OSRDSimulation = () => {
             <div className="row">
               <div className="col-md-6">
                 <div className="osrd-simulation-container mb-2">
-                  {simulation.present.trains.length > 0 ? <TimeTable /> : null}
+                  {simulation.trains.length > 0 ? <TimeTable /> : null}
                 </div>
               </div>
               <div className="col-md-6">
@@ -379,7 +382,7 @@ const OSRDSimulation = () => {
                     <TimeButtons />
                   </div>
                   <div className="col-lg-8">
-                    {simulation.present.trains.length > 0 ? <TrainDetails /> : null}
+                    {simulation.trains.length > 0 ? <TrainDetails /> : null}
                   </div>
                 </div>
               </div>

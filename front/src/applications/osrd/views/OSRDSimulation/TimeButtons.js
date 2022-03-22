@@ -20,7 +20,8 @@ const factor2ms = (factor) => {
 
 export default function TimeButtons() {
   const dispatch = useDispatch();
-  const { timePosition, simulation, selectedTrain, stickyBar } = useSelector((state) => state.osrdsimulation);
+  const { timePosition, selectedTrain, stickyBar } = useSelector((state) => state.osrdsimulation);
+  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const [playInterval, setPlayInterval] = useState(undefined);
   const [playReverse, setPlayReverse] = useState(false);
   const [simulationSpeed, setSimulationSpeed] = useState(1);
@@ -28,7 +29,7 @@ export default function TimeButtons() {
   const stop = () => {
     clearInterval(playInterval);
     setPlayInterval(undefined);
-    dispatch(updateTimePosition(sec2datetime(simulation.present.trains[selectedTrain].base.stops[0].time)));
+    dispatch(updateTimePosition(sec2datetime(simulation.trains[selectedTrain].base.stops[0].time)));
     dispatch(updateIsPlaying(false));
   };
   const pause = () => {

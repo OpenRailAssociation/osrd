@@ -1,16 +1,18 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import i18n from 'i18next';
-import { useTranslation } from 'react-i18next';
-import PropTypes from 'prop-types';
+import DropdownSNCF, { DROPDOWN_STYLE_TYPES } from './DropdownSNCF';
+import { FaMoon, FaPowerOff, FaSun } from 'react-icons/fa';
+import { redoSimulation, undoSimulation } from '../../reducers/osrdsimulation/simulation';
 import { useDispatch, useSelector } from 'react-redux';
-import frenchFlag from '@sncf/bootstrap-sncf.metier.reseau/dist/assets/img/flags/french.svg';
+
+import { Link } from 'react-router-dom';
+import PropTypes from 'prop-types';
+import React from 'react';
+import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 import englishFlag from '@sncf/bootstrap-sncf.metier.reseau/dist/assets/img/flags/english.svg';
-import { FaPowerOff, FaMoon, FaSun } from 'react-icons/fa';
+import frenchFlag from '@sncf/bootstrap-sncf.metier.reseau/dist/assets/img/flags/french.svg';
+import i18n from 'i18next';
 import { logout } from 'reducers/user';
 import { toggleDarkmode } from 'reducers/main.ts';
-import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
-import DropdownSNCF, { DROPDOWN_STYLE_TYPES } from './DropdownSNCF';
+import { useTranslation } from 'react-i18next';
 
 export default function LegacyNavBarSNCF(props) {
   const user = useSelector((state) => state.user);
@@ -45,6 +47,22 @@ export default function LegacyNavBarSNCF(props) {
         <h1 className="text-uppercase text-white pt-2 pl-3 mb-0">{appName}</h1>
       </header>
       <ul className="mastheader-toolbar toolbar mb-0">
+        <li className="toolbar-item separator-gray-500">
+          <button
+            type="button"
+            className="btn btn-transparent px-0 mr-2"
+            onClick={() => dispatch(undoSimulation())}
+          >
+            Undo
+          </button>
+          <button
+            type="button"
+            className="btn btn-transparent px-0 mr-2"
+            onClick={() => dispatch(redoSimulation())}
+          >
+            Redo
+          </button>
+        </li>
         <li className="toolbar-item toolbar-item-spacing">
           <div className="d-flex align-items-center h-100 text-white">
             <span className="mr-2 text-yellow"><FaSun /></span>
@@ -74,6 +92,7 @@ export default function LegacyNavBarSNCF(props) {
             <img src={englishFlag} alt={t('Login.englishFlag')} />
           </button>
         </li> */}
+
         <li className="toolbar-item separator-gray-500">
           <DropdownSNCF
             titleContent={(

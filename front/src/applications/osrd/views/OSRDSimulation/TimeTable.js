@@ -37,8 +37,9 @@ function formatStops(stop, idx, train) {
 
 export default function TimeTable() {
   const { t } = useTranslation(['simulation']);
-  const { selectedTrain, simulation } = useSelector((state) => state.osrdsimulation);
-  const data = simulation.present.trains[selectedTrain].base.stops;
+  const { selectedTrain } = useSelector((state) => state.osrdsimulation);
+  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
+  const data = simulation.trains[selectedTrain].base.stops;
 
   return (
     <>
@@ -57,7 +58,7 @@ export default function TimeTable() {
               </tr>
             </thead>
             <tbody>
-              {data.map((stop, idx) => formatStops(stop, idx, simulation.present.trains[selectedTrain]))}
+              {data.map((stop, idx) => formatStops(stop, idx, simulation.trains[selectedTrain]))}
             </tbody>
           </table>
         </div>

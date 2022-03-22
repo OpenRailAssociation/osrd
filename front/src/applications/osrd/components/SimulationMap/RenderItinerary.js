@@ -7,9 +7,10 @@ import { useSelector } from 'react-redux';
 export default function RenderItinerary(props) {
   const { geojsonPath } = props;
   const {
-    selectedTrain, simulation, allowancesSettings,
+    selectedTrain, allowancesSettings,
   } = useSelector((state) => state.osrdsimulation);
-  const trainID = simulation.present.trains[selectedTrain].id;
+  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
+  const trainID = simulation.trains[selectedTrain].id;
   return (
     <>
       <Source type="geojson" data={geojsonPath}>

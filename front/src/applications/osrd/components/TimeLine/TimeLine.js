@@ -31,16 +31,17 @@ const drawTrains = (trains, selectedTrain, xScale, svg, height) => {
 
 export default function TimeLine() {
   const {
-    chart, selectedTrain, simulation, timePosition,
+    chart, selectedTrain, timePosition,
   } = useSelector((state) => state.osrdsimulation);
+  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
   const ref = useRef();
   const [svgState, setSvg] = useState(undefined);
   const dataRange = [
-    d3.min(simulation.present.trains, (train) => d3.min(
+    d3.min(simulation.trains, (train) => d3.min(
       train.base.head_positions, (section) => d3.min(section, (step) => step.time),
     )),
-    d3.max(simulation.present.trains, (train) => d3.max(
+    d3.max(simulation.trains, (train) => d3.max(
       train.base.head_positions, (section) => d3.max(section, (step) => step.time),
     )),
   ];
@@ -121,7 +122,7 @@ export default function TimeLine() {
     svg.select('#timePositionTimeLine')
       .attr('transform', `translate(${xScale(time2datetime(timePosition))},0)`);
 
-    drawTrains(simulation.present.trains, selectedTrain, xScale, svg, dimensions.height);
+    drawTrains(simulation.trains, selectedTrain, xScale, svg, dimensions.height);
 
     const drag = d3.drag()
       .on('end', () => {

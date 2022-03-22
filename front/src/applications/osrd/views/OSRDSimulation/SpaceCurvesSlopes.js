@@ -46,8 +46,9 @@ const drawAxisTitle = (chart, rotate) => {
 export default function SpaceCurvesSlopes(props) {
   const { heightOfSpaceCurvesSlopesChart } = props;
   const dispatch = useDispatch();
-  const { chartXGEV, mustRedraw, positionValues, selectedTrain, simulation, timePosition } =
+  const { chartXGEV, mustRedraw, positionValues, selectedTrain, timePosition } =
     useSelector((state) => state.osrdsimulation);
+  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const [rotate, setRotate] = useState(false);
   const [chart, setChart] = useState(undefined);
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -59,12 +60,12 @@ export default function SpaceCurvesSlopes(props) {
   // Prepare data
   const dataSimulation = {};
   // Speeds : reference needed for interpolate position of cursor
-  dataSimulation.speed = simulation.present.trains[selectedTrain].base.speeds.map((step) => ({
+  dataSimulation.speed = simulation.trains[selectedTrain].base.speeds.map((step) => ({
     ...step,
     speed: step.speed * 3.6,
   }));
   // Slopes
-  dataSimulation.slopesHistogram = simulation.present.trains[selectedTrain].slopes.map((step) => ({
+  dataSimulation.slopesHistogram = simulation.trains[selectedTrain].slopes.map((step) => ({
     position: step.position,
     gradient: step.gradient,
   }));
@@ -73,13 +74,13 @@ export default function SpaceCurvesSlopes(props) {
     'gradient',
   ]);
   dataSimulation.slopesCurve = createSlopeCurve(
-    simulation.present.trains[selectedTrain].slopes,
+    simulation.trains[selectedTrain].slopes,
     dataSimulation.slopesHistogram,
     'gradient'
   );
   // Curves
   dataSimulation.curvesHistogram = createCurveCurve(
-    simulation.present.trains[selectedTrain].curves,
+    simulation.trains[selectedTrain].curves,
     dataSimulation.slopesHistogram,
     'gradient'
   );
@@ -122,7 +123,7 @@ export default function SpaceCurvesSlopes(props) {
     const operationalPointsZone = chartLocal.drawZone
       .append('g')
       .attr('id', 'gev-operationalPointsZone');
-    simulation.present.trains[selectedTrain].base.stops.forEach((stop) => {
+    simulation.trains[selectedTrain].base.stops.forEach((stop) => {
       operationalPointsZone
         .append('line')
         .datum(stop.position)

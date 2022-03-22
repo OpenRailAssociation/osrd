@@ -46,8 +46,9 @@ export default function SpeedSpaceChart(props) {
   const dispatch = useDispatch();
   const {
     chartXGEV, mustRedraw, positionValues, selectedTrain,
-    simulation, speedSpaceSettings, timePosition,
+    speedSpaceSettings, timePosition,
   } = useSelector((state) => state.osrdsimulation);
+  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const [showSettings, setShowSettings] = useState(false);
   const [rotate, setRotate] = useState(false);
   const [resetChart, setResetChart] = useState(false);
@@ -60,30 +61,30 @@ export default function SpeedSpaceChart(props) {
 
   // Prepare data
   const dataSimulation = {};
-  dataSimulation.speed = simulation.present.trains[selectedTrain].base.speeds.map(
+  dataSimulation.speed = simulation.trains[selectedTrain].base.speeds.map(
     (step) => ({ ...step, speed: step.speed * 3.6 }),
   );
-  if (simulation.present.trains[selectedTrain].margins && !simulation.present.trains[selectedTrain].margins.error) {
-    dataSimulation.margins_speed = simulation.present.trains[selectedTrain].margins.speeds.map(
+  if (simulation.trains[selectedTrain].margins && !simulation.trains[selectedTrain].margins.error) {
+    dataSimulation.margins_speed = simulation.trains[selectedTrain].margins.speeds.map(
       (step) => ({ ...step, speed: step.speed * 3.6 }),
     );
   }
-  if (simulation.present.trains[selectedTrain].eco && !simulation.present.trains[selectedTrain].eco.error) {
-    dataSimulation.eco_speed = simulation.present.trains[selectedTrain].eco.speeds.map(
+  if (simulation.trains[selectedTrain].eco && !simulation.trains[selectedTrain].eco.error) {
+    dataSimulation.eco_speed = simulation.trains[selectedTrain].eco.speeds.map(
       (step) => ({ ...step, speed: step.speed * 3.6 }),
     );
   }
   dataSimulation.areaBlock = mergeDatasAreaConstant(dataSimulation.speed, 0, keyValues);
-  dataSimulation.vmax = simulation.present.trains[selectedTrain].vmax.map(
+  dataSimulation.vmax = simulation.trains[selectedTrain].vmax.map(
     (step) => ({ speed: step.speed * 3.6, position: step.position }),
   );
 
   // Slopes
   dataSimulation.slopesCurve = createSlopeCurve(
-    simulation.present.trains[selectedTrain].slopes, dataSimulation.speed, 'speed',
+    simulation.trains[selectedTrain].slopes, dataSimulation.speed, 'speed',
   );
   const zeroLineSlope = dataSimulation.slopesCurve[0].height; // Start height of histogram
-  dataSimulation.slopesHistogram = simulation.present.trains[selectedTrain].slopes.map(
+  dataSimulation.slopesHistogram = simulation.trains[selectedTrain].slopes.map(
     (step) => ({
       position: step.position,
       gradient: (step.gradient * 4) + zeroLineSlope,
@@ -93,7 +94,7 @@ export default function SpeedSpaceChart(props) {
 
   // Curves
   dataSimulation.curvesHistogram = createCurveCurve(
-    simulation.present.trains[selectedTrain].curves,
+    simulation.trains[selectedTrain].curves,
     dataSimulation.speed,
     'speed',
   );
@@ -129,7 +130,7 @@ export default function SpeedSpaceChart(props) {
 
   const drawOPs = (chartLocal) => {
     const operationalPointsZone = chartLocal.drawZone.append('g').attr('id', 'gev-operationalPointsZone');
-    simulation.present.trains[selectedTrain].base.stops.forEach((stop) => {
+    simulation.trains[selectedTrain].base.stops.forEach((stop) => {
       operationalPointsZone.append('line')
         .datum(stop.position)
         .attr('id', `op-${stop.id}`)

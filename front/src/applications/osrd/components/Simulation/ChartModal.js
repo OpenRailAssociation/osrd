@@ -12,7 +12,8 @@ const ChartModal = (props) => {
   const {
     type, setShowModal, trainName, offsetTimeByDragging,
   } = props;
-  const { selectedTrain, simulation } = useSelector((state) => state.osrdsimulation);
+  const { selectedTrain } = useSelector((state) => state.osrdsimulation);
+  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
   const { t } = useTranslation(['simulation']);
   const [offset, setOffset] = useState('');
@@ -23,8 +24,8 @@ const ChartModal = (props) => {
       const seconds = parseInt(type === '-' ? offset * -1 : offset, 10);
       offsetTimeByDragging(seconds);
       changeTrain({
-        departure_time: simulation.present.trains[selectedTrain].base.stops[0].time + seconds,
-      }, simulation.present.trains[selectedTrain].id);
+        departure_time: simulation.trains[selectedTrain].base.stops[0].time + seconds,
+      }, simulation.trains[selectedTrain].id);
       dispatch(updateMustRedraw(true));
     }
   };

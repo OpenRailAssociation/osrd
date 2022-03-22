@@ -11,9 +11,9 @@ import { useTranslation } from 'react-i18next';
 
 export default function TrainListModal(props) {
   const { t } = useTranslation(['simulation']);
-  const { simulation } = useSelector((state) => state.osrdsimulation);
+  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const { trainIDX } = props;
-  return simulation.present.trains[trainIDX] ? (
+  return simulation.trains[trainIDX] ? (
     <ModalSNCF
       htmlID="trainlist-modal"
     >
@@ -25,13 +25,13 @@ export default function TrainListModal(props) {
           type="text"
           id="trainlist-modal-name"
           onChange={() => {}}
-          value={simulation.present.trains[trainIDX].name}
+          value={simulation.trains[trainIDX].name}
         />
         <InputSNCF
           type="time"
           id="trainlist-modal-starttime"
           onChange={() => {}}
-          value={sec2time(simulation.present.trains[trainIDX].stops[0].time)}
+          value={sec2time(simulation.trains[trainIDX].stops[0].time)}
         />
       </ModalBodySNCF>
     </ModalSNCF>
