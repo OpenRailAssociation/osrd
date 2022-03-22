@@ -163,7 +163,7 @@ public class UndirectedInfraBuilder {
                     rjsSwitch.id, switchType.id, switchTypePorts, switchPorts
             ));
 
-        var res = new SwitchImpl(rjsSwitch.id, networkBuilder.build(), groups.build(), finalPortMap, "");
+        var res = new SwitchImpl(rjsSwitch.id, networkBuilder.build(), groups.build(), finalPortMap);
         for (var branch : allBranches)
             branch.switchRef = res;
         for (var port : allPorts)
