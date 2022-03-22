@@ -14,7 +14,7 @@ import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.EnvelopeShape;
 import fr.sncf.osrd.envelope.EnvelopeTransitions;
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue;
-import fr.sncf.osrd.envelope_sim.allowances.HardenedMarecoAllowance;
+import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
 import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.MarecoConvergenceException;
 import fr.sncf.osrd.train.TestTrains;
 import org.junit.jupiter.api.Test;
@@ -23,16 +23,16 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.util.List;
 
 public class AllowanceTests {
-    private static HardenedMarecoAllowance makeMarecoAllowance(
+    private static MarecoAllowance makeMarecoAllowance(
             EnvelopeSimContext context, 
             double beginPos, double endPos,
             double capacitySpeedLimit,
             AllowanceValue value
     ) {
-        return new HardenedMarecoAllowance(context, beginPos, endPos, capacitySpeedLimit, value);
+        return new MarecoAllowance(context, beginPos, endPos, capacitySpeedLimit, value);
     }
 
-    public static double getDistance(HardenedMarecoAllowance allowance) {
+    public static double getDistance(MarecoAllowance allowance) {
         return allowance.endPos - allowance.beginPos;
     }
 
