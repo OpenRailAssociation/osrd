@@ -1,7 +1,7 @@
 WITH collect AS (
     SELECT signals.obj_id as signal_id,
-        (signals.data->>'position')::numeric as signal_position,
-        (tracks.data->>'length')::numeric as track_length,
+        (signals.data->>'position')::float as signal_position,
+        (tracks.data->>'length')::float as track_length,
         ST_GeomFromGeoJSON(tracks.data->'geo') as track_geo,
         ST_GeomFromGeoJSON(tracks.data->'sch') as track_sch
     FROM osrd_infra_signalmodel as signals

@@ -2,17 +2,19 @@ mod create;
 mod delete;
 mod update;
 
-use crate::infra_cache::InfraCache;
-
 use super::{ObjectType, TrackSection};
+use crate::infra_cache::InfraCache;
 use crate::response::ApiError;
-pub use create::CreateOperation;
-pub use delete::DeleteOperation;
 use diesel::result::Error as DieselError;
 use diesel::PgConnection;
+use json_patch::PatchError;
 use rocket::serde::Deserialize;
+use serde_json::Error as SerdeError;
 use std::collections::{HashMap, HashSet};
 use thiserror::Error;
+
+pub use create::CreateOperation;
+pub use delete::DeleteOperation;
 pub use update::UpdateOperation;
 
 #[derive(Clone, Deserialize)]
@@ -29,25 +31,53 @@ pub enum Operation {
 #[derive(Debug, Error)]
 pub enum OperationError {
     // To modify
-    #[error("Tracksection '{0}', could not be found")]
-    NotFound(String),
+    #[error("Object '{0}', could not be found")]
+    ObjectNotFound(String),
+    #[error("Update operation try to modify object id, which is forbidden")]
+    ModifyId,
     #[error("An internal diesel error occurred: '{}'", .0.to_string())]
-    Other(DieselError),
+    DieselError(DieselError),
+    #[error("A Json Patch error occurred: '{}'", .0.to_string())]
+    JsonPatchError(PatchError),
+    #[error("A Serde Json error occurred: '{}'", .0.to_string())]
+    SerdeJsonError(SerdeError),
 }
 
 impl ApiError for OperationError {
     fn get_code(&self) -> u16 {
         match self {
-            OperationError::NotFound(_) => 404,
-            OperationError::Other(_) => 500,
+            OperationError::ObjectNotFound(_) => 404,
+            OperationError::ModifyId => 400,
+            _ => 500,
         }
     }
 
     fn get_type(&self) -> &'static str {
         match self {
-            OperationError::NotFound(_) => "editoast:operation:NotFound",
-            OperationError::Other(_) => "editoast:operation:Other",
+            OperationError::ObjectNotFound(_) => "editoast:operation:NotFound",
+            OperationError::ModifyId => "editoast:operation:ModifyId",
+            OperationError::DieselError(_) => "editoast:operation:DieselError",
+            OperationError::JsonPatchError(_) => "editoast:operation:JsonPatchError",
+            OperationError::SerdeJsonError(_) => "editoast:operation:SerdeJsonError",
         }
+    }
+}
+
+impl From<DieselError> for Box<dyn ApiError> {
+    fn from(error: DieselError) -> Self {
+        Box::new(OperationError::DieselError(error))
+    }
+}
+
+impl From<PatchError> for Box<dyn ApiError> {
+    fn from(error: PatchError) -> Self {
+        Box::new(OperationError::JsonPatchError(error))
+    }
+}
+
+impl From<SerdeError> for Box<dyn ApiError> {
+    fn from(error: SerdeError) -> Self {
+        Box::new(OperationError::SerdeJsonError(error))
     }
 }
 
