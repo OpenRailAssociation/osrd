@@ -22,26 +22,22 @@ public class SwitchImpl implements Switch {
                 .add("graph", graph)
                 .add("groups", groups)
                 .add("ports", ports)
-                .add("defaultGroup", defaultGroup)
                 .toString();
     }
 
     private final ImmutableMap<String, SwitchPort> ports;
-    private final String defaultGroup;
 
     /** Constructor */
     public SwitchImpl(
             String id,
             ImmutableNetwork<SwitchPort, SwitchBranch> graph,
             ImmutableMultimap<String, SwitchBranch> groups,
-            ImmutableMap<String, SwitchPort> ports,
-            String defaultGroup
+            ImmutableMap<String, SwitchPort> ports
     ) {
         this.id = id;
         this.graph = graph;
         this.groups = groups;
         this.ports = ports;
-        this.defaultGroup = defaultGroup;
     }
 
     @Override
@@ -62,10 +58,5 @@ public class SwitchImpl implements Switch {
     @Override
     public ImmutableMultimap<String, SwitchBranch> getGroups() {
         return groups;
-    }
-
-    @Override
-    public String getDefaultGroup() {
-        return defaultGroup;
     }
 }
