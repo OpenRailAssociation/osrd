@@ -1,6 +1,7 @@
 package fr.sncf.osrd.new_infra.implementation.reservation;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.google.common.graph.ImmutableNetwork;
 import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.reservation.*;
@@ -24,7 +25,7 @@ public class ReservationInfraImpl extends DiTrackInfraImpl implements Reservatio
     ) {
         super(infra, infra.getDiTrackGraph());
         this.detectorMap = detectorMap;
-        this.diDetectorMap = diDetectorMap;
+        this.diDetectorMap = Maps.immutableEnumMap(diDetectorMap);
         this.sectionMap = sectionMap;
         this.infraRouteGraph = infraRouteGraph;
     }

@@ -16,7 +16,4 @@ public interface Switch {
 
     /** Switch branches which are not part of the active group are not available */
     ImmutableMultimap<String, SwitchBranch> getGroups();
-
-    /** Returns the group which is enabled by default */
-    String getDefaultGroup();
 }
