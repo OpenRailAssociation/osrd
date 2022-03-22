@@ -1,8 +1,8 @@
 import React from 'react';
 import nextId from 'react-id-generator';
+import { sec2time } from 'utils/timeManipulation';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { sec2time } from 'utils/timeManipulation';
 
 function formatStops(stop, idx, train) {
   return (
@@ -38,7 +38,7 @@ function formatStops(stop, idx, train) {
 export default function TimeTable() {
   const { t } = useTranslation(['simulation']);
   const { selectedTrain, simulation } = useSelector((state) => state.osrdsimulation);
-  const data = simulation.trains[selectedTrain].base.stops;
+  const data = simulation.present.trains[selectedTrain].base.stops;
 
   return (
     <>
@@ -57,7 +57,7 @@ export default function TimeTable() {
               </tr>
             </thead>
             <tbody>
-              {data.map((stop, idx) => formatStops(stop, idx, simulation.trains[selectedTrain]))}
+              {data.map((stop, idx) => formatStops(stop, idx, simulation.present.trains[selectedTrain]))}
             </tbody>
           </table>
         </div>

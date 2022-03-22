@@ -1,7 +1,7 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
-import nextId from 'react-id-generator';
 import PropTypes from 'prop-types';
+import React from 'react';
+import nextId from 'react-id-generator';
+import { useSelector } from 'react-redux';
 
 export default function OPModal(props) {
   const { values, setValues, fromTo } = props;
@@ -15,7 +15,7 @@ export default function OPModal(props) {
         </tr>
       </thead>
       <tbody>
-        {simulation.trains[selectedTrain].base.stops.map((stop, idx) => (
+        {simulation.present.trains[selectedTrain].base.stops.map((stop, idx) => (
           <tr
             role="button"
             data-dismiss="modal"
