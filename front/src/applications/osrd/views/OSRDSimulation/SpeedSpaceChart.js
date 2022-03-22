@@ -1,21 +1,25 @@
-import React, { useState, useEffect, useRef } from 'react';
-import PropTypes from 'prop-types';
-import { useSelector, useDispatch } from 'react-redux';
 import * as d3 from 'd3';
-import { LIST_VALUES_NAME_SPEED_SPACE } from 'applications/osrd/components/Simulation/consts';
+
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  defineLinear, handleWindowResize, mergeDatasAreaConstant,
+  defineLinear,
+  handleWindowResize,
+  mergeDatasAreaConstant,
 } from 'applications/osrd/components/Helpers/ChartHelpers';
-import { updateChartXGEV, updateMustRedraw } from 'reducers/osrdsimulation';
-import defineChart from 'applications/osrd/components/Simulation/defineChart';
-import drawCurve from 'applications/osrd/components/Simulation/drawCurve';
-import drawArea from 'applications/osrd/components/Simulation/drawArea';
 import enableInteractivity, { traceVerticalLine } from 'applications/osrd/components/Simulation/enableInteractivity';
+import { updateChartXGEV, updateMustRedraw } from 'reducers/osrdsimulation';
+import { useDispatch, useSelector } from 'react-redux';
+
 import { CgLoadbar } from 'react-icons/cg';
 import { GiResize } from 'react-icons/gi';
+import { LIST_VALUES_NAME_SPEED_SPACE } from 'applications/osrd/components/Simulation/consts';
+import PropTypes from 'prop-types';
 import SpeedSpaceSettings from 'applications/osrd/components/Simulation/SpeedSpaceSettings/SpeedSpaceSettings';
-import createSlopeCurve from 'applications/osrd/components/Simulation/SpeedSpaceChart/createSlopeCurve';
 import createCurveCurve from 'applications/osrd/components/Simulation/SpeedSpaceChart/createCurveCurve';
+import createSlopeCurve from 'applications/osrd/components/Simulation/SpeedSpaceChart/createSlopeCurve';
+import defineChart from 'applications/osrd/components/Simulation/defineChart';
+import drawArea from 'applications/osrd/components/Simulation/drawArea';
+import drawCurve from 'applications/osrd/components/Simulation/drawCurve';
 
 const CHART_ID = 'SpeedSpaceChart';
 
@@ -56,30 +60,30 @@ export default function SpeedSpaceChart(props) {
 
   // Prepare data
   const dataSimulation = {};
-  dataSimulation.speed = simulation.trains[selectedTrain].base.speeds.map(
+  dataSimulation.speed = simulation.present.trains[selectedTrain].base.speeds.map(
     (step) => ({ ...step, speed: step.speed * 3.6 }),
   );
-  if (simulation.trains[selectedTrain].margins && !simulation.trains[selectedTrain].margins.error) {
-    dataSimulation.margins_speed = simulation.trains[selectedTrain].margins.speeds.map(
+  if (simulation.present.trains[selectedTrain].margins && !simulation.present.trains[selectedTrain].margins.error) {
+    dataSimulation.margins_speed = simulation.present.trains[selectedTrain].margins.speeds.map(
       (step) => ({ ...step, speed: step.speed * 3.6 }),
     );
   }
-  if (simulation.trains[selectedTrain].eco && !simulation.trains[selectedTrain].eco.error) {
-    dataSimulation.eco_speed = simulation.trains[selectedTrain].eco.speeds.map(
+  if (simulation.present.trains[selectedTrain].eco && !simulation.present.trains[selectedTrain].eco.error) {
+    dataSimulation.eco_speed = simulation.present.trains[selectedTrain].eco.speeds.map(
       (step) => ({ ...step, speed: step.speed * 3.6 }),
     );
   }
   dataSimulation.areaBlock = mergeDatasAreaConstant(dataSimulation.speed, 0, keyValues);
-  dataSimulation.vmax = simulation.trains[selectedTrain].vmax.map(
+  dataSimulation.vmax = simulation.present.trains[selectedTrain].vmax.map(
     (step) => ({ speed: step.speed * 3.6, position: step.position }),
   );
 
   // Slopes
   dataSimulation.slopesCurve = createSlopeCurve(
-    simulation.trains[selectedTrain].slopes, dataSimulation.speed, 'speed',
+    simulation.present.trains[selectedTrain].slopes, dataSimulation.speed, 'speed',
   );
   const zeroLineSlope = dataSimulation.slopesCurve[0].height; // Start height of histogram
-  dataSimulation.slopesHistogram = simulation.trains[selectedTrain].slopes.map(
+  dataSimulation.slopesHistogram = simulation.present.trains[selectedTrain].slopes.map(
     (step) => ({
       position: step.position,
       gradient: (step.gradient * 4) + zeroLineSlope,
@@ -89,7 +93,7 @@ export default function SpeedSpaceChart(props) {
 
   // Curves
   dataSimulation.curvesHistogram = createCurveCurve(
-    simulation.trains[selectedTrain].curves,
+    simulation.present.trains[selectedTrain].curves,
     dataSimulation.speed,
     'speed',
   );
@@ -125,7 +129,7 @@ export default function SpeedSpaceChart(props) {
 
   const drawOPs = (chartLocal) => {
     const operationalPointsZone = chartLocal.drawZone.append('g').attr('id', 'gev-operationalPointsZone');
-    simulation.trains[selectedTrain].base.stops.forEach((stop) => {
+    simulation.present.trains[selectedTrain].base.stops.forEach((stop) => {
       operationalPointsZone.append('line')
         .datum(stop.position)
         .attr('id', `op-${stop.id}`)

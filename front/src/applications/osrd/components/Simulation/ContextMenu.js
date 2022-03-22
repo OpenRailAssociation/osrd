@@ -1,20 +1,26 @@
-import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
 import * as d3 from 'd3';
-import { useSelector, useDispatch } from 'react-redux';
-import { useTranslation } from 'react-i18next';
+
 import { MdContentCopy, MdDelete } from 'react-icons/md';
-import { GiPathDistance } from 'react-icons/gi';
-import { get, post, deleteRequest } from 'common/requests';
+import React, { useEffect, useState } from 'react';
+import { deleteRequest, get, post } from 'common/requests';
+import { setFailure, setSuccess } from 'reducers/main.ts';
 import {
-  updateContextMenu, updateAllowancesSettings, updateSimulation, updateSelectedProjection,
-  updateSelectedTrain, updateMustRedraw,
+  updateAllowancesSettings,
+  updateContextMenu,
+  updateMustRedraw,
+  updateSelectedProjection,
+  updateSelectedTrain,
+  updateSimulation,
 } from 'reducers/osrdsimulation';
-import { setSuccess, setFailure } from 'reducers/main.ts';
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import { useDispatch, useSelector } from 'react-redux';
+
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
-import trainNameWithNum from 'applications/osrd/components/AddTrainSchedule/trainNameHelper';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
+import { GiPathDistance } from 'react-icons/gi';
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import PropTypes from 'prop-types';
+import trainNameWithNum from 'applications/osrd/components/AddTrainSchedule/trainNameHelper';
+import { useTranslation } from 'react-i18next';
 
 const TRAINSCHEDULE_URI = '/train_schedule/';
 
@@ -26,15 +32,15 @@ export default function ContextMenu(props) {
   const { t } = useTranslation(['translation', 'simulation', 'osrdconf', 'allowances']);
   const dispatch = useDispatch();
   const [goUpdate, setGoUpdate] = useState(false);
-  const [trainName, setTrainName] = useState(simulation.trains[selectedTrain].name);
+  const [trainName, setTrainName] = useState(simulation.present.trains[selectedTrain].name);
   const [trainCount, setTrainCount] = useState(1);
   const [trainStep, setTrainStep] = useState(2);
   const [trainDelta, setTrainDelta] = useState(20);
 
   const choosePath = async () => {
-    const train = await get(`${TRAINSCHEDULE_URI}${simulation.trains[selectedTrain].id}/`);
+    const train = await get(`${TRAINSCHEDULE_URI}${simulation.present.trains[selectedTrain].id}/`);
     dispatch(updateSelectedProjection({
-      id: simulation.trains[selectedTrain].id,
+      id: simulation.present.trains[selectedTrain].id,
       path: train.path,
     }));
     dispatch(updateContextMenu(undefined));
@@ -42,7 +48,7 @@ export default function ContextMenu(props) {
 
   const deleteTrain = () => {
     setGoUpdate(true);
-    const trains = Array.from(simulation.trains);
+    const trains = Array.from(simulation.present.trains);
     trains.splice(selectedTrain, 1);
     d3.select(`#spaceTime-${selectedTrain}`).remove();
     if (!trains[selectedTrain]) {
@@ -68,8 +74,8 @@ export default function ContextMenu(props) {
 
   const duplicateTrain = async () => {
     setGoUpdate(true);
-    const trains = Array.from(simulation.trains);
-    const trainDetail = await get(`${TRAINSCHEDULE_URI}${simulation.trains[selectedTrain].id}/`);
+    const trains = Array.from(simulation.present.trains);
+    const trainDetail = await get(`${TRAINSCHEDULE_URI}${simulation.present.trains[selectedTrain].id}/`);
     const params = {
       timetable: trainDetail.timetable,
       path: trainDetail.path,
@@ -78,7 +84,7 @@ export default function ContextMenu(props) {
     let actualTrainCount = 1;
     for (let nb = 1; nb <= trainCount; nb += 1) {
       const newTrainDelta = (60 * trainDelta * nb);
-      const newOriginTime = simulation.trains[selectedTrain].base.stops[0].time + newTrainDelta;
+      const newOriginTime = simulation.present.trains[selectedTrain].base.stops[0].time + newTrainDelta;
       const newTrainName = trainNameWithNum(trainName, actualTrainCount, trainCount);
       params.schedules.push({
         departure_time: newOriginTime,
@@ -114,9 +120,9 @@ export default function ContextMenu(props) {
   const changeAllowancesSettings = (type) => {
     dispatch(updateAllowancesSettings({
       ...allowancesSettings,
-      [simulation.trains[selectedTrain].id]: {
-        ...allowancesSettings[simulation.trains[selectedTrain].id],
-        [type]: !allowancesSettings[simulation.trains[selectedTrain].id][type],
+      [simulation.present.trains[selectedTrain].id]: {
+        ...allowancesSettings[simulation.present.trains[selectedTrain].id],
+        [type]: !allowancesSettings[simulation.present.trains[selectedTrain].id][type],
       },
     }));
     dispatch(updateMustRedraw(true));
@@ -125,8 +131,8 @@ export default function ContextMenu(props) {
   const changeAllowancesSettingsRadio = (type) => {
     dispatch(updateAllowancesSettings({
       ...allowancesSettings,
-      [simulation.trains[selectedTrain].id]: {
-        ...allowancesSettings[simulation.trains[selectedTrain].id],
+      [simulation.present.trains[selectedTrain].id]: {
+        ...allowancesSettings[simulation.present.trains[selectedTrain].id],
         baseBlocks: (type === 'baseBlocks'),
         allowancesBlocks: (type === 'allowancesBlocks'),
         ecoBlocks: (type === 'ecoBlocks'),
@@ -140,10 +146,10 @@ export default function ContextMenu(props) {
       setTimeout(() => { dispatch(updateMustRedraw(true)); }, 0);
       setGoUpdate(false);
     }
-  }, [simulation.trains]);
+  }, [simulation.present.trains]);
 
   useEffect(() => {
-    setTrainName(simulation.trains[selectedTrain].name);
+    setTrainName(simulation.present.trains[selectedTrain].name);
   }, [selectedTrain]);
 
   return contextMenu ? (
@@ -156,8 +162,8 @@ export default function ContextMenu(props) {
       }}
     >
       <div className="dropdown-menu show">
-        {simulation.trains[selectedTrain].allowances
-          || simulation.trains[selectedTrain].eco ? (
+        {simulation.present.trains[selectedTrain].allowances
+          || simulation.present.trains[selectedTrain].eco ? (
             <div className="row">
               <div className="col-3 font-weight-medium mb-1">
                 {t('allowances:blocks')}
@@ -173,7 +179,7 @@ export default function ContextMenu(props) {
                   label="&nbsp;"
                   onChange={() => changeAllowancesSettingsRadio('baseBlocks')}
                   checked={
-                    allowancesSettings[simulation.trains[selectedTrain].id].baseBlocks
+                    allowancesSettings[simulation.present.trains[selectedTrain].id].baseBlocks
                   }
                 />
               </div>
@@ -185,11 +191,11 @@ export default function ContextMenu(props) {
                   onChange={() => changeAllowancesSettings('base')}
                   label={t('allowances:baseTrainSchedule')}
                   checked={
-                    allowancesSettings[simulation.trains[selectedTrain].id].base
+                    allowancesSettings[simulation.present.trains[selectedTrain].id].base
                   }
                 />
               </div>
-              {simulation.trains[selectedTrain].allowances && (
+              {simulation.present.trains[selectedTrain].allowances && (
                 <>
                   <div className="col-3">
                     <CheckboxRadioSNCF
@@ -199,7 +205,7 @@ export default function ContextMenu(props) {
                       label="&nbsp;"
                       onChange={() => changeAllowancesSettingsRadio('allowancesBlocks')}
                       checked={
-                        allowancesSettings[simulation.trains[selectedTrain].id].allowancesBlocks
+                        allowancesSettings[simulation.present.trains[selectedTrain].id].allowancesBlocks
                       }
                     />
                   </div>
@@ -211,13 +217,13 @@ export default function ContextMenu(props) {
                       onChange={() => changeAllowancesSettings('allowances')}
                       label={t('allowances:margedTrainSchedule')}
                       checked={
-                        allowancesSettings[simulation.trains[selectedTrain].id].allowances
+                        allowancesSettings[simulation.present.trains[selectedTrain].id].allowances
                       }
                     />
                   </div>
                 </>
               )}
-              {simulation.trains[selectedTrain].eco && (
+              {simulation.present.trains[selectedTrain].eco && (
                 <>
                   <div className="col-3">
                     <CheckboxRadioSNCF
@@ -227,7 +233,7 @@ export default function ContextMenu(props) {
                       label="&nbsp;"
                       onChange={() => changeAllowancesSettingsRadio('ecoBlocks')}
                       checked={
-                        allowancesSettings[simulation.trains[selectedTrain].id].ecoBlocks
+                        allowancesSettings[simulation.present.trains[selectedTrain].id].ecoBlocks
                       }
                     />
                   </div>
@@ -239,7 +245,7 @@ export default function ContextMenu(props) {
                       onChange={() => changeAllowancesSettings('eco')}
                       label={t('allowances:ecoTrainSchedule')}
                       checked={
-                        allowancesSettings[simulation.trains[selectedTrain].id].eco
+                        allowancesSettings[simulation.present.trains[selectedTrain].id].eco
                       }
                     />
                   </div>

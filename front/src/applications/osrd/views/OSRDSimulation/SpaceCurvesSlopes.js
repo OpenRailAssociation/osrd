@@ -59,12 +59,12 @@ export default function SpaceCurvesSlopes(props) {
   // Prepare data
   const dataSimulation = {};
   // Speeds : reference needed for interpolate position of cursor
-  dataSimulation.speed = simulation.trains[selectedTrain].base.speeds.map((step) => ({
+  dataSimulation.speed = simulation.present.trains[selectedTrain].base.speeds.map((step) => ({
     ...step,
     speed: step.speed * 3.6,
   }));
   // Slopes
-  dataSimulation.slopesHistogram = simulation.trains[selectedTrain].slopes.map((step) => ({
+  dataSimulation.slopesHistogram = simulation.present.trains[selectedTrain].slopes.map((step) => ({
     position: step.position,
     gradient: step.gradient,
   }));
@@ -73,13 +73,13 @@ export default function SpaceCurvesSlopes(props) {
     'gradient',
   ]);
   dataSimulation.slopesCurve = createSlopeCurve(
-    simulation.trains[selectedTrain].slopes,
+    simulation.present.trains[selectedTrain].slopes,
     dataSimulation.slopesHistogram,
     'gradient'
   );
   // Curves
   dataSimulation.curvesHistogram = createCurveCurve(
-    simulation.trains[selectedTrain].curves,
+    simulation.present.trains[selectedTrain].curves,
     dataSimulation.slopesHistogram,
     'gradient'
   );
@@ -122,7 +122,7 @@ export default function SpaceCurvesSlopes(props) {
     const operationalPointsZone = chartLocal.drawZone
       .append('g')
       .attr('id', 'gev-operationalPointsZone');
-    simulation.trains[selectedTrain].base.stops.forEach((stop) => {
+    simulation.present.trains[selectedTrain].base.stops.forEach((stop) => {
       operationalPointsZone
         .append('line')
         .datum(stop.position)

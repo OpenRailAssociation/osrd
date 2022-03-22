@@ -1,10 +1,12 @@
+import 'applications/osrd/components/Simulation/ChartModal.scss';
+
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+
 import PropTypes from 'prop-types';
-import { useTranslation } from 'react-i18next';
-import { updateMustRedraw } from 'reducers/osrdsimulation';
-import 'applications/osrd/components/Simulation/ChartModal.scss';
 import { changeTrain } from 'applications/osrd/components/TrainList/TrainListHelpers';
+import { updateMustRedraw } from 'reducers/osrdsimulation';
+import { useTranslation } from 'react-i18next';
 
 const ChartModal = (props) => {
   const {
@@ -21,8 +23,8 @@ const ChartModal = (props) => {
       const seconds = parseInt(type === '-' ? offset * -1 : offset, 10);
       offsetTimeByDragging(seconds);
       changeTrain({
-        departure_time: simulation.trains[selectedTrain].base.stops[0].time + seconds,
-      }, simulation.trains[selectedTrain].id);
+        departure_time: simulation.present.trains[selectedTrain].base.stops[0].time + seconds,
+      }, simulation.present.trains[selectedTrain].id);
       dispatch(updateMustRedraw(true));
     }
   };

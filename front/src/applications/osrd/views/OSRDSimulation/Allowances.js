@@ -1,20 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import { useTranslation } from 'react-i18next';
-import nextId from 'react-id-generator';
-import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
-import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
-import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
-import OPModal from 'applications/osrd/components/Simulation/Allowances/OPModal';
-import MarecoGlobal from 'applications/osrd/components/Simulation/Allowances/MarecoGlobal';
-import { useSelector, useDispatch } from 'react-redux';
+import React, { useEffect, useState } from 'react';
 import { get, patch } from 'common/requests';
 import { setFailure, setSuccess } from 'reducers/main.ts';
-import { updateAllowancesSettings, updateSimulation, updateMustRedraw } from 'reducers/osrdsimulation';
-import { FaTrash } from 'react-icons/fa';
+import { updateAllowancesSettings, updateMustRedraw, updateSimulation } from 'reducers/osrdsimulation';
+import { useDispatch, useSelector } from 'react-redux';
+
 import DotsLoader from 'common/DotsLoader/DotsLoader';
+import { FaTrash } from 'react-icons/fa';
+import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import MarecoGlobal from 'applications/osrd/components/Simulation/Allowances/MarecoGlobal';
+import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
+import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
+import OPModal from 'applications/osrd/components/Simulation/Allowances/OPModal';
+import PropTypes from 'prop-types';
+import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
+import nextId from 'react-id-generator';
+import { useTranslation } from 'react-i18next';
 
 const trainscheduleURI = '/train_schedule/';
 
@@ -38,8 +39,8 @@ const EmptyLine = (props) => {
   const allowanceNewDatas = {
     allowance_type: 'construction',
     begin_position: 0,
-    end_position: simulation.trains[selectedTrain].base.stops[
-      simulation.trains[selectedTrain].base.stops.length - 1].position,
+    end_position: simulation.present.trains[selectedTrain].base.stops[
+      simulation.present.trains[selectedTrain].base.stops.length - 1].position,
     value: {
       value_type: 'time',
       seconds: 0,
@@ -186,7 +187,7 @@ const Allowance = (props) => {
   const { selectedTrain, simulation } = useSelector((state) => state.osrdsimulation);
 
   const position2name = (position) => {
-    const place = simulation.trains[selectedTrain].base.stops.find(
+    const place = simulation.present.trains[selectedTrain].base.stops.find(
       (element) => element.position === position,
     );
     return place && place.name !== null ? `${place.name} (${Math.round(position)}m)` : `${position}m`;
@@ -260,7 +261,7 @@ export default function Allowances(props) {
   const getAllowances = async () => {
     try {
       setIsUpdating(true);
-      const result = await get(`${trainscheduleURI}${simulation.trains[selectedTrain].id}/`);
+      const result = await get(`${trainscheduleURI}${simulation.present.trains[selectedTrain].id}/`);
       setTrainDetail(result);
       setAllowances(result.allowances);
       setIsUpdating(false);
@@ -276,14 +277,14 @@ export default function Allowances(props) {
   const changeAllowances = async (newAllowances) => {
     try {
       setIsUpdating(true);
-      await patch(`${trainscheduleURI}${simulation.trains[selectedTrain].id}/`, {
+      await patch(`${trainscheduleURI}${simulation.present.trains[selectedTrain].id}/`, {
         ...trainDetail,
         allowances: newAllowances,
       });
-      const newSimulationTrains = Array.from(simulation.trains);
-      newSimulationTrains[selectedTrain] = await get(`${trainscheduleURI}${simulation.trains[selectedTrain].id}/result/`,
+      const newSimulationTrains = Array.from(simulation.present.trains);
+      newSimulationTrains[selectedTrain] = await get(`${trainscheduleURI}${simulation.present.trains[selectedTrain].id}/result/`,
         {
-          id: simulation.trains[selectedTrain].id,
+          id: simulation.present.trains[selectedTrain].id,
           path: selectedProjection.path,
         });
 
@@ -312,8 +313,8 @@ export default function Allowances(props) {
       const newAllowancesSettings = { ...allowancesSettings };
       dispatch(updateAllowancesSettings({
         ...newAllowancesSettings,
-        [simulation.trains[selectedTrain].id]: {
-          ...newAllowancesSettings[simulation.trains[selectedTrain].id],
+        [simulation.present.trains[selectedTrain].id]: {
+          ...newAllowancesSettings[simulation.present.trains[selectedTrain].id],
           ecoBlocks: false,
           baseBlocks: true,
         },

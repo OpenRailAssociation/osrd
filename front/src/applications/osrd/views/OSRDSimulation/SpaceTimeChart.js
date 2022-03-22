@@ -75,7 +75,7 @@ export default function SpaceTimeChart(props) {
   };
 
   const offsetTimeByDragging = (offset) => {
-    const trains = Array.from(simulation.trains);
+    const trains = Array.from(simulation.present.trains);
     trains[selectedTrain] = timeShiftTrain(trains[selectedTrain], offset);
     dispatch(updateSimulation({ ...simulation, trains }));
   };
@@ -91,7 +91,7 @@ export default function SpaceTimeChart(props) {
     const operationalPointsZone = chartLocal.drawZone
       .append('g')
       .attr('id', 'get-operationalPointsZone');
-    simulation.trains[selectedTrain].base.stops.forEach((stop) => {
+    simulation.present.trains[selectedTrain].base.stops.forEach((stop) => {
       operationalPointsZone
         .append('line')
         .datum(stop.position)
@@ -116,6 +116,9 @@ export default function SpaceTimeChart(props) {
 
   const drawAllTrains = (reset) => {
     if (mustRedraw) {
+
+      console.log("DRAWALLTRAINS", selectedProjection)
+
       const chartLocal = createChart(
         chart,
         CHART_ID,
@@ -173,7 +176,7 @@ export default function SpaceTimeChart(props) {
   };
 
   useEffect(() => {
-    setDataSimulation(createTrain(dispatch, keyValues, simulation.trains, t));
+    setDataSimulation(createTrain(dispatch, keyValues, simulation.present.trains, t));
     setTimeout(() => {
       dispatch(updateMustRedraw(true));
     }, 0);
@@ -188,16 +191,16 @@ export default function SpaceTimeChart(props) {
     if (dragEnding) {
       changeTrain(
         {
-          departure_time: simulation.trains[selectedTrain].base.stops[0].time,
+          departure_time: simulation.present.trains[selectedTrain].base.stops[0].time,
         },
-        simulation.trains[selectedTrain].id
+        simulation.present.trains[selectedTrain].id
       );
       setDragEnding(false);
     }
   }, [dragEnding]);
 
   useEffect(() => {
-    setDataSimulation(createTrain(dispatch, keyValues, simulation.trains, t));
+    setDataSimulation(createTrain(dispatch, keyValues, simulation.present.trains, t));
     if (dataSimulation) {
       // ADN: No need to redo all this on a simple drag
       /* ADN drawAllTrain do something only if mustRedraw = true,
@@ -207,7 +210,7 @@ export default function SpaceTimeChart(props) {
       drawAllTrains(resetChart);
       handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
     }
-  }, [mustRedraw, rotate, selectedTrain, simulation.trains[selectedTrain]]);
+  }, [mustRedraw, rotate, selectedTrain, simulation.present.trains[selectedTrain]]);
 
   useEffect(() => {
     if (timePosition && dataSimulation && dataSimulation[selectedTrain]) {

@@ -1,18 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import { useSelector, useDispatch } from 'react-redux';
-import nextId from 'react-id-generator';
-import { useTranslation } from 'react-i18next';
+import React, { useEffect, useState } from 'react';
 import {
-  time2datetime, sec2time, sec2datetime, time2sec,
+  sec2datetime,
+  sec2time,
+  time2datetime,
+  time2sec,
 } from 'utils/timeManipulation';
 import { updateMustRedraw, updateSelectedTrain, updateSimulation } from 'reducers/osrdsimulation';
+import { useDispatch, useSelector } from 'react-redux';
+
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import TrainListModal from 'applications/osrd/components/TrainList/TrainListModal';
 import { IoMdEye } from 'react-icons/io';
-import { useDebounce } from 'utils/helpers';
-import { timeShiftTrain } from 'applications/osrd/components/Helpers/ChartHelpers';
+import PropTypes from 'prop-types';
+import TrainListModal from 'applications/osrd/components/TrainList/TrainListModal';
 import { changeTrain } from 'applications/osrd/components/TrainList/TrainListHelpers';
+import nextId from 'react-id-generator';
+import { timeShiftTrain } from 'applications/osrd/components/Helpers/ChartHelpers';
+import { useDebounce } from 'utils/helpers';
+import { useTranslation } from 'react-i18next';
 
 const InputName = (props) => {
   const {
@@ -86,10 +90,10 @@ export default function TrainsList(props) {
   const changeTrainName = (newName, idx) => {
     setOnInput(true);
     setInputName(newName);
-    const newTrain = { ...simulation.trains[idx], name: newName };
+    const newTrain = { ...simulation.present.trains[idx], name: newName };
     dispatch(updateSimulation({
       ...simulation,
-      trains: simulation.trains.map((train, currentIdx) => (
+      trains: simulation.present.trains.map((train, currentIdx) => (
         (idx === currentIdx) ? newTrain : train)),
     }));
   };
@@ -99,10 +103,10 @@ export default function TrainsList(props) {
     setInputTime(newStartTime);
     const offset = Math.floor(
       (time2datetime(newStartTime) - sec2datetime(
-        simulation.trains[idx].base.stops[0].time,
+        simulation.present.trains[idx].base.stops[0].time,
       )) / 1000,
     );
-    const trains = Array.from(simulation.trains);
+    const trains = Array.from(simulation.present.trains);
     trains[idx] = timeShiftTrain(trains[selectedTrain], offset);
     dispatch(updateSimulation({ ...simulation, trains }));
   };
@@ -111,7 +115,7 @@ export default function TrainsList(props) {
   const debouncedInputTime = useDebounce(inputTime, 500);
 
   const formatTrainsList = () => {
-    const newFormattedList = simulation.trains.map((train, idx) => {
+    const newFormattedList = simulation.present.trains.map((train, idx) => {
       if (filter === '' || (train.labels !== undefined && train.labels.join().toLowerCase().includes(filter.toLowerCase()))) {
         return (
           <tr
@@ -198,7 +202,7 @@ export default function TrainsList(props) {
       setOnInput(false);
       changeTrain(
         { train_name: debouncedInputName },
-        simulation.trains[trainNameClickedIDX].id,
+        simulation.present.trains[trainNameClickedIDX].id,
       );
       dispatch(updateMustRedraw(true));
     }
@@ -209,7 +213,7 @@ export default function TrainsList(props) {
       setOnInput(false);
       changeTrain(
         { departure_time: time2sec(debouncedInputTime) },
-        simulation.trains[trainNameClickedIDX].id,
+        simulation.present.trains[trainNameClickedIDX].id,
       );
       dispatch(updateMustRedraw(true));
     }

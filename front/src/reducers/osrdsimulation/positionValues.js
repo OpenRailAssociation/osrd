@@ -27,8 +27,10 @@ export default function reducer(state = initialState, action, rootState) {
           LIST_VALUES_NAME_SPACE_TIME,
           action.timePosition,
         );
-        draft.positionValues = positionsValues
-
+        draft.headPosition = positionsValues.headPosition;
+        draft.routeEndOccupancy = positionsValues.routeEndOccupancy;
+        draft.routeBeginOccupancy = positionsValues.routeBeginOccupancy;
+        draft.speed = positionsValues.speed;
 
 
           // ADAPT Simulation
