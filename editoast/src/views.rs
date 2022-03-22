@@ -54,10 +54,8 @@ async fn edit_infra(
         let operation = operation.clone();
         let infra_id = infra.id;
         connection
-            .run(move |c| {
-                operation.apply(infra_id, c);
-            })
-            .await
+            .run(move |c| operation.apply(infra_id, c))
+            .await?
     }
 
     // Bump version

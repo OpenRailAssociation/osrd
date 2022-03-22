@@ -36,7 +36,7 @@ impl ObjectType {
 #[serde(crate = "rocket::serde")]
 pub struct TrackSection {
     pub id: String,
-    pub length: f32,
+    pub length: f64,
     pub line_code: i32,
     pub line_name: String,
     pub track_number: i32,
@@ -51,7 +51,7 @@ pub struct TrackSection {
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde", tag = "type")]
 pub enum LineString {
-    LineString { coordinates: Vec<[f32; 2]> },
+    LineString { coordinates: Vec<[f64; 2]> },
 }
 
 impl Default for LineString {
@@ -82,15 +82,15 @@ impl Default for ApplicableDirections {
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 pub struct Curve {
-    pub radius: f32,
-    pub begin: f32,
-    pub end: f32,
+    pub radius: f64,
+    pub begin: f64,
+    pub end: f64,
 }
 
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 pub struct Slope {
-    pub gradient: f32,
-    pub begin: f32,
-    pub end: f32,
+    pub gradient: f64,
+    pub begin: f64,
+    pub end: f64,
 }
