@@ -1,4 +1,4 @@
-use super::{ObjectType, OperationError, TrackSection};
+use super::{ObjectType, TrackSection};
 use crate::{infra_cache::InfraCache, response::ApiError};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
 use rocket::serde::Deserialize;
@@ -12,18 +12,15 @@ pub enum CreateOperation {
 
 impl CreateOperation {
     pub fn apply(&self, infra_id: i32, conn: &PgConnection) -> Result<(), Box<dyn ApiError>> {
-        match sql_query(format!(
+        sql_query(format!(
             "INSERT INTO {} (infra_id, obj_id, data) VALUES ({}, '{}', '{}')",
             self.get_obj_type().get_table(),
             infra_id,
             self.get_obj_id(),
             self.get_data(),
         ))
-        .execute(conn)
-        {
-            Ok(_) => Ok(()),
-            Err(err) => Err(Box::new(OperationError::Other(err))),
-        }
+        .execute(conn)?;
+        Ok(())
     }
 
     pub fn get_updated_objects(

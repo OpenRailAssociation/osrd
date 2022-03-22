@@ -30,21 +30,21 @@ pub enum InfraError {
     #[error("Infra '{0}', could not be found")]
     NotFound(i32),
     #[error("An internal diesel error occurred: '{}'", .0.to_string())]
-    Other(DieselError),
+    DieselError(DieselError),
 }
 
 impl ApiError for InfraError {
     fn get_code(&self) -> u16 {
         match self {
             InfraError::NotFound(_) => 404,
-            InfraError::Other(_) => 500,
+            InfraError::DieselError(_) => 500,
         }
     }
 
     fn get_type(&self) -> &'static str {
         match self {
             InfraError::NotFound(_) => "editoast:infra:NotFound",
-            InfraError::Other(_) => "editoast:infra:Other",
+            InfraError::DieselError(_) => "editoast:infra:DieselError",
         }
     }
 }
@@ -67,7 +67,7 @@ impl Infra {
         match osrd_infra_infra.find(infra_id).first(conn) {
             Ok(infra) => Ok(infra),
             Err(DieselError::NotFound) => Err(Box::new(InfraError::NotFound(infra_id))),
-            Err(e) => Err(Box::new(InfraError::Other(e))),
+            Err(e) => Err(Box::new(InfraError::DieselError(e))),
         }
     }
 
@@ -96,7 +96,7 @@ impl Infra {
         {
             Ok(infra) => Ok(infra),
             Err(DieselError::NotFound) => Err(Box::new(InfraError::NotFound(self.id))),
-            Err(err) => Err(Box::new(InfraError::Other(err))),
+            Err(err) => Err(Box::new(InfraError::DieselError(err))),
         }
     }
 
@@ -110,7 +110,7 @@ impl Infra {
         .get_result::<Infra>(conn)
         {
             Ok(infra) => Ok(infra),
-            Err(err) => Err(Box::new(InfraError::Other(err))),
+            Err(err) => Err(Box::new(InfraError::DieselError(err))),
         }
     }
 
@@ -118,7 +118,7 @@ impl Infra {
         match delete(osrd_infra_infra.filter(id.eq(infra_id))).execute(conn) {
             Ok(1) => Ok(()),
             Ok(_) => Err(Box::new(InfraError::NotFound(infra_id))),
-            Err(err) => Err(Box::new(InfraError::Other(err))),
+            Err(err) => Err(Box::new(InfraError::DieselError(err))),
         }
     }
 }
