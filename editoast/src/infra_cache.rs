@@ -6,11 +6,11 @@ use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Default)]
 pub struct InfraCache {
-    pub track_sections_dependencies: HashMap<String, Vec<ObjectRef>>,
+    track_sections_refs: HashMap<String, HashSet<ObjectRef>>,
 }
 
 #[derive(QueryableByName)]
-struct ResultObjRef {
+struct ObjRefLink {
     #[sql_type = "Text"]
     obj_id: String,
     #[sql_type = "Text"]
@@ -18,12 +18,12 @@ struct ResultObjRef {
 }
 
 impl InfraCache {
-    fn add_refs(&mut self, refs: Vec<ResultObjRef>, obj_type: ObjectType) {
-        for objref in refs.iter() {
-            self.track_sections_dependencies
-                .entry(objref.ref_id.clone())
+    fn add_refs(&mut self, refs: Vec<ObjRefLink>, obj_type: ObjectType) {
+        for link in refs.iter() {
+            self.track_sections_refs
+                .entry(link.ref_id.clone())
                 .or_insert(Default::default())
-                .push(ObjectRef::new(obj_type.clone(), objref.obj_id.clone()));
+                .insert(ObjectRef::new(obj_type.clone(), link.obj_id.clone()));
         }
     }
 
@@ -45,18 +45,13 @@ impl InfraCache {
         infra_cache
     }
 
-    pub fn get_tracks_dependencies(
-        &self,
-        track_id: &String,
-        dependencies: &mut HashMap<ObjectType, HashSet<String>>,
-    ) {
-        if let Some(deps) = self.track_sections_dependencies.get(track_id) {
-            for d in deps.iter() {
-                dependencies
-                    .entry(d.obj_type.clone())
-                    .or_insert(Default::default())
-                    .insert(d.obj_id.clone());
-            }
+    pub fn get_track_refs_type(&self, track_id: &String, obj_type: ObjectType) -> Vec<&ObjectRef> {
+        if let Some(refs) = self.track_sections_refs.get(track_id) {
+            refs.iter()
+                .filter(|obj_ref| obj_ref.obj_type == obj_type)
+                .collect()
+        } else {
+            vec![]
         }
     }
 }

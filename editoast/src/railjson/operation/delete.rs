@@ -2,7 +2,6 @@ use super::{ObjectType, OperationError};
 use crate::response::ApiError;
 use diesel::{sql_query, PgConnection, RunQueryDsl};
 use rocket::serde::Deserialize;
-use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Deserialize)]
 #[serde(crate = "rocket::serde")]
@@ -27,13 +26,6 @@ impl DeleteOperation {
             ))),
             Err(err) => Err(err.into()),
         }
-    }
-
-    pub fn get_updated_objects(&self, update_lists: &mut HashMap<ObjectType, HashSet<String>>) {
-        update_lists
-            .entry(self.obj_type.clone())
-            .or_insert(Default::default())
-            .insert(self.obj_id.clone());
     }
 }
 

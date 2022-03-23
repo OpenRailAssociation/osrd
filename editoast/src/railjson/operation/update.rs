@@ -1,5 +1,4 @@
 use super::{ObjectType, OperationError};
-use crate::infra_cache::InfraCache;
 use crate::railjson::TrackSection;
 use crate::response::ApiError;
 use diesel::sql_types::Jsonb;
@@ -7,13 +6,12 @@ use diesel::{sql_query, PgConnection, QueryableByName, RunQueryDsl};
 use json_patch::Patch;
 use rocket::serde::Deserialize;
 use serde_json::{from_value, to_string, Value};
-use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Deserialize)]
 #[serde(crate = "rocket::serde")]
 pub struct UpdateOperation {
-    obj_id: String,
-    obj_type: ObjectType,
+    pub obj_id: String,
+    pub obj_type: ObjectType,
     railjson_patch: Patch,
 }
 
@@ -46,21 +44,6 @@ impl UpdateOperation {
                 self.obj_id.clone(),
             ))),
             Err(err) => Err(err.into()),
-        }
-    }
-
-    pub fn get_updated_objects(
-        &self,
-        update_lists: &mut HashMap<ObjectType, HashSet<String>>,
-        infra_cache: &InfraCache,
-    ) {
-        update_lists
-            .entry(self.obj_type.clone())
-            .or_insert(Default::default())
-            .insert(self.obj_id.clone());
-
-        if self.obj_type == ObjectType::TrackSection {
-            infra_cache.get_tracks_dependencies(&self.obj_id, update_lists);
         }
     }
 }
