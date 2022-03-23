@@ -3,14 +3,12 @@ mod delete;
 mod update;
 
 use super::{ObjectType, TrackSection};
-use crate::infra_cache::InfraCache;
 use crate::response::ApiError;
 use diesel::result::Error as DieselError;
 use diesel::PgConnection;
 use json_patch::PatchError;
 use rocket::serde::Deserialize;
 use serde_json::Error as SerdeError;
-use std::collections::{HashMap, HashSet};
 use thiserror::Error;
 
 pub use create::CreateOperation;
@@ -87,18 +85,6 @@ impl Operation {
             Operation::Delete(delete) => delete.apply(infra_id, conn),
             Operation::Create(create) => create.apply(infra_id, conn),
             Operation::Update(update) => update.apply(infra_id, conn),
-        }
-    }
-
-    pub fn get_updated_objects(
-        &self,
-        update_lists: &mut HashMap<ObjectType, HashSet<String>>,
-        infra_cache: &InfraCache,
-    ) {
-        match self {
-            Operation::Delete(delete) => delete.get_updated_objects(update_lists),
-            Operation::Create(create) => create.get_updated_objects(update_lists, infra_cache),
-            Operation::Update(update) => update.get_updated_objects(update_lists, infra_cache),
         }
     }
 }

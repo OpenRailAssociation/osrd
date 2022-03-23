@@ -61,18 +61,13 @@ async fn edit_infra(
     // Bump version
     let infra = connection.run(move |c| infra.bump_version(c)).await?;
 
-    // List objects that needs to be refreshed
+    // TODO: Apply operations to infra cache
     let infra_cache = infra_caches
         .get(&infra.id)
         .expect(format!("Infra cache does not contain infra '{}'", infra.id).as_str());
-    let mut update_lists = HashMap::new();
-    for operation in operations.iter() {
-        operation.get_updated_objects(&mut update_lists, &infra_cache);
-    }
 
     // Refresh layers
-    connection
-        .run(move |c| generate::update(c, infra.id, &update_lists))
+    generate::update(&connection, infra.id, &operations, infra_cache)
         .await
         .expect("Update generated data failed");
 
