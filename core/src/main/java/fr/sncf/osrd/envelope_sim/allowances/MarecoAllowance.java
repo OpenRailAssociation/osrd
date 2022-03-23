@@ -1,5 +1,6 @@
 package fr.sncf.osrd.envelope_sim.allowances;
 
+import static java.lang.Double.NaN;
 import static java.lang.Math.abs;
 
 import com.carrotsearch.hppc.DoubleArrayList;
@@ -18,10 +19,7 @@ import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
 import fr.sncf.osrd.utils.DoubleBinarySearch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 public class MarecoAllowance implements Allowance {
     private final Logger logger = LoggerFactory.getLogger(MarecoAllowance.class);
@@ -135,9 +133,40 @@ public class MarecoAllowance implements Allowance {
      */
     private void applyAllowanceRegion(EnvelopeBuilder builder, Envelope envelopeRegion) {
 
+        // build a list of the positions between ranges
+        var transitions = new HashMap<Double, Double>();
+        transitions.put(ranges.get(0).getBeginPos(), NaN);
         for (var range : ranges) {
-            var envelopeRange = Envelope.make(envelopeRegion.slice(range.beginPos, range.endPos));
-            applyAllowanceRange(builder, envelopeRange, range.value);
+            transitions.put(range.getEndPos(), NaN);
+        }
+
+        // sort ranges by allowance percentage
+        var sortedRanges = new ArrayList<>(ranges);
+        sortedRanges.sort(Comparator.comparingDouble(range -> range.getValue().getAllowancePercentage(
+                envelopeRegion.getTimeBetween(range.getBeginPos(), range.getEndPos()),
+                range.getBeginPos() - range.getEndPos()
+        )));
+
+        var i = 0;
+        var allowanceRanges = new ArrayList<Envelope>();
+        for (var range : sortedRanges) {
+            // TODO: replace i by the actual index of the range (position-wise)
+            logger.debug("computing range n°{}", i + 1);
+            var envelopeRange = Envelope.make(envelopeRegion.slice(range.getBeginPos(), range.getEndPos()));
+            var imposedBeginSpeed = transitions.get(range.getBeginPos());
+            var imposedEndSpeed = transitions.get(range.getEndPos());
+            var allowanceRange =
+                    computeAllowanceRange(envelopeRange, range.getValue(), imposedBeginSpeed, imposedEndSpeed);
+            transitions.put(allowanceRange.getBeginPos(), allowanceRange.getBeginSpeed());
+            transitions.put(allowanceRange.getEndPos(), allowanceRange.getEndSpeed());
+            allowanceRanges.add(allowanceRange);
+            i++;
+        }
+        // sort allowance ranges by position
+        var sortedAllowanceRanges = new ArrayList<>(allowanceRanges);
+        sortedAllowanceRanges.sort(Comparator.comparingDouble(Envelope::getBeginPos));
+        for (var envelope : sortedAllowanceRanges) {
+            builder.addEnvelope(envelope);
         }
     }
 
@@ -145,7 +174,10 @@ public class MarecoAllowance implements Allowance {
      * Apply the allowance to the given range.
      * Split the range into sections which can be independently computed.
      */
-    private void applyAllowanceRange(EnvelopeBuilder builder, Envelope envelopeRange, AllowanceValue value) {
+    private Envelope computeAllowanceRange(Envelope envelopeRange,
+                                           AllowanceValue value,
+                                           double imposedBeginSpeed,
+                                           double imposedEndSpeed) {
 
         // compute the added time for all the allowance range
         var baseTime = envelopeRange.getTotalTime();
@@ -153,8 +185,7 @@ public class MarecoAllowance implements Allowance {
         var addedTime = value.getAllowanceTime(baseTime, baseDistance);
         // if no time is added, just return the base envelope without performing binary search
         if (addedTime == 0.0) {
-            builder.addEnvelope(envelopeRange);
-            return;
+            return envelopeRange;
         }
         assert addedTime > 0;
 
@@ -176,6 +207,7 @@ public class MarecoAllowance implements Allowance {
         if (splitPoints.get(splitPoints.size() - 1) != envelopeRange.getEndPos())
             splitPoints.add(envelopeRange.getEndPos());
 
+        var builder = new EnvelopeBuilder();
         // run mareco on each section of the allowance range
         for (int i = 0; i < splitPoints.size() - 1; i++) {
             double sectionBegin = splitPoints.get(i);
@@ -187,14 +219,18 @@ public class MarecoAllowance implements Allowance {
                     sectionTime, baseTime, sectionDistance, baseDistance);
             var targetTime = sectionTime + addedTime * sectionRatio;
             logger.debug("  computing section n°{}", i + 1);
-            var marecoResult = applyAllowanceSection(section, targetTime);
+            var marecoResult = computeAllowanceSection(section, targetTime, imposedBeginSpeed, imposedEndSpeed);
             assert abs(marecoResult.getTotalTime() - targetTime) < context.timeStep;
             builder.addEnvelope(marecoResult);
         }
+        return builder.build();
     }
 
     /** Iteratively run MARECO on the given section, until the target time is reached */
-    private Envelope applyAllowanceSection(Envelope allowanceSection, double targetTime) {
+    private Envelope computeAllowanceSection(Envelope allowanceSection,
+                                             double targetTime,
+                                             double imposedBeginSpeed,
+                                             double imposedEndSpeed) {
         // perform a binary search
         // low bound: capacitySpeedLimit
         // high bound: compute v1 for which vf above max speed of the envelope region
@@ -207,7 +243,7 @@ public class MarecoAllowance implements Allowance {
         for (int i = 1; i < 21 && !search.complete(); i++) {
             var v1 = search.getInput();
             logger.debug("    starting attempt {} with v1 = {}", i, v1);
-            marecoResult = computeMarecoIteration(allowanceSection, v1);
+            marecoResult = computeMarecoIteration(allowanceSection, v1, imposedBeginSpeed, imposedEndSpeed);
             if (marecoResult == null) {
                 // We reached the slowdown / speedup intersection case (not implemented) and need to speed up
                 search.feedback(0);
@@ -224,16 +260,25 @@ public class MarecoAllowance implements Allowance {
     }
 
     /** Compute one iteration of the binary search */
-    public Envelope computeMarecoIteration(Envelope base, double v1) {
+    public Envelope computeMarecoIteration(Envelope base,
+                                           double v1) {
+        return computeMarecoIteration(base, v1, NaN, NaN);
+    }
+
+    /** Compute one iteration of the binary search, with specified speeds on the edges */
+    public Envelope computeMarecoIteration(Envelope base,
+                                           double v1,
+                                           double imposedBeginSpeed,
+                                           double imposedEndSpeed) {
         // The part of the envelope on which the margin is applied is split in 3:
         // slowdown, then core, then speedup. The slowdown / speedup parts are needed to transition to / from v1 when
         // the begin / end speeds are above v1. These phases are empty / can be ignored when the begin / end speeds
         // are below v1.
 
-        // 1) compute the slowdown and speedup regions, so that the rest of this function can assume all speeds are
-        // below v1
-        var slowdownPhase = computeSlowdown(base, v1);
-        var speedupPhase = computeSpeedup(base, v1);
+        // 1) compute the potential slowdown and speedup regions,
+        // so that the rest of this function can assume all speeds are below v1
+        var slowdownPhase = computeSlowdown(base, v1, imposedBeginSpeed);
+        var speedupPhase = computeSpeedup(base, v1, imposedEndSpeed);
         var slowdownEnd = slowdownPhase != null ? slowdownPhase.getEndPos() : base.getBeginPos();
         var speedupBegin = speedupPhase != null ? speedupPhase.getBeginPos() : base.getEndPos();
 
@@ -295,33 +340,47 @@ public class MarecoAllowance implements Allowance {
         return res;
     }
 
-
-    private EnvelopePart computeSlowdown(Envelope base, double v1) {
-        var startSpeed = base.getBeginSpeed();
-        if (startSpeed <= v1)
+    private EnvelopePart computeSlowdown(Envelope envelopeSection, double v1, double targetBeginSpeed) {
+        double beginSpeed;
+        // if there is no target begin speed, that means there is no transition between ranges to compute here
+        // this is done later when the range is re-computed
+        if (Double.isNaN(targetBeginSpeed)) {
+            // if the section is not at the beginning of the allowance region, there will be no slowdown phase
+            if (envelopeSection.getBeginPos() > beginPos)
+                return null;
+            beginSpeed = envelopeSection.getBeginSpeed();
+        } else
+            beginSpeed = targetBeginSpeed;
+        if (beginSpeed <= v1)
             return null;
-
         var partBuilder = new EnvelopePartBuilder();
         var constrainedBuilder = new ConstrainedEnvelopePartBuilder(
                 partBuilder,
                 new SpeedFloor(v1)
         );
-        EnvelopeDeceleration.decelerate(context, base.getBeginPos(), startSpeed, constrainedBuilder, 1);
+        EnvelopeDeceleration.decelerate(context, envelopeSection.getBeginPos(), beginSpeed, constrainedBuilder, 1);
         return partBuilder.build();
     }
 
-
-    private EnvelopePart computeSpeedup(Envelope base, double v1) {
-        var endSpeed = base.getEndSpeed();
+    private EnvelopePart computeSpeedup(Envelope envelopeSection, double v1, double targetEndSpeed) {
+        double endSpeed;
+        // if there is no target end speed, that means there is no transition between ranges to compute here
+        // this is done later when the range is re-computed
+        if (Double.isNaN(targetEndSpeed)) {
+            // if the section is not at the end of the allowance region, there will be no speedup phase
+            if (envelopeSection.getEndPos() < endPos)
+                return null;
+            endSpeed = envelopeSection.getEndSpeed();
+        } else
+            endSpeed = targetEndSpeed;
         if (endSpeed <= v1)
             return null;
-
         var partBuilder = new EnvelopePartBuilder();
         var constrainedBuilder = new ConstrainedEnvelopePartBuilder(
                 partBuilder,
                 new SpeedFloor(v1)
         );
-        EnvelopeAcceleration.accelerate(context, base.getEndPos(), endSpeed, constrainedBuilder, -1);
+        EnvelopeAcceleration.accelerate(context, envelopeSection.getEndPos(), endSpeed, constrainedBuilder, -1);
         return partBuilder.build();
     }
 
