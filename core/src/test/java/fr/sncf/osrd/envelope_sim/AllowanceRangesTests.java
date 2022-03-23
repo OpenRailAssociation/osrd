@@ -10,16 +10,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.envelope.Envelope;
-import fr.sncf.osrd.envelope.EnvelopeBuilder;
 import fr.sncf.osrd.envelope.EnvelopeShape;
-import fr.sncf.osrd.envelope.EnvelopeTransitions;
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue;
-import fr.sncf.osrd.envelope_sim.allowances.HardenedMarecoAllowance;
+import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
 import fr.sncf.osrd.train.TestTrains;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 public class AllowanceRangesTests {
 
@@ -38,13 +34,13 @@ public class AllowanceRangesTests {
         AllowanceRange[] ranges = new AllowanceRange[2];
         ranges[0] = new AllowanceRange(0, 3000, value1);
         ranges[1] = new AllowanceRange(3000, path.getLength(), value2);
-        var allowance = new HardenedMarecoAllowance(
+        var allowance = new MarecoAllowance(
                 context,
                 0, path.getLength(), 0, ranges);
         return allowance.apply(maxEffortEnvelope);
     }
 
-    public static double getDistance(HardenedMarecoAllowance allowance) {
+    public static double getDistance(MarecoAllowance allowance) {
         return allowance.endPos - allowance.beginPos;
     }
 
@@ -78,7 +74,7 @@ public class AllowanceRangesTests {
         var rangesTransition = 70_000;
         ranges[0] = new AllowanceRange(0, rangesTransition, value1);
         ranges[1] = new AllowanceRange(rangesTransition, testPath.getLength(), value2);
-        var allowance = new HardenedMarecoAllowance(
+        var allowance = new MarecoAllowance(
                 testContext, 0, testPath.getLength(), 30 / 3.6, ranges
         );
         var marecoEnvelope = allowance.apply(maxEffortEnvelope);

@@ -1,7 +1,6 @@
 package fr.sncf.osrd.envelope_sim.allowances;
 
 import static java.lang.Math.abs;
-import static java.lang.Math.min;
 
 import com.carrotsearch.hppc.DoubleArrayList;
 import fr.sncf.osrd.envelope.*;
@@ -162,14 +161,13 @@ public class MarecoAllowance implements Allowance {
         var totalTargetTime = baseTime + addedTime;
         var slowestRunningTime = Double.POSITIVE_INFINITY;
         if (capacitySpeedLimit > 0) {
-            var slowestEnvelope = EnvelopeSpeedCap.from(envelopeRange, List.of(new CapacitySpeedLimit()), capacitySpeedLimit);
+            var slowestEnvelope =
+                    EnvelopeSpeedCap.from(envelopeRange, List.of(new CapacitySpeedLimit()), capacitySpeedLimit);
             slowestRunningTime = slowestEnvelope.getTotalTime();
         }
         // if the total target time isn't actually reachable, throw error
         if (totalTargetTime > slowestRunningTime)
-            throw new RuntimeException(
-                    "Mareco simulation did not converge (we can't lose the requested time in this setting)"
-            );
+            throw MarecoConvergenceException.tooMuchTime();
         // build a list of point between which the computation is divided
         // each division is a section
         var splitPoints = new DoubleArrayList();
@@ -205,10 +203,10 @@ public class MarecoAllowance implements Allowance {
         Envelope marecoResult = null;
         var search =
                 new DoubleBinarySearch(capacitySpeedLimit, initialHighBound, targetTime, context.timeStep, true);
-        logger.debug("target time = {}", targetTime);
+        logger.debug("  target time = {}", targetTime);
         for (int i = 1; i < 21 && !search.complete(); i++) {
             var v1 = search.getInput();
-            logger.debug("starting attempt {} with v1 = {}", i, v1);
+            logger.debug("    starting attempt {} with v1 = {}", i, v1);
             marecoResult = computeMarecoIteration(allowanceSection, v1);
             if (marecoResult == null) {
                 // We reached the slowdown / speedup intersection case (not implemented) and need to speed up
@@ -216,7 +214,7 @@ public class MarecoAllowance implements Allowance {
                 continue;
             }
             var regionTime = marecoResult.getTotalTime();
-            logger.debug("envelope time {}", regionTime);
+            logger.debug("    envelope time {}", regionTime);
             search.feedback(regionTime);
         }
 
