@@ -7,7 +7,6 @@ public final class RJSAllowanceRange {
     public double beginPos;
     @Json(name = "end_position")
     public double endPos;
-    @Json(name = "value")
     public RJSAllowanceValue value;
 
     /** Constructor */

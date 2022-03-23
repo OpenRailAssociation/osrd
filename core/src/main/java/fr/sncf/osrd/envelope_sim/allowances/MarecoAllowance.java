@@ -31,7 +31,7 @@ public class MarecoAllowance implements Allowance {
     public final double beginPos;
     public final double endPos;
 
-    public final AllowanceRange[] ranges;
+    public final List<AllowanceRange> ranges;
 
     // potential speed limit under which the train would use too much capacity
     public final double capacitySpeedLimit;
@@ -42,7 +42,7 @@ public class MarecoAllowance implements Allowance {
             double beginPos,
             double endPos,
             double capacitySpeedLimit,
-            AllowanceRange[] ranges
+            List<AllowanceRange> ranges
     ) {
         this.context = context;
         this.beginPos = beginPos;

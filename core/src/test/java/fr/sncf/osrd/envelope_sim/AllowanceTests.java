@@ -21,6 +21,7 @@ import fr.sncf.osrd.train.TestTrains;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import java.util.List;
 
 public class AllowanceTests {
     private static MarecoAllowance makeMarecoAllowance(
@@ -29,8 +30,7 @@ public class AllowanceTests {
             double capacitySpeedLimit,
             AllowanceValue value
     ) {
-        AllowanceRange[] defaultRange = new AllowanceRange[1];
-        defaultRange[0] = new AllowanceRange(beginPos, endPos, value);
+        var defaultRange = List.of(new AllowanceRange(beginPos, endPos, value));
         return new MarecoAllowance(context, beginPos, endPos, capacitySpeedLimit, defaultRange);
     }
 

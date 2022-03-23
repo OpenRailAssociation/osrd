@@ -15,7 +15,9 @@ import fr.sncf.osrd.train.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class RJSStandaloneTrainScheduleParser {
     /** Parses a RailJSON standalone train schedule */
@@ -95,31 +97,30 @@ public class RJSStandaloneTrainScheduleParser {
     }
 
     // Helper class used to sort ranges by begin position
-    static class SortByBeginPos implements Comparator<RJSAllowance.RJSAllowanceRange> {
+    static class SortByBeginPos implements Comparator<RJSAllowanceRange> {
         // Used for sorting in ascending order of begin pos
-        public int compare(RJSAllowance.RJSAllowanceRange a, RJSAllowance.RJSAllowanceRange b) {
+        public int compare(RJSAllowanceRange a, RJSAllowanceRange b) {
             return (int) (a.beginPos - b.beginPos);
         }
     }
 
-    private static AllowanceRange[] parseAllowanceRanges(
+    private static List<AllowanceRange> parseAllowanceRanges(
             EnvelopePath envelopePath,
             RJSAllowanceValue defaultValue,
             RJSAllowanceRange[] ranges
     ) throws InvalidSchedule {
         // if no ranges have been defined, just return the default value
         if (ranges == null || ranges.length == 0) {
-            AllowanceRange[] defaultRange = new AllowanceRange[1];
-            defaultRange[0] =
-                    new AllowanceRange(0, envelopePath.getLength(), parseAllowanceValue(defaultValue));
-            return defaultRange;
+            return List.of(new AllowanceRange(0, envelopePath.getLength(), parseAllowanceValue(defaultValue)));
         }
 
         // sort the range list by begin position
-        Arrays.stream(ranges).sorted(new SortByBeginPos());
+        var sortedRanges = Arrays.stream(ranges)
+                .sorted(Comparator.comparingDouble(range -> range.beginPos))
+                .collect(Collectors.toList());
         var res = new ArrayList<AllowanceRange>();
         var lastEndPos = 0.0;
-        for (var range : ranges) {
+        for (var range : sortedRanges) {
             // if some ranges are overlapping, return an error
             if (range.beginPos < lastEndPos)
                 throw new InvalidSchedule("overlapping allowance ranges");
@@ -132,7 +133,7 @@ public class RJSStandaloneTrainScheduleParser {
         }
         if (lastEndPos < envelopePath.getLength())
             res.add(new AllowanceRange(lastEndPos, envelopePath.getLength(), parseAllowanceValue(defaultValue)));
-        return (AllowanceRange[]) res.toArray();
+        return res;
     }
 
     private static AllowanceRange parseAllowanceRange(RJSAllowanceRange range) throws InvalidSchedule {
