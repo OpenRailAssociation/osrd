@@ -10,7 +10,7 @@ pub enum ObjectType {
     SpeedSection,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 pub struct ObjectRef {
     pub obj_type: ObjectType,
     pub obj_id: String,
