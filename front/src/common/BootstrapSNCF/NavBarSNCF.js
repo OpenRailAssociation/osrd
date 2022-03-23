@@ -1,6 +1,5 @@
 import DropdownSNCF, { DROPDOWN_STYLE_TYPES } from './DropdownSNCF';
 import { FaMoon, FaPowerOff, FaSun } from 'react-icons/fa';
-import { redoSimulation, undoSimulation } from '../../reducers/osrdsimulation/simulation';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { Link } from 'react-router-dom';
@@ -47,22 +46,6 @@ export default function LegacyNavBarSNCF(props) {
         <h1 className="text-uppercase text-white pt-2 pl-3 mb-0">{appName}</h1>
       </header>
       <ul className="mastheader-toolbar toolbar mb-0">
-        <li className="toolbar-item separator-gray-500">
-          <button
-            type="button"
-            className="btn btn-transparent px-0 mr-2"
-            onClick={() => dispatch(undoSimulation())}
-          >
-            Undo
-          </button>
-          <button
-            type="button"
-            className="btn btn-transparent px-0 mr-2"
-            onClick={() => dispatch(redoSimulation())}
-          >
-            Redo
-          </button>
-        </li>
         <li className="toolbar-item toolbar-item-spacing">
           <div className="d-flex align-items-center h-100 text-white">
             <span className="mr-2 text-yellow"><FaSun /></span>

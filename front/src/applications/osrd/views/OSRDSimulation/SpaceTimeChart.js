@@ -117,8 +117,6 @@ export default function SpaceTimeChart(props) {
   const drawAllTrains = (reset) => {
     if (mustRedraw) {
 
-      console.log("DRAWALLTRAINS", selectedProjection)
-
       const chartLocal = createChart(
         chart,
         CHART_ID,

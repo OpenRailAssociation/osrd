@@ -2,6 +2,7 @@ import './OSRDSimulation.scss';
 import './OSRDSimulation.scss';
 
 import React, { useEffect, useState } from 'react';
+import { redoSimulation, undoSimulation } from '../../../../reducers/osrdsimulation/simulation';
 import {
   updateAllowancesSettings,
   updateConsolidatedSimulation,
@@ -149,9 +150,22 @@ const OSRDSimulation = () => {
     setDisplayAllowances(!displayAllowances);
   };
 
+  const handleKey = (e) => {
+    if (e.key === 'i' && e.metaKey) {
+      dispatch(undoSimulation());
+    }
+    if (e.key === 'k' && e.metaKey) {
+      dispatch(redoSimulation());
+    }
+  };
+
   useEffect(() => {
+    // Setup the listener to undi /redo
+    window.addEventListener("keydown", handleKey)
+
     getTimetable();
     return function cleanup() {
+      window.removeEventListener("keydown", handleKey)
       dispatch(updateSelectedProjection(undefined));
       dispatch(updateSimulation({ trains: [] }));
     };
