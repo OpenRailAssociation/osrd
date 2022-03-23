@@ -11,7 +11,6 @@ import fr.sncf.osrd.new_infra.api.reservation.ReservationRoute;
 import fr.sncf.osrd.new_infra.api.signaling.*;
 import fr.sncf.osrd.new_infra.implementation.RJSObjectParsing;
 import fr.sncf.osrd.new_infra_state.api.InfraStateView;
-import fr.sncf.osrd.new_infra_state.api.ReservationRouteState;
 import fr.sncf.osrd.new_infra_state.api.SignalizationStateView;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
@@ -65,7 +64,7 @@ public class BAL3 implements SignalingModule {
             // Finds any free route starting from this signal
             BAL3Route reservedRoute = null;
             for (var route : protectedRoutes)
-                if (openRouteStates.contains(state.getState(route.infraRoute).getSummary())) {
+                if (openRouteStates.contains(state.getState(route.infraRoute).summarize())) {
                     reservedRoute = route;
                     break;
                 }
