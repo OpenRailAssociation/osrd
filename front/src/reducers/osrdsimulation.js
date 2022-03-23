@@ -1,6 +1,7 @@
 import { REDO_SIMULATION, UNDO_SIMULATION } from './osrdsimulation/simulation';
 
 import { LIST_VALUES_NAME_SPACE_TIME } from '../applications/osrd/components/Simulation/consts';
+import { MdFreeBreakfast } from 'react-icons/md';
 import {
   interpolateOnTime,
 } from '../applications/osrd/components/Helpers/ChartHelpers';
@@ -90,10 +91,13 @@ export default function reducer(state = initialState, action) {
         draft.selectedTrain = action.selectedTrain;
         break;
       case UPDATE_SIMULATION:
+      // get only the present, thanks
+        draft.simulation = undoableSimulation(state.simulation, action);
+        break;
       case UNDO_SIMULATION:
       case REDO_SIMULATION:
-      // get only the present, thanks
-      draft.simulation = undoableSimulation(state.simulation, action)
+        draft.mustRedraw = true;
+        draft.simulation = undoableSimulation(state.simulation, action);
         break;
       case UPDATE_SPEEDSPACE_SETTINGS:
         draft.speedSpaceSettings = action.speedSpaceSettings;
