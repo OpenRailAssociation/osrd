@@ -41,4 +41,17 @@ public record NewTrainPath(
                 .map(x -> x.element)
                 .collect(Collectors.toList());
     }
+
+    /** Utility function, returns the last element with offset <= the given offset.
+     * For range objects (route / sections), it returns the element containing the offset. */
+    public static <T> T getLastElementBefore(ImmutableList<LocatedElement<T>> list, double offset) {
+        for (int i = 0; i < list.size(); i++) {
+            var e = list.get(i);
+            if (e.pathOffset > offset && i > 0)
+                return list.get(i - 1).element;
+            if (e.pathOffset >= offset)
+                return e.element;
+        }
+        return list.get(list.size() - 1).element;
+    }
 }

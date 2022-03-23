@@ -15,6 +15,8 @@ import com.google.common.graph.Traverser;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.reservation.DiDetector;
+import fr.sncf.osrd.new_infra.api.signaling.SignalingInfra;
+import fr.sncf.osrd.new_infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.*;
 import fr.sncf.osrd.new_infra.implementation.tracks.undirected.*;
 import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
@@ -253,5 +255,13 @@ public class InfraHelpers {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    /** Returns the signaling route with the given ID. */
+    public static SignalingRoute getSignalingRoute(SignalingInfra infra, String id) {
+        var reservationRoute = infra.getReservationRouteMap().get(id);
+        assert reservationRoute != null;
+        return infra.getRouteMap().get(reservationRoute).stream()
+                .findFirst().orElseThrow();
     }
 }

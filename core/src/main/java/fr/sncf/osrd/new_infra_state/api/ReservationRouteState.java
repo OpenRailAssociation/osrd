@@ -15,7 +15,7 @@ public interface ReservationRouteState {
     }
 
     /** Returns a summary of the state of the route */
-    Summary getSummary();
+    Summary summarize();
 
     /** Returns the train associated with the route */
     ReservationTrain getTrain();
