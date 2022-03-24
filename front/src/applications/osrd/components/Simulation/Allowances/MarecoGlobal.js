@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import { useTranslation } from 'react-i18next';
-import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
+import React, { useEffect, useState } from 'react';
 import { get, patch } from 'common/requests';
-import { FaTrash } from 'react-icons/fa';
-import { useSelector, useDispatch } from 'react-redux';
 import { setFailure, setSuccess } from 'reducers/main.ts';
 import { updateMustRedraw, updateSimulation } from 'reducers/osrdsimulation';
+import { useDispatch, useSelector } from 'react-redux';
+
+import { FaTrash } from 'react-icons/fa';
+import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
+import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 
 const trainscheduleURI = '/train_schedule/';
 
@@ -16,8 +17,9 @@ export default function MarecoGlobal(props) {
     trainDetail, TYPES_UNITS,
   } = props;
   const {
-    selectedProjection, selectedTrain, simulation,
+    selectedProjection, selectedTrain,
   } = useSelector((state) => state.osrdsimulation);
+  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const { t } = useTranslation(['allowances']);
   const dispatch = useDispatch();
   const [value, setValue] = useState({

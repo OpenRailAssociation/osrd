@@ -1,28 +1,35 @@
-import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
 import * as d3 from 'd3';
-import { useSelector, useDispatch } from 'react-redux';
-import { useTranslation } from 'react-i18next';
+
 import { MdContentCopy, MdDelete } from 'react-icons/md';
-import { GiPathDistance } from 'react-icons/gi';
-import { get, post, deleteRequest } from 'common/requests';
+import React, { useEffect, useState } from 'react';
+import { deleteRequest, get, post } from 'common/requests';
+import { setFailure, setSuccess } from 'reducers/main.ts';
 import {
-  updateContextMenu, updateAllowancesSettings, updateSimulation, updateSelectedProjection,
-  updateSelectedTrain, updateMustRedraw,
+  updateAllowancesSettings,
+  updateContextMenu,
+  updateMustRedraw,
+  updateSelectedProjection,
+  updateSelectedTrain,
+  updateSimulation,
 } from 'reducers/osrdsimulation';
-import { setSuccess, setFailure } from 'reducers/main.ts';
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import { useDispatch, useSelector } from 'react-redux';
+
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
-import trainNameWithNum from 'applications/osrd/components/AddTrainSchedule/trainNameHelper';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
+import { GiPathDistance } from 'react-icons/gi';
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import PropTypes from 'prop-types';
+import trainNameWithNum from 'applications/osrd/components/AddTrainSchedule/trainNameHelper';
+import { useTranslation } from 'react-i18next';
 
 const TRAINSCHEDULE_URI = '/train_schedule/';
 
 export default function ContextMenu(props) {
   const { getTimetable } = props;
   const {
-    contextMenu, allowancesSettings, selectedTrain, simulation,
+    contextMenu, allowancesSettings, selectedTrain,
   } = useSelector((state) => state.osrdsimulation);
+  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const { t } = useTranslation(['translation', 'simulation', 'osrdconf', 'allowances']);
   const dispatch = useDispatch();
   const [goUpdate, setGoUpdate] = useState(false);

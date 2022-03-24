@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { updateTimePosition, updateIsPlaying } from 'reducers/osrdsimulation';
-import { datetime2time, time2datetime, sec2datetime } from 'utils/timeManipulation';
 import {
-  FaPause, FaPlay, FaBackward, FaStop,
+  FaBackward,
+  FaPause,
+  FaPlay,
+  FaStop,
 } from 'react-icons/fa';
+import React, { useState } from 'react';
+import { datetime2time, sec2datetime, time2datetime } from 'utils/timeManipulation';
+import { updateIsPlaying, updateTimePosition } from 'reducers/osrdsimulation';
+import { useDispatch, useSelector } from 'react-redux';
+
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 
 // transform a speed ratio (X2 X10 X20, etc.) to interval time & step to bypass
@@ -16,7 +20,8 @@ const factor2ms = (factor) => {
 
 export default function TimeButtons() {
   const dispatch = useDispatch();
-  const { timePosition, simulation, selectedTrain, stickyBar } = useSelector((state) => state.osrdsimulation);
+  const { timePosition, selectedTrain, stickyBar } = useSelector((state) => state.osrdsimulation);
+  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const [playInterval, setPlayInterval] = useState(undefined);
   const [playReverse, setPlayReverse] = useState(false);
   const [simulationSpeed, setSimulationSpeed] = useState(1);

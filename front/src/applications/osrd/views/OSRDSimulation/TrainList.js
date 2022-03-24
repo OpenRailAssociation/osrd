@@ -1,18 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import { useSelector, useDispatch } from 'react-redux';
-import nextId from 'react-id-generator';
-import { useTranslation } from 'react-i18next';
+import React, { useEffect, useState } from 'react';
 import {
-  time2datetime, sec2time, sec2datetime, time2sec,
+  sec2datetime,
+  sec2time,
+  time2datetime,
+  time2sec,
 } from 'utils/timeManipulation';
 import { updateMustRedraw, updateSelectedTrain, updateSimulation } from 'reducers/osrdsimulation';
+import { useDispatch, useSelector } from 'react-redux';
+
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import TrainListModal from 'applications/osrd/components/TrainList/TrainListModal';
 import { IoMdEye } from 'react-icons/io';
-import { useDebounce } from 'utils/helpers';
-import { timeShiftTrain } from 'applications/osrd/components/Helpers/ChartHelpers';
+import PropTypes from 'prop-types';
+import TrainListModal from 'applications/osrd/components/TrainList/TrainListModal';
 import { changeTrain } from 'applications/osrd/components/TrainList/TrainListHelpers';
+import nextId from 'react-id-generator';
+import { timeShiftTrain } from 'applications/osrd/components/Helpers/ChartHelpers';
+import { useDebounce } from 'utils/helpers';
+import { useTranslation } from 'react-i18next';
 
 const InputName = (props) => {
   const {
@@ -63,8 +67,9 @@ const InputTime = (props) => {
 export default function TrainsList(props) {
   const { toggleTrainList } = props;
   const {
-    selectedProjection, selectedTrain, simulation,
+    selectedProjection, selectedTrain,
   } = useSelector((state) => state.osrdsimulation);
+  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
   const [formattedList, setFormattedList] = useState(null);
   const [filter, setFilter] = useState('');

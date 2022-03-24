@@ -1,11 +1,12 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
-import nextId from 'react-id-generator';
 import PropTypes from 'prop-types';
+import React from 'react';
+import nextId from 'react-id-generator';
+import { useSelector } from 'react-redux';
 
 export default function OPModal(props) {
   const { values, setValues, fromTo } = props;
-  const { selectedTrain, simulation } = useSelector((state) => state.osrdsimulation);
+  const { selectedTrain } = useSelector((state) => state.osrdsimulation);
+  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   return (
     <table className="table table-condensed table-hover">
       <thead>

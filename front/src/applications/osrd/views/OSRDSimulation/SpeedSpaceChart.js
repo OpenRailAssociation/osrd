@@ -1,21 +1,25 @@
-import React, { useState, useEffect, useRef } from 'react';
-import PropTypes from 'prop-types';
-import { useSelector, useDispatch } from 'react-redux';
 import * as d3 from 'd3';
-import { LIST_VALUES_NAME_SPEED_SPACE } from 'applications/osrd/components/Simulation/consts';
+
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  defineLinear, handleWindowResize, mergeDatasAreaConstant,
+  defineLinear,
+  handleWindowResize,
+  mergeDatasAreaConstant,
 } from 'applications/osrd/components/Helpers/ChartHelpers';
-import { updateChartXGEV, updateMustRedraw } from 'reducers/osrdsimulation';
-import defineChart from 'applications/osrd/components/Simulation/defineChart';
-import drawCurve from 'applications/osrd/components/Simulation/drawCurve';
-import drawArea from 'applications/osrd/components/Simulation/drawArea';
 import enableInteractivity, { traceVerticalLine } from 'applications/osrd/components/Simulation/enableInteractivity';
+import { updateChartXGEV, updateMustRedraw } from 'reducers/osrdsimulation';
+import { useDispatch, useSelector } from 'react-redux';
+
 import { CgLoadbar } from 'react-icons/cg';
 import { GiResize } from 'react-icons/gi';
+import { LIST_VALUES_NAME_SPEED_SPACE } from 'applications/osrd/components/Simulation/consts';
+import PropTypes from 'prop-types';
 import SpeedSpaceSettings from 'applications/osrd/components/Simulation/SpeedSpaceSettings/SpeedSpaceSettings';
-import createSlopeCurve from 'applications/osrd/components/Simulation/SpeedSpaceChart/createSlopeCurve';
 import createCurveCurve from 'applications/osrd/components/Simulation/SpeedSpaceChart/createCurveCurve';
+import createSlopeCurve from 'applications/osrd/components/Simulation/SpeedSpaceChart/createSlopeCurve';
+import defineChart from 'applications/osrd/components/Simulation/defineChart';
+import drawArea from 'applications/osrd/components/Simulation/drawArea';
+import drawCurve from 'applications/osrd/components/Simulation/drawCurve';
 
 const CHART_ID = 'SpeedSpaceChart';
 
@@ -42,8 +46,9 @@ export default function SpeedSpaceChart(props) {
   const dispatch = useDispatch();
   const {
     chartXGEV, mustRedraw, positionValues, selectedTrain,
-    simulation, speedSpaceSettings, timePosition,
+    speedSpaceSettings, timePosition,
   } = useSelector((state) => state.osrdsimulation);
+  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const [showSettings, setShowSettings] = useState(false);
   const [rotate, setRotate] = useState(false);
   const [resetChart, setResetChart] = useState(false);

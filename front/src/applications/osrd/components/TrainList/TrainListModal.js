@@ -1,16 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
+import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
+import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
+import PropTypes from 'prop-types';
+import { sec2time } from 'utils/timeManipulation';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { sec2time } from 'utils/timeManipulation';
-import PropTypes from 'prop-types';
-import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
-import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
-import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 
 export default function TrainListModal(props) {
   const { t } = useTranslation(['simulation']);
-  const { simulation } = useSelector((state) => state.osrdsimulation);
+  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const { trainIDX } = props;
   return simulation.trains[trainIDX] ? (
     <ModalSNCF

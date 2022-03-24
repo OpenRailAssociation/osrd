@@ -2,6 +2,7 @@ import './OSRDSimulation.scss';
 import './OSRDSimulation.scss';
 
 import React, { useEffect, useState } from 'react';
+import { redoSimulation, undoSimulation } from '../../../../reducers/osrdsimulation/simulation';
 import {
   updateAllowancesSettings,
   updateConsolidatedSimulation,
@@ -64,8 +65,9 @@ const OSRDSimulation = () => {
     useState(heightOfSpaceCurvesSlopesChart);
 
   const { timetableID } = useSelector((state) => state.osrdconf);
-  const { allowancesSettings, selectedProjection, selectedTrain, simulation, stickyBar } =
+  const { allowancesSettings, selectedProjection, selectedTrain, stickyBar } =
     useSelector((state) => state.osrdsimulation);
+  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
 
 
@@ -85,8 +87,9 @@ const OSRDSimulation = () => {
    * Recover the time table for all the trains
    */
   const getTimetable = async () => {
+
     try {
-      if (!simulation.trains[selectedTrain]) {
+      if (!simulation.present || !simulation.trains[selectedTrain]) {
         dispatch(updateSelectedTrain(0));
       }
       dispatch(updateSimulation({ trains: [] }));
@@ -147,9 +150,22 @@ const OSRDSimulation = () => {
     setDisplayAllowances(!displayAllowances);
   };
 
+  const handleKey = (e) => {
+    if (e.key === 'i' && e.metaKey) {
+      dispatch(undoSimulation());
+    }
+    if (e.key === 'k' && e.metaKey) {
+      dispatch(redoSimulation());
+    }
+  };
+
   useEffect(() => {
+    // Setup the listener to undi /redo
+    window.addEventListener("keydown", handleKey)
+
     getTimetable();
     return function cleanup() {
+      window.removeEventListener("keydown", handleKey)
       dispatch(updateSelectedProjection(undefined));
       dispatch(updateSimulation({ trains: [] }));
     };
@@ -180,6 +196,7 @@ const OSRDSimulation = () => {
     // Store it to allow time->position logic to be hosted by redux
     dispatch(updateConsolidatedSimulation(consolidatedSimulation));
   }, [simulation]);
+
 
   return (
     <>

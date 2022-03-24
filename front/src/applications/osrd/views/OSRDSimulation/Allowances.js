@@ -1,20 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import { useTranslation } from 'react-i18next';
-import nextId from 'react-id-generator';
-import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
-import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
-import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
-import OPModal from 'applications/osrd/components/Simulation/Allowances/OPModal';
-import MarecoGlobal from 'applications/osrd/components/Simulation/Allowances/MarecoGlobal';
-import { useSelector, useDispatch } from 'react-redux';
+import React, { useEffect, useState } from 'react';
 import { get, patch } from 'common/requests';
 import { setFailure, setSuccess } from 'reducers/main.ts';
-import { updateAllowancesSettings, updateSimulation, updateMustRedraw } from 'reducers/osrdsimulation';
-import { FaTrash } from 'react-icons/fa';
+import { updateAllowancesSettings, updateMustRedraw, updateSimulation } from 'reducers/osrdsimulation';
+import { useDispatch, useSelector } from 'react-redux';
+
 import DotsLoader from 'common/DotsLoader/DotsLoader';
+import { FaTrash } from 'react-icons/fa';
+import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import MarecoGlobal from 'applications/osrd/components/Simulation/Allowances/MarecoGlobal';
+import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
+import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
+import OPModal from 'applications/osrd/components/Simulation/Allowances/OPModal';
+import PropTypes from 'prop-types';
+import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
+import nextId from 'react-id-generator';
+import { useTranslation } from 'react-i18next';
 
 const trainscheduleURI = '/train_schedule/';
 
@@ -34,7 +35,8 @@ const EmptyLine = (props) => {
   const {
     allowanceTypes, allowances, setAllowances, setUpdateAllowances,
   } = props;
-  const { selectedTrain, simulation } = useSelector((state) => state.osrdsimulation);
+  const { selectedTrain } = useSelector((state) => state.osrdsimulation);
+  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const allowanceNewDatas = {
     allowance_type: 'construction',
     begin_position: 0,
@@ -183,7 +185,8 @@ const EmptyLine = (props) => {
 const Allowance = (props) => {
   const { data, delAllowance, idx } = props;
   const { t } = useTranslation(['allowances']);
-  const { selectedTrain, simulation } = useSelector((state) => state.osrdsimulation);
+  const { selectedTrain } = useSelector((state) => state.osrdsimulation);
+  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
 
   const position2name = (position) => {
     const place = simulation.trains[selectedTrain].base.stops.find(

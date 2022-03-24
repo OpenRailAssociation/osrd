@@ -53,9 +53,9 @@ export default function SpaceTimeChart(props) {
     positionValues,
     selectedProjection,
     selectedTrain,
-    simulation,
     timePosition,
   } = useSelector((state) => state.osrdsimulation);
+  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const keyValues = ['time', 'position'];
   const [rotate, setRotate] = useState(false);
   const [isResizeActive, setResizeActive] = useState(false);
@@ -116,6 +116,7 @@ export default function SpaceTimeChart(props) {
 
   const drawAllTrains = (reset) => {
     if (mustRedraw) {
+
       const chartLocal = createChart(
         chart,
         CHART_ID,
