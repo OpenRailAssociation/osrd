@@ -7,11 +7,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.new_infra.api.Direction;
-import fr.sncf.osrd.new_infra.api.signaling.SignalingInfra;
-import fr.sncf.osrd.new_infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackLocation;
 import fr.sncf.osrd.new_infra.implementation.signaling.SignalingInfraBuilder;
-import fr.sncf.osrd.new_infra.implementation.signaling.modules.BAL3;
+import fr.sncf.osrd.new_infra.implementation.signaling.modules.bal3.BAL3;
 import fr.sncf.osrd.new_infra_state.api.NewTrainPath;
 import fr.sncf.osrd.new_infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;

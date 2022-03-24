@@ -1,5 +1,6 @@
 package fr.sncf.osrd.new_infra_state.implementation.standalone;
 
+import fr.sncf.osrd.new_infra.api.reservation.DetectionSection;
 import fr.sncf.osrd.new_infra.api.reservation.ReservationRoute;
 import fr.sncf.osrd.new_infra_state.api.DetectionSectionState;
 import fr.sncf.osrd.new_infra_state.api.ReservationTrain;
@@ -9,12 +10,19 @@ public class StandaloneDetectionSectionState implements DetectionSectionState {
     private final Summary summary;
     private final ReservationRoute route;
     private final ReservationTrain occupyingTrain;
+    private final DetectionSection detectionSection;
 
     /** Constructor */
-    public StandaloneDetectionSectionState(Summary summary, ReservationRoute route, ReservationTrain occupyingTrain) {
+    public StandaloneDetectionSectionState(
+            Summary summary,
+            ReservationRoute route,
+            ReservationTrain occupyingTrain,
+            DetectionSection detectionSection
+    ) {
         this.summary = summary;
         this.route = route;
         this.occupyingTrain = occupyingTrain;
+        this.detectionSection = detectionSection;
         assert summary.equals(Summary.FREE) == (occupyingTrain == null)
                 : "occupying train must be null if and only if section is free";
         assert summary.equals(Summary.FREE) == (route == null)
@@ -34,5 +42,10 @@ public class StandaloneDetectionSectionState implements DetectionSectionState {
     @Override
     public ReservationTrain getOccupyingTrain() {
         return occupyingTrain;
+    }
+
+    @Override
+    public DetectionSection getDetectionSection() {
+        return detectionSection;
     }
 }
