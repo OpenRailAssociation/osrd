@@ -127,45 +127,56 @@ public class MarecoAllowance implements Allowance {
         return res;
     }
 
+    private record RangePercentage(AllowanceRange range, double percentage) {
+    }
+
     /**
      * Apply the allowance to the region affected by the allowance.
-     * Split the region into section which can be independently computed.
+     * The region is split in ranges asked by the user and independently computed by increasing allowance value.
      */
     private void applyAllowanceRegion(EnvelopeBuilder builder, Envelope envelopeRegion) {
 
-        // build a list of the positions between ranges
-        var transitions = new HashMap<Double, Double>();
-        transitions.put(ranges.get(0).getBeginPos(), NaN);
-        for (var range : ranges) {
-            transitions.put(range.getEndPos(), NaN);
+        // build an array of the imposed speeds between ranges
+        // every time a range is computed, the imposed left and right speeds are memorized
+        var transitions = new double[ranges.size() + 1];
+        for (int i = 0; i < ranges.size() + 1; i++)
+            transitions[i] = NaN;
+
+        // build an array of (range, percentage) in order to sort the array rangeOrder
+        var rangePercentages = new RangePercentage[ranges.size()];
+        for (var i = 0; i < ranges.size(); i++) {
+            var range = ranges.get(i);
+            var percentage = range.getValue().getAllowancePercentage(
+                    envelopeRegion.getTimeBetween(range.getBeginPos(), range.getEndPos()),
+                    range.getBeginPos() - range.getEndPos()
+            );
+            rangePercentages[i] = new RangePercentage(range, percentage);
         }
 
-        // sort ranges by allowance percentage
-        var sortedRanges = new ArrayList<>(ranges);
-        sortedRanges.sort(Comparator.comparingDouble(range -> range.getValue().getAllowancePercentage(
-                envelopeRegion.getTimeBetween(range.getBeginPos(), range.getEndPos()),
-                range.getBeginPos() - range.getEndPos()
-        )));
+        // the order in which the ranges should be computed
+        // ranges are computed with increasing percentage value
+        var rangeOrder = new Integer[ranges.size()];
+        for (var i = 0; i < ranges.size(); i++)
+            rangeOrder[i] = i;
+        Arrays.sort(rangeOrder, Comparator.comparingDouble(rangeIndex -> rangePercentages[rangeIndex].percentage));
 
-        var i = 0;
-        var allowanceRanges = new ArrayList<Envelope>();
-        for (var range : sortedRanges) {
-            // TODO: replace i by the actual index of the range (position-wise)
-            logger.debug("computing range n°{}", i + 1);
+        var res = new Envelope[ranges.size()];
+
+        // compute ranges one by one with increasing percentage value
+        for (var rangeIndex : rangeOrder) {
+            var range = ranges.get(rangeIndex);
+            logger.debug("computing range n°{}", rangeIndex);
             var envelopeRange = Envelope.make(envelopeRegion.slice(range.getBeginPos(), range.getEndPos()));
-            var imposedBeginSpeed = transitions.get(range.getBeginPos());
-            var imposedEndSpeed = transitions.get(range.getEndPos());
+            var imposedBeginSpeed = transitions[rangeIndex];
+            var imposedEndSpeed = transitions[rangeIndex + 1];
             var allowanceRange =
                     computeAllowanceRange(envelopeRange, range.getValue(), imposedBeginSpeed, imposedEndSpeed);
-            transitions.put(allowanceRange.getBeginPos(), allowanceRange.getBeginSpeed());
-            transitions.put(allowanceRange.getEndPos(), allowanceRange.getEndSpeed());
-            allowanceRanges.add(allowanceRange);
-            i++;
+            transitions[rangeIndex] = allowanceRange.getBeginSpeed();
+            transitions[rangeIndex + 1] = allowanceRange.getEndSpeed();
+            res[rangeIndex] = allowanceRange;
         }
-        // sort allowance ranges by position
-        var sortedAllowanceRanges = new ArrayList<>(allowanceRanges);
-        sortedAllowanceRanges.sort(Comparator.comparingDouble(Envelope::getBeginPos));
-        for (var envelope : sortedAllowanceRanges) {
+
+        for (var envelope : res) {
             builder.addEnvelope(envelope);
         }
     }
