@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.Helpers;
-import fr.sncf.osrd.new_infra.implementation.signaling.modules.BAL3;
+import fr.sncf.osrd.new_infra.implementation.signaling.modules.bal3.BAL3;
 import fr.sncf.osrd.new_infra.implementation.signaling.SignalingInfraBuilder;
 import org.junit.jupiter.api.Test;
 import java.util.HashSet;

@@ -1,11 +1,13 @@
 package fr.sncf.osrd.new_infra.implementation.tracks.directed;
 
 
+import com.google.common.base.MoreObjects;
 import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackEdge;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackLocation;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackObject;
 import fr.sncf.osrd.utils.DoubleRangeMap;
+import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -58,6 +60,16 @@ public class TrackRangeView {
     public DoubleRangeMap getSpeedSections() {
         var originalSpeedSections = track.getEdge().getSpeedSections().get(track.getDirection());
         return convertMap(originalSpeedSections);
+    }
+
+    @Override
+    @ExcludeFromGeneratedCodeCoverage
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("begin", begin)
+                .add("end", end)
+                .add("track", track)
+                .toString();
     }
 
     /** Returns the gradients with positions referring to the track range (0 = directed start of the range) */

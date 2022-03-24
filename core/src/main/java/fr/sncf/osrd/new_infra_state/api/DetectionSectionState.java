@@ -1,5 +1,6 @@
 package fr.sncf.osrd.new_infra_state.api;
 
+import fr.sncf.osrd.new_infra.api.reservation.DetectionSection;
 import fr.sncf.osrd.new_infra.api.reservation.ReservationRoute;
 
 /** Encodes the state of the detection section */
@@ -17,4 +18,7 @@ public interface DetectionSectionState {
 
     /** Returns the train which currently occupies the detection section */
     ReservationTrain getOccupyingTrain();
+
+    /** Returns the immutable detection section object */
+    DetectionSection getDetectionSection();
 }

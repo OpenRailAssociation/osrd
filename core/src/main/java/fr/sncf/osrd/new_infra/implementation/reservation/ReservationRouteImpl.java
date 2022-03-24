@@ -9,9 +9,10 @@ import fr.sncf.osrd.new_infra.api.reservation.ReservationRoute;
 import fr.sncf.osrd.new_infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 public class ReservationRouteImpl implements ReservationRoute {
-    private ImmutableSet<ReservationRoute> conflictingRoutes;
+    private ImmutableSet<ReservationRoute> conflictingRoutes = ImmutableSet.of();
     private final ImmutableList<DiDetector> detectorPath;
     private final ImmutableList<Detector> releasePoints;
     public final String id;
@@ -25,6 +26,8 @@ public class ReservationRouteImpl implements ReservationRoute {
                 .add("releasePoints", releasePoints)
                 .add("id", id)
                 .add("trackRanges", trackRanges)
+                .add("conflictingRoutes", conflictingRoutes.stream()
+                        .map(ReservationRoute::getID).collect(Collectors.toList()))
                 .toString();
     }
 

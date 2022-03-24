@@ -8,7 +8,7 @@ import fr.sncf.osrd.new_infra.api.reservation.DetectionSection;
 import fr.sncf.osrd.new_infra.api.reservation.ReservationRoute;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackLocation;
 import fr.sncf.osrd.new_infra.implementation.signaling.SignalingInfraBuilder;
-import fr.sncf.osrd.new_infra.implementation.signaling.modules.BAL3;
+import fr.sncf.osrd.new_infra.implementation.signaling.modules.bal3.BAL3;
 import fr.sncf.osrd.new_infra_state.api.DetectionSectionState;
 import fr.sncf.osrd.new_infra_state.api.InfraStateView;
 import fr.sncf.osrd.new_infra_state.api.NewTrainPath;
@@ -123,6 +123,33 @@ public class StandaloneStateTests {
                     position >= 90 - 50,
                     isSectionOccupied(infraState, path, 2)
             );
+        }
+    }
+
+    @Test
+    public void conflictingRoutesTests() {
+        var rjsInfra = makeSingleTrackRJSInfra();
+        var infra = SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(new BAL3()));
+        var track = infra.getTrackSection("track");
+        var path = TrainPathBuilder.from(
+                List.of(
+                        getSignalingRoute(infra, "route_forward_first_half"),
+                        getSignalingRoute(infra, "route_forward_second_half")
+                ),
+                new TrackLocation(track, 0),
+                new TrackLocation(track, 100)
+        );
+        var length = 15;
+        var infraState = StandaloneState.from(path, length);
+
+        for (double position = 0; position <= path.length(); position += 1) {
+            infraState.moveTrain(position);
+            for (var r : infra.getRouteMap().values())
+                if (infraState.getState(r.getInfraRoute()).summarize().equals(ReservationRouteState.Summary.OCCUPIED))
+                    for (var otherRoute : r.getInfraRoute().getConflictingRoutes()) {
+                        var otherState = infraState.getState(otherRoute).summarize();
+                        assert otherState.equals(ReservationRouteState.Summary.CONFLICT);
+                    }
         }
     }
 

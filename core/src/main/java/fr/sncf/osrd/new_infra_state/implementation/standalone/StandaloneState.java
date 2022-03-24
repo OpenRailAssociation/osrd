@@ -81,24 +81,40 @@ public class StandaloneState implements InfraStateView {
     @Override
     public DetectionSectionState getState(DetectionSection section) {
         if (isElementFree(sectionOccupationRanges, section))
-            return new StandaloneDetectionSectionState(DetectionSectionState.Summary.FREE, null, null);
+            return new StandaloneDetectionSectionState(
+                    DetectionSectionState.Summary.FREE,
+                    null,
+                    null,
+                    section
+            );
         else
             return new StandaloneDetectionSectionState(
                     DetectionSectionState.Summary.OCCUPIED,
                     NewTrainPath.getLastElementBefore(trainPath.routePath(), currentOffset).getInfraRoute(),
-                    new StandaloneReservationTrain()
+                    new StandaloneReservationTrain(),
+                    section
             );
     }
 
     @Override
     public ReservationRouteState getState(ReservationRoute route) {
-        if (isElementFree(routeOccupationRanges, route))
-            return new StandaloneReservationRouteState(ReservationRouteState.Summary.FREE, null);
-        else
+        if (!isElementFree(routeOccupationRanges, route)) {
             return new StandaloneReservationRouteState(
                     ReservationRouteState.Summary.OCCUPIED,
-                    new StandaloneReservationTrain()
+                    new StandaloneReservationTrain(),
+                    route
             );
+        } else {
+            for (var otherRoute : route.getConflictingRoutes()) {
+                if (!isElementFree(routeOccupationRanges, otherRoute))
+                    return new StandaloneReservationRouteState(
+                            ReservationRouteState.Summary.CONFLICT,
+                            new StandaloneReservationTrain(),
+                            otherRoute
+                    );
+            }
+            return new StandaloneReservationRouteState(ReservationRouteState.Summary.FREE, null, route);
+        }
     }
 
     /** Make a multimap of double -> T,

@@ -21,4 +21,7 @@ public interface Signal<StateT extends SignalState> {
 
     /** Returns a list of routes whose state change triggers an update */
     Set<? extends ReservationRoute> getRouteDependencies();
+
+    /** Returns the signal ID */
+    String getID();
 }

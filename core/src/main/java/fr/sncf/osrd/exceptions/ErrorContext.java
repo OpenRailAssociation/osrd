@@ -1,5 +1,6 @@
 package fr.sncf.osrd.exceptions;
 
+import com.squareup.moshi.Json;
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
 
 public class ErrorContext {
@@ -8,6 +9,7 @@ public class ErrorContext {
             PolymorphicJsonAdapterFactory.of(ErrorContext.class, "type")
                     .withSubtype(Train.class, "train")
                     .withSubtype(Allowance.class, "allowance")
+                    .withSubtype(Signal.class, "signal")
     );
 
     public static class Train extends ErrorContext {
@@ -23,6 +25,15 @@ public class ErrorContext {
 
         public Allowance(int index) {
             this.index = index;
+        }
+    }
+
+    public static class Signal extends ErrorContext {
+        @Json(name = "signal_id")
+        public final String signalID;
+
+        public Signal(String signalID) {
+            this.signalID = signalID;
         }
     }
 }

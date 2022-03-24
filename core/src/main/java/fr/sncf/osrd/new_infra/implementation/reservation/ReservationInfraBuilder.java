@@ -143,8 +143,12 @@ public class ReservationInfraBuilder {
     /** Creates a set of detection section present in the route */
     private Set<DetectionSection> sectionsOnRoute(RJSRoute route) {
         var res = new HashSet<DetectionSection>();
-        for (var d : detectorsOnRoute(route))
+
+        var detectors = detectorsOnRoute(route);
+        for (int i = 0; i < detectors.size() - 1; i++) {
+            var d = detectors.get(i);
             res.add(d.getDetector().getNextDetectionSection(d.getDirection()));
+        }
         return res;
     }
 
