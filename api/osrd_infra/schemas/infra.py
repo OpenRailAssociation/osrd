@@ -177,6 +177,9 @@ class Signal(BaseObjectTrait, TrackLocationTrait):
     comment: Optional[str]
     physical_organization_group: Optional[str]
     responsible_group: Optional[str]
+    label: Optional[str]
+    installation_type: Optional[str]
+    value: Optional[str]
 
 
 class BufferStop(BaseObjectTrait, TrackLocationTrait):
