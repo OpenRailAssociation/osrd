@@ -68,8 +68,9 @@ const Map = (props) => {
     viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings,
   } = useSelector((state) => state.map);
   const {
-    isPlaying, selectedTrain, simulation, positionValues, timePosition,
+    isPlaying, selectedTrain, positionValues, timePosition,
   } = useSelector((state) => state.osrdsimulation);
+  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const { t } = useTranslation(['map-settings']);
   const [showSearch, setShowSearch] = useState(false);
   const [showSettings, setShowSettings] = useState(false);

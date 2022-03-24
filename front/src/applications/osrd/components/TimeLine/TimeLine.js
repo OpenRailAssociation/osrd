@@ -1,11 +1,14 @@
-import React, {
-  useState, useEffect, useRef,
-} from 'react';
-import { useSelector, useDispatch } from 'react-redux';
 import * as d3 from 'd3';
-import { sec2datetime, time2datetime } from 'utils/timeManipulation';
+
+import React, {
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { getDirection, gridX } from 'applications/osrd/components/Helpers/ChartHelpers';
+import { sec2datetime, time2datetime } from 'utils/timeManipulation';
 import { updateChart, updateMustRedraw } from 'reducers/osrdsimulation';
+import { useDispatch, useSelector } from 'react-redux';
 
 const drawTrains = (trains, selectedTrain, xScale, svg, height) => {
   trains.forEach((train, idx) => {
@@ -28,8 +31,9 @@ const drawTrains = (trains, selectedTrain, xScale, svg, height) => {
 
 export default function TimeLine() {
   const {
-    chart, selectedTrain, simulation, timePosition,
+    chart, selectedTrain, timePosition,
   } = useSelector((state) => state.osrdsimulation);
+  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
   const ref = useRef();
   const [svgState, setSvg] = useState(undefined);

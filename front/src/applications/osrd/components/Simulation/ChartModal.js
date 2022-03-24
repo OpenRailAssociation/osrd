@@ -1,16 +1,19 @@
+import 'applications/osrd/components/Simulation/ChartModal.scss';
+
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+
 import PropTypes from 'prop-types';
-import { useTranslation } from 'react-i18next';
-import { updateMustRedraw } from 'reducers/osrdsimulation';
-import 'applications/osrd/components/Simulation/ChartModal.scss';
 import { changeTrain } from 'applications/osrd/components/TrainList/TrainListHelpers';
+import { updateMustRedraw } from 'reducers/osrdsimulation';
+import { useTranslation } from 'react-i18next';
 
 const ChartModal = (props) => {
   const {
     type, setShowModal, trainName, offsetTimeByDragging,
   } = props;
-  const { selectedTrain, simulation } = useSelector((state) => state.osrdsimulation);
+  const { selectedTrain } = useSelector((state) => state.osrdsimulation);
+  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
   const { t } = useTranslation(['simulation']);
   const [offset, setOffset] = useState('');

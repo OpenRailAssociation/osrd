@@ -1,14 +1,15 @@
-import React from 'react';
-import PropTypes from 'prop-types';
 import { Marker } from 'react-map-gl';
+import PropTypes from 'prop-types';
+import React from 'react';
 import { datetime2time } from 'utils/timeManipulation';
 import { useSelector } from 'react-redux';
 
 const TrainHoverPosition = (props) => {
   const { point } = props;
   const {
-    selectedTrain, simulation, allowancesSettings,
+    selectedTrain, allowancesSettings,
   } = useSelector((state) => state.osrdsimulation);
+  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const trainID = simulation.trains[selectedTrain].id;
 
   return (

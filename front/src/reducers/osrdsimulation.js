@@ -1,9 +1,13 @@
+import { REDO_SIMULATION, UNDO_SIMULATION } from './osrdsimulation/simulation';
+
 import { LIST_VALUES_NAME_SPACE_TIME } from '../applications/osrd/components/Simulation/consts';
+import { MdFreeBreakfast } from 'react-icons/md';
 import {
-interpolateOnTime,
+  interpolateOnTime,
 } from '../applications/osrd/components/Helpers/ChartHelpers';
-/* eslint-disable default-case */
 import produce from 'immer';
+/* eslint-disable default-case */
+import undoableSimulation from './osrdsimulation/simulation';
 
 // Action Types
 export const UPDATE_CHART = 'osrdsimu/UPDATE_CHART';
@@ -41,9 +45,6 @@ export const initialState = {
   },
   selectedProjection: undefined,
   selectedTrain: 0,
-  simulation: {
-    trains: [],
-  },
   speedSpaceSettings: {
     altitude: false,
     curves: false,
@@ -57,6 +58,7 @@ export const initialState = {
 
 export default function reducer(state = initialState, action) {
   return produce(state, (draft) => {
+    if (!state.simulation) draft.simulation = undoableSimulation(state.simulation, action)
     switch (action.type) {
       case UPDATE_CHART:
         draft.chart = action.chart;
@@ -89,7 +91,13 @@ export default function reducer(state = initialState, action) {
         draft.selectedTrain = action.selectedTrain;
         break;
       case UPDATE_SIMULATION:
-        draft.simulation = action.simulation;
+      // get only the present, thanks
+        draft.simulation = undoableSimulation(state.simulation, action);
+        break;
+      case UNDO_SIMULATION:
+      case REDO_SIMULATION:
+        draft.mustRedraw = true;
+        draft.simulation = undoableSimulation(state.simulation, action);
         break;
       case UPDATE_SPEEDSPACE_SETTINGS:
         draft.speedSpaceSettings = action.speedSpaceSettings;
@@ -104,11 +112,9 @@ export default function reducer(state = initialState, action) {
         draft.consolidatedSimulation = action.consolidatedSimulation;
         break;
       case UPDATE_TIME_POSITION_VALUES: {
-        const currentTimePosition = state.timePosition
         draft.timePosition = action.timePosition;
         // position value will be computed depending on current data simulation
         // eslint-disable-next-line no-case-declarations
-
         const currentTrainSimulation = state.consolidatedSimulation.find(consolidatedSimulation => consolidatedSimulation.trainNumber === state.selectedTrain)
         const positionsValues = interpolateOnTime(
           currentTrainSimulation,
@@ -116,14 +122,7 @@ export default function reducer(state = initialState, action) {
           LIST_VALUES_NAME_SPACE_TIME,
           action.timePosition,
         );
-
         draft.positionValues = positionsValues
-
-        // ADAPT Simulation
-        //console.log(currentTimePosition)
-        //console.log(action.timePosition)
-
-        //draft.positionValues = action.positionValues ? action.positionValues : positionsValues;
         break;
       }
     }
