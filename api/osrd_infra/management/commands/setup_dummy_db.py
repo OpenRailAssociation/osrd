@@ -45,8 +45,8 @@ class Command(BaseCommand):
             speed_sections=[],
             catenary_sections=[],
             signaling_sections=[],
-            geo=LineString(coordinates=[(0, 0), (1000, 1000)]),
-            sch=LineString(coordinates=[(0, 0), (1000, 1000)]),
+            geo=LineString(coordinates=[(0, 0), (1, 1)]),
+            sch=LineString(coordinates=[(0, 0), (1, 1)]),
         )
         track_section.into_model(infra).save()
 
@@ -73,8 +73,8 @@ class Command(BaseCommand):
             path=[
                 DirectionalTrackRange(track=track_section.ref(), begin=0, end=1000, direction=Direction.START_TO_STOP)
             ],
-            geo=LineString(coordinates=[(0, 0), (1000, 1000)]),
-            sch=LineString(coordinates=[(0, 0), (1000, 1000)]),
+            geo=LineString(coordinates=[(0, 0), (1, 1)]),
+            sch=LineString(coordinates=[(0, 0), (1, 1)]),
         )
         route.into_model(infra).save()
         print(infra.id)

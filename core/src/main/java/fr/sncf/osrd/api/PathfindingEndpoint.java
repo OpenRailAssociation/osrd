@@ -46,6 +46,12 @@ public abstract class PathfindingEndpoint implements Take {
         @Json(name = "expected_version")
         public final String expectedVersion;
 
+        PathfindingRequest(PathfindingWaypoint[][] waypoints, String infra) {
+            this.waypoints = waypoints;
+            this.infra = infra;
+            this.expectedVersion = null;
+        }
+
         PathfindingRequest(PathfindingWaypoint[][] waypoints, String infra, String expectedVersion) {
             this.waypoints = waypoints;
             this.infra = infra;
