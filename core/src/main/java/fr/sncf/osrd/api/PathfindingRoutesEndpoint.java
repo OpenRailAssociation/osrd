@@ -82,13 +82,11 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
             var request = adapterRequest.fromJson(body);
             if (request == null)
                 return new RsWithStatus(new RsText("missing request body"), 400);
-            if (request.version < 0)
-                return new RsWithStatus(new RsText("missing infra version"), 400);
 
             var reqWaypoints = request.waypoints;
 
             // load infra
-            var infra = infraManager.load(request.infra, request.version);
+            var infra = infraManager.load(request.infra, request.expectedVersion);
 
             // parse the waypoints
             var waypoints = (ArrayList<RouteLocation>[]) new ArrayList[reqWaypoints.length];

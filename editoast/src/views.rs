@@ -1,6 +1,6 @@
 use crate::generate;
 use crate::infra_cache::InfraCache;
-use crate::models::{CreateInfra, DBConnection, GeneratedInfra, Infra};
+use crate::models::{CreateInfra, DBConnection, Infra};
 use crate::railjson::operation::Operation;
 use crate::response::ApiResult;
 use rocket::serde::json::Json;
@@ -71,14 +71,10 @@ async fn edit_infra(
         .await
         .expect("Update generated data failed");
 
-    // Bump generated infra version to the infra version
+    // Bump infra generated version to the infra version
     connection
-        .run(move |c| {
-            let mut gen_infra = GeneratedInfra::retrieve(c, infra.id);
-            gen_infra.version = infra.version;
-            gen_infra.save(c);
-        })
-        .await;
+        .run(move |c| infra.bump_generated_version(c))
+        .await?;
 
     // Check for warnings and errors
     Ok(Json(String::from("ok")))

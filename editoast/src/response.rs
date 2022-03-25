@@ -18,6 +18,8 @@ pub trait ApiError: Error + Send {
     fn get_type(&self) -> &'static str;
 }
 
+impl Error for Box<dyn ApiError> {}
+
 impl From<Box<dyn ApiError>> for Custom<Json<ResultError>> {
     fn from(api_err: Box<dyn ApiError>) -> Self {
         Custom(

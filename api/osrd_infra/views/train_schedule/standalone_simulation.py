@@ -53,7 +53,7 @@ def create_backend_request_payload(train_schedules: List[TrainScheduleModel]):
 
     return {
         "infra": train_schedules[0].timetable.infra.pk,
-        "version": train_schedules[0].timetable.infra.version,
+        "expected_version": train_schedules[0].timetable.infra.version,
         "rolling_stocks": [rs.to_railjson() for rs in rolling_stocks],
         "trains_path": {"route_paths": path_payload["route_paths"]},
         "train_schedules": schedules_payload,

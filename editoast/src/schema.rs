@@ -2,14 +2,8 @@ table! {
     osrd_infra_infra {
         id -> Integer,
         name -> Text,
-        version -> BigInt,
-    }
-}
-
-table! {
-    osrd_infra_generatedinfra (infra_id) {
-        infra_id -> Integer,
-        version -> BigInt,
+        version -> Text,
+        generated_version -> Text,
     }
 }
 

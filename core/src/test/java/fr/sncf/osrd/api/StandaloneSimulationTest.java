@@ -68,7 +68,7 @@ class StandaloneSimulationTest extends ApiTest {
                 new RJSTrainStop[] { RJSTrainStop.lastStop(0.1) }));
         var query = new StandaloneSimulationRequest(
                 "tiny_infra/infra.json",
-                1,
+                "1",
                 2,
                 getExampleRollingStocks(),
                 trainSchedules,
@@ -109,7 +109,7 @@ class StandaloneSimulationTest extends ApiTest {
 
         var query = new StandaloneSimulationRequest(
                 "tiny_infra/infra.json",
-                1,
+                "1",
                 2,
                 getExampleRollingStocks(),
                 trainSchedules,
@@ -145,7 +145,7 @@ class StandaloneSimulationTest extends ApiTest {
 
         var query = new StandaloneSimulationRequest(
                 "tiny_infra/infra.json",
-                1,
+                "1",
                 2,
                 getExampleRollingStocks(),
                 trains,
@@ -180,7 +180,7 @@ class StandaloneSimulationTest extends ApiTest {
 
         var query = new StandaloneSimulationRequest(
                 "tiny_infra/infra.json",
-                1,
+                "1",
                 2,
                 getExampleRollingStocks(),
                 trains,
