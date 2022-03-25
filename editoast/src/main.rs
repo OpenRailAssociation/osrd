@@ -67,7 +67,7 @@ async fn runserver(args: RunserverArgs, pg_config: PostgresConfig) -> Result<(),
     rocket::custom(config)
         .attach(DBConnection::fairing())
         .manage(infra_caches)
-        .mount(args.get_root_url(), views::routes())
+        .mount("/", views::routes())
         .launch()
         .await?;
 
