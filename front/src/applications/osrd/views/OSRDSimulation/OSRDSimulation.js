@@ -65,7 +65,7 @@ const OSRDSimulation = () => {
     useState(heightOfSpaceCurvesSlopesChart);
 
   const { timetableID } = useSelector((state) => state.osrdconf);
-  const { allowancesSettings, selectedProjection, selectedTrain, stickyBar } =
+  const { allowancesSettings, selectedProjection, departureArrivalTimes, selectedTrain, stickyBar } =
     useSelector((state) => state.osrdsimulation);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
@@ -225,16 +225,14 @@ const OSRDSimulation = () => {
               >
                 <div className="mr-2">
                   {t('simulation:train')}
-                  <span className="ml-2">{simulation.trains[selectedTrain].name}</span>
+                  <span className="ml-2">{departureArrivalTimes[selectedTrain].name}</span>
                 </div>
                 <div className="small mr-1">
-                  {sec2time(simulation.trains[selectedTrain].base.stops[0].time)}
+                  {sec2time(departureArrivalTimes[selectedTrain].departure)}
                 </div>
                 <div className="small">
                   {sec2time(
-                    simulation.trains[selectedTrain].base.stops[
-                      simulation.trains[selectedTrain].base.stops.length - 1
-                    ].time
+                    departureArrivalTimes[selectedTrain].arrival
                   )}
                 </div>
                 <div className="ml-auto d-flex align-items-center">

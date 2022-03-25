@@ -4,9 +4,11 @@ import { getDirection, timeShiftTrain } from 'applications/osrd/components/Helpe
 import { updateContextMenu, updateMustRedraw, updateSelectedTrain, updateSimulation, } from 'reducers/osrdsimulation';
 
 import React from 'react';
+import { departureArrivalTimes } from '../../../../../reducers/osrdsimulation';
 import drawArea from 'applications/osrd/components/Simulation/drawArea';
 import drawCurve from 'applications/osrd/components/Simulation/drawCurve';
 import drawText from 'applications/osrd/components/Simulation/drawText';
+import { updateDepartureArrivalTimes } from '../../../../../reducers/osrdsimulation';
 
 export default function drawTrain(
   chart,
@@ -23,20 +25,24 @@ export default function drawTrain(
   simulation
 ) {
 
+  console.log(simulation.trains[0].base.stops[0].time)
+
   const groupID = `spaceTime-${dataSimulation.trainNumber}`;
 
   const initialDrag = rotate ? chart.y.invert(0) : chart.x.invert(0);
-  let dragValue = 0;
 
   let dragFullOffset = 0;
+
+  const getDragOffsetValue = (offset) => (rotate
+    ? Math.floor((chart.y.invert(offset) - initialDrag) / 1000)
+    : Math.floor((chart.x.invert(offset) - initialDrag) / 1000));
+
   /**
    * Compute, in sceonds, the offset to drill down to the parent through setDragOffset passed hook
    *
    */
   const dragTimeOffset = (offset) => {
-    const value = rotate
-      ? Math.floor((chart.y.invert(offset) - initialDrag) / 1000)
-      : Math.floor((chart.x.invert(offset) - initialDrag) / 1000);
+    const value = getDragOffsetValue(offset)
     setDragOffset(value);
   };
 
@@ -50,10 +56,18 @@ export default function drawTrain(
     const translation = rotate ? `0,${offset}` : `${offset},0`;
     d3.select(`#${groupID}`).attr('transform', `translate(${translation})`);
   };
+  let debounceTimeoutId;
+  function debounceUpdateDepartureArrivalTimes(computedDepartureArrivalTimes, interval) {
+    clearTimeout(debounceTimeoutId);
+    debounceTimeoutId = setTimeout(() => {
+      dispatch(updateDepartureArrivalTimes(computedDepartureArrivalTimes));
+    }, interval);
+  }
 
   const drag = d3
     .drag()
     .on('end', () => {
+      dragTimeOffset(dragFullOffset, true);
       setDragEnding(true);
       dispatch(updateMustRedraw(true));
     })
@@ -62,9 +76,11 @@ export default function drawTrain(
       dispatch(updateSelectedTrain(dataSimulation.trainNumber));
     })
     .on('drag', () => {
-      const dragSingleOffset = rotate ? d3.event.dy : d3.event.dx;
       dragFullOffset += rotate ? d3.event.dy : d3.event.dx;
-      dragTimeOffset(dragSingleOffset, true);
+      const value = getDragOffsetValue(dragFullOffset)
+      console.log("VALUE ON DRAG", value)
+      const newDepartureArrivalTimes = departureArrivalTimes(simulation, value)
+      debounceUpdateDepartureArrivalTimes(newDepartureArrivalTimes, 15);
       applyTrainCurveTranslation(dragFullOffset);
     });
 
@@ -89,7 +105,7 @@ export default function drawTrain(
   // Test direction to avoid displaying block
   const direction = getDirection(dataSimulation.headPosition);
 
-  if (direction) {
+  if (direction && allowancesSettings) {
     if (
       allowancesSettings[dataSimulation.id].baseBlocks ||
       !dataSimulation.eco_routeBeginOccupancy
@@ -173,7 +189,7 @@ export default function drawTrain(
     }
   }
 
-  if (allowancesSettings[dataSimulation.id].base) {
+  if (allowancesSettings && allowancesSettings[dataSimulation.id].base) {
     dataSimulation.tailPosition.forEach((tailPositionSection) =>
       drawCurve(
         chart,
@@ -217,7 +233,7 @@ export default function drawTrain(
       )
     );
   }
-  if (dataSimulation.eco_headPosition && allowancesSettings[dataSimulation.id].eco) {
+  if (allowancesSettings && dataSimulation.eco_headPosition && allowancesSettings[dataSimulation.id].eco) {
     dataSimulation.eco_headPosition.forEach((tailPositionSection) =>
       drawCurve(
         chart,

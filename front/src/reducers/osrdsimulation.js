@@ -5,6 +5,7 @@ import { MdFreeBreakfast } from 'react-icons/md';
 import {
   interpolateOnTime,
 } from '../applications/osrd/components/Helpers/ChartHelpers';
+import { offsetSeconds } from '../applications/osrd/components/Helpers/ChartHelpers';
 import produce from 'immer';
 /* eslint-disable default-case */
 import undoableSimulation from './osrdsimulation/simulation';
@@ -26,6 +27,16 @@ export const UPDATE_STICKYBAR = 'osrdsimu/UPDATE_STICKYBAR';
 export const UPDATE_TIME_POSITION = 'osrdsimu/UPDATE_TIME_POSITION';
 export const UPDATE_TIME_POSITION_VALUES = 'osrdsimu/UPDATE_TIME_POSITION_VALUES';
 export const UPDATE_CONSOLIDATED_SIMULATION = 'osrdsimu/UPDATE_CONSOLIDATED_SIMULATION';
+export const UPDATE_DEPARTURE_ARRIVAL_TIMES = 'osrdsimu/UPDATE_DEPARTURE_ARRIVAL_TIMES';
+
+export const departureArrivalTimes = (simulation, dragOffset) => simulation.trains.map((train) => ({
+    labels: train.labels,
+    name: train.name,
+    departure: offsetSeconds(train.base.stops[0].time + dragOffset),
+    arrival: offsetSeconds(
+      train.base.stops[train.base.stops.length - 1].time + dragOffset
+    ),
+  }))
 
 
 // Reducer
@@ -54,6 +65,7 @@ export const initialState = {
   stickyBar: true,
   timePosition: undefined,
   consolidatedSimulation: null,
+  departureArrivalTimes: []
 };
 
 export default function reducer(state = initialState, action) {
@@ -89,15 +101,19 @@ export default function reducer(state = initialState, action) {
         break;
       case UPDATE_SELECTED_TRAIN:
         draft.selectedTrain = action.selectedTrain;
+        break
+      case UPDATE_DEPARTURE_ARRIVAL_TIMES:
+        draft.departureArrivalTimes = action.departureArrivalTimes;
         break;
       case UPDATE_SIMULATION:
-      // get only the present, thanks
         draft.simulation = undoableSimulation(state.simulation, action);
+        draft.departureArrivalTimes = departureArrivalTimes(draft.simulation.present, 0);
         break;
       case UNDO_SIMULATION:
       case REDO_SIMULATION:
-        draft.mustRedraw = true;
         draft.simulation = undoableSimulation(state.simulation, action);
+        draft.departureArrivalTimes = departureArrivalTimes(draft.simulation.present, 0);
+        //draft.mustRedraw = true;
         break;
       case UPDATE_SPEEDSPACE_SETTINGS:
         draft.speedSpaceSettings = action.speedSpaceSettings;
@@ -128,6 +144,8 @@ export default function reducer(state = initialState, action) {
     }
   });
 }
+
+
 
 // Functions
 export function updateChart(chart) {
@@ -239,6 +257,14 @@ export function updateTimePosition(timePosition) {
     dispatch({
       type: UPDATE_TIME_POSITION,
       timePosition,
+    });
+  };
+}
+export function updateDepartureArrivalTimes(departureArrivalTimes) {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_DEPARTURE_ARRIVAL_TIMES,
+      departureArrivalTimes,
     });
   };
 }
