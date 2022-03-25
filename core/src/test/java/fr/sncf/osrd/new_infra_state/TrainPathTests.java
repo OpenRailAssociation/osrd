@@ -57,17 +57,17 @@ public class TrainPathTests {
         assertEquals(50, path.detectors().get(1).pathOffset());
         assertEquals(75, path.detectors().get(2).pathOffset());
         assertEquals(100, path.detectors().get(3).pathOffset());
-        assertEquals("bs_start", path.detectors().get(0).element().getDetector().getID());
-        assertEquals("d1", path.detectors().get(1).element().getDetector().getID());
-        assertEquals("d2", path.detectors().get(2).element().getDetector().getID());
-        assertEquals("bs_end", path.detectors().get(3).element().getDetector().getID());
+        assertEquals("bs_start", path.detectors().get(0).element().detector().getID());
+        assertEquals("d1", path.detectors().get(1).element().detector().getID());
+        assertEquals("d2", path.detectors().get(2).element().detector().getID());
+        assertEquals("bs_end", path.detectors().get(3).element().detector().getID());
         for (var d : path.detectors())
-            assertEquals(FORWARD, d.element().getDirection());
+            assertEquals(FORWARD, d.element().direction());
 
         assertEquals(3, path.detectionSections().size());
         for (int i = 0; i < 3; i++)
             assertEquals(
-                    path.detectors().get(i).element().getDetector().getNextDetectionSection(FORWARD),
+                    path.detectors().get(i).element().detector().getNextDetectionSection(FORWARD),
                     path.detectionSections().get(i).element()
             );
 
@@ -101,10 +101,10 @@ public class TrainPathTests {
         assertEquals(2, path.detectors().size());
         assertEquals(50 - 20, path.detectors().get(0).pathOffset());
         assertEquals(75 - 20, path.detectors().get(1).pathOffset());
-        assertEquals("d1", path.detectors().get(0).element().getDetector().getID());
-        assertEquals("d2", path.detectors().get(1).element().getDetector().getID());
+        assertEquals("d1", path.detectors().get(0).element().detector().getID());
+        assertEquals("d2", path.detectors().get(1).element().detector().getID());
         for (var d : path.detectors())
-            assertEquals(FORWARD, d.element().getDirection());
+            assertEquals(FORWARD, d.element().direction());
 
         assertEquals(3, path.detectionSections().size());
 
@@ -136,10 +136,10 @@ public class TrainPathTests {
         assertEquals(2, path.detectors().size());
         assertEquals(90 - 75, path.detectors().get(0).pathOffset());
         assertEquals(90 - 50, path.detectors().get(1).pathOffset());
-        assertEquals("d2", path.detectors().get(0).element().getDetector().getID());
-        assertEquals("d1", path.detectors().get(1).element().getDetector().getID());
+        assertEquals("d2", path.detectors().get(0).element().detector().getID());
+        assertEquals("d1", path.detectors().get(1).element().detector().getID());
         for (var d : path.detectors())
-            assertEquals(BACKWARD, d.element().getDirection());
+            assertEquals(BACKWARD, d.element().direction());
 
         assertEquals(3, path.detectionSections().size());
 

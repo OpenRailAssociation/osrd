@@ -2,6 +2,7 @@ package fr.sncf.osrd.new_infra.api.reservation;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import fr.sncf.osrd.new_infra.api.tracks.undirected.Detector;
 import fr.sncf.osrd.new_infra.implementation.tracks.directed.TrackRangeView;
 
 public interface ReservationRoute {

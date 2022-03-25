@@ -112,18 +112,26 @@ public class InfraHelpers {
         return res;
     }
 
+    private static DiDetector getDetector(
+            ImmutableMap<String, Detector> detectors,
+            Direction dir,
+            String id
+    ) {
+        return safeGet(detectors, id).getDiDetector(dir);
+    }
+
     /** Tests that the right DiDetectors can be reached in an oriented graph based on tiny infra.
      * Can be used for different route types */
     public static <T> void testTinyInfraDiDetectorGraph(
             ImmutableNetwork<DiDetector, T> graph,
-            ImmutableMap<Direction, ImmutableMap<String, DiDetector>> diDetectors
+            ImmutableMap<String, Detector> detectors
     ) {
-        var bufferStopA = safeGet(safeGet(diDetectors, FORWARD), "buffer_stop_a");
-        var bufferStopB = safeGet(safeGet(diDetectors, FORWARD), "buffer_stop_b");
-        var bufferStopC = safeGet(safeGet(diDetectors, FORWARD), "buffer_stop_c");
-        var bufferStopABackward = safeGet(safeGet(diDetectors, BACKWARD), "buffer_stop_a");
-        var bufferStopBBackward = safeGet(safeGet(diDetectors, BACKWARD), "buffer_stop_b");
-        var bufferStopCBackward = safeGet(safeGet(diDetectors, BACKWARD), "buffer_stop_c");
+        var bufferStopA = getDetector(detectors, FORWARD, "buffer_stop_a");
+        var bufferStopB = getDetector(detectors, FORWARD, "buffer_stop_b");
+        var bufferStopC = getDetector(detectors, FORWARD, "buffer_stop_c");
+        var bufferStopABackward = getDetector(detectors, BACKWARD, "buffer_stop_a");
+        var bufferStopBBackward = getDetector(detectors, BACKWARD, "buffer_stop_b");
+        var bufferStopCBackward = getDetector(detectors, BACKWARD, "buffer_stop_c");
         var allDirectedBufferStops = Set.of(
                 bufferStopA,
                 bufferStopB,
@@ -228,9 +236,9 @@ public class InfraHelpers {
         );
     }
 
-    /** Sets the objects on the track, bypassing visibility */
-    public static void setTrackObjects(TrackSection track, List<TrackObject> objects) {
-        setPrivateField(track, "trackObjects", ImmutableList.copyOf(objects));
+    /** Sets the detectors on the track, bypassing visibility */
+    public static void setDetectors(TrackSection track, List<Detector> detectors) {
+        setPrivateField(track, "detectors", ImmutableList.copyOf(detectors));
     }
 
     /** Sets the speed sections on the track, bypassing visibility */

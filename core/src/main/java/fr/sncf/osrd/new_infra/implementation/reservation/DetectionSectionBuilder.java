@@ -5,11 +5,11 @@ import static fr.sncf.osrd.new_infra.api.Direction.FORWARD;
 import static fr.sncf.osrd.new_infra.implementation.GraphHelpers.*;
 
 import com.google.common.collect.ImmutableSet;
-import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.reservation.DetectionSection;
 import fr.sncf.osrd.new_infra.api.reservation.DiDetector;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackInfra;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge;
+import fr.sncf.osrd.new_infra.implementation.tracks.undirected.DetectorImpl;
 import fr.sncf.osrd.utils.UnionFind;
 import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import java.util.*;
@@ -27,34 +27,20 @@ public class DetectionSectionBuilder {
     }
 
     private final ArrayList<DetectionSection> detectionSections = new ArrayList<>();
-    private final Map<Direction, Map<String, DiDetector>> diDetectors;
     private final DiTrackInfra infra;
 
     /** Constructor */
     public DetectionSectionBuilder(
-            DiTrackInfra infra,
-            Map<Direction, Map<String, DiDetector>> diDetectors
+            DiTrackInfra infra
     ) {
         this.infra = infra;
-        this.diDetectors = diDetectors;
     }
 
     /**
      * Build all detection sections and link them to waypoints
      */
     public static ArrayList<DetectionSection> build(DiTrackInfra infra) {
-        var detectorMaps = DetectorMaps.from(infra);
-        return new DetectionSectionBuilder(infra, detectorMaps.diDetectorMap).build();
-    }
-
-    /**
-     * Build all detection sections and link them to waypoints, with detectors already instantiated
-     */
-    public static ArrayList<DetectionSection> build(
-            DiTrackInfra infra,
-            Map<Direction, Map<String, DiDetector>> diDetectors
-    ) {
-        return new DetectionSectionBuilder(infra, diDetectors).build();
+        return new DetectionSectionBuilder(infra).build();
     }
 
 
@@ -69,13 +55,13 @@ public class DetectionSectionBuilder {
     private void createSectionsInsideTracks() {
         // Create detection section inside a track section
         for (var track : infra.getTrackGraph().edges()) {
-            var waypoints = track.getTrackObjects();
+            var waypoints = track.getDetectors();
             for (int i = 1; i < waypoints.size(); i++) {
                 var prev = waypoints.get(i - 1);
                 var cur = waypoints.get(i);
                 var detectionSection = new DetectionSectionImpl(ImmutableSet.of(
-                        diDetectors.get(FORWARD).get(prev.getID()),
-                        diDetectors.get(BACKWARD).get(cur.getID())
+                        prev.getDiDetector(FORWARD),
+                        cur.getDiDetector(BACKWARD)
                 ));
                 detectionSections.add(detectionSection);
             }
@@ -90,7 +76,7 @@ public class DetectionSectionBuilder {
         for (var track : infra.getTrackGraph().edges()) {
             var beginIndex = getEndpointIndex(track, EdgeEndpoint.BEGIN);
             var endIndex = getEndpointIndex(track, EdgeEndpoint.END);
-            if (track.getTrackObjects().size() == 0)
+            if (track.getDetectors().size() == 0)
                 uf.union(beginIndex, endIndex);
 
             for (var neighbor : infra.getTrackGraph().adjacentEdges(track)) {
@@ -106,7 +92,7 @@ public class DetectionSectionBuilder {
 
         var detectionSectionsMap = new HashMap<Integer, SectionBuilder>();
         for (var track : infra.getTrackGraph().edges()) {
-            var waypoints = track.getTrackObjects();
+            var waypoints = track.getDetectors();
             if (waypoints.size() == 0)
                 continue;
 
@@ -121,8 +107,8 @@ public class DetectionSectionBuilder {
                     (x) -> new SectionBuilder());
             var lastWaypoint = waypoints.get(waypoints.size() - 1);
 
-            startDetectionSection.detectors.add(diDetectors.get(BACKWARD).get(firstWaypoint.getID()));
-            endDetectionSection.detectors.add(diDetectors.get(FORWARD).get(lastWaypoint.getID()));
+            startDetectionSection.detectors.add(firstWaypoint.getDiDetector(BACKWARD));
+            endDetectionSection.detectors.add(lastWaypoint.getDiDetector(FORWARD));
         }
 
         for (var builder : detectionSectionsMap.values()) {
@@ -147,8 +133,8 @@ public class DetectionSectionBuilder {
     private void setNextSections(ArrayList<DetectionSection> detectionSections) {
         for (var detectionSection : detectionSections)
             for (var diDetector : detectionSection.getDetectors())
-                if (diDetector.getDetector() instanceof DetectorImpl detector)
-                    detector.setDetectionSection(diDetector.getDirection(), detectionSection);
+                if (diDetector.detector() instanceof DetectorImpl detector)
+                    detector.setDetectionSection(diDetector.direction(), detectionSection);
     }
 
     /** Returns the index of a track + endpoint as a unique integer, used in the union find */

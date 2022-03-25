@@ -1,12 +1,6 @@
 package fr.sncf.osrd.new_infra.api.reservation;
 
 import fr.sncf.osrd.new_infra.api.Direction;
+import fr.sncf.osrd.new_infra.api.tracks.undirected.Detector;
 
-public interface DiDetector {
-
-    /** Returns the detector */
-    Detector getDetector();
-
-    /** Returns the direction on the TrackEdge */
-    Direction getDirection();
-}
+public record DiDetector(Detector detector, Direction direction) {}

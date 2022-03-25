@@ -1,6 +1,5 @@
 package fr.sncf.osrd.new_infra.implementation.tracks.undirected;
 
-import static fr.sncf.osrd.new_infra.api.tracks.undirected.TrackObject.TrackObjectType;
 import static java.lang.Math.abs;
 
 import com.google.common.collect.ImmutableList;
@@ -28,7 +27,7 @@ public class UndirectedInfraBuilder {
 
     private final HashMap<String, TrackNode> beginEndpoints = new HashMap<>();
     private final HashMap<String, TrackNode> endEndpoints = new HashMap<>();
-    private final HashMap<TrackSectionImpl, ArrayList<TrackObject>> objectLists = new HashMap<>();
+    private final HashMap<TrackSectionImpl, ArrayList<Detector>> detectorLists = new HashMap<>();
     private final ImmutableNetwork.Builder<TrackNode, TrackEdge> builder;
 
     /** Constructor */
@@ -65,21 +64,21 @@ public class UndirectedInfraBuilder {
         for (var track : infra.trackSections) {
             var newTrack = makeTrackSection(track);
             trackSectionsByID.put(newTrack.getID(), newTrack);
-            objectLists.put(newTrack, new ArrayList<>());
+            detectorLists.put(newTrack, new ArrayList<>());
         }
 
         for (var detector : infra.detectors) {
-            makeWaypoint(trackSectionsByID, detector, TrackObjectType.DETECTOR);
+            makeWaypoint(trackSectionsByID, detector, false);
         }
         for (var bufferStop : infra.bufferStops) {
-            makeWaypoint(trackSectionsByID, bufferStop, TrackObjectType.BUFFER_STOP);
+            makeWaypoint(trackSectionsByID, bufferStop, true);
         }
 
-        for (var entry : objectLists.entrySet()) {
+        for (var entry : detectorLists.entrySet()) {
             var track = entry.getKey();
-            var objects = entry.getValue();
-            objects.sort(Comparator.comparingDouble(TrackObject::getOffset));
-            track.trackObjects = ImmutableList.copyOf(objects);
+            var detectors = entry.getValue();
+            detectors.sort(Comparator.comparingDouble(Detector::getOffset));
+            track.detectors = ImmutableList.copyOf(detectors);
         }
 
         addSpeedSections(infra.speedSections, trackSectionsByID);
@@ -121,10 +120,10 @@ public class UndirectedInfraBuilder {
 
     /** Creates a waypoint and add it to the corresponding track */
     private void makeWaypoint(HashMap<String, TrackSectionImpl> trackSectionsByID,
-                            RJSRouteWaypoint waypoint, TrackObjectType trackObjectType) {
+                            RJSRouteWaypoint waypoint, boolean isBufferStop) {
         var track = RJSObjectParsing.getTrackSection(waypoint.track, trackSectionsByID);
-        var newWaypoint = new TrackObjectImpl(track, waypoint.position, trackObjectType, waypoint.id);
-        objectLists.get(track).add(newWaypoint);
+        var newWaypoint = new DetectorImpl(track, waypoint.position, isBufferStop, waypoint.id);
+        detectorLists.get(track).add(newWaypoint);
     }
 
     /** Creates a track section and registers it in the graph */

@@ -25,8 +25,6 @@ public class SignalingInfraImpl extends ReservationInfraImpl implements Signalin
     ) {
         super(
                 reservationInfra,
-                reservationInfra.getDetectorMap(),
-                reservationInfra.getDiDetectorMap(),
                 reservationInfra.getSectionMap(),
                 reservationInfra.getInfraRouteGraph(),
                 reservationInfra.getReservationRouteMap()
