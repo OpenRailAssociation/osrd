@@ -53,6 +53,11 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
             // All routes starting from this signal are blocked -> red
             return new BAL3SignalState(BAL3.Aspect.RED);
 
+        if (reservedRoute.infraRoute().isControlled()
+                && !state.getState(reservedRoute.infraRoute()).summarize().equals(RESERVED))
+            // Route needs to be reserved but isn't
+            return new BAL3SignalState(BAL3.Aspect.RED);
+
         if (reservedRoute.exitSignal() != null) {
             var nextSignal = signalization.getSignalState(reservedRoute.exitSignal());
             if (nextSignal instanceof BAL3SignalState nextSignalState)

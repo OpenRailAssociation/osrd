@@ -12,6 +12,7 @@ import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.reservation.*;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackInfra;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.Detector;
+import fr.sncf.osrd.new_infra.implementation.GraphHelpers;
 import fr.sncf.osrd.new_infra.implementation.RJSObjectParsing;
 import fr.sncf.osrd.new_infra.implementation.tracks.directed.DirectedInfraBuilder;
 import fr.sncf.osrd.new_infra.implementation.tracks.directed.TrackRangeView;
@@ -75,8 +76,9 @@ public class ReservationInfraBuilder {
                 = HashMultimap.<DetectionSection, ReservationRouteImpl>create();
         var routes = new ArrayList<ReservationRouteImpl>();
         for (var rjsRoute : rjsInfra.routes) {
+            var trackRanges = makeTrackRanges(rjsRoute);
             var route = new ReservationRouteImpl(detectorsOnRoute(rjsRoute), releasePoints(rjsRoute),
-                    rjsRoute.id, makeTrackRanges(rjsRoute));
+                    rjsRoute.id, trackRanges, isRouteControlled(trackRanges));
             routes.add(route);
             for (var section : sectionsOnRoute(rjsRoute)) {
                 routesPerSection.put(section, route);
@@ -100,6 +102,21 @@ public class ReservationInfraBuilder {
             );
         }
         return networkBuilder.build();
+    }
+
+    /** Returns true if the route is controlled (requires explicit reservation to be used) */
+    private boolean isRouteControlled(ImmutableList<TrackRangeView> trackRanges) {
+        // TODO: eventually, add an optional parameter to RJSRoute
+        for (int i = 1; i < trackRanges.size(); i++) {
+            var prev = trackRanges.get(i - 1).track.getEdge();
+            var next = trackRanges.get(i).track.getEdge();
+            if (prev != next) {
+                if (GraphHelpers.areEdgesLinkedBySwitchBranch(diTrackInfra.getTrackGraph(), prev, next))
+                    return true;
+                assert GraphHelpers.areEdgesAdjacent(diTrackInfra.getTrackGraph(), prev, next);
+            }
+        }
+        return false;
     }
 
     private ImmutableList<TrackRangeView> makeTrackRanges(RJSRoute rjsRoute) {
