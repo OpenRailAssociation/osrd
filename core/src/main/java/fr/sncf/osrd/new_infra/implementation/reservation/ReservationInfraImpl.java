@@ -6,41 +6,26 @@ import com.google.common.graph.ImmutableNetwork;
 import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.reservation.*;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackInfra;
+import fr.sncf.osrd.new_infra.api.tracks.undirected.Detector;
 import fr.sncf.osrd.new_infra.implementation.tracks.directed.DiTrackInfraImpl;
 
 public class ReservationInfraImpl extends DiTrackInfraImpl implements ReservationInfra {
 
-    private final ImmutableMap<String, Detector> detectorMap;
     private final ImmutableMap<DiDetector, DetectionSection> sectionMap;
     private final ImmutableNetwork<DiDetector, ReservationRoute> infraRouteGraph;
-    private final ImmutableMap<Direction, ImmutableMap<String, DiDetector>> diDetectorMap;
     private final ImmutableMap<String, ReservationRoute> reservationRouteMap;
 
     /** Constructor */
     public ReservationInfraImpl(
             DiTrackInfra infra,
-            ImmutableMap<String, Detector> detectorMap,
-            ImmutableMap<Direction, ImmutableMap<String, DiDetector>> diDetectorMap,
             ImmutableMap<DiDetector, DetectionSection> sectionMap,
             ImmutableNetwork<DiDetector, ReservationRoute> infraRouteGraph,
             ImmutableMap<String, ReservationRoute> reservationRouteMap
     ) {
         super(infra, infra.getDiTrackGraph());
-        this.detectorMap = detectorMap;
-        this.diDetectorMap = Maps.immutableEnumMap(diDetectorMap);
         this.sectionMap = sectionMap;
         this.infraRouteGraph = infraRouteGraph;
         this.reservationRouteMap = reservationRouteMap;
-    }
-
-    @Override
-    public ImmutableMap<String, Detector> getDetectorMap() {
-        return detectorMap;
-    }
-
-    @Override
-    public ImmutableMap<Direction, ImmutableMap<String, DiDetector>> getDiDetectorMap() {
-        return diDetectorMap;
     }
 
     @Override

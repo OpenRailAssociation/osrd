@@ -1,19 +1,18 @@
 package fr.sncf.osrd.new_infra.reservation;
 
 import static fr.sncf.osrd.new_infra.InfraHelpers.makeSwitchInfra;
-import static fr.sncf.osrd.new_infra.InfraHelpers.setTrackObjects;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import fr.sncf.osrd.Helpers;
+import fr.sncf.osrd.new_infra.InfraHelpers;
 import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.reservation.DetectionSection;
+import fr.sncf.osrd.new_infra.api.tracks.undirected.Detector;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackInfra;
-import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackObject;
 import fr.sncf.osrd.new_infra.implementation.reservation.DetectionSectionBuilder;
 import fr.sncf.osrd.new_infra.implementation.tracks.directed.DirectedInfraBuilder;
-import fr.sncf.osrd.new_infra.implementation.tracks.undirected.TrackObjectImpl;
-import fr.sncf.osrd.new_infra.implementation.tracks.undirected.TrackSectionImpl;
+import fr.sncf.osrd.new_infra.implementation.tracks.undirected.DetectorImpl;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -63,14 +62,14 @@ public class DetectionSectionBuilderTests {
     @Test
     public void testDetectionSwitchInfra() {
         var infra = makeSwitchInfra();
-        setObjects(infra, "1", List.of(
+        setDetectors(infra, "1", List.of(
                 new OffsetIDPair(10, "D1-inner"),
                 new OffsetIDPair(15, "D1-outer")
         ));
-        setObjects(infra, "2", List.of(
+        setDetectors(infra, "2", List.of(
                 new OffsetIDPair(20, "D2")
         ));
-        setObjects(infra, "3", List.of(
+        setDetectors(infra, "3", List.of(
                 new OffsetIDPair(30, "D3-inner"),
                 new OffsetIDPair(40, "D3-outer")
         ));
@@ -103,17 +102,17 @@ public class DetectionSectionBuilderTests {
         for (var s : sections)
             res.add(
                     s.getDetectors().stream()
-                            .map(d -> new DirIDPair(d.getDirection(), d.getDetector().getID()))
+                            .map(d -> new DirIDPair(d.direction(), d.detector().getID()))
                             .collect(Collectors.toSet())
             );
         return res;
     }
 
-    private void setObjects(TrackInfra infra, String tracKID, List<OffsetIDPair> objects) {
+    private void setDetectors(TrackInfra infra, String tracKID, List<OffsetIDPair> objects) {
         var track = infra.getTrackSection(tracKID);
-        var list = new ArrayList<TrackObject>();
-        for (var object : objects)
-            list.add(new TrackObjectImpl(track, object.offset, TrackObject.TrackObjectType.DETECTOR, object.id));
-        setTrackObjects(track, ImmutableList.copyOf(list));
+        var list = new ArrayList<Detector>();
+        for (var detector : objects)
+            list.add(new DetectorImpl(track, detector.offset, false, detector.id));
+        InfraHelpers.setDetectors(track, ImmutableList.copyOf(list));
     }
 }

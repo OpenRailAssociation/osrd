@@ -19,7 +19,7 @@ public class SignalingInfraTests {
         var graph = infra.getSignalingRouteGraph();
         assertEquals(graph.nodes(), infra.getInfraRouteGraph().nodes());
         assertEquals(graph.edges().size(), infra.getInfraRouteGraph().edges().size());
-        testTinyInfraDiDetectorGraph(graph, infra.getDiDetectorMap());
+        testTinyInfraDiDetectorGraph(graph, infra.getDetectorMap());
 
         var bal3Routes = new HashSet<BAL3.BAL3Route>();
         for (var route : graph.edges()) {

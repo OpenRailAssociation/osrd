@@ -1,7 +1,7 @@
 package fr.sncf.osrd.new_infra.implementation;
 
-import fr.sncf.osrd.new_infra.api.reservation.Detector;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackInfra;
+import fr.sncf.osrd.new_infra.api.tracks.undirected.Detector;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackSection;
 import fr.sncf.osrd.new_infra.implementation.tracks.undirected.TrackSectionImpl;
 import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;

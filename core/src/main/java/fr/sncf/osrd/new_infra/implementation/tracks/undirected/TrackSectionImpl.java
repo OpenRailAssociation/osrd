@@ -3,7 +3,7 @@ package fr.sncf.osrd.new_infra.implementation.tracks.undirected;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import fr.sncf.osrd.new_infra.api.Direction;
-import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackObject;
+import fr.sncf.osrd.new_infra.api.tracks.undirected.Detector;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackSection;
 import fr.sncf.osrd.utils.DoubleRangeMap;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
@@ -15,7 +15,7 @@ public class TrackSectionImpl implements TrackSection {
     private final String id;
     EnumMap<Direction, DoubleRangeMap> speedSections;
     EnumMap<Direction, DoubleRangeMap> gradients;
-    ImmutableList<TrackObject> trackObjects;
+    ImmutableList<Detector> detectors = ImmutableList.of();
     int index;
 
     @Override
@@ -38,8 +38,8 @@ public class TrackSectionImpl implements TrackSection {
     }
 
     @Override
-    public ImmutableList<TrackObject> getTrackObjects() {
-        return trackObjects;
+    public ImmutableList<Detector> getDetectors() {
+        return detectors;
     }
 
     @Override

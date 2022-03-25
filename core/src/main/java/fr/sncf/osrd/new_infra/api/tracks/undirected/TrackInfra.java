@@ -2,6 +2,7 @@ package fr.sncf.osrd.new_infra.api.tracks.undirected;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.graph.ImmutableNetwork;
+import java.util.Map;
 
 public interface TrackInfra {
     /** Returns an undirected graph of all tracks */
@@ -11,4 +12,6 @@ public interface TrackInfra {
     ImmutableMap<String, Switch> getSwitches();
 
     TrackSection getTrackSection(String id);
+
+    ImmutableMap<String, Detector> getDetectorMap();
 }

@@ -17,7 +17,12 @@ public class DiTrackInfraImpl extends TrackInfraImpl implements DiTrackInfra {
     private final ImmutableMultimap<String, DiTrackEdge> trackEdgesByID;
 
     protected DiTrackInfraImpl(TrackInfra trackInfra, ImmutableNetwork<DiTrackNode, DiTrackEdge> graph) {
-        super(trackInfra.getSwitches(), trackInfra.getTrackGraph(), makeTrackSections(trackInfra.getTrackGraph()));
+        super(
+                trackInfra.getSwitches(),
+                trackInfra.getTrackGraph(),
+                makeTrackSections(trackInfra.getTrackGraph()),
+                trackInfra.getDetectorMap()
+        );
         this.graph = graph;
         var builder = ImmutableListMultimap.<String, DiTrackEdge>builder();
         for (var edge : graph.edges()) {

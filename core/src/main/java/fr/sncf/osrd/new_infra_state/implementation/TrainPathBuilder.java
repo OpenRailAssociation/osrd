@@ -2,13 +2,11 @@ package fr.sncf.osrd.new_infra_state.implementation;
 
 import com.google.common.collect.ImmutableList;
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.reservation.DetectionSection;
 import fr.sncf.osrd.new_infra.api.reservation.DiDetector;
 import fr.sncf.osrd.new_infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.new_infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackLocation;
-import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackObject;
 import fr.sncf.osrd.new_infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.new_infra_state.api.NewTrainPath;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
@@ -88,11 +86,11 @@ public class TrainPathBuilder {
         for (var locatedRoute : routePath) {
             var route = locatedRoute.element();
             for (var range : route.getInfraRoute().getTrackRanges()) {
-                for (var object : range.getObjects()) {
-                    var diDetector = objectToDiDetector(object.element(), range.track.getDirection());
-                    if (diDetector == null)
+                for (var object : range.getDetectors()) {
+                    if (object.element() == null)
                         continue;
-                    var detectionSection = diDetector.getDetector().getNextDetectionSection(diDetector.getDirection());
+                    var diDetector = object.element().getDiDetector(range.track.getDirection());
+                    var detectionSection = diDetector.detector().getNextDetectionSection(diDetector.direction());
                     addIfDifferent(res, new NewTrainPath.LocatedElement<>(offset + object.offset(), detectionSection));
                 }
                 offset += range.getLength();
@@ -159,22 +157,14 @@ public class TrainPathBuilder {
         var res = new ArrayList<NewTrainPath.LocatedElement<DiDetector>>();
         double offset = 0;
         for (var range : trackSectionPath) {
-            for (var object : range.element().getObjects()) {
-                var diDetector = objectToDiDetector(object.element(), range.element().track.getDirection());
-                if (diDetector != null)
-                    addIfDifferent(res, new NewTrainPath.LocatedElement<>(offset + object.offset(), diDetector));
+            for (var object : range.element().getDetectors()) {
+                if (object.element() != null)
+                    addIfDifferent(res, new NewTrainPath.LocatedElement<>(offset + object.offset(),
+                            object.element().getDiDetector(range.element().track.getDirection())));
             }
             offset += range.element().getLength();
         }
         return ImmutableList.copyOf(res);
-    }
-
-    /** Get the DiDetector object from a TrackObject and a direction. Null if not applicable */
-    private static DiDetector objectToDiDetector(TrackObject object, Direction direction) {
-        var detector = object.getDetector();
-        if (detector == null)
-            return null;
-        return detector.getDiDetector(direction);
     }
 
     /** Creates the lists of track ranges */

@@ -10,8 +10,8 @@ public sealed interface TrackEdge permits SwitchBranch, TrackSection {
     /** The physical length of the edge, in meters */
     double getLength();
 
-    /** List of objects on the track */
-    ImmutableList<TrackObject> getTrackObjects();
+    /** List of detectors on the track */
+    ImmutableList<Detector> getDetectors();
 
     /** List of gradients on the track for a given direction (corrected with curves) */
     EnumMap<Direction, DoubleRangeMap> getGradients();
