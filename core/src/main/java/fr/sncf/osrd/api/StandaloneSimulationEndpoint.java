@@ -74,7 +74,7 @@ public class StandaloneSimulationEndpoint implements Take {
                 return new RsWithStatus(new RsText("missing request body"), 400);
 
             // load infra
-            var infra = infraManager.load(request.infra, request.version);
+            var infra = infraManager.load(request.infra, request.expectedVersion);
 
             // Parse rolling stocks
             var rollingStocks = new HashMap<String, RollingStock>();
@@ -167,7 +167,8 @@ public class StandaloneSimulationEndpoint implements Take {
         public String infra;
 
         /** Infra version */
-        public long version;
+        @Json(name = "expected_version")
+        public String expectedVersion;
 
         /** The time step which shall be used for all simulations */
         @Json(name = "time_step")
@@ -188,7 +189,7 @@ public class StandaloneSimulationEndpoint implements Take {
         /** Create a default SimulationRequest */
         public StandaloneSimulationRequest() {
             infra = null;
-            version = -1;
+            expectedVersion = null;
             timeStep = 2.0;
             rollingStocks = null;
             trainSchedules = null;
@@ -198,14 +199,14 @@ public class StandaloneSimulationEndpoint implements Take {
         /** Create SimulationRequest */
         public StandaloneSimulationRequest(
                 String infra,
-                long version,
+                String expectedVersion,
                 double timeStep,
                 List<RJSRollingStock> rollingStocks,
                 List<RJSStandaloneTrainSchedule> trainSchedules,
                 RJSTrainPath trainsPath
         ) {
             this.infra = infra;
-            this.version = version;
+            this.expectedVersion = expectedVersion;
             this.timeStep = timeStep;
             this.rollingStocks = rollingStocks;
             this.trainSchedules = trainSchedules;
