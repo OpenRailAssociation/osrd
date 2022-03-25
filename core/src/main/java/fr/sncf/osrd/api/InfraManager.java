@@ -104,7 +104,7 @@ public class InfraManager {
         public InfraStatus lastStatus = null;
         public Exception lastError = null;
         public Infra infra = null;
-        public long version = 0;
+        public String expectedVersion = null;
 
         void transitionTo(InfraStatus newStatus) {
             assert status.canTransitionTo(newStatus);
@@ -146,7 +146,11 @@ public class InfraManager {
 
     @ExcludeFromGeneratedCodeCoverage
     @SuppressFBWarnings({"RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE", "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"})
-    private Infra downloadInfra(InfraCacheEntry cacheEntry, String infraId, long version) throws InfraLoadException {
+    private Infra downloadInfra(
+            InfraCacheEntry cacheEntry,
+            String infraId,
+            String expectedVersion
+    ) throws InfraLoadException {
         // create a request
         var endpointUrl = String.format("%sinfra/%s/railjson/", baseUrl, infraId);
         var request = buildRequest(endpointUrl);
@@ -180,7 +184,7 @@ public class InfraManager {
             // Cache the infra
             logger.info("successfuly cached {}", endpointUrl);
             cacheEntry.infra = infra;
-            cacheEntry.version = version;
+            cacheEntry.expectedVersion = expectedVersion;
             cacheEntry.transitionTo(InfraStatus.CACHED);
             return infra;
         } catch (IOException | InvalidInfraException | UnexpectedHttpResponse | JsonDataException e) {
@@ -192,15 +196,16 @@ public class InfraManager {
     /** Load an infra given an id. Cache infra for optimized future call */
     @ExcludeFromGeneratedCodeCoverage
     @SuppressFBWarnings({"REC_CATCH_EXCEPTION"})
-    public Infra load(String infraId, long version) throws InfraLoadException, InterruptedException {
+    public Infra load(String infraId, String expectedVersion) throws InfraLoadException, InterruptedException {
         try {
             var prevCacheEntry = infraCache.putIfAbsent(infraId, new InfraCacheEntry());
             var cacheEntry = infraCache.get(infraId);
 
             synchronized (cacheEntry) {
                 // if there was no cache entry, download the infra again
-                if (prevCacheEntry == null || cacheEntry.status == InfraStatus.ERROR || cacheEntry.version != version)
-                    return downloadInfra(cacheEntry, infraId, version);
+                if (prevCacheEntry == null || cacheEntry.status == InfraStatus.ERROR
+                        || !cacheEntry.expectedVersion.equals(expectedVersion) && expectedVersion != null)
+                    return downloadInfra(cacheEntry, infraId, expectedVersion);
 
                 // otherwise, wait for the infra to reach a stable state
                 cacheEntry.waitUntilStable();

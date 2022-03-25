@@ -25,7 +25,8 @@ class Infra(models.Model):
     name = models.CharField(max_length=128)
     railjson_version = models.CharField(editable=False, max_length=16, default=RAILJSON_VERSION)
     owner = models.UUIDField(editable=False, default="00000000-0000-0000-0000-000000000000")
-    version = models.PositiveBigIntegerField(editable=False, default=1)
+    version = models.CharField(editable=False, max_length=40, default="1")
+    generated_version = models.CharField(editable=False, max_length=40, default="0")
 
     def __str__(self):
         return self.name

@@ -15,7 +15,8 @@ static RAILJSON_VERSION: &'static str = "2.2.0";
 pub struct Infra {
     pub id: i32,
     pub name: String,
-    pub version: i64,
+    pub version: String,
+    pub generated_version: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -90,8 +91,25 @@ impl Infra {
     }
 
     pub fn bump_version(&self, conn: &PgConnection) -> Result<Self, Box<dyn ApiError>> {
+        let new_version = self
+            .version
+            .parse::<u32>()
+            .expect("Cannot convert version into an Integer")
+            + 1;
+
         match update(osrd_infra_infra.filter(id.eq(self.id)))
-            .set(version.eq(self.version + 1))
+            .set(version.eq(new_version.to_string()))
+            .get_result::<Infra>(conn)
+        {
+            Ok(infra) => Ok(infra),
+            Err(DieselError::NotFound) => Err(Box::new(InfraError::NotFound(self.id))),
+            Err(err) => Err(Box::new(InfraError::DieselError(err))),
+        }
+    }
+
+    pub fn bump_generated_version(&self, conn: &PgConnection) -> Result<Self, Box<dyn ApiError>> {
+        match update(osrd_infra_infra.filter(id.eq(self.id)))
+            .set(generated_version.eq(&self.version))
             .get_result::<Infra>(conn)
         {
             Ok(infra) => Ok(infra),
@@ -102,8 +120,8 @@ impl Infra {
 
     pub fn create(infra_name: &String, conn: &PgConnection) -> Result<Infra, Box<dyn ApiError>> {
         match sql_query(format!(
-            "INSERT INTO osrd_infra_infra (name, railjson_version, owner, version)
-             VALUES ('{}', '{}', '00000000-0000-0000-0000-000000000000', 1)
+            "INSERT INTO osrd_infra_infra (name, railjson_version, owner, version, generated_version)
+             VALUES ('{}', '{}', '00000000-0000-0000-0000-000000000000', '1', '0')
              RETURNING *",
             infra_name, RAILJSON_VERSION
         ))
