@@ -168,4 +168,36 @@ public class AllowanceRangesTests {
         assertEquals(marginTime2, targetTime2, 2 * TIME_STEP);
         assertEquals(marginTime3, targetTime3, 2 * TIME_STEP);
     }
+
+    /** Test ranges with intersections being precisely on a stop point */
+    @Test
+    public void testRangesOnStopPoint() {
+        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
+        var length = 100_000;
+        var testPath = new FlatPath(length, 0);
+        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
+        var stops = new double[] { 50000, testPath.getLength() };
+        var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
+        var value1 = new AllowanceValue.TimePerDistance(DISTANCE_RATIO, 5.5);
+        var value2 = new AllowanceValue.Percentage(TIME_RATIO, 10);
+        var rangesTransitions = new double[] { 0, 50_000, length };
+        var ranges = List.of(
+                new AllowanceRange(rangesTransitions[0], rangesTransitions[1], value1),
+                new AllowanceRange(rangesTransitions[1], rangesTransitions[2], value2)
+        );
+        var allowance = new MarecoAllowance(
+                testContext, 0, testPath.getLength(), 30 / 3.6, ranges
+        );
+        var marecoEnvelope = allowance.apply(maxEffortEnvelope);
+        var baseTime1 = maxEffortEnvelope.getTimeBetween(rangesTransitions[0], rangesTransitions[1]);
+        var baseTime2 = maxEffortEnvelope.getTimeBetween(rangesTransitions[1], rangesTransitions[2]);
+        var totalBaseTime = maxEffortEnvelope.getTotalTime();
+        assertEquals(totalBaseTime, baseTime1 + baseTime2, 3 * TIME_STEP);
+        var targetTime1 = baseTime1 + value1.getAllowanceTime(baseTime1, rangesTransitions[1] - rangesTransitions[0]);
+        var targetTime2 = baseTime2 + value2.getAllowanceTime(baseTime2, rangesTransitions[2] - rangesTransitions[1]);
+        var marginTime1 = marecoEnvelope.getTimeBetween(rangesTransitions[0], rangesTransitions[1]);
+        var marginTime2 = marecoEnvelope.getTimeBetween(rangesTransitions[1], rangesTransitions[2]);
+        assertEquals(marginTime1, targetTime1, 2 * TIME_STEP);
+        assertEquals(marginTime2, targetTime2, 2 * TIME_STEP);
+    }
 }
