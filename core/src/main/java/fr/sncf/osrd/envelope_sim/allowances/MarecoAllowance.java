@@ -80,8 +80,8 @@ public class MarecoAllowance implements Allowance {
 
     /** Compute the initial high bound for the binary search
      *  The high bound ensures that the speed vf will be higher than the max speed of the envelope */
-    private double computeInitialHighBound(Envelope section) {
-        var sectionMaxSpeed = section.getMaxSpeed();
+    private double computeInitialHighBound(Envelope envelopeSection) {
+        var sectionMaxSpeed = envelopeSection.getMaxSpeed();
         var maxSpeed = sectionMaxSpeed;
         var vf = computeVf(maxSpeed);
         while (vf < sectionMaxSpeed) {
@@ -111,7 +111,7 @@ public class MarecoAllowance implements Allowance {
         return res;
     }
 
-    /** Apply the allowance to the entire envelope. */
+    /** Apply the allowance to a given envelope. */
     @Override
     public Envelope apply(Envelope base) {
         assert base.continuous;
@@ -119,13 +119,13 @@ public class MarecoAllowance implements Allowance {
         // get only the region on which the allowance applies
         var region = Envelope.make(base.slice(beginPos, endPos));
 
-        // run the allowance algorithm on the
+        // slice parts that are not modified and run the allowance algorithm on the allowance region
         var builder = new EnvelopeBuilder();
         builder.addParts(base.slice(Double.NEGATIVE_INFINITY, beginPos));
         applyAllowanceRegion(builder, region);
         builder.addParts(base.slice(endPos, Double.POSITIVE_INFINITY));
         var res = builder.build();
-        assert res.continuous : "Applying the allowance resulted in a not continuous envelope";
+        assert res.continuous : "Discontinuity on the edges of the allowance region";
         return res;
     }
 
@@ -134,7 +134,11 @@ public class MarecoAllowance implements Allowance {
 
     /**
      * Apply the allowance to the region affected by the allowance.
-     * The region is split in ranges asked by the user and independently computed by increasing allowance value.
+     * The region is split in ranges asked by the user and independently computed.
+     * Ranges are computed in a specific order : from the lowest to the highest allowance value.
+     * Once a range is computed, its begin and end speeds are memorized
+     * and imposed to the left and right side ranges respectively.
+     * This process ensures the continuity of the final envelope.
      */
     private void applyAllowanceRegion(EnvelopeBuilder builder, Envelope envelopeRegion) {
 
@@ -146,7 +150,7 @@ public class MarecoAllowance implements Allowance {
             imposedTransitionSpeeds[i] = NaN;
         imposedTransitionSpeeds[ranges.size()] = envelopeRegion.getEndSpeed();
 
-        // build an array of (range, percentage) in order to sort the array rangeOrder
+        // build an array of (range, percentage) in order to sort the array rangeOrder by ascending percentage
         var rangePercentages = new RangePercentage[ranges.size()];
         for (var i = 0; i < ranges.size(); i++) {
             var range = ranges.get(i);
@@ -166,7 +170,7 @@ public class MarecoAllowance implements Allowance {
 
         var res = new Envelope[ranges.size()];
 
-        // compute ranges one by one with increasing percentage value
+        // compute ranges one by one in the right order
         for (var rangeIndex : rangeOrder) {
             var range = ranges.get(rangeIndex);
             logger.debug("computing range n°{}", rangeIndex + 1);
@@ -175,6 +179,7 @@ public class MarecoAllowance implements Allowance {
             var imposedEndSpeed = imposedTransitionSpeeds[rangeIndex + 1];
             var allowanceRange =
                     computeAllowanceRange(envelopeRange, range.getValue(), imposedBeginSpeed, imposedEndSpeed);
+            // memorize the begin and end speeds
             imposedTransitionSpeeds[rangeIndex] = allowanceRange.getBeginSpeed();
             imposedTransitionSpeeds[rangeIndex + 1] = allowanceRange.getEndSpeed();
             res[rangeIndex] = allowanceRange;
@@ -187,7 +192,7 @@ public class MarecoAllowance implements Allowance {
 
     /**
      * Apply the allowance to the given range.
-     * Split the range into sections which can be independently computed.
+     * Split the range into sections, separated by stops, which are independently computed.
      */
     private Envelope computeAllowanceRange(Envelope envelopeRange,
                                            AllowanceValue value,
@@ -204,6 +209,8 @@ public class MarecoAllowance implements Allowance {
         }
         assert addedTime > 0;
 
+        // compute the slowest running time, given the capacity speed limit,
+        // to make sure the user asked for a margin that is actually possible
         var totalTargetTime = baseTime + addedTime;
         var slowestRunningTime = Double.POSITIVE_INFINITY;
         if (capacitySpeedLimit > 0) {
@@ -238,6 +245,7 @@ public class MarecoAllowance implements Allowance {
                     sectionTime, baseTime, sectionDistance, baseDistance);
             var targetTime = sectionTime + addedTime * sectionRatio;
 
+            // the imposed begin and end speeds only apply to the first and last section of the range respectively
             var imposedBeginSpeed = sectionBeginPos == rangeBeginPos ? imposedRangeBeginSpeed : NaN;
             var imposedEndSpeed = sectionEndPos == rangeEndPos ? imposedRangeEndSpeed : NaN;
 
@@ -250,14 +258,14 @@ public class MarecoAllowance implements Allowance {
     }
 
     /** Iteratively run MARECO on the given section, until the target time is reached */
-    private Envelope computeAllowanceSection(Envelope allowanceSection,
+    private Envelope computeAllowanceSection(Envelope envelopeSection,
                                              double targetTime,
                                              double imposedBeginSpeed,
                                              double imposedEndSpeed) {
         // perform a binary search
         // low bound: capacitySpeedLimit
         // high bound: compute v1 for which vf above max speed of the envelope region
-        var initialHighBound = computeInitialHighBound(allowanceSection);
+        var initialHighBound = computeInitialHighBound(envelopeSection);
 
         Envelope marecoResult = null;
         var search =
@@ -266,7 +274,7 @@ public class MarecoAllowance implements Allowance {
         for (int i = 1; i < 21 && !search.complete(); i++) {
             var v1 = search.getInput();
             logger.debug("    starting attempt {} with v1 = {}", i, v1);
-            marecoResult = computeMarecoIteration(allowanceSection, v1, imposedBeginSpeed, imposedEndSpeed);
+            marecoResult = computeMarecoIteration(envelopeSection, v1, imposedBeginSpeed, imposedEndSpeed);
             if (marecoResult == null) {
                 // We reached the slowdown / speedup intersection case (not implemented) and need to speed up
                 // TODO : update this comment
@@ -294,18 +302,18 @@ public class MarecoAllowance implements Allowance {
                                            double v1,
                                            double imposedBeginSpeed,
                                            double imposedEndSpeed) {
-        // The part of the envelope on which the margin is applied is split in 3:
-        // slowdown, then core, then speedup. The slowdown / speedup parts are needed to transition to / from v1 when
-        // the begin / end speeds are above v1. These phases are empty / can be ignored when the begin / end speeds
-        // are below v1.
 
-        // 1) compute the potential slowdown and speedup parts,
+        // The part of the envelope on which the margin is applied is split in 3:
+        // left junction, then core, then right junction. The junction parts are needed to transition to / from v1 when
+        // begin / end speeds are imposed.
+
+        // 1) compute the potential junction parts (slowdown or speedup)
         var leftPart = computeLeftJunction(base, v1, imposedBeginSpeed);
         var rightPart = computeRightJunction(base, v1, imposedEndSpeed);
         var leftPartEndPos = leftPart != null ? leftPart.getEndPos() : base.getBeginPos();
         var rightPartBeginPos = rightPart != null ? rightPart.getBeginPos() : base.getEndPos();
 
-        // if the slowdown / speedup phases touch or intersect, there is no core phase
+        // if the junction parts touch or intersect, there is no core phase
         if (rightPartBeginPos < leftPartEndPos)
             return intersectSlowdownSpeedup(leftPart, rightPart);
         if (rightPartBeginPos == leftPartEndPos)
@@ -324,11 +332,15 @@ public class MarecoAllowance implements Allowance {
             builder.addPart(rightPart);
         var result = builder.build();
 
-        // 3) check for continuity
-        assert result.continuous;
+        // 3) check for continuity of the section
+        assert result.continuous : "Discontinuity in MARECO section";
         return result;
     }
 
+
+    /** Compute the core of Mareco algorithm.
+     *  This algorithm consists of a speed cap at v1 and several coasting opportunities
+     *  before braking or before accelerating slopes for example. */
     private Envelope computeMarecoCore(Envelope coreBase, double v1) {
         double vf = computeVf(v1);
 
@@ -342,7 +354,7 @@ public class MarecoAllowance implements Allowance {
         // 3) find coasting opportunities related to braking
         coastingOpportunities.addAll(BrakingPhaseCoast.findAll(cappedEnvelope, v1, vf));
 
-        // 4) evaluate coasting opportunities in reverse order, skipping overlapping ones
+        // 4) evaluate coasting opportunities in reverse order, thus skipping overlapping ones
         coastingOpportunities.sort(Comparator.comparing(CoastingOpportunity::getEndPosition));
         Collections.reverse(coastingOpportunities);
 
@@ -359,10 +371,14 @@ public class MarecoAllowance implements Allowance {
         }
 
         var res = builder.build();
-        assert res.continuous;
+        // check for continuity of the core phase
+        assert res.continuous : "Discontinuity in MARECO core phase";
         return res;
     }
 
+    /** Compute the left junction of the section if a begin speed is imposed.
+     *  This junction can be a slow down or a speed up phase,
+     *  depending on the imposed begin speed and the cap speed v1 */
     private EnvelopePart computeLeftJunction(Envelope envelopeSection, double v1, double imposedBeginSpeed) {
         // if there is no imposed begin speed, no junction needs to be computed
         if (Double.isNaN(imposedBeginSpeed))
@@ -392,6 +408,10 @@ public class MarecoAllowance implements Allowance {
         return partBuilder.build();
     }
 
+
+    /** Compute the right junction of the section if an end speed is imposed.
+     *  This junction can be a speed up or a slow down phase,
+     *  depending on the imposed end speed and the cap speed v1 */
     private EnvelopePart computeRightJunction(Envelope envelopeSection, double v1, double imposedEndSpeed) {
         if (Double.isNaN(imposedEndSpeed))
             return null;
