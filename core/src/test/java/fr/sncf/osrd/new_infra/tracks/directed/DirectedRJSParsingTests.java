@@ -115,17 +115,17 @@ public class DirectedRJSParsingTests {
         var edge32 = new TrackSectionImpl(100, "3-2");
         builder.addEdge(node1, node2, edge12);
         builder.addEdge(node3, node2, edge32);
-        var detector1 = new TrackObjectImpl(edge12, 30, TrackObject.TrackObjectType.DETECTOR, "d1");
-        var detector2 = new TrackObjectImpl(edge12, 60, TrackObject.TrackObjectType.DETECTOR, "d2");
-        var bs1 = new TrackObjectImpl(edge12, 0, TrackObject.TrackObjectType.BUFFER_STOP, "bs1");
-        var detector3 = new TrackObjectImpl(edge32, 65, TrackObject.TrackObjectType.DETECTOR, "d3");
-        var detector4 = new TrackObjectImpl(edge32, 35, TrackObject.TrackObjectType.DETECTOR, "d4");
-        setTrackObjects(edge12, List.of(
+        var detector1 = new DetectorImpl(edge12, 30, false, "d1");
+        var detector2 = new DetectorImpl(edge12, 60, false, "d2");
+        var bs1 = new DetectorImpl(edge12, 0, true, "bs1");
+        var detector3 = new DetectorImpl(edge32, 65, false, "d3");
+        var detector4 = new DetectorImpl(edge32, 35, false, "d4");
+        setDetectors(edge12, List.of(
                 detector1,
                 detector2,
                 bs1
         ));
-        setTrackObjects(edge32, List.of(
+        setDetectors(edge32, List.of(
                 detector3,
                 detector4
         ));
@@ -139,33 +139,33 @@ public class DirectedRJSParsingTests {
         final var edge2 = directedInfra.getEdge("3-2", Direction.BACKWARD);
         final var edge1View = new TrackRangeView(0, edge1.getEdge().getLength(), edge1);
         final var edge2View = new TrackRangeView(0, edge1.getEdge().getLength(), edge2);
-        var allObjects = new ArrayList<TrackObject>();
-        for (var object : edge1View.getObjects())
-            allObjects.add(object.element());
-        for (var object : edge2View.getObjects())
-            allObjects.add(object.element());
+        var allDetectors = new ArrayList<Detector>();
+        for (var detector : edge1View.getDetectors())
+            allDetectors.add(detector.element());
+        for (var detector : edge2View.getDetectors())
+            allDetectors.add(detector.element());
         assertEquals(List.of(
                 bs1,
                 detector1,
                 detector2,
                 detector3,
                 detector4
-        ), allObjects);
+        ), allDetectors);
     }
 
     @Test
     public void trackViewObjectsTest() {
         var edge1 = new TrackSectionImpl(100, "1");
         var edge2 = new TrackSectionImpl(100, "2");
-        var detector1 = new TrackObjectImpl(edge1, 30, TrackObject.TrackObjectType.DETECTOR, "d1-30");
-        var detector2 = new TrackObjectImpl(edge1, 60, TrackObject.TrackObjectType.DETECTOR, "d1-60");
-        var detector3 = new TrackObjectImpl(edge2, 65, TrackObject.TrackObjectType.DETECTOR, "d2-65");
-        var detector4 = new TrackObjectImpl(edge2, 35, TrackObject.TrackObjectType.DETECTOR, "d2-35");
-        setTrackObjects(edge1, List.of(
+        var detector1 = new DetectorImpl(edge1, 30, false, "d1-30");
+        var detector2 = new DetectorImpl(edge1, 60, false, "d1-60");
+        var detector3 = new DetectorImpl(edge2, 65, false, "d2-65");
+        var detector4 = new DetectorImpl(edge2, 35, false, "d2-35");
+        setDetectors(edge1, List.of(
                 detector1,
                 detector2
         ));
-        setTrackObjects(edge2, List.of(
+        setDetectors(edge2, List.of(
                 detector3,
                 detector4
         ));
@@ -185,8 +185,8 @@ public class DirectedRJSParsingTests {
                 new TrackRangeView(15, 100, diEdge2F)
         );
         assertEquals(
-                getObjectsOnRanges(path1),
-                getObjectsOnRanges(path2)
+                getDetectorsOnRanges(path1),
+                getDetectorsOnRanges(path2)
         );
 
         var path3 = List.of(
@@ -200,8 +200,8 @@ public class DirectedRJSParsingTests {
                 new TrackRangeView(15, 0, diEdge2B)
         );
         assertEquals(
-                getObjectsOnRanges(path3),
-                getObjectsOnRanges(path4)
+                getDetectorsOnRanges(path3),
+                getDetectorsOnRanges(path4)
         );
 
         var path5 = List.of(
@@ -209,12 +209,12 @@ public class DirectedRJSParsingTests {
                 new TrackRangeView(0, 100, diEdge1B)
         );
 
-        var objectsForward = getObjectsOnRanges(path1).stream()
-                .map(x -> x.object.getID())
+        var objectsForward = getDetectorsOnRanges(path1).stream()
+                .map(x -> x.detector.getID())
                 .toList();
 
-        var objectsBackward = getObjectsOnRanges(path5).stream()
-                .map(x -> x.object.getID())
+        var objectsBackward = getDetectorsOnRanges(path5).stream()
+                .map(x -> x.detector.getID())
                 .toList();
         assertEquals(objectsForward, Lists.reverse(objectsBackward));
     }
@@ -272,16 +272,16 @@ public class DirectedRJSParsingTests {
         );
     }
 
-    private record Pair(TrackObject object, double position) {}
+    private record Pair(Detector detector, double position) {}
 
-    /** Merges all the objects and positions on a list of ranges */
-    private static List<Pair> getObjectsOnRanges(List<TrackRangeView> ranges) {
+    /** Merges all the detectors and positions on a list of ranges */
+    private static List<Pair> getDetectorsOnRanges(List<TrackRangeView> ranges) {
         var pos = 0;
         var res = new ArrayList<Pair>();
         for (var range : ranges) {
-            var objects = range.getObjects();
-            for (var obj : objects)
-                res.add(new Pair(obj.element(), pos + obj.offset()));
+            var detectors = range.getDetectors();
+            for (var d : detectors)
+                res.add(new Pair(d.element(), pos + d.offset()));
             pos += range.getLength();
         }
         return res;

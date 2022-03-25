@@ -10,16 +10,19 @@ public class TrackInfraImpl implements TrackInfra {
     private final ImmutableMap<String, Switch> switches;
     private final ImmutableNetwork<TrackNode, TrackEdge> trackGraph;
     private final Map<String, TrackSection> trackSections;
+    private final ImmutableMap<String, Detector> detectorMap;
 
     /** Constructor */
     public TrackInfraImpl(
             ImmutableMap<String, Switch> switches,
             ImmutableNetwork<TrackNode, TrackEdge> trackGraph,
-            Map<String, TrackSection> trackSections
+            Map<String, TrackSection> trackSections,
+            ImmutableMap<String, Detector> detectorMap
     ) {
         this.switches = switches;
         this.trackGraph = trackGraph;
         this.trackSections = trackSections;
+        this.detectorMap = detectorMap;
     }
 
     protected static Map<String, TrackSection> makeTrackSections(ImmutableNetwork<TrackNode, TrackEdge> trackGraph) {
@@ -37,7 +40,18 @@ public class TrackInfraImpl implements TrackInfra {
     public static TrackInfra from(
             ImmutableMap<String, Switch> switches,
             ImmutableNetwork<TrackNode, TrackEdge> trackGraph) {
-        return new TrackInfraImpl(switches, trackGraph, makeTrackSections(trackGraph));
+        return new TrackInfraImpl(switches, trackGraph, makeTrackSections(trackGraph), makeDetectorMap(trackGraph));
+    }
+
+    private static ImmutableMap<String, Detector> makeDetectorMap(
+            ImmutableNetwork<TrackNode, TrackEdge> trackGraph
+    ) {
+        var res = ImmutableMap.<String, Detector>builder();
+        for (var track : trackGraph.edges()) {
+            for (var detector : track.getDetectors())
+                res.put(detector.getID(), detector);
+        }
+        return res.build();
     }
 
     /** Sets the index to each edge, from 0 to n_edges. Used later on for union finds */
@@ -64,5 +78,10 @@ public class TrackInfraImpl implements TrackInfra {
     @Override
     public TrackSection getTrackSection(String id) {
         return trackSections.get(id);
+    }
+
+    @Override
+    public ImmutableMap<String, Detector> getDetectorMap() {
+        return detectorMap;
     }
 }

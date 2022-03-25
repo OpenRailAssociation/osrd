@@ -11,7 +11,7 @@ import com.google.common.graph.NetworkBuilder;
 import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.reservation.*;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackInfra;
-import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackObject;
+import fr.sncf.osrd.new_infra.api.tracks.undirected.Detector;
 import fr.sncf.osrd.new_infra.implementation.RJSObjectParsing;
 import fr.sncf.osrd.new_infra.implementation.tracks.directed.DirectedInfraBuilder;
 import fr.sncf.osrd.new_infra.implementation.tracks.directed.TrackRangeView;
@@ -24,8 +24,6 @@ public class ReservationInfraBuilder {
 
     private final DiTrackInfra diTrackInfra;
     private final RJSInfra rjsInfra;
-    private Map<String, DetectorImpl> detectorMap;
-    private Map<Direction, Map<String, DiDetector>> diDetectorMap;
 
     /** Constructor */
     private ReservationInfraBuilder(RJSInfra rjsInfra, DiTrackInfra infra) {
@@ -46,18 +44,12 @@ public class ReservationInfraBuilder {
 
     /** Builds everything */
     private ReservationInfra build() {
-        var detectorMaps = DetectorMaps.from(diTrackInfra);
-        detectorMap = detectorMaps.detectorMap;
-        diDetectorMap = detectorMaps.diDetectorMap;
         var reservationSections = DetectionSectionBuilder.build(
-                diTrackInfra,
-                diDetectorMap
+                diTrackInfra
         );
         var routeGraph = makeRouteGraph();
         return new ReservationInfraImpl(
                 diTrackInfra,
-                ImmutableMap.copyOf(detectorMap),
-                convertDiDetectorMap(),
                 makeSectionMap(reservationSections),
                 routeGraph,
                 makeReservationRouteMap(routeGraph)
@@ -72,14 +64,6 @@ public class ReservationInfraBuilder {
         for (var route : routeGraph.edges())
             res.put(route.getID(), route);
         return res.build();
-    }
-
-    /** Converts the map of map into an immutableMap of immutableMap */
-    private ImmutableMap<Direction, ImmutableMap<String, DiDetector>> convertDiDetectorMap() {
-        var builder = ImmutableMap.<Direction, ImmutableMap<String, DiDetector>>builder();
-        for (var entry : diDetectorMap.entrySet())
-            builder.put(entry.getKey(), ImmutableMap.copyOf(entry.getValue()));
-        return builder.build();
     }
 
     /** Instantiates the routes and links them together in the graph */
@@ -135,7 +119,7 @@ public class ReservationInfraBuilder {
     private ImmutableList<Detector> releasePoints(RJSRoute rjsRoute) {
         var builder = ImmutableList.<Detector>builder();
         for (var detector : rjsRoute.releaseDetectors) {
-            builder.add(RJSObjectParsing.getDetector(detector, detectorMap));
+            builder.add(RJSObjectParsing.getDetector(detector, diTrackInfra.getDetectorMap()));
         }
         return builder.build();
     }
@@ -147,7 +131,7 @@ public class ReservationInfraBuilder {
         var detectors = detectorsOnRoute(route);
         for (int i = 0; i < detectors.size() - 1; i++) {
             var d = detectors.get(i);
-            res.add(d.getDetector().getNextDetectionSection(d.getDirection()));
+            res.add(d.detector().getNextDetectionSection(d.direction()));
         }
         return res;
     }
@@ -159,17 +143,17 @@ public class ReservationInfraBuilder {
             var min = Math.min(trackRange.begin, trackRange.end);
             var max = Math.max(trackRange.begin, trackRange.end);
             var track = RJSObjectParsing.getTrackSection(trackRange.track, diTrackInfra);
-            var objectsOnTrack = new ArrayList<TrackObject>();
-            for (var object : track.getTrackObjects()) {
-                if (min <= object.getOffset() && object.getOffset() <= max)
-                    objectsOnTrack.add(object);
+            var detectorsOnTrack = new ArrayList<Detector>();
+            for (var detector : track.getDetectors()) {
+                if (min <= detector.getOffset() && detector.getOffset() <= max)
+                    detectorsOnTrack.add(detector);
             }
             if (trackRange.direction.equals(EdgeDirection.START_TO_STOP)) {
-                for (var o : objectsOnTrack)
-                    res.add(diDetectorMap.get(FORWARD).get(o.getID()));
+                for (var o : detectorsOnTrack)
+                    res.add(o.getDiDetector(FORWARD));
             } else {
-                for (int i = objectsOnTrack.size() - 1; i >= 0; i--)
-                    res.add(diDetectorMap.get(BACKWARD).get(objectsOnTrack.get(i).getID()));
+                for (int i = detectorsOnTrack.size() - 1; i >= 0; i--)
+                    res.add(detectorsOnTrack.get(i).getDiDetector(BACKWARD));
             }
         }
         return ImmutableList.copyOf(res);

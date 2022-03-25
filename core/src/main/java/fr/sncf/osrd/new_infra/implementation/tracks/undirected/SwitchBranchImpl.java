@@ -3,9 +3,9 @@ package fr.sncf.osrd.new_infra.implementation.tracks.undirected;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import fr.sncf.osrd.new_infra.api.Direction;
+import fr.sncf.osrd.new_infra.api.tracks.undirected.Detector;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.Switch;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.SwitchBranch;
-import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackObject;
 import fr.sncf.osrd.utils.DoubleRangeMap;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.EnumMap;
@@ -36,7 +36,7 @@ public class SwitchBranchImpl implements SwitchBranch {
     }
 
     @Override
-    public ImmutableList<TrackObject> getTrackObjects() {
+    public ImmutableList<Detector> getDetectors() {
         return ImmutableList.of();
     }
 

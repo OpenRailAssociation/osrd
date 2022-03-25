@@ -15,7 +15,6 @@ public class ReservationInfraTests {
         var reservationInfra = ReservationInfraBuilder.fromRJS(rjsInfra);
         var graph = reservationInfra.getInfraRouteGraph();
         assertEquals(rjsInfra.routes.size(), graph.edges().size());
-        var diDetectors = reservationInfra.getDiDetectorMap();
-        testTinyInfraDiDetectorGraph(reservationInfra.getInfraRouteGraph(), diDetectors);
+        testTinyInfraDiDetectorGraph(reservationInfra.getInfraRouteGraph(), reservationInfra.getDetectorMap());
     }
 }
