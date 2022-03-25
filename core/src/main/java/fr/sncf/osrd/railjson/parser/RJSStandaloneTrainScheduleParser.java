@@ -96,14 +96,6 @@ public class RJSStandaloneTrainScheduleParser {
         throw new RuntimeException("unknown allowance type");
     }
 
-    // Helper class used to sort ranges by begin position
-    static class SortByBeginPos implements Comparator<RJSAllowanceRange> {
-        // Used for sorting in ascending order of begin pos
-        public int compare(RJSAllowanceRange a, RJSAllowanceRange b) {
-            return (int) (a.beginPos - b.beginPos);
-        }
-    }
-
     private static List<AllowanceRange> parseAllowanceRanges(
             EnvelopePath envelopePath,
             RJSAllowanceValue defaultValue,
