@@ -17,6 +17,7 @@ public class ReservationRouteImpl implements ReservationRoute {
     private final ImmutableList<Detector> releasePoints;
     public final String id;
     private final ImmutableList<TrackRangeView> trackRanges;
+    private final boolean isControlled;
 
     @Override
     @ExcludeFromGeneratedCodeCoverage
@@ -36,11 +37,14 @@ public class ReservationRouteImpl implements ReservationRoute {
             ImmutableList<DiDetector> detectorPath,
             ImmutableList<Detector> releasePoints,
             String id,
-            ImmutableList<TrackRangeView> trackRanges) {
+            ImmutableList<TrackRangeView> trackRanges,
+            boolean isControlled
+    ) {
         this.detectorPath = detectorPath;
         this.releasePoints = releasePoints;
         this.trackRanges = trackRanges;
         this.id = id;
+        this.isControlled = isControlled;
     }
 
     @Override
@@ -78,5 +82,10 @@ public class ReservationRouteImpl implements ReservationRoute {
         return trackRanges.stream()
                 .mapToDouble(TrackRangeView::getLength)
                 .sum();
+    }
+
+    @Override
+    public boolean isControlled() {
+        return isControlled;
     }
 }
