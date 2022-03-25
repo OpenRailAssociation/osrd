@@ -23,4 +23,7 @@ public interface ReservationRoute {
 
     /** Returns the route length (m) */
     double getLength();
+
+    /** Returns true if the route is controlled (needs to be requested) */
+    boolean isControlled();
 }
