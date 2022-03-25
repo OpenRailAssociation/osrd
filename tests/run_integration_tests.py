@@ -10,6 +10,7 @@ import requests
 
 
 URL = "http://127.0.0.1:8000/"
+EDITOAST_URL = "http://127.0.0.1:8090/"
 
 
 def setup() -> Dict[str, int]:
@@ -63,7 +64,7 @@ def clean(infra_ids: Dict[str, int]):
     :param infra_ids: infra id for each name
     """
     for infra_id in infra_ids.values():
-        response = requests.delete(URL + f"infra/{infra_id}/")
+        response = requests.delete(EDITOAST_URL + f"infra/{infra_id}/")
         if response.status_code // 100 != 2:
             raise RuntimeError(f"Cleanup failed, code {response.status_code}: {response.content}")
 

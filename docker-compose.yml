@@ -34,7 +34,7 @@ services:
 
   chartos:
     image: osrd/chartos
-    container_name: chartos
+    container_name: osrd-chartos
     network_mode: host
     build:
       context: chartos
@@ -57,9 +57,9 @@ services:
   api:
     image: osrd/api
     container_name: osrd-api
+    network_mode: host
     depends_on:
       postgres: {condition: service_healthy}
-    network_mode: host
     restart: unless-stopped
     build:
       context: api
@@ -87,10 +87,10 @@ services:
   core:
     image: osrd/core
     container_name: osrd-core
+    network_mode: host
     build:
       context: core
       dockerfile: Dockerfile
-    network_mode: host
     restart: unless-stopped
     command: "java -ea -jar /app/osrd_core.jar api -p 8080"
     environment:
@@ -121,12 +121,13 @@ services:
   editoast:
     image: osrd/editoast
     container_name: osrd-editoast
+    network_mode: host
     depends_on:
       postgres: {condition: service_healthy}
+      api: {condition: service_healthy}
     build:
       context: editoast
       dockerfile: Dockerfile
-    network_mode: host
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8090/health"]

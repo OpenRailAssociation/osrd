@@ -21,7 +21,7 @@ services:
 
   redis:
     image: redis
-    container_name: redis
+    container_name: osrd-redis
     restart: unless-stopped
     ports: ["6379:6379"]
     volumes:
@@ -33,14 +33,14 @@ services:
       interval: 5s
 
   chartos:
-    image: osrd/chartos:v2.0.3
+    image: osrd/chartos
     container_name: osrd-chartos
+    build:
+      context: chartos
+      dockerfile: Dockerfile
     depends_on:
       postgres: {condition: service_healthy}
       redis: {condition: service_healthy}
-    volumes:
-      - "./api/chartos.yml:/config.yml"
-    container_name: chartos
     restart: unless-stopped
     command: "uvicorn --factory chartos:make_app --host 0.0.0.0 --port 80"
     ports: ["7000:80"]
@@ -48,18 +48,17 @@ services:
       PSQL_DSN: "postgres://chartos:password@postgres/chartos"
       ROOT_URL: "http://localhost:7000"
       REDIS_URL: "redis://redis"
-      CONFIG_PATH: "/config.yml"
+      CONFIG_PATH: "/code/chartos.yml"
     healthcheck:
       test: ["CMD", "python", "-c", "from urllib.request import urlopen; exit(0 if urlopen('http://localhost/health').status == 200 else 1)"]
       start_period: 4s
       interval: 5s
 
-  osrd-api:
-    image: osrd/osrd-api
+  api:
+    image: osrd/api
     container_name: osrd-api
     depends_on:
       postgres: {condition: service_healthy}
-      redis: {condition: service_healthy}
     restart: unless-stopped
     build:
       context: api
@@ -86,8 +85,8 @@ services:
       start_period: 4s
       interval: 5s
 
-  osrd-core:
-    image: osrd/osrd-core
+  core:
+    image: osrd/core
     container_name: osrd-core
     build:
       context: core
@@ -102,8 +101,8 @@ services:
       start_period: 4s
       interval: 5s
 
-  osrd-front:
-    image: osrd/osrd-front
+  front:
+    image: osrd/front
     container_name: osrd-front
     build:
       context: front
@@ -120,10 +119,29 @@ services:
       start_period: 4s
       interval: 5s
 
+  editoast:
+    image: osrd/editoast
+    container_name: osrd-editoast
+    depends_on:
+      postgres: {condition: service_healthy}
+      api: {condition: service_healthy}
+    build:
+      context: editoast
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports: ["8090:80"]
+    environment:
+      PSQL_HOST: "postgres"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      start_period: 4s
+      interval: 5s
+
   wait-healthy:
     depends_on:
-      osrd-api: {condition: service_healthy}
+      api: {condition: service_healthy}
       chartos: {condition: service_healthy}
+      editoast: {condition: service_healthy}
     restart: "no"
     image: alpine:latest
     command: "true"
