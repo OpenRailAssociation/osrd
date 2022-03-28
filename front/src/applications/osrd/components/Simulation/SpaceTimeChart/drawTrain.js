@@ -25,8 +25,6 @@ export default function drawTrain(
   simulation
 ) {
 
-  console.log(simulation.trains[0].base.stops[0].time)
-
   const groupID = `spaceTime-${dataSimulation.trainNumber}`;
 
   const initialDrag = rotate ? chart.y.invert(0) : chart.x.invert(0);
@@ -104,10 +102,11 @@ export default function drawTrain(
 
   // Test direction to avoid displaying block
   const direction = getDirection(dataSimulation.headPosition);
+  const currentAllowanceSettings = allowancesSettings ? allowancesSettings[dataSimulation.id] : undefined
 
-  if (direction && allowancesSettings) {
+  if (direction && currentAllowanceSettings) {
     if (
-      allowancesSettings[dataSimulation.id].baseBlocks ||
+      currentAllowanceSettings?.baseBlocks ||
       !dataSimulation.eco_routeBeginOccupancy
     ) {
       dataSimulation.areaBlock.forEach((dataSimulationAreaBlockSection) =>
@@ -148,7 +147,7 @@ export default function drawTrain(
         )
       );
     }
-    if (dataSimulation.eco_routeEndOccupancy && allowancesSettings[dataSimulation.id].ecoBlocks) {
+    if (dataSimulation.eco_routeEndOccupancy && currentAllowanceSettings?.ecoBlocks) {
       dataSimulation.eco_areaBlock.forEach((dataSimulationEcoAreaBlockSection) =>
         drawArea(
           chart,
@@ -189,7 +188,7 @@ export default function drawTrain(
     }
   }
 
-  if (allowancesSettings && allowancesSettings[dataSimulation.id].base) {
+  if (currentAllowanceSettings?.base) {
     dataSimulation.tailPosition.forEach((tailPositionSection) =>
       drawCurve(
         chart,
@@ -218,7 +217,7 @@ export default function drawTrain(
     );
   }
 
-  if (dataSimulation.allowances_headPosition && allowancesSettings[dataSimulation.id].allowances) {
+  if (dataSimulation.allowances_headPosition && currentAllowanceSettings?.allowances) {
     dataSimulation.allowances_headPosition.forEach((tailPositionSection) =>
       drawCurve(
         chart,
@@ -233,7 +232,7 @@ export default function drawTrain(
       )
     );
   }
-  if (allowancesSettings && dataSimulation.eco_headPosition && allowancesSettings[dataSimulation.id].eco) {
+  if (currentAllowanceSettings?.eco && dataSimulation.eco_headPosition ) {
     dataSimulation.eco_headPosition.forEach((tailPositionSection) =>
       drawCurve(
         chart,

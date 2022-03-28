@@ -151,10 +151,10 @@ const OSRDSimulation = () => {
   };
 
   const handleKey = (e) => {
-    if (e.key === 'i' && e.metaKey) {
+    if (e.key === 'z' && e.metaKey) {
       dispatch(undoSimulation());
     }
-    if (e.key === 'k' && e.metaKey) {
+    if (e.key === 'e' && e.metaKey) {
       dispatch(redoSimulation());
     }
   };

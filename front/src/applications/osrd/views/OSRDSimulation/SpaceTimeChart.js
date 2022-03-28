@@ -76,11 +76,7 @@ export default function SpaceTimeChart(props) {
 
   const offsetTimeByDragging = (offset) => {
     const trains = Array.from(simulation.trains);
-    //var t0 = performance.now();
-    console.log("OFFSET on end", offset)
     trains[selectedTrain] = timeShiftTrain(trains[selectedTrain], offset);
-    //var t1 = performance.now();
-    //console.log("L'appel de timeShiftTrain a demandé " + (t1 - t0) + " millisecondes.")
     dispatch(updateSimulation({ ...simulation, trains }));
   };
 
@@ -118,13 +114,13 @@ export default function SpaceTimeChart(props) {
     });
   };
 
-  const drawAllTrains = (reset, forceRedraw = false) => {
+  const drawAllTrains = (reset, forceRedraw = false, newDataSimulation) => {
+    const currentDataSimulation = newDataSimulation || dataSimulation
     if (mustRedraw || forceRedraw) {
-      console.log('REDDRAW', simulation.trains[0], )
       const chartLocal = createChart(
         chart,
         CHART_ID,
-        dataSimulation,
+        currentDataSimulation,
         heightOfSpaceTimeChart,
         keyValues,
         ref,
@@ -139,7 +135,7 @@ export default function SpaceTimeChart(props) {
       drawOPs(chartLocal);
 
       drawAxisTitle(chartLocal, rotate);
-      dataSimulation.forEach((train, idx) => {
+      currentDataSimulation.forEach((train, idx) => {
         drawTrain(
           chartLocal,
           dispatch,
@@ -202,37 +198,20 @@ export default function SpaceTimeChart(props) {
   }, [dragEnding]);
 
   useEffect(() => {
-    console.log('refreshDataSimulation')
-    console.log(simulation.trains[0].base.stops[0].time)
-    //console.log(simulation.trains[0].base.route_begin_occupancy[0][0])
     setDataSimulation(createTrain(dispatch, keyValues, simulation.trains, t));
     if (dataSimulation) {
-      console.log("NO FORCE REDRAW")
-      console.log(dataSimulation[0].areaBlock[0][0])
-      // ADN: No need to redo all this on a simple drag
-      /* ADN drawAllTrain do something only if mustRedraw = true,
-      so delete the condo in it and call if mustRadrw = true
-      it is far more redable */
-      // ADN drawAllTrain already traceVerticalLines
       drawAllTrains(resetChart);
       handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
     }
   }, [mustRedraw, rotate, selectedTrain]);
 
+  // ADN: trigger a redraw on every simulation change. This is the right pattern.
   useEffect(() => {
-    console.log('refreshDataSimulation')
-    console.log(simulation.trains[0].base.stops[0].time)
-    console.log(simulation.trains[0].base.route_begin_occupancy[0][0])
     setDataSimulation(createTrain(dispatch, keyValues, simulation.trains, t));
+    const newDataSimulation = createTrain(dispatch, keyValues, simulation.trains, t)
     if (dataSimulation) {
-      console.log("FORCE REDRAW")
-      console.log(dataSimulation[0].areaBlock[0][0])
-      // ADN: No need to redo all this on a simple drag
-      /* ADN drawAllTrain do something only if mustRedraw = true,
-      so delete the condo in it and call if mustRadrw = true
-      it is far more redable */
       // ADN drawAllTrain already traceVerticalLines
-      drawAllTrains(resetChart, true);
+      drawAllTrains(resetChart, true, newDataSimulation);
       handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
     }
   }, [simulation.trains[selectedTrain]]);
