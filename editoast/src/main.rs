@@ -21,6 +21,7 @@ use models::{DBConnection, Infra};
 use std::collections::HashMap;
 use std::error::Error;
 use std::process::exit;
+use std::sync::{Arc, Mutex};
 use std::thread;
 
 #[rocket::main]
@@ -63,9 +64,10 @@ async fn runserver(
     let conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
 
     // Initialize infra caches
-    let mut infra_caches = HashMap::<i32, InfraCache>::new();
+    let mut infra_caches = HashMap::new();
     for infra in infras.iter() {
-        infra_caches.insert(infra.id, InfraCache::init(&conn, infra.id));
+        let infra_cache = InfraCache::init(&conn, infra.id);
+        infra_caches.insert(infra.id, Arc::new(Mutex::new(infra_cache)));
     }
 
     // Config and run server
