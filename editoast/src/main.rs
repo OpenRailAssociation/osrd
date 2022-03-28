@@ -21,6 +21,7 @@ use models::{DBConnection, Infra};
 use std::collections::HashMap;
 use std::error::Error;
 use std::process::exit;
+use std::thread;
 
 #[rocket::main]
 async fn main() {
@@ -33,7 +34,7 @@ async fn main() {
     }
 }
 
-async fn run() -> Result<(), Box<dyn Error>> {
+async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
     let client = Client::parse();
     let pg_config = client.postgres_config;
 
@@ -43,14 +44,23 @@ async fn run() -> Result<(), Box<dyn Error>> {
     }
 }
 
-async fn runserver(args: RunserverArgs, pg_config: PostgresConfig) -> Result<(), Box<dyn Error>> {
+async fn runserver(
+    args: RunserverArgs,
+    pg_config: PostgresConfig,
+) -> Result<(), Box<dyn Error + Send + Sync>> {
     let conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
     let infras = Infra::list(&conn);
+    let infras_clone = infras.clone();
 
     // Check generated data is up to date
-    for infra in infras.iter() {
-        generate::refresh(&conn, &infra, false)?;
-    }
+    let computation = thread::spawn(move || -> Result<(), Box<dyn Error + Send + Sync>> {
+        for infra in infras_clone.iter() {
+            generate::refresh(&conn, &infra, false)?;
+        }
+        Ok(())
+    });
+
+    let conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
 
     // Initialize infra caches
     let mut infra_caches = HashMap::<i32, InfraCache>::new();
@@ -71,12 +81,16 @@ async fn runserver(args: RunserverArgs, pg_config: PostgresConfig) -> Result<(),
         .launch()
         .await?;
 
+    computation.join().unwrap()?;
     Ok(())
 }
 
 /// Run the generate sub command
 /// This command refresh all infra given as input (if no infra given then refresh all of them)
-fn generate(args: GenerateArgs, pg_config: PostgresConfig) -> Result<(), Box<dyn Error>> {
+fn generate(
+    args: GenerateArgs,
+    pg_config: PostgresConfig,
+) -> Result<(), Box<dyn Error + Send + Sync>> {
     let conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
 
     let mut infras = vec![];
