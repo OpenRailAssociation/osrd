@@ -42,7 +42,7 @@ class Migration(migrations.Migration):
                 ('railjson_version', models.CharField(default='2.2.0', editable=False, max_length=16)),
                 ('owner', models.UUIDField(default='00000000-0000-0000-0000-000000000000', editable=False)),
                 ('version', models.CharField(default='1', editable=False, max_length=40)),
-                ('generated_version', models.CharField(default='0', editable=False, max_length=40)),
+                ('generated_version', models.CharField(editable=False, max_length=40, null=True)),
             ],
         ),
         migrations.CreateModel(

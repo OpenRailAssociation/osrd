@@ -2,10 +2,11 @@ use super::{ObjectType, OperationError};
 use crate::railjson::TrackSection;
 use crate::response::ApiError;
 use diesel::sql_types::Jsonb;
+use diesel::sql_types::{Integer, Json, Text};
 use diesel::{sql_query, PgConnection, QueryableByName, RunQueryDsl};
 use json_patch::Patch;
 use rocket::serde::Deserialize;
-use serde_json::{from_value, to_string, Value};
+use serde_json::{from_value, Value};
 
 #[derive(Clone, Deserialize)]
 #[serde(crate = "rocket::serde")]
@@ -31,12 +32,12 @@ impl UpdateOperation {
 
         // Save new object
         match sql_query(format!(
-            "UPDATE {} SET data = '{}' WHERE infra_id = {} AND obj_id = '{}'",
-            self.obj_type.get_table(),
-            to_string(&obj.data).unwrap(),
-            infra_id,
-            self.obj_id,
+            "UPDATE {} SET data = $1 WHERE infra_id = $2 AND obj_id = $3",
+            self.obj_type.get_table()
         ))
+        .bind::<Json, _>(obj.data)
+        .bind::<Integer, _>(infra_id)
+        .bind::<Text, _>(&self.obj_id)
         .execute(conn)
         {
             Ok(1) => Ok(()),
