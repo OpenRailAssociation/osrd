@@ -1,6 +1,6 @@
 package fr.sncf.osrd.new_infra.implementation.tracks.directed;
 
-import static fr.sncf.osrd.new_infra.implementation.GraphHelpers.*;
+import static fr.sncf.osrd.utils.new_graph.GraphHelpers.*;
 import static fr.sncf.osrd.utils.graph.EdgeEndpoint.endEndpoint;
 
 import com.google.common.collect.HashBiMap;
