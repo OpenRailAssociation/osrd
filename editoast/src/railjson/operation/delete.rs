@@ -1,6 +1,8 @@
 use super::{ObjectType, OperationError};
 use crate::response::ApiError;
-use diesel::{sql_query, PgConnection, RunQueryDsl};
+use diesel::sql_types::{Integer, Text};
+use diesel::RunQueryDsl;
+use diesel::{sql_query, PgConnection};
 use rocket::serde::Deserialize;
 
 #[derive(Clone, Deserialize)]
@@ -13,11 +15,11 @@ pub struct DeleteOperation {
 impl DeleteOperation {
     pub fn apply(&self, infra_id: i32, conn: &PgConnection) -> Result<(), Box<dyn ApiError>> {
         match sql_query(format!(
-            "DELETE FROM {} WHERE obj_id = '{}' AND infra_id = {}",
-            self.obj_type.get_table(),
-            self.obj_id,
-            infra_id
+            "DELETE FROM {} WHERE obj_id = $1 AND infra_id = $2",
+            self.obj_type.get_table()
         ))
+        .bind::<Text, _>(&self.obj_id)
+        .bind::<Integer, _>(&infra_id)
         .execute(conn)
         {
             Ok(1) => Ok(()),

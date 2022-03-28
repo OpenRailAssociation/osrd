@@ -3,7 +3,7 @@ table! {
         id -> Integer,
         name -> Text,
         version -> Text,
-        generated_version -> Text,
+        generated_version -> Nullable<Text>,
     }
 }
 

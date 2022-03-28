@@ -1,7 +1,9 @@
 use super::{ObjectType, TrackSection};
 use crate::response::ApiError;
+use diesel::sql_types::{Integer, Json, Text};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
 use rocket::serde::Deserialize;
+use serde_json::Value;
 
 #[derive(Clone, Deserialize)]
 #[serde(crate = "rocket::serde", tag = "obj_type")]
@@ -12,13 +14,14 @@ pub enum CreateOperation {
 impl CreateOperation {
     pub fn apply(&self, infra_id: i32, conn: &PgConnection) -> Result<(), Box<dyn ApiError>> {
         sql_query(format!(
-            "INSERT INTO {} (infra_id, obj_id, data) VALUES ({}, '{}', '{}')",
-            self.get_obj_type().get_table(),
-            infra_id,
-            self.get_obj_id(),
-            self.get_data(),
+            "INSERT INTO {} (infra_id, obj_id, data) VALUES ($1, $2, $3)",
+            self.get_obj_type().get_table()
         ))
-        .execute(conn)?;
+        .bind::<Integer, _>(infra_id)
+        .bind::<Text, _>(self.get_obj_id())
+        .bind::<Json, _>(self.get_data())
+        .execute(conn)
+        .unwrap();
         Ok(())
     }
 
@@ -34,9 +37,9 @@ impl CreateOperation {
         }
     }
 
-    pub fn get_data(&self) -> String {
+    pub fn get_data(&self) -> Value {
         match self {
-            CreateOperation::TrackSection { railjson } => serde_json::to_string(railjson).unwrap(),
+            CreateOperation::TrackSection { railjson } => serde_json::to_value(railjson).unwrap(),
         }
     }
 }

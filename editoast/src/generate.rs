@@ -10,7 +10,10 @@ use std::error::Error;
 
 pub fn refresh(conn: &PgConnection, infra: &Infra, force: bool) -> Result<(), Box<dyn Error>> {
     // Check if refresh is needed
-    if !force && infra.version == infra.generated_version {
+    if !force
+        && infra.generated_version.is_some()
+        && &infra.version == infra.generated_version.as_ref().unwrap()
+    {
         return Ok(());
     }
 
