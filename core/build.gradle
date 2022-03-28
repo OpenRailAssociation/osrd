@@ -17,6 +17,7 @@ import static org.apache.tools.ant.taskdefs.condition.Os.*
 
 plugins {
     id 'java'
+    id 'org.jetbrains.kotlin.jvm' version '1.6.10'
     id 'application'
     id 'checkstyle'
     id 'com.github.spotbugs' version '5.0.6'
@@ -31,8 +32,12 @@ repositories {
 }
 
 dependencies {
+    // kotlin
+    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib'  // Apache 2.0
+    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: '1.6.1'  // Apache 2.0
+
     // base primitives
-    implementation group: 'com.google.guava', name: 'guava', version: '31.1-jre'
+    implementation group: 'com.google.guava', name: 'guava', version: '31.1-jre'  // Apache 2.0
 
     // command line parsing
     implementation group: 'com.beust', name: 'jcommander', version: '1.78'  // Apache 2.0
@@ -193,6 +198,17 @@ test {
 jacocoTestReport {
     reports {
         xml.required = true
+    }
+}
+
+// endregion
+
+// region KOTLIN
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
+        jvmTarget = "17"
     }
 }
 
