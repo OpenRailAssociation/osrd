@@ -1,4 +1,4 @@
-package fr.sncf.osrd.new_infra.implementation;
+package fr.sncf.osrd.utils.new_graph;
 
 import com.google.common.collect.Sets;
 import com.google.common.graph.EndpointPair;

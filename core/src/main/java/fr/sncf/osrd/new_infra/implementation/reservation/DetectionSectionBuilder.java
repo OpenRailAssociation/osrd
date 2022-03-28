@@ -2,7 +2,7 @@ package fr.sncf.osrd.new_infra.implementation.reservation;
 
 import static fr.sncf.osrd.new_infra.api.Direction.BACKWARD;
 import static fr.sncf.osrd.new_infra.api.Direction.FORWARD;
-import static fr.sncf.osrd.new_infra.implementation.GraphHelpers.*;
+import static fr.sncf.osrd.utils.new_graph.GraphHelpers.*;
 
 import com.google.common.collect.ImmutableSet;
 import fr.sncf.osrd.new_infra.api.reservation.DetectionSection;
