@@ -6,6 +6,7 @@ use crate::response::ApiResult;
 use rocket::serde::json::Json;
 use rocket::{routes, Route, State};
 use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
 
 pub fn routes() -> Vec<Route> {
     routes![health, infra_list, edit_infra, create_infra, delete_infra]
@@ -41,7 +42,7 @@ async fn delete_infra(infra: u32, connection: DBConnection) -> ApiResult<()> {
 async fn edit_infra(
     infra: u32,
     operations: Json<Vec<Operation>>,
-    infra_caches: &State<HashMap<i32, InfraCache>>,
+    infra_caches: &State<HashMap<i32, Arc<Mutex<InfraCache>>>>,
     connection: DBConnection,
 ) -> ApiResult<String> {
     // Retrieve infra
@@ -61,13 +62,20 @@ async fn edit_infra(
     // Bump version
     let infra = connection.run(move |c| infra.bump_version(c)).await?;
 
-    // TODO: Apply operations to infra cache
+    // Apply operations to infra cache
     let infra_cache = infra_caches
         .get(&infra.id)
         .expect(format!("Infra cache does not contain infra '{}'", infra.id).as_str());
 
+    {
+        let mut infra_cache = infra_cache.lock().unwrap();
+        for op in operations.iter() {
+            infra_cache.apply(op);
+        }
+    }
+
     // Refresh layers
-    generate::update(&connection, infra.id, &operations, infra_cache)
+    generate::update(&connection, infra.id, &operations, infra_cache.clone())
         .await
         .expect("Update generated data failed");
 
