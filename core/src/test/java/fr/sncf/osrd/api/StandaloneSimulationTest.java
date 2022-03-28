@@ -4,11 +4,13 @@ import static fr.sncf.osrd.Helpers.getExampleRollingStocks;
 import static org.junit.jupiter.api.Assertions.*;
 
 import fr.sncf.osrd.api.StandaloneSimulationEndpoint.StandaloneSimulationRequest;
-import fr.sncf.osrd.api.StandaloneSimulationEndpoint.StandaloneSimulationResult;
 import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.schedule.*;
+import fr.sncf.osrd.standalone_sim.result.ResultPosition;
+import fr.sncf.osrd.standalone_sim.result.ResultSpeed;
+import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import org.junit.jupiter.api.Test;
 import org.takes.rq.RqFake;
@@ -37,7 +39,7 @@ class StandaloneSimulationTest extends ApiTest {
         return trainPath;
     }
 
-    public static StandaloneSimulationResult runStandaloneSimulation(StandaloneSimulationRequest request) throws
+    public static StandaloneSimResult runStandaloneSimulation(StandaloneSimulationRequest request) throws
             InvalidRollingStock,
             InvalidSchedule,
             IOException,
@@ -51,7 +53,7 @@ class StandaloneSimulationTest extends ApiTest {
         ).printBody();
 
         // parse the response
-        var response =  StandaloneSimulationEndpoint.adapterResult.fromJson(rawResponse);
+        var response = StandaloneSimResult.adapter.fromJson(rawResponse);
         assertNotNull(response);
         return response;
     }
@@ -80,12 +82,12 @@ class StandaloneSimulationTest extends ApiTest {
         var trainResult = simResult.baseSimulations.get(0);
 
         // ensure the position of the head and the tail of the train are always increasing
-        var positions = trainResult.headPositions.toArray(new StandaloneSimulationEndpoint.SimulationResultPosition[0]);
+        var positions = trainResult.headPositions.toArray(new ResultPosition[0]);
         for (int i = 1; i < positions.length; i++)
             assertTrue(positions[i - 1].time <= positions[i].time);
 
         // ensure the speed is always increasing
-        var speeds = trainResult.speeds.toArray(new StandaloneSimulationEndpoint.SimulationResultSpeed[0]);
+        var speeds = trainResult.speeds.toArray(new ResultSpeed[0]);
         for (int i = 1; i < speeds.length; i++)
             assertTrue(speeds[i - 1].position <= speeds[i].position);
         assertEquals(8, trainResult.routeOccupancies.size());
