@@ -11,6 +11,8 @@ use diesel::{delete, sql_query};
 use itertools::Itertools;
 use rocket::serde::Serialize;
 use std::collections::HashSet;
+use std::ops::Deref;
+use std::sync::{Arc, Mutex};
 
 #[derive(QueryableByName, Queryable, Debug, Serialize)]
 #[serde(crate = "rocket::serde")]
@@ -72,32 +74,39 @@ impl SignalLayer {
         conn: &DBConnection,
         infra: i32,
         operations: &Vec<Operation>,
-        infra_cache: &InfraCache,
+        infra_cache: Arc<Mutex<InfraCache>>,
     ) -> Result<(), Error> {
         // Search all signals that needs to be refreshed
         let mut obj_ids = HashSet::new();
-        for op in operations {
-            match op {
-                Operation::Create(CreateOperation::TrackSection { railjson }) => {
-                    Self::fill_signal_track_refs(infra_cache, &railjson.id, &mut obj_ids)
+        {
+            let infra_cache = infra_cache.lock().unwrap();
+            for op in operations {
+                match op {
+                    Operation::Create(CreateOperation::TrackSection { railjson }) => {
+                        Self::fill_signal_track_refs(
+                            infra_cache.deref(),
+                            &railjson.id,
+                            &mut obj_ids,
+                        )
+                    }
+                    Operation::Update(UpdateOperation {
+                        obj_id: track_id,
+                        obj_type: ObjectType::TrackSection,
+                        ..
+                    }) => Self::fill_signal_track_refs(infra_cache.deref(), track_id, &mut obj_ids),
+                    Operation::Delete(DeleteOperation {
+                        obj_id: signal_id,
+                        obj_type: ObjectType::Signal,
+                    })
+                    | Operation::Update(UpdateOperation {
+                        obj_id: signal_id,
+                        obj_type: ObjectType::Signal,
+                        ..
+                    }) => {
+                        obj_ids.insert(signal_id.clone());
+                    }
+                    _ => (),
                 }
-                Operation::Update(UpdateOperation {
-                    obj_id: track_id,
-                    obj_type: ObjectType::TrackSection,
-                    ..
-                }) => Self::fill_signal_track_refs(infra_cache, track_id, &mut obj_ids),
-                Operation::Delete(DeleteOperation {
-                    obj_id: signal_id,
-                    obj_type: ObjectType::Signal,
-                })
-                | Operation::Update(UpdateOperation {
-                    obj_id: signal_id,
-                    obj_type: ObjectType::Signal,
-                    ..
-                }) => {
-                    obj_ids.insert(signal_id.clone());
-                }
-                _ => (),
             }
         }
         // Update layer
