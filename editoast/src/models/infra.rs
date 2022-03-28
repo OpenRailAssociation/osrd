@@ -1,8 +1,9 @@
 use crate::response::ApiError;
 use crate::schema::osrd_infra_infra;
 use crate::schema::osrd_infra_infra::dsl::*;
-use diesel::prelude::*;
 use diesel::result::Error as DieselError;
+use diesel::sql_types::Text;
+use diesel::ExpressionMethods;
 use diesel::{delete, sql_query, update, PgConnection, QueryDsl, RunQueryDsl};
 use rocket::serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -16,7 +17,7 @@ pub struct Infra {
     pub id: i32,
     pub name: String,
     pub version: String,
-    pub generated_version: String,
+    pub generated_version: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -51,19 +52,6 @@ impl ApiError for InfraError {
 }
 
 impl Infra {
-    pub fn _retrieve_list(
-        conn: &PgConnection,
-        ids: &Vec<i32>,
-    ) -> Result<Vec<Infra>, diesel::result::Error> {
-        println!("{:?}", vec![3, 4]);
-        let ids: Vec<String> = ids.iter().map(|i| i.to_string()).collect();
-        sql_query(format!(
-            "SELECT id, name FROM osrd_infra_infra WHERE id IN ({})",
-            ids.join(",")
-        ))
-        .load(conn)
-    }
-
     pub fn retrieve(conn: &PgConnection, infra_id: i32) -> Result<Infra, Box<dyn ApiError>> {
         match osrd_infra_infra.find(infra_id).first(conn) {
             Ok(infra) => Ok(infra),
@@ -76,18 +64,6 @@ impl Infra {
         osrd_infra_infra
             .load::<Self>(conn)
             .expect("List infra query failed")
-    }
-
-    pub fn _rename(
-        &mut self,
-        new_name: String,
-        conn: &PgConnection,
-    ) -> Result<(), diesel::result::Error> {
-        let new_infra = update(osrd_infra_infra.find(self.id))
-            .set(name.eq(new_name))
-            .get_result::<Self>(conn)?;
-        self.name = new_infra.name;
-        Ok(())
     }
 
     pub fn bump_version(&self, conn: &PgConnection) -> Result<Self, Box<dyn ApiError>> {
@@ -119,12 +95,13 @@ impl Infra {
     }
 
     pub fn create(infra_name: &String, conn: &PgConnection) -> Result<Infra, Box<dyn ApiError>> {
-        match sql_query(format!(
+        match sql_query(
             "INSERT INTO osrd_infra_infra (name, railjson_version, owner, version, generated_version)
-             VALUES ('{}', '{}', '00000000-0000-0000-0000-000000000000', '1', '0')
+             VALUES ($1, $2, '00000000-0000-0000-0000-000000000000', '1', NULL)
              RETURNING *",
-            infra_name, RAILJSON_VERSION
-        ))
+        )
+        .bind::<Text, _>(infra_name)
+        .bind::<Text, _>(RAILJSON_VERSION)
         .get_result::<Infra>(conn)
         {
             Ok(infra) => Ok(infra),
