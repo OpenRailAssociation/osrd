@@ -40,9 +40,6 @@ dependencies {
     // fast primitive collections
     implementation group: 'com.carrotsearch', name: 'hppc', version: '0.9.0'  // Apache 2.0
 
-    // XML parsing
-    implementation group: 'org.dom4j', name: 'dom4j', version: '2.1.0'  // modified BSD, credits should be given to "the DOM4J Project - https://dom4j.github.io/"
-
     // JSON parsing
     implementation 'com.squareup.moshi:moshi:1.13.0' // Apache 2.0
     implementation 'com.squareup.moshi:moshi-adapters:1.13.0'  // Apache 2.0
@@ -50,9 +47,6 @@ dependencies {
     // HTTP server framework
     implementation group: 'org.takes', name: 'takes', version: '1.19'  // MIT
     implementation group: 'javax.json', name: 'javax.json-api', version: '1.1.4'  // GPLv2 with classpath exemption
-    // WebSocket server
-    implementation group: 'org.glassfish.tyrus', name: 'tyrus-server', version: '2.0.1'  // EPL 2.0
-    implementation group: 'org.glassfish.tyrus', name: 'tyrus-container-grizzly-server', version: '2.0.1'  // EPL 2.0
 
     // HTTP client
     implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.9.1' // Apache 2.0
@@ -61,8 +55,6 @@ dependencies {
     implementation group: 'io.github.classgraph', name: 'classgraph', version: '4.8.102' // MIT
 
     // for debug UI
-    implementation 'org.graphstream:gs-core:2.0'  // LGLPv3
-    implementation 'org.graphstream:gs-ui-swing:2.0'  // LGLPv3
     implementation 'com.github.yannrichet:JMathPlot:1.0.1' // BSD
 
     // the logging API stub
