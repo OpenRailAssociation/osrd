@@ -8,7 +8,11 @@ use crate::railjson::operation::Operation;
 use diesel::PgConnection;
 use std::error::Error;
 
-pub fn refresh(conn: &PgConnection, infra: &Infra, force: bool) -> Result<(), Box<dyn Error>> {
+pub fn refresh(
+    conn: &PgConnection,
+    infra: &Infra,
+    force: bool,
+) -> Result<(), Box<dyn Error + Send + Sync>> {
     // Check if refresh is needed
     if !force
         && infra.generated_version.is_some()
