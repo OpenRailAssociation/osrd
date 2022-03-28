@@ -12,6 +12,7 @@ import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.reservation.*;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackInfra;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.Detector;
+import fr.sncf.osrd.new_infra.api.tracks.undirected.SwitchBranch;
 import fr.sncf.osrd.new_infra.implementation.GraphHelpers;
 import fr.sncf.osrd.new_infra.implementation.RJSObjectParsing;
 import fr.sncf.osrd.new_infra.implementation.tracks.directed.DirectedInfraBuilder;
@@ -19,6 +20,7 @@ import fr.sncf.osrd.new_infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
+import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import java.util.*;
 
 public class ReservationInfraBuilder {
@@ -107,20 +109,12 @@ public class ReservationInfraBuilder {
     /** Returns true if the route is controlled (requires explicit reservation to be used) */
     private boolean isRouteControlled(ImmutableList<TrackRangeView> trackRanges) {
         // TODO: eventually, add an optional parameter to RJSRoute
-        for (int i = 1; i < trackRanges.size(); i++) {
-            var prev = trackRanges.get(i - 1).track.getEdge();
-            var next = trackRanges.get(i).track.getEdge();
-            if (prev != next) {
-                if (GraphHelpers.areEdgesLinkedBySwitchBranch(diTrackInfra.getTrackGraph(), prev, next))
-                    return true;
-                assert GraphHelpers.areEdgesAdjacent(diTrackInfra.getTrackGraph(), prev, next);
-            }
-        }
-        return false;
+        return trackRanges.stream()
+                .anyMatch(trackRangeView -> trackRangeView.track.getEdge() instanceof SwitchBranch);
     }
 
     private ImmutableList<TrackRangeView> makeTrackRanges(RJSRoute rjsRoute) {
-        var res = ImmutableList.<TrackRangeView>builder();
+        var res = new ArrayList<TrackRangeView>();
         for (var range : rjsRoute.path) {
             range.track.checkType(Set.of("TrackSection"));
             res.add(new TrackRangeView(
@@ -129,7 +123,33 @@ public class ReservationInfraBuilder {
                     diTrackInfra.getEdge(range.track.id.id, Direction.fromEdgeDir(range.direction))
             ));
         }
-        return res.build();
+
+        // Adds switch branches edges (unspecified in the RJS path)
+        for (int i = 1; i < res.size(); i++) {
+            var prev = res.get(i - 1);
+            var next = res.get(i);
+            var g = diTrackInfra.getTrackGraph();
+            if (g.adjacentEdges(prev.track.getEdge()).contains(next.track.getEdge()))
+                continue;
+            var prevNode = GraphHelpers.nodeFromEdgeEndpoint(
+                    g,
+                    prev.track.getEdge(),
+                    EdgeEndpoint.endEndpoint(prev.track.getDirection())
+            );
+            var nextNode = GraphHelpers.nodeFromEdgeEndpoint(
+                    g,
+                    next.track.getEdge(),
+                    EdgeEndpoint.startEndpoint(next.track.getDirection())
+            );
+            var connecting = g.edgeConnecting(prevNode, nextNode);
+            if (connecting.isEmpty())
+                connecting = g.edgeConnecting(nextNode, prevNode);
+            assert connecting.isPresent() : "Route track path isn't contiguous";
+            var branchEdge = connecting.get();
+            var dir = g.incidentNodes(branchEdge).nodeU().equals(prevNode) ? FORWARD : BACKWARD;
+            res.add(i, new TrackRangeView(0, 0, diTrackInfra.getEdge(branchEdge, dir)));
+        }
+        return ImmutableList.copyOf(res);
     }
 
     /** Lists the release points on a given route (in order) */
