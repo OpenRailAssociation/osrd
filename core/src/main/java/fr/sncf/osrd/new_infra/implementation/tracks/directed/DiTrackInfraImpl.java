@@ -7,6 +7,7 @@ import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackEdge;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackInfra;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackNode;
+import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackInfra;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackSection;
 import fr.sncf.osrd.new_infra.implementation.tracks.undirected.TrackInfraImpl;
@@ -14,7 +15,7 @@ import fr.sncf.osrd.new_infra.implementation.tracks.undirected.TrackInfraImpl;
 public class DiTrackInfraImpl extends TrackInfraImpl implements DiTrackInfra {
 
     private final ImmutableNetwork<DiTrackNode, DiTrackEdge> graph;
-    private final ImmutableMultimap<String, DiTrackEdge> trackEdgesByID;
+    private final ImmutableMultimap<TrackEdge, DiTrackEdge> trackEdgesToDiTrackEdges;
 
     protected DiTrackInfraImpl(TrackInfra trackInfra, ImmutableNetwork<DiTrackNode, DiTrackEdge> graph) {
         super(
@@ -24,13 +25,10 @@ public class DiTrackInfraImpl extends TrackInfraImpl implements DiTrackInfra {
                 trackInfra.getDetectorMap()
         );
         this.graph = graph;
-        var builder = ImmutableListMultimap.<String, DiTrackEdge>builder();
-        for (var edge : graph.edges()) {
-            if (edge.getEdge() instanceof TrackSection trackSection) {
-                builder.put(trackSection.getID(), edge);
-            }
-        }
-        trackEdgesByID = builder.build();
+        var builder = ImmutableListMultimap.<TrackEdge, DiTrackEdge>builder();
+        for (var edge : graph.edges())
+            builder.put(edge.getEdge(), edge);
+        trackEdgesToDiTrackEdges = builder.build();
     }
 
     @Override
@@ -40,9 +38,14 @@ public class DiTrackInfraImpl extends TrackInfraImpl implements DiTrackInfra {
 
     @Override
     public DiTrackEdge getEdge(String id, Direction direction) {
-        for (var edge : trackEdgesByID.get(id))
-            if (edge.getDirection() == direction)
-                return edge;
+        return getEdge(getTrackSection(id), direction);
+    }
+
+    @Override
+    public DiTrackEdge getEdge(TrackEdge edge, Direction direction) {
+        for (var diEdge : trackEdgesToDiTrackEdges.get(edge))
+            if (diEdge.getDirection() == direction)
+                return diEdge;
         throw new RuntimeException("Missing oriented edge for the given direction");
     }
 }

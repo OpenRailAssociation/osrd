@@ -40,34 +40,6 @@ public class GraphHelpers {
         return intersection.stream().iterator().next();
     }
 
-    /** Returns true if the edges share a node */
-    public static boolean areEdgesAdjacent(ImmutableNetwork<TrackNode, TrackEdge> undirectedGraph,
-                                           TrackEdge edge1, TrackEdge edge2) {
-        var intersection = Sets.intersection(
-                endpointPairToSet(undirectedGraph.incidentNodes(edge1)),
-                endpointPairToSet(undirectedGraph.incidentNodes(edge2))
-        );
-        return intersection.size() == 1;
-    }
-
-    /** Returns true if the edges are connected by an instance of `SwitchBranch` */
-    public static boolean areEdgesLinkedBySwitchBranch(ImmutableNetwork<TrackNode, TrackEdge> undirectedGraph,
-                                                       TrackEdge edge1, TrackEdge edge2) {
-        for (var node1 : endpointPairToSet(undirectedGraph.incidentNodes(edge1))) {
-            for (var node2 : endpointPairToSet(undirectedGraph.incidentNodes(edge2))) {
-                var connecting = undirectedGraph.edgeConnecting(node1, node2);
-                if (connecting.isEmpty())
-                    connecting = undirectedGraph.edgeConnecting(node2, node1);
-                if (connecting.isPresent()) {
-                    var connectingEdge = connecting.get();
-                    if (connectingEdge != edge1 && connectingEdge != edge2)
-                        return connectingEdge instanceof SwitchBranch;
-                }
-            }
-        }
-        return false;
-    }
-
     /** Creates a set from a pair of endpoints */
     public static Set<TrackNode> endpointPairToSet(EndpointPair<TrackNode> pair) {
         return Set.of(pair.nodeU(), pair.nodeV());
