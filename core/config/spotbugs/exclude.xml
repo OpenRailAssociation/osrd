@@ -2,4 +2,7 @@
   <Match>
     <Bug code="EI2,EI" />
   </Match>
+  <Match>
+    <Source name="~.*\.kt"/>
+  </Match>
 </FindBugsFilter>
