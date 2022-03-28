@@ -13,7 +13,7 @@ pub struct ResultError {
     message: String,
 }
 
-pub trait ApiError: Error + Send {
+pub trait ApiError: Error + Send + Sync {
     fn get_code(&self) -> u16;
     fn get_type(&self) -> &'static str;
 }
