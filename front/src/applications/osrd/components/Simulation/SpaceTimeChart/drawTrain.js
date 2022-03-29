@@ -76,7 +76,6 @@ export default function drawTrain(
     .on('drag', () => {
       dragFullOffset += rotate ? d3.event.dy : d3.event.dx;
       const value = getDragOffsetValue(dragFullOffset)
-      console.log("VALUE ON DRAG", value)
       const newDepartureArrivalTimes = departureArrivalTimes(simulation, value)
       debounceUpdateDepartureArrivalTimes(newDepartureArrivalTimes, 15);
       applyTrainCurveTranslation(dragFullOffset);

@@ -40,8 +40,9 @@ function undoable(simulationReducer) {
         // Delegate handling the action to the passed reducer
         const newPresent = simulationReducer(present, action)
 
+        // test equality on train
         if (present === newPresent) {
-          return state
+          return state;
         }
         return {
           past: [...past, present],
@@ -51,8 +52,6 @@ function undoable(simulationReducer) {
     }
   }
 }
-
-
 
 // Reducer
 const initialState = {
@@ -68,8 +67,6 @@ function reducer(state = { trains: []}, action) {
     default:
       return state;
   }
-
-
 }
 
 const undoableSimulation = undoable(reducer)
