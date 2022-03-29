@@ -115,7 +115,9 @@ export default function SpaceTimeChart(props) {
   };
 
   const drawAllTrains = (reset, forceRedraw = false, newDataSimulation) => {
+
     const currentDataSimulation = newDataSimulation || dataSimulation
+
     if (mustRedraw || forceRedraw) {
       const chartLocal = createChart(
         chart,
@@ -153,7 +155,7 @@ export default function SpaceTimeChart(props) {
       });
       enableInteractivity(
         chartLocal,
-        dataSimulation[selectedTrain],
+        currentDataSimulation[selectedTrain],
         dispatch,
         keyValues,
         LIST_VALUES_NAME_SPACE_TIME,

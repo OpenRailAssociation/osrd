@@ -20,6 +20,8 @@ function undoable(simulationReducer) {
     switch (action.type) {
       case UNDO_SIMULATION:
         const previous = past[past.length - 1]
+        // security: do not return manually to an empty simulation, it should not happen
+        if(previous.trains?.length === 0) return state
         const newPast = past.slice(0, past.length - 1)
         return {
           past: newPast,
