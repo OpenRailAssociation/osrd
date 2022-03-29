@@ -48,7 +48,7 @@ class StandaloneSimulationTest extends ApiTest {
         var requestBody = StandaloneSimulationEndpoint.adapterRequest.toJson(request);
 
         // process it
-        var rawResponse = new RsPrint(new StandaloneSimulationEndpoint(infraHandlerMock)
+        var rawResponse = new RsPrint(new StandaloneSimulationEndpoint(newInfraHandlerMock)
                 .act(new RqFake("POST", "/standalone_simulation", requestBody))
         ).printBody();
 

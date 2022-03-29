@@ -7,6 +7,8 @@ import fr.sncf.osrd.envelope.*;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.infra.trackgraph.TrackSection;
+import fr.sncf.osrd.new_infra.implementation.tracks.directed.TrackRangeView;
+import fr.sncf.osrd.new_infra_state.api.NewTrainPath;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.TrainPath;
 import fr.sncf.osrd.utils.DoubleUtils;
@@ -26,54 +28,44 @@ public class MRSP {
         }
     }
 
-    /** Computes the most restricted speed profile */
-    public static Envelope from(TrainPath trainPath, RollingStock rollingStock) {
+    /** Computes the most restricted speed profile from a path */
+    public static Envelope from(NewTrainPath trainPath, RollingStock rollingStock) {
+        return from(NewTrainPath.removeLocation(trainPath.trackRangePath()), rollingStock);
+    }
+
+    /** Computes the most restricted speed profile from a list of track ranges */
+    public static Envelope from(List<TrackRangeView> ranges, RollingStock rollingStock) {
         var builder = new MRSPEnvelopeBuilder();
+        var pathLength = ranges.stream().mapToDouble(TrackRangeView::getLength).sum();
 
         // add a limit for the maximum speed the hardware is rated for
         builder.addPart(EnvelopePart.generateTimes(
                 List.of(EnvelopeProfile.CONSTANT_SPEED, LimitKind.TRAIN_LIMIT),
-                new double[] { 0, trainPath.length },
+                new double[] { 0, pathLength },
                 new double[] { rollingStock.maxSpeed, rollingStock.maxSpeed }
         ));
 
-        var offset = 0;
-        for (var trackSectionRange : trainPath.trackSectionPath) {
-            var edge = trackSectionRange.edge;
-            for (var speedRange : TrackSection.getSpeedSections(edge, trackSectionRange.direction)) {
-                // ignore the speed limit if it doesn't apply to our train
-                var speedSection = speedRange.value;
-                if (!speedSection.isValidFor(rollingStock))
-                    continue;
+        var offset = 0.;
+        for (var range : ranges) {
+            if (range.getLength() > 0) {
+                for (var speedRange : range.getSpeedSections().getValuesInRange(0, range.getLength()).entrySet()) {
+                    // compute where this limit is active from and to
+                    var interval = speedRange.getKey();
+                    var begin = offset + interval.getBeginPosition();
+                    var end = offset + interval.getEndPosition();
+                    var speed = speedRange.getValue();
+                    if (speed.isInfinite() || speed == 0)
+                        continue;
 
-                var speedRangeBegin = min(speedRange.begin, speedRange.end);
-                var speedRangeEnd = max(speedRange.begin, speedRange.end);
-                var beginOnRange = 0.;
-                if (trackSectionRange.direction == EdgeDirection.START_TO_STOP) {
-                    beginOnRange = DoubleUtils.clamp(
-                            speedRangeBegin - trackSectionRange.getBeginPosition(), 0, trackSectionRange.length());
-                } else {
-                    beginOnRange = DoubleUtils.clamp(
-                            trackSectionRange.getBeginPosition() - speedRangeEnd, 0, trackSectionRange.length());
+                    // Add the envelope part corresponding to the restricted speed section
+                    builder.addPart(EnvelopePart.generateTimes(
+                            List.of(EnvelopeProfile.CONSTANT_SPEED, LimitKind.SPEED_LIMIT),
+                            new double[]{begin, end},
+                            new double[]{speed, speed}
+                    ));
                 }
-                var endOnRange = DoubleUtils.clamp(
-                        beginOnRange + speedRangeEnd - speedRangeBegin, 0, trackSectionRange.length());
-
-                if (Double.compare(beginOnRange, endOnRange) == 0)
-                    continue;
-
-                // compute where this limit is active from and to
-                var begin = offset + beginOnRange;
-                var end = offset + endOnRange;
-
-                // Add the envelope part corresponding to the restricted speed section
-                builder.addPart(EnvelopePart.generateTimes(
-                        List.of(EnvelopeProfile.CONSTANT_SPEED, LimitKind.SPEED_LIMIT),
-                        new double[] { begin, end },
-                        new double[] { speedSection.speedLimit, speedSection.speedLimit }
-                ));
+                offset += range.getLength();
             }
-            offset += trackSectionRange.length();
         }
         return builder.build();
     }

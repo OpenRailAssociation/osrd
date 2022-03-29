@@ -9,11 +9,11 @@ import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.envelope_sim_infra.MRSP;
 import fr.sncf.osrd.exceptions.ErrorContext;
 import fr.sncf.osrd.exceptions.OSRDError;
-import fr.sncf.osrd.infra.Infra;
+import fr.sncf.osrd.new_infra.api.signaling.SignalingInfra;
+import fr.sncf.osrd.new_infra_state.api.NewTrainPath;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
 import fr.sncf.osrd.standalone_sim.result.*;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
-import fr.sncf.osrd.train.TrainPath;
 import java.util.HashMap;
 import java.util.List;
 
@@ -23,13 +23,13 @@ public class StandaloneSim {
      * Interactions between trains are ignored.
      */
     public static StandaloneSimResult run(
-            Infra infra,
+            SignalingInfra infra,
             RJSTrainPath rjsTrainsPath,
-            TrainPath trainsPath,
+            NewTrainPath trainsPath,
             List<StandaloneTrainSchedule> schedules,
             double timeStep
     ) {
-        var envelopePath = EnvelopeTrainPath.from(trainsPath);
+        var envelopePath = EnvelopeTrainPath.fromNew(trainsPath);
 
         // Compute envelopes
         var result = new StandaloneSimResult();

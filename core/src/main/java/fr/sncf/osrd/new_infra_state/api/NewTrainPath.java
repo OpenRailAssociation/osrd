@@ -5,7 +5,9 @@ import com.google.common.collect.ImmutableList;
 import fr.sncf.osrd.new_infra.api.reservation.DetectionSection;
 import fr.sncf.osrd.new_infra.api.reservation.DiDetector;
 import fr.sncf.osrd.new_infra.api.signaling.SignalingRoute;
+import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackLocation;
 import fr.sncf.osrd.new_infra.implementation.tracks.directed.TrackRangeView;
+import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,13 +47,38 @@ public record NewTrainPath(
     /** Utility function, returns the last element with offset <= the given offset.
      * For range objects (route / sections), it returns the element containing the offset. */
     public static <T> T getLastElementBefore(ImmutableList<LocatedElement<T>> list, double offset) {
+        return getLastLocatedElementBefore(list, offset).element;
+    }
+
+    /** Utility function, returns the last located element with offset <= the given offset.
+     * For range objects (route / sections), it returns the element containing the offset. */
+    public static <T> LocatedElement<T> getLastLocatedElementBefore(
+            ImmutableList<LocatedElement<T>> list,
+            double offset
+    ) {
         for (int i = 0; i < list.size(); i++) {
             var e = list.get(i);
             if (e.pathOffset > offset && i > 0)
-                return list.get(i - 1).element;
+                return list.get(i - 1);
             if (e.pathOffset >= offset)
-                return e.element;
+                return e;
         }
-        return list.get(list.size() - 1).element;
+        return list.get(list.size() - 1);
+    }
+
+    /** Converts a track location into an offset on the path.
+     * Note: using this should be avoided whenever possible, it prevents paths with loops */
+    public double convertTrackLocation(TrackLocation location) {
+        for (var track : trackRangePath)
+            if (track.element.contains(location))
+                return track.pathOffset + track.element.offsetOf(location);
+        throw new InvalidSchedule("TrackLocation isn't included in the path");
+    }
+
+    /** Returns the location at the given offset */
+    public TrackLocation findLocation(double pathOffset) {
+        assert pathOffset <= length;
+        var element = getLastLocatedElementBefore(trackRangePath, pathOffset);
+        return element.element.locationOfOffset(pathOffset - element.pathOffset);
     }
 }

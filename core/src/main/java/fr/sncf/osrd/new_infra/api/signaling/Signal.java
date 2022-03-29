@@ -24,4 +24,7 @@ public interface Signal<StateT extends SignalState> {
 
     /** Returns the signal ID */
     String getID();
+
+    /** Returns a set of routes protected by this signal. May be empty if the signal isn't linked to a detector */
+    Set<ReservationRoute> getProtectedRoutes();
 }
