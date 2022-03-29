@@ -7,7 +7,8 @@ use crate::response::ApiError;
 use diesel::result::Error as DieselError;
 use diesel::PgConnection;
 use json_patch::PatchError;
-use rocket::serde::Deserialize;
+use rocket::http::Status;
+use serde::Deserialize;
 use serde_json::Error as SerdeError;
 use thiserror::Error;
 
@@ -16,7 +17,7 @@ pub use delete::DeleteOperation;
 pub use update::UpdateOperation;
 
 #[derive(Clone, Deserialize)]
-#[serde(crate = "rocket::serde", tag = "type")]
+#[serde(tag = "type")]
 pub enum Operation {
     #[serde(rename = "CREATE")]
     Create(CreateOperation),
@@ -42,11 +43,11 @@ pub enum OperationError {
 }
 
 impl ApiError for OperationError {
-    fn get_code(&self) -> u16 {
+    fn get_status(&self) -> Status {
         match self {
-            OperationError::ObjectNotFound(_) => 404,
-            OperationError::ModifyId => 400,
-            _ => 500,
+            OperationError::ObjectNotFound(_) => Status::NotFound,
+            OperationError::ModifyId => Status::BadRequest,
+            _ => Status::InternalServerError,
         }
     }
 

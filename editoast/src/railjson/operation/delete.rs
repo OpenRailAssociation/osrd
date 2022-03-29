@@ -3,10 +3,9 @@ use crate::response::ApiError;
 use diesel::sql_types::{Integer, Text};
 use diesel::RunQueryDsl;
 use diesel::{sql_query, PgConnection};
-use rocket::serde::Deserialize;
+use serde::Deserialize;
 
 #[derive(Clone, Deserialize)]
-#[serde(crate = "rocket::serde")]
 pub struct DeleteOperation {
     pub obj_type: ObjectType,
     pub obj_id: String,

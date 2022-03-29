@@ -2,11 +2,11 @@ use super::{ObjectType, TrackSection};
 use crate::response::ApiError;
 use diesel::sql_types::{Integer, Json, Text};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
-use rocket::serde::Deserialize;
+use serde::Deserialize;
 use serde_json::Value;
 
 #[derive(Clone, Deserialize)]
-#[serde(crate = "rocket::serde", tag = "obj_type")]
+#[serde(tag = "obj_type")]
 pub enum CreateOperation {
     TrackSection { railjson: TrackSection },
 }

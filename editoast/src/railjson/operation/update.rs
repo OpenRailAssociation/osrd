@@ -5,11 +5,10 @@ use diesel::sql_types::Jsonb;
 use diesel::sql_types::{Integer, Json, Text};
 use diesel::{sql_query, PgConnection, QueryableByName, RunQueryDsl};
 use json_patch::Patch;
-use rocket::serde::Deserialize;
+use serde::Deserialize;
 use serde_json::{from_value, Value};
 
 #[derive(Clone, Deserialize)]
-#[serde(crate = "rocket::serde")]
 pub struct UpdateOperation {
     pub obj_id: String,
     pub obj_type: ObjectType,

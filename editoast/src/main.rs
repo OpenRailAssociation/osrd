@@ -1,7 +1,10 @@
+#![feature(proc_macro_hygiene, decl_macro)]
 #[macro_use]
 extern crate rocket;
 #[macro_use]
 extern crate diesel;
+#[macro_use]
+extern crate rocket_contrib;
 
 mod client;
 mod generate;
@@ -18,15 +21,15 @@ use colored::*;
 use diesel::{Connection, PgConnection};
 use infra_cache::InfraCache;
 use models::{DBConnection, Infra};
+use rocket::config::Value;
 use std::collections::HashMap;
 use std::error::Error;
 use std::process::exit;
-use std::sync::{Arc, Mutex};
+use std::sync::Mutex;
 use std::thread;
 
-#[rocket::main]
-async fn main() {
-    match run().await {
+fn main() {
+    match run() {
         Ok(_) => (),
         Err(e) => {
             eprintln!("{}", e);
@@ -35,17 +38,17 @@ async fn main() {
     }
 }
 
-async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
+fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
     let client = Client::parse();
     let pg_config = client.postgres_config;
 
     match client.command {
-        Commands::Runserver(args) => runserver(args, pg_config).await,
+        Commands::Runserver(args) => runserver(args, pg_config),
         Commands::Generate(args) => generate(args, pg_config),
     }
 }
 
-async fn runserver(
+fn runserver(
     args: RunserverArgs,
     pg_config: PostgresConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
@@ -66,22 +69,27 @@ async fn runserver(
     // Initialize infra caches
     let mut infra_caches = HashMap::new();
     for infra in infras.iter() {
-        let infra_cache = InfraCache::init(&conn, infra.id);
-        infra_caches.insert(infra.id, Arc::new(Mutex::new(infra_cache)));
+        let infra_cache = Mutex::new(InfraCache::init(&conn, infra.id));
+        infra_caches.insert(infra.id, infra_cache);
     }
 
     // Config and run server
+    let databases = HashMap::from([(
+        "postgres",
+        Value::from(HashMap::from([("url", Value::from(pg_config.url()))])),
+    )]);
 
-    let config = rocket::Config::figment()
-        .merge(("port", args.port))
-        .merge(("databases.postgres.url", pg_config.url()));
+    let mut config = rocket::Config::active().unwrap();
+    config.set_port(args.port);
+    config
+        .extras
+        .insert("databases".to_string(), databases.into());
 
     rocket::custom(config)
         .attach(DBConnection::fairing())
         .manage(infra_caches)
         .mount("/", views::routes())
-        .launch()
-        .await?;
+        .launch();
 
     computation.join().unwrap()?;
     Ok(())
@@ -125,13 +133,13 @@ fn generate(
 mod test {
     use super::views;
     use rocket::http::Status;
-    use rocket::local::blocking::Client;
+    use rocket::local::Client;
     use rocket::routes;
 
     #[test]
     fn health() {
-        let serv = rocket::build().mount("/", routes![views::health]);
-        let client = Client::tracked(serv).expect("valid rocket instance");
+        let serv = rocket::ignite().mount("/", routes![views::health]);
+        let client = Client::new(serv).expect("valid rocket instance");
         let response = client.get("/health").dispatch();
         assert_eq!(response.status(), Status::Ok);
     }
