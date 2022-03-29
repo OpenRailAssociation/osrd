@@ -203,8 +203,7 @@ public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelop
 
     /** Returns the time between two positions of the envelope */
     public double getTimeBetween(double beginPos, double endPos) {
-        var sliced = make(slice(beginPos, endPos));
-        return ((double) sliced.getTotalTimeMS()) / 1000;
+        return interpolateTotalTime(endPos) - interpolateTotalTime(beginPos);
     }
 
 

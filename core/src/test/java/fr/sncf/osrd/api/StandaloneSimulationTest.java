@@ -229,6 +229,7 @@ class StandaloneSimulationTest extends ApiTest {
 
         var query = new StandaloneSimulationRequest(
                 "tiny_infra/infra.json",
+                "1",
                 2,
                 getExampleRollingStocks(),
                 trains,

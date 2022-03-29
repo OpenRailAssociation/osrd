@@ -154,9 +154,9 @@ public class MarecoAllowance implements Allowance {
         var rangePercentages = new RangePercentage[ranges.size()];
         for (var i = 0; i < ranges.size(); i++) {
             var range = ranges.get(i);
-            var percentage = range.getValue().getAllowancePercentage(
-                    envelopeRegion.getTimeBetween(range.getBeginPos(), range.getEndPos()),
-                    range.getBeginPos() - range.getEndPos()
+            var percentage = range.value.getAllowanceRatio(
+                    envelopeRegion.getTimeBetween(range.beginPos, range.endPos),
+                    range.beginPos - range.endPos
             );
             rangePercentages[i] = new RangePercentage(range, percentage);
         }
@@ -174,11 +174,11 @@ public class MarecoAllowance implements Allowance {
         for (var rangeIndex : rangeOrder) {
             var range = ranges.get(rangeIndex);
             logger.debug("computing range n°{}", rangeIndex + 1);
-            var envelopeRange = Envelope.make(envelopeRegion.slice(range.getBeginPos(), range.getEndPos()));
+            var envelopeRange = Envelope.make(envelopeRegion.slice(range.beginPos, range.endPos));
             var imposedBeginSpeed = imposedTransitionSpeeds[rangeIndex];
             var imposedEndSpeed = imposedTransitionSpeeds[rangeIndex + 1];
             var allowanceRange =
-                    computeAllowanceRange(envelopeRange, range.getValue(), imposedBeginSpeed, imposedEndSpeed);
+                    computeAllowanceRange(envelopeRange, range.value, imposedBeginSpeed, imposedEndSpeed);
             // memorize the begin and end speeds
             imposedTransitionSpeeds[rangeIndex] = allowanceRange.getBeginSpeed();
             imposedTransitionSpeeds[rangeIndex + 1] = allowanceRange.getEndSpeed();

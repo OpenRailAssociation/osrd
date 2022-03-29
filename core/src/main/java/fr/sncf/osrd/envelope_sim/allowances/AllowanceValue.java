@@ -23,7 +23,7 @@ public abstract class AllowanceValue {
     public abstract double getAllowanceTime(double baseTime, double distance);
 
     /** Returns the allowance, given the total time and distance of the trip */
-    public abstract double getAllowancePercentage(double baseTime, double distance);
+    public abstract double getAllowanceRatio(double baseTime, double distance);
 
 
     /** A fixed time allowance */
@@ -41,8 +41,8 @@ public abstract class AllowanceValue {
         }
 
         @Override
-        public double getAllowancePercentage(double baseTime, double distance) {
-            return 100 * time / baseTime;
+        public double getAllowanceRatio(double baseTime, double distance) {
+            return time / baseTime;
         }
     }
 
@@ -62,8 +62,8 @@ public abstract class AllowanceValue {
         }
 
         @Override
-        public double getAllowancePercentage(double baseTime, double distance) {
-            return percentage;
+        public double getAllowanceRatio(double baseTime, double distance) {
+            return percentage / 100;
         }
     }
 
@@ -83,7 +83,7 @@ public abstract class AllowanceValue {
         }
 
         @Override
-        public double getAllowancePercentage(double baseTime, double distance) {
+        public double getAllowanceRatio(double baseTime, double distance) {
             return getAllowanceTime(baseTime, distance) / baseTime;
         }
     }
