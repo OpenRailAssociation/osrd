@@ -7,11 +7,10 @@ use diesel::result::Error;
 use diesel::sql_types::{Integer, Text};
 use diesel::{delete, prelude::*, sql_query};
 use itertools::Itertools;
-use rocket::serde::Serialize;
+use serde::Serialize;
 use std::collections::HashSet;
 
 #[derive(QueryableByName, Queryable, Debug, Serialize)]
-#[serde(crate = "rocket::serde")]
 #[table_name = "osrd_infra_tracksectionlayer"]
 pub struct TrackSectionLayer {
     pub id: i32,
@@ -51,7 +50,7 @@ impl TrackSectionLayer {
         Ok(())
     }
 
-    pub async fn update(
+    pub fn update(
         conn: &DBConnection,
         infra: i32,
         operations: &Vec<Operation>,
@@ -78,7 +77,6 @@ impl TrackSectionLayer {
             }
         }
         // Update layer
-        conn.run(move |c| Self::update_list(c, infra, &obj_ids))
-            .await
+        Self::update_list(conn, infra, &obj_ids)
     }
 }

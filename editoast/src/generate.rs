@@ -7,7 +7,6 @@ use crate::models::TrackSectionLayer;
 use crate::railjson::operation::Operation;
 use diesel::PgConnection;
 use std::error::Error;
-use std::sync::{Arc, Mutex};
 
 pub fn refresh(
     conn: &PgConnection,
@@ -37,14 +36,14 @@ pub fn refresh(
     Ok(())
 }
 
-pub async fn update(
+pub fn update(
     conn: &DBConnection,
     infra_id: i32,
     operations: &Vec<Operation>,
-    infra_cache: Arc<Mutex<InfraCache>>,
+    infra_cache: &mut InfraCache,
 ) -> Result<(), Box<dyn Error>> {
-    TrackSectionLayer::update(conn, infra_id, operations).await?;
-    SignalLayer::update(conn, infra_id, operations, infra_cache.clone()).await?;
-    SpeedSectionLayer::update(conn, infra_id, operations, infra_cache.clone()).await?;
+    TrackSectionLayer::update(conn, infra_id, operations)?;
+    SignalLayer::update(conn, infra_id, operations, infra_cache)?;
+    SpeedSectionLayer::update(conn, infra_id, operations, infra_cache)?;
     Ok(())
 }
