@@ -1,9 +1,8 @@
 pub mod operation;
 
-use rocket::serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Deserialize, Hash, Eq, PartialEq)]
-#[serde(crate = "rocket::serde")]
 pub enum ObjectType {
     TrackSection,
     Signal,
@@ -33,7 +32,6 @@ impl ObjectType {
 }
 
 #[derive(Clone, Deserialize, Serialize, Default)]
-#[serde(crate = "rocket::serde")]
 pub struct TrackSection {
     pub id: String,
     pub length: f64,
@@ -49,7 +47,7 @@ pub struct TrackSection {
 }
 
 #[derive(Clone, Deserialize, Serialize)]
-#[serde(crate = "rocket::serde", tag = "type")]
+#[serde(tag = "type")]
 pub enum LineString {
     LineString { coordinates: Vec<[f64; 2]> },
 }
@@ -63,7 +61,6 @@ impl Default for LineString {
 }
 
 #[derive(Clone, Deserialize, Serialize)]
-#[serde(crate = "rocket::serde")]
 pub enum ApplicableDirections {
     #[serde(rename = "START_TO_STOP")]
     StartToStop,
@@ -80,7 +77,6 @@ impl Default for ApplicableDirections {
 }
 
 #[derive(Clone, Deserialize, Serialize)]
-#[serde(crate = "rocket::serde")]
 pub struct Curve {
     pub radius: f64,
     pub begin: f64,
@@ -88,7 +84,6 @@ pub struct Curve {
 }
 
 #[derive(Clone, Deserialize, Serialize)]
-#[serde(crate = "rocket::serde")]
 pub struct Slope {
     pub gradient: f64,
     pub begin: f64,

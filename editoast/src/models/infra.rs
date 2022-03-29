@@ -5,13 +5,13 @@ use diesel::result::Error as DieselError;
 use diesel::sql_types::Text;
 use diesel::ExpressionMethods;
 use diesel::{delete, sql_query, update, PgConnection, QueryDsl, RunQueryDsl};
-use rocket::serde::{Deserialize, Serialize};
+use rocket::http::Status;
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 static RAILJSON_VERSION: &'static str = "2.2.0";
 
 #[derive(Clone, QueryableByName, Queryable, Debug, Serialize)]
-#[serde(crate = "rocket::serde")]
 #[table_name = "osrd_infra_infra"]
 pub struct Infra {
     pub id: i32,
@@ -21,7 +21,6 @@ pub struct Infra {
 }
 
 #[derive(Debug, Deserialize)]
-#[serde(crate = "rocket::serde")]
 pub struct CreateInfra {
     pub name: String,
 }
@@ -36,10 +35,10 @@ pub enum InfraError {
 }
 
 impl ApiError for InfraError {
-    fn get_code(&self) -> u16 {
+    fn get_status(&self) -> Status {
         match self {
-            InfraError::NotFound(_) => 404,
-            InfraError::DieselError(_) => 500,
+            InfraError::NotFound(_) => Status::NotFound,
+            InfraError::DieselError(_) => Status::InternalServerError,
         }
     }
 
@@ -62,7 +61,7 @@ impl Infra {
 
     pub fn list(conn: &PgConnection) -> Vec<Infra> {
         osrd_infra_infra
-            .load::<Self>(conn)
+            .load::<Self>(&*conn)
             .expect("List infra query failed")
     }
 
@@ -124,6 +123,7 @@ mod test {
     use crate::client::PostgresConfig;
     use diesel::result::Error;
     use diesel::{Connection, PgConnection};
+    use rocket::http::Status;
 
     #[test]
     fn create_infra() {
@@ -142,7 +142,7 @@ mod test {
             let infra = Infra::create(&"test".to_string(), &conn).unwrap();
             assert!(Infra::delete(infra.id, &conn).is_ok());
             let err = Infra::delete(infra.id, &conn).unwrap_err();
-            assert_eq!(err.get_code(), 404);
+            assert_eq!(err.get_status(), Status::NotFound);
             Ok(())
         });
     }
