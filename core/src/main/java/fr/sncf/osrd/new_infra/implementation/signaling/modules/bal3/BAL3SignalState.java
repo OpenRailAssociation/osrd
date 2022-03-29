@@ -23,6 +23,11 @@ public class BAL3SignalState implements SignalState {
     }
 
     @Override
+    public boolean isFree() {
+        return aspect.equals(BAL3.Aspect.GREEN);
+    }
+
+    @Override
     @ExcludeFromGeneratedCodeCoverage
     public String toString() {
         return MoreObjects.toStringHelper(this)

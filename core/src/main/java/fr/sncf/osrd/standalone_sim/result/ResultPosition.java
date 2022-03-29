@@ -2,7 +2,7 @@ package fr.sncf.osrd.standalone_sim.result;
 
 import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.train.TrainPath;
+import fr.sncf.osrd.new_infra_state.api.NewTrainPath;
 import java.util.ArrayList;
 
 @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
@@ -21,9 +21,9 @@ public class ResultPosition {
         this.offset = offset;
     }
 
-    public static ResultPosition from(double time, double pathOffset, TrainPath path) {
+    public static ResultPosition from(double time, double pathOffset, NewTrainPath path) {
         var location = path.findLocation(pathOffset);
-        return new ResultPosition(time, pathOffset, location.edge.id, location.offset);
+        return new ResultPosition(time, pathOffset, location.track().getID(), location.offset());
     }
 
     /** Interpolate in a list of positions the time associated to a given position.

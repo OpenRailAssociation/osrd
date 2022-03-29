@@ -58,6 +58,7 @@ public final class ApiServerCommand implements CliCommand {
         FbSentry.init();
         var authorizationToken = System.getenv("FETCH_INFRA_AUTHORIZATION");
         var infraManager = new InfraManager(getMiddlewareBaseUrl(), authorizationToken);
+        var newInfraManager = new NewInfraManager(getMiddlewareBaseUrl(), authorizationToken);
 
         try {
             // the list of endpoints
@@ -65,7 +66,7 @@ public final class ApiServerCommand implements CliCommand {
                     new FkRegex("/health", ""),
                     new FkRegex("/pathfinding/routes", new PathfindingRoutesEndpoint(infraManager)),
                     new FkRegex("/pathfinding/tracks", new PathfindingTracksEndpoint(infraManager)),
-                    new FkRegex("/standalone_simulation", new StandaloneSimulationEndpoint(infraManager)),
+                    new FkRegex("/standalone_simulation", new StandaloneSimulationEndpoint(newInfraManager)),
                     new FkRegex("/cache_status", new InfraCacheStatusEndpoint(infraManager))
             );
 

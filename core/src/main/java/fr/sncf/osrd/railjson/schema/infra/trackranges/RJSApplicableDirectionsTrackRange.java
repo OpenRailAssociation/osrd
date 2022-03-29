@@ -10,7 +10,8 @@ public class RJSApplicableDirectionsTrackRange extends RJSTrackRange {
     @Json(name = "applicable_directions")
     public ApplicableDirection applicableDirections;
 
-    RJSApplicableDirectionsTrackRange(
+    /** Constructor */
+    public RJSApplicableDirectionsTrackRange(
             RJSObjectRef<RJSTrackSection> track,
             ApplicableDirection applicableDirections,
             double begin,

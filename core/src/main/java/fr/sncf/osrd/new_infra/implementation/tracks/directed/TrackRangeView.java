@@ -6,6 +6,7 @@ import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackEdge;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.Detector;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackLocation;
+import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackSection;
 import fr.sncf.osrd.utils.DoubleRangeMap;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.Comparator;
@@ -94,6 +95,16 @@ public class TrackRangeView {
             return end - location.offset();
     }
 
+    /** Returns the location of the given offset on the range */
+    public TrackLocation locationOfOffset(double offset) {
+        assert track.getEdge() instanceof TrackSection;
+        var trackSection = (TrackSection) track.getEdge();
+        if (track.getDirection().equals(Direction.FORWARD))
+            return new TrackLocation(trackSection, begin + offset);
+        else
+            return new TrackLocation(trackSection, end - offset);
+    }
+
     /** Returns a new view where the beginning is truncated until the given offset */
     public TrackRangeView truncateBegin(double offset) {
         assert offset >= begin && offset <= end : "truncate location isn't located in the range";
@@ -123,7 +134,8 @@ public class TrackRangeView {
                 rangeStart = rangeEnd;
                 rangeEnd = tmp;
             }
-            res.addRange(rangeStart, rangeEnd, entry.getValue());
+            if (rangeStart != rangeEnd)
+                res.addRange(rangeStart, rangeEnd, entry.getValue());
         }
         return res.simplify();
     }
