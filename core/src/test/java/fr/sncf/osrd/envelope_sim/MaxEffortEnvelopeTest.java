@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 
 public class MaxEffortEnvelopeTest {
     /** Builds max effort envelope with the specified stops, on a flat MRSP */
-    static Envelope makeSimpleMaxEffortEnvelope(
+    public static Envelope makeSimpleMaxEffortEnvelope(
             EnvelopeSimContext context,
             double speed,
             double[] stops

@@ -5,6 +5,7 @@ import static fr.sncf.osrd.utils.DoubleUtils.clamp;
 import com.carrotsearch.hppc.DoubleArrayList;
 import fr.sncf.osrd.envelope_sim.EnvelopePath;
 import fr.sncf.osrd.new_infra.implementation.tracks.directed.TrackRangeView;
+import fr.sncf.osrd.new_infra_state.api.NewTrainPath;
 import fr.sncf.osrd.train.TrackSectionRange;
 import fr.sncf.osrd.train.TrainPath;
 import fr.sncf.osrd.utils.Range;
@@ -78,14 +79,21 @@ public class EnvelopeTrainPath {
         var length = 0.;
 
         for (var range : trackSectionPath) {
-            var grades = range.getGradients().getValuesInRange(0, range.getLength());
-            for (var interval : new TreeSet<>(grades.keySet())) {
-                gradePositions.add(length + interval.getEndPosition());
-                gradeValues.add(grades.get(interval));
+            if (range.getLength() > 0) {
+                var grades = range.getGradients().getValuesInRange(0, range.getLength());
+                for (var interval : new TreeSet<>(grades.keySet())) {
+                    gradePositions.add(length + interval.getEndPosition());
+                    gradeValues.add(grades.get(interval));
 
+                }
+                length += range.getLength();
             }
-            length += range.getLength();
         }
         return new EnvelopePath(length, gradePositions.toArray(), gradeValues.toArray());
+    }
+
+    /** Create EnvelopePath from a train path */
+    public static EnvelopePath fromNew(NewTrainPath trainsPath) {
+        return fromNew(NewTrainPath.removeLocation(trainsPath.trackRangePath()));
     }
 }

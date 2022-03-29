@@ -13,7 +13,8 @@ public class RJSSpeedSection implements Identified {
     @Json(name = "track_ranges")
     public List<RJSApplicableDirectionsTrackRange> trackRanges;
 
-    RJSSpeedSection(
+    /** Constructor */
+    public RJSSpeedSection(
             String id,
             double speed,
             List<RJSApplicableDirectionsTrackRange> trackRanges

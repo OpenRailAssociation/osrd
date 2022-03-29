@@ -2,12 +2,22 @@ package fr.sncf.osrd.envelope_sim;
 
 import static fr.sncf.osrd.envelope.EnvelopeShape.*;
 import static fr.sncf.osrd.envelope_sim_infra.MRSP.LimitKind.SPEED_LIMIT;
+import static fr.sncf.osrd.new_infra.InfraHelpers.makeSingleTrackRJSInfra;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import fr.sncf.osrd.envelope.*;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
+import fr.sncf.osrd.envelope_sim_infra.MRSP;
 import fr.sncf.osrd.envelope_sim_infra.MRSP.LimitKind;
+import fr.sncf.osrd.new_infra.api.Direction;
+import fr.sncf.osrd.new_infra.implementation.tracks.directed.DirectedInfraBuilder;
+import fr.sncf.osrd.new_infra.implementation.tracks.directed.TrackRangeView;
+import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSApplicableDirectionsTrackRange;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
 import fr.sncf.osrd.train.TestTrains;
+import fr.sncf.osrd.utils.graph.ApplicableDirection;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -15,7 +25,7 @@ import java.util.function.BiConsumer;
 
 public class MaxSpeedEnvelopeTest {
 
-    static final double TIME_STEP = 4;
+    public static final double TIME_STEP = 4;
 
     /** Builds a constant speed MRSP for a given path */
     public static Envelope makeSimpleMRSP(EnvelopeSimContext context,
@@ -144,5 +154,49 @@ public class MaxSpeedEnvelopeTest {
                 DECREASING, CONSTANT, CONSTANT, CONSTANT, DECREASING, CONSTANT, DECREASING);
         EnvelopeTransitions.checkContinuity(maxSpeedEnvelope,
                 false, true, true, true, false, false, false, true, true, true);
+    }
+
+    @Test
+    public void mrspFromInfraPath() {
+        var rjsInfra = makeSingleTrackRJSInfra();
+        rjsInfra.speedSections = List.of(
+                new RJSSpeedSection("foo1", 42, List.of(
+                        new RJSApplicableDirectionsTrackRange(
+                                new RJSObjectRef<>("track", "TrackSection"),
+                                ApplicableDirection.BOTH,
+                                0, 30
+                        )
+                )),
+                new RJSSpeedSection("foo2", 21, List.of(
+                        new RJSApplicableDirectionsTrackRange(
+                                new RJSObjectRef<>("track", "TrackSection"),
+                                ApplicableDirection.NORMAL,
+                                30, 50
+                        )
+                )),
+                new RJSSpeedSection("foo3", 10.5, List.of(
+                        new RJSApplicableDirectionsTrackRange(
+                                new RJSObjectRef<>("track", "TrackSection"),
+                                ApplicableDirection.REVERSE,
+                                70, 100
+                        )
+                ))
+        );
+        var infra = DirectedInfraBuilder.fromRJS(rjsInfra);
+        var path = List.of(
+                new TrackRangeView(0, 15, infra.getEdge("track", Direction.FORWARD)),
+                new TrackRangeView(15, 15, infra.getEdge("track", Direction.FORWARD)),
+                new TrackRangeView(15, 80, infra.getEdge("track", Direction.FORWARD))
+        );
+        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
+
+        var mrsp = MRSP.from(path, testRollingStock);
+        assertEquals(42, mrsp.interpolateSpeedRightDir(0, 1));
+        assertEquals(42, mrsp.interpolateSpeedRightDir(15, 1));
+        assertEquals(42, mrsp.interpolateSpeedRightDir(29, 1));
+        assertEquals(21, mrsp.interpolateSpeedRightDir(30, 1));
+        assertEquals(21, mrsp.interpolateSpeedRightDir(49, 1));
+        assertEquals(testRollingStock.maxSpeed, mrsp.interpolateSpeedRightDir(50, 1));
+        assertEquals(testRollingStock.maxSpeed, mrsp.interpolateSpeedRightDir(75, 1));
     }
 }

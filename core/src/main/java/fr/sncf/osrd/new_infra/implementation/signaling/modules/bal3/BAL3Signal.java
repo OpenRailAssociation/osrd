@@ -11,6 +11,7 @@ import fr.sncf.osrd.new_infra_state.api.SignalizationStateView;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class BAL3Signal implements Signal<BAL3SignalState> {
 
@@ -85,5 +86,12 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
     @Override
     public String getID() {
         return id;
+    }
+
+    @Override
+    public Set<ReservationRoute> getProtectedRoutes() {
+        return protectedRoutes.stream()
+                .map(BAL3.BAL3Route::getInfraRoute)
+                .collect(Collectors.toSet());
     }
 }

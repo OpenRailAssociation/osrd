@@ -1,25 +1,27 @@
 package fr.sncf.osrd.api;
 
+import com.squareup.moshi.JsonDataException;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.exceptions.OSRDError;
-import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.railjson.parser.RailJSONParser;
+import fr.sncf.osrd.new_infra.api.signaling.SignalingInfra;
+import fr.sncf.osrd.new_infra.implementation.signaling.SignalingInfraBuilder;
+import fr.sncf.osrd.new_infra.implementation.signaling.modules.bal3.BAL3;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.IOException;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
-import com.squareup.moshi.JsonDataException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
-public class InfraManager {
-    static final Logger logger = LoggerFactory.getLogger(InfraManager.class);
+public class NewInfraManager {
+    static final Logger logger = LoggerFactory.getLogger(NewInfraManager.class);
 
     private final ConcurrentHashMap<String, InfraCacheEntry> infraCache = new ConcurrentHashMap<>();
 
@@ -29,7 +31,7 @@ public class InfraManager {
 
     public static final class InfraLoadException extends OSRDError {
         private static final long serialVersionUID = 4291184310194002894L;
-        public static final String osrdErrorType = "old_infra_loading";
+        public static final String osrdErrorType = "infra_loading";
 
         public final InfraStatus sourceOperation;
 
@@ -51,7 +53,7 @@ public class InfraManager {
 
     public static final class UnexpectedHttpResponse extends Exception {
         private static final long serialVersionUID = 1052450937805248669L;
-        
+
         public final transient Response response;
 
         UnexpectedHttpResponse(Response response) {
@@ -78,7 +80,7 @@ public class InfraManager {
             DOWNLOADING.transitions = new InfraStatus[] { PARSING_JSON, ERROR };
             PARSING_JSON.transitions = new InfraStatus[] { PARSING_INFRA, ERROR };
             PARSING_INFRA.transitions = new InfraStatus[] { CACHED, ERROR };
-            // if an infrastructure is already cached, or in an error state, 
+            // if an infrastructure is already cached, or in an error state,
             // a new version can re-trigger a downloaad
             CACHED.transitions = new InfraStatus[] { DOWNLOADING };
             ERROR.transitions = new InfraStatus[] { DOWNLOADING };
@@ -103,7 +105,7 @@ public class InfraManager {
         public InfraStatus status = InfraStatus.INITIALIZING;
         public InfraStatus lastStatus = null;
         public Exception lastError = null;
-        public Infra infra = null;
+        public SignalingInfra infra = null;
         public String expectedVersion = null;
 
         void transitionTo(InfraStatus newStatus) {
@@ -132,7 +134,7 @@ public class InfraManager {
     private final String baseUrl;
     private final String authorizationToken;
 
-    public InfraManager(String baseUrl, String authorizationToken) {
+    public NewInfraManager(String baseUrl, String authorizationToken) {
         this.baseUrl = baseUrl;
         this.authorizationToken = authorizationToken;
     }
@@ -146,7 +148,7 @@ public class InfraManager {
 
     @ExcludeFromGeneratedCodeCoverage
     @SuppressFBWarnings({"RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE", "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"})
-    private Infra downloadInfra(
+    private SignalingInfra downloadInfra(
             InfraCacheEntry cacheEntry,
             String infraId,
             String expectedVersion
@@ -179,7 +181,7 @@ public class InfraManager {
             // Parse railjson into a proper infra
             logger.info("parsing the infra of {}", endpointUrl);
             cacheEntry.transitionTo(InfraStatus.PARSING_INFRA);
-            var infra = RailJSONParser.parse(rjsInfra);
+            var infra = SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(new BAL3()));
 
             // Cache the infra
             logger.info("successfuly cached {}", endpointUrl);
@@ -196,7 +198,8 @@ public class InfraManager {
     /** Load an infra given an id. Cache infra for optimized future call */
     @ExcludeFromGeneratedCodeCoverage
     @SuppressFBWarnings({"REC_CATCH_EXCEPTION"})
-    public Infra load(String infraId, String expectedVersion) throws InfraLoadException, InterruptedException {
+    public SignalingInfra load(String infraId, String expectedVersion)
+            throws InfraLoadException, InterruptedException {
         try {
             var prevCacheEntry = infraCache.putIfAbsent(infraId, new InfraCacheEntry());
             var cacheEntry = infraCache.get(infraId);
