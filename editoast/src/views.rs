@@ -2,19 +2,97 @@ use crate::generate;
 use crate::infra_cache::InfraCache;
 use crate::models::{CreateInfra, DBConnection, Infra, InfraError};
 use crate::railjson::operation::Operation;
-use crate::response::{ApiError, ApiResult};
+use crate::response::{ApiError, ApiResult, ResultError};
+use rocket::http::{RawStr, Status};
+use rocket::request::FromFormValue;
+use rocket::response::status::Custom;
 use rocket::{routes, Route, State};
 use rocket_contrib::json::Json;
 use std::collections::HashMap;
-use std::ops::DerefMut;
+use std::ops::{Deref, DerefMut};
 use std::sync::Mutex;
 
 pub fn routes() -> Vec<Route> {
-    routes![health, infra_list, edit_infra, create_infra, delete_infra]
+    routes![
+        health,
+        infra_list,
+        edit_infra,
+        create_infra,
+        delete_infra,
+        refresh_infra
+    ]
+}
+
+#[derive(Debug, Default)]
+struct ParamInfraList(Vec<i32>);
+
+impl Deref for ParamInfraList {
+    type Target = Vec<i32>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for ParamInfraList {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl<'f> FromFormValue<'f> for ParamInfraList {
+    type Error = Custom<Json<ResultError>>;
+
+    fn from_form_value(form_value: &'f RawStr) -> Result<Self, Self::Error> {
+        let mut res: Self = Default::default();
+        if !form_value.is_empty() {
+            for id in form_value.split(',') {
+                match id.parse::<i32>() {
+                    Ok(id) => res.push(id),
+                    Err(err) => {
+                        return Err(ResultError::create(
+                            "editoast:views:ParamInfraList",
+                            err.to_string(),
+                            Status::BadRequest,
+                        ))
+                    }
+                }
+            }
+        }
+        Ok(res)
+    }
+
+    fn default() -> Option<Self> {
+        Some(Default::default())
+    }
 }
 
 #[get("/health")]
 pub fn health() {}
+
+/// Refresh infra generated data
+#[post("/infra/refresh?<infras>&<force>")]
+fn refresh_infra(conn: DBConnection, infras: ParamInfraList, force: bool) -> ApiResult<()> {
+    let mut infras_list = vec![];
+
+    if infras.is_empty() {
+        // Retrieve all available infra
+        for infra in Infra::list(&conn) {
+            infras_list.push(infra);
+        }
+    } else {
+        // Retrieve given infras
+        for id in infras.iter() {
+            infras_list.push(Infra::retrieve(&conn, *id)?);
+        }
+    }
+
+    // Refresh each infras
+    for infra in infras_list {
+        generate::refresh(&conn, &infra, force)?;
+    }
+    Ok(Json(()))
+}
 
 /// Return a list of infras
 #[get("/infra")]
