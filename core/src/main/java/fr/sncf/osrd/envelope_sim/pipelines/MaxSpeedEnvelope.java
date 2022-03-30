@@ -1,11 +1,12 @@
 package fr.sncf.osrd.envelope_sim.pipelines;
 
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
+import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
 
 import fr.sncf.osrd.envelope.*;
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
-import fr.sncf.osrd.envelope.part.constraints.SpeedFloor;
+import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
 import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
@@ -30,7 +31,7 @@ public class MaxSpeedEnvelope {
             partBuilder.setAttr(EnvelopeProfile.BRAKING);
             var overlayBuilder = new ConstrainedEnvelopePartBuilder(
                     partBuilder,
-                    new SpeedFloor(0),
+                    new SpeedConstraint(0, FLOOR),
                     new EnvelopeConstraint(mrsp, CEILING)
             );
             var startSpeed = cursor.getSpeed();
@@ -64,7 +65,7 @@ public class MaxSpeedEnvelope {
             partBuilder.setAttr(new StopMeta(i));
             var overlayBuilder = new ConstrainedEnvelopePartBuilder(
                     partBuilder,
-                    new SpeedFloor(0),
+                    new SpeedConstraint(0, FLOOR),
                     new EnvelopeConstraint(curveWithDecelerations, CEILING)
             );
             EnvelopeDeceleration.decelerate(context, stopPosition, 0, overlayBuilder, -1);
