@@ -1,5 +1,8 @@
 package fr.sncf.osrd.standalone_sim;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+
 import com.google.common.collect.Sets;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.Envelope;
@@ -10,10 +13,12 @@ import fr.sncf.osrd.new_infra_state.api.ReservationRouteState;
 import fr.sncf.osrd.new_infra_state.implementation.SignalizationEngine;
 import fr.sncf.osrd.new_infra_state.implementation.standalone.StandaloneSignalingSimulation;
 import fr.sncf.osrd.new_infra_state.implementation.standalone.StandaloneState;
-import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
 import fr.sncf.osrd.standalone_sim.result.*;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.utils.CurveSimplification;
+import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class ScheduleMetadataExtractor {
@@ -21,7 +26,6 @@ public class ScheduleMetadataExtractor {
     public static ResultTrain run(
             Envelope envelope,
             NewTrainPath trainPath,
-            RJSTrainPath rjsTrainPath,
             StandaloneTrainSchedule schedule,
             SignalingInfra infra
     ) throws InvalidInfraException {
@@ -88,14 +92,12 @@ public class ScheduleMetadataExtractor {
         for (var entry : infraState.routeUpdatePositions.entries()) {
             var position = entry.getKey();
             var route = entry.getValue();
-            if (position >= trainPath.length())
-                continue;
             infraState.moveTrain(position);
             for (var r : Sets.union(route.getConflictingRoutes(), Set.of(route))) {
                 addUpdate(
                         routeOccupied,
                         routeFree,
-                        infraState.getState(r).summarize().equals(ReservationRouteState.Summary.FREE),
+                        infraState.getState(r).summarize().equals(ReservationRouteState.Summary.RESERVED),
                         r.getID(),
                         position,
                         trainPath.length()
@@ -122,23 +124,73 @@ public class ScheduleMetadataExtractor {
 
         // Builds the results, converting positions into times
         var res = new HashMap<String, ResultOccupancyTiming>();
-        for (var route : Sets.union(routeFree.keySet(), routeOccupied.keySet())) {
-            var occupied = routeOccupied.getOrDefault(route, 0.);
-            var free = routeFree.getOrDefault(route, trainPath.length());
+        for (var routeID : Sets.union(routeFree.keySet(), routeOccupied.keySet())) {
+            var occupied = routeOccupied.getOrDefault(routeID, 0.);
+            var free = routeFree.getOrDefault(routeID, trainPath.length());
 
             // Get the points where the route is freed by the head and occupied by the tail
             // TODO: either remove the need for this, or add comments that explain why it's needed
-            var headFree = Math.min(occupied + trainLength, trainPath.length());
-            var tailOccupied = Math.max(free - trainLength, 0);
+            var route = infra.getReservationRouteMap().get(routeID);
+            assert route != null;
+            var shift = min(trainLength, trainPath.length());
+            var headFree = free - shift;
+            var tailOccupied = occupied + shift;
 
-            res.put(route, new ResultOccupancyTiming(
-                    envelope.interpolateTotalTime(occupied),
-                    envelope.interpolateTotalTime(headFree),
-                    envelope.interpolateTotalTime(tailOccupied),
-                    envelope.interpolateTotalTime(free)
+            res.put(routeID, new ResultOccupancyTiming(
+                    envelope.interpolateTotalTime(min(occupied, trainPath.length())),
+                    envelope.interpolateTotalTime(min(headFree, trainPath.length())),
+                    envelope.interpolateTotalTime(min(tailOccupied, trainPath.length())),
+                    envelope.interpolateTotalTime(min(free, trainPath.length()))
             ));
         }
+        validate(trainPath, res, envelope, trainLength);
         return res;
+    }
+
+    /** Validates that the results make sens, checks for obvious errors */
+    private static void validate(
+            NewTrainPath trainPath,
+            HashMap<String, ResultOccupancyTiming> times,
+            Envelope envelope,
+            double trainLength
+    ) {
+        for (var first : trainPath.routePath()) {
+            for (var second : trainPath.routePath()) {
+                var inverted = first.pathOffset() > second.pathOffset();
+                var timeFirst = times.get(first.element().getInfraRoute().getID());
+                var timeSecond = times.get(second.element().getInfraRoute().getID());
+                assertOrdered(timeFirst.timeHeadFree, timeSecond.timeHeadFree, inverted);
+                assertOrdered(timeFirst.timeTailFree, timeSecond.timeTailFree, inverted);
+                assertOrdered(timeFirst.timeHeadOccupy, timeSecond.timeHeadOccupy, inverted);
+                assertOrdered(timeFirst.timeTailOccupy, timeSecond.timeTailOccupy, inverted);
+            }
+        }
+        for (int i = 1; i < trainPath.routePath().size(); i++) {
+            var prev = times.get(trainPath.routePath().get(i - 1).element().getInfraRoute().getID());
+            var next = times.get(trainPath.routePath().get(i).element().getInfraRoute().getID());
+            assert prev.timeHeadFree >= next.timeHeadOccupy;
+            assert prev.timeTailFree >= next.timeTailOccupy;
+        }
+
+        // Checks that every route in the path is occupied *at least* when the train is present on it
+        for (var route : trainPath.routePath()) {
+            var beginOccupancy = max(0, route.pathOffset());
+            var endOccupancy = min(
+                    route.pathOffset() + route.element().getInfraRoute().getLength() + trainLength,
+                    trainPath.length()
+            );
+            var time = times.get(route.element().getInfraRoute().getID());
+            assert time != null;
+            assert envelope.interpolateTotalTime(beginOccupancy) >= time.timeHeadOccupy;
+            assert envelope.interpolateTotalTime(endOccupancy) <= time.timeTailFree;
+        }
+    }
+
+    /** Checks that the values are either equals, or in the given order */
+    static void assertOrdered(double first, double second, boolean inverted) {
+        if (first == second)
+            return;
+        assert inverted == (first > second);
     }
 
     /** Adds a route update to the maps */
@@ -151,9 +203,9 @@ public class ScheduleMetadataExtractor {
             double pathLength
     ) {
         if (isFree)
-            routeFree.put(id, Math.max(position, routeOccupied.getOrDefault(id, 0.)));
+            routeFree.put(id, max(position, routeOccupied.getOrDefault(id, 0.)));
         else
-            routeOccupied.put(id, Math.min(position, routeOccupied.getOrDefault(id, pathLength)));
+            routeOccupied.put(id, min(position, routeOccupied.getOrDefault(id, pathLength)));
     }
 
     @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
@@ -185,5 +237,30 @@ public class ScheduleMetadataExtractor {
                     return Math.abs(point.speed - proj);
                 }
         );
+    }
+
+    /** Debugging utility method: exports the occupancy times to csv */
+    @ExcludeFromGeneratedCodeCoverage()
+    @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
+    private static void exportOccupancyToCSV(NewTrainPath trainPath, HashMap<String, ResultOccupancyTiming> times) {
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(
+                new FileOutputStream("times.csv"), StandardCharsets.UTF_8))) {
+            writer.write("route,offset,length,head_occupy,tail_occupy,head_free,tail_free\n");
+            for (var route : trainPath.routePath()) {
+                var id = route.element().getInfraRoute().getID();
+                var t = times.get(id);
+                writer.write(String.format("%s,%f,%f,%f,%f,%f,%f%n",
+                        id,
+                        route.pathOffset(),
+                        route.element().getInfraRoute().getLength(),
+                        t.timeHeadOccupy,
+                        t.timeTailOccupy,
+                        t.timeHeadFree,
+                        t.timeTailFree
+                ));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

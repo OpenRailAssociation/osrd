@@ -9,7 +9,7 @@ import requests
 from pathlib import Path
 
 URL = "http://127.0.0.1:8000/"
-TIMEOUT = 10
+TIMEOUT = 15
 
 
 """

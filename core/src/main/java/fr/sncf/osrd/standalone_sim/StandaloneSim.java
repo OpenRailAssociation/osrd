@@ -47,7 +47,6 @@ public class StandaloneSim {
                 var simResultTrain = ScheduleMetadataExtractor.run(
                         envelope,
                         trainsPath,
-                        rjsTrainsPath,
                         trainSchedule,
                         infra);
                 cacheMaxEffort.put(trainSchedule, simResultTrain);
@@ -58,7 +57,6 @@ public class StandaloneSim {
                     var simEcoResultTrain = ScheduleMetadataExtractor.run(
                             ecoEnvelope,
                             trainsPath,
-                            rjsTrainsPath,
                             trainSchedule,
                             infra);
                     cacheEco.put(trainSchedule, simEcoResultTrain);

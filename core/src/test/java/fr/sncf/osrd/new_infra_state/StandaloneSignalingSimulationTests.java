@@ -2,6 +2,7 @@ package fr.sncf.osrd.new_infra_state;
 
 import static fr.sncf.osrd.new_infra.InfraHelpers.getSignalingRoute;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.envelope.Envelope;
@@ -52,7 +53,11 @@ public class StandaloneSignalingSimulationTests {
                         new SignalUpdateID(175, "il.sig.C2", BAL3.Aspect.RED),
                         new SignalUpdateID(175 + length, "il.sig.S7", BAL3.Aspect.GREEN),
                         new SignalUpdateID(10175, "il.sig.C6", BAL3.Aspect.RED),
-                        new SignalUpdateID(10175 + length, "il.sig.C2", BAL3.Aspect.YELLOW)
+                        new SignalUpdateID(10175 + length, "il.sig.C2", BAL3.Aspect.YELLOW),
+                        new SignalUpdateID(path.length() + length, "il.sig.C2", BAL3.Aspect.GREEN),
+                        new SignalUpdateID(path.length() + length, "il.sig.C3", BAL3.Aspect.GREEN),
+                        new SignalUpdateID(path.length() + length, "il.sig.C6", BAL3.Aspect.GREEN),
+                        new SignalUpdateID(path.length() + length, "il.sig.C1", BAL3.Aspect.GREEN)
                 ),
                 convertEventList(events)
         );
@@ -70,7 +75,7 @@ public class StandaloneSignalingSimulationTests {
         var path = TrainPathBuilder.from(
                 routes,
                 new TrackLocation(infra.getTrackSection("track.0"), 0),
-                new TrackLocation(infra.getTrackSection("track.9"), 1000)
+                new TrackLocation(infra.getTrackSection("track.9"), 0)
         );
         var length = 100;
         var infraState = StandaloneState.from(path, length);
@@ -84,7 +89,7 @@ public class StandaloneSignalingSimulationTests {
                 if (bal3State.aspect.equals(BAL3.Aspect.RED))
                     redSignals.add(e.signal().getID());
         for (var signal : infra.getSignalMap().values())
-            assert redSignals.contains(signal.getID());
+            assertTrue(redSignals.contains(signal.getID()));
     }
 
     @Test
@@ -99,7 +104,7 @@ public class StandaloneSignalingSimulationTests {
         var path = TrainPathBuilder.from(
                 routes,
                 new TrackLocation(infra.getTrackSection("track.0"), 0),
-                new TrackLocation(infra.getTrackSection("track.9"), 1000)
+                new TrackLocation(infra.getTrackSection("track.9"), 0)
         );
         var speed = 10;
         var envelope = makeConstantSpeedEnvelope(path.length(), speed);
@@ -108,7 +113,7 @@ public class StandaloneSignalingSimulationTests {
         var signalizationEngine = SignalizationEngine.from(infra, infraState);
         var events = StandaloneSignalingSimulation.run(path, infraState, signalizationEngine, envelope);
         for (var e : events)
-            assertEquals(e.position() / speed, e.time());
+            assertTrue(e.position() / speed >= e.time());
     }
 
     /** Converts a list of event into a set of simpler record structure, for easier equality testing */
