@@ -113,7 +113,7 @@ def run_all() -> int:
             print("PASS")
             n_passed += 1
         else:
-            print("FAIL", error[:1024])
+            print("FAIL", error[:4096])
         n_total += 1
 
     print(f"{n_passed} / {n_total}")

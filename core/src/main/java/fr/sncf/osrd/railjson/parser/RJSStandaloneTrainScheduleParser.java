@@ -6,13 +6,18 @@ import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceDistribution;
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
+import fr.sncf.osrd.envelope_sim.allowances.*;
 import fr.sncf.osrd.infra.Infra;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.parser.exceptions.UnknownRollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.*;
 import fr.sncf.osrd.train.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class RJSStandaloneTrainScheduleParser {
     /** Parses a RailJSON standalone train schedule */
@@ -67,22 +72,65 @@ public class RJSStandaloneTrainScheduleParser {
                     new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
                     rjsConstruction.beginPosition, rjsConstruction.endPosition,
                     getPositiveDoubleOrDefault(rjsConstruction.capacitySpeedLimit, 30 / 3.6),
-                    parseAllowanceValue(rjsConstruction.value));
+                    List.of(
+                            new AllowanceRange(
+                                    rjsConstruction.beginPosition,
+                                    rjsConstruction.endPosition,
+                                    parseAllowanceValue(rjsConstruction.value)
+                            )
+                    )
+            );
         }
         if (rjsAllowance.getClass() == RJSAllowance.Mareco.class) {
             var rjsMareco = (RJSAllowance.Mareco) rjsAllowance;
-            if (rjsMareco.ranges != null && rjsMareco.ranges.length > 0)
-                throw new InvalidSchedule("mareco value ranges aren't yet implemented");
             if (rjsMareco.defaultValue == null)
                 throw new InvalidSchedule("missing mareco default_value");
             return new MarecoAllowance(
                     new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
                     0, envelopePath.getLength(),
                     getPositiveDoubleOrDefault(rjsMareco.capacitySpeedLimit, 30 / 3.6),
-                    parseAllowanceValue(rjsMareco.defaultValue));
+                    parseAllowanceRanges(envelopePath, rjsMareco.defaultValue, rjsMareco.ranges)
+            );
         }
 
         throw new RuntimeException("unknown allowance type");
+    }
+
+    private static List<AllowanceRange> parseAllowanceRanges(
+            EnvelopePath envelopePath,
+            RJSAllowanceValue defaultValue,
+            RJSAllowanceRange[] ranges
+    ) throws InvalidSchedule {
+        var value = parseAllowanceValue(defaultValue);
+        // if no ranges have been defined, just return the default value
+        if (ranges == null || ranges.length == 0) {
+            return List.of(new AllowanceRange(0, envelopePath.getLength(), value));
+        }
+
+        // sort the range list by begin position
+        var sortedRanges = Arrays.stream(ranges)
+                .sorted(Comparator.comparingDouble(range -> range.beginPos))
+                .collect(Collectors.toList());
+        var res = new ArrayList<AllowanceRange>();
+        var lastEndPos = 0.0;
+        for (var range : sortedRanges) {
+            // if some ranges are overlapping, return an error
+            if (range.beginPos < lastEndPos)
+                throw new InvalidSchedule("overlapping allowance ranges");
+            // if there is a gap between two ranges, fill it with default value
+            if (range.beginPos > lastEndPos) {
+                res.add(new AllowanceRange(lastEndPos, range.beginPos, value));
+            }
+            lastEndPos = range.endPos;
+            res.add(parseAllowanceRange(range));
+        }
+        if (lastEndPos < envelopePath.getLength())
+            res.add(new AllowanceRange(lastEndPos, envelopePath.getLength(), value));
+        return res;
+    }
+
+    private static AllowanceRange parseAllowanceRange(RJSAllowanceRange range) throws InvalidSchedule {
+        return new AllowanceRange(range.beginPos, range.endPos, parseAllowanceValue(range.value));
     }
 
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
