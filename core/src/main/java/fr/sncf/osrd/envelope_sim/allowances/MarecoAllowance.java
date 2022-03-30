@@ -315,8 +315,11 @@ public class MarecoAllowance implements Allowance {
         var rightPartBeginPos = rightPart != null ? rightPart.getBeginPos() : base.getEndPos();
 
         // if the junction parts touch or intersect, there is no core phase
-        if (rightPartBeginPos < leftPartEndPos)
+        if (rightPartBeginPos < leftPartEndPos) {
+            assert leftPart != null;
+            assert rightPart != null;
             return intersectSlowdownSpeedup(leftPart, rightPart);
+        }
         if (rightPartBeginPos == leftPartEndPos)
             return Envelope.make(leftPart, rightPart);
 
@@ -442,6 +445,16 @@ public class MarecoAllowance implements Allowance {
     }
 
     private Envelope intersectSlowdownSpeedup(EnvelopePart slowdown, EnvelopePart speedup) {
-        return null;
+        var partBuilder = new EnvelopePartBuilder();
+        var constrainedBuilder = new ConstrainedEnvelopePartBuilder(
+                partBuilder,
+                new EnvelopeConstraint(Envelope.make(speedup), FLOOR)
+            );
+        EnvelopeDeceleration.decelerate(
+                context, slowdown.getBeginPos(), slowdown.getBeginSpeed(), constrainedBuilder, 1
+        );
+        var slowdownPart = partBuilder.build();
+        var speedupPart = speedup.slice(slowdownPart.getEndPos(), Double.POSITIVE_INFINITY);
+        return Envelope.make(slowdownPart, speedupPart);
     }
 }
