@@ -1015,7 +1015,7 @@ components:
           properties:
             id:
               type: integer
-        - $ref: "#components/schemas/WritableTrainSchedule"
+        - $ref: "#/components/schemas/WritableTrainSchedule"
     StandaloneSimulationParameters:
       properties:
         timetable:
