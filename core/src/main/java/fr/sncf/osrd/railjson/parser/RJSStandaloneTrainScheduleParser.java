@@ -101,9 +101,10 @@ public class RJSStandaloneTrainScheduleParser {
             RJSAllowanceValue defaultValue,
             RJSAllowanceRange[] ranges
     ) throws InvalidSchedule {
+        var value = parseAllowanceValue(defaultValue);
         // if no ranges have been defined, just return the default value
         if (ranges == null || ranges.length == 0) {
-            return List.of(new AllowanceRange(0, envelopePath.getLength(), parseAllowanceValue(defaultValue)));
+            return List.of(new AllowanceRange(0, envelopePath.getLength(), value));
         }
 
         // sort the range list by begin position
@@ -118,13 +119,13 @@ public class RJSStandaloneTrainScheduleParser {
                 throw new InvalidSchedule("overlapping allowance ranges");
             // if there is a gap between two ranges, fill it with default value
             if (range.beginPos > lastEndPos) {
-                res.add(new AllowanceRange(lastEndPos, range.beginPos, parseAllowanceValue(defaultValue)));
+                res.add(new AllowanceRange(lastEndPos, range.beginPos, value));
             }
             lastEndPos = range.endPos;
             res.add(parseAllowanceRange(range));
         }
         if (lastEndPos < envelopePath.getLength())
-            res.add(new AllowanceRange(lastEndPos, envelopePath.getLength(), parseAllowanceValue(defaultValue)));
+            res.add(new AllowanceRange(lastEndPos, envelopePath.getLength(), value));
         return res;
     }
 

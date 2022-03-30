@@ -122,7 +122,9 @@ public class MarecoAllowance implements Allowance {
         // slice parts that are not modified and run the allowance algorithm on the allowance region
         var builder = new EnvelopeBuilder();
         builder.addParts(base.slice(Double.NEGATIVE_INFINITY, beginPos));
-        applyAllowanceRegion(builder, region);
+        var allowanceRegion = computeAllowanceRegion(region);
+        for (var envelope : allowanceRegion)
+            builder.addEnvelope(envelope);
         builder.addParts(base.slice(endPos, Double.POSITIVE_INFINITY));
         var res = builder.build();
         assert res.continuous : "Discontinuity on the edges of the allowance region";
@@ -140,7 +142,7 @@ public class MarecoAllowance implements Allowance {
      * and imposed to the left and right side ranges respectively.
      * This process ensures the continuity of the final envelope.
      */
-    private void applyAllowanceRegion(EnvelopeBuilder builder, Envelope envelopeRegion) {
+    private Envelope[] computeAllowanceRegion(Envelope envelopeRegion) {
 
         // build an array of the imposed speeds between ranges
         // every time a range is computed, the imposed left and right speeds are memorized
@@ -185,9 +187,7 @@ public class MarecoAllowance implements Allowance {
             res[rangeIndex] = allowanceRange;
         }
 
-        for (var envelope : res) {
-            builder.addEnvelope(envelope);
-        }
+        return res;
     }
 
     /**

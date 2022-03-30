@@ -18,4 +18,12 @@ public final class RJSAllowanceRange {
         this.endPos = endPos;
         this.value = value;
     }
+
+    /** Constructor */
+    @SuppressWarnings("unused")
+    public RJSAllowanceRange() {
+        this.beginPos = Double.NaN;
+        this.endPos = Double.NaN;
+        this.value = null;
+    }
 }
