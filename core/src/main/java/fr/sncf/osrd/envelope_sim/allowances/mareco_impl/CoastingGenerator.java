@@ -1,8 +1,10 @@
 package fr.sncf.osrd.envelope_sim.allowances.mareco_impl;
 
+import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
+
 import fr.sncf.osrd.envelope.*;
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
-import fr.sncf.osrd.envelope.part.constraints.EnvelopeCeiling;
+import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
 import fr.sncf.osrd.envelope.part.constraints.SpeedFloor;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
@@ -20,7 +22,7 @@ public final class CoastingGenerator {
         var constrainedBuilder = new ConstrainedEnvelopePartBuilder(
                 partBuilder,
                 new SpeedFloor(0),
-                new EnvelopeCeiling(envelope)
+                new EnvelopeConstraint(envelope, CEILING)
         );
         var speed = envelope.interpolateSpeed(startPos);
         EnvelopeCoasting.coast(context, startPos, speed, constrainedBuilder, 1);
@@ -45,7 +47,7 @@ public final class CoastingGenerator {
         var constrainedBuilder = new ConstrainedEnvelopePartBuilder(
                 backwardPartBuilder,
                 new SpeedFloor(0),
-                new EnvelopeCeiling(envelope)
+                new EnvelopeConstraint(envelope, CEILING)
         );
 
         double position = endPos;

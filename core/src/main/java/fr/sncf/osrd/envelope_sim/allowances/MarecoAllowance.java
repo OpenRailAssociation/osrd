@@ -2,11 +2,12 @@ package fr.sncf.osrd.envelope_sim.allowances;
 
 import static java.lang.Double.NaN;
 import static java.lang.Math.abs;
+import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
 
 import com.carrotsearch.hppc.DoubleArrayList;
 import fr.sncf.osrd.envelope.*;
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
-import fr.sncf.osrd.envelope.part.constraints.EnvelopeCeiling;
+import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
 import fr.sncf.osrd.envelope.part.constraints.SpeedCeiling;
 import fr.sncf.osrd.envelope.part.constraints.SpeedFloor;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
@@ -397,7 +398,7 @@ public class MarecoAllowance implements Allowance {
             var constrainedBuilder = new ConstrainedEnvelopePartBuilder(
                     partBuilder,
                     new SpeedCeiling(v1),
-                    new EnvelopeCeiling(envelopeSection)
+                    new EnvelopeConstraint(envelopeSection, CEILING)
             );
             EnvelopeAcceleration.accelerate(
                     context, envelopeSection.getBeginPos(), imposedBeginSpeed, constrainedBuilder, 1
@@ -429,7 +430,7 @@ public class MarecoAllowance implements Allowance {
             var constrainedBuilder = new ConstrainedEnvelopePartBuilder(
                     partBuilder,
                     new SpeedCeiling(v1),
-                    new EnvelopeCeiling(envelopeSection)
+                    new EnvelopeConstraint(envelopeSection, CEILING)
             );
             EnvelopeDeceleration.decelerate(
                     context, envelopeSection.getEndPos(), imposedEndSpeed, constrainedBuilder, -1
@@ -441,6 +442,6 @@ public class MarecoAllowance implements Allowance {
     }
 
     private Envelope intersectSlowdownSpeedup(EnvelopePart slowdown, EnvelopePart speedup) {
-        return null; // TODO
+        return null;
     }
 }

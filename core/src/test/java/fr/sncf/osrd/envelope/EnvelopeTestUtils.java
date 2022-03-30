@@ -2,9 +2,10 @@ package fr.sncf.osrd.envelope;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
 
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
-import fr.sncf.osrd.envelope.part.constraints.EnvelopeCeiling;
+import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
 import fr.sncf.osrd.envelope.part.constraints.SpeedFloor;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
@@ -35,7 +36,7 @@ public class EnvelopeTestUtils {
             cursor.findPosition(positions[0]);
 
             var overlayBuilder = new ConstrainedEnvelopePartBuilder(
-                    partBuilder, new SpeedFloor(0), new EnvelopeCeiling(cursor.envelope)
+                    partBuilder, new SpeedFloor(0), new EnvelopeConstraint(cursor.envelope, CEILING)
             );
             assertTrue(overlayBuilder.initEnvelopePart(cursor.getPosition(), cursor.getSpeed(), direction));
 
@@ -46,7 +47,7 @@ public class EnvelopeTestUtils {
         } else {
             cursor.findPosition(positions[lastIndex]);
             var overlayBuilder = new ConstrainedEnvelopePartBuilder(
-                    partBuilder, new SpeedFloor(0), new EnvelopeCeiling(cursor.envelope)
+                    partBuilder, new SpeedFloor(0), new EnvelopeConstraint(cursor.envelope, CEILING)
             );
             assertTrue(overlayBuilder.initEnvelopePart(cursor.getPosition(), cursor.getSpeed(), direction));
 

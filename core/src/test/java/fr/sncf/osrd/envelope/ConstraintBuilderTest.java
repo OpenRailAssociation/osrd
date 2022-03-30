@@ -1,6 +1,7 @@
 package fr.sncf.osrd.envelope;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
 
 import fr.sncf.osrd.envelope.EnvelopeTestUtils.TestAttr;
 import fr.sncf.osrd.envelope.part.*;
@@ -20,7 +21,7 @@ public class ConstraintBuilderTest {
                 new SpeedFloor(0),
                 new SpeedCeiling(2),
                 new PositionRange(1, 5),
-                new EnvelopeCeiling(envelopeCeiling)
+                new EnvelopeConstraint(envelopeCeiling, CEILING)
         );
     }
 
