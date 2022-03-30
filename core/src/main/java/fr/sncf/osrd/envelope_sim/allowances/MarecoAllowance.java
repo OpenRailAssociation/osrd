@@ -1,5 +1,6 @@
 package fr.sncf.osrd.envelope_sim.allowances;
 
+import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
 import static java.lang.Double.NaN;
 import static java.lang.Math.abs;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
@@ -8,8 +9,7 @@ import com.carrotsearch.hppc.DoubleArrayList;
 import fr.sncf.osrd.envelope.*;
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
-import fr.sncf.osrd.envelope.part.constraints.SpeedCeiling;
-import fr.sncf.osrd.envelope.part.constraints.SpeedFloor;
+import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
@@ -389,7 +389,7 @@ public class MarecoAllowance implements Allowance {
         if (imposedBeginSpeed > v1) {
             var constrainedBuilder = new ConstrainedEnvelopePartBuilder(
                     partBuilder,
-                    new SpeedFloor(v1)
+                    new SpeedConstraint(v1, FLOOR)
             );
             EnvelopeDeceleration.decelerate(
                     context, envelopeSection.getBeginPos(), imposedBeginSpeed, constrainedBuilder, 1
@@ -397,7 +397,7 @@ public class MarecoAllowance implements Allowance {
         } else if (imposedBeginSpeed < envelopeSection.getBeginSpeed()) {
             var constrainedBuilder = new ConstrainedEnvelopePartBuilder(
                     partBuilder,
-                    new SpeedCeiling(v1),
+                    new SpeedConstraint(v1, CEILING),
                     new EnvelopeConstraint(envelopeSection, CEILING)
             );
             EnvelopeAcceleration.accelerate(
@@ -421,7 +421,7 @@ public class MarecoAllowance implements Allowance {
         if (imposedEndSpeed > v1) {
             var constrainedBuilder = new ConstrainedEnvelopePartBuilder(
                     partBuilder,
-                    new SpeedFloor(v1)
+                    new SpeedConstraint(v1, FLOOR)
             );
             EnvelopeAcceleration.accelerate(
                     context, envelopeSection.getEndPos(), imposedEndSpeed, constrainedBuilder, -1
@@ -429,7 +429,7 @@ public class MarecoAllowance implements Allowance {
         } else if (imposedEndSpeed < envelopeSection.getEndSpeed()) {
             var constrainedBuilder = new ConstrainedEnvelopePartBuilder(
                     partBuilder,
-                    new SpeedCeiling(v1),
+                    new SpeedConstraint(v1, CEILING),
                     new EnvelopeConstraint(envelopeSection, CEILING)
             );
             EnvelopeDeceleration.decelerate(
