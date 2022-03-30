@@ -26,7 +26,6 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::process::exit;
 use std::sync::Mutex;
-use std::thread;
 
 fn main() {
     match run() {
@@ -54,17 +53,6 @@ fn runserver(
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
     let infras = Infra::list(&conn);
-    let infras_clone = infras.clone();
-
-    // Check generated data is up to date
-    let computation = thread::spawn(move || -> Result<(), Box<dyn Error + Send + Sync>> {
-        for infra in infras_clone.iter() {
-            generate::refresh(&conn, &infra, false)?;
-        }
-        Ok(())
-    });
-
-    let conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
 
     // Initialize infra caches
     let mut infra_caches = HashMap::new();
@@ -90,8 +78,6 @@ fn runserver(
         .manage(infra_caches)
         .mount("/", views::routes())
         .launch();
-
-    computation.join().unwrap()?;
     Ok(())
 }
 

@@ -1,8 +1,8 @@
 use crate::generate;
 use crate::infra_cache::InfraCache;
-use crate::models::{CreateInfra, DBConnection, Infra};
+use crate::models::{CreateInfra, DBConnection, Infra, InfraError};
 use crate::railjson::operation::Operation;
-use crate::response::ApiResult;
+use crate::response::{ApiError, ApiResult};
 use rocket::{routes, Route, State};
 use rocket_contrib::json::Json;
 use std::collections::HashMap;
@@ -16,49 +16,56 @@ pub fn routes() -> Vec<Route> {
 #[get("/health")]
 pub fn health() {}
 
-#[get("/infra")]
 /// Return a list of infras
+#[get("/infra")]
 fn infra_list(conn: DBConnection) -> ApiResult<Vec<Infra>> {
-    Ok(Json(Infra::list(&*conn)))
+    Ok(Json(Infra::list(&conn)))
 }
 
 #[post("/infra", data = "<data>")]
 fn create_infra(data: Json<CreateInfra>, conn: DBConnection) -> ApiResult<i32> {
-    let infra = Infra::create(&data.name, &*conn)?;
+    let infra = Infra::create(&data.name, &conn)?;
     Ok(Json(infra.id))
 }
 
 #[delete("/infra/<infra>")]
 fn delete_infra(infra: u32, conn: DBConnection) -> ApiResult<()> {
-    Infra::delete(infra as i32, &*conn)?;
+    Infra::delete(infra as i32, &conn)?;
     Ok(Json(()))
 }
 
-#[post("/infra/<infra>", data = "<operations>")]
 /// CRUD for edit an infrastructure. Takes a batch of operations.
+#[post("/infra/<infra>", data = "<operations>")]
 fn edit_infra(
-    infra: u32,
+    infra: i32,
     operations: Json<Vec<Operation>>,
     infra_caches: State<HashMap<i32, Mutex<InfraCache>>>,
     conn: DBConnection,
 ) -> ApiResult<String> {
-    // Retrieve infra
-    let infra = Infra::retrieve(&*conn, infra as i32)?;
+    // Take lock on infra cache
+    if !infra_caches.contains_key(&infra) {
+        let err: Box<dyn ApiError> = Box::new(InfraError::NotFound(infra));
+        return Err(err.into());
+    }
 
-    let infra_cache = infra_caches
-        .get(&infra.id)
-        .expect(format!("Infra cache does not contain infra '{}'", infra.id).as_str());
+    let infra_cache = infra_caches.get(&infra).unwrap();
     let mut infra_cache = infra_cache.lock().unwrap();
+
+    // Retrieve infra
+    let infra = Infra::retrieve(&conn, infra as i32)?;
+
+    // Check if infra has sync generated data
+    generate::refresh(&conn, &infra, false)?;
 
     // Apply modifications
     for operation in operations.iter() {
         let operation = operation.clone();
         let infra_id = infra.id;
-        operation.apply(infra_id, &*conn)?
+        operation.apply(infra_id, &conn)?
     }
 
     // Bump version
-    let infra = infra.bump_version(&*conn)?;
+    let infra = infra.bump_version(&conn)?;
 
     // Apply operations to infra cache
     for op in operations.iter() {
@@ -70,7 +77,7 @@ fn edit_infra(
         .expect("Update generated data failed");
 
     // Bump infra generated version to the infra version
-    infra.bump_generated_version(&*conn)?;
+    infra.bump_generated_version(&conn)?;
 
     // Check for warnings and errors
     Ok(Json(String::from("ok")))

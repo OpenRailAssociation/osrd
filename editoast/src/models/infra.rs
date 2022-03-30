@@ -61,7 +61,7 @@ impl Infra {
 
     pub fn list(conn: &PgConnection) -> Vec<Infra> {
         osrd_infra_infra
-            .load::<Self>(&*conn)
+            .load::<Self>(conn)
             .expect("List infra query failed")
     }
 
