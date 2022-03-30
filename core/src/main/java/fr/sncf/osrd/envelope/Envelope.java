@@ -201,6 +201,11 @@ public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelop
         return ((double) getTotalTimeMS()) / 1000;
     }
 
+    /** Returns the time between two positions of the envelope */
+    public double getTimeBetween(double beginPos, double endPos) {
+        return interpolateTotalTime(endPos) - interpolateTotalTime(beginPos);
+    }
+
 
     /** Returns the total time required to get from the start of the envelope to
      * the start of an envelope part, in milliseconds

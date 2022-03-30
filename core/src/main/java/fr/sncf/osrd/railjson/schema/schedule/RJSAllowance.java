@@ -18,14 +18,14 @@ public class RJSAllowance {
         public double endPosition = Double.NaN;
         @Json(name = "capacity_speed_limit")
         public double capacitySpeedLimit = -1;
-        public RJSAllowanceValue value = null;
+        public RJSAllowanceValue value;
     }
 
     public static final class Mareco extends RJSAllowance {
         @Json(name = "default_value")
-        public RJSAllowanceValue defaultValue = null;
+        public RJSAllowanceValue defaultValue;
 
-        public RJSRangeAllowance[] ranges = null;
+        public RJSAllowanceRange[] ranges;
 
         @Json(name = "capacity_speed_limit")
         public double capacitySpeedLimit = -1;
@@ -35,18 +35,9 @@ public class RJSAllowance {
             this.ranges = null;
         }
 
-        public Mareco() {
-            this.defaultValue = null;
-            this.ranges = null;
+        public Mareco(RJSAllowanceValue defaultValue, RJSAllowanceRange[] ranges) {
+            this.defaultValue = defaultValue;
+            this.ranges = ranges;
         }
-    }
-
-    @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-    public static final class RJSRangeAllowance {
-        @Json(name = "begin_position")
-        public double beginPosition = Double.NaN;
-        @Json(name = "end_position")
-        public double endPosition = Double.NaN;
-        public RJSAllowanceValue value = null;
     }
 }
