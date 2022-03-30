@@ -51,6 +51,17 @@ public class RJSStopsParser {
                 position = stop.position;
             else
                 position = path.convertTrackLocation(RJSTrackLocationParser.parseNew(infra, stop.location));
+
+            if (position > path.length()) {
+                // As we use different TrainPath classes for pathfinding and simulation (for now),
+                // we can have small float inaccuracies for the path length, causing errors on the last stop
+                // (this is temporary)
+                if (position <= path.length() + 1e-5)
+                    position = path.length();
+                else
+                    throw new InvalidSchedule("Stop position is outside of the path");
+            }
+
             res.add(new TrainStop(position, stop.duration));
         }
         for (var stop : res)

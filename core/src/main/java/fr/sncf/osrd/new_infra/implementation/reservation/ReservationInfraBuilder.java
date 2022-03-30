@@ -79,8 +79,9 @@ public class ReservationInfraBuilder {
         var routes = new ArrayList<ReservationRouteImpl>();
         for (var rjsRoute : rjsInfra.routes) {
             var trackRanges = makeTrackRanges(rjsRoute);
+            var length = trackRanges.stream().mapToDouble(TrackRangeView::getLength).sum();
             var route = new ReservationRouteImpl(detectorsOnRoute(rjsRoute), releasePoints(rjsRoute),
-                    rjsRoute.id, trackRanges, isRouteControlled(trackRanges));
+                    rjsRoute.id, trackRanges, isRouteControlled(trackRanges), length);
             routes.add(route);
             for (var section : sectionsOnRoute(rjsRoute)) {
                 routesPerSection.put(section, route);

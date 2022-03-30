@@ -98,14 +98,14 @@ public class SignalizationEngine implements SignalizationState {
             HashSet<Signal<?>> updated
     ) {
         try {
-            if (modifiedSignalsInCurrentUpdate.contains(signal))
-                throw new SignalizationError(
-                        "Infinite loop in signal dependency updates",
-                        OSRDError.ErrorCause.USER // This would be caused by invalid infrastructures
-                );
-            modifiedSignalsInCurrentUpdate.add(signal);
             var newSignalState = signal.processDependencyUpdate(infraState, this);
             if (!newSignalState.equals(signalStates.get(signal))) {
+                if (modifiedSignalsInCurrentUpdate.contains(signal))
+                    throw new SignalizationError(
+                            "Infinite loop in signal dependency updates",
+                            OSRDError.ErrorCause.USER // This would be caused by invalid infrastructures
+                    );
+                modifiedSignalsInCurrentUpdate.add(signal);
                 updated.add(signal);
                 signalStates.put(signal, newSignalState);
                 for (var otherSignal : signalSubscribers.get(signal))

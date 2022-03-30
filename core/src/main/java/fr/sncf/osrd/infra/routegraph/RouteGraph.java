@@ -68,7 +68,7 @@ public class RouteGraph extends DirNGraph<Route, Waypoint> {
             try {
                 var tvdSectionsPath = generatePath(id, entryPoint, exitPoint, entryDirection, switchesGroup);
 
-                var length = 0;
+                double length = 0;
                 for (var tvdSectionPath : tvdSectionsPath)
                     length += tvdSectionPath.length;
 

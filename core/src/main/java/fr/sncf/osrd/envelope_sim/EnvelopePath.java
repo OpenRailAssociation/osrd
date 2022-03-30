@@ -35,7 +35,7 @@ public class EnvelopePath implements PhysicsPath {
     private double[] initCumSum(double[] gradePositions, double[] gradeValues) {
         var result = new double[gradePositions.length];
         result[0] = 0.0;
-        var cumSum = 0;
+        double cumSum = 0;
         for (int i = 0; i < gradePositions.length - 1; i++) {
             var rangeLength = gradePositions[i + 1] - gradePositions[i];
             cumSum += gradeValues[i] * rangeLength;

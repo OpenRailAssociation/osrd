@@ -96,7 +96,7 @@ public class TrackRangeView {
     }
 
     /** Returns the location of the given offset on the range */
-    public TrackLocation locationOfOffset(double offset) {
+    public TrackLocation offsetLocation(double offset) {
         assert track.getEdge() instanceof TrackSection;
         var trackSection = (TrackSection) track.getEdge();
         if (track.getDirection().equals(Direction.FORWARD))

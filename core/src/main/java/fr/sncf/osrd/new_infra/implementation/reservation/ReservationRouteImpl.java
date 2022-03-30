@@ -9,7 +9,6 @@ import fr.sncf.osrd.new_infra.api.tracks.undirected.Detector;
 import fr.sncf.osrd.new_infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 public class ReservationRouteImpl implements ReservationRoute {
     private ImmutableSet<ReservationRoute> conflictingRoutes = ImmutableSet.of();
@@ -18,17 +17,14 @@ public class ReservationRouteImpl implements ReservationRoute {
     public final String id;
     private final ImmutableList<TrackRangeView> trackRanges;
     private final boolean isControlled;
+    private final double length;
 
     @Override
     @ExcludeFromGeneratedCodeCoverage
     public String toString() {
         return MoreObjects.toStringHelper(this)
-                .add("detectorPath", detectorPath)
-                .add("releasePoints", releasePoints)
                 .add("id", id)
-                .add("trackRanges", trackRanges)
-                .add("conflictingRoutes", conflictingRoutes.stream()
-                        .map(ReservationRoute::getID).collect(Collectors.toList()))
+                .add("length", length)
                 .toString();
     }
 
@@ -38,13 +34,14 @@ public class ReservationRouteImpl implements ReservationRoute {
             ImmutableList<Detector> releasePoints,
             String id,
             ImmutableList<TrackRangeView> trackRanges,
-            boolean isControlled
-    ) {
+            boolean isControlled,
+            double length) {
         this.detectorPath = detectorPath;
         this.releasePoints = releasePoints;
         this.trackRanges = trackRanges;
         this.id = id;
         this.isControlled = isControlled;
+        this.length = length;
     }
 
     @Override
@@ -79,9 +76,7 @@ public class ReservationRouteImpl implements ReservationRoute {
 
     @Override
     public double getLength() {
-        return trackRanges.stream()
-                .mapToDouble(TrackRangeView::getLength)
-                .sum();
+        return length;
     }
 
     @Override

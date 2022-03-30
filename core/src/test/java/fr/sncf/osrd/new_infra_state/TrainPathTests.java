@@ -164,7 +164,7 @@ public class TrainPathTests {
         var path = TrainPathBuilder.from(
                 List.of(getSignalingRoute(infra, "route_forward")),
                 new TrackLocation(track, 10),
-                new TrackLocation(track, 0)
+                new TrackLocation(track, 100)
         );
         var envelopePath = EnvelopeTrainPath.fromNew(NewTrainPath.removeLocation(path.trackRangePath()));
         assertEquals(30, envelopePath.getAverageGrade(0, 20));

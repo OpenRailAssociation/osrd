@@ -276,7 +276,7 @@ public class DirectedRJSParsingTests {
 
     /** Merges all the detectors and positions on a list of ranges */
     private static List<Pair> getDetectorsOnRanges(List<TrackRangeView> ranges) {
-        var pos = 0;
+        var pos = 0.;
         var res = new ArrayList<Pair>();
         for (var range : ranges) {
             var detectors = range.getDetectors();
@@ -289,7 +289,7 @@ public class DirectedRJSParsingTests {
 
     /** Merges all the speed sections on a list of ranges */
     private static DoubleRangeMap getSpeedsOnRange(List<TrackRangeView> ranges) {
-        var pos = 0;
+        var pos = 0.;
         var res = new DoubleRangeMap();
         for (var range : ranges) {
             var sections = range.getSpeedSections();

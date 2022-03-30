@@ -35,7 +35,7 @@ public class RJSStandaloneTrainScheduleParser {
         if (rollingStock == null)
             throw new UnknownRollingStock(rollingStockID);
 
-        var stops = (ArrayList<TrainStop>) RJSStopsParser.parseNew(rjsTrainSchedule.stops, infra, trainPath);
+        var stops = RJSStopsParser.parseNew(rjsTrainSchedule.stops, infra, trainPath);
 
         var initialSpeed = rjsTrainSchedule.initialSpeed;
         if (Double.isNaN(initialSpeed) || initialSpeed < 0)
@@ -71,7 +71,8 @@ public class RJSStandaloneTrainScheduleParser {
                 throw new InvalidSchedule("missing construction allowance end_position");
             return new MarecoAllowance(
                     new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
-                    rjsConstruction.beginPosition, rjsConstruction.endPosition,
+                    rjsConstruction.beginPosition,
+                    Math.min(envelopePath.length, rjsConstruction.endPosition),
                     getPositiveDoubleOrDefault(rjsConstruction.capacitySpeedLimit, 30 / 3.6),
                     List.of(
                             new AllowanceRange(

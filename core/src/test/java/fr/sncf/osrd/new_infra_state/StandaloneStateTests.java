@@ -68,7 +68,7 @@ public class StandaloneStateTests {
                 Set.of(
                         new RouteUpdate(0, ReservationRouteState.Summary.OCCUPIED, firstRoute),
                         new RouteUpdate(50, ReservationRouteState.Summary.OCCUPIED, secondRoute),
-                        new RouteUpdate(50 + length, ReservationRouteState.Summary.FREE, firstRoute)
+                        new RouteUpdate(50 + length, ReservationRouteState.Summary.RESERVED, firstRoute)
                 ),
                 routeUpdates
         );
