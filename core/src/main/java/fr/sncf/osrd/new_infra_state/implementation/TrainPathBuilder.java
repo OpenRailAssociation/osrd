@@ -29,9 +29,9 @@ public class TrainPathBuilder {
             throw new InvalidSchedule(e.getMessage());
         }
         var detectors = createDetectorPath(trackSectionPath);
-        var length = trackSectionPath.stream()
-                .mapToDouble(x -> x.element().getLength())
-                .sum();
+        double length = 0;
+        for (var track : trackSectionPath)
+            length += track.element().getLength();
         var locatedRoutePath = makeLocatedRoutePath(routePath, startLocation);
         var trainPath = new NewTrainPath(
                 locatedRoutePath,
@@ -76,47 +76,34 @@ public class TrainPathBuilder {
         }
     }
 
-    /** Creates the list of detection sections on the path */
-    private static ImmutableList<NewTrainPath.LocatedElement<DetectionSection>> makeDetectionSections(
-            ImmutableList<NewTrainPath.LocatedElement<SignalingRoute>> routePath,
-            double pathLength
-    ) {
-        var res = new ArrayList<NewTrainPath.LocatedElement<DetectionSection>>();
-        var offset = routePath.get(0).pathOffset();
-        for (var locatedRoute : routePath) {
-            var route = locatedRoute.element();
-            for (var range : route.getInfraRoute().getTrackRanges()) {
-                for (var object : range.getDetectors()) {
-                    if (object.element() == null)
-                        continue;
-                    var diDetector = object.element().getDiDetector(range.track.getDirection());
-                    var detectionSection = diDetector.detector().getNextDetectionSection(diDetector.direction());
-                    addIfDifferent(res, new NewTrainPath.LocatedElement<>(offset + object.offset(), detectionSection));
-                }
-                offset += range.getLength();
-            }
-        }
-
-        // Remove the first sections until only one start with a negative offset (the one we start on)
-        while (res.size() > 1 && res.get(1).pathOffset() < 0)
-            res.remove(0);
-        // Remove the sections that start after the end of the path
-        res.removeIf(section -> section.pathOffset() >= pathLength);
-
-        return ImmutableList.copyOf(res);
-    }
-
     /** check that everything make sense */
     private static void validate(NewTrainPath path) {
         assert !path.routePath().isEmpty() : "empty route path";
         assert !path.detectionSections().isEmpty() : "no detection section on path";
         assert !path.trackRangePath().isEmpty() : "empty track range path";
-        assert Math.abs(path.detectionSections().size() - path.detectors().size()) <= 1
-                : "Detection section size is inconsistent";
         assert path.length() > 0 : "length must be strictly positive";
+
+        validateDetectionSections(path);
 
         // TODO checks that the track ranges are properly connected
         // But this would require an actual infra, which technically isn't required otherwise
+    }
+
+    /** Checks that the detectors and detection section transitions are consistent */
+    private static void validateDetectionSections(NewTrainPath path) {
+        assert path.detectionSections().size() > 0 : "no detection section";
+        int detSectionIndex = path.detectionSections().get(0).pathOffset() < 0 ? 1 : 0;
+        for (int detectorIndex = 0; detectorIndex < path.detectors().size(); detectorIndex++) {
+            assert detSectionIndex <= path.detectionSections().size() : "missing detection sections";
+            if (detSectionIndex < path.detectionSections().size()) {
+                assert path.detectors().get(detectorIndex).pathOffset()
+                        == path.detectionSections().get(detSectionIndex).pathOffset()
+                        : "detector / section offset mismatch";
+            }
+            detSectionIndex++;
+        }
+        assert Math.abs(path.detectionSections().size() - path.detectors().size()) <= 1
+                : "Detection section size is inconsistent";
     }
 
     /** Creates the list of located routes */
@@ -141,7 +128,7 @@ public class TrainPathBuilder {
 
     /** Returns the distance between the beginning of the list of ranges and the given location */
     private static double offsetFromStartOfPath(ImmutableList<TrackRangeView> path, TrackLocation location) {
-        var offset = 0;
+        var offset = 0.;
         for (var range : path) {
             if (range.contains(location))
                 return offset + range.offsetOf(location);
@@ -155,7 +142,7 @@ public class TrainPathBuilder {
             ImmutableList<NewTrainPath.LocatedElement<TrackRangeView>> trackSectionPath
     ) {
         var res = new ArrayList<NewTrainPath.LocatedElement<DiDetector>>();
-        double offset = 0;
+        double offset = 0.;
         for (var range : trackSectionPath) {
             for (var object : range.element().getDetectors()) {
                 if (object.element() != null)
@@ -167,6 +154,34 @@ public class TrainPathBuilder {
         return ImmutableList.copyOf(res);
     }
 
+    /** Creates the list of detection sections on the path */
+    private static ImmutableList<NewTrainPath.LocatedElement<DetectionSection>> makeDetectionSections(
+            ImmutableList<NewTrainPath.LocatedElement<SignalingRoute>> routePath,
+            double pathLength
+    ) {
+        var res = new ArrayList<NewTrainPath.LocatedElement<DetectionSection>>();
+        var offset = routePath.get(0).pathOffset();
+        for (var locatedRoute : routePath) {
+            var route = locatedRoute.element();
+            for (var range : route.getInfraRoute().getTrackRanges()) {
+                for (var object : range.getDetectors()) {
+                    var diDetector = object.element().getDiDetector(range.track.getDirection());
+                    var detectionSection = diDetector.detector().getNextDetectionSection(diDetector.direction());
+                    addIfDifferent(res, new NewTrainPath.LocatedElement<>(offset + object.offset(), detectionSection));
+                }
+                offset += range.getLength();
+            }
+        }
+
+        // Remove the first sections until only one start with a negative offset (the one we start on)
+        while (res.size() > 1 && res.get(1).pathOffset() < 0)
+            res.remove(0);
+        // Remove the sections that start after the end of the path
+        res.removeIf(section -> section.pathOffset() >= pathLength);
+
+        return ImmutableList.copyOf(res);
+    }
+
     /** Creates the lists of track ranges */
     private static ImmutableList<NewTrainPath.LocatedElement<TrackRangeView>> createTrackRangePath(
             List<SignalingRoute> routePath,
@@ -174,8 +189,9 @@ public class TrainPathBuilder {
             TrackLocation endLocation
     ) {
         var res = new ArrayList<NewTrainPath.LocatedElement<TrackRangeView>>();
-        double offset = 0;
+        double offset = 0.;
         var reachedStart = false;
+        var reachedEnd = false;
         for (int i = 0; i < routePath.size(); i++) {
             var signalingRoute = routePath.get(i);
             var route = signalingRoute.getInfraRoute();
@@ -187,12 +203,18 @@ public class TrainPathBuilder {
                     range = range.truncateBegin(startLocation.offset());
                 }
                 // We have to check if we're on the last route to avoid problems with looping paths
-                if (i == routePath.size() - 1 && range.contains(endLocation))
+                if (i == routePath.size() - 1 && range.contains(endLocation)) {
                     range = range.truncateEnd(endLocation.offset());
+                    reachedEnd = true;
+                }
                 res.add(new NewTrainPath.LocatedElement<>(offset, range));
                 offset += range.getLength();
+                if (reachedEnd)
+                    break;
             }
         }
+        assert reachedStart : "Start location isn't included in the route graph";
+        assert reachedEnd : "End location isn't included in the route graph";
         return ImmutableList.copyOf(res);
     }
 

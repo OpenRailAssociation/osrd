@@ -76,7 +76,7 @@ public class EnvelopeTrainPath {
         var gradePositions = new DoubleArrayList();
         gradePositions.add(0);
         var gradeValues = new DoubleArrayList();
-        var length = 0.;
+        double length = 0;
 
         for (var range : trackSectionPath) {
             if (range.getLength() > 0) {

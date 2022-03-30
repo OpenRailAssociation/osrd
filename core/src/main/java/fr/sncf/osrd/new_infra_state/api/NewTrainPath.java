@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import fr.sncf.osrd.new_infra.api.reservation.DetectionSection;
 import fr.sncf.osrd.new_infra.api.reservation.DiDetector;
 import fr.sncf.osrd.new_infra.api.signaling.SignalingRoute;
+import fr.sncf.osrd.new_infra.api.tracks.undirected.SwitchBranch;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackLocation;
 import fr.sncf.osrd.new_infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
@@ -77,8 +78,11 @@ public record NewTrainPath(
 
     /** Returns the location at the given offset */
     public TrackLocation findLocation(double pathOffset) {
-        assert pathOffset <= length;
         var element = getLastLocatedElementBefore(trackRangePath, pathOffset);
-        return element.element.locationOfOffset(pathOffset - element.pathOffset);
+        if (element.element.track.getEdge() instanceof SwitchBranch) {
+            // This case can happen when pathOffset is exactly on a switch, we want the next range in that case
+            element = trackRangePath.get(trackRangePath.indexOf(element) + 1);
+        }
+        return element.element.offsetLocation(pathOffset - element.pathOffset);
     }
 }

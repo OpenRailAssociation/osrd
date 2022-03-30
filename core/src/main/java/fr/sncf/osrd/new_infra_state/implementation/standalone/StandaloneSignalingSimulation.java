@@ -25,8 +25,6 @@ public class StandaloneSignalingSimulation {
     ) {
         var res = new ArrayList<SignalEvent<?>>();
         for (var position : state.updatePositions) {
-            if (position >= path.length())
-                break;
             state.moveTrain(position);
             var updatedSignals = new HashSet<Signal<?>>();
             for (var route : state.routeUpdatePositions.get(position)) {
@@ -58,7 +56,7 @@ public class StandaloneSignalingSimulation {
     ) {
         return new SignalTimedEvent<>(
                 event.position,
-                trainEnvelope.interpolateTotalTime(event.position),
+                trainEnvelope.interpolateTotalTime(Math.min(trainEnvelope.getEndPos(), event.position)),
                 event.signal,
                 event.state
         );

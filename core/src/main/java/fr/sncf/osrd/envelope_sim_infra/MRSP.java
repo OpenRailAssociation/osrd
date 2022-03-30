@@ -36,7 +36,9 @@ public class MRSP {
     /** Computes the most restricted speed profile from a list of track ranges */
     public static Envelope from(List<TrackRangeView> ranges, RollingStock rollingStock) {
         var builder = new MRSPEnvelopeBuilder();
-        var pathLength = ranges.stream().mapToDouble(TrackRangeView::getLength).sum();
+        var pathLength = 0.;
+        for (var r : ranges)
+            pathLength += r.getLength();
 
         // add a limit for the maximum speed the hardware is rated for
         builder.addPart(EnvelopePart.generateTimes(
@@ -47,25 +49,25 @@ public class MRSP {
 
         var offset = 0.;
         for (var range : ranges) {
-            if (range.getLength() > 0) {
-                for (var speedRange : range.getSpeedSections().getValuesInRange(0, range.getLength()).entrySet()) {
-                    // compute where this limit is active from and to
-                    var interval = speedRange.getKey();
-                    var begin = offset + interval.getBeginPosition();
-                    var end = offset + interval.getEndPosition();
-                    var speed = speedRange.getValue();
-                    if (speed.isInfinite() || speed == 0)
-                        continue;
+            if (range.getLength() == 0)
+                continue;
+            for (var speedRange : range.getSpeedSections().getValuesInRange(0, range.getLength()).entrySet()) {
+                // compute where this limit is active from and to
+                var interval = speedRange.getKey();
+                var begin = offset + interval.getBeginPosition();
+                var end = offset + interval.getEndPosition();
+                var speed = speedRange.getValue();
+                if (speed.isInfinite() || speed == 0)
+                    continue;
 
-                    // Add the envelope part corresponding to the restricted speed section
-                    builder.addPart(EnvelopePart.generateTimes(
-                            List.of(EnvelopeProfile.CONSTANT_SPEED, LimitKind.SPEED_LIMIT),
-                            new double[]{begin, end},
-                            new double[]{speed, speed}
-                    ));
-                }
-                offset += range.getLength();
+                // Add the envelope part corresponding to the restricted speed section
+                builder.addPart(EnvelopePart.generateTimes(
+                        List.of(EnvelopeProfile.CONSTANT_SPEED, LimitKind.SPEED_LIMIT),
+                        new double[]{begin, end},
+                        new double[]{speed, speed}
+                ));
             }
+            offset += range.getLength();
         }
         return builder.build();
     }

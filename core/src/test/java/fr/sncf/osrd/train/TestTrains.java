@@ -24,6 +24,7 @@ public class TestTrains {
     public static final RollingStock REALISTIC_FAST_TRAIN;
     public static final RollingStock REALISTIC_FAST_TRAIN_MAX_DEC_TYPE;
     public static final RollingStock VERY_SHORT_FAST_TRAIN;
+    public static final RollingStock VERY_LONG_FAST_TRAIN;
 
 
     static {
@@ -45,6 +46,22 @@ public class TestTrains {
                 "fast train source",
                 "fast train verbose name",
                 1, trainMass, 1.05, (0.65 * trainMass) / 100,
+                ((0.008 * trainMass) / 100) * 3.6,
+                (((0.00012 * trainMass) / 100) * 3.6) * 3.6,
+                maxSpeed,
+                30,
+                0.05,
+                0.25,
+                0.5,
+                RollingStock.GammaType.CONST,
+                tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0])
+        );
+
+        VERY_LONG_FAST_TRAIN = new RollingStock(
+                "fast train",
+                "fast train source",
+                "fast train verbose name",
+                100000, trainMass, 1.05, (0.65 * trainMass) / 100,
                 ((0.008 * trainMass) / 100) * 3.6,
                 (((0.00012 * trainMass) / 100) * 3.6) * 3.6,
                 maxSpeed,

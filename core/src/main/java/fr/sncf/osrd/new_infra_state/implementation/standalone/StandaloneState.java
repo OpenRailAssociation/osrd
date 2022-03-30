@@ -113,7 +113,8 @@ public class StandaloneState implements InfraStateView {
                             otherRoute
                     );
             }
-            return new StandaloneReservationRouteState(ReservationRouteState.Summary.FREE, null, route);
+            return new StandaloneReservationRouteState(ReservationRouteState.Summary.RESERVED,
+                    new StandaloneReservationTrain(), route);
         }
     }
 
