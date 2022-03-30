@@ -8,13 +8,15 @@ use crate::railjson::operation::Operation;
 use crate::response::ApiError;
 use diesel::PgConnection;
 
-pub fn refresh(conn: &PgConnection, infra: &Infra, force: bool) -> Result<(), Box<dyn ApiError>> {
+/// Refreshes the layers if needed and returns whether they were refreshed.
+/// `force` argument allows us to refresh it in any cases.
+pub fn refresh(conn: &PgConnection, infra: &Infra, force: bool) -> Result<bool, Box<dyn ApiError>> {
     // Check if refresh is needed
     if !force
         && infra.generated_version.is_some()
         && &infra.version == infra.generated_version.as_ref().unwrap()
     {
-        return Ok(());
+        return Ok(false);
     }
 
     // Generate layers
@@ -29,7 +31,7 @@ pub fn refresh(conn: &PgConnection, infra: &Infra, force: bool) -> Result<(), Bo
 
     // Update generated infra version
     infra.bump_generated_version(conn)?;
-    Ok(())
+    Ok(true)
 }
 
 pub fn update(

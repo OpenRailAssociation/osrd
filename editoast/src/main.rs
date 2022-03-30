@@ -98,7 +98,7 @@ fn generate(
     } else {
         // Retrieve given infras
         for id in args.infra_ids {
-            infras.push(Infra::retrieve(&conn, id as i32).unwrap());
+            infras.push(Infra::retrieve(&conn, id as i32)?);
         }
     };
 
