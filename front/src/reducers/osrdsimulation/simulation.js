@@ -2,11 +2,31 @@ export const UPDATE_SIMULATION = 'osrdsimu/UPDATE_SIMULATION';
 export const UNDO_SIMULATION = 'osrdsimu/UNDO_SIMULATION';
 export const REDO_SIMULATION = 'osrdsimu/REDO_SIMULATION';
 
+// CONTEXT HELPERS
+function simulationTrainsEquals(a, b) {
+  return Array.isArray(a.trains) &&
+      Array.isArray(b.trains) &&
+      a.trains.length === b.trains.length &&
+      a.trains.every((val, index) => val === b.trains[index]);
+}
+
+
+// THUNKS
+function persistentUndoSimulation() {
+  return async function persistentUpdateUndoParts(dispatch, getState) {
+    // use getState to check the diff between past and present
+    // call the corresponding API
+
+    // do the undo:
+    dispatch({
+      type: UNDO_SIMULATION,
+    });
+  }
+}
+
+
 function undoable(simulationReducer) {
   // Call the reducer with empty action to populate the initial state
-
-
-
   const initialStateU = {
     past: [],
     present: simulationReducer(undefined, {}),
