@@ -1,0 +1,243 @@
+openapi: 3.0.2
+info:
+  title: OSRD Editoast
+  description: OSRD Edition ervice documentation
+  version: 0.1.0
+
+tags:
+  - name: infra
+    description: Infra
+
+paths:
+  /health:
+    get:
+      responses:
+        200:
+          description: Check if Editoast is running correctly
+  /infra/:
+    get:
+      tags:
+        - infra
+      summary: List all available infra
+      responses:
+        200:
+          description: The infra list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Infra"
+
+    post:
+      tags:
+        - infra
+      summary: Create an infra
+      requestBody:
+        description: Name of the infra to create
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        200:
+          description: The id of the infra
+          content:
+            application/json:
+              schema:
+                type: integer
+
+  /infra/{id}/:
+    delete:
+      tags:
+        - infra
+      summary: Delete an infra and all entities linked to it
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: infra id
+          required: true
+      responses:
+        200:
+          description: No content
+          content:
+            application/json:
+              schema:
+                type: integer
+                nullable: true
+                enum: [null]
+
+    post:
+      tags:
+        - infra
+      summary: Update/Create/Delete an object of the infra
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: infra id
+          required: true
+      requestBody:
+        description: Operations to do on the infra
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/Operation"
+      responses:
+        200:
+          description: No content
+          content:
+            application/json:
+              schema:
+                type: string
+                enum: [ok]
+
+  /infra/refresh/:
+    post:
+      tags:
+        - infra
+      summary: Refresh the layers
+      parameters:
+        - in: query
+          name: infras
+          schema:
+            type: array
+            items:
+              type: integer
+            default: []
+          description: A list of infra ID
+        - in: query
+          name: force
+          schema:
+            type: boolean
+            default: false
+          description: Force the refresh of the layers
+      responses:
+        200:
+          description: No content
+
+components:
+  schemas:
+    Infra:
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        version:
+          type: string
+          example: "1"
+        generated_version:
+          type: string
+          nullable: true
+          example: "1"
+    ObjectType:
+      type: string
+      enum:
+        - TrackSection
+        - Signal
+        - SpeedSection
+    Operation:
+      oneOf:
+        - $ref: "#/components/schemas/CreateOperation"
+        - $ref: "#/components/schemas/DeleteOperation"
+        - $ref: "#/components/schemas/UpdateOperation"
+      discriminator:
+        propertyName: type
+    CreateOperation:
+      properties:
+        type:
+          type: string
+          enum: ["CREATE"]
+        obj_type:
+          $ref: "#/components/schemas/ObjectType"
+        railjson:
+          type: object
+          description: This field follows railjson format
+          example:
+            id: bd840b06-84ba-4566-98c1-ccf0196c5f16
+            geo:
+              type: LineString
+              coordinates:
+                - - 1.0
+                  - 41.0
+                - - 2.0
+                  - 42.0
+            sch:
+              type: LineString
+              coordinates:
+                - - 1.0
+                  - 41.0
+                - - 2.0
+                  - 42.0
+            curves: []
+            length: 1000
+            slopes:
+              - end: 500
+                begin: 250
+                gradient: -1
+            line_code: 1
+            line_name: my line
+            track_name: track name
+            navigability: BOTH
+            track_number: 1
+    DeleteOperation:
+      properties:
+        type:
+          type: string
+          enum: ["DELETE"]
+        obj_type:
+          $ref: "#/components/schemas/ObjectType"
+        obj_id:
+          type: string
+          example: bd840b06-84ba-4566-98c1-ccf0196c5f16
+    UpdateOperation:
+      properties:
+        type:
+          type: string
+          enum: ["UPDATE"]
+        obj_type:
+          $ref: "#/components/schemas/ObjectType"
+        obj_id:
+          type: string
+          example: bd840b06-84ba-4566-98c1-ccf0196c5f16
+        railjson_patch:
+          $ref: "#/components/schemas/Patches"
+    Patch:
+      description: A JSONPatch document as defined by RFC 6902
+      required:
+        - "op"
+        - "path"
+      properties:
+        op:
+          type: string
+          description: The operation to be performed
+          enum:
+            - "add"
+            - "remove"
+            - "replace"
+            - "move"
+            - "copy"
+            - "test"
+        path:
+          type: string
+          description: A JSON-Pointer
+        value:
+          type: object
+          description: The value to be used within the operations.
+        from:
+          type: string
+          description: A string containing a JSON Pointer value.
+    Patches:
+      description: A list of Patch
+      type: array
+      items:
+        $ref: "#/components/schemas/Patch"
