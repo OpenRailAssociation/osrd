@@ -1,4 +1,3 @@
-use crate::models::DBConnection;
 use crate::railjson::operation::{CreateOperation, DeleteOperation, Operation, UpdateOperation};
 use crate::railjson::ObjectType;
 use crate::schema::osrd_infra_tracksectionlayer;
@@ -51,7 +50,7 @@ impl TrackSectionLayer {
     }
 
     pub fn update(
-        conn: &DBConnection,
+        conn: &PgConnection,
         infra: i32,
         operations: &Vec<Operation>,
     ) -> Result<(), Error> {

@@ -5,14 +5,10 @@ use crate::models::SignalLayer;
 use crate::models::SpeedSectionLayer;
 use crate::models::TrackSectionLayer;
 use crate::railjson::operation::Operation;
+use crate::response::ApiError;
 use diesel::PgConnection;
-use std::error::Error;
 
-pub fn refresh(
-    conn: &PgConnection,
-    infra: &Infra,
-    force: bool,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+pub fn refresh(conn: &PgConnection, infra: &Infra, force: bool) -> Result<(), Box<dyn ApiError>> {
     // Check if refresh is needed
     if !force
         && infra.generated_version.is_some()
@@ -41,7 +37,7 @@ pub fn update(
     infra_id: i32,
     operations: &Vec<Operation>,
     infra_cache: &mut InfraCache,
-) -> Result<(), Box<dyn Error>> {
+) -> Result<(), Box<dyn ApiError>> {
     TrackSectionLayer::update(conn, infra_id, operations)?;
     SignalLayer::update(conn, infra_id, operations, infra_cache)?;
     SpeedSectionLayer::update(conn, infra_id, operations, infra_cache)?;
