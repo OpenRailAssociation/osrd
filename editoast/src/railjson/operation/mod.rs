@@ -2,29 +2,39 @@ mod create;
 mod delete;
 mod update;
 
-use super::{ObjectType, TrackSection};
+use super::{ObjectRef, ObjectType};
 use crate::response::ApiError;
 use diesel::result::Error as DieselError;
 use diesel::PgConnection;
 use json_patch::PatchError;
 use rocket::http::Status;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::Error as SerdeError;
 use thiserror::Error;
 
-pub use create::CreateOperation;
-pub use delete::DeleteOperation;
+pub use create::RailjsonObject;
 pub use update::UpdateOperation;
 
 #[derive(Clone, Deserialize)]
-#[serde(tag = "type")]
+#[serde(tag = "operation_type")]
 pub enum Operation {
     #[serde(rename = "CREATE")]
-    Create(CreateOperation),
+    Create(RailjsonObject),
     #[serde(rename = "UPDATE")]
     Update(UpdateOperation),
     #[serde(rename = "DELETE")]
-    Delete(DeleteOperation),
+    Delete(ObjectRef),
+}
+
+#[derive(Clone, Serialize)]
+#[serde(tag = "operation_type")]
+pub enum OperationResult {
+    #[serde(rename = "CREATE")]
+    Create(RailjsonObject),
+    #[serde(rename = "UPDATE")]
+    Update(RailjsonObject),
+    #[serde(rename = "DELETE")]
+    Delete(ObjectRef),
 }
 
 #[derive(Debug, Error)]
@@ -81,11 +91,24 @@ impl From<SerdeError> for Box<dyn ApiError> {
 }
 
 impl Operation {
-    pub fn apply(&self, infra_id: i32, conn: &PgConnection) -> Result<(), Box<dyn ApiError>> {
+    pub fn apply(
+        &self,
+        infra_id: i32,
+        conn: &PgConnection,
+    ) -> Result<OperationResult, Box<dyn ApiError>> {
         match self {
-            Operation::Delete(delete) => delete.apply(infra_id, conn),
-            Operation::Create(create) => create.apply(infra_id, conn),
-            Operation::Update(update) => update.apply(infra_id, conn),
+            Operation::Delete(object_ref) => {
+                delete::apply_delete_operation(object_ref, infra_id, conn)?;
+                Ok(OperationResult::Delete(object_ref.clone()))
+            }
+            Operation::Create(railjson_object) => {
+                create::apply_create_operation(railjson_object, infra_id, conn)?;
+                Ok(OperationResult::Create(railjson_object.clone()))
+            }
+            Operation::Update(update) => {
+                let obj_railjson = update.apply(infra_id, conn)?;
+                Ok(OperationResult::Update(obj_railjson))
+            }
         }
     }
 }

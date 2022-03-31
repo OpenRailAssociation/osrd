@@ -1,4 +1,5 @@
 use super::{ObjectType, OperationError};
+use crate::railjson::operation::RailjsonObject;
 use crate::railjson::TrackSection;
 use crate::response::ApiError;
 use diesel::sql_types::Jsonb;
@@ -16,7 +17,11 @@ pub struct UpdateOperation {
 }
 
 impl UpdateOperation {
-    pub fn apply(&self, infra_id: i32, conn: &PgConnection) -> Result<(), Box<dyn ApiError>> {
+    pub fn apply(
+        &self,
+        infra_id: i32,
+        conn: &PgConnection,
+    ) -> Result<RailjsonObject, Box<dyn ApiError>> {
         // Load object
         let mut obj: DataObject = sql_query(format!(
             "SELECT data FROM {} WHERE infra_id = {} AND obj_id = '{}'",
@@ -27,7 +32,7 @@ impl UpdateOperation {
         .get_result(conn)?;
 
         // Apply and check patch
-        obj.patch_and_check(self)?;
+        let railjson_obj = obj.patch_and_check(self)?;
 
         // Save new object
         match sql_query(format!(
@@ -39,7 +44,7 @@ impl UpdateOperation {
         .bind::<Text, _>(&self.obj_id)
         .execute(conn)
         {
-            Ok(1) => Ok(()),
+            Ok(1) => Ok(railjson_obj),
             Ok(_) => Err(Box::new(OperationError::ObjectNotFound(
                 self.obj_id.clone(),
             ))),
@@ -57,19 +62,24 @@ struct DataObject {
 impl DataObject {
     /// This function will patch the data object given an update operation.
     /// It will also check that the id of the id of the object is untouched and that the resulted data is valid.
-    pub fn patch_and_check(&mut self, update: &UpdateOperation) -> Result<(), Box<dyn ApiError>> {
+    pub fn patch_and_check(
+        &mut self,
+        update: &UpdateOperation,
+    ) -> Result<RailjsonObject, Box<dyn ApiError>> {
         json_patch::patch(&mut self.data, &update.railjson_patch)?;
 
-        let check_id = match update.obj_type {
-            ObjectType::TrackSection => from_value::<TrackSection>(self.data.clone())?.id,
+        let obj_railjson = match update.obj_type {
+            ObjectType::TrackSection => RailjsonObject::TrackSection {
+                railjson: from_value::<TrackSection>(self.data.clone())?,
+            },
             ObjectType::Signal => todo!(),
             ObjectType::SpeedSection => todo!(),
         };
 
-        if check_id != update.obj_id {
+        if obj_railjson.get_obj_id() != update.obj_id {
             return Err(Box::new(OperationError::ModifyId));
         }
-        Ok(())
+        Ok(obj_railjson)
     }
 }
 
@@ -78,8 +88,9 @@ mod test {
     use super::UpdateOperation;
     use crate::client::PostgresConfig;
     use crate::models::Infra;
-    use crate::railjson::operation::CreateOperation;
+    use crate::railjson::operation::create::apply_create_operation;
     use crate::railjson::operation::OperationError;
+    use crate::railjson::operation::RailjsonObject;
     use crate::railjson::ObjectType;
     use crate::railjson::TrackSection;
     use crate::response::ApiError;
@@ -100,7 +111,7 @@ mod test {
     fn valide_update_track() {
         let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
         conn.test_transaction::<_, Error, _>(|| {
-            let track_creation = CreateOperation::TrackSection {
+            let track_creation = RailjsonObject::TrackSection {
                 railjson: TrackSection {
                     id: "my_track".to_string(),
                     length: 100.,
@@ -110,7 +121,7 @@ mod test {
                 },
             };
             let infra = Infra::create(&"test".to_string(), &conn).unwrap();
-            assert!(track_creation.apply(infra.id, &conn).is_ok());
+            assert!(apply_create_operation(&track_creation, infra.id, &conn).is_ok());
 
             let update_track = UpdateOperation {
                 obj_id: "my_track".to_string(),
@@ -140,7 +151,7 @@ mod test {
     fn invalide_update_track() {
         let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
         conn.test_transaction::<_, Error, _>(|| {
-            let track_creation = CreateOperation::TrackSection {
+            let track_creation = RailjsonObject::TrackSection {
                 railjson: TrackSection {
                     id: "my_track".to_string(),
                     length: 100.,
@@ -150,7 +161,7 @@ mod test {
                 },
             };
             let infra = Infra::create(&"test".to_string(), &conn).unwrap();
-            assert!(track_creation.apply(infra.id, &conn).is_ok());
+            assert!(apply_create_operation(&track_creation, infra.id, &conn).is_ok());
 
             let update_track = UpdateOperation {
                 obj_id: "my_track".to_string(),

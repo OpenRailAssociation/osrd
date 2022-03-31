@@ -2,14 +2,14 @@ pub mod operation;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Deserialize, Hash, Eq, PartialEq)]
+#[derive(Debug, Clone, Deserialize, Hash, Eq, PartialEq, Serialize)]
 pub enum ObjectType {
     TrackSection,
     Signal,
     SpeedSection,
 }
 
-#[derive(Debug, PartialEq, Eq, Hash)]
+#[derive(Deserialize, Serialize, Clone, Debug, PartialEq, Eq, Hash)]
 pub struct ObjectRef {
     pub obj_type: ObjectType,
     pub obj_id: String,
@@ -31,7 +31,7 @@ impl ObjectType {
     }
 }
 
-#[derive(Clone, Deserialize, Serialize, Default)]
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
 pub struct TrackSection {
     pub id: String,
     pub length: f64,
@@ -46,7 +46,7 @@ pub struct TrackSection {
     pub sch: LineString,
 }
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(tag = "type")]
 pub enum LineString {
     LineString { coordinates: Vec<[f64; 2]> },
@@ -60,7 +60,7 @@ impl Default for LineString {
     }
 }
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub enum ApplicableDirections {
     #[serde(rename = "START_TO_STOP")]
     StartToStop,
@@ -76,14 +76,14 @@ impl Default for ApplicableDirections {
     }
 }
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Curve {
     pub radius: f64,
     pub begin: f64,
     pub end: f64,
 }
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Slope {
     pub gradient: f64,
     pub begin: f64,

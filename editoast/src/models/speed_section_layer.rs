@@ -1,6 +1,6 @@
 use crate::infra_cache::InfraCache;
-use crate::railjson::operation::{CreateOperation, DeleteOperation, Operation, UpdateOperation};
-use crate::railjson::ObjectType;
+use crate::railjson::operation::{Operation, RailjsonObject, UpdateOperation};
+use crate::railjson::{ObjectRef, ObjectType};
 use crate::schema::osrd_infra_speedsectionlayer;
 use crate::schema::osrd_infra_speedsectionlayer::dsl::*;
 use diesel::result::Error;
@@ -74,7 +74,7 @@ impl SpeedSectionLayer {
         let mut obj_ids = HashSet::new();
         for op in operations {
             match op {
-                Operation::Create(CreateOperation::TrackSection { railjson }) => {
+                Operation::Create(RailjsonObject::TrackSection { railjson }) => {
                     Self::fill_speed_section_track_refs(
                         infra_cache.deref(),
                         &railjson.id,
@@ -88,7 +88,7 @@ impl SpeedSectionLayer {
                 }) => {
                     Self::fill_speed_section_track_refs(infra_cache.deref(), track_id, &mut obj_ids)
                 }
-                Operation::Delete(DeleteOperation {
+                Operation::Delete(ObjectRef {
                     obj_id: speed_section_id,
                     obj_type: ObjectType::SpeedSection,
                 })
