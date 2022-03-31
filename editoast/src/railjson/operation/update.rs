@@ -1,7 +1,7 @@
 use super::{ObjectType, OperationError};
+use crate::error::ApiError;
 use crate::railjson::operation::RailjsonObject;
 use crate::railjson::TrackSection;
-use crate::response::ApiError;
 use diesel::sql_types::Jsonb;
 use diesel::sql_types::{Integer, Json, Text};
 use diesel::{sql_query, PgConnection, QueryableByName, RunQueryDsl};
@@ -10,6 +10,7 @@ use serde::Deserialize;
 use serde_json::{from_value, Value};
 
 #[derive(Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct UpdateOperation {
     pub obj_id: String,
     pub obj_type: ObjectType,
@@ -87,13 +88,13 @@ impl DataObject {
 mod test {
     use super::UpdateOperation;
     use crate::client::PostgresConfig;
+    use crate::error::ApiError;
     use crate::models::Infra;
     use crate::railjson::operation::create::apply_create_operation;
     use crate::railjson::operation::OperationError;
     use crate::railjson::operation::RailjsonObject;
     use crate::railjson::ObjectType;
     use crate::railjson::TrackSection;
-    use crate::response::ApiError;
     use diesel::result::Error;
     use diesel::sql_query;
     use diesel::sql_types::Double;
