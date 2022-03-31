@@ -4,11 +4,11 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.EnvelopePhysics;
 import fr.sncf.osrd.envelope.EnvelopePoint;
 
-public class PositionRange implements EnvelopePartConstraint {
+public class PositionConstraint implements EnvelopePartConstraint {
     public final double rangeBegin;
     public final double rangeEnd;
 
-    public PositionRange(double rangeBegin, double rangeEnd) {
+    public PositionConstraint(double rangeBegin, double rangeEnd) {
         this.rangeBegin = rangeBegin;
         this.rangeEnd = rangeEnd;
     }
