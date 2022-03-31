@@ -286,7 +286,7 @@ public class AllowanceTests {
         assertEquals(speedSecondPointBase, speedSecondPoint, speedSecondPointBase * tolerance);
     }
 
-    /** Test the construction margin with a high value on a small segment, expecting to get an error */
+    /** Test the construction margin with a high value on a short segment, expecting to get an error */
     @Test
     public void testImpossibleConstructionMargin() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
@@ -298,6 +298,27 @@ public class AllowanceTests {
         var stops = new double[] { 50_000, testPath.getLength() };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         var allowanceValue = new AllowanceValue.FixedTime(TIME_RATIO, 20_000);
+        var allowance = makeMarecoAllowance(
+                new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP),
+                begin, end, capacitySpeedLimit, allowanceValue);
+
+        var thrown = assertThrows(MarecoConvergenceException.class, () -> allowance.apply(maxEffortEnvelope));
+
+        assertEquals("too_much_time", thrown.marecoErrorType);
+    }
+
+    /** Test the construction margin with a very short segment, to trigger intersectSlowDonSpeedup method */
+    @Test
+    public void testIntersectSlowDownSpeedup() {
+        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
+        var testPath = new FlatPath(100_000, 0);
+        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
+        double capacitySpeedLimit = 30 / 3.6;
+        double begin = 20_000;
+        double end = 21_000;
+        var stops = new double[] { 50_000, testPath.getLength() };
+        var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
+        var allowanceValue = new AllowanceValue.FixedTime(TIME_RATIO, 20);
         var allowance = makeMarecoAllowance(
                 new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP),
                 begin, end, capacitySpeedLimit, allowanceValue);
