@@ -1,12 +1,14 @@
 package fr.sncf.osrd.envelope;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
 
 import fr.sncf.osrd.envelope.EnvelopeTestUtils.TestAttr;
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
-import fr.sncf.osrd.envelope.part.constraints.EnvelopeCeiling;
+import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
+import org.checkerframework.checker.units.qual.C;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -66,7 +68,7 @@ public class EnvelopeOverlayTest {
         {
             var partBuilder = new EnvelopePartBuilder();
             var overlayBuilder = new ConstrainedEnvelopePartBuilder(
-                    partBuilder, new EnvelopeCeiling(constSpeedEnvelope));
+                    partBuilder, new EnvelopeConstraint(constSpeedEnvelope, CEILING));
             overlayBuilder.initEnvelopePart(3, constSpeedEnvelope.interpolateSpeed(3), 1);
             assertTrue(overlayBuilder.addStep(4, 1));
             assertFalse(overlayBuilder.addStep(5, 4));
@@ -94,7 +96,7 @@ public class EnvelopeOverlayTest {
         {
             var partBuilder = new EnvelopePartBuilder();
             var overlayBuilder = new ConstrainedEnvelopePartBuilder(
-                    partBuilder, new EnvelopeCeiling(constSpeedEnvelope));
+                    partBuilder, new EnvelopeConstraint(constSpeedEnvelope, CEILING));
             overlayBuilder.initEnvelopePart(0, constSpeedEnvelope.interpolateSpeed(0), 1);
             assertTrue(overlayBuilder.addStep(1, 1));
             assertFalse(overlayBuilder.addStep(3, 2));
@@ -104,7 +106,7 @@ public class EnvelopeOverlayTest {
         {
             var partBuilder = new EnvelopePartBuilder();
             var overlayBuilder = new ConstrainedEnvelopePartBuilder(
-                    partBuilder, new EnvelopeCeiling(constSpeedEnvelope));
+                    partBuilder, new EnvelopeConstraint(constSpeedEnvelope, CEILING));
             overlayBuilder.initEnvelopePart(6, constSpeedEnvelope.interpolateSpeed(6), 1);
             assertTrue(overlayBuilder.addStep(7, 1));
             assertFalse(overlayBuilder.addStep(8, 2));
@@ -134,7 +136,7 @@ public class EnvelopeOverlayTest {
             var partBuilder = new EnvelopePartBuilder();
             partBuilder.setAttr(TestAttr.A);
             var overlayBuilder = new ConstrainedEnvelopePartBuilder(
-                    partBuilder, new EnvelopeCeiling(constSpeedEnvelope));
+                    partBuilder, new EnvelopeConstraint(constSpeedEnvelope, CEILING));
             overlayBuilder.initEnvelopePart(overlayPoints[0], 2, backwardDir ? -1 : 1);
             assertTrue(overlayBuilder.addStep(overlayPoints[1], 1));
             assertFalse(overlayBuilder.addStep(overlayPoints[2], 2));
@@ -232,7 +234,10 @@ public class EnvelopeOverlayTest {
 
         {
             var partBuilder = new EnvelopePartBuilder();
-            var overlayBuilder = new ConstrainedEnvelopePartBuilder(partBuilder, new EnvelopeCeiling(baseEnvelope));
+            var overlayBuilder = new ConstrainedEnvelopePartBuilder(
+                    partBuilder,
+                    new EnvelopeConstraint(baseEnvelope, CEILING)
+            );
             overlayBuilder.initEnvelopePart(1, baseEnvelope.interpolateSpeedLeftDir(1, 1), 1);
             assertFalse(overlayBuilder.addStep(5, 5));
             builder.addPart(partBuilder.build());
@@ -292,7 +297,10 @@ public class EnvelopeOverlayTest {
 
         {
             var partBuilder = new EnvelopePartBuilder();
-            var overlayBuilder = new ConstrainedEnvelopePartBuilder(partBuilder, new EnvelopeCeiling(inputEnvelope));
+            var overlayBuilder = new ConstrainedEnvelopePartBuilder(
+                    partBuilder,
+                    new EnvelopeConstraint(inputEnvelope, CEILING)
+            );
             overlayBuilder.initEnvelopePart(0, inputEnvelope.interpolateSpeed(1), 1);
             assertTrue(overlayBuilder.addStep(1, 1));
             assertFalse(overlayBuilder.addStep(4, 1));
@@ -315,7 +323,10 @@ public class EnvelopeOverlayTest {
 
         {
             var partBuilder = new EnvelopePartBuilder();
-            var overlayBuilder = new ConstrainedEnvelopePartBuilder(partBuilder, new EnvelopeCeiling(inputEnvelope));
+            var overlayBuilder = new ConstrainedEnvelopePartBuilder(
+                    partBuilder,
+                    new EnvelopeConstraint(inputEnvelope, CEILING)
+            );
             overlayBuilder.initEnvelopePart(2, inputEnvelope.interpolateSpeed(2), 1);
             assertTrue(overlayBuilder.addStep(3, 2));
             assertFalse(overlayBuilder.addStep(4, 3));
