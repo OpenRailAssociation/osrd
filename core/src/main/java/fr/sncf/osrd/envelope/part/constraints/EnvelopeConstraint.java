@@ -1,16 +1,19 @@
 package fr.sncf.osrd.envelope.part.constraints;
 
 import static fr.sncf.osrd.envelope.EnvelopeCursor.NextStepResult.*;
+import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
+import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
 
 import fr.sncf.osrd.envelope.*;
 
-public class EnvelopeCeiling implements EnvelopePartConstraint {
+public class EnvelopeConstraint implements EnvelopePartConstraint {
     public final Envelope envelope;
-
+    private final EnvelopePartConstraintType type;
     private EnvelopeCursor cursor = null;
 
-    public EnvelopeCeiling(Envelope envelope) {
+    public EnvelopeConstraint(Envelope envelope, EnvelopePartConstraintType type) {
         this.envelope = envelope;
+        this.type = type;
     }
 
     @Override
@@ -25,7 +28,10 @@ public class EnvelopeCeiling implements EnvelopePartConstraint {
         var stepIndex = part.findRightDir(position, direction);
         var envelopeSpeed = part.interpolateSpeed(stepIndex, position);
         cursor = new EnvelopeCursor(envelope, direction < 0, partIndex, stepIndex, position);
-        return envelopeSpeed >= speed;
+        if (type == CEILING)
+            return envelopeSpeed >= speed;
+        else
+            return envelopeSpeed <= speed;
     }
 
     // region INTERSECTION
@@ -103,15 +109,22 @@ public class EnvelopeCeiling implements EnvelopePartConstraint {
     private EnvelopePoint intersect(double lastPos, double lastSpeed, double position, double speed) {
         // if the speed ranges do not even intersect, there is no intersection
         var baseMin = Math.min(cursor.getStepEndSpeed(), cursor.getStepBeginSpeed());
+        var baseMax = Math.max(cursor.getStepEndSpeed(), cursor.getStepBeginSpeed());
+        var overlayMin = Math.min(lastSpeed, speed);
         var overlayMax = Math.max(lastSpeed, speed);
-        if (overlayMax < baseMin)
+        if (type == CEILING && overlayMax < baseMin)
+            return null;
+        if (type == FLOOR && overlayMin > baseMax)
             return null;
 
         // look for the next point by position, and interpolate both curves to find the minimum
         var curveEvent = getNextPoint(lastPos, lastSpeed, position, speed);
         var speedDelta = curveEvent.overlaySpeed - curveEvent.baseSpeed;
-        // if the overlay is still the minimum, all is good
-        if (speedDelta < 0)
+        // if the constraint is a ceiling and the overlay is still the minimum, it's all good
+        if (type == CEILING && speedDelta < 0)
+            return null;
+        // if the constraint is a floor and the overlay is still the maximum, it's all good
+        if (type == FLOOR && speedDelta > 0)
             return null;
 
         // if the curves intersect exactly at the next point, use some simplifications
@@ -141,7 +154,9 @@ public class EnvelopeCeiling implements EnvelopePartConstraint {
                 partStart - lastOverlayPos
         );
 
-        if (partStartSpeed > overlaySpeed)
+        if (type == CEILING && partStartSpeed > overlaySpeed)
+            return null;
+        if (type == FLOOR && partStartSpeed < overlaySpeed)
             return null;
 
         return new EnvelopePoint(partStart, overlaySpeed);

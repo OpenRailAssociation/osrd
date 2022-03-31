@@ -1,9 +1,12 @@
 package fr.sncf.osrd.envelope_sim.pipelines;
 
+import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
+import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
+
 import fr.sncf.osrd.envelope.*;
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
-import fr.sncf.osrd.envelope.part.constraints.EnvelopeCeiling;
-import fr.sncf.osrd.envelope.part.constraints.SpeedFloor;
+import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
+import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
@@ -33,8 +36,8 @@ public class MaxEffortEnvelope {
             partBuilder.setAttr(EnvelopeProfile.ACCELERATING);
             var overlayBuilder = new ConstrainedEnvelopePartBuilder(
                     partBuilder,
-                    new SpeedFloor(0),
-                    new EnvelopeCeiling(maxSpeedProfile)
+                    new SpeedConstraint(0, FLOOR),
+                    new EnvelopeConstraint(maxSpeedProfile, CEILING)
             );
             EnvelopeAcceleration.accelerate(context, 0, initialSpeed, overlayBuilder, 1);
             cursor.findPosition(overlayBuilder.getLastPos());
@@ -45,8 +48,8 @@ public class MaxEffortEnvelope {
             partBuilder.setAttr(EnvelopeProfile.ACCELERATING);
             var overlayBuilder = new ConstrainedEnvelopePartBuilder(
                     partBuilder,
-                    new SpeedFloor(0),
-                    new EnvelopeCeiling(maxSpeedProfile)
+                    new SpeedConstraint(0, FLOOR),
+                    new EnvelopeConstraint(maxSpeedProfile, CEILING)
             );
             var startSpeed = maxSpeedProfile.interpolateSpeedLeftDir(cursor.getPosition(), 1);
             var startPosition = cursor.getPosition();
@@ -84,8 +87,8 @@ public class MaxEffortEnvelope {
                 partBuilder.setAttr(EnvelopeProfile.CATCHING_UP);
                 var overlayBuilder = new ConstrainedEnvelopePartBuilder(
                         partBuilder,
-                        new SpeedFloor(0),
-                        new EnvelopeCeiling(maxSpeedProfile)
+                        new SpeedConstraint(0, FLOOR),
+                        new EnvelopeConstraint(maxSpeedProfile, CEILING)
                 );
                 var startPosition = cursor.getPosition();
                 var startSpeed = maxSpeedProfile.interpolateSpeedLeftDir(startPosition, 1);
