@@ -7,11 +7,11 @@ extern crate diesel;
 extern crate rocket_contrib;
 
 mod client;
+mod error;
 mod generate;
 mod infra_cache;
 mod models;
 mod railjson;
-mod response;
 mod schema;
 mod views;
 
@@ -61,7 +61,7 @@ fn runserver(
         infra_caches.insert(infra.id, infra_cache);
     }
 
-    // Config and run server
+    // Config server
     let databases = HashMap::from([(
         "postgres",
         Value::from(HashMap::from([("url", Value::from(pg_config.url()))])),
@@ -73,11 +73,17 @@ fn runserver(
         .extras
         .insert("databases".to_string(), databases.into());
 
-    rocket::custom(config)
+    let mut rocket = rocket::custom(config)
         .attach(DBConnection::fairing())
-        .manage(infra_caches)
-        .mount("/", views::routes())
-        .launch();
+        .manage(infra_caches);
+
+    // Mount routes
+    for (base, routes) in views::routes() {
+        rocket = rocket.mount(base, routes);
+    }
+
+    // Run server
+    rocket.launch();
     Ok(())
 }
 

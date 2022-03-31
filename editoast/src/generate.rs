@@ -1,3 +1,4 @@
+use crate::error::ApiError;
 use crate::infra_cache::InfraCache;
 use crate::models::DBConnection;
 use crate::models::Infra;
@@ -5,7 +6,6 @@ use crate::models::SignalLayer;
 use crate::models::SpeedSectionLayer;
 use crate::models::TrackSectionLayer;
 use crate::railjson::operation::Operation;
-use crate::response::ApiError;
 use diesel::PgConnection;
 
 /// Refreshes the layers if needed and returns whether they were refreshed.
