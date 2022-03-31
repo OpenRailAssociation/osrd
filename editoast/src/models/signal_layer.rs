@@ -1,6 +1,6 @@
 use crate::infra_cache::InfraCache;
-use crate::railjson::operation::{CreateOperation, DeleteOperation, Operation, UpdateOperation};
-use crate::railjson::ObjectType;
+use crate::railjson::operation::{Operation, RailjsonObject, UpdateOperation};
+use crate::railjson::{ObjectRef, ObjectType};
 use crate::schema::osrd_infra_signallayer;
 use crate::schema::osrd_infra_signallayer::dsl::*;
 use diesel::prelude::*;
@@ -77,7 +77,7 @@ impl SignalLayer {
         let mut obj_ids = HashSet::new();
         for op in operations {
             match op {
-                Operation::Create(CreateOperation::TrackSection { railjson }) => {
+                Operation::Create(RailjsonObject::TrackSection { railjson }) => {
                     Self::fill_signal_track_refs(infra_cache.deref(), &railjson.id, &mut obj_ids)
                 }
                 Operation::Update(UpdateOperation {
@@ -85,7 +85,7 @@ impl SignalLayer {
                     obj_type: ObjectType::TrackSection,
                     ..
                 }) => Self::fill_signal_track_refs(infra_cache.deref(), track_id, &mut obj_ids),
-                Operation::Delete(DeleteOperation {
+                Operation::Delete(ObjectRef {
                     obj_id: signal_id,
                     obj_type: ObjectType::Signal,
                 })

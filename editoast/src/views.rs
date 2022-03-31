@@ -1,13 +1,13 @@
 use crate::generate;
 use crate::infra_cache::InfraCache;
 use crate::models::{CreateInfra, DBConnection, Infra, InfraError};
-use crate::railjson::operation::Operation;
+use crate::railjson::operation::{Operation, OperationResult};
 use crate::response::{ApiError, ApiResult, ResultError};
 use rocket::http::{RawStr, Status};
 use rocket::request::FromFormValue;
 use rocket::response::status::Custom;
 use rocket::{routes, Route, State};
-use rocket_contrib::json::Json;
+use rocket_contrib::json::{Json, JsonValue};
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
 use std::sync::Mutex;
@@ -72,7 +72,7 @@ pub fn health() {}
 
 /// Refresh infra generated data
 #[post("/infra/refresh?<infras>&<force>")]
-fn refresh_infra(conn: DBConnection, infras: ParamInfraList, force: bool) -> ApiResult<()> {
+fn refresh_infra(conn: DBConnection, infras: ParamInfraList, force: bool) -> ApiResult<JsonValue> {
     let mut infras_list = vec![];
 
     if infras.is_empty() {
@@ -88,28 +88,32 @@ fn refresh_infra(conn: DBConnection, infras: ParamInfraList, force: bool) -> Api
     }
 
     // Refresh each infras
+    let mut refreshed_infra = vec![];
     for infra in infras_list {
-        generate::refresh(&conn, &infra, force)?;
+        if generate::refresh(&conn, &infra, force)? {
+            refreshed_infra.push(infra.id);
+        }
     }
-    Ok(Json(()))
+
+    Ok(json!({ "infra_refreshed": refreshed_infra }))
 }
 
 /// Return a list of infras
 #[get("/infra")]
-fn infra_list(conn: DBConnection) -> ApiResult<Vec<Infra>> {
+fn infra_list(conn: DBConnection) -> ApiResult<Json<Vec<Infra>>> {
     Ok(Json(Infra::list(&conn)))
 }
 
 #[post("/infra", data = "<data>")]
-fn create_infra(data: Json<CreateInfra>, conn: DBConnection) -> ApiResult<i32> {
+fn create_infra(data: Json<CreateInfra>, conn: DBConnection) -> ApiResult<Custom<Json<Infra>>> {
     let infra = Infra::create(&data.name, &conn)?;
-    Ok(Json(infra.id))
+    Ok(Custom(Status::Created, Json(infra)))
 }
 
 #[delete("/infra/<infra>")]
-fn delete_infra(infra: u32, conn: DBConnection) -> ApiResult<()> {
+fn delete_infra(infra: u32, conn: DBConnection) -> ApiResult<Custom<()>> {
     Infra::delete(infra as i32, &conn)?;
-    Ok(Json(()))
+    Ok(Custom(Status::NoContent, ()))
 }
 
 /// CRUD for edit an infrastructure. Takes a batch of operations.
@@ -119,7 +123,7 @@ fn edit_infra(
     operations: Json<Vec<Operation>>,
     infra_caches: State<HashMap<i32, Mutex<InfraCache>>>,
     conn: DBConnection,
-) -> ApiResult<String> {
+) -> ApiResult<Json<Vec<OperationResult>>> {
     // Take lock on infra cache
     if !infra_caches.contains_key(&infra) {
         let err: Box<dyn ApiError> = Box::new(InfraError::NotFound(infra));
@@ -136,18 +140,19 @@ fn edit_infra(
     generate::refresh(&conn, &infra, false)?;
 
     // Apply modifications
+    let mut operation_results = vec![];
     for operation in operations.iter() {
         let operation = operation.clone();
         let infra_id = infra.id;
-        operation.apply(infra_id, &conn)?
+        operation_results.push(operation.apply(infra_id, &conn)?);
     }
 
     // Bump version
     let infra = infra.bump_version(&conn)?;
 
     // Apply operations to infra cache
-    for op in operations.iter() {
-        infra_cache.apply(op);
+    for op_res in operation_results.iter() {
+        infra_cache.apply(op_res);
     }
 
     // Refresh layers
@@ -158,5 +163,5 @@ fn edit_infra(
     infra.bump_generated_version(&conn)?;
 
     // Check for warnings and errors
-    Ok(Json(String::from("ok")))
+    Ok(Json(operation_results))
 }
