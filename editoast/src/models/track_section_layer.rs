@@ -1,5 +1,5 @@
-use crate::railjson::operation::{CreateOperation, DeleteOperation, Operation, UpdateOperation};
-use crate::railjson::ObjectType;
+use crate::railjson::operation::{Operation, RailjsonObject, UpdateOperation};
+use crate::railjson::{ObjectRef, ObjectType};
 use crate::schema::osrd_infra_tracksectionlayer;
 use crate::schema::osrd_infra_tracksectionlayer::dsl::*;
 use diesel::result::Error;
@@ -58,7 +58,7 @@ impl TrackSectionLayer {
         let mut obj_ids = HashSet::new();
         for op in operations {
             match op {
-                Operation::Create(CreateOperation::TrackSection { railjson }) => {
+                Operation::Create(RailjsonObject::TrackSection { railjson }) => {
                     obj_ids.insert(railjson.id.clone());
                 }
                 Operation::Update(UpdateOperation {
@@ -66,7 +66,7 @@ impl TrackSectionLayer {
                     obj_type: ObjectType::TrackSection,
                     ..
                 })
-                | Operation::Delete(DeleteOperation {
+                | Operation::Delete(ObjectRef {
                     obj_id: track_id,
                     obj_type: ObjectType::TrackSection,
                 }) => {

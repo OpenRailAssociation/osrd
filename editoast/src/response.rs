@@ -4,7 +4,7 @@ use rocket_contrib::json::Json;
 use serde::Serialize;
 use std::error::Error;
 
-pub type ApiResult<T> = Result<Json<T>, Custom<Json<ResultError>>>;
+pub type ApiResult<T> = Result<T, Custom<Json<ResultError>>>;
 
 #[derive(Debug, Serialize)]
 pub struct ResultError {

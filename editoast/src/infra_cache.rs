@@ -1,4 +1,4 @@
-use crate::railjson::operation::{DeleteOperation, Operation, UpdateOperation};
+use crate::railjson::operation::{OperationResult, RailjsonObject};
 use crate::railjson::{ObjectRef, ObjectType};
 use diesel::sql_types::{Integer, Text};
 use diesel::PgConnection;
@@ -86,9 +86,9 @@ impl InfraCache {
     }
 
     /// Apply delete operation to the infra cache
-    fn apply_delete(&mut self, op: &DeleteOperation) {
-        match op {
-            DeleteOperation {
+    fn apply_delete(&mut self, object_ref: &ObjectRef) {
+        match object_ref {
+            ObjectRef {
                 obj_type: ObjectType::Signal,
                 obj_id,
             } => {
@@ -98,7 +98,7 @@ impl InfraCache {
                     .unwrap()
                     .remove(&ObjectRef::new(ObjectType::Signal, obj_id.clone()));
             }
-            DeleteOperation {
+            ObjectRef {
                 obj_type: ObjectType::SpeedSection,
                 obj_id,
             } => {
@@ -116,26 +116,22 @@ impl InfraCache {
     }
 
     /// Apply update operation to the infra cache
-    fn apply_update(&mut self, op: &UpdateOperation) {
-        match op {
-            UpdateOperation {
-                obj_type: ObjectType::Signal,
-                ..
-            } => todo!(),
-            UpdateOperation {
-                obj_type: ObjectType::SpeedSection,
-                ..
-            } => todo!(),
-            _ => (),
-        }
+    fn apply_update(&mut self, _railjson_obj: &RailjsonObject) {
+        // TODO: handle objects update (nothing to do with track sections)
+        // This will basically be the same as delete + insert
+    }
+
+    /// Apply create operation to the infra cache
+    fn apply_create(&mut self, _railjson_obj: &RailjsonObject) {
+        // TODO: handle objects creation (nothing to do with track sections)
     }
 
     /// Apply an operation to the infra cache
-    pub fn apply(&mut self, operation: &Operation) {
-        match operation {
-            Operation::Delete(delete_op) => self.apply_delete(delete_op),
-            Operation::Update(update_op) => self.apply_update(update_op),
-            _ => (),
+    pub fn apply(&mut self, op_res: &OperationResult) {
+        match op_res {
+            OperationResult::Delete(obj_ref) => self.apply_delete(obj_ref),
+            OperationResult::Update(railjson_obj) => self.apply_update(railjson_obj),
+            OperationResult::Create(railjson_obj) => self.apply_create(railjson_obj),
         }
     }
 }
