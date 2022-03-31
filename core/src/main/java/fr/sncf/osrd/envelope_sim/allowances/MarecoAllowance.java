@@ -276,12 +276,6 @@ public class MarecoAllowance implements Allowance {
             var v1 = search.getInput();
             logger.debug("    starting attempt {} with v1 = {}", i, v1);
             marecoResult = computeMarecoIteration(envelopeSection, v1, imposedBeginSpeed, imposedEndSpeed);
-            if (marecoResult == null) {
-                // We reached the slowdown / speedup intersection case (not implemented) and need to speed up
-                // TODO : update this comment
-                search.feedback(0);
-                continue;
-            }
             var regionTime = marecoResult.getTotalTime();
             logger.debug("    envelope time {}", regionTime);
             search.feedback(regionTime);
