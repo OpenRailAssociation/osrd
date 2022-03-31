@@ -3,6 +3,21 @@ import { get, patch } from 'common/requests';
 const trainScheduleURI = '/train_schedule';
 
 /**
+ * Premare the params to override the trains details and save them
+ * @param {object} simulationTrain
+ * @returns
+ */
+export function getTrainDetailsForAPI(simulationTrain) {
+  const params =  {
+    id: simulationTrain.id,
+    departure_time: simulationTrain.base.stops[0].time,
+    name: simulationTrain.base.stops[0].time,
+  }
+  return params
+}
+
+
+/**
  * Use the trainScheduleAPI to update train details on a specific computation
  *
  * @export

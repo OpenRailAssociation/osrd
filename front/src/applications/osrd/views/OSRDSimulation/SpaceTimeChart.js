@@ -10,11 +10,11 @@ import {
   timeShiftTrain,
 } from 'applications/osrd/components/Helpers/ChartHelpers';
 import {
-  updateChart,
-  updateContextMenu,
-  updateMustRedraw,
-  updatePositionValues,
-  updateSimulation,
+updateChart,
+updateContextMenu,
+updateMustRedraw,
+updatePositionValues,
+updateSimulation
 } from 'reducers/osrdsimulation';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -27,6 +27,7 @@ import { changeTrain } from 'applications/osrd/components/TrainList/TrainListHel
 import createChart from 'applications/osrd/components/Simulation/SpaceTimeChart/createChart';
 import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/createTrain';
 import drawTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/drawTrain';
+import { persistentUpdateSimulation } from 'reducers/osrdsimulation/simulation';
 import { useTranslation } from 'react-i18next';
 
 const CHART_ID = 'SpaceTimeChart';
@@ -77,7 +78,7 @@ export default function SpaceTimeChart(props) {
   const offsetTimeByDragging = (offset) => {
     const trains = Array.from(simulation.trains);
     trains[selectedTrain] = timeShiftTrain(trains[selectedTrain], offset);
-    dispatch(updateSimulation({ ...simulation, trains }));
+    dispatch(persistentUpdateSimulation({ ...simulation, trains }));
   };
 
   const toggleRotation = () => {
