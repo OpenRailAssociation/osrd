@@ -3,7 +3,7 @@ mod delete;
 mod update;
 
 use super::{ObjectRef, ObjectType};
-use crate::response::ApiError;
+use crate::error::ApiError;
 use diesel::result::Error as DieselError;
 use diesel::PgConnection;
 use json_patch::PatchError;

@@ -1,79 +1,27 @@
+use crate::error::{ApiError, ApiResult};
 use crate::generate;
 use crate::infra_cache::InfraCache;
 use crate::models::{CreateInfra, DBConnection, Infra, InfraError};
 use crate::railjson::operation::{Operation, OperationResult};
-use crate::response::{ApiError, ApiResult, ResultError};
-use rocket::http::{RawStr, Status};
-use rocket::request::FromFormValue;
+use rocket::http::Status;
 use rocket::response::status::Custom;
 use rocket::{routes, Route, State};
-use rocket_contrib::json::{Json, JsonValue};
+use rocket_contrib::json::{Json, JsonError, JsonValue};
 use std::collections::HashMap;
-use std::ops::{Deref, DerefMut};
+use std::ops::DerefMut;
 use std::sync::Mutex;
 
+use super::params::List;
+
 pub fn routes() -> Vec<Route> {
-    routes![
-        health,
-        infra_list,
-        edit_infra,
-        create_infra,
-        delete_infra,
-        refresh_infra
-    ]
+    routes![list, edit, create, delete, refresh]
 }
-
-#[derive(Debug, Default)]
-struct ParamInfraList(Vec<i32>);
-
-impl Deref for ParamInfraList {
-    type Target = Vec<i32>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for ParamInfraList {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-impl<'f> FromFormValue<'f> for ParamInfraList {
-    type Error = Custom<Json<ResultError>>;
-
-    fn from_form_value(form_value: &'f RawStr) -> Result<Self, Self::Error> {
-        let mut res: Self = Default::default();
-        if !form_value.is_empty() {
-            for id in form_value.split(',') {
-                match id.parse::<i32>() {
-                    Ok(id) => res.push(id),
-                    Err(err) => {
-                        return Err(ResultError::create(
-                            "editoast:views:ParamInfraList",
-                            err.to_string(),
-                            Status::BadRequest,
-                        ))
-                    }
-                }
-            }
-        }
-        Ok(res)
-    }
-
-    fn default() -> Option<Self> {
-        Some(Default::default())
-    }
-}
-
-#[get("/health")]
-pub fn health() {}
 
 /// Refresh infra generated data
-#[post("/infra/refresh?<infras>&<force>")]
-fn refresh_infra(conn: DBConnection, infras: ParamInfraList, force: bool) -> ApiResult<JsonValue> {
+#[post("/refresh?<infras>&<force>")]
+fn refresh(conn: DBConnection, infras: List<i32>, force: bool) -> ApiResult<JsonValue> {
     let mut infras_list = vec![];
+    let infras = infras.0?;
 
     if infras.is_empty() {
         // Retrieve all available infra
@@ -99,31 +47,37 @@ fn refresh_infra(conn: DBConnection, infras: ParamInfraList, force: bool) -> Api
 }
 
 /// Return a list of infras
-#[get("/infra")]
-fn infra_list(conn: DBConnection) -> ApiResult<Json<Vec<Infra>>> {
+#[get("/")]
+fn list(conn: DBConnection) -> ApiResult<Json<Vec<Infra>>> {
     Ok(Json(Infra::list(&conn)))
 }
 
-#[post("/infra", data = "<data>")]
-fn create_infra(data: Json<CreateInfra>, conn: DBConnection) -> ApiResult<Custom<Json<Infra>>> {
+#[post("/", data = "<data>")]
+fn create(
+    data: Result<Json<CreateInfra>, JsonError>,
+    conn: DBConnection,
+) -> ApiResult<Custom<Json<Infra>>> {
+    let data = data?;
     let infra = Infra::create(&data.name, &conn)?;
     Ok(Custom(Status::Created, Json(infra)))
 }
 
-#[delete("/infra/<infra>")]
-fn delete_infra(infra: u32, conn: DBConnection) -> ApiResult<Custom<()>> {
+#[delete("/<infra>")]
+fn delete(infra: u32, conn: DBConnection) -> ApiResult<Custom<()>> {
     Infra::delete(infra as i32, &conn)?;
     Ok(Custom(Status::NoContent, ()))
 }
 
 /// CRUD for edit an infrastructure. Takes a batch of operations.
-#[post("/infra/<infra>", data = "<operations>")]
-fn edit_infra(
+#[post("/<infra>", data = "<operations>")]
+fn edit(
     infra: i32,
-    operations: Json<Vec<Operation>>,
+    operations: Result<Json<Vec<Operation>>, JsonError>,
     infra_caches: State<HashMap<i32, Mutex<InfraCache>>>,
     conn: DBConnection,
 ) -> ApiResult<Json<Vec<OperationResult>>> {
+    let operations = operations?;
+
     // Take lock on infra cache
     if !infra_caches.contains_key(&infra) {
         let err: Box<dyn ApiError> = Box::new(InfraError::NotFound(infra));

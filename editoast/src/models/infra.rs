@@ -1,4 +1,4 @@
-use crate::response::ApiError;
+use crate::error::ApiError;
 use crate::schema::osrd_infra_infra;
 use crate::schema::osrd_infra_infra::dsl::*;
 use diesel::result::Error as DieselError;
@@ -21,6 +21,7 @@ pub struct Infra {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct CreateInfra {
     pub name: String,
 }
