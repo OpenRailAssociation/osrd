@@ -14,6 +14,7 @@ paths:
       responses:
         200:
           description: Check if Editoast is running correctly
+
   /infra/:
     get:
       tags:
@@ -28,7 +29,6 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Infra"
-
     post:
       tags:
         - infra
@@ -43,12 +43,12 @@ paths:
                 name:
                   type: string
       responses:
-        200:
-          description: The id of the infra
+        201:
+          description: The created infra
           content:
             application/json:
               schema:
-                type: integer
+                $ref: "#/components/schemas/Infra"
 
   /infra/{id}/:
     delete:
@@ -63,14 +63,8 @@ paths:
           description: infra id
           required: true
       responses:
-        200:
+        204:
           description: No content
-          content:
-            application/json:
-              schema:
-                type: integer
-                nullable: true
-                enum: [null]
 
     post:
       tags:
@@ -93,12 +87,13 @@ paths:
                 $ref: "#/components/schemas/Operation"
       responses:
         200:
-          description: No content
+          description: An array containing infos about the operations processed
           content:
             application/json:
               schema:
-                type: string
-                enum: [ok]
+                type: array
+                items:
+                  $ref: "#/components/schemas/OperationResult"
 
   /infra/refresh/:
     post:
@@ -122,7 +117,13 @@ paths:
           description: Force the refresh of the layers
       responses:
         200:
-          description: No content
+          description: A list thats contains the ID of the infras that were refreshed*
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
 
 components:
   schemas:
@@ -139,59 +140,42 @@ components:
           type: string
           nullable: true
           example: "1"
+
     ObjectType:
       type: string
       enum:
         - TrackSection
         - Signal
         - SpeedSection
+
     Operation:
       oneOf:
         - $ref: "#/components/schemas/CreateOperation"
         - $ref: "#/components/schemas/DeleteOperation"
         - $ref: "#/components/schemas/UpdateOperation"
       discriminator:
-        propertyName: type
+        propertyName: operation_type
+
+    OperationResult:
+      oneOf:
+        - $ref: "#/components/schemas/DeleteOperation"
+        - $ref: "#/components/schemas/OperationObject"
+      discriminator:
+        propertyName: operation_type
+
     CreateOperation:
       properties:
-        type:
+        operation_type:
           type: string
           enum: ["CREATE"]
         obj_type:
           $ref: "#/components/schemas/ObjectType"
         railjson:
-          type: object
-          description: This field follows railjson format
-          example:
-            id: bd840b06-84ba-4566-98c1-ccf0196c5f16
-            geo:
-              type: LineString
-              coordinates:
-                - - 1.0
-                  - 41.0
-                - - 2.0
-                  - 42.0
-            sch:
-              type: LineString
-              coordinates:
-                - - 1.0
-                  - 41.0
-                - - 2.0
-                  - 42.0
-            curves: []
-            length: 1000
-            slopes:
-              - end: 500
-                begin: 250
-                gradient: -1
-            line_code: 1
-            line_name: my line
-            track_name: track name
-            navigability: BOTH
-            track_number: 1
+          $ref: "#/components/schemas/Railjson"
+
     DeleteOperation:
       properties:
-        type:
+        operation_type:
           type: string
           enum: ["DELETE"]
         obj_type:
@@ -199,9 +183,10 @@ components:
         obj_id:
           type: string
           example: bd840b06-84ba-4566-98c1-ccf0196c5f16
+
     UpdateOperation:
       properties:
-        type:
+        operation_type:
           type: string
           enum: ["UPDATE"]
         obj_type:
@@ -211,6 +196,17 @@ components:
           example: bd840b06-84ba-4566-98c1-ccf0196c5f16
         railjson_patch:
           $ref: "#/components/schemas/Patches"
+
+    OperationObject:
+      properties:
+        operation_type:
+          type: string
+          enum: ["CREATE", "UPDATE"]
+        obj_type:
+          $ref: "#/components/schemas/ObjectType"
+        railjson:
+          $ref: "#/components/schemas/Railjson"
+
     Patch:
       description: A JSONPatch document as defined by RFC 6902
       required:
@@ -236,8 +232,40 @@ components:
         from:
           type: string
           description: A string containing a JSON Pointer value.
+
     Patches:
-      description: A list of Patch
       type: array
+      description: A list of Patch
       items:
         $ref: "#/components/schemas/Patch"
+
+    Railjson:
+      type: object
+      description: This field follows railjson format
+      example:
+        id: bd840b06-84ba-4566-98c1-ccf0196c5f16
+        geo:
+          type: LineString
+          coordinates:
+            - - 1.0
+              - 41.0
+            - - 2.0
+              - 42.0
+        sch:
+          type: LineString
+          coordinates:
+            - - 1.0
+              - 41.0
+            - - 2.0
+              - 42.0
+        curves: []
+        length: 1000
+        slopes:
+          - end: 500
+            begin: 250
+            gradient: -1
+        line_code: 1
+        line_name: my line
+        track_name: track name
+        navigability: BOTH
+        track_number: 1
