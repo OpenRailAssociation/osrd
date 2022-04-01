@@ -2,8 +2,16 @@
   table_name: osrd_infra_tracksectionlayer
   id_field: id
   views:
-    - name: geographic
+    - name: geo
       on_field: geographic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "(track_section.data - 'id' - 'geo' - 'sch')::text as data"
+      joins:
+        - "inner join osrd_infra_tracksectionmodel track_section on track_section.obj_id = layer.obj_id"
+    - name: sch
+      on_field: schematic
       cache_duration: 3600
       fields:
         - "layer.obj_id as id"
@@ -15,7 +23,7 @@
   table_name: osrd_infra_signallayer
   id_field: id
   views:
-    - name: geographic
+    - name: geo
       on_field: geographic
       cache_duration: 3600
       fields:
@@ -23,3 +31,32 @@
         - "(signal.data - 'id' - 'geo' - 'sch')::text as data"
       joins:
         - "inner join osrd_infra_signalmodel signal on signal.obj_id = layer.obj_id"
+    - name: sch
+      on_field: schematic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "(signal.data - 'id' - 'geo' - 'sch')::text as data"
+      joins:
+        - "inner join osrd_infra_signalmodel signal on signal.obj_id = layer.obj_id"
+
+- name: speed_sections
+  table_name: osrd_infra_speedsectionlayer
+  id_field: id
+  views:
+    - name: geo
+      on_field: geographic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "(speed_section.data - 'id' - 'geo' - 'sch')::text as data"
+      joins:
+        - "inner join osrd_infra_speedsectionmodel speed_section on speed_section.obj_id = layer.obj_id"
+    - name: sch
+      on_field: schematic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "(speed_section.data - 'id' - 'geo' - 'sch')::text as data"
+      joins:
+        - "inner join osrd_infra_speedsectionmodel speed_section on speed_section.obj_id = layer.obj_id"
