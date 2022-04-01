@@ -16,7 +16,7 @@ pub use create::RailjsonObject;
 pub use update::UpdateOperation;
 
 #[derive(Clone, Deserialize)]
-#[serde(tag = "operation_type")]
+#[serde(tag = "operation_type", deny_unknown_fields)]
 pub enum Operation {
     #[serde(rename = "CREATE")]
     Create(RailjsonObject),
@@ -63,7 +63,7 @@ impl ApiError for OperationError {
 
     fn get_type(&self) -> &'static str {
         match self {
-            OperationError::ObjectNotFound(_) => "editoast:operation:NotFound",
+            OperationError::ObjectNotFound(_) => "editoast:operation:ObjectNotFound",
             OperationError::ModifyId => "editoast:operation:ModifyId",
             OperationError::DieselError(_) => "editoast:operation:DieselError",
             OperationError::JsonPatchError(_) => "editoast:operation:JsonPatchError",
