@@ -10,6 +10,8 @@ import fr.sncf.osrd.new_infra_state.api.NewTrainPath;
 import fr.sncf.osrd.new_infra_state.api.ReservationRouteState;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /** A simple implementation of InfraStateView that supports only a single train. */
 @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
@@ -21,6 +23,8 @@ public class StandaloneState implements InfraStateView {
     private final Map<DetectionSection, OccupationRange> sectionOccupationRanges;
     /** For each route, the train position range where it is occupied */
     private final Map<ReservationRoute, OccupationRange> routeOccupationRanges;
+    /** Set of route IDs on the path. Those routes are considered RESERVED instead of FREE */
+    private final Set<String> routesOnPath;
     /** Current offset of the train */
     private double currentOffset = 0;
 
@@ -44,6 +48,7 @@ public class StandaloneState implements InfraStateView {
             NewTrainPath trainPath,
             Map<DetectionSection, OccupationRange> sectionOccupationRanges,
             Map<ReservationRoute, OccupationRange> routeOccupationRanges,
+            Set<String> routesOnPath,
             ImmutableMultimap<Double, DetectionSection> detectionUpdatePositions,
             ImmutableMultimap<Double, ReservationRoute> routeUpdatePositions,
             ImmutableSortedSet<Double> updatePositions
@@ -51,6 +56,7 @@ public class StandaloneState implements InfraStateView {
         this.trainPath = trainPath;
         this.sectionOccupationRanges = sectionOccupationRanges;
         this.routeOccupationRanges = routeOccupationRanges;
+        this.routesOnPath = routesOnPath;
         this.detectionUpdatePositions = detectionUpdatePositions;
         this.routeUpdatePositions = routeUpdatePositions;
         this.updatePositions = updatePositions;
@@ -63,10 +69,14 @@ public class StandaloneState implements InfraStateView {
         var detectionUpdatePositions = makeGenericUpdatePositions(detectionRanges);
         var routeUpdatePositions = makeGenericUpdatePositions(routeRanges);
         var updatePositions = makeUpdatePositions(detectionUpdatePositions, routeUpdatePositions);
+        var routesOnPath = trainPath.routePath().stream()
+                .map(r -> r.element().getInfraRoute().getID())
+                .collect(Collectors.toSet());
         return new StandaloneState(
                 trainPath,
                 detectionRanges,
                 routeRanges,
+                routesOnPath,
                 detectionUpdatePositions,
                 routeUpdatePositions,
                 updatePositions
@@ -113,8 +123,12 @@ public class StandaloneState implements InfraStateView {
                             otherRoute
                     );
             }
-            return new StandaloneReservationRouteState(ReservationRouteState.Summary.RESERVED,
-                    new StandaloneReservationTrain(), route);
+            if (routesOnPath.contains(route.getID()))
+                return new StandaloneReservationRouteState(ReservationRouteState.Summary.RESERVED,
+                        new StandaloneReservationTrain(), route);
+            else
+                return new StandaloneReservationRouteState(ReservationRouteState.Summary.FREE,
+                        null, route);
         }
     }
 
