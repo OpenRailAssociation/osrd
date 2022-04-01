@@ -72,6 +72,17 @@ impl Infra {
         }
     }
 
+    pub fn retrieve_for_update(
+        conn: &PgConnection,
+        infra_id: i32,
+    ) -> Result<Infra, Box<dyn ApiError>> {
+        match osrd_infra_infra.for_update().find(infra_id).first(conn) {
+            Ok(infra) => Ok(infra),
+            Err(DieselError::NotFound) => Err(Box::new(InfraError::NotFound(infra_id))),
+            Err(e) => Err(Box::new(InfraError::DieselError(e))),
+        }
+    }
+
     pub fn list(conn: &PgConnection) -> Vec<Infra> {
         osrd_infra_infra
             .load::<Self>(conn)

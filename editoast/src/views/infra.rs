@@ -1,4 +1,4 @@
-use crate::error::{ApiError, ApiResult};
+use crate::error::{ApiError, ApiResult, EditoastError};
 use crate::generate;
 use crate::infra_cache::InfraCache;
 use crate::models::{CreateInfra, DBConnection, Infra, InfraError};
@@ -88,34 +88,39 @@ fn edit(
     let mut infra_cache = infra_cache.lock().unwrap();
 
     // Retrieve infra
-    let infra = Infra::retrieve(&conn, infra as i32)?;
+    conn.build_transaction().run::<_, EditoastError, _>(|| {
+        let infra = Infra::retrieve_for_update(&conn, infra as i32)?;
 
-    // Check if infra has sync generated data
-    generate::refresh(&conn, &infra, false)?;
+        // Check if infra has sync generated data
+        generate::refresh(&conn, &infra, false)?;
 
-    // Apply modifications
-    let mut operation_results = vec![];
-    for operation in operations.iter() {
-        let operation = operation.clone();
-        let infra_id = infra.id;
-        operation_results.push(operation.apply(infra_id, &conn)?);
-    }
+        // Apply modifications
+        let mut operation_results = vec![];
+        for operation in operations.iter() {
+            let operation = operation.clone();
+            let infra_id = infra.id;
+            operation_results.push(operation.apply(infra_id, &conn)?);
+        }
 
-    // Bump version
-    let infra = infra.bump_version(&conn)?;
+        // Bump version
+        let infra = infra.bump_version(&conn)?;
 
-    // Apply operations to infra cache
-    for op_res in operation_results.iter() {
-        infra_cache.apply(op_res);
-    }
+        // Apply operations to infra cache
+        for op_res in operation_results.iter() {
+            infra_cache.apply(op_res);
+        }
 
-    // Refresh layers
-    generate::update(&conn, infra.id, &operations, infra_cache.deref_mut())
-        .expect("Update generated data failed");
+        // Refresh layers
+        generate::update(&conn, infra.id, &operations, infra_cache.deref_mut())
+            .expect("Update generated data failed");
 
-    // Bump infra generated version to the infra version
-    infra.bump_generated_version(&conn)?;
+        // Bump infra generated version to the infra version
+        infra.bump_generated_version(&conn)?;
 
-    // Check for warnings and errors
-    Ok(Json(operation_results))
+        // TODO REMOVE ME
+        std::thread::sleep(std::time::Duration::from_secs(60 * 2));
+
+        // Check for warnings and errors
+        Ok(Json(operation_results))
+    })
 }
