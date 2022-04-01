@@ -44,30 +44,50 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
                 RESERVED
         );
         // Finds any free route starting from this signal
-        BAL3.BAL3Route reservedRoute = null;
+        Set<BAL3.BAL3Route> reservedRoutes = new HashSet<>();
         for (var route : protectedRoutes)
-            if (openRouteStates.contains(state.getState(route.infraRoute()).summarize())) {
-                reservedRoute = route;
-                break;
-            }
-        if (reservedRoute == null)
+            if (openRouteStates.contains(state.getState(route.infraRoute()).summarize()))
+                reservedRoutes.add(route);
+        if (reservedRoutes.isEmpty())
             // All routes starting from this signal are blocked -> red
             return new BAL3SignalState(BAL3.Aspect.RED);
 
-        if (reservedRoute.infraRoute().isControlled()
-                && !state.getState(reservedRoute.infraRoute()).summarize().equals(RESERVED))
-            // Route needs to be reserved but isn't
-            return new BAL3SignalState(BAL3.Aspect.RED);
-
-        if (reservedRoute.exitSignal() != null) {
-            var nextSignal = signalization.getSignalState(reservedRoute.exitSignal());
-            if (nextSignal instanceof BAL3SignalState nextSignalState)
-                if (nextSignalState.aspect.equals(BAL3.Aspect.RED))
-                    // Next signal is red -> yellow
-                    return new BAL3SignalState(BAL3.Aspect.YELLOW);
+        if (reservedRoutes.stream().anyMatch(r -> r.infraRoute().isControlled())) {
+            // At lease one route needs to be reserved
+            if (reservedRoutes.stream().noneMatch(r -> state.getState(r.infraRoute()).summarize().equals(RESERVED))) {
+                // No route is reserved -> red
+                return new BAL3SignalState(BAL3.Aspect.RED);
+            }
         }
-        // TODO default to red for requested routes
+
+        // Checks if the next signal is red: we look for reserved routes first
+        for (var route : reservedRoutes) {
+            if (state.getState(route.getInfraRoute()).summarize().equals(RESERVED)) {
+                if (isNextRouteBlocked(route, signalization))
+                    return new BAL3SignalState(BAL3.Aspect.YELLOW);
+                else {
+                    // A route is reserved and lead to a signal that isn't red, we don't need to check the rest
+                    return new BAL3SignalState(BAL3.Aspect.GREEN);
+                }
+            }
+        }
+
+        // If no reserved route, we check all free routes starting from this signal
+        for (var route : reservedRoutes) {
+            if (isNextRouteBlocked(route, signalization))
+                return new BAL3SignalState(BAL3.Aspect.YELLOW);
+        }
         return new BAL3SignalState(BAL3.Aspect.GREEN);
+    }
+
+    /** Returns true if the signal at the end of this route is red */
+    private boolean isNextRouteBlocked(BAL3.BAL3Route route, SignalizationStateView signalization) {
+        if (route.exitSignal() != null) {
+            var nextSignal = signalization.getSignalState(route.exitSignal());
+            if (nextSignal instanceof BAL3SignalState nextSignalState)
+                return nextSignalState.aspect.equals(BAL3.Aspect.RED);
+        }
+        return false;
     }
 
     @Override
