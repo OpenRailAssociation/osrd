@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
-#[serde(tag = "obj_type")]
+#[serde(tag = "obj_type", deny_unknown_fields)]
 pub enum RailjsonObject {
     TrackSection { railjson: TrackSection },
 }
