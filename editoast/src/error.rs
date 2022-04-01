@@ -1,3 +1,4 @@
+use diesel::result::Error as DieselError;
 use rocket::http::Status;
 use rocket::response::status::Custom;
 use rocket_contrib::json::{JsonError, JsonValue};
@@ -43,6 +44,21 @@ pub trait ApiError: Error + Send + Sync {
 }
 
 impl Error for Box<dyn ApiError> {}
+
+impl From<DieselError> for EditoastError {
+    fn from(err: DieselError) -> Self {
+        Self::create(
+            "editoast:DieselError",
+            "An internal diesel error occurred".to_string(),
+            Status::InternalServerError,
+            json!({
+                "diesel_message": err.to_string(),
+            })
+            .as_object()
+            .cloned(),
+        )
+    }
+}
 
 impl From<Box<dyn ApiError>> for EditoastError {
     fn from(api_err: Box<dyn ApiError>) -> Self {
