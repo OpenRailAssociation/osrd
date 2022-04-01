@@ -28,7 +28,7 @@
       cache_duration: 3600
       fields:
         - "layer.obj_id as id"
-        - "(signal.data - 'id' - 'geo' - 'sch')::text as data"
+        - "(signal.data - 'id')::text as data"
       joins:
         - "inner join osrd_infra_signalmodel signal on signal.obj_id = layer.obj_id"
     - name: sch
@@ -36,7 +36,7 @@
       cache_duration: 3600
       fields:
         - "layer.obj_id as id"
-        - "(signal.data - 'id' - 'geo' - 'sch')::text as data"
+        - "(signal.data - 'id')::text as data"
       joins:
         - "inner join osrd_infra_signalmodel signal on signal.obj_id = layer.obj_id"
 
@@ -49,7 +49,7 @@
       cache_duration: 3600
       fields:
         - "layer.obj_id as id"
-        - "(speed_section.data - 'id' - 'geo' - 'sch')::text as data"
+        - "(speed_section.data - 'id')::text as data"
       joins:
         - "inner join osrd_infra_speedsectionmodel speed_section on speed_section.obj_id = layer.obj_id"
     - name: sch
@@ -57,6 +57,6 @@
       cache_duration: 3600
       fields:
         - "layer.obj_id as id"
-        - "(speed_section.data - 'id' - 'geo' - 'sch')::text as data"
+        - "(speed_section.data - 'id')::text as data"
       joins:
         - "inner join osrd_infra_speedsectionmodel speed_section on speed_section.obj_id = layer.obj_id"
