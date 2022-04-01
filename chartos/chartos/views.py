@@ -123,7 +123,7 @@ async def mvt_query(psql, layer, infra, view, z, x, y) -> bytes:
         f"SELECT ST_AsMVT(tile_content, '{layer.name}') AS tile FROM tile_content"
     )
 
-    async with psql.transaction(isolation="repeatable_read"):
+    async with psql.transaction(isolation="repeatable_read", readonly=True):
         (record,) = await psql.fetch(query, z, x, y, int(infra))
 
     return record.get("tile")
