@@ -15,6 +15,7 @@ mod railjson;
 mod schema;
 mod views;
 
+use chashmap::CHashMap;
 use clap::Parser;
 use client::{Client, Commands, GenerateArgs, PostgresConfig, RunserverArgs};
 use colored::*;
@@ -25,7 +26,6 @@ use rocket::config::Value;
 use std::collections::HashMap;
 use std::error::Error;
 use std::process::exit;
-use std::sync::Mutex;
 
 fn main() {
     match run() {
@@ -55,10 +55,10 @@ fn runserver(
     let infras = Infra::list(&conn);
 
     // Initialize infra caches
-    let mut infra_caches = HashMap::new();
+    let infra_caches = CHashMap::new();
     for infra in infras.iter() {
-        let infra_cache = Mutex::new(InfraCache::init(&conn, infra.id));
-        infra_caches.insert(infra.id, infra_cache);
+        let infra_cache = InfraCache::init(&conn, infra.id);
+        infra_caches.insert_new(infra.id, infra_cache);
     }
 
     // Config server

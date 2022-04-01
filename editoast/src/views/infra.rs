@@ -1,17 +1,15 @@
-use crate::error::{ApiError, ApiResult, EditoastError};
+use super::params::List;
+use crate::error::{ApiResult, EditoastError};
 use crate::generate;
 use crate::infra_cache::InfraCache;
-use crate::models::{CreateInfra, DBConnection, Infra, InfraError};
+use crate::models::{CreateInfra, DBConnection, Infra};
 use crate::railjson::operation::{Operation, OperationResult};
+use chashmap::CHashMap;
 use rocket::http::Status;
 use rocket::response::status::Custom;
 use rocket::{routes, Route, State};
 use rocket_contrib::json::{Json, JsonError, JsonValue};
-use std::collections::HashMap;
 use std::ops::DerefMut;
-use std::sync::Mutex;
-
-use super::params::List;
 
 pub fn routes() -> Vec<Route> {
     routes![list, edit, create, delete, refresh]
@@ -52,19 +50,28 @@ fn list(conn: DBConnection) -> ApiResult<Json<Vec<Infra>>> {
     Ok(Json(Infra::list(&conn)))
 }
 
+/// Create an infra
 #[post("/", data = "<data>")]
 fn create(
     data: Result<Json<CreateInfra>, JsonError>,
     conn: DBConnection,
+    infra_caches: State<CHashMap<i32, InfraCache>>,
 ) -> ApiResult<Custom<Json<Infra>>> {
     let data = data?;
     let infra = Infra::create(&data.name, &conn)?;
+    infra_caches.insert_new(infra.id, InfraCache::default());
     Ok(Custom(Status::Created, Json(infra)))
 }
 
+/// Delete an infra
 #[delete("/<infra>")]
-fn delete(infra: u32, conn: DBConnection) -> ApiResult<Custom<()>> {
-    Infra::delete(infra as i32, &conn)?;
+fn delete(
+    infra: i32,
+    conn: DBConnection,
+    infra_caches: State<CHashMap<i32, InfraCache>>,
+) -> ApiResult<Custom<()>> {
+    Infra::delete(infra, &conn)?;
+    infra_caches.remove(&infra);
     Ok(Custom(Status::NoContent, ()))
 }
 
@@ -73,22 +80,14 @@ fn delete(infra: u32, conn: DBConnection) -> ApiResult<Custom<()>> {
 fn edit(
     infra: i32,
     operations: Result<Json<Vec<Operation>>, JsonError>,
-    infra_caches: State<HashMap<i32, Mutex<InfraCache>>>,
+    infra_caches: State<CHashMap<i32, InfraCache>>,
     conn: DBConnection,
 ) -> ApiResult<Json<Vec<OperationResult>>> {
     let operations = operations?;
 
-    // Take lock on infra cache
-    if !infra_caches.contains_key(&infra) {
-        let err: Box<dyn ApiError> = Box::new(InfraError::NotFound(infra));
-        return Err(err.into());
-    }
-
-    let infra_cache = infra_caches.get(&infra).unwrap();
-    let mut infra_cache = infra_cache.lock().unwrap();
-
-    // Retrieve infra
+    // Use a transaction to give scope to the infra lock
     conn.build_transaction().run::<_, EditoastError, _>(|| {
+        // Retrieve and lock infra
         let infra = Infra::retrieve_for_update(&conn, infra as i32)?;
 
         // Check if infra has sync generated data
@@ -106,6 +105,7 @@ fn edit(
         let infra = infra.bump_version(&conn)?;
 
         // Apply operations to infra cache
+        let mut infra_cache = infra_caches.get_mut(&infra.id).unwrap();
         for op_res in operation_results.iter() {
             infra_cache.apply(op_res);
         }
@@ -116,9 +116,6 @@ fn edit(
 
         // Bump infra generated version to the infra version
         infra.bump_generated_version(&conn)?;
-
-        // TODO REMOVE ME
-        std::thread::sleep(std::time::Duration::from_secs(60 * 2));
 
         // Check for warnings and errors
         Ok(Json(operation_results))
