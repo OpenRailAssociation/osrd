@@ -7,6 +7,7 @@ use diesel::ExpressionMethods;
 use diesel::{delete, sql_query, update, PgConnection, QueryDsl, RunQueryDsl};
 use rocket::http::Status;
 use serde::{Deserialize, Serialize};
+use serde_json::{Map, Value};
 use thiserror::Error;
 
 static RAILJSON_VERSION: &'static str = "2.2.0";
@@ -47,6 +48,17 @@ impl ApiError for InfraError {
         match self {
             InfraError::NotFound(_) => "editoast:infra:NotFound",
             InfraError::DieselError(_) => "editoast:infra:DieselError",
+        }
+    }
+
+    fn extra(&self) -> Option<Map<String, Value>> {
+        match self {
+            InfraError::NotFound(infra_id) => json!({
+                "infra_id": infra_id,
+            })
+            .as_object()
+            .cloned(),
+            _ => None,
         }
     }
 }
