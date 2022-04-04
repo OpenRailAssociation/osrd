@@ -33,9 +33,7 @@ mod test {
     use crate::railjson::operation::create::apply_create_operation;
     use crate::railjson::operation::delete::apply_delete_operation;
     use crate::railjson::operation::RailjsonObject;
-    use crate::railjson::ObjectRef;
-    use crate::railjson::ObjectType;
-    use crate::railjson::TrackSection;
+    use crate::railjson::{ObjectRef, ObjectType, Signal, SpeedSection, TrackSection};
     use diesel::result::Error;
     use diesel::sql_types::BigInt;
     use diesel::{sql_query, Connection, PgConnection, RunQueryDsl};
@@ -72,6 +70,74 @@ mod test {
 
             let res_del = sql_query(format!(
                 "SELECT COUNT (*) AS nb FROM osrd_infra_tracksectionmodel WHERE obj_id = 'my_track' AND infra_id = {}",
+                infra.id
+            ))
+            .load::<Count>(&conn).unwrap();
+
+            assert_eq!(res_del[0].nb, 0);
+
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn delete_signal() {
+        let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
+        conn.test_transaction::<_, Error, _>(|| {
+            let signal_creation = RailjsonObject::Signal {
+                railjson: Signal {
+                    id: "my_signal".to_string(),
+                    sight_distance: 10.0,
+                    ..Default::default()
+                },
+            };
+
+            let infra = Infra::create(&"test".to_string(), &conn).unwrap();
+            assert!(apply_create_operation(&signal_creation, infra.id, &conn).is_ok());
+
+            let signal_deletion = ObjectRef {
+                obj_type: ObjectType::Signal,
+                obj_id: "my_signal".to_string(),
+            };
+
+            assert!(apply_delete_operation(&signal_deletion, infra.id, &conn).is_ok());
+
+            let res_del = sql_query(format!(
+                "SELECT COUNT (*) AS nb FROM osrd_infra_signalmodel WHERE obj_id = 'my_signal' AND infra_id = {}",
+                infra.id
+            ))
+            .load::<Count>(&conn).unwrap();
+
+            assert_eq!(res_del[0].nb, 0);
+
+            Ok(())
+        });
+    }
+
+    #[test]
+    fn delete_speed() {
+        let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
+        conn.test_transaction::<_, Error, _>(|| {
+            let speed_creation = RailjsonObject::SpeedSection {
+                railjson: SpeedSection {
+                    id: "my_speed".to_string(),
+                    speed: 100.0,
+                    ..Default::default()
+                },
+            };
+
+            let infra = Infra::create(&"test".to_string(), &conn).unwrap();
+            assert!(apply_create_operation(&speed_creation, infra.id, &conn).is_ok());
+
+            let speed_deletion = ObjectRef {
+                obj_type: ObjectType::SpeedSection,
+                obj_id: "my_speed".to_string(),
+            };
+
+            assert!(apply_delete_operation(&speed_deletion, infra.id, &conn).is_ok());
+
+            let res_del = sql_query(format!(
+                "SELECT COUNT (*) AS nb FROM osrd_infra_speedsectionmodel WHERE obj_id = 'my_speed' AND infra_id = {}",
                 infra.id
             ))
             .load::<Count>(&conn).unwrap();

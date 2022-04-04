@@ -2,7 +2,7 @@ mod create;
 mod delete;
 mod update;
 
-use super::{ObjectRef, ObjectType};
+use super::ObjectRef;
 use crate::error::ApiError;
 use diesel::result::Error as DieselError;
 use diesel::PgConnection;
