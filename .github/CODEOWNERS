@@ -31,4 +31,7 @@
 /core/config                                             @multun
 
 # openapi
-/core/specifications   @flomonster @DGEXSolutions/osrd-backend-maintainers
+/core/specifications                                     @DGEXSolutions/osrd-backend-maintainers
+
+# Load database
+/load-database.sh                                        @flomonster
