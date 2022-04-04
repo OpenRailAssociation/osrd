@@ -1,8 +1,9 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { useSelector } from 'react-redux';
-import { Source, Layer } from 'react-map-gl';
+import { Layer, Source } from 'react-map-gl';
+
 import { MAP_URL } from 'common/Map/const';
+import PropTypes from 'prop-types';
+import React from 'react';
+import { useSelector } from 'react-redux';
 
 export default function SpeedLimits(props) {
   const { layersSettings } = useSelector((state) => state.map);
@@ -62,7 +63,7 @@ export default function SpeedLimits(props) {
     <Source
       id={`osrd_speed_limit_${geomType}`}
       type="vector"
-      url={`${MAP_URL}/layer/speed_sections/mvt/${geomType}/?version=${infraID}`}
+      url={`${MAP_URL}/layer/speed_sections/mvt/${geomType}/?infra=${infraID}`}
     >
       <Layer {...speedValuePointParams} id={`chartis/osrd_speed_limit_points/${geomType}`} />
       <Layer {...speedValueParams} id={`chartis/osrd_speed_limit_value/${geomType}`} />

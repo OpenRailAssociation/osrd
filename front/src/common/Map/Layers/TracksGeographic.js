@@ -1,15 +1,16 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { useSelector } from 'react-redux';
-import { Source, Layer } from 'react-map-gl';
-import { geoMainLayer, geoServiceLayer } from 'common/Map/Layers/geographiclayers.ts';
-import { trackNameLayer, lineNumberLayer, lineNameLayer } from 'common/Map/Layers/commonlayers';
+import { Layer, Source } from 'react-map-gl';
 import { MAP_TRACK_SOURCES, MAP_URL } from 'common/Map/const';
+import { geoMainLayer, geoServiceLayer } from 'common/Map/Layers/geographiclayers.ts';
+import { lineNameLayer, lineNumberLayer, trackNameLayer } from 'common/Map/Layers/commonlayers';
+
+import PropTypes from 'prop-types';
+import React from 'react';
+import { useSelector } from 'react-redux';
 
 const TracksGeographic = (props) => {
   const { colors } = props;
   const { infraID } = useSelector((state) => state.osrdconf);
-  const infraVersion = infraID !== undefined ? `?version=${infraID}` : null;
+  const infraVersion = infraID !== undefined ? `?infra=${infraID}` : null;
 
   return (
     <Source
