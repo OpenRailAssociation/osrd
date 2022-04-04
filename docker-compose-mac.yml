@@ -45,12 +45,12 @@ services:
     command: "uvicorn --factory chartos:make_app --host 0.0.0.0 --port 80"
     ports: ["7000:80"]
     environment:
-      PSQL_DSN: "postgres://chartos:password@postgres/chartos"
+      PSQL_DSN: "postgres://osrd:password@postgres/osrd"
       ROOT_URL: "http://localhost:7000"
       REDIS_URL: "redis://redis"
       CONFIG_PATH: "/code/chartos.yml"
     healthcheck:
-      test: ["CMD", "python", "-c", "from urllib.request import urlopen; exit(0 if urlopen('http://localhost/health').status == 200 else 1)"]
+      test: ["CMD", "python", "-c", "from urllib.request import urlopen; exit(0 if urlopen('http://localhost:7000/health').status == 200 else 1)"]
       start_period: 4s
       interval: 5s
 

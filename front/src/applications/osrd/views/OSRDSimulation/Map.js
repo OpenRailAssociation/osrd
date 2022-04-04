@@ -336,12 +336,12 @@ const Map = (props) => {
             <OperationalPoints geomType="geo" colors={colors[mapStyle]} />
             <SignalingType geomType="geo" />
             <SpeedLimits geomType="geo" colors={colors[mapStyle]} />
-            <Signals sourceTable="map_midi_signal" colors={colors[mapStyle]} sourceLayer="geo" />
+            <Signals sourceTable="signals" colors={colors[mapStyle]} sourceLayer="geo" />
           </>
         ) : (
           <>
             <TracksSchematic colors={colors[mapStyle]} idHover={idHover} />
-            <Signals sourceTable="map_midi_signal" colors={colors[mapStyle]} sourceLayer="sch" />
+            <Signals sourceTable="signals" colors={colors[mapStyle]} sourceLayer="sch" />
           </>
         )}
 

@@ -1,19 +1,22 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { useSelector } from 'react-redux';
-import { MAP_URL, SIGNALS_PANELS } from 'common/Map/const';
-import {
-  Source, Layer,
-} from 'react-map-gl';
 import {
   ALL_SIGNAL_LAYERS,
   LIGHT_SIGNALS,
   PANELS_STOPS,
   PANELS_TIVS,
 } from 'common/Map/Consts/SignalsNames';
+import {
+  Layer,
+  Source,
+} from 'react-map-gl';
+import { MAP_URL, SIGNALS_PANELS } from 'common/Map/const';
+
+import PropTypes from 'prop-types';
+import React from 'react';
+import { useSelector } from 'react-redux';
 
 const Signals = (props) => {
   const { mapStyle, signalsSettings } = useSelector((state) => state.map);
+  const { infraID } = useSelector((state) => state.osrdconf);
   const {
     colors, sourceTable, sourceLayer, hovered,
   } = props;
@@ -48,7 +51,7 @@ const Signals = (props) => {
     type: 'circle',
     minzoom: 9,
     'source-layer': sourceTable,
-    filter: ['in', ['get', 'TIF_mnemo'], ['literal', signalList]],
+    filter: ['in', ['get', 'installation_type'], ['literal', signalList]],
     paint: {
       'circle-color': colors.signal.point,
       'circle-radius': 3,
@@ -58,27 +61,27 @@ const Signals = (props) => {
   const signalsTosprites = (type) => {
     switch (type) {
       case 'TIV D FIXE':
-        return ['concat', prefix, 'TIV D FIXE ', ['get', 'S_valeur']];
+        return ['concat', prefix, 'TIV D FIXE ', ['get', 'value']];
       case 'TIV D MOB':
-        return ['concat', prefix, 'TIV D MOB ', ['get', 'S_valeur']];
+        return ['concat', prefix, 'TIV D MOB ', ['get', 'value']];
       case 'TIV R MOB':
-        return ['concat', prefix, 'TIV R MOB ', ['get', 'S_valeur']];
+        return ['concat', prefix, 'TIV R MOB ', ['get', 'value']];
       case 'TIVD C FIX':
-        return ['concat', prefix, 'TIVD C FIX ', ['get', 'S_valeur']];
+        return ['concat', prefix, 'TIVD C FIX ', ['get', 'value']];
       case 'TIVD B FIX':
-        return ['concat', prefix, 'TIVD B FIX ', ['get', 'S_valeur']];
+        return ['concat', prefix, 'TIVD B FIX ', ['get', 'value']];
       case 'TIV PENDIS':
-        return ['concat', prefix, 'TIV PENDIS ', ['get', 'S_valeur']];
+        return ['concat', prefix, 'TIV PENDIS ', ['get', 'value']];
       case 'TIV PENEXE':
-        return ['concat', prefix, 'TIV PENEXE ', ['get', 'S_valeur']];
+        return ['concat', prefix, 'TIV PENEXE ', ['get', 'value']];
       case 'CHEVRON':
         return `${prefix}CHEVRON BAS`;
       case 'ARRET VOY':
-        return ['concat', prefix, 'ARRET VOY ', ['get', 'RA_libelle']];
+        return ['concat', prefix, 'ARRET VOY ', ['get', 'label']];
       case 'DIVERS':
         return ['case',
-          ['==', ['get', 'S_valeur'], `${prefix}SIGNAUX A GAUCHE`], `${prefix}SIG A GAUCHE`,
-          ['==', ['get', 'S_valeur'], `${prefix}SIGNAUX A DROITE`], `${prefix}SIG A DROITE`,
+          ['==', ['get', 'value'], `${prefix}SIGNAUX A GAUCHE`], `${prefix}SIG A GAUCHE`,
+          ['==', ['get', 'value'], `${prefix}SIGNAUX A DROITE`], `${prefix}SIG A DROITE`,
           '',
         ];
       case 'TECS':
@@ -96,9 +99,9 @@ const Signals = (props) => {
       type: 'symbol',
       minzoom: 14,
       'source-layer': sourceTable,
-      filter: ['in', ['get', 'TIF_mnemo'], ['literal', signalList]],
+      filter: ['in', ['get', 'installation_type'], ['literal', signalList]],
       layout: {
-        'text-field': '', // '{TIF_mnemo} / {S_valeur} / {RA_libelle}',
+        'text-field': '', // '{installation_type} / {value} / {label}',
         'text-font': [
           'Roboto Condensed',
         ],
@@ -120,14 +123,14 @@ const Signals = (props) => {
     });
   };
 
-  const signalEmpty = (type, angleName, iconOffset, libelle = 'S_valeur') => {
+  const signalEmpty = (type, angleName, iconOffset, libelle = 'value') => {
     const excludeText = ['SIGNAUX A GAUCHE', 'SIGNAUX A DROITE'];
 
     return {
       type: 'symbol',
       minzoom: 13,
       'source-layer': sourceTable,
-      filter: ['==', 'TIF_mnemo', type],
+      filter: ['==', 'installation_type', type],
       layout: {
         'text-field': ['case',
           ['in', ['get', libelle], ['literal', excludeText]], '',
@@ -173,9 +176,9 @@ const Signals = (props) => {
     type: 'symbol',
     minzoom: 13,
     'source-layer': sourceTable,
-    filter: ['==', 'TIF_mnemo', 'PN'],
+    filter: ['==', 'installation_type', 'PN'],
     layout: {
-      'text-field': '{RA_libelle}',
+      'text-field': '{label}',
       'text-font': [
         'SNCF',
       ],
@@ -239,7 +242,7 @@ const Signals = (props) => {
 
     switch (type) {
       case 'REPER VIT':
-        return signalEmpty(type, angleName, iconOffset, 'RA_libelle');
+        return signalEmpty(type, angleName, iconOffset, 'label');
       case 'DESTI':
       case 'DIVERS':
         return signalEmpty(type, angleName, iconOffset);
@@ -252,11 +255,11 @@ const Signals = (props) => {
       minzoom: 12,
       type: 'symbol',
       'source-layer': sourceTable,
-      filter: ['==', 'TIF_mnemo', type],
+      filter: ['==', 'installation_type', type],
       layout: {
         'text-field': ['step',
           ['zoom'], '',
-          minZoom, ['case', isSignal, ['get', 'RA_libelle'], ''],
+          minZoom, ['case', isSignal, ['get', 'label'], ''],
         ],
         'text-font': [
           'Roboto Condensed',
@@ -295,7 +298,7 @@ const Signals = (props) => {
   };
 
   return (
-    <Source type="vector" url={`${MAP_URL}/layer/${sourceTable}/mvt/${sourceLayer}/`}>
+    <Source type="vector" url={`${MAP_URL}/layer/${sourceTable}/mvt/${sourceLayer}/?infra=${infraID}`}>
       <Layer {...signalMat()} id="chartis/signal/mat" />
       <Layer {...point()} id="chartis/signal/point" />
       {signalList.map((sig) => {
