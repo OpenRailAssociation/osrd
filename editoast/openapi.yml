@@ -150,7 +150,7 @@ components:
 
     Operation:
       oneOf:
-        - $ref: "#/components/schemas/CreateOperation"
+        - $ref: "#/components/schemas/RailjsonObject"
         - $ref: "#/components/schemas/DeleteOperation"
         - $ref: "#/components/schemas/UpdateOperation"
       discriminator:
@@ -163,7 +163,7 @@ components:
       discriminator:
         propertyName: operation_type
 
-    CreateOperation:
+    RailjsonObject:
       properties:
         operation_type:
           type: string
