@@ -31,7 +31,7 @@ impl InfraCache {
             self.track_sections_refs
                 .entry(link.ref_id.clone())
                 .or_insert(Default::default())
-                .insert(ObjectRef::new(obj_type.clone(), link.obj_id.clone()));
+                .insert(ObjectRef::new(obj_type, link.obj_id.clone()));
         }
     }
 
@@ -96,19 +96,18 @@ impl InfraCache {
                 self.track_sections_refs
                     .get_mut(&track_id)
                     .unwrap()
-                    .remove(&ObjectRef::new(ObjectType::Signal, obj_id.clone()));
+                    .remove(object_ref);
             }
             ObjectRef {
                 obj_type: ObjectType::SpeedSection,
                 obj_id,
             } => {
                 let track_ids = self.speed_section_dependencies.remove(obj_id).unwrap();
-                let object_ref = ObjectRef::new(ObjectType::SpeedSection, obj_id.clone());
                 for track_id in track_ids {
                     self.track_sections_refs
                         .get_mut(&track_id)
                         .unwrap()
-                        .remove(&object_ref);
+                        .remove(object_ref);
                 }
             }
             _ => (),
@@ -116,14 +115,45 @@ impl InfraCache {
     }
 
     /// Apply update operation to the infra cache
-    fn apply_update(&mut self, _railjson_obj: &RailjsonObject) {
-        // TODO: handle objects update (nothing to do with track sections)
-        // This will basically be the same as delete + insert
+    fn apply_update(&mut self, railjson_obj: &RailjsonObject) {
+        self.apply_delete(&railjson_obj.get_ref());
+        self.apply_create(railjson_obj);
     }
 
     /// Apply create operation to the infra cache
-    fn apply_create(&mut self, _railjson_obj: &RailjsonObject) {
-        // TODO: handle objects creation (nothing to do with track sections)
+    fn apply_create(&mut self, railjson_obj: &RailjsonObject) {
+        match railjson_obj {
+            RailjsonObject::Signal { railjson } => {
+                assert!(self
+                    .signal_dependencies
+                    .insert(railjson.id.clone(), railjson.track.obj_id.clone())
+                    .is_none());
+                self.track_sections_refs
+                    .entry(railjson.track.obj_id.clone())
+                    .or_default()
+                    .insert(railjson_obj.get_ref());
+            }
+            RailjsonObject::SpeedSection { railjson } => {
+                assert!(self
+                    .speed_section_dependencies
+                    .insert(
+                        railjson.id.clone(),
+                        railjson
+                            .track_ranges
+                            .iter()
+                            .map(|track_range| track_range.track.obj_id.clone())
+                            .collect(),
+                    )
+                    .is_none());
+                railjson.track_ranges.iter().for_each(|track_range| {
+                    self.track_sections_refs
+                        .entry(track_range.track.obj_id.clone())
+                        .or_default()
+                        .insert(railjson_obj.get_ref());
+                });
+            }
+            _ => (),
+        }
     }
 
     /// Apply an operation to the infra cache

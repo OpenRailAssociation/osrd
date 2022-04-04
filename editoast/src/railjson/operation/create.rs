@@ -1,5 +1,5 @@
 use crate::error::ApiError;
-use crate::railjson::{ObjectType, Signal, SpeedSection, TrackSection};
+use crate::railjson::{ObjectRef, ObjectType, Signal, SpeedSection, TrackSection};
 use diesel::sql_types::{Integer, Json, Text};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
 use serde::{Deserialize, Serialize};
@@ -54,6 +54,10 @@ impl RailjsonObject {
             RailjsonObject::SpeedSection { railjson } => serde_json::to_value(railjson).unwrap(),
         }
     }
+
+    pub fn get_ref(&self) -> ObjectRef {
+        ObjectRef::new(self.get_obj_type(), self.get_obj_id())
+    }
 }
 
 #[cfg(test)]
@@ -91,8 +95,6 @@ mod test {
         conn.test_transaction::<_, Error, _>(|| {
             let signal_creation = RailjsonObject::Signal {
                 railjson: Signal {
-                    id: "my_signal".to_string(),
-                    sight_distance: 10.0,
                     ..Default::default()
                 },
             };

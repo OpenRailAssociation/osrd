@@ -16,11 +16,13 @@ pub struct PostgresConfig {
 
 impl Default for PostgresConfig {
     fn default() -> Self {
-        Self { psql_database: "osrd".to_string(),
-        psql_username: "osrd".to_string(),
-        psql_password: "password".to_string(),
-        psql_host: "localhost".to_string(),
-        psql_port: 5432 }
+        Self {
+            psql_database: "osrd".to_string(),
+            psql_username: "osrd".to_string(),
+            psql_password: "password".to_string(),
+            psql_host: "localhost".to_string(),
+            psql_port: 5432,
+        }
     }
 }
 
