@@ -2,7 +2,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import List
 
-from railjson_generator.rjs_static import ASPECTS, SCRIPT_FUNCTIONS, SWITCH_TYPES
+from railjson_generator.rjs_static import SWITCH_TYPES
 from railjson_generator.schema.infra.link import Link
 from railjson_generator.schema.infra.operational_point import OperationalPoint
 from railjson_generator.schema.infra.route import Route
@@ -70,5 +70,7 @@ class Infra:
         for track in self.track_sections:
             for op_part in track.operational_points:
                 parts_per_op[op_part.operarational_point.label].append(op_part.to_rjs(track))
+        ops = []
         for op in self.operational_points:
-            yield infra.OperationalPoint(id=op.label, parts=parts_per_op[op.label], ci=0, ch="aa", name=op.label)
+            ops.append(infra.OperationalPoint(id=op.label, parts=parts_per_op[op.label], ci=0, ch="aa", name=op.label))
+        return ops
