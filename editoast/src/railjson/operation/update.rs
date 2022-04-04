@@ -212,8 +212,6 @@ mod test {
         conn.test_transaction::<_, Error, _>(|| {
             let signal_creation = RailjsonObject::Signal {
                 railjson: Signal {
-                    id: "my_signal".to_string(),
-                    sight_distance: 10.0,
                     ..Default::default()
                 },
             };
@@ -250,8 +248,6 @@ mod test {
         conn.test_transaction::<_, Error, _>(|| {
             let signal_creation = RailjsonObject::Signal {
                 railjson: Signal {
-                    id: "my_signal".to_string(),
-                    sight_distance: 10.0,
                     ..Default::default()
                 },
             };
