@@ -4,7 +4,7 @@ from typing import List, Optional, Tuple
 from railjson_generator.schema.infra.direction import ApplicableDirection, Direction
 from railjson_generator.schema.infra.endpoint import Endpoint, TrackEndpoint
 from railjson_generator.schema.infra.link import Link
-from railjson_generator.schema.infra.make_geo_data import make_geo_lines, make_geo_points
+from railjson_generator.schema.infra.make_geo_data import make_geo_lines
 from railjson_generator.schema.infra.operational_point import OperationalPointPart
 from railjson_generator.schema.infra.range_elements import Curve, Slope
 from railjson_generator.schema.infra.signal import Signal
@@ -107,15 +107,3 @@ class TrackSection:
 
     def make_rjs_ref(self):
         return infra.ObjectReference(id=self.label, type=type(self).__name__)
-
-    def get_coordinates_at_offset(self, offset):
-        if self.begin_coordinates is None or self.end_coordinates is None:
-            return 0, 0
-        x_begin, x_end = self.begin_coordinates
-        y_begin, y_end = self.end_coordinates
-        x = x_begin + (x_end - x_begin) * (offset / self.length)
-        y = y_begin + (y_end - y_begin) * (offset / self.length)
-        return x, y
-
-    def geo_from_track_offset(self, offset):
-        return make_geo_points(*self.get_coordinates_at_offset(offset))

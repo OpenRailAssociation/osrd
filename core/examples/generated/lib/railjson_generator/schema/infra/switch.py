@@ -1,7 +1,6 @@
 from dataclasses import dataclass, field
 
 from railjson_generator.schema.infra.endpoint import TrackEndpoint
-from railjson_generator.schema.infra.make_geo_data import make_geo_points
 
 import infra
 
@@ -32,5 +31,4 @@ class Switch:
             switch_type=infra.ObjectReference(id="classic_switch", type="SwitchType"),
             group_change_delay=self.delay,
             ports={port: getattr(self, port).to_rjs() for port in ("base", "left", "right")},
-            **make_geo_points(*self.base.get_coords()),
         )

@@ -28,5 +28,4 @@ class OperationalPointPart:
         return infra.OperationalPointPart(
             track=track.make_rjs_ref(),
             position=self.position,
-            **track.geo_from_track_offset(self.position)
         )
