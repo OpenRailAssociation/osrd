@@ -1,8 +1,9 @@
 pub mod operation;
 
+use derivative::Derivative;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Deserialize, Hash, Eq, PartialEq, Serialize)]
+#[derive(Debug, Clone, Copy, Deserialize, Hash, Eq, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
 pub enum ObjectType {
     TrackSection,
@@ -49,10 +50,21 @@ pub struct TrackSection {
     pub sch: LineString,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, Default)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[derivative(Default)]
 pub struct Signal {
+    #[derivative(Default(value = "\"my_signal\".to_string()"))]
     pub id: String,
-    pub direction: Directions,
+    #[derivative(Default(value = "ObjectRef {
+        obj_type: ObjectType::TrackSection,
+        obj_id: \"my_track\".to_string(),
+    }"))]
+    pub track: ObjectRef,
+    #[derivative(Default(value = "0."))]
+    pub position: f64,
+    #[derivative(Default(value = "Direction::StartToStop"))]
+    pub direction: Direction,
+    #[derivative(Default(value = "400."))]
     pub sight_distance: f64,
     pub linked_detector: Option<ObjectRef>,
     pub aspects: Option<Vec<String>>,
@@ -102,33 +114,23 @@ impl Default for LineString {
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
-pub enum Directions {
+pub enum Direction {
     #[serde(rename = "START_TO_STOP")]
     StartToStop,
     #[serde(rename = "STOP_TO_START")]
     StopToStart,
 }
 
-impl Default for Directions {
-    fn default() -> Self {
-        Directions::StartToStop
-    }
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[derivative(Default)]
 pub enum ApplicableDirections {
     #[serde(rename = "START_TO_STOP")]
     StartToStop,
     #[serde(rename = "STOP_TO_START")]
     StopToStart,
     #[serde(rename = "BOTH")]
+    #[derivative(Default)]
     Both,
-}
-
-impl Default for ApplicableDirections {
-    fn default() -> Self {
-        ApplicableDirections::Both
-    }
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
