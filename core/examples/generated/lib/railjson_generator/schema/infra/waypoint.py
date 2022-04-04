@@ -25,7 +25,6 @@ class Waypoint:
             track=track.make_rjs_ref(),
             position=self.position,
             applicable_directions=infra.ApplicableDirections[self.applicable_direction.name],
-            **track.geo_from_track_offset(self.position),
         )
 
 

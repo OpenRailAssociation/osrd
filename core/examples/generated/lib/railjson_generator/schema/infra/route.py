@@ -31,9 +31,8 @@ class Route:
             id=self.label,
             entry_point=self.entry_point.make_rjs_ref(),
             exit_point=self.exit_point.make_rjs_ref(),
-            path=[element.to_rjs() for element in self.path_elements],
             release_detectors=[w.make_rjs_ref() for w in self.waypoints[1:-1]],
-            **self._make_geo_lines(),
+            path=[element.to_rjs() for element in self.path_elements],
         )
 
     def _make_geo_lines(self):
