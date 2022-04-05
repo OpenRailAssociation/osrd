@@ -2,9 +2,7 @@ package fr.sncf.osrd.new_infra.implementation.tracks.undirected;
 
 import static java.lang.Math.abs;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.*;
 import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.NetworkBuilder;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -29,6 +27,7 @@ public class UndirectedInfraBuilder {
     private final HashMap<String, TrackNode> endEndpoints = new HashMap<>();
     private final HashMap<TrackSectionImpl, ArrayList<Detector>> detectorLists = new HashMap<>();
     private final ImmutableNetwork.Builder<TrackNode, TrackEdge> builder;
+    private final Multimap<String, OperationalPoint> operationalPointsPerTrack = ArrayListMultimap.create();
 
     /** Constructor */
     private UndirectedInfraBuilder() {
@@ -44,6 +43,14 @@ public class UndirectedInfraBuilder {
 
     /** Parse the railjson to build an infra */
     private TrackInfra parse(RJSInfra infra) {
+        // Loads operational points
+        for (var op : infra.operationalPoints) {
+            for (var part : op.parts) {
+                var newOp = new OperationalPoint(part.position, op.id);
+                operationalPointsPerTrack.put(part.track.id.id, newOp);
+            }
+        }
+
         // Creates switches
         var switchTypeMap = new HashMap<String, RJSSwitchType>();
         for (var rjsSwitchType : infra.switchTypes)
@@ -130,7 +137,11 @@ public class UndirectedInfraBuilder {
     private TrackSectionImpl makeTrackSection(RJSTrackSection track) {
         var begin = getNode(track.id, EdgeEndpoint.BEGIN);
         var end = getNode(track.id, EdgeEndpoint.END);
-        var edge = new TrackSectionImpl(track.length, track.id);
+        var edge = new TrackSectionImpl(
+                track.length,
+                track.id,
+                ImmutableSet.copyOf(operationalPointsPerTrack.get(track.id))
+        );
         builder.addEdge(begin, end, edge);
         edge.gradients = makeGradients(track);
         return edge;
