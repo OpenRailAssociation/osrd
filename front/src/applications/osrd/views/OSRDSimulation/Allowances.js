@@ -233,8 +233,9 @@ const Allowance = (props) => {
 export default function Allowances(props) {
   const { toggleAllowancesDisplay } = props;
   const {
-    allowancesSettings, selectedProjection, selectedTrain, simulation,
+    allowancesSettings, selectedProjection, selectedTrain,
   } = useSelector((state) => state.osrdsimulation);
+  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const [trainDetail, setTrainDetail] = useState(undefined);
   const [allowances, setAllowances] = useState([]);
   const [updateAllowances, setUpdateAllowances] = useState(false);

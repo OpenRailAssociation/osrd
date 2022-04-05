@@ -12,7 +12,7 @@ export const sec2d3datetime = (time) => d3.timeParse('%H:%M:%S')(sec2time(time))
  * @param {*} seconds
  * @return {*}
  */
-const offsetSeconds = (seconds) => {
+export const offsetSeconds = (seconds) => {
   if (seconds > 85399) {
     return seconds - 86400;
   }
