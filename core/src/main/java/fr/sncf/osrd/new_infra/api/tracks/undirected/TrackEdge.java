@@ -1,8 +1,10 @@
 package fr.sncf.osrd.new_infra.api.tracks.undirected;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.utils.DoubleRangeMap;
+import fr.sncf.osrd.utils.geom.LineString;
 import java.util.EnumMap;
 
 /** An undirected track edge, which can either be a branch of a switch, or a track section */
@@ -21,4 +23,13 @@ public sealed interface TrackEdge permits SwitchBranch, TrackSection {
 
     /** Global unique index starting at 0, used for union finds */
     int getIndex();
+
+    /** Returns the geographical geometry */
+    LineString getGeo();
+
+    /** Returns the schematic geometry */
+    LineString getSch();
+
+    /** Returns the operational points on the edge */
+    ImmutableSet<OperationalPoint> getOperationalPoints();
 }
