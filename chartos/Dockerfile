@@ -15,6 +15,6 @@ RUN poetry config virtualenvs.create false \
 # Creating folders, and files for a project:
 COPY . /code
 
-ENV CONFIG_PATH=/core/chartos.yml
+ENV CONFIG_PATH=/code/chartos.yml
 
 CMD ["uvicorn", "--factory", "chartos:make_app", "--host", "0.0.0.0"]
