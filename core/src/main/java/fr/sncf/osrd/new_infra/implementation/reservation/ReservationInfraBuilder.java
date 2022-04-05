@@ -3,13 +3,12 @@ package fr.sncf.osrd.new_infra.implementation.reservation;
 import static fr.sncf.osrd.new_infra.api.Direction.BACKWARD;
 import static fr.sncf.osrd.new_infra.api.Direction.FORWARD;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.*;
 import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.NetworkBuilder;
 import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.reservation.*;
+import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackEdge;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackInfra;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.Detector;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.SwitchBranch;
@@ -55,8 +54,32 @@ public class ReservationInfraBuilder {
                 diTrackInfra,
                 makeSectionMap(reservationSections),
                 routeGraph,
-                makeReservationRouteMap(routeGraph)
+                makeReservationRouteMap(routeGraph),
+                makeRouteOnEdgeMap(routeGraph.edges())
         );
+    }
+
+    /** Builds a multimap of routes present on each edge */
+    private static ImmutableMultimap<DiTrackEdge, ReservationInfra.RouteEntry> makeRouteOnEdgeMap(
+            Collection<ReservationRoute> routes
+    ) {
+        var res = ImmutableMultimap.<DiTrackEdge, ReservationInfra.RouteEntry>builder();
+        for (var route : routes) {
+            var offset = 0;
+            for (var range : route.getTrackRanges()) {
+                double rangeOffset; // Offset from the start of the track to the start of the range
+                if (range.track.getDirection().equals(FORWARD))
+                    rangeOffset = range.begin;
+                else
+                    rangeOffset = range.track.getEdge().getLength() - range.end;
+                assert rangeOffset == 0 || offset == 0
+                        : "A track range must be either the first on the route, or start at the edge of a track";
+                var rangeOffsetFromRouteStart = rangeOffset - offset;
+                res.put(range.track, new ReservationInfra.RouteEntry(route, rangeOffsetFromRouteStart));
+                offset += range.getLength();
+            }
+        }
+        return res.build();
     }
 
     /** Builds an ID to route mapping */

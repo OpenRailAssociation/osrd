@@ -1,8 +1,9 @@
 package fr.sncf.osrd.new_infra.api.reservation;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.graph.ImmutableNetwork;
-import fr.sncf.osrd.new_infra.api.Direction;
+import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackEdge;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackInfra;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.Detector;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackInfra;
@@ -19,4 +20,13 @@ public interface ReservationInfra extends TrackInfra, DiTrackInfra {
 
     /** Returns a mapping from route ID to route */
     ImmutableMap<String, ReservationRoute> getReservationRouteMap();
+
+
+    /** Returns the map of all routes passing by any given directed edge.
+     * If the route starts before the track, the offset is the length of the route before the track (negative).
+     * Otherwise, the offset is the start of the route on the directed edge. */
+    ImmutableMultimap<DiTrackEdge, RouteEntry> getRoutesOnEdges();
+
+    /** A pair of route + offset of the start */
+    record RouteEntry(ReservationRoute route, double startOffset) {}
 }
