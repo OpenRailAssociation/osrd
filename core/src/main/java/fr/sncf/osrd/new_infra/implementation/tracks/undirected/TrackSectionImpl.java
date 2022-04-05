@@ -8,6 +8,7 @@ import fr.sncf.osrd.new_infra.api.tracks.undirected.Detector;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.OperationalPoint;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackSection;
 import fr.sncf.osrd.utils.DoubleRangeMap;
+import fr.sncf.osrd.utils.geom.LineString;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.EnumMap;
 
@@ -20,6 +21,8 @@ public class TrackSectionImpl implements TrackSection {
     EnumMap<Direction, DoubleRangeMap> gradients;
     ImmutableList<Detector> detectors = ImmutableList.of();
     int index;
+    private final LineString geo;
+    private final LineString sch;
 
     @Override
     @ExcludeFromGeneratedCodeCoverage
@@ -31,16 +34,26 @@ public class TrackSectionImpl implements TrackSection {
     }
 
     /** Constructor */
-    public TrackSectionImpl(double length, String id, ImmutableSet<OperationalPoint> operationalPoints) {
+    public TrackSectionImpl(
+            double length,
+            String id,
+            ImmutableSet<OperationalPoint> operationalPoints,
+            LineString geo,
+            LineString sch
+    ) {
         this.length = length;
         this.id = id;
         this.operationalPoints = operationalPoints;
+        this.geo = geo;
+        this.sch = sch;
     }
 
-    /** Constructor with empty operational points */
+    /** Constructor with empty operational points and geometry */
     public TrackSectionImpl(double length, String id) {
         this.length = length;
         this.id = id;
+        this.geo = null;
+        this.sch = null;
         this.operationalPoints = ImmutableSet.of();
     }
 
@@ -77,5 +90,15 @@ public class TrackSectionImpl implements TrackSection {
     @Override
     public String getID() {
         return id;
+    }
+
+    @Override
+    public LineString getGeo() {
+        return geo;
+    }
+
+    @Override
+    public LineString getSch() {
+        return sch;
     }
 }

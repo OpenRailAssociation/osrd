@@ -6,9 +6,9 @@ import com.google.common.collect.*;
 import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.NetworkBuilder;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.*;
+import fr.sncf.osrd.new_infra.implementation.InvalidInfraError;
 import fr.sncf.osrd.new_infra.implementation.RJSObjectParsing;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitch;
@@ -140,7 +140,9 @@ public class UndirectedInfraBuilder {
         var edge = new TrackSectionImpl(
                 track.length,
                 track.id,
-                ImmutableSet.copyOf(operationalPointsPerTrack.get(track.id))
+                ImmutableSet.copyOf(operationalPointsPerTrack.get(track.id)),
+                track.geo,
+                track.sch
         );
         builder.addEdge(begin, end, edge);
         edge.gradients = makeGradients(track);
@@ -195,7 +197,7 @@ public class UndirectedInfraBuilder {
         if (map.containsKey(trackId)) {
             if (map.get(trackId) instanceof SwitchPort) // the link is already created in a switch, ignore
                 return;
-            throw new InvalidInfraException("Duplicated track link"); // TODO: add details
+            throw new InvalidInfraError("Duplicated track link"); // TODO: add details
         }
         map.put(trackId, node);
         builder.addNode(node);
@@ -217,7 +219,7 @@ public class UndirectedInfraBuilder {
     private Switch parseSwitch(
             RJSSwitch rjsSwitch,
             HashMap<String, RJSSwitchType> switchTypeMap
-    ) throws InvalidInfraException {
+    ) {
         var networkBuilder = NetworkBuilder.directed()
                 .<SwitchPort, SwitchBranch>immutable();
         var portMap = ImmutableMap.<String, SwitchPort>builder();
@@ -232,7 +234,7 @@ public class UndirectedInfraBuilder {
             allPorts.add(newNode);
         }
         var finalPortMap = portMap.build();
-        var switchType = rjsSwitch.switchType.getSwitchType(switchTypeMap);
+        var switchType = RJSObjectParsing.getSwitchType(rjsSwitch.switchType, switchTypeMap);
         var groups = ImmutableMultimap.<String, SwitchBranch>builder();
         var allBranches = new HashSet<SwitchBranchImpl>();
         for (var entry : switchType.groups.entrySet()) {
@@ -251,7 +253,7 @@ public class UndirectedInfraBuilder {
         var switchTypePorts = new HashSet<>(switchType.ports);
         var switchPorts = rjsSwitch.ports.keySet();
         if (!switchTypePorts.equals(switchPorts))
-            throw new InvalidInfraException(String.format(
+            throw new InvalidInfraError(String.format(
                     "Switch %s doesn't have the right ports for type %s (expected %s, got %s)",
                     rjsSwitch.id, switchType.id, switchTypePorts, switchPorts
             ));

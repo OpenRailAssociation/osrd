@@ -2,25 +2,17 @@ package fr.sncf.osrd.api;
 
 import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.Infra;
-import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.OperationalPoint;
-import fr.sncf.osrd.infra.routegraph.Route;
-import fr.sncf.osrd.infra.routegraph.RouteLocation;
-import fr.sncf.osrd.infra.trackgraph.TrackSection;
+import fr.sncf.osrd.new_infra.api.signaling.SignalingInfra;
+import fr.sncf.osrd.new_infra.api.signaling.SignalingRoute;
+import fr.sncf.osrd.new_infra.api.tracks.undirected.OperationalPoint;
+import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackSection;
+import fr.sncf.osrd.new_infra.implementation.RJSObjectParsing;
 import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
-import fr.sncf.osrd.train.TrackSectionRange;
-import fr.sncf.osrd.utils.PointValue;
-import fr.sncf.osrd.utils.TrackSectionLocation;
 import fr.sncf.osrd.utils.geom.LineString;
-import fr.sncf.osrd.utils.graph.EdgeDirection;
-import fr.sncf.osrd.utils.graph.path.BasicPathNode;
-import fr.sncf.osrd.utils.graph.path.FullPathArray;
-import java.util.ArrayDeque;
+import fr.sncf.osrd.utils.new_graph.Pathfinding;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class PathfindingResult {
@@ -35,96 +27,77 @@ public class PathfindingResult {
     /**
      * pathfindingResultMake is used to create a class PathfindingResult with a good format to be sent to the middleware
      * during this function, we add geometric information in the PathfindingResult
-     * @param finalPathsToGoal contains the pathfinding's result
+     * @param path contains the pathfinding's result
      */
     public static PathfindingResult make(
-            ArrayDeque<FullPathArray<Route, BasicPathNode<Route>>> finalPathsToGoal,
-            Infra infra
-    ) throws InvalidInfraException {
+            ArrayList<Pathfinding.EdgeRange<SignalingRoute>> path,
+            SignalingInfra infra
+    ) {
         var res = new PathfindingResult();
-        fillRoutePath(finalPathsToGoal, res);
+        fillRoutePath(path, res);
         res.addGeometry(infra);
         return res;
     }
 
-    @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
     private static void fillRoutePath(
-            ArrayDeque<FullPathArray<Route, BasicPathNode<Route>>> finalPathsToGoal,
+            ArrayList<Pathfinding.EdgeRange<SignalingRoute>> path,
             PathfindingResult pathfindingResult
     ) {
-        for (var path : finalPathsToGoal) {
-            var routeBeginLoc = pathNodeToRouteLocation(path.pathNodes.get(0));
-            var beginLoc = routeBeginLoc.getTrackSectionLocation();
-            var routeEndLoc = pathNodeToRouteLocation(path.pathNodes.get(path.pathNodes.size() - 1));
-            var endLoc = routeEndLoc.getTrackSectionLocation();
-
-            var routes = new ArrayList<Route>();
-            for (var node : path.pathNodes) {
-                if (routes.isEmpty() || routes.get(routes.size() - 1) != node.edge)
-                    routes.add(node.edge);
-            }
-
-            for (int j = 0; j < routes.size(); j++) {
-                TrackSectionLocation begin = null;
-                TrackSectionLocation end = null;
-                if (j == 0)
-                    begin = beginLoc;
-                if (j == routes.size() - 1)
-                    end = endLoc;
-                var route = routes.get(j);
-                var trackSections = Route.routesToTrackSectionRange(
-                        Collections.singletonList(route), begin, end);
-                if (j == 0) {
-                    // Add the given origin location to the steps output
-                    var firstTrack = trackSections.get(0);
-                    var newStep = new PathWaypointResult(firstTrack.edge,
-                            firstTrack.getBeginPosition());
-                    pathfindingResult.addStep(newStep);
-                }
-                pathfindingResult.add(route, trackSections);
-                if (j == routes.size() - 1) {
-                    // Add the given destination location to the steps output
-                    var lastTrack = trackSections.get(trackSections.size() - 1);
-                    var newStep = new PathWaypointResult(lastTrack.edge,
-                            lastTrack.getEndPosition());
-                    pathfindingResult.addStep(newStep);
-                }
-            }
-        }
+        for (var signalingRouteEdgeRange : path)
+            pathfindingResult.routePaths.add(
+                    makeRouteResult(
+                            pathfindingResult,
+                            signalingRouteEdgeRange
+                    )
+            );
+        var lastRoute = pathfindingResult.routePaths.get(pathfindingResult.routePaths.size() - 1);
+        var lastRange = lastRoute.trackSections.get(lastRoute.trackSections.size() - 1);
+        pathfindingResult.addStep(new PathWaypointResult(lastRange.trackSection.id.id, lastRange.end));
     }
 
-    @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
-    private static RouteLocation pathNodeToRouteLocation(BasicPathNode<Route> node) {
-        return new RouteLocation(node.edge, node.position);
-    }
-
-    private void add(Route route, List<TrackSectionRange> trackSections) {
+    private static RoutePathResult makeRouteResult(
+            PathfindingResult pathfindingResult,
+            Pathfinding.EdgeRange<SignalingRoute> element
+    ) {
         var routeResult = new RoutePathResult();
-        routeResult.route = new RJSObjectRef<>(route.id, "Route");
+        routeResult.route = new RJSObjectRef<>(element.edge().getInfraRoute().getID(), "Route");
         routeResult.trackSections = new ArrayList<>();
-        for (var trackSection : trackSections) {
-            if (trackSection.direction == EdgeDirection.START_TO_STOP)
-                assert trackSection.getBeginPosition() <= trackSection.getEndPosition();
-            else
-                assert trackSection.getBeginPosition() >= trackSection.getEndPosition();
-            var trackSectionResult = new PathfindingEndpoint.DirectionalTrackRangeResult(trackSection.edge.id,
-                    trackSection.getBeginPosition(),
-                    trackSection.getEndPosition());
-            routeResult.trackSections.add(trackSectionResult);
-            var opIterator = trackSection.edge.operationalPoints.iterate(
-                    trackSection.direction,
-                    trackSection.getBeginPosition(),
-                    trackSection.getEndPosition(),
-                    null);
-            while (opIterator.hasNext())
-                addStep(new PathWaypointResult(opIterator.next(), trackSection.edge));
-        }
+        double offset = 0;
+        for (var range : element.edge().getInfraRoute().getTrackRanges()) {
+            if (!(range.track.getEdge() instanceof TrackSection trackSection))
+                continue;
 
-        if (!routePaths.isEmpty() && routePaths.get(routePaths.size() - 1).route.id.equals(routeResult.route.id)) {
-            routePaths.get(routePaths.size() - 1).addTrackSections(routeResult.trackSections);
-        } else {
-            routePaths.add(routeResult);
+            // Truncate the ranges to match the part of the route we use
+            var truncatedRange = range; // WIP double check this
+            if (offset < element.start()) {
+                truncatedRange = truncatedRange.truncateBeginByLength(element.start() - offset);
+            }
+            if (offset + range.getLength() > element.end()) {
+                truncatedRange = truncatedRange.truncateEndByLength(offset + range.getLength() - element.end());
+            }
+            offset += range.getLength();
+            if (truncatedRange.getLength() == 0)
+                continue;
+
+            // Add the track ranges to the result
+            routeResult.trackSections.add(new PathfindingEndpoint.DirectionalTrackRangeResult(
+                    trackSection.getID(),
+                    truncatedRange.getStart(),
+                    truncatedRange.getStop()
+            ));
+            if (pathfindingResult.pathWaypoints.isEmpty()) {
+                // add the first waypoint
+                var firstLocation = truncatedRange.offsetLocation(0);
+                pathfindingResult.addStep(
+                        new PathWaypointResult(firstLocation.track().getID(), firstLocation.offset())
+                );
+            }
+
+            // Add waypoints: OP as suggestions, and start / end locations
+            for (var op : truncatedRange.getOperationalPoints())
+                pathfindingResult.addStep(new PathWaypointResult(op.element(), trackSection));
         }
+        return routeResult;
     }
 
     void addStep(PathWaypointResult newStep) {
@@ -140,7 +113,7 @@ public class PathfindingResult {
         pathWaypoints.add(newStep);
     }
 
-    void addGeometry(Infra infra) throws InvalidInfraException {
+    void addGeometry(SignalingInfra infra) {
         var geoList = new ArrayList<LineString>();
         var schList = new ArrayList<LineString>();
 
@@ -160,9 +133,9 @@ public class PathfindingResult {
 
                 if (previousTrack.trackSection.id.id.compareTo(trackSection.trackSection.id.id) != 0) {
                     if (Double.compare(previousBegin, previousEnd) != 0) {
-                        var track = previousTrack.trackSection.getTrack(infra.trackGraph.trackSectionMap);
-                        geoList.add(track.geo.slice(previousBegin / track.length, previousEnd / track.length));
-                        schList.add(track.sch.slice(previousBegin / track.length, previousEnd / track.length));
+                        var track = RJSObjectParsing.getTrackSection(previousTrack.trackSection, infra);
+                        sliceAndAdd(geoList, track.getGeo(), previousBegin, previousEnd, track.getLength());
+                        sliceAndAdd(schList, track.getSch(), previousBegin, previousEnd, track.getLength());
                     }
                     previousTrack = trackSection;
                     previousBegin = trackSection.begin;
@@ -172,52 +145,42 @@ public class PathfindingResult {
         }
 
         assert previousTrack != null;
-        var track = previousTrack.trackSection.getTrack(infra.trackGraph.trackSectionMap);
-        geoList.add(track.geo.slice(previousBegin / track.length, previousEnd / track.length));
-        schList.add(track.sch.slice(previousBegin / track.length, previousEnd / track.length));
+        var track = RJSObjectParsing.getTrackSection(previousTrack.trackSection, infra);
+        sliceAndAdd(geoList, track.getGeo(), previousBegin, previousEnd, track.getLength());
+        sliceAndAdd(schList, track.getSch(), previousBegin, previousEnd, track.getLength());
 
-        geographic = LineString.concatenate(geoList);
-        schematic = LineString.concatenate(schList);
+        geographic = concatenate(geoList);
+        schematic = concatenate(schList);
     }
 
+    private LineString concatenate(List<LineString> list) {
+        if (list.size() >= 2)
+            return LineString.concatenate(list);
+        else
+            return LineString.make(
+                    new double[] {0., 1.},
+                    new double[] {0., 1.}
+            );
+    }
 
+    private static void sliceAndAdd(
+            List<LineString> res,
+            LineString lineString,
+            double previousBegin,
+            double previousEnd,
+            double trackLength
+    ) {
+        if (lineString == null)
+            return;
+        res.add(lineString.slice(previousBegin / trackLength, previousEnd / trackLength));
+    }
 
+    @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
     public static class RoutePathResult {
         public RJSObjectRef<RJSRoute> route;
         @Json(name = "track_sections")
         public List<PathfindingEndpoint.DirectionalTrackRangeResult> trackSections = new ArrayList<>();
-
-        /** This function adds trackSectionRanges by concatenating them to the existing ones */
-        public void addTrackSections(List<PathfindingEndpoint.DirectionalTrackRangeResult> newTracks) {
-            if (trackSections.isEmpty()) {
-                trackSections = newTracks;
-                return;
-            }
-
-            var lastTrack = trackSections.get(trackSections.size() - 1);
-            var firstNewTrack = newTracks.get(0);
-
-            // If no intersection we simply add all new tracks
-            if (!lastTrack.trackSection.id.equals(firstNewTrack.trackSection.id)) {
-                trackSections.addAll(newTracks);
-                return;
-            }
-
-            // If same track we must merge the last track with the first new one
-            trackSections.remove(trackSections.size() - 1);
-            trackSections.add(new PathfindingEndpoint.DirectionalTrackRangeResult(
-                    lastTrack.trackSection.id.id,
-                    lastTrack.begin,
-                    firstNewTrack.end)
-            );
-
-            // Add the rest of them
-            for (int i = 1; i < newTracks.size(); i++)
-                trackSections.add(newTracks.get(i));
-        }
     }
-
-
 
     public static class PathWaypointResult {
         public String id;
@@ -226,21 +189,21 @@ public class PathfindingResult {
         public double position;
 
         /** Suggested operational points */
-        PathWaypointResult(PointValue<OperationalPoint> op, TrackSection trackSection) {
-            this.id = op.value.id;
+        PathWaypointResult(OperationalPoint op, TrackSection trackSection) {
+            this.id = op.id();
             this.suggestion = true;
-            this.track = new RJSObjectRef<>(trackSection.id, "TrackSection");
-            this.position = op.position;
+            this.track = new RJSObjectRef<>(trackSection.getID(), "TrackSection");
+            this.position = op.offset();
         }
 
         /** Given step */
-        PathWaypointResult(TrackSection trackSection, double position) {
+        public PathWaypointResult(String id, double offset) {
             this.suggestion = false;
-            this.track = new RJSObjectRef<>(trackSection.id, "TrackSection");
-            this.position = position;
+            this.track = new RJSObjectRef<>(id, "TrackSection");
+            this.position = offset;
         }
 
-        /** Check if two step result are at the same location */
+        /** Check if two steps result are at the same location */
         public boolean isDuplicate(PathWaypointResult other) {
             if (!track.equals(other.track))
                 return false;

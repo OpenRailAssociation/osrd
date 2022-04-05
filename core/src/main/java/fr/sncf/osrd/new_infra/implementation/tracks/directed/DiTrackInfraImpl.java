@@ -9,7 +9,6 @@ import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackInfra;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackNode;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackInfra;
-import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackSection;
 import fr.sncf.osrd.new_infra.implementation.tracks.undirected.TrackInfraImpl;
 
 public class DiTrackInfraImpl extends TrackInfraImpl implements DiTrackInfra {
@@ -46,6 +45,6 @@ public class DiTrackInfraImpl extends TrackInfraImpl implements DiTrackInfra {
         for (var diEdge : trackEdgesToDiTrackEdges.get(edge))
             if (diEdge.getDirection() == direction)
                 return diEdge;
-        throw new RuntimeException("Missing oriented edge for the given direction");
+        return null;
     }
 }
