@@ -2,6 +2,50 @@ export const UPDATE_SIMULATION = 'osrdsimu/UPDATE_SIMULATION';
 export const UNDO_SIMULATION = 'osrdsimu/UNDO_SIMULATION';
 export const REDO_SIMULATION = 'osrdsimu/REDO_SIMULATION';
 
+import { changeTrain, getTrainDetailsForAPI } from "applications/osrd/components/TrainList/TrainListHelpers";
+import { setFailure, setSuccess } from 'reducers/main.ts';
+
+import { deleteRequest } from 'common/requests';
+import { get } from 'common/requests';
+import { trainscheduleURI } from 'applications/osrd/views/OSRDSimulation/OSRDSimulation'
+
+const timetableURI = '/timetable/';
+
+export function updateSimulation(simulation) {
+
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_SIMULATION,
+      simulation,
+    });
+  };
+}
+
+
+/**
+   * This version of getTimeTable does not erase the simulations trains
+   */
+ export async function progressiveGetTimetable(timetableID, selectedProjection, dispatch) {
+  const timetable = await get(`${timetableURI}${timetableID}/`);
+  const trainSchedulesIDs = timetable.train_schedules.map((train) => train.id);
+  try {
+    const simulationLocal = await get(`${trainscheduleURI}results/`, {
+      train_ids: trainSchedulesIDs.join(','),
+      path: selectedProjection.path,
+    });
+    simulationLocal.sort((a, b) => a.base.stops[0].time > b.base.stops[0].time);
+    dispatch(updateSimulation({ trains: simulationLocal }));
+  } catch (e) {
+    dispatch(
+      setFailure({
+        name: t('simulation:errorMessages.unableToRetrieveTrainSchedule'),
+        message: `${e.message} : ${e.response.data.detail}`,
+      })
+    );
+    console.log('ERROR', e);
+  }
+}
+
 // CONTEXT HELPERS
 function simulationTrainsEquals(a, b) {
   return Array.isArray(a?.trains) &&
@@ -14,44 +58,65 @@ function simulationEquals(present, newPresent) {
   return JSON.stringify(present) === JSON.stringify(newPresent)
 }
 
-function apiSyncOnDiff(present, nextPresent) {
+function apiSyncOnDiff(present, nextPresent, dispatch = () => {}) {
   // If there is not mod don't do anything
-  if (simulationEquals(present, newPresent)) return;
+  console.log("Compare next Present and Present")
+  if (simulationEquals(present, nextPresent)) return;
+  console.log("Next and present simulation not equals, diff computation ops", present)
   // test missing trains and apply delete api
 
-  for (let i = 0; i < present.trains; i += 1) {
-    const id = present.trains[i].id;
+  for (let i = 0; i < present.trains?.length; i += 1) {
+    const presentTrain = present.trains[i];
+    const apiDetailsForPresentTrain = JSON.stringify(getTrainDetailsForAPI(presentTrain));
+    const { id } = present.trains[i];
 
-    const nextTrainId = nextPresent.trains.find((train) => train.id === id)
+
+    const nextTrain = nextPresent.trains.find((train) => train.id === id);
+    const apiDetailsForNextTrain = nextTrain
+      ? JSON.stringify(getTrainDetailsForAPI(nextTrain)) : undefined;
+    console.log(apiDetailsForPresentTrain);
+    console.log(apiDetailsForNextTrain);
+
     // This trains is absent from the future simulation state.
-    if (!nextTrainId) {
-     // Call delete API (await)
-
-    }
-    // Test equality on each train
-     // if trains are same by Id but content not the same, update the new One
-
-    else {
-      // compare eventual patch content to existent one
+    if (!nextTrain) {
+    // Call delete API (await)
+      try {
+        deleteRequest(`${trainscheduleURI}${id}/`);
+      } catch (e) {
+        console.log('ERROR', e);
+        dispatch(setFailure({
+          name: e.name,
+          message: e.message,
+        }));
+      }
+    } else if (
+      JSON.stringify(apiDetailsForNextTrain) !== JSON.stringify(apiDetailsForPresentTrain)
+    ) {
+      // train exists, but is different. Patch this train
+      console.log("CALL Patch API through Thunk")
+      changeTrain(getTrainDetailsForAPI(nextTrain), nextTrain.id);
     }
   }
 
   // test new trains and apply post api
-  for (let i = 0; i < newPresent.trains; i += 1) {
-    const id = newPresent.trains[i];
+  for (let i = 0; i < nextPresent.trains; i += 1) {
+    const id = nextPresent.trains[i];
     if (!present.trains.find((train) => train.id === id)) {
-     // Call post API
+      // Call standalone api
+      progressiveGetTimetable()
     }
   }
-
 }
 
 
 // THUNKS
-function persistentUndoSimulation() {
+export function persistentUndoSimulation() {
   return async function persistentUndoSimulationParts(dispatch, getState) {
     // use getState to check the diff between past and present
-    // call the corresponding API
+    const present = getState()?.osrdsimulation.simulation.present;
+    const past = getState()?.osrdsimulation.simulation.past;
+    const nextPresent = past[past.length - 1];
+    if (nextPresent) apiSyncOnDiff(present, nextPresent);
 
     // do the undo:
     dispatch({
@@ -60,11 +125,14 @@ function persistentUndoSimulation() {
   }
 }
 
-function persistentRedoSimulation() {
+export function persistentRedoSimulation() {
   return async function persistentRedoSimulationParts(dispatch, getState) {
     // use getState to check the diff between next one and present
+    const present = getState()?.osrdsimulation.simulation.present;
+    const future = getState()?.osrdsimulation.simulation.future;
+    const nextPresent = future[0];
     // call the corresponding API
-
+    if (nextPresent) apiSyncOnDiff(present, nextPresent, dispatch);
     // do the undo:
     dispatch({
       type: REDO_SIMULATION,
@@ -74,15 +142,15 @@ function persistentRedoSimulation() {
 
 export function persistentUpdateSimulation(simulation) {
   return async function persistentUpdateSimulationParts(dispatch, getState) {
-    console.log("Get state in Persisted Simulation", getState());
+    console.log("Get state in Persisted Simulation", getState()?.osrdsimulation.simulation);
     // use getState to check the diff between past and present
-    const present = getState()?.osrdsimulation.simulation;
+    const present = getState()?.osrdsimulation.simulation.present;
     const nextPresent = simulation; // To be the next present
 
 
     apiSyncOnDiff(present, nextPresent)
     // call the corresponding API
-console.log(simulation)
+
     // do the undo:
     dispatch({
       type: UPDATE_SIMULATION,
@@ -117,6 +185,7 @@ function undoable(simulationReducer) {
         }
       case REDO_SIMULATION:
         const next = future[0]
+        if(next.trains?.length === 0) return state
         const newFuture = future.slice(1)
         return {
           past: [...past, present],
@@ -161,15 +230,7 @@ const undoableSimulation = undoable(reducer)
 
 export default undoableSimulation;
 
-export function updateSimulation(simulation) {
 
-  return (dispatch) => {
-    dispatch({
-      type: UPDATE_SIMULATION,
-      simulation,
-    });
-  };
-}
 
 export function undoSimulation() {
   return (dispatch) => {

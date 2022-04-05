@@ -3,6 +3,7 @@ import * as d3 from 'd3';
 import { MdContentCopy, MdDelete } from 'react-icons/md';
 import React, { useEffect, useState } from 'react';
 import { deleteRequest, get, post } from 'common/requests';
+import { persistentUndoSimulation, persistentUpdateSimulation } from 'reducers/osrdsimulation/simulation';
 import { setFailure, setSuccess } from 'reducers/main.ts';
 import {
   updateAllowancesSettings,
@@ -55,13 +56,13 @@ export default function ContextMenu(props) {
     if (!trains[selectedTrain]) {
       dispatch(updateSelectedTrain(selectedTrain - 1));
     }
-    dispatch(updateSimulation({ ...simulation, trains }));
+    dispatch(persistentUpdateSimulation({ ...simulation, trains }));
     dispatch(updateContextMenu(undefined));
     dispatch(setSuccess({
       title: t('simulation:trainDeleted'),
       text: `Train ID ${contextMenu.id}`,
     }));
-
+/*
     try {
       deleteRequest(`${TRAINSCHEDULE_URI}${contextMenu.id}/`);
     } catch (e) {
@@ -71,6 +72,7 @@ export default function ContextMenu(props) {
         message: e.message,
       }));
     }
+    */
   };
 
   const duplicateTrain = async () => {
