@@ -27,7 +27,8 @@ public class SignalingInfraImpl extends ReservationInfraImpl implements Signalin
                 reservationInfra,
                 reservationInfra.getSectionMap(),
                 reservationInfra.getInfraRouteGraph(),
-                reservationInfra.getReservationRouteMap()
+                reservationInfra.getReservationRouteMap(),
+                reservationInfra.getRoutesOnEdges()
         );
         this.signalMap = signalMap;
         this.routeMap = routeMap;
