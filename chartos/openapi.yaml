@@ -1,0 +1,161 @@
+openapi: 3.0.2
+info:
+  title: Chartos
+  version: 0.2.0
+paths:
+  /info/:
+    get:
+      summary: Info
+      operationId: info_info_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /layer/{layer_slug}/mvt/{view_slug}/:
+    get:
+      summary: Mvt View Metadata
+      operationId: mvt_view_metadata_layer__layer_slug__mvt__view_slug___get
+      parameters:
+        - required: true
+          schema:
+            title: Layer Slug
+            type: string
+          name: layer_slug
+          in: path
+        - required: true
+          schema:
+            title: View Slug
+            type: string
+          name: view_slug
+          in: path
+        - required: true
+          schema:
+            title: Infra id
+            type: integer
+          name: infra
+          in: query
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    example: vector
+                  name:
+                    type: string
+                    example: track_sections
+                  promotedId:
+                    type: object
+                    example: {track_sections: "id"}
+                  scheme:
+                    type: string
+                    example: "xyz"
+                  tiles:
+                    type: array
+                    items:
+                      type: string
+                      example: http://localhost:7000/tile/track_sections/geo/{z}/{x}/{y}/?infra=1
+                  attribution:
+                    type: string
+                  minzoom:
+                    type: integer
+                  maxzoom:
+                    type: integer
+                    example: 18
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /tile/{layer_slug}/{view_slug}/{z}/{x}/{y}/:
+    get:
+      summary: Mvt View Tile
+      operationId: mvt_view_tile_tile__layer_slug___view_slug___z___x___y___get
+      parameters:
+        - required: true
+          schema:
+            title: Layer Slug
+            type: string
+          name: layer_slug
+          in: path
+        - required: true
+          schema:
+            title: View Slug
+            type: string
+          name: view_slug
+          in: path
+        - required: true
+          schema:
+            title: Z
+            type: integer
+          name: z
+          in: path
+        - required: true
+          schema:
+            title: X
+            type: integer
+          name: x
+          in: path
+        - required: true
+          schema:
+            title: 'Y'
+            type: integer
+          name: 'y'
+          in: path
+        - required: true
+          schema:
+            title: Infra id
+            type: integer
+          name: infra
+          in: query
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/x-protobuf:
+              schema:
+                type: string
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            type: string
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+
