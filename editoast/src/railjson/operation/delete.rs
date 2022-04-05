@@ -33,7 +33,6 @@ mod test {
     use crate::railjson::operation::create::apply_create_operation;
     use crate::railjson::operation::delete::apply_delete_operation;
     use crate::railjson::operation::RailjsonObject;
-    use crate::railjson::{ObjectRef, ObjectType, Signal, SpeedSection, TrackSection};
     use diesel::result::Error;
     use diesel::sql_types::BigInt;
     use diesel::{sql_query, Connection, PgConnection, RunQueryDsl};
@@ -49,22 +48,13 @@ mod test {
         let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
         conn.test_transaction::<_, Error, _>(|| {
             let track_creation = RailjsonObject::TrackSection {
-                railjson: TrackSection {
-                    id: "my_track".to_string(),
-                    length: 100.,
-                    line_name: "line_test".to_string(),
-                    track_name: "track_test".to_string(),
-                    ..Default::default()
-                },
+                railjson: Default::default()
             };
 
             let infra = Infra::create(&"test".to_string(), &conn).unwrap();
             assert!(apply_create_operation(&track_creation, infra.id, &conn).is_ok());
 
-            let track_deletion = ObjectRef {
-                obj_type: ObjectType::TrackSection,
-                obj_id: "my_track".to_string(),
-            };
+            let track_deletion = track_creation.get_ref();
 
             assert!(apply_delete_operation(&track_deletion, infra.id, &conn).is_ok());
 
@@ -72,9 +62,9 @@ mod test {
                 "SELECT COUNT (*) AS nb FROM osrd_infra_tracksectionmodel WHERE obj_id = 'my_track' AND infra_id = {}",
                 infra.id
             ))
-            .load::<Count>(&conn).unwrap();
+            .get_result::<Count>(&conn).unwrap();
 
-            assert_eq!(res_del[0].nb, 0);
+            assert_eq!(res_del.nb, 0);
 
             Ok(())
         });
@@ -85,18 +75,13 @@ mod test {
         let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
         conn.test_transaction::<_, Error, _>(|| {
             let signal_creation = RailjsonObject::Signal {
-                railjson: Signal {
-                    ..Default::default()
-                },
+                railjson: Default::default(),
             };
 
             let infra = Infra::create(&"test".to_string(), &conn).unwrap();
             assert!(apply_create_operation(&signal_creation, infra.id, &conn).is_ok());
 
-            let signal_deletion = ObjectRef {
-                obj_type: ObjectType::Signal,
-                obj_id: "my_signal".to_string(),
-            };
+            let signal_deletion = signal_creation.get_ref();
 
             assert!(apply_delete_operation(&signal_deletion, infra.id, &conn).is_ok());
 
@@ -104,9 +89,9 @@ mod test {
                 "SELECT COUNT (*) AS nb FROM osrd_infra_signalmodel WHERE obj_id = 'my_signal' AND infra_id = {}",
                 infra.id
             ))
-            .load::<Count>(&conn).unwrap();
+            .get_result::<Count>(&conn).unwrap();
 
-            assert_eq!(res_del[0].nb, 0);
+            assert_eq!(res_del.nb, 0);
 
             Ok(())
         });
@@ -117,20 +102,13 @@ mod test {
         let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
         conn.test_transaction::<_, Error, _>(|| {
             let speed_creation = RailjsonObject::SpeedSection {
-                railjson: SpeedSection {
-                    id: "my_speed".to_string(),
-                    speed: 100.0,
-                    ..Default::default()
-                },
+                railjson: Default::default()
             };
 
             let infra = Infra::create(&"test".to_string(), &conn).unwrap();
             assert!(apply_create_operation(&speed_creation, infra.id, &conn).is_ok());
 
-            let speed_deletion = ObjectRef {
-                obj_type: ObjectType::SpeedSection,
-                obj_id: "my_speed".to_string(),
-            };
+            let speed_deletion = speed_creation.get_ref();
 
             assert!(apply_delete_operation(&speed_deletion, infra.id, &conn).is_ok());
 
@@ -138,9 +116,9 @@ mod test {
                 "SELECT COUNT (*) AS nb FROM osrd_infra_speedsectionmodel WHERE obj_id = 'my_speed' AND infra_id = {}",
                 infra.id
             ))
-            .load::<Count>(&conn).unwrap();
+            .get_result::<Count>(&conn).unwrap();
 
-            assert_eq!(res_del[0].nb, 0);
+            assert_eq!(res_del.nb, 0);
 
             Ok(())
         });
