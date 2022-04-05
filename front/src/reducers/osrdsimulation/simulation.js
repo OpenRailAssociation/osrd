@@ -14,22 +14,25 @@ function simulationEquals(present, newPresent) {
   return JSON.stringify(present) === JSON.stringify(newPresent)
 }
 
-function apiSyncOnDiff(present, newPresent) {
+function apiSyncOnDiff(present, nextPresent) {
   // If there is not mod don't do anything
   if (simulationEquals(present, newPresent)) return;
   // test missing trains and apply delete api
 
   for (let i = 0; i < present.trains; i += 1) {
-    const id = present.trains[i];
-    if (!newPresent.trains.find((train) => train.id === id)) {
-     // Call delete API
+    const id = present.trains[i].id;
+
+    const nextTrainId = nextPresent.trains.find((train) => train.id === id)
+    // This trains is absent from the future simulation state.
+    if (!nextTrainId) {
+     // Call delete API (await)
 
     }
     // Test equality on each train
      // if trains are same by Id but content not the same, update the new One
 
-    else if (false) {
-
+    else {
+      // compare eventual patch content to existent one
     }
   }
 
@@ -74,9 +77,10 @@ export function persistentUpdateSimulation(simulation) {
     console.log("Get state in Persisted Simulation", getState());
     // use getState to check the diff between past and present
     const present = getState()?.osrdsimulation.simulation;
-    const newPresent = simulation;
+    const nextPresent = simulation; // To be the next present
 
-    apiSyncOnDiff(present, newPresent)
+
+    apiSyncOnDiff(present, nextPresent)
     // call the corresponding API
 console.log(simulation)
     // do the undo:
