@@ -16,9 +16,9 @@ public abstract class PathfindingEndpoint implements Take {
             .adapter(PathfindingRequest.class)
             .failOnUnknown();
 
-    protected final InfraManager infraManager;
+    protected final NewInfraManager infraManager;
 
-    public PathfindingEndpoint(InfraManager infraManager) {
+    public PathfindingEndpoint(NewInfraManager infraManager) {
         this.infraManager = infraManager;
     }
 

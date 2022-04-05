@@ -1,5 +1,6 @@
 package fr.sncf.osrd.new_infra.implementation.reservation;
 
+import static com.google.common.collect.Maps.immutableEnumMap;
 import static fr.sncf.osrd.new_infra.api.Direction.BACKWARD;
 import static fr.sncf.osrd.new_infra.api.Direction.FORWARD;
 
@@ -60,9 +61,8 @@ public class ReservationInfraBuilder {
     }
 
     /** Builds a multimap of routes present on each edge */
-    private static ImmutableMultimap<DiTrackEdge, ReservationInfra.RouteEntry> makeRouteOnEdgeMap(
-            Collection<ReservationRoute> routes
-    ) {
+    private static ImmutableMultimap<DiTrackEdge, ReservationInfra.RouteEntry>
+            makeRouteOnEdgeMap(Collection<ReservationRoute> routes) {
         var res = ImmutableMultimap.<DiTrackEdge, ReservationInfra.RouteEntry>builder();
         for (var route : routes) {
             var offset = 0;
@@ -75,7 +75,8 @@ public class ReservationInfraBuilder {
                 assert rangeOffset == 0 || offset == 0
                         : "A track range must be either the first on the route, or start at the edge of a track";
                 var rangeOffsetFromRouteStart = rangeOffset - offset;
-                res.put(range.track, new ReservationInfra.RouteEntry(route, rangeOffsetFromRouteStart));
+                var routeEntry = new ReservationInfra.RouteEntry(route, rangeOffsetFromRouteStart);
+                res.put(range.track, routeEntry);
                 offset += range.getLength();
             }
         }

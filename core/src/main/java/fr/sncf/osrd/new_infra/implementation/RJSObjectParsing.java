@@ -5,6 +5,7 @@ import fr.sncf.osrd.new_infra.api.tracks.undirected.Detector;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackSection;
 import fr.sncf.osrd.new_infra.implementation.tracks.undirected.TrackSectionImpl;
 import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
+import fr.sncf.osrd.railjson.schema.infra.RJSSwitchType;
 import java.util.Map;
 import java.util.Set;
 
@@ -21,6 +22,11 @@ public class RJSObjectParsing {
     public static TrackSectionImpl getTrackSection(RJSObjectRef<?> object,
                                                    Map<String, TrackSectionImpl> cachedObjects) {
         return parseRef(object, cachedObjects, Set.of("TrackSection"));
+    }
+
+    public static RJSSwitchType getSwitchType(RJSObjectRef<?> object,
+                                              Map<String, RJSSwitchType> switchTypeMap) {
+        return parseRef(object, switchTypeMap, Set.of("SwitchType"));
     }
 
     private static <U> U parseRef(RJSObjectRef<?> object, Map<String, U> cachedObjects, Set<String> expectedTypes) {

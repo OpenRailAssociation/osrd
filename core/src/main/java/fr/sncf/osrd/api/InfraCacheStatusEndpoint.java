@@ -11,11 +11,11 @@ import org.takes.Response;
 import org.takes.Take;
 import org.takes.rs.RsJson;
 import org.takes.rs.RsWithBody;
-import fr.sncf.osrd.api.InfraManager.InfraCacheEntry;
-import fr.sncf.osrd.api.InfraManager.InfraStatus;
+import fr.sncf.osrd.api.NewInfraManager.InfraCacheEntry;
+import fr.sncf.osrd.api.NewInfraManager.InfraStatus;
 
 public final class InfraCacheStatusEndpoint implements Take {
-    private InfraManager infraManager;
+    private final NewInfraManager infraManager;
      
 
     private static final JsonAdapter<Map<String, SerializedInfraCache>> adapter;
@@ -26,7 +26,7 @@ public final class InfraCacheStatusEndpoint implements Take {
         adapter = moshi.adapter(type);
     }
 
-    public InfraCacheStatusEndpoint(InfraManager infraManager) {
+    public InfraCacheStatusEndpoint(NewInfraManager infraManager) {
         this.infraManager = infraManager;
     }
 

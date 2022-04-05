@@ -163,7 +163,7 @@ public class NewInfraManager {
             cacheEntry.transitionTo(InfraStatus.DOWNLOADING);
 
             var response = httpClient.newCall(request).execute();
-            if (!response.isSuccessful()) 
+            if (!response.isSuccessful())
                 throw new UnexpectedHttpResponse(response);
 
             // Parse the response
