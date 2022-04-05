@@ -117,7 +117,7 @@ public class TrackRangeView {
 
     /** Returns a new view where the beginning is truncated until the given offset */
     public TrackRangeView truncateBegin(double offset) {
-        assert offset >= begin && offset <= end : "truncate location isn't located in the range";
+        offset = Math.min(end, Math.max(begin, offset));
         if (track.getDirection().equals(Direction.FORWARD))
             return new TrackRangeView(offset, end, track);
         else
@@ -126,11 +126,33 @@ public class TrackRangeView {
 
     /** Returns a new view where the end is truncated from the given offset */
     public TrackRangeView truncateEnd(double offset) {
-        assert offset >= begin && offset <= end : "truncate location isn't located in the range";
+        offset = Math.min(end, Math.max(begin, offset));
         if (track.getDirection().equals(Direction.FORWARD))
             return new TrackRangeView(begin, offset, track);
         else
             return new TrackRangeView(offset, end, track);
+    }
+
+    /** Returns a new view where the beginning is truncated by the given length */
+    public TrackRangeView truncateBeginByLength(double length) {
+        var offset = offsetLocation(length).offset();
+        return truncateBegin(offset);
+    }
+
+    /** Returns a new view where the end is truncated by the given length */
+    public TrackRangeView truncateEndByLength(double length) {
+        var offset = offsetLocation(getLength() - length).offset();
+        return truncateEnd(offset);
+    }
+
+    /** Returns the offset on the oriented start of the range on the original track */
+    public double getStart() {
+        return track.getDirection().equals(Direction.FORWARD) ? begin : end;
+    }
+
+    /** Returns the offset on the oriented stop of the range on the original track */
+    public double getStop() {
+        return track.getDirection().equals(Direction.FORWARD) ? end : begin;
     }
 
     /** Converts a DoubleRangeMap based on the original track so that the positions refer to the range */
