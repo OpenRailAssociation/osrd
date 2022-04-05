@@ -114,13 +114,15 @@ export default function SpaceTimeChart(props) {
     });
   };
 
-  const drawAllTrains = (reset) => {
-    if (mustRedraw) {
+  const drawAllTrains = (reset, forceRedraw = false, newDataSimulation) => {
 
+    const currentDataSimulation = newDataSimulation || dataSimulation
+
+    if (mustRedraw || forceRedraw) {
       const chartLocal = createChart(
         chart,
         CHART_ID,
-        dataSimulation,
+        currentDataSimulation,
         heightOfSpaceTimeChart,
         keyValues,
         ref,
@@ -135,7 +137,7 @@ export default function SpaceTimeChart(props) {
       drawOPs(chartLocal);
 
       drawAxisTitle(chartLocal, rotate);
-      dataSimulation.forEach((train, idx) => {
+      currentDataSimulation.forEach((train, idx) => {
         drawTrain(
           chartLocal,
           dispatch,
@@ -153,7 +155,7 @@ export default function SpaceTimeChart(props) {
       });
       enableInteractivity(
         chartLocal,
-        dataSimulation[selectedTrain],
+        currentDataSimulation[selectedTrain],
         dispatch,
         keyValues,
         LIST_VALUES_NAME_SPACE_TIME,
@@ -200,15 +202,21 @@ export default function SpaceTimeChart(props) {
   useEffect(() => {
     setDataSimulation(createTrain(dispatch, keyValues, simulation.trains, t));
     if (dataSimulation) {
-      // ADN: No need to redo all this on a simple drag
-      /* ADN drawAllTrain do something only if mustRedraw = true,
-      so delete the condo in it and call if mustRadrw = true
-      it is far more redable */
-      // ADN drawAllTrain already traceVerticalLines
       drawAllTrains(resetChart);
       handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
     }
-  }, [mustRedraw, rotate, selectedTrain, simulation.trains[selectedTrain]]);
+  }, [mustRedraw, rotate, selectedTrain]);
+
+  // ADN: trigger a redraw on every simulation change. This is the right pattern.
+  useEffect(() => {
+    setDataSimulation(createTrain(dispatch, keyValues, simulation.trains, t));
+    const newDataSimulation = createTrain(dispatch, keyValues, simulation.trains, t)
+    if (dataSimulation) {
+      // ADN drawAllTrain already traceVerticalLines
+      drawAllTrains(resetChart, true, newDataSimulation);
+      handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
+    }
+  }, [simulation.trains[selectedTrain]]);
 
   useEffect(() => {
     if (timePosition && dataSimulation && dataSimulation[selectedTrain]) {

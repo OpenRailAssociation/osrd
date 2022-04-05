@@ -22,6 +22,7 @@ export default function createTrain(dispatch, keyValues, simulationTrains, t) {
     dataSimulationTrain.routeBeginOccupancy = formatStepsWithTimeMulti(
       train.base.route_begin_occupancy,
     );
+    //console.log("dataSimulation In process", dataSimulationTrain)
     dataSimulationTrain.areaBlock = mergeDatasArea(
       dataSimulationTrain.routeEndOccupancy,
       dataSimulationTrain.routeBeginOccupancy,
