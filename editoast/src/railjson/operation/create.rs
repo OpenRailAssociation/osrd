@@ -65,7 +65,6 @@ mod test {
     use crate::client::PostgresConfig;
     use crate::models::Infra;
     use crate::railjson::operation::create::{apply_create_operation, RailjsonObject};
-    use crate::railjson::{Signal, SpeedSection, TrackSection};
     use diesel::result::Error;
     use diesel::{Connection, PgConnection};
 
@@ -74,13 +73,7 @@ mod test {
         let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
         conn.test_transaction::<_, Error, _>(|| {
             let track_creation = RailjsonObject::TrackSection {
-                railjson: TrackSection {
-                    id: "my_track".to_string(),
-                    length: 100.,
-                    line_name: "line_test".to_string(),
-                    track_name: "track_test".to_string(),
-                    ..Default::default()
-                },
+                railjson: Default::default(),
             };
             let infra = Infra::create(&"test".to_string(), &conn).unwrap();
 
@@ -94,9 +87,7 @@ mod test {
         let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
         conn.test_transaction::<_, Error, _>(|| {
             let signal_creation = RailjsonObject::Signal {
-                railjson: Signal {
-                    ..Default::default()
-                },
+                railjson: Default::default(),
             };
             let infra = Infra::create(&"test".to_string(), &conn).unwrap();
 
@@ -110,11 +101,7 @@ mod test {
         let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
         conn.test_transaction::<_, Error, _>(|| {
             let speed_creation = RailjsonObject::SpeedSection {
-                railjson: SpeedSection {
-                    id: "my_speed".to_string(),
-                    speed: 100.0,
-                    track_ranges: vec![],
-                },
+                railjson: Default::default(),
             };
             let infra = Infra::create(&"test".to_string(), &conn).unwrap();
 

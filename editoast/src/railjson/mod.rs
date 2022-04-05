@@ -34,14 +34,19 @@ impl ObjectType {
     }
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, Default)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
+#[derivative(Default)]
 pub struct TrackSection {
+    #[derivative(Default(value = r#""my_track".to_string()"#))]
     pub id: String,
+    #[derivative(Default(value = "0."))]
     pub length: f64,
     pub line_code: i32,
+    #[derivative(Default(value = r#""line_test".to_string()"#))]
     pub line_name: String,
     pub track_number: i32,
+    #[derivative(Default(value = r#""track_test".to_string()"#))]
     pub track_name: String,
     pub navigability: ApplicableDirections,
     pub slopes: Vec<Slope>,
@@ -53,12 +58,12 @@ pub struct TrackSection {
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
 #[derivative(Default)]
 pub struct Signal {
-    #[derivative(Default(value = "\"my_signal\".to_string()"))]
+    #[derivative(Default(value = r#""my_signal".to_string()"#))]
     pub id: String,
-    #[derivative(Default(value = "ObjectRef {
+    #[derivative(Default(value = r#"ObjectRef {
         obj_type: ObjectType::TrackSection,
-        obj_id: \"my_track\".to_string(),
-    }"))]
+        obj_id: "my_track".to_string(),
+    }"#))]
     pub track: ObjectRef,
     #[derivative(Default(value = "0."))]
     pub position: f64,
@@ -83,9 +88,12 @@ pub struct Signal {
     pub value: Option<String>,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, Default)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[derivative(Default)]
 pub struct SpeedSection {
+    #[derivative(Default(value = r#""my_speed".to_string()"#))]
     pub id: String,
+    #[derivative(Default(value = "100."))]
     pub speed: f64,
     pub track_ranges: Vec<ApplicableDirectionsTrackRange>,
 }

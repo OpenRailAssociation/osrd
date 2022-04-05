@@ -95,7 +95,7 @@ mod test {
     use crate::models::Infra;
     use crate::railjson::operation::create::apply_create_operation;
     use crate::railjson::operation::{OperationError, RailjsonObject};
-    use crate::railjson::{ObjectType, Signal, SpeedSection, TrackSection};
+    use crate::railjson::ObjectType;
     use diesel::result::Error;
     use diesel::sql_query;
     use diesel::sql_types::{Double, Text};
@@ -104,15 +104,9 @@ mod test {
     use serde_json::from_str;
 
     #[derive(QueryableByName)]
-    struct Length {
+    struct Value {
         #[sql_type = "Double"]
-        length: f64,
-    }
-
-    #[derive(QueryableByName)]
-    struct SightDistance {
-        #[sql_type = "Double"]
-        sight_distance: f64,
+        val: f64,
     }
 
     #[derive(QueryableByName)]
@@ -121,24 +115,12 @@ mod test {
         comment: String,
     }
 
-    #[derive(QueryableByName)]
-    struct Speed {
-        #[sql_type = "Double"]
-        speed: f64,
-    }
-
     #[test]
     fn valide_update_track() {
         let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
         conn.test_transaction::<_, Error, _>(|| {
             let track_creation = RailjsonObject::TrackSection {
-                railjson: TrackSection {
-                    id: "my_track".to_string(),
-                    length: 100.,
-                    line_name: "line_test".to_string(),
-                    track_name: "track_test".to_string(),
-                    ..Default::default()
-                },
+                railjson: Default::default()
             };
             let infra = Infra::create(&"test".to_string(), &conn).unwrap();
             assert!(apply_create_operation(&track_creation, infra.id, &conn).is_ok());
@@ -157,11 +139,12 @@ mod test {
             assert!(update_track.apply(infra.id, &conn).is_ok());
 
             let updated_length = sql_query(format!(
-                "SELECT (data->>'length')::float as length FROM osrd_infra_tracksectionmodel WHERE obj_id = 'my_track' AND infra_id = {}",
+                "SELECT (data->>'length')::float as val FROM osrd_infra_tracksectionmodel WHERE obj_id = 'my_track' AND infra_id = {}",
                 infra.id
             ))
-            .load::<Length>(&conn).unwrap();
-            assert_eq!(updated_length[0].length, 80.0);
+            .get_result::<Value>(&conn).unwrap();
+
+            assert_eq!(updated_length.val, 80.0);
 
             Ok(())
         });
@@ -172,13 +155,7 @@ mod test {
         let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
         conn.test_transaction::<_, Error, _>(|| {
             let track_creation = RailjsonObject::TrackSection {
-                railjson: TrackSection {
-                    id: "my_track".to_string(),
-                    length: 100.,
-                    line_name: "line_test".to_string(),
-                    track_name: "track_test".to_string(),
-                    ..Default::default()
-                },
+                railjson: Default::default(),
             };
             let infra = Infra::create(&"test".to_string(), &conn).unwrap();
             assert!(apply_create_operation(&track_creation, infra.id, &conn).is_ok());
@@ -211,9 +188,7 @@ mod test {
         let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
         conn.test_transaction::<_, Error, _>(|| {
             let signal_creation = RailjsonObject::Signal {
-                railjson: Signal {
-                    ..Default::default()
-                },
+                railjson: Default::default()
             };
             let infra = Infra::create(&"test".to_string(), &conn).unwrap();
             assert!(apply_create_operation(&signal_creation, infra.id, &conn).is_ok());
@@ -232,11 +207,12 @@ mod test {
             assert!(update_signal.apply(infra.id, &conn).is_ok());
 
             let updated_length = sql_query(format!(
-                "SELECT (data->>'sight_distance')::float as sight_distance FROM osrd_infra_signalmodel WHERE obj_id = 'my_signal' AND infra_id = {}",
+                "SELECT (data->>'sight_distance')::float as val FROM osrd_infra_signalmodel WHERE obj_id = 'my_signal' AND infra_id = {}",
                 infra.id
             ))
-            .load::<SightDistance>(&conn).unwrap();
-            assert_eq!(updated_length[0].sight_distance, 15.0);
+            .get_result::<Value>(&conn).unwrap();
+
+            assert_eq!(updated_length.val, 15.0);
 
             Ok(())
         });
@@ -247,9 +223,7 @@ mod test {
         let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
         conn.test_transaction::<_, Error, _>(|| {
             let signal_creation = RailjsonObject::Signal {
-                railjson: Signal {
-                    ..Default::default()
-                },
+                railjson: Default::default()
             };
             let infra = Infra::create(&"test".to_string(), &conn).unwrap();
             assert!(apply_create_operation(&signal_creation, infra.id, &conn).is_ok());
@@ -271,8 +245,9 @@ mod test {
                 "SELECT (data->>'comment') as comment FROM osrd_infra_signalmodel WHERE obj_id = 'my_signal' AND infra_id = {}",
                 infra.id
             ))
-            .load::<Comment>(&conn).unwrap();
-            assert_eq!(updated_comment[0].comment, "Test Passed");
+            .get_result::<Comment>(&conn).unwrap();
+
+            assert_eq!(updated_comment.comment, "Test Passed");
 
             Ok(())
         });
@@ -283,11 +258,7 @@ mod test {
         let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
         conn.test_transaction::<_, Error, _>(|| {
             let speed_creation = RailjsonObject::SpeedSection {
-                railjson: SpeedSection {
-                    id: "my_speed".to_string(),
-                    speed: 100.0,
-                    ..Default::default()
-                },
+                railjson: Default::default()
             };
 
             let infra = Infra::create(&"test".to_string(), &conn).unwrap();
@@ -307,11 +278,12 @@ mod test {
             assert!(update_speed.apply(infra.id, &conn).is_ok());
 
             let updated_speed = sql_query(format!(
-                "SELECT (data->>'speed')::float as speed FROM osrd_infra_speedsectionmodel WHERE obj_id = 'my_speed' AND infra_id = {}",
+                "SELECT (data->>'speed')::float as val FROM osrd_infra_speedsectionmodel WHERE obj_id = 'my_speed' AND infra_id = {}",
                 infra.id
             ))
-            .load::<Speed>(&conn).unwrap();
-            assert_eq!(updated_speed[0].speed, 80.0);
+            .get_result::<Value>(&conn).unwrap();
+
+            assert_eq!(updated_speed.val, 80.0);
 
             Ok(())
         });
