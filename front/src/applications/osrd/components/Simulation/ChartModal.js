@@ -18,6 +18,7 @@ const ChartModal = (props) => {
   const { t } = useTranslation(['simulation']);
   const [offset, setOffset] = useState('');
 
+  // ADN: just do an upadteSimulation, should do the rest
   const sendOffset = ({ key }) => {
     if (key === 'Enter') {
       setShowModal('');
