@@ -8,8 +8,8 @@ on:
 
 jobs:
   test:
+    name: Run tests
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2
         with:
@@ -43,12 +43,30 @@ jobs:
           toolchain: nightly
           override: true
 
-      - name: Build
-        run: |
-          cd editoast
-          cargo build --verbose
-
       - name: Test
         run: |
           cd editoast
           cargo test --verbose
+
+  linter:
+    name: Check format and run linter
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          # run the CI on the actual latest commit of the PR, not the attempted merge
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          components: rustfmt, clippy
+          override: true
+      - name: Format check
+        run: |
+          cd editoast
+          cargo fmt --check
+      - name: Clippy linter
+        uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --all-features --manifest-path=editoast/Cargo.toml
