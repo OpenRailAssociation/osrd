@@ -464,7 +464,7 @@ public class MarecoAllowance implements Allowance {
                 speedup.getEndSpeed()
         );
         assert slicedSpeedupPart != null;
-        var slicedSlowDownPart = slowdown.slice(
+        var slicedSlowDownPart = slowdown.sliceWithSpeeds(
                 Double.NEGATIVE_INFINITY,
                 Double.NaN,
                 slicedSpeedupPart.getBeginPos(),

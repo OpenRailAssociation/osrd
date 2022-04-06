@@ -523,6 +523,25 @@ public final class EnvelopePart implements SearchableEnvelope {
         return slice(beginIndex, beginPosition, beginSpeed, stepCount() - 1, Double.POSITIVE_INFINITY, Double.NaN);
     }
 
+    /** Cuts an envelope part with imposed speeds on the edges
+     * @return an EnvelopePart spanning from beginPosition to endPosition
+     */
+    public EnvelopePart sliceWithSpeeds(
+            double beginPosition, double beginSpeed,
+            double endPosition, double endSpeed) {
+        int beginIndex = 0;
+        if (beginPosition <= getBeginPos())
+            beginPosition = Double.NEGATIVE_INFINITY;
+        if (beginPosition != Double.NEGATIVE_INFINITY)
+            beginIndex = findRight(beginPosition);
+        int endIndex = stepCount() - 1;
+        if (endPosition >= getEndPos())
+            endPosition = Double.POSITIVE_INFINITY;
+        if (endPosition != Double.POSITIVE_INFINITY)
+            endIndex = findLeft(endPosition);
+        return slice(beginIndex, beginPosition, beginSpeed, endIndex, endPosition, endSpeed);
+    }
+
     /** Cuts an envelope part, interpolating new points if required.
      * @return an EnvelopePart spanning from beginPosition to endPosition
      */
@@ -538,23 +557,6 @@ public final class EnvelopePart implements SearchableEnvelope {
         if (endPosition != Double.POSITIVE_INFINITY)
             endIndex = findLeft(endPosition);
         return slice(beginIndex, beginPosition, endIndex, endPosition);
-    }
-
-    /** Cuts an envelope part with imposed speeds on the edges
-     * @return an EnvelopePart spanning from beginPosition to endPosition
-     */
-    public EnvelopePart slice(double beginPosition, double beginSpeed, double endPosition, double endSpeed) {
-        int beginIndex = 0;
-        if (beginPosition <= getBeginPos())
-            beginPosition = Double.NEGATIVE_INFINITY;
-        if (beginPosition != Double.NEGATIVE_INFINITY)
-            beginIndex = findRight(beginPosition);
-        int endIndex = stepCount() - 1;
-        if (endPosition >= getEndPos())
-            endPosition = Double.POSITIVE_INFINITY;
-        if (endPosition != Double.POSITIVE_INFINITY)
-            endIndex = findLeft(endPosition);
-        return slice(beginIndex, beginPosition, beginSpeed, endIndex, endPosition, endSpeed);
     }
 
     /** Cuts an envelope part, interpolating new points if required.

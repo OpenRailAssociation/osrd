@@ -89,4 +89,20 @@ public class EnvelopePartSliceTest {
         );
         EnvelopeTestUtils.assertEquals(expectedSlice, slice);
     }
+
+    @Test
+    void sliceWithImposedSpeeds() {
+        var ep1 = EnvelopePart.generateTimes(
+                List.of(TestAttr.A),
+                new double[] {1, 3, 5},
+                new double[] {3, 3, 4}
+        );
+        var slice = ep1.sliceWithSpeeds(2, 3, 4, 3.5);
+        var expectedSlice = EnvelopePart.generateTimes(
+                List.of(TestAttr.A),
+                new double[] {2, 3, 4},
+                new double[] {3, 3, 3.5}
+        );
+        assertEquals(expectedSlice, slice);
+    }
 }
