@@ -120,10 +120,6 @@ export default function SpaceTimeChart(props) {
     const currentDataSimulation = newDataSimulation || dataSimulation
 
     if (mustRedraw || forceRedraw) {
-
-    const currentDataSimulation = newDataSimulation || dataSimulation
-
-    if (mustRedraw || forceRedraw) {
       const chartLocal = createChart(
         chart,
         CHART_ID,
@@ -300,4 +296,4 @@ export default function SpaceTimeChart(props) {
 
 SpaceTimeChart.propTypes = {
   heightOfSpaceTimeChart: PropTypes.number.isRequired,
-};
+}
