@@ -215,7 +215,7 @@ export default function SpaceTimeChart(props) {
     const newDataSimulation = createTrain(dispatch, keyValues, simulation.trains, t)
     if (dataSimulation) {
       // ADN drawAllTrain already traceVerticalLines
-      drawAllTrains(true, true, newDataSimulation);
+      drawAllTrains(resetChart, true, newDataSimulation);
       handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
     }
   }, [simulation.trains]);
