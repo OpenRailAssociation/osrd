@@ -540,6 +540,23 @@ public final class EnvelopePart implements SearchableEnvelope {
         return slice(beginIndex, beginPosition, endIndex, endPosition);
     }
 
+    /** Cuts an envelope part with imposed speeds on the edges
+     * @return an EnvelopePart spanning from beginPosition to endPosition
+     */
+    public EnvelopePart slice(double beginPosition, double beginSpeed, double endPosition, double endSpeed) {
+        int beginIndex = 0;
+        if (beginPosition <= getBeginPos())
+            beginPosition = Double.NEGATIVE_INFINITY;
+        if (beginPosition != Double.NEGATIVE_INFINITY)
+            beginIndex = findRight(beginPosition);
+        int endIndex = stepCount() - 1;
+        if (endPosition >= getEndPos())
+            endPosition = Double.POSITIVE_INFINITY;
+        if (endPosition != Double.POSITIVE_INFINITY)
+            endIndex = findLeft(endPosition);
+        return slice(beginIndex, beginPosition, beginSpeed, endIndex, endPosition, endSpeed);
+    }
+
     /** Cuts an envelope part, interpolating new points if required.
      * @param beginStepIndex the index of a step beginPosition belongs to
      * @param beginPosition must belong to the step at beginStepIndex

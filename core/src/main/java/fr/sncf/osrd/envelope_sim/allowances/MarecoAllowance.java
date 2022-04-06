@@ -448,7 +448,11 @@ public class MarecoAllowance implements Allowance {
                 context, slowdown.getBeginPos(), slowdown.getBeginSpeed(), constrainedBuilder, 1
         );
         var slowdownPart = partBuilder.build();
-        var speedupPart = speedup.slice(slowdownPart.getEndPos(), Double.POSITIVE_INFINITY);
+        var speedupPart = speedup.slice(
+                slowdownPart.getEndPos(),
+                slowdownPart.getBeginSpeed(),
+                Double.POSITIVE_INFINITY,
+                Double.NaN);
         return Envelope.make(slowdownPart, speedupPart);
     }
 }

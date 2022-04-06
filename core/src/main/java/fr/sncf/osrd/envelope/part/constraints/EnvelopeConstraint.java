@@ -21,7 +21,7 @@ public class EnvelopeConstraint implements EnvelopePartConstraint {
         var partIndex = envelope.findRightDir(position, direction);
 
         // if the position is off the envelope, fail
-        if (partIndex == -1)
+        if (partIndex < 0)
             return false;
 
         var part = envelope.get(partIndex);
