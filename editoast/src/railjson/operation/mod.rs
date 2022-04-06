@@ -19,7 +19,7 @@ pub use update::UpdateOperation;
 #[serde(tag = "operation_type", deny_unknown_fields)]
 pub enum Operation {
     #[serde(rename = "CREATE")]
-    Create(RailjsonObject),
+    Create(Box<RailjsonObject>),
     #[serde(rename = "UPDATE")]
     Update(UpdateOperation),
     #[serde(rename = "DELETE")]
@@ -103,7 +103,7 @@ impl Operation {
             }
             Operation::Create(railjson_object) => {
                 create::apply_create_operation(railjson_object, infra_id, conn)?;
-                Ok(OperationResult::Create(railjson_object.clone()))
+                Ok(OperationResult::Create(*railjson_object.clone()))
             }
             Operation::Update(update) => {
                 let obj_railjson = update.apply(infra_id, conn)?;

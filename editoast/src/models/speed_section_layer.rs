@@ -1,5 +1,5 @@
 use crate::infra_cache::InfraCache;
-use crate::railjson::operation::{Operation, RailjsonObject, UpdateOperation};
+use crate::railjson::operation::{Operation, UpdateOperation};
 use crate::railjson::{ObjectRef, ObjectType};
 use crate::schema::osrd_infra_speedsectionlayer;
 use crate::schema::osrd_infra_speedsectionlayer::dsl::*;
@@ -9,7 +9,6 @@ use diesel::{delete, prelude::*, sql_query};
 use itertools::Itertools;
 use serde::Serialize;
 use std::collections::HashSet;
-use std::ops::Deref;
 
 #[derive(QueryableByName, Queryable, Debug, Serialize)]
 #[table_name = "osrd_infra_speedsectionlayer"]
@@ -64,30 +63,34 @@ impl SpeedSectionLayer {
             });
     }
 
+    /// Search and update all speed sections that needs to be refreshed given a list of operation.
     pub fn update(
         conn: &PgConnection,
         infra: i32,
         operations: &Vec<Operation>,
         infra_cache: &mut InfraCache,
     ) -> Result<(), Error> {
-        // Search all signals that needs to be refreshed
         let mut obj_ids = HashSet::new();
         for op in operations {
             match op {
-                Operation::Create(RailjsonObject::TrackSection { railjson }) => {
-                    Self::fill_speed_section_track_refs(
-                        infra_cache.deref(),
-                        &railjson.id,
-                        &mut obj_ids,
-                    )
-                }
+                Operation::Create(rjs_obj) => match rjs_obj.get_obj_type() {
+                    ObjectType::TrackSection => {
+                        Self::fill_speed_section_track_refs(
+                            infra_cache,
+                            &rjs_obj.get_obj_id(),
+                            &mut obj_ids,
+                        );
+                    }
+                    ObjectType::SpeedSection => {
+                        obj_ids.insert(rjs_obj.get_obj_id().clone());
+                    }
+                    _ => (),
+                },
                 Operation::Update(UpdateOperation {
                     obj_id: track_id,
                     obj_type: ObjectType::TrackSection,
                     ..
-                }) => {
-                    Self::fill_speed_section_track_refs(infra_cache.deref(), track_id, &mut obj_ids)
-                }
+                }) => Self::fill_speed_section_track_refs(infra_cache, track_id, &mut obj_ids),
                 Operation::Delete(ObjectRef {
                     obj_id: speed_section_id,
                     obj_type: ObjectType::SpeedSection,
@@ -102,7 +105,6 @@ impl SpeedSectionLayer {
                 _ => (),
             }
         }
-        // Update layer
         Self::update_list(conn, infra, &obj_ids)
     }
 }
