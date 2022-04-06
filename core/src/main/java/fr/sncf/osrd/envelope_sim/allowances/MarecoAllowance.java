@@ -9,6 +9,7 @@ import com.carrotsearch.hppc.DoubleArrayList;
 import fr.sncf.osrd.envelope.*;
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
+import fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraint;
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
@@ -309,13 +310,11 @@ public class MarecoAllowance implements Allowance {
         var rightPartBeginPos = rightPart != null ? rightPart.getBeginPos() : base.getEndPos();
 
         // if the junction parts touch or intersect, there is no core phase
-        if (rightPartBeginPos < leftPartEndPos) {
+        if (rightPartBeginPos <= leftPartEndPos) {
             assert leftPart != null;
             assert rightPart != null;
-            return intersectSlowdownSpeedup(leftPart, rightPart);
+            return intersectSlowdownSpeedup(base, leftPart, rightPart);
         }
-        if (rightPartBeginPos == leftPartEndPos)
-            return Envelope.make(leftPart, rightPart);
 
         // otherwise, compute the core phase
         var coreBase = Envelope.make(base.slice(leftPartEndPos, rightPartBeginPos));
@@ -411,23 +410,42 @@ public class MarecoAllowance implements Allowance {
      *  This junction can be a speed up or a slow down phase,
      *  depending on the imposed end speed and the cap speed v1 */
     private EnvelopePart computeRightJunction(Envelope envelopeSection, double v1, double imposedEndSpeed) {
+        return computeRightJunction(envelopeSection, null, v1, imposedEndSpeed);
+    }
+
+    /** Compute the right junction of the section, with a left  */
+    private EnvelopePart computeRightJunction(Envelope envelopeSection,
+                                              Envelope leftJunction,
+                                              double v1,
+                                              double imposedEndSpeed) {
         if (Double.isNaN(imposedEndSpeed))
             return null;
+        var constraints = new ArrayList<EnvelopePartConstraint>();
+
+        if (leftJunction != null) {
+            if (leftJunction.getBeginSpeed() > v1)
+                constraints.add(new EnvelopeConstraint(leftJunction, FLOOR));
+            else
+                constraints.add(new EnvelopeConstraint(leftJunction, CEILING));
+        }
+
         var partBuilder = new EnvelopePartBuilder();
         // if the target speed is above v1, compute speedup, else, compute slowdown
         if (imposedEndSpeed > v1) {
+            constraints.add(new SpeedConstraint(v1, FLOOR));
             var constrainedBuilder = new ConstrainedEnvelopePartBuilder(
                     partBuilder,
-                    new SpeedConstraint(v1, FLOOR)
+                    constraints.toArray(new EnvelopePartConstraint[0])
             );
             EnvelopeAcceleration.accelerate(
                     context, envelopeSection.getEndPos(), imposedEndSpeed, constrainedBuilder, -1
             );
         } else if (imposedEndSpeed < envelopeSection.getEndSpeed()) {
+            constraints.add(new SpeedConstraint(v1, CEILING));
+            constraints.add(new EnvelopeConstraint(envelopeSection, CEILING));
             var constrainedBuilder = new ConstrainedEnvelopePartBuilder(
                     partBuilder,
-                    new SpeedConstraint(v1, CEILING),
-                    new EnvelopeConstraint(envelopeSection, CEILING)
+                    constraints.toArray(new EnvelopePartConstraint[0])
             );
             EnvelopeDeceleration.decelerate(
                     context, envelopeSection.getEndPos(), imposedEndSpeed, constrainedBuilder, -1
@@ -438,21 +456,19 @@ public class MarecoAllowance implements Allowance {
         return partBuilder.build();
     }
 
-    private Envelope intersectSlowdownSpeedup(EnvelopePart slowdown, EnvelopePart speedup) {
-        var partBuilder = new EnvelopePartBuilder();
-        var constrainedBuilder = new ConstrainedEnvelopePartBuilder(
-                partBuilder,
-                new EnvelopeConstraint(Envelope.make(speedup), FLOOR)
-            );
-        EnvelopeDeceleration.decelerate(
-                context, slowdown.getBeginPos(), slowdown.getBeginSpeed(), constrainedBuilder, 1
+    private Envelope intersectSlowdownSpeedup(Envelope envelopeSection, EnvelopePart slowdown, EnvelopePart speedup) {
+        var slicedSpeedupPart = computeRightJunction(
+                envelopeSection,
+                Envelope.make(slowdown),
+                slowdown.getEndSpeed(),
+                speedup.getEndSpeed()
         );
-        var slowdownPart = partBuilder.build();
-        var speedupPart = speedup.slice(
-                slowdownPart.getEndPos(),
-                slowdownPart.getBeginSpeed(),
-                Double.POSITIVE_INFINITY,
-                Double.NaN);
-        return Envelope.make(slowdownPart, speedupPart);
+        assert slicedSpeedupPart != null;
+        var slicedSlowDownPart = slowdown.slice(
+                Double.NEGATIVE_INFINITY,
+                Double.NaN,
+                slicedSpeedupPart.getBeginPos(),
+                slicedSpeedupPart.getBeginSpeed());
+        return Envelope.make(slicedSlowDownPart, slicedSpeedupPart);
     }
 }
