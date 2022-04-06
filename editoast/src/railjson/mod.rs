@@ -106,18 +106,15 @@ pub struct ApplicableDirectionsTrackRange {
     pub applicable_directions: ApplicableDirections,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
 #[serde(tag = "type", deny_unknown_fields)]
+#[derivative(Default)]
 pub enum LineString {
-    LineString { coordinates: Vec<[f64; 2]> },
-}
-
-impl Default for LineString {
-    fn default() -> Self {
-        LineString::LineString {
-            coordinates: vec![[0., 0.], [1., 1.]],
-        }
-    }
+    #[derivative(Default)]
+    LineString {
+        #[derivative(Default(value = "vec![[0., 0.], [1., 1.]]"))]
+        coordinates: Vec<[f64; 2]>,
+    },
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
