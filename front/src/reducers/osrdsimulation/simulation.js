@@ -165,7 +165,6 @@ export function persistentRedoSimulation() {
 
 export function persistentUpdateSimulation(simulation) {
   return async function persistentUpdateSimulationParts(dispatch, getState) {
-    console.log("Get state in Persisted Simulation", getState()?.osrdsimulation.simulation);
     // use getState to check the diff between past and present
     const present = getState()?.osrdsimulation.simulation.present;
     const nextPresent = simulation; // To be the next present
