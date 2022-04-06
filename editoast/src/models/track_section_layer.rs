@@ -1,4 +1,4 @@
-use crate::railjson::operation::{Operation, RailjsonObject, UpdateOperation};
+use crate::railjson::operation::{Operation, UpdateOperation};
 use crate::railjson::{ObjectRef, ObjectType};
 use crate::schema::osrd_infra_tracksectionlayer;
 use crate::schema::osrd_infra_tracksectionlayer::dsl::*;
@@ -49,17 +49,19 @@ impl TrackSectionLayer {
         Ok(())
     }
 
+    /// Search and update all track sections that needs to be refreshed given a list of operation.
     pub fn update(
         conn: &PgConnection,
         infra: i32,
         operations: &Vec<Operation>,
     ) -> Result<(), Error> {
-        // Search all signals that needs to be refreshed
         let mut obj_ids = HashSet::new();
         for op in operations {
             match op {
-                Operation::Create(RailjsonObject::TrackSection { railjson }) => {
-                    obj_ids.insert(railjson.id.clone());
+                Operation::Create(rjs_obj)
+                    if rjs_obj.get_obj_type() == ObjectType::TrackSection =>
+                {
+                    obj_ids.insert(rjs_obj.get_obj_id().clone());
                 }
                 Operation::Update(UpdateOperation {
                     obj_id: track_id,
@@ -75,7 +77,6 @@ impl TrackSectionLayer {
                 _ => (),
             }
         }
-        // Update layer
         Self::update_list(conn, infra, &obj_ids)
     }
 }

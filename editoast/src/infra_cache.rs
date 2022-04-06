@@ -26,27 +26,27 @@ struct ObjRefLink {
 }
 
 impl InfraCache {
-    fn add_tracks_refs(&mut self, refs: &Vec<ObjRefLink>, obj_type: ObjectType) {
+    fn add_tracks_refs(&mut self, refs: &[ObjRefLink], obj_type: ObjectType) {
         for link in refs.iter() {
             self.track_sections_refs
                 .entry(link.ref_id.clone())
-                .or_insert(Default::default())
+                .or_default()
                 .insert(ObjectRef::new(obj_type, link.obj_id.clone()));
         }
     }
 
-    fn add_signal_dependencies(&mut self, refs: &Vec<ObjRefLink>) {
+    fn add_signal_dependencies(&mut self, refs: &[ObjRefLink]) {
         for link in refs.iter() {
             self.signal_dependencies
                 .insert(link.obj_id.clone(), link.ref_id.clone());
         }
     }
 
-    fn add_speed_section_dependencies(&mut self, refs: &Vec<ObjRefLink>) {
+    fn add_speed_section_dependencies(&mut self, refs: &[ObjRefLink]) {
         for link in refs.iter() {
             self.speed_section_dependencies
                 .entry(link.obj_id.clone())
-                .or_insert(Default::default())
+                .or_default()
                 .push(link.ref_id.clone());
         }
     }

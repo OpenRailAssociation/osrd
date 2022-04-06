@@ -14,10 +14,22 @@ It will apply modification and update generated data such as object geometry.
 
 ```sh
 # Install nightly rust toolchain
-$ rustup toolchain install nightly 
+$ rustup toolchain install nightly
 # Set nightly as default for the project
 $ rustup override set nightly
 # Build and run
 $ cargo build
 $ cargo run -- runserver
 ```
+
+## Useful tools
+
+Here a list of components to help you in your development:
+
+ - [rustfmt](https://github.com/rust-lang/rust-clippy): Format the whole code `cargo fmt`
+ - [clippy](): Run a powerful linter `cargo clippy`
+
+To install them simply run:
+ ```
+ $ rustup component add rustfmt clippy
+ ```
