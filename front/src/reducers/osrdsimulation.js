@@ -113,13 +113,7 @@ export default function reducer(state = initialState, action) {
       case REDO_SIMULATION:
       // get only the present, thanks
         draft.simulation = undoableSimulation(state.simulation, action);
-        break;
-      case UNDO_SIMULATION:
-      case REDO_SIMULATION:
-        draft.mustRedraw = true;
-        draft.simulation = undoableSimulation(state.simulation, action);
         draft.departureArrivalTimes = departureArrivalTimes(draft.simulation.present, 0);
-        //draft.mustRedraw = true;
         break;
       case UPDATE_SPEEDSPACE_SETTINGS:
         draft.speedSpaceSettings = action.speedSpaceSettings;
