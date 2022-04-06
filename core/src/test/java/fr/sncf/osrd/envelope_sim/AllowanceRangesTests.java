@@ -208,12 +208,12 @@ public class AllowanceRangesTests {
         var length = 100_000;
         var testPath = new FlatPath(length, 0);
         var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
-        var stops = new double[] { 50000, testPath.getLength() };
+        var stops = new double[] { testPath.getLength() };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         var value1 = new AllowanceValue.Percentage(TIME_RATIO, 5);
-        var value2 = new AllowanceValue.Percentage(TIME_RATIO, 10);
-        var value3 = new AllowanceValue.Percentage(TIME_RATIO, 3);
-        var rangesTransitions = new double[] { 0, 50_000, 52_000, length };
+        var value2 = new AllowanceValue.Percentage(TIME_RATIO, 20);
+        var value3 = new AllowanceValue.Percentage(TIME_RATIO, 10);
+        var rangesTransitions = new double[] { 0, 30_000, 30_500, length };
         var ranges = List.of(
                 new AllowanceRange(rangesTransitions[0], rangesTransitions[1], value1),
                 new AllowanceRange(rangesTransitions[1], rangesTransitions[2], value2),
