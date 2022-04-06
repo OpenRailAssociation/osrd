@@ -93,7 +93,6 @@ const OSRDSimulation = () => {
       if (!simulation.trains || !simulation.trains[selectedTrain]) {
         dispatch(updateSelectedTrain(0));
       }
-      dispatch(updateSimulation({ trains: [] }));
       const timetable = await get(`${timetableURI}${timetableID}/`);
       if (timetable.train_schedules.length > 0) {
         setIsEmpty(false);
@@ -115,6 +114,7 @@ const OSRDSimulation = () => {
         });
         simulationLocal.sort((a, b) => a.base.stops[0].time > b.base.stops[0].time);
         dispatch(updateSimulation({ trains: simulationLocal }));
+
         // Create margins settings for each train if not set
         const newAllowancesSettings = { ...allowancesSettings };
         simulationLocal.forEach((train) => {

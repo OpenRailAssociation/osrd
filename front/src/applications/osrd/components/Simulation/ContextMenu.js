@@ -34,17 +34,20 @@ export default function ContextMenu(props) {
   const { t } = useTranslation(['translation', 'simulation', 'osrdconf', 'allowances']);
   const dispatch = useDispatch();
   const [goUpdate, setGoUpdate] = useState(false);
-  const [trainName, setTrainName] = useState(simulation.trains[selectedTrain].name);
+  const [trainName, setTrainName] = useState(simulation.trains[selectedTrain]?.name);
   const [trainCount, setTrainCount] = useState(1);
   const [trainStep, setTrainStep] = useState(2);
   const [trainDelta, setTrainDelta] = useState(20);
 
   const choosePath = async () => {
-    const train = await get(`${TRAINSCHEDULE_URI}${simulation.trains[selectedTrain].id}/`);
-    dispatch(updateSelectedProjection({
-      id: simulation.trains[selectedTrain].id,
-      path: train.path,
-    }));
+    const train = await get(`${TRAINSCHEDULE_URI}${simulation.trains[selectedTrain]?.id}/`);
+    if(simulation.trains[selectedTrain]) {
+      dispatch(updateSelectedProjection({
+        id: simulation.trains[selectedTrain].id,
+        path: train.path,
+      }));
+    }
+
     dispatch(updateContextMenu(undefined));
   };
 

@@ -221,7 +221,9 @@ export default function TrainsList(props) {
   }, [debouncedInputTime]);
 
   useEffect(() => {
+    console.log("SET FORMATED TRAIN LIST")
     if (!onInput) {
+      console.log("SET FORMATED TRAIN LIST 2")
       setFormattedList(formatTrainsList());
     }
   }, [selectedTrain, departureArrivalTimes, filter, trainNameClickedIDX, typeOfInputFocused]);

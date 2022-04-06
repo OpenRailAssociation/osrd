@@ -120,6 +120,7 @@ export default function SpaceTimeChart(props) {
     const currentDataSimulation = newDataSimulation || dataSimulation
 
     if (mustRedraw || forceRedraw) {
+
       const chartLocal = createChart(
         chart,
         CHART_ID,
@@ -214,10 +215,10 @@ export default function SpaceTimeChart(props) {
     const newDataSimulation = createTrain(dispatch, keyValues, simulation.trains, t)
     if (dataSimulation) {
       // ADN drawAllTrain already traceVerticalLines
-      drawAllTrains(resetChart, true, newDataSimulation);
+      drawAllTrains(true, true, newDataSimulation);
       handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
     }
-  }, [simulation.trains[selectedTrain]]);
+  }, [simulation.trains]);
 
   useEffect(() => {
     if (timePosition && dataSimulation && dataSimulation[selectedTrain]) {

@@ -3,10 +3,10 @@ export const UNDO_SIMULATION = 'osrdsimu/UNDO_SIMULATION';
 export const REDO_SIMULATION = 'osrdsimu/REDO_SIMULATION';
 
 import { changeTrain, getTrainDetailsForAPI } from "applications/osrd/components/TrainList/TrainListHelpers";
+import { deleteRequest, get, post } from 'common/requests';
 import { setFailure, setSuccess } from 'reducers/main.ts';
 
-import { deleteRequest } from 'common/requests';
-import { get } from 'common/requests';
+import trainNameWithNum from "applications/osrd/components/AddTrainSchedule/trainNameHelper";
 import { trainscheduleURI } from 'applications/osrd/views/OSRDSimulation/OSRDSimulation'
 
 const timetableURI = '/timetable/';
@@ -25,7 +25,33 @@ export function updateSimulation(simulation) {
 /**
    * This version of getTimeTable does not erase the simulations trains
    */
- export async function progressiveGetTimetable(timetableID, selectedProjection, dispatch) {
+ export async function progressiveDuplicateTrain(timetableID, selectedProjection, simulationTrains, selectedTrain, dispatch) {
+
+  const trainDetail = await get(`${trainscheduleURI}${simulationTrains[selectedTrain].id}/`);
+  const params = {
+    timetable: trainDetail.timetable,
+    path: trainDetail.path,
+    schedules: [],
+  };
+  let actualTrainCount = 1;
+  const trainName = simulationTrains[selectedTrain]?.name;
+  const trainCount = simulationTrains.length;
+  const trainStep = 10;
+  for (let nb = 1; nb <= trainCount; nb += 1) {
+    const newTrainDelta = (60 * trainDelta * nb);
+    const newOriginTime = simulationTrains[selectedTrain].base.stops[0].time + newTrainDelta;
+    const newTrainName = trainNameWithNum(trainName, actualTrainCount, trainCount);
+    params.schedules.push({
+      departure_time: newOriginTime,
+      initial_speed: trainDetail.initial_speed,
+      labels: trainDetail.labels,
+      rolling_stock: trainDetail.rolling_stock,
+      train_name: newTrainName,
+      allowances: trainDetail.allowances,
+    });
+    actualTrainCount += trainStep;
+  }
+  await post(`${trainscheduleURI}standalone_simulation/`, params);
   const timetable = await get(`${timetableURI}${timetableID}/`);
   const trainSchedulesIDs = timetable.train_schedules.map((train) => train.id);
   try {
@@ -47,22 +73,14 @@ export function updateSimulation(simulation) {
 }
 
 // CONTEXT HELPERS
-function simulationTrainsEquals(a, b) {
-  return Array.isArray(a?.trains) &&
-      Array.isArray(b?.trains) &&
-      a.trains.length === b.trains.length &&
-      a.trains.every((val, index) => val === b.trains[index]);
-}
 
 function simulationEquals(present, newPresent) {
   return JSON.stringify(present) === JSON.stringify(newPresent)
 }
 
-function apiSyncOnDiff(present, nextPresent, dispatch = () => {}) {
+function apiSyncOnDiff(present, nextPresent, dispatch = () => {}, getState = () => {}) {
   // If there is not mod don't do anything
-  console.log("Compare next Present and Present")
   if (simulationEquals(present, nextPresent)) return;
-  console.log("Next and present simulation not equals, diff computation ops", present)
   // test missing trains and apply delete api
 
   for (let i = 0; i < present.trains?.length; i += 1) {
@@ -70,12 +88,9 @@ function apiSyncOnDiff(present, nextPresent, dispatch = () => {}) {
     const apiDetailsForPresentTrain = JSON.stringify(getTrainDetailsForAPI(presentTrain));
     const { id } = present.trains[i];
 
-
     const nextTrain = nextPresent.trains.find((train) => train.id === id);
     const apiDetailsForNextTrain = nextTrain
       ? JSON.stringify(getTrainDetailsForAPI(nextTrain)) : undefined;
-    console.log(apiDetailsForPresentTrain);
-    console.log(apiDetailsForNextTrain);
 
     // This trains is absent from the future simulation state.
     if (!nextTrain) {
@@ -93,8 +108,7 @@ function apiSyncOnDiff(present, nextPresent, dispatch = () => {}) {
       JSON.stringify(apiDetailsForNextTrain) !== JSON.stringify(apiDetailsForPresentTrain)
     ) {
       // train exists, but is different. Patch this train
-      console.log("CALL Patch API through Thunk")
-      changeTrain(getTrainDetailsForAPI(nextTrain), nextTrain.id);
+     changeTrain(getTrainDetailsForAPI(nextTrain), nextTrain.id);
     }
   }
 
@@ -103,7 +117,16 @@ function apiSyncOnDiff(present, nextPresent, dispatch = () => {}) {
     const id = nextPresent.trains[i];
     if (!present.trains.find((train) => train.id === id)) {
       // Call standalone api
-      progressiveGetTimetable()
+      // ADN: infect bicolup. Will test more efficent
+      /*
+      const timeTableID = getState()?.osrdconf.timetableID;
+      const selectedProjection = getState()?.osrdsimulation.selectedProjection;
+      const selectedTrain = getState()?.osrdsimulation.selectedTrain;
+      const simulationTrains = getState()?.osrdsimulation.simulation.present.trains;
+      progressiveDuplicateTrain(
+        timeTableID, selectedProjection, simulationTrains, selectedTrain, dispatch
+      );
+      */
     }
   }
 }
@@ -147,9 +170,7 @@ export function persistentUpdateSimulation(simulation) {
     const present = getState()?.osrdsimulation.simulation.present;
     const nextPresent = simulation; // To be the next present
 
-
-    apiSyncOnDiff(present, nextPresent)
-    // call the corresponding API
+    apiSyncOnDiff(present, nextPresent, dispatch, getState)
 
     // do the undo:
     dispatch({
