@@ -2,7 +2,7 @@ import './OSRDSimulation.scss';
 import './OSRDSimulation.scss';
 
 import React, { useEffect, useState } from 'react';
-import { redoSimulation, undoSimulation } from '../../../../reducers/osrdsimulation/simulation';
+import { persistentRedoSimulation, persistentUndoSimulation } from 'reducers/osrdsimulation/simulation';
 import {
   updateAllowancesSettings,
   updateConsolidatedSimulation,
@@ -38,11 +38,10 @@ import { updateViewport } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
 
 const KEY_VALUES_FOR_CONSOLIDATED_SIMULATION = ["time", "position"]
-
-
-
 const timetableURI = '/timetable/';
-const trainscheduleURI = '/train_schedule/';
+
+
+export const trainscheduleURI = '/train_schedule/';
 
 const OSRDSimulation = () => {
   const { t } = useTranslation(['translation', 'simulation', 'allowances']);
@@ -71,6 +70,7 @@ const OSRDSimulation = () => {
   const dispatch = useDispatch();
 
 
+
   if (darkmode) {
     import('./OSRDSimulationDarkMode.scss');
   }
@@ -80,19 +80,19 @@ const OSRDSimulation = () => {
       return <h1 className="text-center">{t('simulation:noData')}</h1>;
     }
     return <CenterLoader message={t('simulation:waiting')} />;
-  };
+  }
+
+
 
 
   /**
    * Recover the time table for all the trains
    */
   const getTimetable = async () => {
-
     try {
-      if (!simulation.present || !simulation.trains[selectedTrain]) {
+      if (!simulation.trains || !simulation.trains[selectedTrain]) {
         dispatch(updateSelectedTrain(0));
       }
-      dispatch(updateSimulation({ trains: [] }));
       const timetable = await get(`${timetableURI}${timetableID}/`);
       if (timetable.train_schedules.length > 0) {
         setIsEmpty(false);
@@ -114,6 +114,7 @@ const OSRDSimulation = () => {
         });
         simulationLocal.sort((a, b) => a.base.stops[0].time > b.base.stops[0].time);
         dispatch(updateSimulation({ trains: simulationLocal }));
+
         // Create margins settings for each train if not set
         const newAllowancesSettings = { ...allowancesSettings };
         simulationLocal.forEach((train) => {
@@ -152,10 +153,10 @@ const OSRDSimulation = () => {
 
   const handleKey = (e) => {
     if (e.key === 'z' && e.metaKey) {
-      dispatch(undoSimulation());
+      dispatch(persistentUndoSimulation());
     }
     if (e.key === 'e' && e.metaKey) {
-      dispatch(redoSimulation());
+      dispatch(persistentRedoSimulation());
     }
   };
 
