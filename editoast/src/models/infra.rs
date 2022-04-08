@@ -142,32 +142,36 @@ impl Infra {
 }
 
 #[cfg(test)]
-mod test {
+pub mod test {
     use super::Infra;
     use crate::client::PostgresConfig;
     use diesel::result::Error;
     use diesel::{Connection, PgConnection};
     use rocket::http::Status;
 
-    #[test]
-    fn create_infra() {
+    pub fn test_transaction(fn_test: fn(&PgConnection, Infra)) {
         let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
         conn.test_transaction::<_, Error, _>(|| {
             let infra = Infra::create(&"test".to_string(), &conn).unwrap();
-            assert_eq!("test", infra.name);
+
+            fn_test(&conn, infra);
             Ok(())
         });
     }
 
     #[test]
+    fn create_infra() {
+        test_transaction(|_, infra| {
+            assert_eq!("test", infra.name);
+        });
+    }
+
+    #[test]
     fn delete_infra() {
-        let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
-        conn.test_transaction::<_, Error, _>(|| {
-            let infra = Infra::create(&"test".to_string(), &conn).unwrap();
-            assert!(Infra::delete(infra.id, &conn).is_ok());
-            let err = Infra::delete(infra.id, &conn).unwrap_err();
+        test_transaction(|conn, infra| {
+            assert!(Infra::delete(infra.id, conn).is_ok());
+            let err = Infra::delete(infra.id, conn).unwrap_err();
             assert_eq!(err.get_status(), Status::NotFound);
-            Ok(())
         });
     }
 }

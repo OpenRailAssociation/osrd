@@ -61,52 +61,48 @@ impl RailjsonObject {
 }
 
 #[cfg(test)]
-mod test {
-    use crate::client::PostgresConfig;
-    use crate::models::Infra;
+pub mod test {
+    use crate::models::infra::test::test_transaction;
     use crate::railjson::operation::create::{apply_create_operation, RailjsonObject};
-    use diesel::result::Error;
-    use diesel::{Connection, PgConnection};
+    use crate::railjson::{Signal, SpeedSection, TrackSection};
+    use diesel::PgConnection;
+
+    pub fn create_track(conn: &PgConnection, infra_id: i32, track: TrackSection) -> RailjsonObject {
+        let obj = RailjsonObject::TrackSection { railjson: track };
+        assert!(apply_create_operation(&obj, infra_id, conn).is_ok());
+        obj
+    }
+
+    pub fn create_signal(conn: &PgConnection, infra_id: i32, signal: Signal) -> RailjsonObject {
+        let obj = RailjsonObject::Signal { railjson: signal };
+        assert!(apply_create_operation(&obj, infra_id, conn).is_ok());
+        obj
+    }
+
+    pub fn create_speed(conn: &PgConnection, infra_id: i32, speed: SpeedSection) -> RailjsonObject {
+        let obj = RailjsonObject::SpeedSection { railjson: speed };
+        assert!(apply_create_operation(&obj, infra_id, conn).is_ok());
+        obj
+    }
 
     #[test]
-    fn create_track() {
-        let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
-        conn.test_transaction::<_, Error, _>(|| {
-            let track_creation = RailjsonObject::TrackSection {
-                railjson: Default::default(),
-            };
-            let infra = Infra::create(&"test".to_string(), &conn).unwrap();
-
-            assert!(apply_create_operation(&track_creation, infra.id, &conn).is_ok());
-            Ok(())
+    fn create_track_test() {
+        test_transaction(|conn, infra| {
+            create_track(conn, infra.id, Default::default());
         });
     }
 
     #[test]
-    fn create_signal() {
-        let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
-        conn.test_transaction::<_, Error, _>(|| {
-            let signal_creation = RailjsonObject::Signal {
-                railjson: Default::default(),
-            };
-            let infra = Infra::create(&"test".to_string(), &conn).unwrap();
-
-            assert!(apply_create_operation(&signal_creation, infra.id, &conn).is_ok());
-            Ok(())
+    fn create_signal_test() {
+        test_transaction(|conn, infra| {
+            create_signal(conn, infra.id, Default::default());
         });
     }
 
     #[test]
-    fn create_speedsection() {
-        let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
-        conn.test_transaction::<_, Error, _>(|| {
-            let speed_creation = RailjsonObject::SpeedSection {
-                railjson: Default::default(),
-            };
-            let infra = Infra::create(&"test".to_string(), &conn).unwrap();
-
-            assert!(apply_create_operation(&speed_creation, infra.id, &conn).is_ok());
-            Ok(())
+    fn create_speed_test() {
+        test_transaction(|conn, infra| {
+            create_speed(conn, infra.id, Default::default());
         });
     }
 }

@@ -90,17 +90,14 @@ impl DataObject {
 #[cfg(test)]
 mod test {
     use super::UpdateOperation;
-    use crate::client::PostgresConfig;
     use crate::error::ApiError;
-    use crate::models::Infra;
-    use crate::railjson::operation::create::apply_create_operation;
-    use crate::railjson::operation::{OperationError, RailjsonObject};
+    use crate::models::infra::test::test_transaction;
+    use crate::railjson::operation::create::test::{create_signal, create_speed, create_track};
+    use crate::railjson::operation::OperationError;
     use crate::railjson::ObjectType;
-    use diesel::result::Error;
     use diesel::sql_query;
     use diesel::sql_types::{Double, Text};
     use diesel::RunQueryDsl;
-    use diesel::{Connection, PgConnection};
     use serde_json::from_str;
 
     #[derive(QueryableByName)]
@@ -117,16 +114,11 @@ mod test {
 
     #[test]
     fn valide_update_track() {
-        let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
-        conn.test_transaction::<_, Error, _>(|| {
-            let track_creation = RailjsonObject::TrackSection {
-                railjson: Default::default()
-            };
-            let infra = Infra::create(&"test".to_string(), &conn).unwrap();
-            assert!(apply_create_operation(&track_creation, infra.id, &conn).is_ok());
+        test_transaction(|conn, infra| {
+            let track = create_track(conn, infra.id, Default::default());
 
             let update_track = UpdateOperation {
-                obj_id: "my_track".to_string(),
+                obj_id: track.get_obj_id(),
                 obj_type: ObjectType::TrackSection,
                 railjson_patch: from_str(
                     r#"[
@@ -136,32 +128,26 @@ mod test {
                 .unwrap(),
             };
 
-            assert!(update_track.apply(infra.id, &conn).is_ok());
+            assert!(update_track.apply(infra.id, conn).is_ok());
 
             let updated_length = sql_query(format!(
-                "SELECT (data->>'length')::float as val FROM osrd_infra_tracksectionmodel WHERE obj_id = 'my_track' AND infra_id = {}",
+                "SELECT (data->>'length')::float as val FROM osrd_infra_tracksectionmodel WHERE obj_id = '{}' AND infra_id = {}",
+                track.get_obj_id(),
                 infra.id
             ))
-            .get_result::<Value>(&conn).unwrap();
+            .get_result::<Value>(conn).unwrap();
 
             assert_eq!(updated_length.val, 80.0);
-
-            Ok(())
         });
     }
 
     #[test]
     fn invalide_update_track() {
-        let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
-        conn.test_transaction::<_, Error, _>(|| {
-            let track_creation = RailjsonObject::TrackSection {
-                railjson: Default::default(),
-            };
-            let infra = Infra::create(&"test".to_string(), &conn).unwrap();
-            assert!(apply_create_operation(&track_creation, infra.id, &conn).is_ok());
+        test_transaction(|conn, infra| {
+            let track = create_track(conn, infra.id, Default::default());
 
             let update_track = UpdateOperation {
-                obj_id: "my_track".to_string(),
+                obj_id: track.get_obj_id(),
                 obj_type: ObjectType::TrackSection,
                 railjson_patch: from_str(
                     r#"[
@@ -171,30 +157,23 @@ mod test {
                 .unwrap(),
             };
 
-            let res = update_track.apply(infra.id, &conn);
+            let res = update_track.apply(infra.id, conn);
 
             assert!(res.is_err());
             assert_eq!(
                 res.unwrap_err().get_type(),
                 OperationError::ModifyId.get_type()
             );
-
-            Ok(())
         });
     }
 
     #[test]
     fn valide_update_signal() {
-        let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
-        conn.test_transaction::<_, Error, _>(|| {
-            let signal_creation = RailjsonObject::Signal {
-                railjson: Default::default()
-            };
-            let infra = Infra::create(&"test".to_string(), &conn).unwrap();
-            assert!(apply_create_operation(&signal_creation, infra.id, &conn).is_ok());
+        test_transaction(|conn, infra| {
+            let signal = create_signal(conn, infra.id, Default::default());
 
             let update_signal = UpdateOperation {
-                obj_id: "my_signal".to_string(),
+                obj_id: signal.get_obj_id(),
                 obj_type: ObjectType::Signal,
                 railjson_patch: from_str(
                     r#"[
@@ -204,88 +183,74 @@ mod test {
                 .unwrap(),
             };
 
-            assert!(update_signal.apply(infra.id, &conn).is_ok());
+            assert!(update_signal.apply(infra.id, conn).is_ok());
 
             let updated_length = sql_query(format!(
-                "SELECT (data->>'sight_distance')::float as val FROM osrd_infra_signalmodel WHERE obj_id = 'my_signal' AND infra_id = {}",
+                "SELECT (data->>'sight_distance')::float as val FROM osrd_infra_signalmodel WHERE obj_id = '{}' AND infra_id = {}",
+                signal.get_obj_id(),
                 infra.id
             ))
-            .get_result::<Value>(&conn).unwrap();
+            .get_result::<Value>(conn).unwrap();
 
             assert_eq!(updated_length.val, 15.0);
-
-            Ok(())
         });
     }
 
     #[test]
     fn valide_update_signal_optionnal() {
-        let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
-        conn.test_transaction::<_, Error, _>(|| {
-            let signal_creation = RailjsonObject::Signal {
-                railjson: Default::default()
-            };
-            let infra = Infra::create(&"test".to_string(), &conn).unwrap();
-            assert!(apply_create_operation(&signal_creation, infra.id, &conn).is_ok());
+        test_transaction(|conn, infra| {
+            let signal = create_signal(conn, infra.id, Default::default());
 
             let update_signal = UpdateOperation {
-                obj_id: "my_signal".to_string(),
+                obj_id: signal.get_obj_id(),
                 obj_type: ObjectType::Signal,
                 railjson_patch: from_str(
                     r#"[
-                    { "op": "replace", "path": "/comment", "value": "Test Passed" }
+                        { "op": "replace", "path": "/comment", "value": "Test Passed" }
                   ]"#,
                 )
                 .unwrap(),
             };
 
-            assert!(update_signal.apply(infra.id, &conn).is_ok());
+            assert!(update_signal.apply(infra.id, conn).is_ok());
 
             let updated_comment = sql_query(format!(
-                "SELECT (data->>'comment') as comment FROM osrd_infra_signalmodel WHERE obj_id = 'my_signal' AND infra_id = {}",
+                "SELECT (data->>'comment') as comment FROM osrd_infra_signalmodel WHERE obj_id = '{}' AND infra_id = {}",
+                signal.get_obj_id(),
                 infra.id
             ))
-            .get_result::<Comment>(&conn).unwrap();
+            .get_result::<Comment>(conn).unwrap();
 
             assert_eq!(updated_comment.comment, "Test Passed");
-
-            Ok(())
         });
     }
 
     #[test]
     fn valide_update_speed() {
-        let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
-        conn.test_transaction::<_, Error, _>(|| {
-            let speed_creation = RailjsonObject::SpeedSection {
-                railjson: Default::default()
-            };
-
-            let infra = Infra::create(&"test".to_string(), &conn).unwrap();
-            assert!(apply_create_operation(&speed_creation, infra.id, &conn).is_ok());
+        test_transaction(|conn, infra| {
+            let speed = create_speed(conn, infra.id, Default::default());
 
             let update_speed = UpdateOperation {
-                obj_id: "my_speed".to_string(),
+                obj_id: speed.get_obj_id(),
                 obj_type: ObjectType::SpeedSection,
                 railjson_patch: from_str(
                     r#"[
-                    { "op": "replace", "path": "/speed", "value": 80.0 }
+                        { "op": "replace", "path": "/speed", "value": 80.0 }
                   ]"#,
                 )
                 .unwrap(),
             };
 
-            assert!(update_speed.apply(infra.id, &conn).is_ok());
+            assert!(update_speed.apply(infra.id, conn).is_ok());
 
             let updated_speed = sql_query(format!(
-                "SELECT (data->>'speed')::float as val FROM osrd_infra_speedsectionmodel WHERE obj_id = 'my_speed' AND infra_id = {}",
+                "SELECT (data->>'speed')::float as val FROM osrd_infra_speedsectionmodel WHERE obj_id = '{}' AND infra_id = {}",
+                speed.get_obj_id(),
                 infra.id
             ))
-            .get_result::<Value>(&conn).unwrap();
+            .get_result::<Value>(conn).unwrap();
 
             assert_eq!(updated_speed.val, 80.0);
-
-            Ok(())
         });
     }
 }
