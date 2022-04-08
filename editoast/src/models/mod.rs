@@ -1,4 +1,4 @@
-mod infra;
+pub mod infra;
 mod signal_layer;
 mod speed_section_layer;
 mod track_section_layer;

@@ -1,7 +1,19 @@
 pub mod operation;
 
 use derivative::Derivative;
+use rand::distributions::Alphanumeric;
+use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
+
+fn generate_id(prefix: &str) -> String {
+    format!(
+        "{}_{}",
+        prefix,
+        (0..10)
+            .map(|_| thread_rng().sample(Alphanumeric) as char)
+            .collect::<String>(),
+    )
+}
 
 #[derive(Debug, Clone, Copy, Deserialize, Hash, Eq, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -38,7 +50,7 @@ impl ObjectType {
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct TrackSection {
-    #[derivative(Default(value = r#""my_track".to_string()"#))]
+    #[derivative(Default(value = r#"generate_id("track_section")"#))]
     pub id: String,
     #[derivative(Default(value = "0."))]
     pub length: f64,
@@ -58,11 +70,11 @@ pub struct TrackSection {
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
 #[derivative(Default)]
 pub struct Signal {
-    #[derivative(Default(value = r#""my_signal".to_string()"#))]
+    #[derivative(Default(value = r#"generate_id("signal")"#))]
     pub id: String,
     #[derivative(Default(value = r#"ObjectRef {
         obj_type: ObjectType::TrackSection,
-        obj_id: "my_track".to_string(),
+        obj_id: "".to_string(),
     }"#))]
     pub track: ObjectRef,
     #[derivative(Default(value = "0."))]
@@ -91,7 +103,7 @@ pub struct Signal {
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
 #[derivative(Default)]
 pub struct SpeedSection {
-    #[derivative(Default(value = r#""my_speed".to_string()"#))]
+    #[derivative(Default(value = r#"generate_id("speed_section")"#))]
     pub id: String,
     #[derivative(Default(value = "100."))]
     pub speed: f64,
