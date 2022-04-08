@@ -321,6 +321,7 @@ dependencies = [
  "diesel",
  "itertools",
  "json-patch",
+ "rand 0.8.5",
  "rocket",
  "rocket_contrib",
  "serde",

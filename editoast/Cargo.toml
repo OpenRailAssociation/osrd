@@ -12,13 +12,14 @@ license = "LGPL-3.0"
 chashmap = "2.2.2"
 clap = { version = "3.1.6", features = ["derive", "env"] }
 colored = "2.0.0"
+derivative = "2.2.0"
 diesel = { version = "1.4.8", features = ["postgres", "uuidv07", "serde_json"] }
 itertools = "0.10.3"
 json-patch = "0.2.6"
+rand = "0.8.5"
 rocket = "0.4.10"
 rocket_contrib = {version="0.4.10", features=["json", "diesel_postgres_pool", "uuid"]}
 serde = "1.0.136"
 serde_derive = "1.0.136"
 serde_json = "1.0.79"
 thiserror = "1.0.30"
-derivative = "2.2.0"
