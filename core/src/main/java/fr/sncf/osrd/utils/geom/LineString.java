@@ -155,6 +155,12 @@ public class LineString {
 
         double ratio = distance / cumulativeLengths[0];
 
+        if (cumulativeLengths[0] == 0) {
+            // Avoids NaNs
+            assert distance == 0;
+            ratio = 0;
+        }
+
         if (interval > 0) {
             ratio = (distance - cumulativeLengths[interval - 1])
                     / (cumulativeLengths[interval] - cumulativeLengths[interval - 1]);
