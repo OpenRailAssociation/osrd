@@ -54,17 +54,26 @@ def create_route_from_path(builder, path):
     )
 
 
+def create_if_not_seen(builder, path, seen):
+    waypoints_tuple = (path[0].track_section.label, path[0].begin, path[-1].track_section.label, path[-1].end)
+    if waypoints_tuple in seen:
+        return
+    seen.add(waypoints_tuple)
+    create_route_from_path(builder, path)
+
+
 def generate_routes(builder):
+    seen_paths = set()
     for track in builder.infra.track_sections:
         for signal in track.signals:
             direction = Direction(signal.direction)
             origin = PathfindingStep(track, signal.position, direction)
             for path in explore_paths(origin):
-                create_route_from_path(builder, path)
+                create_if_not_seen(builder, path, seen_paths)
         for waypoint in track.waypoints:
             if waypoint.waypoint_type == "detector":
                 continue
             for direction in waypoint.applicable_direction.directions():
                 origin = PathfindingStep(track, waypoint.position, direction)
                 for path in explore_paths(origin):
-                    create_route_from_path(builder, path)
+                    create_if_not_seen(builder, path, seen_paths)

@@ -36,7 +36,7 @@ def run_test(infra: InfraGraph, base_url: str, infra_id: int):
     path_payload = make_payload_path(infra_id, path)
     r = requests.post(base_url + "pathfinding/", json=path_payload, timeout=TIMEOUT)
     if r.status_code // 100 != 2:
-        raise RuntimeError(f"Pathfinding error {r.status_code}: {r.content}, payload={json.dumps(path_payload)}")
+        raise RuntimeError(f"Pathfinding error {r.status_code}: payload=\n{json.dumps(path_payload)}\n{r.content}")
     path_id = r.json()["id"]
     rolling_stock = get_random_rolling_stock(base_url)
 
@@ -46,7 +46,7 @@ def run_test(infra: InfraGraph, base_url: str, infra_id: int):
         if r.status_code // 100 == 4:
             print("ignore: invalid user input")
             return
-        raise RuntimeError(f"Schedule error {r.status_code}: {r.content}, payload={json.dumps(schedule_payload)}")
+        raise RuntimeError(f"Schedule error {r.status_code}: payload=\n{json.dumps(schedule_payload)}\n{r.content}")
 
     schedule_id = r.json()["ids"][0]
     r = requests.get(f"{base_url}train_schedule/{schedule_id}/result/", timeout=TIMEOUT)

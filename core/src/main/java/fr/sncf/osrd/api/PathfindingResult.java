@@ -34,41 +34,33 @@ public class PathfindingResult {
             SignalingInfra infra
     ) {
         var res = new PathfindingResult();
-        fillRoutePath(path, res);
+        for (var signalingRouteEdgeRange : path)
+            res.routePaths.add(
+                    makeRouteResult(
+                            res,
+                            signalingRouteEdgeRange
+                    )
+            );
+        var lastRoute = res.routePaths.get(res.routePaths.size() - 1);
+        var lastRange = lastRoute.trackSections.get(lastRoute.trackSections.size() - 1);
+        res.addStep(new PathWaypointResult(lastRange.trackSection.id.id, lastRange.end));
         res.addGeometry(infra);
         return res;
     }
 
-    private static void fillRoutePath(
-            ArrayList<Pathfinding.EdgeRange<SignalingRoute>> path,
-            PathfindingResult pathfindingResult
-    ) {
-        for (var signalingRouteEdgeRange : path)
-            pathfindingResult.routePaths.add(
-                    makeRouteResult(
-                            pathfindingResult,
-                            signalingRouteEdgeRange
-                    )
-            );
-        var lastRoute = pathfindingResult.routePaths.get(pathfindingResult.routePaths.size() - 1);
-        var lastRange = lastRoute.trackSections.get(lastRoute.trackSections.size() - 1);
-        pathfindingResult.addStep(new PathWaypointResult(lastRange.trackSection.id.id, lastRange.end));
-    }
-
+    /** Adds a single route to the result, including waypoints present on the route */
     private static RoutePathResult makeRouteResult(
             PathfindingResult pathfindingResult,
             Pathfinding.EdgeRange<SignalingRoute> element
     ) {
-        var routeResult = new RoutePathResult();
-        routeResult.route = new RJSObjectRef<>(element.edge().getInfraRoute().getID(), "Route");
-        routeResult.trackSections = new ArrayList<>();
+        var routeResult = new RoutePathResult(new RJSObjectRef<>(element.edge().getInfraRoute().getID(), "Route"));
         double offset = 0;
         for (var range : element.edge().getInfraRoute().getTrackRanges()) {
             if (!(range.track.getEdge() instanceof TrackSection trackSection))
                 continue;
 
             // Truncate the ranges to match the part of the route we use
-            var truncatedRange = range; // WIP double check this
+            var truncatedRange = range;
             if (offset < element.start()) {
                 truncatedRange = truncatedRange.truncateBeginByLength(element.start() - offset);
             }
@@ -100,6 +92,7 @@ public class PathfindingResult {
         return routeResult;
     }
 
+    /** Adds a single waypoint to the result */
     void addStep(PathWaypointResult newStep) {
         if (pathWaypoints.isEmpty()) {
             pathWaypoints.add(newStep);
@@ -113,6 +106,7 @@ public class PathfindingResult {
         pathWaypoints.add(newStep);
     }
 
+    /** Generates the path geometry */
     void addGeometry(SignalingInfra infra) {
         var geoList = new ArrayList<LineString>();
         var schList = new ArrayList<LineString>();
@@ -153,9 +147,13 @@ public class PathfindingResult {
         schematic = concatenate(schList);
     }
 
+    /** Concatenates a list of LineString into a single LineString.
+     * If not enough values are present, we return the default [0, 1] line. */
     private LineString concatenate(List<LineString> list) {
         if (list.size() >= 2)
             return LineString.concatenate(list);
+        else if (list.size() == 1)
+            return list.get(0);
         else
             return LineString.make(
                     new double[] {0., 1.},
@@ -163,6 +161,7 @@ public class PathfindingResult {
             );
     }
 
+    /** If the lineString isn't null, slice it from previousBegin to previousEnd and add it to res */
     private static void sliceAndAdd(
             List<LineString> res,
             LineString lineString,
@@ -172,20 +171,35 @@ public class PathfindingResult {
     ) {
         if (lineString == null)
             return;
-        res.add(lineString.slice(previousBegin / trackLength, previousEnd / trackLength));
+        if (trackLength == 0) {
+            assert previousBegin == 0;
+            assert previousEnd == 0;
+            res.add(lineString);
+        } else
+            res.add(lineString.slice(previousBegin / trackLength, previousEnd / trackLength));
     }
 
+    /** A single route on the path */
     @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
     public static class RoutePathResult {
-        public RJSObjectRef<RJSRoute> route;
+        public final RJSObjectRef<RJSRoute> route;
         @Json(name = "track_sections")
-        public List<PathfindingEndpoint.DirectionalTrackRangeResult> trackSections = new ArrayList<>();
+        public final List<PathfindingEndpoint.DirectionalTrackRangeResult> trackSections = new ArrayList<>();
+
+        public RoutePathResult(RJSObjectRef<RJSRoute> route) {
+            this.route = route;
+        }
     }
 
+    /** One waypoint in the path, represents an operational point */
     public static class PathWaypointResult {
+        /** ID if the operational point */
         public String id;
+        /** A point is a suggestion if it's not part of the input path and just an OP on the path */
         public boolean suggestion;
+        /** Track the point is on */
         public RJSObjectRef<RJSTrackSection> track;
+        /** Offset of the point */
         public double position;
 
         /** Suggested operational points */
