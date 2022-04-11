@@ -5,6 +5,8 @@ import com.squareup.moshi.Moshi;
 import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.new_infra.api.signaling.SignalingRoute;
+import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackLocation;
+import fr.sncf.osrd.new_infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.utils.geom.LineString;
@@ -19,6 +21,7 @@ import org.takes.rs.RsText;
 import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
     public static final JsonAdapter<PathfindingResult> adapterResult = new Moshi
@@ -85,9 +88,33 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
 
             var res = PathfindingResult.make(pathToGoal, infra);
 
+            validate(infra, res);
+
             return new RsJson(new RsWithBody(adapterResult.toJson(res)));
         } catch (Throwable ex) {
             return ExceptionHandler.handle(ex);
+        }
+    }
+
+    /** Checks that the results make sense */
+    private void validate(SignalingInfra infra, PathfindingResult res) {
+        var start = res.pathWaypoints.get(0);
+        var end = res.pathWaypoints.get(res.pathWaypoints.size() - 1);
+        var startLocation = new TrackLocation(infra.getTrackSection(start.track.id.id), start.position);
+        var endLocation = new TrackLocation(infra.getTrackSection(end.track.id.id), end.position);
+        var routes = new ArrayList<SignalingRoute>();
+        for (var route : res.routePaths) {
+            var infraRoute = infra.getReservationRouteMap().get(route.route.id.id);
+            assert infraRoute != null;
+            var signalingRoute = infra.getRouteMap().get(infraRoute).asList().get(0);
+            if (routes.isEmpty() || routes.get(routes.size() - 1) != signalingRoute)
+                routes.add(signalingRoute);
+        }
+        var path = TrainPathBuilder.from(routes, startLocation, endLocation);
+        for (int i = 1; i < path.trackRangePath().size(); i++) {
+            var prev = path.trackRangePath().get(i - 1).element().track.getEdge();
+            var next = path.trackRangePath().get(i).element().track.getEdge();
+            assert prev == next || infra.getTrackGraph().adjacentEdges(prev).contains(next) : "path isn't continuous";
         }
     }
 

@@ -96,8 +96,9 @@ public class TrainPathBuilder {
         for (int detectorIndex = 0; detectorIndex < path.detectors().size(); detectorIndex++) {
             assert detSectionIndex <= path.detectionSections().size() : "missing detection sections";
             if (detSectionIndex < path.detectionSections().size()) {
-                assert path.detectors().get(detectorIndex).pathOffset()
-                        == path.detectionSections().get(detSectionIndex).pathOffset()
+                assert Math.abs(path.detectors().get(detectorIndex).pathOffset()
+                        - path.detectionSections().get(detSectionIndex).pathOffset())
+                        < 1e-5
                         : "detector / section offset mismatch";
             }
             detSectionIndex++;
