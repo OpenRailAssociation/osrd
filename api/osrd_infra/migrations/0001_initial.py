@@ -295,9 +295,23 @@ class Migration(migrations.Migration):
                 'verbose_name_plural': 'buffer stops',
             },
         ),
+        migrations.CreateModel(
+            name='ErrorLayer',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('obj_type', models.CharField(choices=[('OperationalPoint', 'OperationalPoint'), ('Route', 'Route'), ('SwitchType', 'SwitchType'), ('Switch', 'Switch'), ('TrackSectionLink', 'TrackSectionLink'), ('SpeedSection', 'SpeedSection'), ('Catenary', 'Catenary'), ('TrackSection', 'TrackSection'), ('Signal', 'Signal'), ('BufferStop', 'BufferStop'), ('Detector', 'Detector')], max_length=32)),
+                ('obj_id', models.CharField(max_length=255)),
+                ('geographic', django.contrib.gis.db.models.fields.GeometryField(null=True, srid=3857)),
+                ('schematic', django.contrib.gis.db.models.fields.GeometryField(null=True, srid=3857)),
+                ('information', models.JSONField(validators=[osrd_infra.utils.JSONSchemaValidator(limit_value={'anyOf': [{'$ref': '#/definitions/InvalidReference'}, {'$ref': '#/definitions/OutOfRange'}, {'$ref': '#/definitions/EmptyObject'}], 'definitions': {'EmptyObject': {'properties': {'error_type': {'default': 'empty_object', 'enum': ['empty_object'], 'title': 'Error Type', 'type': 'string'}, 'field': {'title': 'Field', 'type': 'string'}, 'is_warning': {'default': True, 'enum': [True], 'title': 'Is Warning', 'type': 'boolean'}}, 'required': ['field'], 'title': 'EmptyObject', 'type': 'object'}, 'InvalidReference': {'properties': {'error_type': {'default': 'invalid_reference', 'enum': ['invalid_reference'], 'title': 'Error Type', 'type': 'string'}, 'field': {'title': 'Field', 'type': 'string'}, 'is_warning': {'default': False, 'enum': [False], 'title': 'Is Warning', 'type': 'boolean'}, 'reference': {'$ref': '#/definitions/ObjectReference'}}, 'required': ['field', 'reference'], 'title': 'InvalidReference', 'type': 'object'}, 'ObjectReference': {'properties': {'id': {'maxLength': 255, 'title': 'Id', 'type': 'string'}, 'type': {'title': 'Type', 'type': 'string'}}, 'required': ['id', 'type'], 'title': 'ObjectReference', 'type': 'object'}, 'OutOfRange': {'properties': {'error_type': {'default': 'out_of_range', 'enum': ['out_of_range'], 'title': 'Error Type', 'type': 'string'}, 'expected_range': {'items': [{'type': 'number'}, {'type': 'number'}], 'maxItems': 2, 'minItems': 2, 'title': 'Expected Range', 'type': 'array'}, 'field': {'title': 'Field', 'type': 'string'}, 'is_warning': {'default': False, 'enum': [False], 'title': 'Is Warning', 'type': 'boolean'}, 'position': {'title': 'Position', 'type': 'number'}}, 'required': ['field', 'position', 'expected_range'], 'title': 'OutOfRange', 'type': 'object'}}, 'discriminator': {'mapping': {'empty_object': '#/definitions/EmptyObject', 'invalid_reference': '#/definitions/InvalidReference', 'out_of_range': '#/definitions/OutOfRange'}, 'propertyName': 'error_type'}, 'title': 'InfraError'})])),
+            ],
+            options={
+                'verbose_name_plural': 'generated errors',
+            },
+        ),
     ]
 
-    infra_foreign_models = ["pathmodel", "timetable"]
+    infra_foreign_models = ["pathmodel", "timetable", "errorlayer"]
     infra_obj_models = [
         "routemodel",
         "operationalpointmodel",
