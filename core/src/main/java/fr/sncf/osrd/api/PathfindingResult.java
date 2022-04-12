@@ -30,17 +30,18 @@ public class PathfindingResult {
      * @param path contains the pathfinding's result
      */
     public static PathfindingResult make(
-            ArrayList<Pathfinding.EdgeRange<SignalingRoute>> path,
+            List<Pathfinding.EdgeRange<SignalingRoute>> path,
             SignalingInfra infra
     ) {
         var res = new PathfindingResult();
         for (var signalingRouteEdgeRange : path)
-            res.routePaths.add(
-                    makeRouteResult(
-                            res,
-                            signalingRouteEdgeRange
-                    )
-            );
+            if (signalingRouteEdgeRange.start() < signalingRouteEdgeRange.end())
+                res.routePaths.add(
+                        makeRouteResult(
+                                res,
+                                signalingRouteEdgeRange
+                        )
+                );
         var lastRoute = res.routePaths.get(res.routePaths.size() - 1);
         var lastRange = lastRoute.trackSections.get(lastRoute.trackSections.size() - 1);
         res.addStep(new PathWaypointResult(lastRange.trackSection.id.id, lastRange.end));
