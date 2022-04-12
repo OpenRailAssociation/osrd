@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.NetworkBuilder;
-import fr.sncf.osrd.new_infra_state.implementation.standalone.StandaloneSignalingSimulation;
 import fr.sncf.osrd.utils.new_graph.Pathfinding;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
@@ -65,6 +64,12 @@ public class PathfindingTests {
 
     @Test
     public void pathfindingShortestTwoStepsTest() {
+        /* Two possible paths, top path is the shortest
+
+        0 -> B -> 1 -> 2 -> 3 -> E -> 4
+                   \        /
+                    + ->-> +
+         */
         var builder = new SimpleGraphBuilder();
         builder.makeNodes(5);
         builder.makeEdge(0, 1, 0);
@@ -75,8 +80,10 @@ public class PathfindingTests {
         var g = builder.build();
         var res = Pathfinding.findEdgePath(
                 g,
-                List.of(builder.getEdgeLocation("0-1")),
-                List.of(builder.getEdgeLocation("3-4")),
+                List.of(
+                        List.of(builder.getEdgeLocation("0-1")),
+                        List.of(builder.getEdgeLocation("3-4"))
+                ),
                 edge -> edge.length
         );
         var resIDs = res.stream().map(x -> x.label).toList();
@@ -93,6 +100,12 @@ public class PathfindingTests {
 
     @Test
     public void simplePathfindingTest() {
+        /* Same setting as previous test, but the bottom path is the shortest
+
+        0 -> B -> 1 -> 2 -> 3 -> E -> 4
+                   \        /
+                    + ->-> +
+         */
         var builder = new SimpleGraphBuilder();
         builder.makeNodes(5);
         builder.makeEdge(0, 1, 0);
@@ -103,8 +116,10 @@ public class PathfindingTests {
         var g = builder.build();
         var res = Pathfinding.findEdgePath(
                 g,
-                List.of(builder.getEdgeLocation("0-1")),
-                List.of(builder.getEdgeLocation("3-4")),
+                List.of(
+                        List.of(builder.getEdgeLocation("0-1")),
+                        List.of(builder.getEdgeLocation("3-4"))
+                ),
                 edge -> edge.length
         );
         var resIDs = res.stream().map(x -> x.label).toList();
@@ -120,6 +135,14 @@ public class PathfindingTests {
 
     @Test
     public void severalStartsTest() {
+        /* Bottom path has more edges but is shorter
+
+        0 -> B1 -> 1 ->-> +
+                          |
+                          5 -> E -> 6
+                         /
+        2 -> B2 -> 3 -> 4
+         */
         var builder = new SimpleGraphBuilder();
         builder.makeNodes(7);
         builder.makeEdge(0, 1, 0);
@@ -134,10 +157,12 @@ public class PathfindingTests {
         var res = Pathfinding.findEdgePath(
                 g,
                 List.of(
-                        builder.getEdgeLocation("0-1"),
-                        builder.getEdgeLocation("2-3")
+                        List.of(
+                                builder.getEdgeLocation("0-1"),
+                                builder.getEdgeLocation("2-3")
+                        ),
+                        List.of(builder.getEdgeLocation("5-6"))
                 ),
-                List.of(builder.getEdgeLocation("5-6")),
                 edge -> edge.length
         );
         var resIDs = res.stream().map(x -> x.label).toList();
@@ -154,6 +179,13 @@ public class PathfindingTests {
 
     @Test
     public void severalEndsTest() {
+        /* The bottom path has more edges but is shorter
+
+        0 -> B -> 1 -> 2 -> E1 -> 2
+                   \
+                    v
+                     4 -> 5 -> E2 -> 6
+         */
         var builder = new SimpleGraphBuilder();
         builder.makeNodes(7);
         builder.makeEdge(0, 1, 0);
@@ -167,10 +199,12 @@ public class PathfindingTests {
         var g = builder.build();
         var res = Pathfinding.findEdgePath(
                 g,
-                List.of(builder.getEdgeLocation("0-1")),
                 List.of(
-                        builder.getEdgeLocation("2-3"),
-                        builder.getEdgeLocation("5-6")
+                        List.of(builder.getEdgeLocation("0-1")),
+                        List.of(
+                                builder.getEdgeLocation("2-3"),
+                                builder.getEdgeLocation("5-6")
+                        )
                 ),
                 edge -> edge.length
         );
@@ -188,16 +222,25 @@ public class PathfindingTests {
 
     @Test
     public void loopTest() {
+        /* The 1 -> 0 path has a negative length.
+        if the "seen" edges are badly handled, this starts an infinite loop
+
+        0 -> B -> 1 -> E -> 2
+         ^        v
+          + <-<- +
+        */
         var builder = new SimpleGraphBuilder();
         builder.makeNodes(3);
         builder.makeEdge(0, 1, 1);
         builder.makeEdge(1, 2, 100);
-        builder.makeEdge(1, 0, 1);
+        builder.makeEdge(1, 0, -100);
         var g = builder.build();
         var res = Pathfinding.findEdgePath(
                 g,
-                List.of(builder.getEdgeLocation("0-1")),
-                List.of(builder.getEdgeLocation("1-2")),
+                List.of(
+                        List.of(builder.getEdgeLocation("0-1")),
+                        List.of(builder.getEdgeLocation("1-2", 50))
+                ),
                 edge -> edge.length
         );
         var resIDs = res.stream().map(x -> x.label).toList();
@@ -212,6 +255,10 @@ public class PathfindingTests {
 
     @Test
     public void noPathTest() {
+        /* No possible path without going backwards
+
+        0 -> E -> 1 -> 2 -> B -> 3
+         */
         var builder = new SimpleGraphBuilder();
         builder.makeNodes(4);
         builder.makeEdge(0, 1, 100);
@@ -220,8 +267,10 @@ public class PathfindingTests {
         var g = builder.build();
         var res = Pathfinding.findEdgePath(
                 g,
-                List.of(builder.getEdgeLocation("2-3")),
-                List.of(builder.getEdgeLocation("0-1")),
+                List.of(
+                        List.of(builder.getEdgeLocation("2-3")),
+                        List.of(builder.getEdgeLocation("0-1"))
+                ),
                 edge -> edge.length
         );
         assertNull(res);
@@ -229,15 +278,20 @@ public class PathfindingTests {
 
     @Test
     public void sameEdgeNoPathTest() {
-        // The goal is at a smaller offset that the start: no path
+        /* The end is on the same edge but at a smaller offset that the start: no path
+
+        0 -> -> E -> -> B -> -> 1
+         */
         var builder = new SimpleGraphBuilder();
         builder.makeNodes(2);
         builder.makeEdge(0, 1, 100);
         var g = builder.build();
         var res = Pathfinding.findEdgePath(
                 g,
-                List.of(builder.getEdgeLocation("0-1", 60)),
-                List.of(builder.getEdgeLocation("0-1", 30)),
+                List.of(
+                        List.of(builder.getEdgeLocation("0-1", 60)),
+                        List.of(builder.getEdgeLocation("0-1", 30))
+                ),
                 edge -> edge.length
         );
         assertNull(res);
@@ -245,7 +299,13 @@ public class PathfindingTests {
 
     @Test
     public void sameEdgeWithLoopTest() {
-        // The goal is at a smaller offset that the start: it has to loop through the edges to reach the end
+        /* The end is at a smaller offset that the start: it has to loop through the edges to reach it
+
+        0 - -> E - -> B - -> 1
+         ^                  /
+          \                v
+           + <- - 2 <- -  +
+         */
         var builder = new SimpleGraphBuilder();
         builder.makeNodes(3);
         builder.makeEdge(0, 1, 100);
@@ -254,8 +314,10 @@ public class PathfindingTests {
         var g = builder.build();
         var res = Pathfinding.findEdgePath(
                 g,
-                List.of(builder.getEdgeLocation("0-1", 60)),
-                List.of(builder.getEdgeLocation("0-1", 30)),
+                List.of(
+                        List.of(builder.getEdgeLocation("0-1", 60)),
+                        List.of(builder.getEdgeLocation("0-1", 30))
+                ),
                 edge -> edge.length
         );
         var resIDs = res.stream().map(x -> x.label).toList();
@@ -272,8 +334,13 @@ public class PathfindingTests {
 
     @Test
     public void shortestPathWithOffsetsTests() {
-        // The start of the end edge is closer on the 0 -> 1 -> 2 -> 3 path,
-        // but the 0 -> 1 -> 4 -> 5 path is shortest if we account offsets correctly
+        /* The start of the end edge is closer on the 0 -> 1 -> 2 -> 3 path,
+        but the 0 -> 1 -> 4 -> 5 path is shortest if we account offsets correctly
+
+        0 - B - 1 - 2 - - - - - E1 - 3
+                 \
+                  4 - E2 - 5
+         */
         var builder = new SimpleGraphBuilder();
         builder.makeNodes(6);
         builder.makeEdge(0, 1, 0);
@@ -284,10 +351,12 @@ public class PathfindingTests {
         var g = builder.build();
         var res = Pathfinding.findPath(
                 g,
-                List.of(builder.getEdgeLocation("0-1")),
                 List.of(
-                        builder.getEdgeLocation("2-3", 500),
-                        builder.getEdgeLocation("4-5", 10)
+                        List.of(builder.getEdgeLocation("0-1")),
+                        List.of(
+                                builder.getEdgeLocation("2-3", 500),
+                                builder.getEdgeLocation("4-5", 10)
+                        )
                 ),
                 edge -> edge.length
         );
@@ -296,6 +365,45 @@ public class PathfindingTests {
                         new SimpleRange("0-1", 0, 0),
                         new SimpleRange("1-4", 0, 100),
                         new SimpleRange("4-5", 0, 10)
+                ),
+                convertRes(res)
+        );
+    }
+
+    @Test
+    public void intermediateStopTest() {
+        /* Shortest path from B to E is 0 - 1 - 2 - 3
+        But it has to pass through a step on 4 - 5 along the way
+
+        0 - B - 1 - - - -  2 - E - 3
+                 \        /
+                  4 step 5
+         */
+        var builder = new SimpleGraphBuilder();
+        builder.makeNodes(6);
+        builder.makeEdge(0, 1, 10);
+        builder.makeEdge(1, 2, 10);
+        builder.makeEdge(2, 3, 10);
+        builder.makeEdge(1, 4, 1000);
+        builder.makeEdge(4, 5, 10);
+        builder.makeEdge(5, 2, 1000);
+        var g = builder.build();
+        var res = Pathfinding.findPath(
+                g,
+                List.of(
+                        List.of(builder.getEdgeLocation("0-1", 5)),
+                        List.of(builder.getEdgeLocation("4-5", 5)),
+                        List.of(builder.getEdgeLocation("2-3", 5))
+                ),
+                edge -> edge.length
+        );
+        assertEquals(
+                List.of(
+                        new SimpleRange("0-1", 5, 10),
+                        new SimpleRange("1-4", 0, 1000),
+                        new SimpleRange("4-5", 0, 10),
+                        new SimpleRange("5-2", 0, 1000),
+                        new SimpleRange("2-3", 0, 5)
                 ),
                 convertRes(res)
         );
