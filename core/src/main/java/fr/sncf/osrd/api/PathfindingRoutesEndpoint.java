@@ -21,7 +21,6 @@ import org.takes.rs.RsText;
 import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
     public static final JsonAdapter<PathfindingResult> adapterResult = new Moshi
@@ -52,7 +51,7 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
             var infra = infraManager.load(request.infra, request.expectedVersion);
 
             // parse the waypoints
-            var waypoints = new ArrayList<Set<Pathfinding.EdgeLocation<SignalingRoute>>>();
+            var waypoints = new ArrayList<Collection<Pathfinding.EdgeLocation<SignalingRoute>>>();
             for (var step : reqWaypoints) {
                 var allStarts = new HashSet<Pathfinding.EdgeLocation<SignalingRoute>>();
                 for (var waypoint : step)
@@ -61,32 +60,16 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
             }
 
             // Compute the paths from the entry waypoint to the exit waypoint
-            var pathToGoal = new ArrayList<Pathfinding.EdgeRange<SignalingRoute>>();
-            for (int i = 1; i < waypoints.size(); i++) {
-                var destinationWaypoints = waypoints.get(i);
+            var path = Pathfinding.findPath(
+                    infra.getSignalingRouteGraph(),
+                    waypoints,
+                    route -> route.getInfraRoute().getLength()
+            );
 
-                // TODO: find a way to actually handle several intermediate steps
-                Set<Pathfinding.EdgeLocation<SignalingRoute>> startWaypoints = new HashSet<>(waypoints.get(i - 1));
+            if (path == null)
+                return new RsWithStatus(new RsText("No path could be found"), 400);
 
-                var path = Pathfinding.findPath(
-                        infra.getSignalingRouteGraph(),
-                        startWaypoints,
-                        destinationWaypoints,
-                        route -> route.getInfraRoute().getLength()
-                );
-
-                if (path == null) {
-                    var error = String.format(
-                            "No path could be found between steps %d and %d",
-                            i - 1, i
-                    );
-                    return new RsWithStatus(new RsText(error), 400);
-                }
-
-                pathToGoal.addAll(path);
-            }
-
-            var res = PathfindingResult.make(pathToGoal, infra);
+            var res = PathfindingResult.make(path, infra);
 
             validate(infra, res);
 

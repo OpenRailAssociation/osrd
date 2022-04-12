@@ -92,7 +92,13 @@ public class TrainPathBuilder {
     /** Checks that the detectors and detection section transitions are consistent */
     private static void validateDetectionSections(NewTrainPath path) {
         assert path.detectionSections().size() > 0 : "no detection section";
-        int detSectionIndex = path.detectionSections().get(0).pathOffset() < 0 ? 1 : 0;
+        int detSectionIndex = 0;
+        var firstOffset = path.detectionSections().get(0).pathOffset();
+        if (firstOffset < 0
+                || (firstOffset == 0
+                && path.detectors().size() > 0
+                && path.detectors().get(0).pathOffset() > 0))
+            detSectionIndex = 1;
         for (int detectorIndex = 0; detectorIndex < path.detectors().size(); detectorIndex++) {
             assert detSectionIndex <= path.detectionSections().size() : "missing detection sections";
             if (detSectionIndex < path.detectionSections().size()) {
