@@ -9,11 +9,11 @@ import fr.sncf.osrd.new_infra.implementation.reservation.ReservationInfraBuilder
 import fr.sncf.osrd.railjson.schema.RJSSimulation;
 import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.takes.rq.RqFake;
 import org.takes.rs.RsPrint;
 import java.io.IOException;
@@ -84,7 +84,6 @@ public class PathfindingTest extends ApiTest {
     }
 
     @Test
-    @Disabled("WIP")
     public void testMiddleStop() throws Exception {
         var waypointStart = new PathfindingWaypoint(
                 "ne.micro.foo_b",
@@ -177,9 +176,9 @@ public class PathfindingTest extends ApiTest {
     }
 
     /** Tests that we find a route path between two points on the same edge */
-    @Test
-    public void simpleRoutesSameEdge() throws Exception {
-        var inverted = false;
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    public void simpleRoutesSameEdge(boolean inverted) throws Exception {
         var waypointStart = new PathfindingWaypoint(
                 "ne.micro.bar_a",
                 100,
@@ -214,6 +213,47 @@ public class PathfindingTest extends ApiTest {
         expectWaypointInPathResult(response, waypointEnd);
     }
 
+    /** Runs a pathfinding on a given infra. Looks into the simulation file to find a possible path */
+    private static void runTestOnExampleInfra(String rootPath, boolean inverted) throws Exception {
+        var req = requestFromExampleInfra(
+                rootPath + "/infra.json",
+                rootPath + "/simulation.json",
+                inverted
+        );
+        var requestBody = PathfindingEndpoint.adapterRequest.toJson(req);
+
+        var result = new RsPrint(
+                new PathfindingRoutesEndpoint(infraHandlerMock).act(
+                        new RqFake("POST", "/pathfinding/routes", requestBody))
+        ).printBody();
+
+        var response = PathfindingRoutesEndpoint.adapterResult.fromJson(result);
+        assert response != null;
+        assertTrue(response.pathWaypoints.size() >= 2);
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideInfraParameters")
+    public void tinyInfraTest(String path, boolean inverted) throws Exception {
+        runTestOnExampleInfra(path, inverted);
+    }
+
+    static Stream<Arguments> provideInfraParameters() {
+        var res = new HashSet<Arguments>();
+        var infraPaths = new ArrayList<>(List.of(
+                "tiny_infra",
+                "one_line",
+                "three_trains"
+        ));
+        for (int i = 0; i < 10; i++)
+            infraPaths.add("generated/" + i);
+        for (var inverted : new boolean[] {true, false})
+            for (var path : infraPaths)
+                res.add(Arguments.of(path, inverted));
+        return res.stream();
+    }
+
+    /** Converts a location into a pair of PathfindingWaypoint (either way) */
     private static PathfindingWaypoint[] convertLocToWaypoint(String trackID, double offset) {
         var res = new PathfindingWaypoint[2];
         for (var dir : EdgeDirection.values())
@@ -247,44 +287,5 @@ public class PathfindingTest extends ApiTest {
         waypoints[startIndex] = convertLocToWaypoint(startLoc.trackSection.id, startLoc.offset);
         waypoints[endIndex] = convertLocToWaypoint(endLoc.track().getID(), endLoc.offset());
         return new PathfindingEndpoint.PathfindingRequest(waypoints, infraPath);
-    }
-
-    private static void runTestOnExampleInfra(String rootPath, boolean inverted) throws Exception {
-        var req = requestFromExampleInfra(
-                rootPath + "/infra.json",
-                rootPath + "/simulation.json",
-                inverted
-        );
-        var requestBody = PathfindingEndpoint.adapterRequest.toJson(req);
-
-        var result = new RsPrint(
-                new PathfindingRoutesEndpoint(infraHandlerMock).act(
-                        new RqFake("POST", "/pathfinding/routes", requestBody))
-        ).printBody();
-
-        var response = PathfindingRoutesEndpoint.adapterResult.fromJson(result);
-        assert response != null;
-        assertTrue(response.pathWaypoints.size() >= 2);
-    }
-
-    @ParameterizedTest
-    @MethodSource("provideInfraParameters")
-    public void tinyInfraTest(String path, boolean inverted) throws Exception {
-        runTestOnExampleInfra(path, inverted);
-    }
-
-    private static Stream<Arguments> provideInfraParameters() {
-        var res = new HashSet<Arguments>();
-        var infraPaths = new ArrayList<>(List.of(
-                "tiny_infra",
-                "one_line",
-                "three_trains"
-        ));
-        for (int i = 0; i < 10; i++)
-            infraPaths.add("generated/" + i);
-        for (var inverted : new boolean[] {true, false})
-            for (var path : infraPaths)
-                res.add(Arguments.of(path, inverted));
-        return res.stream();
     }
 }

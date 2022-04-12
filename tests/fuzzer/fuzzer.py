@@ -51,7 +51,7 @@ def run_test(infra: InfraGraph, base_url: str, infra_id: int):
     schedule_id = r.json()["ids"][0]
     r = requests.get(f"{base_url}train_schedule/{schedule_id}/result/", timeout=TIMEOUT)
     if r.status_code // 100 != 2:
-        raise RuntimeError(f"Schedule error {r.status_code}: {r.content}, id={schedule_id}")
+        raise RuntimeError(f"Schedule error {r.status_code}: {r.content}, id={schedule_id}\npath_payload=\n{json.dumps(path_payload)}")
 
     print("test PASSED")
 
