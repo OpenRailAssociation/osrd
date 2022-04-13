@@ -18,7 +18,6 @@ import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
 import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.MarecoConvergenceException;
 import fr.sncf.osrd.train.TestTrains;
-import org.checkerframework.checker.units.qual.C;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
