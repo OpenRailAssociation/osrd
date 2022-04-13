@@ -1,7 +1,7 @@
-from typing import List, Optional, Dict, NewType
-from dataclasses import dataclass, asdict
-from chartos.utils import ValueDependable
+from dataclasses import asdict, dataclass
+from typing import Dict, List, NewType, Optional
 
+from chartos.utils import ValueDependable
 
 get_config = ValueDependable("get_config")
 
@@ -33,8 +33,8 @@ class View:
             data["name"],
             data["on_field"],
             data["fields"],
-            data["joins"],
-            data["cache_duration"]
+            data.get("joins", []),
+            data["cache_duration"],
         )
 
     def todict(self):
@@ -60,7 +60,7 @@ class Layer:
             data["table_name"],
             views,
             data.get("id_field"),
-            data.get("attribution")
+            data.get("attribution"),
         )
 
     def todict(self):
