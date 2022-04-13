@@ -442,14 +442,14 @@ public class AllowanceTests {
         var gradeValues = new DoubleArrayList();
         var gradePositions = new DoubleArrayList();
 
-        for (double begin = 0; begin + 30 < pathLength; begin += 40) {
+        for (double begin = 0; begin + 6000 < pathLength; begin += 8000) {
             gradePositions.add(begin);
             gradeValues.add(-10.0);
-            gradePositions.add(begin + 10);
+            gradePositions.add(begin + 2000);
             gradeValues.add(0.0);
-            gradePositions.add(begin + 20);
+            gradePositions.add(begin + 4000);
             gradeValues.add(10.0);
-            gradePositions.add(begin + 30);
+            gradePositions.add(begin + 6000);
             gradeValues.add(0.0);
         }
         gradePositions.add(pathLength);
@@ -466,6 +466,20 @@ public class AllowanceTests {
         var targetTime = baseTime + allowanceValue.getAllowanceTime(baseTime, pathLength);
         var marginTime = marecoEnvelope.getTotalTime();
         assertEquals(marginTime, targetTime, 2 * TIME_STEP);
+        // The train space-speed curve is supposed to follow this complicated shape because of the multiple
+        // accelerating slopes.
+        // If the test fails here, plot the curves to check if the curve makes sense and adapt the shape.
+        // It is not supposed to be an absolute shape, but at least to be triggered if MARECO doesn't take into
+        // account the accelerating slopes
+        EnvelopeShape.check(marecoEnvelope, new EnvelopeShape[][]{
+                {INCREASING}, {CONSTANT}, {DECREASING, INCREASING}, {CONSTANT}, {INCREASING}, {CONSTANT},
+                {DECREASING, INCREASING}, {CONSTANT}, {DECREASING, INCREASING}, {CONSTANT},
+                {DECREASING, INCREASING, DECREASING, INCREASING, DECREASING, INCREASING},
+                {DECREASING}, {INCREASING}, {CONSTANT}, {INCREASING}, {INCREASING}, {CONSTANT},
+                {DECREASING, INCREASING}, {CONSTANT}, {DECREASING, INCREASING, DECREASING},
+                {CONSTANT}, {DECREASING, INCREASING}, {CONSTANT}, {DECREASING, INCREASING, DECREASING}, {DECREASING}
+        }
+        );
     }
 
     /** Tests mareco on a short path where we can't reach max speed,
