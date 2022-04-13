@@ -133,8 +133,14 @@ public class ScheduleMetadataExtractor {
             var route = infra.getReservationRouteMap().get(routeID);
             assert route != null;
             var shift = min(trainLength, trainPath.length());
-            var headFree = free - shift;
             var tailOccupied = occupied + shift;
+            var headFree = occupied + route.getLength();
+            if (routeID.equals(trainPath.routePath().get(0).element().getInfraRoute().getID())) {
+                if (trainPath.routePath().size() > 1)
+                    headFree = trainPath.routePath().get(1).pathOffset();
+                else
+                    headFree = trainPath.length();
+            }
 
             res.put(routeID, new ResultOccupancyTiming(
                     envelope.interpolateTotalTime(min(occupied, trainPath.length())),
