@@ -1,23 +1,29 @@
-from typing import Dict, List
 from collections import defaultdict
-from fastapi import APIRouter, Depends, HTTPException, Query
 from dataclasses import asdict as dataclass_as_dict
-from .config import Config, get_config
-from .settings import Settings, get_settings
-from .psql import PSQLPool
-from .redis import RedisPool
-from fastapi.responses import Response
-from .layer_cache import get_view_cache_prefix, get_cache_tile_key, AffectedTile
+from typing import Dict, List
 from urllib.parse import quote as url_quote
 
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import Response
+
+from .config import Config, get_config
+from .layer_cache import (
+    AffectedTile,
+    get_cache_tile_key,
+    get_view_cache_prefix,
+    invalidate_full_layer_cache,
+)
+from .psql import PSQLPool
+from .redis import RedisPool
+from .settings import Settings, get_settings
 
 router = APIRouter()
 
 
 @router.get("/health")
 async def health(
-        psql=Depends(PSQLPool.get),
-        redis=Depends(RedisPool.get),
+    psql=Depends(PSQLPool.get),
+    redis=Depends(RedisPool.get),
 ):
     await psql.execute("select 1;")
     await redis.ping()
@@ -31,29 +37,24 @@ async def info(config: Config = Depends(get_config)):
 
 @router.get("/layer/{layer_slug}/mvt/{view_slug}/")
 async def mvt_view_metadata(
-        layer_slug: str,
-        view_slug: str,
-        infra: str = Query(...),
-        config: Config = Depends(get_config),
-        settings: Settings = Depends(get_settings),
+    layer_slug: str,
+    view_slug: str,
+    infra: str = Query(...),
+    config: Config = Depends(get_config),
+    settings: Settings = Depends(get_settings),
 ):
     layer = config.layers[layer_slug]
     view = layer.views[view_slug]
-    tiles_url_pattern = (
-        f"{settings.root_url}"
-        f"/tile/{layer_slug}/{view_slug}"
-        "/{z}/{x}/{y}/"
-        f"?infra={url_quote(infra)}"
-    )
+    tiles_url_pattern = f"{settings.root_url}/tile/{layer_slug}/{view_slug}/{z}/{x}/{y}/?infra={url_quote(infra)}"
     return {
-        'type': 'vector',
-        'name': layer.name,
-        'promoteId': {layer.name: layer.id_field},
-        'scheme': 'xyz',
-        'tiles': [tiles_url_pattern],
-        'attribution': layer.attribution or "",
-        'minzoom': 0,
-        'maxzoom': settings.max_zoom,
+        "type": "vector",
+        "name": layer.name,
+        "promoteId": {layer.name: layer.id_field},
+        "scheme": "xyz",
+        "tiles": [tiles_url_pattern],
+        "attribution": layer.attribution or "",
+        "minzoom": 0,
+        "maxzoom": settings.max_zoom,
     }
 
 
@@ -61,18 +62,17 @@ class ProtobufResponse(Response):
     media_type = "application/x-protobuf"
 
 
-@router.get(
-    "/tile/{layer_slug}/{view_slug}/{z}/{x}/{y}/",
-    response_class=ProtobufResponse
-)
+@router.get("/tile/{layer_slug}/{view_slug}/{z}/{x}/{y}/", response_class=ProtobufResponse)
 async def mvt_view_tile(
-        layer_slug: str,
-        view_slug: str,
-        infra: str,
-        z: int, x: int, y: int,
-        config: Config = Depends(get_config),
-        psql=Depends(PSQLPool.get),
-        redis=Depends(RedisPool.get),
+    layer_slug: str,
+    view_slug: str,
+    infra: str,
+    z: int,
+    x: int,
+    y: int,
+    config: Config = Depends(get_config),
+    psql=Depends(PSQLPool.get),
+    redis=Depends(RedisPool.get),
 ):
     layer = config.layers[layer_slug]
     view = layer.views[view_slug]
@@ -127,3 +127,15 @@ async def mvt_query(psql, layer, infra, view, z, x, y) -> bytes:
         (record,) = await psql.fetch(query, z, x, y, int(infra))
 
     return record.get("tile")
+
+
+@router.post("/layer/{layer_slug}/invalidate/", status_code=204, response_class=Response)
+async def invalidate_layer(
+    layer_slug: str,
+    infra: str,
+    config: Config = Depends(get_config),
+    redis=Depends(RedisPool.get),
+):
+    """Invalidate cache for a whole layer"""
+    layer = config.layers[layer_slug]
+    await invalidate_full_layer_cache(redis, layer, infra)
