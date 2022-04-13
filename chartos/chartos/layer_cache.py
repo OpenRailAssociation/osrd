@@ -33,24 +33,20 @@ def get_cache_tile_key(view_prefix: str, tile: AffectedTile):
 
 
 def get_xy(lat: float, lon: float, zoom: int) -> Tuple[int, int]:
-    n = 2.0 ** zoom
-    x = floor((lon + 180.) / 360. * n)
-    y = floor((1. - asinh(tan(radians(lat))) / pi) / 2. * n)
+    n = 2.0**zoom
+    x = floor((lon + 180.0) / 360.0 * n)
+    y = floor((1.0 - asinh(tan(radians(lat))) / pi) / 2.0 * n)
     return x, y
 
 
 def get_nw_deg(z: int, x: int, y: int):
-    n = 2.0 ** z
+    n = 2.0**z
     lon_deg = x / n * 360.0 - 180.0
     lat_rad = atan(sinh(pi * (1 - 2 * y / n)))
     return degrees(lat_rad), lon_deg
 
 
-def find_prepared_affected_tiles(
-        max_zoom,
-        prep_geom,
-        z: int, x: int, y: int
-) -> Iterator[AffectedTile]:
+def find_prepared_affected_tiles(max_zoom, prep_geom, z: int, x: int, y: int) -> Iterator[AffectedTile]:
     if z > max_zoom:
         return
 
@@ -64,14 +60,7 @@ def find_prepared_affected_tiles(
 
     for sub_x in range(x * 2, x * 2 + 2):
         for sub_y in range(y * 2, y * 2 + 2):
-            yield from find_prepared_affected_tiles(
-                max_zoom,
-                prep_geom,
-                z + 1,
-                sub_x,
-                sub_y
-            )
-
+            yield from find_prepared_affected_tiles(max_zoom, prep_geom, z + 1, sub_x, sub_y)
 
 
 def find_affected_tiles(max_zoom, geom) -> Iterator[AffectedTile]:
@@ -80,12 +69,7 @@ def find_affected_tiles(max_zoom, geom) -> Iterator[AffectedTile]:
     return find_prepared_affected_tiles(max_zoom, prepared_geom, 0, 0, 0)
 
 
-async def invalidate_cache(
-        redis,
-        layer: Layer,
-        version: str,
-        affected_tiles: Dict[View, Set[AffectedTile]]
-):
+async def invalidate_cache(redis, layer: Layer, version: str, affected_tiles: Dict[View, Set[AffectedTile]]):
     impacted_tiles_meta = {}
 
     def build_evicted_keys() -> Iterable[str]:
@@ -97,6 +81,7 @@ async def invalidate_cache(
             cache_location = get_view_cache_prefix(layer, version, view)
             for tile in view_affected_tiles:
                 yield get_cache_tile_key(cache_location, tile)
+
     evicted_keys = list(build_evicted_keys())
     if evicted_keys:
         await redis.delete(*evicted_keys)
@@ -117,4 +102,5 @@ async def invalidate_full_layer_cache(redis, layer: Layer, version: str):
     key_pattern = f"{layer_prefix}.*"
 
     delete_args = await redis.keys(key_pattern)
-    await redis.delete(*delete_args)
+    if delete_args:
+        await redis.delete(*delete_args)

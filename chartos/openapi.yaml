@@ -8,7 +8,7 @@ paths:
       summary: Info
       operationId: info_info_get
       responses:
-        '200':
+        200:
           description: Successful Response
           content:
             application/json:
@@ -37,7 +37,7 @@ paths:
           name: infra
           in: query
       responses:
-        '200':
+        200:
           description: Successful Response
           content:
             application/json:
@@ -52,7 +52,7 @@ paths:
                     example: track_sections
                   promotedId:
                     type: object
-                    example: {track_sections: "id"}
+                    example: { track_sections: "id" }
                   scheme:
                     type: string
                     example: "xyz"
@@ -68,12 +68,31 @@ paths:
                   maxzoom:
                     type: integer
                     example: 18
-        '422':
+        422:
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
+  /layer/{layer_slug}/invalidate/:
+    post:
+      summary: Invalidate cache for a whole layer
+      parameters:
+        - required: true
+          schema:
+            title: Layer Slug
+            type: string
+          name: layer_slug
+          in: path
+        - required: true
+          schema:
+            title: Infra id
+            type: integer
+          name: infra
+          in: query
+      responses:
+        204:
+          description: No content
   /tile/{layer_slug}/{view_slug}/{z}/{x}/{y}/:
     get:
       summary: Mvt View Tile
@@ -105,9 +124,9 @@ paths:
           in: path
         - required: true
           schema:
-            title: 'Y'
+            title: Y
             type: integer
-          name: 'y'
+          name: y
           in: path
         - required: true
           schema:
@@ -116,18 +135,18 @@ paths:
           name: infra
           in: query
       responses:
-        '200':
+        200:
           description: Successful Response
           content:
             application/x-protobuf:
               schema:
                 type: string
-        '422':
+        422:
           description: Validation Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HTTPValidationError'
+                $ref: "#/components/schemas/HTTPValidationError"
 components:
   schemas:
     HTTPValidationError:
@@ -138,7 +157,7 @@ components:
           title: Detail
           type: array
           items:
-            $ref: '#/components/schemas/ValidationError'
+            $ref: "#/components/schemas/ValidationError"
     ValidationError:
       title: ValidationError
       required:
@@ -158,4 +177,3 @@ components:
         type:
           title: Error Type
           type: string
-
