@@ -146,4 +146,24 @@ public class ScheduleMetadataExtractorTests {
         // We only check that no assertion is thrown in the validation
         ScheduleMetadataExtractor.makeRouteOccupancy(infra, envelope, path, testRollingStock.length);
     }
+
+    @Test
+    public void veryShortPathTests() throws Exception {
+        var rjsInfra = Helpers.getExampleInfra("one_line/infra.json");
+        var infra = SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(new BAL3()));
+        var routes = List.of(getSignalingRoute(infra, "rt.buffer_stop.0->detector.0"));
+        var path = TrainPathBuilder.from(
+                routes,
+                new TrackLocation(infra.getTrackSection("track.0"), 0),
+                new TrackLocation(infra.getTrackSection("track.0"), 10)
+        );
+        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
+        var testContext = new EnvelopeSimContext(testRollingStock, EnvelopeTrainPath.fromNew(path), TIME_STEP);
+        var envelope = makeSimpleMaxEffortEnvelope(
+                testContext,
+                testRollingStock.maxSpeed, new double[]{}
+        );
+        // We only check that no assertion is thrown in the validation
+        ScheduleMetadataExtractor.makeRouteOccupancy(infra, envelope, path, testRollingStock.length);
+    }
 }
