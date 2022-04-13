@@ -1,8 +1,8 @@
 package fr.sncf.osrd.utils.graph;
 
 public enum ApplicableDirection {
-    NORMAL(new EdgeDirection[]{EdgeDirection.START_TO_STOP}),
-    REVERSE(new EdgeDirection[]{EdgeDirection.STOP_TO_START}),
+    START_TO_STOP(new EdgeDirection[]{EdgeDirection.START_TO_STOP}),
+    STOP_TO_START(new EdgeDirection[]{EdgeDirection.STOP_TO_START}),
     BOTH(new EdgeDirection[]{EdgeDirection.START_TO_STOP, EdgeDirection.STOP_TO_START});
 
     public final EdgeDirection[] directionSet;
@@ -17,10 +17,10 @@ public enum ApplicableDirection {
      */
     public ApplicableDirection opposite() {
         switch (this) {
-            case NORMAL:
-                return REVERSE;
-            case REVERSE:
-                return NORMAL;
+            case START_TO_STOP:
+                return STOP_TO_START;
+            case STOP_TO_START:
+                return START_TO_STOP;
             case BOTH:
                 return BOTH;
         }
@@ -28,10 +28,10 @@ public enum ApplicableDirection {
     }
 
     public boolean appliesToNormal() {
-        return this != REVERSE;
+        return this != STOP_TO_START;
     }
 
     public boolean appliesToReverse() {
-        return this != NORMAL;
+        return this != START_TO_STOP;
     }
 }

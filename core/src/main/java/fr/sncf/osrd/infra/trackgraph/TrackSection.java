@@ -146,9 +146,9 @@ public final class TrackSection extends BiNEdge<TrackSection> {
             EdgeEndpoint positionOnB,
             ApplicableDirection direction
     ) {
-        if (direction == ApplicableDirection.BOTH || direction == ApplicableDirection.NORMAL)
+        if (direction == ApplicableDirection.BOTH || direction == ApplicableDirection.START_TO_STOP)
             edgeA.getNeighbors(positionOnA).add(edgeB);
-        if (direction == ApplicableDirection.BOTH || direction == ApplicableDirection.REVERSE)
+        if (direction == ApplicableDirection.BOTH || direction == ApplicableDirection.STOP_TO_START)
             edgeB.getNeighbors(positionOnB).add(edgeA);
     }
 
