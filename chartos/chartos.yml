@@ -106,3 +106,22 @@
         - "(speed_section.data->>'track_ranges')::text as track_ranges"
       joins:
         - "inner join osrd_infra_speedsectionmodel speed_section on speed_section.obj_id = layer.obj_id"
+
+- name: errors
+  table_name: osrd_infra_errorlayer
+  id_field: id
+  views:
+    - name: geo
+      on_field: geographic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "layer.obj_type as type"
+        - "layer.information::text as information"
+    - name: sch
+      on_field: schematic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "layer.obj_type as type"
+        - "layer.information::text as information"
