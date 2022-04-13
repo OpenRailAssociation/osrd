@@ -15,18 +15,18 @@ public class Pathfinding<NodeT, EdgeT> {
 
     /** Pathfinding step */
     private record Step<EdgeT>(
-            EdgeRange<EdgeT> range, // Next step
+            EdgeRange<EdgeT> range, // Range covered by this step
             Step<EdgeT> prev, // Previous step (to construct the result)
             double totalDistance, // Total distance from the start
             double weight, // Priority queue weight (could be different from totalDistance to allow for A*)
-            int nReachedSteps // How many steps have been passed
+            int nReachedTargets // How many targets have been passed
     ) implements Comparable<Step<EdgeT>> {
         @Override
         public int compareTo(@NotNull Step<EdgeT> o) {
             if (weight != o.weight)
                 return Double.compare(weight, o.weight);
-            // If the weights are equal, we prioritize the highest number of reached steps
-            return o.nReachedSteps - nReachedSteps;
+            // If the weights are equal, we prioritize the highest number of reached targets
+            return o.nReachedTargets - nReachedTargets;
         }
     }
 
@@ -49,7 +49,7 @@ public class Pathfinding<NodeT, EdgeT> {
     private final Function<EdgeT, Double> edgeToLength;
     /** Input graph */
     private final ImmutableNetwork<NodeT, EdgeT> graph;
-    /** Keeps track of visited location. For each visited range, keeps the max number of passed steps at that point */
+    /** Keeps track of visited location. For each visited range, keeps the max number of passed targets at that point */
     private final HashMap<EdgeRange<EdgeT>, Integer> seen = new HashMap<>();
     // TODO: add a `private final Function<EdgeT, Boolean> isEdgeAllowed;` as optional parameter to filter some edges
 
@@ -82,13 +82,14 @@ public class Pathfinding<NodeT, EdgeT> {
     }
 
     /** Runs the pathfinding, returning a path as a list of (edge, start offset, end offset).
-     * Each step is given as a collection of location.
-     * It finds the shortest path from start to end, going through every intermediate step in order.
+     * Each target is given as a collection of location.
+     * It finds the shortest path from start to end,
+     * going through at least one location of each every intermediate target in order.
      * It uses Dijkstra algorithm internally, but can be changed to an A* with minor changes */
     private List<EdgeRange<EdgeT>> runPathfinding(
-            List<Collection<EdgeLocation<EdgeT>>> locations
+            List<Collection<EdgeLocation<EdgeT>>> targets
     ) {
-        for (var location : locations.get(0)) {
+        for (var location : targets.get(0)) {
             var startRange = new EdgeRange<>(location.edge, location.offset, edgeToLength.apply(location.edge));
             registerStep(startRange, null, 0, 0);
         }
@@ -96,14 +97,15 @@ public class Pathfinding<NodeT, EdgeT> {
             var step = queue.poll();
             if (step == null)
                 return null;
-            if (hasReachedEnd(locations, step))
+            if (hasReachedEnd(targets, step))
                 return buildResult(step);
-            for (var stopLocation : locations.get(step.nReachedSteps + 1))
-                if (step.range.edge.equals(stopLocation.edge) && step.range.start <= stopLocation.offset) {
+            // Check if the next target is reached in this step
+            for (var targetLocation : targets.get(step.nReachedTargets + 1))
+                if (step.range.edge.equals(targetLocation.edge) && step.range.start <= targetLocation.offset) {
                     // Adds a new step precisely on the stop location. This ensures that we don't ignore the
                     // distance between the start of the edge and the stop location
-                    var newRange = new EdgeRange<>(stopLocation.edge, step.range.start, stopLocation.offset);
-                    registerStep(newRange, step.prev, step.totalDistance, step.nReachedSteps + 1);
+                    var newRange = new EdgeRange<>(targetLocation.edge, step.range.start, targetLocation.offset);
+                    registerStep(newRange, step.prev, step.totalDistance, step.nReachedTargets + 1);
                 }
             var edgeLength = edgeToLength.apply(step.range.edge);
             if (step.range.end == edgeLength) {
@@ -115,22 +117,22 @@ public class Pathfinding<NodeT, EdgeT> {
                             new EdgeRange<>(edge, 0, edgeToLength.apply(edge)),
                             step,
                             step.totalDistance,
-                            step.nReachedSteps
+                            step.nReachedTargets
                     );
                 }
             } else {
-                // We don't reach the end of the edge (intermediate step): we add a new step until the end
+                // We don't reach the end of the edge (intermediate target): we add a new step until the end
                 var newRange = new EdgeRange<>(step.range.edge, step.range.end, edgeLength);
-                registerStep(newRange, step, step.totalDistance, step.nReachedSteps);
+                registerStep(newRange, step, step.totalDistance, step.nReachedTargets);
             }
         }
     }
 
     /** Runs the pathfinding, returning a path as a list of edge. */
     private List<EdgeT> runPathfindingEdgesOnly(
-            List<Collection<EdgeLocation<EdgeT>>> locations
+            List<Collection<EdgeLocation<EdgeT>>> targets
     ) {
-        var locatedSteps = runPathfinding(locations);
+        var locatedSteps = runPathfinding(targets);
         if (locatedSteps == null)
             return null;
         return locatedSteps.stream()
@@ -138,12 +140,12 @@ public class Pathfinding<NodeT, EdgeT> {
                 .collect(Collectors.toList());
     }
 
-    /** Returns true if the step has reached the end of the path */
+    /** Returns true if the step has reached the end of the path (last target) */
     private boolean hasReachedEnd(
-            List<Collection<EdgeLocation<EdgeT>>> locations,
+            List<Collection<EdgeLocation<EdgeT>>> targets,
             Step<EdgeT> step
     ) {
-        return step.nReachedSteps >= locations.size() - 1;
+        return step.nReachedTargets >= targets.size() - 1;
     }
 
     /** Builds the result, iterating over the previous steps and merging ranges */
@@ -167,12 +169,12 @@ public class Pathfinding<NodeT, EdgeT> {
     }
 
     /** Registers one step, adding the edge to the queue if not already seen */
-    private void registerStep(EdgeRange<EdgeT> range, Step<EdgeT> prev, double prevDistance, int nPassedSteps) {
-        if (!(seen.getOrDefault(range, -1) < nPassedSteps))
+    private void registerStep(EdgeRange<EdgeT> range, Step<EdgeT> prev, double prevDistance, int nPassedTargets) {
+        if (!(seen.getOrDefault(range, -1) < nPassedTargets))
             return;
         double totalDistance = prevDistance + (range.end - range.start);
         var distanceLeftEstimation = 0; // Set this with geo coordinates if we want an A*
-        queue.add(new Step<>(range, prev, totalDistance, totalDistance + distanceLeftEstimation, nPassedSteps));
-        seen.put(range, nPassedSteps);
+        queue.add(new Step<>(range, prev, totalDistance, totalDistance + distanceLeftEstimation, nPassedTargets));
+        seen.put(range, nPassedTargets);
     }
 }
