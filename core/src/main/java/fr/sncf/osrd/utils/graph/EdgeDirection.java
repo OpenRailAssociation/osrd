@@ -16,9 +16,9 @@ public enum EdgeDirection {
         switch (dir) {
             case BOTH:
                 return null;
-            case NORMAL:
+            case START_TO_STOP:
                 return START_TO_STOP;
-            case REVERSE:
+            case STOP_TO_START:
                 return STOP_TO_START;
         }
         throw new RuntimeException("invalid applicable direction");

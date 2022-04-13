@@ -14,8 +14,8 @@ public class SingleDirectionalRJSTrackRange extends RJSTrackRange {
     @Override
     public ApplicableDirection getNavigability() {
         if (direction == EdgeDirection.START_TO_STOP)
-            return ApplicableDirection.NORMAL;
-        return ApplicableDirection.REVERSE;
+            return ApplicableDirection.START_TO_STOP;
+        return ApplicableDirection.STOP_TO_START;
     }
 
     public SingleDirectionalRJSTrackRange(EdgeDirection direction, RJSObjectRef<RJSTrackSection> track) {

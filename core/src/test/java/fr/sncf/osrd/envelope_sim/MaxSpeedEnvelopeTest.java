@@ -170,14 +170,14 @@ public class MaxSpeedEnvelopeTest {
                 new RJSSpeedSection("foo2", 21, List.of(
                         new RJSApplicableDirectionsTrackRange(
                                 new RJSObjectRef<>("track", "TrackSection"),
-                                ApplicableDirection.NORMAL,
+                                ApplicableDirection.START_TO_STOP,
                                 30, 50
                         )
                 )),
                 new RJSSpeedSection("foo3", 10.5, List.of(
                         new RJSApplicableDirectionsTrackRange(
                                 new RJSObjectRef<>("track", "TrackSection"),
-                                ApplicableDirection.REVERSE,
+                                ApplicableDirection.STOP_TO_START,
                                 70, 100
                         )
                 ))
