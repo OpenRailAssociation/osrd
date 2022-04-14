@@ -1,7 +1,7 @@
 package fr.sncf.osrd.envelope_sim;
 
-import java.util.Arrays;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.Arrays;
 
 public class EnvelopePath implements PhysicsPath {
     public final double length;

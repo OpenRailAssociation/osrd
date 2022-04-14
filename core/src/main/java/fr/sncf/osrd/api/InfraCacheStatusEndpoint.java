@@ -1,18 +1,18 @@
 package fr.sncf.osrd.api;
 
-import java.util.HashMap;
-import java.util.Map;
 import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
+import fr.sncf.osrd.api.NewInfraManager.InfraCacheEntry;
+import fr.sncf.osrd.api.NewInfraManager.InfraStatus;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;
 import org.takes.rs.RsJson;
 import org.takes.rs.RsWithBody;
-import fr.sncf.osrd.api.NewInfraManager.InfraCacheEntry;
-import fr.sncf.osrd.api.NewInfraManager.InfraStatus;
+import java.util.HashMap;
+import java.util.Map;
 
 public final class InfraCacheStatusEndpoint implements Take {
     private final NewInfraManager infraManager;

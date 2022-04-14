@@ -2,7 +2,8 @@ package fr.sncf.osrd.new_infra.implementation.reservation;
 
 import static fr.sncf.osrd.new_infra.api.Direction.BACKWARD;
 import static fr.sncf.osrd.new_infra.api.Direction.FORWARD;
-import static fr.sncf.osrd.utils.new_graph.GraphHelpers.*;
+import static fr.sncf.osrd.utils.new_graph.GraphHelpers.getCommonNode;
+import static fr.sncf.osrd.utils.new_graph.GraphHelpers.getDirectionFromEndpoint;
 
 import com.google.common.collect.ImmutableSet;
 import fr.sncf.osrd.new_infra.api.reservation.DetectionSection;
@@ -10,9 +11,10 @@ import fr.sncf.osrd.new_infra.api.reservation.DiDetector;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackInfra;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge;
 import fr.sncf.osrd.new_infra.implementation.tracks.undirected.DetectorImpl;
+import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
 import fr.sncf.osrd.utils.UnionFind;
-import fr.sncf.osrd.utils.graph.EdgeEndpoint;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class DetectionSectionBuilder {
 

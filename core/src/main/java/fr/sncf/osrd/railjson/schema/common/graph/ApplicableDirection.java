@@ -1,4 +1,4 @@
-package fr.sncf.osrd.utils.graph;
+package fr.sncf.osrd.railjson.schema.common.graph;
 
 public enum ApplicableDirection {
     START_TO_STOP(new EdgeDirection[]{EdgeDirection.START_TO_STOP}),
@@ -16,15 +16,11 @@ public enum ApplicableDirection {
      * @return The opposite applicable directions
      */
     public ApplicableDirection opposite() {
-        switch (this) {
-            case START_TO_STOP:
-                return STOP_TO_START;
-            case STOP_TO_START:
-                return START_TO_STOP;
-            case BOTH:
-                return BOTH;
-        }
-        throw new RuntimeException("impossible switch branch");
+        return switch (this) {
+            case START_TO_STOP -> STOP_TO_START;
+            case STOP_TO_START -> START_TO_STOP;
+            case BOTH -> BOTH;
+        };
     }
 
     public boolean appliesToNormal() {

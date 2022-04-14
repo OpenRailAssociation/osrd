@@ -1,7 +1,7 @@
 package fr.sncf.osrd.new_infra.implementation.tracks.directed;
 
+import static fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint.endEndpoint;
 import static fr.sncf.osrd.utils.new_graph.GraphHelpers.*;
-import static fr.sncf.osrd.utils.graph.EdgeEndpoint.endEndpoint;
 
 import com.google.common.collect.HashBiMap;
 import com.google.common.graph.ImmutableNetwork;
@@ -16,10 +16,10 @@ import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackInfra;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackNode;
 import fr.sncf.osrd.new_infra.implementation.tracks.undirected.UndirectedInfraBuilder;
+import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.utils.UnionFind;
-import fr.sncf.osrd.utils.graph.EdgeEndpoint;
-import java.util.*;
+import java.util.HashMap;
 
 public class DirectedInfraBuilder {
     /** Map from undirected node to directed node (forward) */

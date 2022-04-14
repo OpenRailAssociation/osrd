@@ -4,7 +4,7 @@ import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
-import fr.sncf.osrd.utils.graph.EdgeDirection;
+import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 
 @SuppressFBWarnings({"UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSSignal extends RJSTrackObject implements Identified {

@@ -9,9 +9,9 @@ import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackLocation;
 import fr.sncf.osrd.new_infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.common.ID;
+import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.utils.geom.LineString;
 import fr.sncf.osrd.utils.geom.Point;
-import fr.sncf.osrd.utils.graph.EdgeDirection;
 import fr.sncf.osrd.utils.new_graph.Pathfinding;
 import org.takes.Request;
 import org.takes.Response;
@@ -20,7 +20,10 @@ import org.takes.rs.RsJson;
 import org.takes.rs.RsText;
 import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
     public static final JsonAdapter<PathfindingResult> adapterResult = new Moshi

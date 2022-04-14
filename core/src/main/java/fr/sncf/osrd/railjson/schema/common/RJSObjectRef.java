@@ -1,11 +1,6 @@
 package fr.sncf.osrd.railjson.schema.common;
 
-import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.infra.routegraph.Route;
-import fr.sncf.osrd.infra.trackgraph.Detector;
-import fr.sncf.osrd.infra.trackgraph.TrackSection;
-import fr.sncf.osrd.infra.trackgraph.Waypoint;
-import fr.sncf.osrd.railjson.parser.TrackBuilder;
+import fr.sncf.osrd.new_infra.implementation.InvalidInfraError;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitchType;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.HashMap;
@@ -48,11 +43,11 @@ public final class RJSObjectRef<T extends Identified> {
     }
 
 
-    private <U> U parseRef(Map<String, ? extends U> cachedObjects, String expectedType) throws InvalidInfraException {
+    private <U> U parseRef(Map<String, ? extends U> cachedObjects, String expectedType) {
         return parseRef(cachedObjects, Set.of(expectedType));
     }
 
-    private <U> U parseRef(Map<String, U> cachedObjects, Set<String> expectedTypes) throws InvalidInfraException {
+    private <U> U parseRef(Map<String, U> cachedObjects, Set<String> expectedTypes) {
         checkType(expectedTypes);
         return cachedObjects.get(id.id);
     }
@@ -60,33 +55,13 @@ public final class RJSObjectRef<T extends Identified> {
     /** Checks that the type of the object matches one of the given expected types */
     public void checkType(Set<String> expectedTypes) {
         if (!expectedTypes.contains(type))
-            throw new InvalidInfraException(String.format(
+            throw new InvalidInfraError(String.format(
                     "Mismatched ref type: expected %s, got (type=%s, id=%s)",
                     expectedTypes, type, id
             ));
     }
 
-    public TrackSection getTrack(Map<String, TrackSection> tracks) throws InvalidInfraException {
-        return parseRef(tracks, "TrackSection");
-    }
-
-    public Route getRoute(Map<String, Route> routes) throws InvalidInfraException {
-        return parseRef(routes, "Route");
-    }
-
-    public TrackBuilder getTrackBuilder(Map<String, TrackBuilder> tracks) throws InvalidInfraException {
-        return parseRef(tracks, "TrackSection");
-    }
-
-    public Detector getDetector(HashMap<String, Waypoint> waypoints) throws InvalidInfraException {
-        return (Detector) parseRef(waypoints, "Detector");
-    }
-
-    public Waypoint getWaypoint(HashMap<String, Waypoint> waypoints) throws InvalidInfraException {
-        return parseRef(waypoints, Set.of("Detector", "BufferStop"));
-    }
-
-    public RJSSwitchType getSwitchType(HashMap<String, RJSSwitchType> switchTypeMap) throws InvalidInfraException {
+    public RJSSwitchType getSwitchType(HashMap<String, RJSSwitchType> switchTypeMap) {
         return parseRef(switchTypeMap, "SwitchType");
     }
 }

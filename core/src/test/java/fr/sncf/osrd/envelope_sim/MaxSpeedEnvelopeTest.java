@@ -1,11 +1,15 @@
 package fr.sncf.osrd.envelope_sim;
 
-import static fr.sncf.osrd.envelope.EnvelopeShape.*;
+import static fr.sncf.osrd.envelope.EnvelopeShape.CONSTANT;
+import static fr.sncf.osrd.envelope.EnvelopeShape.DECREASING;
 import static fr.sncf.osrd.envelope_sim_infra.MRSP.LimitKind.SPEED_LIMIT;
 import static fr.sncf.osrd.new_infra.InfraHelpers.makeSingleTrackRJSInfra;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import fr.sncf.osrd.envelope.*;
+import fr.sncf.osrd.envelope.Envelope;
+import fr.sncf.osrd.envelope.EnvelopeShape;
+import fr.sncf.osrd.envelope.EnvelopeTransitions;
+import fr.sncf.osrd.envelope.MRSPEnvelopeBuilder;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
 import fr.sncf.osrd.envelope_sim_infra.MRSP;
@@ -14,10 +18,10 @@ import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.implementation.tracks.directed.DirectedInfraBuilder;
 import fr.sncf.osrd.new_infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
+import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSApplicableDirectionsTrackRange;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
 import fr.sncf.osrd.train.TestTrains;
-import fr.sncf.osrd.utils.graph.ApplicableDirection;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.function.BiConsumer;

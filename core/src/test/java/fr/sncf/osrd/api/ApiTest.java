@@ -1,11 +1,10 @@
 package fr.sncf.osrd.api;
 
-import static fr.sncf.osrd.infra.Infra.parseRailJSONFromFile;
+import static fr.sncf.osrd.railjson.parser.RJSParser.parseRailJSONFromFile;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import fr.sncf.osrd.Helpers;
-import fr.sncf.osrd.api.InfraManager.InfraLoadException;
 import fr.sncf.osrd.new_infra.implementation.signaling.SignalingInfraBuilder;
 import fr.sncf.osrd.new_infra.implementation.signaling.modules.bal3.BAL3;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +23,7 @@ public class ApiTest {
      * Setup infra handler mock
      */
     @BeforeEach
-    public void setUp() throws InfraLoadException, InterruptedException {
+    public void setUp() throws InterruptedException {
         ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
         when(infraHandlerMock.load(argument.capture(), any())).thenAnswer(
                 invocation ->

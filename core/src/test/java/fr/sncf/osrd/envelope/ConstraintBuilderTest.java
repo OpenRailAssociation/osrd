@@ -1,12 +1,17 @@
 package fr.sncf.osrd.envelope;
 
+import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
 import static org.junit.jupiter.api.Assertions.*;
-import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
 
 import fr.sncf.osrd.envelope.EnvelopeTestUtils.TestAttr;
-import fr.sncf.osrd.envelope.part.*;
-import fr.sncf.osrd.envelope.part.constraints.*;
+import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
+import fr.sncf.osrd.envelope.part.EnvelopePart;
+import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
+import fr.sncf.osrd.envelope.part.EnvelopePartConsumer;
+import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
+import fr.sncf.osrd.envelope.part.constraints.PositionConstraint;
+import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 

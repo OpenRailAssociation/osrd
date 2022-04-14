@@ -1,7 +1,8 @@
 package fr.sncf.osrd.new_infra.tracks.undirected;
 
 import static com.google.common.collect.Iterables.contains;
-import static fr.sncf.osrd.new_infra.InfraHelpers.*;
+import static fr.sncf.osrd.new_infra.InfraHelpers.getTrack;
+import static fr.sncf.osrd.new_infra.InfraHelpers.toUndirected;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.graph.Traverser;

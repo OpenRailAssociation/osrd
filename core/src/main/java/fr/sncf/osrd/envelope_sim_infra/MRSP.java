@@ -1,18 +1,13 @@
 package fr.sncf.osrd.envelope_sim_infra;
 
-import static java.lang.Math.max;
-import static java.lang.Math.min;
-
-import fr.sncf.osrd.envelope.*;
+import fr.sncf.osrd.envelope.Envelope;
+import fr.sncf.osrd.envelope.EnvelopeAttr;
+import fr.sncf.osrd.envelope.MRSPEnvelopeBuilder;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
-import fr.sncf.osrd.infra.trackgraph.TrackSection;
 import fr.sncf.osrd.new_infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.new_infra_state.api.NewTrainPath;
 import fr.sncf.osrd.train.RollingStock;
-import fr.sncf.osrd.train.TrainPath;
-import fr.sncf.osrd.utils.DoubleUtils;
-import fr.sncf.osrd.utils.graph.EdgeDirection;
 import java.util.List;
 
 /** MRSP = most restrictive speed profile: maximum speed allowed at any given point */

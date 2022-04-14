@@ -3,9 +3,9 @@ package fr.sncf.osrd.railjson.schema.schedule;
 import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
+import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
-import fr.sncf.osrd.utils.graph.EdgeDirection;
 import java.util.ArrayList;
 import java.util.List;
 

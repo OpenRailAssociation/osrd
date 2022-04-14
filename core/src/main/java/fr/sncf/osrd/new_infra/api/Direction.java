@@ -1,6 +1,6 @@
 package fr.sncf.osrd.new_infra.api;
 
-import fr.sncf.osrd.utils.graph.EdgeDirection;
+import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 
 /** Encodes a direction in a one dimension space */
 public enum Direction {
