@@ -45,7 +45,7 @@ async def mvt_view_metadata(
 ):
     layer = config.layers[layer_slug]
     view = layer.views[view_slug]
-    tiles_url_pattern = f"{settings.root_url}/tile/{layer_slug}/{view_slug}/{z}/{x}/{y}/?infra={url_quote(infra)}"
+    tiles_url_pattern = f"{settings.root_url}/tile/{layer_slug}/{view_slug}/" "{z}/{x}/{y}" f"/?infra={url_quote(infra)}"
     return {
         "type": "vector",
         "name": layer.name,
