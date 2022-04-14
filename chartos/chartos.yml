@@ -7,7 +7,12 @@
       cache_duration: 3600
       fields:
         - "layer.obj_id as id"
-        - "(track_section.data - 'id' - 'geo' - 'sch')::text as data"
+        - "(track_section.data->'length')::float as length"
+        - "(track_section.data->'line_code')::int as line_code"
+        - "(track_section.data->'line_name')::text as line_name"
+        - "(track_section.data->'navigability')::text as navigability"
+        - "(track_section.data->'slopes')::text as slopes"
+        - "(track_section.data->'curves')::text as curves"
       joins:
         - "inner join osrd_infra_tracksectionmodel track_section on track_section.obj_id = layer.obj_id"
     - name: sch
@@ -15,7 +20,12 @@
       cache_duration: 3600
       fields:
         - "layer.obj_id as id"
-        - "(track_section.data - 'id' - 'geo' - 'sch')::text as data"
+        - "(track_section.data->'length')::float as length"
+        - "(track_section.data->'line_code')::int as line_code"
+        - "(track_section.data->'line_name')::text as line_name"
+        - "(track_section.data->'navigability')::text as navigability"
+        - "(track_section.data->'slopes')::text as slopes"
+        - "(track_section.data->'curves')::text as curves"
       joins:
         - "inner join osrd_infra_tracksectionmodel track_section on track_section.obj_id = layer.obj_id"
 
@@ -28,7 +38,23 @@
       cache_duration: 3600
       fields:
         - "layer.obj_id as id"
-        - "(signal.data - 'id')::text as data"
+        - "(signal.data->'direction')::text as direction"
+        - "(signal.data->'sight_distance')::float as sight_distance"
+        - "(signal.data->'linked_detector')::text as linked_detector"
+        - "(signal.data->'aspects')::text as aspects"
+        - "(COALESCE(signal.data->>'angle_sch', '0'))::float as angle_sch"
+        - "(COALESCE(signal.data->>'angle_geo', '0'))::float as angle_geo"
+        - "(signal.data->'type_code')::text as type_code"
+        - "(signal.data->'support_type')::text as support_type"
+        - "(signal.data->'is_in_service')::boolean as is_in_service"
+        - "(signal.data->'is_lightable')::boolean as is_lightable"
+        - "(signal.data->'is_operational')::boolean as is_operational"
+        - "(signal.data->'comment')::text as comment"
+        - "(signal.data->'physical_organization_group')::text as physical_organization_group"
+        - "(signal.data->'responsible_group')::text as responsible_group"
+        - "(signal.data->'label')::text as label"
+        - "(signal.data->'installation_type')::text as installation_type"
+        - "(signal.data->'value')::text as value"
       joins:
         - "inner join osrd_infra_signalmodel signal on signal.obj_id = layer.obj_id"
     - name: sch
@@ -36,7 +62,23 @@
       cache_duration: 3600
       fields:
         - "layer.obj_id as id"
-        - "(signal.data - 'id')::text as data"
+        - "(signal.data->'direction')::text as direction"
+        - "(signal.data->'sight_distance')::float as sight_distance"
+        - "(signal.data->'linked_detector')::text as linked_detector"
+        - "(signal.data->'aspects')::text as aspects"
+        - "(signal.data->'angle_sch')::float as angle_sch"
+        - "(signal.data->'angle_geo')::float as angle_geo"
+        - "(signal.data->'type_code')::text as type_code"
+        - "(signal.data->'support_type')::text as support_type"
+        - "(signal.data->'is_in_service')::boolean as is_in_service"
+        - "(signal.data->'is_lightable')::boolean as is_lightable"
+        - "(signal.data->'is_operational')::boolean as is_operational"
+        - "(signal.data->'comment')::text as comment"
+        - "(signal.data->'physical_organization_group')::text as physical_organization_group"
+        - "(signal.data->'responsible_group')::text as responsible_group"
+        - "(signal.data->'label')::text as label"
+        - "(signal.data->'installation_type')::text as installation_type"
+        - "(signal.data->'value')::text as value"
       joins:
         - "inner join osrd_infra_signalmodel signal on signal.obj_id = layer.obj_id"
 
@@ -49,7 +91,8 @@
       cache_duration: 3600
       fields:
         - "layer.obj_id as id"
-        - "(speed_section.data - 'id')::text as data"
+        - "(speed_section.data->'speed')::float as speed"
+        - "(speed_section.data->'track_ranges')::text as track_ranges"
       joins:
         - "inner join osrd_infra_speedsectionmodel speed_section on speed_section.obj_id = layer.obj_id"
     - name: sch
@@ -57,6 +100,7 @@
       cache_duration: 3600
       fields:
         - "layer.obj_id as id"
-        - "(speed_section.data - 'id')::text as data"
+        - "(speed_section.data->'speed')::float as speed"
+        - "(speed_section.data->'track_ranges')::text as track_ranges"
       joins:
         - "inner join osrd_infra_speedsectionmodel speed_section on speed_section.obj_id = layer.obj_id"
