@@ -337,7 +337,7 @@ public class AllowanceTests {
         double begin = 30_000;
         double end = 50_000;
         var stops = new double[] { 50_000, testPath.getLength() };
-        // put mareco allowance
+        // apply mareco allowance
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         var marecoAllowanceValue = new AllowanceValue.Percentage(TIME_RATIO, 10);
         var marecoAllowance = makeMarecoAllowance(
@@ -359,7 +359,7 @@ public class AllowanceTests {
         var marecoAllowanceTime = marecoAllowanceValue.getAllowanceTime(baseTime, marecoDistance);
         var targetTime = baseTime + marecoAllowanceTime + constructionAllowanceTime;
         var marginTime = constructionEnvelope.getTotalTime();
-        assertEquals(marginTime, targetTime, 2 * TIME_STEP);
+        assertEquals(marginTime, targetTime, 5 * TIME_STEP);
     }
 
     /** Test several construction allowances on segments */
