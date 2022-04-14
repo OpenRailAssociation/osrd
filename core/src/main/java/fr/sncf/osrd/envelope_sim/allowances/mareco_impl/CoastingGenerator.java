@@ -69,7 +69,6 @@ public final class CoastingGenerator {
                 break;
         }
 
-        // TODO: remove me when braking phase opportunities are detected using metadata and not start / end speeds
         if (backwardPartBuilder.isEmpty())
             return null;
 
