@@ -4,8 +4,8 @@ import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
-import fr.sncf.osrd.api.NewInfraManager.InfraCacheEntry;
-import fr.sncf.osrd.api.NewInfraManager.InfraStatus;
+import fr.sncf.osrd.api.InfraManager.InfraCacheEntry;
+import fr.sncf.osrd.api.InfraManager.InfraStatus;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;
@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class InfraCacheStatusEndpoint implements Take {
-    private final NewInfraManager infraManager;
+    private final InfraManager infraManager;
      
 
     private static final JsonAdapter<Map<String, SerializedInfraCache>> adapter;
@@ -26,7 +26,7 @@ public final class InfraCacheStatusEndpoint implements Take {
         adapter = moshi.adapter(type);
     }
 
-    public InfraCacheStatusEndpoint(NewInfraManager infraManager) {
+    public InfraCacheStatusEndpoint(InfraManager infraManager) {
         this.infraManager = infraManager;
     }
 

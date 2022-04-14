@@ -5,8 +5,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import fr.sncf.osrd.Helpers;
-import fr.sncf.osrd.new_infra.implementation.signaling.SignalingInfraBuilder;
-import fr.sncf.osrd.new_infra.implementation.signaling.modules.bal3.BAL3;
+import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
+import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -17,7 +17,7 @@ import java.util.Set;
 @ExtendWith(MockitoExtension.class)
 public class ApiTest {
     @Mock
-    static NewInfraManager infraHandlerMock;
+    static InfraManager infraHandlerMock;
 
     /**
      * Setup infra handler mock

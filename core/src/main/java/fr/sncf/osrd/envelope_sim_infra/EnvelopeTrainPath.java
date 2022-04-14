@@ -2,15 +2,15 @@ package fr.sncf.osrd.envelope_sim_infra;
 
 import com.carrotsearch.hppc.DoubleArrayList;
 import fr.sncf.osrd.envelope_sim.EnvelopePath;
-import fr.sncf.osrd.new_infra.implementation.tracks.directed.TrackRangeView;
-import fr.sncf.osrd.new_infra_state.api.NewTrainPath;
+import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
+import fr.sncf.osrd.infra_state.api.TrainPath;
 import java.util.List;
 import java.util.TreeSet;
 
 public class EnvelopeTrainPath {
 
     /** Create EnvelopePath from a list of TrackRangeView */
-    public static EnvelopePath fromNew(List<TrackRangeView> trackSectionPath) {
+    public static EnvelopePath from(List<TrackRangeView> trackSectionPath) {
         var gradePositions = new DoubleArrayList();
         gradePositions.add(0);
         var gradeValues = new DoubleArrayList();
@@ -31,7 +31,7 @@ public class EnvelopeTrainPath {
     }
 
     /** Create EnvelopePath from a train path */
-    public static EnvelopePath fromNew(NewTrainPath trainsPath) {
-        return fromNew(NewTrainPath.removeLocation(trainsPath.trackRangePath()));
+    public static EnvelopePath from(TrainPath trainsPath) {
+        return from(TrainPath.removeLocation(trainsPath.trackRangePath()));
     }
 }

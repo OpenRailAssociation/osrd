@@ -1,7 +1,7 @@
 package fr.sncf.osrd.railjson.parser;
 
-import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackInfra;
-import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackLocation;
+import fr.sncf.osrd.infra.api.tracks.undirected.TrackInfra;
+import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.parser.exceptions.UnknownTrackSection;
 import fr.sncf.osrd.railjson.schema.common.RJSTrackLocation;
