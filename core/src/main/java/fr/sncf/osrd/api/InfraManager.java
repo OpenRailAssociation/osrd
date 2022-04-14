@@ -204,7 +204,7 @@ public class InfraManager {
             synchronized (cacheEntry) {
                 // if there was no cache entry, download the infra again
                 if (prevCacheEntry == null || cacheEntry.status == InfraStatus.ERROR
-                        || !cacheEntry.expectedVersion.equals(expectedVersion) && expectedVersion != null)
+                        || expectedVersion != null && !expectedVersion.equals(cacheEntry.expectedVersion))
                     return downloadInfra(cacheEntry, infraId, expectedVersion);
 
                 // otherwise, wait for the infra to reach a stable state
