@@ -1,6 +1,6 @@
 package fr.sncf.osrd.railjson.schema.infra;
 
-import com.squareup.moshi.Json;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
 import java.util.List;
@@ -35,6 +35,7 @@ public class RJSSwitchType implements Identified {
         return new RJSObjectRef<>(this.id, "SwitchType");
     }
 
+    @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
     public static class SwitchPortConnection {
         public String src;
         public String dst;

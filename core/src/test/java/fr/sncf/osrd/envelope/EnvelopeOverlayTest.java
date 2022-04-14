@@ -1,14 +1,13 @@
 package fr.sncf.osrd.envelope;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
+import static org.junit.jupiter.api.Assertions.*;
 
 import fr.sncf.osrd.envelope.EnvelopeTestUtils.TestAttr;
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
-import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
-import org.checkerframework.checker.units.qual.C;
+import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;

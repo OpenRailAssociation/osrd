@@ -5,8 +5,8 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
+import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
-import fr.sncf.osrd.utils.graph.EdgeDirection;
 import org.takes.Take;
 
 public abstract class PathfindingEndpoint implements Take {

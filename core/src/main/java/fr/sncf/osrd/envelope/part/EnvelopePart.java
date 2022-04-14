@@ -7,7 +7,10 @@ import fr.sncf.osrd.envelope.EnvelopeAttr;
 import fr.sncf.osrd.envelope.EnvelopePhysics;
 import fr.sncf.osrd.envelope.SearchableEnvelope;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**

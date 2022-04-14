@@ -2,7 +2,8 @@ package fr.sncf.osrd.envelope_physics;
 
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.getWeightForce;
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.newtonStep;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.envelope_sim.Action;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;

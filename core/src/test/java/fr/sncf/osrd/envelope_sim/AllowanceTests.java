@@ -1,7 +1,6 @@
 package fr.sncf.osrd.envelope_sim;
 
 import static fr.sncf.osrd.envelope.EnvelopeShape.*;
-import static fr.sncf.osrd.envelope.EnvelopeShape.DECREASING;
 import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeTest.makeComplexMaxEffortEnvelope;
 import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeTest.makeSimpleMaxEffortEnvelope;
 import static fr.sncf.osrd.envelope_sim.MaxSpeedEnvelopeTest.TIME_STEP;
@@ -9,7 +8,6 @@ import static fr.sncf.osrd.envelope_sim.allowances.AllowanceDistribution.TIME_RA
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.carrotsearch.hppc.DoubleArrayList;
-import fr.sncf.osrd.exceptions.OSRDError;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.EnvelopeShape;
 import fr.sncf.osrd.envelope.EnvelopeTransitions;
@@ -17,6 +15,7 @@ import fr.sncf.osrd.envelope_sim.allowances.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
 import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.MarecoConvergenceException;
+import fr.sncf.osrd.exceptions.OSRDError;
 import fr.sncf.osrd.train.TestTrains;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

@@ -2,7 +2,7 @@ package fr.sncf.osrd.railjson.schema.infra;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.Identified;
-import fr.sncf.osrd.utils.graph.ApplicableDirection;
+import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection;
 
 /** This class represents a link between two track sections */
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})

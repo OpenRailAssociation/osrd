@@ -9,15 +9,19 @@ import com.google.common.graph.NetworkBuilder;
 import com.google.common.graph.Traverser;
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.new_infra.api.Direction;
-import fr.sncf.osrd.new_infra.api.tracks.undirected.*;
+import fr.sncf.osrd.new_infra.api.tracks.undirected.Detector;
+import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge;
+import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackNode;
 import fr.sncf.osrd.new_infra.implementation.tracks.directed.DiTrackEdgeImpl;
 import fr.sncf.osrd.new_infra.implementation.tracks.directed.DirectedInfraBuilder;
 import fr.sncf.osrd.new_infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.new_infra.implementation.tracks.undirected.*;
 import fr.sncf.osrd.utils.DoubleRangeMap;
 import org.junit.jupiter.api.Test;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
 import java.util.Set;
-import java.util.*;
 
 public class DirectedRJSParsingTests {
 

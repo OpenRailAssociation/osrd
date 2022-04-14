@@ -2,7 +2,6 @@ package fr.sncf.osrd.railjson.schema.schedule;
 
 import com.squareup.moshi.Json;
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class RJSAllowance {
     public static final PolymorphicJsonAdapterFactory<RJSAllowance> adapter = (

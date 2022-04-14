@@ -1,8 +1,6 @@
 package fr.sncf.osrd.utils.jacoco;
 
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.CONSTRUCTOR;
-import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Documented;

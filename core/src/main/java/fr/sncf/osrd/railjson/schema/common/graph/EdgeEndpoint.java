@@ -1,4 +1,4 @@
-package fr.sncf.osrd.utils.graph;
+package fr.sncf.osrd.railjson.schema.common.graph;
 
 import fr.sncf.osrd.new_infra.api.Direction;
 
@@ -16,13 +16,6 @@ public enum EdgeEndpoint {
     /** Return the first met endpoint along the edge in the given direction */
     public static EdgeEndpoint startEndpoint(Direction dir) {
         if (dir == Direction.FORWARD)
-            return BEGIN;
-        return END;
-    }
-
-    /** deprecated */
-    public static EdgeEndpoint startEndpointOld(EdgeDirection dir) {
-        if (dir == EdgeDirection.START_TO_STOP)
             return BEGIN;
         return END;
     }
