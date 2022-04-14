@@ -5,8 +5,8 @@ import fr.sncf.osrd.envelope.EnvelopeAttr;
 import fr.sncf.osrd.envelope.MRSPEnvelopeBuilder;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
-import fr.sncf.osrd.new_infra.implementation.tracks.directed.TrackRangeView;
-import fr.sncf.osrd.new_infra_state.api.NewTrainPath;
+import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
+import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.train.RollingStock;
 import java.util.List;
 
@@ -24,8 +24,8 @@ public class MRSP {
     }
 
     /** Computes the most restricted speed profile from a path */
-    public static Envelope from(NewTrainPath trainPath, RollingStock rollingStock) {
-        return from(NewTrainPath.removeLocation(trainPath.trackRangePath()), rollingStock);
+    public static Envelope from(TrainPath trainPath, RollingStock rollingStock) {
+        return from(TrainPath.removeLocation(trainPath.trackRangePath()), rollingStock);
     }
 
     /** Computes the most restricted speed profile from a list of track ranges */

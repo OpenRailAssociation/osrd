@@ -7,8 +7,8 @@ import fr.sncf.osrd.envelope_sim.allowances.AllowanceDistribution;
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
-import fr.sncf.osrd.new_infra.api.signaling.SignalingInfra;
-import fr.sncf.osrd.new_infra_state.api.NewTrainPath;
+import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
+import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.parser.exceptions.UnknownRollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
@@ -31,7 +31,7 @@ public class RJSStandaloneTrainScheduleParser {
             double timeStep,
             Function<String, RollingStock> rollingStockGetter,
             RJSStandaloneTrainSchedule rjsTrainSchedule,
-            NewTrainPath trainPath,
+            TrainPath trainPath,
             EnvelopePath envelopePath
     ) throws InvalidSchedule {
         var rollingStockID = rjsTrainSchedule.rollingStock;
@@ -39,7 +39,7 @@ public class RJSStandaloneTrainScheduleParser {
         if (rollingStock == null)
             throw new UnknownRollingStock(rollingStockID);
 
-        var stops = RJSStopsParser.parseNew(rjsTrainSchedule.stops, infra, trainPath);
+        var stops = RJSStopsParser.parse(rjsTrainSchedule.stops, infra, trainPath);
 
         var initialSpeed = rjsTrainSchedule.initialSpeed;
         if (Double.isNaN(initialSpeed) || initialSpeed < 0)

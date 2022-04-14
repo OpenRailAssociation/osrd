@@ -1,6 +1,6 @@
 package fr.sncf.osrd.railjson.schema.common.graph;
 
-import fr.sncf.osrd.new_infra.api.Direction;
+import fr.sncf.osrd.infra.api.Direction;
 
 /** Encodes an end, an endpoint, the tip of an edge. */
 public enum EdgeEndpoint {

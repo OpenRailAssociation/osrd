@@ -5,7 +5,7 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
-import fr.sncf.osrd.new_infra_state.implementation.TrainPathBuilder;
+import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
 import fr.sncf.osrd.railjson.parser.RJSStandaloneTrainScheduleParser;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
@@ -35,7 +35,7 @@ import java.util.List;
 
 
 public class StandaloneSimulationEndpoint implements Take {
-    private final NewInfraManager infraManager;
+    private final InfraManager infraManager;
 
     public static final JsonAdapter<StandaloneSimulationRequest> adapterRequest = new Moshi
             .Builder()
@@ -46,7 +46,7 @@ public class StandaloneSimulationEndpoint implements Take {
             .build()
             .adapter(StandaloneSimulationRequest.class);
 
-    public StandaloneSimulationEndpoint(NewInfraManager infraManager) {
+    public StandaloneSimulationEndpoint(InfraManager infraManager) {
         this.infraManager = infraManager;
     }
 
@@ -71,7 +71,7 @@ public class StandaloneSimulationEndpoint implements Take {
 
             // Parse trainsPath
             var trainsPath = TrainPathBuilder.from(infra, request.trainsPath);
-            var envelopePath = EnvelopeTrainPath.fromNew(trainsPath);
+            var envelopePath = EnvelopeTrainPath.from(trainsPath);
 
             // Parse train schedules
             var trainSchedules = new ArrayList<StandaloneTrainSchedule>();

@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.NetworkBuilder;
-import fr.sncf.osrd.utils.new_graph.Pathfinding;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.HashMap;
