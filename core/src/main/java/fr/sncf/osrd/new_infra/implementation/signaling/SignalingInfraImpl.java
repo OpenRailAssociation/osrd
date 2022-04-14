@@ -2,7 +2,9 @@ package fr.sncf.osrd.new_infra.implementation.signaling;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.graph.ImmutableNetwork;
-import fr.sncf.osrd.new_infra.api.reservation.*;
+import fr.sncf.osrd.new_infra.api.reservation.DiDetector;
+import fr.sncf.osrd.new_infra.api.reservation.ReservationInfra;
+import fr.sncf.osrd.new_infra.api.reservation.ReservationRoute;
 import fr.sncf.osrd.new_infra.api.signaling.Signal;
 import fr.sncf.osrd.new_infra.api.signaling.SignalState;
 import fr.sncf.osrd.new_infra.api.signaling.SignalingInfra;

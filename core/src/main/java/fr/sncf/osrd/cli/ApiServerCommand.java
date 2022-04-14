@@ -2,7 +2,10 @@ package fr.sncf.osrd.cli;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import fr.sncf.osrd.api.*;
+import fr.sncf.osrd.api.InfraCacheStatusEndpoint;
+import fr.sncf.osrd.api.NewInfraManager;
+import fr.sncf.osrd.api.PathfindingRoutesEndpoint;
+import fr.sncf.osrd.api.StandaloneSimulationEndpoint;
 import io.sentry.Sentry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,15 +13,11 @@ import org.takes.Response;
 import org.takes.facets.fallback.*;
 import org.takes.facets.fork.FkRegex;
 import org.takes.facets.fork.TkFork;
-import org.takes.http.Exit;
-import org.takes.http.FtBasic;
+import org.takes.http.*;
 import org.takes.misc.Opt;
 import org.takes.rs.RsText;
 import org.takes.rs.RsWithStatus;
 import org.takes.tk.TkSlf4j;
-import org.takes.http.BkParallel;
-import org.takes.http.BkSafe;
-import org.takes.http.BkBasic;
 import java.io.IOException;
 
 @Parameters(commandDescription = "HTTP API server mode")

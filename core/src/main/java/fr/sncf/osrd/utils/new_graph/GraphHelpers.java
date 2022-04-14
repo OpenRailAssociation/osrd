@@ -4,10 +4,9 @@ import com.google.common.collect.Sets;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.ImmutableNetwork;
 import fr.sncf.osrd.new_infra.api.Direction;
-import fr.sncf.osrd.new_infra.api.tracks.undirected.SwitchBranch;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackEdge;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackNode;
-import fr.sncf.osrd.utils.graph.EdgeEndpoint;
+import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
 import java.util.Set;
 
 /** Collection of small static methods for ImmutableNetworks */

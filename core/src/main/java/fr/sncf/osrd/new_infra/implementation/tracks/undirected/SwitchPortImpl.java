@@ -1,7 +1,8 @@
 package fr.sncf.osrd.new_infra.implementation.tracks.undirected;
 
 import com.google.common.base.MoreObjects;
-import fr.sncf.osrd.new_infra.api.tracks.undirected.*;
+import fr.sncf.osrd.new_infra.api.tracks.undirected.Switch;
+import fr.sncf.osrd.new_infra.api.tracks.undirected.SwitchPort;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 
 @ExcludeFromGeneratedCodeCoverage

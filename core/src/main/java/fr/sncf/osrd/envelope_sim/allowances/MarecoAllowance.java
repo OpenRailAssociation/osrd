@@ -1,9 +1,9 @@
 package fr.sncf.osrd.envelope_sim.allowances;
 
+import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
 import static java.lang.Double.NaN;
 import static java.lang.Math.abs;
-import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
 
 import com.carrotsearch.hppc.DoubleArrayList;
 import fr.sncf.osrd.envelope.*;
@@ -13,10 +13,12 @@ import fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraint;
 import fr.sncf.osrd.envelope.part.constraints.PositionConstraint;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
+import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
+import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
+import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.AcceleratingSlopeCoast;
 import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.BrakingPhaseCoast;
 import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.CoastingOpportunity;
-import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.AcceleratingSlopeCoast;
 import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.MarecoConvergenceException;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;

@@ -1,14 +1,19 @@
 package fr.sncf.osrd.new_infra.implementation.reservation;
 
-import static com.google.common.collect.Maps.immutableEnumMap;
 import static fr.sncf.osrd.new_infra.api.Direction.BACKWARD;
 import static fr.sncf.osrd.new_infra.api.Direction.FORWARD;
 
-import com.google.common.collect.*;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.NetworkBuilder;
 import fr.sncf.osrd.new_infra.api.Direction;
-import fr.sncf.osrd.new_infra.api.reservation.*;
+import fr.sncf.osrd.new_infra.api.reservation.DetectionSection;
+import fr.sncf.osrd.new_infra.api.reservation.DiDetector;
+import fr.sncf.osrd.new_infra.api.reservation.ReservationInfra;
+import fr.sncf.osrd.new_infra.api.reservation.ReservationRoute;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackEdge;
 import fr.sncf.osrd.new_infra.api.tracks.directed.DiTrackInfra;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.Detector;
@@ -16,10 +21,10 @@ import fr.sncf.osrd.new_infra.api.tracks.undirected.SwitchBranch;
 import fr.sncf.osrd.new_infra.implementation.RJSObjectParsing;
 import fr.sncf.osrd.new_infra.implementation.tracks.directed.DirectedInfraBuilder;
 import fr.sncf.osrd.new_infra.implementation.tracks.directed.TrackRangeView;
+import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
+import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
-import fr.sncf.osrd.utils.graph.EdgeDirection;
-import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import fr.sncf.osrd.utils.new_graph.GraphHelpers;
 import java.util.*;
 

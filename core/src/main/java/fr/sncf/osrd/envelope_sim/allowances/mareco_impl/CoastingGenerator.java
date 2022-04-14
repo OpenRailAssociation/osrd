@@ -3,13 +3,16 @@ package fr.sncf.osrd.envelope_sim.allowances.mareco_impl;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
 
-import fr.sncf.osrd.envelope.*;
+import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
-import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
-import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
-import fr.sncf.osrd.envelope_sim.*;
+import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
+import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
+import fr.sncf.osrd.envelope_sim.Action;
+import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
+import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
+import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeCoasting;
 
 public final class CoastingGenerator {

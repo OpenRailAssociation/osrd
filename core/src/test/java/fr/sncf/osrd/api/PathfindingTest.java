@@ -7,7 +7,7 @@ import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.api.PathfindingEndpoint.PathfindingWaypoint;
 import fr.sncf.osrd.new_infra.implementation.reservation.ReservationInfraBuilder;
 import fr.sncf.osrd.railjson.schema.RJSSimulation;
-import fr.sncf.osrd.utils.graph.EdgeDirection;
+import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

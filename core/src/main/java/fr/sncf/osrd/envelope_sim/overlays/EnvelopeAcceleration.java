@@ -1,7 +1,9 @@
 package fr.sncf.osrd.envelope_sim.overlays;
 
 import fr.sncf.osrd.envelope.part.InteractiveEnvelopePartConsumer;
-import fr.sncf.osrd.envelope_sim.*;
+import fr.sncf.osrd.envelope_sim.Action;
+import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
+import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator;
 
 public class EnvelopeAcceleration {
     /** Accelerate, storing the resulting steps into consumer */

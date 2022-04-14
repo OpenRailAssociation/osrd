@@ -10,6 +10,7 @@ import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.tracks.undirected.*;
 import fr.sncf.osrd.new_infra.implementation.InvalidInfraError;
 import fr.sncf.osrd.new_infra.implementation.RJSObjectParsing;
+import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitch;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitchType;
@@ -17,7 +18,6 @@ import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
 import fr.sncf.osrd.utils.DoubleRangeMap;
-import fr.sncf.osrd.utils.graph.EdgeEndpoint;
 import java.util.*;
 
 @SuppressFBWarnings({"NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD"})

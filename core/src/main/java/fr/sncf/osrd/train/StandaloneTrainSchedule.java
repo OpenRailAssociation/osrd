@@ -2,7 +2,6 @@ package fr.sncf.osrd.train;
 
 import com.carrotsearch.hppc.DoubleArrayList;
 import fr.sncf.osrd.envelope_sim.allowances.Allowance;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 

@@ -1,10 +1,14 @@
 package fr.sncf.osrd.envelope.part.constraints;
 
-import static fr.sncf.osrd.envelope.EnvelopeCursor.NextStepResult.*;
+import static fr.sncf.osrd.envelope.EnvelopeCursor.NextStepResult.NEXT_PART;
+import static fr.sncf.osrd.envelope.EnvelopeCursor.NextStepResult.NEXT_REACHED_END;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
 
-import fr.sncf.osrd.envelope.*;
+import fr.sncf.osrd.envelope.Envelope;
+import fr.sncf.osrd.envelope.EnvelopeCursor;
+import fr.sncf.osrd.envelope.EnvelopePhysics;
+import fr.sncf.osrd.envelope.EnvelopePoint;
 
 public class EnvelopeConstraint implements EnvelopePartConstraint {
     public final Envelope envelope;

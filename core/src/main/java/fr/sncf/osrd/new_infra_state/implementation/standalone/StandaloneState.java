@@ -1,6 +1,8 @@
 package fr.sncf.osrd.new_infra_state.implementation.standalone;
 
-import com.google.common.collect.*;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSortedSet;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.new_infra.api.reservation.DetectionSection;
 import fr.sncf.osrd.new_infra.api.reservation.ReservationRoute;

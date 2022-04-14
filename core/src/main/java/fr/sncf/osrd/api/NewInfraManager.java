@@ -3,7 +3,6 @@ package fr.sncf.osrd.api;
 import com.squareup.moshi.JsonDataException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.exceptions.OSRDError;
-import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.new_infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.new_infra.implementation.signaling.SignalingInfraBuilder;
 import fr.sncf.osrd.new_infra.implementation.signaling.modules.bal3.BAL3;
@@ -189,7 +188,7 @@ public class NewInfraManager {
             cacheEntry.expectedVersion = expectedVersion;
             cacheEntry.transitionTo(InfraStatus.CACHED);
             return infra;
-        } catch (IOException | InvalidInfraException | UnexpectedHttpResponse | JsonDataException e) {
+        } catch (IOException | UnexpectedHttpResponse | JsonDataException e) {
             cacheEntry.registerError(e);
             throw new InfraLoadException("error while loading new infra", cacheEntry.lastStatus, e);
         }
