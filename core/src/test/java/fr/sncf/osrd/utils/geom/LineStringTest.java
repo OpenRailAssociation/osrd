@@ -3,7 +3,6 @@ package fr.sncf.osrd.utils.geom;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.squareup.moshi.JsonDataException;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.util.ArrayList;

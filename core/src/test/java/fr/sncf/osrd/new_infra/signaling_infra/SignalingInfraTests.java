@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.Helpers;
-import fr.sncf.osrd.new_infra.implementation.signaling.modules.bal3.BAL3;
 import fr.sncf.osrd.new_infra.implementation.signaling.SignalingInfraBuilder;
+import fr.sncf.osrd.new_infra.implementation.signaling.modules.bal3.BAL3;
 import org.junit.jupiter.api.Test;
 import java.util.HashSet;
 import java.util.Set;

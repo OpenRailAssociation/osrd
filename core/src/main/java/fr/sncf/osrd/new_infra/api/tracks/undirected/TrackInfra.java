@@ -2,9 +2,6 @@ package fr.sncf.osrd.new_infra.api.tracks.undirected;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.graph.ImmutableNetwork;
-import fr.sncf.osrd.railjson.schema.infra.RJSOperationalPoint;
-import java.util.Collection;
-import java.util.Map;
 
 public interface TrackInfra {
     /** Returns an undirected graph of all tracks */

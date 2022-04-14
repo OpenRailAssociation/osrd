@@ -9,7 +9,8 @@ import static fr.sncf.osrd.envelope_sim.allowances.AllowanceDistribution.TIME_RA
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import fr.sncf.osrd.envelope.*;
+import fr.sncf.osrd.envelope.Envelope;
+import fr.sncf.osrd.envelope.EnvelopeShape;
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;

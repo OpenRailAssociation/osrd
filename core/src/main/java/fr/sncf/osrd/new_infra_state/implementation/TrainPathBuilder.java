@@ -1,7 +1,7 @@
 package fr.sncf.osrd.new_infra_state.implementation;
 
 import com.google.common.collect.ImmutableList;
-import fr.sncf.osrd.infra.InvalidInfraException;
+import fr.sncf.osrd.exceptions.OSRDError;
 import fr.sncf.osrd.new_infra.api.reservation.DetectionSection;
 import fr.sncf.osrd.new_infra.api.reservation.DiDetector;
 import fr.sncf.osrd.new_infra.api.signaling.SignalingInfra;
@@ -71,7 +71,7 @@ public class TrainPathBuilder {
             );
 
             return from(routePath, startLocation, endLocation);
-        } catch (InvalidInfraException e) {
+        } catch (OSRDError e) {
             throw new InvalidSchedule(e.getMessage());
         }
     }

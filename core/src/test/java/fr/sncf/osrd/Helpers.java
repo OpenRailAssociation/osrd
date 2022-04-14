@@ -2,21 +2,19 @@ package fr.sncf.osrd;
 
 
 import com.squareup.moshi.JsonAdapter;
-import fr.sncf.osrd.infra.TVDSection;
-import fr.sncf.osrd.infra.trackgraph.Waypoint;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
-import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Helpers {
     /** Parse all serialized .json rolling stock files and add these to the given map */
@@ -25,7 +23,7 @@ public class Helpers {
         var rollingStocksPaths = Files.list(dirPath)
                 .filter((path) -> path.toFile().isFile())
                 .filter(jsonMatcher::matches)
-                .collect(Collectors.toList());
+                .toList();
 
         var res = new ArrayList<RJSRollingStock>();
         for (var filePath : rollingStocksPaths)
@@ -62,24 +60,5 @@ public class Helpers {
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    /** Create a tvd section given waypoints */
-    public static TVDSection makeTVDSection(Waypoint...waypoints) {
-        var tvd = new TVDSection();
-        tvd.waypoints.addAll(Arrays.asList(waypoints));
-        return tvd;
-    }
-
-    /** Assign before tvd section to all given waypoints */
-    public static void assignBeforeTVDSection(TVDSection tvdSection, Waypoint...waypoints) {
-        for (var waypoint : waypoints)
-            waypoint.beforeTvdSection = tvdSection;
-    }
-
-    /** Assign after tvd section to all given waypoints */
-    public static void assignAfterTVDSection(TVDSection tvdSection, Waypoint...waypoints) {
-        for (var waypoint : waypoints)
-            waypoint.afterTvdSection = tvdSection;
     }
 }

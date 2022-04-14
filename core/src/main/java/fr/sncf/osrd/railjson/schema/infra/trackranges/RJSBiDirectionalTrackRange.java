@@ -1,6 +1,6 @@
 package fr.sncf.osrd.railjson.schema.infra.trackranges;
 
-import fr.sncf.osrd.utils.graph.ApplicableDirection;
+import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection;
 
 public class RJSBiDirectionalTrackRange extends RJSTrackRange {
     RJSBiDirectionalTrackRange(double begin, double end) {

@@ -4,7 +4,9 @@ import static fr.sncf.osrd.envelope.EnvelopeShape.*;
 import static fr.sncf.osrd.envelope_sim.MaxSpeedEnvelopeTest.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import fr.sncf.osrd.envelope.*;
+import fr.sncf.osrd.envelope.Envelope;
+import fr.sncf.osrd.envelope.EnvelopeShape;
+import fr.sncf.osrd.envelope.EnvelopeTransitions;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
 import fr.sncf.osrd.train.TestTrains;

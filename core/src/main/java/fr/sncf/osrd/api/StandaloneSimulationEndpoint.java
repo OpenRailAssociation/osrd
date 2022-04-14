@@ -5,8 +5,6 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
-import fr.sncf.osrd.infra.InvalidInfraException;
-import fr.sncf.osrd.new_infra_state.api.NewTrainPath;
 import fr.sncf.osrd.new_infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
 import fr.sncf.osrd.railjson.parser.RJSStandaloneTrainScheduleParser;
@@ -15,10 +13,14 @@ import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
-import fr.sncf.osrd.railjson.schema.schedule.*;
+import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
+import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceValue;
+import fr.sncf.osrd.railjson.schema.schedule.RJSStandaloneTrainSchedule;
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
 import fr.sncf.osrd.standalone_sim.StandaloneSim;
 import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult;
-import fr.sncf.osrd.train.*;
+import fr.sncf.osrd.train.RollingStock;
+import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;
@@ -27,7 +29,9 @@ import org.takes.rs.RsJson;
 import org.takes.rs.RsText;
 import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 
 public class StandaloneSimulationEndpoint implements Take {
@@ -49,8 +53,7 @@ public class StandaloneSimulationEndpoint implements Take {
     @Override
     public Response act(Request req) throws
             InvalidRollingStock,
-            InvalidSchedule,
-            InvalidInfraException {
+            InvalidSchedule {
         try {
             // Parse request input
             var body = new RqPrint(req).printBody();

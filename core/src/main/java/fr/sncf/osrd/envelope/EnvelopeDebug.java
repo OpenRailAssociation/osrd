@@ -3,12 +3,8 @@ package fr.sncf.osrd.envelope;
 import fr.sncf.osrd.utils.SwingUtils;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import org.math.plot.Plot2DPanel;
-import javax.swing.JPanel;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
+import javax.swing.*;
 import java.util.ArrayList;
-import java.util.Locale;
 
 @ExcludeFromGeneratedCodeCoverage
 public class EnvelopeDebug {

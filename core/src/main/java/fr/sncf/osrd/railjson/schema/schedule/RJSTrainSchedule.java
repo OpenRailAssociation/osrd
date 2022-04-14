@@ -5,7 +5,6 @@ import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.railjson.schema.common.RJSTrackLocation;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
-import java.util.List;
 
 public class RJSTrainSchedule implements Identified {
     /** The identifier of this train */

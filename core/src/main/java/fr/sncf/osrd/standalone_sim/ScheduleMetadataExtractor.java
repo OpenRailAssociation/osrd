@@ -6,7 +6,6 @@ import static java.lang.Math.min;
 import com.google.common.collect.Sets;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.Envelope;
-import fr.sncf.osrd.infra.InvalidInfraException;
 import fr.sncf.osrd.new_infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.new_infra_state.api.NewTrainPath;
 import fr.sncf.osrd.new_infra_state.api.ReservationRouteState;
@@ -19,7 +18,10 @@ import fr.sncf.osrd.utils.CurveSimplification;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public class ScheduleMetadataExtractor {
     /** Use an already computed envelope to extract various metadata about a trip. */
@@ -28,7 +30,7 @@ public class ScheduleMetadataExtractor {
             NewTrainPath trainPath,
             StandaloneTrainSchedule schedule,
             SignalingInfra infra
-    ) throws InvalidInfraException {
+    ) {
         assert envelope.continuous;
         // Compute speeds, head and tail positions
         final var trainLength = schedule.rollingStock.length;

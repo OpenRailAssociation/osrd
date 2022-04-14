@@ -6,12 +6,15 @@ import fr.sncf.osrd.new_infra.api.Direction;
 import fr.sncf.osrd.new_infra.api.reservation.DiDetector;
 import fr.sncf.osrd.new_infra.api.reservation.ReservationInfra;
 import fr.sncf.osrd.new_infra.api.reservation.ReservationRoute;
-import fr.sncf.osrd.new_infra.api.signaling.*;
+import fr.sncf.osrd.new_infra.api.signaling.Signal;
+import fr.sncf.osrd.new_infra.api.signaling.SignalingModule;
+import fr.sncf.osrd.new_infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.new_infra.implementation.RJSObjectParsing;
+import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
-import fr.sncf.osrd.utils.graph.EdgeDirection;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /** This module implements the BAL3 signaling system.
  * It will eventually be moved to an external module */
