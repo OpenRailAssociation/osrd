@@ -51,11 +51,11 @@ public class StandaloneSignalingSimulationTests {
                         new SignalUpdateID(0, "il.sig.S7", BAL3.Aspect.RED),
                         new SignalUpdateID(0, "il.sig.C1", BAL3.Aspect.RED),
                         new SignalUpdateID(175, "il.sig.C2", BAL3.Aspect.RED),
-                        new SignalUpdateID(175 + length, "il.sig.S7", BAL3.Aspect.GREEN),
+                        new SignalUpdateID(175 + length, "il.sig.S7", BAL3.Aspect.YELLOW),
                         new SignalUpdateID(10175, "il.sig.C6", BAL3.Aspect.RED),
                         new SignalUpdateID(10175 + length, "il.sig.C2", BAL3.Aspect.YELLOW),
                         new SignalUpdateID(path.length() + length, "il.sig.C2", BAL3.Aspect.GREEN),
-                        new SignalUpdateID(path.length() + length, "il.sig.C6", BAL3.Aspect.GREEN)
+                        new SignalUpdateID(path.length() + length, "il.sig.C6", BAL3.Aspect.YELLOW)
                 ),
                 convertEventList(events)
         );

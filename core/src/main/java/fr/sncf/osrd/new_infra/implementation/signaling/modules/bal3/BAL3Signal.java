@@ -34,7 +34,12 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
 
     @Override
     public BAL3SignalState getInitialState() {
-        return new BAL3SignalState(BAL3.Aspect.GREEN);
+        var endsWithBufferStop = protectedRoutes.stream()
+                .anyMatch(route -> route.exitSignal() == null);
+        if (endsWithBufferStop)
+            return new BAL3SignalState(BAL3.Aspect.YELLOW);
+        else
+            return new BAL3SignalState(BAL3.Aspect.GREEN);
     }
 
     @Override
@@ -82,11 +87,13 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
 
     /** Returns true if the signal at the end of this route is red */
     private boolean isNextRouteBlocked(BAL3.BAL3Route route, SignalizationStateView signalization) {
-        if (route.exitSignal() != null) {
-            var nextSignal = signalization.getSignalState(route.exitSignal());
-            if (nextSignal instanceof BAL3SignalState nextSignalState)
-                return nextSignalState.aspect.equals(BAL3.Aspect.RED);
+        if (route.exitSignal() == null) {
+            // No exit signal -> this route ends with a buffer stop (equivalent to an always red signal)
+            return true;
         }
+        var nextSignal = signalization.getSignalState(route.exitSignal());
+        if (nextSignal instanceof BAL3SignalState nextSignalState)
+            return nextSignalState.aspect.equals(BAL3.Aspect.RED);
         return false;
     }
 
