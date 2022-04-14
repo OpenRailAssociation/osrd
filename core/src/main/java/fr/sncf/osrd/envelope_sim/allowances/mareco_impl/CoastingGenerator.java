@@ -13,7 +13,8 @@ import fr.sncf.osrd.envelope_sim.*;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeCoasting;
 
 public final class CoastingGenerator {
-    private static EnvelopePart coastFromBeginning(
+    /** Generate a coasting envelope part which starts at startPos */
+    public static EnvelopePart coastFromBeginning(
             Envelope envelope,
             EnvelopeSimContext context,
             double startPos
