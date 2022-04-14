@@ -474,14 +474,6 @@ public final class EnvelopePart implements SearchableEnvelope {
         return interpolatePosition(0, speed);
     }
 
-    /** Given a position and a step index return the interpolated acceleration. */
-    public double interpolateAcceleration(int stepIndex, double position) {
-        assert checkPosition(stepIndex, position);
-        return EnvelopePhysics.stepAcceleration(
-                positions[stepIndex], positions[stepIndex + 1],
-                speeds[stepIndex], speeds[stepIndex + 1]
-        );
-    }
 
     /** Check if a is in the interval [b, c] or [c, b]*/
     private static boolean isBetween(double a, double b, double c) {
@@ -521,6 +513,25 @@ public final class EnvelopePart implements SearchableEnvelope {
 
     public EnvelopePart sliceEnd(int beginIndex, double beginPosition, double beginSpeed) {
         return slice(beginIndex, beginPosition, beginSpeed, stepCount() - 1, Double.POSITIVE_INFINITY, Double.NaN);
+    }
+
+    /** Cuts an envelope part with imposed speeds on the edges
+     * @return an EnvelopePart spanning from beginPosition to endPosition
+     */
+    public EnvelopePart sliceWithSpeeds(
+            double beginPosition, double beginSpeed,
+            double endPosition, double endSpeed) {
+        int beginIndex = 0;
+        if (beginPosition <= getBeginPos())
+            beginPosition = Double.NEGATIVE_INFINITY;
+        if (beginPosition != Double.NEGATIVE_INFINITY)
+            beginIndex = findRight(beginPosition);
+        int endIndex = stepCount() - 1;
+        if (endPosition >= getEndPos())
+            endPosition = Double.POSITIVE_INFINITY;
+        if (endPosition != Double.POSITIVE_INFINITY)
+            endIndex = findLeft(endPosition);
+        return slice(beginIndex, beginPosition, beginSpeed, endIndex, endPosition, endSpeed);
     }
 
     /** Cuts an envelope part, interpolating new points if required.
