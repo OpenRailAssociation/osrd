@@ -3,7 +3,7 @@ package fr.sncf.osrd.cli;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import fr.sncf.osrd.api.InfraCacheStatusEndpoint;
-import fr.sncf.osrd.api.NewInfraManager;
+import fr.sncf.osrd.api.InfraManager;
 import fr.sncf.osrd.api.PathfindingRoutesEndpoint;
 import fr.sncf.osrd.api.StandaloneSimulationEndpoint;
 import io.sentry.Sentry;
@@ -56,15 +56,14 @@ public final class ApiServerCommand implements CliCommand {
     public int run() {
         FbSentry.init();
         var authorizationToken = System.getenv("FETCH_INFRA_AUTHORIZATION");
-        NewInfraManager infraManager = new NewInfraManager(getMiddlewareBaseUrl(), authorizationToken);
-        var newInfraManager = new NewInfraManager(getMiddlewareBaseUrl(), authorizationToken);
+        var infraManager = new InfraManager(getMiddlewareBaseUrl(), authorizationToken);
 
         try {
             // the list of endpoints
             var routes = new TkFork(
                     new FkRegex("/health", ""),
                     new FkRegex("/pathfinding/routes", new PathfindingRoutesEndpoint(infraManager)),
-                    new FkRegex("/standalone_simulation", new StandaloneSimulationEndpoint(newInfraManager)),
+                    new FkRegex("/standalone_simulation", new StandaloneSimulationEndpoint(infraManager)),
                     new FkRegex("/cache_status", new InfraCacheStatusEndpoint(infraManager))
             );
 

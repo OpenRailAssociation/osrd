@@ -1,7 +1,7 @@
 package fr.sncf.osrd.railjson.parser;
 
-import fr.sncf.osrd.new_infra.api.signaling.SignalingInfra;
-import fr.sncf.osrd.new_infra_state.api.NewTrainPath;
+import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
+import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop;
 import fr.sncf.osrd.train.TrainStop;
@@ -12,7 +12,7 @@ import java.util.List;
 public class RJSStopsParser {
 
     /** Parse a list of RJS stops given an infra and a path */
-    public static List<TrainStop> parseNew(RJSTrainStop[] stops, SignalingInfra infra, NewTrainPath path)
+    public static List<TrainStop> parse(RJSTrainStop[] stops, SignalingInfra infra, TrainPath path)
             throws InvalidSchedule {
         var res = new ArrayList<TrainStop>();
         if (stops == null) {

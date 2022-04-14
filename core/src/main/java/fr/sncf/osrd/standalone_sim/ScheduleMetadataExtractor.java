@@ -6,12 +6,12 @@ import static java.lang.Math.min;
 import com.google.common.collect.Sets;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.Envelope;
-import fr.sncf.osrd.new_infra.api.signaling.SignalingInfra;
-import fr.sncf.osrd.new_infra_state.api.NewTrainPath;
-import fr.sncf.osrd.new_infra_state.api.ReservationRouteState;
-import fr.sncf.osrd.new_infra_state.implementation.SignalizationEngine;
-import fr.sncf.osrd.new_infra_state.implementation.standalone.StandaloneSignalingSimulation;
-import fr.sncf.osrd.new_infra_state.implementation.standalone.StandaloneState;
+import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
+import fr.sncf.osrd.infra_state.api.TrainPath;
+import fr.sncf.osrd.infra_state.api.ReservationRouteState;
+import fr.sncf.osrd.infra_state.implementation.SignalizationEngine;
+import fr.sncf.osrd.infra_state.implementation.standalone.StandaloneSignalingSimulation;
+import fr.sncf.osrd.infra_state.implementation.standalone.StandaloneState;
 import fr.sncf.osrd.standalone_sim.result.*;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.utils.CurveSimplification;
@@ -27,7 +27,7 @@ public class ScheduleMetadataExtractor {
     /** Use an already computed envelope to extract various metadata about a trip. */
     public static ResultTrain run(
             Envelope envelope,
-            NewTrainPath trainPath,
+            TrainPath trainPath,
             StandaloneTrainSchedule schedule,
             SignalingInfra infra
     ) {
@@ -80,7 +80,7 @@ public class ScheduleMetadataExtractor {
     public static Map<String, ResultOccupancyTiming> makeRouteOccupancy(
             SignalingInfra infra,
             Envelope envelope,
-            NewTrainPath trainPath,
+            TrainPath trainPath,
             double trainLength
     ) {
         // Earliest position at which the route is occupied
@@ -157,7 +157,7 @@ public class ScheduleMetadataExtractor {
 
     /** Validates that the results make sens, checks for obvious errors */
     private static void validate(
-            NewTrainPath trainPath,
+            TrainPath trainPath,
             HashMap<String, ResultOccupancyTiming> times,
             Envelope envelope,
             double trainLength
@@ -250,7 +250,7 @@ public class ScheduleMetadataExtractor {
     /** Debugging utility method: exports the occupancy times to csv */
     @ExcludeFromGeneratedCodeCoverage()
     @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
-    private static void exportOccupancyToCSV(NewTrainPath trainPath, HashMap<String, ResultOccupancyTiming> times) {
+    private static void exportOccupancyToCSV(TrainPath trainPath, HashMap<String, ResultOccupancyTiming> times) {
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream("times.csv"), StandardCharsets.UTF_8))) {
             writer.write("route,offset,length,head_occupy,tail_occupy,head_free,tail_free\n");
