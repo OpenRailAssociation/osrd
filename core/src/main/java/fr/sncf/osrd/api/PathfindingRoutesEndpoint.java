@@ -2,17 +2,17 @@ package fr.sncf.osrd.api;
 
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
-import fr.sncf.osrd.new_infra.api.Direction;
-import fr.sncf.osrd.new_infra.api.signaling.SignalingInfra;
-import fr.sncf.osrd.new_infra.api.signaling.SignalingRoute;
-import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackLocation;
-import fr.sncf.osrd.new_infra_state.implementation.TrainPathBuilder;
+import fr.sncf.osrd.infra.api.Direction;
+import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
+import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
+import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
+import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.utils.geom.LineString;
 import fr.sncf.osrd.utils.geom.Point;
-import fr.sncf.osrd.utils.new_graph.Pathfinding;
+import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.rq.RqPrint;
@@ -36,7 +36,7 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
             .failOnUnknown();
 
 
-    public PathfindingRoutesEndpoint(NewInfraManager infraHandler) {
+    public PathfindingRoutesEndpoint(InfraManager infraHandler) {
         super(infraHandler);
     }
 

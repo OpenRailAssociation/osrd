@@ -2,16 +2,16 @@ package fr.sncf.osrd.api;
 
 import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.new_infra.api.signaling.SignalingInfra;
-import fr.sncf.osrd.new_infra.api.signaling.SignalingRoute;
-import fr.sncf.osrd.new_infra.api.tracks.undirected.OperationalPoint;
-import fr.sncf.osrd.new_infra.api.tracks.undirected.TrackSection;
-import fr.sncf.osrd.new_infra.implementation.RJSObjectParsing;
+import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
+import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
+import fr.sncf.osrd.infra.api.tracks.undirected.OperationalPoint;
+import fr.sncf.osrd.infra.api.tracks.undirected.TrackSection;
+import fr.sncf.osrd.infra.implementation.RJSObjectParsing;
 import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.utils.geom.LineString;
-import fr.sncf.osrd.utils.new_graph.Pathfinding;
+import fr.sncf.osrd.utils.graph.Pathfinding;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -9,8 +9,8 @@ import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.envelope_sim_infra.MRSP;
 import fr.sncf.osrd.exceptions.ErrorContext;
 import fr.sncf.osrd.exceptions.OSRDError;
-import fr.sncf.osrd.new_infra.api.signaling.SignalingInfra;
-import fr.sncf.osrd.new_infra_state.api.NewTrainPath;
+import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
+import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
 import fr.sncf.osrd.standalone_sim.result.ResultEnvelopePoint;
 import fr.sncf.osrd.standalone_sim.result.ResultTrain;
@@ -27,11 +27,11 @@ public class StandaloneSim {
     public static StandaloneSimResult run(
             SignalingInfra infra,
             RJSTrainPath rjsTrainsPath,
-            NewTrainPath trainsPath,
+            TrainPath trainsPath,
             List<StandaloneTrainSchedule> schedules,
             double timeStep
     ) {
-        var envelopePath = EnvelopeTrainPath.fromNew(trainsPath);
+        var envelopePath = EnvelopeTrainPath.from(trainsPath);
 
         // Compute envelopes
         var result = new StandaloneSimResult();
