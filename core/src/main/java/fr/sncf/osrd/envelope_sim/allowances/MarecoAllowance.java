@@ -303,18 +303,14 @@ public class MarecoAllowance implements Allowance {
         // left junction, then core, then right junction. The junction parts are needed to transition to / from v1 when
         // begin / end speeds are imposed.
 
-        // 1) compute the potential junction parts (slowdown or speedup)
-        var flatEnvelope = Envelope.make(
-                EnvelopePart.generateTimes(
-                    new double[] {base.getBeginPos(), base.getEndPos()},
-                    new double[] {v1, v1}
-                )
-        );
-        var leftPart = computeLeftJunction(base, flatEnvelope, imposedBeginSpeed);
-        var leftPartEndPos = leftPart != null ? leftPart.getEndPos() : base.getBeginPos();
-        var leftEnvelope = computeEnvelopeWithLeftJunction(base, flatEnvelope, leftPart);
+        var coreEnvelope = computeMarecoCore(base, v1);
 
-        var rightPart = computeRightJunction(base, leftEnvelope, imposedEndSpeed);
+        // 1) compute the potential junction parts (slowdown or speedup)
+        var leftPart = computeLeftJunction(base, coreEnvelope, imposedBeginSpeed);
+        var leftPartEndPos = leftPart != null ? leftPart.getEndPos() : base.getBeginPos();
+        var coreEnvelopeWithLeft = computeEnvelopeWithLeftJunction(base, coreEnvelope, leftPart);
+
+        var rightPart = computeRightJunction(base, coreEnvelopeWithLeft, imposedEndSpeed);
         var rightPartBeginPos = rightPart != null ? rightPart.getBeginPos() : base.getEndPos();
 
         // if the junction parts touch or intersect, there is no core phase
@@ -322,15 +318,11 @@ public class MarecoAllowance implements Allowance {
             return intersectLeftRightParts(leftPart, rightPart);
         }
 
-        // otherwise, compute the core phase
-        var coreBase = Envelope.make(base.slice(leftPartEndPos, rightPartBeginPos));
-        var corePhase = computeMarecoCore(coreBase, v1);
-
         // 2) stick phases back together
         var builder = new EnvelopeBuilder();
         if (leftPart != null)
             builder.addPart(leftPart);
-        builder.addEnvelope(corePhase);
+        builder.addParts(coreEnvelope.slice(leftPartEndPos, rightPartBeginPos));
         if (rightPart != null)
             builder.addPart(rightPart);
         var result = builder.build();
