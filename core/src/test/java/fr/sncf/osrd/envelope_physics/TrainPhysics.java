@@ -2,12 +2,21 @@ package fr.sncf.osrd.envelope_physics;
 
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.getWeightForce;
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.newtonStep;
+import static fr.sncf.osrd.envelope_sim.allowances.mareco_impl.CoastingGenerator.coastFromBeginning;
 import static org.junit.jupiter.api.Assertions.*;
 
+import fr.sncf.osrd.envelope.Envelope;
+import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
+import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
+import fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraint;
+import fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType;
+import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
 import fr.sncf.osrd.envelope_sim.Action;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.FlatPath;
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator;
+import fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration;
+import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.TestTrains;
 import org.junit.jupiter.api.Test;
@@ -119,5 +128,21 @@ public class TrainPhysics {
         }
         // it should be stopped
         assertEquals(speed, 0.0);
+    }
+
+    @Test
+    public void testEmptyCoastFromBeginning() {
+        var testPath = new FlatPath(100000, 0);
+        var context = new EnvelopeSimContext(TEST_ROLLING_STOCK, testPath, TIME_STEP);
+        var builder = new EnvelopePartBuilder();
+        var constrainedBuilder = new ConstrainedEnvelopePartBuilder(
+                builder,
+                new SpeedConstraint(0, EnvelopePartConstraintType.FLOOR)
+        );
+        EnvelopeDeceleration.decelerate(context, 0, 10, constrainedBuilder, 1);
+        var acceleration = Envelope.make(builder.build());
+        // starting a coasting phase in a braking phase must result in a null EnvelopePart
+        var failedCoast = coastFromBeginning(acceleration, context, 0);
+        assertNull(failedCoast);
     }
 }
