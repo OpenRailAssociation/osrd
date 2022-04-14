@@ -2,7 +2,9 @@ package fr.sncf.osrd.envelope_sim.allowances.mareco_impl;
 
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
+import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
+import fr.sncf.osrd.envelope_sim.StopMeta;
 import java.util.ArrayList;
 
 public class BrakingPhaseCoast implements CoastingOpportunity {
@@ -29,8 +31,7 @@ public class BrakingPhaseCoast implements CoastingOpportunity {
     public static ArrayList<BrakingPhaseCoast> findAll(Envelope envelope, double v1, double vf) {
         var res = new ArrayList<BrakingPhaseCoast>();
         for (var part : envelope) {
-            // TODO: filter using metadata, remove isEmpty ignore checks
-            if (part.getBeginSpeed() <= part.getEndSpeed())
+            if (!part.hasAttr(EnvelopeProfile.BRAKING))
                 continue;
             double targetSpeed = part.getEndSpeed();
             // if that LimitAnnounceSpeedController is above v1 that means it will not have an impact here
