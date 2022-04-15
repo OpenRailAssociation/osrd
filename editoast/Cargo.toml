@@ -17,6 +17,7 @@ diesel = { version = "1.4.8", features = ["postgres", "uuidv07", "serde_json"] }
 itertools = "0.10.3"
 json-patch = "0.2.6"
 rand = "0.8.5"
+reqwest = { version="0.11.10", features=["blocking"] }
 rocket = "0.4.10"
 rocket_contrib = {version="0.4.10", features=["json", "diesel_postgres_pool", "uuid"]}
 serde = "1.0.136"

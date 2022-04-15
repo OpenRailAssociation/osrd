@@ -1,6 +1,7 @@
+use crate::client::ChartosConfig;
 use crate::infra_cache::InfraCache;
-use crate::railjson::operation::{Operation, UpdateOperation};
-use crate::railjson::{ObjectRef, ObjectType};
+use crate::railjson::operation::{DeleteOperation, Operation, UpdateOperation};
+use crate::railjson::ObjectType;
 use crate::schema::osrd_infra_signallayer;
 use crate::schema::osrd_infra_signallayer::dsl::*;
 use diesel::prelude::*;
@@ -11,6 +12,8 @@ use itertools::Itertools;
 use serde::Serialize;
 use std::collections::HashSet;
 
+use super::invalidate_chartos_layer;
+
 #[derive(QueryableByName, Queryable, Debug, Serialize)]
 #[table_name = "osrd_infra_signallayer"]
 pub struct SignalLayer {
@@ -20,16 +23,18 @@ pub struct SignalLayer {
 }
 
 impl SignalLayer {
-    /// Clear track section layer of a given infra id
-    pub fn clear(conn: &PgConnection, infra: i32) -> Result<usize, Error> {
-        delete(osrd_infra_signallayer.filter(infra_id.eq(infra))).execute(conn)
-    }
-
-    /// Generate signal layer of a given infra id
-    pub fn generate(conn: &PgConnection, infra: i32) -> Result<usize, Error> {
+    /// Clear and regenerate fully the signal layer of a given infra id
+    pub fn refresh(
+        conn: &PgConnection,
+        infra: i32,
+        chartos_config: &ChartosConfig,
+    ) -> Result<(), Error> {
+        delete(osrd_infra_signallayer.filter(infra_id.eq(infra))).execute(conn)?;
         sql_query(include_str!("sql/generate_signal_layer.sql"))
             .bind::<Integer, _>(infra)
-            .execute(conn)
+            .execute(conn)?;
+        invalidate_chartos_layer(infra, "track_sections", chartos_config);
+        Ok(())
     }
 
     pub fn update_list(
@@ -72,6 +77,7 @@ impl SignalLayer {
         infra: i32,
         operations: &Vec<Operation>,
         infra_cache: &mut InfraCache,
+        chartos_config: &ChartosConfig,
     ) -> Result<(), Error> {
         let mut obj_ids = HashSet::new();
         for op in operations {
@@ -94,7 +100,7 @@ impl SignalLayer {
                     obj_type: ObjectType::TrackSection,
                     ..
                 }) => Self::fill_signal_track_refs(infra_cache, track_id, &mut obj_ids),
-                Operation::Delete(ObjectRef {
+                Operation::Delete(DeleteOperation {
                     obj_id: signal_id,
                     obj_type: ObjectType::Signal,
                 })
@@ -108,6 +114,12 @@ impl SignalLayer {
                 _ => (),
             }
         }
-        Self::update_list(conn, infra, &obj_ids)
+        if obj_ids.is_empty() {
+            // No update needed
+            return Ok(());
+        }
+        Self::update_list(conn, infra, &obj_ids)?;
+        invalidate_chartos_layer(infra, "signals", chartos_config);
+        Ok(())
     }
 }
