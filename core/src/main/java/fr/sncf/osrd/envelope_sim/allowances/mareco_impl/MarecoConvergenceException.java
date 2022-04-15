@@ -17,10 +17,10 @@ public class MarecoConvergenceException extends OSRDError {
         this.marecoErrorType = marecoErrorType;
     }
 
-    /** Generates an error from a discontinuity in mareco search */
+    /** Generates an error from a discontinuity in mareco allowance binary search */
     public static MarecoConvergenceException discontinuity() {
         return new MarecoConvergenceException(
-                "Mareco failed to converge when computing allowances because of a discontinuity in the search space",
+                "Failed to converge when computing Mareco allowances because of a discontinuity in the search space",
                 ErrorCause.INTERNAL,
                 "discontinuity"
         );

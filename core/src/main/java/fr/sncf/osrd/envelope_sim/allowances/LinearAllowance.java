@@ -14,10 +14,10 @@ import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
 import fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraint;
 import fr.sncf.osrd.envelope.part.constraints.PositionConstraint;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
-import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.AcceleratingSlopeCoast;
-import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.BrakingPhaseCoast;
-import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.CoastingOpportunity;
 import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.MarecoConvergenceException;
+import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
+import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
+import fr.sncf.osrd.envelope_sim.allowances.utils.LinearConvergenceException;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
 import fr.sncf.osrd.utils.DoubleBinarySearch;
@@ -63,9 +63,13 @@ public class LinearAllowance implements Allowance {
         }
     }
 
-    /** Compute the initial high bound for the binary search */
-    private double computeInitialHighBound(Envelope envelopeSection) {
-        return envelopeSection.getMaxSpeed();
+    private static RuntimeException makeLinearError(DoubleBinarySearch search) {
+        if (!search.hasRaisedLowBound())
+            throw LinearConvergenceException.tooMuchTime();
+        else if (!search.hasLoweredHighBound())
+            throw LinearConvergenceException.notEnoughTime();
+        else
+            throw LinearConvergenceException.discontinuity();
     }
 
     private DoubleArrayList findStops(Envelope base) {
@@ -106,7 +110,7 @@ public class LinearAllowance implements Allowance {
      * Apply the allowance to the region affected by the allowance.
      * The region is split in ranges asked by the user and independently computed.
      * Ranges are computed in a specific order : from the lowest to the highest allowance value.
-     * Once a range is computed, its begin and end speeds are memorized
+     * Once a range is computed, its beginning and end speeds are memorized
      * and imposed to the left and right side ranges respectively.
      * This process ensures the continuity of the final envelope.
      */
@@ -149,7 +153,7 @@ public class LinearAllowance implements Allowance {
             var imposedEndSpeed = imposedTransitionSpeeds[rangeIndex + 1];
             var allowanceRange =
                     computeAllowanceRange(envelopeRange, range.value, imposedBeginSpeed, imposedEndSpeed);
-            // memorize the begin and end speeds
+            // memorize the beginning and end speeds
             imposedTransitionSpeeds[rangeIndex] = allowanceRange.getBeginSpeed();
             imposedTransitionSpeeds[rangeIndex + 1] = allowanceRange.getEndSpeed();
             res[rangeIndex] = allowanceRange;
@@ -202,7 +206,7 @@ public class LinearAllowance implements Allowance {
             splitPoints.add(rangeEndPos);
 
         var builder = new EnvelopeBuilder();
-        // run mareco on each section of the allowance range
+        // apply allowance on each section of the allowance range
         for (int i = 0; i < splitPoints.size() - 1; i++) {
             double sectionBeginPos = splitPoints.get(i);
             double sectionEndPos = splitPoints.get(i + 1);
@@ -225,19 +229,16 @@ public class LinearAllowance implements Allowance {
         return builder.build();
     }
 
-    /** Iteratively run MARECO on the given section, until the target time is reached */
+    /** Iteratively apply the allowance on the given section, until the target time is reached */
     private Envelope computeAllowanceSection(Envelope envelopeSection,
                                              double targetTime,
                                              double imposedBeginSpeed,
                                              double imposedEndSpeed) {
         // perform a binary search
-        // low bound: capacitySpeedLimit
-        // high bound: compute v1 for which vf above max speed of the envelope region
-        var initialHighBound = computeInitialHighBound(envelopeSection);
 
         Envelope linearResult = null;
         var search =
-                new DoubleBinarySearch(0, 100, targetTime, context.timeStep, true);
+                new DoubleBinarySearch(0, 1, targetTime, context.timeStep, true);
         logger.debug("  target time = {}", targetTime);
         for (int i = 1; i < 21 && !search.complete(); i++) {
             var speedRatio = search.getInput();
@@ -249,7 +250,7 @@ public class LinearAllowance implements Allowance {
         }
 
         if (!search.complete())
-            throw makeMarecoError(search);
+            throw makeLinearError(search);
         return linearResult;
     }
 
@@ -263,18 +264,14 @@ public class LinearAllowance implements Allowance {
         // left junction, then core, then right junction. The junction parts are needed to transition to / from v1 when
         // begin / end speeds are imposed.
 
-        // 1) compute the potential junction parts (slowdown or speedup)
-        var flatEnvelope = Envelope.make(
-                EnvelopePart.generateTimes(
-                        new double[] {base.getBeginPos(), base.getEndPos()},
-                        new double[] {v1, v1}
-                )
-        );
-        var leftPart = computeLeftJunction(base, flatEnvelope, imposedBeginSpeed);
-        var leftPartEndPos = leftPart != null ? leftPart.getEndPos() : base.getBeginPos();
-        var leftEnvelope = computeEnvelopeWithLeftJunction(base, flatEnvelope, leftPart);
+        var coreEnvelope = computeLinearCore(base, ratio);
 
-        var rightPart = computeRightJunction(base, leftEnvelope, imposedEndSpeed);
+        // 1) compute the potential junction parts (slowdown or speedup)
+        var leftPart = computeLeftJunction(base, coreEnvelope, imposedBeginSpeed);
+        var leftPartEndPos = leftPart != null ? leftPart.getEndPos() : base.getBeginPos();
+        var coreEnvelopeWithLeft = computeEnvelopeWithLeftJunction(base, coreEnvelope, leftPart);
+
+        var rightPart = computeRightJunction(base, coreEnvelopeWithLeft, imposedEndSpeed);
         var rightPartBeginPos = rightPart != null ? rightPart.getBeginPos() : base.getEndPos();
 
         // if the junction parts touch or intersect, there is no core phase
@@ -282,65 +279,40 @@ public class LinearAllowance implements Allowance {
             return intersectLeftRightParts(leftPart, rightPart);
         }
 
-        // otherwise, compute the core phase
-        var coreBase = Envelope.make(base.slice(leftPartEndPos, rightPartBeginPos));
-        var corePhase = computeMarecoCore(coreBase, v1);
-
         // 2) stick phases back together
         var builder = new EnvelopeBuilder();
         if (leftPart != null)
             builder.addPart(leftPart);
-        builder.addEnvelope(corePhase);
+        builder.addParts(coreEnvelope.slice(leftPartEndPos, rightPartBeginPos));
         if (rightPart != null)
             builder.addPart(rightPart);
         var result = builder.build();
 
         // 3) check for continuity of the section
-        assert result.continuous : "Discontinuity in MARECO section";
+        assert result.continuous : "Discontinuity in section";
         return result;
     }
 
 
-    /** Compute the core of Mareco algorithm.
-     *  This algorithm consists of a speed cap at v1 and several coasting opportunities
-     *  before braking or before accelerating slopes for example. */
-    private Envelope computeMarecoCore(Envelope coreBase, double v1) {
-        double vf = computeVf(v1);
-
-        // 1) cap the core base envelope at v1
-        var cappedEnvelope = EnvelopeSpeedCap.from(coreBase, List.of(new MarecoSpeedLimit()), v1);
-
-        // 2) find accelerating slopes on constant speed limit regions
-        var coastingOpportunities = new ArrayList<CoastingOpportunity>();
-        coastingOpportunities.addAll(AcceleratingSlopeCoast.findAll(cappedEnvelope, context, vf));
-
-        // 3) find coasting opportunities related to braking
-        coastingOpportunities.addAll(BrakingPhaseCoast.findAll(cappedEnvelope, v1, vf));
-
-        // 4) evaluate coasting opportunities in reverse order, thus skipping overlapping ones
-        coastingOpportunities.sort(Comparator.comparing(CoastingOpportunity::getEndPosition));
-        Collections.reverse(coastingOpportunities);
-
-        var builder = OverlayEnvelopeBuilder.backward(cappedEnvelope);
-        double lastCoastBegin = Double.POSITIVE_INFINITY;
-        for (var opportunity : coastingOpportunities) {
-            if (lastCoastBegin < opportunity.getEndPosition())
-                continue;
-            var overlay = opportunity.compute(cappedEnvelope, context, v1, vf);
-            if (overlay == null)
-                continue;
-            lastCoastBegin = overlay.getBeginPos();
-            builder.addPart(overlay);
+    /** Compute the core of linear allowance algorithm.
+     *  This algorithm consists of a ratio that scales speeds */
+    private Envelope computeLinearCore(Envelope coreBase, double ratio) {
+        var builder = new EnvelopeBuilder();
+        for (var i = 0; i < coreBase.size(); i++) {
+            var part = coreBase.get(i);
+            var positions = part.clonePositions();
+            var speeds = part.cloneSpeeds();
+            var scaledSpeeds = Arrays.stream(speeds)
+                    .map(x -> x * ratio)
+                    .toArray();
+            var scaledPart = EnvelopePart.generateTimes(positions, scaledSpeeds);
+            builder.addPart(scaledPart);
         }
-
-        var res = builder.build();
-        // check for continuity of the core phase
-        assert res.continuous : "Discontinuity in MARECO core phase";
-        return res;
+        return builder.build();
     }
 
-    /** Compute the left junction of the section if a begin speed is imposed.
-     *  This junction can be a slow down or a speed up phase,
+    /** Compute the left junction of the section if a beginning speed is imposed.
+     *  This junction can be a slow-down or a speed-up phase,
      *  depending on the imposed begin speed and the cap speed v1 */
     private EnvelopePart computeLeftJunction(Envelope envelopeSection,
                                              Envelope envelopeTarget,
@@ -380,7 +352,7 @@ public class LinearAllowance implements Allowance {
     }
 
     /** Compute the right junction of the section if an end speed is imposed.
-     *  This junction can be a speed up or a slow down phase,
+     *  This junction can be a speed-up or a slow-down phase,
      *  depending on the imposed end speed and the cap speed v1 */
     private EnvelopePart computeRightJunction(Envelope envelopeSection,
                                               Envelope envelopeTarget,
@@ -418,7 +390,7 @@ public class LinearAllowance implements Allowance {
         return partBuilder.build();
     }
 
-    /** Transform leftJunction into an envelope that will span from the beginning to the end of envelopeSection,
+    /** Transform leftJunction into an envelope that spans from the beginning to the end of envelopeSection,
      * filling the gap with a constant speed v1 */
     private Envelope computeEnvelopeWithLeftJunction(Envelope envelopeSection,
                                                      Envelope flatEnvelope,
