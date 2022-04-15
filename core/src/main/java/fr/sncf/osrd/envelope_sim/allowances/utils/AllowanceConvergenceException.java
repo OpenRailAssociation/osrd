@@ -4,8 +4,8 @@ import fr.sncf.osrd.exceptions.OSRDError;
 
 public class AllowanceConvergenceException extends OSRDError {
 
-    private static final long serialVersionUID = 3559229820846157964L;
-    public static final String osrdErrorType = "linear_convergence";
+    private static final long serialVersionUID = 2130748645658059205L;
+    public static final String osrdErrorType = "allowance_convergence";
     public final String errorType;
 
     private AllowanceConvergenceException(

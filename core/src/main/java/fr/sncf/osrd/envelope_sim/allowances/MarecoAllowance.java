@@ -38,6 +38,12 @@ public class MarecoAllowance extends AbstractAllowanceWithRanges {
         return wle * v1 / (wle + context.rollingStock.getRollingResistance(v1) * v1);
     }
 
+    /** Compute the initial low bound for the binary search */
+    @Override
+    protected double computeInitialLowBound(Envelope envelopeSection) {
+        return capacitySpeedLimit;
+    }
+
     /** Compute the initial high bound for the binary search
      *  The high bound ensures that the speed vf will be higher than the max speed of the envelope */
     @Override

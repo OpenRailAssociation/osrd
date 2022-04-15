@@ -32,7 +32,7 @@ import java.util.List;
 
 public abstract class AbstractAllowanceWithRanges implements Allowance {
 
-    public final Logger logger = LoggerFactory.getLogger(MarecoAllowance.class);
+    public final Logger logger = LoggerFactory.getLogger(Allowance.class);
 
     public final EnvelopeSimContext context;
 
@@ -61,6 +61,8 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
     protected abstract Envelope computeCore(Envelope base, double parameter);
 
     protected abstract double computeInitialHighBound(Envelope envelopeSection);
+
+    protected abstract double computeInitialLowBound(Envelope envelopeSection);
 
     public static final class CapacitySpeedLimit implements EnvelopeAttr {
         private CapacitySpeedLimit() {
@@ -124,7 +126,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
      * Apply the allowance to the region affected by the allowance.
      * The region is split in ranges asked by the user and independently computed.
      * Ranges are computed in a specific order : from the lowest to the highest allowance value.
-     * Once a range is computed, its begin and end speeds are memorized
+     * Once a range is computed, its beginning and end speeds are memorized
      * and imposed to the left and right side ranges respectively.
      * This process ensures the continuity of the final envelope.
      */
@@ -167,7 +169,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
             var imposedEndSpeed = imposedTransitionSpeeds[rangeIndex + 1];
             var allowanceRange =
                     computeAllowanceRange(envelopeRange, range.value, imposedBeginSpeed, imposedEndSpeed);
-            // memorize the begin and end speeds
+            // memorize the beginning and end speeds
             imposedTransitionSpeeds[rangeIndex] = allowanceRange.getBeginSpeed();
             imposedTransitionSpeeds[rangeIndex + 1] = allowanceRange.getEndSpeed();
             res[rangeIndex] = allowanceRange;
@@ -220,7 +222,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
             splitPoints.add(rangeEndPos);
 
         var builder = new EnvelopeBuilder();
-        // run mareco on each section of the allowance range
+        // apply the allowance on each section of the allowance range
         for (int i = 0; i < splitPoints.size() - 1; i++) {
             double sectionBeginPos = splitPoints.get(i);
             double sectionEndPos = splitPoints.get(i + 1);
@@ -236,9 +238,10 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
             var imposedEndSpeed = sectionEndPos == rangeEndPos ? imposedRangeEndSpeed : NaN;
 
             logger.debug("  computing section n°{}", i + 1);
-            var marecoResult = computeAllowanceSection(section, targetTime, imposedBeginSpeed, imposedEndSpeed);
-            assert abs(marecoResult.getTotalTime() - targetTime) < context.timeStep;
-            builder.addEnvelope(marecoResult);
+            var allowanceSection =
+                    computeAllowanceSection(section, targetTime, imposedBeginSpeed, imposedEndSpeed);
+            assert abs(allowanceSection.getTotalTime() - targetTime) < context.timeStep;
+            builder.addEnvelope(allowanceSection);
         }
         return builder.build();
     }
@@ -249,18 +252,17 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
                                              double imposedBeginSpeed,
                                              double imposedEndSpeed) {
         // perform a binary search
-        // low bound: capacitySpeedLimit
-        // high bound: compute v1 for which vf above max speed of the envelope region
+        var initialLowBound = computeInitialLowBound(envelopeSection);
         var initialHighBound = computeInitialHighBound(envelopeSection);
 
         Envelope res = null;
         var search =
-                new DoubleBinarySearch(capacitySpeedLimit, initialHighBound, targetTime, context.timeStep, true);
+                new DoubleBinarySearch(initialLowBound, initialHighBound, targetTime, context.timeStep, true);
         logger.debug("  target time = {}", targetTime);
         for (int i = 1; i < 21 && !search.complete(); i++) {
-            var v1 = search.getInput();
-            logger.debug("    starting attempt {} with v1 = {}", i, v1);
-            res = computeIteration(envelopeSection, v1, imposedBeginSpeed, imposedEndSpeed);
+            var input = search.getInput();
+            logger.debug("    starting attempt {}", i);
+            res = computeIteration(envelopeSection, input, imposedBeginSpeed, imposedEndSpeed);
             var regionTime = res.getTotalTime();
             logger.debug("    envelope time {}", regionTime);
             search.feedback(regionTime);
@@ -273,21 +275,22 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
 
     /** Compute one iteration of the binary search */
     public Envelope computeIteration(Envelope base,
-                                     double v1) {
-        return computeIteration(base, v1, NaN, NaN);
+                                     double input) {
+        return computeIteration(base, input, NaN, NaN);
     }
 
     /** Compute one iteration of the binary search, with specified speeds on the edges */
     public Envelope computeIteration(Envelope base,
-                                     double v1,
+                                     double input,
                                      double imposedBeginSpeed,
                                      double imposedEndSpeed) {
 
         // The part of the envelope on which the margin is applied is split in 3:
-        // left junction, then core, then right junction. The junction parts are needed to transition to / from v1 when
-        // begin / end speeds are imposed.
+        // left junction, then core phase, then right junction.
+        // The junction parts are needed to transition to keep the total envelope continuous
+        // when beginning or end speeds are imposed
 
-        var coreEnvelope = computeCore(base, v1);
+        var coreEnvelope = computeCore(base, input);
 
         // 1) compute the potential junction parts (slowdown or speedup)
         var leftPart = computeLeftJunction(base, coreEnvelope, imposedBeginSpeed);
@@ -312,13 +315,13 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         var result = builder.build();
 
         // 3) check for continuity of the section
-        assert result.continuous : "Discontinuity in MARECO section";
+        assert result.continuous : "Discontinuity in allowance section";
         return result;
     }
 
-    /** Compute the left junction of the section if a begin speed is imposed.
-     *  This junction can be a slow down or a speed up phase,
-     *  depending on the imposed begin speed and the cap speed v1 */
+    /** Compute the left junction of the section if a beginning speed is imposed.
+     *  This junction can be a slow-down or a speed-up phase,
+     *  depending on the imposed begin speed and the target envelope */
     private EnvelopePart computeLeftJunction(Envelope envelopeSection,
                                              Envelope envelopeTarget,
                                              double imposedBeginSpeed) {
@@ -330,7 +333,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         constraints.add(new PositionConstraint(envelopeSection.getBeginPos(), envelopeSection.getEndPos()));
 
         var partBuilder = new EnvelopePartBuilder();
-        // if the target speed is above v1, compute slowdown, else, compute speedup
+        // if the imposed speed is above the target, compute slowdown, else, compute speedup
         if (imposedBeginSpeed > envelopeTarget.getBeginSpeed()) {
             constraints.add(new EnvelopeConstraint(envelopeTarget, FLOOR));
             var constrainedBuilder = new ConstrainedEnvelopePartBuilder(
@@ -357,8 +360,8 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
     }
 
     /** Compute the right junction of the section if an end speed is imposed.
-     *  This junction can be a speed up or a slow down phase,
-     *  depending on the imposed end speed and the cap speed v1 */
+     *  This junction can be a speed-up or a slow-down phase,
+     *  depending on the imposed end speed and the target envelope */
     private EnvelopePart computeRightJunction(Envelope envelopeSection,
                                               Envelope envelopeTarget,
                                               double imposedEndSpeed) {
@@ -369,7 +372,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         constraints.add(new PositionConstraint(envelopeSection.getBeginPos(), envelopeSection.getEndPos()));
 
         var partBuilder = new EnvelopePartBuilder();
-        // if the target speed is above envelopeTarget's end speed, compute speedup, else, compute slowdown
+        // if the imposed speed is above the target compute speed-up, else, compute slow-down
         if (imposedEndSpeed > envelopeTarget.getEndSpeed()) {
             constraints.add(new EnvelopeConstraint(envelopeTarget, FLOOR));
             var constrainedBuilder = new ConstrainedEnvelopePartBuilder(
@@ -395,17 +398,17 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         return partBuilder.build();
     }
 
-    /** Transform leftJunction into an envelope that will span from the beginning to the end of envelopeSection,
-     * filling the gap with a constant speed v1 */
+    /** Transform leftJunction into an envelope that spans from the beginning to the end of envelopeSection,
+     * filling the gap with the core envelope */
     private Envelope computeEnvelopeWithLeftJunction(Envelope envelopeSection,
-                                                     Envelope flatEnvelope,
+                                                     Envelope coreEnvelope,
                                                      EnvelopePart leftJunction) {
         var builder = new EnvelopeBuilder();
         if (leftJunction == null)
-            return flatEnvelope;
+            return coreEnvelope;
         builder.addPart(leftJunction);
         if (leftJunction.getEndPos() < envelopeSection.getEndPos())
-            builder.addParts(flatEnvelope.slice(leftJunction.getEndPos(), Double.POSITIVE_INFINITY));
+            builder.addParts(coreEnvelope.slice(leftJunction.getEndPos(), Double.POSITIVE_INFINITY));
         return builder.build();
     }
 

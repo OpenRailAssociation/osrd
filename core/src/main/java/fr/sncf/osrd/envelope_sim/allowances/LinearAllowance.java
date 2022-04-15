@@ -19,6 +19,12 @@ public class LinearAllowance extends AbstractAllowanceWithRanges {
         super(context, beginPos, endPos, capacitySpeedLimit, ranges);
     }
 
+    /** Compute the initial low bound for the binary search */
+    @Override
+    protected double computeInitialLowBound(Envelope envelopeSection) {
+        return 0;
+    }
+
     /** Compute the initial high bound for the binary search */
     @Override
     protected double computeInitialHighBound(Envelope envelopeSection) {
