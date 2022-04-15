@@ -115,6 +115,22 @@ public class MarecoAllowance implements Allowance {
         return res;
     }
 
+    /** Get the total distance the allowance covers */
+    @Override
+    public double getDistance() {
+        return endPos - beginPos;
+    }
+
+    /** Get the target time if we apply the allowance */
+    @Override
+    public double getAllowanceTime(double baseTime) {
+        var totalTime = 0;
+        for (var range : ranges) {
+            totalTime += range.value.getAllowanceTime(baseTime, getDistance());
+        }
+        return totalTime;
+    }
+
     /** Apply the allowance to a given envelope. */
     @Override
     public Envelope apply(Envelope base) {
