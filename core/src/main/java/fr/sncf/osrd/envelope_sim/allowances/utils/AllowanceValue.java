@@ -1,4 +1,4 @@
-package fr.sncf.osrd.envelope_sim.allowances;
+package fr.sncf.osrd.envelope_sim.allowances.utils;
 
 public abstract class AllowanceValue {
     /** Defines how the allowance is internally distributed when the trip is subdivided */

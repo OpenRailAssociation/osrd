@@ -1,4 +1,4 @@
-package fr.sncf.osrd.envelope_sim.allowances;
+package fr.sncf.osrd.envelope_sim.allowances.utils;
 
 /** A range of allowance is a part of the path between [beginPos, endPos] that has a certain allowance value
  *  Together, allowance ranges are supposed to cover the entire path.
