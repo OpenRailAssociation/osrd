@@ -38,6 +38,8 @@
       cache_duration: 3600
       fields:
         - "layer.obj_id as id"
+        - "(signal.data->>'track')::text as track"
+        - "(signal.data->>'position')::float as position"
         - "(signal.data->>'direction')::text as direction"
         - "(signal.data->>'sight_distance')::float as sight_distance"
         - "(signal.data->>'linked_detector')::text as linked_detector"
@@ -63,6 +65,8 @@
       cache_duration: 3600
       fields:
         - "layer.obj_id as id"
+        - "(signal.data->>'track')::text as track"
+        - "(signal.data->>'position')::float as position"
         - "(signal.data->>'direction')::text as direction"
         - "(signal.data->>'sight_distance')::float as sight_distance"
         - "(signal.data->>'linked_detector')::text as linked_detector"
