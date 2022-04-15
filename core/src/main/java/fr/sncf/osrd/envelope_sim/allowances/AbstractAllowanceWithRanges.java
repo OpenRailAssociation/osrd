@@ -17,7 +17,7 @@ import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
 import fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraint;
 import fr.sncf.osrd.envelope.part.constraints.PositionConstraint;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
-import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.MarecoConvergenceException;
+import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceConvergenceException;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration;
@@ -90,11 +90,11 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
 
     private static RuntimeException makeError(DoubleBinarySearch search) {
         if (!search.hasRaisedLowBound())
-            throw MarecoConvergenceException.tooMuchTime();
+            throw AllowanceConvergenceException.tooMuchTime();
         else if (!search.hasLoweredHighBound())
-            throw MarecoConvergenceException.notEnoughTime();
+            throw AllowanceConvergenceException.notEnoughTime();
         else
-            throw MarecoConvergenceException.discontinuity();
+            throw AllowanceConvergenceException.discontinuity();
     }
 
     /** Apply the allowance to a given envelope. */
@@ -206,7 +206,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         }
         // if the total target time isn't actually reachable, throw error
         if (totalTargetTime > slowestRunningTime)
-            throw MarecoConvergenceException.tooMuchTime();
+            throw AllowanceConvergenceException.tooMuchTime();
 
         var rangeBeginPos = envelopeRange.getBeginPos();
         var rangeEndPos = envelopeRange.getEndPos();
@@ -412,7 +412,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
     /** If the left and right part intersect, build an envelope with the intersection */
     private Envelope intersectLeftRightParts(EnvelopePart leftPart, EnvelopePart rightPart) {
         if (rightPart == null || leftPart == null)
-            throw MarecoConvergenceException.tooMuchTime();
+            throw AllowanceConvergenceException.tooMuchTime();
         var slicedLeftPart = leftPart.sliceWithSpeeds(
                 Double.NEGATIVE_INFINITY, NaN,
                 rightPart.getBeginPos(), rightPart.getBeginSpeed()

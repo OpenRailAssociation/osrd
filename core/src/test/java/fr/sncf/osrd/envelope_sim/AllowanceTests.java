@@ -13,10 +13,10 @@ import fr.sncf.osrd.envelope.EnvelopeShape;
 import fr.sncf.osrd.envelope.EnvelopeTransitions;
 import fr.sncf.osrd.envelope_sim.allowances.Allowance;
 import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance;
+import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceConvergenceException;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
-import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.MarecoConvergenceException;
 import fr.sncf.osrd.exceptions.OSRDError;
 import fr.sncf.osrd.train.TestTrains;
 import org.junit.jupiter.api.Test;
@@ -334,9 +334,9 @@ public class AllowanceTests {
                 new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP),
                 begin, end, capacitySpeedLimit, allowanceValue);
 
-        var thrown = assertThrows(MarecoConvergenceException.class, () -> allowance.apply(maxEffortEnvelope));
+        var thrown = assertThrows(AllowanceConvergenceException.class, () -> allowance.apply(maxEffortEnvelope));
 
-        assertEquals("too_much_time", thrown.marecoErrorType);
+        assertEquals("too_much_allowance_time", thrown.errorType);
     }
 
     /** Test the construction margin with a very short segment, to trigger intersectSlowDonSpeedup method */
@@ -355,9 +355,9 @@ public class AllowanceTests {
                 new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP),
                 begin, end, capacitySpeedLimit, allowanceValue);
 
-        var thrown = assertThrows(MarecoConvergenceException.class, () -> allowance.apply(maxEffortEnvelope));
+        var thrown = assertThrows(AllowanceConvergenceException.class, () -> allowance.apply(maxEffortEnvelope));
 
-        assertEquals("too_much_time", thrown.marecoErrorType);
+        assertEquals("too_much_allowance_time", thrown.errorType);
     }
 
     @Test
@@ -634,11 +634,11 @@ public class AllowanceTests {
         var testPath = new FlatPath(10000, 0);
         var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
 
-        var ex = assertThrows(MarecoConvergenceException.class, () ->
+        var ex = assertThrows(AllowanceConvergenceException.class, () ->
                 makeSimpleMarecoEnvelope(testContext, 44.4,
                         new AllowanceValue.Percentage(TIME_RATIO, 1e10), true)
         );
-        assert ex.marecoErrorType.equals("too_much_time");
+        assert ex.errorType.equals("too_much_allowance_time");
         assert ex.cause == OSRDError.ErrorCause.USER;
     }
 
@@ -654,10 +654,10 @@ public class AllowanceTests {
         var allowance = makeMarecoAllowance(
                 new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP),
                 5000, 5300, 0, allowanceValue);
-        var ex = assertThrows(MarecoConvergenceException.class, () ->
+        var ex = assertThrows(AllowanceConvergenceException.class, () ->
                 allowance.apply(maxEffortEnvelope)
         );
-        assert ex.marecoErrorType.equals("too_much_time");
+        assert ex.errorType.equals("too_much_allowance_time");
         assert ex.cause == OSRDError.ErrorCause.USER;
     }
 }
