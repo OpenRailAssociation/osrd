@@ -74,10 +74,10 @@ public class AllowanceTests {
         var allowance = makeMarecoAllowance(
                 new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP),
                 0, testPath.getLength(), 0, allowanceValue);
-        var marecoIteration = allowance.computeMarecoIteration(maxEffortEnvelope, 10);
+        var marecoIteration = allowance.computeIteration(maxEffortEnvelope, 10);
         var previousTime = marecoIteration.getTotalTime();
         for (double v1 = 10; v1 < 80; v1 = v1 + 0.1) {
-            marecoIteration = allowance.computeMarecoIteration(maxEffortEnvelope, v1);
+            marecoIteration = allowance.computeIteration(maxEffortEnvelope, v1);
             // as v1 is a speed cap the difference between two consecutive times must be approximately
             // the time delta between the total length travelled at v1 and v1 - 0.1 m/s
             var timeDelta = length / (v1 - 0.1) - length / v1;
@@ -119,12 +119,8 @@ public class AllowanceTests {
         assertTrue(marecoEnvelope.continuous);
     }
 
-    private void testPercentageTimeAllowance(EnvelopeSimContext context, Allowance allowance) {
-        var stops = new double[] { 50000, context.path.getLength() };
-        var maxEffortEnvelope = makeComplexMaxEffortEnvelope(context, stops);
+    private void testPercentageTimeAllowance(Envelope maxEffortEnvelope, Allowance allowance, double targetTime) {
         var allowanceEnvelope = allowance.apply(maxEffortEnvelope);
-        var baseTime = maxEffortEnvelope.getTotalTime();
-        var targetTime = baseTime + allowance.getAllowanceTime(baseTime);
         var marginTime = allowanceEnvelope.getTotalTime();
         assertEquals(marginTime, targetTime, 2 * TIME_STEP);
     }
@@ -136,11 +132,17 @@ public class AllowanceTests {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var testPath = new FlatPath(100000, 0);
         var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
+
+        var stops = new double[] { 50000, testContext.path.getLength() };
+        var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
+
         var allowanceValue = new AllowanceValue.Percentage(TIME_RATIO, value);
         var allowance = makeMarecoAllowance(
                 testContext,
                 0, testPath.getLength(), 0, allowanceValue);
-        testPercentageTimeAllowance(testContext, allowance);
+        var baseTime = maxEffortEnvelope.getTotalTime();
+        var targetTime = baseTime + allowanceValue.getAllowanceTime(baseTime, testPath.getLength());
+        testPercentageTimeAllowance(maxEffortEnvelope, allowance, targetTime);
     }
 
     /** Test linear allowance with percentage time */
@@ -150,11 +152,17 @@ public class AllowanceTests {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var testPath = new FlatPath(100000, 0);
         var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
+
+        var stops = new double[] { 50000, testContext.path.getLength() };
+        var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
+
         var allowanceValue = new AllowanceValue.Percentage(TIME_RATIO, value);
         var allowance = makeLinearAllowance(
                 testContext,
                 0, testPath.getLength(), 0, allowanceValue);
-        testPercentageTimeAllowance(testContext, allowance);
+        var baseTime = maxEffortEnvelope.getTotalTime();
+        var targetTime = baseTime + allowanceValue.getAllowanceTime(baseTime, testPath.getLength());
+        testPercentageTimeAllowance(maxEffortEnvelope, allowance, targetTime);
     }
 
     /** Test mareco with a time per distance allowance */

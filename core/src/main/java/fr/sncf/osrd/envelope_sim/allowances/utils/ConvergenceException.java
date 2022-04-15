@@ -2,14 +2,14 @@ package fr.sncf.osrd.envelope_sim.allowances.utils;
 
 import fr.sncf.osrd.exceptions.OSRDError;
 
-public class LinearConvergenceException extends OSRDError {
+public class ConvergenceException extends OSRDError {
 
     // TODO change this ID
     private static final long serialVersionUID = -4300915709988986248L;
     public static final String osrdErrorType = "linear_convergence";
     public final String linearErrorType;
 
-    private LinearConvergenceException(
+    private ConvergenceException(
             String message,
             ErrorCause cause,
             String marecoErrorType
@@ -18,18 +18,18 @@ public class LinearConvergenceException extends OSRDError {
         this.linearErrorType = marecoErrorType;
     }
 
-    /** Generates an error from a discontinuity in linear allowance binary search */
-    public static LinearConvergenceException discontinuity() {
-        return new LinearConvergenceException(
-                "Failed to converge when computing linear allowances because of a discontinuity in the search space",
+    /** Generates an error from a discontinuity in allowance binary search */
+    public static ConvergenceException discontinuity() {
+        return new ConvergenceException(
+                "Failed to converge when computing allowances because of a discontinuity in the search space",
                 ErrorCause.INTERNAL,
                 "discontinuity"
         );
     }
 
     /** Generates an error from setting were we can't go slow enough */
-    public static LinearConvergenceException tooMuchTime() {
-        return new LinearConvergenceException(
+    public static ConvergenceException tooMuchTime() {
+        return new ConvergenceException(
                 "We could not go slow enough in this setting to match the given allowance time",
                 ErrorCause.USER,
                 "too_much_time"
@@ -37,8 +37,8 @@ public class LinearConvergenceException extends OSRDError {
     }
 
     /** Generates an error from setting were we can't go fast enough */
-    public static LinearConvergenceException notEnoughTime() {
-        return new LinearConvergenceException(
+    public static ConvergenceException notEnoughTime() {
+        return new ConvergenceException(
                 "We could not go fast enough in this setting to match the given allowance time",
                 ErrorCause.INTERNAL,
                 "not_enough_time"
