@@ -17,7 +17,7 @@ pub struct InfraCache {
     track_sections_refs: HashMap<String, HashSet<ObjectRef>>,
 }
 
-#[derive(QueryableByName)]
+#[derive(QueryableByName, Debug, Clone)]
 struct ObjRefLink {
     #[sql_type = "Text"]
     obj_id: String,
@@ -56,20 +56,20 @@ impl InfraCache {
         let mut infra_cache = Self::default();
 
         // Load signal tracks references
-        let signal_track_links = sql_query(
-            "SELECT obj_id, data->'track'->'id' AS ref_id FROM osrd_infra_signalmodel WHERE infra_id = $1")
+        let signal_references = sql_query(
+            "SELECT obj_id, data->'track'->>'id' AS ref_id FROM osrd_infra_signalmodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
         .load(conn).expect("Error loading signal refs");
-        infra_cache.add_tracks_refs(&signal_track_links, ObjectType::Signal);
-        infra_cache.add_signal_dependencies(&signal_track_links);
+        infra_cache.add_tracks_refs(&signal_references, ObjectType::Signal);
+        infra_cache.add_signal_dependencies(&signal_references);
 
         // Load speed sections tracks references
-        let speed_track_links = sql_query(
-            "SELECT obj_id, jsonb_array_elements(data->'track_ranges')->'track'->'id' AS ref_id FROM osrd_infra_speedsectionmodel WHERE infra_id = $1")
+        let speed_references = sql_query(
+            "SELECT obj_id, jsonb_array_elements(data->'track_ranges')->'track'->>'id' AS ref_id FROM osrd_infra_speedsectionmodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
         .load(conn).expect("Error loading signal refs");
-        infra_cache.add_tracks_refs(&speed_track_links, ObjectType::SpeedSection);
-        infra_cache.add_speed_section_dependencies(&speed_track_links);
+        infra_cache.add_tracks_refs(&speed_references, ObjectType::SpeedSection);
+        infra_cache.add_speed_section_dependencies(&speed_references);
 
         infra_cache
     }
