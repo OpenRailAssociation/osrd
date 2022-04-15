@@ -1,7 +1,7 @@
 use super::OperationError;
 use crate::error::ApiError;
 use crate::railjson::operation::RailjsonObject;
-use crate::railjson::{ObjectType, Signal, SpeedSection, TrackSection};
+use crate::railjson::ObjectType;
 use diesel::sql_types::{Integer, Json, Jsonb, Text};
 use diesel::{sql_query, PgConnection, QueryableByName, RunQueryDsl};
 use json_patch::Patch;
@@ -70,14 +70,15 @@ impl DataObject {
 
         let obj_railjson = match update.obj_type {
             ObjectType::TrackSection => RailjsonObject::TrackSection {
-                railjson: from_value::<TrackSection>(self.data.clone())?,
+                railjson: from_value(self.data.clone())?,
             },
             ObjectType::Signal => RailjsonObject::Signal {
-                railjson: from_value::<Signal>(self.data.clone())?,
+                railjson: from_value(self.data.clone())?,
             },
             ObjectType::SpeedSection => RailjsonObject::SpeedSection {
-                railjson: from_value::<SpeedSection>(self.data.clone())?,
+                railjson: from_value(self.data.clone())?,
             },
+            ObjectType::Detector => todo!(),
         };
 
         if obj_railjson.get_obj_id() != update.obj_id {

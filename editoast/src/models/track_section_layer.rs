@@ -1,5 +1,6 @@
-use crate::railjson::operation::{Operation, UpdateOperation};
-use crate::railjson::{ObjectRef, ObjectType};
+use crate::client::ChartosConfig;
+use crate::railjson::operation::{DeleteOperation, Operation, UpdateOperation};
+use crate::railjson::ObjectType;
 use crate::schema::osrd_infra_tracksectionlayer;
 use crate::schema::osrd_infra_tracksectionlayer::dsl::*;
 use diesel::result::Error;
@@ -8,6 +9,8 @@ use diesel::{delete, prelude::*, sql_query};
 use itertools::Itertools;
 use serde::Serialize;
 use std::collections::HashSet;
+
+use super::invalidate_chartos_layer;
 
 #[derive(QueryableByName, Queryable, Debug, Serialize)]
 #[table_name = "osrd_infra_tracksectionlayer"]
@@ -18,16 +21,18 @@ pub struct TrackSectionLayer {
 }
 
 impl TrackSectionLayer {
-    /// Clear track section layer of a given infra id
-    pub fn clear(conn: &PgConnection, infra: i32) -> Result<usize, Error> {
-        delete(osrd_infra_tracksectionlayer.filter(infra_id.eq(infra))).execute(conn)
-    }
-
-    /// Generate track section layer of a given infra id
-    pub fn generate(conn: &PgConnection, infra: i32) -> Result<usize, Error> {
+    /// Clear and regenerate fully the track sections layer of a given infra id
+    pub fn refresh(
+        conn: &PgConnection,
+        infra: i32,
+        chartos_config: &ChartosConfig,
+    ) -> Result<(), Error> {
+        delete(osrd_infra_tracksectionlayer.filter(infra_id.eq(infra))).execute(conn)?;
         sql_query(include_str!("sql/generate_track_section_layer.sql"))
             .bind::<Integer, _>(infra)
-            .execute(conn)
+            .execute(conn)?;
+        invalidate_chartos_layer(infra, "track_sections", chartos_config);
+        Ok(())
     }
 
     fn update_list(
@@ -54,6 +59,7 @@ impl TrackSectionLayer {
         conn: &PgConnection,
         infra: i32,
         operations: &Vec<Operation>,
+        chartos_config: &ChartosConfig,
     ) -> Result<(), Error> {
         let mut obj_ids = HashSet::new();
         for op in operations {
@@ -68,7 +74,7 @@ impl TrackSectionLayer {
                     obj_type: ObjectType::TrackSection,
                     ..
                 })
-                | Operation::Delete(ObjectRef {
+                | Operation::Delete(DeleteOperation {
                     obj_id: track_id,
                     obj_type: ObjectType::TrackSection,
                 }) => {
@@ -77,6 +83,12 @@ impl TrackSectionLayer {
                 _ => (),
             }
         }
-        Self::update_list(conn, infra, &obj_ids)
+        if obj_ids.is_empty() {
+            // No update needed
+            return Ok(());
+        }
+        Self::update_list(conn, infra, &obj_ids)?;
+        invalidate_chartos_layer(infra, "track_sections", chartos_config);
+        Ok(())
     }
 }

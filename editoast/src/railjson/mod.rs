@@ -21,12 +21,15 @@ pub enum ObjectType {
     TrackSection,
     Signal,
     SpeedSection,
+    Detector,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[serde(deny_unknown_fields)]
 pub struct ObjectRef {
+    #[serde(rename = "type")]
     pub obj_type: ObjectType,
+    #[serde(rename = "id")]
     pub obj_id: String,
 }
 
@@ -42,6 +45,7 @@ impl ObjectType {
             ObjectType::TrackSection => "osrd_infra_tracksectionmodel",
             ObjectType::Signal => "osrd_infra_signalmodel",
             ObjectType::SpeedSection => "osrd_infra_speedsectionmodel",
+            ObjectType::Detector => todo!(),
         }
     }
 }

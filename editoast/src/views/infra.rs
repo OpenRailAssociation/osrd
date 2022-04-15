@@ -1,4 +1,5 @@
 use super::params::List;
+use crate::client::ChartosConfig;
 use crate::error::{ApiResult, EditoastError};
 use crate::generate;
 use crate::infra_cache::InfraCache;
@@ -17,7 +18,12 @@ pub fn routes() -> Vec<Route> {
 
 /// Refresh infra generated data
 #[post("/refresh?<infras>&<force>")]
-fn refresh(conn: DBConnection, infras: List<i32>, force: bool) -> ApiResult<JsonValue> {
+fn refresh(
+    conn: DBConnection,
+    infras: List<i32>,
+    force: bool,
+    chartos_config: State<ChartosConfig>,
+) -> ApiResult<JsonValue> {
     let mut infras_list = vec![];
     let infras = infras.0?;
 
@@ -36,7 +42,7 @@ fn refresh(conn: DBConnection, infras: List<i32>, force: bool) -> ApiResult<Json
     // Refresh each infras
     let mut refreshed_infra = vec![];
     for infra in infras_list {
-        if generate::refresh(&conn, &infra, force)? {
+        if generate::refresh(&conn, &infra, force, &chartos_config)? {
             refreshed_infra.push(infra.id);
         }
     }
@@ -81,6 +87,7 @@ fn edit(
     infra: i32,
     operations: Result<Json<Vec<Operation>>, JsonError>,
     infra_caches: State<CHashMap<i32, InfraCache>>,
+    chartos_config: State<ChartosConfig>,
     conn: DBConnection,
 ) -> ApiResult<Json<Vec<OperationResult>>> {
     let operations = operations?;
@@ -89,9 +96,6 @@ fn edit(
     conn.build_transaction().run::<_, EditoastError, _>(|| {
         // Retrieve and lock infra
         let infra = Infra::retrieve_for_update(&conn, infra as i32)?;
-
-        // Check if infra has sync generated data
-        generate::refresh(&conn, &infra, false)?;
 
         // Apply modifications
         let mut operation_results = vec![];
@@ -111,8 +115,14 @@ fn edit(
         }
 
         // Refresh layers
-        generate::update(&conn, infra.id, &operations, infra_cache.deref_mut())
-            .expect("Update generated data failed");
+        generate::update(
+            &conn,
+            infra.id,
+            &operations,
+            infra_cache.deref_mut(),
+            &chartos_config,
+        )
+        .expect("Update generated data failed");
 
         // Bump infra generated version to the infra version
         infra.bump_generated_version(&conn)?;

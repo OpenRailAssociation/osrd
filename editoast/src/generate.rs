@@ -1,3 +1,4 @@
+use crate::client::ChartosConfig;
 use crate::error::ApiError;
 use crate::infra_cache::InfraCache;
 use crate::models::DBConnection;
@@ -10,7 +11,12 @@ use diesel::PgConnection;
 
 /// Refreshes the layers if needed and returns whether they were refreshed.
 /// `force` argument allows us to refresh it in any cases.
-pub fn refresh(conn: &PgConnection, infra: &Infra, force: bool) -> Result<bool, Box<dyn ApiError>> {
+pub fn refresh(
+    conn: &PgConnection,
+    infra: &Infra,
+    force: bool,
+    chartos_config: &ChartosConfig,
+) -> Result<bool, Box<dyn ApiError>> {
     // Check if refresh is needed
     if !force
         && infra.generated_version.is_some()
@@ -20,14 +26,9 @@ pub fn refresh(conn: &PgConnection, infra: &Infra, force: bool) -> Result<bool, 
     }
 
     // Generate layers
-    TrackSectionLayer::clear(conn, infra.id)?;
-    TrackSectionLayer::generate(conn, infra.id)?;
-
-    SignalLayer::clear(conn, infra.id)?;
-    SignalLayer::generate(conn, infra.id)?;
-
-    SpeedSectionLayer::clear(conn, infra.id)?;
-    SpeedSectionLayer::generate(conn, infra.id)?;
+    TrackSectionLayer::refresh(conn, infra.id, chartos_config)?;
+    SignalLayer::refresh(conn, infra.id, chartos_config)?;
+    SpeedSectionLayer::refresh(conn, infra.id, chartos_config)?;
 
     // Update generated infra version
     infra.bump_generated_version(conn)?;
@@ -39,9 +40,10 @@ pub fn update(
     infra_id: i32,
     operations: &Vec<Operation>,
     infra_cache: &mut InfraCache,
+    chartos_config: &ChartosConfig,
 ) -> Result<(), Box<dyn ApiError>> {
-    TrackSectionLayer::update(conn, infra_id, operations)?;
-    SignalLayer::update(conn, infra_id, operations, infra_cache)?;
-    SpeedSectionLayer::update(conn, infra_id, operations, infra_cache)?;
+    TrackSectionLayer::update(conn, infra_id, operations, chartos_config)?;
+    SignalLayer::update(conn, infra_id, operations, infra_cache, chartos_config)?;
+    SpeedSectionLayer::update(conn, infra_id, operations, infra_cache, chartos_config)?;
     Ok(())
 }
