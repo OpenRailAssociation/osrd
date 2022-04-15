@@ -17,7 +17,7 @@ mod views;
 
 use chashmap::CHashMap;
 use clap::Parser;
-use client::{Client, Commands, GenerateArgs, PostgresConfig, RunserverArgs};
+use client::{ChartosConfig, Client, Commands, GenerateArgs, PostgresConfig, RunserverArgs};
 use colored::*;
 use diesel::{Connection, PgConnection};
 use infra_cache::InfraCache;
@@ -40,16 +40,18 @@ fn main() {
 fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
     let client = Client::parse();
     let pg_config = client.postgres_config;
+    let chartos_config = client.chartos_config;
 
     match client.command {
-        Commands::Runserver(args) => runserver(args, pg_config),
-        Commands::Generate(args) => generate(args, pg_config),
+        Commands::Runserver(args) => runserver(args, pg_config, chartos_config),
+        Commands::Generate(args) => generate(args, pg_config, chartos_config),
     }
 }
 
 fn runserver(
     args: RunserverArgs,
     pg_config: PostgresConfig,
+    chartos_config: ChartosConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
     let infras = Infra::list(&conn);
@@ -75,7 +77,8 @@ fn runserver(
 
     let mut rocket = rocket::custom(config)
         .attach(DBConnection::fairing())
-        .manage(infra_caches);
+        .manage(infra_caches)
+        .manage(chartos_config);
 
     // Mount routes
     for (base, routes) in views::routes() {
@@ -92,6 +95,7 @@ fn runserver(
 fn generate(
     args: GenerateArgs,
     pg_config: PostgresConfig,
+    chartos_config: ChartosConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
 
@@ -115,7 +119,7 @@ fn generate(
             infra.name.bold(),
             infra.id
         );
-        generate::refresh(&conn, &infra, args.force)?;
+        generate::refresh(&conn, &infra, args.force, &chartos_config)?;
         println!("✅ Infra {}[{}] generated!", infra.name.bold(), infra.id);
     }
     Ok(())

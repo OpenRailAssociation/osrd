@@ -12,6 +12,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Error as SerdeError;
 use thiserror::Error;
 
+pub use self::delete::DeleteOperation;
 pub use create::RailjsonObject;
 pub use update::UpdateOperation;
 
@@ -23,7 +24,7 @@ pub enum Operation {
     #[serde(rename = "UPDATE")]
     Update(UpdateOperation),
     #[serde(rename = "DELETE")]
-    Delete(ObjectRef),
+    Delete(DeleteOperation),
 }
 
 #[derive(Clone, Serialize)]
@@ -97,9 +98,9 @@ impl Operation {
         conn: &PgConnection,
     ) -> Result<OperationResult, Box<dyn ApiError>> {
         match self {
-            Operation::Delete(object_ref) => {
-                delete::apply_delete_operation(object_ref, infra_id, conn)?;
-                Ok(OperationResult::Delete(object_ref.clone()))
+            Operation::Delete(deletion) => {
+                deletion.apply(infra_id, conn)?;
+                Ok(OperationResult::Delete(deletion.clone().into()))
             }
             Operation::Create(railjson_object) => {
                 create::apply_create_operation(railjson_object, infra_id, conn)?;

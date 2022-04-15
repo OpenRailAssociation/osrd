@@ -1,5 +1,7 @@
+mod chartos_config;
 mod postgres_config;
 
+pub use chartos_config::ChartosConfig;
 use clap::{Args, Parser, Subcommand};
 pub use postgres_config::PostgresConfig;
 
@@ -8,6 +10,8 @@ pub use postgres_config::PostgresConfig;
 pub struct Client {
     #[clap(flatten)]
     pub postgres_config: PostgresConfig,
+    #[clap(flatten)]
+    pub chartos_config: ChartosConfig,
     #[clap(subcommand)]
     pub command: Commands,
 }
