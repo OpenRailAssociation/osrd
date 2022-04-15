@@ -1,4 +1,4 @@
-package fr.sncf.osrd.envelope_sim.allowances;
+package fr.sncf.osrd.envelope_sim.allowances.utils;
 
 /** Defines how the allowance shall be distributed among subsections / stops */
 public enum AllowanceDistribution {

@@ -1,10 +1,10 @@
 package fr.sncf.osrd.envelope_sim;
 
-import static fr.sncf.osrd.envelope_sim.allowances.AllowanceDistribution.DISTANCE_RATIO;
-import static fr.sncf.osrd.envelope_sim.allowances.AllowanceDistribution.TIME_RATIO;
+import static fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceDistribution.DISTANCE_RATIO;
+import static fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceDistribution.TIME_RATIO;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue;
+import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import org.junit.jupiter.api.Test;
 
 public class AllowanceValueTest {
