@@ -3,10 +3,10 @@ package fr.sncf.osrd.infra.implementation.reservation;
 import static fr.sncf.osrd.infra.api.Direction.BACKWARD;
 import static fr.sncf.osrd.infra.api.Direction.FORWARD;
 
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.NetworkBuilder;
 import fr.sncf.osrd.infra.api.Direction;
@@ -55,7 +55,7 @@ public class ReservationInfraBuilder {
         var reservationSections = DetectionSectionBuilder.build(
                 diTrackInfra
         );
-        var routeGraph = makeRouteGraph();
+        var routeGraph = makeRouteGraph(reservationSections);
         return new ReservationInfraImpl(
                 diTrackInfra,
                 makeSectionMap(reservationSections),
@@ -99,34 +99,33 @@ public class ReservationInfraBuilder {
     }
 
     /** Instantiates the routes and links them together in the graph */
-    private ImmutableNetwork<DiDetector, ReservationRoute> makeRouteGraph() {
+    private ImmutableNetwork<DiDetector, ReservationRoute> makeRouteGraph(
+            ArrayList<DetectionSection> reservationSections
+    ) {
         var networkBuilder = NetworkBuilder
                 .directed()
                 .<DiDetector, ReservationRoute>immutable();
-        var routesPerSection
-                = HashMultimap.<DetectionSection, ReservationRouteImpl>create();
+        var routesPerSection = new IdentityHashMap<DetectionSection, ImmutableSet.Builder<ReservationRoute>>();
+        for (var section : reservationSections)
+            routesPerSection.put(section, new ImmutableSet.Builder<>());
         var routes = new ArrayList<ReservationRouteImpl>();
         for (var rjsRoute : rjsInfra.routes) {
             var trackRanges = makeTrackRanges(rjsRoute);
             var length = trackRanges.stream().mapToDouble(TrackRangeView::getLength).sum();
+            var sections = sectionsOnRoute(rjsRoute);
             var route = new ReservationRouteImpl(detectorsOnRoute(rjsRoute), releasePoints(rjsRoute),
-                    rjsRoute.id, trackRanges, isRouteControlled(trackRanges), length);
+                    rjsRoute.id, trackRanges, isRouteControlled(trackRanges), length, sections);
             routes.add(route);
-            for (var section : sectionsOnRoute(rjsRoute)) {
-                routesPerSection.put(section, route);
-            }
+            for (var section : sections)
+                routesPerSection.get(section).add(route);
         }
-        Map<ReservationRouteImpl, Set<ReservationRoute>> routeConflictBuilders = new HashMap<>();
-        for (var routesSharingSection : routesPerSection.asMap().values()) {
-            for (var route : routesSharingSection) {
-                var conflictSet = routeConflictBuilders.computeIfAbsent(route, r -> new HashSet<>());
-                for (var otherRoute : routesSharingSection)
-                    if (otherRoute != route)
-                        conflictSet.add(otherRoute);
-            }
-        }
+
+        // Sets the routes passing through each section
+        for (var entry : routesPerSection.entrySet())
+            if (entry.getKey() instanceof DetectionSectionImpl section)
+                section.setRoutes(entry.getValue().build());
+
         for (var route : routes) {
-            route.setConflictingRoutes(routeConflictBuilders.get(route));
             networkBuilder.addEdge(
                     route.getDetectorPath().get(0),
                     route.getDetectorPath().get(route.getDetectorPath().size() - 1),
@@ -192,15 +191,15 @@ public class ReservationInfraBuilder {
     }
 
     /** Creates a set of detection section present in the route */
-    private Set<DetectionSection> sectionsOnRoute(RJSRoute route) {
-        var res = new HashSet<DetectionSection>();
+    private ImmutableList<DetectionSection> sectionsOnRoute(RJSRoute route) {
+        var res = ImmutableList.<DetectionSection>builder();
 
         var detectors = detectorsOnRoute(route);
         for (int i = 0; i < detectors.size() - 1; i++) {
             var d = detectors.get(i);
             res.add(d.detector().getNextDetectionSection(d.direction()));
         }
-        return res;
+        return res.build();
     }
 
     /** Creates the list of DiDetectors present on the route */
