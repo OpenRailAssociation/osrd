@@ -4,6 +4,7 @@ import static fr.sncf.osrd.envelope.EnvelopeShape.*;
 import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeTest.makeComplexMaxEffortEnvelope;
 import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeTest.makeSimpleMaxEffortEnvelope;
 import static fr.sncf.osrd.envelope_sim.MaxSpeedEnvelopeTest.TIME_STEP;
+import static fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceDistribution.DISTANCE_RATIO;
 import static fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceDistribution.TIME_RATIO;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -11,6 +12,7 @@ import com.carrotsearch.hppc.DoubleArrayList;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.EnvelopeShape;
 import fr.sncf.osrd.envelope.EnvelopeTransitions;
+import fr.sncf.osrd.envelope_sim.allowances.AbstractAllowanceWithRanges;
 import fr.sncf.osrd.envelope_sim.allowances.Allowance;
 import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceConvergenceException;
@@ -25,6 +27,13 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.util.List;
 
 public class AllowanceTests {
+
+    private static EnvelopeSimContext makeSimpleContext(double length, double slope) {
+        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
+        var testPath = new FlatPath(length, slope);
+        return new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
+    }
+
     private static MarecoAllowance makeMarecoAllowance(
             EnvelopeSimContext context, 
             double beginPos, double endPos,
@@ -45,10 +54,10 @@ public class AllowanceTests {
         return new LinearAllowance(context, beginPos, endPos, capacitySpeedLimit, defaultRange);
     }
 
-    private static Envelope makeSimpleMarecoEnvelope(EnvelopeSimContext context,
-                                                    double speed,
-                                                    AllowanceValue value,
-                                                    boolean stop) {
+    private static Envelope makeSimpleAllowanceEnvelope(EnvelopeSimContext context,
+                                                        Allowance allowance,
+                                                        double speed,
+                                                        boolean stop) {
         var path = context.path;
         double[] stops;
         if (stop)
@@ -56,375 +65,328 @@ public class AllowanceTests {
         else
             stops = new double[] { path.getLength() };
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(context, speed, stops);
-        var allowance = makeMarecoAllowance(
-                context,
-                0, path.getLength(), 0, value);
         return allowance.apply(maxEffortEnvelope);
     }
 
-    @Test
-    public void testMarecoContinuity() {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var length = 100_000;
-        var testPath = new FlatPath(length, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
-        var stops = new double[] { 0.5 * length, testPath.getLength() };
-        var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
-        var allowanceValue = new AllowanceValue.Percentage(TIME_RATIO, 10);
-        var allowance = makeMarecoAllowance(
-                new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP),
-                0, testPath.getLength(), 0, allowanceValue);
-        var marecoIteration = allowance.computeIteration(maxEffortEnvelope, 10);
-        var previousTime = marecoIteration.getTotalTime();
-        for (double v1 = 10; v1 < 80; v1 = v1 + 0.1) {
-            marecoIteration = allowance.computeIteration(maxEffortEnvelope, v1);
-            // as v1 is a speed cap the difference between two consecutive times must be approximately
-            // the time delta between the total length travelled at v1 and v1 - 0.1 m/s
-            var timeDelta = length / (v1 - 0.1) - length / v1;
-            var iterationTime = marecoIteration.getTotalTime();
+    /** Test the continuity of the binary search */
+    private void testBinarySearchContinuity(Envelope maxEffortEnvelope,
+                                            AbstractAllowanceWithRanges allowance,
+                                            double lowSpeed,
+                                            double highSpeed) {
+        var iteration = allowance.computeIteration(maxEffortEnvelope, lowSpeed);
+        var speedStep = (highSpeed - lowSpeed) / 100;
+        var previousTime = iteration.getTotalTime();
+        var length = allowance.getDistance();
+        for (double speed = lowSpeed; speed < highSpeed; speed += speedStep) {
+            iteration = allowance.computeIteration(maxEffortEnvelope, speed);
+            // the difference between two consecutive times must be approximately
+            // the time delta between the total length travelled at speed and speed - speedStep
+            var timeDelta = length / (speed - speedStep) - length / speed;
+            var iterationTime = iteration.getTotalTime();
             assertEquals(iterationTime, previousTime, timeDelta * 1.1);
             previousTime = iterationTime;
         }
-
     }
 
     @Test
-    public void testMarecoFlat() {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testPath = new FlatPath(10000, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
-        var marecoEnvelope = makeSimpleMarecoEnvelope(
-                testContext, 44.4, new AllowanceValue.Percentage(TIME_RATIO, 10), true);
-        EnvelopeShape.check(marecoEnvelope, INCREASING, DECREASING, DECREASING, INCREASING, DECREASING, DECREASING);
-        var delta = 2 * marecoEnvelope.getMaxSpeed() * TIME_STEP;
+    public void testBinarySearchContinuityMareco() {
+        var length = 100_000;
+        var testContext = makeSimpleContext(length, 0);
+        var stops = new double[] { 0.5 * length, length };
+        var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
+        var allowanceValue = new AllowanceValue.Percentage(TIME_RATIO, 10);
+        var allowance = makeMarecoAllowance(
+                testContext,
+                0, length, 0, allowanceValue);
+        testBinarySearchContinuity(maxEffortEnvelope, allowance, 10, 80);
+    }
+
+    private void testAllowanceFlat(EnvelopeSimContext context, Allowance allowance) {
+        var allowanceEnvelope = makeSimpleAllowanceEnvelope(
+                context, allowance, 44.4, true);
+        EnvelopeShape.check(allowanceEnvelope, INCREASING, DECREASING, DECREASING, INCREASING, DECREASING, DECREASING);
+        var delta = 2 * allowanceEnvelope.getMaxSpeed() * TIME_STEP;
         // don't modify these values, they have been calculated with a 0.1s time step, so they can be considered as
         // reference, the delta is supposed to absorb the difference for higher time steps
-        EnvelopeTransitions.checkPositions(marecoEnvelope, delta, 1411, 5094, 6000, 6931, 9339);
-        assertTrue(marecoEnvelope.continuous);
+        EnvelopeTransitions.checkPositions(allowanceEnvelope, delta, 1411, 5094, 6000, 6931, 9339);
+        assertTrue(allowanceEnvelope.continuous);
     }
 
     @Test
-    public void testMarecoSteep() {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testPath = new FlatPath(10000, 20);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
-        var marecoEnvelope = makeSimpleMarecoEnvelope(
-                testContext, 44.4, new AllowanceValue.Percentage(TIME_RATIO, 10), true);
-        EnvelopeShape.check(marecoEnvelope,
+    public void testMarecoAllowanceFlat() {
+        var length = 10_000;
+        var testContext = makeSimpleContext(length, 0);
+        var allowanceValue = new AllowanceValue.Percentage(TIME_RATIO, 10);
+        var allowance = makeMarecoAllowance(
+                testContext,
+                0, length, 0, allowanceValue);
+        testAllowanceFlat(testContext, allowance);
+    }
+
+    private void testAllowanceSteep(EnvelopeSimContext context, Allowance allowance) {
+        var allowanceEnvelope = makeSimpleAllowanceEnvelope(
+                context, allowance, 44.4, true);
+        EnvelopeShape.check(allowanceEnvelope,
                 INCREASING, CONSTANT, DECREASING, DECREASING, INCREASING, CONSTANT, DECREASING, DECREASING);
-        var delta = 2 * marecoEnvelope.getMaxSpeed() * TIME_STEP;
+        var delta = 2 * allowanceEnvelope.getMaxSpeed() * TIME_STEP;
         // don't modify these values, they have been calculated with a 0.1s time step, so they can be considered as
         // reference, the delta is supposed to absorb the difference for higher time steps
-        EnvelopeTransitions.checkPositions(marecoEnvelope, delta, 1839, 4351, 5747, 6000, 7259, 8764, 9830);
-        assertTrue(marecoEnvelope.continuous);
+        EnvelopeTransitions.checkPositions(allowanceEnvelope, delta, 1839, 4351, 5747, 6000, 7259, 8764, 9830);
+        assertTrue(allowanceEnvelope.continuous);
     }
 
-    private void testPercentageTimeAllowance(Envelope maxEffortEnvelope, Allowance allowance, double targetTime) {
-        var allowanceEnvelope = allowance.apply(maxEffortEnvelope);
+    @Test
+    public void testMarecoAllowanceSteep() {
+        var length = 10_000;
+        var testContext = makeSimpleContext(length, 20);
+        var allowanceValue = new AllowanceValue.Percentage(TIME_RATIO, 10);
+        var allowance = makeMarecoAllowance(
+                testContext,
+                0, length, 0, allowanceValue);
+        testAllowanceSteep(testContext, allowance);
+    }
+
+    /** Make sure that applying the given allowance to the given base will result in the correct total time*/
+    private void testAllowanceTime(Envelope base, AbstractAllowanceWithRanges allowance) {
+        var allowanceEnvelope = allowance.apply(base);
         var marginTime = allowanceEnvelope.getTotalTime();
+        var targetTime = allowance.getTargetTime(base);
         assertEquals(marginTime, targetTime, 2 * TIME_STEP);
+    }
+
+    private void testTransitionPoints(Envelope base, AbstractAllowanceWithRanges allowance) {
+
+        final double tolerance = 0.02; // percentage
+        var beginPos = allowance.beginPos;
+        var endPos = allowance.endPos;
+        var allowanceEnvelope = allowance.apply(base);
+
+        var timeBeginPointBase = base.interpolateTotalTime(beginPos);
+        var timeEndPointBase = base.interpolateTotalTime(endPos);
+
+        var timeBeginPoint = allowanceEnvelope.interpolateTotalTime(beginPos);
+        var timeEndPoint = allowanceEnvelope.interpolateTotalTime(endPos);
+        var expectedTimeEndPoint = timeEndPointBase + allowance.getAddedTime(base);
+
+        // make sure begin has the same time before and after margin, and that end is offset by the proper value
+        assertEquals(timeBeginPointBase, timeBeginPoint, 5 * TIME_STEP);
+        assertEquals(expectedTimeEndPoint, timeEndPoint, 5 * TIME_STEP);
+
+        var speedBeginPointBase = base.interpolateSpeed(beginPos);
+        var speedEndPointBase = base.interpolateSpeed(endPos);
+
+        var speedBeginPoint = allowanceEnvelope.interpolateSpeed(beginPos);
+        var speedEndPoint = allowanceEnvelope.interpolateSpeed(endPos);
+
+        // make sure begin and end have the same speed before and after margin
+        assertEquals(speedBeginPointBase, speedBeginPoint, speedBeginPointBase * tolerance);
+        assertEquals(speedEndPointBase, speedEndPoint, speedEndPointBase * tolerance);
     }
 
     /** Test mareco allowance with percentage time */
     @ParameterizedTest
     @ValueSource(doubles = {0.0, 10, 100})
     public void testPercentageTimeMarecoAllowance(double value) {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testPath = new FlatPath(100000, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
+        var length = 100_000;
+        var testContext = makeSimpleContext(length, 0);
 
-        var stops = new double[] { 50000, testContext.path.getLength() };
+        var stops = new double[] { 50_000, testContext.path.getLength() };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
 
         var allowanceValue = new AllowanceValue.Percentage(TIME_RATIO, value);
         var allowance = makeMarecoAllowance(
                 testContext,
-                0, testPath.getLength(), 0, allowanceValue);
-        var baseTime = maxEffortEnvelope.getTotalTime();
-        var targetTime = baseTime + allowanceValue.getAllowanceTime(baseTime, testPath.getLength());
-        testPercentageTimeAllowance(maxEffortEnvelope, allowance, targetTime);
+                0, length, 0, allowanceValue);
+        testAllowanceTime(maxEffortEnvelope, allowance);
     }
 
     /** Test linear allowance with percentage time */
     @ParameterizedTest
     @ValueSource(doubles = {0.0, 10, 100})
     public void testPercentageTimeLinearAllowance(double value) {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testPath = new FlatPath(100000, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
+        var length = 100_000;
+        var testContext = makeSimpleContext(length, 0);
 
-        var stops = new double[] { 50000, testContext.path.getLength() };
+        var stops = new double[] { 50_000, testContext.path.getLength() };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
 
         var allowanceValue = new AllowanceValue.Percentage(TIME_RATIO, value);
         var allowance = makeLinearAllowance(
                 testContext,
-                0, testPath.getLength(), 0, allowanceValue);
-        var baseTime = maxEffortEnvelope.getTotalTime();
-        var targetTime = baseTime + allowanceValue.getAllowanceTime(baseTime, testPath.getLength());
-        testPercentageTimeAllowance(maxEffortEnvelope, allowance, targetTime);
+                0, length, 0, allowanceValue);
+        testAllowanceTime(maxEffortEnvelope, allowance);
     }
 
     /** Test mareco with a time per distance allowance */
     @ParameterizedTest
     @ValueSource(doubles = {0.0, 4.5, 5.5})
-    public void testMarecoAllowanceDistance(double value) {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testPath = new FlatPath(100000, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
-        var stops = new double[] { 50000, testPath.getLength() };
+    public void testTimePerDistanceMarecoAllowance(double value) {
+
+        var length = 100_000;
+        var testContext = makeSimpleContext(length, 0);
+        var stops = new double[] { 50_000, testContext.path.getLength() };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
-        var allowanceValue = new AllowanceValue.TimePerDistance(TIME_RATIO, value);
+
+        var allowanceValue = new AllowanceValue.TimePerDistance(DISTANCE_RATIO, value);
         var allowance = makeMarecoAllowance(
-                new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP),
-                0, testPath.getLength(), 0, allowanceValue);
-        var marecoEnvelope = allowance.apply(maxEffortEnvelope);
-        var baseTime = maxEffortEnvelope.getTotalTime();
-        var distance = allowance.getDistance();
-        var targetTime = baseTime + allowanceValue.getAllowanceTime(baseTime, distance);
-        var marginTime = marecoEnvelope.getTotalTime();
-        assertEquals(marginTime, targetTime, 2 * TIME_STEP);
+                testContext,
+                0, length, 0, allowanceValue);
+        testAllowanceTime(maxEffortEnvelope, allowance);
     }
 
-    private Envelope makeSimpleConstructionEnvelope(
-            EnvelopeSimContext context,
-            double[] stops,
-            double speed,
-            double begin,
-            double end,
-            AllowanceValue value
-    ) {
-        double capacitySpeedLimit = 30 / 3.6;
-        var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(context, speed, stops);
-        var allowance = makeMarecoAllowance(
-                context,
-                begin, end, capacitySpeedLimit, value);
-        return allowance.apply(maxEffortEnvelope);
+    private void testConstructionAllowance(Envelope base, AbstractAllowanceWithRanges allowance) {
+        testAllowanceTime(base, allowance);
+        testTransitionPoints(base, allowance);
     }
 
-    @Test
-    public void testConstructionFlat() {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testPath = new FlatPath(10000, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
-        var stops = new double[] { testPath.getLength() };
-        var constructionEnvelope = makeSimpleConstructionEnvelope(
-                testContext, stops, 44.4, 1000, 5000, new AllowanceValue.FixedTime(TIME_RATIO, 60));
-        EnvelopeShape.check(constructionEnvelope,
-                INCREASING, DECREASING, CONSTANT, INCREASING, CONSTANT, DECREASING);
-        var delta = 2 * constructionEnvelope.getMaxSpeed() * TIME_STEP;
-        // don't modify these values, they have been calculated with a 0.1s time step, so they can be considered as
-        // reference, the delta is supposed to absorb the difference for higher time steps
-        EnvelopeTransitions.checkPositions(constructionEnvelope, delta, 1000, 1503, 2640, 5000, 8029);
-        assertTrue(constructionEnvelope.continuous);
-    }
-
-    @Test
-    public void testConstructionSteep() {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testPath = new FlatPath(10000, 20);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
-        var stops = new double[] { 8000, testPath.getLength() };
-        var constructionEnvelope = makeSimpleConstructionEnvelope(
-                testContext, stops, 44.4, 1500, 6500, new AllowanceValue.FixedTime(TIME_RATIO, 60));
-        EnvelopeShape.check(constructionEnvelope,
-                INCREASING, DECREASING, CONSTANT, INCREASING, DECREASING, INCREASING, DECREASING);
-        var delta = 2 * constructionEnvelope.getMaxSpeed() * TIME_STEP;
-        // don't modify these values, they have been calculated with a 0.1s time step, so they can be considered as
-        // reference, the delta is supposed to absorb the difference for higher time steps
-        EnvelopeTransitions.checkPositions(constructionEnvelope, delta, 1500, 1803, 3356, 6500, 8000, 9356);
-        assertTrue(constructionEnvelope.continuous);
-    }
-
-    /** Test construction with fixed time allowance on a segment */
     @ParameterizedTest
     @ValueSource(doubles = {0.0, 60, 200})
-    public void testConstructionAllowance(double value) {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testPath = new FlatPath(100_000, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
-        double capacitySpeedLimit = 30 / 3.6;
-        double begin = 0;
-        double end = testPath.getLength();
-        final double tolerance = 0.02; // percentage
-        var stops = new double[] { 50000, testPath.getLength() };
+    public void testConstructionAllowanceFlat(double value) {
+        var length = 100_000;
+        var testContext = makeSimpleContext(length, 0);
+        var stops = new double[] { 50_000, length };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         var allowanceValue = new AllowanceValue.FixedTime(TIME_RATIO, value);
         var allowance = makeMarecoAllowance(
-                new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP),
-                begin, end, capacitySpeedLimit, allowanceValue);
-        var constructionEnvelope = allowance.apply(maxEffortEnvelope);
-        var baseTime = maxEffortEnvelope.getTotalTime();
-        var distance = end - begin;
-        var targetTime = baseTime + allowanceValue.getAllowanceTime(baseTime, distance);
-        var marginTime = constructionEnvelope.getTotalTime();
-        assertEquals(marginTime, targetTime, 2 * TIME_STEP);
+                testContext, 0, length, 8.33, allowanceValue);
 
-        var speedFirstPointBase = maxEffortEnvelope.interpolateSpeed(begin);
-        var speedSecondPointBase = maxEffortEnvelope.interpolateSpeed(end);
+        testConstructionAllowance(maxEffortEnvelope, allowance);
+    }
 
-        var speedFirstPoint = constructionEnvelope.interpolateSpeed(begin);
-        var speedSecondPoint = constructionEnvelope.interpolateSpeed(end);
-
-        // make sure begin and end have the same speed before and after margin
-        assertEquals(speedFirstPointBase, speedFirstPoint, speedFirstPointBase * tolerance);
-        assertEquals(speedSecondPointBase, speedSecondPoint, speedSecondPointBase * tolerance);
+    @ParameterizedTest
+    @ValueSource(doubles = {0.0, 60, 200})
+    public void testConstructionMarecoAllowanceSteep(double value) {
+        var length = 100_000;
+        var testContext = makeSimpleContext(length, 20);
+        var stops = new double[] { 50000, length };
+        var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
+        var allowanceValue = new AllowanceValue.FixedTime(TIME_RATIO, value);
+        var allowance = makeMarecoAllowance(
+                testContext, 0, length, 8.33, allowanceValue);
+        testConstructionAllowance(maxEffortEnvelope, allowance);
     }
 
     /** Test construction with fixed time allowance on a segment */
     @ParameterizedTest
     @ValueSource(doubles = {0.0, 60, 200})
     public void testConstructionAllowanceOnSegment(double value) {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testPath = new FlatPath(100_000, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
-        double capacitySpeedLimit = 30 / 3.6;
-        double begin = 20_000;
-        double end = 40_000;
-        final double tolerance = 0.02; // percentage
-        var stops = new double[] { 2_000, 50_000, testPath.getLength() };
+
+        var length = 100_000;
+        var testContext = makeSimpleContext(length, 0);
+        var stops = new double[] { 2_000, 50_000, length };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         var allowanceValue = new AllowanceValue.FixedTime(TIME_RATIO, value);
+        double begin = 20_000;
+        double end = 40_000;
         var allowance = makeMarecoAllowance(
-                new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP),
-                begin, end, capacitySpeedLimit, allowanceValue);
-        var constructionEnvelope = allowance.apply(maxEffortEnvelope);
-        var baseTime = maxEffortEnvelope.getTotalTime();
-        var distance = end - begin;
-        var targetTime = baseTime + allowanceValue.getAllowanceTime(baseTime, distance);
-        var marginTime = constructionEnvelope.getTotalTime();
-        assertEquals(marginTime, targetTime, 2 * TIME_STEP);
+                testContext, begin, end, 8.33, allowanceValue);
 
-        var timeFirstPointBase = maxEffortEnvelope.interpolateTotalTime(begin);
-        var timeSecondPointBase = maxEffortEnvelope.interpolateTotalTime(end);
-
-        var timeFirstPoint = constructionEnvelope.interpolateTotalTime(begin);
-        var timeSecondPoint = constructionEnvelope.interpolateTotalTime(end);
-        var expectedTimeSecondPoint = timeSecondPointBase
-                + allowanceValue.getAllowanceTime(baseTime, distance);
-
-        // make sure begin has the same time before and after margin, and that end is offset by the proper value
-        assertEquals(timeFirstPointBase, timeFirstPoint, 5 * TIME_STEP);
-        assertEquals(expectedTimeSecondPoint, timeSecondPoint, 5 * TIME_STEP);
-
-        var speedFirstPointBase = maxEffortEnvelope.interpolateSpeed(begin);
-        var speedSecondPointBase = maxEffortEnvelope.interpolateSpeed(end);
-
-        var speedFirstPoint = constructionEnvelope.interpolateSpeed(begin);
-        var speedSecondPoint = constructionEnvelope.interpolateSpeed(end);
-
-        // make sure begin and end have the same speed before and after margin
-        assertEquals(speedFirstPointBase, speedFirstPoint, speedFirstPointBase * tolerance);
-        assertEquals(speedSecondPointBase, speedSecondPoint, speedSecondPointBase * tolerance);
+        testConstructionAllowance(maxEffortEnvelope, allowance);
     }
 
     /** Test the construction margin with a high value on a short segment, expecting to get an error */
     @Test
     public void testImpossibleConstructionMargin() {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testPath = new FlatPath(100_000, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
-        double capacitySpeedLimit = 30 / 3.6;
-        double begin = 20_000;
-        double end = 40_000;
-        var stops = new double[] { 50_000, testPath.getLength() };
+        var length = 100_000;
+        var testContext = makeSimpleContext(length, 0);
+        var stops = new double[] { 50_000, length };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         var allowanceValue = new AllowanceValue.FixedTime(TIME_RATIO, 20_000);
+        double begin = 20_000;
+        double end = 40_000;
         var allowance = makeMarecoAllowance(
-                new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP),
-                begin, end, capacitySpeedLimit, allowanceValue);
+                testContext, begin, end, 8.33, allowanceValue);
 
-        var thrown = assertThrows(AllowanceConvergenceException.class, () -> allowance.apply(maxEffortEnvelope));
+        var thrown =
+                assertThrows(AllowanceConvergenceException.class, () -> allowance.apply(maxEffortEnvelope));
 
         assertEquals("too_much_allowance_time", thrown.errorType);
     }
 
-    /** Test the construction margin with a very short segment, to trigger intersectSlowDonSpeedup method */
+    /** Test the construction margin with a very short segment, to trigger intersectLeftRightParts method */
     @Test
-    public void testIntersectSlowDownSpeedup() {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testPath = new FlatPath(100_000, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
-        double capacitySpeedLimit = 30 / 3.6;
-        double begin = 20_000;
-        double end = 21_000;
-        var stops = new double[] { 50_000, testPath.getLength() };
+    public void testIntersectLeftRightParts() {
+        var length = 100_000;
+        var testContext = makeSimpleContext(length, 0);
+        var stops = new double[] { 50_000, length };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         var allowanceValue = new AllowanceValue.FixedTime(TIME_RATIO, 20);
+        double begin = 20_000;
+        double end = 21_000;
         var allowance = makeMarecoAllowance(
-                new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP),
-                begin, end, capacitySpeedLimit, allowanceValue);
+                testContext, begin, end, 8.33, allowanceValue);
 
-        var thrown = assertThrows(AllowanceConvergenceException.class, () -> allowance.apply(maxEffortEnvelope));
+        var thrown =
+                assertThrows(AllowanceConvergenceException.class, () -> allowance.apply(maxEffortEnvelope));
 
         assertEquals("too_much_allowance_time", thrown.errorType);
     }
 
-    @Test
-    public void testConstructionOnMarecoAllowance() {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testPath = new FlatPath(100_000, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
-        double capacitySpeedLimit = 30 / 3.6;
-        double begin = 30_000;
-        double end = 50_000;
-        var stops = new double[] { 50_000, testPath.getLength() };
-        // apply mareco allowance
-        var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
-        var marecoAllowanceValue = new AllowanceValue.Percentage(TIME_RATIO, 10);
-        var marecoAllowance = makeMarecoAllowance(
-                new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP),
-                0, testPath.getLength(), 0, marecoAllowanceValue);
-        var marecoDistance = marecoAllowance.getDistance();
-        var marecoEnvelope = marecoAllowance.apply(maxEffortEnvelope);
-        // put construction allowance
-        var constructionAllowanceValue = new AllowanceValue.FixedTime(TIME_RATIO, 30);
-        var constructionAllowance = makeMarecoAllowance(
-                new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP),
-                begin, end, capacitySpeedLimit, constructionAllowanceValue);
-        var constructionEnvelope = constructionAllowance.apply(marecoEnvelope);
-        // compare the results
+    private void testConstructionOnStandardAllowance(Envelope maxEffortEnvelope,
+                                                     AbstractAllowanceWithRanges standardAllowance,
+                                                     AbstractAllowanceWithRanges constructionAllowance) {
+        var standardEnvelope = standardAllowance.apply(maxEffortEnvelope);
+        var constructionEnvelope = constructionAllowance.apply(standardEnvelope);
+
         var baseTime = maxEffortEnvelope.getTotalTime();
-        var constructionDistance = end - begin;
-        var constructionAllowanceTime =
-                constructionAllowanceValue.getAllowanceTime(baseTime, constructionDistance);
-        var marecoAllowanceTime = marecoAllowanceValue.getAllowanceTime(baseTime, marecoDistance);
-        var targetTime = baseTime + marecoAllowanceTime + constructionAllowanceTime;
+        var standardAllowanceAddedTime = standardAllowance.getAddedTime(maxEffortEnvelope);
+        var constructionAllowanceAddedTime = constructionAllowance.getAddedTime(standardEnvelope);
+        var targetTime = baseTime + standardAllowanceAddedTime + constructionAllowanceAddedTime;
         var marginTime = constructionEnvelope.getTotalTime();
         assertEquals(marginTime, targetTime, 5 * TIME_STEP);
+
+        var constructionAllowanceTargetTime = constructionAllowance.getTargetTime(standardEnvelope);
+        assertEquals(marginTime, constructionAllowanceTargetTime, 5 * TIME_STEP);
+
+    }
+
+    @Test
+    public void testConstructionOnStandardMarecoAllowance() {
+        var length = 100_000;
+        var testContext = makeSimpleContext(length, 0);
+        var stops = new double[] { 50_000, length };
+        var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
+        var standardAllowanceValue = new AllowanceValue.Percentage(TIME_RATIO, 10);
+        var standardAllowance = makeMarecoAllowance(
+                testContext, 0, length, 8.33, standardAllowanceValue);
+        double begin = 30_000;
+        double end = 50_000;
+        var constructionAllowanceValue = new AllowanceValue.FixedTime(TIME_RATIO, 30);
+        var constructionAllowance = makeMarecoAllowance(
+                testContext, begin, end, 8.33, constructionAllowanceValue);
+        testConstructionOnStandardAllowance(maxEffortEnvelope, standardAllowance, constructionAllowance);
+    }
+
+    private void testSeveralConstructionAllowances(Envelope maxEffortEnvelope,
+                                                   AbstractAllowanceWithRanges allowanceA,
+                                                   AbstractAllowanceWithRanges allowanceB) {
+        var constructionEnvelopeA = allowanceA.apply(maxEffortEnvelope);
+        var constructionEnvelopeB = allowanceB.apply(constructionEnvelopeA);
+        var baseTime = maxEffortEnvelope.getTotalTime();
+        var targetTime = baseTime
+                + allowanceA.getAddedTime(maxEffortEnvelope)
+                + allowanceB.getAddedTime(maxEffortEnvelope);
+        var marginTime = constructionEnvelopeB.getTotalTime();
+        assertEquals(marginTime, targetTime, 2 * TIME_STEP);
     }
 
     /** Test several construction allowances on segments */
-    @Test
-    public void testSeveralConstructionAllowances() {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testPath = new FlatPath(100000, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
-        double capacitySpeedLimit = 30 / 3.6;
-        var firstAllowanceBegin = 0.;
-        var firstAllowanceEnd = 50000;
-        var fistAllowanceValue = new AllowanceValue.FixedTime(TIME_RATIO, 15);
-        var secondAllowanceBegin = 50000;
-        var secondAllowanceEnd = testPath.getLength();
-        var secondAllowanceValue = new AllowanceValue.FixedTime(TIME_RATIO, 30);
-        var stops = new double[] { 50_000, testPath.getLength() };
+    @ParameterizedTest
+    @ValueSource(ints = {30_000, 50_000, 70_000})
+    public void testSeveralConstructionMarecoAllowances(double value) {
 
+        var length = 100_000;
+        var testContext = makeSimpleContext(length, 0);
+        var stops = new double[] { 50_000, length };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
-        var firstAllowance = makeMarecoAllowance(
-                new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP),
-                firstAllowanceBegin, firstAllowanceEnd, capacitySpeedLimit, fistAllowanceValue);
-        var fistConstructionEnvelope = firstAllowance.apply(maxEffortEnvelope);
-        var secondAllowance = makeMarecoAllowance(
-                new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP),
-                secondAllowanceBegin, secondAllowanceEnd, capacitySpeedLimit, secondAllowanceValue);
-        var secondConstructionEnvelope = secondAllowance.apply(fistConstructionEnvelope);
-        var baseTime = maxEffortEnvelope.getTotalTime();
-        var firstDistance = firstAllowanceEnd - firstAllowanceBegin;
-        var secondDistance = secondAllowanceEnd - secondAllowanceBegin;
-        var targetTime = baseTime + fistAllowanceValue.getAllowanceTime(baseTime, firstDistance)
-                + secondAllowanceValue.getAllowanceTime(baseTime, secondDistance);
-        var marginTime = secondConstructionEnvelope.getTotalTime();
-        assertEquals(marginTime, targetTime, 2 * TIME_STEP);
+        var allowanceValueA = new AllowanceValue.FixedTime(TIME_RATIO, 15);
+        var allowanceA = makeMarecoAllowance(
+                testContext, 0, value, 8.33, allowanceValueA);
+        var allowanceValueB = new AllowanceValue.FixedTime(TIME_RATIO, 30);
+        var allowanceB = makeMarecoAllowance(
+                testContext, value, length, 8.33, allowanceValueB);
+
+        testSeveralConstructionAllowances(maxEffortEnvelope, allowanceA, allowanceB);
     }
 
     /** Test mareco with different slopes*/
@@ -471,31 +433,28 @@ public class AllowanceTests {
         }
 
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var pathLength = 100_000;
-        var testPath = new EnvelopePath(pathLength, gradePositions, gradeValues);
+        var length = 100_000;
+        var testPath = new EnvelopePath(length, gradePositions, gradeValues);
         var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
-        var stops = new double[] { 50_000, pathLength };
-
+        var stops = new double[] { 50_000, testContext.path.getLength() };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
-        var allowanceValue = new AllowanceValue.Percentage(TIME_RATIO, 40);
-        var allowance = makeMarecoAllowance(new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP),
-                0, testPath.getLength(), 0, allowanceValue);
-        var marecoEnvelope = allowance.apply(maxEffortEnvelope);
 
-        var baseTime = maxEffortEnvelope.getTotalTime();
-        var targetTime = baseTime + allowanceValue.getAllowanceTime(baseTime, pathLength);
-        var marginTime = marecoEnvelope.getTotalTime();
-        assertEquals(marginTime, targetTime, 2 * TIME_STEP);
+        var allowanceValue = new AllowanceValue.Percentage(TIME_RATIO, 40);
+        var allowance = makeMarecoAllowance(
+                testContext,
+                0, length, 0, allowanceValue);
+
+        testAllowanceTime(maxEffortEnvelope, allowance);
     }
 
-    /** Test mareco with different slopes*/
+    /** Test mareco with different accelerating slopes*/
     @Test
-    public void testAcceleratingSlopes() {
-        double pathLength = 100_000;
+    public void testMarecoAcceleratingSlopes() {
+        double length = 100_000;
         var gradeValues = new DoubleArrayList();
         var gradePositions = new DoubleArrayList();
 
-        for (double begin = 0; begin + 6000 < pathLength; begin += 8000) {
+        for (double begin = 0; begin + 6000 < length; begin += 8000) {
             gradePositions.add(begin);
             gradeValues.add(-10.0);
             gradePositions.add(begin + 2000);
@@ -505,20 +464,21 @@ public class AllowanceTests {
             gradePositions.add(begin + 6000);
             gradeValues.add(0.0);
         }
-        gradePositions.add(pathLength);
+        gradePositions.add(length);
+
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testPath = new EnvelopePath(pathLength, gradePositions.toArray(), gradeValues.toArray());
+        var testPath = new EnvelopePath(length, gradePositions.toArray(), gradeValues.toArray());
         var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
-        var stops = new double[]{50_000, pathLength};
+        var stops = new double[]{ 50_000, length };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         var allowanceValue = new AllowanceValue.Percentage(TIME_RATIO, 10);
         var allowance = makeMarecoAllowance(new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP),
                 0, testPath.getLength(), 0, allowanceValue);
         var marecoEnvelope = allowance.apply(maxEffortEnvelope);
-        var baseTime = maxEffortEnvelope.getTotalTime();
-        var targetTime = baseTime + allowanceValue.getAllowanceTime(baseTime, pathLength);
+        var targetTime = allowance.getTargetTime(maxEffortEnvelope);
         var marginTime = marecoEnvelope.getTotalTime();
         assertEquals(marginTime, targetTime, 2 * TIME_STEP);
+
         // The train space-speed curve is supposed to follow this complicated shape because of the multiple
         // accelerating slopes.
         // If the test fails here, plot the curves to check if the curve makes sense and adapt the shape.
@@ -539,20 +499,21 @@ public class AllowanceTests {
      * we only check internal asserts (convergence, envelope asserts) */
     @Test
     public void testShortMareco() {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testPath = new FlatPath(100, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
-        makeSimpleMarecoEnvelope(testContext, 100,
-                new AllowanceValue.Percentage(TIME_RATIO, 10), false);
+        var length = 100;
+        var testContext = makeSimpleContext(length, 0);
+        var allowanceValue = new AllowanceValue.Percentage(TIME_RATIO, 10);
+        var allowance = makeMarecoAllowance(
+                testContext,
+                0, length, 0, allowanceValue);
+        makeSimpleAllowanceEnvelope(testContext, allowance, 100, false);
     }
 
     /** Test mareco starting in a deceleration section */
     @Test
     public void testMarecoStartDeceleration() {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testPath = new FlatPath(100000, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
-        var stops = new double[] { 6000, testPath.getLength() };
+        var length = 100_000;
+        var testContext = makeSimpleContext(length, 0);
+        var stops = new double[] { 6000, length };
 
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         double start = 0;
@@ -564,18 +525,17 @@ public class AllowanceTests {
         }
         assert start > 0;
         var allowanceValue = new AllowanceValue.TimePerDistance(TIME_RATIO, 10);
-        var allowance = makeMarecoAllowance(new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP),
-                start, testPath.getLength(), 0, allowanceValue);
+        var allowance = makeMarecoAllowance(testContext,
+                start, length, 0, allowanceValue);
         allowance.apply(maxEffortEnvelope);
     }
 
     /** Test mareco ending in an acceleration section */
     @Test
     public void testMarecoEndAcceleration() {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testPath = new FlatPath(100000, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
-        var stops = new double[] { 6000, testPath.getLength() };
+        var length = 100_000;
+        var testContext = makeSimpleContext(length, 0);
+        var stops = new double[] { 6000, length };
 
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
         double end = 0;
@@ -587,7 +547,7 @@ public class AllowanceTests {
         assert end > 0;
         var allowanceValue = new AllowanceValue.TimePerDistance(TIME_RATIO, 10);
         var allowance = makeMarecoAllowance(
-                new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP),
+                testContext,
                 0, end, 0, allowanceValue);
         allowance.apply(maxEffortEnvelope);
     }
@@ -630,32 +590,14 @@ public class AllowanceTests {
 
     @Test
     public void testMarecoErrors() {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testPath = new FlatPath(10000, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
-
-        var ex = assertThrows(AllowanceConvergenceException.class, () ->
-                makeSimpleMarecoEnvelope(testContext, 44.4,
-                        new AllowanceValue.Percentage(TIME_RATIO, 1e10), true)
-        );
-        assert ex.errorType.equals("too_much_allowance_time");
-        assert ex.cause == OSRDError.ErrorCause.USER;
-    }
-
-    @Test
-    public void testConstructionImpossibleMargin() {
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testPath = new FlatPath(10000, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
-
+        var length = 10_000;
+        var testContext = makeSimpleContext(length, 0);
         var allowanceValue = new AllowanceValue.Percentage(TIME_RATIO, 1e10);
-        var stops = new double[] { testPath.getLength() };
-        var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 50, stops);
         var allowance = makeMarecoAllowance(
-                new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP),
-                5000, 5300, 0, allowanceValue);
+                testContext,
+                0, length, 0, allowanceValue);
         var ex = assertThrows(AllowanceConvergenceException.class, () ->
-                allowance.apply(maxEffortEnvelope)
+                makeSimpleAllowanceEnvelope(testContext, allowance, 44.4, true)
         );
         assert ex.errorType.equals("too_much_allowance_time");
         assert ex.cause == OSRDError.ErrorCause.USER;

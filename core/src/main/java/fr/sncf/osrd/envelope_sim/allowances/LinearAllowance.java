@@ -22,19 +22,20 @@ public class LinearAllowance extends AbstractAllowanceWithRanges {
     /** Compute the initial low bound for the binary search */
     @Override
     protected double computeInitialLowBound(Envelope envelopeSection) {
-        return 0;
+        return capacitySpeedLimit;
     }
 
     /** Compute the initial high bound for the binary search */
     @Override
     protected double computeInitialHighBound(Envelope envelopeSection) {
-        return 1;
+        return envelopeSection.getMaxSpeed();
     }
 
     /** Compute the core of linear allowance algorithm.
      *  This algorithm consists of a ratio that scales speeds */
     @Override
-    protected Envelope computeCore(Envelope coreBase, double ratio) {
+    protected Envelope computeCore(Envelope coreBase, double maxSpeed) {
+        var ratio = maxSpeed / coreBase.getMaxSpeed();
         var builder = new EnvelopeBuilder();
         for (var i = 0; i < coreBase.size(); i++) {
             var part = coreBase.get(i);
