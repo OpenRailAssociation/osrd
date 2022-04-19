@@ -85,8 +85,8 @@ pub struct Signal {
     pub sight_distance: f64,
     pub linked_detector: Option<ObjectRef>,
     pub aspects: Option<Vec<String>>,
-    pub angle_sch: Option<f64>,
-    pub angle_geo: Option<f64>,
+    pub angle_sch: f64,
+    pub angle_geo: f64,
     pub type_code: Option<String>,
     pub support_type: Option<String>,
     pub is_in_service: Option<bool>,
@@ -98,6 +98,7 @@ pub struct Signal {
     pub label: Option<String>,
     pub installation_type: Option<String>,
     pub value: Option<String>,
+    pub side: Side,
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
@@ -148,6 +149,18 @@ pub enum ApplicableDirections {
     #[serde(rename = "BOTH")]
     #[derivative(Default)]
     Both,
+}
+
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[derivative(Default)]
+pub enum Side {
+    #[serde(rename = "LEFT")]
+    Left,
+    #[serde(rename = "RIGHT")]
+    Right,
+    #[serde(rename = "CENTER")]
+    #[derivative(Default)]
+    Center,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]

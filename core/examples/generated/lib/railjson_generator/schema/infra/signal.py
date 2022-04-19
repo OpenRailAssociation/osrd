@@ -31,6 +31,7 @@ class Signal:
             direction=infra.Direction[self.direction.name],
             sight_distance=self.sight_distance,
             linked_detector=self.linked_detector.make_rjs_ref(),
-            angle=0,
+            angle_geo=0,
             angle_sch=0,
+            side="CENTER",
         )

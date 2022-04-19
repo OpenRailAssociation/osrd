@@ -42,8 +42,8 @@
         - "(signal.data->>'sight_distance')::float as sight_distance"
         - "(signal.data->>'linked_detector')::text as linked_detector"
         - "(signal.data->>'aspects')::text as aspects"
-        - "(COALESCE(signal.data->>'angle_sch', '0'))::float as angle_sch"
-        - "(COALESCE(signal.data->>'angle_geo', '0'))::float as angle_geo"
+        - "(signal.data->>'angle_sch')::float as angle_sch"
+        - "(signal.data->>'angle_geo')::float as angle_geo"
         - "(signal.data->>'type_code')::text as type_code"
         - "(signal.data->>'support_type')::text as support_type"
         - "(signal.data->>'is_in_service')::boolean as is_in_service"
@@ -55,6 +55,7 @@
         - "(signal.data->>'label')::text as label"
         - "(signal.data->>'installation_type')::text as installation_type"
         - "(signal.data->>'value')::text as value"
+        - "(signal.data->>'side')::text as side"
       joins:
         - "inner join osrd_infra_signalmodel signal on signal.obj_id = layer.obj_id"
     - name: sch
@@ -79,6 +80,7 @@
         - "(signal.data->>'label')::text as label"
         - "(signal.data->>'installation_type')::text as installation_type"
         - "(signal.data->>'value')::text as value"
+        - "(signal.data->>'side')::text as side"
       joins:
         - "inner join osrd_infra_signalmodel signal on signal.obj_id = layer.obj_id"
 
