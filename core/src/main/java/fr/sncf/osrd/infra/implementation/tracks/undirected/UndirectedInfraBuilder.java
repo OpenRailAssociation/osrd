@@ -25,7 +25,7 @@ public class UndirectedInfraBuilder {
 
     private final HashMap<String, TrackNode> beginEndpoints = new HashMap<>();
     private final HashMap<String, TrackNode> endEndpoints = new HashMap<>();
-    private final HashMap<TrackSectionImpl, ArrayList<Detector>> detectorLists = new HashMap<>();
+    private final IdentityHashMap<TrackSectionImpl, ArrayList<Detector>> detectorLists = new IdentityHashMap<>();
     private final ImmutableNetwork.Builder<TrackNode, TrackEdge> builder;
     private final Multimap<String, OperationalPoint> operationalPointsPerTrack = ArrayListMultimap.create();
 
