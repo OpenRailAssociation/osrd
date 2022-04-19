@@ -2,10 +2,10 @@ from enum import Enum
 from typing import List, Literal, Mapping, Optional
 
 from geojson_pydantic import LineString
-from pydantic import BaseModel, constr, root_validator
+from pydantic import BaseModel, Field, constr, root_validator
 
 ALL_OBJECT_TYPES = []
-RAILJSON_VERSION = "2.2.0"
+RAILJSON_VERSION = "2.2.1"
 
 # Traits
 
@@ -49,6 +49,12 @@ class ApplicableDirections(str, Enum):
 class Endpoint(str, Enum):
     BEGIN = "BEGIN"
     END = "END"
+
+
+class Side(str, Enum):
+    LEFT = "LEFT"
+    RIGHT = "RIGHT"
+    CENTER = "CENTER"
 
 
 class DirectionalTrackRange(BaseModel):
@@ -167,8 +173,8 @@ class Signal(BaseObjectTrait, TrackLocationTrait):
     sight_distance: float
     linked_detector: Optional[ObjectReference]
     aspects: Optional[List[str]]
-    angle_sch: Optional[float]
-    angle_geo: Optional[float]
+    angle_sch: float = Field(0, description="Schematic angle in degrees")
+    angle_geo: float = Field(0, description="Geographic angle in degrees")
     type_code: Optional[str]
     support_type: Optional[str]
     is_in_service: Optional[bool]
@@ -180,6 +186,7 @@ class Signal(BaseObjectTrait, TrackLocationTrait):
     label: Optional[str]
     installation_type: Optional[str]
     value: Optional[str]
+    side: Side = Field(Side.CENTER, description="Side of the signal on the track")
 
 
 class BufferStop(BaseObjectTrait, TrackLocationTrait):
