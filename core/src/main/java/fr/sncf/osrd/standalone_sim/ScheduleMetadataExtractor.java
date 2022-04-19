@@ -6,6 +6,8 @@ import static java.lang.Math.min;
 import com.google.common.collect.Sets;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.Envelope;
+import fr.sncf.osrd.infra.api.reservation.ReservationRoute;
+import fr.sncf.osrd.infra.api.signaling.Signal;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.infra_state.api.ReservationRouteState;
@@ -16,12 +18,12 @@ import fr.sncf.osrd.standalone_sim.result.*;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.utils.CurveSimplification;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
+import java.awt.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ScheduleMetadataExtractor {
     /** Use an already computed envelope to extract various metadata about a trip. */
@@ -72,8 +74,63 @@ public class ScheduleMetadataExtractor {
             var stopTime = ResultPosition.interpolateTime(stop.position, headPositions);
             stops.add(new ResultStops(stopTime, stop.position, stop.duration));
         }
-        return new ResultTrain(speeds, headPositions, stops,
-                makeRouteOccupancy(infra, envelope, trainPath, trainLength));
+        return new ResultTrain(
+                speeds,
+                headPositions,
+                stops,
+                makeRouteOccupancy(infra, envelope, trainPath, trainLength),
+                makeSignalUpdates(infra, envelope, trainPath, trainLength)
+        );
+    }
+
+    /** Makes the list of SignalUpdates from the train path and envelope */
+    public static Collection<SignalUpdate> makeSignalUpdates(
+            SignalingInfra infra,
+            Envelope envelope,
+            TrainPath trainPath,
+            double trainLength
+    ) {
+        var res = new ArrayList<SignalUpdate>();
+        var infraState = StandaloneState.from(trainPath, trainLength);
+        var signalizationEngine = SignalizationEngine.from(infra, infraState);
+        var events = StandaloneSignalingSimulation.run(trainPath, infraState, signalizationEngine, envelope);
+
+        // Builds a list of events per signal
+        var eventsPerSignal = new IdentityHashMap<Signal<?>, List<StandaloneSignalingSimulation.SignalTimedEvent<?>>>();
+        for (var e : events) {
+            var list = eventsPerSignal.computeIfAbsent(e.signal(), x -> new ArrayList<>());
+            list.add(e);
+        }
+
+        for (var entry : eventsPerSignal.entrySet()) {
+            var updates = entry.getValue();
+            for (int i = 0; i < updates.size() - 1; i++) {
+                var update = updates.get(i);
+                if (update.state().isFree()) {
+                    // default state isn't reported, it's not displayed and assumed to be anywhere not specified
+                    continue;
+                }
+                var timeStart = update.time();
+                var timeEnd = envelope.getTotalTime();
+                if (i < updates.size() - 1)
+                    timeEnd = updates.get(i + 1).time();
+                if (timeStart == timeEnd)
+                    continue;
+                var routeIDs = entry.getKey().getProtectedRoutes().stream()
+                        .map(ReservationRoute::getID)
+                        .collect(Collectors.toSet());
+                res.add(new SignalUpdate(
+                        entry.getKey().getID(),
+                        routeIDs,
+                        timeStart,
+                        timeEnd,
+                        update.state().getRGBColor(),
+                        false
+                ));
+            }
+        }
+
+        return res;
     }
 
     /** Generates the ResultOccupancyTiming objects for each route */

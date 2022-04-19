@@ -34,6 +34,10 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
 
     @Override
     public BAL3SignalState getInitialState() {
+        var isControlled = protectedRoutes.stream()
+                .anyMatch(route -> route.getInfraRoute().isControlled());
+        if (isControlled)
+            return new BAL3SignalState(BAL3.Aspect.RED);
         var endsWithBufferStop = protectedRoutes.stream()
                 .anyMatch(route -> route.exitSignal() == null);
         if (endsWithBufferStop)
