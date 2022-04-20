@@ -18,6 +18,14 @@ public class SignalizationEngine implements SignalizationState {
     private final ImmutableMultimap<ReservationRoute, Signal<?>> routeSubscribers;
     private final InfraStateView infraState;
 
+    /** Cached subscribers for each infra, avoids unnecessary re-computations */
+    private static final IdentityHashMap<SignalingInfra, CachedSubscribers> cachedSubscribers = new IdentityHashMap<>();
+
+    private record CachedSubscribers(
+            ImmutableMultimap<Signal<?>, Signal<?>> signalSubscribers,
+            ImmutableMultimap<ReservationRoute, Signal<?>> routeSubscribers
+    ) {}
+
     /** Constructor */
     public SignalizationEngine(
             InfraStateView infraState,
@@ -37,11 +45,19 @@ public class SignalizationEngine implements SignalizationState {
             InfraStateView infraState
     ) {
         var signalStates = initSignalStates(infra);
+        var subscribers = cachedSubscribers.getOrDefault(infra, null);
+        if (subscribers == null) {
+            subscribers = new CachedSubscribers(
+                    initSignalSubscribers(signalStates.keySet()),
+                    initRouteSubscribers(signalStates.keySet())
+            );
+            cachedSubscribers.put(infra, subscribers);
+        }
         return new SignalizationEngine(
                 infraState,
-                initSignalStates(infra),
-                initSignalSubscribers(signalStates.keySet()),
-                initRouteSubscribers(signalStates.keySet())
+                signalStates,
+                subscribers.signalSubscribers,
+                subscribers.routeSubscribers
         );
     }
 
