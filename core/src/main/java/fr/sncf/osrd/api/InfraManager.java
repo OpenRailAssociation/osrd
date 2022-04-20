@@ -191,6 +191,9 @@ public class InfraManager {
         } catch (IOException | UnexpectedHttpResponse | JsonDataException e) {
             cacheEntry.registerError(e);
             throw new InfraLoadException("error while loading new infra", cacheEntry.lastStatus, e);
+        } catch (Exception e) {
+            cacheEntry.registerError(e);
+            throw e;
         }
     }
 
