@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from osrd_infra.models import PathModel, TrainScheduleModel
 from osrd_infra.schemas.path import PathPayload
 from osrd_infra.views.projection import Projection
@@ -64,6 +66,9 @@ def convert_simulation_results(
     route_begin_occupancy, route_end_occupancy = convert_route_occupancies(
         simulation_result["route_occupancies"], projection_path_payload, departure_time
     )
+    route_aspects = project_signal_updates(
+        simulation_result["signal_updates"], projection_path_payload, departure_time
+    )
 
     speeds = [{**speed, "time": speed["time"] + departure_time} for speed in simulation_result["speeds"]]
     stops = [{**stop, "time": stop["time"] + departure_time} for stop in simulation_result["stops"]]
@@ -75,6 +80,7 @@ def convert_simulation_results(
         "route_end_occupancy": route_end_occupancy,
         "speeds": speeds,
         "stops": stops,
+        "route_aspects": route_aspects,
     }
 
 
@@ -147,6 +153,37 @@ def compute_tail_positions(head_positions, train_length: float):
             for point in curve:
                 current_curve.append({**point, "position": min(first_pos, point["position"] + train_length)})
         results.append(current_curve)
+    return results
+
+
+def project_signal_updates(signal_updates, projection_path_payload: PathPayload, departure_time):
+    results = []
+
+    updates_by_route_id = defaultdict(lambda: list())
+    for update in signal_updates:
+        for route_id in update["route_ids"]:
+            updates_by_route_id[route_id].append(update)
+
+    start_pos = 0
+    for route_path in projection_path_payload.route_paths:
+        route_id = route_path.route.id
+
+        end_pos = start_pos
+        for track_range in route_path.track_sections:
+            end_pos += track_range.length()
+
+        for update in updates_by_route_id[route_id]:
+            results.append({
+                "signal_id": update["signal_id"],
+                "route_id": route_id,
+                "time_start": update["time_start"] + departure_time,
+                "time_end": update["time_end"] + departure_time,
+                "position_start": start_pos,
+                "position_end": end_pos,
+                "color": update["color"],
+                "blinking": update["blinking"]
+            })
+        start_pos = end_pos
     return results
 
 
