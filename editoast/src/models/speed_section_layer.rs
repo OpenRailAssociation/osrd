@@ -5,9 +5,8 @@ use crate::railjson::ObjectType;
 use crate::schema::osrd_infra_speedsectionlayer;
 use crate::schema::osrd_infra_speedsectionlayer::dsl::*;
 use diesel::result::Error;
-use diesel::sql_types::{Integer, Text};
+use diesel::sql_types::{Array, Integer, Text};
 use diesel::{delete, prelude::*, sql_query};
-use itertools::Itertools;
 use serde::Serialize;
 use std::collections::HashSet;
 
@@ -36,21 +35,19 @@ impl SpeedSectionLayer {
         Ok(())
     }
 
-    fn update_list(
-        conn: &PgConnection,
-        infra: i32,
-        obj_ids: &HashSet<String>,
-    ) -> Result<(), Error> {
-        let obj_ids = obj_ids.iter().join(",");
+    fn update_list(conn: &PgConnection, infra: i32, obj_ids: HashSet<String>) -> Result<(), Error> {
+        let obj_ids: Vec<String> = obj_ids.into_iter().collect();
+
         sql_query(
-            "DELETE FROM osrd_infra_speedsectionlayer WHERE infra_id = $1 AND obj_id in ($2)",
+            "DELETE FROM osrd_infra_speedsectionlayer WHERE infra_id = $1 AND obj_id = ANY($2)",
         )
         .bind::<Integer, _>(infra)
-        .bind::<Text, _>(&obj_ids)
+        .bind::<Array<Text>, _>(&obj_ids)
         .execute(conn)?;
+
         sql_query(include_str!("sql/update_speed_section_layer.sql"))
             .bind::<Integer, _>(infra)
-            .bind::<Text, _>(&obj_ids)
+            .bind::<Array<Text>, _>(&obj_ids)
             .execute(conn)?;
         Ok(())
     }
@@ -115,7 +112,8 @@ impl SpeedSectionLayer {
             // No update needed
             return Ok(());
         }
-        Self::update_list(conn, infra, &obj_ids)?;
+        dbg!(&obj_ids);
+        Self::update_list(conn, infra, obj_ids)?;
         invalidate_chartos_layer(infra, "speed_sections", chartos_config);
         Ok(())
     }

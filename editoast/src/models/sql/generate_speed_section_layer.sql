@@ -15,18 +15,9 @@ sliced_tracks AS (
         ST_Transform(
             ST_LineSubstring(
                 ST_GeomFromGeoJSON(tracks.data->'geo'),
+                track_ranges.slice_begin / (tracks.data->'length')::float,
                 LEAST(
-                    GREATEST(
-                        track_ranges.slice_begin / (tracks.data->'length')::float,
-                        0.
-                    ),
-                    1.
-                ),
-                LEAST(
-                    GREATEST(
-                        track_ranges.slice_end / (tracks.data->'length')::float,
-                        0.
-                    ),
+                    track_ranges.slice_end / (tracks.data->'length')::float,
                     1.
                 )
             ),
@@ -35,18 +26,9 @@ sliced_tracks AS (
         ST_Transform(
             ST_LineSubstring(
                 ST_GeomFromGeoJSON(tracks.data->'sch'),
+                track_ranges.slice_begin / (tracks.data->'length')::float,
                 LEAST(
-                    GREATEST(
-                        track_ranges.slice_begin / (tracks.data->'length')::float,
-                        0.
-                    ),
-                    1.
-                ),
-                LEAST(
-                    GREATEST(
-                        track_ranges.slice_end / (tracks.data->'length')::float,
-                        0.
-                    ),
+                    track_ranges.slice_end / (tracks.data->'length')::float,
                     1.
                 )
             ),
@@ -55,6 +37,7 @@ sliced_tracks AS (
     FROM track_ranges
         INNER JOIN osrd_infra_tracksectionmodel AS tracks ON tracks.obj_id = track_ranges.track_id
         AND tracks.infra_id = $1
+        AND track_ranges.slice_begin < (tracks.data->'length')::float
 )
 INSERT INTO osrd_infra_speedsectionlayer (obj_id, infra_id, geographic, schematic)
 SELECT speed_id,
