@@ -15,14 +15,14 @@ SELECT signal_id,
     ST_Transform(
         ST_LineInterpolatePoint(
             track_geo,
-            LEAST(GREATEST(signal_position / track_length, 0))
+            LEAST(GREATEST(signal_position / track_length, 0.), 1.)
         ),
         3857
     ),
     ST_Transform(
         ST_LineInterpolatePoint(
             track_sch,
-            LEAST(GREATEST(signal_position / track_length, 0))
+            LEAST(GREATEST(signal_position / track_length, 0.), 1.)
         ),
         3857
     )

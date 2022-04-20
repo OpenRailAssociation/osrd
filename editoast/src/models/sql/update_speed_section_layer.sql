@@ -16,12 +16,18 @@ sliced_tracks AS (
         ST_Transform(
             ST_LineSubstring(
                 ST_GeomFromGeoJSON(tracks.data->'geo'),
-                GREATEST(
-                    track_ranges.slice_begin / (tracks.data->'length')::float,
-                    0.
+                LEAST(
+                    GREATEST(
+                        track_ranges.slice_begin / (tracks.data->'length')::float,
+                        0.
+                    ),
+                    1.
                 ),
                 LEAST(
-                    track_ranges.slice_end / (tracks.data->'length')::float,
+                    GREATEST(
+                        track_ranges.slice_end / (tracks.data->'length')::float,
+                        0.
+                    ),
                     1.
                 )
             ),
@@ -30,12 +36,18 @@ sliced_tracks AS (
         ST_Transform(
             ST_LineSubstring(
                 ST_GeomFromGeoJSON(tracks.data->'sch'),
-                GREATEST(
-                    track_ranges.slice_begin / (tracks.data->'length')::float,
-                    0.
+                LEAST(
+                    GREATEST(
+                        track_ranges.slice_begin / (tracks.data->'length')::float,
+                        0.
+                    ),
+                    1.
                 ),
                 LEAST(
-                    track_ranges.slice_end / (tracks.data->'length')::float,
+                    GREATEST(
+                        track_ranges.slice_end / (tracks.data->'length')::float,
+                        0.
+                    ),
                     1.
                 )
             ),
