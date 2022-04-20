@@ -10,10 +10,8 @@ import fr.sncf.osrd.infra_state.api.DetectionSectionState;
 import fr.sncf.osrd.infra_state.api.InfraStateView;
 import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.infra_state.api.ReservationRouteState;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /** A simple implementation of InfraStateView that supports only a single train. */
 @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
@@ -22,11 +20,9 @@ public class StandaloneState implements InfraStateView {
     /** Train path */
     private final TrainPath trainPath;
     /** For each detection section, the train position range where it is occupied */
-    private final Map<DetectionSection, OccupationRange> sectionOccupationRanges;
+    private final IdentityHashMap<DetectionSection, OccupationRange> sectionOccupationRanges;
     /** For each route, the train position range where it is occupied */
-    private final Map<ReservationRoute, OccupationRange> routeOccupationRanges;
-    /** Set of route IDs on the path. Those routes are considered RESERVED instead of FREE */
-    private final Set<String> routesOnPath;
+    private final IdentityHashMap<ReservationRoute, OccupationRange> routeOccupationRanges;
     /** Current offset of the train */
     private double currentOffset = 0;
 
@@ -48,9 +44,8 @@ public class StandaloneState implements InfraStateView {
     /** Constructor */
     private StandaloneState(
             TrainPath trainPath,
-            Map<DetectionSection, OccupationRange> sectionOccupationRanges,
-            Map<ReservationRoute, OccupationRange> routeOccupationRanges,
-            Set<String> routesOnPath,
+            IdentityHashMap<DetectionSection, OccupationRange> sectionOccupationRanges,
+            IdentityHashMap<ReservationRoute, OccupationRange> routeOccupationRanges,
             ImmutableMultimap<Double, DetectionSection> detectionUpdatePositions,
             ImmutableMultimap<Double, ReservationRoute> routeUpdatePositions,
             ImmutableSortedSet<Double> updatePositions
@@ -58,7 +53,6 @@ public class StandaloneState implements InfraStateView {
         this.trainPath = trainPath;
         this.sectionOccupationRanges = sectionOccupationRanges;
         this.routeOccupationRanges = routeOccupationRanges;
-        this.routesOnPath = routesOnPath;
         this.detectionUpdatePositions = detectionUpdatePositions;
         this.routeUpdatePositions = routeUpdatePositions;
         this.updatePositions = updatePositions;
@@ -71,14 +65,10 @@ public class StandaloneState implements InfraStateView {
         var detectionUpdatePositions = makeGenericUpdatePositions(detectionRanges);
         var routeUpdatePositions = makeGenericUpdatePositions(routeRanges);
         var updatePositions = makeUpdatePositions(detectionUpdatePositions, routeUpdatePositions);
-        var routesOnPath = trainPath.routePath().stream()
-                .map(r -> r.element().getInfraRoute().getID())
-                .collect(Collectors.toSet());
         return new StandaloneState(
                 trainPath,
                 detectionRanges,
                 routeRanges,
-                routesOnPath,
                 detectionUpdatePositions,
                 routeUpdatePositions,
                 updatePositions
@@ -125,7 +115,7 @@ public class StandaloneState implements InfraStateView {
                             otherRoute
                     );
             }
-            if (routesOnPath.contains(route.getID()))
+            if (routeOccupationRanges.containsKey(route))
                 return new StandaloneReservationRouteState(ReservationRouteState.Summary.RESERVED,
                         new StandaloneReservationTrain(), route);
             else
@@ -160,7 +150,7 @@ public class StandaloneState implements InfraStateView {
     }
 
     /** Initializes the detection -> occupation range mapping */
-    private static Map<DetectionSection, OccupationRange> initDetectionSectionRanges(
+    private static IdentityHashMap<DetectionSection, OccupationRange> initDetectionSectionRanges(
             TrainPath trainPath,
             double trainLength
     ) {
@@ -168,14 +158,14 @@ public class StandaloneState implements InfraStateView {
     }
 
     /** Initializes the route -> occupation range mapping */
-    private static Map<ReservationRoute, OccupationRange> initRouteStateRanges(
+    private static IdentityHashMap<ReservationRoute, OccupationRange> initRouteStateRanges(
             TrainPath trainPath,
             double trainLength
     ) {
         var intermediateRes
                 = initRanges(trainPath.routePath(), trainPath.length(), trainLength);
         // Converts the SignalingRoute keys into ReservationRoutes
-        var res = new HashMap<ReservationRoute, OccupationRange>();
+        var res = new IdentityHashMap<ReservationRoute, OccupationRange>();
         for (var entry : intermediateRes.entrySet())
             res.put(entry.getKey().getInfraRoute(), entry.getValue());
         return res;
@@ -183,12 +173,12 @@ public class StandaloneState implements InfraStateView {
 
     /** Initializes a mapping from T to occupation range.
      * (factorizes code from `initRouteStateRanges` and `initDetectionSectionRanges`) */
-    private static <T> Map<T, OccupationRange> initRanges(
+    private static <T> IdentityHashMap<T, OccupationRange> initRanges(
             ImmutableList<TrainPath.LocatedElement<T>> elements,
             double pathLength,
             double trainLength
     ) {
-        var res = new HashMap<T, OccupationRange>();
+        var res = new IdentityHashMap<T, OccupationRange>();
         for (int i = 0; i < elements.size(); i++) {
             var element = elements.get(i);
             var begin = element.pathOffset();
