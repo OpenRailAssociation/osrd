@@ -14,7 +14,6 @@ clap = { version = "3.1.6", features = ["derive", "env"] }
 colored = "2.0.0"
 derivative = "2.2.0"
 diesel = { version = "1.4.8", features = ["postgres", "uuidv07", "serde_json"] }
-itertools = "0.10.3"
 json-patch = "0.2.6"
 rand = "0.8.5"
 reqwest = { version="0.11.10", features=["blocking"] }

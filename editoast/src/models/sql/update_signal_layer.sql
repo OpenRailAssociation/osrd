@@ -8,7 +8,7 @@ WITH collect AS (
         INNER JOIN osrd_infra_tracksectionmodel AS tracks ON tracks.obj_id = signals.data->'track'->>'id'
         AND tracks.infra_id = signals.infra_id
     WHERE signals.infra_id = $1
-        AND signals.obj_id in ($2)
+        AND signals.obj_id = ANY($2)
 )
 INSERT INTO osrd_infra_signallayer (obj_id, infra_id, geographic, schematic)
 SELECT signal_id,
@@ -16,14 +16,14 @@ SELECT signal_id,
     ST_Transform(
         ST_LineInterpolatePoint(
             track_geo,
-            LEAST(GREATEST(signal_position / track_length, 0.), 1.)
+            LEAST(signal_position / track_length, 1.)
         ),
         3857
     ),
     ST_Transform(
         ST_LineInterpolatePoint(
             track_sch,
-            LEAST(GREATEST(signal_position / track_length, 0.), 1.)
+            LEAST(signal_position / track_length, 1.)
         ),
         3857
     )
