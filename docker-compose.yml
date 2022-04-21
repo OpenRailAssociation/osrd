@@ -124,7 +124,7 @@ services:
     network_mode: host
     depends_on:
       postgres: {condition: service_healthy}
-      api: {condition: service_healthy}
+      chartos: {condition: service_healthy}
     build:
       context: editoast
       dockerfile: Dockerfile

@@ -23,6 +23,7 @@ use diesel::{Connection, PgConnection};
 use infra_cache::InfraCache;
 use models::{DBConnection, Infra};
 use rocket::config::Value;
+use rocket::Rocket;
 use std::collections::HashMap;
 use std::error::Error;
 use std::process::exit;
@@ -47,6 +48,35 @@ fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
         Commands::Generate(args) => generate(args, pg_config, chartos_config),
     }
 }
+pub fn create_server(
+    infra_caches: CHashMap<i32, InfraCache>,
+    port: u16,
+    pg_config: &PostgresConfig,
+    chartos_config: ChartosConfig,
+) -> Rocket {
+    // Config server
+    let databases = HashMap::from([(
+        "postgres",
+        Value::from(HashMap::from([("url", Value::from(pg_config.url()))])),
+    )]);
+
+    let mut config = rocket::Config::active().unwrap();
+    config.set_port(port);
+    config
+        .extras
+        .insert("databases".to_string(), databases.into());
+
+    let mut rocket = rocket::custom(config)
+        .attach(DBConnection::fairing())
+        .manage(infra_caches)
+        .manage(chartos_config);
+
+    // Mount routes
+    for (base, routes) in views::routes() {
+        rocket = rocket.mount(base, routes);
+    }
+    rocket
+}
 
 fn runserver(
     args: RunserverArgs,
@@ -63,27 +93,7 @@ fn runserver(
         infra_caches.insert_new(infra.id, infra_cache);
     }
 
-    // Config server
-    let databases = HashMap::from([(
-        "postgres",
-        Value::from(HashMap::from([("url", Value::from(pg_config.url()))])),
-    )]);
-
-    let mut config = rocket::Config::active().unwrap();
-    config.set_port(args.port);
-    config
-        .extras
-        .insert("databases".to_string(), databases.into());
-
-    let mut rocket = rocket::custom(config)
-        .attach(DBConnection::fairing())
-        .manage(infra_caches)
-        .manage(chartos_config);
-
-    // Mount routes
-    for (base, routes) in views::routes() {
-        rocket = rocket.mount(base, routes);
-    }
+    let rocket = create_server(infra_caches, args.port, &pg_config, chartos_config);
 
     // Run server
     rocket.launch();
