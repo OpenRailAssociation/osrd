@@ -15,6 +15,8 @@ public class SwitchBranchImpl implements SwitchBranch {
 
     public Switch switchRef;
     int index;
+    public final String srcPort;
+    public final String dstPort;
 
     /** static mapping from direction to empty map. Avoids unnecessary object instantiations */
     private static final EnumMap<Direction, DoubleRangeMap> emptyMap = new EnumMap<>(Map.of(
@@ -22,12 +24,10 @@ public class SwitchBranchImpl implements SwitchBranch {
             Direction.BACKWARD, new DoubleRangeMap()
     ));
 
-    @Override
-    @ExcludeFromGeneratedCodeCoverage
-    public String toString() {
-        return MoreObjects.toStringHelper(this)
-                .add("switchRef", switchRef.getID())
-                .toString();
+    /** Constructor */
+    public SwitchBranchImpl(String srcPort, String dstPort) {
+        this.srcPort = srcPort;
+        this.dstPort = dstPort;
     }
 
     @Override
@@ -53,5 +53,16 @@ public class SwitchBranchImpl implements SwitchBranch {
     @Override
     public int getIndex() {
         return index;
+    }
+
+    @Override
+    @ExcludeFromGeneratedCodeCoverage
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("switchRef.ID", switchRef.getID())
+                .add("index", index)
+                .add("srcPort", srcPort)
+                .add("dstPort", dstPort)
+                .toString();
     }
 }
