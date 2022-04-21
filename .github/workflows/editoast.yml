@@ -27,13 +27,13 @@ jobs:
         with:
           load: true
           files: "docker-compose.yml"
-          targets: "api"
+          targets: "api,chartos"
           set: |
             *.cache-from=type=gha
             *.cache-to=type=gha,mode=max
 
       - name: Startup the postgres and api
-        run: "docker-compose up --no-build -d postgres api"
+        run: "docker-compose up --no-build -d postgres api chartos"
         env:
           DOCKER_BUILDKIT: 1
           COMPOSE_DOCKER_CLI_BUILD: 1
@@ -46,7 +46,7 @@ jobs:
       - name: Test
         run: |
           cd editoast
-          cargo test --verbose
+          cargo test --verbose -- --test-threads 2
 
   linter:
     name: Check format and run linter
