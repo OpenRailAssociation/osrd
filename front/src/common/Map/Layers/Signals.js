@@ -86,14 +86,18 @@ const Signals = (props) => {
         ];
       case 'TECS':
       case 'TSCS':
-        return ['concat', prefix, type, ' ', ['get', 'LP_positionLocalisation']];
+        return ['concat', prefix, type, ' ', ['case',
+          ['==', ['get', 'side'], 'RIGHT'], 'D',
+          ['==', ['get', 'side'], 'LEFT'], 'G',
+          '',
+        ]];
       default:
         return `${prefix}${type}`;
     }
   };
 
   const signalMat = () => {
-    const angleName = (sourceLayer === 'sch') ? 'angleSch' : 'angleGeo';
+    const angleName = (sourceLayer === 'sch') ? 'angle_sch' : 'angle_geo';
 
     return ({
       type: 'symbol',
@@ -107,8 +111,8 @@ const Signals = (props) => {
         ],
         'text-size': 9,
         'icon-image': ['case',
-          ['==', ['get', 'LP_positionLocalisation'], 'D'], 'MATD',
-          ['==', ['get', 'LP_positionLocalisation'], 'G'], 'MATG',
+          ['==', ['get', 'side'], 'RIGHT'], 'MATD',
+          ['==', ['get', 'side'], 'LEFT'], 'MATG',
           '',
         ],
         'icon-size': 0.7,
@@ -141,16 +145,16 @@ const Signals = (props) => {
         ],
         'text-size': 8,
         'text-offset': ['case',
-          ['==', ['get', 'LP_positionLocalisation'], 'D'], ['literal', [1, -3]],
-          ['==', ['get', 'LP_positionLocalisation'], 'G'], ['literal', [-1, -3]],
+          ['==', ['get', 'side'], 'RIGHT'], ['literal', [1, -3]],
+          ['==', ['get', 'side'], 'LEFT'], ['literal', [-1, -3]],
           ['literal', [0, 0]],
         ],
         'icon-offset': iconOffset,
         'icon-image': signalsTosprites(type),
         'icon-size': 0.5,
         'text-anchor': ['case',
-          ['==', ['get', 'LP_positionLocalisation'], 'D'], 'left',
-          ['==', ['get', 'LP_positionLocalisation'], 'G'], 'right',
+          ['==', ['get', 'side'], 'RIGHT'], 'left',
+          ['==', ['get', 'side'], 'LEFT'], 'right',
           'center',
         ],
         'icon-rotation-alignment': 'map',
@@ -184,8 +188,8 @@ const Signals = (props) => {
       ],
       'text-size': 8,
       'text-offset': ['case',
-        ['==', ['get', 'LP_positionLocalisation'], 'D'], ['literal', [3.5, -3.5]],
-        ['==', ['get', 'LP_positionLocalisation'], 'G'], ['literal', [-3.5, -3.5]],
+        ['==', ['get', 'side'], 'RIGHT'], ['literal', [3.5, -3.5]],
+        ['==', ['get', 'side'], 'LEFT'], ['literal', [-3.5, -3.5]],
         ['literal', [0, 0]],
       ],
       'icon-offset': iconOffset,
@@ -207,7 +211,7 @@ const Signals = (props) => {
   });
 
   const signal = (type) => {
-    const angleName = (sourceLayer === 'sch') ? 'angleSch' : 'angleGeo';
+    const angleName = (sourceLayer === 'sch') ? 'angle_sch' : 'angle_geo';
 
     let size = 0.4;
     let offsetY = -105;
@@ -229,14 +233,14 @@ const Signals = (props) => {
     const minZoom = 14;
 
     const textOffset = ['case',
-      ['==', ['get', 'LP_positionLocalisation'], 'D'], ['literal', [textOffsetX, -0.3]],
-      ['==', ['get', 'LP_positionLocalisation'], 'G'], ['literal', [(textOffsetX * -1), -0.3]],
+      ['==', ['get', 'side'], 'RIGHT'], ['literal', [textOffsetX, -0.3]],
+      ['==', ['get', 'side'], 'LEFT'], ['literal', [(textOffsetX * -1), -0.3]],
       ['literal', [2, 0]],
     ];
 
     const iconOffset = ['case',
-      ['==', ['get', 'LP_positionLocalisation'], 'D'], ['literal', [iconOffsetX, offsetY]],
-      ['==', ['get', 'LP_positionLocalisation'], 'G'], ['literal', [(iconOffsetX * -1), offsetY]],
+      ['==', ['get', 'side'], 'RIGHT'], ['literal', [iconOffsetX, offsetY]],
+      ['==', ['get', 'side'], 'LEFT'], ['literal', [(iconOffsetX * -1), offsetY]],
       ['literal', [0, 0]],
     ];
 
@@ -273,8 +277,8 @@ const Signals = (props) => {
           minZoom, size,
         ],
         'text-anchor': ['case',
-          ['==', ['get', 'LP_positionLocalisation'], 'D'], 'left',
-          ['==', ['get', 'LP_positionLocalisation'], 'G'], 'right',
+          ['==', ['get', 'side'], 'RIGHT'], 'left',
+          ['==', ['get', 'side'], 'LEFT'], 'right',
           'center',
         ],
         'icon-anchor': 'center',
