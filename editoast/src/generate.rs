@@ -1,6 +1,7 @@
 use crate::client::ChartosConfig;
 use crate::error::ApiError;
 use crate::infra_cache::InfraCache;
+use crate::models::errors::generate_errors;
 use crate::models::DBConnection;
 use crate::models::Infra;
 use crate::models::SignalLayer;
@@ -16,6 +17,7 @@ pub fn refresh(
     infra: &Infra,
     force: bool,
     chartos_config: &ChartosConfig,
+    infra_cache: &InfraCache,
 ) -> Result<bool, Box<dyn ApiError>> {
     // Check if refresh is needed
     if !force
@@ -29,6 +31,9 @@ pub fn refresh(
     TrackSectionLayer::refresh(conn, infra.id, chartos_config)?;
     SignalLayer::refresh(conn, infra.id, chartos_config)?;
     SpeedSectionLayer::refresh(conn, infra.id, chartos_config)?;
+
+    // Generate errors
+    generate_errors(conn, infra.id, infra_cache, chartos_config)?;
 
     // Update generated infra version
     infra.bump_generated_version(conn)?;
@@ -45,5 +50,9 @@ pub fn update(
     TrackSectionLayer::update(conn, infra_id, operations, chartos_config)?;
     SignalLayer::update(conn, infra_id, operations, infra_cache, chartos_config)?;
     SpeedSectionLayer::update(conn, infra_id, operations, infra_cache, chartos_config)?;
+
+    // Generate errors
+    generate_errors(conn, infra_id, infra_cache, chartos_config)?;
+
     Ok(())
 }

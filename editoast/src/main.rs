@@ -129,7 +129,8 @@ fn generate(
             infra.name.bold(),
             infra.id
         );
-        generate::refresh(&conn, &infra, args.force, &chartos_config)?;
+        let infra_cache = InfraCache::init(&conn, infra.id);
+        generate::refresh(&conn, &infra, args.force, &chartos_config, &infra_cache)?;
         println!("✅ Infra {}[{}] generated!", infra.name.bold(), infra.id);
     }
     Ok(())
