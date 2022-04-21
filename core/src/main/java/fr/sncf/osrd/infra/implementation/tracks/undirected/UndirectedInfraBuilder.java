@@ -8,7 +8,7 @@ import com.google.common.graph.NetworkBuilder;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.tracks.undirected.*;
-import fr.sncf.osrd.infra.implementation.InvalidInfraError;
+import fr.sncf.osrd.infra.errors.InvalidInfraError;
 import fr.sncf.osrd.infra.implementation.RJSObjectParsing;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;

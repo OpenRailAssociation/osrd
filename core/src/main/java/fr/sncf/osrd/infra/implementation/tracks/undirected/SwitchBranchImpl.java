@@ -56,6 +56,11 @@ public class SwitchBranchImpl implements SwitchBranch {
     }
 
     @Override
+    public String getID() {
+        return String.format("SwitchID=%s, src=%s, dst=%s", switchRef.getID(), srcPort, dstPort);
+    }
+
+    @Override
     @ExcludeFromGeneratedCodeCoverage
     public String toString() {
         return MoreObjects.toStringHelper(this)

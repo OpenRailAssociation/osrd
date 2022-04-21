@@ -18,6 +18,7 @@ import fr.sncf.osrd.infra.api.tracks.directed.DiTrackEdge;
 import fr.sncf.osrd.infra.api.tracks.directed.DiTrackInfra;
 import fr.sncf.osrd.infra.api.tracks.undirected.Detector;
 import fr.sncf.osrd.infra.api.tracks.undirected.SwitchBranch;
+import fr.sncf.osrd.infra.errors.DiscontinuousRoute;
 import fr.sncf.osrd.infra.implementation.RJSObjectParsing;
 import fr.sncf.osrd.infra.implementation.tracks.directed.DirectedInfraBuilder;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
@@ -173,7 +174,8 @@ public class ReservationInfraBuilder {
             var connecting = g.edgeConnecting(prevNode, nextNode);
             if (connecting.isEmpty())
                 connecting = g.edgeConnecting(nextNode, prevNode);
-            assert connecting.isPresent() : "Route track path isn't contiguous";
+            if (connecting.isEmpty())
+                throw new DiscontinuousRoute(rjsRoute.id, prev.track.getEdge().getID(), next.track.getEdge().getID());
             var branchEdge = connecting.get();
             var dir = g.incidentNodes(branchEdge).nodeU().equals(prevNode) ? FORWARD : BACKWARD;
             res.add(i, new TrackRangeView(0, 0, diTrackInfra.getEdge(branchEdge, dir)));
