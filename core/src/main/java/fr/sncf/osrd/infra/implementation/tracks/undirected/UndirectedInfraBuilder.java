@@ -159,21 +159,33 @@ public class UndirectedInfraBuilder {
         }
 
         // Insert railjson slopes
-        if (track.slopes != null)
-            for (var rjsSlope : track.slopes)
-                if (rjsSlope.gradient != 0.)
+        if (track.slopes != null) {
+            for (var rjsSlope : track.slopes) {
+                rjsSlope.simplify();
+                if (rjsSlope.begin < 0 || rjsSlope.end > track.length)
+                    throw new InvalidInfraError(
+                            String.format("Track '%s' has a slope with an invalid range", track.id));
+                if (rjsSlope.gradient != 0.) {
                     for (var dir : Direction.values())
                         res.get(dir).addRange(rjsSlope.begin, rjsSlope.end, rjsSlope.gradient * dir.sign);
+                }
+            }
+        }
         for (var dir : Direction.values())
             addCurvesToGradients(res.get(dir), track);
         return res;
     }
 
     /** Inserts curves as extra gradient values */
-    private static void addCurvesToGradients(DoubleRangeMap gradients, RJSTrackSection trackSection) {
+    private static void addCurvesToGradients(DoubleRangeMap gradients, RJSTrackSection track) {
         // Insert curves: gradient + 800 / radius
-        if (trackSection.curves != null)
-            for (var rjsCurve : trackSection.curves) {
+        if (track.curves != null)
+            for (var rjsCurve : track.curves) {
+                rjsCurve.simplify();
+                if (rjsCurve.begin < 0 || rjsCurve.end > track.length)
+                    throw new InvalidInfraError(
+                            String.format("Track '%s' has a curve with an invalid range", track.id));
+
                 if (rjsCurve.radius == 0.)
                     continue;
 
