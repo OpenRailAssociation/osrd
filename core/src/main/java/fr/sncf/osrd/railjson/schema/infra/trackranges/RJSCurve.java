@@ -12,4 +12,14 @@ public class RJSCurve extends RJSBiDirectionalTrackRange {
         super(begin, end);
         this.radius = radius;
     }
+
+    /** Forces the start position to be lower than the end position. */
+    public void simplify() {
+        if (this.begin > this.end) {
+            var tmp = this.begin;
+            this.begin = this.end;
+            this.end = tmp;
+            this.radius *= -1.;
+        }
+    }
 }

@@ -11,4 +11,14 @@ public class RJSSlope extends RJSBiDirectionalTrackRange {
         super(begin, end);
         this.gradient = gradient;
     }
+
+    /** Forces the start position to be lower than the end position. */
+    public void simplify() {
+        if (this.begin > this.end) {
+            var tmp = this.begin;
+            this.begin = this.end;
+            this.end = tmp;
+            this.gradient *= -1.;
+        }
+    }
 }
