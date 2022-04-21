@@ -12,7 +12,7 @@ use thiserror::Error;
 
 static RAILJSON_VERSION: &str = "2.2.1";
 
-#[derive(Clone, QueryableByName, Queryable, Debug, Serialize)]
+#[derive(Clone, QueryableByName, Queryable, Debug, Serialize, Deserialize)]
 #[table_name = "osrd_infra_infra"]
 pub struct Infra {
     pub id: i32,
@@ -89,6 +89,13 @@ impl Infra {
             .expect("List infra query failed")
     }
 
+    pub fn list_for_update(conn: &PgConnection) -> Vec<Infra> {
+        osrd_infra_infra
+            .for_update()
+            .load::<Self>(conn)
+            .expect("List infra query failed")
+    }
+
     pub fn bump_version(&self, conn: &PgConnection) -> Result<Self, Box<dyn ApiError>> {
         let new_version = self
             .version
@@ -120,7 +127,7 @@ impl Infra {
     pub fn create(infra_name: &String, conn: &PgConnection) -> Result<Infra, Box<dyn ApiError>> {
         match sql_query(
             "INSERT INTO osrd_infra_infra (name, railjson_version, owner, version, generated_version)
-             VALUES ($1, $2, '00000000-0000-0000-0000-000000000000', '1', NULL)
+             VALUES ($1, $2, '00000000-0000-0000-0000-000000000000', '0', '0')
              RETURNING *",
         )
         .bind::<Text, _>(infra_name)

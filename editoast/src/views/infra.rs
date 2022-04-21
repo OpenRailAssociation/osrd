@@ -24,30 +24,34 @@ fn refresh(
     force: bool,
     chartos_config: State<ChartosConfig>,
 ) -> ApiResult<JsonValue> {
-    let mut infras_list = vec![];
-    let infras = infras.0?;
+    // Use a transaction to give scope to infra list lock
+    conn.build_transaction().run::<_, EditoastError, _>(|| {
+        let mut infras_list = vec![];
+        let infras = infras.0?;
 
-    if infras.is_empty() {
-        // Retrieve all available infra
-        for infra in Infra::list(&conn) {
-            infras_list.push(infra);
+        if infras.is_empty() {
+            // Retrieve all available infra
+            for infra in Infra::list_for_update(&conn) {
+                infras_list.push(infra);
+            }
+        } else {
+            // Retrieve given infras
+            for id in infras.iter() {
+                infras_list.push(Infra::retrieve_for_update(&conn, *id)?);
+            }
         }
-    } else {
-        // Retrieve given infras
-        for id in infras.iter() {
-            infras_list.push(Infra::retrieve(&conn, *id)?);
-        }
-    }
 
-    // Refresh each infras
-    let mut refreshed_infra = vec![];
-    for infra in infras_list {
-        if generate::refresh(&conn, &infra, force, &chartos_config)? {
-            refreshed_infra.push(infra.id);
-        }
-    }
+        // Refresh each infras
+        let mut refreshed_infra = vec![];
 
-    Ok(json!({ "infra_refreshed": refreshed_infra }))
+        for infra in infras_list {
+            if generate::refresh(&conn, &infra, force, &chartos_config)? {
+                refreshed_infra.push(infra.id);
+            }
+        }
+
+        Ok(json!({ "infra_refreshed": refreshed_infra }))
+    })
 }
 
 /// Return a list of infras
@@ -130,4 +134,141 @@ fn edit(
         // Check for warnings and errors
         Ok(Json(operation_results))
     })
+}
+
+#[cfg(test)]
+mod test {
+    use crate::create_server;
+    use crate::models::Infra;
+    use rocket::http::{ContentType, Status};
+    use rocket::local::Client;
+    use serde::Deserialize;
+
+    #[test]
+    fn infras_list() {
+        let rocket = create_server(
+            Default::default(),
+            6000,
+            &Default::default(),
+            Default::default(),
+        );
+
+        let client = Client::new(rocket).expect("valid rocket instance");
+        let response = client.get("/infra").dispatch();
+        assert_eq!(response.status(), Status::Ok);
+    }
+
+    #[test]
+    fn infras_create_delete() {
+        let rocket = create_server(
+            Default::default(),
+            6000,
+            &Default::default(),
+            Default::default(),
+        );
+
+        let client = Client::new(rocket).expect("valid rocket instance");
+        let mut create_infra = client
+            .post("/infra")
+            .header(ContentType::JSON)
+            .body(r#"{"name":"test"}"#)
+            .dispatch();
+
+        let body = create_infra.body_string();
+        assert!(body.is_some());
+
+        let infra: Infra = serde_json::from_str(body.unwrap().as_str()).unwrap();
+
+        assert_eq!(create_infra.status(), Status::Created);
+        assert_eq!(infra.name, "test");
+
+        let delete_infra = client.delete(format!("/infra/{}", infra.id)).dispatch();
+
+        assert_eq!(delete_infra.status(), Status::NoContent);
+    }
+
+    #[derive(Deserialize)]
+    struct InfraRefreshedResponse {
+        infra_refreshed: Vec<i32>,
+    }
+
+    #[test]
+    fn infras_refresh() {
+        let rocket = create_server(
+            Default::default(),
+            6000,
+            &Default::default(),
+            Default::default(),
+        );
+
+        let client = Client::new(rocket).expect("valid rocket instance");
+
+        let mut create_infra = client
+            .post("/infra")
+            .header(ContentType::JSON)
+            .body(r#"{"name":"refresh_test"}"#)
+            .dispatch();
+
+        assert_eq!(create_infra.status(), Status::Created);
+
+        let body_infra = create_infra.body_string();
+        assert!(body_infra.is_some());
+        let infra: Infra = serde_json::from_str(body_infra.unwrap().as_str()).unwrap();
+        assert_eq!(infra.name, "refresh_test");
+
+        let mut infra_no_refresh = client
+            .post(format!("/infra/refresh/?infras={}", infra.id))
+            .dispatch();
+        assert_eq!(infra_no_refresh.status(), Status::Ok);
+
+        let body_refresh = infra_no_refresh.body_string();
+        assert!(body_refresh.is_some());
+
+        let refresh: InfraRefreshedResponse =
+            serde_json::from_str(body_refresh.unwrap().as_str()).unwrap();
+        assert!(refresh.infra_refreshed.is_empty());
+
+        let delete_infra = client.delete(format!("/infra/{}", infra.id)).dispatch();
+        assert_eq!(delete_infra.status(), Status::NoContent);
+    }
+
+    #[test]
+    fn infras_refresh_force() {
+        let rocket = create_server(
+            Default::default(),
+            6000,
+            &Default::default(),
+            Default::default(),
+        );
+
+        let client = Client::new(rocket).expect("valid rocket instance");
+
+        let mut create_infra = client
+            .post("/infra")
+            .header(ContentType::JSON)
+            .body(r#"{"name":"refresh_test"}"#)
+            .dispatch();
+
+        assert_eq!(create_infra.status(), Status::Created);
+
+        let body_infra = create_infra.body_string();
+        assert!(body_infra.is_some());
+        let infra: Infra = serde_json::from_str(body_infra.unwrap().as_str()).unwrap();
+        assert_eq!(infra.name, "refresh_test");
+
+        let mut infra_no_refresh = client
+            .post(format!("/infra/refresh/?force=true&infras={}", infra.id))
+            .dispatch();
+        assert_eq!(infra_no_refresh.status(), Status::Ok);
+
+        let body_refresh = infra_no_refresh.body_string();
+        assert!(body_refresh.is_some());
+
+        let refresh: InfraRefreshedResponse =
+            serde_json::from_str(body_refresh.unwrap().as_str()).unwrap();
+        assert!(refresh.infra_refreshed.contains(&infra.id));
+
+        let delete_infra = client.delete(format!("/infra/{}", infra.id)).dispatch();
+        assert_eq!(delete_infra.status(), Status::NoContent);
+    }
 }
