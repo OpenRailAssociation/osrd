@@ -1,8 +1,7 @@
-FROM rust:1.59.0 as builder
+FROM rustlang/rust:nightly as builder
 
 WORKDIR /app
 COPY . .
-RUN rustup default nightly
 RUN cargo install --path .
 
 FROM debian:buster-slim as runner
