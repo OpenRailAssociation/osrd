@@ -18,6 +18,7 @@ class GeometryPointTrait(BaseModel):
 class RoutePath(BaseModel):
     route: ObjectReference
     track_sections: List[DirectionalTrackRange]
+    signaling_type: str
 
 
 class PathWaypoint(GeometryPointTrait, TrackLocationTrait):

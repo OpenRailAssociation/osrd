@@ -49,12 +49,13 @@ public class TrainPathBuilder {
         try {
             var routePath = new ArrayList<SignalingRoute>();
             for (var rjsRoutePath : rjsTrainPath.routePath) {
-                var infraRoute = infra.getReservationRouteMap().get(rjsRoutePath.route.id.id);
-                if (infraRoute == null)
-                    throw new InvalidSchedule(String.format("Can't find route %s", rjsRoutePath.route.id.id));
-                var signalingRoutes = infra.getRouteMap().get(infraRoute);
-                // TODO: add an enum to determine the signalization type
-                routePath.add(signalingRoutes.stream().findFirst().orElseThrow());
+                var route = infra.findSignalingRoute(rjsRoutePath.route.id.id, rjsRoutePath.signalingType);
+                if (route == null)
+                    throw new InvalidSchedule(String.format(
+                            "Can't find route %s (type %s)",
+                            rjsRoutePath.route.id.id,
+                            rjsRoutePath.signalingType));
+                routePath.add(route);
             }
 
             var rjsStartTrackRange = rjsTrainPath.routePath.get(0).trackSections.get(0);
