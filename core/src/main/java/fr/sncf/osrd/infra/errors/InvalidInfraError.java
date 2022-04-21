@@ -1,4 +1,4 @@
-package fr.sncf.osrd.infra.implementation;
+package fr.sncf.osrd.infra.errors;
 
 import fr.sncf.osrd.exceptions.OSRDError;
 import java.io.Serial;

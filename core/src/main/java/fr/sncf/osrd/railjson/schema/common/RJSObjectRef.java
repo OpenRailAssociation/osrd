@@ -1,6 +1,6 @@
 package fr.sncf.osrd.railjson.schema.common;
 
-import fr.sncf.osrd.infra.implementation.InvalidInfraError;
+import fr.sncf.osrd.infra.errors.InvalidInfraError;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitchType;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.HashMap;

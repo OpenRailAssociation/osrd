@@ -32,4 +32,7 @@ public sealed interface TrackEdge permits SwitchBranch, TrackSection {
 
     /** Returns the operational points on the edge */
     ImmutableSet<OperationalPoint> getOperationalPoints();
+
+    /** Returns the ID if the edge is a track section, otherwise the signal ID with ports */
+    String getID();
 }
