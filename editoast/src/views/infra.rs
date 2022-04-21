@@ -23,6 +23,7 @@ fn refresh(
     infras: List<i32>,
     force: bool,
     chartos_config: State<ChartosConfig>,
+    infra_caches: State<CHashMap<i32, InfraCache>>,
 ) -> ApiResult<JsonValue> {
     // Use a transaction to give scope to infra list lock
     conn.build_transaction().run::<_, EditoastError, _>(|| {
@@ -45,7 +46,8 @@ fn refresh(
         let mut refreshed_infra = vec![];
 
         for infra in infras_list {
-            if generate::refresh(&conn, &infra, force, &chartos_config)? {
+            let infra_cache = infra_caches.get(&infra.id).unwrap();
+            if generate::refresh(&conn, &infra, force, &chartos_config, &infra_cache)? {
                 refreshed_infra.push(infra.id);
             }
         }

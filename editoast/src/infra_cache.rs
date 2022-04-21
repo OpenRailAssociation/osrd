@@ -5,16 +5,21 @@ use diesel::PgConnection;
 use diesel::{sql_query, QueryableByName, RunQueryDsl};
 use std::collections::{HashMap, HashSet};
 
+/// Contains infra cached data used to generate layers and errors
 #[derive(Debug, Default)]
 pub struct InfraCache {
-    // Map speed section id to track sections id
-    speed_section_dependencies: HashMap<String, Vec<String>>,
+    /// Map speed section id to track sections id
+    pub speed_section_dependencies: HashMap<String, Vec<String>>,
 
-    // Map signal id to track section id
-    signal_dependencies: HashMap<String, String>,
+    /// Map signal id to track section id
+    pub signal_dependencies: HashMap<String, String>,
 
-    // Map track section id to the list of objects that depend on it
-    track_sections_refs: HashMap<String, HashSet<ObjectRef>>,
+    /// Map track section id to the list of objects that depend on it
+    /// Contains all referenced track sections (not only existing ones)
+    pub track_sections_refs: HashMap<String, HashSet<ObjectRef>>,
+
+    /// List of existing track sections
+    pub track_sections: HashSet<String>,
 }
 
 #[derive(QueryableByName, Debug, Clone)]
@@ -23,6 +28,12 @@ struct ObjRefLink {
     obj_id: String,
     #[sql_type = "Text"]
     ref_id: String,
+}
+
+#[derive(QueryableByName, Debug, Clone)]
+struct ObjId {
+    #[sql_type = "Text"]
+    obj_id: String,
 }
 
 impl InfraCache {
@@ -54,6 +65,17 @@ impl InfraCache {
     /// Initialize an infra cache given an infra id
     pub fn init(conn: &PgConnection, infra_id: i32) -> InfraCache {
         let mut infra_cache = Self::default();
+
+        // Load track sections list
+        let track_sections =
+            sql_query("SELECT obj_id FROM osrd_infra_tracksectionmodel WHERE infra_id = $1")
+                .bind::<Integer, _>(infra_id)
+                .load::<ObjId>(conn)
+                .expect("Error loading track sections");
+        infra_cache.track_sections = track_sections
+            .into_iter()
+            .map(|obj_id| obj_id.obj_id)
+            .collect();
 
         // Load signal tracks references
         let signal_references = sql_query(
@@ -110,6 +132,12 @@ impl InfraCache {
                         .remove(object_ref);
                 }
             }
+            ObjectRef {
+                obj_type: ObjectType::TrackSection,
+                obj_id,
+            } => {
+                self.track_sections.remove(obj_id);
+            }
             _ => (),
         }
     }
@@ -152,7 +180,9 @@ impl InfraCache {
                         .insert(railjson_obj.get_ref());
                 });
             }
-            _ => (),
+            RailjsonObject::TrackSection { railjson } => {
+                self.track_sections.insert(railjson.id.clone());
+            }
         }
     }
 

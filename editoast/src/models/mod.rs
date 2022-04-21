@@ -1,3 +1,4 @@
+pub mod errors;
 pub mod infra;
 mod signal_layer;
 mod speed_section_layer;

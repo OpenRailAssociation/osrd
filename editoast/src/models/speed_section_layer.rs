@@ -112,7 +112,7 @@ impl SpeedSectionLayer {
             // No update needed
             return Ok(());
         }
-        dbg!(&obj_ids);
+
         Self::update_list(conn, infra, obj_ids)?;
         invalidate_chartos_layer(infra, "speed_sections", chartos_config);
         Ok(())
