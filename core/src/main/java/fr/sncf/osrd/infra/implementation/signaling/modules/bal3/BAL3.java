@@ -7,25 +7,27 @@ import fr.sncf.osrd.infra.api.reservation.DiDetector;
 import fr.sncf.osrd.infra.api.reservation.ReservationInfra;
 import fr.sncf.osrd.infra.api.reservation.ReservationRoute;
 import fr.sncf.osrd.infra.api.signaling.Signal;
+import fr.sncf.osrd.infra.api.signaling.SignalType;
 import fr.sncf.osrd.infra.api.signaling.SignalingModule;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.implementation.RJSObjectParsing;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
-import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /** This module implements the BAL3 signaling system.
  * It will eventually be moved to an external module */
 public class BAL3 implements SignalingModule {
+    public static final SignalType<?, BAL3SignalState> TYPE = SignalType.make(
+            "bal3", BAL3SignalState.class, BAL3SignalState.class);
 
     public enum Aspect {
         GREEN,
         YELLOW,
         RED
     }
-
 
     private final Map<DiDetector, BAL3Signal> detectorToSignal = new HashMap<>();
 
@@ -41,22 +43,21 @@ public class BAL3 implements SignalingModule {
     }
 
     @Override
-    public ImmutableMap<RJSSignal, Signal<?>> createSignals(ReservationInfra infra, RJSInfra rjsInfra) {
-        var res = ImmutableMap.<RJSSignal, Signal<?>>builder();
-        for (var signal : rjsInfra.signals) {
-            if (!isBALSignal(signal))
-                continue;
-            DiDetector linkedDetector = null;
-            if (signal.linkedDetector != null) {
-                var undirectedDetector = RJSObjectParsing.getDetector(signal.linkedDetector, infra.getDetectorMap());
-                var dir = signal.direction == EdgeDirection.START_TO_STOP ? Direction.FORWARD : Direction.BACKWARD;
-                linkedDetector = undirectedDetector.getDiDetector(dir);
-            }
-            var newSignal = new BAL3Signal(signal.id);
-            res.put(signal, newSignal);
-            detectorToSignal.put(linkedDetector, newSignal);
+    public Iterable<SignalType<?, ?>> getSupportedTypes() {
+        return List.of(TYPE);
+    }
+
+    @Override
+    public Signal<?> parseSignal(ReservationInfra infra, RJSSignal rjsSignal) {
+        var signal = new BAL3Signal(rjsSignal.id);
+
+        if (rjsSignal.linkedDetector != null) {
+            var undirectedDetector = RJSObjectParsing.getDetector(rjsSignal.linkedDetector, infra.getDetectorMap());
+            var dir = rjsSignal.direction == EdgeDirection.START_TO_STOP ? Direction.FORWARD : Direction.BACKWARD;
+            var linkedDetector = undirectedDetector.getDiDetector(dir);
+            detectorToSignal.put(linkedDetector, signal);
         }
-        return res.build();
+        return signal;
     }
 
     @Override
@@ -81,11 +82,6 @@ public class BAL3 implements SignalingModule {
             }
         }
         return res.build();
-    }
-
-    private static boolean isBALSignal(RJSSignal signal) {
-        // TODO
-        return true;
     }
 
     private static boolean isBALRoute(ReservationRoute route) {

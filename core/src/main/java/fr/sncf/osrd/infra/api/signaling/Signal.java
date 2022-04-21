@@ -1,8 +1,8 @@
 package fr.sncf.osrd.infra.api.signaling;
 
 import fr.sncf.osrd.infra.api.reservation.ReservationRoute;
-import fr.sncf.osrd.infra_state.api.InfraStateView;
-import fr.sncf.osrd.infra_state.api.SignalizationStateView;
+import fr.sncf.osrd.dyn_infra.api.InfraStateView;
+import fr.sncf.osrd.dyn_infra.api.SignalizationStateView;
 import java.util.Set;
 
 /**
@@ -10,6 +10,9 @@ import java.util.Set;
  * It has an associated SignalState per simulation
  */
 public interface Signal<StateT extends SignalState> {
+    /** Returns the type metadata associated with the signal */
+    SignalType<?, StateT> getType();
+
     /** Returns the initial state of the signal */
     StateT getInitialState();
 

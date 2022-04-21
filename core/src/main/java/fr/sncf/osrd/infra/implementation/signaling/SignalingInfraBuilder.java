@@ -9,8 +9,10 @@ import fr.sncf.osrd.infra.api.reservation.ReservationInfra;
 import fr.sncf.osrd.infra.api.reservation.ReservationRoute;
 import fr.sncf.osrd.infra.api.signaling.*;
 import fr.sncf.osrd.infra.implementation.reservation.ReservationInfraBuilder;
+import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -77,8 +79,21 @@ public class SignalingInfraBuilder {
     }
 
     /** Creates the signal multimap, calling each module and merging the results */
-    private ImmutableMultimap<RJSSignal, Signal<? extends SignalState>> makeSignalMap() {
-        return loadAndMergeMultimap(module -> module.createSignals(reservationInfra, rjsInfra));
+    private ImmutableMultimap<RJSSignal, Signal<?>> makeSignalMap() {
+        var res = ImmutableMultimap.<RJSSignal, Signal<?>>builder();
+
+        var typeHandler = new HashMap<String, SignalingModule>();
+        for (var module : signalingModules)
+            for (var signalType : module.getSupportedTypes())
+                typeHandler.put(signalType.getName(), module);
+
+        for (var rjsSignal : rjsInfra.signals) {
+            // TODO: add generic signal support to railjson (the signal type field)
+            var module = typeHandler.get(BAL3.TYPE.getName());
+            var signal = module.parseSignal(reservationInfra, rjsSignal);
+            res.put(rjsSignal, signal);
+        }
+        return res.build();
     }
 
     /** Runs a module method and merges the results as a multimap */
