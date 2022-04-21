@@ -15,11 +15,13 @@ import fr.sncf.osrd.infra.api.tracks.undirected.SwitchBranch;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackEdge;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackInfra;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackNode;
+import fr.sncf.osrd.infra.implementation.tracks.undirected.SwitchPortImpl;
 import fr.sncf.osrd.infra.implementation.tracks.undirected.UndirectedInfraBuilder;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.utils.UnionFind;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class DirectedInfraBuilder {
     /** Map from undirected node to directed node (forward) */
@@ -71,7 +73,18 @@ public class DirectedInfraBuilder {
             for (var direction : Direction.values()) {
                 for (var adjacent : adjacentEdges(undirectedGraph, edge, endEndpoint(direction))) {
                     if (canGoFromAToB(edge, adjacent)) {
-                        linkEdges(edge, adjacent, nodeFromEdgeEndpoint(undirectedGraph, edge, endEndpoint(direction)));
+                        linkEdges(
+                                edge, adjacent,
+                                nodeFromEdgeEndpoint(undirectedGraph, edge, endEndpoint(direction)),
+                                false);
+                    }
+                    if (!isNotSwitchBranch(edge) && !isNotSwitchBranch(adjacent)) {
+                        // This prevents a crash if we have a switch where the base isn't linked to anything.
+                        // It shouldn't happen, but we should be able to handle it with no crash
+                        linkEdges(
+                                edge, adjacent,
+                                nodeFromEdgeEndpoint(undirectedGraph, edge, endEndpoint(direction)),
+                                true);
                     }
                 }
             }
@@ -117,10 +130,12 @@ public class DirectedInfraBuilder {
     }
 
     /** Links two edges across the given node, registering it in the union find */
-    private void linkEdges(TrackEdge a, TrackEdge b, TrackNode node) {
+    private void linkEdges(TrackEdge a, TrackEdge b, TrackNode node, boolean commonSwitchPort) {
         var endpointA = endpointOfNode(undirectedGraph, a, node);
         var endpointB = endpointOfNode(undirectedGraph, b, node);
         var invertedDirection = endpointA == endpointB;
+        if (commonSwitchPort)
+            invertedDirection = !invertedDirection;
         for (var direction : Direction.values()) {
             var otherDirection = invertedDirection ? direction.opposite() : direction;
             uf.union(

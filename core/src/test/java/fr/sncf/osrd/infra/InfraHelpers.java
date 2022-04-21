@@ -97,8 +97,8 @@ public class InfraHelpers {
         builder.addEdge(nodeIn1, nodeOut1, new TrackSectionImpl(0, "1"));
         builder.addEdge(nodeIn2, nodeOut2, new TrackSectionImpl(0, "2"));
         builder.addEdge(nodeIn3, nodeOut3, new TrackSectionImpl(0, "3"));
-        builder.addEdge(nodeIn1, nodeIn2, new SwitchBranchImpl());
-        builder.addEdge(nodeIn3, nodeIn1, new SwitchBranchImpl());
+        builder.addEdge(nodeIn1, nodeIn2, new SwitchBranchImpl("1", "2"));
+        builder.addEdge(nodeIn3, nodeIn1, new SwitchBranchImpl("3", "1"));
 
         return TrackInfraImpl.from(null, builder.build());
     }
