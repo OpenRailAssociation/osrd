@@ -241,7 +241,7 @@ public class UndirectedInfraBuilder {
             for (var e : entry.getValue()) {
                 var src = finalPortMap.get(e.src);
                 var dst = finalPortMap.get(e.dst);
-                var branch = new SwitchBranchImpl();
+                var branch = new SwitchBranchImpl(e.src, e.dst);
                 groups.put(entry.getKey(), branch);
                 assert src != null;
                 assert dst != null;
