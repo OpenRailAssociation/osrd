@@ -16,7 +16,7 @@ pub fn generate_errors(
     let mut speed_section_ids = vec![];
     for (speed_id, track_refs) in infra_cache.speed_section_dependencies.iter() {
         for (index, track_ref) in track_refs.iter().enumerate() {
-            if !infra_cache.track_sections.contains(track_ref) {
+            if !infra_cache.track_sections.contains_key(track_ref) {
                 let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_ref.into());
                 let infra_error =
                     InfraError::new_invalid_reference(format!("track_ranges.{}", index), obj_ref);
@@ -26,7 +26,7 @@ pub fn generate_errors(
         }
     }
 
-    let count = sql_query(include_str!("sql/speed_sections_invalid_refs.sql"))
+    let count = sql_query(include_str!("sql/speed_sections_insert_errors.sql"))
         .bind::<Integer, _>(infra_id)
         .bind::<Array<Text>, _>(&speed_section_ids)
         .bind::<Array<Json>, _>(&errors)
