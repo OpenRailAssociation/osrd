@@ -804,19 +804,24 @@ components:
                 type: string
                 description: id of the affected route on the train path
               time_start:
-                type: float
+                type: number
+                format: float
                 description: the aspect starts being displayed at this time
               time_end:
-                type: float
+                type: number
+                format: float
                 description: the aspect stops being displayed at this time
               position_start:
-                type: float
+                type: number
+                format: float
                 description: the route starts at this position on the train path
               position_end:
-                type: float
+                type: number
+                format: float
                 description: the route ends at this position on the train path
               color:
-                type: int
+                type: number
+                format: float
                 description: color of the aspect (Bits 24-31 are alpha, 16-23 are red, 8-15 are green, 0-7 are blue)
               blinking:
                 type: boolean
