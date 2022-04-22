@@ -1,17 +1,15 @@
 use crate::railjson::operation::{OperationResult, RailjsonObject};
-use crate::railjson::{ObjectRef, ObjectType};
+use crate::railjson::{ApplicableDirectionsTrackRange, ObjectRef, ObjectType, SpeedSection};
 use derivative::Derivative;
-use diesel::sql_types::{Double, Integer, Text};
+use diesel::sql_types::{Double, Integer, Json, Text};
 use diesel::PgConnection;
 use diesel::{sql_query, QueryableByName, RunQueryDsl};
+use serde_json::Value;
 use std::collections::{HashMap, HashSet};
 
 /// Contains infra cached data used to generate layers and errors
 #[derive(Debug, Default)]
 pub struct InfraCache {
-    /// Map speed section id to track sections id
-    pub speed_section_dependencies: HashMap<String, Vec<String>>,
-
     /// Map track section id to the list of objects that depend on it
     /// Contains all referenced track sections (not only existing ones)
     pub track_sections_refs: HashMap<String, HashSet<ObjectRef>>,
@@ -21,14 +19,9 @@ pub struct InfraCache {
 
     /// List existing signals
     pub signals: HashMap<String, SignalCache>,
-}
 
-#[derive(QueryableByName, Debug, Clone)]
-struct ObjRefLink {
-    #[sql_type = "Text"]
-    obj_id: String,
-    #[sql_type = "Text"]
-    ref_id: String,
+    /// List existing speed sections
+    pub speed_sections: HashMap<String, SpeedSection>,
 }
 
 #[derive(QueryableByName, Debug, Clone, Derivative)]
@@ -46,7 +39,6 @@ impl TrackCache {
         Self { obj_id, length }
     }
 }
-
 #[derive(QueryableByName, Debug, Clone, Derivative)]
 #[derivative(Hash, PartialEq)]
 pub struct SignalCache {
@@ -70,7 +62,15 @@ impl SignalCache {
     }
 }
 
-impl Eq for TrackCache {}
+#[derive(QueryableByName, Debug, Clone)]
+pub struct SpeedSectionQueryable {
+    #[sql_type = "Text"]
+    pub obj_id: String,
+    #[sql_type = "Json"]
+    pub track_ranges: Value,
+    #[sql_type = "Double"]
+    pub speed: f64,
+}
 
 impl InfraCache {
     fn add_track_ref(&mut self, track_id: String, obj_ref: ObjectRef) {
@@ -78,15 +78,6 @@ impl InfraCache {
             .entry(track_id)
             .or_default()
             .insert(obj_ref);
-    }
-
-    fn add_tracks_refs(&mut self, refs: &[ObjRefLink], obj_type: ObjectType) {
-        for link in refs.iter() {
-            self.track_sections_refs
-                .entry(link.ref_id.clone())
-                .or_default()
-                .insert(ObjectRef::new(obj_type, link.obj_id.clone()));
-        }
     }
 
     fn load_signals(&mut self, signals: Vec<SignalCache>) {
@@ -99,12 +90,24 @@ impl InfraCache {
         }
     }
 
-    fn add_speed_section_dependencies(&mut self, refs: &[ObjRefLink]) {
-        for link in refs.iter() {
-            self.speed_section_dependencies
-                .entry(link.obj_id.clone())
-                .or_default()
-                .push(link.ref_id.clone());
+    fn load_speed_sections(&mut self, speed_sections: Vec<SpeedSectionQueryable>) {
+        for speed in speed_sections {
+            let track_ranges: Vec<ApplicableDirectionsTrackRange> =
+                serde_json::from_value(speed.track_ranges).unwrap();
+            for track_range in track_ranges.iter() {
+                self.add_track_ref(
+                    track_range.track.obj_id.clone(),
+                    ObjectRef::new(ObjectType::SpeedSection, speed.obj_id.clone()),
+                );
+            }
+            self.speed_sections.insert(
+                speed.obj_id.clone(),
+                SpeedSection {
+                    id: speed.obj_id.clone(),
+                    speed: speed.speed,
+                    track_ranges,
+                },
+            );
         }
     }
 
@@ -131,12 +134,10 @@ impl InfraCache {
         .load::<SignalCache>(conn).expect("Error loading signal refs"));
 
         // Load speed sections tracks references
-        let speed_references = sql_query(
-            "SELECT obj_id, jsonb_array_elements(data->'track_ranges')->'track'->>'id' AS ref_id FROM osrd_infra_speedsectionmodel WHERE infra_id = $1")
+        infra_cache.load_speed_sections(sql_query(
+            "SELECT obj_id, data->>'track_ranges' AS track_ranges, (data->>'speed')::float AS speed FROM osrd_infra_speedsectionmodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
-        .load(conn).expect("Error loading signal refs");
-        infra_cache.add_tracks_refs(&speed_references, ObjectType::SpeedSection);
-        infra_cache.add_speed_section_dependencies(&speed_references);
+        .load(conn).expect("Error loading speed section refs"));
 
         infra_cache
     }
@@ -169,10 +170,10 @@ impl InfraCache {
                 obj_type: ObjectType::SpeedSection,
                 obj_id,
             } => {
-                let track_ids = self.speed_section_dependencies.remove(obj_id).unwrap();
-                for track_id in track_ids {
+                let speed = self.speed_sections.remove(obj_id).unwrap();
+                for track_range in speed.track_ranges {
                     self.track_sections_refs
-                        .get_mut(&track_id)
+                        .get_mut(&track_range.track.obj_id)
                         .unwrap()
                         .remove(object_ref);
                 }
@@ -215,15 +216,8 @@ impl InfraCache {
             }
             RailjsonObject::SpeedSection { railjson } => {
                 assert!(self
-                    .speed_section_dependencies
-                    .insert(
-                        railjson.id.clone(),
-                        railjson
-                            .track_ranges
-                            .iter()
-                            .map(|track_range| track_range.track.obj_id.clone())
-                            .collect(),
-                    )
+                    .speed_sections
+                    .insert(railjson.id.clone(), railjson.clone())
                     .is_none());
                 railjson.track_ranges.iter().for_each(|track_range| {
                     self.track_sections_refs
