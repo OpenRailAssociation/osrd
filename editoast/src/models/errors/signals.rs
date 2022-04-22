@@ -27,7 +27,7 @@ pub fn generate_errors(
 
         let track_cache = infra_cache.track_sections.get(&signal.track).unwrap();
         // Retrieve out of range
-        if !(0.0..track_cache.length).contains(&signal.position) {
+        if !(0.0..=track_cache.length).contains(&signal.position) {
             let infra_error = InfraError::new_out_of_range(
                 "position".into(),
                 signal.position,
