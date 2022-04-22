@@ -14,12 +14,36 @@ pub fn generate_errors(
 ) -> Result<(), DieselError> {
     let mut errors = vec![];
     let mut speed_section_ids = vec![];
-    for (speed_id, track_refs) in infra_cache.speed_section_dependencies.iter() {
-        for (index, track_ref) in track_refs.iter().enumerate() {
-            if !infra_cache.track_sections.contains_key(track_ref) {
-                let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_ref.into());
+    for (speed_id, speed_section) in infra_cache.speed_sections.iter() {
+        for (index, track_range) in speed_section.track_ranges.iter().enumerate() {
+            // Retrieve invalid refs
+            let track_id = &track_range.track.obj_id;
+            if !infra_cache.track_sections.contains_key(track_id) {
+                let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_id.clone());
                 let infra_error =
                     InfraError::new_invalid_reference(format!("track_ranges.{}", index), obj_ref);
+                errors.push(to_value(infra_error).unwrap());
+                speed_section_ids.push(speed_id.clone());
+                continue;
+            }
+
+            let track_cache = infra_cache.track_sections.get(track_id).unwrap();
+            // Retrieve out of range
+            if !(0.0..=track_cache.length).contains(&track_range.begin) {
+                let infra_error = InfraError::new_out_of_range(
+                    format!("track_ranges.{}.begin", index),
+                    track_range.begin,
+                    [0.0, track_cache.length],
+                );
+                errors.push(to_value(infra_error).unwrap());
+                speed_section_ids.push(speed_id.clone());
+            }
+            if !(0.0..=track_cache.length).contains(&track_range.end) {
+                let infra_error = InfraError::new_out_of_range(
+                    format!("track_ranges.{}.end", index),
+                    track_range.begin,
+                    [0.0, track_cache.length],
+                );
                 errors.push(to_value(infra_error).unwrap());
                 speed_section_ids.push(speed_id.clone());
             }
