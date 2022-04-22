@@ -14,16 +14,31 @@ pub fn generate_errors(
 ) -> Result<(), DieselError> {
     let mut errors = vec![];
     let mut signal_ids = vec![];
-    for (signal_id, track_ref) in infra_cache.signal_dependencies.iter() {
-        if !infra_cache.track_sections.contains(track_ref) {
-            let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_ref.into());
+
+    for (signal_id, signal) in infra_cache.signals.iter() {
+        // Retrieve invalid refs
+        if !infra_cache.track_sections.contains_key(&signal.track) {
+            let obj_ref = ObjectRef::new(ObjectType::TrackSection, signal.track.clone());
             let infra_error = InfraError::new_invalid_reference("track".into(), obj_ref);
+            errors.push(to_value(infra_error).unwrap());
+            signal_ids.push(signal_id.clone());
+            continue;
+        }
+
+        let track_cache = infra_cache.track_sections.get(&signal.track).unwrap();
+        // Retrieve out of range
+        if !(0.0..track_cache.length).contains(&signal.position) {
+            let infra_error = InfraError::new_out_of_range(
+                "position".into(),
+                signal.position,
+                [0.0, track_cache.length],
+            );
             errors.push(to_value(infra_error).unwrap());
             signal_ids.push(signal_id.clone());
         }
     }
 
-    let count = sql_query(include_str!("sql/signals_invalid_refs.sql"))
+    let count = sql_query(include_str!("sql/signals_insert_errors.sql"))
         .bind::<Integer, _>(infra_id)
         .bind::<Array<Text>, _>(&signal_ids)
         .bind::<Array<Json>, _>(&errors)
