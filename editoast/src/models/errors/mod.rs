@@ -25,6 +25,11 @@ struct InfraError {
 enum InfraErrorType {
     #[serde(rename = "invalid_reference")]
     InvalidReference { reference: ObjectRef },
+    #[serde(rename = "out_of_range")]
+    OutOfRange {
+        position: f64,
+        expected_range: [f64; 2],
+    },
 }
 
 impl InfraError {
@@ -33,6 +38,17 @@ impl InfraError {
             field,
             is_warning: false,
             sub_type: InfraErrorType::InvalidReference { reference },
+        }
+    }
+
+    fn new_out_of_range(field: String, position: f64, expected_range: [f64; 2]) -> Self {
+        Self {
+            field,
+            is_warning: false,
+            sub_type: InfraErrorType::OutOfRange {
+                position,
+                expected_range,
+            },
         }
     }
 }
