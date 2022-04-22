@@ -1,6 +1,7 @@
 package fr.sncf.osrd.api;
 
 import static fr.sncf.osrd.Helpers.getResourcePath;
+import static fr.sncf.osrd.Helpers.infraFromRJS;
 import static org.junit.jupiter.api.Assertions.*;
 
 import fr.sncf.osrd.Helpers;
@@ -273,7 +274,7 @@ public class PathfindingTest extends ApiTest {
             boolean inverted
     ) throws Exception {
         var rjsInfra = Helpers.getExampleInfra(infraPath);
-        var infra = ReservationInfraBuilder.fromRJS(rjsInfra);
+        var infra = infraFromRJS(rjsInfra);
         var simulation = MoshiUtils.deserialize(RJSSimulation.adapter, getResourcePath(simPath));
         var schedule = simulation.trainSchedules.get(0);
         var endRouteID = schedule.routes[schedule.routes.length - 1].id;

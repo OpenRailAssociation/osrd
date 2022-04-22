@@ -1,4 +1,4 @@
-package fr.sncf.osrd.exceptions;
+package fr.sncf.osrd.reporting.exceptions;
 
 public class NotImplemented extends OSRDError {
     private static final long serialVersionUID = -6595197131331887742L;

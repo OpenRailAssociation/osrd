@@ -19,7 +19,7 @@ import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceConvergenceException;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
-import fr.sncf.osrd.exceptions.OSRDError;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.train.TestTrains;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

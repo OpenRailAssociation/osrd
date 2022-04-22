@@ -10,6 +10,7 @@ import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
+import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
 import fr.sncf.osrd.utils.geom.LineString;
 import fr.sncf.osrd.utils.geom.Point;
 import fr.sncf.osrd.utils.graph.Pathfinding;
@@ -43,6 +44,7 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
     @Override
     public Response act(Request req) {
         try {
+            var warningRecorder = new WarningRecorderImpl(false);
             var body = new RqPrint(req).printBody();
             var request = adapterRequest.fromJson(body);
             if (request == null)
@@ -51,7 +53,7 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
             var reqWaypoints = request.waypoints;
 
             // load infra
-            var infra = infraManager.load(request.infra, request.expectedVersion);
+            var infra = infraManager.load(request.infra, request.expectedVersion, warningRecorder);
 
             // parse the waypoints
             var waypoints = new ArrayList<Collection<Pathfinding.EdgeLocation<SignalingRoute>>>();
@@ -72,7 +74,7 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
             if (path == null)
                 return new RsWithStatus(new RsText("No path could be found"), 400);
 
-            var res = PathfindingResult.make(path, infra);
+            var res = PathfindingResult.make(path, infra, warningRecorder);
 
             validate(infra, res);
 

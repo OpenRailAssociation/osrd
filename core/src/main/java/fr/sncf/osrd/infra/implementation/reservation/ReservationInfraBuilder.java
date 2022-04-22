@@ -26,6 +26,7 @@ import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
+import fr.sncf.osrd.reporting.warnings.WarningRecorder;
 import fr.sncf.osrd.utils.graph.GraphHelpers;
 import java.util.*;
 
@@ -46,7 +47,7 @@ public class ReservationInfraBuilder {
     }
 
     /** Builds a ReservationInfra from a railjson infra */
-    public static ReservationInfra fromRJS(RJSInfra rjsInfra) {
+    public static ReservationInfra fromRJS(RJSInfra rjsInfra, WarningRecorder warningRecorder) {
         var diInfra = DirectedInfraBuilder.fromRJS(rjsInfra);
         return fromDiTrackInfra(rjsInfra, diInfra);
     }

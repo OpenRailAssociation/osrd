@@ -2,11 +2,12 @@ package fr.sncf.osrd.api;
 
 import com.squareup.moshi.JsonDataException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.exceptions.OSRDError;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
 import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
+import fr.sncf.osrd.reporting.warnings.WarningRecorder;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -150,7 +151,8 @@ public class InfraManager {
     private SignalingInfra downloadInfra(
             InfraCacheEntry cacheEntry,
             String infraId,
-            String expectedVersion
+            String expectedVersion,
+            WarningRecorder warningRecorder
     ) throws InfraLoadException {
         // create a request
         var endpointUrl = String.format("%sinfra/%s/railjson/", baseUrl, infraId);
@@ -180,7 +182,7 @@ public class InfraManager {
             // Parse railjson into a proper infra
             logger.info("parsing the infra of {}", endpointUrl);
             cacheEntry.transitionTo(InfraStatus.PARSING_INFRA);
-            var infra = SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(new BAL3()));
+            var infra = SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(new BAL3()), warningRecorder);
 
             // Cache the infra
             logger.info("successfuly cached {}", endpointUrl);
@@ -200,7 +202,7 @@ public class InfraManager {
     /** Load an infra given an id. Cache infra for optimized future call */
     @ExcludeFromGeneratedCodeCoverage
     @SuppressFBWarnings({"REC_CATCH_EXCEPTION"})
-    public SignalingInfra load(String infraId, String expectedVersion)
+    public SignalingInfra load(String infraId, String expectedVersion, WarningRecorder warningRecorder)
             throws InfraLoadException, InterruptedException {
         try {
             var prevCacheEntry = infraCache.putIfAbsent(infraId, new InfraCacheEntry());
@@ -210,7 +212,7 @@ public class InfraManager {
                 // if there was no cache entry, download the infra again
                 if (prevCacheEntry == null || cacheEntry.status == InfraStatus.ERROR
                         || expectedVersion != null && !expectedVersion.equals(cacheEntry.expectedVersion))
-                    return downloadInfra(cacheEntry, infraId, expectedVersion);
+                    return downloadInfra(cacheEntry, infraId, expectedVersion, warningRecorder);
 
                 // otherwise, wait for the infra to reach a stable state
                 cacheEntry.waitUntilStable();

@@ -1,5 +1,6 @@
 package fr.sncf.osrd.infra_state;
 
+import static fr.sncf.osrd.Helpers.infraFromRJS;
 import static fr.sncf.osrd.infra.InfraHelpers.getSignalingRoute;
 import static fr.sncf.osrd.infra.InfraHelpers.makeSingleTrackRJSInfra;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -15,6 +16,7 @@ import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.infra_state.api.ReservationRouteState;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.infra_state.implementation.standalone.StandaloneState;
+import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
 import org.junit.jupiter.api.Test;
 import java.util.HashSet;
 import java.util.List;
@@ -29,7 +31,7 @@ public class StandaloneStateTests {
     @Test
     public void simpleIteratingOverUpdates() {
         var rjsInfra = makeSingleTrackRJSInfra();
-        var infra = SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(new BAL3()));
+        var infra = infraFromRJS(rjsInfra);
         var track = infra.getTrackSection("track");
         var path = TrainPathBuilder.from(
                 List.of(
@@ -94,7 +96,7 @@ public class StandaloneStateTests {
     @Test
     public void stateWithStepsTest() {
         var rjsInfra = makeSingleTrackRJSInfra();
-        var infra = SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(new BAL3()));
+        var infra = infraFromRJS(rjsInfra);
         var track = infra.getTrackSection("track");
         var route = getSignalingRoute(infra, "route_backward");
         var path = TrainPathBuilder.from(
@@ -129,7 +131,7 @@ public class StandaloneStateTests {
     @Test
     public void conflictingRoutesTests() {
         var rjsInfra = makeSingleTrackRJSInfra();
-        var infra = SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(new BAL3()));
+        var infra = infraFromRJS(rjsInfra);
         var track = infra.getTrackSection("track");
         var path = TrainPathBuilder.from(
                 List.of(

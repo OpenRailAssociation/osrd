@@ -1,5 +1,6 @@
 package fr.sncf.osrd.infra_state;
 
+import static fr.sncf.osrd.Helpers.infraFromRJS;
 import static fr.sncf.osrd.infra.InfraHelpers.getSignalingRoute;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -17,6 +18,7 @@ import fr.sncf.osrd.infra_state.implementation.SignalizationEngine;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.infra_state.implementation.standalone.StandaloneSignalingSimulation;
 import fr.sncf.osrd.infra_state.implementation.standalone.StandaloneState;
+import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -28,7 +30,7 @@ public class StandaloneSignalingSimulationTests {
     @Test
     public void simpleTinyInfraSignalUpdates() throws Exception {
         var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
-        var infra = SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(new BAL3()));
+        var infra = infraFromRJS(rjsInfra);
         var barA = infra.getTrackSection("ne.micro.bar_a");
         var fooA = infra.getTrackSection("ne.micro.foo_a");
         var path = TrainPathBuilder.from(
@@ -60,7 +62,7 @@ public class StandaloneSignalingSimulationTests {
     @Test
     public void lineInfraTests() throws Exception {
         var rjsInfra = Helpers.getExampleInfra("one_line/infra.json");
-        var infra = SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(new BAL3()));
+        var infra = infraFromRJS(rjsInfra);
         var routes = new ArrayList<SignalingRoute>();
         routes.add(getSignalingRoute(infra, "rt.buffer_stop.0->detector.0"));
         for (int i = 0; i < 9; i++)
@@ -89,7 +91,7 @@ public class StandaloneSignalingSimulationTests {
     @Test
     public void lineInfraEnvelopeTests() throws Exception {
         var rjsInfra = Helpers.getExampleInfra("one_line/infra.json");
-        var infra = SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(new BAL3()));
+        var infra = infraFromRJS(rjsInfra);
         var routes = new ArrayList<SignalingRoute>();
         routes.add(getSignalingRoute(infra, "rt.buffer_stop.0->detector.0"));
         for (int i = 0; i < 9; i++)

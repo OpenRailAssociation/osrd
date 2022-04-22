@@ -1,5 +1,6 @@
 package fr.sncf.osrd.standalone_sim;
 
+import static fr.sncf.osrd.Helpers.infraFromRJS;
 import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeTest.makeSimpleMaxEffortEnvelope;
 import static fr.sncf.osrd.envelope_sim.MaxSpeedEnvelopeTest.TIME_STEP;
 import static fr.sncf.osrd.infra.InfraHelpers.getSignalingRoute;
@@ -20,9 +21,9 @@ import fr.sncf.osrd.infra_state.implementation.SignalizationEngine;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.infra_state.implementation.standalone.StandaloneSignalingSimulation;
 import fr.sncf.osrd.infra_state.implementation.standalone.StandaloneState;
+import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
 import fr.sncf.osrd.train.TestTrains;
 import org.junit.jupiter.api.Test;
-import java.io.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -34,7 +35,7 @@ public class ScheduleMetadataExtractorTests {
     @Test
     public void tinyInfraTests() throws Exception {
         var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
-        var infra = SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(new BAL3()));
+        var infra = infraFromRJS(rjsInfra);
         var barA = infra.getTrackSection("ne.micro.bar_a");
         var fooA = infra.getTrackSection("ne.micro.foo_a");
         var path = TrainPathBuilder.from(
@@ -86,7 +87,7 @@ public class ScheduleMetadataExtractorTests {
     @Test
     public void tinyInfraEndsInMiddleRoutesTests() throws Exception {
         var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
-        var infra = SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(new BAL3()));
+        var infra = infraFromRJS(rjsInfra);
         var barA = infra.getTrackSection("ne.micro.bar_a");
         var fooA = infra.getTrackSection("ne.micro.foo_a");
         var path = TrainPathBuilder.from(
@@ -111,7 +112,7 @@ public class ScheduleMetadataExtractorTests {
     @Test
     public void veryLongTrainTests() throws Exception {
         var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
-        var infra = SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(new BAL3()));
+        var infra = infraFromRJS(rjsInfra);
         var barA = infra.getTrackSection("ne.micro.bar_a");
         var fooA = infra.getTrackSection("ne.micro.foo_a");
         var path = TrainPathBuilder.from(
@@ -136,7 +137,7 @@ public class ScheduleMetadataExtractorTests {
     @Test
     public void oneLineInfraTests() throws Exception {
         var rjsInfra = Helpers.getExampleInfra("one_line/infra.json");
-        var infra = SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(new BAL3()));
+        var infra = infraFromRJS(rjsInfra);
         var routes = new ArrayList<SignalingRoute>();
         routes.add(getSignalingRoute(infra, "rt.buffer_stop.0->detector.0"));
         for (int i = 0; i < 9; i++)
@@ -160,7 +161,7 @@ public class ScheduleMetadataExtractorTests {
     @Test
     public void veryShortPathTests() throws Exception {
         var rjsInfra = Helpers.getExampleInfra("one_line/infra.json");
-        var infra = SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(new BAL3()));
+        var infra = infraFromRJS(rjsInfra);
         var routes = List.of(getSignalingRoute(infra, "rt.buffer_stop.0->detector.0"));
         var path = TrainPathBuilder.from(
                 routes,
@@ -180,7 +181,7 @@ public class ScheduleMetadataExtractorTests {
     @Test
     public void tinyInfraSignalUpdatesTests() throws Exception {
         var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
-        var infra = SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(new BAL3()));
+        var infra = infraFromRJS(rjsInfra);
         var barA = infra.getTrackSection("ne.micro.bar_a");
         var fooA = infra.getTrackSection("ne.micro.foo_a");
         var path = TrainPathBuilder.from(
@@ -204,7 +205,7 @@ public class ScheduleMetadataExtractorTests {
     @Test
     public void oneLineInfraSignalTests() throws Exception {
         var rjsInfra = Helpers.getExampleInfra("one_line/infra.json");
-        var infra = SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(new BAL3()));
+        var infra = infraFromRJS(rjsInfra);
         var routes = new ArrayList<SignalingRoute>();
         routes.add(getSignalingRoute(infra, "rt.buffer_stop.0->detector.0"));
         for (int i = 0; i < 9; i++)

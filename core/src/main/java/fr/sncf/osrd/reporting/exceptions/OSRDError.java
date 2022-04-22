@@ -1,6 +1,7 @@
-package fr.sncf.osrd.exceptions;
+package fr.sncf.osrd.reporting.exceptions;
 
 import com.squareup.moshi.JsonAdapter;
+import fr.sncf.osrd.reporting.ErrorContext;
 import fr.sncf.osrd.utils.Reflection;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,7 @@ public abstract class OSRDError extends RuntimeException {
     /** Detailed error message */
     public final String message;
 
+    /** Stack trace of context */
     public final List<ErrorContext> trace = new ArrayList<>();
 
     /** Whether this is an internal or user error, used to determine if we send a 400 or 500 code */
