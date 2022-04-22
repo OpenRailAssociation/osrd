@@ -2,9 +2,13 @@ package fr.sncf.osrd;
 
 
 import com.squareup.moshi.JsonAdapter;
+import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
+import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
+import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
+import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
 import java.io.File;
 import java.io.IOException;
@@ -15,6 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class Helpers {
     /** Parse all serialized .json rolling stock files and add these to the given map */
@@ -60,5 +65,10 @@ public class Helpers {
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /** Generates a signaling infra from rjs data */
+    public static SignalingInfra infraFromRJS(RJSInfra rjs) {
+        return SignalingInfraBuilder.fromRJSInfra(rjs, Set.of(new BAL3()), new WarningRecorderImpl(true));
     }
 }

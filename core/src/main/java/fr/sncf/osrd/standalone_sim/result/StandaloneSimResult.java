@@ -4,6 +4,7 @@ import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.reporting.warnings.Warning;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,4 +20,5 @@ public class StandaloneSimResult {
     @Json(name = "eco_simulations")
     public List<ResultTrain> ecoSimulations = new ArrayList<>();
     public List<List<ResultEnvelopePoint>> mrsps = new ArrayList<>();
+    public List<Warning> warnings = new ArrayList<>();
 }

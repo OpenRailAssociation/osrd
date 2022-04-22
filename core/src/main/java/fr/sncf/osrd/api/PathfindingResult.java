@@ -10,6 +10,8 @@ import fr.sncf.osrd.infra.implementation.RJSObjectParsing;
 import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
+import fr.sncf.osrd.reporting.warnings.Warning;
+import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
 import fr.sncf.osrd.utils.geom.LineString;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import java.util.ArrayList;
@@ -20,6 +22,7 @@ public class PathfindingResult {
     public final List<RoutePathResult> routePaths = new ArrayList<>();
     @Json(name = "path_waypoints")
     public final List<PathWaypointResult> pathWaypoints = new ArrayList<>();
+    public List<Warning> warnings;
 
     public LineString geographic = null;
     public LineString schematic = null;
@@ -31,7 +34,8 @@ public class PathfindingResult {
      */
     public static PathfindingResult make(
             List<Pathfinding.EdgeRange<SignalingRoute>> path,
-            SignalingInfra infra
+            SignalingInfra infra,
+            WarningRecorderImpl warningRecorder
     ) {
         var res = new PathfindingResult();
         for (var signalingRouteEdgeRange : path)
@@ -46,6 +50,7 @@ public class PathfindingResult {
         var lastRange = lastRoute.trackSections.get(lastRoute.trackSections.size() - 1);
         res.addStep(new PathWaypointResult(lastRange.trackSection.id.id, lastRange.end));
         res.addGeometry(infra);
+        res.warnings = warningRecorder.warnings;
         return res;
     }
 

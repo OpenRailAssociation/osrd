@@ -8,6 +8,7 @@ import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.reservation.ReservationInfra;
 import fr.sncf.osrd.infra.implementation.reservation.ReservationInfraBuilder;
+import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
 import org.junit.jupiter.api.Test;
 
 public class ReservationInfraTests {
@@ -15,7 +16,7 @@ public class ReservationInfraTests {
     @Test
     public void testTinyInfra() throws Exception {
         var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
-        var reservationInfra = ReservationInfraBuilder.fromRJS(rjsInfra);
+        var reservationInfra = ReservationInfraBuilder.fromRJS(rjsInfra, new WarningRecorderImpl(true));
         var graph = reservationInfra.getInfraRouteGraph();
         assertEquals(rjsInfra.routes.size(), graph.edges().size());
         testTinyInfraDiDetectorGraph(reservationInfra.getInfraRouteGraph(), reservationInfra.getDetectorMap());
@@ -24,7 +25,7 @@ public class ReservationInfraTests {
     @Test
     public void testTrackToRouteMap() throws Exception {
         var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
-        var reservationInfra = ReservationInfraBuilder.fromRJS(rjsInfra);
+        var reservationInfra = ReservationInfraBuilder.fromRJS(rjsInfra, new WarningRecorderImpl(true));
         var map = reservationInfra.getRoutesOnEdges();
 
         for (var route : reservationInfra.getInfraRouteGraph().edges()) {

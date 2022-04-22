@@ -1,6 +1,6 @@
 package fr.sncf.osrd.infra_state.implementation;
 
-import fr.sncf.osrd.exceptions.OSRDError;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import java.io.Serial;
 
 public class SignalizationError extends OSRDError {

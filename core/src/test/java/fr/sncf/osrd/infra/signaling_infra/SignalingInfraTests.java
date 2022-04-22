@@ -1,12 +1,14 @@
 package fr.sncf.osrd.infra.signaling_infra;
 
+import static fr.sncf.osrd.Helpers.infraFromRJS;
 import static fr.sncf.osrd.infra.InfraHelpers.testTinyInfraDiDetectorGraph;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
 import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
+import fr.sncf.osrd.reporting.warnings.StrictWarningError;
+import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
 import org.junit.jupiter.api.Test;
 import java.util.HashSet;
 import java.util.Set;
@@ -15,7 +17,7 @@ public class SignalingInfraTests {
     @Test
     public void testTinyInfra() throws Exception {
         var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
-        var infra = SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(new BAL3()));
+        var infra = infraFromRJS(rjsInfra);
         var graph = infra.getSignalingRouteGraph();
         assertEquals(graph.nodes(), infra.getInfraRouteGraph().nodes());
         assertEquals(graph.edges().size(), infra.getInfraRouteGraph().edges().size());
@@ -42,5 +44,14 @@ public class SignalingInfraTests {
                     assertTrue(route.entrySignal().getSignalDependencies().contains(route.exitSignal()));
             }
         }
+    }
+
+    @Test
+    public void testErrorMissingSignaling() throws Exception {
+        var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
+        assertThrows(
+                StrictWarningError.class,
+                () -> SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(), new WarningRecorderImpl(true))
+        );
     }
 }

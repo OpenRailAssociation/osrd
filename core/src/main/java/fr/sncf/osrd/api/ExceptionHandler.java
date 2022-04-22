@@ -1,6 +1,6 @@
 package fr.sncf.osrd.api;
 
-import fr.sncf.osrd.exceptions.OSRDError;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import io.sentry.Sentry;
 import org.takes.Response;
 import org.takes.rs.RsJson;

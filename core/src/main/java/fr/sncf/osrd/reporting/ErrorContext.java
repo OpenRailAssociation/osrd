@@ -1,4 +1,4 @@
-package fr.sncf.osrd.exceptions;
+package fr.sncf.osrd.reporting;
 
 import com.squareup.moshi.Json;
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory;

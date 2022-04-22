@@ -1,6 +1,6 @@
 package fr.sncf.osrd.envelope_sim.allowances.utils;
 
-import fr.sncf.osrd.exceptions.OSRDError;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 
 public class AllowanceConvergenceException extends OSRDError {
 
