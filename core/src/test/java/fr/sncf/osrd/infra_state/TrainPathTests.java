@@ -1,5 +1,6 @@
 package fr.sncf.osrd.infra_state;
 
+import static fr.sncf.osrd.Helpers.infraFromRJS;
 import static fr.sncf.osrd.infra.InfraHelpers.*;
 import static fr.sncf.osrd.infra.api.Direction.BACKWARD;
 import static fr.sncf.osrd.infra.api.Direction.FORWARD;
@@ -14,6 +15,7 @@ import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
+import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
 import fr.sncf.osrd.utils.DoubleRangeMap;
 import org.junit.jupiter.api.Test;
 import java.util.EnumMap;
@@ -25,7 +27,7 @@ public class TrainPathTests {
     @Test
     public void testFromRJSTrainPath() {
         var rjsInfra = makeSingleTrackRJSInfra();
-        var infra = SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(new BAL3()));
+        var infra = infraFromRJS(rjsInfra);
         var rjsPath = new RJSTrainPath(List.of(
                 new RJSTrainPath.RJSRoutePath("route_forward", List.of(
                         new RJSTrainPath.RJSDirectionalTrackRange("track", 20, 80, EdgeDirection.START_TO_STOP)
@@ -38,7 +40,7 @@ public class TrainPathTests {
     @Test
     public void testSingleTrackInfraSimple() {
         var rjsInfra = makeSingleTrackRJSInfra();
-        var infra = SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(new BAL3()));
+        var infra = infraFromRJS(rjsInfra);
         var track = infra.getTrackSection("track");
         var path = TrainPathBuilder.from(
                 List.of(getSignalingRoute(infra, "route_forward")),
@@ -79,7 +81,7 @@ public class TrainPathTests {
     @Test
     public void testSingleTrackInfraTwoRoutes() {
         var rjsInfra = makeSingleTrackRJSInfra();
-        var infra = SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(new BAL3()));
+        var infra = infraFromRJS(rjsInfra);
         var track = infra.getTrackSection("track");
         var path = TrainPathBuilder.from(
                 List.of(
@@ -119,7 +121,7 @@ public class TrainPathTests {
     @Test
     public void testSingleTrackInfraBackward() {
         var rjsInfra = makeSingleTrackRJSInfra();
-        var infra = SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(new BAL3()));
+        var infra = infraFromRJS(rjsInfra);
         var track = infra.getTrackSection("track");
         var path = TrainPathBuilder.from(
                 List.of(getSignalingRoute(infra, "route_backward")),
@@ -158,7 +160,7 @@ public class TrainPathTests {
         for (var dir : Direction.values())
             gradients.put(dir, map);
         var rjsInfra = makeSingleTrackRJSInfra();
-        var infra = SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(new BAL3()));
+        var infra = infraFromRJS(rjsInfra);
         var track = infra.getTrackSection("track");
         setGradient(track, gradients);
         var path = TrainPathBuilder.from(

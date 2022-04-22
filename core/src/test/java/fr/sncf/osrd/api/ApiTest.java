@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
 import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
+import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -25,12 +26,13 @@ public class ApiTest {
     @BeforeEach
     public void setUp() throws InterruptedException {
         ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
-        when(infraHandlerMock.load(argument.capture(), any())).thenAnswer(
+        when(infraHandlerMock.load(argument.capture(), any(), any())).thenAnswer(
                 invocation ->
                         SignalingInfraBuilder.fromRJSInfra(
                                 parseRailJSONFromFile(
                                         Helpers.getResourcePath(argument.getValue()).toString()
-                                ), Set.of(new BAL3())
+                                ), Set.of(new BAL3()),
+                                new WarningRecorderImpl(true)
                         )
         );
     }

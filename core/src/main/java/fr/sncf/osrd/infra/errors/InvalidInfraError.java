@@ -1,6 +1,6 @@
 package fr.sncf.osrd.infra.errors;
 
-import fr.sncf.osrd.exceptions.OSRDError;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import java.io.Serial;
 
 public class InvalidInfraError extends OSRDError {

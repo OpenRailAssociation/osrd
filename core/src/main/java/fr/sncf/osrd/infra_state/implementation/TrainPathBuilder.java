@@ -1,7 +1,7 @@
 package fr.sncf.osrd.infra_state.implementation;
 
 import com.google.common.collect.ImmutableList;
-import fr.sncf.osrd.exceptions.OSRDError;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.infra.api.reservation.DetectionSection;
 import fr.sncf.osrd.infra.api.reservation.DiDetector;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;

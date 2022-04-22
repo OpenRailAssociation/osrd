@@ -1,6 +1,6 @@
 package fr.sncf.osrd.railjson.parser.exceptions;
 
-import fr.sncf.osrd.exceptions.OSRDError;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 
 public class InvalidRollingStock extends OSRDError {
     private static final long serialVersionUID = -8380552148316200567L;

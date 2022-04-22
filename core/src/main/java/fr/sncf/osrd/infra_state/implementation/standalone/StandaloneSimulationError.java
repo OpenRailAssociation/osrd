@@ -1,6 +1,6 @@
 package fr.sncf.osrd.infra_state.implementation.standalone;
 
-import fr.sncf.osrd.exceptions.OSRDError;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import java.io.Serial;
 
 public class StandaloneSimulationError extends OSRDError {

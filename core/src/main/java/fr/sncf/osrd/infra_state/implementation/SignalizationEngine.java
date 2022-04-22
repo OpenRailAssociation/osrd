@@ -1,8 +1,8 @@
 package fr.sncf.osrd.infra_state.implementation;
 
 import com.google.common.collect.ImmutableMultimap;
-import fr.sncf.osrd.exceptions.ErrorContext;
-import fr.sncf.osrd.exceptions.OSRDError;
+import fr.sncf.osrd.reporting.ErrorContext;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.infra.api.reservation.ReservationRoute;
 import fr.sncf.osrd.infra.api.signaling.Signal;
 import fr.sncf.osrd.infra.api.signaling.SignalState;
