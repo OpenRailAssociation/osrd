@@ -1,15 +1,19 @@
 package fr.sncf.osrd.infra.implementation.signaling.modules.bal3;
 
-import static fr.sncf.osrd.dyn_infra.api.ReservationRouteState.Summary.FREE;
-import static fr.sncf.osrd.dyn_infra.api.ReservationRouteState.Summary.RESERVED;
+import static fr.sncf.osrd.infra_state.api.ReservationRouteState.Summary.FREE;
+import static fr.sncf.osrd.infra_state.api.ReservationRouteState.Summary.RESERVED;
 
 import com.google.common.base.MoreObjects;
+import fr.sncf.osrd.dyn_infra.implementation.DynSignal;
+import fr.sncf.osrd.dyn_infra.implementation.bal3.DynBAL3Signal;
 import fr.sncf.osrd.infra.api.reservation.ReservationRoute;
 import fr.sncf.osrd.infra.api.signaling.Signal;
 import fr.sncf.osrd.infra.api.signaling.SignalType;
-import fr.sncf.osrd.dyn_infra.api.InfraStateView;
-import fr.sncf.osrd.dyn_infra.api.SignalizationStateView;
+import fr.sncf.osrd.infra_state.api.InfraStateView;
+import fr.sncf.osrd.infra_state.api.SignalizationStateView;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -125,5 +129,12 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
         return protectedRoutes.stream()
                 .map(BAL3.BAL3Route::getInfraRoute)
                 .collect(Collectors.toSet());
+    }
+
+    @NotNull
+    @Override
+    public DynSignal<BAL3SignalState> makeDynamic() {
+        protectedRoutes
+        return DynBAL3Signal();
     }
 }

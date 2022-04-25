@@ -1,8 +1,11 @@
 package fr.sncf.osrd.infra.api.signaling;
 
+import fr.sncf.osrd.dyn_infra.implementation.DynSignal;
 import fr.sncf.osrd.infra.api.reservation.ReservationRoute;
-import fr.sncf.osrd.dyn_infra.api.InfraStateView;
-import fr.sncf.osrd.dyn_infra.api.SignalizationStateView;
+import fr.sncf.osrd.infra_state.api.InfraStateView;
+import fr.sncf.osrd.infra_state.api.SignalizationStateView;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Set;
 
 /**
@@ -30,4 +33,7 @@ public interface Signal<StateT extends SignalState> {
 
     /** Returns a set of routes protected by this signal. May be empty if the signal isn't linked to a detector */
     Set<ReservationRoute> getProtectedRoutes();
+
+    @NotNull
+    DynSignal<StateT> makeDynamic();
 }
