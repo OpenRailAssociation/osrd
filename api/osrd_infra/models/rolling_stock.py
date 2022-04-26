@@ -2,6 +2,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from osrd_infra.schemas.infra import LoadingGaugeType
 from osrd_infra.utils import JSONSchemaValidator
 
 EFFORT_CURVE_SCHEMA = {
@@ -150,6 +151,11 @@ class RollingStock(models.Model):
     )
 
     traction_mode = models.CharField(max_length=128)
+
+    loading_gauge = models.CharField(
+        max_length=16,
+        choices=[(x, x) for x in LoadingGaugeType]
+    )
 
     power_class = models.PositiveIntegerField()
 
