@@ -21,5 +21,5 @@ SELECT link_id,
         ep
         WHEN 'BEGIN' THEN ST_Transform(ST_StartPoint(track_sch), 3857)
         WHEN 'END' THEN ST_Transform(ST_EndPoint(track_sch), 3857)
-    END,
-    FROM collect
+    END
+FROM collect
