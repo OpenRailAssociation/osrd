@@ -30,6 +30,7 @@
         - "(track_section.data->>'navigability')::text as navigability"
         - "(track_section.data->>'slopes')::text as slopes"
         - "(track_section.data->>'curves')::text as curves"
+        - "(track_section.data->>'loading_gauge_limits')::text as loading_gauge_limits"
       joins:
         - "inner join osrd_infra_tracksectionmodel track_section on track_section.obj_id = layer.obj_id and track_section.infra_id = layer.infra_id"
 

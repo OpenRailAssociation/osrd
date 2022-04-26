@@ -69,6 +69,7 @@ pub struct TrackSection {
     pub navigability: ApplicableDirections,
     pub slopes: Vec<Slope>,
     pub curves: Vec<Curve>,
+    pub loading_gauge_limits: Vec<LoadingGaugeLimit>,
     pub geo: LineString,
     pub sch: LineString,
 }
@@ -200,6 +201,26 @@ pub struct TrackEndpoint {
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
+pub enum ApplicableTrainType {
+    #[serde(rename = "FREIGHT")]
+    Freight,
+    #[serde(rename = "PASSENGER")]
+    Passenger,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub enum LoadingGaugeType {
+    G1,
+    GA,
+    GB,
+    GB1,
+    GB2,
+    GC,
+    #[serde(rename = "FR3.3")]
+    FR3_3,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct Curve {
     pub radius: f64,
@@ -211,6 +232,15 @@ pub struct Curve {
 #[serde(deny_unknown_fields)]
 pub struct Slope {
     pub gradient: f64,
+    pub begin: f64,
+    pub end: f64,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct LoadingGaugeLimit {
+    pub category: LoadingGaugeType,
+    pub applicable_train_type: ApplicableTrainType,
     pub begin: f64,
     pub end: f64,
 }
