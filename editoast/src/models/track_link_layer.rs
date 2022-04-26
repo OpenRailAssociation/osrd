@@ -31,8 +31,7 @@ impl TrackLinkLayer {
         sql_query(include_str!("sql/generate_track_link_layer.sql"))
             .bind::<Integer, _>(infra)
             .execute(conn)?;
-        // find the good layer_slug for links, and check the one for speedsection
-        // invalidate_chartos_layer(infra, "track_links", chartos_config);
+        invalidate_chartos_layer(infra, "track_section_links", chartos_config);
         Ok(())
     }
 

@@ -22,6 +22,9 @@ pub struct InfraCache {
 
     /// List existing speed sections
     pub speed_sections: HashMap<String, SpeedSection>,
+
+    /// List existing track section links
+    pub track_section_links: HashMap<String, TrackSectionLinkCache>,
 }
 
 #[derive(QueryableByName, Debug, Clone, Derivative)]
@@ -39,6 +42,7 @@ impl TrackCache {
         Self { obj_id, length }
     }
 }
+
 #[derive(QueryableByName, Debug, Clone, Derivative)]
 #[derivative(Hash, PartialEq)]
 pub struct SignalCache {
@@ -70,6 +74,25 @@ pub struct SpeedSectionQueryable {
     pub track_ranges: Value,
     #[sql_type = "Double"]
     pub speed: f64,
+}
+
+#[derive(QueryableByName, Debug, Clone, Derivative)]
+#[derivative(Hash, PartialEq)]
+pub struct TrackSectionLinkCache {
+    #[sql_type = "Text"]
+    pub obj_id: String,
+    #[derivative(Hash = "ignore", PartialEq = "ignore")]
+    #[sql_type = "Text"]
+    pub src: String,
+    #[derivative(Hash = "ignore", PartialEq = "ignore")]
+    #[sql_type = "Text"]
+    pub dst: String,
+}
+
+impl TrackSectionLinkCache {
+    pub fn new(obj_id: String, src: String, dst: String) -> Self {
+        Self { obj_id, src, dst }
+    }
 }
 
 impl InfraCache {
@@ -110,15 +133,20 @@ impl InfraCache {
             );
         }
     }
-    /*
-    fn add_track_link_dependencies(&mut self, refs: &[ObjRefLink]) {
-        for link in refs.iter() {
-            self.track_link_dependencies
-                .entry(link.obj_id.clone())
-                .or_default()
-                .push(link.ref_id.clone());
+
+    fn load_track_section_links(&mut self, links: Vec<TrackSectionLinkCache>) {
+        for link in links {
+            self.add_track_ref(
+                link.src.clone(),
+                ObjectRef::new(ObjectType::TrackLink, link.obj_id.clone()),
+            );
+            self.add_track_ref(
+                link.dst.clone(),
+                ObjectRef::new(ObjectType::TrackLink, link.obj_id.clone()),
+            );
+            self.track_section_links.insert(link.obj_id.clone(), link);
         }
-    } */
+    }
 
     /// Initialize an infra cache given an infra id
     pub fn init(conn: &PgConnection, infra_id: i32) -> InfraCache {
@@ -147,20 +175,12 @@ impl InfraCache {
             "SELECT obj_id, data->>'track_ranges' AS track_ranges, (data->>'speed')::float AS speed FROM osrd_infra_speedsectionmodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
         .load(conn).expect("Error loading speed section refs"));
-        /*
-        // Load track link tracks references
-        let link_src_references = sql_query(
-            "SELECT obj_id, data->'src'->'track'->>'id' AS ref_id FROM osrd_infra_tracksectionlinkmodel WHERE infra_id = $1")
+
+        // Load track section links tracks references
+        infra_cache.load_track_section_links(sql_query(
+            "SELECT obj_id, data->'src'->track->>'id' AS src, data->'dst'->track->>'id' AS dst FROM osrd_infra_tracksectionlinkmodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
-        .load(conn).expect("Error loading track link src refs");
-        let link_dst_references = sql_query(
-            "SELECT obj_id, data->'dst'->'track'->>'id' AS ref_id FROM osrd_infra_tracksectionlinkmodel WHERE infra_id = $1")
-        .bind::<Integer, _>(infra_id)
-        .load(conn).expect("Error loading track link dst refs");
-        infra_cache.add_tracks_refs(&link_src_references, ObjectType::TrackLink);
-        infra_cache.add_track_link_dependencies(&link_src_references);
-        infra_cache.add_tracks_refs(&speed_references, ObjectType::TrackLink);
-        infra_cache.add_track_link_dependencies(&link_dst_references); */
+        .load::<TrackSectionLinkCache>(conn).expect("Error loading track section link refs"));
 
         infra_cache
     }
@@ -200,6 +220,20 @@ impl InfraCache {
                         .unwrap()
                         .remove(object_ref);
                 }
+            }
+            ObjectRef {
+                obj_type: ObjectType::TrackLink,
+                obj_id,
+            } => {
+                let link = self.track_section_links.remove(obj_id).unwrap();
+                self.track_sections_refs
+                    .get_mut(&link.src)
+                    .unwrap()
+                    .remove(object_ref);
+                self.track_sections_refs
+                    .get_mut(&link.dst)
+                    .unwrap()
+                    .remove(object_ref);
             }
             ObjectRef {
                 obj_type: ObjectType::TrackSection,
@@ -254,6 +288,27 @@ impl InfraCache {
                     railjson.id.clone(),
                     TrackCache::new(railjson.id.clone(), railjson.length),
                 );
+            }
+            RailjsonObject::TrackLink { railjson } => {
+                assert!(self
+                    .track_section_links
+                    .insert(
+                        railjson.id.clone(),
+                        TrackSectionLinkCache {
+                            obj_id: railjson.id.clone(),
+                            src: railjson.src.track.obj_id.clone(),
+                            dst: railjson.dst.track.obj_id.clone(),
+                        },
+                    )
+                    .is_none());
+                self.track_sections_refs
+                    .entry(railjson.src.track.obj_id.clone())
+                    .or_default()
+                    .insert(railjson_obj.get_ref());
+                self.track_sections_refs
+                    .entry(railjson.dst.track.obj_id.clone())
+                    .or_default()
+                    .insert(railjson_obj.get_ref());
             }
         }
     }
