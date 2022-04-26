@@ -14,13 +14,13 @@ use super::invalidate_chartos_layer;
 
 #[derive(QueryableByName, Queryable, Debug, Serialize)]
 #[table_name = "osrd_infra_tracksectionlinklayer"]
-pub struct TrackLinkLayer {
+pub struct TrackSectionLinkLayer {
     pub id: i32,
     pub infra_id: i32,
     pub obj_id: String,
 }
 
-impl TrackLinkLayer {
+impl TrackSectionLinkLayer {
     /// Clear and regenerate fully the track_link sections layer of a given infra id
     pub fn refresh(
         conn: &PgConnection,
@@ -28,7 +28,7 @@ impl TrackLinkLayer {
         chartos_config: &ChartosConfig,
     ) -> Result<(), Error> {
         delete(osrd_infra_tracksectionlinklayer.filter(infra_id.eq(infra))).execute(conn)?;
-        sql_query(include_str!("sql/generate_track_link_layer.sql"))
+        sql_query(include_str!("sql/generate_track_section_link_layer.sql"))
             .bind::<Integer, _>(infra)
             .execute(conn)?;
         invalidate_chartos_layer(infra, "track_section_links", chartos_config);
@@ -44,8 +44,7 @@ impl TrackLinkLayer {
         .bind::<Integer, _>(infra)
         .bind::<Array<Text>, _>(&obj_ids)
         .execute(conn)?;
-
-        sql_query(include_str!("sql/update_track_link_layer.sql"))
+        sql_query(include_str!("sql/update_track_section_link_layer.sql"))
             .bind::<Integer, _>(infra)
             .bind::<Array<Text>, _>(&obj_ids)
             .execute(conn)?;
@@ -58,7 +57,7 @@ impl TrackLinkLayer {
         results: &mut HashSet<String>,
     ) {
         infra_cache
-            .get_track_refs_type(track_id, ObjectType::TrackLink)
+            .get_track_refs_type(track_id, ObjectType::TrackSectionLink)
             .iter()
             .for_each(|obj_ref| {
                 results.insert(obj_ref.obj_id.clone());
@@ -84,7 +83,7 @@ impl TrackLinkLayer {
                             &mut obj_ids,
                         );
                     }
-                    ObjectType::TrackLink => {
+                    ObjectType::TrackSectionLink => {
                         obj_ids.insert(rjs_obj.get_obj_id().clone());
                     }
                     _ => (),
@@ -96,11 +95,11 @@ impl TrackLinkLayer {
                 }) => Self::fill_track_link_track_refs(infra_cache, track_id, &mut obj_ids),
                 Operation::Delete(DeleteOperation {
                     obj_id: track_link_id,
-                    obj_type: ObjectType::TrackLink,
+                    obj_type: ObjectType::TrackSectionLink,
                 })
                 | Operation::Update(UpdateOperation {
                     obj_id: track_link_id,
-                    obj_type: ObjectType::TrackLink,
+                    obj_type: ObjectType::TrackSectionLink,
                     ..
                 }) => {
                     obj_ids.insert(track_link_id.clone());
@@ -112,9 +111,8 @@ impl TrackLinkLayer {
             // No update needed
             return Ok(());
         }
-        dbg!(&obj_ids);
         Self::update_list(conn, infra, obj_ids)?;
-        invalidate_chartos_layer(infra, "track_links", chartos_config);
+        invalidate_chartos_layer(infra, "track_section_links", chartos_config);
         Ok(())
     }
 }
