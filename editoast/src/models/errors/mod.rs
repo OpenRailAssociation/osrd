@@ -1,5 +1,6 @@
 mod signals;
 mod speed_sections;
+mod track_section_links;
 
 use diesel::result::Error as DieselError;
 use diesel::{sql_query, sql_types::Integer, PgConnection, RunQueryDsl};
@@ -68,6 +69,7 @@ pub fn generate_errors(
     // Generate the errors
     signals::generate_errors(conn, infra, infra_cache)?;
     speed_sections::generate_errors(conn, infra, infra_cache)?;
+    track_section_links::generate_errors(conn, infra, infra_cache)?;
 
     // Invalidate chartos cache
     invalidate_chartos_layer(infra, "errors", chartos_config);

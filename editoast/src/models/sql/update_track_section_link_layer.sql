@@ -7,7 +7,7 @@ WITH collect AS (
         INNER JOIN osrd_infra_tracksectionmodel AS tracks ON tracks.obj_id = links.data->'dst'->'track'->>'id'
         AND tracks.infra_id = links.infra_id
     WHERE links.infra_id = $1
-        AND links.id = ANY($2)
+        AND links.obj_id = ANY($2)
 )
 INSERT INTO osrd_infra_tracksectionlinklayer (obj_id, infra_id, geographic, schematic)
 SELECT link_id,

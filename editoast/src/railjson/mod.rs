@@ -22,7 +22,7 @@ pub enum ObjectType {
     Signal,
     SpeedSection,
     Detector,
-    TrackLink,
+    TrackSectionLink,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -47,7 +47,7 @@ impl ObjectType {
             ObjectType::Signal => "osrd_infra_signalmodel",
             ObjectType::SpeedSection => "osrd_infra_speedsectionmodel",
             ObjectType::Detector => todo!(),
-            ObjectType::TrackLink => "osrd_infra_tracksectionlinkmodel",
+            ObjectType::TrackSectionLink => "osrd_infra_tracksectionlinkmodel",
         }
     }
 }
@@ -119,7 +119,7 @@ pub struct SpeedSection {
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
 #[derivative(Default)]
-pub struct TrackLink {
+pub struct TrackSectionLink {
     #[derivative(Default(value = r#"generate_id("track_link")"#))]
     pub id: String,
     pub src: TrackEndpoint,

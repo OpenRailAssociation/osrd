@@ -138,11 +138,11 @@ impl InfraCache {
         for link in links {
             self.add_track_ref(
                 link.src.clone(),
-                ObjectRef::new(ObjectType::TrackLink, link.obj_id.clone()),
+                ObjectRef::new(ObjectType::TrackSectionLink, link.obj_id.clone()),
             );
             self.add_track_ref(
                 link.dst.clone(),
-                ObjectRef::new(ObjectType::TrackLink, link.obj_id.clone()),
+                ObjectRef::new(ObjectType::TrackSectionLink, link.obj_id.clone()),
             );
             self.track_section_links.insert(link.obj_id.clone(), link);
         }
@@ -178,7 +178,7 @@ impl InfraCache {
 
         // Load track section links tracks references
         infra_cache.load_track_section_links(sql_query(
-            "SELECT obj_id, data->'src'->track->>'id' AS src, data->'dst'->track->>'id' AS dst FROM osrd_infra_tracksectionlinkmodel WHERE infra_id = $1")
+            "SELECT obj_id, data->'src'->'track'->>'id' AS src, data->'dst'->'track'->>'id' AS dst FROM osrd_infra_tracksectionlinkmodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
         .load::<TrackSectionLinkCache>(conn).expect("Error loading track section link refs"));
 
@@ -222,7 +222,7 @@ impl InfraCache {
                 }
             }
             ObjectRef {
-                obj_type: ObjectType::TrackLink,
+                obj_type: ObjectType::TrackSectionLink,
                 obj_id,
             } => {
                 let link = self.track_section_links.remove(obj_id).unwrap();
@@ -289,7 +289,7 @@ impl InfraCache {
                     TrackCache::new(railjson.id.clone(), railjson.length),
                 );
             }
-            RailjsonObject::TrackLink { railjson } => {
+            RailjsonObject::TrackSectionLink { railjson } => {
                 assert!(self
                     .track_section_links
                     .insert(

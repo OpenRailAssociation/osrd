@@ -1,5 +1,7 @@
 use crate::error::ApiError;
-use crate::railjson::{ObjectRef, ObjectType, Signal, SpeedSection, TrackLink, TrackSection};
+use crate::railjson::{
+    ObjectRef, ObjectType, Signal, SpeedSection, TrackSection, TrackSectionLink,
+};
 use diesel::sql_types::{Integer, Json, Text};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
 use serde::{Deserialize, Serialize};
@@ -11,7 +13,7 @@ pub enum RailjsonObject {
     TrackSection { railjson: TrackSection },
     Signal { railjson: Signal },
     SpeedSection { railjson: SpeedSection },
-    TrackLink { railjson: TrackLink },
+    TrackSectionLink { railjson: TrackSectionLink },
 }
 
 pub fn apply_create_operation(
@@ -37,7 +39,7 @@ impl RailjsonObject {
             RailjsonObject::TrackSection { railjson: _ } => ObjectType::TrackSection,
             RailjsonObject::Signal { railjson: _ } => ObjectType::Signal,
             RailjsonObject::SpeedSection { railjson: _ } => ObjectType::SpeedSection,
-            RailjsonObject::TrackLink { railjson: _ } => ObjectType::TrackLink,
+            RailjsonObject::TrackSectionLink { railjson: _ } => ObjectType::TrackSectionLink,
         }
     }
 
@@ -46,7 +48,7 @@ impl RailjsonObject {
             RailjsonObject::TrackSection { railjson } => railjson.id.clone(),
             RailjsonObject::Signal { railjson } => railjson.id.clone(),
             RailjsonObject::SpeedSection { railjson } => railjson.id.clone(),
-            RailjsonObject::TrackLink { railjson } => railjson.id.clone(),
+            RailjsonObject::TrackSectionLink { railjson } => railjson.id.clone(),
         }
     }
 
@@ -55,7 +57,9 @@ impl RailjsonObject {
             RailjsonObject::TrackSection { railjson } => serde_json::to_value(railjson).unwrap(),
             RailjsonObject::Signal { railjson } => serde_json::to_value(railjson).unwrap(),
             RailjsonObject::SpeedSection { railjson } => serde_json::to_value(railjson).unwrap(),
-            RailjsonObject::TrackLink { railjson } => serde_json::to_value(railjson).unwrap(),
+            RailjsonObject::TrackSectionLink { railjson } => {
+                serde_json::to_value(railjson).unwrap()
+            }
         }
     }
 
@@ -68,7 +72,7 @@ impl RailjsonObject {
 pub mod test {
     use crate::models::infra::test::test_transaction;
     use crate::railjson::operation::create::{apply_create_operation, RailjsonObject};
-    use crate::railjson::{Signal, SpeedSection, TrackLink, TrackSection};
+    use crate::railjson::{Signal, SpeedSection, TrackSection, TrackSectionLink};
     use diesel::PgConnection;
 
     pub fn create_track(conn: &PgConnection, infra_id: i32, track: TrackSection) -> RailjsonObject {
@@ -89,8 +93,12 @@ pub mod test {
         obj
     }
 
-    pub fn create_link(conn: &PgConnection, infra_id: i32, link: TrackLink) -> RailjsonObject {
-        let obj = RailjsonObject::TrackLink { railjson: link };
+    pub fn create_link(
+        conn: &PgConnection,
+        infra_id: i32,
+        link: TrackSectionLink,
+    ) -> RailjsonObject {
+        let obj = RailjsonObject::TrackSectionLink { railjson: link };
         assert!(apply_create_operation(&obj, infra_id, conn).is_ok());
         obj
     }
