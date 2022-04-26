@@ -6,6 +6,7 @@ use crate::models::DBConnection;
 use crate::models::Infra;
 use crate::models::SignalLayer;
 use crate::models::SpeedSectionLayer;
+use crate::models::TrackLinkLayer;
 use crate::models::TrackSectionLayer;
 use crate::railjson::operation::Operation;
 use diesel::PgConnection;
@@ -31,6 +32,7 @@ pub fn refresh(
     TrackSectionLayer::refresh(conn, infra.id, chartos_config)?;
     SignalLayer::refresh(conn, infra.id, chartos_config)?;
     SpeedSectionLayer::refresh(conn, infra.id, chartos_config)?;
+    TrackLinkLayer::refresh(conn, infra.id, chartos_config)?;
 
     // Generate errors
     generate_errors(conn, infra.id, infra_cache, chartos_config)?;
@@ -50,9 +52,8 @@ pub fn update(
     TrackSectionLayer::update(conn, infra_id, operations, chartos_config)?;
     SignalLayer::update(conn, infra_id, operations, infra_cache, chartos_config)?;
     SpeedSectionLayer::update(conn, infra_id, operations, infra_cache, chartos_config)?;
-
+    TrackLinkLayer::update(conn, infra_id, operations, infra_cache, chartos_config)?;
     // Generate errors
     generate_errors(conn, infra_id, infra_cache, chartos_config)?;
-
     Ok(())
 }
