@@ -2,14 +2,14 @@ pub mod errors;
 pub mod infra;
 mod signal_layer;
 mod speed_section_layer;
-mod track_link_layer;
 mod track_section_layer;
+mod track_section_link_layer;
 
 pub use infra::{CreateInfra, Infra, InfraError};
 pub use signal_layer::SignalLayer;
 pub use speed_section_layer::SpeedSectionLayer;
-pub use track_link_layer::TrackLinkLayer;
 pub use track_section_layer::TrackSectionLayer;
+pub use track_section_link_layer::TrackSectionLinkLayer;
 
 use rocket_contrib::databases::diesel;
 

@@ -79,7 +79,7 @@ impl DataObject {
                 railjson: from_value(self.data.clone())?,
             },
             ObjectType::Detector => todo!(),
-            ObjectType::TrackLink => RailjsonObject::TrackLink {
+            ObjectType::TrackSectionLink => RailjsonObject::TrackSectionLink {
                 railjson: from_value(self.data.clone())?,
             },
         };
