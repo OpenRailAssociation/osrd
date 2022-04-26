@@ -79,6 +79,9 @@ impl DataObject {
                 railjson: from_value(self.data.clone())?,
             },
             ObjectType::Detector => todo!(),
+            ObjectType::TrackLink => RailjsonObject::TrackLink {
+                railjson: from_value(self.data.clone())?,
+            },
         };
 
         if obj_railjson.get_obj_id() != update.obj_id {

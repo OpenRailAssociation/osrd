@@ -110,6 +110,15 @@ impl InfraCache {
             );
         }
     }
+    /*
+    fn add_track_link_dependencies(&mut self, refs: &[ObjRefLink]) {
+        for link in refs.iter() {
+            self.track_link_dependencies
+                .entry(link.obj_id.clone())
+                .or_default()
+                .push(link.ref_id.clone());
+        }
+    } */
 
     /// Initialize an infra cache given an infra id
     pub fn init(conn: &PgConnection, infra_id: i32) -> InfraCache {
@@ -138,6 +147,20 @@ impl InfraCache {
             "SELECT obj_id, data->>'track_ranges' AS track_ranges, (data->>'speed')::float AS speed FROM osrd_infra_speedsectionmodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
         .load(conn).expect("Error loading speed section refs"));
+        /*
+        // Load track link tracks references
+        let link_src_references = sql_query(
+            "SELECT obj_id, data->'src'->'track'->>'id' AS ref_id FROM osrd_infra_tracksectionlinkmodel WHERE infra_id = $1")
+        .bind::<Integer, _>(infra_id)
+        .load(conn).expect("Error loading track link src refs");
+        let link_dst_references = sql_query(
+            "SELECT obj_id, data->'dst'->'track'->>'id' AS ref_id FROM osrd_infra_tracksectionlinkmodel WHERE infra_id = $1")
+        .bind::<Integer, _>(infra_id)
+        .load(conn).expect("Error loading track link dst refs");
+        infra_cache.add_tracks_refs(&link_src_references, ObjectType::TrackLink);
+        infra_cache.add_track_link_dependencies(&link_src_references);
+        infra_cache.add_tracks_refs(&speed_references, ObjectType::TrackLink);
+        infra_cache.add_track_link_dependencies(&link_dst_references); */
 
         infra_cache
     }
