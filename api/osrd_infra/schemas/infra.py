@@ -5,7 +5,7 @@ from geojson_pydantic import LineString
 from pydantic import BaseModel, Field, constr, root_validator
 
 ALL_OBJECT_TYPES = []
-RAILJSON_VERSION = "2.2.1"
+RAILJSON_VERSION = "2.2.2"
 
 # Traits
 
@@ -55,6 +55,21 @@ class Side(str, Enum):
     LEFT = "LEFT"
     RIGHT = "RIGHT"
     CENTER = "CENTER"
+
+
+class ApplicableTrainType(str, Enum):
+    FREIGHT = "FREIGHT"
+    PASSENGER = "PASSENGER"
+
+
+class LoadingGaugeType(str, Enum):
+    G1 = "G1"
+    G2 = "G2"
+    GA = "GA"
+    GB = "GB"
+    GB1 = "GB1"
+    GC = "GC"
+    FR3_3 = "FR3.3"
 
 
 class DirectionalTrackRange(BaseModel):
@@ -157,6 +172,13 @@ class Slope(BaseModel):
     end: float
 
 
+class LoadingGaugeLimit(BaseModel):
+    category: LoadingGaugeType
+    begin: float
+    end: float
+    applicable_train_type: ApplicableTrainType
+
+
 class TrackSection(BaseObjectTrait, GeometryLineTrait):
     length: float
     line_code: int
@@ -166,6 +188,7 @@ class TrackSection(BaseObjectTrait, GeometryLineTrait):
     navigability: ApplicableDirections
     slopes: List[Slope]
     curves: List[Curve]
+    loading_gauge_limits: List[LoadingGaugeLimit] = Field(default_factory=list)
 
 
 class Signal(BaseObjectTrait, TrackLocationTrait):
