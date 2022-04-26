@@ -22,6 +22,7 @@ pub enum ObjectType {
     Signal,
     SpeedSection,
     Detector,
+    TrackLink,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -46,6 +47,7 @@ impl ObjectType {
             ObjectType::Signal => "osrd_infra_signalmodel",
             ObjectType::SpeedSection => "osrd_infra_speedsectionmodel",
             ObjectType::Detector => todo!(),
+            ObjectType::TrackLink => "osrd_infra_tracksectionlinkmodel",
         }
     }
 }
@@ -115,6 +117,16 @@ pub struct SpeedSection {
     pub track_ranges: Vec<ApplicableDirectionsTrackRange>,
 }
 
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[derivative(Default)]
+pub struct TrackLink {
+    #[derivative(Default(value = r#"generate_id("track_link")"#))]
+    pub id: String,
+    pub src: TrackEndpoint,
+    pub dst: TrackEndpoint,
+    pub navigability: ApplicableDirections,
+}
+
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct ApplicableDirectionsTrackRange {
     pub track: ObjectRef,
@@ -165,6 +177,26 @@ pub enum Side {
     #[serde(rename = "CENTER")]
     #[derivative(Default)]
     Center,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub enum Endpoint {
+    #[serde(rename = "BEGIN")]
+    Begin,
+    #[serde(rename = "END")]
+    End,
+}
+
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[derivative(Default)]
+pub struct TrackEndpoint {
+    #[derivative(Default(value = "Endpoint::Begin"))]
+    pub endpoint: Endpoint,
+    #[derivative(Default(value = r#"ObjectRef {
+        obj_type: ObjectType::TrackSection,
+        obj_id: "".to_string(),
+    }"#))]
+    pub track: ObjectRef,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]

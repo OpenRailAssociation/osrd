@@ -55,7 +55,9 @@ impl From<ObjectRef> for DeleteOperation {
 #[cfg(test)]
 mod test {
     use crate::models::infra::test::test_transaction;
-    use crate::railjson::operation::create::test::{create_signal, create_speed, create_track};
+    use crate::railjson::operation::create::test::{
+        create_link, create_signal, create_speed, create_track,
+    };
     use crate::railjson::operation::delete::DeleteOperation;
     use diesel::sql_types::BigInt;
     use diesel::{sql_query, RunQueryDsl};
@@ -118,6 +120,26 @@ mod test {
             let res_del = sql_query(format!(
                 "SELECT COUNT (*) AS nb FROM osrd_infra_speedsectionmodel WHERE obj_id = '{}' AND infra_id = {}",
                 speed.get_obj_id(),
+                infra.id
+            ))
+            .get_result::<Count>(conn).unwrap();
+
+            assert_eq!(res_del.nb, 0);
+        });
+    }
+
+    #[test]
+    fn delete_link() {
+        test_transaction(|conn, infra| {
+            let link = create_link(conn, infra.id, Default::default());
+
+            let link_deletion: DeleteOperation = link.get_ref().into();
+
+            assert!(link_deletion.apply(infra.id, conn).is_ok());
+
+            let res_del = sql_query(format!(
+                "SELECT COUNT (*) AS nb FROM osrd_infra_tracksectionlinkmodel WHERE obj_id = '{}' AND infra_id = {}",
+                link.get_obj_id(),
                 infra.id
             ))
             .get_result::<Count>(conn).unwrap();
