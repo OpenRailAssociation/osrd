@@ -31,4 +31,5 @@ class Switch:
             switch_type=infra.ObjectReference(id="classic_switch", type="SwitchType"),
             group_change_delay=self.delay,
             ports={port: getattr(self, port).to_rjs() for port in ("base", "left", "right")},
+            label=self.label
         )
