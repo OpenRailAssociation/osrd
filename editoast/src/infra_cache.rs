@@ -1,5 +1,7 @@
 use crate::railjson::operation::{OperationResult, RailjsonObject};
-use crate::railjson::{ApplicableDirectionsTrackRange, ObjectRef, ObjectType, SpeedSection};
+use crate::railjson::{
+    ApplicableDirectionsTrackRange, ObjectRef, ObjectType, Signal, SpeedSection, TrackSectionLink,
+};
 use derivative::Derivative;
 use diesel::sql_types::{Double, Integer, Json, Text};
 use diesel::PgConnection;
@@ -66,6 +68,12 @@ impl SignalCache {
     }
 }
 
+impl From<&Signal> for SignalCache {
+    fn from(sig: &Signal) -> Self {
+        Self::new(sig.id.clone(), sig.track.obj_id.clone(), sig.position)
+    }
+}
+
 #[derive(QueryableByName, Debug, Clone)]
 pub struct SpeedSectionQueryable {
     #[sql_type = "Text"]
@@ -74,6 +82,18 @@ pub struct SpeedSectionQueryable {
     pub track_ranges: Value,
     #[sql_type = "Double"]
     pub speed: f64,
+}
+
+impl From<SpeedSectionQueryable> for SpeedSection {
+    fn from(speed: SpeedSectionQueryable) -> Self {
+        let track_ranges: Vec<ApplicableDirectionsTrackRange> =
+            serde_json::from_value(speed.track_ranges).unwrap();
+        SpeedSection {
+            id: speed.obj_id.clone(),
+            speed: speed.speed,
+            track_ranges,
+        }
+    }
 }
 
 #[derive(QueryableByName, Debug, Clone, Derivative)]
@@ -95,6 +115,16 @@ impl TrackSectionLinkCache {
     }
 }
 
+impl From<&TrackSectionLink> for TrackSectionLinkCache {
+    fn from(link: &TrackSectionLink) -> Self {
+        Self::new(
+            link.id.clone(),
+            link.src.track.obj_id.clone(),
+            link.dst.track.obj_id.clone(),
+        )
+    }
+}
+
 impl InfraCache {
     fn add_track_ref(&mut self, track_id: String, obj_ref: ObjectRef) {
         self.track_sections_refs
@@ -103,49 +133,38 @@ impl InfraCache {
             .insert(obj_ref);
     }
 
-    fn load_signals(&mut self, signals: Vec<SignalCache>) {
-        for signal in signals {
-            self.add_track_ref(
-                signal.track.clone(),
-                ObjectRef::new(ObjectType::Signal, signal.obj_id.clone()),
-            );
-            self.signals.insert(signal.obj_id.clone(), signal);
-        }
+    fn load_signal(&mut self, signal: SignalCache) {
+        self.add_track_ref(
+            signal.track.clone(),
+            ObjectRef::new(ObjectType::Signal, signal.obj_id.clone()),
+        );
+        assert!(self.signals.insert(signal.obj_id.clone(), signal).is_none());
     }
 
-    fn load_speed_sections(&mut self, speed_sections: Vec<SpeedSectionQueryable>) {
-        for speed in speed_sections {
-            let track_ranges: Vec<ApplicableDirectionsTrackRange> =
-                serde_json::from_value(speed.track_ranges).unwrap();
-            for track_range in track_ranges.iter() {
-                self.add_track_ref(
-                    track_range.track.obj_id.clone(),
-                    ObjectRef::new(ObjectType::SpeedSection, speed.obj_id.clone()),
-                );
-            }
-            self.speed_sections.insert(
-                speed.obj_id.clone(),
-                SpeedSection {
-                    id: speed.obj_id.clone(),
-                    speed: speed.speed,
-                    track_ranges,
-                },
+    fn load_speed_section(&mut self, speed: SpeedSection) {
+        for track_range in speed.track_ranges.iter() {
+            self.add_track_ref(
+                track_range.track.obj_id.clone(),
+                ObjectRef::new(ObjectType::SpeedSection, speed.id.clone()),
             );
         }
+        assert!(self
+            .speed_sections
+            .insert(speed.id.clone(), speed)
+            .is_none());
     }
 
-    fn load_track_section_links(&mut self, links: Vec<TrackSectionLinkCache>) {
-        for link in links {
+    fn load_track_section_link(&mut self, link: TrackSectionLinkCache) {
+        for endpoint in [&link.src, &link.dst] {
             self.add_track_ref(
-                link.src.clone(),
+                endpoint.clone(),
                 ObjectRef::new(ObjectType::TrackSectionLink, link.obj_id.clone()),
             );
-            self.add_track_ref(
-                link.dst.clone(),
-                ObjectRef::new(ObjectType::TrackSectionLink, link.obj_id.clone()),
-            );
-            self.track_section_links.insert(link.obj_id.clone(), link);
         }
+        assert!(self
+            .track_section_links
+            .insert(link.obj_id.clone(), link)
+            .is_none());
     }
 
     /// Initialize an infra cache given an infra id
@@ -165,22 +184,28 @@ impl InfraCache {
             .collect();
 
         // Load signal tracks references
-        infra_cache.load_signals(sql_query(
+        sql_query(
             "SELECT obj_id, data->'track'->>'id' AS track, (data->>'position')::float AS position FROM osrd_infra_signalmodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
-        .load::<SignalCache>(conn).expect("Error loading signal refs"));
+        .load::<SignalCache>(conn).expect("Error loading signal refs").into_iter().for_each(|signal| {
+            infra_cache.load_signal(signal);
+        });
 
         // Load speed sections tracks references
-        infra_cache.load_speed_sections(sql_query(
+        sql_query(
             "SELECT obj_id, data->>'track_ranges' AS track_ranges, (data->>'speed')::float AS speed FROM osrd_infra_speedsectionmodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
-        .load(conn).expect("Error loading speed section refs"));
+        .load::<SpeedSectionQueryable>(conn).expect("Error loading speed section refs").into_iter().for_each(|speed| {
+            infra_cache.load_speed_section(speed.into());
+        });
 
         // Load track section links tracks references
-        infra_cache.load_track_section_links(sql_query(
+        sql_query(
             "SELECT obj_id, data->'src'->'track'->>'id' AS src, data->'dst'->'track'->>'id' AS dst FROM osrd_infra_tracksectionlinkmodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
-        .load::<TrackSectionLinkCache>(conn).expect("Error loading track section link refs"));
+        .load::<TrackSectionLinkCache>(conn).expect("Error loading track section link refs").into_iter().for_each(|link| {
+            infra_cache.load_track_section_link(link);
+        });
 
         infra_cache
     }
@@ -254,61 +279,16 @@ impl InfraCache {
     /// Apply create operation to the infra cache
     fn apply_create(&mut self, railjson_obj: &RailjsonObject) {
         match railjson_obj {
-            RailjsonObject::Signal { railjson } => {
-                assert!(self
-                    .signals
-                    .insert(
-                        railjson.id.clone(),
-                        SignalCache::new(
-                            railjson.id.clone(),
-                            railjson.track.obj_id.clone(),
-                            railjson.position
-                        )
-                    )
-                    .is_none());
-                self.track_sections_refs
-                    .entry(railjson.track.obj_id.clone())
-                    .or_default()
-                    .insert(railjson_obj.get_ref());
-            }
-            RailjsonObject::SpeedSection { railjson } => {
-                assert!(self
-                    .speed_sections
-                    .insert(railjson.id.clone(), railjson.clone())
-                    .is_none());
-                railjson.track_ranges.iter().for_each(|track_range| {
-                    self.track_sections_refs
-                        .entry(track_range.track.obj_id.clone())
-                        .or_default()
-                        .insert(railjson_obj.get_ref());
-                });
-            }
             RailjsonObject::TrackSection { railjson } => {
                 self.track_sections.insert(
                     railjson.id.clone(),
                     TrackCache::new(railjson.id.clone(), railjson.length),
                 );
             }
+            RailjsonObject::Signal { railjson } => self.load_signal(railjson.into()),
+            RailjsonObject::SpeedSection { railjson } => self.load_speed_section(railjson.clone()),
             RailjsonObject::TrackSectionLink { railjson } => {
-                assert!(self
-                    .track_section_links
-                    .insert(
-                        railjson.id.clone(),
-                        TrackSectionLinkCache {
-                            obj_id: railjson.id.clone(),
-                            src: railjson.src.track.obj_id.clone(),
-                            dst: railjson.dst.track.obj_id.clone(),
-                        },
-                    )
-                    .is_none());
-                self.track_sections_refs
-                    .entry(railjson.src.track.obj_id.clone())
-                    .or_default()
-                    .insert(railjson_obj.get_ref());
-                self.track_sections_refs
-                    .entry(railjson.dst.track.obj_id.clone())
-                    .or_default()
-                    .insert(railjson_obj.get_ref());
+                self.load_track_section_link(railjson.into())
             }
         }
     }
