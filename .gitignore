@@ -1,2 +1,2 @@
 *.nix
-dump/
+*.backup
