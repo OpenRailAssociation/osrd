@@ -5,7 +5,7 @@ from geojson_pydantic import LineString
 from pydantic import BaseModel, Field, constr, root_validator
 
 ALL_OBJECT_TYPES = []
-RAILJSON_VERSION = "2.2.2"
+RAILJSON_VERSION = "2.2.3"
 
 # Traits
 
@@ -142,6 +142,7 @@ class Switch(BaseObjectTrait):
     switch_type: ObjectReference
     group_change_delay: float
     ports: Mapping[str, TrackEndpoint]
+    label: str
 
 
 class TrackSectionLink(BaseObjectTrait):

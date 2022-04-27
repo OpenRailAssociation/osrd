@@ -22,7 +22,7 @@ public class RJSInfra {
             .build()
             .adapter(RJSInfra.class);
 
-    public static final transient String CURRENT_VERSION = "2.2.2";
+    public static final transient String CURRENT_VERSION = "2.2.3";
 
     /** The version of the infra format used */
     public String version;
