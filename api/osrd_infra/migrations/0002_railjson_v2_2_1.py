@@ -11,7 +11,7 @@ def apply_migration(apps, schema_editor):
     updated_infra = []
 
     for infra in Infra.objects.all():
-        if infra.railjson_version == "2.2.0":
+        if infra.railjson_version != "2.2.1":
             infra.railjson_version = "2.2.1"
             infra.version = str(int(infra.version) + 1)
             updated_infra.append(infra)
@@ -24,7 +24,7 @@ def revert_migration(apps, schema_editor):
     updated_infra = []
 
     for infra in Infra.objects.all():
-        if infra.railjson_version == "2.2.1":
+        if infra.railjson_version != "2.2.0":
             infra.railjson_version = "2.2.0"
             infra.version = str(int(infra.version) + 1)
             updated_infra.append(infra)
@@ -121,21 +121,17 @@ class Migration(migrations.Migration):
             ),
         ),
         migrations.RunSQL(
-            sql="""UPDATE osrd_infra_signalmodel as signal  SET data = JSONB_SET(data, '{side}', '\"CENTER\"') FROM
-                osrd_infra_infra as infra WHERE infra.id = signal.infra_id AND infra.railjson_version = '2.2.0'""",
-            reverse_sql="""UPDATE osrd_infra_signalmodel as signal  SET data = data - 'side' FROM osrd_infra_infra as
-                infra WHERE infra.id = signal.infra_id AND infra.railjson_version = '2.2.1'""",
+            sql="""UPDATE osrd_infra_signalmodel as signal  SET data = JSONB_SET(data, '{side}', '\"CENTER\"')""",
+            reverse_sql="""UPDATE osrd_infra_signalmodel as signal  SET data = data - 'side'""",
         ),
         migrations.RunSQL(
-            sql="""UPDATE osrd_infra_signalmodel as signal  SET data = JSONB_SET(data, '{angle_sch}', '0') FROM
-                osrd_infra_infra as infra WHERE infra.id = signal.infra_id AND infra.railjson_version = '2.2.0'
-                AND signal.data->>'angle_sch' IS NULL""",
+            sql="""UPDATE osrd_infra_signalmodel as signal  SET data = JSONB_SET(data, '{angle_sch}', '0')
+                   WHERE signal.data->>'angle_sch' IS NULL""",
             reverse_sql=migrations.RunSQL.noop,
         ),
         migrations.RunSQL(
-            sql="""UPDATE osrd_infra_signalmodel as signal  SET data = JSONB_SET(data, '{angle_geo}', '0') FROM
-                osrd_infra_infra as infra WHERE infra.id = signal.infra_id AND infra.railjson_version = '2.2.0'
-                AND signal.data->>'angle_geo' IS NULL""",
+            sql="""UPDATE osrd_infra_signalmodel as signal  SET data = JSONB_SET(data, '{angle_geo}', '0')
+                   WHERE signal.data->>'angle_geo' IS NULL""",
             reverse_sql=migrations.RunSQL.noop,
         ),
         migrations.RunPython(code=apply_migration, reverse_code=revert_migration),
