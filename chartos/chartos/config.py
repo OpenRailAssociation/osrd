@@ -1,4 +1,4 @@
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from typing import Dict, List, NewType, Optional
 
 from chartos.utils import ValueDependable
@@ -19,13 +19,13 @@ SelectExpr = NewType("SelectExpr", str)
 JoinExpr = NewType("JoinExpr", str)
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class View:
     name: str
-    on_field: str
-    fields: List[SelectExpr]
-    joins: List[JoinExpr]
-    cache_duration: int
+    on_field: str = field(compare=False)
+    fields: List[SelectExpr] = field(compare=False)
+    joins: List[JoinExpr] = field(compare=False)
+    cache_duration: int = field(compare=False)
 
     @staticmethod
     def parse(data):

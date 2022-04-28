@@ -93,6 +93,48 @@ paths:
       responses:
         204:
           description: No content
+  /layer/{layer_slug}/invalidate_bbox/:
+    post:
+      summary: Invalidate cache for a whole layer
+      parameters:
+        - required: true
+          schema:
+            title: Layer Slug
+            type: string
+          name: layer_slug
+          in: path
+        - required: true
+          schema:
+            title: Infra id
+            type: integer
+          name: infra
+          in: query
+      requestBody:
+        description: Bounding box by view
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  view:
+                    type: string
+                    example: geo
+                  bbox:
+                    type: array
+                    items:
+                      type: array
+                      items:
+                        type: number
+                      minItems: 2
+                      maxItems: 2
+                    minItems: 2
+                    maxItems: 2
+                    example: [[2.1, 48.5], [2.5, 48.8]]
+      responses:
+        204:
+          description: No content
   /tile/{layer_slug}/{view_slug}/{z}/{x}/{y}/:
     get:
       summary: Mvt View Tile
