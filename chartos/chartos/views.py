@@ -1,16 +1,20 @@
 from collections import defaultdict
 from dataclasses import asdict as dataclass_as_dict
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from urllib.parse import quote as url_quote
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from fastapi.responses import Response
+from pydantic import BaseModel
+from shapely.geometry import Polygon
 
 from .config import Config, get_config
 from .layer_cache import (
     AffectedTile,
+    find_tiles,
     get_cache_tile_key,
     get_view_cache_prefix,
+    invalidate_cache,
     invalidate_full_layer_cache,
 )
 from .psql import PSQLPool
@@ -45,7 +49,9 @@ async def mvt_view_metadata(
 ):
     layer = config.layers[layer_slug]
     view = layer.views[view_slug]
-    tiles_url_pattern = f"{settings.root_url}/tile/{layer_slug}/{view_slug}/" "{z}/{x}/{y}" f"/?infra={url_quote(infra)}"
+    tiles_url_pattern = (
+        f"{settings.root_url}/tile/{layer_slug}/{view_slug}/" "{z}/{x}/{y}" f"/?infra={url_quote(infra)}"
+    )
     return {
         "type": "vector",
         "name": layer.name,
@@ -139,3 +145,27 @@ async def invalidate_layer(
     """Invalidate cache for a whole layer"""
     layer = config.layers[layer_slug]
     await invalidate_full_layer_cache(redis, layer, infra)
+
+
+class BoundingBox(BaseModel):
+    view: str
+    bbox: Tuple[Tuple[float, float], Tuple[float, float]]
+
+
+@router.post("/layer/{layer_slug}/invalidate_bbox/", status_code=204, response_class=Response)
+async def invalidate_layer_bbox(
+    layer_slug: str,
+    infra: str,
+    bounding_boxes: List[BoundingBox] = Body(...),
+    config: Config = Depends(get_config),
+    redis: RedisPool = Depends(RedisPool.get),
+    settings: Settings = Depends(get_settings),
+):
+    """Invalidate cache for a whole layer"""
+    layer: Layer = config.layers[layer_slug]
+    affected_tiles: Dict[View, List[AffectedTile]] = defaultdict(set)
+    for bbox in bounding_boxes:
+        view = layer.views[bbox.view]
+        polygon = Polygon.from_bounds(bbox.bbox[0][0], bbox.bbox[0][1], bbox.bbox[1][0], bbox.bbox[1][1])
+        affected_tiles[view] = find_tiles(settings.max_zoom, bbox.bbox)
+    await invalidate_cache(redis, layer, infra, affected_tiles)

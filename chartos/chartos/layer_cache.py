@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from math import asinh, atan, degrees, floor, pi, radians, sinh, tan
-from typing import Collection, Dict, Iterable, Iterator, Optional, Set, Tuple
+from typing import Collection, Dict, Iterable, Iterator, List, Optional, Set, Tuple
 
 from fastapi.responses import JSONResponse
 from shapely.geometry import Polygon
@@ -46,49 +46,27 @@ def get_nw_deg(z: int, x: int, y: int):
     return degrees(lat_rad), lon_deg
 
 
-def find_prepared_affected_tiles(max_zoom, prep_geom, z: int, x: int, y: int) -> Iterator[AffectedTile]:
-    if z > max_zoom:
-        return
-
-    lat_max, long_min = get_nw_deg(z, x, y)
-    lat_min, long_max = get_nw_deg(z, x + 1, y + 1)
-    bbox = Polygon.from_bounds(long_min, lat_min, long_max, lat_max)
-    if not prep_geom.intersects(bbox):
-        return
-
-    yield AffectedTile(x, y, z)
-
-    for sub_x in range(x * 2, x * 2 + 2):
-        for sub_y in range(y * 2, y * 2 + 2):
-            yield from find_prepared_affected_tiles(max_zoom, prep_geom, z + 1, sub_x, sub_y)
-
-
-def find_affected_tiles(max_zoom, geom) -> Iterator[AffectedTile]:
-    """geom must be a 4326 (GPS) geometry"""
-    prepared_geom = prep(geom)
-    return find_prepared_affected_tiles(max_zoom, prepared_geom, 0, 0, 0)
+def find_tiles(max_zoom, bbox) -> List[AffectedTile]:
+    """Compute from bbox the list of tiles to invalidate"""
+    affected_tiles = []
+    for zoom in range(max_zoom + 1):
+        nw_x, nw_y = get_xy(bbox[0][1], bbox[0][0], zoom)
+        se_x, se_y = get_xy(bbox[1][1], bbox[1][0], zoom)
+        for x in range(nw_x, se_x + 1):
+            for y in range(se_y, nw_y + 1):
+                affected_tiles.append(AffectedTile(x, y, zoom))
+    return affected_tiles
 
 
 async def invalidate_cache(redis, layer: Layer, version: str, affected_tiles: Dict[View, Set[AffectedTile]]):
-    impacted_tiles_meta = {}
+    evicted_keys = []
+    for view, view_affected_tiles in affected_tiles.items():
+        cache_location = get_view_cache_prefix(layer, version, view)
+        for tile in view_affected_tiles:
+            evicted_keys.append(get_cache_tile_key(cache_location, tile))
 
-    def build_evicted_keys() -> Iterable[str]:
-        for view in layer.views.values():
-            view_affected_tiles = affected_tiles.get(view)
-            if view_affected_tiles is None:
-                continue
-            impacted_tiles_meta[view.name] = [tile.to_json() for tile in view_affected_tiles]
-            cache_location = get_view_cache_prefix(layer, version, view)
-            for tile in view_affected_tiles:
-                yield get_cache_tile_key(cache_location, tile)
-
-    evicted_keys = list(build_evicted_keys())
     if evicted_keys:
         await redis.delete(*evicted_keys)
-    return JSONResponse(
-        {"impacted_tiles": impacted_tiles_meta},
-        status_code=201,
-    )
 
 
 async def invalidate_full_layer_cache(redis, layer: Layer, version: str):
