@@ -43,39 +43,49 @@ public class Pathfinding<NodeT, EdgeT> {
             double end
     ) {}
 
+    /** A simple range with no edge attached */
+    public record Range(double start, double end){}
+
     /** Step priority queue */
     private final PriorityQueue<Step<EdgeT>> queue;
     /** Function to call to get edge length */
     private final Function<EdgeT, Double> edgeToLength;
+    /** Function to call to get the blocked ranges on an edge */
+    private final Function<EdgeT, Collection<Range>> blockedRangesOnEdge;
     /** Input graph */
     private final ImmutableNetwork<NodeT, EdgeT> graph;
     /** Keeps track of visited location. For each visited range, keeps the max number of passed targets at that point */
     private final HashMap<EdgeRange<EdgeT>, Integer> seen = new HashMap<>();
-    // TODO: add a `private final Function<EdgeT, Boolean> isEdgeAllowed;` as optional parameter to filter some edges
 
     /** Returns the shortest path from any start edge to any end edge, as a list of edge (containing start and stop) */
     public static <NodeT, EdgeT> List<EdgeT> findEdgePath(
             ImmutableNetwork<NodeT, EdgeT> graph,
             List<Collection<EdgeLocation<EdgeT>>> locations,
-            Function<EdgeT, Double> edgeToLength
+            Function<EdgeT, Double> edgeToLength,
+            Function<EdgeT, Collection<Range>> blockedRangesOnEdge
     ) {
-        return new Pathfinding<>(graph, edgeToLength).runPathfindingEdgesOnly(locations);
+        return new Pathfinding<>(graph, edgeToLength, blockedRangesOnEdge).runPathfindingEdgesOnly(locations);
     }
 
     /** Returns the shortest path from any start edge to any end edge, as a list of (edge, start, end) */
     public static <NodeT, EdgeT> List<EdgeRange<EdgeT>> findPath(
             ImmutableNetwork<NodeT, EdgeT> graph,
             List<Collection<EdgeLocation<EdgeT>>> locations,
-            Function<EdgeT, Double> edgeToLength
+            Function<EdgeT, Double> edgeToLength,
+            Function<EdgeT, Collection<Range>> blockedRangesOnEdge
     ) {
-        return new Pathfinding<>(graph, edgeToLength).runPathfinding(locations);
+        return new Pathfinding<>(graph, edgeToLength, blockedRangesOnEdge).runPathfinding(locations);
     }
 
     /** Constructor */
     private Pathfinding(
             ImmutableNetwork<NodeT, EdgeT> graph,
-            Function<EdgeT, Double> edgeToLength
+            Function<EdgeT, Double> edgeToLength,
+            Function<EdgeT, Collection<Range>> blockedRangesOnEdge
     ) {
+        if (blockedRangesOnEdge == null)
+            blockedRangesOnEdge = x -> List.of();
+        this.blockedRangesOnEdge = blockedRangesOnEdge;
         queue = new PriorityQueue<>();
         this.graph = graph;
         this.edgeToLength = edgeToLength;
@@ -105,6 +115,12 @@ public class Pathfinding<NodeT, EdgeT> {
                     // Adds a new step precisely on the stop location. This ensures that we don't ignore the
                     // distance between the start of the edge and the stop location
                     var newRange = new EdgeRange<>(targetLocation.edge, step.range.start, targetLocation.offset);
+                    newRange = filterRange(newRange);
+                    assert newRange != null;
+                    if (newRange.end != targetLocation.offset) {
+                        // The target location is blocked by a blocked range, it can't be accessed from here
+                        continue;
+                    }
                     registerStep(newRange, step.prev, step.totalDistance, step.nReachedTargets + 1);
                 }
             var edgeLength = edgeToLength.apply(step.range.edge);
@@ -168,8 +184,28 @@ public class Pathfinding<NodeT, EdgeT> {
         return res;
     }
 
+    /** Filter the range to keep only the parts that can be reached */
+    private EdgeRange<EdgeT> filterRange(EdgeRange<EdgeT> range) {
+        var end = range.end;
+        for (var blockedRange : blockedRangesOnEdge.apply(range.edge)) {
+            if (blockedRange.end < range.start) {
+                // The blocked range is before the considered range
+                continue;
+            }
+            if (blockedRange.start <= range.start) {
+                // The start of the range is blocked: we don't visit this range
+                return null;
+            }
+            end = Math.min(end, blockedRange.start);
+        }
+        return new EdgeRange<>(range.edge, range.start, end);
+    }
+
     /** Registers one step, adding the edge to the queue if not already seen */
     private void registerStep(EdgeRange<EdgeT> range, Step<EdgeT> prev, double prevDistance, int nPassedTargets) {
+        range = filterRange(range);
+        if (range == null)
+            return;
         if (!(seen.getOrDefault(range, -1) < nPassedTargets))
             return;
         double totalDistance = prevDistance + (range.end - range.start);

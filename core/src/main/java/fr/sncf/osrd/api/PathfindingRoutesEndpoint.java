@@ -68,8 +68,8 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
             var path = Pathfinding.findPath(
                     infra.getSignalingRouteGraph(),
                     waypoints,
-                    route -> route.getInfraRoute().getLength()
-            );
+                    route -> route.getInfraRoute().getLength(),
+                    null);
 
             if (path == null)
                 return new RsWithStatus(new RsText("No path could be found"), 400);
