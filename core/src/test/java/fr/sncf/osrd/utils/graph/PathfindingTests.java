@@ -1,22 +1,18 @@
 package fr.sncf.osrd.utils.graph;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.NetworkBuilder;
 import org.junit.jupiter.api.Test;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class PathfindingTests {
 
     private static class SimpleGraphBuilder {
 
-        private record Edge(double length, String label){}
+        private record Edge(double length, String label, Set<Pathfinding.Range> blockedRanges){}
 
         private static class Node{}
 
@@ -38,11 +34,15 @@ public class PathfindingTests {
                 makeNode();
         }
 
-        public void makeEdge(int n1, int n2, double length) {
+        public void makeEdge(int n1, int n2, double length, Set<Pathfinding.Range> blockedRanges) {
             var label = String.format("%d-%s", n1, n2);
-            var res = new Edge(length, label);
+            var res = new Edge(length, label, blockedRanges);
             builder.addEdge(nodes.get(n1), nodes.get(n2), res);
             edges.put(label, res);
+        }
+
+        public void makeEdge(int n1, int n2, double length) {
+            makeEdge(n1, n2, length, Set.of());
         }
 
         public ImmutableNetwork<Node, Edge> build() {
@@ -83,8 +83,8 @@ public class PathfindingTests {
                         List.of(builder.getEdgeLocation("0-1")),
                         List.of(builder.getEdgeLocation("3-4"))
                 ),
-                edge -> edge.length
-        );
+                edge -> edge.length,
+                null);
         var resIDs = res.stream().map(x -> x.label).toList();
         assertEquals(
                 List.of(
@@ -119,8 +119,8 @@ public class PathfindingTests {
                         List.of(builder.getEdgeLocation("0-1")),
                         List.of(builder.getEdgeLocation("3-4"))
                 ),
-                edge -> edge.length
-        );
+                edge -> edge.length,
+                null);
         var resIDs = res.stream().map(x -> x.label).toList();
         assertEquals(
                 List.of(
@@ -162,8 +162,8 @@ public class PathfindingTests {
                         ),
                         List.of(builder.getEdgeLocation("5-6"))
                 ),
-                edge -> edge.length
-        );
+                edge -> edge.length,
+                null);
         var resIDs = res.stream().map(x -> x.label).toList();
         assertEquals(
                 List.of(
@@ -205,8 +205,8 @@ public class PathfindingTests {
                                 builder.getEdgeLocation("5-6")
                         )
                 ),
-                edge -> edge.length
-        );
+                edge -> edge.length,
+                null);
         var resIDs = res.stream().map(x -> x.label).toList();
         assertEquals(
                 List.of(
@@ -240,8 +240,8 @@ public class PathfindingTests {
                         List.of(builder.getEdgeLocation("0-1")),
                         List.of(builder.getEdgeLocation("1-2", 50))
                 ),
-                edge -> edge.length
-        );
+                edge -> edge.length,
+                null);
         var resIDs = res.stream().map(x -> x.label).toList();
         assertEquals(
                 List.of(
@@ -270,8 +270,8 @@ public class PathfindingTests {
                         List.of(builder.getEdgeLocation("2-3")),
                         List.of(builder.getEdgeLocation("0-1"))
                 ),
-                edge -> edge.length
-        );
+                edge -> edge.length,
+                null);
         assertNull(res);
     }
 
@@ -291,8 +291,8 @@ public class PathfindingTests {
                         List.of(builder.getEdgeLocation("0-1", 60)),
                         List.of(builder.getEdgeLocation("0-1", 30))
                 ),
-                edge -> edge.length
-        );
+                edge -> edge.length,
+                null);
         assertNull(res);
     }
 
@@ -317,8 +317,8 @@ public class PathfindingTests {
                         List.of(builder.getEdgeLocation("0-1", 60)),
                         List.of(builder.getEdgeLocation("0-1", 30))
                 ),
-                edge -> edge.length
-        );
+                edge -> edge.length,
+                null);
         var resIDs = res.stream().map(x -> x.label).toList();
         assertEquals(
                 List.of(
@@ -357,8 +357,8 @@ public class PathfindingTests {
                                 builder.getEdgeLocation("4-5", 10)
                         )
                 ),
-                edge -> edge.length
-        );
+                edge -> edge.length,
+                null);
         assertEquals(
                 List.of(
                         new SimpleRange("0-1", 0, 0),
@@ -394,8 +394,8 @@ public class PathfindingTests {
                         List.of(builder.getEdgeLocation("4-5", 5)),
                         List.of(builder.getEdgeLocation("2-3", 5))
                 ),
-                edge -> edge.length
-        );
+                edge -> edge.length,
+                null);
         assertEquals(
                 List.of(
                         new SimpleRange("0-1", 5, 10),
@@ -406,6 +406,168 @@ public class PathfindingTests {
                 ),
                 convertRes(res)
         );
+    }
+
+    @Test
+    public void blockedRangeRightPathTest() {
+        /* Top path is shorter but blocked
+
+        0 -> B1 -> BLOCKED -> 1
+                              |
+                              v
+                              4 -> E -> 5
+                              ^
+        2 -> B2 -> -> -> ->-> 3
+         */
+        var builder = new SimpleGraphBuilder();
+        builder.makeNodes(7);
+        builder.makeEdge(0, 1, 100, Set.of(new Pathfinding.Range(50, 50)));
+        builder.makeEdge(1, 4, 100);
+
+        builder.makeEdge(2, 3, 100);
+        builder.makeEdge(3, 4, 100000);
+
+        builder.makeEdge(4, 5, 0);
+        var g = builder.build();
+        var res = Pathfinding.findEdgePath(
+                g,
+                List.of(
+                        List.of(
+                                builder.getEdgeLocation("0-1"),
+                                builder.getEdgeLocation("2-3")
+                        ),
+                        List.of(builder.getEdgeLocation("4-5"))
+                ),
+                edge -> edge.length,
+                x -> x.blockedRanges
+        );
+        var resIDs = res.stream().map(x -> x.label).toList();
+        assertEquals(
+                List.of(
+                        "2-3",
+                        "3-4",
+                        "4-5"
+                ),
+                resIDs
+        );
+    }
+
+    @Test
+    public void blockedStartTest() {
+        /* Single edge, the start is on a blocked range
+
+        0 -> BLOCKED( -> B -> E -> ) -> 1
+         */
+        var builder = new SimpleGraphBuilder();
+        builder.makeNodes(2);
+        builder.makeEdge(0, 1, 100, Set.of(new Pathfinding.Range(0, 10)));
+        var g = builder.build();
+        var res = Pathfinding.findEdgePath(
+                g,
+                List.of(
+                        List.of(builder.getEdgeLocation("0-1", 5)),
+                        List.of(builder.getEdgeLocation("0-1", 7))
+                ),
+                edge -> edge.length,
+                x -> x.blockedRanges
+        );
+        assertNull(res);
+    }
+
+    @Test
+    public void pathBetweenBlockedRangesTest() {
+        /* Single edge, there are blocked ranges before and after the path
+
+        0 -> BLOCKED() -> B -> E -> BLOCKED() -> 1
+         */
+        var builder = new SimpleGraphBuilder();
+        builder.makeNodes(2);
+        builder.makeEdge(0, 1, 100, Set.of(
+                new Pathfinding.Range(0, 30),
+                new Pathfinding.Range(70, 100)
+        ));
+        var g = builder.build();
+        var res = Pathfinding.findEdgePath(
+                g,
+                List.of(
+                        List.of(builder.getEdgeLocation("0-1", 40)),
+                        List.of(builder.getEdgeLocation("0-1", 50))
+                ),
+                edge -> edge.length,
+                x -> x.blockedRanges
+        );
+        assertNotNull(res);
+    }
+
+    @Test
+    public void blockedAfterEnd() {
+        /* Several edges, the last edge is blocked after the end
+
+        0 -> B -> 1 -> E -> BLOCKED() -> 2
+         */
+        var builder = new SimpleGraphBuilder();
+        builder.makeNodes(3);
+        builder.makeEdge(0, 1, 100);
+        builder.makeEdge(1, 2, 100, Set.of(new Pathfinding.Range(70, 100)));
+        var g = builder.build();
+        var res = Pathfinding.findEdgePath(
+                g,
+                List.of(
+                        List.of(builder.getEdgeLocation("0-1")),
+                        List.of(builder.getEdgeLocation("1-2", 50))
+                ),
+                edge -> edge.length,
+                x -> x.blockedRanges
+        );
+        assertNotNull(res);
+    }
+
+    @Test
+    public void blockedBeforeEnd() {
+        /* Several edges, the last edge is blocked before the end
+
+        0 -> B -> 1 -> BLOCKED() -> E -> 2
+         */
+        var builder = new SimpleGraphBuilder();
+        builder.makeNodes(3);
+        builder.makeEdge(0, 1, 100);
+        builder.makeEdge(1, 2, 100, Set.of(new Pathfinding.Range(10, 20)));
+        var g = builder.build();
+        var res = Pathfinding.findEdgePath(
+                g,
+                List.of(
+                        List.of(builder.getEdgeLocation("0-1")),
+                        List.of(builder.getEdgeLocation("1-2", 50))
+                ),
+                edge -> edge.length,
+                x -> x.blockedRanges
+        );
+        assertNull(res);
+    }
+
+    @Test
+    public void severalStartsWithBlockedRange() {
+        /* Some starting points are blocked, others are not
+
+        0 -> B1 -> BLOCKED -> B2 -> E -> 1
+         */
+        var builder = new SimpleGraphBuilder();
+        builder.makeNodes(2);
+        builder.makeEdge(0, 1, 100, Set.of(new Pathfinding.Range(10, 20)));
+        var g = builder.build();
+        var res = Pathfinding.findEdgePath(
+                g,
+                List.of(
+                        List.of(
+                                builder.getEdgeLocation("0-1", 10),
+                                builder.getEdgeLocation("0-1", 40)
+                        ),
+                        List.of(builder.getEdgeLocation("0-1", 50))
+                ),
+                edge -> edge.length,
+                x -> x.blockedRanges
+        );
+        assertNotNull(res);
     }
 
     private static List<SimpleRange> convertRes(List<Pathfinding.EdgeRange<SimpleGraphBuilder.Edge>> res) {
