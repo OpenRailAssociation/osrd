@@ -1,7 +1,7 @@
 import csv
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Iterable
 
 from django.contrib.gis.geos import GEOSGeometry, LineString, Point
 from django.core.management.base import BaseCommand, CommandError
@@ -92,11 +92,16 @@ def dump_entities(writer, objects, formatters, **kwargs):
         writer.writerow((f(obj, **kwargs) for f in formatters))
 
 
-def interpolate_location(obj: TrackLocationTrait, tracks: Dict[str, TrackSection], geo: bool) -> Point:
-    track = tracks[obj.track.id]
+def interpolate_location_with_track(offset: float, track: TrackSection, geo: bool) -> Point:
     data = track.geo if geo else track.sch
     geo_line = GEOSGeometry(data.json())
-    return geo_line.interpolate(obj.position)
+    normalized = 0 if track.length == 0 else offset / track.length
+    return geo_line.interpolate_normalized(normalized)
+
+
+def interpolate_location(obj: TrackLocationTrait, tracks: Dict[str, TrackSection], geo: bool) -> Point:
+    track = tracks[obj.track.id]
+    return interpolate_location_with_track(obj.position, track, geo)
 
 
 def get_geo_point_near_endpoint(track, endpoint):
@@ -150,6 +155,22 @@ def export_switches(fp, infra, track_sections):
             switch.ports["RIGHT"].endpoint,
         )
         writer.writerow([switch.id, line.ewkt])
+
+
+def export_loading_gauges(fp, track_sections: Iterable[TrackSection]):
+    writer = csv.writer(fp)
+    writer.writerow(["geo", "sch", "applicable", "category"])
+    for track in track_sections:
+        for gauge in track.loading_gauge_limits:
+            geo = LineString(
+                interpolate_location_with_track(gauge.begin, track, True),
+                interpolate_location_with_track(gauge.end, track, True),
+            )
+            sch = LineString(
+                interpolate_location_with_track(gauge.begin, track, False),
+                interpolate_location_with_track(gauge.end, track, False),
+            )
+            writer.writerow((geo.ewkt, sch.ewkt, gauge.applicable_train_type, gauge.category))
 
 
 class Command(BaseCommand):
@@ -233,3 +254,6 @@ class Command(BaseCommand):
 
         with (out_dir / "switches.csv").open("w") as fp:
             export_switches(fp, infra, track_sections)
+
+        with (out_dir / "loading_gauges.csv").open("w") as fp:
+            export_loading_gauges(fp, track_sections.values())
