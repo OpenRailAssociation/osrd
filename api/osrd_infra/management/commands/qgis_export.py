@@ -1,6 +1,7 @@
 import csv
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Dict
 
 from django.contrib.gis.geos import GEOSGeometry, LineString, Point
 from django.core.management.base import BaseCommand, CommandError
@@ -14,9 +15,8 @@ from osrd_infra.models import (
     SwitchModel,
     TrackSectionLinkModel,
     TrackSectionModel,
-    TVDSectionModel,
 )
-from osrd_infra.schemas.infra import Endpoint
+from osrd_infra.schemas.infra import Endpoint, TrackLocationTrait, TrackSection
 
 
 @dataclass
@@ -36,40 +36,67 @@ def formatter(name):
 
 
 @formatter("osrd_id")
-def format_osrd_id(obj):
+def format_osrd_id(obj, **kwargs):
     return obj.id
 
 
 @formatter("name")
-def format_name(obj):
+def format_name(obj, **kwargs):
     return obj.name
 
 
 @formatter("geo")
-def format_geo(obj):
+def format_geo_point(obj, **kwargs):
+    return GEOSGeometry(obj.geo.json).ewkt
+
+
+@formatter("sch")
+def format_sch_point(obj, **kwargs):
+    return GEOSGeometry(obj.sch.json).ewkt
+
+
+@formatter("geo")
+def format_geo(obj, **kwargs):
     return GEOSGeometry(obj.geo.json()).ewkt
 
 
 @formatter("sch")
-def format_sch(obj):
+def format_sch(obj, **kwargs):
     return GEOSGeometry(obj.sch.json()).ewkt
 
 
+@formatter("geo")
+def compute_geo_from_location(obj: TrackLocationTrait, **kwargs):
+    return interpolate_location(obj, kwargs["tracks"], True).ewkt
+
+
+@formatter("sch")
+def compute_sch_from_location(obj: TrackLocationTrait, **kwargs):
+    return interpolate_location(obj, kwargs["tracks"], False).ewkt
+
+
 @formatter("op_name")
-def format_operational_point(entity):
+def format_operational_point(entity, **kwargs):
     op = entity.operational_point_part.operational_point
     return op.operational_point.name
 
 
 @formatter("aspects")
-def format_aspects(signal):
+def format_aspects(signal, **kwargs):
     return ";".join(signal.aspects or [])
 
 
-def dump_entities(writer, objects, formatters):
+def dump_entities(writer, objects, formatters, **kwargs):
     writer.writerow((f.name for f in formatters))
     for obj in objects:
-        writer.writerow((f(obj) for f in formatters))
+        writer.writerow((f(obj, **kwargs) for f in formatters))
+
+
+def interpolate_location(obj: TrackLocationTrait, tracks: Dict[str, TrackSection], geo: bool) -> Point:
+    track = tracks[obj.track.id]
+    data = track.geo if geo else track.sch
+    geo_line = GEOSGeometry(data.json())
+    return geo_line.interpolate(obj.position)
 
 
 def get_geo_point_near_endpoint(track, endpoint):
@@ -161,7 +188,8 @@ class Command(BaseCommand):
             dump_entities(
                 csv.writer(fp),
                 buffer_stops,
-                [format_osrd_id, format_geo, format_sch],
+                [format_osrd_id, compute_geo_from_location, compute_sch_from_location],
+                tracks=track_sections,
             )
 
         buffer_stops = [w.into_obj() for w in BufferStopModel.objects.filter(infra=infra)]
@@ -169,7 +197,8 @@ class Command(BaseCommand):
             dump_entities(
                 csv.writer(fp),
                 buffer_stops,
-                [format_osrd_id, format_geo, format_sch],
+                [format_osrd_id, compute_geo_from_location, compute_sch_from_location],
+                tracks=track_sections,
             )
 
         signals = [w.into_obj() for w in SignalModel.objects.filter(infra=infra)]
@@ -177,28 +206,26 @@ class Command(BaseCommand):
             dump_entities(
                 csv.writer(fp),
                 signals,
-                [format_osrd_id, format_geo, format_sch, format_aspects],
-            )
-
-        tvd_sections = [tvd.into_obj() for tvd in TVDSectionModel.objects.filter(infra=infra)]
-        with (out_dir / "tvd_sections.csv").open("w") as fp:
-            dump_entities(
-                csv.writer(fp),
-                tvd_sections,
-                [format_osrd_id, format_geo, format_sch],
+                [format_osrd_id, compute_geo_from_location, compute_sch_from_location, format_aspects],
+                tracks=track_sections,
             )
 
         operational_points = []
         for op in OperationalPointModel.objects.filter(infra=infra):
             op = op.into_obj()
             for part in op.parts:
-                operational_points.append(CustomOperationalPointPart(part.geo, part.sch, op.name, op.id))
+                operational_points.append(CustomOperationalPointPart(
+                    interpolate_location(part, track_sections, True),
+                    interpolate_location(part, track_sections, False),
+                    op.name,
+                    op.id
+                ))
 
         with (out_dir / "operational_points.csv").open("w") as fp:
             dump_entities(
                 csv.writer(fp),
                 operational_points,
-                [format_osrd_id, format_geo, format_sch, format_name],
+                [format_osrd_id, format_geo_point, format_sch_point, format_name],
             )
 
         with (out_dir / "track_section_links.csv").open("w") as fp:
