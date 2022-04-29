@@ -109,9 +109,9 @@ public class DirectedRJSParsingTests {
                 .directed()
                 .<TrackNode, TrackEdge>immutable();
 
-        final var node1 = new SwitchPortImpl("1");
-        final var node2 = new SwitchPortImpl("2");
-        final var node3 = new SwitchPortImpl("3");
+        final var node1 = new SwitchPortImpl("1", "switchID");
+        final var node2 = new SwitchPortImpl("2", "switchID");
+        final var node3 = new SwitchPortImpl("3", "switchID");
         builder.addNode(node1);
         builder.addNode(node2);
         builder.addNode(node3);

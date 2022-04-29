@@ -82,12 +82,12 @@ public class InfraHelpers {
                 .directed()
                 .<TrackNode, TrackEdge>immutable();
 
-        final var nodeIn1 = new SwitchPortImpl("1");
-        final var nodeIn2 = new SwitchPortImpl("2");
-        final var nodeIn3 = new SwitchPortImpl("3");
-        final var nodeOut1 = new TrackNodeImpl.Joint();
-        final var nodeOut2 = new TrackNodeImpl.Joint();
-        final var nodeOut3 = new TrackNodeImpl.Joint();
+        final var nodeIn1 = new SwitchPortImpl("1", "switchID");
+        final var nodeIn2 = new SwitchPortImpl("2", "switchID");
+        final var nodeIn3 = new SwitchPortImpl("3", "switchID");
+        final var nodeOut1 = new TrackNodeImpl.Joint("1-out");
+        final var nodeOut2 = new TrackNodeImpl.Joint("2-out");
+        final var nodeOut3 = new TrackNodeImpl.Joint("3-out");
         builder.addNode(nodeIn1);
         builder.addNode(nodeIn2);
         builder.addNode(nodeIn3);
