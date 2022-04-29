@@ -60,12 +60,7 @@ public class UndirectedInfraBuilder {
             switches.put(s.id, parseSwitch(s, switchTypeMap));
         }
 
-        // Create remaining links
-        for (var link : infra.trackSectionLinks) {
-            var newNode = new TrackNodeImpl.Joint();
-            addNode(link.src.track.id.id, link.src.endpoint, newNode);
-            addNode(link.dst.track.id.id, link.dst.endpoint, newNode);
-        }
+        addRemainingLinks(infra);
 
         var trackSectionsByID = new HashMap<String, TrackSectionImpl>();
         for (var track : infra.trackSections) {
@@ -91,6 +86,33 @@ public class UndirectedInfraBuilder {
         addSpeedSections(infra.speedSections, trackSectionsByID);
 
         return TrackInfraImpl.from(switches.build(), builder.build());
+    }
+
+    /** Creates all the track section links that haven't already been created by switches */
+    private void addRemainingLinks(RJSInfra infra) {
+        for (var link : infra.trackSectionLinks) {
+            var srcID = link.src.track.id.id;
+            var dstID = link.dst.track.id.id;
+            var oldSrcNode = getNode(srcID, link.src.endpoint);
+            var oldDstNode = getNode(dstID, link.dst.endpoint);
+            if (oldSrcNode != null || oldDstNode != null) {
+                // At least one of the node already exists:
+                // either both are the same switch node, or there is an error in the infra
+                if (oldSrcNode instanceof SwitchPort srcSwitchPort
+                                && oldDstNode instanceof SwitchPort dstSwitchPort
+                                && srcSwitchPort.getSwitch().getID().equals(dstSwitchPort.getSwitch().getID()))
+                    continue;
+                throw new InvalidInfraError(String.format(
+                        "Error in track link %s: at least one endpoint is already linked (src=%s, dst=%s)",
+                        link.id,
+                        oldSrcNode,
+                        oldDstNode
+                ));
+            }
+            var newNode = new TrackNodeImpl.Joint(link.id);
+            addNode(srcID, link.src.endpoint, newNode);
+            addNode(dstID, link.dst.endpoint, newNode);
+        }
     }
 
     /** Adds all the speed sections to track attributes */
@@ -135,8 +157,8 @@ public class UndirectedInfraBuilder {
 
     /** Creates a track section and registers it in the graph */
     private TrackSectionImpl makeTrackSection(RJSTrackSection track) {
-        var begin = getNode(track.id, EdgeEndpoint.BEGIN);
-        var end = getNode(track.id, EdgeEndpoint.END);
+        var begin = getOrCreateNode(track.id, EdgeEndpoint.BEGIN);
+        var end = getOrCreateNode(track.id, EdgeEndpoint.END);
         var edge = new TrackSectionImpl(
                 track.length,
                 track.id,
@@ -206,23 +228,27 @@ public class UndirectedInfraBuilder {
         var map = beginEndpoints;
         if (endpoint == EdgeEndpoint.END)
             map = endEndpoints;
-        if (map.containsKey(trackId)) {
-            if (map.get(trackId) instanceof SwitchPort) // the link is already created in a switch, ignore
-                return;
-            throw new InvalidInfraError("Duplicated track link"); // TODO: add details
-        }
+        if (map.containsKey(trackId))
+            throw new InvalidInfraError(String.format("Duplicated track link on endpoint (%s - %s) : (old=%s, new=%s)",
+                    trackId, endpoint, map.get(trackId), node));
         map.put(trackId, node);
         builder.addNode(node);
     }
 
-    /** Returns the node at the given end of the track */
+    /** Returns the node at the given end of the track, returns null if absent */
     private TrackNode getNode(String trackId, EdgeEndpoint endpoint) {
         var map = beginEndpoints;
         if (endpoint == EdgeEndpoint.END)
             map = endEndpoints;
-        if (map.containsKey(trackId))
-            return map.get(trackId);
-        var res = new TrackNodeImpl.End();
+        return map.getOrDefault(trackId, null);
+    }
+
+    /** Returns the node at the given end of the track, create a TrackNode.End if absent */
+    private TrackNode getOrCreateNode(String trackId, EdgeEndpoint endpoint) {
+        var res = getNode(trackId, endpoint);
+        if (res != null)
+            return res;
+        res = new TrackNodeImpl.End();
         addNode(trackId, endpoint, res);
         return res;
     }
@@ -239,7 +265,7 @@ public class UndirectedInfraBuilder {
         for (var entry : rjsSwitch.ports.entrySet()) {
             var portName = entry.getKey();
             var port = entry.getValue();
-            var newNode = new SwitchPortImpl(portName);
+            var newNode = new SwitchPortImpl(portName, rjsSwitch.id);
             portMap.put(portName, newNode);
             networkBuilder.addNode(newNode);
             addNode(port.track.id.id, port.endpoint, newNode);
