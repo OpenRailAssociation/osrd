@@ -70,6 +70,7 @@ class LoadingGaugeType(str, Enum):
     GB1 = "GB1"
     GC = "GC"
     FR3_3 = "FR3.3"
+    FR3_3_GB_G2 = "FR3.3/GB/G2"
 
 
 class DirectionalTrackRange(BaseModel):
