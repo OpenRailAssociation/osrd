@@ -7,7 +7,5 @@ public class TrackNodeImpl {
 
     }
 
-    public static class Joint implements TrackNode.Joint {
-
-    }
+    public record Joint(String id) implements TrackNode.Joint {}
 }

@@ -60,6 +60,11 @@ public abstract class OSRDError extends RuntimeException {
         this.cause = cause;
     }
 
+    @Override
+    public String getMessage() {
+        return message;
+    }
+
     public static final JsonAdapter<OSRDError> adapter = Reflection.makeJsonAdapterFromSubtypes(
             OSRDError.class, "type", List.of(ErrorContext.adapter), "osrdErrorType");
 }

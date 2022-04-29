@@ -8,10 +8,12 @@ import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 @ExcludeFromGeneratedCodeCoverage
 public class SwitchPortImpl implements SwitchPort {
     private final String id;
+    private final String switchID; // This is a separate variable to report errors before the switch is instantiated
     public Switch switchRef;
 
-    public SwitchPortImpl(String id) {
+    public SwitchPortImpl(String id, String switchID) {
         this.id = id;
+        this.switchID = switchID;
     }
 
     @Override
@@ -29,7 +31,7 @@ public class SwitchPortImpl implements SwitchPort {
     public String toString() {
         return MoreObjects.toStringHelper(this)
                 .add("id", id)
-                .add("switchRef", switchRef.getID())
+                .add("switchID", switchID)
                 .toString();
     }
 }
