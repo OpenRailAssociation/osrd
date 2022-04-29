@@ -1,7 +1,7 @@
 use crate::client::ChartosConfig;
 use crate::infra_cache::InfraCache;
-use crate::railjson::operation::{DeleteOperation, Operation, UpdateOperation};
-use crate::railjson::ObjectType;
+use crate::railjson::operation::{OperationResult, RailjsonObject};
+use crate::railjson::{ObjectRef, ObjectType};
 use crate::schema::osrd_infra_tracksectionlinklayer;
 use crate::schema::osrd_infra_tracksectionlinklayer::dsl::*;
 use diesel::result::Error;
@@ -10,7 +10,7 @@ use diesel::{delete, prelude::*, sql_query};
 use serde::Serialize;
 use std::collections::HashSet;
 
-use super::invalidate_chartos_layer;
+use super::{invalidate_bbox_chartos_layer, invalidate_chartos_layer, InvalidationZone};
 
 #[derive(QueryableByName, Queryable, Debug, Serialize)]
 #[table_name = "osrd_infra_tracksectionlinklayer"]
@@ -75,7 +75,7 @@ impl TrackSectionLinkLayer {
         Ok(())
     }
 
-    fn fill_track_section_link_track_refs(
+    fn fill_track_link_track_refs(
         infra_cache: &InfraCache,
         track_id: &String,
         results: &mut HashSet<String>,
@@ -92,48 +92,28 @@ impl TrackSectionLinkLayer {
     pub fn update(
         conn: &PgConnection,
         infra: i32,
-        operations: &Vec<Operation>,
-        infra_cache: &mut InfraCache,
+        operations: &Vec<OperationResult>,
+        infra_cache: &InfraCache,
+        invalid_zone: &InvalidationZone,
         chartos_config: &ChartosConfig,
     ) -> Result<(), Error> {
         let mut update_obj_ids = HashSet::new();
         let mut delete_obj_ids = HashSet::new();
         for op in operations {
             match op {
-                Operation::Create(rjs_obj) => match rjs_obj.get_obj_type() {
-                    ObjectType::TrackSection => {
-                        Self::fill_track_section_link_track_refs(
-                            infra_cache,
-                            &rjs_obj.get_obj_id(),
-                            &mut update_obj_ids,
-                        );
-                    }
-                    ObjectType::TrackSectionLink => {
-                        update_obj_ids.insert(rjs_obj.get_obj_id().clone());
-                    }
-                    _ => (),
-                },
-                Operation::Update(UpdateOperation {
-                    obj_id: track_id,
-                    obj_type: ObjectType::TrackSection,
-                    ..
-                }) => Self::fill_track_section_link_track_refs(
-                    infra_cache,
-                    track_id,
-                    &mut update_obj_ids,
-                ),
-                Operation::Delete(DeleteOperation {
-                    obj_id: track_section_link_id,
-                    obj_type: ObjectType::TrackSectionLink,
-                }) => {
-                    delete_obj_ids.insert(track_section_link_id.clone());
+                OperationResult::Create(RailjsonObject::TrackSection { railjson })
+                | OperationResult::Update(RailjsonObject::TrackSection { railjson }) => {
+                    Self::fill_track_link_track_refs(infra_cache, &railjson.id, &mut update_obj_ids)
                 }
-                Operation::Update(UpdateOperation {
-                    obj_id: track_section_link_id,
+                OperationResult::Create(RailjsonObject::TrackSectionLink { railjson })
+                | OperationResult::Update(RailjsonObject::TrackSectionLink { railjson }) => {
+                    update_obj_ids.insert(railjson.id.clone());
+                }
+                OperationResult::Delete(ObjectRef {
                     obj_type: ObjectType::TrackSectionLink,
-                    ..
+                    obj_id: link_id,
                 }) => {
-                    update_obj_ids.insert(track_section_link_id.clone());
+                    delete_obj_ids.insert(link_id.clone());
                 }
                 _ => (),
             }
@@ -144,7 +124,7 @@ impl TrackSectionLinkLayer {
         }
         Self::delete_list(conn, infra, delete_obj_ids)?;
         Self::insert_update_list(conn, infra, update_obj_ids)?;
-        invalidate_chartos_layer(infra, "track_section_links", chartos_config);
+        invalidate_bbox_chartos_layer(infra, "track_section_links", invalid_zone, chartos_config);
         Ok(())
     }
 }
