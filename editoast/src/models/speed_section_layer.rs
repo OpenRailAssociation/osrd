@@ -1,7 +1,7 @@
 use crate::client::ChartosConfig;
 use crate::infra_cache::InfraCache;
-use crate::railjson::operation::{DeleteOperation, Operation, UpdateOperation};
-use crate::railjson::ObjectType;
+use crate::railjson::operation::{OperationResult, RailjsonObject};
+use crate::railjson::{ObjectRef, ObjectType};
 use crate::schema::osrd_infra_speedsectionlayer;
 use crate::schema::osrd_infra_speedsectionlayer::dsl::*;
 use diesel::result::Error;
@@ -10,7 +10,7 @@ use diesel::{delete, prelude::*, sql_query};
 use serde::Serialize;
 use std::collections::HashSet;
 
-use super::invalidate_chartos_layer;
+use super::{invalidate_bbox_chartos_layer, invalidate_chartos_layer, InvalidationZone};
 
 #[derive(QueryableByName, Queryable, Debug, Serialize)]
 #[table_name = "osrd_infra_speedsectionlayer"]
@@ -73,7 +73,7 @@ impl SpeedSectionLayer {
         Ok(())
     }
 
-    fn fill_speed_section_track_refs(
+    fn fill_speed_track_refs(
         infra_cache: &InfraCache,
         track_id: &String,
         results: &mut HashSet<String>,
@@ -90,46 +90,28 @@ impl SpeedSectionLayer {
     pub fn update(
         conn: &PgConnection,
         infra: i32,
-        operations: &Vec<Operation>,
-        infra_cache: &mut InfraCache,
+        operations: &Vec<OperationResult>,
+        infra_cache: &InfraCache,
+        invalidation_zone: &InvalidationZone,
         chartos_config: &ChartosConfig,
     ) -> Result<(), Error> {
         let mut update_obj_ids = HashSet::new();
         let mut delete_obj_ids = HashSet::new();
         for op in operations {
             match op {
-                Operation::Create(rjs_obj) => match rjs_obj.get_obj_type() {
-                    ObjectType::TrackSection => {
-                        Self::fill_speed_section_track_refs(
-                            infra_cache,
-                            &rjs_obj.get_obj_id(),
-                            &mut update_obj_ids,
-                        );
-                    }
-                    ObjectType::SpeedSection => {
-                        update_obj_ids.insert(rjs_obj.get_obj_id().clone());
-                    }
-                    _ => (),
-                },
-                Operation::Update(UpdateOperation {
-                    obj_id: track_id,
-                    obj_type: ObjectType::TrackSection,
-                    ..
-                }) => {
-                    Self::fill_speed_section_track_refs(infra_cache, track_id, &mut update_obj_ids)
+                OperationResult::Create(RailjsonObject::TrackSection { railjson })
+                | OperationResult::Update(RailjsonObject::TrackSection { railjson }) => {
+                    Self::fill_speed_track_refs(infra_cache, &railjson.id, &mut update_obj_ids);
                 }
-                Operation::Delete(DeleteOperation {
-                    obj_id: speed_section_id,
-                    obj_type: ObjectType::SpeedSection,
-                }) => {
-                    delete_obj_ids.insert(speed_section_id.clone());
+                OperationResult::Create(RailjsonObject::SpeedSection { railjson })
+                | OperationResult::Update(RailjsonObject::SpeedSection { railjson }) => {
+                    update_obj_ids.insert(railjson.id.clone());
                 }
-                Operation::Update(UpdateOperation {
-                    obj_id: speed_section_id,
+                OperationResult::Delete(ObjectRef {
                     obj_type: ObjectType::SpeedSection,
-                    ..
+                    obj_id: speed_id,
                 }) => {
-                    update_obj_ids.insert(speed_section_id.clone());
+                    delete_obj_ids.insert(speed_id.clone());
                 }
                 _ => (),
             }
@@ -140,7 +122,7 @@ impl SpeedSectionLayer {
         }
         Self::delete_list(conn, infra, delete_obj_ids)?;
         Self::insert_update_list(conn, infra, update_obj_ids)?;
-        invalidate_chartos_layer(infra, "speed_sections", chartos_config);
+        invalidate_bbox_chartos_layer(infra, "speed_sections", invalidation_zone, chartos_config);
         Ok(())
     }
 }

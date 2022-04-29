@@ -4,15 +4,16 @@ use crate::infra_cache::InfraCache;
 use crate::models::errors::generate_errors;
 use crate::models::DBConnection;
 use crate::models::Infra;
+use crate::models::InvalidationZone;
 use crate::models::SignalLayer;
 use crate::models::SpeedSectionLayer;
 use crate::models::SwitchLayer;
 use crate::models::TrackSectionLayer;
 use crate::models::TrackSectionLinkLayer;
-use crate::railjson::operation::Operation;
+use crate::railjson::operation::OperationResult;
 use diesel::PgConnection;
 
-/// Refreshes the layers if needed and returns whether they were refreshed.
+/// Refreshes layers if not up to date and returns whether they were refreshed.
 /// `force` argument allows us to refresh it in any cases.
 pub fn refresh(
     conn: &PgConnection,
@@ -44,20 +45,23 @@ pub fn refresh(
     Ok(true)
 }
 
+/// Refresh layers of objects affected by the given list of operations result.
 pub fn update(
     conn: &DBConnection,
     infra_id: i32,
-    operations: &Vec<Operation>,
-    infra_cache: &mut InfraCache,
+    operations: &Vec<OperationResult>,
+    cache: &InfraCache,
+    zone: &InvalidationZone,
     chartos_config: &ChartosConfig,
 ) -> Result<(), Box<dyn ApiError>> {
-    TrackSectionLayer::update(conn, infra_id, operations, chartos_config)?;
-    SignalLayer::update(conn, infra_id, operations, infra_cache, chartos_config)?;
-    SpeedSectionLayer::update(conn, infra_id, operations, infra_cache, chartos_config)?;
-    TrackSectionLinkLayer::update(conn, infra_id, operations, infra_cache, chartos_config)?;
-    SwitchLayer::update(conn, infra_id, operations, infra_cache, chartos_config)?;
+    TrackSectionLayer::update(conn, infra_id, operations, zone, chartos_config)?;
+    SignalLayer::update(conn, infra_id, operations, cache, zone, chartos_config)?;
+    SpeedSectionLayer::update(conn, infra_id, operations, cache, zone, chartos_config)?;
+    TrackSectionLinkLayer::update(conn, infra_id, operations, cache, zone, chartos_config)?;
+    SwitchLayer::update(conn, infra_id, operations, cache, zone, chartos_config)?;
 
     // Generate errors
-    generate_errors(conn, infra_id, infra_cache, chartos_config)?;
+    generate_errors(conn, infra_id, cache, chartos_config)?;
+
     Ok(())
 }
