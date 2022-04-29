@@ -7,6 +7,8 @@ use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
 
+use crate::models::BoundingBox;
+
 fn generate_id(prefix: &str) -> String {
     format!(
         "{}_{}",
@@ -169,6 +171,24 @@ pub enum LineString {
     },
 }
 
+impl LineString {
+    pub fn get_bbox(&self) -> BoundingBox {
+        let coords = match self {
+            Self::LineString { coordinates } => coordinates,
+        };
+
+        let mut min: (f64, f64) = (f64::MAX, f64::MAX);
+        let mut max: (f64, f64) = (f64::MIN, f64::MIN);
+        for p in coords {
+            min.0 = min.0.min(p[0]);
+            max.0 = max.0.max(p[0]);
+            min.1 = min.1.min(p[1]);
+            max.1 = max.1.max(p[1]);
+        }
+        BoundingBox(min, max)
+    }
+}
+
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub enum Direction {
@@ -265,4 +285,30 @@ pub struct LoadingGaugeLimit {
     pub applicable_train_type: ApplicableTrainType,
     pub begin: f64,
     pub end: f64,
+}
+
+#[cfg(test)]
+mod test {
+    use crate::models::BoundingBox;
+
+    use super::LineString::LineString;
+
+    /// Test bounding box from linestring
+    #[test]
+    fn test_line_string_bbox() {
+        let line_string = LineString {
+            coordinates: vec![
+                [2.4, 49.3],
+                [2.6, 49.1],
+                [2.8, 49.2],
+                [3.0, 49.1],
+                [2.6, 49.0],
+            ],
+        };
+
+        assert_eq!(
+            line_string.get_bbox(),
+            BoundingBox((2.4, 49.0), (3.0, 49.3))
+        );
+    }
 }

@@ -1,6 +1,6 @@
 use crate::client::ChartosConfig;
-use crate::railjson::operation::{DeleteOperation, Operation, UpdateOperation};
-use crate::railjson::ObjectType;
+use crate::railjson::operation::{OperationResult, RailjsonObject};
+use crate::railjson::{ObjectRef, ObjectType};
 use crate::schema::osrd_infra_tracksectionlayer;
 use crate::schema::osrd_infra_tracksectionlayer::dsl::*;
 use diesel::result::Error;
@@ -9,7 +9,7 @@ use diesel::{delete, prelude::*, sql_query};
 use serde::Serialize;
 use std::collections::HashSet;
 
-use super::invalidate_chartos_layer;
+use super::{invalidate_bbox_chartos_layer, invalidate_chartos_layer, InvalidationZone};
 
 #[derive(QueryableByName, Queryable, Debug, Serialize)]
 #[table_name = "osrd_infra_tracksectionlayer"]
@@ -76,28 +76,21 @@ impl TrackSectionLayer {
     pub fn update(
         conn: &PgConnection,
         infra: i32,
-        operations: &Vec<Operation>,
+        operations: &Vec<OperationResult>,
+        invalidation_zone: &InvalidationZone,
         chartos_config: &ChartosConfig,
     ) -> Result<(), Error> {
         let mut update_obj_ids = HashSet::new();
         let mut delete_obj_ids = HashSet::new();
         for op in operations {
             match op {
-                Operation::Create(rjs_obj)
-                    if rjs_obj.get_obj_type() == ObjectType::TrackSection =>
-                {
-                    update_obj_ids.insert(rjs_obj.get_obj_id().clone());
+                OperationResult::Create(RailjsonObject::TrackSection { railjson })
+                | OperationResult::Update(RailjsonObject::TrackSection { railjson }) => {
+                    update_obj_ids.insert(railjson.id.clone());
                 }
-                Operation::Update(UpdateOperation {
-                    obj_id: track_id,
+                OperationResult::Delete(ObjectRef {
                     obj_type: ObjectType::TrackSection,
-                    ..
-                }) => {
-                    update_obj_ids.insert(track_id.clone());
-                }
-                Operation::Delete(DeleteOperation {
                     obj_id: track_id,
-                    obj_type: ObjectType::TrackSection,
                 }) => {
                     delete_obj_ids.insert(track_id.clone());
                 }
@@ -111,7 +104,7 @@ impl TrackSectionLayer {
         }
         Self::delete_list(conn, infra, delete_obj_ids)?;
         Self::insert_update_list(conn, infra, update_obj_ids)?;
-        invalidate_chartos_layer(infra, "track_sections", chartos_config);
+        invalidate_bbox_chartos_layer(infra, "track_sections", invalidation_zone, chartos_config);
         Ok(())
     }
 }

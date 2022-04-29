@@ -3,14 +3,13 @@ use crate::client::ChartosConfig;
 use crate::error::{ApiResult, EditoastError};
 use crate::generate;
 use crate::infra_cache::InfraCache;
-use crate::models::{CreateInfra, DBConnection, Infra};
+use crate::models::{CreateInfra, DBConnection, Infra, InvalidationZone};
 use crate::railjson::operation::{Operation, OperationResult};
 use chashmap::CHashMap;
 use rocket::http::Status;
 use rocket::response::status::Custom;
 use rocket::{routes, Route, State};
 use rocket_contrib::json::{Json, JsonError, JsonValue};
-use std::ops::DerefMut;
 
 pub fn routes() -> Vec<Route> {
     routes![list, edit, create, delete, refresh]
@@ -114,18 +113,22 @@ fn edit(
         // Bump version
         let infra = infra.bump_version(&conn)?;
 
-        // Apply operations to infra cache
+        // Retrieve infra cache
         let mut infra_cache = infra_caches.get_mut(&infra.id).unwrap();
-        for op_res in operation_results.iter() {
-            infra_cache.apply(op_res);
-        }
+
+        // Compute cache invalidation zone
+        let invalidation_zone = InvalidationZone::compute(&infra_cache, &operation_results);
+
+        // Apply operations to infra cache
+        infra_cache.apply_operations(&operation_results);
 
         // Refresh layers
         generate::update(
             &conn,
             infra.id,
-            &operations,
-            infra_cache.deref_mut(),
+            &operation_results,
+            &infra_cache,
+            &invalidation_zone,
             &chartos_config,
         )
         .expect("Update generated data failed");
