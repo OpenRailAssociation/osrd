@@ -58,7 +58,7 @@ public class MRSP {
                 // Add the envelope part corresponding to the restricted speed section
                 builder.addPart(EnvelopePart.generateTimes(
                         List.of(EnvelopeProfile.CONSTANT_SPEED, LimitKind.SPEED_LIMIT),
-                        new double[]{begin, end},
+                        new double[]{begin, end + rollingStock.length},
                         new double[]{speed, speed}
                 ));
             }

@@ -192,7 +192,7 @@ public class MaxSpeedEnvelopeTest {
                 new TrackRangeView(15, 15, infra.getEdge("track", Direction.FORWARD)),
                 new TrackRangeView(15, 80, infra.getEdge("track", Direction.FORWARD))
         );
-        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
+        var testRollingStock = TestTrains.VERY_SHORT_FAST_TRAIN;
 
         var mrsp = MRSP.from(path, testRollingStock);
         assertEquals(42, mrsp.interpolateSpeedRightDir(0, 1));
@@ -200,7 +200,7 @@ public class MaxSpeedEnvelopeTest {
         assertEquals(42, mrsp.interpolateSpeedRightDir(29, 1));
         assertEquals(21, mrsp.interpolateSpeedRightDir(30, 1));
         assertEquals(21, mrsp.interpolateSpeedRightDir(49, 1));
-        assertEquals(testRollingStock.maxSpeed, mrsp.interpolateSpeedRightDir(50, 1));
+        assertEquals(testRollingStock.maxSpeed, mrsp.interpolateSpeedRightDir(51, 1));
         assertEquals(testRollingStock.maxSpeed, mrsp.interpolateSpeedRightDir(75, 1));
     }
 }
