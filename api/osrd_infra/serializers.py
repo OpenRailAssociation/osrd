@@ -63,6 +63,10 @@ class PathInputSerializer(Serializer):
         min_length=2,
         child=StepInputSerializer(),
     )
+    rolling_stocks = serializers.ListField(
+        child=serializers.PrimaryKeyRelatedField(queryset=RollingStock.objects.all()),
+        required=False,
+    )
 
 
 class PathSerializer(ModelSerializer):

@@ -78,6 +78,9 @@ public class RJSRollingStockParser {
         if (rjsRollingStock.masses == null)
             throw new MissingRollingStockField("masses");
 
+        if (rjsRollingStock.loadingGaugeType == null)
+            throw new MissingRollingStockField("loading_gauge_type");
+
         var masses = parseMasses(rjsRollingStock);
 
         // TODO: handle modes
@@ -98,22 +101,23 @@ public class RJSRollingStockParser {
             mass = masses.get(LoadState.EMPTY_LOAD);
 
         return new RollingStock(
-            rjsRollingStock.id,
-            rjsRollingStock.source,
-            rjsRollingStock.verboseName,
-            rjsRollingStock.length,
-            mass,
-            rjsRollingStock.inertiaCoefficient,
-            rollingResistance.A,
-            rollingResistance.B,
-            rollingResistance.C,
-            rjsRollingStock.maxSpeed,
-            rjsRollingStock.startUpTime,
-            rjsRollingStock.startUpAcceleration,
-            rjsRollingStock.comfortAcceleration,
-            rjsRollingStock.gamma,
-            rjsRollingStock.gammaType,
-            curve
+                rjsRollingStock.id,
+                rjsRollingStock.source,
+                rjsRollingStock.verboseName,
+                rjsRollingStock.length,
+                mass,
+                rjsRollingStock.inertiaCoefficient,
+                rollingResistance.A,
+                rollingResistance.B,
+                rollingResistance.C,
+                rjsRollingStock.maxSpeed,
+                rjsRollingStock.startUpTime,
+                rjsRollingStock.startUpAcceleration,
+                rjsRollingStock.comfortAcceleration,
+                rjsRollingStock.gamma,
+                rjsRollingStock.gammaType,
+                curve,
+                rjsRollingStock.loadingGaugeType
         );
     }
 

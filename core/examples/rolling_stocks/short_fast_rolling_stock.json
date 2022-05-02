@@ -82,5 +82,6 @@
             "rolling_resistance_profile": "default_resistance_profile",
             "effort_curve_profile": "default_curve_profile"
         }
-    ]
+    ],
+    "loading_gauge_type": "G1"
 }
