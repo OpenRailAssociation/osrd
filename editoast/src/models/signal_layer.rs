@@ -36,7 +36,7 @@ impl SignalLayer {
         Ok(())
     }
 
-    pub fn update_list(
+    pub fn insert_update_list(
         conn: &PgConnection,
         infra: i32,
         obj_ids: HashSet<String>,
@@ -46,15 +46,29 @@ impl SignalLayer {
         }
         let obj_ids: Vec<String> = obj_ids.into_iter().collect();
 
+        sql_query(include_str!("sql/insert_update_signal_layer.sql"))
+            .bind::<Integer, _>(infra)
+            .bind::<Array<Text>, _>(&obj_ids)
+            .execute(conn)?;
+        Ok(())
+    }
+
+    pub fn delete_list(
+        conn: &PgConnection,
+        infra: i32,
+        obj_ids: HashSet<String>,
+    ) -> Result<(), Error> {
+        if obj_ids.is_empty() {
+            return Ok(());
+        }
+
+        let obj_ids: Vec<String> = obj_ids.into_iter().collect();
+
         sql_query("DELETE FROM osrd_infra_signallayer WHERE infra_id = $1 AND obj_id = ANY($2)")
             .bind::<Integer, _>(infra)
             .bind::<Array<Text>, _>(&obj_ids)
             .execute(conn)?;
 
-        sql_query(include_str!("sql/update_signal_layer.sql"))
-            .bind::<Integer, _>(infra)
-            .bind::<Array<Text>, _>(&obj_ids)
-            .execute(conn)?;
         Ok(())
     }
 
@@ -79,7 +93,8 @@ impl SignalLayer {
         infra_cache: &mut InfraCache,
         chartos_config: &ChartosConfig,
     ) -> Result<(), Error> {
-        let mut obj_ids = HashSet::new();
+        let mut update_obj_ids = HashSet::new();
+        let mut delete_obj_ids = HashSet::new();
         for op in operations {
             match op {
                 Operation::Create(rjs_obj) => match rjs_obj.get_obj_type() {
@@ -87,11 +102,11 @@ impl SignalLayer {
                         Self::fill_signal_track_refs(
                             infra_cache,
                             &rjs_obj.get_obj_id(),
-                            &mut obj_ids,
+                            &mut update_obj_ids,
                         );
                     }
                     ObjectType::Signal => {
-                        obj_ids.insert(rjs_obj.get_obj_id().clone());
+                        update_obj_ids.insert(rjs_obj.get_obj_id().clone());
                     }
                     _ => (),
                 },
@@ -99,26 +114,29 @@ impl SignalLayer {
                     obj_id: track_id,
                     obj_type: ObjectType::TrackSection,
                     ..
-                }) => Self::fill_signal_track_refs(infra_cache, track_id, &mut obj_ids),
+                }) => Self::fill_signal_track_refs(infra_cache, track_id, &mut update_obj_ids),
                 Operation::Delete(DeleteOperation {
                     obj_id: signal_id,
                     obj_type: ObjectType::Signal,
-                })
-                | Operation::Update(UpdateOperation {
+                }) => {
+                    delete_obj_ids.insert(signal_id.clone());
+                }
+                Operation::Update(UpdateOperation {
                     obj_id: signal_id,
                     obj_type: ObjectType::Signal,
                     ..
                 }) => {
-                    obj_ids.insert(signal_id.clone());
+                    update_obj_ids.insert(signal_id.clone());
                 }
                 _ => (),
             }
         }
-        if obj_ids.is_empty() {
+        if update_obj_ids.is_empty() && delete_obj_ids.is_empty() {
             // No update needed
             return Ok(());
         }
-        Self::update_list(conn, infra, obj_ids)?;
+        Self::delete_list(conn, infra, delete_obj_ids)?;
+        Self::insert_update_list(conn, infra, update_obj_ids)?;
         invalidate_chartos_layer(infra, "signals", chartos_config);
         Ok(())
     }

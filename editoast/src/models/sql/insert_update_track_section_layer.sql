@@ -5,4 +5,7 @@ SELECT obj_id,
     ST_Transform(ST_GeomFromGeoJSON(data->'sch'), 3857)
 FROM osrd_infra_tracksectionmodel
 WHERE infra_id = $1
-    and obj_id = ANY($2)
+    AND obj_id = ANY($2) ON CONFLICT (infra_id, obj_id) DO
+UPDATE
+SET geographic = EXCLUDED.geographic,
+    schematic = EXCLUDED.schematic

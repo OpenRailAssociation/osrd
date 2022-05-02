@@ -34,7 +34,32 @@ impl TrackSectionLayer {
         Ok(())
     }
 
-    fn update_list(conn: &PgConnection, infra: i32, obj_ids: HashSet<String>) -> Result<(), Error> {
+    pub fn insert_update_list(
+        conn: &PgConnection,
+        infra: i32,
+        obj_ids: HashSet<String>,
+    ) -> Result<(), Error> {
+        if obj_ids.is_empty() {
+            return Ok(());
+        }
+        let obj_ids: Vec<String> = obj_ids.into_iter().collect();
+
+        sql_query(include_str!("sql/insert_update_track_section_layer.sql"))
+            .bind::<Integer, _>(infra)
+            .bind::<Array<Text>, _>(&obj_ids)
+            .execute(conn)?;
+        Ok(())
+    }
+
+    pub fn delete_list(
+        conn: &PgConnection,
+        infra: i32,
+        obj_ids: HashSet<String>,
+    ) -> Result<(), Error> {
+        if obj_ids.is_empty() {
+            return Ok(());
+        }
+
         let obj_ids: Vec<String> = obj_ids.into_iter().collect();
 
         sql_query(
@@ -44,10 +69,6 @@ impl TrackSectionLayer {
         .bind::<Array<Text>, _>(&obj_ids)
         .execute(conn)?;
 
-        sql_query(include_str!("sql/update_track_section_layer.sql"))
-            .bind::<Integer, _>(infra)
-            .bind::<Array<Text>, _>(&obj_ids)
-            .execute(conn)?;
         Ok(())
     }
 
@@ -58,33 +79,38 @@ impl TrackSectionLayer {
         operations: &Vec<Operation>,
         chartos_config: &ChartosConfig,
     ) -> Result<(), Error> {
-        let mut obj_ids = HashSet::new();
+        let mut update_obj_ids = HashSet::new();
+        let mut delete_obj_ids = HashSet::new();
         for op in operations {
             match op {
                 Operation::Create(rjs_obj)
                     if rjs_obj.get_obj_type() == ObjectType::TrackSection =>
                 {
-                    obj_ids.insert(rjs_obj.get_obj_id().clone());
+                    update_obj_ids.insert(rjs_obj.get_obj_id().clone());
                 }
                 Operation::Update(UpdateOperation {
                     obj_id: track_id,
                     obj_type: ObjectType::TrackSection,
                     ..
-                })
-                | Operation::Delete(DeleteOperation {
+                }) => {
+                    update_obj_ids.insert(track_id.clone());
+                }
+                Operation::Delete(DeleteOperation {
                     obj_id: track_id,
                     obj_type: ObjectType::TrackSection,
                 }) => {
-                    obj_ids.insert(track_id.clone());
+                    delete_obj_ids.insert(track_id.clone());
                 }
                 _ => (),
             }
         }
-        if obj_ids.is_empty() {
+
+        if update_obj_ids.is_empty() && delete_obj_ids.is_empty() {
             // No update needed
             return Ok(());
         }
-        Self::update_list(conn, infra, obj_ids)?;
+        Self::delete_list(conn, infra, delete_obj_ids)?;
+        Self::insert_update_list(conn, infra, update_obj_ids)?;
         invalidate_chartos_layer(infra, "track_sections", chartos_config);
         Ok(())
     }

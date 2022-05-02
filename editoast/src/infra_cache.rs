@@ -1,6 +1,7 @@
 use crate::railjson::operation::{OperationResult, RailjsonObject};
 use crate::railjson::{
-    ApplicableDirectionsTrackRange, ObjectRef, ObjectType, Signal, SpeedSection, TrackSectionLink,
+    ApplicableDirectionsTrackRange, ObjectRef, ObjectType, Signal, SpeedSection, Switch,
+    TrackEndpoint, TrackSectionLink,
 };
 use derivative::Derivative;
 use diesel::sql_types::{Double, Integer, Json, Text};
@@ -27,6 +28,9 @@ pub struct InfraCache {
 
     /// List existing track section links
     pub track_section_links: HashMap<String, TrackSectionLinkCache>,
+
+    /// List existing switches
+    pub switches: HashMap<String, SwitchCache>,
 }
 
 #[derive(QueryableByName, Debug, Clone, Derivative)]
@@ -125,6 +129,43 @@ impl From<&TrackSectionLink> for TrackSectionLinkCache {
     }
 }
 
+#[derive(Debug, Clone, Derivative)]
+#[derivative(Hash, PartialEq)]
+pub struct SwitchCache {
+    pub obj_id: String,
+    #[derivative(Hash = "ignore", PartialEq = "ignore")]
+    pub ports: HashMap<String, TrackEndpoint>,
+}
+
+#[derive(QueryableByName, Debug, Clone)]
+pub struct SwitchQueryable {
+    #[sql_type = "Text"]
+    pub obj_id: String,
+    #[sql_type = "Json"]
+    pub ports: Value,
+}
+
+impl From<SwitchQueryable> for SwitchCache {
+    fn from(switch: SwitchQueryable) -> Self {
+        Self {
+            obj_id: switch.obj_id,
+            ports: serde_json::from_value(switch.ports).unwrap(),
+        }
+    }
+}
+
+impl SwitchCache {
+    pub fn new(obj_id: String, ports: HashMap<String, TrackEndpoint>) -> Self {
+        Self { obj_id, ports }
+    }
+}
+
+impl From<&Switch> for SwitchCache {
+    fn from(switch: &Switch) -> Self {
+        Self::new(switch.id.clone(), switch.ports.clone())
+    }
+}
+
 impl InfraCache {
     fn add_track_ref(&mut self, track_id: String, obj_ref: ObjectRef) {
         self.track_sections_refs
@@ -167,6 +208,19 @@ impl InfraCache {
             .is_none());
     }
 
+    fn load_switch(&mut self, switch: SwitchCache) {
+        for port in switch.ports.iter() {
+            self.add_track_ref(
+                port.1.track.obj_id.clone(),
+                ObjectRef::new(ObjectType::Switch, switch.obj_id.clone()),
+            );
+        }
+        assert!(self
+            .switches
+            .insert(switch.obj_id.clone(), switch)
+            .is_none());
+    }
+
     /// Initialize an infra cache given an infra id
     pub fn init(conn: &PgConnection, infra_id: i32) -> InfraCache {
         let mut infra_cache = Self::default();
@@ -205,6 +259,14 @@ impl InfraCache {
         .bind::<Integer, _>(infra_id)
         .load::<TrackSectionLinkCache>(conn).expect("Error loading track section link refs").into_iter().for_each(|link| {
             infra_cache.load_track_section_link(link);
+        });
+
+        // Load switch tracks references
+        sql_query(
+            "SELECT obj_id, data->>'ports' AS ports FROM osrd_infra_switchmodel WHERE infra_id = $1")
+        .bind::<Integer, _>(infra_id)
+        .load::<SwitchQueryable>(conn).expect("Error loading switch refs").into_iter().for_each(|switch| {
+            infra_cache.load_switch(switch.into());
         });
 
         infra_cache
@@ -261,6 +323,18 @@ impl InfraCache {
                     .remove(object_ref);
             }
             ObjectRef {
+                obj_type: ObjectType::Switch,
+                obj_id,
+            } => {
+                let switch = self.switches.remove(obj_id).unwrap();
+                for endpoint in switch.ports.values() {
+                    self.track_sections_refs
+                        .get_mut(&endpoint.track.obj_id)
+                        .unwrap()
+                        .remove(object_ref);
+                }
+            }
+            ObjectRef {
                 obj_type: ObjectType::TrackSection,
                 obj_id,
             } => {
@@ -290,6 +364,7 @@ impl InfraCache {
             RailjsonObject::TrackSectionLink { railjson } => {
                 self.load_track_section_link(railjson.into())
             }
+            RailjsonObject::Switch { railjson } => self.load_switch(railjson.into()),
         }
     }
 
