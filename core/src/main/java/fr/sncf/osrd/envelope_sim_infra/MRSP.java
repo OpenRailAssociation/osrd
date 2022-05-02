@@ -24,12 +24,12 @@ public class MRSP {
     }
 
     /** Computes the most restricted speed profile from a path */
-    public static Envelope from(TrainPath trainPath, RollingStock rollingStock) {
-        return from(TrainPath.removeLocation(trainPath.trackRangePath()), rollingStock);
+    public static Envelope from(TrainPath trainPath, RollingStock rollingStock, boolean addRollingStockLength) {
+        return from(TrainPath.removeLocation(trainPath.trackRangePath()), rollingStock, addRollingStockLength);
     }
 
     /** Computes the most restricted speed profile from a list of track ranges */
-    public static Envelope from(List<TrackRangeView> ranges, RollingStock rollingStock) {
+    public static Envelope from(List<TrackRangeView> ranges, RollingStock rollingStock, boolean addRollingStockLength) {
         var builder = new MRSPEnvelopeBuilder();
         var pathLength = 0.;
         for (var r : ranges)
@@ -51,6 +51,8 @@ public class MRSP {
                 var interval = speedRange.getKey();
                 var begin = offset + interval.getBeginPosition();
                 var end = offset + interval.getEndPosition();
+                if (addRollingStockLength)
+                    end += rollingStock.length;
                 var speed = speedRange.getValue();
                 if (speed.isInfinite() || speed == 0)
                     continue;
@@ -58,7 +60,7 @@ public class MRSP {
                 // Add the envelope part corresponding to the restricted speed section
                 builder.addPart(EnvelopePart.generateTimes(
                         List.of(EnvelopeProfile.CONSTANT_SPEED, LimitKind.SPEED_LIMIT),
-                        new double[]{begin, end + rollingStock.length},
+                        new double[]{begin, end},
                         new double[]{speed, speed}
                 ));
             }

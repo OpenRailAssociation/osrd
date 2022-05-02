@@ -194,7 +194,7 @@ public class MaxSpeedEnvelopeTest {
         );
         var testRollingStock = TestTrains.VERY_SHORT_FAST_TRAIN;
 
-        var mrsp = MRSP.from(path, testRollingStock);
+        var mrsp = MRSP.from(path, testRollingStock, true);
         assertEquals(42, mrsp.interpolateSpeedRightDir(0, 1));
         assertEquals(42, mrsp.interpolateSpeedRightDir(15, 1));
         assertEquals(42, mrsp.interpolateSpeedRightDir(29, 1));

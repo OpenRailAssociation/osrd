@@ -91,7 +91,7 @@ class StandaloneSimulationTest extends ApiTest {
         assertEquals(8, trainResult.routeOccupancies.size());
 
         // check mrsp
-        var mrsp = simResult.mrsps.get(0);
+        var mrsp = simResult.speedLimits.get(0);
         assertEquals(mrsp.size(), 6);
     }
 
@@ -118,7 +118,7 @@ class StandaloneSimulationTest extends ApiTest {
 
         var simResult = runStandaloneSimulation(query);
         assertEquals(10, simResult.baseSimulations.size());
-        assertEquals(10, simResult.mrsps.size());
+        assertEquals(10, simResult.speedLimits.size());
     }
 
     @Test
