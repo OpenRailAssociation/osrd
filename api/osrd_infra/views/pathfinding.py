@@ -193,9 +193,15 @@ def compute_curves(payload: PathPayload, track_map: Mapping[str, TrackSection]):
 
 def compute_path(path, request_data, owner):
     infra = request_data["infra"]
+    rolling_stocks = request_data.get("rolling_stocks", [])
 
     waypoints, step_durations = parse_steps_input(request_data["steps"], infra)
-    payload = request_pathfinding({"infra": infra.pk, "expected_version": infra.version, "waypoints": waypoints})
+    payload = request_pathfinding({
+        "infra": infra.pk,
+        "expected_version": infra.version,
+        "waypoints": waypoints,
+        "rolling_stocks": [r.to_railjson() for r in rolling_stocks]
+    })
     path.geographic = json.dumps(payload.pop("geographic"))
     path.schematic = json.dumps(payload.pop("schematic"))
 

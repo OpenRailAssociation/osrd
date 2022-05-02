@@ -7,14 +7,18 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance;
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import org.takes.Take;
+import java.util.List;
 
 public abstract class PathfindingEndpoint implements Take {
     public static final JsonAdapter<PathfindingRequest> adapterRequest = new Moshi
             .Builder()
+            .add(RJSRollingResistance.adapter)
             .build()
-            .adapter(PathfindingRequest.class)
-            .failOnUnknown();
+            .adapter(PathfindingRequest.class);
+    // TODO: add the `.failOnUnknown()` back, which requires adding all extra fields to rolling stock models
 
     protected final InfraManager infraManager;
 
@@ -45,6 +49,10 @@ public abstract class PathfindingEndpoint implements Take {
         public final String infra;
         @Json(name = "expected_version")
         public final String expectedVersion;
+
+        /** List of rolling stocks that must be able to go through this path */
+        @Json(name = "rolling_stocks")
+        public List<RJSRollingStock> rollingStocks;
 
         /** Constructor */
         public PathfindingRequest(PathfindingWaypoint[][] waypoints, String infra) {

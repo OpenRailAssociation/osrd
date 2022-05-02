@@ -53,6 +53,7 @@ COPIED_KEYS_V1_TO_V2 = (
     "gamma_type",
     "inertia_coefficient",
     "features",
+    "loading_gauge_type",
 )
 
 
@@ -184,6 +185,7 @@ class RollingStock(models.Model):
                 "gamma": self.timetable_gamma,
                 "gamma_type": "CONST",
                 "tractive_effort_curve": next(iter(self.tractive_effort_curves.values())),
+                "loading_gauge_type": self.loading_gauge,
             }
         )
 
@@ -208,6 +210,7 @@ class RollingStock(models.Model):
                 ]
             },
             power_class=rjs["power_class"],
+            loading_gauge=rjs["loading_gauge_type"],
         )
         res.save()
         return res
