@@ -131,6 +131,9 @@ public class RJSRollingStock implements Identified {
     /** Each train has a number of operation modes (electric, diesel, battery), which come with their own properties */
     public RJSMode[] modes = null;
 
+    @Json(name = "loading_gauge_type")
+    public RJSLoadingGaugeType loadingGaugeType;
+
     // region ROLLING_RESISTANCE
 
     public static final class RJSRollingResistanceProfile {

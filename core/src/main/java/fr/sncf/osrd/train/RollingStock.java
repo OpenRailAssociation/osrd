@@ -3,6 +3,7 @@ package fr.sncf.osrd.train;
 import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 
 
 /**
@@ -67,6 +68,8 @@ public class RollingStock implements PhysicsRollingStock {
      * https://en.wikipedia.org/wiki/Tractive_force#Tractive_effort_curves
      */
     public final TractiveEffortPoint[] tractiveEffortCurve;
+
+    public final RJSLoadingGaugeType loadingGaugeType;
 
     @Override
     public double getMass() {
@@ -179,7 +182,8 @@ public class RollingStock implements PhysicsRollingStock {
             double comfortAcceleration,
             double gamma,
             GammaType gammaType,
-            TractiveEffortPoint[] tractiveEffortCurve
+            TractiveEffortPoint[] tractiveEffortCurve,
+            RJSLoadingGaugeType loadingGaugeType
     ) {
         this.id = id;
         this.source = source;
@@ -198,5 +202,6 @@ public class RollingStock implements PhysicsRollingStock {
         this.inertiaCoefficient = inertiaCoefficient;
         this.tractiveEffortCurve = tractiveEffortCurve;
         this.inertia = mass * inertiaCoefficient;
+        this.loadingGaugeType = loadingGaugeType;
     }
 }
