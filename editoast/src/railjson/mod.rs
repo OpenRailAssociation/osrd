@@ -1,5 +1,7 @@
 pub mod operation;
 
+use std::collections::HashMap;
+
 use derivative::Derivative;
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
@@ -23,6 +25,8 @@ pub enum ObjectType {
     SpeedSection,
     Detector,
     TrackSectionLink,
+    Switch,
+    SwitchType,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -48,6 +52,8 @@ impl ObjectType {
             ObjectType::SpeedSection => "osrd_infra_speedsectionmodel",
             ObjectType::Detector => todo!(),
             ObjectType::TrackSectionLink => "osrd_infra_tracksectionlinkmodel",
+            ObjectType::Switch => "osrd_infra_switchmodel",
+            ObjectType::SwitchType => todo!(),
         }
     }
 }
@@ -126,6 +132,22 @@ pub struct TrackSectionLink {
     pub src: TrackEndpoint,
     pub dst: TrackEndpoint,
     pub navigability: ApplicableDirections,
+}
+
+/* temporary object ref on a traksection for tests */
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[derivative(Default)]
+pub struct Switch {
+    #[derivative(Default(value = r#"generate_id("track_link")"#))]
+    pub id: String,
+    #[derivative(Default(value = r#"ObjectRef {
+        obj_type: ObjectType::TrackSection,
+        obj_id: "".to_string(),
+    }"#))]
+    pub switch_type: ObjectRef,
+    pub group_change_delay: f64,
+    pub ports: HashMap<String, TrackEndpoint>,
+    pub label: String,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]

@@ -82,6 +82,10 @@ impl DataObject {
             ObjectType::TrackSectionLink => RailjsonObject::TrackSectionLink {
                 railjson: from_value(self.data.clone())?,
             },
+            ObjectType::Switch => RailjsonObject::Switch {
+                railjson: from_value(self.data.clone())?,
+            },
+            ObjectType::SwitchType => todo!(),
         };
 
         if obj_railjson.get_obj_id() != update.obj_id {
