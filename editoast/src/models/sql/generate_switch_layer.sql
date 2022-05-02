@@ -1,15 +1,15 @@
 WITH collect AS (
-    SELECT links.obj_id AS link_id,
-        links.data->'dst'->>'endpoint' AS ep,
+    SELECT switches.obj_id AS switch_id,
+        jsonb_path_query_first(switches.data->'ports', '$.*')->>'endpoint' AS ep,
         ST_GeomFromGeoJSON(tracks.data->'geo') AS track_geo,
         ST_GeomFromGeoJSON(tracks.data->'sch') AS track_sch
-    FROM osrd_infra_tracksectionlinkmodel AS links
-        INNER JOIN osrd_infra_tracksectionmodel AS tracks ON tracks.obj_id = links.data->'dst'->'track'->>'id'
-        AND tracks.infra_id = links.infra_id
-    WHERE links.infra_id = $1
+    FROM osrd_infra_switchmodel AS switches
+        INNER JOIN osrd_infra_tracksectionmodel AS tracks ON tracks.obj_id = jsonb_path_query_first(switches.data->'ports', '$.*')->'track'->>'id'
+        AND tracks.infra_id = switches.infra_id
+    WHERE switches.infra_id = $1
 )
-INSERT INTO osrd_infra_tracksectionlinklayer (obj_id, infra_id, geographic, schematic)
-SELECT link_id,
+INSERT INTO osrd_infra_switchlayer (obj_id, infra_id, geographic, schematic)
+SELECT switch_id,
     $1,
     CASE
         ep

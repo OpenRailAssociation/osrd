@@ -141,6 +141,33 @@
       joins:
         - "inner join osrd_infra_tracksectionlinkmodel track_section_link on track_section_link.obj_id = layer.obj_id and track_section_link.infra_id = layer.infra_id"
 
+- name: switches
+  table_name: osrd_infra_switchlayer
+  id_field: id
+  views:
+    - name: geo
+      on_field: geographic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "(switch.data->>'switch_type')::text as switch_type"
+        - "(switch.data->>'group_change_delay')::float as group_change_delay"
+        - "(switch.data->>'ports')::text as ports"
+        - "(switch.data->>'label')::text as label"
+      joins:
+        - "inner join osrd_infra_switchmodel switch on switch.obj_id = layer.obj_id and switch.infra_id = layer.infra_id"
+    - name: sch
+      on_field: schematic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "(switch.data->>'switch_type')::text as switch_type"
+        - "(switch.data->>'group_change_delay')::float as group_change_delay"
+        - "(switch.data->>'ports')::text as ports"
+        - "(switch.data->>'label')::text as label"
+      joins:
+        - "inner join osrd_infra_switchmodel switch on switch.obj_id = layer.obj_id and switch.infra_id = layer.infra_id"
+
 - name: errors
   table_name: osrd_infra_errorlayer
   id_field: id

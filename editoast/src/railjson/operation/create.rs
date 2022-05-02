@@ -1,6 +1,6 @@
 use crate::error::ApiError;
 use crate::railjson::{
-    ObjectRef, ObjectType, Signal, SpeedSection, TrackSection, TrackSectionLink,
+    ObjectRef, ObjectType, Signal, SpeedSection, Switch, TrackSection, TrackSectionLink,
 };
 use diesel::sql_types::{Integer, Json, Text};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
@@ -14,6 +14,7 @@ pub enum RailjsonObject {
     Signal { railjson: Signal },
     SpeedSection { railjson: SpeedSection },
     TrackSectionLink { railjson: TrackSectionLink },
+    Switch { railjson: Switch },
 }
 
 pub fn apply_create_operation(
@@ -40,6 +41,7 @@ impl RailjsonObject {
             RailjsonObject::Signal { railjson: _ } => ObjectType::Signal,
             RailjsonObject::SpeedSection { railjson: _ } => ObjectType::SpeedSection,
             RailjsonObject::TrackSectionLink { railjson: _ } => ObjectType::TrackSectionLink,
+            RailjsonObject::Switch { railjson: _ } => ObjectType::Switch,
         }
     }
 
@@ -49,6 +51,7 @@ impl RailjsonObject {
             RailjsonObject::Signal { railjson } => railjson.id.clone(),
             RailjsonObject::SpeedSection { railjson } => railjson.id.clone(),
             RailjsonObject::TrackSectionLink { railjson } => railjson.id.clone(),
+            RailjsonObject::Switch { railjson } => railjson.id.clone(),
         }
     }
 
@@ -60,6 +63,7 @@ impl RailjsonObject {
             RailjsonObject::TrackSectionLink { railjson } => {
                 serde_json::to_value(railjson).unwrap()
             }
+            RailjsonObject::Switch { railjson } => serde_json::to_value(railjson).unwrap(),
         }
     }
 
@@ -72,7 +76,7 @@ impl RailjsonObject {
 pub mod test {
     use crate::models::infra::test::test_transaction;
     use crate::railjson::operation::create::{apply_create_operation, RailjsonObject};
-    use crate::railjson::{Signal, SpeedSection, TrackSection, TrackSectionLink};
+    use crate::railjson::{Signal, SpeedSection, Switch, TrackSection, TrackSectionLink};
     use diesel::PgConnection;
 
     pub fn create_track(conn: &PgConnection, infra_id: i32, track: TrackSection) -> RailjsonObject {
@@ -103,6 +107,12 @@ pub mod test {
         obj
     }
 
+    pub fn create_switch(conn: &PgConnection, infra_id: i32, switch: Switch) -> RailjsonObject {
+        let obj = RailjsonObject::Switch { railjson: switch };
+        assert!(apply_create_operation(&obj, infra_id, conn).is_ok());
+        obj
+    }
+
     #[test]
     fn create_track_test() {
         test_transaction(|conn, infra| {
@@ -128,6 +138,13 @@ pub mod test {
     fn create_link_test() {
         test_transaction(|conn, infra| {
             create_link(conn, infra.id, Default::default());
+        });
+    }
+
+    #[test]
+    fn create_switch_test() {
+        test_transaction(|conn, infra| {
+            create_switch(conn, infra.id, Default::default());
         });
     }
 }

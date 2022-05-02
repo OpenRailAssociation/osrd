@@ -61,3 +61,14 @@ class TrackSectionLinkLayer(models.Model):
     class Meta:
         verbose_name_plural = "generated track section links layer"
         unique_together = (("infra", "obj_id"),)
+
+
+class SwitchLayer(models.Model):
+    infra = models.ForeignKey("Infra", on_delete=models.CASCADE)
+    obj_id = models.CharField(max_length=255)
+    geographic = models.PointField(srid=settings.MAPBOX_SRID)
+    schematic = models.PointField(srid=settings.MAPBOX_SRID)
+
+    class Meta:
+        verbose_name_plural = "generated switch layer"
+        unique_together = (("infra", "obj_id"),)

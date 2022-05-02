@@ -31,11 +31,36 @@ impl SpeedSectionLayer {
         sql_query(include_str!("sql/generate_speed_section_layer.sql"))
             .bind::<Integer, _>(infra)
             .execute(conn)?;
-        invalidate_chartos_layer(infra, "track_sections", chartos_config);
+        invalidate_chartos_layer(infra, "speed_sections", chartos_config);
         Ok(())
     }
 
-    fn update_list(conn: &PgConnection, infra: i32, obj_ids: HashSet<String>) -> Result<(), Error> {
+    pub fn insert_update_list(
+        conn: &PgConnection,
+        infra: i32,
+        obj_ids: HashSet<String>,
+    ) -> Result<(), Error> {
+        if obj_ids.is_empty() {
+            return Ok(());
+        }
+        let obj_ids: Vec<String> = obj_ids.into_iter().collect();
+
+        sql_query(include_str!("sql/insert_update_speed_section_layer.sql"))
+            .bind::<Integer, _>(infra)
+            .bind::<Array<Text>, _>(&obj_ids)
+            .execute(conn)?;
+        Ok(())
+    }
+
+    pub fn delete_list(
+        conn: &PgConnection,
+        infra: i32,
+        obj_ids: HashSet<String>,
+    ) -> Result<(), Error> {
+        if obj_ids.is_empty() {
+            return Ok(());
+        }
+
         let obj_ids: Vec<String> = obj_ids.into_iter().collect();
 
         sql_query(
@@ -45,10 +70,6 @@ impl SpeedSectionLayer {
         .bind::<Array<Text>, _>(&obj_ids)
         .execute(conn)?;
 
-        sql_query(include_str!("sql/update_speed_section_layer.sql"))
-            .bind::<Integer, _>(infra)
-            .bind::<Array<Text>, _>(&obj_ids)
-            .execute(conn)?;
         Ok(())
     }
 
@@ -73,7 +94,8 @@ impl SpeedSectionLayer {
         infra_cache: &mut InfraCache,
         chartos_config: &ChartosConfig,
     ) -> Result<(), Error> {
-        let mut obj_ids = HashSet::new();
+        let mut update_obj_ids = HashSet::new();
+        let mut delete_obj_ids = HashSet::new();
         for op in operations {
             match op {
                 Operation::Create(rjs_obj) => match rjs_obj.get_obj_type() {
@@ -81,11 +103,11 @@ impl SpeedSectionLayer {
                         Self::fill_speed_section_track_refs(
                             infra_cache,
                             &rjs_obj.get_obj_id(),
-                            &mut obj_ids,
+                            &mut update_obj_ids,
                         );
                     }
                     ObjectType::SpeedSection => {
-                        obj_ids.insert(rjs_obj.get_obj_id().clone());
+                        update_obj_ids.insert(rjs_obj.get_obj_id().clone());
                     }
                     _ => (),
                 },
@@ -93,27 +115,31 @@ impl SpeedSectionLayer {
                     obj_id: track_id,
                     obj_type: ObjectType::TrackSection,
                     ..
-                }) => Self::fill_speed_section_track_refs(infra_cache, track_id, &mut obj_ids),
+                }) => {
+                    Self::fill_speed_section_track_refs(infra_cache, track_id, &mut update_obj_ids)
+                }
                 Operation::Delete(DeleteOperation {
                     obj_id: speed_section_id,
                     obj_type: ObjectType::SpeedSection,
-                })
-                | Operation::Update(UpdateOperation {
+                }) => {
+                    delete_obj_ids.insert(speed_section_id.clone());
+                }
+                Operation::Update(UpdateOperation {
                     obj_id: speed_section_id,
                     obj_type: ObjectType::SpeedSection,
                     ..
                 }) => {
-                    obj_ids.insert(speed_section_id.clone());
+                    update_obj_ids.insert(speed_section_id.clone());
                 }
                 _ => (),
             }
         }
-        if obj_ids.is_empty() {
+        if update_obj_ids.is_empty() && delete_obj_ids.is_empty() {
             // No update needed
             return Ok(());
         }
-
-        Self::update_list(conn, infra, obj_ids)?;
+        Self::delete_list(conn, infra, delete_obj_ids)?;
+        Self::insert_update_list(conn, infra, update_obj_ids)?;
         invalidate_chartos_layer(infra, "speed_sections", chartos_config);
         Ok(())
     }
