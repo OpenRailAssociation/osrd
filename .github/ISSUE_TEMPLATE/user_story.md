@@ -1,7 +1,7 @@
 ---
 name: User story
 about: Create a new user story for this project
-title: '[US] As [...], I'd like to [...], in order to [...].'
+title: "[US] As [...], I'd like to [...], in order to [...]."
 labels: 'kind:user-story'
 assignees: ''
 
