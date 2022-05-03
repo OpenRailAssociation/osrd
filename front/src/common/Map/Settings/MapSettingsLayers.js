@@ -8,6 +8,7 @@ import { IoMdSpeedometer } from 'react-icons/io';
 import { AiOutlineBlock } from 'react-icons/ai';
 import { MdSpaceBar } from 'react-icons/md';
 import { FaMapMarkerAlt } from 'react-icons/fa';
+import { TiFlowSwitch } from 'react-icons/ti';
 import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 
 const FormatSwitch = (props) => {
@@ -69,6 +70,10 @@ export default function MapSettingsLayers() {
       <FormatSwitch
         name="operationalpoints"
         icon={<FaMapMarkerAlt />}
+      />
+      <FormatSwitch
+        name="switches"
+        icon={<TiFlowSwitch />}
       />
     </div>
   );

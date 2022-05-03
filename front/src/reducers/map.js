@@ -49,6 +49,7 @@ export const initialState = {
     operationalpoints: false,
     signalingtype: true,
     tvds: false,
+    switches: false,
   },
   mapSearchMarker: undefined,
 };
