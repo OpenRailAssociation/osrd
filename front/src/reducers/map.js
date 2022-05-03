@@ -44,8 +44,7 @@ export const initialState = {
   },
   layersSettings: {
     electrification: false,
-    speedlimits: true,
-    speedlimitscolor: false,
+    speedlimits: false,
     operationalpoints: false,
     signalingtype: true,
     tvds: false,

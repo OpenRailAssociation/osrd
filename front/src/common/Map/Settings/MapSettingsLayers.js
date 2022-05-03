@@ -52,10 +52,12 @@ export default function MapSettingsLayers() {
       <FormatSwitch
         name="electrification"
         icon={<GiElectric />}
+        disabled
       />
       <FormatSwitch
         name="signalingtype"
         icon={<AiOutlineBlock />}
+        disabled
       />
       <FormatSwitch
         name="speedlimits"
