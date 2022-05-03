@@ -35,14 +35,15 @@ public class StandaloneSim {
 
         // Compute envelopes
         var result = new StandaloneSimResult();
-        var cacheMRSP = new HashMap<StandaloneTrainSchedule, List<ResultEnvelopePoint>>();
+        var cacheSpeedLimits = new HashMap<StandaloneTrainSchedule, List<ResultEnvelopePoint>>();
         var cacheMaxEffort = new HashMap<StandaloneTrainSchedule, ResultTrain>();
         var cacheEco = new HashMap<StandaloneTrainSchedule, ResultTrain>();
         for (var trainSchedule : schedules) {
             if (!cacheMaxEffort.containsKey(trainSchedule)) {
-                // MRSP
-                var mrsp = MRSP.from(trainsPath, trainSchedule.rollingStock);
-                cacheMRSP.put(trainSchedule, ResultEnvelopePoint.from(mrsp));
+                // MRSP & SpeedLimits
+                var mrsp = MRSP.from(trainsPath, trainSchedule.rollingStock, true);
+                var speedLimits = MRSP.from(trainsPath, trainSchedule.rollingStock, false);
+                cacheSpeedLimits.put(trainSchedule, ResultEnvelopePoint.from(speedLimits));
 
                 // Base
                 var envelope = computeMaxEffortEnvelope(mrsp, timeStep, envelopePath, trainSchedule);
@@ -65,7 +66,7 @@ public class StandaloneSim {
                 }
             }
 
-            result.mrsps.add(cacheMRSP.get(trainSchedule));
+            result.speedLimits.add(cacheSpeedLimits.get(trainSchedule));
             result.baseSimulations.add(cacheMaxEffort.get(trainSchedule));
             result.ecoSimulations.add(cacheEco.getOrDefault(trainSchedule, null));
         }

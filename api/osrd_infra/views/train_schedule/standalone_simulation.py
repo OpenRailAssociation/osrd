@@ -81,8 +81,8 @@ def process_simulation_response(train_schedules, response_payload):
     """
     base_simulations = response_payload["base_simulations"]
     assert len(train_schedules) == len(base_simulations)
-    mrsps = response_payload["mrsps"]
-    assert len(train_schedules) == len(mrsps)
+    speed_limits = response_payload["speed_limits"]
+    assert len(train_schedules) == len(speed_limits)
 
     eco_simulations = response_payload["eco_simulations"]
 
@@ -96,7 +96,7 @@ def process_simulation_response(train_schedules, response_payload):
             stop.update(stop_update)
 
         train_schedule.base_simulation = base_simulations[i]
-        train_schedule.mrsp = mrsps[i]
+        train_schedule.mrsp = speed_limits[i]
 
         # Skip if no eco simulation is available
         if not eco_simulations[i]:
