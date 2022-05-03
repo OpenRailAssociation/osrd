@@ -16,9 +16,11 @@ import fr.sncf.osrd.railjson.schema.infra.RJSSwitch;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitchType;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.LoadingGaugeLimit;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
 import fr.sncf.osrd.reporting.warnings.Warning;
 import fr.sncf.osrd.reporting.warnings.WarningRecorder;
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 import fr.sncf.osrd.utils.DoubleRangeMap;
 import java.util.*;
 
@@ -168,11 +170,49 @@ public class UndirectedInfraBuilder {
                 track.id,
                 ImmutableSet.copyOf(operationalPointsPerTrack.get(track.id)),
                 track.geo,
-                track.sch
+                track.sch,
+                buildLoadingGaugeLimits(track.loadingGaugeLimits)
         );
         builder.addEdge(begin, end, edge);
         edge.gradients = makeGradients(track);
         return edge;
+    }
+
+    /** Builds the ranges of blocked loading gauge types on the track */
+    private ImmutableRangeMap<Double, ImmutableSet<RJSLoadingGaugeType>> buildLoadingGaugeLimits(
+            List<LoadingGaugeLimit> limits
+    ) {
+        // This method has a bad complexity compared to more advanced solutions,
+        // but we don't expect more than a few ranges per section
+        if (limits == null)
+            return ImmutableRangeMap.of();
+        var builder = new ImmutableRangeMap.Builder<Double, ImmutableSet<RJSLoadingGaugeType>>();
+        var transitions = new TreeSet<Double>();
+        for (var range : limits) {
+            transitions.add(range.begin);
+            transitions.add(range.end);
+        }
+        var transitionsList = new ArrayList<>(transitions);
+        for (int i = 1; i < transitionsList.size(); i++) {
+            var begin = transitionsList.get(i - 1);
+            var end = transitionsList.get(i);
+            var allowedTypes = new HashSet<RJSLoadingGaugeType>();
+            for (var range : limits)
+                if (range.begin <= begin && range.end >= end)
+                    allowedTypes.addAll(getCompatibleGaugeTypes(range.type));
+            var blockedTypes = Sets.difference(
+                    Sets.newHashSet(RJSLoadingGaugeType.values()),
+                    allowedTypes
+            );
+            builder.put(Range.open(begin, end), ImmutableSet.copyOf(blockedTypes));
+        }
+        return builder.build();
+    }
+
+    /** Returns all the gauge types compatible with the given type */
+    private Set<RJSLoadingGaugeType> getCompatibleGaugeTypes(RJSLoadingGaugeType type) {
+        // TODO
+        return Set.of(type);
     }
 
     /** Creates the two DoubleRangeMaps with gradient values */
