@@ -1,6 +1,6 @@
 WITH errors AS (
-    SELECT unnest($2) as switch_id,
-        unnest($3) as information
+    SELECT unnest($2) AS switch_id,
+        unnest($3) AS information
 )
 INSERT INTO osrd_infra_errorlayer (
         infra_id,
@@ -10,9 +10,9 @@ INSERT INTO osrd_infra_errorlayer (
         schematic,
         information
     )
-SELECT $1 as infra_id,
-    errors.switch_id as obj_id,
-    'Switch' as obj_type,
+SELECT $1 AS infra_id,
+    errors.switch_id AS obj_id,
+    'Switch' AS obj_type,
     switches.geographic,
     switches.schematic,
     errors.information

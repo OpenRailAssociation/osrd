@@ -56,7 +56,7 @@ impl From<ObjectRef> for DeleteOperation {
 mod test {
     use crate::models::infra::test::test_transaction;
     use crate::railjson::operation::create::test::{
-        create_link, create_signal, create_speed, create_switch, create_track,
+        create_detector, create_link, create_signal, create_speed, create_switch, create_track,
     };
     use crate::railjson::operation::delete::DeleteOperation;
     use diesel::sql_types::BigInt;
@@ -160,6 +160,26 @@ mod test {
             let res_del = sql_query(format!(
                 "SELECT COUNT (*) AS nb FROM osrd_infra_switchmodel WHERE obj_id = '{}' AND infra_id = {}",
                 switch.get_obj_id(),
+                infra.id
+            ))
+            .get_result::<Count>(conn).unwrap();
+
+            assert_eq!(res_del.nb, 0);
+        });
+    }
+
+    #[test]
+    fn delete_detector() {
+        test_transaction(|conn, infra| {
+            let detector = create_detector(conn, infra.id, Default::default());
+
+            let detector_deletion: DeleteOperation = detector.get_ref().into();
+
+            assert!(detector_deletion.apply(infra.id, conn).is_ok());
+
+            let res_del = sql_query(format!(
+                "SELECT COUNT (*) AS nb FROM osrd_infra_detectormodel WHERE obj_id = '{}' AND infra_id = {}",
+                detector.get_obj_id(),
                 infra.id
             ))
             .get_result::<Count>(conn).unwrap();

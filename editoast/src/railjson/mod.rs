@@ -52,7 +52,7 @@ impl ObjectType {
             ObjectType::TrackSection => "osrd_infra_tracksectionmodel",
             ObjectType::Signal => "osrd_infra_signalmodel",
             ObjectType::SpeedSection => "osrd_infra_speedsectionmodel",
-            ObjectType::Detector => todo!(),
+            ObjectType::Detector => "osrd_infra_detectormodel",
             ObjectType::TrackSectionLink => "osrd_infra_tracksectionlinkmodel",
             ObjectType::Switch => "osrd_infra_switchmodel",
             ObjectType::SwitchType => todo!(),
@@ -140,7 +140,7 @@ pub struct TrackSectionLink {
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
 #[derivative(Default)]
 pub struct Switch {
-    #[derivative(Default(value = r#"generate_id("track_link")"#))]
+    #[derivative(Default(value = r#"generate_id("switch")"#))]
     pub id: String,
     #[derivative(Default(value = r#"ObjectRef {
         obj_type: ObjectType::TrackSection,
@@ -150,6 +150,21 @@ pub struct Switch {
     pub group_change_delay: f64,
     pub ports: HashMap<String, TrackEndpoint>,
     pub label: String,
+}
+
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[derivative(Default)]
+pub struct Detector {
+    #[derivative(Default(value = r#"generate_id("detector")"#))]
+    pub id: String,
+    #[derivative(Default(value = r#"ObjectRef {
+        obj_type: ObjectType::TrackSection,
+        obj_id: "".to_string(),
+    }"#))]
+    pub track: ObjectRef,
+    #[derivative(Default(value = "0."))]
+    pub position: f64,
+    pub applicable_directions: ApplicableDirections,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]

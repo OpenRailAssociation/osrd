@@ -75,6 +75,10 @@ impl InvalidationZone {
                         Self::merge_bbox(&mut geo, &mut sch, infra_cache, track_id);
                     }
                 }
+                OperationResult::Update(RailjsonObject::Detector { railjson })
+                | OperationResult::Create(RailjsonObject::Detector { railjson }) => {
+                    Self::merge_bbox(&mut geo, &mut sch, infra_cache, &railjson.track.obj_id);
+                }
                 OperationResult::Delete(ObjectRef {
                     obj_type: ObjectType::TrackSection,
                     obj_id,
@@ -122,8 +126,12 @@ impl InvalidationZone {
                 }
                 OperationResult::Delete(ObjectRef {
                     obj_type: ObjectType::Detector,
-                    obj_id: _,
-                }) => todo!(),
+                    obj_id,
+                }) => {
+                    if let Some(detector) = infra_cache.detectors.get(obj_id) {
+                        Self::merge_bbox(&mut geo, &mut sch, infra_cache, &detector.track);
+                    }
+                }
                 OperationResult::Delete(ObjectRef {
                     obj_type: ObjectType::SwitchType,
                     obj_id: _,
