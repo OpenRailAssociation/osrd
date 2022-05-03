@@ -18,7 +18,6 @@ import fr.sncf.osrd.standalone_sim.result.*;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.utils.CurveSimplification;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
-import java.awt.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -130,8 +129,38 @@ public class ScheduleMetadataExtractor {
             }
         }
 
+        res.addAll(makeOpenSignalRequirements(trainPath, envelope));
+
         return res;
     }
+
+    /** The signals must be open from the moment we can see them,
+     * this method adds signal updates to display this constraint on occupancy blocks */
+    private static Collection<SignalUpdate> makeOpenSignalRequirements(
+            TrainPath trainPath,
+            Envelope envelope
+    ) {
+        var res = new HashSet<SignalUpdate>();
+        for (var route : trainPath.routePath()) {
+            if (route.pathOffset() < 0)
+                continue;
+            var entrySignal = route.element().getEntrySignal();
+            if (entrySignal == null)
+                continue;
+            var sightPosition = route.pathOffset() - entrySignal.getSightDistance();
+            sightPosition = Math.max(0, sightPosition);
+            res.add(new SignalUpdate(
+                    entrySignal.getID(),
+                    Set.of(route.element().getInfraRoute().getID()),
+                    envelope.interpolateTotalTime(sightPosition),
+                    envelope.interpolateTotalTime(route.pathOffset()),
+                    entrySignal.getOpenState().getRGBColor(),
+                    false
+            ));
+        }
+        return res;
+    }
+
 
     /** Generates the ResultOccupancyTiming objects for each route */
     public static Map<String, ResultOccupancyTiming> makeRouteOccupancy(
