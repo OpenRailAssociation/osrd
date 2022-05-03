@@ -17,8 +17,9 @@ import GeoJSONs, { GEOJSON_LAYER_ID } from '../../../common/Map/Layers/GeoJSONs'
 import colors from '../../../common/Map/Consts/colors';
 import Modal from '../components/Modal';
 import { getNearestPoint } from '../../../utils/mapboxHelper';
-import { EntityForm } from '../components/EntityForm';
+import EntityForm from '../components/EntityForm';
 import { EntityModel } from '../data/entity';
+import { EditorComponentsDefinition, EditorEntitiesDefinition } from '../../../types';
 
 export type CreateLineState = CommonToolState & {
   linePoints: [number, number][];
@@ -153,7 +154,7 @@ export const CreateLine: Tool<CreateLineState> = {
     if (e.features && e.features.length) {
       const nearestPoint = getNearestPoint(
         e.features as Feature<LineString | MultiLineString>[],
-        e.lngLat,
+        e.lngLat
       );
       setState({ ...toolState, nearestPoint });
     } else {
@@ -199,8 +200,8 @@ export const CreateLine: Tool<CreateLineState> = {
     // Create the entity model
     const entity = new EntityModel(
       'track_section',
-      editorState.editorEntitiesDefinition,
-      editorState.editorComponentsDefinition,
+      editorState.editorEntitiesDefinition as EditorEntitiesDefinition,
+      editorState.editorComponentsDefinition as EditorComponentsDefinition
     );
     // Set the geo
     entity.setGeometry({
@@ -225,7 +226,7 @@ export const CreateLine: Tool<CreateLineState> = {
   getInteractiveLayers() {
     return [GEOJSON_LAYER_ID];
   },
-  getCursor(toolState, editorState, { isDragging }) {
+  getCursor(_toolState, _editorState, { isDragging }) {
     if (isDragging) return 'move';
     return 'copy';
   },

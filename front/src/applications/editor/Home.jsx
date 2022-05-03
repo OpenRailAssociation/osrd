@@ -2,9 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { withTranslation } from 'react-i18next';
 import { Route, Switch } from 'react-router-dom';
-import config from 'config/config';
-import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
-import logo from 'assets/logo_osrd_seul_blanc.svg';
+
+import config from '../../config/config';
+import logo from '../../assets/logo_osrd_seul_blanc.svg';
+import NavBarSNCF from '../../common/BootstrapSNCF/NavBarSNCF';
 import Editor from './Editor.tsx';
 
 class HomeEditorUnplugged extends React.Component {

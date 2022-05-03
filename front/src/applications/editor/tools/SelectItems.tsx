@@ -25,15 +25,15 @@ import EditorZone from '../../../common/Map/Layers/EditorZone';
 import GeoJSONs, { GEOJSON_LAYER_ID } from '../../../common/Map/Layers/GeoJSONs';
 import colors from '../../../common/Map/Consts/colors';
 import Modal from '../components/Modal';
-import { EntityForm } from '../components/EntityForm';
+import EntityForm from '../components/EntityForm';
 import { EntityModel } from '../data/entity';
 
 export type SelectItemsState = CommonToolState & {
   mode: 'rectangle' | 'single' | 'polygon';
-  selection: EntityForm[];
+  selection: (EntityModel | Item)[]; // TODO: Find why it is heterogeneous
   polygonPoints: [number, number][];
   rectangleTopLeft: [number, number] | null;
-  showModal: 'info' | 'edit' | null;
+  showModal: 'info' | 'edit' | 'delete' | null;
 };
 
 export const SelectItems: Tool<SelectItemsState> = {
@@ -177,11 +177,9 @@ export const SelectItems: Tool<SelectItemsState> = {
     if (toolState.mode !== 'single') return;
 
     let { selection } = toolState;
-    const isAlreadySelected = selection.find(
-      (item) => item.entity_id === feature.properties.id,
-    );
+    const isAlreadySelected = selection.find((item) => item.entity_id === feature.properties.id);
     const current: EntityModel | undefined = editorState.editorEntities.find(
-      (item) => item.entity_id === feature.properties.id,
+      (item) => item.entity_id === feature.properties.id
     );
     console.log('current', current, editorState.editorEntities, feature);
     if (current) {
@@ -283,7 +281,7 @@ export const SelectItems: Tool<SelectItemsState> = {
         <GeoJSONs
           colors={colors[mapStyle]}
           hoveredIDs={toolState.hovered && !selectionZone ? [toolState.hovered] : []}
-          selectionIDs={toolState.selection}
+          selectionIDs={toolState.selection as Item[]}
         />
         <EditorZone newZone={selectionZone} />
         {toolState.mode === 'single' && toolState.hovered && (
@@ -324,7 +322,7 @@ export const SelectItems: Tool<SelectItemsState> = {
             title={t('Editor.tools.select-items.edit-line')}
           >
             <EntityForm
-              entity={toolState.selection[0]}
+              entity={toolState.selection[0] as EntityModel}
               onSubmit={(data: EntityModel) => {
                 dispatch<any>(updateEntity(data));
                 setState({ ...toolState, showModal: null });
@@ -333,6 +331,7 @@ export const SelectItems: Tool<SelectItemsState> = {
           </Modal>
         );
       case 'delete':
+      default:
         return (
           <Modal
             onClose={() => setState({ ...toolState, showModal: null })}
@@ -344,7 +343,7 @@ export const SelectItems: Tool<SelectItemsState> = {
               <button
                 className="btn btn-primary"
                 onClick={() => {
-                  dispatch<any>(deleteEntities(toolState.selection));
+                  dispatch<any>(deleteEntities(toolState.selection as EntityModel[]));
                   setState({ ...toolState, showModal: null });
                 }}
               >
@@ -366,7 +365,7 @@ export const SelectItems: Tool<SelectItemsState> = {
     if (!toolState.selection.length) return t('Editor.tools.select-items.no-selection');
     return t('Editor.tools.select-items.selection', { count: toolState.selection.length });
   },
-  getCursor(toolState, editorState, { isDragging }) {
+  getCursor(toolState, _editorState, { isDragging }) {
     if (isDragging) return 'move';
     if (toolState.mode === 'single' && toolState.hovered) return 'pointer';
     if (toolState.mode !== 'single') return 'crosshair';
