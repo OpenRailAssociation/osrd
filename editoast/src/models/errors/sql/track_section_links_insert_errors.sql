@@ -1,6 +1,6 @@
 WITH errors AS (
-    SELECT unnest($2) as link_id,
-        unnest($3) as information
+    SELECT unnest($2) AS link_id,
+        unnest($3) AS information
 )
 INSERT INTO osrd_infra_errorlayer (
         infra_id,
@@ -10,9 +10,9 @@ INSERT INTO osrd_infra_errorlayer (
         schematic,
         information
     )
-SELECT $1 as infra_id,
-    errors.link_id as obj_id,
-    'TrackSectionLink' as obj_type,
+SELECT $1 AS infra_id,
+    errors.link_id AS obj_id,
+    'TrackSectionLink' AS obj_type,
     links.geographic,
     links.schematic,
     errors.information

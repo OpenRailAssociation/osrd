@@ -3,6 +3,7 @@ use crate::error::ApiError;
 use crate::infra_cache::InfraCache;
 use crate::models::errors::generate_errors;
 use crate::models::DBConnection;
+use crate::models::DetectorLayer;
 use crate::models::Infra;
 use crate::models::InvalidationZone;
 use crate::models::SignalLayer;
@@ -36,6 +37,7 @@ pub fn refresh(
     SpeedSectionLayer::refresh(conn, infra.id, chartos_config)?;
     TrackSectionLinkLayer::refresh(conn, infra.id, chartos_config)?;
     SwitchLayer::refresh(conn, infra.id, chartos_config)?;
+    DetectorLayer::refresh(conn, infra.id, chartos_config)?;
 
     // Generate errors
     generate_errors(conn, infra.id, infra_cache, chartos_config)?;
@@ -59,6 +61,7 @@ pub fn update(
     SpeedSectionLayer::update(conn, infra_id, operations, cache, zone, chartos_config)?;
     TrackSectionLinkLayer::update(conn, infra_id, operations, cache, zone, chartos_config)?;
     SwitchLayer::update(conn, infra_id, operations, cache, zone, chartos_config)?;
+    DetectorLayer::update(conn, infra_id, operations, cache, zone, chartos_config)?;
 
     // Generate errors
     generate_errors(conn, infra_id, cache, chartos_config)?;
