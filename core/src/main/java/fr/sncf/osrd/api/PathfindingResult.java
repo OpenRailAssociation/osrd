@@ -59,7 +59,10 @@ public class PathfindingResult {
             PathfindingResult pathfindingResult,
             Pathfinding.EdgeRange<SignalingRoute> element
     ) {
-        var routeResult = new RoutePathResult(new RJSObjectRef<>(element.edge().getInfraRoute().getID(), "Route"));
+        var routeResult = new RoutePathResult(
+                new RJSObjectRef<>(element.edge().getInfraRoute().getID(), "Route"),
+                element.edge().getSignalingType()
+        );
         double offset = 0;
         for (var range : element.edge().getInfraRoute().getTrackRanges()) {
             if (!(range.track.getEdge() instanceof TrackSection trackSection))
@@ -191,9 +194,12 @@ public class PathfindingResult {
         public final RJSObjectRef<RJSRoute> route;
         @Json(name = "track_sections")
         public final List<PathfindingEndpoint.DirectionalTrackRangeResult> trackSections = new ArrayList<>();
+        @Json(name = "signaling_type")
+        public final String signalingType;
 
-        public RoutePathResult(RJSObjectRef<RJSRoute> route) {
+        public RoutePathResult(RJSObjectRef<RJSRoute> route, String signalingType) {
             this.route = route;
+            this.signalingType = signalingType;
         }
     }
 

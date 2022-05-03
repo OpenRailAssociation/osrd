@@ -31,7 +31,7 @@ public class TrainPathTests {
         var rjsPath = new RJSTrainPath(List.of(
                 new RJSTrainPath.RJSRoutePath("route_forward", List.of(
                         new RJSTrainPath.RJSDirectionalTrackRange("track", 20, 80, EdgeDirection.START_TO_STOP)
-                ))
+                ), "BAL3")
         ));
         var path = TrainPathBuilder.from(infra, rjsPath);
         assertEquals(60, path.length());

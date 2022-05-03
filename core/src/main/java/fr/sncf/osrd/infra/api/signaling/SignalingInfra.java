@@ -16,4 +16,7 @@ public interface SignalingInfra extends ReservationInfra {
 
     /** Returns the graph of signaling routes */
     ImmutableNetwork<DiDetector, SignalingRoute> getSignalingRouteGraph();
+
+    /** Returns the route matching the ID and the signaling type, null if not found */
+    SignalingRoute findSignalingRoute(String id, String signalingType);
 }
