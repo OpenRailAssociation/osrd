@@ -4,11 +4,21 @@ import static fr.sncf.osrd.Helpers.infraFromRJS;
 import static fr.sncf.osrd.infra.InfraHelpers.testTinyInfraDiDetectorGraph;
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import fr.sncf.osrd.Helpers;
+import fr.sncf.osrd.infra.api.reservation.ReservationInfra;
+import fr.sncf.osrd.infra.api.reservation.ReservationRoute;
+import fr.sncf.osrd.infra.api.signaling.Signal;
+import fr.sncf.osrd.infra.api.signaling.SignalState;
+import fr.sncf.osrd.infra.api.signaling.SignalingModule;
+import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
 import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
 import fr.sncf.osrd.reporting.warnings.StrictWarningError;
 import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
+import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
+import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
 import org.junit.jupiter.api.Test;
 import java.util.HashSet;
 import java.util.Set;
@@ -53,5 +63,63 @@ public class SignalingInfraTests {
                 StrictWarningError.class,
                 () -> SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(), new WarningRecorderImpl(true))
         );
+    }
+
+    @Test
+    public void findRoutesTests() throws Exception {
+        var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
+        var infra = SignalingInfraBuilder.fromRJSInfra(
+                rjsInfra,
+                Set.of(new BAL3(), new DummySignalingModule()),
+                new WarningRecorderImpl(true)
+        );
+        assertNull(infra.findSignalingRoute("nope", "BAL3"));
+        assertNull(infra.findSignalingRoute("rt.tde.foo_a-switch_foo->buffer_stop_c", "nope"));
+        assertTrue(infra.findSignalingRoute(
+                "rt.tde.foo_a-switch_foo->buffer_stop_c", "BAL3") instanceof BAL3.BAL3Route
+        );
+        assertTrue(infra.findSignalingRoute(
+                "rt.tde.foo_a-switch_foo->buffer_stop_c", "Dummy") instanceof DummySignalingModule.DummyRoute
+        );
+    }
+
+    private static class DummySignalingModule implements SignalingModule {
+
+        static class DummyRoute implements SignalingRoute {
+
+            @Override
+            public ReservationRoute getInfraRoute() {
+                return null;
+            }
+
+            @Override
+            public Signal<?> getEntrySignal() {
+                return null;
+            }
+
+            @Override
+            public String getSignalingType() {
+                return "Dummy";
+            }
+        }
+
+        @Override
+        public ImmutableMap<RJSSignal, Signal<? extends SignalState>> createSignals(
+                ReservationInfra infra,
+                RJSInfra rjsInfra
+        ) {
+            return ImmutableMap.of();
+        }
+
+        @Override
+        public ImmutableMap<ReservationRoute, SignalingRoute> createRoutes(
+                ReservationInfra infra,
+                ImmutableMultimap<RJSSignal, Signal<? extends SignalState>> signalMap
+        ) {
+            var builder = ImmutableMap.<ReservationRoute, SignalingRoute>builder();
+            for (var route : infra.getReservationRouteMap().values())
+                builder.put(route, new DummyRoute());
+            return builder.build();
+        }
     }
 }

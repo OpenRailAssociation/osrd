@@ -43,6 +43,10 @@ public class BAL3 implements SignalingModule {
         public Signal<?> getEntrySignal() {
             return entrySignal;
         }
+        
+        public String getSignalingType() {
+            return "BAL3";
+        }
     }
 
     @Override

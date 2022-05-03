@@ -51,4 +51,15 @@ public class SignalingInfraImpl extends ReservationInfraImpl implements Signalin
     public ImmutableNetwork<DiDetector, SignalingRoute> getSignalingRouteGraph() {
         return signalingRouteGraph;
     }
+
+    @Override
+    public SignalingRoute findSignalingRoute(String id, String signalingType) {
+        var reservationRoute = getReservationRouteMap().getOrDefault(id, null);
+        if (reservationRoute == null)
+            return null;
+        for (SignalingRoute route : routeMap.get(reservationRoute))
+            if (route.getSignalingType().equals(signalingType))
+                return route;
+        return null;
+    }
 }

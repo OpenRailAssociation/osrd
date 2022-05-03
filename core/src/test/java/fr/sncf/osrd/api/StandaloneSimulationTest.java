@@ -26,7 +26,7 @@ class StandaloneSimulationTest extends ApiTest {
         tracksRoute1.add(
                 new RJSTrainPath.RJSDirectionalTrackRange("ne.micro.foo_b", 100, 175, EdgeDirection.START_TO_STOP));
         trainPath.routePath.add(new RJSTrainPath.RJSRoutePath(
-                "rt.buffer_stop_b->tde.foo_b-switch_foo", tracksRoute1));
+                "rt.buffer_stop_b->tde.foo_b-switch_foo", tracksRoute1, "BAL3"));
         var tracksRoute2 = new ArrayList<RJSTrainPath.RJSDirectionalTrackRange>();
         tracksRoute2.add(new RJSTrainPath.RJSDirectionalTrackRange(
                 "ne.micro.foo_b", 175, 200, EdgeDirection.START_TO_STOP));
@@ -34,7 +34,11 @@ class StandaloneSimulationTest extends ApiTest {
                 "ne.micro.foo_to_bar", 0, 10000, EdgeDirection.START_TO_STOP));
         tracksRoute2.add(new RJSTrainPath.RJSDirectionalTrackRange(
                 "ne.micro.bar_a", 0, 100, EdgeDirection.START_TO_STOP));
-        trainPath.routePath.add(new RJSTrainPath.RJSRoutePath("rt.tde.foo_b-switch_foo->buffer_stop_c", tracksRoute2));
+        trainPath.routePath.add(new RJSTrainPath.RJSRoutePath(
+                "rt.tde.foo_b-switch_foo->buffer_stop_c",
+                tracksRoute2,
+                "BAL3")
+        );
         return trainPath;
     }
 

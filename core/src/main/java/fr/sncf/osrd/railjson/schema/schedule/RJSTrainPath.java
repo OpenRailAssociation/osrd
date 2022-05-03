@@ -28,10 +28,14 @@ public class RJSTrainPath {
         public final RJSObjectRef<RJSRoute> route;
         @Json(name = "track_sections")
         public final List<RJSDirectionalTrackRange> trackSections;
+        @Json(name = "signaling_type")
+        public final String signalingType;
 
-        public RJSRoutePath(String route, List<RJSDirectionalTrackRange> trackSections) {
+        /** Constructor */
+        public RJSRoutePath(String route, List<RJSDirectionalTrackRange> trackSections, String signalingType) {
             this.route = new RJSObjectRef<>(route, "Route");
             this.trackSections = trackSections;
+            this.signalingType = signalingType;
         }
     }
 

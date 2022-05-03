@@ -7,4 +7,7 @@ public interface SignalingRoute {
 
     /** Returns the entry signal for the route */
     Signal<?> getEntrySignal();
+
+    /** Returns a string representing the signaling type of the route (BAL3, TVM, BAPR...) */
+    String getSignalingType();
 }

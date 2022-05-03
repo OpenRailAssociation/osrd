@@ -92,9 +92,8 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
         var endLocation = new TrackLocation(infra.getTrackSection(end.track.id.id), end.position);
         var routes = new ArrayList<SignalingRoute>();
         for (var route : res.routePaths) {
-            var infraRoute = infra.getReservationRouteMap().get(route.route.id.id);
-            assert infraRoute != null;
-            var signalingRoute = infra.getRouteMap().get(infraRoute).asList().get(0);
+            var signalingRoute = infra.findSignalingRoute(route.route.id.id, route.signalingType);
+            assert signalingRoute != null;
             if (routes.isEmpty() || routes.get(routes.size() - 1) != signalingRoute)
                 routes.add(signalingRoute);
         }
