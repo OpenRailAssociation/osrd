@@ -15,7 +15,9 @@ const FormatSwitch = (props) => {
   const dispatch = useDispatch();
   const { t } = useTranslation(['map-settings']);
   const { layersSettings } = useSelector((state) => state.map);
-  const { name, icon, color } = props;
+  const {
+    name, icon, color, disabled = false,
+  } = props;
 
   const setLayerSettings = (setting) => {
     dispatch(updateLayersSettings({
@@ -33,6 +35,7 @@ const FormatSwitch = (props) => {
           name={`${name}-switch`}
           onChange={() => setLayerSettings(name)}
           checked={layersSettings[name]}
+          disabled={disabled}
         />
         <span className={`px-1 d-flex align-items-center ${color}`}>
           {icon}
@@ -66,10 +69,12 @@ export default function MapSettingsLayers() {
       <FormatSwitch
         name="tvds"
         icon={<MdSpaceBar />}
+        disabled
       />
       <FormatSwitch
         name="operationalpoints"
         icon={<FaMapMarkerAlt />}
+        disabled
       />
       <FormatSwitch
         name="switches"
@@ -83,7 +88,9 @@ FormatSwitch.propTypes = {
   name: PropTypes.string.isRequired,
   icon: PropTypes.object.isRequired,
   color: PropTypes.string,
+  disabled: PropTypes.bool,
 };
 FormatSwitch.defaultProps = {
   color: '',
+  disabled: false,
 };
