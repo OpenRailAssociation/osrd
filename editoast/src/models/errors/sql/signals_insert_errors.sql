@@ -1,6 +1,6 @@
 WITH errors AS (
-    SELECT unnest($2) as signal_id,
-        unnest($3) as information
+    SELECT unnest($2) AS signal_id,
+        unnest($3) AS information
 )
 INSERT INTO osrd_infra_errorlayer (
         infra_id,
@@ -10,9 +10,9 @@ INSERT INTO osrd_infra_errorlayer (
         schematic,
         information
     )
-SELECT $1 as infra_id,
-    errors.signal_id as obj_id,
-    'Signal' as obj_type,
+SELECT $1 AS infra_id,
+    errors.signal_id AS obj_id,
+    'Signal' AS obj_type,
     signals.geographic,
     signals.schematic,
     errors.information

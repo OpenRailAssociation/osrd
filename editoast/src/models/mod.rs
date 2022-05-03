@@ -1,4 +1,5 @@
 mod bounding_box;
+mod detector_layer;
 pub mod errors;
 pub mod infra;
 mod signal_layer;
@@ -8,6 +9,7 @@ mod track_section_layer;
 mod track_section_link_layer;
 
 pub use bounding_box::{BoundingBox, InvalidationZone};
+pub use detector_layer::DetectorLayer;
 pub use infra::{CreateInfra, Infra, InfraError};
 pub use signal_layer::SignalLayer;
 pub use speed_section_layer::SpeedSectionLayer;

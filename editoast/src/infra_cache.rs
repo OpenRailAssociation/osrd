@@ -1,8 +1,8 @@
 use crate::models::BoundingBox;
 use crate::railjson::operation::{OperationResult, RailjsonObject};
 use crate::railjson::{
-    ApplicableDirectionsTrackRange, LineString, ObjectRef, ObjectType, Signal, SpeedSection,
-    Switch, TrackEndpoint, TrackSection, TrackSectionLink,
+    ApplicableDirectionsTrackRange, Detector, LineString, ObjectRef, ObjectType, Signal,
+    SpeedSection, Switch, TrackEndpoint, TrackSection, TrackSectionLink,
 };
 use derivative::Derivative;
 use diesel::sql_types::{Double, Integer, Json, Text};
@@ -32,6 +32,9 @@ pub struct InfraCache {
 
     /// List existing switches
     pub switches: HashMap<String, SwitchCache>,
+
+    /// List existing detectors
+    pub detectors: HashMap<String, DetectorCache>,
 }
 
 #[derive(Debug, Clone, Derivative)]
@@ -199,6 +202,35 @@ impl From<&Switch> for SwitchCache {
     }
 }
 
+#[derive(QueryableByName, Debug, Clone, Derivative)]
+#[derivative(Hash, PartialEq)]
+pub struct DetectorCache {
+    #[sql_type = "Text"]
+    pub obj_id: String,
+    #[derivative(Hash = "ignore", PartialEq = "ignore")]
+    #[sql_type = "Text"]
+    pub track: String,
+    #[derivative(Hash = "ignore", PartialEq = "ignore")]
+    #[sql_type = "Double"]
+    pub position: f64,
+}
+
+impl DetectorCache {
+    pub fn new(obj_id: String, track: String, position: f64) -> Self {
+        Self {
+            obj_id,
+            track,
+            position,
+        }
+    }
+}
+
+impl From<&Detector> for DetectorCache {
+    fn from(sig: &Detector) -> Self {
+        Self::new(sig.id.clone(), sig.track.obj_id.clone(), sig.position)
+    }
+}
+
 impl InfraCache {
     fn add_track_ref(&mut self, track_id: String, obj_ref: ObjectRef) {
         self.track_sections_refs
@@ -258,6 +290,17 @@ impl InfraCache {
             .is_none());
     }
 
+    fn load_detector(&mut self, detector: DetectorCache) {
+        self.add_track_ref(
+            detector.track.clone(),
+            ObjectRef::new(ObjectType::Detector, detector.obj_id.clone()),
+        );
+        assert!(self
+            .detectors
+            .insert(detector.obj_id.clone(), detector)
+            .is_none());
+    }
+
     /// Initialize an infra cache given an infra id
     pub fn init(conn: &PgConnection, infra_id: i32) -> InfraCache {
         let mut infra_cache = Self::default();
@@ -302,6 +345,13 @@ impl InfraCache {
             infra_cache.load_switch(switch.into());
         });
 
+        // Load detector tracks references
+        sql_query(
+            "SELECT obj_id, data->'track'->>'id' AS track, (data->>'position')::float AS position FROM osrd_infra_detectormodel WHERE infra_id = $1")
+        .bind::<Integer, _>(infra_id)
+        .load::<DetectorCache>(conn).expect("Error loading detector refs").into_iter().for_each(|detector| 
+            infra_cache.load_detector(detector)
+        );
         infra_cache
     }
 
@@ -368,6 +418,16 @@ impl InfraCache {
                 }
             }
             ObjectRef {
+                obj_type: ObjectType::Detector,
+                obj_id,
+            } => {
+                let detector = self.detectors.remove(obj_id).unwrap();
+                self.track_sections_refs
+                    .get_mut(&detector.track)
+                    .unwrap()
+                    .remove(object_ref);
+            }
+            ObjectRef {
                 obj_type: ObjectType::TrackSection,
                 obj_id,
             } => {
@@ -393,6 +453,7 @@ impl InfraCache {
                 self.load_track_section_link(railjson.into())
             }
             RailjsonObject::Switch { railjson } => self.load_switch(railjson.into()),
+            RailjsonObject::Detector { railjson } => self.load_detector(railjson.into()),
         }
     }
 

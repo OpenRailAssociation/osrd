@@ -78,7 +78,9 @@ impl DataObject {
             ObjectType::SpeedSection => RailjsonObject::SpeedSection {
                 railjson: from_value(self.data.clone())?,
             },
-            ObjectType::Detector => todo!(),
+            ObjectType::Detector => RailjsonObject::Detector {
+                railjson: from_value(self.data.clone())?,
+            },
             ObjectType::TrackSectionLink => RailjsonObject::TrackSectionLink {
                 railjson: from_value(self.data.clone())?,
             },
