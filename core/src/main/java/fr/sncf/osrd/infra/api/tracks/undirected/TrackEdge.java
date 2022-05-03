@@ -1,8 +1,10 @@
 package fr.sncf.osrd.infra.api.tracks.undirected;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.ImmutableSet;
 import fr.sncf.osrd.infra.api.Direction;
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 import fr.sncf.osrd.utils.DoubleRangeMap;
 import fr.sncf.osrd.utils.geom.LineString;
 import java.util.EnumMap;
@@ -35,4 +37,7 @@ public sealed interface TrackEdge permits SwitchBranch, TrackSection {
 
     /** Returns the ID if the edge is a track section, otherwise the signal ID with ports */
     String getID();
+
+    /** Returns a list of ranges, each having a set of blocked loading gauge type */
+    ImmutableRangeMap<Double, ImmutableSet<RJSLoadingGaugeType>> getBlockedLoadingGauges();
 }

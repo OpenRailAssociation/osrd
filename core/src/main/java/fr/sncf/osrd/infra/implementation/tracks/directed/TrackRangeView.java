@@ -2,12 +2,16 @@ package fr.sncf.osrd.infra.implementation.tracks.directed;
 
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableRangeMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Range;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.tracks.directed.DiTrackEdge;
 import fr.sncf.osrd.infra.api.tracks.undirected.Detector;
 import fr.sncf.osrd.infra.api.tracks.undirected.OperationalPoint;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackSection;
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 import fr.sncf.osrd.utils.DoubleRangeMap;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.Comparator;
@@ -170,6 +174,25 @@ public class TrackRangeView {
                 res.addRange(rangeStart, rangeEnd, entry.getValue());
         }
         return res.simplify();
+    }
+
+    /** Returns the blocked gauge types projected on the range */
+    private ImmutableRangeMap<Double, ImmutableSet<RJSLoadingGaugeType>> getBlockedGaugeTypes() {
+        // TODO: once DoubleRangeMap have been migrated to RangeMap, merge this method with the other one
+        var builder = ImmutableRangeMap.<Double, ImmutableSet<RJSLoadingGaugeType>>builder();
+        var subMap = track.getEdge().getBlockedLoadingGauges().subRangeMap(Range.open(begin, end));
+        for (var entry : subMap.asMapOfRanges().entrySet()) {
+            var rangeStart = convertPosition(entry.getKey().lowerEndpoint());
+            var rangeEnd = convertPosition(entry.getKey().upperEndpoint());
+            if (rangeStart > rangeEnd) {
+                var tmp = rangeStart;
+                rangeStart = rangeEnd;
+                rangeEnd = tmp;
+            }
+            if (rangeStart != rangeEnd)
+                builder.put(Range.open(rangeStart, rangeEnd), entry.getValue());
+        }
+        return builder.build();
     }
 
     /** Converts a position on the original track to one referring to the range itself.*/
