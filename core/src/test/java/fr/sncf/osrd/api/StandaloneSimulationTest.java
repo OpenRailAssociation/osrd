@@ -95,7 +95,7 @@ class StandaloneSimulationTest extends ApiTest {
         assertEquals(8, trainResult.routeOccupancies.size());
 
         // check mrsp
-        var mrsp = simResult.mrsps.get(0);
+        var mrsp = simResult.speedLimits.get(0);
         assertEquals(mrsp.size(), 6);
     }
 
@@ -122,7 +122,7 @@ class StandaloneSimulationTest extends ApiTest {
 
         var simResult = runStandaloneSimulation(query);
         assertEquals(10, simResult.baseSimulations.size());
-        assertEquals(10, simResult.mrsps.size());
+        assertEquals(10, simResult.speedLimits.size());
     }
 
     @Test
@@ -198,7 +198,7 @@ class StandaloneSimulationTest extends ApiTest {
         var noAllowanceTime = noAllowanceResult.headPositions.get(noAllowanceResult.headPositions.size() - 1).time;
         var marecoResult = simResult.ecoSimulations.get(1);
         var marecoTime = marecoResult.headPositions.get(marecoResult.headPositions.size() - 1).time;
-        assertEquals(noAllowanceTime * 1.05, marecoTime, noAllowanceTime * 0.001);
+        assertEquals(noAllowanceTime * 1.05, marecoTime, noAllowanceTime * 0.01);
         assertNull(simResult.ecoSimulations.get(0));
     }
 
