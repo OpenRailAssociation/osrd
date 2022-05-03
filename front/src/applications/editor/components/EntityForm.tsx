@@ -1,29 +1,28 @@
-import React, { useState } from 'react';
+import { FC } from 'react';
 import Form from '@rjsf/core';
-import { useSelector } from 'react-redux';
-import { JSONSchema7 } from 'json-schema';
-import { EntityModel } from '../data/entity';
-import { EditorState } from '../../../reducers/editor';
+
+import { EntityBase, EntityModel } from '../data/entity';
 
 interface EntityFormProps {
   entity: EntityModel;
-  onSubmit: (data: Entity) => void;
+  onSubmit: (data: EntityModel) => void;
 }
 
 /**
  * Display a form to create a new entity.
- *
  */
-export const EntityForm: FC<EntityFormProps> = ({ entity, onSubmit }) => {
+const EntityForm: FC<EntityFormProps> = ({ entity, onSubmit }) => {
   console.log(entity, entity.getJsonSchema(), entity.toObject());
   return (
     <Form
       formData={entity.toObject()}
       schema={entity.getJsonSchema()}
       onSubmit={(e) => {
-        entity.update(e.formData);
+        entity.update(e.formData as unknown as EntityBase);
         onSubmit(entity);
       }}
     />
   );
 };
+
+export default EntityForm;

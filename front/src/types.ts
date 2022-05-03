@@ -3,7 +3,7 @@ import { JSONSchema7 } from 'json-schema';
 import { Position } from 'geojson';
 import { ThunkAction as ReduxThunkAction } from 'redux-thunk';
 
-export type EditorModelsDefinition = any
+export type EditorModelsDefinition = any;
 
 //
 //  Redux types
@@ -30,12 +30,14 @@ export type Zone = RectangleZone | PolygonZone;
 //
 //  Metadata types
 //
-type uuid = string;
-type flags = string; // Should match /[01]{7}/
 
 export interface Item {
   id: string;
   properties: Record<string, any>;
+
+  // TODO:
+  // Refine typings
+  entity_id?: string;
 }
 export type PositionnedItem = Item & {
   lng: number;
@@ -53,18 +55,22 @@ export interface Notification {
 //
 // Editor actions
 //
-export interface EditorOperationCreateEntity {
+export interface BaseEditorOperation {
+  component_id?: undefined | number;
+  entity_id?: undefined | number;
+}
+export interface EditorOperationCreateEntity extends BaseEditorOperation {
   operation: 'create_entity';
   entity_type: string;
   components: Array<{ component_type: string; component: unknown }>;
 }
-export interface EditorOperationUpdateComponent {
+export interface EditorOperationUpdateComponent extends BaseEditorOperation {
   operation: 'update_component';
   component_id: number;
   component_type: string;
   update: { [key: string]: unknown };
 }
-export interface EditorOperationDeleteEntity {
+export interface EditorOperationDeleteEntity extends BaseEditorOperation {
   operation: 'delete_entity';
   entity_id: number;
 }
@@ -77,8 +83,8 @@ export type EditorOperation =
 //
 // Editor data model
 //
-export type EditorComponentsDefintion = { [key: string]: JSONSchema7 };
-export type EditorEntitiesDefinition = { [key: string]: Array<keyof EditorComponentsDefintion> };
+export type EditorComponentsDefinition = { [key: string]: JSONSchema7 };
+export type EditorEntitiesDefinition = { [key: string]: Array<keyof EditorComponentsDefinition> };
 
 //
 //  Misc
@@ -86,3 +92,27 @@ export type EditorEntitiesDefinition = { [key: string]: Array<keyof EditorCompon
 export type Theme = {
   [key: string]: { [key: string]: string };
 };
+
+//
+// API
+//
+export interface ApiInfrastructure {
+  id: number;
+  name: string;
+  owner: string;
+  created: Date;
+  modified: Date;
+}
+
+export interface ApiSchemaResponseEntity {
+  entity_name: string;
+  components: Array<string>;
+}
+export interface ApiSchemaResponseComponent {
+  component_name: string;
+  fields: Array<{ name: string; type: string }>;
+}
+export interface ApiSchemaResponse {
+  entities: Array<ApiSchemaResponseEntity>;
+  components: Array<ApiSchemaResponseComponent>;
+}

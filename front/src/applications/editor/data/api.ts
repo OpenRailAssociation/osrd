@@ -1,43 +1,26 @@
-import { GeoJSON } from 'geojson';
-import { JSONSchema7 } from 'json-schema';
-import { get, post } from '../../../common/requests';
 import { omit } from 'lodash';
+import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
+
+import { get, post } from '../../../common/requests';
 import {
-  EditorOperation,
   Zone,
-  EditorComponentsDefintion,
   EditorModelsDefinition,
-} from '../../types';
+  EditorEntitiesDefinition,
+  EditorComponentsDefinition,
+  ApiInfrastructure,
+  ApiSchemaResponse,
+  ApiSchemaResponseEntity,
+  ApiSchemaResponseComponent,
+} from '../../../types';
 import { zoneToFeature } from '../../../utils/mapboxHelper';
-import { EntityModel } from './entity';
-import i18n from './../../../i18n';
-
-interface ApiInfrastructure {
-  id: number;
-  name: string;
-  owner: string;
-  created: Date;
-  modified: Date;
-}
-
-interface ApiSchemaResponseEntity {
-  entity_name: string;
-  components: Array<string>;
-}
-interface ApiSchemaResponseComponent {
-  component_name: string;
-  fields: Array<{ name: string; type: string }>;
-}
-interface ApiSchemaResponse {
-  entities: Array<ApiSchemaResponseEntity>;
-  components: Array<ApiSchemaResponseComponent>;
-}
+import { EntityBase, EntityModel } from './entity';
+import i18n from '../../../i18n';
 
 /**
  * Call the API to get an infra
  */
 export async function getInfrastructure(id: number): Promise<ApiInfrastructure> {
-  const data = await get(`/infra/${id}`, {}, true);
+  const data = await get(`/infra/${id}`);
   return {
     ...data,
     created: new Date(data.created),
@@ -48,7 +31,7 @@ export async function getInfrastructure(id: number): Promise<ApiInfrastructure> 
  * Call the API to get the list of infra
  */
 export async function getInfrastructures(): Promise<Array<ApiInfrastructure>> {
-  const data = await get(`/infra/`, {}, true);
+  const data = await get('/infra/');
   return data.results.map((infra: ApiInfrastructure) => {
     return {
       ...infra,
@@ -62,17 +45,17 @@ export async function getInfrastructures(): Promise<Array<ApiInfrastructure>> {
  * Call the API to get the definition of entities and components
  */
 export async function getEditorModelDefinition(): Promise<{
-  components: EditorComponentsDefintion;
+  components: EditorComponentsDefinition;
   entities: EditorModelsDefinition;
 }> {
   const result: {
-    components: EditorComponentsDefintion;
+    components: EditorComponentsDefinition;
     entities: EditorModelsDefinition;
   } = {
     components: {},
     entities: {},
   };
-  const data: ApiSchemaResponse = await get('/schema/', {}, true);
+  const data: ApiSchemaResponse = await get('/schema/');
 
   // parse the response and build the result
   data.entities.forEach((entity: ApiSchemaResponseEntity) => {
@@ -87,25 +70,29 @@ export async function getEditorModelDefinition(): Promise<{
     };
     component.fields
       .filter(
-        (field: { name: string; type: string }) => !['component_id', 'entity'].includes(field.name),
+        (field: { name: string; type: string }) => !['component_id', 'entity'].includes(field.name)
       )
       .forEach((field: { name: string; type: string }) => {
-        jsonSchema.properties[field.name] = {
+        jsonSchema.properties = jsonSchema.properties || {};
+        jsonSchema.required = jsonSchema.required || [];
+
+        const property: JSONSchema7Definition = {
           title: i18n.t(`Editor.entities.${component.component_name}-${field.name}`),
         };
+        jsonSchema.properties[field.name] = property;
         switch (field.type) {
           case 'integer':
           case 'string':
-            jsonSchema.properties[field.name].type = field.type;
+            property.type = field.type;
             jsonSchema.required.push(field.name);
             break;
           case 'float':
-            jsonSchema.properties[field.name].type = 'number';
+            property.type = 'number';
             jsonSchema.required.push(field.name);
             break;
           // for PK
           default:
-            jsonSchema.properties[field.name].type = 'integer';
+            property.type = 'integer';
             break;
         }
       });
@@ -121,25 +108,26 @@ export async function getEditorEntities(
   infra: number,
   layers: Array<string>,
   zone: Zone,
-  entitiesDefinintion: EditorEntitiesDefinition | null,
-  componentsDefinition: EditorComponentsDefinition | null,
+  entitiesDefinition: EditorEntitiesDefinition | null,
+  componentsDefinition: EditorComponentsDefinition | null
 ): Promise<Array<EntityModel>> {
   const geoJson = zoneToFeature(zone, true);
   const responses = await Promise.all(
-    layers.map((layer) =>
-      get(
-        `/infra/${infra}/geojson/`,
-        {
-          query: geoJson.geometry,
-        },
-        true,
-      ),
-    ),
+    layers.map(() =>
+      get(`/infra/${infra}/geojson/`, {
+        query: geoJson.geometry,
+      })
+    )
   );
   return responses.flatMap((response) =>
     response.features.map(
-      (obj) => new EntityModel(obj.properties, entitiesDefinintion, componentsDefinition),
-    ),
+      (obj: { properties: string | EntityBase }) =>
+        new EntityModel(
+          obj.properties,
+          entitiesDefinition as EditorEntitiesDefinition,
+          componentsDefinition as EditorComponentsDefinition
+        )
+    )
   );
 }
 
@@ -148,42 +136,44 @@ export async function getEditorEntities(
  */
 export async function saveEditorEntities(
   infra: number,
-  entities: Array<EntityModel>,
+  entities: Array<EntityModel>
 ): Promise<Array<EntityModel>> {
   const operations = entities.flatMap((entity: EntityModel) => entity.getOperations());
   const response = await post(
     `/infra/${infra}/edit/`,
     operations.map((operation) => {
-      if (operation.operation === 'create_entity') return omit(operation, ['entity_id']);
-      else return operation;
+      return operation.operation === 'create_entity' ? omit(operation, ['entity_id']) : operation;
     }),
-    {},
-    true,
+    {}
   );
 
   // rebuild the entities list
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~
   let newEntities = [...entities];
 
   // parse the response to add ids to new entities
-  response.forEach((result, index) => {
-    const operation = operations[index];
+  response.forEach(
+    (result: { entity_id: number; component_ids: Record<number, number> }, index: number) => {
+      const operation = operations[index];
 
-    if (operation.operation === 'create_entity') {
-      const entity = newEntities.find((entity) => entity.entity_id === operation.entity_id);
-      entity.entity_id = result.entity_id;
-      entity.components = entity.components.map((component, index) => {
-        component.component_id = result.component_ids[index];
-        return component;
-      });
-      newEntities = newEntities.filter((entity) => entity.entity_id !== operation.entity_id);
-      newEntities.push(entity);
-    }
+      if (operation.operation === 'create_entity') {
+        const entity = newEntities.find((e) => e.entity_id === operation.entity_id);
+        if (!entity) return;
 
-    if (operation.operation === 'delete_entity') {
-      newEntities = newEntities.filter((entity) => entity.entity_id !== operation.entity_id);
+        entity.entity_id = result.entity_id;
+        entity.components = entity.components.map((component, i) => ({
+          ...component,
+          component_id: result.component_ids[i],
+        }));
+        newEntities = newEntities.filter((e) => e.entity_id !== operation.entity_id);
+        newEntities.push(entity);
+      }
+
+      if (operation.operation === 'delete_entity') {
+        newEntities = newEntities.filter((e) => e.entity_id !== operation.entity_id);
+      }
     }
-  });
+  );
 
   return newEntities;
 }

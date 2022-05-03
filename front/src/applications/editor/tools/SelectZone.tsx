@@ -80,12 +80,12 @@ export const SelectZone: Tool<SelectZoneState> = {
         id: 'unselect-zone',
         icon: TiTimesOutline,
         labelTranslationKey: 'Editor.tools.select-zone.actions.unselect.label',
-        isDisabled(state, editorState) {
+        isDisabled(_state, editorState) {
           return !editorState.editorZone;
         },
-        onClick({ dispatch }, toolState, editorState) {
+        onClick({ dispatch }, _toolState, editorState) {
           dispatch<any>(
-            selectZone(editorState.editorInfrastructure.id, editorState.editorLayers, null),
+            selectZone(editorState.editorInfrastructure!.id, editorState.editorLayers, null)
           );
         },
       },
@@ -98,10 +98,10 @@ export const SelectZone: Tool<SelectZoneState> = {
         onClick({ dispatch, setState }, state, editorState) {
           if (state.polygonPoints) {
             dispatch<any>(
-              selectZone(editorState.editorInfrastructure.id, editorState.editorLayers, {
+              selectZone(editorState.editorInfrastructure!.id, editorState.editorLayers, {
                 type: 'polygon',
                 points: state.polygonPoints,
-              }),
+              })
             );
             setState({
               ...state,
@@ -167,10 +167,10 @@ export const SelectZone: Tool<SelectZoneState> = {
           setState({ ...toolState, rectangleTopLeft: null });
         } else {
           dispatch<any>(
-            selectZone(editorState.editorInfrastructure.id, editorState.editorLayers, {
+            selectZone(editorState.editorInfrastructure!.id, editorState.editorLayers, {
               type: 'rectangle',
               points: [toolState.rectangleTopLeft, position],
-            }),
+            })
           );
           setState({ ...toolState, rectangleTopLeft: null });
         }
@@ -187,10 +187,10 @@ export const SelectZone: Tool<SelectZoneState> = {
       if (isEqual(lastPoint, position)) {
         if (points.length >= 3) {
           dispatch<any>(
-            selectZone(editorState.editorInfrastructure.id, editorState.editorLayers, {
+            selectZone(editorState.editorInfrastructure!.id, editorState.editorLayers, {
               type: 'polygon',
               points,
-            }),
+            })
           );
           setState({ ...toolState, polygonPoints: [] });
         }
@@ -204,7 +204,7 @@ export const SelectZone: Tool<SelectZoneState> = {
   },
 
   // Layers:
-  getLayers({ mapStyle }, toolState, editorState) {
+  getLayers({ mapStyle }, toolState) {
     let newZone: Zone | undefined;
 
     if (toolState.mode === 'rectangle' && toolState.rectangleTopLeft) {
@@ -232,7 +232,7 @@ export const SelectZone: Tool<SelectZoneState> = {
     return [];
   },
 
-  getCursor(toolState, editorState, { isDragging }) {
+  getCursor(_toolState, _editorState, { isDragging }) {
     if (isDragging) return 'move';
     return 'crosshair';
   },

@@ -1,13 +1,10 @@
 import produce from 'immer';
 import { createSelector } from 'reselect';
-import { Feature, FeatureCollection, GeoJSON } from 'geojson';
+import { FeatureCollection, GeoJSON } from 'geojson';
 import {
   ThunkAction,
-  Path,
-  EditorOperation,
-  LineProperties,
   Zone,
-  EditorComponentsDefintion,
+  EditorComponentsDefinition,
   EditorEntitiesDefinition,
   ApiInfrastructure,
 } from '../types';
@@ -33,7 +30,7 @@ type ActionSelectZone = {
 export function selectZone(
   infra: number,
   layers: Array<string>,
-  zone: Zone | null,
+  zone: Zone | null
 ): ThunkAction<ActionSelectZone> {
   return async (dispatch: any, getState) => {
     dispatch({
@@ -50,12 +47,12 @@ export function selectZone(
           layers,
           zone,
           editor.editorEntitiesDefinition,
-          editor.editorComponentsDefinition,
+          editor.editorComponentsDefinition
         );
         dispatch(setSuccess());
         dispatch(setEditorData(data));
       } catch (e) {
-        dispatch(setFailure(e));
+        dispatch(setFailure(e as Error));
       }
     }
   };
@@ -104,7 +101,7 @@ type ActionLoadDataModel = {
   type: typeof LOAD_DATA_MODEL;
   data: {
     entities: EditorEntitiesDefinition;
-    components: EditorComponentsDefintion;
+    components: EditorComponentsDefinition;
   };
 };
 export function loadDataModel(): ThunkAction<ActionLoadDataModel> {
@@ -123,7 +120,7 @@ export function loadDataModel(): ThunkAction<ActionLoadDataModel> {
           data,
         });
       } catch (e) {
-        dispatch(setFailure(e));
+        dispatch(setFailure(e as Error));
       }
     }
   };
@@ -179,25 +176,24 @@ export function save(): ThunkAction<ActionSave> {
     try {
       const data = await saveEditorEntities(
         state.editor.editorInfrastructure.id,
-        state.editor.editorEntities,
+        state.editor.editorEntities
       );
       dispatch(setEditorData(data));
       dispatch(
         setSuccess({
           title: 'Modifications enregistrées',
           text: `Vos modifications ont été publiées`,
-        }),
+        })
       );
       // TODO: parse the response and update the  state.editor.editorEntities
     } catch (e) {
-      dispatch(setFailure(e));
+      dispatch(setFailure(e as Error));
     }
   };
 }
 
 type Actions =
   | ActionSelectZone
-  | ActionSelectedZoneLoaded
   | ActionLoadDataModel
   | ActionSetInfra
   | ActionCreateEntity
@@ -213,6 +209,10 @@ export interface EditorState {
   editorLayers: Array<string>;
   editorZone: Zone | null;
   editorEntities: Array<EntityModel>;
+
+  // TODO:
+  // Find why it is read sometimes, but wasn't initially typed:
+  editorData?: GeoJSON[];
 }
 
 export const initialState: EditorState = {
@@ -233,30 +233,37 @@ export const initialState: EditorState = {
 //
 // State reducer
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-export default function reducer(state = initialState, action: Actions) {
+export default function reducer(inputState: EditorState, action: Actions) {
+  const state = inputState || initialState;
+
   return produce(state, (draft) => {
     switch (action.type) {
       case SET_INFRASTRUCTURE:
         draft.editorInfrastructure = action.data;
+        break;
       case SELECT_ZONE:
         draft.editorZone = action.zone;
         break;
-      case SET_DATA:
-        draft.editorEntities = action.data;
-        break;
       case CREATE_ENTITY:
         draft.editorEntities = state.editorEntities.concat(action.entity);
-        break;
-      case UPDATE_ENTITY:
-      case DELETE_ENTITY:
-        draft.editorEntities = state.editorEntities
-          .filter((item) => item.entity_id !== action.entity.entity_id)
-          .concat(action.entity);
         break;
       case LOAD_DATA_MODEL:
         draft.editorEntitiesDefinition = action.data.entities;
         draft.editorComponentsDefinition = action.data.components;
         break;
+      // The following cases are commented because they apparently don't apply
+      // with the current state of typings:
+      // case SET_DATA:
+      //   draft.editorEntities = action.data;
+      //   break;
+      // case UPDATE_ENTITY:
+      // case DELETE_ENTITY:
+      //   draft.editorEntities = state.editorEntities
+      //     .filter((item) => item.entity_id !== action.entity.entity_id)
+      //     .concat(action.entity);
+      //   break;
+      default:
+      // Nothing to do here
     }
   });
 }
@@ -274,7 +281,7 @@ export const clippedDataSelector = createSelector(dataSelector, zoneSelector, (d
         features: data.map((entity: EntityModel) => clip(entity.toGeoJSON(), zone)),
       } as FeatureCollection,
     ];
-  } else {
-    return [];
   }
+
+  return [];
 });

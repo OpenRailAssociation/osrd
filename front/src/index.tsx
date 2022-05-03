@@ -5,14 +5,14 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 
 // Sentry
 import * as Sentry from '@sentry/browser';
-import * as serviceWorker from 'serviceWorker';
+import * as serviceWorker from './serviceWorker';
 
-import { persistor, store } from 'Store';
+import { persistor, store } from './Store';
 
 // Components
-import App from 'main/App';
+import App from './main/App';
 import { Integrations } from '@sentry/tracing';
-import Loader from 'common/Loader';
+import Loader from './common/Loader';
 import { PersistGate } from 'redux-persist/integration/react';
 import { Provider } from 'react-redux';
 import React from 'react';

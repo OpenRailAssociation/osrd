@@ -57,9 +57,6 @@
       },
       "select-items": {
         "actions": {
-          "delete-selection": {
-            "label": "[TODO] Supprimer les éléments sélectionnés"
-          },
           "edit-info": {
             "label": "Modifier les métadonnées de l'élément sélectionné"
           },

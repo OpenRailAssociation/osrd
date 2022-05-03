@@ -18,7 +18,7 @@ import Map from './Map';
 import Tipped from './components/Tipped';
 import NavButtons from './nav';
 import { updateViewport } from '../../reducers/map';
-import { getInfrastructure, getInfrastructures } from './data//api';
+import { getInfrastructure, getInfrastructures } from './data/api';
 
 const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   const dispatch = useDispatch();
@@ -28,17 +28,17 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   const [toolState, setToolState] = useState<any>(activeTool.getInitialState());
   const actionsGroups = activeTool.actions
     .map((group) =>
-      group.filter((action) => !action.isHidden || !action.isHidden(toolState, editorState)),
+      group.filter((action) => !action.isHidden || !action.isHidden(toolState, editorState))
     )
     .filter((group) => group.length);
 
-  const { infra, urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
+  const { infra, urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams<any>();
   const { mapStyle, viewport } = useSelector((state: { map: any }) => state.map);
   const setViewport = useCallback(
     (value) => {
-      dispatch(updateViewport(value, `/editor/${infra ? infra : '-1'}`));
+      dispatch(updateViewport(value, `/editor/${infra || '-1'}`));
     },
-    [dispatch, updateViewport, infra],
+    [dispatch, updateViewport, infra]
   );
 
   // Initial viewport:
@@ -64,17 +64,17 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
     if (infra && infra !== '-1') {
       getInfrastructure(parseInt(infra))
         .then((infrastructure) => dispatch(setInfrastructure(infrastructure)))
-        .catch((e) => {
+        .catch(() => {
           dispatch(setFailure(new Error(t('Editor.errors.infra-not-found', { id: infra }))));
-          dispatch(updateViewport(viewport, `/editor/${infrastructure.id}`));
+          dispatch(updateViewport(viewport, `/editor/infra`));
         });
     } else {
       getInfrastructures()
         .then((infras) => {
           if (infras && infras.length > 0) {
-            const infra = infras.sort((a, b) => (a.modified < b.modified ? 1 : -1))[0];
-            dispatch(setInfrastructure(infra));
-            dispatch(updateViewport(viewport, `/editor/${infra.id}`));
+            const infrastructure = infras.sort((a, b) => (a.modified < b.modified ? 1 : -1))[0];
+            dispatch(setInfrastructure(infrastructure));
+            dispatch(updateViewport(viewport, `/editor/${infrastructure.id}`));
           } else {
             dispatch(setFailure(new Error(t('Editor.errors.no-infra-available'))));
           }
@@ -135,7 +135,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
                     className={cx(
                       'editor-btn',
                       'btn-rounded',
-                      isActive && isActive(toolState, editorState) ? 'active' : '',
+                      isActive && isActive(toolState, editorState) ? 'active' : ''
                     )}
                     onClick={() => {
                       if (onClick) {
@@ -191,7 +191,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
                         className={cx(
                           'editor-btn',
                           'btn-rounded',
-                          isActive && isActive(editorState) ? 'active' : '',
+                          isActive && isActive(editorState) ? 'active' : ''
                         )}
                         onClick={() => {
                           if (onClick) {
