@@ -14,20 +14,18 @@ import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
-import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
 import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
 import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.infra_state.implementation.SignalizationEngine;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.infra_state.implementation.standalone.StandaloneSignalingSimulation;
 import fr.sncf.osrd.infra_state.implementation.standalone.StandaloneState;
-import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
 import fr.sncf.osrd.train.TestTrains;
 import org.junit.jupiter.api.Test;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ScheduleMetadataExtractorTests {
@@ -270,6 +268,19 @@ public class ScheduleMetadataExtractorTests {
                     .toList();
             for (int i = 1; i < signalUpdates.size(); i++)
                 assertTrue(signalUpdates.get(i - 1).timeEnd <= signalUpdates.get(i).timeStart);
+        }
+
+        // Checks that the signals are set to green from the moment they're seen
+        for (var route : path.routePath()) {
+            var signal = route.element().getEntrySignal();
+            if (signal == null)
+                continue;
+            var seen = Math.max(0, route.pathOffset() - signal.getSightDistance());
+            assertTrue(simplifiedUpdates.contains(new SimplifiedUpdate(
+                    signal.getID(),
+                    envelope.interpolateTotalTime(seen),
+                    Color.GREEN.getRGB()
+            )));
         }
     }
 
