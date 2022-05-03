@@ -62,11 +62,6 @@ export default function MapSettingsLayers() {
         icon={<IoMdSpeedometer />}
       />
       <FormatSwitch
-        name="speedlimitscolor"
-        icon={<IoMdSpeedometer />}
-        color="text-green"
-      />
-      <FormatSwitch
         name="tvds"
         icon={<MdSpaceBar />}
         disabled

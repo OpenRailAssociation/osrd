@@ -39,7 +39,6 @@ import SearchMarker from 'common/Map/Layers/SearchMarker';
 import SignalingType from 'common/Map/Layers/SignalingType';
 import Signals from 'common/Map/Layers/Signals';
 import SpeedLimits from 'common/Map/Layers/SpeedLimits';
-import SpeedLimitsColors from 'common/Map/Layers/SpeedLimitsColors';
 /* Objects & various */
 import TVDs from 'common/Map/Layers/TVDs';
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
@@ -328,7 +327,6 @@ const Map = (props) => {
         {/* Have to  duplicate objects with sourceLayer to avoid cache problems in mapbox */}
         {mapTrackSources === 'geographic' ? (
           <>
-            <SpeedLimitsColors geomType="geo" />
             <ElectrificationType geomType="geo" colors={colors[mapStyle]} />
             <TVDs geomType="geo" colors={colors[mapStyle]} idHover={idHover} />
             <Platform colors={colors[mapStyle]} />

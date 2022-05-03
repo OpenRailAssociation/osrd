@@ -41,7 +41,6 @@ import SignalingType from 'common/Map/Layers/SignalingType';
 import Signals from 'common/Map/Layers/Signals';
 import SnappedMarker from 'common/Map/Layers/SnappedMarker';
 import SpeedLimits from 'common/Map/Layers/SpeedLimits';
-import SpeedLimitsColors from 'common/Map/Layers/SpeedLimitsColors';
 /* Objects & various */
 import TVDs from 'common/Map/Layers/TVDs';
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
@@ -245,7 +244,6 @@ const Map = () => {
         {/* Have to  duplicate objects with sourceLayer to avoid cache problems in mapbox */}
         {mapTrackSources === 'geographic' ? (
           <>
-            <SpeedLimitsColors geomType="geo" />
             <TVDs geomType="geo" colors={colors[mapStyle]} idHover={idHover} />
             <ElectrificationType geomType="geo" colors={colors[mapStyle]} />
             <Platform colors={colors[mapStyle]} />
