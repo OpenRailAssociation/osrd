@@ -51,8 +51,11 @@ public class MRSP {
                 var interval = speedRange.getKey();
                 var begin = offset + interval.getBeginPosition();
                 var end = offset + interval.getEndPosition();
-                if (addRollingStockLength)
+                if (addRollingStockLength) {
                     end += rollingStock.length;
+                    if (end > pathLength)
+                        end = pathLength;
+                }
                 var speed = speedRange.getValue();
                 if (speed.isInfinite() || speed == 0)
                     continue;
