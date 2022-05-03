@@ -2,10 +2,13 @@ package fr.sncf.osrd.infra.implementation.tracks.undirected;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableRangeMap;
+import com.google.common.collect.ImmutableSet;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.tracks.undirected.Detector;
 import fr.sncf.osrd.infra.api.tracks.undirected.Switch;
 import fr.sncf.osrd.infra.api.tracks.undirected.SwitchBranch;
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 import fr.sncf.osrd.utils.DoubleRangeMap;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.EnumMap;
@@ -58,6 +61,11 @@ public class SwitchBranchImpl implements SwitchBranch {
     @Override
     public String getID() {
         return String.format("SwitchID=%s, src=%s, dst=%s", switchRef.getID(), srcPort, dstPort);
+    }
+
+    @Override
+    public ImmutableRangeMap<Double, ImmutableSet<RJSLoadingGaugeType>> getBlockedLoadingGauges() {
+        return ImmutableRangeMap.of();
     }
 
     @Override
