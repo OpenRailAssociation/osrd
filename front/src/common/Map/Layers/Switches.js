@@ -12,10 +12,10 @@ export default function Switches(props) {
     type: 'circle',
     'source-layer': 'switches',
     paint: {
-      'circle-stroke-color': '#82be00',
+      'circle-stroke-color': colors.switches.circle,
       'circle-stroke-width': 2,
       'circle-color': 'rgba(255, 255, 255, 0)',
-      'circle-radius': 4,
+      'circle-radius': 3,
     },
   };
 
@@ -23,7 +23,7 @@ export default function Switches(props) {
     type: 'symbol',
     'source-layer': 'switches',
     layout: {
-      'text-field': '{name}',
+      'text-field': '{label}',
       'text-font': [
         'Roboto Condensed',
       ],
@@ -35,9 +35,9 @@ export default function Switches(props) {
       visibility: 'visible',
     },
     paint: {
-      'text-color': colors.op.text,
+      'text-color': colors.switches.text,
       'text-halo-width': 2,
-      'text-halo-color': colors.op.halo,
+      'text-halo-color': colors.switches.halo,
       'text-halo-blur': 1,
     },
   };
@@ -46,7 +46,7 @@ export default function Switches(props) {
     <Source
       id={`osrd_switches_${geomType}`}
       type="vector"
-      url={`${MAP_URL}/layer/switches/mvt/${geomType}/?version=${infraID}`}
+      url={`${MAP_URL}/layer/switches/mvt/${geomType}/?infra=${infraID}`}
     >
       <Layer {...layerPoint} id={`chartis/osrd_switches/${geomType}`} />
       <Layer {...layerName} id={`chartis/osrd_switches_name/${geomType}`} />
