@@ -18,9 +18,11 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
     final Set<BAL3Signal> signalDependencies = new HashSet<>();
     final Set<BAL3.BAL3Route> protectedRoutes = new HashSet<>();
     private final String id;
+    private final double sightDistance;
 
-    public BAL3Signal(String id) {
+    public BAL3Signal(String id, double sightDistance) {
         this.id = id;
+        this.sightDistance = sightDistance;
     }
 
     @Override
@@ -29,6 +31,11 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
         return MoreObjects.toStringHelper(this)
                 .add("id", id)
                 .toString();
+    }
+
+    @Override
+    public BAL3SignalState getOpenState() {
+        return new BAL3SignalState(BAL3.Aspect.GREEN);
     }
 
 
@@ -124,5 +131,10 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
         return protectedRoutes.stream()
                 .map(BAL3.BAL3Route::getInfraRoute)
                 .collect(Collectors.toSet());
+    }
+
+    @Override
+    public double getSightDistance() {
+        return sightDistance;
     }
 }

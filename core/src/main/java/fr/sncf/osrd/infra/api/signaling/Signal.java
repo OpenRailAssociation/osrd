@@ -27,4 +27,10 @@ public interface Signal<StateT extends SignalState> {
 
     /** Returns a set of routes protected by this signal. May be empty if the signal isn't linked to a detector */
     Set<ReservationRoute> getProtectedRoutes();
+
+    /** Returns the distance at which the signal can be seen */
+    double getSightDistance();
+
+    /** Returns the state when this signal is open */
+    StateT getOpenState();
 }

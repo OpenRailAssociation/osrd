@@ -38,6 +38,11 @@ public class BAL3 implements SignalingModule {
         public ReservationRoute getInfraRoute() {
             return infraRoute;
         }
+
+        @Override
+        public Signal<?> getEntrySignal() {
+            return entrySignal;
+        }
     }
 
     @Override
@@ -52,7 +57,7 @@ public class BAL3 implements SignalingModule {
                 var dir = signal.direction == EdgeDirection.START_TO_STOP ? Direction.FORWARD : Direction.BACKWARD;
                 linkedDetector = undirectedDetector.getDiDetector(dir);
             }
-            var newSignal = new BAL3Signal(signal.id);
+            var newSignal = new BAL3Signal(signal.id, signal.sightDistance);
             res.put(signal, newSignal);
             detectorToSignal.put(linkedDetector, newSignal);
         }
