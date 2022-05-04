@@ -181,6 +181,7 @@ const Map = () => {
           <>
             <TracksSchematic colors={colors[mapStyle]} idHover={idHover} />
             <OperationalPoints geomType="sch" colors={colors[mapStyle]} />
+            <SpeedLimits geomType="sch" colors={colors[mapStyle]} />
             <Signals sourceTable="signals" colors={colors[mapStyle]} sourceLayer="sch" />
             <Switches geomType="sch" colors={colors[mapStyle]} />
           </>
