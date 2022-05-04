@@ -39,5 +39,5 @@ public sealed interface TrackEdge permits SwitchBranch, TrackSection {
     String getID();
 
     /** Returns a list of ranges, each having a set of blocked loading gauge type */
-    ImmutableRangeMap<Double, ImmutableSet<RJSLoadingGaugeType>> getBlockedLoadingGauges();
+    ImmutableRangeMap<Double, LoadingGaugeConstraint> getLoadingGaugeConstraints();
 }

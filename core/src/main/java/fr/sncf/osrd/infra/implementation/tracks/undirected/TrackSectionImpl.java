@@ -4,6 +4,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.*;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.tracks.undirected.Detector;
+import fr.sncf.osrd.infra.api.tracks.undirected.LoadingGaugeConstraint;
 import fr.sncf.osrd.infra.api.tracks.undirected.OperationalPoint;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackSection;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
@@ -23,7 +24,7 @@ public class TrackSectionImpl implements TrackSection {
     int index;
     private final LineString geo;
     private final LineString sch;
-    private final ImmutableRangeMap<Double, ImmutableSet<RJSLoadingGaugeType>> blockedLoadingGauges;
+    private final ImmutableRangeMap<Double, LoadingGaugeConstraint> loadingGaugeConstraints;
 
     @Override
     @ExcludeFromGeneratedCodeCoverage
@@ -41,14 +42,14 @@ public class TrackSectionImpl implements TrackSection {
             ImmutableSet<OperationalPoint> operationalPoints,
             LineString geo,
             LineString sch,
-            ImmutableRangeMap<Double, ImmutableSet<RJSLoadingGaugeType>> blockedLoadingGauges
+            ImmutableRangeMap<Double, LoadingGaugeConstraint> loadingGaugeConstraints
     ) {
         this.length = length;
         this.id = id;
         this.operationalPoints = operationalPoints;
         this.geo = geo;
         this.sch = sch;
-        this.blockedLoadingGauges = blockedLoadingGauges;
+        this.loadingGaugeConstraints = loadingGaugeConstraints;
     }
 
     /** Constructor with empty operational points and geometry */
@@ -58,7 +59,7 @@ public class TrackSectionImpl implements TrackSection {
     ) {
         this.length = length;
         this.id = id;
-        this.blockedLoadingGauges = ImmutableRangeMap.of();
+        this.loadingGaugeConstraints = ImmutableRangeMap.of();
         this.geo = null;
         this.sch = null;
         this.operationalPoints = ImmutableSet.of();
@@ -100,8 +101,8 @@ public class TrackSectionImpl implements TrackSection {
     }
 
     @Override
-    public ImmutableRangeMap<Double, ImmutableSet<RJSLoadingGaugeType>> getBlockedLoadingGauges() {
-        return blockedLoadingGauges;
+    public ImmutableRangeMap<Double, LoadingGaugeConstraint> getLoadingGaugeConstraints() {
+        return loadingGaugeConstraints;
     }
 
     @Override

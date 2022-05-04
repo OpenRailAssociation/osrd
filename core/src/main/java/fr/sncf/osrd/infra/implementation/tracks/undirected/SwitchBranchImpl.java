@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.ImmutableSet;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.tracks.undirected.Detector;
+import fr.sncf.osrd.infra.api.tracks.undirected.LoadingGaugeConstraint;
 import fr.sncf.osrd.infra.api.tracks.undirected.Switch;
 import fr.sncf.osrd.infra.api.tracks.undirected.SwitchBranch;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
@@ -64,7 +65,7 @@ public class SwitchBranchImpl implements SwitchBranch {
     }
 
     @Override
-    public ImmutableRangeMap<Double, ImmutableSet<RJSLoadingGaugeType>> getBlockedLoadingGauges() {
+    public ImmutableRangeMap<Double, LoadingGaugeConstraint> getLoadingGaugeConstraints() {
         return ImmutableRangeMap.of();
     }
 
