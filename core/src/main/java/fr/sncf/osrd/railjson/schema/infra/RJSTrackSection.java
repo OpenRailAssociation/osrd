@@ -5,7 +5,7 @@ import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
-import fr.sncf.osrd.railjson.schema.infra.trackranges.LoadingGaugeLimit;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSLoadingGaugeLimit;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSCurve;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSlope;
 import fr.sncf.osrd.utils.geom.LineString;
@@ -18,7 +18,7 @@ public class RJSTrackSection implements Identified {
 
     public List<RJSSlope> slopes;
     public List<RJSCurve> curves;
-    public List<LoadingGaugeLimit> loadingGaugeLimits;
+    public List<RJSLoadingGaugeLimit> loadingGaugeLimits;
 
     public LineString geo;
     public LineString sch;
