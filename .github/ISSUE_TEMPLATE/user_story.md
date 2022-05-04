@@ -7,14 +7,17 @@ assignees: ''
 
 ---
 
-**Acceptance criteria**
+## Acceptance criteria
+
 A clear and exhaustive list of acceptance criteria that goes with this US.
 - [ ] Criteria 1
 - [ ] Criteria 2
 - [ ] Criteria 3
 
-**Additional content**
+## Additional content
+
 Is there an existing mockup or wireframe for this US ? If so, please link it here.
 
-**Time estimate**
-How complicated will this US be ?
+## Difficulty
+
+This user story [easy / normal / difficult / extreme]
