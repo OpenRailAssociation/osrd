@@ -16,6 +16,7 @@ import fr.sncf.osrd.infra.implementation.tracks.directed.DiTrackEdgeImpl;
 import fr.sncf.osrd.infra.implementation.tracks.directed.DirectedInfraBuilder;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.infra.implementation.tracks.undirected.*;
+import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
 import fr.sncf.osrd.utils.DoubleRangeMap;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ public class DirectedRJSParsingTests {
     public void testTinyInfra() throws Exception {
         // This test only checks that no assertion is thrown
         var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
-        var infra = UndirectedInfraBuilder.parseInfra(rjsInfra);
+        var infra = UndirectedInfraBuilder.parseInfra(rjsInfra, new WarningRecorderImpl(true));
         DirectedInfraBuilder.fromUndirected(infra);
     }
 
