@@ -170,6 +170,9 @@ class RollingStock(models.Model):
         return f"rolling_stock.{self.id}"
 
     def to_railjson(self):
+        loading_gauge_type = self.loading_gauge
+        if loading_gauge_type is None or loading_gauge_type == "":
+            loading_gauge_type = "G1"
         return migrate_v1_to_v2(
             {
                 "id": self.railjson_id,
@@ -185,7 +188,7 @@ class RollingStock(models.Model):
                 "gamma": self.timetable_gamma,
                 "gamma_type": "CONST",
                 "tractive_effort_curve": next(iter(self.tractive_effort_curves.values())),
-                "loading_gauge_type": self.loading_gauge,
+                "loading_gauge_type": loading_gauge_type,
             }
         )
 
