@@ -4,6 +4,7 @@ const drawCurve = (
   chart, classes, dataSimulation, groupID, interpolation,
   keyValues, name, rotate, isSelected = true,
 ) => {
+
   const drawZone = chart.drawZone.select(`#${groupID}`);
   drawZone.append('path')
     .attr('class', `line zoomable ${classes}`)
