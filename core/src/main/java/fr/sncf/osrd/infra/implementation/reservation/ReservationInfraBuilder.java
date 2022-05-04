@@ -48,7 +48,7 @@ public class ReservationInfraBuilder {
 
     /** Builds a ReservationInfra from a railjson infra */
     public static ReservationInfra fromRJS(RJSInfra rjsInfra, WarningRecorder warningRecorder) {
-        var diInfra = DirectedInfraBuilder.fromRJS(rjsInfra);
+        var diInfra = DirectedInfraBuilder.fromRJS(rjsInfra, warningRecorder);
         return fromDiTrackInfra(rjsInfra, diInfra);
     }
 

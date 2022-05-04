@@ -15,6 +15,8 @@ import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackEndpoint;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSectionLink;
+import fr.sncf.osrd.reporting.warnings.StrictWarningError;
+import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 
@@ -23,7 +25,7 @@ public class RJSParsingTests {
     @Test
     public void testTinyInfra() throws Exception {
         var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
-        var infra = UndirectedInfraBuilder.parseInfra(rjsInfra);
+        var infra = UndirectedInfraBuilder.parseInfra(rjsInfra, new WarningRecorderImpl(true));
         var graph = toUndirected(infra.getTrackGraph());
         var traverser = Traverser.forGraph(graph);
         var fooAEndpoint = graph.incidentNodes(getTrack(infra, "ne.micro.foo_a")).nodeU();
@@ -41,8 +43,8 @@ public class RJSParsingTests {
         var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
         rjsInfra.switches.add(rjsInfra.switches.iterator().next());
         assertThrows(
-                InvalidInfraError.class,
-                () -> UndirectedInfraBuilder.parseInfra(rjsInfra)
+                StrictWarningError.class,
+                () -> UndirectedInfraBuilder.parseInfra(rjsInfra, new WarningRecorderImpl(true))
         );
     }
 
@@ -59,7 +61,7 @@ public class RJSParsingTests {
         ));
         assertThrows(
                 InvalidInfraError.class,
-                () -> UndirectedInfraBuilder.parseInfra(rjsInfra)
+                () -> UndirectedInfraBuilder.parseInfra(rjsInfra, new WarningRecorderImpl(true))
         );
     }
 }
