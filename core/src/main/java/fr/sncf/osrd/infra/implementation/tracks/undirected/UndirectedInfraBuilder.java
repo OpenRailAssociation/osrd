@@ -17,6 +17,8 @@ import fr.sncf.osrd.railjson.schema.infra.RJSSwitchType;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
+import fr.sncf.osrd.reporting.warnings.Warning;
+import fr.sncf.osrd.reporting.warnings.WarningRecorder;
 import fr.sncf.osrd.utils.DoubleRangeMap;
 import java.util.*;
 
@@ -28,17 +30,19 @@ public class UndirectedInfraBuilder {
     private final IdentityHashMap<TrackSectionImpl, ArrayList<Detector>> detectorLists = new IdentityHashMap<>();
     private final ImmutableNetwork.Builder<TrackNode, TrackEdge> builder;
     private final Multimap<String, OperationalPoint> operationalPointsPerTrack = ArrayListMultimap.create();
+    private final WarningRecorder warningRecorder;
 
     /** Constructor */
-    private UndirectedInfraBuilder() {
+    private UndirectedInfraBuilder(WarningRecorder warningRecorder) {
+        this.warningRecorder = warningRecorder;
         builder = NetworkBuilder
                 .directed()
                 .immutable();
     }
 
     /** Creates a TrackInfra from a railjson infra */
-    public static TrackInfra parseInfra(RJSInfra infra) {
-        return new UndirectedInfraBuilder().parse(infra);
+    public static TrackInfra parseInfra(RJSInfra infra, WarningRecorder warningRecorder) {
+        return new UndirectedInfraBuilder(warningRecorder).parse(infra);
     }
 
     /** Parse the railjson to build an infra */
@@ -229,8 +233,10 @@ public class UndirectedInfraBuilder {
         if (endpoint == EdgeEndpoint.END)
             map = endEndpoints;
         if (map.containsKey(trackId))
-            throw new InvalidInfraError(String.format("Duplicated track link on endpoint (%s - %s) : (old=%s, new=%s)",
-                    trackId, endpoint, map.get(trackId), node));
+            warningRecorder.register(new Warning(String.format(
+                    "Duplicated track link on endpoint (%s - %s) : (old=%s, new=%s). This may cause issues later on",
+                    trackId, endpoint, map.get(trackId), node
+            )));
         map.put(trackId, node);
         builder.addNode(node);
     }
