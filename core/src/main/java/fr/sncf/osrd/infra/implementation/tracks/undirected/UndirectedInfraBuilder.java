@@ -1,5 +1,6 @@
 package fr.sncf.osrd.infra.implementation.tracks.undirected;
 
+import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.*;
 import static java.lang.Math.abs;
 
 import com.google.common.collect.*;
@@ -16,7 +17,7 @@ import fr.sncf.osrd.railjson.schema.infra.RJSSwitch;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitchType;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
-import fr.sncf.osrd.railjson.schema.infra.trackranges.LoadingGaugeLimit;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSLoadingGaugeLimit;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
 import fr.sncf.osrd.reporting.warnings.Warning;
 import fr.sncf.osrd.reporting.warnings.WarningRecorder;
@@ -179,20 +180,25 @@ public class UndirectedInfraBuilder {
     }
 
     /** Builds the ranges of blocked loading gauge types on the track */
-    private ImmutableRangeMap<Double, ImmutableSet<RJSLoadingGaugeType>> buildLoadingGaugeLimits(
-            List<LoadingGaugeLimit> limits
+    private ImmutableRangeMap<Double, LoadingGaugeConstraint> buildLoadingGaugeLimits(
+            List<RJSLoadingGaugeLimit> limits
     ) {
         // This method has a bad complexity compared to more advanced solutions,
-        // but we don't expect more than a few ranges per section
+        // but we don't expect more than a few ranges per section.
+        // TODO: use an interval tree
+
         if (limits == null)
             return ImmutableRangeMap.of();
-        var builder = new ImmutableRangeMap.Builder<Double, ImmutableSet<RJSLoadingGaugeType>>();
+        var builder = new ImmutableRangeMap.Builder<Double, LoadingGaugeConstraint>();
+
+        // Sorts and removes duplicates
         var transitions = new TreeSet<Double>();
         for (var range : limits) {
             transitions.add(range.begin);
             transitions.add(range.end);
         }
-        var transitionsList = new ArrayList<>(transitions);
+
+        var transitionsList = new ArrayList<>(transitions); // Needed for index based loop
         for (int i = 1; i < transitionsList.size(); i++) {
             var begin = transitionsList.get(i - 1);
             var end = transitionsList.get(i);
@@ -204,15 +210,26 @@ public class UndirectedInfraBuilder {
                     Sets.newHashSet(RJSLoadingGaugeType.values()),
                     allowedTypes
             );
-            builder.put(Range.open(begin, end), ImmutableSet.copyOf(blockedTypes));
+            builder.put(Range.open(begin, end), new LoadingGaugeConstraintImpl(ImmutableSet.copyOf(blockedTypes)));
         }
         return builder.build();
     }
 
-    /** Returns all the gauge types compatible with the given type */
-    private Set<RJSLoadingGaugeType> getCompatibleGaugeTypes(RJSLoadingGaugeType type) {
-        // TODO
-        return Set.of(type);
+    /** Returns all the rolling stock gauge types compatible with the given track type */
+    private Set<RJSLoadingGaugeType> getCompatibleGaugeTypes(RJSLoadingGaugeType trackType) {
+        return switch (trackType) {
+            case G1 -> Set.of(G1);
+            case GA -> Sets.union(Set.of(GA), getCompatibleGaugeTypes(G1));
+            case GB -> Sets.union(Set.of(GB, FR3_3_GB_G2), getCompatibleGaugeTypes(GA));
+            case GB1 -> Sets.union(Set.of(GB1), getCompatibleGaugeTypes(GB));
+            case GC -> Sets.union(Set.of(GC), getCompatibleGaugeTypes(GB1));
+            case G2 -> Set.of(G1, G2, FR3_3_GB_G2);
+            case FR3_3 -> Set.of(FR3_3, FR3_3_GB_G2);
+            default -> {
+                warningRecorder.register(new Warning("Invalid gauge type for track: " + trackType));
+                yield Sets.newHashSet(RJSLoadingGaugeType.values());
+            }
+        };
     }
 
     /** Creates the two DoubleRangeMaps with gradient values */

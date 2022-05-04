@@ -7,10 +7,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.tracks.directed.DiTrackEdge;
-import fr.sncf.osrd.infra.api.tracks.undirected.Detector;
-import fr.sncf.osrd.infra.api.tracks.undirected.OperationalPoint;
-import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
-import fr.sncf.osrd.infra.api.tracks.undirected.TrackSection;
+import fr.sncf.osrd.infra.api.tracks.undirected.*;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 import fr.sncf.osrd.utils.DoubleRangeMap;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
@@ -177,10 +174,12 @@ public class TrackRangeView {
     }
 
     /** Returns the blocked gauge types projected on the range */
-    private ImmutableRangeMap<Double, ImmutableSet<RJSLoadingGaugeType>> getBlockedGaugeTypes() {
+    public ImmutableRangeMap<Double, LoadingGaugeConstraint> getBlockedGaugeTypes() {
         // TODO: once DoubleRangeMap have been migrated to RangeMap, merge this method with the other one
-        var builder = ImmutableRangeMap.<Double, ImmutableSet<RJSLoadingGaugeType>>builder();
-        var subMap = track.getEdge().getBlockedLoadingGauges().subRangeMap(Range.open(begin, end));
+        if (getLength() == 0)
+            return ImmutableRangeMap.of();
+        var builder = ImmutableRangeMap.<Double, LoadingGaugeConstraint>builder();
+        var subMap = track.getEdge().getLoadingGaugeConstraints().subRangeMap(Range.open(begin, end));
         for (var entry : subMap.asMapOfRanges().entrySet()) {
             var rangeStart = convertPosition(entry.getKey().lowerEndpoint());
             var rangeEnd = convertPosition(entry.getKey().upperEndpoint());

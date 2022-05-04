@@ -27,6 +27,7 @@ public class TestTrains {
     public static final RollingStock REALISTIC_FAST_TRAIN_MAX_DEC_TYPE;
     public static final RollingStock VERY_SHORT_FAST_TRAIN;
     public static final RollingStock VERY_LONG_FAST_TRAIN;
+    public static final RollingStock FAST_TRAIN_LARGE_GAUGE;
 
 
     static {
@@ -109,6 +110,23 @@ public class TestTrains {
                 RollingStock.GammaType.MAX,
                 tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
                 RJSLoadingGaugeType.G1
+        );
+
+        FAST_TRAIN_LARGE_GAUGE = new RollingStock(
+                "fast train",
+                "fast train source",
+                "fast train verbose name",
+                400, trainMass, 1.05, (0.65 * trainMass) / 100,
+                ((0.008 * trainMass) / 100) * 3.6,
+                (((0.00012 * trainMass) / 100) * 3.6) * 3.6,
+                maxSpeed,
+                30,
+                0.05,
+                0.25,
+                0.5,
+                RollingStock.GammaType.CONST,
+                tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
+                RJSLoadingGaugeType.GC
         );
     }
 }

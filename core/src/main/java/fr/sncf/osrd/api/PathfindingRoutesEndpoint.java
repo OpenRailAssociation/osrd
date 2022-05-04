@@ -2,15 +2,18 @@ package fr.sncf.osrd.api;
 
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
+import fr.sncf.osrd.api.pathfinding_constraints.LoadingGaugeConstraints;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
+import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
+import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.geom.LineString;
 import fr.sncf.osrd.utils.geom.Point;
 import fr.sncf.osrd.utils.graph.Pathfinding;
@@ -21,10 +24,7 @@ import org.takes.rs.RsJson;
 import org.takes.rs.RsText;
 import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
     public static final JsonAdapter<PathfindingResult> adapterResult = new Moshi
@@ -55,21 +55,14 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
             // load infra
             var infra = infraManager.load(request.infra, request.expectedVersion, warningRecorder);
 
-            // parse the waypoints
-            var waypoints = new ArrayList<Collection<Pathfinding.EdgeLocation<SignalingRoute>>>();
-            for (var step : reqWaypoints) {
-                var allStarts = new HashSet<Pathfinding.EdgeLocation<SignalingRoute>>();
-                for (var waypoint : step)
-                    allStarts.addAll(findRoutes(infra, waypoint));
-                waypoints.add(allStarts);
-            }
+            // load rolling stocks
+            var rollingStocks = List.<RollingStock>of();
+            if (request.rollingStocks != null)
+                rollingStocks = request.rollingStocks.stream()
+                        .map(RJSRollingStockParser::parse)
+                        .toList();
 
-            // Compute the paths from the entry waypoint to the exit waypoint
-            var path = Pathfinding.findPath(
-                    infra.getSignalingRouteGraph(),
-                    waypoints,
-                    route -> route.getInfraRoute().getLength(),
-                    null);
+            var path = runPathfinding(infra, reqWaypoints, rollingStocks);
 
             if (path == null)
                 return new RsWithStatus(new RsText("No path could be found"), 400);
@@ -82,6 +75,33 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
         } catch (Throwable ex) {
             return ExceptionHandler.handle(ex);
         }
+    }
+
+    /** Runs the pathfinding with the infra and rolling stocks already parsed */
+    public static List<Pathfinding.EdgeRange<SignalingRoute>> runPathfinding(
+            SignalingInfra infra,
+            PathfindingWaypoint[][] reqWaypoints,
+            Collection<RollingStock> rollingStocks
+    ) {
+        // parse the waypoints
+        var waypoints = new ArrayList<Collection<Pathfinding.EdgeLocation<SignalingRoute>>>();
+        for (var step : reqWaypoints) {
+            var allStarts = new HashSet<Pathfinding.EdgeLocation<SignalingRoute>>();
+            for (var waypoint : step)
+                allStarts.addAll(findRoutes(infra, waypoint));
+            waypoints.add(allStarts);
+        }
+
+        // Initializes the constraints
+        var loadingGaugeConstraints = new LoadingGaugeConstraints(rollingStocks);
+
+        // Compute the paths from the entry waypoint to the exit waypoint
+        return Pathfinding.findPath(
+                infra.getSignalingRouteGraph(),
+                waypoints,
+                route -> route.getInfraRoute().getLength(),
+                loadingGaugeConstraints
+        );
     }
 
     /** Checks that the results make sense */
