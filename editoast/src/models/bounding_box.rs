@@ -4,6 +4,7 @@ use crate::infra_cache::InfraCache;
 use crate::railjson::operation::{OperationResult, RailjsonObject};
 use crate::railjson::{ObjectRef, ObjectType};
 
+// impl Iter trait
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct BoundingBox(pub (f64, f64), pub (f64, f64));
 
@@ -16,8 +17,20 @@ impl BoundingBox {
 }
 impl Default for BoundingBox {
     fn default() -> Self {
-        Self((f64::MAX, f64::MAX), (f64::MIN, f64::MIN))
+        Self(
+            (f64::INFINITY, f64::INFINITY),
+            (f64::NEG_INFINITY, f64::NEG_INFINITY),
+        )
     }
+}
+
+pub fn check_bbox_bound(zone: &InvalidationZone) -> bool {
+    let ((first_point_x, first_point_y), (last_point_x, last_point_y)) = (zone.geo.0, zone.geo.1);
+
+    first_point_x.is_finite()
+        && first_point_y.is_finite()
+        && last_point_x.is_finite()
+        && last_point_y.is_finite()
 }
 
 #[derive(Debug, Clone)]

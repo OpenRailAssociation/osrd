@@ -8,6 +8,7 @@ WITH collect AS (
         INNER JOIN osrd_infra_tracksectionmodel AS tracks ON tracks.obj_id = detectors.data->'track'->>'id'
         AND tracks.infra_id = detectors.infra_id
     WHERE detectors.infra_id = $1
+        AND detectors.obj_id = ANY($2)
 )
 INSERT INTO osrd_infra_detectorlayer (obj_id, infra_id, geographic, schematic)
 SELECT detector_id,
