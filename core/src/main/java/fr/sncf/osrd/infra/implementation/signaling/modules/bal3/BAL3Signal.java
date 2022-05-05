@@ -45,12 +45,16 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
                 .anyMatch(route -> route.getInfraRoute().isControlled());
         if (isControlled)
             return new BAL3SignalState(BAL3.Aspect.RED);
-        var endsWithBufferStop = protectedRoutes.stream()
-                .anyMatch(route -> route.exitSignal() == null);
-        if (endsWithBufferStop)
-            return new BAL3SignalState(BAL3.Aspect.YELLOW);
-        else
-            return new BAL3SignalState(BAL3.Aspect.GREEN);
+
+        for (var route : protectedRoutes) {
+            if (route.exitSignal() == null)
+                return new BAL3SignalState(BAL3.Aspect.YELLOW); // last signal before a buffer stop -> yellow
+            if (route.exitSignal() instanceof BAL3Signal bal3Signal
+                    && bal3Signal.getInitialState().aspect == BAL3.Aspect.RED)
+                return new BAL3SignalState(BAL3.Aspect.YELLOW); // next signal is red by default -> yellow
+        }
+
+        return new BAL3SignalState(BAL3.Aspect.GREEN);
     }
 
     @Override
