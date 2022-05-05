@@ -7,7 +7,7 @@ const drawRect = (
 
   const width = rotate ? chart.x(dataSimulation[`${keyValues[1]}_end`]) - chart.x(dataSimulation[`${keyValues[1]}_start`]) : chart.x(dataSimulation[`${keyValues[0]}_end`]) - chart.x(dataSimulation[`${keyValues[0]}_start`])
 
-  const height = rotate ? chart.y(dataSimulation[`${keyValues[0]}_end`] - dataSimulation[`${keyValues[0]}_start`]) : chart.y(dataSimulation[`${keyValues[1]}_end`]) - chart.y(dataSimulation[`${keyValues[1]}_start`])
+  const height = rotate ? chart.y(dataSimulation[`${keyValues[0]}_end`]) - chart.y(dataSimulation[`${keyValues[0]}_start`]) : chart.y(dataSimulation[`${keyValues[1]}_end`]) - chart.y(dataSimulation[`${keyValues[1]}_start`])
 
 
   const drawZone = chart.drawZone.select(`#${groupID}`);

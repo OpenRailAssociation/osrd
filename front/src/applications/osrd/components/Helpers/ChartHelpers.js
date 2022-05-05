@@ -23,7 +23,7 @@ export const offsetSeconds = (seconds) => {
   return seconds;
 };
 
-export const getDirection = (data) => data[0][0].position
+export const getDirection = (data) => data[0] && data[0][0].position
   < data[data.length - 1][
     data[data.length - 1].length - 1].position;
 
@@ -107,6 +107,13 @@ export const timeShiftTrain = (train, value) => ({
         (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
       ),
     ),
+    route_aspects: train.base.route_aspects.map(
+      (square) => ({
+        ...square,
+        time_start: offsetSeconds(square.time_start + value),
+        time_end: offsetSeconds(square.time_end + value),
+      }),
+    ),
     speeds: train.base.speeds.map(
       (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
     ),
@@ -162,6 +169,13 @@ export const timeShiftTrain = (train, value) => ({
       (section) => section.map(
         (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
       ),
+    ),
+    route_aspects: train.eco.route_aspects.map(
+      (square) => ({
+        ...square,
+        time_start: offsetSeconds(square.time_start + value),
+        time_end: offsetSeconds(square.time_end + value),
+      }),
     ),
     speeds: train.eco.speeds.map(
       (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
