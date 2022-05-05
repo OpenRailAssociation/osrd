@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { FaTrash } from 'react-icons/fa';
 import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
+import MarecoMultiRange from './MarecoMultiRange';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 
@@ -171,6 +172,7 @@ export default function MarecoGlobal(props) {
             <FaTrash />
           </button>
         </div>
+        <MarecoMultiRange />
       </div>
     </>
   );
