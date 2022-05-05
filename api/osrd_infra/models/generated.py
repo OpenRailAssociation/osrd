@@ -83,3 +83,14 @@ class DetectorLayer(models.Model):
     class Meta:
         verbose_name_plural = "generated detector layer"
         unique_together = (("infra", "obj_id"),)
+
+
+class BufferStopLayer(models.Model):
+    infra = models.ForeignKey("Infra", on_delete=models.CASCADE)
+    obj_id = models.CharField(max_length=255)
+    geographic = models.PointField(srid=settings.MAPBOX_SRID)
+    schematic = models.PointField(srid=settings.MAPBOX_SRID)
+
+    class Meta:
+        verbose_name_plural = "generated buffer stop layer"
+        unique_together = (("infra", "obj_id"),)
