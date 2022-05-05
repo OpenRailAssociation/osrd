@@ -21,6 +21,19 @@ public class RJSSignal extends RJSTrackObject implements Identified {
     @Json(name = "linked_detector")
     public RJSObjectRef<RJSTrainDetector> linkedDetector;
 
+    /** Constructor */
+    public RJSSignal(
+            String id,
+            EdgeDirection direction,
+            double sightDistance,
+            RJSObjectRef<RJSTrainDetector> linkedDetector
+    ) {
+        this.id = id;
+        this.direction = direction;
+        this.sightDistance = sightDistance;
+        this.linkedDetector = linkedDetector;
+    }
+
     @Override
     public String getID() {
         return id;

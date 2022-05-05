@@ -68,10 +68,11 @@ public class SignalingInfraTests {
     @Test
     public void findRoutesTests() throws Exception {
         var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
+        var wr = new WarningRecorderImpl(true);
         var infra = SignalingInfraBuilder.fromRJSInfra(
                 rjsInfra,
-                Set.of(new BAL3(), new DummySignalingModule()),
-                new WarningRecorderImpl(true)
+                Set.of(new BAL3(wr), new DummySignalingModule()),
+                wr
         );
         assertNull(infra.findSignalingRoute("nope", "BAL3"));
         assertNull(infra.findSignalingRoute("rt.tde.foo_a-switch_foo->buffer_stop_c", "nope"));

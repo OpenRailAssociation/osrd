@@ -25,6 +25,7 @@ import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSBufferStop;
+import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrainDetector;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.SingleDirectionalRJSTrackRange;
 import fr.sncf.osrd.utils.DoubleRangeMap;
@@ -174,6 +175,10 @@ public class InfraHelpers {
         return new RJSObjectRef<>(id, "TrackSection");
     }
 
+    private static RJSObjectRef<RJSTrainDetector> makeDetectorRef(String id) {
+        return new RJSObjectRef<>(id, "Detector");
+    }
+
     /** Make a single track infra.
      * The track has two detectors, d1 at 50 and d2 at 75.
      * It has two routes going from bs to bs either way, and two going to and from d1 */
@@ -210,7 +215,9 @@ public class InfraHelpers {
                         )
                 ),
                 new ArrayList<>(),
-                new ArrayList<>(),
+                List.of(
+                        new RJSSignal("signal", EdgeDirection.START_TO_STOP, 400, makeDetectorRef("d1"))
+                ),
                 List.of(
                         new RJSBufferStop("bs_start", 0, makeTrackRef("track")),
                         new RJSBufferStop("bs_end", 100, makeTrackRef("track"))

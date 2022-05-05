@@ -16,6 +16,12 @@ public class RJSRoute implements Identified {
     @Json(name = "release_detectors")
     public List<RJSObjectRef<RJSTrainDetector>> releaseDetectors;
 
+    @Json(name = "entry_point")
+    public RJSObjectRef<RJSTrainDetector> entryPoint;
+
+    @Json(name = "exit_point")
+    public RJSObjectRef<RJSTrainDetector> exitPoint;
+
     /** Routes are described as a list of TVD Sections, Switches in specific positions, and an entry point */
     public RJSRoute(
             String id,

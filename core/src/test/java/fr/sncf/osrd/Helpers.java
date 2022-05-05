@@ -69,6 +69,7 @@ public class Helpers {
 
     /** Generates a signaling infra from rjs data */
     public static SignalingInfra infraFromRJS(RJSInfra rjs) {
-        return SignalingInfraBuilder.fromRJSInfra(rjs, Set.of(new BAL3()), new WarningRecorderImpl(true));
+        var wr = new WarningRecorderImpl(true);
+        return SignalingInfraBuilder.fromRJSInfra(rjs, Set.of(new BAL3(wr)), wr);
     }
 }

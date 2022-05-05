@@ -13,6 +13,8 @@ import fr.sncf.osrd.infra.implementation.RJSObjectParsing;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
+import fr.sncf.osrd.reporting.warnings.Warning;
+import fr.sncf.osrd.reporting.warnings.WarningRecorder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,12 +22,17 @@ import java.util.Map;
  * It will eventually be moved to an external module */
 public class BAL3 implements SignalingModule {
 
+    private final WarningRecorder warningRecorder;
+
     public enum Aspect {
         GREEN,
         YELLOW,
         RED
     }
 
+    public BAL3(WarningRecorder warningRecorder) {
+        this.warningRecorder = warningRecorder;
+    }
 
     private final Map<DiDetector, BAL3Signal> detectorToSignal = new HashMap<>();
 
@@ -81,6 +88,11 @@ public class BAL3 implements SignalingModule {
             var detectors = graph.incidentNodes(infraRoute);
             var startSignal = detectorToSignal.get(detectors.nodeU());
             var endSignal = detectorToSignal.get(detectors.nodeV());
+            if (startSignal == null && graph.inEdges(detectors.nodeU()).size() > 0)
+                warningRecorder.register(new Warning(String.format(
+                        "Can't find BAL entry signal for route %s (entry point: %s)",
+                        infraRoute.getID(), detectors.nodeU()
+                )));
             var newRoute = new BAL3Route(infraRoute, startSignal, endSignal);
             res.put(infraRoute, newRoute);
             if (startSignal != null) {
