@@ -77,7 +77,7 @@ impl TrackSectionLayer {
         conn: &PgConnection,
         infra: i32,
         operations: &Vec<OperationResult>,
-        invalidation_zone: &InvalidationZone,
+        invalid_zone: &InvalidationZone,
         chartos_config: &ChartosConfig,
     ) -> Result<(), Error> {
         let mut update_obj_ids = HashSet::new();
@@ -104,7 +104,7 @@ impl TrackSectionLayer {
         }
         Self::delete_list(conn, infra, delete_obj_ids)?;
         Self::insert_update_list(conn, infra, update_obj_ids)?;
-        invalidate_bbox_chartos_layer(infra, "track_sections", invalidation_zone, chartos_config);
+        invalidate_bbox_chartos_layer(infra, "track_sections", invalid_zone, chartos_config);
         Ok(())
     }
 }

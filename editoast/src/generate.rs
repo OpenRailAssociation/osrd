@@ -63,8 +63,5 @@ pub fn update(
     SwitchLayer::update(conn, infra_id, operations, cache, zone, chartos_config)?;
     DetectorLayer::update(conn, infra_id, operations, cache, zone, chartos_config)?;
 
-    // Generate errors
-    generate_errors(conn, infra_id, cache, chartos_config)?;
-
     Ok(())
 }
