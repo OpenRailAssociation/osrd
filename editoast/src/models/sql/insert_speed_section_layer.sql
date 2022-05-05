@@ -58,7 +58,4 @@ SELECT speed_id,
     St_Collect(geo),
     St_Collect(sch)
 FROM sliced_tracks
-GROUP BY speed_id ON CONFLICT (infra_id, obj_id) DO
-UPDATE
-SET geographic = EXCLUDED.geographic,
-    schematic = EXCLUDED.schematic
+GROUP BY speed_id
