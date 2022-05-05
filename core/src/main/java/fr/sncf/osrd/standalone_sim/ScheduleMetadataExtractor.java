@@ -4,7 +4,6 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 import com.google.common.collect.Sets;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.infra.api.reservation.ReservationRoute;
 import fr.sncf.osrd.infra.api.signaling.Signal;
@@ -17,9 +16,6 @@ import fr.sncf.osrd.infra_state.implementation.standalone.StandaloneState;
 import fr.sncf.osrd.standalone_sim.result.*;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.utils.CurveSimplification;
-import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
-import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -92,6 +88,11 @@ public class ScheduleMetadataExtractor {
         var res = new ArrayList<SignalUpdate>();
         var infraState = StandaloneState.from(trainPath, trainLength);
         var signalizationEngine = SignalizationEngine.from(infra, infraState);
+        for (var route : trainPath.routePath()) {
+            var entrySignal = route.element().getEntrySignal();
+            if (entrySignal != null)
+                signalizationEngine.setSignalOpen(entrySignal);
+        }
         var events = StandaloneSignalingSimulation.run(trainPath, infraState, signalizationEngine, envelope);
 
         // Builds a list of events per signal
@@ -103,7 +104,7 @@ public class ScheduleMetadataExtractor {
 
         for (var entry : eventsPerSignal.entrySet()) {
             var updates = entry.getValue();
-            for (int i = 0; i < updates.size() - 1; i++) {
+            for (int i = 0; i < updates.size(); i++) {
                 var update = updates.get(i);
                 if (update.state().isFree()) {
                     // default state isn't reported, it's not displayed and assumed to be anywhere not specified
@@ -302,7 +303,6 @@ public class ScheduleMetadataExtractor {
             routeOccupied.put(id, min(position, routeOccupied.getOrDefault(id, pathLength)));
     }
 
-    @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
     private static ArrayList<ResultPosition> simplifyPositions(
             ArrayList<ResultPosition> positions) {
         return CurveSimplification.rdp(
@@ -318,7 +318,6 @@ public class ScheduleMetadataExtractor {
         );
     }
 
-    @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
     private static ArrayList<ResultSpeed> simplifySpeeds(ArrayList<ResultSpeed> speeds) {
         return CurveSimplification.rdp(
                 speeds,
@@ -331,30 +330,5 @@ public class ScheduleMetadataExtractor {
                     return Math.abs(point.speed - proj);
                 }
         );
-    }
-
-    /** Debugging utility method: exports the occupancy times to csv */
-    @ExcludeFromGeneratedCodeCoverage()
-    @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
-    private static void exportOccupancyToCSV(TrainPath trainPath, HashMap<String, ResultOccupancyTiming> times) {
-        try (Writer writer = new BufferedWriter(new OutputStreamWriter(
-                new FileOutputStream("times.csv"), StandardCharsets.UTF_8))) {
-            writer.write("route,offset,length,head_occupy,tail_occupy,head_free,tail_free\n");
-            for (var route : trainPath.routePath()) {
-                var id = route.element().getInfraRoute().getID();
-                var t = times.get(id);
-                writer.write(String.format("%s,%f,%f,%f,%f,%f,%f%n",
-                        id,
-                        route.pathOffset(),
-                        route.element().getInfraRoute().getLength(),
-                        t.timeHeadOccupy,
-                        t.timeTailOccupy,
-                        t.timeHeadFree,
-                        t.timeTailFree
-                ));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 }
