@@ -29,6 +29,7 @@ pub enum ObjectType {
     TrackSectionLink,
     Switch,
     SwitchType,
+    BufferStop,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -56,6 +57,7 @@ impl ObjectType {
             ObjectType::TrackSectionLink => "osrd_infra_tracksectionlinkmodel",
             ObjectType::Switch => "osrd_infra_switchmodel",
             ObjectType::SwitchType => todo!(),
+            ObjectType::BufferStop => "osrd_infra_bufferstopmodel",
         }
     }
 }
@@ -129,7 +131,7 @@ pub struct SpeedSection {
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
 #[derivative(Default)]
 pub struct TrackSectionLink {
-    #[derivative(Default(value = r#"generate_id("track_link")"#))]
+    #[derivative(Default(value = r#"generate_id("track_section_link")"#))]
     pub id: String,
     pub src: TrackEndpoint,
     pub dst: TrackEndpoint,
@@ -156,6 +158,21 @@ pub struct Switch {
 #[derivative(Default)]
 pub struct Detector {
     #[derivative(Default(value = r#"generate_id("detector")"#))]
+    pub id: String,
+    #[derivative(Default(value = r#"ObjectRef {
+        obj_type: ObjectType::TrackSection,
+        obj_id: "".to_string(),
+    }"#))]
+    pub track: ObjectRef,
+    #[derivative(Default(value = "0."))]
+    pub position: f64,
+    pub applicable_directions: ApplicableDirections,
+}
+
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[derivative(Default)]
+pub struct BufferStop {
+    #[derivative(Default(value = r#"generate_id("buffer_stop")"#))]
     pub id: String,
     #[derivative(Default(value = r#"ObjectRef {
         obj_type: ObjectType::TrackSection,

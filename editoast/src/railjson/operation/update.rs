@@ -88,6 +88,9 @@ impl DataObject {
                 railjson: from_value(self.data.clone())?,
             },
             ObjectType::SwitchType => todo!(),
+            ObjectType::BufferStop => RailjsonObject::BufferStop {
+                railjson: from_value(self.data.clone())?,
+            },
         };
 
         if obj_railjson.get_obj_id() != update.obj_id {

@@ -1,8 +1,8 @@
 use crate::models::BoundingBox;
 use crate::railjson::operation::{OperationResult, RailjsonObject};
 use crate::railjson::{
-    ApplicableDirectionsTrackRange, Detector, LineString, ObjectRef, ObjectType, Signal,
-    SpeedSection, Switch, TrackEndpoint, TrackSection, TrackSectionLink,
+    ApplicableDirectionsTrackRange, BufferStop, Detector, LineString, ObjectRef, ObjectType,
+    Signal, SpeedSection, Switch, TrackEndpoint, TrackSection, TrackSectionLink,
 };
 use derivative::Derivative;
 use diesel::sql_types::{Double, Integer, Json, Text};
@@ -35,6 +35,9 @@ pub struct InfraCache {
 
     /// List existing detectors
     pub detectors: HashMap<String, DetectorCache>,
+
+    /// List existing buffer stops
+    pub buffer_stops: HashMap<String, BufferStopCache>,
 }
 
 #[derive(Debug, Clone, Derivative)]
@@ -226,8 +229,37 @@ impl DetectorCache {
 }
 
 impl From<&Detector> for DetectorCache {
-    fn from(sig: &Detector) -> Self {
-        Self::new(sig.id.clone(), sig.track.obj_id.clone(), sig.position)
+    fn from(det: &Detector) -> Self {
+        Self::new(det.id.clone(), det.track.obj_id.clone(), det.position)
+    }
+}
+
+#[derive(QueryableByName, Debug, Clone, Derivative)]
+#[derivative(Hash, PartialEq)]
+pub struct BufferStopCache {
+    #[sql_type = "Text"]
+    pub obj_id: String,
+    #[derivative(Hash = "ignore", PartialEq = "ignore")]
+    #[sql_type = "Text"]
+    pub track: String,
+    #[derivative(Hash = "ignore", PartialEq = "ignore")]
+    #[sql_type = "Double"]
+    pub position: f64,
+}
+
+impl BufferStopCache {
+    pub fn new(obj_id: String, track: String, position: f64) -> Self {
+        Self {
+            obj_id,
+            track,
+            position,
+        }
+    }
+}
+
+impl From<&BufferStop> for BufferStopCache {
+    fn from(stop: &BufferStop) -> Self {
+        Self::new(stop.id.clone(), stop.track.obj_id.clone(), stop.position)
     }
 }
 
@@ -301,6 +333,17 @@ impl InfraCache {
             .is_none());
     }
 
+    fn load_buffer_stop(&mut self, buffer_stop: BufferStopCache) {
+        self.add_track_ref(
+            buffer_stop.track.clone(),
+            ObjectRef::new(ObjectType::BufferStop, buffer_stop.obj_id.clone()),
+        );
+        assert!(self
+            .buffer_stops
+            .insert(buffer_stop.obj_id.clone(), buffer_stop)
+            .is_none());
+    }
+
     /// Initialize an infra cache given an infra id
     pub fn init(conn: &PgConnection, infra_id: i32) -> InfraCache {
         let mut infra_cache = Self::default();
@@ -352,6 +395,15 @@ impl InfraCache {
         .load::<DetectorCache>(conn).expect("Error loading detector refs").into_iter().for_each(|detector| 
             infra_cache.load_detector(detector)
         );
+
+        // Load buffer stop tracks references
+        sql_query(
+            "SELECT obj_id, data->'track'->>'id' AS track, (data->>'position')::float AS position FROM osrd_infra_bufferstopmodel WHERE infra_id = $1")
+        .bind::<Integer, _>(infra_id)
+        .load::<BufferStopCache>(conn).expect("Error loading buffer stop refs").into_iter().for_each(|buffer_stop| 
+            infra_cache.load_buffer_stop(buffer_stop)
+        );
+
         infra_cache
     }
 
@@ -428,6 +480,16 @@ impl InfraCache {
                     .remove(object_ref);
             }
             ObjectRef {
+                obj_type: ObjectType::BufferStop,
+                obj_id,
+            } => {
+                let buffer_stop = self.buffer_stops.remove(obj_id).unwrap();
+                self.track_sections_refs
+                    .get_mut(&buffer_stop.track)
+                    .unwrap()
+                    .remove(object_ref);
+            }
+            ObjectRef {
                 obj_type: ObjectType::TrackSection,
                 obj_id,
             } => {
@@ -454,6 +516,7 @@ impl InfraCache {
             }
             RailjsonObject::Switch { railjson } => self.load_switch(railjson.into()),
             RailjsonObject::Detector { railjson } => self.load_detector(railjson.into()),
+            RailjsonObject::BufferStop { railjson } => self.load_buffer_stop(railjson.into()),
         }
     }
 
