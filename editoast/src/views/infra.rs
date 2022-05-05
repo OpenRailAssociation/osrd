@@ -3,6 +3,7 @@ use crate::client::ChartosConfig;
 use crate::error::{ApiResult, EditoastError};
 use crate::generate;
 use crate::infra_cache::InfraCache;
+use crate::models::errors::generate_errors;
 use crate::models::{CreateInfra, DBConnection, Infra, InvalidationZone};
 use crate::railjson::operation::{Operation, OperationResult};
 use chashmap::CHashMap;
@@ -117,21 +118,27 @@ fn edit(
         let mut infra_cache = infra_caches.get_mut(&infra.id).unwrap();
 
         // Compute cache invalidation zone
-        let invalidation_zone = InvalidationZone::compute(&infra_cache, &operation_results);
+        let invalid_zone = InvalidationZone::compute(&infra_cache, &operation_results);
 
         // Apply operations to infra cache
         infra_cache.apply_operations(&operation_results);
 
-        // Refresh layers
-        generate::update(
-            &conn,
-            infra.id,
-            &operation_results,
-            &infra_cache,
-            &invalidation_zone,
-            &chartos_config,
-        )
-        .expect("Update generated data failed");
+        // Refresh layers if needed
+        if invalid_zone.geo.is_valid() {
+            assert!(invalid_zone.sch.is_valid());
+            generate::update(
+                &conn,
+                infra.id,
+                &operation_results,
+                &infra_cache,
+                &invalid_zone,
+                &chartos_config,
+            )
+            .expect("Update generated data failed");
+        }
+
+        // Generate errors
+        generate_errors(&conn, infra.id, &infra_cache, &chartos_config)?;
 
         // Bump infra generated version to the infra version
         infra.bump_generated_version(&conn)?;

@@ -1,3 +1,4 @@
+use super::{invalidate_bbox_chartos_layer, invalidate_chartos_layer, InvalidationZone};
 use crate::client::ChartosConfig;
 use crate::infra_cache::InfraCache;
 use crate::railjson::operation::{OperationResult, RailjsonObject};
@@ -9,9 +10,6 @@ use diesel::sql_types::{Array, Integer, Text};
 use diesel::{delete, prelude::*, sql_query};
 use serde::Serialize;
 use std::collections::HashSet;
-
-use super::bounding_box::check_bbox_bound;
-use super::{invalidate_bbox_chartos_layer, invalidate_chartos_layer, InvalidationZone};
 
 #[derive(QueryableByName, Queryable, Debug, Serialize)]
 #[table_name = "osrd_infra_speedsectionlayer"]
@@ -93,7 +91,7 @@ impl SpeedSectionLayer {
         infra: i32,
         operations: &Vec<OperationResult>,
         infra_cache: &InfraCache,
-        invalidation_zone: &InvalidationZone,
+        invalid_zone: &InvalidationZone,
         chartos_config: &ChartosConfig,
     ) -> Result<(), Error> {
         let mut update_obj_ids = HashSet::new();
@@ -124,14 +122,7 @@ impl SpeedSectionLayer {
         Self::delete_list(conn, infra, delete_obj_ids)?;
         Self::insert_update_list(conn, infra, update_obj_ids)?;
 
-        if check_bbox_bound(invalidation_zone) {
-            invalidate_bbox_chartos_layer(
-                infra,
-                "speed_sections",
-                invalidation_zone,
-                chartos_config,
-            );
-        }
+        invalidate_bbox_chartos_layer(infra, "speed_sections", invalid_zone, chartos_config);
         Ok(())
     }
 }
