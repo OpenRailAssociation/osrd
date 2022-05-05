@@ -26,13 +26,14 @@ public class ApiTest {
     @BeforeEach
     public void setUp() throws InterruptedException {
         ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
+        var wr = new WarningRecorderImpl(true);
         when(infraHandlerMock.load(argument.capture(), any(), any())).thenAnswer(
                 invocation ->
                         SignalingInfraBuilder.fromRJSInfra(
                                 parseRailJSONFromFile(
                                         Helpers.getResourcePath(argument.getValue()).toString()
-                                ), Set.of(new BAL3()),
-                                new WarningRecorderImpl(true)
+                                ), Set.of(new BAL3(wr)),
+                                wr
                         )
         );
     }

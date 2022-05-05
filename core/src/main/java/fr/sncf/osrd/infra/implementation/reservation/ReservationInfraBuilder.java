@@ -22,10 +22,10 @@ import fr.sncf.osrd.infra.errors.DiscontinuousRoute;
 import fr.sncf.osrd.infra.implementation.RJSObjectParsing;
 import fr.sncf.osrd.infra.implementation.tracks.directed.DirectedInfraBuilder;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
-import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
+import fr.sncf.osrd.reporting.warnings.Warning;
 import fr.sncf.osrd.reporting.warnings.WarningRecorder;
 import fr.sncf.osrd.utils.graph.GraphHelpers;
 import java.util.*;
@@ -34,22 +34,28 @@ public class ReservationInfraBuilder {
 
     private final DiTrackInfra diTrackInfra;
     private final RJSInfra rjsInfra;
+    private final WarningRecorder warningRecorder;
 
     /** Constructor */
-    private ReservationInfraBuilder(RJSInfra rjsInfra, DiTrackInfra infra) {
+    private ReservationInfraBuilder(RJSInfra rjsInfra, DiTrackInfra infra, WarningRecorder warningRecorder) {
         this.rjsInfra = rjsInfra;
         this.diTrackInfra = infra;
+        this.warningRecorder = warningRecorder;
     }
 
     /** Builds a ReservationInfra from railjson data and a DiTrackInfra */
-    public static ReservationInfra fromDiTrackInfra(RJSInfra rjsInfra, DiTrackInfra diTrackInfra) {
-        return new ReservationInfraBuilder(rjsInfra, diTrackInfra).build();
+    public static ReservationInfra fromDiTrackInfra(
+            RJSInfra rjsInfra,
+            DiTrackInfra diTrackInfra,
+            WarningRecorder warningRecorder
+    ) {
+        return new ReservationInfraBuilder(rjsInfra, diTrackInfra, warningRecorder).build();
     }
 
     /** Builds a ReservationInfra from a railjson infra */
     public static ReservationInfra fromRJS(RJSInfra rjsInfra, WarningRecorder warningRecorder) {
         var diInfra = DirectedInfraBuilder.fromRJS(rjsInfra, warningRecorder);
-        return fromDiTrackInfra(rjsInfra, diInfra);
+        return fromDiTrackInfra(rjsInfra, diInfra, warningRecorder);
     }
 
     /** Builds everything */
@@ -114,9 +120,11 @@ public class ReservationInfraBuilder {
         for (var rjsRoute : rjsInfra.routes) {
             var trackRanges = makeTrackRanges(rjsRoute);
             var length = trackRanges.stream().mapToDouble(TrackRangeView::getLength).sum();
-            var sections = sectionsOnRoute(rjsRoute);
-            var route = new ReservationRouteImpl(detectorsOnRoute(rjsRoute), releasePoints(rjsRoute),
+            var detectors = detectorsOnRoute(trackRanges);
+            var sections = sectionsOnRoute(detectors);
+            var route = new ReservationRouteImpl(detectors, releasePoints(rjsRoute),
                     rjsRoute.id, trackRanges, isRouteControlled(trackRanges), length, sections);
+            validateRoute(route, rjsRoute);
             routes.add(route);
             for (var section : sections)
                 routesPerSection.get(section).add(route);
@@ -135,6 +143,38 @@ public class ReservationInfraBuilder {
             );
         }
         return networkBuilder.build();
+    }
+
+    private void validateRoute(ReservationRouteImpl route, RJSRoute rjsRoute) {
+        if (route.getDetectorPath().isEmpty()) {
+            warningRecorder.register(new Warning(String.format(
+                    "Route %s has no detector on its track ranges", rjsRoute.id
+            )));
+            return;
+        }
+        var detectorIDs = rjsRoute.releaseDetectors.stream()
+                        .map(x -> x.id.id)
+                        .toList();
+        var lastDetector = route.getDetectorPath().get(route.getDetectorPath().size() - 1);
+        if (rjsRoute.entryPoint != null
+                && !route.getDetectorPath().get(0).detector().getID().equals(rjsRoute.entryPoint.id.id))
+            warningRecorder.register(new Warning(String.format(
+                    "Entry point for route %s don't match the first detector on the route "
+                            + "(expected = %s, detector list = %s)",
+                    rjsRoute.id,
+                    rjsRoute.entryPoint.id.id,
+                    detectorIDs
+            )));
+        if (rjsRoute.exitPoint != null
+                && !lastDetector.detector().getID().equals(rjsRoute.exitPoint.id.id)) {
+            warningRecorder.register(new Warning(String.format(
+                    "Exit point for route %s don't match the last detector on the route "
+                            + "(expected = %s, detector list = %s)",
+                    rjsRoute.id,
+                    rjsRoute.exitPoint.id.id,
+                    detectorIDs
+            )));
+        }
     }
 
     /** Returns true if the route is controlled (requires explicit reservation to be used) */
@@ -194,10 +234,9 @@ public class ReservationInfraBuilder {
     }
 
     /** Creates a set of detection section present in the route */
-    private ImmutableList<DetectionSection> sectionsOnRoute(RJSRoute route) {
+    private ImmutableList<DetectionSection> sectionsOnRoute(ImmutableList<DiDetector> detectors) {
         var res = ImmutableList.<DetectionSection>builder();
 
-        var detectors = detectorsOnRoute(route);
         for (int i = 0; i < detectors.size() - 1; i++) {
             var d = detectors.get(i);
             res.add(d.detector().getNextDetectionSection(d.direction()));
@@ -206,26 +245,12 @@ public class ReservationInfraBuilder {
     }
 
     /** Creates the list of DiDetectors present on the route */
-    private ImmutableList<DiDetector> detectorsOnRoute(RJSRoute route) {
-        var res = new ArrayList<DiDetector>();
-        for (var trackRange : route.path) {
-            var min = Math.min(trackRange.begin, trackRange.end);
-            var max = Math.max(trackRange.begin, trackRange.end);
-            var track = RJSObjectParsing.getTrackSection(trackRange.track, diTrackInfra);
-            var detectorsOnTrack = new ArrayList<Detector>();
-            for (var detector : track.getDetectors()) {
-                if (min <= detector.getOffset() && detector.getOffset() <= max)
-                    detectorsOnTrack.add(detector);
-            }
-            if (trackRange.direction.equals(EdgeDirection.START_TO_STOP)) {
-                for (var o : detectorsOnTrack)
-                    res.add(o.getDiDetector(FORWARD));
-            } else {
-                for (int i = detectorsOnTrack.size() - 1; i >= 0; i--)
-                    res.add(detectorsOnTrack.get(i).getDiDetector(BACKWARD));
-            }
-        }
-        return ImmutableList.copyOf(res);
+    private ImmutableList<DiDetector> detectorsOnRoute(List<TrackRangeView> ranges) {
+        var res = ImmutableList.<DiDetector>builder();
+        for (var range : ranges)
+            for (var detector : range.getDetectors())
+                res.add(detector.element().getDiDetector(range.track.getDirection()));
+        return res.build();
     }
 
     /** Creates a mapping from a directed detector to its next detection section */

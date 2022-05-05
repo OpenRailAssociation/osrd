@@ -24,7 +24,11 @@ public class ValidateInfra implements CliCommand {
         try {
             var rjs = RJSParser.parseRailJSONFromFile(infraPath);
             var warningRecorder = new WarningRecorderImpl(false);
-            SignalingInfraBuilder.fromRJSInfra(rjs, Set.of(new BAL3()), warningRecorder);
+            SignalingInfraBuilder.fromRJSInfra(
+                    rjs,
+                    Set.of(new BAL3(warningRecorder)),
+                    warningRecorder
+            );
             warningRecorder.report();
             return 0;
         } catch (Exception e) {
