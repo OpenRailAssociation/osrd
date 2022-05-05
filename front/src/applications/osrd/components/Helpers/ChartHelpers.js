@@ -5,6 +5,7 @@ import { updateMustRedraw } from 'reducers/osrdsimulation';
 
 export const sec2d3datetime = (time) => d3.timeParse('%H:%M:%S')(sec2time(time));
 
+export const colorModelToHex = (color) => (`rgba(${(color >> 16) & 0xFF}, ${(color >> 8) & 0xFF}, ${color & 0xFF}, ${(color >> 24) & 0xFF})`);
 
 /**
  * returns Contextualized offset not depending on days ahead
@@ -22,7 +23,7 @@ export const offsetSeconds = (seconds) => {
   return seconds;
 };
 
-export const getDirection = (data) => data[0][0].position
+export const getDirection = (data) => data[0] && data[0][0].position
   < data[data.length - 1][
     data[data.length - 1].length - 1].position;
 
@@ -40,6 +41,14 @@ export const formatStepsWithTimeMulti = (data) => data.map(
     (step) => ({ time: sec2d3datetime(step.time), position: step.position }),
   ),
 );
+
+export const formatRouteAspects = (data = []) => data
+  .map((step) => ({
+    ...step,
+    time_start: sec2d3datetime(step.time_start),
+    time_end: sec2d3datetime(step.time_end),
+    color: colorModelToHex(step.color),
+  }));
 
 export const makeStairCase = (data) => {
   const newData = [];
@@ -98,6 +107,13 @@ export const timeShiftTrain = (train, value) => ({
         (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
       ),
     ),
+    route_aspects: train.base.route_aspects.map(
+      (square) => ({
+        ...square,
+        time_start: offsetSeconds(square.time_start + value),
+        time_end: offsetSeconds(square.time_end + value),
+      }),
+    ),
     speeds: train.base.speeds.map(
       (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
     ),
@@ -153,6 +169,13 @@ export const timeShiftTrain = (train, value) => ({
       (section) => section.map(
         (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
       ),
+    ),
+    route_aspects: train.eco.route_aspects.map(
+      (square) => ({
+        ...square,
+        time_start: offsetSeconds(square.time_start + value),
+        time_end: offsetSeconds(square.time_end + value),
+      }),
     ),
     speeds: train.eco.speeds.map(
       (step) => ({ ...step, time: offsetSeconds(step.time + value) }),
