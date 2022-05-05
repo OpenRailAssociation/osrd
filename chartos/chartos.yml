@@ -193,7 +193,7 @@
       joins:
         - "inner join osrd_infra_detectormodel detector on detector.obj_id = layer.obj_id and detector.infra_id = layer.infra_id"
 
-- name: bufferstops
+- name: buffer_stops
   table_name: osrd_infra_bufferstoplayer
   id_field: id
   views:

@@ -107,6 +107,13 @@ impl InvalidationZone {
                     };
                     Self::merge_bbox(&mut geo, &mut sch, infra_cache, &railjson.track.obj_id);
                 }
+                OperationResult::Update(RailjsonObject::BufferStop { railjson })
+                | OperationResult::Create(RailjsonObject::BufferStop { railjson }) => {
+                    if let Some(buffer_stop) = infra_cache.buffer_stops.get(&railjson.id) {
+                        Self::merge_bbox(&mut geo, &mut sch, infra_cache, &buffer_stop.track);
+                    };
+                    Self::merge_bbox(&mut geo, &mut sch, infra_cache, &railjson.track.obj_id);
+                }
                 OperationResult::Delete(ObjectRef {
                     obj_type: ObjectType::TrackSection,
                     obj_id,
@@ -158,6 +165,14 @@ impl InvalidationZone {
                 }) => {
                     if let Some(detector) = infra_cache.detectors.get(obj_id) {
                         Self::merge_bbox(&mut geo, &mut sch, infra_cache, &detector.track);
+                    }
+                }
+                OperationResult::Delete(ObjectRef {
+                    obj_type: ObjectType::BufferStop,
+                    obj_id,
+                }) => {
+                    if let Some(buffer_stop) = infra_cache.buffer_stops.get(obj_id) {
+                        Self::merge_bbox(&mut geo, &mut sch, infra_cache, &buffer_stop.track);
                     }
                 }
                 OperationResult::Delete(ObjectRef {
