@@ -131,4 +131,12 @@ public class SignalizationEngine implements SignalizationState {
             throw e.withContext(new ErrorContext.Signal(signal.getID()));
         }
     }
+
+    /** Sets a signal to its open state.
+     * Can be used when initializing a standalone path, so that updates are properly registered.
+     */
+    @SuppressWarnings("unchecked") // We know the types match, but we lose that information when going through the map
+    public <T extends SignalState> void setSignalOpen(Signal<T> signal) {
+        signalStates.put(signal, signal.getOpenState());
+    }
 }
