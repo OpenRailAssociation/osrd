@@ -1,4 +1,5 @@
 import {
+  formatRouteAspects,
   formatStepsWithTime,
   formatStepsWithTimeMulti,
   makeStairCase,
@@ -7,6 +8,14 @@ import {
 
 import { setFailure } from 'reducers/main.ts';
 
+/**
+ * Will do some formating & computation to get a trains to be displayed. Stored then with currentSimulation splitted reducer
+ * @param {*} dispatch react action dispatcher
+ * @param {*} keyValues what do we compare (times vs position vs speed vs slope etc...)
+ * @param {*} simulationTrains simulation raw data
+ * @param {*} t translation middle
+ * @returns
+ */
 export default function createTrain(dispatch, keyValues, simulationTrains, t) {
   // Prepare data
   const dataSimulation = simulationTrains.map((train, trainNumber) => {
@@ -22,7 +31,9 @@ export default function createTrain(dispatch, keyValues, simulationTrains, t) {
     dataSimulationTrain.routeBeginOccupancy = formatStepsWithTimeMulti(
       train.base.route_begin_occupancy,
     );
-    //console.log("dataSimulation In process", dataSimulationTrain)
+
+    dataSimulationTrain.routeAspects = formatRouteAspects(train.base.route_aspects);
+
     dataSimulationTrain.areaBlock = mergeDatasArea(
       dataSimulationTrain.routeEndOccupancy,
       dataSimulationTrain.routeBeginOccupancy,
@@ -44,6 +55,7 @@ export default function createTrain(dispatch, keyValues, simulationTrains, t) {
       dataSimulationTrain.eco_routeBeginOccupancy = formatStepsWithTimeMulti(
         train.eco.route_begin_occupancy,
       );
+      dataSimulationTrain.eco_routeAspects = formatRouteAspects(train.eco.route_aspects?.filter(d => d.color == -65536));
       dataSimulationTrain.eco_areaBlock = mergeDatasArea(
         dataSimulationTrain.eco_routeEndOccupancy,
         dataSimulationTrain.eco_routeBeginOccupancy,

@@ -86,6 +86,18 @@ const updateChart = (chart, keyValues, rotate) => {
       .y((d) => newY(rotate ? d[keyValues[0]] : d[keyValues[1]]))
   );
 
+
+  chart.drawZone.selectAll('rect.route-aspect')
+    .attr('x', d => newX(rotate ? d[`${keyValues[1]}_start`] : d[`${keyValues[0]}_start`]))
+    .attr('y', d => newY(rotate ? d[`${keyValues[0]}_start`] : d[`${keyValues[1]}_start`]) - (rotate ? newY(d[`${keyValues[0]}_end`] - d[`${keyValues[0]}_start`]) : newY(d[`${keyValues[1]}_end`]) - newY(d[`${keyValues[1]}_start`])) * -1)
+    .attr('width', d => (rotate ? newX(d[`${keyValues[1]}_end`]) - newX(d[`${keyValues[1]}_start`]) : newX(d[`${keyValues[0]}_end`]) - newX(d[`${keyValues[0]}_start`])))
+    .attr('height', d => (rotate ? newY(d[`${keyValues[0]}_end`]) - newY(d[`${keyValues[0]}_start`]) : newY(d[`${keyValues[1]}_end`]) - newY(d[`${keyValues[1]}_start`])) * -1)
+
+
+    //chart.drawZone.selectAll('rect.route-aspect')
+   // .attr('x', d => {console.log(d)})
+
+
   chart.drawZone.selectAll('.area').attr(
     'd',
     rotate

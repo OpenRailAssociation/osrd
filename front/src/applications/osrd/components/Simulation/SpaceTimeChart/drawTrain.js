@@ -7,6 +7,7 @@ import React from 'react';
 import { departureArrivalTimes } from '../../../../../reducers/osrdsimulation';
 import drawArea from 'applications/osrd/components/Simulation/drawArea';
 import drawCurve from 'applications/osrd/components/Simulation/drawCurve';
+import drawRect from 'applications/osrd/components/Simulation/drawRect';
 import drawText from 'applications/osrd/components/Simulation/drawText';
 import { updateDepartureArrivalTimes } from '../../../../../reducers/osrdsimulation';
 
@@ -103,6 +104,7 @@ export default function drawTrain(
   const direction = getDirection(dataSimulation.headPosition);
   const currentAllowanceSettings = allowancesSettings ? allowancesSettings[dataSimulation.id] : undefined
 
+
   if (direction && currentAllowanceSettings) {
     if (
       currentAllowanceSettings?.baseBlocks ||
@@ -119,6 +121,7 @@ export default function drawTrain(
           rotate
         )
       );
+      /*
       dataSimulation.routeEndOccupancy.forEach((routeEndOccupancySection) =>
         drawCurve(
           chart,
@@ -144,9 +147,28 @@ export default function drawTrain(
           rotate,
           isSelected
         )
-      );
+
+      )
+      */
+
+      // Let's draw route_aspects
+      dataSimulation.routeAspects.forEach((ecoRouteAspect) => {
+        drawRect(
+          chart,
+          `${isSelected && 'selected'} route-aspect`,
+          ecoRouteAspect,
+          groupID,
+          'curveLinear',
+          keyValues,
+          'eco_routeEndOccupancy',
+          rotate,
+          isSelected
+        )
+      })
+
     }
     if (dataSimulation.eco_routeEndOccupancy && currentAllowanceSettings?.ecoBlocks) {
+
       dataSimulation.eco_areaBlock.forEach((dataSimulationEcoAreaBlockSection) =>
         drawArea(
           chart,
@@ -158,6 +180,23 @@ export default function drawTrain(
           rotate
         )
       );
+
+
+      // Let's draw route_aspects
+      dataSimulation.eco_routeAspects.forEach((ecoRouteAspect) => {
+        drawRect(
+          chart,
+          `${isSelected && 'selected'} route-aspect`,
+          ecoRouteAspect,
+          groupID,
+          'curveLinear',
+          keyValues,
+          'eco_routeEndOccupancy',
+          rotate,
+          isSelected
+        )
+      })
+/*
       dataSimulation.eco_routeEndOccupancy.forEach((ecoRouteEndOccupancySection) =>
         drawCurve(
           chart,
@@ -184,7 +223,10 @@ export default function drawTrain(
           isSelected
         )
       );
+      */
     }
+
+
   }
 
   if (currentAllowanceSettings?.base) {
