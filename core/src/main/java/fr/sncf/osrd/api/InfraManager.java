@@ -182,7 +182,11 @@ public class InfraManager {
             // Parse railjson into a proper infra
             logger.info("parsing the infra of {}", endpointUrl);
             cacheEntry.transitionTo(InfraStatus.PARSING_INFRA);
-            var infra = SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(new BAL3()), warningRecorder);
+            var infra = SignalingInfraBuilder.fromRJSInfra(
+                    rjsInfra,
+                    Set.of(new BAL3(warningRecorder)),
+                    warningRecorder
+            );
 
             // Cache the infra
             logger.info("successfuly cached {}", endpointUrl);
