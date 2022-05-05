@@ -10,6 +10,7 @@ use diesel::{delete, prelude::*, sql_query};
 use serde::Serialize;
 use std::collections::HashSet;
 
+use super::bounding_box::check_bbox_bound;
 use super::{invalidate_bbox_chartos_layer, invalidate_chartos_layer, InvalidationZone};
 
 #[derive(QueryableByName, Queryable, Debug, Serialize)]
@@ -121,7 +122,9 @@ impl SwitchLayer {
         }
         Self::delete_list(conn, infra, delete_obj_ids)?;
         Self::insert_update_list(conn, infra, update_obj_ids)?;
-        invalidate_bbox_chartos_layer(infra, "speed_sections", invalidation_zone, chartos_config);
+        if check_bbox_bound(invalidation_zone) {
+            invalidate_bbox_chartos_layer(infra, "switches", invalidation_zone, chartos_config);
+        }
         Ok(())
     }
 }
