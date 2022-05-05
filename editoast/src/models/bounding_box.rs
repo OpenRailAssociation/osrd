@@ -14,6 +14,10 @@ impl BoundingBox {
         self.1 = (self.1 .0.max(b.1 .0), self.1 .1.max(b.1 .1));
         self
     }
+
+    pub fn is_valid(&self) -> bool {
+        self.0 .0 < self.1 .0 && self.0 .1 < self.1 .1
+    }
 }
 impl Default for BoundingBox {
     fn default() -> Self {
@@ -22,15 +26,6 @@ impl Default for BoundingBox {
             (f64::NEG_INFINITY, f64::NEG_INFINITY),
         )
     }
-}
-
-pub fn check_bbox_bound(zone: &InvalidationZone) -> bool {
-    let ((first_point_x, first_point_y), (last_point_x, last_point_y)) = (zone.geo.0, zone.geo.1);
-
-    first_point_x.is_finite()
-        && first_point_y.is_finite()
-        && last_point_x.is_finite()
-        && last_point_y.is_finite()
 }
 
 #[derive(Debug, Clone)]
@@ -68,21 +63,38 @@ impl InvalidationZone {
                 }
                 OperationResult::Update(RailjsonObject::Signal { railjson })
                 | OperationResult::Create(RailjsonObject::Signal { railjson }) => {
+                    if let Some(signal) = infra_cache.signals.get(&railjson.id) {
+                        Self::merge_bbox(&mut geo, &mut sch, infra_cache, &signal.track);
+                    };
                     Self::merge_bbox(&mut geo, &mut sch, infra_cache, &railjson.track.obj_id);
                 }
                 OperationResult::Update(RailjsonObject::SpeedSection { railjson })
                 | OperationResult::Create(RailjsonObject::SpeedSection { railjson }) => {
+                    if let Some(speed_section) = infra_cache.speed_sections.get(&railjson.id) {
+                        for track_id in speed_section.track_ranges.iter().map(|r| &r.track.obj_id) {
+                            Self::merge_bbox(&mut geo, &mut sch, infra_cache, track_id);
+                        }
+                    }
                     for track_id in railjson.track_ranges.iter().map(|r| &r.track.obj_id) {
                         Self::merge_bbox(&mut geo, &mut sch, infra_cache, track_id);
                     }
                 }
                 OperationResult::Update(RailjsonObject::TrackSectionLink { railjson })
                 | OperationResult::Create(RailjsonObject::TrackSectionLink { railjson }) => {
+                    if let Some(link) = infra_cache.track_section_links.get(&railjson.id) {
+                        Self::merge_bbox(&mut geo, &mut sch, infra_cache, &link.src);
+                    };
                     let track_id = &railjson.src.track.obj_id;
                     Self::merge_bbox(&mut geo, &mut sch, infra_cache, track_id);
                 }
                 OperationResult::Update(RailjsonObject::Switch { railjson })
                 | OperationResult::Create(RailjsonObject::Switch { railjson }) => {
+                    if let Some(switch) = infra_cache.switches.get(&railjson.id) {
+                        for endpoint in switch.ports.values() {
+                            let track_id = &endpoint.track.obj_id;
+                            Self::merge_bbox(&mut geo, &mut sch, infra_cache, track_id);
+                        }
+                    };
                     for endpoint in railjson.ports.values() {
                         let track_id = &endpoint.track.obj_id;
                         Self::merge_bbox(&mut geo, &mut sch, infra_cache, track_id);
@@ -90,6 +102,9 @@ impl InvalidationZone {
                 }
                 OperationResult::Update(RailjsonObject::Detector { railjson })
                 | OperationResult::Create(RailjsonObject::Detector { railjson }) => {
+                    if let Some(detector) = infra_cache.detectors.get(&railjson.id) {
+                        Self::merge_bbox(&mut geo, &mut sch, infra_cache, &detector.track);
+                    };
                     Self::merge_bbox(&mut geo, &mut sch, infra_cache, &railjson.track.obj_id);
                 }
                 OperationResult::Delete(ObjectRef {
