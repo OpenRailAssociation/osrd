@@ -34,7 +34,7 @@ impl SpeedSectionLayer {
         Ok(())
     }
 
-    pub fn insert_update_list(
+    pub fn insert_list(
         conn: &PgConnection,
         infra: i32,
         obj_ids: HashSet<String>,
@@ -44,7 +44,7 @@ impl SpeedSectionLayer {
         }
         let obj_ids: Vec<String> = obj_ids.into_iter().collect();
 
-        sql_query(include_str!("sql/insert_update_speed_section_layer.sql"))
+        sql_query(include_str!("sql/insert_speed_section_layer.sql"))
             .bind::<Integer, _>(infra)
             .bind::<Array<Text>, _>(&obj_ids)
             .execute(conn)?;
@@ -94,33 +94,39 @@ impl SpeedSectionLayer {
         invalid_zone: &InvalidationZone,
         chartos_config: &ChartosConfig,
     ) -> Result<(), Error> {
-        let mut update_obj_ids = HashSet::new();
-        let mut delete_obj_ids = HashSet::new();
+        // For this layer we can't avoid updating it if a track reference is invalid.
+        let mut obj_ids = HashSet::new();
         for op in operations {
             match op {
                 OperationResult::Create(RailjsonObject::TrackSection { railjson })
                 | OperationResult::Update(RailjsonObject::TrackSection { railjson }) => {
-                    Self::fill_speed_track_refs(infra_cache, &railjson.id, &mut update_obj_ids);
+                    Self::fill_speed_track_refs(infra_cache, &railjson.id, &mut obj_ids);
                 }
                 OperationResult::Create(RailjsonObject::SpeedSection { railjson })
                 | OperationResult::Update(RailjsonObject::SpeedSection { railjson }) => {
-                    update_obj_ids.insert(railjson.id.clone());
+                    obj_ids.insert(railjson.id.clone());
                 }
                 OperationResult::Delete(ObjectRef {
                     obj_type: ObjectType::SpeedSection,
                     obj_id: speed_id,
                 }) => {
-                    delete_obj_ids.insert(speed_id.clone());
+                    obj_ids.insert(speed_id.clone());
+                }
+                OperationResult::Delete(ObjectRef {
+                    obj_type: ObjectType::TrackSection,
+                    obj_id: track_id,
+                }) => {
+                    Self::fill_speed_track_refs(infra_cache, track_id, &mut obj_ids);
                 }
                 _ => (),
             }
         }
-        if update_obj_ids.is_empty() && delete_obj_ids.is_empty() {
+        if obj_ids.is_empty() {
             // No update needed
             return Ok(());
         }
-        Self::delete_list(conn, infra, delete_obj_ids)?;
-        Self::insert_update_list(conn, infra, update_obj_ids)?;
+        Self::delete_list(conn, infra, obj_ids.clone())?;
+        Self::insert_list(conn, infra, obj_ids)?;
 
         invalidate_bbox_chartos_layer(infra, "speed_sections", invalid_zone, chartos_config);
         Ok(())
