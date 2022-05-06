@@ -20,6 +20,7 @@ export default class SwitchSNCF extends Component {
     id: PropTypes.string.isRequired,
     checked: PropTypes.bool,
     warning: PropTypes.bool,
+    disabled: PropTypes.bool,
   }
 
   static defaultProps = {
@@ -27,11 +28,12 @@ export default class SwitchSNCF extends Component {
     checkedName: undefined,
     checked: true,
     warning: false,
+    disabled: false,
   }
 
   render() {
     const {
-      type, options, onChange, checkedName, name, id, checked, warning,
+      type, options, onChange, checkedName, name, id, checked, warning, disabled,
     } = this.props;
 
     const warningClass = warning ? 'warning' : '';
@@ -73,6 +75,7 @@ export default class SwitchSNCF extends Component {
               className="sr-only"
               onChange={onChange}
               checked={checked}
+              disabled={disabled}
             />
             <span className="switch-control-slider" />
           </label>
@@ -93,6 +96,7 @@ export default class SwitchSNCF extends Component {
                       checked={option.value === checkedName}
                       onChange={onChange}
                       value={option.value}
+                      disabled={disabled}
                     />
                     <label className="options-btn font-weight-medium" htmlFor={optionId}>
                       {option.label}
