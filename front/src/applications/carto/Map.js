@@ -29,7 +29,7 @@ import SearchMarker from 'common/Map/Layers/SearchMarker';
 import SignalingType from 'common/Map/Layers/SignalingType';
 import Signals from 'common/Map/Layers/Signals';
 import SpeedLimits from 'common/Map/Layers/SpeedLimits';
-import SpeedLimitsColors from 'common/Map/Layers/SpeedLimitsColors';
+import Switches from 'common/Map/Layers/Switches';
 import TVDs from 'common/Map/Layers/TVDs';
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 import TracksSchematic from 'common/Map/Layers/TracksSchematic';
@@ -167,7 +167,6 @@ const Map = () => {
         {/* Have to duplicate objects with sourceLayer to avoid cache problems in mapbox */}
         {mapTrackSources === 'geographic' ? (
           <>
-            <SpeedLimitsColors geomType="geo" />
             <ElectrificationType geomType="geo" colors={colors[mapStyle]} />
             <TVDs geomType="geo" colors={colors[mapStyle]} idHover={idHover} />
             <Platform colors={colors[mapStyle]} />
@@ -176,12 +175,15 @@ const Map = () => {
             <SignalingType geomType="geo" />
             <SpeedLimits geomType="geo" colors={colors[mapStyle]} />
             <Signals sourceTable="signals" colors={colors[mapStyle]} sourceLayer="geo" />
+            <Switches geomType="geo" colors={colors[mapStyle]} />
           </>
         ) : (
           <>
             <TracksSchematic colors={colors[mapStyle]} idHover={idHover} />
             <OperationalPoints geomType="sch" colors={colors[mapStyle]} />
+            <SpeedLimits geomType="sch" colors={colors[mapStyle]} />
             <Signals sourceTable="signals" colors={colors[mapStyle]} sourceLayer="sch" />
+            <Switches geomType="sch" colors={colors[mapStyle]} />
           </>
         )}
 

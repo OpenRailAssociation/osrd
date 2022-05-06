@@ -8,13 +8,16 @@ import { IoMdSpeedometer } from 'react-icons/io';
 import { AiOutlineBlock } from 'react-icons/ai';
 import { MdSpaceBar } from 'react-icons/md';
 import { FaMapMarkerAlt } from 'react-icons/fa';
+import { TiFlowSwitch } from 'react-icons/ti';
 import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 
 const FormatSwitch = (props) => {
   const dispatch = useDispatch();
   const { t } = useTranslation(['map-settings']);
   const { layersSettings } = useSelector((state) => state.map);
-  const { name, icon, color } = props;
+  const {
+    name, icon, color, disabled = false,
+  } = props;
 
   const setLayerSettings = (setting) => {
     dispatch(updateLayersSettings({
@@ -32,6 +35,7 @@ const FormatSwitch = (props) => {
           name={`${name}-switch`}
           onChange={() => setLayerSettings(name)}
           checked={layersSettings[name]}
+          disabled={disabled}
         />
         <span className={`px-1 d-flex align-items-center ${color}`}>
           {icon}
@@ -48,27 +52,30 @@ export default function MapSettingsLayers() {
       <FormatSwitch
         name="electrification"
         icon={<GiElectric />}
+        disabled
       />
       <FormatSwitch
         name="signalingtype"
         icon={<AiOutlineBlock />}
+        disabled
       />
       <FormatSwitch
         name="speedlimits"
         icon={<IoMdSpeedometer />}
       />
       <FormatSwitch
-        name="speedlimitscolor"
-        icon={<IoMdSpeedometer />}
-        color="text-green"
-      />
-      <FormatSwitch
         name="tvds"
         icon={<MdSpaceBar />}
+        disabled
       />
       <FormatSwitch
         name="operationalpoints"
         icon={<FaMapMarkerAlt />}
+        disabled
+      />
+      <FormatSwitch
+        name="switches"
+        icon={<TiFlowSwitch />}
       />
     </div>
   );
@@ -78,7 +85,9 @@ FormatSwitch.propTypes = {
   name: PropTypes.string.isRequired,
   icon: PropTypes.object.isRequired,
   color: PropTypes.string,
+  disabled: PropTypes.bool,
 };
 FormatSwitch.defaultProps = {
   color: '',
+  disabled: false,
 };

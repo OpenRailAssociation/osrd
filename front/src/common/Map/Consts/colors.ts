@@ -97,6 +97,11 @@ const colors: Record<string, Theme> = {
       halo: '#ffffff',
       text: '#555555',
     },
+    switches: {
+      circle: '#a1006b',
+      halo: '#e7e7e7',
+      text: '#a1006b',
+    },
     track: {
       minor: '#777777',
       major: '#0088ce',
@@ -207,6 +212,11 @@ const colors: Record<string, Theme> = {
       halo: '#0b011d',
       text: '#e0e1dd',
     },
+    switches: {
+      circle: '#555555',
+      halo: '#ffffff',
+      text: '#555555',
+    },
     track: {
       minor: '#3a86ff',
       major: '#3a86ff',
@@ -313,6 +323,11 @@ const colors: Record<string, Theme> = {
       halo: bpBg,
     },
     station: {
+      circle: bpLight,
+      halo: bpBg,
+      text: bpLight,
+    },
+    switches: {
       circle: bpLight,
       halo: bpBg,
       text: bpLight,
