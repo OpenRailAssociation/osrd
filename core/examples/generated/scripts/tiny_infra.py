@@ -68,10 +68,13 @@ switch = builder.add_switch(ne_micro_foo_to_bar.begin(), ne_micro_foo_b.end(), n
 
 # Set coordinates
 
-switch.set_coords(0, 1)
-link.set_coords(0, 2)
-ne_micro_foo_b.begin().set_coords(1, 0)
-ne_micro_bar_a.end().set_coords(0, 3)
+center_x = -42
+center_y = 70
+switch.set_coords(center_x, center_y + 1)
+link.set_coords(center_x, center_y + 2)
+ne_micro_foo_a.begin().set_coords(center_x, center_y)
+ne_micro_foo_b.begin().set_coords(center_x + 1, center_y)
+ne_micro_bar_a.end().set_coords(center_x, center_y + 3)
 
 # Build infra
 infra = builder.build()
