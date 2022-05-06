@@ -3,7 +3,11 @@ import * as d3 from 'd3';
 import React, { useEffect, useRef, useState } from 'react';
 
 const snappedHeight = 200;
-const width = 600;
+const chartID = "now"
+//const width = parseInt(d3.select(`#container-${chartID}`).style('width'), 10) ?? 600;
+const width = 1000;
+const height = 100;
+const margin = {top: 25, bottom: 25, left: 40, right: 40}
 const stops = [200, 300, 400, 460, 500, 600, 650, 780];
 
 export default function MarecoMultiRange(props) {
@@ -11,6 +15,38 @@ export default function MarecoMultiRange(props) {
   const brushesContainer = useRef(null);
   const brushesRef = useRef([]);
   const [brushes, setBrushes] = useState([]);
+  const x = d3
+    .scaleLinear()
+    .domain([Math.min(...stops), Math.max(...stops)])
+    .range([0, width]);
+
+  const qu = d3
+    .scaleQuantize()
+    .domain([Math.min(...stops), Math.max(...stops)])
+    .range(stops);
+
+  const xAxis = (node) =>
+    node
+      .attr("transform", `translate(0,${height - margin.bottom})`)
+      .call(
+        d3
+          .axisTop(x)
+          .tickValues(stops)
+          .tickSize(height - margin.bottom * 2)
+        //.ticks(d3.timeMonth.every(1))
+        //.tickFormat((d) => (d <= d3.timeYear(d) ? d.getFullYear() : null))
+      )
+      .call((g) => g.select(".domain").remove());
+
+  const xAxis2 = (node) =>
+  node
+        .attr("transform", `translate(0,${height - margin.bottom})`)
+        .call(
+          d3.axisBottom(x)
+          //.ticks(d3.timeMonth.every(1))
+          //.tickFormat((d) => (d <= d3.timeYear(d) ? d.getFullYear() : null))
+        )
+        .call((g) => g.select(".domain").remove());
 
   function newBrush(qu) {
     const brush = d3
@@ -83,6 +119,8 @@ export default function MarecoMultiRange(props) {
 
   useEffect(
     () => {
+      d3.select(d3Container.current).append("g").style("background-color", "grey").call(xAxis);
+      d3.select(d3Container.current).append("g").style("background-color", "grey").call(xAxis2);
       newBrush();
     },
     [],
@@ -298,7 +336,7 @@ export default function MarecoMultiRange(props) {
       <svg
         className="d3-component w-100"
         //viewBox="0 0 800 200"
-        height={50}
+        height={height}
         //width={800}
         ref={d3Container}
       >
