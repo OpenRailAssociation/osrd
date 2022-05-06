@@ -8,7 +8,7 @@ from argparse import ArgumentParser
 
 
 def run_script(gen_script: Path, script_env, output_dir: Path):
-    assert gen_script.is_file()
+    assert gen_script.is_file(), f"{gen_script} is not a valid file name"
     script_name = gen_script.stem
     script_output = output_dir / script_name
     script_output.mkdir(parents=True, exist_ok=True)

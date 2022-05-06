@@ -46,7 +46,7 @@ class Infra:
 
     def save(self, path):
         with open(path, "w") as f:
-            print(self.to_rjs().json(), file=f)
+            print(self.to_rjs().json(indent=2), file=f)
 
     def make_rjs_signals(self):
         for track in self.track_sections:
