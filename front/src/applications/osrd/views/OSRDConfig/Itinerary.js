@@ -126,6 +126,7 @@ const Itinerary = (props) => {
       const params = {
         infra: osrdconf.infraID,
         steps: [],
+        rolling_stocks: [osrdconf.rollingStockID],
       };
 
       // Adding start point
