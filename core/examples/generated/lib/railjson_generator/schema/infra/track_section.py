@@ -29,8 +29,7 @@ class TrackSection:
     signals: List[Signal] = field(default_factory=list)
     operational_points: List[OperationalPointPart] = field(default_factory=list)
     index: int = field(default=-1, repr=False)
-    begin_coordinates: Tuple[float, float] = field(default=(0, 0))
-    end_coordinates: Tuple[float, float] = field(default=(0, 0))
+    coordinates: List[Tuple[float, float]] = field(default_factory=lambda: [(0, 0), (0,0)])
     begining_links: List[TrackEndpoint] = field(default_factory=list, repr=False)
     end_links: List[TrackEndpoint] = field(default_factory=list, repr=False)
     slopes: List[Slope] = field(default_factory=list)
@@ -88,10 +87,10 @@ class TrackSection:
         return self.begining_links
 
     def to_rjs(self):
-        if self.begin_coordinates is None or self.end_coordinates is None:
+        if self.coordinates is None:
             geo_data = make_geo_lines((0, 0), (0, 0))
         else:
-            geo_data = make_geo_lines(self.begin_coordinates, self.end_coordinates)
+            geo_data = make_geo_lines(*self.coordinates)
         return infra.TrackSection(
             id=self.label,
             length=self.length,
