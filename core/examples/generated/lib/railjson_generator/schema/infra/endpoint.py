@@ -35,15 +35,15 @@ class TrackEndpoint:
 
     def get_coords(self):
         if self.endpoint == Endpoint.BEGIN:
-            return self.track_section.begin_coordinates or (0, 0)
+            return self.track_section.coordinates[0] or (0, 0)
         else:
-            return self.track_section.end_coordinates or (0, 0)
+            return self.track_section.coordinates[-1] or (0, 0)
 
     def set_coords(self, x: float, y: float):
         if self.endpoint == Endpoint.BEGIN:
-            self.track_section.begin_coordinates = (x, y)
+            self.track_section.coordinates[0] = (x, y)
         else:
-            self.track_section.end_coordinates = (x, y)
+            self.track_section.coordinates[-1] = (x, y)
 
     def to_rjs(self):
         return infra.TrackEndpoint(endpoint=infra.Endpoint[self.endpoint.name], track=self.track_section.make_rjs_ref())
