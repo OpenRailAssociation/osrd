@@ -34,6 +34,8 @@ enum InfraErrorType {
         position: f64,
         expected_range: [f64; 2],
     },
+    #[serde(rename = "empty_object")]
+    EmptyObject,
 }
 
 impl InfraError {
@@ -53,6 +55,14 @@ impl InfraError {
                 position,
                 expected_range,
             },
+        }
+    }
+
+    fn new_empty_object(field: String) -> Self {
+        Self {
+            field,
+            is_warning: true,
+            sub_type: InfraErrorType::EmptyObject,
         }
     }
 }

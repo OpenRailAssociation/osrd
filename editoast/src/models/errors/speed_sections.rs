@@ -15,6 +15,12 @@ pub fn generate_errors(
     let mut errors = vec![];
     let mut speed_section_ids = vec![];
     for (speed_id, speed_section) in infra_cache.speed_sections.iter() {
+        if speed_section.track_ranges.is_empty() {
+            let infra_error = InfraError::new_empty_object("track_ranges".into());
+            errors.push(to_value(infra_error).unwrap());
+            speed_section_ids.push(speed_id.clone());
+        }
+
         for (index, track_range) in speed_section.track_ranges.iter().enumerate() {
             // Retrieve invalid refs
             let track_id = &track_range.track.obj_id;
