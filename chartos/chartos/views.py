@@ -1,8 +1,9 @@
 from collections import defaultdict
 from dataclasses import asdict as dataclass_as_dict
-from typing import Dict, List, Tuple
+from typing import Dict, List, NewType, Tuple
 from urllib.parse import quote as url_quote
 
+from asyncpg import Connection
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from fastapi.responses import Response
 from pydantic import BaseModel
@@ -26,8 +27,8 @@ router = APIRouter()
 
 @router.get("/health")
 async def health(
-    psql=Depends(PSQLPool.get),
-    redis=Depends(RedisPool.get),
+    psql: Connection = Depends(PSQLPool.get),
+    redis: RedisPool = Depends(RedisPool.get),
 ):
     await psql.execute("select 1;")
     await redis.ping()
@@ -39,6 +40,14 @@ async def info(config: Config = Depends(get_config)):
     return config.todict()
 
 
+def get_or_404(elements, key, array_name):
+    if key not in elements:
+        raise HTTPException(
+            status_code=404, detail=f"{array_name} {key} not found. Expected one of [{', '.join(elements.keys())}]"
+        )
+    return elements[key]
+
+
 @router.get("/layer/{layer_slug}/mvt/{view_slug}/")
 async def mvt_view_metadata(
     layer_slug: str,
@@ -47,8 +56,8 @@ async def mvt_view_metadata(
     config: Config = Depends(get_config),
     settings: Settings = Depends(get_settings),
 ):
-    layer = config.layers[layer_slug]
-    view = layer.views[view_slug]
+    layer: Layer = get_or_404(config.layers, layer_slug, "Layer")
+    view = get_or_404(layer.views, view_slug, "Layer view")
     tiles_url_pattern = (
         f"{settings.root_url}/tile/{layer_slug}/{view_slug}/" "{z}/{x}/{y}" f"/?infra={url_quote(infra)}"
     )
@@ -77,11 +86,11 @@ async def mvt_view_tile(
     x: int,
     y: int,
     config: Config = Depends(get_config),
-    psql=Depends(PSQLPool.get),
+    psql: Connection = Depends(PSQLPool.get),
     redis=Depends(RedisPool.get),
 ):
-    layer = config.layers[layer_slug]
-    view = layer.views[view_slug]
+    layer: Layer = get_or_404(config.layers, layer_slug, "Layer")
+    view = get_or_404(layer.views, view_slug, "Layer view")
 
     # try to fetch the tile from the cache
     view_cache_prefix = get_view_cache_prefix(layer, infra, view)
@@ -140,32 +149,74 @@ async def invalidate_layer(
     layer_slug: str,
     infra: str,
     config: Config = Depends(get_config),
-    redis=Depends(RedisPool.get),
+    redis: RedisPool = Depends(RedisPool.get),
 ):
     """Invalidate cache for a whole layer"""
-    layer = config.layers[layer_slug]
+    layer: Layer = get_or_404(config.layers, layer_slug, "Layer")
     await invalidate_full_layer_cache(redis, layer, infra)
 
 
-class BoundingBox(BaseModel):
+BoundingBox = NewType("BoundingBox", Tuple[Tuple[float, float], Tuple[float, float]])
+
+
+class BoundingBoxView(BaseModel):
     view: str
-    bbox: Tuple[Tuple[float, float], Tuple[float, float]]
+    bbox: BoundingBox
 
 
 @router.post("/layer/{layer_slug}/invalidate_bbox/", status_code=204, response_class=Response)
 async def invalidate_layer_bbox(
     layer_slug: str,
     infra: str,
-    bounding_boxes: List[BoundingBox] = Body(...),
+    bounding_boxes: List[BoundingBoxView] = Body(...),
     config: Config = Depends(get_config),
     redis: RedisPool = Depends(RedisPool.get),
     settings: Settings = Depends(get_settings),
 ):
     """Invalidate cache for a whole layer"""
-    layer: Layer = config.layers[layer_slug]
+    layer: Layer = get_or_404(config.layers, layer_slug, "Layer")
     affected_tiles: Dict[View, List[AffectedTile]] = defaultdict(set)
     for bbox in bounding_boxes:
-        view = layer.views[bbox.view]
+        view = get_or_404(layer.views, bbox.view, "Layer view")
         polygon = Polygon.from_bounds(bbox.bbox[0][0], bbox.bbox[0][1], bbox.bbox[1][0], bbox.bbox[1][1])
         affected_tiles[view] = find_tiles(settings.max_zoom, bbox.bbox)
     await invalidate_cache(redis, layer, infra, affected_tiles)
+
+
+@router.get("/layer/{layer_slug}/objects/{view_slug}/", response_class=Response)
+async def get_objects_in_bbox(
+    layer_slug: str,
+    view_slug: str,
+    infra: int = Query(...),
+    bbox: BoundingBox = Body(...),
+    psql: Connection = Depends(PSQLPool.get),
+    config: Config = Depends(get_config),
+    settings: Settings = Depends(get_settings),
+):
+    """Retrieve objects in a given bounding box"""
+    layer: Layer = get_or_404(config.layers, layer_slug, "Layer")
+    view = get_or_404(layer.views, view_slug, "Layer view")
+
+    query = (
+        # Prepare the collection of objects in the bounding box
+        "WITH collect AS ("
+        # Add geometry of the object
+        f"SELECT ST_Transform(layer.{view.on_field}, 4326) as geom, "
+        # Add properties of the object
+        f"{', '.join(view.fields)} "
+        f"FROM {layer.table_name} AS layer "
+        # Add joins
+        f"{' '.join(view.joins)} "
+        # Filter by infra
+        "WHERE layer.infra_id = $1 "
+        # Filter by objects inside the bounding box
+        f"AND layer.{view.on_field} && ST_Transform(ST_MakeEnvelope($2, $3, $4, $5, 4326), 3857)) "
+        # Return a geojson feature collection
+        "SELECT jsonb_build_object('type', 'FeatureCollection', 'features', COALESCE(jsonb_agg(ST_AsGeoJSON(collect.*)::jsonb), '[]'::jsonb)) AS geojson "
+        "FROM collect"
+    )
+
+    async with psql.transaction(isolation="repeatable_read", readonly=True):
+        (record,) = await psql.fetch(query, infra, bbox[0][0], bbox[0][1], bbox[1][0], bbox[1][1])
+
+    return record.get("geojson")
