@@ -132,6 +132,7 @@ paths:
                     minItems: 2
                     maxItems: 2
                     example: [[2.1, 48.5], [2.5, 48.8]]
+              description: Bounding box [[minx, miny], [maxx, maxy]]
       responses:
         204:
           description: No content
@@ -183,6 +184,82 @@ paths:
             application/x-protobuf:
               schema:
                 type: string
+        422:
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /layer/{layer_slug}/objects/{view_slug}/:
+    get:
+      summary: Geojson objects in a given bounding box
+      operationId: objects_view_layer__layer_slug__objects__view_slug___get
+      parameters:
+        - required: true
+          schema:
+            title: Layer Slug
+            type: string
+          name: layer_slug
+          in: path
+        - required: true
+          schema:
+            title: View Slug
+            type: string
+          name: view_slug
+          in: path
+        - required: true
+          schema:
+            title: Infra id
+            type: integer
+          name: infra
+          in: query
+      requestBody:
+        description: Bounding box [[minx, miny], [maxx, maxy]]
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: array
+                items:
+                  type: number
+                minItems: 2
+                maxItems: 2
+              minItems: 2
+              maxItems: 2
+              example: [[-4.9, 46.5], [-0.1, 49.0]]
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    example: vector
+                  name:
+                    type: string
+                    example: track_sections
+                  promotedId:
+                    type: object
+                    example: { track_sections: "id" }
+                  scheme:
+                    type: string
+                    example: "xyz"
+                  tiles:
+                    type: array
+                    items:
+                      type: string
+                      example: http://localhost:7000/tile/track_sections/geo/{z}/{x}/{y}/?infra=1
+                  attribution:
+                    type: string
+                  minzoom:
+                    type: integer
+                  maxzoom:
+                    type: integer
+                    example: 18
         422:
           description: Validation Error
           content:
