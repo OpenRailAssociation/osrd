@@ -25,7 +25,7 @@ public record LoadingGaugeConstraints(
      * Returns the sections of the given route that can't be used by the given rolling stock
      */
     private static Set<Pathfinding.Range> getBlockedRanges(RollingStock stock, ReservationRoute route) {
-        var offset = 0;
+        double offset = 0;
         var res = new HashSet<Pathfinding.Range>();
         for (var trackRange : route.getTrackRanges()) {
             for (var entry : trackRange.getBlockedGaugeTypes().asMapOfRanges().entrySet()) {

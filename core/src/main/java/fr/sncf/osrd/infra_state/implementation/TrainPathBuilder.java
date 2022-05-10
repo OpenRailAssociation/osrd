@@ -2,6 +2,8 @@ package fr.sncf.osrd.infra_state.implementation;
 
 import com.google.common.collect.ImmutableList;
 import fr.sncf.osrd.infra_state.implementation.errors.InvalidPathError;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.infra.api.reservation.DetectionSection;
 import fr.sncf.osrd.infra.api.reservation.DiDetector;
@@ -87,6 +89,26 @@ public class TrainPathBuilder {
 
         checkDetectorOverlap(path.detectors());
         validateDetectionSections(path);
+        checkRangeLength(path);
+    }
+
+    /** Checks that when changing tracks, the ranges reach the end of each track */
+    @SuppressFBWarnings("FE_FLOATING_POINT_EQUALITY")
+    private static void checkRangeLength(TrainPath path) {
+        for (int i = 1; i < path.trackRangePath().size(); i++) {
+            var prevRange = path.trackRangePath().get(i - 1).element();
+            var nextRange = path.trackRangePath().get(i).element();
+            if (prevRange.track != nextRange.track) {
+                if (prevRange.track.getDirection().equals(Direction.FORWARD))
+                    assert prevRange.end == prevRange.track.getEdge().getLength() : "path isn't continuous";
+                else
+                    assert prevRange.begin == 0. : "path isn't continuous";
+                if (nextRange.track.getDirection().equals(Direction.FORWARD))
+                    assert nextRange.begin == 0 : "path isn't continuous";
+                else
+                    assert nextRange.end == nextRange.track.getEdge().getLength() : "path isn't continuous";
+            }
+        }
     }
 
     /** Checks that detectors don't overlap */

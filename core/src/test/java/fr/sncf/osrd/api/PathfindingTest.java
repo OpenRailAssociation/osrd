@@ -2,10 +2,12 @@ package fr.sncf.osrd.api;
 
 import static fr.sncf.osrd.Helpers.getResourcePath;
 import static fr.sncf.osrd.Helpers.infraFromRJS;
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
 import static org.junit.jupiter.api.Assertions.*;
 
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.api.PathfindingEndpoint.PathfindingWaypoint;
+import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
 import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
 import fr.sncf.osrd.railjson.schema.RJSSimulation;
@@ -14,6 +16,7 @@ import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSLoadingGaugeLimit;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
 import fr.sncf.osrd.train.TestTrains;
+import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -23,10 +26,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.takes.rq.RqFake;
 import org.takes.rs.RsPrint;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 
@@ -342,5 +342,48 @@ public class PathfindingTest extends ApiTest {
         waypoints[startIndex] = convertLocToWaypoint(startLoc.trackSection.id, startLoc.offset);
         waypoints[endIndex] = convertLocToWaypoint(endLoc.track().getID(), endLoc.offset());
         return new PathfindingEndpoint.PathfindingRequest(waypoints, infraPath);
+    }
+
+    /** Checks that the waypoints match when converting back and forth into a route offset */
+    private static void testMatchingRouteOffsets(SignalingInfra infra, PathfindingWaypoint waypoint) {
+        var routeLocations = PathfindingRoutesEndpoint.findRoutes(infra, waypoint);
+        for (var loc : routeLocations) {
+            var routeRange = new Pathfinding.EdgeRange<>(
+                    loc.edge(),
+                    loc.offset() / 2,
+                    loc.offset() + (loc.edge().getInfraRoute().getLength() - loc.offset()) / 2
+            );
+            var waypoints = PathfindingResult.getWaypointsOnRoute(routeRange, Set.of(loc.offset()));
+            var userDefinedWaypoints = waypoints.stream()
+                    .filter(wp -> !wp.suggestion)
+                    .toList();
+            assertEquals(1, userDefinedWaypoints.size());
+            if (waypoint.offset <= 0 || waypoint.offset >= infra.getTrackSection(waypoint.trackSection).getLength()) {
+                // Waypoints placed on track transitions can be on either side
+                continue;
+            }
+            assertEquals(waypoint.trackSection, userDefinedWaypoints.get(0).track.id.id);
+            assertEquals(waypoint.offset, userDefinedWaypoints.get(0).position, POSITION_EPSILON);
+        }
+    }
+
+    /** Checks that the waypoints match when converting back and forth into a route offset */
+    private static void testAllMatchingRouteOffsets(String infraPath, boolean inverted) throws Exception {
+        var req = requestFromExampleInfra(
+                infraPath + "/infra.json",
+                infraPath + "/simulation.json",
+                inverted
+        );
+        var rjsInfra = Helpers.getExampleInfra(infraPath + "/infra.json");
+        var infra = infraFromRJS(rjsInfra);
+        for (var waypointList : req.waypoints)
+            for (var waypoint : waypointList)
+                testMatchingRouteOffsets(infra, waypoint);
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideInfraParameters")
+    public void testMachingRouteOffsets(String path, boolean inverted) throws Exception {
+        testAllMatchingRouteOffsets(path, inverted);
     }
 }

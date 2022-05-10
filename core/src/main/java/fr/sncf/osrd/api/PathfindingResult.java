@@ -1,12 +1,17 @@
 package fr.sncf.osrd.api;
 
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
+
+import com.google.common.collect.HashMultimap;
 import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.api.tracks.undirected.OperationalPoint;
+import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackSection;
 import fr.sncf.osrd.infra.implementation.RJSObjectParsing;
+import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
@@ -14,8 +19,7 @@ import fr.sncf.osrd.reporting.warnings.Warning;
 import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
 import fr.sncf.osrd.utils.geom.LineString;
 import fr.sncf.osrd.utils.graph.Pathfinding;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class PathfindingResult {
     @Json(name = "route_paths")
@@ -30,33 +34,112 @@ public class PathfindingResult {
     /**
      * pathfindingResultMake is used to create a class PathfindingResult with a good format to be sent to the middleware
      * during this function, we add geometric information in the PathfindingResult
+     *
      * @param path contains the pathfinding's result
      */
     public static PathfindingResult make(
-            List<Pathfinding.EdgeRange<SignalingRoute>> path,
+            Pathfinding.Result<SignalingRoute> path,
             SignalingInfra infra,
             WarningRecorderImpl warningRecorder
     ) {
         var res = new PathfindingResult();
-        for (var signalingRouteEdgeRange : path)
+
+        // Builds a mapping between routes and all user defined waypoints on the route
+        var userDefinedWaypointsPerRoute = HashMultimap.<SignalingRoute, Double>create();
+        for (var waypoint : path.waypoints())
+            userDefinedWaypointsPerRoute.put(waypoint.edge(), waypoint.offset());
+
+        for (var signalingRouteEdgeRange : path.ranges()) {
             if (signalingRouteEdgeRange.start() < signalingRouteEdgeRange.end())
-                res.routePaths.add(
-                        makeRouteResult(
-                                res,
-                                signalingRouteEdgeRange
-                        )
-                );
-        var lastRoute = res.routePaths.get(res.routePaths.size() - 1);
-        var lastRange = lastRoute.trackSections.get(lastRoute.trackSections.size() - 1);
-        res.addStep(new PathWaypointResult(lastRange.trackSection.id.id, lastRange.getEnd()));
+                res.routePaths.add(makeRouteResult(signalingRouteEdgeRange));
+            var waypoints = getWaypointsOnRoute(
+                    signalingRouteEdgeRange,
+                    userDefinedWaypointsPerRoute.get(signalingRouteEdgeRange.edge())
+            );
+            for (var waypoint : waypoints)
+                res.addStep(waypoint);
+        }
         res.addGeometry(infra);
         res.warnings = warningRecorder.warnings;
         return res;
     }
 
+    /** Adds all waypoints on the route range, both suggestions (OP) and user defined waypoints */
+    public static List<PathWaypointResult> getWaypointsOnRoute(
+            Pathfinding.EdgeRange<SignalingRoute> routeRange,
+            Set<Double> userDefinedWaypointOffsets
+    ) {
+        var res = new ArrayList<PathWaypointResult>();
+
+        // We need a mutable copy to remove elements as we find them
+        var waypointsOffsetsList = new ArrayList<>(userDefinedWaypointOffsets);
+
+        double offset = 0;
+        for (var range : routeRange.edge().getInfraRoute().getTrackRanges()) {
+            if (!(range.track.getEdge() instanceof TrackSection trackSection))
+                continue;
+
+            if (offset > routeRange.end())
+                break;
+
+            if (offset + range.getLength() >= routeRange.start()) {
+                // Truncate the range to match the part of the route we use
+                var truncatedRange = truncateTrackRange(range, offset, routeRange);
+
+                // List all waypoints on the track range in a tree map, with offsets from the range start as key
+                var waypoints = new ArrayList<PathWaypointResult>();
+
+                // Add operational points as optional waypoints
+                for (var op : truncatedRange.getOperationalPoints())
+                    waypoints.add(PathWaypointResult.suggestion(op.element(), trackSection, op.offset()));
+
+                // Add user defined waypoints
+                var truncatedRangeOffset = offset + Math.abs(truncatedRange.getStart() - range.getStart());
+                for (int i = 0; i < waypointsOffsetsList.size(); i++) {
+                    var trackRangeOffset = waypointsOffsetsList.get(i) - truncatedRangeOffset;
+
+                    // We can have tiny differences here because we accumulate offsets in a different way
+                    if (Math.abs(trackRangeOffset - truncatedRange.getLength()) < POSITION_EPSILON)
+                        trackRangeOffset = truncatedRange.getLength();
+                    if (Math.abs(trackRangeOffset) < POSITION_EPSILON)
+                        trackRangeOffset = 0;
+
+                    if (trackRangeOffset >= 0 && trackRangeOffset <= truncatedRange.getLength()) {
+                        var location = truncatedRange.offsetLocation(trackRangeOffset);
+                        waypoints.add(PathWaypointResult.userDefined(location, trackRangeOffset));
+                        waypointsOffsetsList.remove(i--); // Avoids duplicates on track transitions
+                    }
+                }
+
+                // Adds all waypoints in order
+                waypoints.sort(Comparator.comparingDouble(x -> x.trackRangeOffset));
+                res.addAll(waypoints);
+            }
+
+            offset += range.getLength();
+        }
+        assert waypointsOffsetsList.isEmpty();
+        return res;
+    }
+
+    /** Truncates a track range view so that it's limited to the route range */
+    private static TrackRangeView truncateTrackRange(
+            TrackRangeView range,
+            double offset,
+            Pathfinding.EdgeRange<SignalingRoute> routeRange
+    ) {
+        var truncatedRange = range;
+        if (offset < routeRange.start()) {
+            truncatedRange = truncatedRange.truncateBeginByLength(routeRange.start() - offset);
+        }
+        if (offset + range.getLength() > routeRange.end()) {
+            truncatedRange = truncatedRange.truncateEndByLength(offset + range.getLength() - routeRange.end());
+        }
+        return truncatedRange;
+    }
+
     /** Adds a single route to the result, including waypoints present on the route */
     private static RoutePathResult makeRouteResult(
-            PathfindingResult pathfindingResult,
             Pathfinding.EdgeRange<SignalingRoute> element
     ) {
         var routeResult = new RoutePathResult(
@@ -69,13 +152,7 @@ public class PathfindingResult {
                 continue;
 
             // Truncate the ranges to match the part of the route we use
-            var truncatedRange = range;
-            if (offset < element.start()) {
-                truncatedRange = truncatedRange.truncateBeginByLength(element.start() - offset);
-            }
-            if (offset + range.getLength() > element.end()) {
-                truncatedRange = truncatedRange.truncateEndByLength(offset + range.getLength() - element.end());
-            }
+            var truncatedRange = truncateTrackRange(range, offset, element);
             offset += range.getLength();
             if (truncatedRange.getLength() == 0)
                 continue;
@@ -86,33 +163,8 @@ public class PathfindingResult {
                     truncatedRange.getStart(),
                     truncatedRange.getStop()
             ));
-            if (pathfindingResult.pathWaypoints.isEmpty()) {
-                // add the first waypoint
-                var firstLocation = truncatedRange.offsetLocation(0);
-                pathfindingResult.addStep(
-                        new PathWaypointResult(firstLocation.track().getID(), firstLocation.offset())
-                );
-            }
-
-            // Add waypoints: OP as suggestions, and start / end locations
-            for (var op : truncatedRange.getOperationalPoints())
-                pathfindingResult.addStep(new PathWaypointResult(op.element(), trackSection));
         }
         return routeResult;
-    }
-
-    /** Adds a single waypoint to the result */
-    void addStep(PathWaypointResult newStep) {
-        if (pathWaypoints.isEmpty()) {
-            pathWaypoints.add(newStep);
-            return;
-        }
-        var lastStep = pathWaypoints.get(pathWaypoints.size() - 1);
-        if (lastStep.isDuplicate(newStep)) {
-            lastStep.merge(newStep);
-            return;
-        }
-        pathWaypoints.add(newStep);
     }
 
     /** Generates the path geometry */
@@ -188,6 +240,20 @@ public class PathfindingResult {
             res.add(lineString.slice(previousBegin / trackLength, previousEnd / trackLength));
     }
 
+    /** Adds a single waypoint to the result */
+    void addStep(PathWaypointResult newStep) {
+        if (pathWaypoints.isEmpty()) {
+            pathWaypoints.add(newStep);
+            return;
+        }
+        var lastStep = pathWaypoints.get(pathWaypoints.size() - 1);
+        if (lastStep.isDuplicate(newStep)) {
+            lastStep.merge(newStep);
+            return;
+        }
+        pathWaypoints.add(newStep);
+    }
+
     /** A single route on the path */
     @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
     public static class RoutePathResult {
@@ -211,23 +277,38 @@ public class PathfindingResult {
         public boolean suggestion;
         /** Track the point is on */
         public RJSObjectRef<RJSTrackSection> track;
-        /** Offset of the point */
+        /** Offset of the point on the track */
         public double position;
+        /** Used to sort the waypoint, not a part of the actual response (transient) */
+        private final transient double trackRangeOffset;
 
-        /** Suggested operational points */
-        PathWaypointResult(OperationalPoint op, TrackSection trackSection) {
-            this.id = op.id();
-            this.suggestion = true;
-            this.track = new RJSObjectRef<>(trackSection.getID(), "TrackSection");
-            this.position = op.offset();
-        }
-
-        /** Given step */
-        public PathWaypointResult(String id, double offset) {
-            this.suggestion = false;
-            this.track = new RJSObjectRef<>(id, "TrackSection");
+        /** Constructor */
+        private PathWaypointResult(
+                String trackID,
+                double offset,
+                boolean suggestion,
+                String opID,
+                double trackRangeOffset
+        ) {
+            this.suggestion = suggestion;
+            this.track = new RJSObjectRef<>(trackID, "TrackSection");
             this.position = offset;
+            this.id = opID;
+            this.trackRangeOffset = trackRangeOffset;
         }
+
+        /** Creates a suggested waypoint from an OP */
+        public static PathWaypointResult suggestion(
+                OperationalPoint op, TrackSection trackSection, double trackRangeOffset
+        ) {
+            return new PathWaypointResult(trackSection.getID(), op.offset(), true, op.id(), trackRangeOffset);
+        }
+
+        /** Creates a user defined waypoint */
+        public static PathWaypointResult userDefined(TrackLocation location, double trackRangeOffset) {
+            return new PathWaypointResult(location.track().getID(), location.offset(), false, null, trackRangeOffset);
+        }
+
 
         /** Check if two steps result are at the same location */
         public boolean isDuplicate(PathWaypointResult other) {

@@ -79,7 +79,7 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
     }
 
     /** Runs the pathfinding with the infra and rolling stocks already parsed */
-    public static List<Pathfinding.EdgeRange<SignalingRoute>> runPathfinding(
+    public static Pathfinding.Result<SignalingRoute> runPathfinding(
             SignalingInfra infra,
             PathfindingWaypoint[][] reqWaypoints,
             Collection<RollingStock> rollingStocks
@@ -122,12 +122,13 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
         for (int i = 1; i < path.trackRangePath().size(); i++) {
             var prev = path.trackRangePath().get(i - 1).element().track.getEdge();
             var next = path.trackRangePath().get(i).element().track.getEdge();
-            assert prev == next || infra.getTrackGraph().adjacentEdges(prev).contains(next) : "path isn't continuous";
+            assert prev == next || infra.getTrackGraph().adjacentEdges(prev).contains(next)
+                    : "The path goes over consecutive tracks that are not adjacent";
         }
     }
 
     /** Returns all the EdgeLocations matching the given waypoint */
-    private static Set<Pathfinding.EdgeLocation<SignalingRoute>> findRoutes(
+    public static Set<Pathfinding.EdgeLocation<SignalingRoute>> findRoutes(
             SignalingInfra infra,
             PathfindingWaypoint waypoint
     ) {
