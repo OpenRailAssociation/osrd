@@ -81,7 +81,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
 
     /** Get the total added time of the allowance region */
     public double getAddedTime(Envelope base) {
-        var addedTime = 0;
+        double addedTime = 0;
         for (var range : ranges) {
             var baseTime = base.getTimeBetween(range.beginPos, range.endPos);
             var distance = range.endPos - range.beginPos;
