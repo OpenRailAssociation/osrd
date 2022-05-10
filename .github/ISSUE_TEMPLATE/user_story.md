@@ -1,15 +1,27 @@
 ---
 name: User story
 about: Create a new user story for this project
-title: "[US] As [...], I'd like to [...], in order to [...]."
+title: "[US] [Name this US as it appears in the sprint goal]"
 labels: 'kind:user-story'
 assignees: ''
 
 ---
 
+## User
+
+- [X] Study officer
+- [ ] Manager
+
+## Description
+
+Please give a brief description of the User Story. What must the user be able to do ?
+
+## Goal
+
+What is the point of this user story ? Why is it necessary ?
+
 ## Acceptance criteria
 
-A clear and exhaustive list of acceptance criteria that goes with this US.
 - [ ] Criteria 1
 - [ ] Criteria 2
 - [ ] Criteria 3
@@ -20,4 +32,4 @@ Is there an existing mockup or wireframe for this US ? If so, please link it her
 
 ## Difficulty
 
-This user story [easy / normal / difficult / extreme]
+This user story is [easy / normal / difficult / extreme]
