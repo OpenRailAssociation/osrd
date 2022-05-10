@@ -597,8 +597,8 @@ public class PathfindingTests {
         assertNull(res);
     }
 
-    private static List<SimpleRange> convertRes(List<Pathfinding.EdgeRange<SimpleGraphBuilder.Edge>> res) {
-        return res.stream()
+    private static List<SimpleRange> convertRes(Pathfinding.Result<SimpleGraphBuilder.Edge> res) {
+        return res.ranges().stream()
                 .map(x -> new SimpleRange(x.edge().label, x.start(), x.end()))
                 .collect(Collectors.toList());
     }

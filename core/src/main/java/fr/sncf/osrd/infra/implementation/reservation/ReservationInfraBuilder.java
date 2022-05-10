@@ -79,7 +79,7 @@ public class ReservationInfraBuilder {
             makeRouteOnEdgeMap(Collection<ReservationRoute> routes) {
         var res = ImmutableMultimap.<DiTrackEdge, ReservationInfra.RouteEntry>builder();
         for (var route : routes) {
-            var offset = 0;
+            double offset = 0.;
             for (var range : route.getTrackRanges()) {
                 double rangeOffset; // Offset from the start of the track to the start of the range
                 if (range.track.getDirection().equals(FORWARD))

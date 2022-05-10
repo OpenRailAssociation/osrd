@@ -92,18 +92,27 @@ public class TrackRangeView {
 
     /** Returns true if the location is included in the range */
     public boolean contains(TrackLocation location) {
-        return location.track().equals(track.getEdge())
-                && location.offset() >= begin
-                && location.offset() <= end;
+        return location.track().equals(track.getEdge()) && containsOffset(location.offset());
+    }
+
+    /** Returns true if the track offset is included in the range */
+    public boolean containsOffset(double offset) {
+        return offset >= begin && offset <= end;
     }
 
     /** Returns the distance between the start of the range and the given location */
     public double offsetOf(TrackLocation location) {
         assert contains(location) : "can't determine the offset of an element not in the range";
+        return offsetOf(location.offset());
+    }
+
+    /** Returns the distance between the start of the range and the given location */
+    public double offsetOf(double trackLocation) {
+        assert containsOffset(trackLocation) : "can't determine the offset of an element not in the range";
         if (track.getDirection().equals(Direction.FORWARD))
-            return location.offset() - begin;
+            return trackLocation - begin;
         else
-            return end - location.offset();
+            return end - trackLocation;
     }
 
     /** Returns the location of the given offset on the range */

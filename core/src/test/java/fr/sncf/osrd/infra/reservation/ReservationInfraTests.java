@@ -28,7 +28,7 @@ public class ReservationInfraTests {
         var map = reservationInfra.getRoutesOnEdges();
 
         for (var route : reservationInfra.getInfraRouteGraph().edges()) {
-            var offset = 0;
+            double offset = 0;
             for (var range : route.getTrackRanges()) {
                 double trackOffset;
                 if (offset > 0)

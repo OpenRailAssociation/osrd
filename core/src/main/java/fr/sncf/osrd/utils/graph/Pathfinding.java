@@ -19,7 +19,8 @@ public class Pathfinding<NodeT, EdgeT> {
             Step<EdgeT> prev, // Previous step (to construct the result)
             double totalDistance, // Total distance from the start
             double weight, // Priority queue weight (could be different from totalDistance to allow for A*)
-            int nReachedTargets // How many targets have been passed
+            int nReachedTargets, // How many targets we found by this path
+            List<EdgeLocation<EdgeT>> targets // The list of targets found within this step (in order)
     ) implements Comparable<Step<EdgeT>> {
         @Override
         public int compareTo(@NotNull Step<EdgeT> o) {
@@ -29,6 +30,12 @@ public class Pathfinding<NodeT, EdgeT> {
             return o.nReachedTargets - nReachedTargets;
         }
     }
+
+    /** Contains all the results of a pathfinding */
+    public record Result<EdgeT>(
+            List<EdgeRange<EdgeT>> ranges, // Full path as edge ranges
+            List<EdgeLocation<EdgeT>> waypoints // All the range locations given as input that the path goes through
+    ) {}
 
     /** A location on a range, made of edge + offset. Used for the input of the pathfinding */
     public record EdgeLocation<EdgeT>(
@@ -68,7 +75,7 @@ public class Pathfinding<NodeT, EdgeT> {
     }
 
     /** Returns the shortest path from any start edge to any end edge, as a list of (edge, start, end) */
-    public static <NodeT, EdgeT> List<EdgeRange<EdgeT>> findPath(
+    public static <NodeT, EdgeT> Result<EdgeT> findPath(
             ImmutableNetwork<NodeT, EdgeT> graph,
             List<Collection<EdgeLocation<EdgeT>>> locations,
             Function<EdgeT, Double> edgeToLength,
@@ -96,12 +103,12 @@ public class Pathfinding<NodeT, EdgeT> {
      * It finds the shortest path from start to end,
      * going through at least one location of each every intermediate target in order.
      * It uses Dijkstra algorithm internally, but can be changed to an A* with minor changes */
-    private List<EdgeRange<EdgeT>> runPathfinding(
+    private Result<EdgeT> runPathfinding(
             List<Collection<EdgeLocation<EdgeT>>> targets
     ) {
         for (var location : targets.get(0)) {
             var startRange = new EdgeRange<>(location.edge, location.offset, edgeToLength.apply(location.edge));
-            registerStep(startRange, null, 0, 0);
+            registerStep(startRange, null, 0, 0, List.of(location));
         }
         while (true) {
             var step = queue.poll();
@@ -121,7 +128,15 @@ public class Pathfinding<NodeT, EdgeT> {
                         // The target location is blocked by a blocked range, it can't be accessed from here
                         continue;
                     }
-                    registerStep(newRange, step.prev, step.totalDistance, step.nReachedTargets + 1);
+                    var stepTargets = new ArrayList<>(step.targets);
+                    stepTargets.add(targetLocation);
+                    registerStep(
+                            newRange,
+                            step.prev,
+                            step.totalDistance,
+                            step.nReachedTargets + 1,
+                            stepTargets
+                    );
                 }
             var edgeLength = edgeToLength.apply(step.range.edge);
             if (step.range.end == edgeLength) {
@@ -148,10 +163,10 @@ public class Pathfinding<NodeT, EdgeT> {
     private List<EdgeT> runPathfindingEdgesOnly(
             List<Collection<EdgeLocation<EdgeT>>> targets
     ) {
-        var locatedSteps = runPathfinding(targets);
-        if (locatedSteps == null)
+        var res = runPathfinding(targets);
+        if (res == null)
             return null;
-        return locatedSteps.stream()
+        return res.ranges.stream()
                 .map(step -> step.edge)
                 .collect(Collectors.toList());
     }
@@ -165,23 +180,27 @@ public class Pathfinding<NodeT, EdgeT> {
     }
 
     /** Builds the result, iterating over the previous steps and merging ranges */
-    private List<EdgeRange<EdgeT>> buildResult(Step<EdgeT> step) {
-        var ranges = new ArrayDeque<EdgeRange<EdgeT>>();
-        while (step != null) {
-            ranges.addFirst(step.range);
-            step = step.prev;
+    private Result<EdgeT> buildResult(Step<EdgeT> lastStep) {
+        var orderedSteps = new ArrayDeque<Step<EdgeT>>();
+        while (lastStep != null) {
+            orderedSteps.addFirst(lastStep);
+            lastStep = lastStep.prev;
         }
-        var res = new ArrayList<EdgeRange<EdgeT>>();
-        for (var range : ranges) {
-            var lastIndex = res.size() - 1;
-            if (res.isEmpty() || res.get(lastIndex).edge != range.edge)
-                res.add(range);
-            else {
-                var newRange = new EdgeRange<>(range.edge, res.get(lastIndex).start, range.end);
-                res.set(lastIndex, newRange);
+        var ranges = new ArrayList<EdgeRange<EdgeT>>();
+        var waypoints = new ArrayList<EdgeLocation<EdgeT>>();
+        for (var step : orderedSteps) {
+            var lastIndex = ranges.size() - 1;
+            if (ranges.isEmpty() || ranges.get(lastIndex).edge != step.range.edge) {
+                // If we start a new edge, add a new range to the result
+                ranges.add(step.range);
+            } else {
+                // Otherwise, extend the previous range
+                var newRange = new EdgeRange<>(step.range.edge, ranges.get(lastIndex).start, step.range.end);
+                ranges.set(lastIndex, newRange);
             }
+            waypoints.addAll(step.targets);
         }
-        return res;
+        return new Result<>(ranges, waypoints);
     }
 
     /** Filter the range to keep only the parts that can be reached */
@@ -202,15 +221,38 @@ public class Pathfinding<NodeT, EdgeT> {
     }
 
     /** Registers one step, adding the edge to the queue if not already seen */
-    private void registerStep(EdgeRange<EdgeT> range, Step<EdgeT> prev, double prevDistance, int nPassedTargets) {
+    private void registerStep(
+            EdgeRange<EdgeT> range,
+            Step<EdgeT> prev,
+            double prevDistance,
+            int nPassedTargets
+    ) {
+        registerStep(range, prev, prevDistance, nPassedTargets, List.of());
+    }
+
+    /** Registers one step, adding the edge to the queue if not already seen */
+    private void registerStep(
+            EdgeRange<EdgeT> range,
+            Step<EdgeT> prev,
+            double prevDistance,
+            int nPassedTargets,
+            List<EdgeLocation<EdgeT>> targets
+    ) {
         range = filterRange(range);
         if (range == null)
             return;
         if (!(seen.getOrDefault(range, -1) < nPassedTargets))
             return;
         double totalDistance = prevDistance + (range.end - range.start);
-        var distanceLeftEstimation = 0; // Set this with geo coordinates if we want an A*
-        queue.add(new Step<>(range, prev, totalDistance, totalDistance + distanceLeftEstimation, nPassedTargets));
+        double distanceLeftEstimation = 0; // Set this with geo coordinates if we want an A*
+        queue.add(new Step<>(
+                range,
+                prev,
+                totalDistance,
+                totalDistance + distanceLeftEstimation,
+                nPassedTargets,
+                targets
+        ));
         seen.put(range, nPassedTargets);
     }
 }
