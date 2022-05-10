@@ -137,6 +137,6 @@ public class SignalizationEngine implements SignalizationState {
      */
     @SuppressWarnings("unchecked") // We know the types match, but we lose that information when going through the map
     public <T extends SignalState> void setSignalOpen(Signal<T> signal) {
-        signalStates.put(signal, signal.getOpenState());
+        signalStates.put(signal, signal.getLeastRestrictiveState());
     }
 }

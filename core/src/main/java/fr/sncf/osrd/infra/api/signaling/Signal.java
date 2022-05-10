@@ -31,6 +31,6 @@ public interface Signal<StateT extends SignalState> {
     /** Returns the distance at which the signal can be seen */
     double getSightDistance();
 
-    /** Returns the state when this signal is open */
-    StateT getOpenState();
+    /** Returns the least restrictive state */
+    StateT getLeastRestrictiveState();
 }

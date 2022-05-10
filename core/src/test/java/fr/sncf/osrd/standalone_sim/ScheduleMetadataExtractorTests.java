@@ -22,7 +22,6 @@ import fr.sncf.osrd.infra_state.implementation.standalone.StandaloneSignalingSim
 import fr.sncf.osrd.infra_state.implementation.standalone.StandaloneState;
 import fr.sncf.osrd.train.TestTrains;
 import org.junit.jupiter.api.Test;
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -270,17 +269,18 @@ public class ScheduleMetadataExtractorTests {
                 assertTrue(signalUpdates.get(i - 1).timeEnd <= signalUpdates.get(i).timeStart);
         }
 
-        // Checks that the signals are set to green from the moment they're seen
+        // Checks that the signals are set to "open" from the moment they're seen
         for (var route : path.routePath()) {
             var signal = route.element().getEntrySignal();
             if (signal == null)
                 continue;
             var seen = Math.max(0, route.pathOffset() - signal.getSightDistance());
-            assertTrue(simplifiedUpdates.contains(new SimplifiedUpdate(
-                    signal.getID(),
-                    envelope.interpolateTotalTime(seen),
-                    Color.GREEN.getRGB()
-            )));
+            if (seen > 0)
+                assertTrue(simplifiedUpdates.contains(new SimplifiedUpdate(
+                        signal.getID(),
+                        envelope.interpolateTotalTime(seen),
+                        signal.getLeastRestrictiveState().getRGBColor()
+                )));
         }
     }
 
