@@ -101,6 +101,9 @@ public class BAL3 implements SignalingModule {
                     startSignal.signalDependencies.add(endSignal);
             }
         }
+        for (var signal : signalMap.values())
+            if (signal instanceof BAL3Signal bal3Signal)
+                bal3Signal.setup();
         return res.build();
     }
 

@@ -1,7 +1,6 @@
 package fr.sncf.osrd.standalone_sim;
 
-import static java.lang.Math.max;
-import static java.lang.Math.min;
+import static java.lang.Math.*;
 
 import com.google.common.collect.Sets;
 import fr.sncf.osrd.envelope.Envelope;
@@ -106,8 +105,9 @@ public class ScheduleMetadataExtractor {
             var updates = entry.getValue();
             for (int i = 0; i < updates.size(); i++) {
                 var update = updates.get(i);
-                if (update.state().isFree()) {
-                    // default state isn't reported, it's not displayed and assumed to be anywhere not specified
+                if (update.state().equals(entry.getKey().getLeastRestrictiveState())) {
+                    // The least restrictive state isn't reported,
+                    // it's not displayed and assumed to be anywhere not specified
                     continue;
                 }
                 var timeStart = update.time();
@@ -150,14 +150,18 @@ public class ScheduleMetadataExtractor {
                 continue;
             var sightPosition = route.pathOffset() - entrySignal.getSightDistance();
             sightPosition = Math.max(0, sightPosition);
-            res.add(new SignalUpdate(
-                    entrySignal.getID(),
-                    Set.of(route.element().getInfraRoute().getID()),
-                    envelope.interpolateTotalTime(sightPosition),
-                    envelope.interpolateTotalTime(route.pathOffset()),
-                    entrySignal.getOpenState().getRGBColor(),
-                    false
-            ));
+            if (sightPosition > 0) {
+                var newUpdate = new SignalUpdate(
+                        entrySignal.getID(),
+                        Set.of(route.element().getInfraRoute().getID()),
+                        envelope.interpolateTotalTime(sightPosition),
+                        envelope.interpolateTotalTime(route.pathOffset()),
+                        entrySignal.getLeastRestrictiveState().getRGBColor(),
+                        false
+                );
+                System.out.println(newUpdate);
+                res.add(newUpdate);
+            }
         }
         return res;
     }
