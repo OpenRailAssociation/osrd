@@ -19,6 +19,7 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
     final Set<BAL3.BAL3Route> protectedRoutes = new HashSet<>();
     private final String id;
     private final double sightDistance;
+    private Boolean canDisplayGreen = null;
 
     public BAL3Signal(String id, double sightDistance) {
         this.id = id;
@@ -34,8 +35,12 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
     }
 
     @Override
-    public BAL3SignalState getOpenState() {
-        return new BAL3SignalState(BAL3.Aspect.GREEN);
+    public BAL3SignalState getLeastRestrictiveState() {
+        assert canDisplayGreen != null : "signal.setup() has not been called";
+        if (canDisplayGreen)
+            return new BAL3SignalState(BAL3.Aspect.GREEN);
+        else
+            return new BAL3SignalState(BAL3.Aspect.YELLOW);
     }
 
 
@@ -47,14 +52,12 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
             return new BAL3SignalState(BAL3.Aspect.RED);
 
         for (var route : protectedRoutes) {
-            if (route.exitSignal() == null)
-                return new BAL3SignalState(BAL3.Aspect.YELLOW); // last signal before a buffer stop -> yellow
             if (route.exitSignal() instanceof BAL3Signal bal3Signal
                     && bal3Signal.getInitialState().aspect == BAL3.Aspect.RED)
                 return new BAL3SignalState(BAL3.Aspect.YELLOW); // next signal is red by default -> yellow
         }
 
-        return new BAL3SignalState(BAL3.Aspect.GREEN);
+        return getLeastRestrictiveState();
     }
 
     @Override
@@ -87,7 +90,7 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
                     return new BAL3SignalState(BAL3.Aspect.YELLOW);
                 else {
                     // A route is reserved and lead to a signal that isn't red, we don't need to check the rest
-                    return new BAL3SignalState(BAL3.Aspect.GREEN);
+                    return getLeastRestrictiveState();
                 }
             }
         }
@@ -97,7 +100,7 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
             if (isNextRouteBlocked(route, signalization))
                 return new BAL3SignalState(BAL3.Aspect.YELLOW);
         }
-        return new BAL3SignalState(BAL3.Aspect.GREEN);
+        return getLeastRestrictiveState();
     }
 
     /** Returns true if the signal at the end of this route is red */
@@ -140,5 +143,16 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
     @Override
     public double getSightDistance() {
         return sightDistance;
+    }
+
+    /** Finish setting up everything, to be called once protected routes have been set */
+    void setup() {
+        canDisplayGreen = true;
+        for (var route : protectedRoutes) {
+            if (route.exitSignal() == null) {
+                canDisplayGreen = false;
+                break;
+            }
+        }
     }
 }
