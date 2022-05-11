@@ -23,4 +23,4 @@ class Simulation:
 
     def save(self, path):
         with open(path, "w") as f:
-            json.dump(self.format(), f)
+            json.dump(self.format(), f, indent=2)
