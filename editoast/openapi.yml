@@ -51,6 +51,24 @@ paths:
                 $ref: "#/components/schemas/Infra"
 
   /infra/{id}/:
+    get:
+      tags:
+        - infra
+      summary: Retrieve a specific infra
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: infra id
+          required: true
+      responses:
+        200:
+          description: Information about the retrieved infra
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Infra"
     delete:
       tags:
         - infra
