@@ -132,4 +132,11 @@ class InfraBuilder:
         # Generate routes
         generate_routes(self)
 
+        duplicates = self.infra.find_duplicates()
+        if duplicates:
+            print("Duplicates were found:")
+            for duplicate in duplicates:
+                print(duplicate.__class__.__name__, duplicate.label)
+            raise ValueError(f"Duplicates found")
+
         return self.infra

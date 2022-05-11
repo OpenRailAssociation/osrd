@@ -72,5 +72,36 @@ class Infra:
                 parts_per_op[op_part.operarational_point.label].append(op_part.to_rjs(track))
         ops = []
         for op in self.operational_points:
-            ops.append(infra.OperationalPoint(id=op.label, parts=parts_per_op[op.label], ci=0, ch="aa", name=op.label))
+            ops.append(
+                infra.OperationalPoint(
+                    id=op.label,
+                    parts=parts_per_op[op.label],
+                    ci=0,
+                    ch="aa",
+                    name=op.label,
+                )
+            )
         return ops
+
+    def find_duplicates(self):
+        """
+        Checks for duplicates in all objects.
+        """
+        duplicates = []
+        for instance_list in [
+            self.track_sections,
+            self.switches,
+            self.links,
+            self.operational_points,
+            self.routes,
+            self.speed_sections,
+            sum([ts.signals for ts in self.track_sections], []),
+            sum([ts.waypoints for ts in self.track_sections], []),
+        ]:
+            seen_ids = set()
+            for instance in instance_list:
+                if instance.label in seen_ids:
+                    duplicates.append(instance)
+                else:
+                    seen_ids.add(instance.label)
+        return duplicates
