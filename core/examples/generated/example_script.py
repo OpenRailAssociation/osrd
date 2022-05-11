@@ -54,8 +54,8 @@ for i in (0, 1, 2, 4):
 
 # Add operational points
 my_op = builder.add_operational_point("my-op")
-my_op.set_position(tracks[0], 500)
-my_op.set_position(tracks[1], 500)
+my_op.add_part(tracks[0], 500)
+my_op.add_part(tracks[1], 500)
 
 # Build infra: Generate BufferStops, TVDSections and Routes
 infra = builder.build()

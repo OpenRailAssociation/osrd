@@ -13,7 +13,7 @@ class OperationalPoint:
         self.label = label
         self.parts = list()
 
-    def set_position(self, track, offset):
+    def add_part(self, track, offset):
         op_part = OperationalPointPart(self, offset)
         track.operational_points.append(op_part)
         self.parts.append(op_part)

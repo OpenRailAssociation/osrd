@@ -23,7 +23,7 @@
 
 ### Operation point 
 
-- `set_position(self, track, offset)`: Link an operational point to a position.
+- `add_part(self, track, offset)`: Link an operational point to a position.
 
 ### Infra 
 
