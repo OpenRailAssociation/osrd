@@ -1,6 +1,3 @@
-import enum
-from re import L
-
 from railjson_generator import (
     InfraBuilder,
     SimulationBuilder,
@@ -8,6 +5,10 @@ from railjson_generator import (
     Location,
 )
 from railjson_generator.schema.infra.direction import Direction
+from railjson_generator import get_output_dir
+
+
+OUTPUT_DIR = get_output_dir()
 
 
 def place_regular_signals_detectors(
@@ -127,6 +128,21 @@ west.add_part(ta0, 700)
 west.add_part(ta1, 500)
 west.add_part(ta2, 500)
 
+# Slopes
+ta6.add_slope(begin=4000, end=4300, slope=-3)
+ta6.add_slope(begin=4300, end=4700, slope=-6)
+ta6.add_slope(begin=4700, end=5000, slope=-3)
+ta7.add_slope(begin=4000, end=4300, slope=-3)
+ta7.add_slope(begin=4300, end=4700, slope=-6)
+ta7.add_slope(begin=4700, end=5000, slope=-3)
+
+
+ta6.add_slope(begin=7000, end=7300, slope=3)
+ta6.add_slope(begin=7300, end=7700, slope=6)
+ta6.add_slope(begin=7700, end=7000, slope=3)
+ta7.add_slope(begin=7000, end=7300, slope=3)
+ta7.add_slope(begin=7300, end=7700, slope=6)
+ta7.add_slope(begin=7700, end=7000, slope=3)
 
 # ================================
 #  Around station B: South-West
@@ -224,7 +240,7 @@ td3 = builder.add_track_section(length=3000, label="TD3")
 
 te0 = builder.add_track_section(length=1500, label="TE0")
 tf0 = builder.add_track_section(length=3, label="TF0")
-tf1 = builder.add_track_section(length=5000, label="TF1")
+tf1 = builder.add_track_section(length=6500, label="TF1")
 
 # switches
 pd0 = builder.add_cross_switch(
@@ -261,6 +277,21 @@ place_regular_signals_detectors(td1, "D1", 200, -200)
 mid_east = builder.add_operational_point(label="Mid_East_station")
 mid_east.add_part(td0, 14000)
 mid_east.add_part(td1, 14000)
+
+# Slopes
+td0.add_slope(begin=6000, end=7000, slope=3)
+td0.add_slope(begin=7000, end=8000, slope=6)
+td0.add_slope(begin=8000, end=9000, slope=3)
+td1.add_slope(begin=6000, end=7000, slope=3)
+td1.add_slope(begin=7000, end=8000, slope=6)
+td1.add_slope(begin=8000, end=9000, slope=3)
+
+td0.add_slope(begin=14000, end=15000, slope=-3)
+td0.add_slope(begin=15000, end=16000, slope=-6)
+td0.add_slope(begin=16000, end=17000, slope=-3)
+td1.add_slope(begin=14000, end=15000, slope=-3)
+td1.add_slope(begin=15000, end=16000, slope=-6)
+td1.add_slope(begin=16000, end=17000, slope=-3)
 
 # ================================
 #  Around station E: North
@@ -310,7 +341,7 @@ pe2 = builder.add_point_switch(
 )
 pe2.set_coords(-0.15, LAT_0)
 
-tf0.set_remaining_coords([[-0.172, LAT_3 - 0.002]])
+te0.set_remaining_coords([[-0.172, LAT_3 - 0.002]])
 te2.set_remaining_coords(
     [
         [-0.164, LAT_3 + LAT_LINE_SPACE],
@@ -324,6 +355,18 @@ north = builder.add_operational_point(label="North_station")
 north.add_part(te1, 1000)
 north.add_part(te2, 1025)
 
+# Curves
+te3.add_curve(begin=0, end=300, curve=5000)
+te3.add_curve(begin=650, end=850, curve=9000)
+te3.add_curve(begin=te3.length - 850, end=te3.length - 650, curve=8000)
+te3.add_curve(begin=te3.length - 300, end=te3.length, curve=7000)
+
+te1.add_curve(begin=0, end=300, curve=5000)
+te1.add_curve(begin=te3.length - 300, end=0, curve=6000)
+
+te0.add_curve(begin=0, end=300, curve=6000)
+te0.add_curve(begin=500, end=1000, curve=8000)
+
 # ================================
 #  Around station F: South
 # ================================
@@ -332,6 +375,9 @@ tf1.set_remaining_coords([[-0.172, 49.47], [-0.167, 49.466], [-0.135, 49.466]])
 
 south = builder.add_operational_point(label="South_station")
 south.add_part(tf1, 4300)
+
+# Curves
+tf1.add_curve(begin=3100, end=4400, curve=9500)
 
 # ================================
 #  Around station G: North-East
@@ -429,8 +475,17 @@ th1.set_remaining_coords(
     [[-0.115, 49.497], [-0.115, 49.487], [-0.11, 49.484], [-0.09, 49.484]]
 )
 
+# Station
 south_east = builder.add_operational_point(label="South_East_station")
 south_east.add_part(th1, 4400)
+
+# Speed section
+speed_1 = builder.add_speed_section(142)
+speed_1.add_track_range(th0, 500, 1000, ApplicableDirection.BOTH)
+speed_1.add_track_range(th1, 0, 4000, ApplicableDirection.BOTH)
+
+speed_2 = builder.add_speed_section(112)
+speed_2.add_track_range(th1, 3500, 4400, ApplicableDirection.BOTH)
 
 # ================================
 # Produce the railjson
@@ -440,4 +495,4 @@ south_east.add_part(th1, 4400)
 infra = builder.build()
 
 # Save railjson
-infra.save("infra.json")
+infra.save(OUTPUT_DIR / "infra.json")
