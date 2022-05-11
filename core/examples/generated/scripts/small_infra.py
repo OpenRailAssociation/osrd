@@ -58,11 +58,6 @@ LONG_SWITCH_LENGTH = 0.005
 builder = InfraBuilder()
 
 # ================================
-#  Around station B: South-West
-# ================================
-tb0 = builder.add_track_section(length=300, label="TB0")
-
-# ================================
 #  Around station A: West
 # ================================
 # track sections
@@ -74,6 +69,9 @@ ta4 = builder.add_track_section(length=50, label="TA4")
 ta5 = builder.add_track_section(length=50, label="TA5")
 ta6 = builder.add_track_section(length=10000, label="TA6")
 ta7 = builder.add_track_section(length=10000, label="TA7")
+
+# I create this track section here to be able to add points using it
+tb0 = builder.add_track_section(length=3000, label="TB0")
 
 # switches
 pa0 = builder.add_point_switch(
@@ -113,9 +111,6 @@ ta0.set_remaining_coords([[-0.4, LAT_0]])
 ta1.set_remaining_coords([[-0.4, LAT_1]])
 ta2.set_remaining_coords([[-0.4, LAT_2]])
 
-# We set TB0's coordinates only here because we had to wait for PA1 to be created
-tb0.set_remaining_coords([[-0.4, 49.49], [-0.373, 49.49], [-0.37, 49.492]])
-
 # Extra detectors, which are not associated to signals
 
 da7 = ta3.add_detector(label="DA7", position=ta3.length / 2)
@@ -125,6 +120,22 @@ da9 = ta5.add_detector(label="DA9", position=ta5.length / 2)
 # Extra signals
 place_regular_signals_detectors(ta6, "A6", 200, -200)
 place_regular_signals_detectors(ta7, "A7", 200, -200)
+
+# Station
+west = builder.add_operational_point(label="South_West_station")
+west.add_part(ta0, 700)
+west.add_part(ta1, 500)
+west.add_part(ta2, 500)
+
+
+# ================================
+#  Around station B: South-West
+# ================================
+
+tb0.set_remaining_coords([[-0.4, 49.49], [-0.373, 49.49], [-0.37, 49.492]])
+
+south_west = builder.add_operational_point(label="West_station")
+south_west.add_part(tb0, 500)
 
 # ================================
 #  Around station C: Mid - West
@@ -197,6 +208,13 @@ tc3.set_remaining_coords(
     [[-0.309, LAT_1 - LAT_LINE_SPACE], [-0.297, LAT_1 - LAT_LINE_SPACE]]
 )
 
+# Station
+mid_west = builder.add_operational_point(label="Mid_West_station")
+mid_west.add_part(tc0, 550)
+mid_west.add_part(tc1, 550)
+mid_west.add_part(tc2, 450)
+mid_west.add_part(tc3, 450)
+
 # ================================
 #  Around station D: Mid-East
 # ================================
@@ -238,6 +256,11 @@ pd1.set_coords(-0.172, LAT_1)
 
 place_regular_signals_detectors(td0, "D0", 200, -200)
 place_regular_signals_detectors(td1, "D1", 200, -200)
+
+# Station
+mid_east = builder.add_operational_point(label="Mid_East_station")
+mid_east.add_part(td0, 14000)
+mid_east.add_part(td1, 14000)
 
 # ================================
 #  Around station E: North
@@ -296,14 +319,22 @@ te2.set_remaining_coords(
 )
 te3.set_remaining_coords([[-0.145, LAT_0 + 0.002], [-0.145, LAT_3 - 0.002]])
 
+# Station
+north = builder.add_operational_point(label="North_station")
+north.add_part(te1, 1000)
+north.add_part(te2, 1025)
+
 # ================================
 #  Around station F: South
 # ================================
 
 tf1.set_remaining_coords([[-0.172, 49.47], [-0.167, 49.466], [-0.135, 49.466]])
 
+south = builder.add_operational_point(label="South_station")
+south.add_part(tf1, 4300)
+
 # ================================
-#  Around station G: North-West
+#  Around station G: North-East
 # ================================
 # track sections
 tg1 = builder.add_track_section(length=4000, label="TG1")
@@ -334,8 +365,13 @@ tg5.set_remaining_coords([[-0.09, LAT_4 - LAT_LINE_SPACE]])
 
 dg6 = tg3.add_detector(label="DG7", position=tg3.length / 2)
 
+north_east = builder.add_operational_point(label="North_East_station")
+north_east.add_part(tg4, 1550)
+north_east.add_part(tg5, 1500)
+
+
 # ================================
-#  Around station H: South-West
+#  Around station H: South-East
 # ================================
 # track sections
 th0 = builder.add_track_section(length=1000, label="TH0")
@@ -369,7 +405,6 @@ ph1 = builder.add_point_switch(
 )
 ph1.set_coords(-0.12, LAT_1)
 
-# TODO finish coords
 td3.set_remaining_coords([[-0.1354, LAT_1]])
 tg0.set_remaining_coords([[-0.1354, LAT_0]])
 tg1.set_remaining_coords(
@@ -393,6 +428,9 @@ th0.set_remaining_coords([[-0.1346, LAT_1]])
 th1.set_remaining_coords(
     [[-0.115, 49.497], [-0.115, 49.487], [-0.11, 49.484], [-0.09, 49.484]]
 )
+
+south_east = builder.add_operational_point(label="South_East_station")
+south_east.add_part(th1, 4400)
 
 # ================================
 # Produce the railjson
