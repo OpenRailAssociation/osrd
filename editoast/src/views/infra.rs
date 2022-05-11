@@ -13,7 +13,7 @@ use rocket::{routes, Route, State};
 use rocket_contrib::json::{Json, JsonError, JsonValue};
 
 pub fn routes() -> Vec<Route> {
-    routes![list, edit, create, delete, refresh]
+    routes![list, get, edit, create, delete, refresh]
 }
 
 /// Refresh infra generated data
@@ -60,6 +60,12 @@ fn refresh(
 #[get("/")]
 fn list(conn: DBConnection) -> ApiResult<Json<Vec<Infra>>> {
     Ok(Json(Infra::list(&conn)))
+}
+
+/// Return a specific infra
+#[get("/<infra>")]
+fn get(conn: DBConnection, infra: i32) -> ApiResult<Custom<Json<Infra>>> {
+    Ok(Custom(Status::Ok, Json(Infra::retrieve(&conn, infra)?)))
 }
 
 /// Create an infra
@@ -197,6 +203,43 @@ mod test {
         let delete_infra = client.delete(format!("/infra/{}", infra.id)).dispatch();
 
         assert_eq!(delete_infra.status(), Status::NoContent);
+    }
+
+    #[test]
+    fn infras_get() {
+        let rocket = create_server(
+            Default::default(),
+            6000,
+            &Default::default(),
+            Default::default(),
+        );
+
+        let client = Client::new(rocket).expect("valid rocket instance");
+        let mut create_infra = client
+            .post("/infra")
+            .header(ContentType::JSON)
+            .body(r#"{"name":"test"}"#)
+            .dispatch();
+
+        let body = create_infra.body_string();
+        assert!(body.is_some());
+
+        let infra: Infra = serde_json::from_str(body.unwrap().as_str()).unwrap();
+
+        assert_eq!(create_infra.status(), Status::Created);
+        assert_eq!(infra.name, "test");
+
+        let response = client.get(format!("/infra/{}", infra.id)).dispatch();
+
+        assert_eq!(response.status(), Status::Ok);
+
+        let delete_infra = client.delete(format!("/infra/{}", infra.id)).dispatch();
+
+        assert_eq!(delete_infra.status(), Status::NoContent);
+
+        let responsedel = client.get(format!("/infra/{}", infra.id)).dispatch();
+
+        assert_eq!(responsedel.status(), Status::NotFound);
     }
 
     #[derive(Deserialize)]
