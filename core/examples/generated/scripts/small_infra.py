@@ -10,6 +10,36 @@ from railjson_generator import (
 from railjson_generator.schema.infra.direction import Direction
 
 
+def place_regular_signals_detectors(
+    track_section: "TrackSection",
+    label_suffix: str,
+    min_offset: float = 0,
+    max_offset: float = None,
+    period: float = 1500,
+):
+    """Place signals and detectors on the track section, every <period> meters."""
+    if max_offset is None:
+        max_offset = track_section.length
+    elif max_offset < 0:
+        max_offset = track_section.length + max_offset
+    n_signals = ((max_offset - min_offset) // period) - 1
+    signal_step = (max_offset - min_offset) / (n_signals + 1)
+    for i in range(n_signals):
+        for j, direction in enumerate(
+            [Direction.START_TO_STOP, Direction.STOP_TO_START]
+        ):
+            detector = track_section.add_detector(
+                label=f"D{label_suffix}_{i}" + "r" * j,
+                position=min_offset + i * signal_step + 20 + (-40 * j),
+            )
+            track_section.add_signal(
+                label=f"S{label_suffix}_{i}" + "r" * j,
+                linked_detector=detector,
+                direction=direction,
+                position=min_offset + i * signal_step,
+            )
+
+
 # Reference latitudes and longitudes
 LAT_LINE_SPACE = 0.0001
 
@@ -42,8 +72,8 @@ ta2 = builder.add_track_section(length=1950, label="TA2")
 ta3 = builder.add_track_section(length=50, label="TA3")
 ta4 = builder.add_track_section(length=50, label="TA4")
 ta5 = builder.add_track_section(length=50, label="TA5")
-ta6 = builder.add_track_section(length=8000, label="TA6")
-ta7 = builder.add_track_section(length=8000, label="TA7")
+ta6 = builder.add_track_section(length=10000, label="TA6")
+ta7 = builder.add_track_section(length=10000, label="TA7")
 
 # switches
 pa0 = builder.add_point_switch(
@@ -92,6 +122,9 @@ da7 = ta3.add_detector(label="DA7", position=ta3.length / 2)
 da8 = ta4.add_detector(label="DA8", position=ta4.length / 2)
 da9 = ta5.add_detector(label="DA9", position=ta5.length / 2)
 
+# Extra signals
+place_regular_signals_detectors(ta6, "A6", 200, -200)
+place_regular_signals_detectors(ta7, "A7", 200, -200)
 
 # ================================
 #  Around station C: Mid - West
@@ -103,8 +136,8 @@ tc2 = builder.add_track_section(length=1000, label="TC2")
 tc3 = builder.add_track_section(length=1050, label="TC3")
 
 # I have to create them here in order to create switches
-td0 = builder.add_track_section(length=20000, label="TD0")
-td1 = builder.add_track_section(length=20000, label="TD1")
+td0 = builder.add_track_section(length=25000, label="TD0")
+td1 = builder.add_track_section(length=25000, label="TD1")
 
 # Switches
 pc0 = builder.add_point_switch(
@@ -202,6 +235,9 @@ pd1 = builder.add_cross_switch(
     },
 )
 pd1.set_coords(-0.172, LAT_1)
+
+place_regular_signals_detectors(td0, "D0", 200, -200)
+place_regular_signals_detectors(td1, "D1", 200, -200)
 
 # ================================
 #  Around station E: North
