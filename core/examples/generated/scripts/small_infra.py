@@ -82,7 +82,7 @@ pa0 = builder.add_point_switch(
     right=ta4.begin(),
     signal_on_ports={"base": ("DA0", "SA0")},
 )
-pa0.set_coords(-0.365, LAT_1)
+pa0.set_coords(-0.37, LAT_1)
 pa1 = builder.add_point_switch(
     label="PA1",
     base=ta5.begin(),
@@ -90,7 +90,7 @@ pa1 = builder.add_point_switch(
     right=ta2.end(),
     signal_on_ports={"left": ("DB0", "SB0"), "right": ("DA1", "SA1")},
 )
-pa1.set_coords(-0.365, LAT_1 - LAT_LINE_SPACE)
+pa1.set_coords(-0.37, LAT_1 - LAT_LINE_SPACE)
 pa2 = builder.add_point_switch(
     label="PA2",
     base=ta6.begin(),
@@ -98,7 +98,7 @@ pa2 = builder.add_point_switch(
     right=ta0.end(),
     signal_on_ports={"base": ("DA3", "SA3"), "right": ("DA2", "SA2")},
 )
-pa2.set_coords(-0.037, LAT_0)
+pa2.set_coords(-0.365, LAT_0)
 pa3 = builder.add_point_switch(
     label="PA3",
     base=ta7.begin(),
@@ -106,7 +106,7 @@ pa3 = builder.add_point_switch(
     right=ta4.end(),
     signal_on_ports={"base": ("DA4", "SA4")},
 )
-pa3.set_coords(-0.037, LAT_1)
+pa3.set_coords(-0.365, LAT_1)
 
 ta0.set_remaining_coords([[-0.4, LAT_0]])
 ta1.set_remaining_coords([[-0.4, LAT_1]])
@@ -139,10 +139,10 @@ ta7.add_slope(begin=4700, end=5000, slope=-3)
 
 ta6.add_slope(begin=7000, end=7300, slope=3)
 ta6.add_slope(begin=7300, end=7700, slope=6)
-ta6.add_slope(begin=7700, end=7000, slope=3)
+ta6.add_slope(begin=7700, end=8000, slope=3)
 ta7.add_slope(begin=7000, end=7300, slope=3)
 ta7.add_slope(begin=7300, end=7700, slope=6)
-ta7.add_slope(begin=7700, end=7000, slope=3)
+ta7.add_slope(begin=7700, end=8000, slope=3)
 
 # ================================
 #  Around station B: South-West
@@ -342,10 +342,10 @@ pe2 = builder.add_point_switch(
 pe2.set_coords(-0.15, LAT_0)
 
 te0.set_remaining_coords([[-0.172, LAT_3 - 0.002]])
-te2.set_remaining_coords(
+te1.set_remaining_coords(
     [
-        [-0.164, LAT_3 + LAT_LINE_SPACE],
         [-0.151, LAT_3 + LAT_LINE_SPACE],
+        [-0.164, LAT_3 + LAT_LINE_SPACE],
     ]
 )
 te3.set_remaining_coords([[-0.145, LAT_0 + 0.002], [-0.145, LAT_3 - 0.002]])
@@ -362,7 +362,7 @@ te3.add_curve(begin=te3.length - 850, end=te3.length - 650, curve=8000)
 te3.add_curve(begin=te3.length - 300, end=te3.length, curve=7000)
 
 te1.add_curve(begin=0, end=300, curve=5000)
-te1.add_curve(begin=te3.length - 300, end=0, curve=6000)
+te1.add_curve(begin=te1.length - 300, end=te1.length, curve=6000)
 
 te0.add_curve(begin=0, end=300, curve=6000)
 te0.add_curve(begin=500, end=1000, curve=8000)
@@ -467,7 +467,7 @@ tg2.set_remaining_coords(
         [-0.1199, LAT_1],
         [-0.1149, 49.50296],
         [-0.1149, 49.50997],
-        [-0.09, LAT_4 - LAT_LINE_SPACE],
+        [-0.1099, LAT_4 - LAT_LINE_SPACE],
     ]
 )
 th0.set_remaining_coords([[-0.1346, LAT_1]])
@@ -480,11 +480,11 @@ south_east = builder.add_operational_point(label="South_East_station")
 south_east.add_part(th1, 4400)
 
 # Speed section
-speed_1 = builder.add_speed_section(142)
+speed_1 = builder.add_speed_section(142 / 3.6)
 speed_1.add_track_range(th0, 500, 1000, ApplicableDirection.BOTH)
 speed_1.add_track_range(th1, 0, 4000, ApplicableDirection.BOTH)
 
-speed_2 = builder.add_speed_section(112)
+speed_2 = builder.add_speed_section(112 / 3.6)
 speed_2.add_track_range(th1, 3500, 4400, ApplicableDirection.BOTH)
 
 # ================================
@@ -496,3 +496,31 @@ infra = builder.build()
 
 # Save railjson
 infra.save(OUTPUT_DIR / "infra.json")
+
+
+# ================================
+# Produce the simulation file
+# ================================
+
+builder = SimulationBuilder(infra)
+train_0 = builder.add_train_schedule(
+    Location(ta1, 500), Location(tc0, 500), Location(te1, 500), Location(tf1, 4300), label="train.0"
+)
+train_1 = builder.add_train_schedule(
+    Location(ta2, 500), Location(tc2, 500), Location(td1, 14000), Location(tg5, 1500), label="train.1"
+)
+train_2 = builder.add_train_schedule(
+    Location(ta0, 500), Location(tc1, 500), Location(td0, 14000), Location(th1, 4400), label="train.2"
+)
+
+# Add train succession tables
+builder.add_tst(pa2, train_0, train_2)
+builder.add_tst(pc0, train_0, train_2)
+builder.add_tst(pc2, train_0, train_2)
+builder.add_tst(ph0, train_1, train_2)
+
+# Build simulation
+sim = builder.build()
+
+# Save railjson
+sim.save(OUTPUT_DIR / "simulation.json")
