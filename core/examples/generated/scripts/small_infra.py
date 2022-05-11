@@ -88,9 +88,9 @@ tb0.set_remaining_coords([[-0.4, 49.49], [-0.373, 49.49], [-0.37, 49.492]])
 
 # Extra detectors, which are not associated to signals
 
-da7 = ta3.add_detector(label="DA5", position=ta3.length / 2)
-da8 = ta4.add_detector(label="DA6", position=ta4.length / 2)
-da9 = ta5.add_detector(label="DA7", position=ta5.length / 2)
+da7 = ta3.add_detector(label="DA7", position=ta3.length / 2)
+da8 = ta4.add_detector(label="DA8", position=ta4.length / 2)
+da9 = ta5.add_detector(label="DA9", position=ta5.length / 2)
 
 
 # ================================
@@ -244,9 +244,9 @@ pe2 = builder.add_point_switch(
     left=te3.begin(),
     right=tg0.begin(),
     signal_on_ports={
-        "base": ("DD5", "SD5"),
+        "base": ("DD6", "SD6"),
         "left": ("DE7", "SE7"),
-        "right": ("DD6", "SD6"),
+        "right": ("DD7", "SD7"),
     },
 )
 pe2.set_coords(-0.15, LAT_0)
@@ -281,7 +281,7 @@ pg0 = builder.add_point_switch(
     base=tg1.end(),
     left=tg4.begin(),
     right=tg3.begin(),
-    signal_on_ports={"base": ("DG2", "SG2"), "left": ("DG4", "SG4")},
+    signal_on_ports={"base": ("DG3", "SG3"), "left": ("DG5", "SG5")},
 )
 pg0.set_coords(-0.1082, LAT_4)
 pg1 = builder.add_point_switch(
@@ -289,14 +289,14 @@ pg1 = builder.add_point_switch(
     base=tg5.begin(),
     left=tg2.end(),
     right=tg3.end(),
-    signal_on_ports={"base": ("DG5", "SG5"), "left": ("DG3", "SG3")},
+    signal_on_ports={"base": ("DG6", "SG6"), "left": ("DG4", "SG4")},
 )
 pg1.set_coords(-0.108, LAT_4 - LAT_LINE_SPACE)
 
 tg4.set_remaining_coords([[-0.09, LAT_4]])
 tg5.set_remaining_coords([[-0.09, LAT_4 - LAT_LINE_SPACE]])
 
-dg6 = tg3.add_detector(label="DG6", position=tg3.length / 2)
+dg6 = tg3.add_detector(label="DG7", position=tg3.length / 2)
 
 # ================================
 #  Around station H: South-West
@@ -327,7 +327,7 @@ ph1 = builder.add_point_switch(
     right=th1.begin(),
     signal_on_ports={
         "base": ("DH2", "SH2"),
-        "left": ("DG1", "SG1"),
+        "left": ("DG2", "SG2"),
         "right": ("DH3", "SH3"),
     },
 )

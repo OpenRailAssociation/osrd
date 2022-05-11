@@ -24,9 +24,12 @@ class Route:
     def __eq__(self, other):
         return self.label == other.label
 
-    def to_rjs(self):
+    def __post_init__(self):
         if self.label is None:
             self.label = f"rt.{self.entry_point.label}->{self.waypoints[-1].label}"
+
+
+    def to_rjs(self):
         return infra.Route(
             id=self.label,
             entry_point=self.entry_point.make_rjs_ref(),
