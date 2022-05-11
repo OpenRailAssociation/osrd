@@ -225,20 +225,16 @@ mod test {
         assert!(body.is_some());
 
         let infra: Infra = serde_json::from_str(body.unwrap().as_str()).unwrap();
-
         assert_eq!(create_infra.status(), Status::Created);
         assert_eq!(infra.name, "test");
 
         let response = client.get(format!("/infra/{}", infra.id)).dispatch();
-
         assert_eq!(response.status(), Status::Ok);
 
         let delete_infra = client.delete(format!("/infra/{}", infra.id)).dispatch();
-
         assert_eq!(delete_infra.status(), Status::NoContent);
 
         let responsedel = client.get(format!("/infra/{}", infra.id)).dispatch();
-
         assert_eq!(responsedel.status(), Status::NotFound);
     }
 
