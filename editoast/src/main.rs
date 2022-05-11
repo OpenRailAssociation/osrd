@@ -135,19 +135,3 @@ fn generate(
     }
     Ok(())
 }
-
-#[cfg(test)]
-mod test {
-    use super::views;
-    use rocket::http::Status;
-    use rocket::local::Client;
-    use rocket::routes;
-
-    #[test]
-    fn health() {
-        let serv = rocket::ignite().mount("/", routes![views::health]);
-        let client = Client::new(serv).expect("valid rocket instance");
-        let response = client.get("/health").dispatch();
-        assert_eq!(response.status(), Status::Ok);
-    }
-}
