@@ -396,14 +396,6 @@ optional = false
 python-versions = ">=3.5"
 
 [[package]]
-name = "ikp3db"
-version = "1.4.1"
-description = "A hackable CPython 3.6+ remote debugger designed for the Web and online IDE integration. Fork of IKPdb."
-category = "dev"
-optional = false
-python-versions = "*"
-
-[[package]]
 name = "importlib-resources"
 version = "5.6.0"
 description = "Read resources from Python packages"
@@ -920,7 +912,7 @@ production = ["gunicorn", "sentry-sdk", "uvloop", "httptools", "uvicorn"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "1e541f1d45abba694dda3a736f09028d79391c644d589a54ea3ac1b53af01950"
+content-hash = "3894615b614022d0ed9a6c50c3b92a7fbd1b62a0ffe14c83f47680a0c495bf06"
 
 [metadata.files]
 amqp = [
@@ -1122,9 +1114,6 @@ httptools = [
 idna = [
     {file = "idna-3.3-py3-none-any.whl", hash = "sha256:84d9dd047ffa80596e0f246e2eab0b391788b0503584e8945f2368256d2735ff"},
     {file = "idna-3.3.tar.gz", hash = "sha256:9d643ff0a55b762d5cdb124b8eaa99c66322e2157b69160bc32796e824360e6d"},
-]
-ikp3db = [
-    {file = "ikp3db-1.4.1.tar.gz", hash = "sha256:62596dd8420e7b2d0f502e2b41760e2bf89217dcf9b93ae79e6254541873c855"},
 ]
 importlib-resources = [
     {file = "importlib_resources-5.6.0-py3-none-any.whl", hash = "sha256:a9dd72f6cc106aeb50f6e66b86b69b454766dd6e39b69ac68450253058706bcc"},

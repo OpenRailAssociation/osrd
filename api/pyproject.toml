@@ -39,7 +39,6 @@ production = [
 
 [tool.poetry.dev-dependencies]
 django-debug-toolbar = "3.2.4"
-ikp3db = "1.4.1"
 coverage = "6.2"
 black = "21.12b0"
 isort = "5.10.1"
