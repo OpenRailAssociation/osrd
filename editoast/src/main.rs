@@ -24,6 +24,7 @@ use infra_cache::InfraCache;
 use models::{DBConnection, Infra};
 use rocket::config::Value;
 use rocket::Rocket;
+use rocket_cors::CorsOptions;
 use std::collections::HashMap;
 use std::error::Error;
 use std::process::exit;
@@ -66,8 +67,12 @@ pub fn create_server(
         .extras
         .insert("databases".to_string(), databases.into());
 
+    // Setup CORS
+    let cors = CorsOptions::default().to_cors().unwrap();
+
     let mut rocket = rocket::custom(config)
         .attach(DBConnection::fairing())
+        .attach(cors)
         .manage(infra_caches)
         .manage(chartos_config);
 
