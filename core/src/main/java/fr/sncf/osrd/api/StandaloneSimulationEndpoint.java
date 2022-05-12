@@ -55,9 +55,8 @@ public class StandaloneSimulationEndpoint implements Take {
     public Response act(Request req) throws
             InvalidRollingStock,
             InvalidSchedule {
+        var warningRecorder = new WarningRecorderImpl(false);
         try {
-            var warningRecorder = new WarningRecorderImpl(false);
-
             // Parse request input
             var body = new RqPrint(req).printBody();
             var request = adapterRequest.fromJson(body);
@@ -94,6 +93,7 @@ public class StandaloneSimulationEndpoint implements Take {
 
             return new RsJson(new RsWithBody(StandaloneSimResult.adapter.toJson(result)));
         } catch (Throwable ex) {
+            // TODO: include warnings in the response
             return ExceptionHandler.handle(ex);
         }
     }

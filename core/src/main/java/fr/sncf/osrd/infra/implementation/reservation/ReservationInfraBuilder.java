@@ -18,6 +18,7 @@ import fr.sncf.osrd.infra.api.tracks.directed.DiTrackEdge;
 import fr.sncf.osrd.infra.api.tracks.directed.DiTrackInfra;
 import fr.sncf.osrd.infra.api.tracks.undirected.Detector;
 import fr.sncf.osrd.infra.api.tracks.undirected.SwitchBranch;
+import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
 import fr.sncf.osrd.infra.errors.DiscontinuousRoute;
 import fr.sncf.osrd.infra.implementation.RJSObjectParsing;
 import fr.sncf.osrd.infra.implementation.tracks.directed.DirectedInfraBuilder;
@@ -145,6 +146,7 @@ public class ReservationInfraBuilder {
         return networkBuilder.build();
     }
 
+    /** Checks that the route makes sense, reports any relevant warning or error otherwise */
     private void validateRoute(ReservationRouteImpl route, RJSRoute rjsRoute) {
         if (route.getDetectorPath().isEmpty()) {
             warningRecorder.register(new Warning(String.format(
@@ -152,28 +154,54 @@ public class ReservationInfraBuilder {
             )));
             return;
         }
-        var detectorIDs = rjsRoute.releaseDetectors.stream()
-                        .map(x -> x.id.id)
-                        .toList();
+        var detectorIDs = route.getDetectorPath().stream()
+                        .map(x -> x.detector().getID())
+                .toList();
         var lastDetector = route.getDetectorPath().get(route.getDetectorPath().size() - 1);
-        if (rjsRoute.entryPoint != null
-                && !route.getDetectorPath().get(0).detector().getID().equals(rjsRoute.entryPoint.id.id))
-            warningRecorder.register(new Warning(String.format(
-                    "Entry point for route %s don't match the first detector on the route "
-                            + "(expected = %s, detector list = %s)",
-                    rjsRoute.id,
-                    rjsRoute.entryPoint.id.id,
-                    detectorIDs
-            )));
-        if (rjsRoute.exitPoint != null
-                && !lastDetector.detector().getID().equals(rjsRoute.exitPoint.id.id)) {
-            warningRecorder.register(new Warning(String.format(
-                    "Exit point for route %s don't match the last detector on the route "
-                            + "(expected = %s, detector list = %s)",
-                    rjsRoute.id,
-                    rjsRoute.exitPoint.id.id,
-                    detectorIDs
-            )));
+        if (rjsRoute.entryPoint != null) {
+            var entryDetector = route.getDetectorPath().get(0).detector();
+            if (!entryDetector.getID().equals(rjsRoute.entryPoint.id.id))
+                warningRecorder.register(new Warning(String.format(
+                        "Entry point for route %s don't match the first detector on the route "
+                                + "(expected = %s, detector list = %s)",
+                        rjsRoute.id,
+                        rjsRoute.entryPoint.id.id,
+                        detectorIDs
+                )));
+            var entryPointLocation = new TrackLocation(entryDetector.getTrackSection(), entryDetector.getOffset());
+            var routeStartLocation = route.getTrackRanges().get(0).offsetLocation(0);
+            if (!entryPointLocation.equalsWithTolerance(routeStartLocation, 1e-8)) {
+                warningRecorder.register(new Warning(String.format(
+                        "Entry point for route %s isn't located on the route start "
+                                + "(detector location = %s, route start = %s)",
+                        rjsRoute.id,
+                        entryPointLocation,
+                        routeStartLocation
+                )));
+            }
+        }
+        if (rjsRoute.exitPoint != null) {
+            var exitDetector = lastDetector.detector();
+            if (!lastDetector.detector().getID().equals(rjsRoute.exitPoint.id.id))
+                warningRecorder.register(new Warning(String.format(
+                        "Exit point for route %s don't match the last detector on the route "
+                                + "(expected = %s, detector list = %s)",
+                        rjsRoute.id,
+                        rjsRoute.exitPoint.id.id,
+                        detectorIDs
+                )));
+            var exitPointLocation = new TrackLocation(exitDetector.getTrackSection(), exitDetector.getOffset());
+            var lastRouteRange = route.getTrackRanges().get(route.getTrackRanges().size() - 1);
+            var routeEndLocation = lastRouteRange.offsetLocation(lastRouteRange.getLength());
+            if (!exitPointLocation.equalsWithTolerance(routeEndLocation, 1e-8)) {
+                warningRecorder.register(new Warning(String.format(
+                        "Exit point for route %s isn't located on the route start "
+                                + "(detector location = %s, route end = %s)",
+                        rjsRoute.id,
+                        exitPointLocation,
+                        routeEndLocation
+                )));
+            }
         }
     }
 

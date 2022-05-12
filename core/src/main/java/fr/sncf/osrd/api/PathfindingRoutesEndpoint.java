@@ -43,8 +43,8 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
 
     @Override
     public Response act(Request req) {
+        var warningRecorder = new WarningRecorderImpl(false);
         try {
-            var warningRecorder = new WarningRecorderImpl(false);
             var body = new RqPrint(req).printBody();
             var request = adapterRequest.fromJson(body);
             if (request == null)
@@ -80,6 +80,7 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
 
             return new RsJson(new RsWithBody(adapterResult.toJson(res)));
         } catch (Throwable ex) {
+            // TODO: include warnings in the response
             return ExceptionHandler.handle(ex);
         }
     }
