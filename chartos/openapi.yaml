@@ -238,28 +238,23 @@ paths:
                 properties:
                   type:
                     type: string
-                    example: vector
-                  name:
-                    type: string
-                    example: track_sections
-                  promotedId:
-                    type: object
-                    example: { track_sections: "id" }
-                  scheme:
-                    type: string
-                    example: "xyz"
-                  tiles:
+                    enum: [FeatureCollection]
+                  features:
                     type: array
                     items:
-                      type: string
-                      example: http://localhost:7000/tile/track_sections/geo/{z}/{x}/{y}/?infra=1
-                  attribution:
-                    type: string
-                  minzoom:
-                    type: integer
-                  maxzoom:
-                    type: integer
-                    example: 18
+                      type: object
+                      description: GeoJSON Feature containing all railjson properties
+                      example:
+                        type: Feature
+                        geometry:
+                          type: LineString
+                          coordinates: [[2.1, 48.5], [2.5, 48.8]]
+                        properties:
+                          id: f8095b47-c0d3-4e2a-a252-4891bc1790bd
+                          curves: "[]"
+                          slopes: "[]"
+                          line_code: 42
+                          line_name: My example line
         422:
           description: Validation Error
           content:
