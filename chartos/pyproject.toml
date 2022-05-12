@@ -38,7 +38,6 @@ asgi-lifespan = "^1"
 # used for querying the server during tests
 httpx = "*"
 
-# ikp3db = "1.4.1"
 # coverage = "5.5"
 # black = "21.9b0"
 # isort = "^5"
