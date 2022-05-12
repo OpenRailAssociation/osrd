@@ -5,7 +5,7 @@ from geojson_pydantic import LineString
 from pydantic import BaseModel, Field, constr, root_validator
 
 ALL_OBJECT_TYPES = []
-RAILJSON_VERSION = "2.2.3"
+RAILJSON_VERSION = "2.2.4"
 
 # Traits
 
@@ -167,11 +167,21 @@ class Curve(BaseModel):
     begin: float
     end: float
 
+    @root_validator
+    def check_range(cls, v):
+        assert v.get("begin") < v.get("end"), "expected: begin < end"
+        return v
+
 
 class Slope(BaseModel):
     gradient: float
     begin: float
     end: float
+
+    @root_validator
+    def check_range(cls, v):
+        assert v.get("begin") < v.get("end"), "expected: begin < end"
+        return v
 
 
 class LoadingGaugeLimit(BaseModel):
