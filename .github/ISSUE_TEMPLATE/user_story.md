@@ -11,14 +11,15 @@ assignees: ''
 
 - [X] Study officer
 - [ ] Manager
+- [ ] Other (please write it here)
 
 ## Description
 
-Please give a brief description of the User Story. What must the user be able to do ?
+<!-- Please give a brief description of the User Story. What must the user be able to do ? -->
 
 ## Goal
 
-What is the point of this user story ? Why is it necessary ?
+<!-- What is the point of this user story ? Why is it necessary ? -->
 
 ## Acceptance criteria
 
@@ -28,7 +29,7 @@ What is the point of this user story ? Why is it necessary ?
 
 ## Additional content
 
-Is there an existing mockup or wireframe for this US ? If so, please link it here.
+<!-- Is there an existing mockup or wireframe for this US ? If so, please link it here. -->
 
 ## Difficulty
 
