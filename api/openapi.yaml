@@ -618,44 +618,25 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/TrainScheduleResult"
-  /schema/:
+  /infra/schema/:
     get:
-      summary: List all models and their content
+      tags:
+        - infra
+      summary: Current railjson schema
       responses:
         200:
-          description: The description
+          description: Json schema
           content:
             application/json:
               schema:
                 type: object
-                properties:
-                  entities:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        entity_name:
-                          type: string
-                        components:
-                          type: array
-                          items:
-                            type: string
-                  components:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        component_name:
-                          type: string
-                        fields:
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              name:
-                                type: string
-                              type:
-                                type: string
+                description: Railjson schema following json Schema specification
+                example:
+                  title: RailJsonInfra
+                  type: object
+                  properties: { ... }
+                  required: [...]
+                  definitions: { ... }
 components:
   schemas:
     Infra:
