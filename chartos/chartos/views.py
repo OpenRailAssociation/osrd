@@ -183,7 +183,7 @@ async def invalidate_layer_bbox(
     await invalidate_cache(redis, layer, infra, affected_tiles)
 
 
-@router.get("/layer/{layer_slug}/objects/{view_slug}/{min_x}/{min_y}/{max_x}/{max_y}/", response_class=Response)
+@router.get("/layer/{layer_slug}/objects/{view_slug}/{min_x}/{min_y}/{max_x}/{max_y}/")
 async def get_objects_in_bbox(
     layer_slug: str,
     view_slug: str,
