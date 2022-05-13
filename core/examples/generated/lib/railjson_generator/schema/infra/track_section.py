@@ -26,6 +26,10 @@ class TrackSection:
 
     length: float
     label: str = field(default_factory=_track_id)
+    track_name: str = "placeholder_track"
+    track_number: int = 0
+    line_code: int = 0
+    line_name: str = "placeholder_line"
     waypoints: List[Waypoint] = field(default_factory=list)
     signals: List[Signal] = field(default_factory=list)
     operational_points: List[OperationalPointPart] = field(default_factory=list)
@@ -85,6 +89,7 @@ class TrackSection:
 
     @staticmethod
     def register_link(link: Link):
+        """Add each linked trackEndPoint to its neighbor's neighbors list."""
         if link.navigability != ApplicableDirection.STOP_TO_START:
             link.begin.get_neighbors().append(link.end)
         if link.navigability != ApplicableDirection.START_TO_STOP:
@@ -108,10 +113,10 @@ class TrackSection:
         return infra.TrackSection(
             id=self.label,
             length=self.length,
-            line_code=0,
-            track_number=0,
-            line_name="placeholder_line",
-            track_name="placeholder_track",
+            line_code=self.line_code,
+            track_number=self.track_number,
+            line_name=self.line_name,
+            track_name=self.track_name,
             navigability=infra.ApplicableDirections[ApplicableDirection.BOTH.name],
             slopes=[slope.to_rjs() for slope in self.slopes],
             curves=[curve.to_rjs() for curve in self.curves],
