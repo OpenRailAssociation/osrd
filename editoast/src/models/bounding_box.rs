@@ -16,7 +16,7 @@ impl BoundingBox {
     }
 
     pub fn is_valid(&self) -> bool {
-        self.0 .0 < self.1 .0 && self.0 .1 < self.1 .1
+        self.0 .0 <= self.1 .0 && self.0 .1 <= self.1 .1
     }
 }
 impl Default for BoundingBox {
