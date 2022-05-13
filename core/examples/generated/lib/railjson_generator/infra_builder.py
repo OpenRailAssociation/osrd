@@ -140,6 +140,6 @@ class InfraBuilder:
             print("Duplicates were found:")
             for duplicate in duplicates:
                 print(duplicate.__class__.__name__, duplicate.label)
-            raise ValueError(f"Duplicates found")
+            raise ValueError("Duplicates found")
 
         return self.infra

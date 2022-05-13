@@ -102,11 +102,10 @@ class TrackSection:
         return self.begining_links
 
     def to_rjs(self):
+        if self.coordinates == [(None, None), (None, None)]:
+            self.coordinates = [(0, 0), (0, 0)]
         try:
-            if self.coordinates is None:
-                geo_data = make_geo_lines((0, 0), (0, 0))
-            else:
-                geo_data = make_geo_lines(*self.coordinates)
+            geo_data = make_geo_lines(*self.coordinates)
         except ValidationError:
             print(f"Track section {self.label} has invalid coordinates:")
             print(self.coordinates)
