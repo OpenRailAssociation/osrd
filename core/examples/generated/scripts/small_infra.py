@@ -53,6 +53,7 @@ def place_regular_signals_detectors(
                 linked_detector=detector,
                 direction=direction,
                 position=min_offset + i * detector_step - 20 + 40 * d,
+                installation_type="S",
             )
 
 
