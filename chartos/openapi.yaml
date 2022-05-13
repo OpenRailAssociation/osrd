@@ -190,7 +190,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HTTPValidationError"
-  /layer/{layer_slug}/objects/{view_slug}/:
+  /layer/{layer_slug}/objects/{view_slug}/{min_x}/{min_y}/{max_x}/{max_y}/:
     get:
       summary: Geojson objects in a given bounding box
       operationId: objects_view_layer__layer_slug__objects__view_slug___get
@@ -209,25 +209,30 @@ paths:
           in: path
         - required: true
           schema:
+            title: Bounding box min X
+          name: min_x
+          in: path
+        - required: true
+          schema:
+            title: Bounding box min Y
+          name: min_y
+          in: path
+        - required: true
+          schema:
+            title: Bounding box max X
+          name: max_x
+          in: path
+        - required: true
+          schema:
+            title: Bounding box max Y
+          name: max_y
+          in: path
+        - required: true
+          schema:
             title: Infra id
             type: integer
           name: infra
           in: query
-      requestBody:
-        description: Bounding box [[minx, miny], [maxx, maxy]]
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                type: array
-                items:
-                  type: number
-                minItems: 2
-                maxItems: 2
-              minItems: 2
-              maxItems: 2
-              example: [[-4.9, 46.5], [-0.1, 49.0]]
       responses:
         200:
           description: Successful Response

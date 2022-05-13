@@ -183,12 +183,15 @@ async def invalidate_layer_bbox(
     await invalidate_cache(redis, layer, infra, affected_tiles)
 
 
-@router.get("/layer/{layer_slug}/objects/{view_slug}/", response_class=Response)
+@router.get("/layer/{layer_slug}/objects/{view_slug}/{min_x}/{min_y}/{max_x}/{max_y}/", response_class=Response)
 async def get_objects_in_bbox(
     layer_slug: str,
     view_slug: str,
+    min_x: float,
+    min_y: float,
+    max_x: float,
+    max_y: float,
     infra: int = Query(...),
-    bbox: BoundingBox = Body(...),
     psql: Connection = Depends(PSQLPool.get),
     config: Config = Depends(get_config),
     settings: Settings = Depends(get_settings),
@@ -217,6 +220,6 @@ async def get_objects_in_bbox(
     )
 
     async with psql.transaction(isolation="repeatable_read", readonly=True):
-        (record,) = await psql.fetch(query, infra, bbox[0][0], bbox[0][1], bbox[1][0], bbox[1][1])
+        (record,) = await psql.fetch(query, infra, min_x, min_y, max_x, max_y)
 
     return record.get("geojson")
