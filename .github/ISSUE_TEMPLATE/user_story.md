@@ -1,7 +1,7 @@
 ---
 name: User story
 about: Create a new user story for this project
-title: "[US] [Name this US as it appears in the sprint goal]"
+title: "[Name this US as it appears in the sprint goal]"
 labels: 'kind:user-story'
 assignees: ''
 
@@ -32,4 +32,7 @@ Is there an existing mockup or wireframe for this US ? If so, please link it her
 
 ## Difficulty
 
-This user story is [easy / normal / difficult / extreme]
+- [ ] easy
+- [ ] normal
+- [ ] difficult
+- [ ] extreme
