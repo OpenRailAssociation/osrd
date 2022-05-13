@@ -46,7 +46,8 @@ class InfraBuilder:
         l2 = self.add_link(base, right)
         self.switches_group_map[l2.get_key()] = (switch, "RIGHT")
         self.infra.switches.append(switch)
-        switch.add_signals_detectors_to_ports(signal_on_ports)
+        if signal_on_ports is not None:
+            switch.add_signals_detectors_to_ports(signal_on_ports)
         return switch
 
     def add_cross_switch(
@@ -67,7 +68,8 @@ class InfraBuilder:
         l2 = self.add_link(east, west)
         self.switches_group_map[l2.get_key()] = (switch, "static")
         self.infra.switches.append(switch)
-        switch.add_signals_detectors_to_ports(signal_on_ports)
+        if signal_on_ports is not None:
+            switch.add_signals_detectors_to_ports(signal_on_ports)
         return switch
 
     def add_double_cross_switch(
@@ -94,7 +96,8 @@ class InfraBuilder:
             link = self.add_link(src, dst)
             self.switches_group_map[link.get_key()] = (switch, group_name)
         self.infra.switches.append(switch)
-        switch.add_signals_detectors_to_ports(signal_on_ports)
+        if signal_on_ports is not None:
+            switch.add_signals_detectors_to_ports(signal_on_ports)
         return switch
 
     def add_link(self, *args, **kwargs):
