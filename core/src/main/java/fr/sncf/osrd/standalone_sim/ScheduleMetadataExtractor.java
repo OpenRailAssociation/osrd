@@ -68,23 +68,23 @@ public class ScheduleMetadataExtractor {
             var stopTime = ResultPosition.interpolateTime(stop.position, headPositions);
             stops.add(new ResultStops(stopTime, stop.position, stop.duration));
         }
+
+        // Compute events
+        var events = computeEvents(infra, trainPath, trainLength, envelope);
+
         return new ResultTrain(
                 speeds,
                 headPositions,
                 stops,
-                makeRouteOccupancy(infra, envelope, trainPath, trainLength),
-                makeSignalUpdates(infra, envelope, trainPath, trainLength)
+                makeRouteOccupancy(infra, envelope, trainPath, trainLength, events),
+                makeSignalUpdates(envelope, trainPath, events)
         );
     }
 
-    /** Makes the list of SignalUpdates from the train path and envelope */
-    public static Collection<SignalUpdate> makeSignalUpdates(
-            SignalingInfra infra,
-            Envelope envelope,
-            TrainPath trainPath,
-            double trainLength
+    /** Computes the list of event for the given train path */
+    public static List<StandaloneSignalingSimulation.SignalTimedEvent<?>> computeEvents(
+            SignalingInfra infra, TrainPath trainPath, double trainLength, Envelope envelope
     ) {
-        var res = new ArrayList<SignalUpdate>();
         var infraState = StandaloneState.from(trainPath, trainLength);
         var signalizationEngine = SignalizationEngine.from(infra, infraState);
         for (var route : trainPath.routePath()) {
@@ -92,7 +92,16 @@ public class ScheduleMetadataExtractor {
             if (entrySignal != null)
                 signalizationEngine.setSignalOpen(entrySignal);
         }
-        var events = StandaloneSignalingSimulation.run(trainPath, infraState, signalizationEngine, envelope);
+        return StandaloneSignalingSimulation.run(trainPath, infraState, signalizationEngine, envelope);
+    }
+
+    /** Makes the list of SignalUpdates from the train path and envelope */
+    public static Collection<SignalUpdate> makeSignalUpdates(
+            Envelope envelope,
+            TrainPath trainPath,
+            List<StandaloneSignalingSimulation.SignalTimedEvent<?>> events
+    ) {
+        var res = new ArrayList<SignalUpdate>();
 
         // Builds a list of events per signal
         var eventsPerSignal = new IdentityHashMap<Signal<?>, List<StandaloneSignalingSimulation.SignalTimedEvent<?>>>();
@@ -172,7 +181,8 @@ public class ScheduleMetadataExtractor {
             SignalingInfra infra,
             Envelope envelope,
             TrainPath trainPath,
-            double trainLength
+            double trainLength,
+            List<StandaloneSignalingSimulation.SignalTimedEvent<?>> events
     ) {
         // Earliest position at which the route is occupied
         var routeOccupied = new HashMap<String, Double>();
@@ -199,8 +209,6 @@ public class ScheduleMetadataExtractor {
         }
 
         // Add signal updates: a route is "occupied" when a signal protecting it isn't green
-        var signalizationEngine = SignalizationEngine.from(infra, infraState);
-        var events = StandaloneSignalingSimulation.runWithoutEnvelope(trainPath, infraState, signalizationEngine);
         for (var e : events) {
             var routes = e.signal().getProtectedRoutes();
             for (var r : routes) {

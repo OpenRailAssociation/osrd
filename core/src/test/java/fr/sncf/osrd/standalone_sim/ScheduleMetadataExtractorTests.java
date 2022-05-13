@@ -16,15 +16,15 @@ import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
 import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
 import fr.sncf.osrd.infra_state.api.TrainPath;
-import fr.sncf.osrd.infra_state.implementation.SignalizationEngine;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
-import fr.sncf.osrd.infra_state.implementation.standalone.StandaloneSignalingSimulation;
-import fr.sncf.osrd.infra_state.implementation.standalone.StandaloneState;
+import fr.sncf.osrd.standalone_sim.result.ResultOccupancyTiming;
+import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.TestTrains;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ScheduleMetadataExtractorTests {
@@ -50,7 +50,7 @@ public class ScheduleMetadataExtractorTests {
                 testContext,
                 testRollingStock.maxSpeed, new double[]{}
         );
-        var timings = ScheduleMetadataExtractor.makeRouteOccupancy(infra, envelope, path, testRollingStock.length);
+        var timings = makeRouteOccupancy(infra, path, testRollingStock, envelope);
 
         var routePath = path.routePath();
         for (int i = 0; i < routePath.size(); i++) {
@@ -103,7 +103,7 @@ public class ScheduleMetadataExtractorTests {
                 testRollingStock.maxSpeed, new double[]{}
         );
         // We only check that no assertion is thrown in the validation
-        ScheduleMetadataExtractor.makeRouteOccupancy(infra, envelope, path, testRollingStock.length);
+        makeRouteOccupancy(infra, path, testRollingStock, envelope);
     }
 
     @Test
@@ -128,7 +128,7 @@ public class ScheduleMetadataExtractorTests {
                 testRollingStock.maxSpeed, new double[]{}
         );
         // We only check that no assertion is thrown in the validation
-        ScheduleMetadataExtractor.makeRouteOccupancy(infra, envelope, path, testRollingStock.length);
+        makeRouteOccupancy(infra, path, testRollingStock, envelope);
     }
 
     @Test
@@ -152,7 +152,7 @@ public class ScheduleMetadataExtractorTests {
                 testRollingStock.maxSpeed, new double[]{}
         );
         // We only check that no assertion is thrown in the validation
-        ScheduleMetadataExtractor.makeRouteOccupancy(infra, envelope, path, testRollingStock.length);
+        makeRouteOccupancy(infra, path, testRollingStock, envelope);
     }
 
     @Test
@@ -172,7 +172,7 @@ public class ScheduleMetadataExtractorTests {
                 testRollingStock.maxSpeed, new double[]{}
         );
         // We only check that no assertion is thrown in the validation
-        ScheduleMetadataExtractor.makeRouteOccupancy(infra, envelope, path, testRollingStock.length);
+        makeRouteOccupancy(infra, path, testRollingStock, envelope);
     }
 
     @Test
@@ -229,14 +229,11 @@ public class ScheduleMetadataExtractorTests {
             TrainPath path,
             double trainLength
     ) {
-        var updates = ScheduleMetadataExtractor.makeSignalUpdates(infra, envelope, path, trainLength);
+        var events = ScheduleMetadataExtractor.computeEvents(infra, path, trainLength, envelope);
+        var updates = ScheduleMetadataExtractor.makeSignalUpdates(envelope, path, events);
         var simplifiedUpdates = updates.stream()
                 .map(u -> new SimplifiedUpdate(u.signalID, u.timeStart, u.color))
                 .collect(Collectors.toSet());
-
-        var infraState = StandaloneState.from(path, trainLength);
-        var signalizationEngine = SignalizationEngine.from(infra, infraState);
-        var events = StandaloneSignalingSimulation.run(path, infraState, signalizationEngine, envelope);
 
         // Check that every signal change is seen in the updates
         for (var e : events) {
@@ -282,6 +279,13 @@ public class ScheduleMetadataExtractorTests {
                         signal.getLeastRestrictiveState().getRGBColor()
                 )));
         }
+    }
+
+    private static Map<String, ResultOccupancyTiming> makeRouteOccupancy(
+            SignalingInfra infra, TrainPath path, RollingStock testRollingStock, Envelope envelope
+    ) {
+        var events = ScheduleMetadataExtractor.computeEvents(infra, path, testRollingStock.length, envelope);
+        return ScheduleMetadataExtractor.makeRouteOccupancy(infra, envelope, path, testRollingStock.length, events);
     }
 
 
