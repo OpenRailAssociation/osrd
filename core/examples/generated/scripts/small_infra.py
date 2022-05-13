@@ -14,30 +14,45 @@ OUTPUT_DIR = get_output_dir()
 def place_regular_signals_detectors(
     track_section: "TrackSection",
     label_suffix: str,
+    prefered_direction: Direction = None,
     min_offset: float = 0,
     max_offset: float = None,
     period: float = 1500,
 ):
-    """Place signals and detectors on the track section, every <period> meters."""
+    """Place signals and detectors regularly on the track section.
+    In the prefered direction, every <period> meters,
+    in the opposite direction, every 3 *<period> meters."""
     if max_offset is None:
         max_offset = track_section.length
     elif max_offset < 0:
         max_offset = track_section.length + max_offset
-    n_signals = ((max_offset - min_offset) // period) - 1
-    signal_step = (max_offset - min_offset) / (n_signals + 1)
-    for i in range(n_signals):
-        for j, direction in enumerate(
-            [Direction.START_TO_STOP, Direction.STOP_TO_START]
-        ):
-            detector = track_section.add_detector(
-                label=f"D{label_suffix}_{i}" + "r" * j,
-                position=min_offset + i * signal_step + 20 + (-40 * j),
-            )
+
+    if prefered_direction is None:
+        is_prefered = [True, True]
+        is_reverse = [False, True]
+    else:
+        is_prefered = [
+            prefered_direction == Direction.START_TO_STOP,
+            prefered_direction == Direction.STOP_TO_START,
+        ]
+        is_reverse = [not pref for pref in is_prefered]
+
+    n_detectors = ((max_offset - min_offset) // period) - 1
+    detector_step = (max_offset - min_offset) / (n_detectors + 1)
+    for i in range(1, n_detectors + 1):
+        detector = track_section.add_detector(
+            label=f"D{label_suffix}_{i}",
+            position=min_offset + i * detector_step,
+        )
+
+        for d, direction in enumerate(Direction):
+            if not is_prefered[d] and i % 3 != 2:
+                continue
             track_section.add_signal(
-                label=f"S{label_suffix}_{i}" + "r" * j,
+                label=f"S{label_suffix}_{i}" + "r" * is_reverse[d],
                 linked_detector=detector,
                 direction=direction,
-                position=min_offset + i * signal_step,
+                position=min_offset + i * detector_step - 20 + 40 * d,
             )
 
 
@@ -55,24 +70,45 @@ LAT_4 = 49.513
 
 LONG_SWITCH_LENGTH = 0.005
 
+# Track and line names
+V1 = {"track_name": "V1", "track_number": 1}
+V2 = {"track_name": "V2", "track_number": 2}
+
+south_west_parking = {"line_name": "South_West_Parking", "line_code": 414141}
+west_parking = {"line_name": "West_parking", "line_code": 424242}
+west_to_east_road = {"line_name": "West_to_East_road", "line_code": 434343}
+north_to_south_loop = {"line_name": "North_to_South_loop", "line_code": 444444}
+north_east_road = {"line_name": "North_East_road", "line_code": 454545}
+north_east_parking = {"line_name": "North_East_parking", "line_code": 464646}
+south_east_parking = {"line_name": "South_East_parking", "line_code": 474647}
+
 
 builder = InfraBuilder()
 
 # ================================
 #  Around station A: West
 # ================================
+
 # track sections
-ta0 = builder.add_track_section(length=2000, label="TA0")
-ta1 = builder.add_track_section(length=1950, label="TA1")
-ta2 = builder.add_track_section(length=1950, label="TA2")
-ta3 = builder.add_track_section(length=50, label="TA3")
-ta4 = builder.add_track_section(length=50, label="TA4")
-ta5 = builder.add_track_section(length=50, label="TA5")
-ta6 = builder.add_track_section(length=10000, label="TA6")
-ta7 = builder.add_track_section(length=10000, label="TA7")
+ta0 = builder.add_track_section(length=2000, label="TA0", **V1, **west_parking)
+ta1 = builder.add_track_section(length=1950, label="TA1", **V2, **west_parking)
+ta2 = builder.add_track_section(
+    length=1950, label="TA2", track_name="A", track_number=3, **west_parking
+)
+ta3 = builder.add_track_section(
+    length=50, label="TA3", track_name="J1", track_number=4, **west_parking
+)
+ta4 = builder.add_track_section(length=50, label="TA4", **V2, **west_parking)
+ta5 = builder.add_track_section(
+    length=50, label="TA5", track_name="J2", track_number=3, **west_parking
+)
+ta6 = builder.add_track_section(length=10000, label="TA6", **V1, **west_to_east_road)
+ta7 = builder.add_track_section(length=10000, label="TA7", **V2, **west_to_east_road)
 
 # I create this track section here to be able to add points using it
-tb0 = builder.add_track_section(length=3000, label="TB0")
+tb0 = builder.add_track_section(
+    length=3000, label="TB0", track_name="A", track_number=1, **south_west_parking
+)
 
 # switches
 pa0 = builder.add_point_switch(
@@ -119,8 +155,8 @@ da8 = ta4.add_detector(label="DA8", position=ta4.length / 2)
 da9 = ta5.add_detector(label="DA9", position=ta5.length / 2)
 
 # Extra signals
-place_regular_signals_detectors(ta6, "A6", 200, -200)
-place_regular_signals_detectors(ta7, "A7", 200, -200)
+place_regular_signals_detectors(ta6, "A6", Direction.START_TO_STOP, 200, -200)
+place_regular_signals_detectors(ta7, "A7", Direction.STOP_TO_START, 200, -200)
 
 # Station
 west = builder.add_operational_point(label="South_West_station")
@@ -157,14 +193,18 @@ south_west.add_part(tb0, 500)
 #  Around station C: Mid - West
 # ================================
 # track sections
-tc0 = builder.add_track_section(length=1050, label="TC0")
-tc1 = builder.add_track_section(length=1000, label="TC1")
-tc2 = builder.add_track_section(length=1000, label="TC2")
-tc3 = builder.add_track_section(length=1050, label="TC3")
+tc0 = builder.add_track_section(
+    length=1050, label="TC0", track_name="V1bis", track_number=3, **west_to_east_road
+)
+tc1 = builder.add_track_section(length=1000, label="TC1", **V1, **west_to_east_road)
+tc2 = builder.add_track_section(length=1000, label="TC2", **V2, **west_to_east_road)
+tc3 = builder.add_track_section(
+    length=1050, label="TC3", track_name="V2bis", track_number=4, **west_to_east_road
+)
 
 # I have to create them here in order to create switches
-td0 = builder.add_track_section(length=25000, label="TD0")
-td1 = builder.add_track_section(length=25000, label="TD1")
+td0 = builder.add_track_section(length=25000, label="TD0", **V1, **west_to_east_road)
+td1 = builder.add_track_section(length=25000, label="TD1", **V2, **west_to_east_road)
 
 # Switches
 pc0 = builder.add_point_switch(
@@ -235,12 +275,12 @@ mid_west.add_part(tc3, 450)
 #  Around station D: Mid-East
 # ================================
 # track sections
-td2 = builder.add_track_section(length=2000, label="TD2")
-td3 = builder.add_track_section(length=3000, label="TD3")
+td2 = builder.add_track_section(length=2000, label="TD2", **V1, **west_to_east_road)
+td3 = builder.add_track_section(length=3000, label="TD3", **V2, **west_to_east_road)
 
-te0 = builder.add_track_section(length=1500, label="TE0")
-tf0 = builder.add_track_section(length=3, label="TF0")
-tf1 = builder.add_track_section(length=6500, label="TF1")
+te0 = builder.add_track_section(length=1500, label="TE0", **V1, **north_to_south_loop)
+tf0 = builder.add_track_section(length=3, label="TF0", **V1, **north_to_south_loop)
+tf1 = builder.add_track_section(length=6500, label="TF1", **V1, **north_to_south_loop)
 
 # switches
 pd0 = builder.add_cross_switch(
@@ -270,8 +310,8 @@ pd1 = builder.add_cross_switch(
 )
 pd1.set_coords(-0.172, LAT_1)
 
-place_regular_signals_detectors(td0, "D0", 200, -200)
-place_regular_signals_detectors(td1, "D1", 200, -200)
+place_regular_signals_detectors(td0, "D0", Direction.START_TO_STOP, 200, -200)
+place_regular_signals_detectors(td1, "D1", Direction.STOP_TO_START, 200, -200)
 
 # Station
 mid_east = builder.add_operational_point(label="Mid_East_station")
@@ -297,11 +337,13 @@ td1.add_slope(begin=16000, end=17000, slope=-3)
 #  Around station E: North
 # ================================
 # track sections
-te1 = builder.add_track_section(length=2000, label="TE1")
-te2 = builder.add_track_section(length=2050, label="TE2")
-te3 = builder.add_track_section(length=2000, label="TE3")
+te1 = builder.add_track_section(
+    length=2000, label="TE1", track_name="V1bis", track_number=2, **north_to_south_loop
+)
+te2 = builder.add_track_section(length=2050, label="TE2", **V1, **north_to_south_loop)
+te3 = builder.add_track_section(length=2000, label="TE3", **V1, **north_to_south_loop)
 
-tg0 = builder.add_track_section(length=1000, label="TG0")
+tg0 = builder.add_track_section(length=1000, label="TG0", **V1, **west_to_east_road)
 
 # switches
 pe0 = builder.add_point_switch(
@@ -376,6 +418,8 @@ tf1.set_remaining_coords([[-0.172, 49.47], [-0.167, 49.466], [-0.135, 49.466]])
 south = builder.add_operational_point(label="South_station")
 south.add_part(tf1, 4300)
 
+place_regular_signals_detectors(tf1, "F1", min_offset=200, max_offset=4300)
+
 # Curves
 tf1.add_curve(begin=3100, end=4400, curve=9500)
 
@@ -383,11 +427,13 @@ tf1.add_curve(begin=3100, end=4400, curve=9500)
 #  Around station G: North-East
 # ================================
 # track sections
-tg1 = builder.add_track_section(length=4000, label="TG1")
-tg2 = builder.add_track_section(length=3000, label="TG2")
-tg3 = builder.add_track_section(length=50, label="TG3")
-tg4 = builder.add_track_section(length=2000, label="TG4")
-tg5 = builder.add_track_section(length=2000, label="TG5")
+tg1 = builder.add_track_section(length=4000, label="TG1", **V1, **north_east_road)
+tg2 = builder.add_track_section(length=3000, label="TG2", **V2, **north_east_road)
+tg3 = builder.add_track_section(
+    length=50, label="TG3", track_name="J4", track_number=3, **north_east_parking
+)
+tg4 = builder.add_track_section(length=2000, label="TG4", **V1, **north_east_parking)
+tg5 = builder.add_track_section(length=2000, label="TG5", **V2, **north_east_parking)
 
 pg0 = builder.add_point_switch(
     label="PG0",
@@ -415,13 +461,16 @@ north_east = builder.add_operational_point(label="North_East_station")
 north_east.add_part(tg4, 1550)
 north_east.add_part(tg5, 1500)
 
+place_regular_signals_detectors(tg1, "G1", min_offset=200, max_offset=-200)
 
 # ================================
 #  Around station H: South-East
 # ================================
 # track sections
-th0 = builder.add_track_section(length=1000, label="TH0")
-th1 = builder.add_track_section(length=5000, label="TH1")
+th0 = builder.add_track_section(length=1000, label="TH0", **V2, **west_to_east_road)
+th1 = builder.add_track_section(length=5000, label="TH1", **V1, **south_east_parking)
+
+place_regular_signals_detectors(th1, "H1", min_offset=200)
 
 # switches
 ph0 = builder.add_double_cross_switch(
@@ -504,13 +553,25 @@ infra.save(OUTPUT_DIR / "infra.json")
 
 builder = SimulationBuilder(infra)
 train_0 = builder.add_train_schedule(
-    Location(ta1, 500), Location(tc0, 500), Location(te1, 500), Location(tf1, 4300), label="train.0"
+    Location(ta1, 500),
+    Location(tc0, 500),
+    Location(te1, 500),
+    Location(tf1, 4300),
+    label="train.0",
 )
 train_1 = builder.add_train_schedule(
-    Location(ta2, 500), Location(tc2, 500), Location(td1, 14000), Location(tg5, 1500), label="train.1"
+    Location(ta2, 500),
+    Location(tc2, 500),
+    Location(td1, 14000),
+    Location(tg5, 1500),
+    label="train.1",
 )
 train_2 = builder.add_train_schedule(
-    Location(ta0, 500), Location(tc1, 500), Location(td0, 14000), Location(th1, 4400), label="train.2"
+    Location(ta0, 500),
+    Location(tc1, 500),
+    Location(td0, 14000),
+    Location(th1, 4400),
+    label="train.2",
 )
 
 # Add train succession tables
