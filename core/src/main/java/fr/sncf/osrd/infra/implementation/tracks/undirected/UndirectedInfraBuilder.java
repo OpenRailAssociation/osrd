@@ -155,11 +155,21 @@ public class UndirectedInfraBuilder {
     }
 
     /** Creates a waypoint and add it to the corresponding track */
+    @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"}) // This case only causes issues with strict equalities
     private void makeWaypoint(HashMap<String, TrackSectionImpl> trackSectionsByID,
                             RJSRouteWaypoint waypoint, boolean isBufferStop) {
         var track = RJSObjectParsing.getTrackSection(waypoint.track, trackSectionsByID);
         var newWaypoint = new DetectorImpl(track, waypoint.position, isBufferStop, waypoint.id);
-        detectorLists.get(track).add(newWaypoint);
+        var detectors = detectorLists.get(track);
+        for (var detector : detectors)
+            if (detector.getOffset() == newWaypoint.offset) {
+                warningRecorder.register(new Warning(String.format(
+                        "Duplicate waypoint (dropping new) : old = %s, new = %s",
+                        detector, newWaypoint
+                )));
+                return;
+            }
+        detectors.add(newWaypoint);
     }
 
     /** Creates a track section and registers it in the graph */

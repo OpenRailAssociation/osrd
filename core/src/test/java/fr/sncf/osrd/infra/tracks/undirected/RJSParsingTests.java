@@ -64,4 +64,14 @@ public class RJSParsingTests {
                 () -> UndirectedInfraBuilder.parseInfra(rjsInfra, new WarningRecorderImpl(true))
         );
     }
+
+    @Test
+    public void testDuplicateDetector() throws Exception {
+        var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
+        rjsInfra.detectors.add(rjsInfra.detectors.get(0));
+        assertThrows(
+                StrictWarningError.class,
+                () -> UndirectedInfraBuilder.parseInfra(rjsInfra, new WarningRecorderImpl(true))
+        );
+    }
 }
