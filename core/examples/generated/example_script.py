@@ -20,9 +20,9 @@ tracks = [builder.add_track_section(length=1000) for _ in range(7)]
 
 
 # Create switches
-switch_0 = builder.add_switch(tracks[2].begin(), tracks[1].end(), tracks[0].end())
-switch_1 = builder.add_switch(tracks[2].end(), tracks[3].begin(), tracks[4].begin())
-switch_2 = builder.add_switch(tracks[4].end(), tracks[5].begin(), tracks[6].begin())
+switch_0 = builder.add_point_switch(tracks[2].begin(), tracks[1].end(), tracks[0].end())
+switch_1 = builder.add_point_switch(tracks[2].end(), tracks[3].begin(), tracks[4].begin())
+switch_2 = builder.add_point_switch(tracks[4].end(), tracks[5].begin(), tracks[6].begin())
 
 # Set coordinates (optional)
 

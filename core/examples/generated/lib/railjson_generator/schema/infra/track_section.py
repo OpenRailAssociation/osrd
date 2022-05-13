@@ -82,9 +82,10 @@ class TrackSection:
         return False
     
     def set_remaining_coords(self, coordinates: List[Tuple[float, float]]):
+        """Sets values for extremities if none was already set, else only set values between extremities."""
         begin, end = 0, len(self.coordinates)
-        if self.coordinates[0] is not (None, None): begin += 1
-        if self.coordinates[-1] is not (None, None): end -= 1
+        if self.coordinates[0] != (None, None): begin += 1
+        if self.coordinates[-1] != (None, None): end -= 1
         self.coordinates[begin:end] = coordinates
 
     @staticmethod
