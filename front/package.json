@@ -41,6 +41,7 @@
     "d3": "^5.16.0",
     "d3-delaunay": "^6.0.2",
     "d3-brush": "^3.0.0",
+    "d3-selection": "^3.0.0",
     "debounce": "^1.2.0",
     "eslint-plugin-only-warn": "^1.0.2",
     "fetch-mock": "^9.4.0",

@@ -22,7 +22,7 @@ export const offsetSeconds = (seconds) => {
   return seconds;
 };
 
-export const getDirection = (data) => data[0][0].position
+export const getDirection = (data) => data && data[0][0].position
   < data[data.length - 1][
     data[data.length - 1].length - 1].position;
 
