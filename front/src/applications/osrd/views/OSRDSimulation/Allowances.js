@@ -422,12 +422,7 @@ export default function Allowances(props) {
               <i className="icons-arrow-up" />
             </button>
           </div>
-          <div>
-            {t('ecoAllowanceByInterval')}
-          </div>
-          <div>
-            <MarecoMultiRange stops={simulation.trains[selectedTrain].base.stops} extensions={ext} setExtensions={handleExtensionsChange} />
-          </div>
+
           <div>
             {t('allowanceByInterval')}
           </div>
