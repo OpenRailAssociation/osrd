@@ -25,11 +25,6 @@ import ElectrificationType from 'common/Map/Layers/ElectrificationType';
 import Hillshade from 'common/Map/Layers/Hillshade';
 import MapSearch from 'common/Map/Search/MapSearch';
 import MapSettings from 'common/Map/Settings/MapSettings';
-import MapSettingsLayers from 'common/Map/Settings/MapSettingsLayers';
-import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
-import MapSettingsShowOSM from 'common/Map/Settings/MapSettingsShowOSM';
-import MapSettingsSignals from 'common/Map/Settings/MapSettingsSignals';
-import MapSettingsTrackSources from 'common/Map/Settings/MapSettingsTrackSources';
 import OSM from 'common/Map/Layers/OSM';
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
 import Platform from 'common/Map/Layers/Platform';
@@ -281,17 +276,7 @@ const Map = (props) => {
         <ButtonResetViewport updateLocalViewport={resetPitchBearing} />
       </div>
       <MapSearch active={showSearch} toggleMapSearch={toggleMapSearch} />
-      <MapSettings active={showSettings} toggleMapSettings={toggleMapSettings}>
-        <MapSettingsMapStyle />
-        <div className="my-2" />
-        <MapSettingsTrackSources />
-        <div className="my-2" />
-        <MapSettingsShowOSM />
-        <div className="mb-1 mt-3 border-bottom">Signalisation</div>
-        <MapSettingsSignals />
-        <div className="mb-1 mt-3 border-bottom">Coucou</div>
-        <MapSettingsLayers />
-      </MapSettings>
+      <MapSettings active={showSettings} toggleMapSettings={toggleMapSettings} />
       <ReactMapGL
         {...viewport}
         style={{ cursor: 'pointer' }}

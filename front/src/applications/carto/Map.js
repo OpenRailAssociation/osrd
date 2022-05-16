@@ -16,11 +16,6 @@ import Hillshade from 'common/Map/Layers/Hillshade';
 import JointsDeZones from 'common/Map/Layers/JointsDeZones';
 import MapSearch from 'common/Map/Search/MapSearch';
 import MapSettings from 'common/Map/Settings/MapSettings';
-import MapSettingsLayers from 'common/Map/Settings/MapSettingsLayers';
-import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
-import MapSettingsShowOSM from 'common/Map/Settings/MapSettingsShowOSM';
-import MapSettingsSignals from 'common/Map/Settings/MapSettingsSignals';
-import MapSettingsTrackSources from 'common/Map/Settings/MapSettingsTrackSources';
 import OSM from 'common/Map/Layers/OSM';
 /* Objects & various */
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
@@ -118,17 +113,7 @@ const Map = () => {
         <ButtonFullscreen />
       </div>
       <MapSearch active={showSearch} toggleMapSearch={toggleMapSearch} />
-      <MapSettings active={showSettings} toggleMapSettings={toggleMapSettings}>
-        <MapSettingsMapStyle />
-        <div className="my-2" />
-        <MapSettingsTrackSources />
-        <div className="my-2" />
-        <MapSettingsShowOSM />
-        <div className="mb-1 mt-3 border-bottom">Signalisation</div>
-        <MapSettingsSignals />
-        <div className="mb-1 mt-3 border-bottom">{t('map-settings:layers')}</div>
-        <MapSettingsLayers />
-      </MapSettings>
+      <MapSettings active={showSettings} toggleMapSettings={toggleMapSettings} />
       <ReactMapGL
         {...viewport}
         style={{ cursor: 'normal' }}
