@@ -28,7 +28,13 @@ public class MaxSpeedEnvelope {
     private static Envelope addBrakingCurves(EnvelopeSimContext context, Envelope mrsp) {
         var builder = OverlayEnvelopeBuilder.backward(mrsp);
         var cursor = EnvelopeCursor.backward(mrsp);
+        var lastPosition = mrsp.getEndPos();
         while (cursor.findPartTransition(MaxSpeedEnvelope::increase)) {
+            if (cursor.getPosition() > lastPosition) {
+                // The next braking curve already covers this point, this braking curve is hidden
+                cursor.nextPart();
+                continue;
+            }
             var partBuilder = new EnvelopePartBuilder();
             partBuilder.setAttr(EnvelopeProfile.BRAKING);
             var overlayBuilder = new ConstrainedEnvelopePartBuilder(
@@ -42,6 +48,7 @@ public class MaxSpeedEnvelope {
             EnvelopeDeceleration.decelerate(context, startPosition, startSpeed, overlayBuilder, -1);
             builder.addPart(partBuilder.build());
             cursor.nextPart();
+            lastPosition = overlayBuilder.getLastPos();
         }
         return builder.build();
     }
