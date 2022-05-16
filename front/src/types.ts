@@ -56,35 +56,28 @@ export interface Notification {
 // Editor actions
 //
 export interface BaseEditorOperation {
-  component_id?: undefined | number;
-  entity_id?: undefined | number;
+  obj_type?: string;
 }
-export interface EditorOperationCreateEntity extends BaseEditorOperation {
-  operation: 'create_entity';
-  entity_type: string;
-  components: Array<{ component_type: string; component: unknown }>;
+export interface EditorOperationCreate extends BaseEditorOperation {
+  operation_type: 'CREATE';
+  railjson: any;
 }
-export interface EditorOperationUpdateComponent extends BaseEditorOperation {
-  operation: 'update_component';
-  component_id: number;
-  component_type: string;
-  update: { [key: string]: unknown };
+export interface EditorOperationUpdate extends BaseEditorOperation {
+  operation_type: 'UPDATE';
+  obj_id: number;
+  railjson_patch: any;
 }
-export interface EditorOperationDeleteEntity extends BaseEditorOperation {
-  operation: 'delete_entity';
-  entity_id: number;
+export interface EditorOperationDelete extends BaseEditorOperation {
+  operation: 'DELETE';
+  obj_id: number;
 }
 
-export type EditorOperation =
-  | EditorOperationCreateEntity
-  | EditorOperationUpdateComponent
-  | EditorOperationDeleteEntity;
+export type EditorOperation = EditorOperationCreate | EditorOperationUpdate | EditorOperationDelete;
 
 //
 // Editor data model
 //
-export type EditorComponentsDefinition = { [key: string]: JSONSchema7 };
-export type EditorEntitiesDefinition = { [key: string]: Array<keyof EditorComponentsDefinition> };
+export type EditorSchema = { [key: string]: JSONSchema7 };
 
 //
 //  Misc
@@ -99,20 +92,5 @@ export type Theme = {
 export interface ApiInfrastructure {
   id: number;
   name: string;
-  owner: string;
-  created: Date;
-  modified: Date;
-}
-
-export interface ApiSchemaResponseEntity {
-  entity_name: string;
-  components: Array<string>;
-}
-export interface ApiSchemaResponseComponent {
-  component_name: string;
-  fields: Array<{ name: string; type: string }>;
-}
-export interface ApiSchemaResponse {
-  entities: Array<ApiSchemaResponseEntity>;
-  components: Array<ApiSchemaResponseComponent>;
+  version: string;
 }

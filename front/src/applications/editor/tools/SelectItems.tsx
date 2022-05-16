@@ -10,6 +10,7 @@ import {
   MdSelectAll,
 } from 'react-icons/all';
 import { isEqual } from 'lodash';
+import { Feature } from 'geojson';
 
 import { Popup } from 'react-map-gl';
 import { CommonToolState, DEFAULT_COMMON_TOOL_STATE, Tool } from '../tools';
@@ -25,12 +26,11 @@ import EditorZone from '../../../common/Map/Layers/EditorZone';
 import GeoJSONs, { GEOJSON_LAYER_ID } from '../../../common/Map/Layers/GeoJSONs';
 import colors from '../../../common/Map/Consts/colors';
 import Modal from '../components/Modal';
-import EntityForm from '../components/EntityForm';
-import { EntityModel } from '../data/entity';
+import EditorForm from '../components/EditorForm';
 
 export type SelectItemsState = CommonToolState & {
   mode: 'rectangle' | 'single' | 'polygon';
-  selection: (EntityModel | Item)[]; // TODO: Find why it is heterogeneous
+  selection: Feature[];
   polygonPoints: [number, number][];
   rectangleTopLeft: [number, number] | null;
   showModal: 'info' | 'edit' | 'delete' | null;
@@ -177,11 +177,12 @@ export const SelectItems: Tool<SelectItemsState> = {
     if (toolState.mode !== 'single') return;
 
     let { selection } = toolState;
-    const isAlreadySelected = selection.find((item) => item.entity_id === feature.properties.id);
-    const current: EntityModel | undefined = editorState.editorEntities.find(
-      (item) => item.entity_id === feature.properties.id
+    const isAlreadySelected = selection.find((item) => item.id === feature.id);
+    //TODO: replace the static layer
+    const current = (editorState.editorData['track_sections'] || []).find(
+      (item) => item.id === feature.id
     );
-    console.log('current', current, editorState.editorEntities, feature);
+    console.log('current', current, editorState.editorData, feature);
     if (current) {
       if (!isAlreadySelected) {
         if (e.srcEvent.ctrlKey) {
@@ -190,7 +191,7 @@ export const SelectItems: Tool<SelectItemsState> = {
           selection = [current];
         }
       } else if (e.srcEvent.ctrlKey) {
-        selection = selection.filter((item) => item.entity_id !== feature.properties.id);
+        selection = selection.filter((item) => item.id !== feature.id);
       } else if (selection.length === 1) {
         selection = [];
       } else {
@@ -214,7 +215,7 @@ export const SelectItems: Tool<SelectItemsState> = {
           setState({
             ...toolState,
             rectangleTopLeft: null,
-            selection: selectInZone(editorState.editorData || [], {
+            selection: selectInZone(editorState.editorData['track_sections'] || [], {
               type: 'rectangle',
               points: [toolState.rectangleTopLeft, position],
             }),
@@ -235,7 +236,7 @@ export const SelectItems: Tool<SelectItemsState> = {
           setState({
             ...toolState,
             polygonPoints: [],
-            selection: selectInZone(editorState.editorData || [], {
+            selection: selectInZone(editorState.editorData['track_sections'] || [], {
               type: 'polygon',
               points,
             }),
@@ -321,9 +322,10 @@ export const SelectItems: Tool<SelectItemsState> = {
             onClose={() => setState({ ...toolState, showModal: null })}
             title={t('Editor.tools.select-items.edit-line')}
           >
-            <EntityForm
-              entity={toolState.selection[0] as EntityModel}
-              onSubmit={(data: EntityModel) => {
+            <EditorForm
+              layer={'track_section'}
+              data={toolState.selection[0]}
+              onSubmit={(data) => {
                 dispatch<any>(updateEntity(data));
                 setState({ ...toolState, showModal: null });
               }}
@@ -343,7 +345,7 @@ export const SelectItems: Tool<SelectItemsState> = {
               <button
                 className="btn btn-primary"
                 onClick={() => {
-                  dispatch<any>(deleteEntities(toolState.selection as EntityModel[]));
+                  dispatch<any>(deleteEntities(toolState.selection));
                   setState({ ...toolState, showModal: null });
                 }}
               >
