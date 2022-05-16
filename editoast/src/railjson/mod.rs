@@ -30,6 +30,7 @@ pub enum ObjectType {
     Switch,
     SwitchType,
     BufferStop,
+    Route,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -58,6 +59,7 @@ impl ObjectType {
             ObjectType::Switch => "osrd_infra_switchmodel",
             ObjectType::SwitchType => todo!(),
             ObjectType::BufferStop => "osrd_infra_bufferstopmodel",
+            ObjectType::Route => "osrd_infra_routemodel",
         }
     }
 }
@@ -128,6 +130,26 @@ pub struct SpeedSection {
     pub track_ranges: Vec<ApplicableDirectionsTrackRange>,
 }
 
+/* temporary object ref on a traksection for tests */
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[derivative(Default)]
+pub struct Route {
+    #[derivative(Default(value = r#"generate_id("route")"#))]
+    pub id: String,
+    #[derivative(Default(value = r#"ObjectRef {
+        obj_type: ObjectType::TrackSection,
+        obj_id: "".to_string(),
+    }"#))]
+    pub entry_point: ObjectRef,
+    #[derivative(Default(value = r#"ObjectRef {
+        obj_type: ObjectType::TrackSection,
+        obj_id: "".to_string(),
+    }"#))]
+    pub exit_point: ObjectRef,
+    pub release_detectors: Vec<ObjectRef>,
+    pub path: Vec<DirectionalTrackRange>,
+}
+
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
 #[derivative(Default)]
 pub struct TrackSectionLink {
@@ -190,6 +212,14 @@ pub struct ApplicableDirectionsTrackRange {
     pub begin: f64,
     pub end: f64,
     pub applicable_directions: ApplicableDirections,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct DirectionalTrackRange {
+    pub track: ObjectRef,
+    pub begin: f64,
+    pub end: f64,
+    pub direction: Direction,
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]

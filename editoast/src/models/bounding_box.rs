@@ -79,6 +79,17 @@ impl InvalidationZone {
                         Self::merge_bbox(&mut geo, &mut sch, infra_cache, track_id);
                     }
                 }
+                OperationResult::Update(RailjsonObject::Route { railjson })
+                | OperationResult::Create(RailjsonObject::Route { railjson }) => {
+                    if let Some(route) = infra_cache.routes.get(&railjson.id) {
+                        for track_id in route.path.iter().map(|r| &r.track.obj_id) {
+                            Self::merge_bbox(&mut geo, &mut sch, infra_cache, track_id);
+                        }
+                    }
+                    for track_id in railjson.path.iter().map(|r| &r.track.obj_id) {
+                        Self::merge_bbox(&mut geo, &mut sch, infra_cache, track_id);
+                    }
+                }
                 OperationResult::Update(RailjsonObject::TrackSectionLink { railjson })
                 | OperationResult::Create(RailjsonObject::TrackSectionLink { railjson }) => {
                     if let Some(link) = infra_cache.track_section_links.get(&railjson.id) {
@@ -132,6 +143,16 @@ impl InvalidationZone {
                 }) => {
                     if let Some(speed) = infra_cache.speed_sections.get(obj_id) {
                         for track_id in speed.track_ranges.iter().map(|r| &r.track.obj_id) {
+                            Self::merge_bbox(&mut geo, &mut sch, infra_cache, track_id);
+                        }
+                    }
+                }
+                OperationResult::Delete(ObjectRef {
+                    obj_type: ObjectType::Route,
+                    obj_id,
+                }) => {
+                    if let Some(route) = infra_cache.routes.get(obj_id) {
+                        for track_id in route.path.iter().map(|r| &r.track.obj_id) {
                             Self::merge_bbox(&mut geo, &mut sch, infra_cache, track_id);
                         }
                     }

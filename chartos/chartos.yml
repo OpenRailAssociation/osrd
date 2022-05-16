@@ -218,6 +218,33 @@
       joins:
         - "inner join osrd_infra_bufferstopmodel buffer_stop on buffer_stop.obj_id = layer.obj_id and buffer_stop.infra_id = layer.infra_id"
 
+- name: routes
+  table_name: osrd_infra_routelayer
+  id_field: id
+  views:
+    - name: geo
+      on_field: geographic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "(route.data->>'entry_point')::text as entry_point"
+        - "(route.data->>'exit_point')::text as exit_point"
+        - "(route.data->>'release_detectors')::text as release_detectors"
+        - "(route.data->>'path')::text as path"
+      joins:
+        - "inner join osrd_infra_routemodel route on route.obj_id = layer.obj_id and route.infra_id = layer.infra_id"
+    - name: sch
+      on_field: schematic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "(route.data->>'entry_point')::text as entry_point"
+        - "(route.data->>'exit_point')::text as exit_point"
+        - "(route.data->>'release_detectors')::text as release_detectors"
+        - "(route.data->>'path')::text as path"
+      joins:
+        - "inner join osrd_infra_routemodel route on route.obj_id = layer.obj_id and route.infra_id = layer.infra_id"
+
 - name: errors
   table_name: osrd_infra_errorlayer
   id_field: id
