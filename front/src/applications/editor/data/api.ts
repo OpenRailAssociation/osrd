@@ -16,7 +16,7 @@ export async function getInfrastructure(id: number): Promise<ApiInfrastructure> 
  */
 export async function getInfrastructures(): Promise<Array<ApiInfrastructure>> {
   const response = await get(`/infra/`);
-  return response.results;
+  return response;
 }
 
 /**
@@ -47,10 +47,11 @@ export async function getEditorData(
       };
     })
   );
-  return responses.reduce(
+  const result = responses.reduce(
     (acc, current) => ({ ...acc, [current.layer]: current.data }),
     {} as { [layer: string]: Array<Feature> }
   );
+  return result;
 }
 
 /**
