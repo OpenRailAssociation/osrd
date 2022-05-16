@@ -529,7 +529,16 @@ th1.set_remaining_coords(
 south_east = builder.add_operational_point(label="South_East_station")
 south_east.add_part(th1, 4400)
 
-# Speed section
+# ================================
+#  Speed sections
+# ================================
+speed_0 = builder.add_speed_section(300 / 3.6)
+for track_section in builder.infra.track_sections:
+    speed_0.add_track_range(
+        track_section, 0, track_section.length, ApplicableDirection.BOTH
+    )
+
+
 speed_1 = builder.add_speed_section(142 / 3.6)
 speed_1.add_track_range(th0, 500, 1000, ApplicableDirection.BOTH)
 speed_1.add_track_range(th1, 0, 4000, ApplicableDirection.BOTH)
