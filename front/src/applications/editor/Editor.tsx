@@ -63,7 +63,8 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   // we call the api to find the latest infrastructure modified
   useEffect(() => {
     console.log('infra', infra, infra && infra !== '-1');
-    if (infra && infra !== '-1') {
+    if (infra && parseInt(infra) > 0) {
+      console.log('infra', infra);
       getInfrastructure(parseInt(infra))
         .then((infrastructure) => dispatch(updateInfraID(infrastructure.id)))
         .catch(() => {
@@ -71,10 +72,13 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
           dispatch(updateViewport(viewport, `/editor/infra`));
         });
     } else {
+      console.log('no infra');
       getInfrastructures()
         .then((infras) => {
+          console.log(infras);
           if (infras && infras.length > 0) {
             const infrastructure = infras[0];
+            console.log('pick infra', infrastructure);
             dispatch(updateInfraID(infrastructure.id));
             dispatch(updateViewport(viewport, `/editor/${infrastructure.id}`));
           } else {
