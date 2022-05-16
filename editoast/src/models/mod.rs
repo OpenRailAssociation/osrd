@@ -3,6 +3,7 @@ mod buffer_stop_layer;
 mod detector_layer;
 pub mod errors;
 pub mod infra;
+pub mod infra_errors;
 mod route_layer;
 mod signal_layer;
 mod speed_section_layer;

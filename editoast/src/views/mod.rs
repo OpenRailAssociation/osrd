@@ -1,4 +1,5 @@
 mod infra;
+pub mod pagination;
 pub mod params;
 
 use diesel::{sql_query, RunQueryDsl};
