@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import MapSettingsLayers from 'common/Map/Settings/MapSettingsLayers';
 import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
 import MapSettingsShowOSM from 'common/Map/Settings/MapSettingsShowOSM';
+import MapSettingsShowOSMtracksections from 'common/Map/Settings/MapSettingsShowOSMtracksections';
 import MapSettingsSignals from 'common/Map/Settings/MapSettingsSignals';
 import MapSettingsTrackSources from 'common/Map/Settings/MapSettingsTrackSources';
 import { useTranslation } from 'react-i18next';
@@ -22,6 +23,8 @@ export default function MapSettings(props) {
       <MapSettingsTrackSources />
       <div className="my-2" />
       <MapSettingsShowOSM />
+      <div className="my-1" />
+      <MapSettingsShowOSMtracksections />
       <div className="mb-1 mt-3 border-bottom">Signalisation</div>
       <MapSettingsSignals />
       <div className="mb-1 mt-3 border-bottom">{t('map-settings:layers')}</div>

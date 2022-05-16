@@ -13,6 +13,7 @@ export const UPDATE_MAPSTYLE = 'map/UPDATE_MAPSTYLE';
 export const UPDATE_MAP_TRACK_SOURCES = 'map/UPDATE_MAP_TRACK_SOURCES';
 export const UPDATE_MAP_SEARCH_MARKER = 'map/UPDATE_MAP_SEARCH_MARKER';
 export const UPDATE_SHOW_OSM = 'map/UPDATE_SHOW_OSM';
+export const UPDATE_SHOW_OSM_TRACKSECTIONS = 'map/UPDATE_SHOW_OSM_TRACKSECTIONS';
 export const UPDATE_FEATURE_INFO_HOVER = 'map/UPDATE_FEATURE_INFO_HOVER';
 export const UPDATE_FEATURE_INFO_CLICK = 'map/UPDATE_FEATURE_INFO_CLICK';
 export const UPDATE_LAYERS_SETTINGS = 'osrdconf/UPDATE_LAYERS_SETTINGS';
@@ -25,6 +26,7 @@ export const initialState = {
   mapStyle: 'normal',
   mapTrackSources: 'geographic',
   showOSM: true,
+  showOSMtracksections: false,
   viewport: {
     latitude: 48.32,
     longitude: 2.44,
@@ -43,12 +45,14 @@ export const initialState = {
     tivs: false,
   },
   layersSettings: {
+    bufferstops: false,
+    detectors: false,
     electrification: false,
-    speedlimits: false,
     operationalpoints: false,
     signalingtype: true,
-    tvds: false,
+    speedlimits: false,
     switches: false,
+    tvds: false,
   },
   mapSearchMarker: undefined,
 };
@@ -83,6 +87,9 @@ export default function reducer(state = initialState, action) {
         break;
       case UPDATE_SHOW_OSM:
         draft.showOSM = action.showOSM;
+        break;
+      case UPDATE_SHOW_OSM_TRACKSECTIONS:
+        draft.showOSMtracksections = action.showOSMtracksections;
         break;
       case UPDATE_FEATURE_INFO_HOVER:
         draft.featureSource = action.featureSource;
@@ -151,6 +158,15 @@ export function updateShowOSM(showOSM) {
     dispatch({
       type: UPDATE_SHOW_OSM,
       showOSM,
+    });
+  };
+}
+
+export function updateShowOSMtracksections(showOSMtracksections) {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_SHOW_OSM_TRACKSECTIONS,
+      showOSMtracksections,
     });
   };
 }
