@@ -127,7 +127,6 @@ public class MaxEffortEnvelopeTest {
     }
 
     @Test
-    @Disabled("See issue: https://github.com/DGEXSolutions/osrd/issues/974")
     public void testOverlappingBrakingCurves() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var testPath = new FlatPath(100, 0);
