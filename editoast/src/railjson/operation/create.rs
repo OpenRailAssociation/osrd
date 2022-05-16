@@ -1,6 +1,6 @@
 use crate::error::ApiError;
 use crate::railjson::{
-    BufferStop, Detector, ObjectRef, ObjectType, Signal, SpeedSection, Switch, TrackSection,
+    BufferStop, Detector, ObjectRef, ObjectType, Route, Signal, SpeedSection, Switch, TrackSection,
     TrackSectionLink,
 };
 use diesel::sql_types::{Integer, Json, Text};
@@ -18,6 +18,7 @@ pub enum RailjsonObject {
     Switch { railjson: Switch },
     Detector { railjson: Detector },
     BufferStop { railjson: BufferStop },
+    Route { railjson: Route },
 }
 
 pub fn apply_create_operation(
@@ -47,6 +48,7 @@ impl RailjsonObject {
             RailjsonObject::Switch { railjson: _ } => ObjectType::Switch,
             RailjsonObject::Detector { railjson: _ } => ObjectType::Detector,
             RailjsonObject::BufferStop { railjson: _ } => ObjectType::BufferStop,
+            RailjsonObject::Route { railjson: _ } => ObjectType::Route,
         }
     }
 
@@ -59,6 +61,7 @@ impl RailjsonObject {
             RailjsonObject::Switch { railjson } => railjson.id.clone(),
             RailjsonObject::Detector { railjson } => railjson.id.clone(),
             RailjsonObject::BufferStop { railjson } => railjson.id.clone(),
+            RailjsonObject::Route { railjson } => railjson.id.clone(),
         }
     }
 
@@ -73,6 +76,7 @@ impl RailjsonObject {
             RailjsonObject::Switch { railjson } => serde_json::to_value(railjson).unwrap(),
             RailjsonObject::Detector { railjson } => serde_json::to_value(railjson).unwrap(),
             RailjsonObject::BufferStop { railjson } => serde_json::to_value(railjson).unwrap(),
+            RailjsonObject::Route { railjson } => serde_json::to_value(railjson).unwrap(),
         }
     }
 
@@ -86,7 +90,7 @@ pub mod test {
     use crate::models::infra::test::test_transaction;
     use crate::railjson::operation::create::{apply_create_operation, RailjsonObject};
     use crate::railjson::{
-        BufferStop, Detector, Signal, SpeedSection, Switch, TrackSection, TrackSectionLink,
+        BufferStop, Detector, Route, Signal, SpeedSection, Switch, TrackSection, TrackSectionLink,
     };
     use diesel::PgConnection;
 
@@ -146,6 +150,12 @@ pub mod test {
         obj
     }
 
+    pub fn create_route(conn: &PgConnection, infra_id: i32, route: Route) -> RailjsonObject {
+        let obj = RailjsonObject::Route { railjson: route };
+        assert!(apply_create_operation(&obj, infra_id, conn).is_ok());
+        obj
+    }
+
     #[test]
     fn create_track_test() {
         test_transaction(|conn, infra| {
@@ -192,6 +202,13 @@ pub mod test {
     fn create_buffer_stop_test() {
         test_transaction(|conn, infra| {
             create_buffer_stop(conn, infra.id, Default::default());
+        });
+    }
+
+    #[test]
+    fn create_route_test() {
+        test_transaction(|conn, infra| {
+            create_route(conn, infra.id, Default::default());
         });
     }
 }

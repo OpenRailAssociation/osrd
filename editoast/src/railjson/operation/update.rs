@@ -91,6 +91,9 @@ impl DataObject {
             ObjectType::BufferStop => RailjsonObject::BufferStop {
                 railjson: from_value(self.data.clone())?,
             },
+            ObjectType::Route => RailjsonObject::Route {
+                railjson: from_value(self.data.clone())?,
+            },
         };
 
         if obj_railjson.get_obj_id() != update.obj_id {
