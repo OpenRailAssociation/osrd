@@ -35,7 +35,12 @@ class InfraBuilder:
         return track
 
     def add_point_switch(
-        self, base: TrackEndpoint, left: TrackEndpoint, right: TrackEndpoint, signal_on_ports=None, **kwargs
+        self,
+        base: TrackEndpoint,
+        left: TrackEndpoint,
+        right: TrackEndpoint,
+        signal_on_ports: Mapping[str, Tuple[str, str]] = None,
+        **kwargs
     ):
         """
         Adds a switch as well as all links between concerned track sections.
@@ -56,7 +61,7 @@ class InfraBuilder:
         south: TrackEndpoint,
         east: TrackEndpoint,
         west: TrackEndpoint,
-        signal_on_ports=None,
+        signal_on_ports: Mapping[str, Tuple[str, str]] = None,
         **kwargs
     ):
         """
@@ -78,7 +83,7 @@ class InfraBuilder:
         north_2: TrackEndpoint,
         south_1: TrackEndpoint,
         south_2: TrackEndpoint,
-        signal_on_ports=None,
+        signal_on_ports: Mapping[str, Tuple[str, str]] = None,
         **kwargs
     ):
         """

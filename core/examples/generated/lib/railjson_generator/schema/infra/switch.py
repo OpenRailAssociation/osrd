@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Dict, Tuple
+from typing import Mapping, Tuple
 
 from railjson_generator.schema.infra.endpoint import TrackEndpoint, Endpoint
 from railjson_generator.schema.infra.direction import Direction
@@ -30,7 +30,7 @@ class Switch:
         for port_name in self.PORT_NAMES:
             getattr(self, port_name).set_coords(x, y)
 
-    def add_signals_detectors_to_ports(self, ports: Dict[str, Tuple[str, str]]):
+    def add_signals_detectors_to_ports(self, ports: Mapping[str, Tuple[str, str]]):
         """Add signals and detectors to given ports.
         Args:
             ports: A dictionary of port names to (detector_label, signal_label) pairs.
