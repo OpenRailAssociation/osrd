@@ -1,7 +1,16 @@
 import axios from 'axios';
 import mainConfig from 'config/config';
 
-const formatPath = (path) => `${mainConfig.proxy}${path}`;
+const formatPath = (path) => {
+  let result = `${mainConfig.proxy}${path}`;
+  if (path.startsWith('/infra')) {
+    result = `${mainConfig.proxy_editoast}${path}`;
+  }
+  if (path.startsWith('/layer')) {
+    result = `${mainConfig.proxy_chartis}${path}`;
+  }
+  return result;
+};
 
 const getAuthConfig = () => ({
   headers: {
@@ -14,6 +23,7 @@ export const get = async (path, params = undefined) => {
   if (params) {
     config.params = params;
   }
+
   let newPath;
   // ULGY HACK https://gateway.dev.dgexsol.fr/osrd
   if (path.substr(0, 5) === '/gaia') {
@@ -21,7 +31,6 @@ export const get = async (path, params = undefined) => {
   } else {
     newPath = formatPath(path);
   }
-  // UGLY HACK
   const res = await axios.get(newPath, config);
   return res.data;
 };

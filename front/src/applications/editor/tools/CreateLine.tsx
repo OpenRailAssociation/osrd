@@ -7,7 +7,7 @@ import {
   BiAnchor,
   MdShowChart,
 } from 'react-icons/all';
-import { Feature, LineString, MultiLineString, Point } from '@turf/helpers';
+import { Feature, LineString, MultiLineString, Point } from 'geojson';
 import { Layer, Source } from 'react-map-gl';
 
 import { CommonToolState, DEFAULT_COMMON_TOOL_STATE, Tool } from '../tools';
@@ -17,9 +17,7 @@ import GeoJSONs, { GEOJSON_LAYER_ID } from '../../../common/Map/Layers/GeoJSONs'
 import colors from '../../../common/Map/Consts/colors';
 import Modal from '../components/Modal';
 import { getNearestPoint } from '../../../utils/mapboxHelper';
-import EntityForm from '../components/EntityForm';
-import { EntityModel } from '../data/entity';
-import { EditorComponentsDefinition, EditorEntitiesDefinition } from '../../../types';
+import EditorForm from '../components/EditorForm';
 
 export type CreateLineState = CommonToolState & {
   linePoints: [number, number][];
@@ -196,27 +194,27 @@ export const CreateLine: Tool<CreateLineState> = {
       </>
     );
   },
-  getDOM({ setState, dispatch, t }, toolState, editorState) {
+  getDOM({ setState, dispatch, t }, toolState) {
+    const layer = 'track_sections';
     // Create the entity model
-    const entity = new EntityModel(
-      'track_section',
-      editorState.editorEntitiesDefinition as EditorEntitiesDefinition,
-      editorState.editorComponentsDefinition as EditorComponentsDefinition
-    );
-    // Set the geo
-    entity.setGeometry({
-      type: 'LineString',
-      coordinates: toolState.linePoints,
-    });
+    const newLine: Feature = {
+      type: 'Feature',
+      geometry: {
+        type: 'LineString',
+        coordinates: toolState.linePoints,
+      },
+      properties: {},
+    };
     return toolState.showPropertiesModal ? (
       <Modal
         onClose={() => setState({ ...toolState, showPropertiesModal: false, linePoints: [] })}
         title={t('Editor.tools.create-line.label')}
       >
-        <EntityForm
-          entity={entity}
-          onSubmit={(data: EntityModel) => {
-            dispatch<any>(createEntity(data));
+        <EditorForm
+          layer={layer}
+          data={newLine}
+          onSubmit={(data) => {
+            dispatch<any>(createEntity(layer, data));
             setState({ ...toolState, linePoints: [], showPropertiesModal: false });
           }}
         />
