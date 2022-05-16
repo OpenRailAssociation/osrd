@@ -154,7 +154,7 @@ export function save(): ThunkAction<ActionSave> {
   };
 }
 
-type Actions = ActionSelectZone | ActionLoadDataModel | ActionCreateEntity | ActionSave;
+type Actions = ActionSelectZone | ActionLoadDataModel | ActionSave | ActionSetData;
 
 //
 // State definition
@@ -196,9 +196,9 @@ export default function reducer(inputState: EditorState, action: Actions) {
       // break;
       // The following cases are commented because they apparently don't apply
       // with the current state of typings:
-      // case SET_DATA:
-      //   draft.editorEntities = action.data;
-      //   break;
+      case SET_DATA:
+        draft.editorData = action.data;
+        break;
       // case UPDATE_ENTITY:
       // case DELETE_ENTITY:
       //   draft.editorEntities = state.editorEntities
