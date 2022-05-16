@@ -9,6 +9,7 @@ import { AiOutlineBlock } from 'react-icons/ai';
 import { MdSpaceBar } from 'react-icons/md';
 import { FaMapMarkerAlt } from 'react-icons/fa';
 import { TiFlowSwitch } from 'react-icons/ti';
+import BufferStopSVGFile from 'assets/pictures/layersicons/bufferstop.svg';
 import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 
 const FormatSwitch = (props) => {
@@ -46,6 +47,12 @@ const FormatSwitch = (props) => {
   );
 };
 
+const BufferStopSVG = () => (
+  <>
+    <img src={BufferStopSVGFile} alt="Buffer stop icon" height="16" />
+  </>
+);
+
 export default function MapSettingsLayers() {
   return (
     <div className="row">
@@ -76,6 +83,10 @@ export default function MapSettingsLayers() {
       <FormatSwitch
         name="switches"
         icon={<TiFlowSwitch />}
+      />
+      <FormatSwitch
+        name="bufferstops"
+        icon={<BufferStopSVG />}
       />
     </div>
   );
