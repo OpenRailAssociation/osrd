@@ -1,8 +1,9 @@
 use crate::models::BoundingBox;
 use crate::railjson::operation::{OperationResult, RailjsonObject};
 use crate::railjson::{
-    ApplicableDirectionsTrackRange, BufferStop, Detector, LineString, ObjectRef, ObjectType,
-    Signal, SpeedSection, Switch, TrackEndpoint, TrackSection, TrackSectionLink,
+    ApplicableDirectionsTrackRange, BufferStop, Detector, DirectionalTrackRange, LineString,
+    ObjectRef, ObjectType, Route, Signal, SpeedSection, Switch, TrackEndpoint, TrackSection,
+    TrackSectionLink,
 };
 use derivative::Derivative;
 use diesel::sql_types::{Double, Integer, Json, Text};
@@ -38,6 +39,9 @@ pub struct InfraCache {
 
     /// List existing buffer stops
     pub buffer_stops: HashMap<String, BufferStopCache>,
+
+    /// List existing routes
+    pub routes: HashMap<String, Route>,
 }
 
 #[derive(Debug, Clone, Derivative)]
@@ -135,6 +139,37 @@ impl From<SpeedSectionQueryable> for SpeedSection {
             id: speed.obj_id.clone(),
             speed: speed.speed,
             track_ranges,
+        }
+    }
+}
+
+#[derive(QueryableByName, Debug, Clone)]
+pub struct RouteQueryable {
+    #[sql_type = "Text"]
+    pub obj_id: String,
+    #[sql_type = "Json"]
+    pub entry_point: Value,
+    #[sql_type = "Json"]
+    pub exit_point: Value,
+    #[sql_type = "Json"]
+    pub release_detectors: Value,
+    #[sql_type = "Json"]
+    pub path: Value,
+}
+
+impl From<RouteQueryable> for Route {
+    fn from(route: RouteQueryable) -> Self {
+        let entry_point: ObjectRef = serde_json::from_value(route.entry_point).unwrap();
+        let exit_point: ObjectRef = serde_json::from_value(route.exit_point).unwrap();
+        let release_detectors: Vec<ObjectRef> =
+            serde_json::from_value(route.release_detectors).unwrap();
+        let path: Vec<DirectionalTrackRange> = serde_json::from_value(route.path).unwrap();
+        Route {
+            id: route.obj_id,
+            entry_point,
+            exit_point,
+            release_detectors,
+            path,
         }
     }
 }
@@ -296,6 +331,16 @@ impl InfraCache {
             .is_none());
     }
 
+    fn load_route(&mut self, route: Route) {
+        for path in route.path.iter() {
+            self.add_track_ref(
+                path.track.obj_id.clone(),
+                ObjectRef::new(ObjectType::Route, route.id.clone()),
+            );
+        }
+        assert!(self.routes.insert(route.id.clone(), route).is_none());
+    }
+
     fn load_track_section_link(&mut self, link: TrackSectionLinkCache) {
         for endpoint in [&link.src, &link.dst] {
             self.add_track_ref(
@@ -372,6 +417,14 @@ impl InfraCache {
             infra_cache.load_speed_section(speed.into())
         );
 
+        // Load routes tracks references
+        sql_query(
+            "SELECT obj_id, data->>'entry_point' AS entry_point, data->>'exit_point' AS exit_point, data->>'release_detectors' AS release_detectors, data->>'path' AS path FROM osrd_infra_routemodel WHERE infra_id = $1")
+        .bind::<Integer, _>(infra_id)
+        .load::<RouteQueryable>(conn).expect("Error loading route refs").into_iter().for_each(|route| 
+            infra_cache.load_route(route.into())
+        );
+
         // Load track section links tracks references
         sql_query(
             "SELECT obj_id, data->'src'->'track'->>'id' AS src, data->'dst'->'track'->>'id' AS dst FROM osrd_infra_tracksectionlinkmodel WHERE infra_id = $1")
@@ -444,6 +497,18 @@ impl InfraCache {
                 }
             }
             ObjectRef {
+                obj_type: ObjectType::Route,
+                obj_id,
+            } => {
+                let route = self.routes.remove(obj_id).unwrap();
+                for path in route.path {
+                    self.track_sections_refs
+                        .get_mut(&path.track.obj_id)
+                        .unwrap()
+                        .remove(object_ref);
+                }
+            }
+            ObjectRef {
                 obj_type: ObjectType::TrackSectionLink,
                 obj_id,
             } => {
@@ -511,6 +576,7 @@ impl InfraCache {
             RailjsonObject::TrackSection { railjson } => self.load_track_section(railjson.into()),
             RailjsonObject::Signal { railjson } => self.load_signal(railjson.into()),
             RailjsonObject::SpeedSection { railjson } => self.load_speed_section(railjson.clone()),
+            RailjsonObject::Route { railjson } => self.load_route(railjson.clone()),
             RailjsonObject::TrackSectionLink { railjson } => {
                 self.load_track_section_link(railjson.into())
             }
