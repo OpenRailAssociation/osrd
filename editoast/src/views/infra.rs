@@ -4,16 +4,18 @@ use crate::error::{ApiResult, EditoastError};
 use crate::generate;
 use crate::infra_cache::InfraCache;
 use crate::models::errors::generate_errors;
+use crate::models::infra_errors::get_paginated_infra_errors;
 use crate::models::{CreateInfra, DBConnection, Infra, InvalidationZone};
 use crate::railjson::operation::{Operation, OperationResult};
 use chashmap::CHashMap;
+
 use rocket::http::Status;
 use rocket::response::status::Custom;
 use rocket::{routes, Route, State};
 use rocket_contrib::json::{Json, JsonError, JsonValue};
 
 pub fn routes() -> Vec<Route> {
-    routes![list, get, edit, create, delete, refresh]
+    routes![list, get, edit, create, delete, refresh, list_errors]
 }
 
 /// Refresh infra generated data
@@ -152,6 +154,22 @@ fn edit(
         // Check for warnings and errors
         Ok(Json(operation_results))
     })
+}
+
+/// Return the list of errors of an infra
+#[get("/<infra>/errors?<page>&<exclude_warnings>")]
+fn list_errors(
+    infra: i32,
+    page: Option<i64>,
+    exclude_warnings: bool,
+    conn: DBConnection,
+) -> ApiResult<Custom<JsonValue>> {
+    let page = page.unwrap_or_default().max(1);
+    let (infra_errors, count) = get_paginated_infra_errors(&conn, infra, page, exclude_warnings)?;
+    Ok(Custom(
+        Status::Ok,
+        json!({ "count": count, "results": infra_errors }),
+    ))
 }
 
 #[cfg(test)]
