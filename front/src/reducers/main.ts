@@ -155,7 +155,7 @@ export default function reducer(state = initialState, action: Actions) {
               n.text === action.notification.text &&
               n.type === action.notification.type &&
               n.title === action.notification.title
-            ),
+            )
         );
         break;
     }

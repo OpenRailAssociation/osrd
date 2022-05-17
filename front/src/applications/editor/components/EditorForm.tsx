@@ -1,27 +1,43 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Form from '@rjsf/core';
 import { Feature } from 'geojson';
 import { useSelector } from 'react-redux';
+import { omit } from 'lodash';
+
+import { EditorEntity } from '../../../types';
 import { EditorState } from '../../../reducers/editor';
+import { getJsonSchemaForLayer, getLayerForObjectType } from '../data/utils';
 
 interface EditorFormProps {
-  layer: string;
-  data: Feature;
-  onSubmit: (data: Feature) => void;
+  data: EditorEntity;
+  onSubmit: (data: EditorEntity) => void;
 }
 
 /**
- * Display a form to create a new entity.
+ * Display a form to create/update a new entity.
  */
-const EditorForm: React.FC<EditorFormProps> = ({ layer, data, onSubmit }) => {
+const EditorForm: React.FC<EditorFormProps> = ({ data, onSubmit }) => {
+  const [error, setError] = useState<unknown | null>(null);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
-  const schema = editorState.editorSchema[layer];
+  const layer = getLayerForObjectType(editorState.editorSchema, data.objType);
+  const schema = getJsonSchemaForLayer(editorState.editorSchema, layer || '');
+  if (!schema) throw new Error(`Missing data type for ${layer}`);
+
   return (
-    <Form
-      formData={data.properties}
-      schema={schema}
-      onSubmit={(e) => onSubmit({ ...data, properties: e.formData })}
-    />
+    <div>
+      {error !== null && <p className="error">{JSON.stringify(error)}</p>}
+      <Form
+        formData={data.properties}
+        schema={schema ? schema : {}}
+        onSubmit={(e) => {
+          try {
+            onSubmit({ ...data, properties: { ...data.properties, ...e.formData } });
+          } catch (e) {
+            setError(e);
+          }
+        }}
+      />
+    </div>
   );
 };
 

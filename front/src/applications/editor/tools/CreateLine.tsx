@@ -10,8 +10,9 @@ import {
 import { Feature, LineString, MultiLineString, Point } from 'geojson';
 import { Layer, Source } from 'react-map-gl';
 
+import { EditorEntity } from '../../../types';
 import { CommonToolState, DEFAULT_COMMON_TOOL_STATE, Tool } from '../tools';
-import { EditorState, createEntity } from '../../../reducers/editor';
+import { EditorState, save } from '../../../reducers/editor';
 import EditorZone from '../../../common/Map/Layers/EditorZone';
 import GeoJSONs, { GEOJSON_LAYER_ID } from '../../../common/Map/Layers/GeoJSONs';
 import colors from '../../../common/Map/Consts/colors';
@@ -195,10 +196,10 @@ export const CreateLine: Tool<CreateLineState> = {
     );
   },
   getDOM({ setState, dispatch, t }, toolState) {
-    const layer = 'track_sections';
     // Create the entity model
-    const newLine: Feature = {
+    const newLine: EditorEntity = {
       type: 'Feature',
+      objType: 'TrackSection',
       geometry: {
         type: 'LineString',
         coordinates: toolState.linePoints,
@@ -211,10 +212,9 @@ export const CreateLine: Tool<CreateLineState> = {
         title={t('Editor.tools.create-line.label')}
       >
         <EditorForm
-          layer={layer}
           data={newLine}
           onSubmit={(data) => {
-            dispatch<any>(createEntity(layer, data));
+            dispatch<any>(save({ create: [data] }));
             setState({ ...toolState, linePoints: [], showPropertiesModal: false });
           }}
         />
