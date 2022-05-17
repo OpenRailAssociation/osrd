@@ -68,7 +68,7 @@ public class StandaloneSim {
 
             result.speedLimits.add(cacheSpeedLimits.get(trainSchedule));
             result.baseSimulations.add(cacheMaxEffort.get(trainSchedule));
-            result.ecoSimulations.add(cacheEco.getOrDefault(trainSchedule, null));
+            result.allowanceSimulations.add(cacheEco.getOrDefault(trainSchedule, null));
         }
         return result;
     }
