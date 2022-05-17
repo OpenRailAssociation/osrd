@@ -49,11 +49,13 @@ import TrainHoverPosition from 'applications/osrd/components/SimulationMap/Train
 import TrainHoverPositionOthers from 'applications/osrd/components/SimulationMap/TrainHoverPositionOthers';
 import along from '@turf/along';
 import bbox from '@turf/bbox';
+import bearing from '@turf/bearing';
 import colors from 'common/Map/Consts/colors.ts';
 import { datetime2sec } from 'utils/timeManipulation';
 import { get } from 'common/requests';
 import lineLength from '@turf/length';
 import lineSlice from '@turf/line-slice';
+import nearestPointOnLine from '@turf/nearest-point-on-line';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import { updateTimePositionValues } from 'reducers/osrdsimulation';
 import { updateViewport } from 'reducers/map';
@@ -61,11 +63,12 @@ import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 const PATHFINDING_URI = '/pathfinding/';
+const INTERMEDIATE_MARKERS_QTY = 8;
 
 const Map = (props) => {
   const { setExtViewport } = props;
   const {
-    viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings,
+    viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings, zoom,
   } = useSelector((state) => state.map);
   const {
     isPlaying, selectedTrain, positionValues, timePosition,
@@ -96,7 +99,7 @@ const Map = (props) => {
           train.base.head_positions.length - 1][
           train.base.head_positions[train.base.head_positions.length - 1].length - 1].time
         && idx !== selectedTrain) {
-        const interpolation = interpolateOnTime(train.base, ['time', 'position'], ['head_positions', 'speeds'], actualTime);
+        const interpolation = interpolateOnTime(train.base, ['time', 'position'], ['head_positions', 'tail_positions', 'speeds'], actualTime);
         if (interpolation.head_positions && interpolation.speeds) {
           concernedTrains.push({
             ...interpolation,
@@ -118,9 +121,38 @@ const Map = (props) => {
         positionValues.headPosition.position / 1000,
         { units: 'kilometers' },
       );
+      const tailPosition = positionValues.tailPosition ? along(
+        line,
+        positionValues.tailPosition.position / 1000,
+        { units: 'kilometers' },
+      ) : position;
+
+      const intermediaterMarkersPoints = [];
+
+      // Representing the wagons is useless at outer zooms
+      if(viewport?.zoom > 13) {
+        // To do: get this data from rollingstock, stored
+        const trainLength = positionValues.headPosition.position
+        - positionValues.tailPosition.position;
+        for (let i = 0; i < INTERMEDIATE_MARKERS_QTY; i++) {
+          const intermediatePosition = along(
+            line,
+            (positionValues.headPosition.position
+              - (trainLength / INTERMEDIATE_MARKERS_QTY) * i) / 1000,
+            { units: 'kilometers' },
+          );
+          intermediaterMarkersPoints.push(intermediatePosition);
+        }
+        intermediaterMarkersPoints.push(tailPosition);
+      }
+
+
       setTrainHoverPosition({
         ...position,
-        properties: positionValues.speed,
+        properties: {
+          speedTime: positionValues.speed,
+          intermediaterMarkersPoints,
+        },
       });
     } else {
       setTrainHoverPosition(undefined);
@@ -139,6 +171,49 @@ const Map = (props) => {
         name: train.name,
       },
     })));
+
+    createOtherPoints().map((train) => {
+      console.log("OTHER TRAIN", train)
+    })
+
+    // Found trains including timePosition, and organize them with geojson collection of points
+    /*
+    setTrainHoverPositionOthers(createOtherPoints().map((train) => {
+      const position = along(
+        line,
+        train.head_positions.position / 1000,
+        { units: 'kilometers' },
+      )
+
+      const intermediaterMarkersPoints = [];
+
+      // Representing the wagons is useless at outer zooms
+      if(viewport?.zoom > 13) {
+        // To do: get this data from rollingstock, stored
+        const trainLength = positionValues.headPosition.position
+        - positionValues.tailPosition.position;
+        for (let i = 0; i < INTERMEDIATE_MARKERS_QTY; i++) {
+          const intermediatePosition = along(
+            line,
+            (positionValues.tailPosition.position
+              - (trainLength / INTERMEDIATE_MARKERS_QTY) * i) / 1000,
+            { units: 'kilometers' },
+          );
+          intermediaterMarkersPoints.push(intermediatePosition);
+        }
+        intermediaterMarkersPoints.push(train.tail_positions.position);
+      }
+
+      return {
+        position,
+        properties: {
+          speedTime: train.speeds.speed,
+          name: train.name,
+          intermediaterMarkersPoints,
+        }
+      }
+    }));
+    */
   };
 
   const zoomToFeature = (boundingBox) => {
