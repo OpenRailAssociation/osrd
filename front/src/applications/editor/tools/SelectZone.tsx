@@ -83,8 +83,8 @@ export const SelectZone: Tool<SelectZoneState> = {
         isDisabled(_state, editorState) {
           return !editorState.editorZone;
         },
-        onClick({ dispatch }, _toolState, editorState) {
-          dispatch<any>(selectZone(editorState.editorLayers, null));
+        onClick({ dispatch }, _toolState) {
+          dispatch<any>(selectZone(null));
         },
       },
     ],
@@ -93,10 +93,10 @@ export const SelectZone: Tool<SelectZoneState> = {
         id: 'validate-polygon',
         icon: AiOutlineCheckCircle,
         labelTranslationKey: 'Editor.tools.select-zone.actions.validate-polygon.label',
-        onClick({ dispatch, setState }, state, editorState) {
+        onClick({ dispatch, setState }, state) {
           if (state.polygonPoints) {
             dispatch<any>(
-              selectZone(editorState.editorLayers, {
+              selectZone({
                 type: 'polygon',
                 points: state.polygonPoints,
               })
@@ -156,7 +156,7 @@ export const SelectZone: Tool<SelectZoneState> = {
   ],
 
   // Interactions:
-  onClickMap(e: MapEvent, { setState, dispatch }, toolState, editorState) {
+  onClickMap(e: MapEvent, { setState, dispatch }, toolState) {
     const position = e.lngLat;
 
     if (toolState.mode === 'rectangle') {
@@ -165,7 +165,7 @@ export const SelectZone: Tool<SelectZoneState> = {
           setState({ ...toolState, rectangleTopLeft: null });
         } else {
           dispatch<any>(
-            selectZone(editorState.editorLayers, {
+            selectZone({
               type: 'rectangle',
               points: [toolState.rectangleTopLeft, position],
             })
@@ -185,7 +185,7 @@ export const SelectZone: Tool<SelectZoneState> = {
       if (isEqual(lastPoint, position)) {
         if (points.length >= 3) {
           dispatch<any>(
-            selectZone(editorState.editorLayers, {
+            selectZone({
               type: 'polygon',
               points,
             })

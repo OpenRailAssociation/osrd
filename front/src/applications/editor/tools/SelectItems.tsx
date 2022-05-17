@@ -11,16 +11,11 @@ import {
 } from 'react-icons/all';
 import { isEqual } from 'lodash';
 import { Feature } from 'geojson';
-
 import { Popup } from 'react-map-gl';
+
 import { CommonToolState, DEFAULT_COMMON_TOOL_STATE, Tool } from '../tools';
-import { Item, Zone } from '../../../types';
-import {
-  EditorState,
-  clippedDataSelector,
-  deleteEntities,
-  updateEntity,
-} from '../../../reducers/editor';
+import { EditorEntity, Item, Zone } from '../../../types';
+import { EditorState, clippedDataSelector, save } from '../../../reducers/editor';
 import { selectInZone } from '../../../utils/mapboxHelper';
 import EditorZone from '../../../common/Map/Layers/EditorZone';
 import GeoJSONs, { GEOJSON_LAYER_ID } from '../../../common/Map/Layers/GeoJSONs';
@@ -212,6 +207,7 @@ export const SelectItems: Tool<SelectItemsState> = {
         if (isEqual(toolState.rectangleTopLeft, position)) {
           setState({ ...toolState, rectangleTopLeft: null });
         } else {
+          // TODO remove the layer static variable
           setState({
             ...toolState,
             rectangleTopLeft: null,
@@ -233,6 +229,7 @@ export const SelectItems: Tool<SelectItemsState> = {
 
       if (isEqual(lastPoint, position)) {
         if (points.length >= 3) {
+          // TODO remove the layer static variable
           setState({
             ...toolState,
             polygonPoints: [],
@@ -323,17 +320,15 @@ export const SelectItems: Tool<SelectItemsState> = {
             title={t('Editor.tools.select-items.edit-line')}
           >
             <EditorForm
-              layer={'track_section'}
-              data={toolState.selection[0]}
+              data={toolState.selection[0] as EditorEntity}
               onSubmit={(data) => {
-                dispatch<any>(updateEntity(data));
+                dispatch<any>(save({ update: [data] }));
                 setState({ ...toolState, showModal: null });
               }}
             />
           </Modal>
         );
       case 'delete':
-      default:
         return (
           <Modal
             onClose={() => setState({ ...toolState, showModal: null })}
@@ -345,7 +340,7 @@ export const SelectItems: Tool<SelectItemsState> = {
               <button
                 className="btn btn-primary"
                 onClick={() => {
-                  dispatch<any>(deleteEntities(toolState.selection));
+                  dispatch<any>(save({ delete: toolState.selection as EditorEntity[] }));
                   setState({ ...toolState, showModal: null });
                 }}
               >
@@ -360,6 +355,8 @@ export const SelectItems: Tool<SelectItemsState> = {
             </div>
           </Modal>
         );
+      default:
+        return <></>;
     }
   },
 

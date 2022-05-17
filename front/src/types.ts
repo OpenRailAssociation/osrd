@@ -1,6 +1,6 @@
 import { Action } from 'redux';
 import { JSONSchema7 } from 'json-schema';
-import { Position } from 'geojson';
+import { Position, Feature } from 'geojson';
 import { ThunkAction as ReduxThunkAction } from 'redux-thunk';
 
 export type EditorModelsDefinition = any;
@@ -53,31 +53,10 @@ export interface Notification {
 }
 
 //
-// Editor actions
-//
-export interface BaseEditorOperation {
-  obj_type?: string;
-}
-export interface EditorOperationCreate extends BaseEditorOperation {
-  operation_type: 'CREATE';
-  railjson: any;
-}
-export interface EditorOperationUpdate extends BaseEditorOperation {
-  operation_type: 'UPDATE';
-  obj_id: number;
-  railjson_patch: any;
-}
-export interface EditorOperationDelete extends BaseEditorOperation {
-  operation: 'DELETE';
-  obj_id: number;
-}
-
-export type EditorOperation = EditorOperationCreate | EditorOperationUpdate | EditorOperationDelete;
-
-//
 // Editor data model
 //
-export type EditorSchema = { [key: string]: JSONSchema7 };
+export type EditorSchema = { [layer: string]: { objType: string; schema: JSONSchema7 } };
+export type EditorEntity = Feature & { objType: string };
 
 //
 //  Misc

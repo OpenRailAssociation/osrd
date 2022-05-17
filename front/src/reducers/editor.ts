@@ -2,7 +2,7 @@ import produce from 'immer';
 import { createSelector } from 'reselect';
 import { Feature, FeatureCollection, GeoJSON } from 'geojson';
 
-import { ThunkAction, Zone, ApiInfrastructure, EditorSchema } from '../types';
+import { ThunkAction, Zone, ApiInfrastructure, EditorSchema, EditorEntity } from '../types';
 import { setLoading, setSuccess, setFailure } from './main';
 import { getEditorSchema, getEditorData, editorSave } from '../applications/editor/data/api';
 import { clip } from '../utils/mapboxHelper';
@@ -14,12 +14,8 @@ const SELECT_ZONE = 'editor/SELECT_ZONE';
 type ActionSelectZone = {
   type: typeof SELECT_ZONE;
   zone: Zone | null;
-  layers: Array<string>;
 };
-export function selectZone(
-  layers: Array<string>,
-  zone: Zone | null
-): ThunkAction<ActionSelectZone> {
+export function selectZone(zone: Zone | null): ThunkAction<ActionSelectZone> {
   return async (dispatch: any, getState) => {
     dispatch({
       type: SELECT_ZONE,
@@ -29,8 +25,13 @@ export function selectZone(
     if (zone) {
       dispatch(setLoading());
       try {
-        const { osrdconf } = getState();
-        const data = await getEditorData(osrdconf.infraID, layers, zone);
+        const { osrdconf, editor } = getState();
+        const data = await getEditorData(
+          editor.editorSchema,
+          osrdconf.infraID,
+          editor.editorLayers,
+          zone
+        );
         dispatch(setSuccess());
         dispatch(setEditorData(data));
       } catch (e) {
@@ -87,67 +88,38 @@ export function loadDataModel(): ThunkAction<ActionLoadDataModel> {
   };
 }
 
-const CREATE_ENTITY = 'editor/CREATE_ENTITY';
-type ActionCreateEntity = { type: typeof CREATE_ENTITY; layer: string; data: Feature };
-export function createEntity(layer: string, data: Feature): ThunkAction<ActionCreateEntity> {
-  return (dispatch) => {
-    dispatch({
-      type: CREATE_ENTITY,
-      layer,
-      data,
-    });
-    dispatch(save());
-  };
-}
-
-const UPDATE_ENTITY = 'editor/UPDATE_ENTITY';
-type ActionUpdateEntity = { type: typeof UPDATE_ENTITY; item: Feature };
-export function updateEntity(item: Feature): ThunkAction<ActionUpdateEntity> {
-  return (dispatch) => {
-    dispatch({
-      type: UPDATE_ENTITY,
-      item,
-    });
-    dispatch(save());
-  };
-}
-
-const DELETE_ENTITY = 'editor/DELETE_ENTITY';
-type ActionDeleteEntities = { type: typeof DELETE_ENTITY; items: Array<Feature> };
-export function deleteEntities(items: Array<Feature>): ThunkAction<ActionDeleteEntities> {
-  //TODO
-  console.log(items);
-  return (dispatch) => {
-    // entities.forEach((entity) => {
-    //   entity.delete();
-    //   dispatch({
-    //     type: DELETE_ENTITY,
-    //     entity,
-    //   });
-    // });
-    dispatch(save());
-  };
-}
-
+//
+// Save modifications
+//
 const SAVE = 'editor/SAVE';
 type ActionSave = {
   type: typeof SAVE;
+  operations: {
+    create?: Array<Feature>;
+    update?: Array<Feature>;
+    delete?: Array<Feature>;
+  };
 };
-export function save(): ThunkAction<ActionSave> {
+export function save(operations: {
+  create?: Array<EditorEntity>;
+  update?: Array<EditorEntity>;
+  delete?: Array<EditorEntity>;
+}): ThunkAction<ActionSave> {
   return async (dispatch, getState) => {
     const state = getState();
     dispatch(setLoading());
     try {
-      // TODO state.editor.editorEntities
-      await editorSave(state.editor.editorInfrastructure.id, []);
-      // dispatch(setEditorData(data));
+      // saving the data
+      await editorSave(state.osrdconf.infraID, operations);
+      // reload the zone
+      dispatch(selectZone(state.editor.editorZone));
+      // success message
       dispatch(
         setSuccess({
           title: 'Modifications enregistrées',
           text: `Vos modifications ont été publiées`,
         })
       );
-      // TODO: parse the response and update the  state.editor.editorEntities
     } catch (e) {
       dispatch(setFailure(e as Error));
     }
@@ -191,20 +163,9 @@ export default function reducer(inputState: EditorState, action: Actions) {
       case LOAD_DATA_MODEL:
         draft.editorSchema = action.schema;
         break;
-      // case CREATE_ENTITY:
-      //   draft.editorEntities = state.editorEntities.concat(action.entity);
-      // break;
-      // The following cases are commented because they apparently don't apply
-      // with the current state of typings:
       case SET_DATA:
         draft.editorData = action.data;
         break;
-      // case UPDATE_ENTITY:
-      // case DELETE_ENTITY:
-      //   draft.editorEntities = state.editorEntities
-      //     .filter((item) => item.entity_id !== action.entity.entity_id)
-      //     .concat(action.entity);
-      //   break;
       default:
       // Nothing to do here
     }

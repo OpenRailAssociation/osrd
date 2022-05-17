@@ -1,13 +1,13 @@
 import { Dispatch } from 'redux';
 import { MapEvent } from 'react-map-gl';
 import { IconType } from 'react-icons/lib/esm/iconBase';
+import { TFunction } from 'i18next';
 
 import { EditorState } from '../../reducers/editor';
+import { Item, PositionnedItem } from '../../types';
 import { SelectZone } from './tools/SelectZone';
 import { CreateLine } from './tools/CreateLine';
 import { SelectItems } from './tools/SelectItems';
-import { Item, PositionnedItem } from '../../types';
-import { TFunction } from 'i18next';
 
 export interface CommonToolState {
   mousePosition: [number, number];
