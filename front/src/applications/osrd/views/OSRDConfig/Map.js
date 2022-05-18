@@ -37,6 +37,7 @@ import Signals from 'common/Map/Layers/Signals';
 import SnappedMarker from 'common/Map/Layers/SnappedMarker';
 import SpeedLimits from 'common/Map/Layers/SpeedLimits';
 import BufferStops from 'common/Map/Layers/BufferStops';
+import Detectors from 'common/Map/Layers/Detectors';
 import Switches from 'common/Map/Layers/Switches';
 /* Objects & various */
 import TVDs from 'common/Map/Layers/TVDs';
@@ -240,6 +241,7 @@ const Map = () => {
             <SpeedLimits geomType="geo" colors={colors[mapStyle]} />
             <Signals sourceTable="signals" colors={colors[mapStyle]} sourceLayer="geo" />
             <BufferStops geomType="geo" colors={colors[mapStyle]} />
+            <Detectors geomType="geo" colors={colors[mapStyle]} />
             <Switches geomType="geo" colors={colors[mapStyle]} />
             <RenderPopup />
           </>
@@ -250,6 +252,7 @@ const Map = () => {
             <Signals sourceTable="signals" colors={colors[mapStyle]} sourceLayer="sch" />
             <SpeedLimits geomType="sch" colors={colors[mapStyle]} />
             <BufferStops geomType="sch" colors={colors[mapStyle]} />
+            <Detectors geomType="sch" colors={colors[mapStyle]} />
             <Switches geomType="sch" colors={colors[mapStyle]} />
           </>
         )}

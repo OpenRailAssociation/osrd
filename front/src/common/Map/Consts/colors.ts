@@ -15,6 +15,11 @@ const colors: Record<string, Theme> = {
       text: '#c16b00',
       circle: '#c16b00',
     },
+    detectors: {
+      circle: '#cd0037',
+      halo: '#e7e7e7',
+      text: '#a1006b',
+    },
     electricbox: {
       text: '#b42222',
     },
@@ -130,6 +135,11 @@ const colors: Record<string, Theme> = {
       text: '#c16b00',
       circle: '#c16b00',
     },
+    detectors: {
+      circle: '#555555',
+      halo: '#ffffff',
+      text: '#555555',
+    },
     electricbox: {
       text: '#b42222',
     },
@@ -244,6 +254,11 @@ const colors: Record<string, Theme> = {
     dbc: {
       text: bpLight,
       circle: bpLight,
+    },
+    detectors: {
+      circle: bpLight,
+      halo: bpBg,
+      text: bpLight,
     },
     electricbox: {
       text: bpLight,
