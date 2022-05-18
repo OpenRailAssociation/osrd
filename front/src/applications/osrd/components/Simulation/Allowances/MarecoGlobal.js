@@ -46,7 +46,9 @@ export default function MarecoGlobal(props) {
     dispatch(updateMustRedraw(true));
   };
 
+  // In fact it is Create/Update
   const addMareco = async () => {
+    console.log("update/create Mareco global")
     const marecoConf = {
       allowance_type: 'mareco',
       default_value: {
@@ -58,7 +60,7 @@ export default function MarecoGlobal(props) {
     let ranges = [];
     trainDetail.allowances.forEach((allowance) => {
       if (allowance.allowance_type === 'mareco') {
-        ranges = allowance.ranges;
+        ranges = allowance.ranges; // Preserve existing Ranges
       } else {
         newAllowances.push(allowance);
       }
