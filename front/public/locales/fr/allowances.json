@@ -13,6 +13,7 @@
   "marecoWholePath": "Marche économique (trajet complet)",
   "margedTrainSchedule": "Avec marges",
   "allowanceByInterval": "Marges par intervalles",
+  "ecoAllowanceByInterval": "Marches Economiques par intervalles",
   "allowanceModified": {
     "marecoAdd": "Marche économique ajoutée",
     "marecoDel": "Marche économique supprimée",
