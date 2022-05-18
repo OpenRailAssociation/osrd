@@ -7,10 +7,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.EnvelopeShape;
 import fr.sncf.osrd.envelope.EnvelopeTransitions;
+import fr.sncf.osrd.envelope.MRSPEnvelopeBuilder;
+import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
+import fr.sncf.osrd.envelope_sim_infra.MRSP;
 import fr.sncf.osrd.train.TestTrains;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import java.util.List;
 
 public class MaxEffortEnvelopeTest {
     /** Builds max effort envelope with the specified stops, on a flat MRSP */
@@ -119,5 +124,32 @@ public class MaxEffortEnvelopeTest {
         var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
         var stops = new double[] { testPath.getLength() - 1, testPath.getLength() };
         makeSimpleMaxEffortEnvelope(testContext, 10000, stops);
+    }
+
+    @Test
+    public void testOverlappingBrakingCurves() {
+        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
+        var testPath = new FlatPath(100, 0);
+        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
+        var stops = new double[] {};
+        var mrspBuilder = new MRSPEnvelopeBuilder();
+        mrspBuilder.addPart(EnvelopePart.generateTimes(
+                List.of(EnvelopeProfile.CONSTANT_SPEED, MRSP.LimitKind.TRAIN_LIMIT),
+                new double[] {0, 50},
+                new double[] {30, 30}
+        ));
+        mrspBuilder.addPart(EnvelopePart.generateTimes(
+                List.of(EnvelopeProfile.CONSTANT_SPEED, MRSP.LimitKind.TRAIN_LIMIT),
+                new double[] {50, 51},
+                new double[] {29, 29}
+        ));
+        mrspBuilder.addPart(EnvelopePart.generateTimes(
+                List.of(EnvelopeProfile.CONSTANT_SPEED, MRSP.LimitKind.TRAIN_LIMIT),
+                new double[] {51, 100},
+                new double[] {1, 1}
+        ));
+        var mrsp = mrspBuilder.build();
+        var maxSpeedEnvelope = MaxSpeedEnvelope.from(testContext, stops, mrsp);
+        MaxEffortEnvelope.from(testContext, 0, maxSpeedEnvelope);
     }
 }

@@ -25,11 +25,6 @@ import ElectrificationType from 'common/Map/Layers/ElectrificationType';
 import Hillshade from 'common/Map/Layers/Hillshade';
 import MapSearch from 'common/Map/Search/MapSearch';
 import MapSettings from 'common/Map/Settings/MapSettings';
-import MapSettingsLayers from 'common/Map/Settings/MapSettingsLayers';
-import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
-import MapSettingsShowOSM from 'common/Map/Settings/MapSettingsShowOSM';
-import MapSettingsSignals from 'common/Map/Settings/MapSettingsSignals';
-import MapSettingsTrackSources from 'common/Map/Settings/MapSettingsTrackSources';
 import OSM from 'common/Map/Layers/OSM';
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
 import Platform from 'common/Map/Layers/Platform';
@@ -39,6 +34,8 @@ import SearchMarker from 'common/Map/Layers/SearchMarker';
 import SignalingType from 'common/Map/Layers/SignalingType';
 import Signals from 'common/Map/Layers/Signals';
 import SpeedLimits from 'common/Map/Layers/SpeedLimits';
+import BufferStops from 'common/Map/Layers/BufferStops';
+import Detectors from 'common/Map/Layers/Detectors';
 import Switches from 'common/Map/Layers/Switches';
 /* Objects & various */
 import TVDs from 'common/Map/Layers/TVDs';
@@ -49,11 +46,13 @@ import TrainHoverPosition from 'applications/osrd/components/SimulationMap/Train
 import TrainHoverPositionOthers from 'applications/osrd/components/SimulationMap/TrainHoverPositionOthers';
 import along from '@turf/along';
 import bbox from '@turf/bbox';
+import bearing from '@turf/bearing';
 import colors from 'common/Map/Consts/colors.ts';
 import { datetime2sec } from 'utils/timeManipulation';
 import { get } from 'common/requests';
 import lineLength from '@turf/length';
 import lineSlice from '@turf/line-slice';
+import nearestPointOnLine from '@turf/nearest-point-on-line';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import { updateTimePositionValues } from 'reducers/osrdsimulation';
 import { updateViewport } from 'reducers/map';
@@ -61,11 +60,12 @@ import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 const PATHFINDING_URI = '/pathfinding/';
+const INTERMEDIATE_MARKERS_QTY = 8;
 
 const Map = (props) => {
   const { setExtViewport } = props;
   const {
-    viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings,
+    viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings, zoom,
   } = useSelector((state) => state.map);
   const {
     isPlaying, selectedTrain, positionValues, timePosition,
@@ -96,7 +96,7 @@ const Map = (props) => {
           train.base.head_positions.length - 1][
           train.base.head_positions[train.base.head_positions.length - 1].length - 1].time
         && idx !== selectedTrain) {
-        const interpolation = interpolateOnTime(train.base, ['time', 'position'], ['head_positions', 'speeds'], actualTime);
+        const interpolation = interpolateOnTime(train.base, ['time', 'position'], ['head_positions', 'tail_positions', 'speeds'], actualTime);
         if (interpolation.head_positions && interpolation.speeds) {
           concernedTrains.push({
             ...interpolation,
@@ -118,9 +118,38 @@ const Map = (props) => {
         positionValues.headPosition.position / 1000,
         { units: 'kilometers' },
       );
+      const tailPosition = positionValues.tailPosition ? along(
+        line,
+        positionValues.tailPosition.position / 1000,
+        { units: 'kilometers' },
+      ) : position;
+
+      const intermediaterMarkersPoints = [];
+
+      // Representing the wagons is useless at outer zooms
+      if(viewport?.zoom > 13) {
+        // To do: get this data from rollingstock, stored
+        const trainLength = positionValues.headPosition.position
+        - positionValues.tailPosition.position;
+        for (let i = 0; i < INTERMEDIATE_MARKERS_QTY; i++) {
+          const intermediatePosition = along(
+            line,
+            (positionValues.headPosition.position
+              - (trainLength / INTERMEDIATE_MARKERS_QTY) * i) / 1000,
+            { units: 'kilometers' },
+          );
+          intermediaterMarkersPoints.push(intermediatePosition);
+        }
+        intermediaterMarkersPoints.push(tailPosition);
+      }
+
+
       setTrainHoverPosition({
         ...position,
-        properties: positionValues.speed,
+        properties: {
+          speedTime: positionValues.speed,
+          intermediaterMarkersPoints,
+        },
       });
     } else {
       setTrainHoverPosition(undefined);
@@ -139,6 +168,8 @@ const Map = (props) => {
         name: train.name,
       },
     })));
+
+
   };
 
   const zoomToFeature = (boundingBox) => {
@@ -281,17 +312,7 @@ const Map = (props) => {
         <ButtonResetViewport updateLocalViewport={resetPitchBearing} />
       </div>
       <MapSearch active={showSearch} toggleMapSearch={toggleMapSearch} />
-      <MapSettings active={showSettings} toggleMapSettings={toggleMapSettings}>
-        <MapSettingsMapStyle />
-        <div className="my-2" />
-        <MapSettingsTrackSources />
-        <div className="my-2" />
-        <MapSettingsShowOSM />
-        <div className="mb-1 mt-3 border-bottom">Signalisation</div>
-        <MapSettingsSignals />
-        <div className="mb-1 mt-3 border-bottom">Coucou</div>
-        <MapSettingsLayers />
-      </MapSettings>
+      <MapSettings active={showSettings} toggleMapSettings={toggleMapSettings} />
       <ReactMapGL
         {...viewport}
         style={{ cursor: 'pointer' }}
@@ -336,6 +357,8 @@ const Map = (props) => {
             <SignalingType geomType="geo" />
             <SpeedLimits geomType="geo" colors={colors[mapStyle]} />
             <Signals sourceTable="signals" colors={colors[mapStyle]} sourceLayer="geo" />
+            <BufferStops geomType="geo" colors={colors[mapStyle]} />
+            <Detectors geomType="geo" colors={colors[mapStyle]} />
             <Switches geomType="geo" colors={colors[mapStyle]} />
           </>
         ) : (
@@ -343,6 +366,8 @@ const Map = (props) => {
             <TracksSchematic colors={colors[mapStyle]} idHover={idHover} />
             <Signals sourceTable="signals" colors={colors[mapStyle]} sourceLayer="sch" />
             <SpeedLimits geomType="sch" colors={colors[mapStyle]} />
+            <BufferStops geomType="sch" colors={colors[mapStyle]} />
+            <Detectors geomType="sch" colors={colors[mapStyle]} />
             <Switches geomType="sch" colors={colors[mapStyle]} />
           </>
         )}

@@ -24,7 +24,7 @@ station_bar = builder.add_operational_point("op.station_bar")
 
 ne_micro_foo_a = builder.add_track_section(length=200, label="ne.micro.foo_a")
 ne_micro_foo_a.add_curve(0, 200, 2000)
-station_foo.set_position(ne_micro_foo_a, 100)
+station_foo.add_part(ne_micro_foo_a, 100)
 ne_micro_foo_a.add_buffer_stop(label="buffer_stop_a", position=0)
 tde_foo_a_switch_foo = ne_micro_foo_a.add_detector(label="tde.foo_a-switch_foo", position=175)
 ne_micro_foo_a.add_signal(label="il.sig.C1", position=150, direction=Direction.START_TO_STOP,
@@ -33,14 +33,14 @@ ne_micro_foo_a.add_signal(label="il.sig.C1", position=150, direction=Direction.S
 ne_micro_foo_b = builder.add_track_section(length=200, label="ne.micro.foo_b")
 ne_micro_foo_b.add_slope(0, 200, 10)
 ne_micro_foo_b.add_curve(0, 200, 2000)
-station_foo.set_position(ne_micro_foo_b, 100)
+station_foo.add_part(ne_micro_foo_b, 100)
 ne_micro_foo_b.add_buffer_stop(label="buffer_stop_b", position=0)
 tde_foo_b_switch_foo = ne_micro_foo_b.add_detector(label="tde.foo_b-switch_foo", position=175)
 ne_micro_foo_b.add_signal(label="il.sig.C3", position=150, direction=Direction.START_TO_STOP,
                           linked_detector=tde_foo_b_switch_foo)
 
 ne_micro_bar_a = builder.add_track_section(length=200, label="ne.micro.bar_a")
-station_bar.set_position(ne_micro_bar_a, 100)
+station_bar.add_part(ne_micro_bar_a, 100)
 ne_micro_bar_a.add_buffer_stop(label="buffer_stop_c", position=200)
 tde_track_bar = ne_micro_bar_a.add_detector(label="tde.track-bar", position=25)
 ne_micro_bar_a.add_signal(label="il.sig.C2", position=50, direction=Direction.STOP_TO_START,
@@ -63,7 +63,7 @@ speed_section.add_track_range(ne_micro_foo_to_bar, 2_000, 6_000, ApplicableDirec
 
 # Add links
 link = builder.add_link(ne_micro_foo_to_bar.end(), ne_micro_bar_a.begin(), ApplicableDirection.BOTH)
-switch = builder.add_switch(ne_micro_foo_to_bar.begin(), ne_micro_foo_b.end(), ne_micro_foo_a.end(),
+switch = builder.add_point_switch(ne_micro_foo_to_bar.begin(), ne_micro_foo_b.end(), ne_micro_foo_a.end(),
                    label="il.switch_foo")
 
 # Set coordinates

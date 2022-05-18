@@ -1,5 +1,6 @@
 package fr.sncf.osrd.infra.implementation.tracks.undirected;
 
+import static fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType.*;
 import static java.lang.Math.abs;
 
 import com.google.common.collect.*;
@@ -16,9 +17,11 @@ import fr.sncf.osrd.railjson.schema.infra.RJSSwitch;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitchType;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSLoadingGaugeLimit;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
 import fr.sncf.osrd.reporting.warnings.Warning;
 import fr.sncf.osrd.reporting.warnings.WarningRecorder;
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 import fr.sncf.osrd.utils.DoubleRangeMap;
 import java.util.*;
 
@@ -152,11 +155,21 @@ public class UndirectedInfraBuilder {
     }
 
     /** Creates a waypoint and add it to the corresponding track */
+    @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"}) // This case only causes issues with strict equalities
     private void makeWaypoint(HashMap<String, TrackSectionImpl> trackSectionsByID,
                             RJSRouteWaypoint waypoint, boolean isBufferStop) {
         var track = RJSObjectParsing.getTrackSection(waypoint.track, trackSectionsByID);
         var newWaypoint = new DetectorImpl(track, waypoint.position, isBufferStop, waypoint.id);
-        detectorLists.get(track).add(newWaypoint);
+        var detectors = detectorLists.get(track);
+        for (var detector : detectors)
+            if (detector.getOffset() == newWaypoint.offset) {
+                warningRecorder.register(new Warning(String.format(
+                        "Duplicate waypoint (dropping new) : old = %s, new = %s",
+                        detector, newWaypoint
+                )));
+                return;
+            }
+        detectors.add(newWaypoint);
     }
 
     /** Creates a track section and registers it in the graph */
@@ -168,11 +181,65 @@ public class UndirectedInfraBuilder {
                 track.id,
                 ImmutableSet.copyOf(operationalPointsPerTrack.get(track.id)),
                 track.geo,
-                track.sch
+                track.sch,
+                buildLoadingGaugeLimits(track.loadingGaugeLimits)
         );
         builder.addEdge(begin, end, edge);
         edge.gradients = makeGradients(track);
         return edge;
+    }
+
+    /** Builds the ranges of blocked loading gauge types on the track */
+    private ImmutableRangeMap<Double, LoadingGaugeConstraint> buildLoadingGaugeLimits(
+            List<RJSLoadingGaugeLimit> limits
+    ) {
+        // This method has a bad complexity compared to more advanced solutions,
+        // but we don't expect more than a few ranges per section.
+        // TODO: use an interval tree
+
+        if (limits == null)
+            return ImmutableRangeMap.of();
+        var builder = new ImmutableRangeMap.Builder<Double, LoadingGaugeConstraint>();
+
+        // Sorts and removes duplicates
+        var transitions = new TreeSet<Double>();
+        for (var range : limits) {
+            transitions.add(range.begin);
+            transitions.add(range.end);
+        }
+
+        var transitionsList = new ArrayList<>(transitions); // Needed for index based loop
+        for (int i = 1; i < transitionsList.size(); i++) {
+            var begin = transitionsList.get(i - 1);
+            var end = transitionsList.get(i);
+            var allowedTypes = new HashSet<RJSLoadingGaugeType>();
+            for (var range : limits)
+                if (range.begin <= begin && range.end >= end)
+                    allowedTypes.addAll(getCompatibleGaugeTypes(range.type));
+            var blockedTypes = Sets.difference(
+                    Sets.newHashSet(RJSLoadingGaugeType.values()),
+                    allowedTypes
+            );
+            builder.put(Range.open(begin, end), new LoadingGaugeConstraintImpl(ImmutableSet.copyOf(blockedTypes)));
+        }
+        return builder.build();
+    }
+
+    /** Returns all the rolling stock gauge types compatible with the given track type */
+    private Set<RJSLoadingGaugeType> getCompatibleGaugeTypes(RJSLoadingGaugeType trackType) {
+        return switch (trackType) {
+            case G1 -> Set.of(G1);
+            case GA -> Sets.union(Set.of(GA), getCompatibleGaugeTypes(G1));
+            case GB -> Sets.union(Set.of(GB, FR3_3_GB_G2), getCompatibleGaugeTypes(GA));
+            case GB1 -> Sets.union(Set.of(GB1), getCompatibleGaugeTypes(GB));
+            case GC -> Sets.union(Set.of(GC), getCompatibleGaugeTypes(GB1));
+            case G2 -> Set.of(G1, G2, FR3_3_GB_G2);
+            case FR3_3 -> Set.of(FR3_3, FR3_3_GB_G2);
+            default -> {
+                warningRecorder.register(new Warning("Invalid gauge type for track: " + trackType));
+                yield Sets.newHashSet(RJSLoadingGaugeType.values());
+            }
+        };
     }
 
     /** Creates the two DoubleRangeMaps with gradient values */

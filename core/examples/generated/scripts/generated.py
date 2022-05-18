@@ -45,7 +45,7 @@ def _endpoint_offset(endpoint: TrackEndpoint, offset: float):
 
 
 def _make_switch(builder: InfraBuilder, a: TrackEndpoint, b: TrackEndpoint, c: TrackEndpoint):
-    builder.add_switch(a, b, c)
+    builder.add_point_switch(a, b, c)
     for endpoint in [a, b, c]:
         _add_detector_at(endpoint.track_section, _endpoint_offset(endpoint, 50))
 

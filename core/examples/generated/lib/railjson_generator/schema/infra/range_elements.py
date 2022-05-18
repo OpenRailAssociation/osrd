@@ -14,6 +14,10 @@ class RangeElement:
         self.begin = begin
         self.end = end
 
+    def __post_init__(self):
+        if self.end < self.begin:
+            self.begin, self.end = self.end, self.begin
+
 
 class Slope(RangeElement):
     gradient: float

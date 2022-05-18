@@ -570,6 +570,33 @@ public class PathfindingTests {
         assertNotNull(res);
     }
 
+    @Test
+    public void overlappingBlockedRanges() {
+        /* Blocked ranges overlap
+
+        0 -> + -> -> + -> -> + -> B -> E -> + -> 1
+             +  - blocked -  +
+                     +  -  blocked -  -  -  +
+         */
+        var builder = new SimpleGraphBuilder();
+        builder.makeNodes(2);
+        builder.makeEdge(0, 1, 100, Set.of(
+                new Pathfinding.Range(10, 50),
+                new Pathfinding.Range(30, 80)
+        ));
+        var g = builder.build();
+        var res = Pathfinding.findEdgePath(
+                g,
+                List.of(
+                        List.of(builder.getEdgeLocation("0-1", 55)),
+                        List.of(builder.getEdgeLocation("0-1", 60))
+                ),
+                edge -> edge.length,
+                x -> x.blockedRanges
+        );
+        assertNull(res);
+    }
+
     private static List<SimpleRange> convertRes(List<Pathfinding.EdgeRange<SimpleGraphBuilder.Edge>> res) {
         return res.stream()
                 .map(x -> new SimpleRange(x.edge().label, x.start(), x.end()))

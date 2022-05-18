@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
+from pydantic.error_wrappers import ValidationError
 
 from railjson_generator.schema.infra.direction import ApplicableDirection, Direction
 from railjson_generator.schema.infra.endpoint import Endpoint, TrackEndpoint
@@ -25,12 +26,17 @@ class TrackSection:
 
     length: float
     label: str = field(default_factory=_track_id)
+    track_name: str = "placeholder_track"
+    track_number: int = 0
+    line_code: int = 0
+    line_name: str = "placeholder_line"
     waypoints: List[Waypoint] = field(default_factory=list)
     signals: List[Signal] = field(default_factory=list)
     operational_points: List[OperationalPointPart] = field(default_factory=list)
     index: int = field(default=-1, repr=False)
-    begin_coordinates: Tuple[float, float] = field(default=(0, 0))
-    end_coordinates: Tuple[float, float] = field(default=(0, 0))
+    coordinates: List[Tuple[float, float]] = field(
+        default_factory=lambda: [(None, None), (None, None)]
+    )
     begining_links: List[TrackEndpoint] = field(default_factory=list, repr=False)
     end_links: List[TrackEndpoint] = field(default_factory=list, repr=False)
     slopes: List[Slope] = field(default_factory=list)
@@ -74,9 +80,17 @@ class TrackSection:
             if waypoint.waypoint_type == "buffer_stop":
                 return True
         return False
+    
+    def set_remaining_coords(self, coordinates: List[Tuple[float, float]]):
+        """Sets values for extremities if none was already set, else only set values between extremities."""
+        begin, end = 0, len(self.coordinates)
+        if self.coordinates[0] != (None, None): begin += 1
+        if self.coordinates[-1] != (None, None): end -= 1
+        self.coordinates[begin:end] = coordinates
 
     @staticmethod
     def register_link(link: Link):
+        """Add each linked trackEndPoint to its neighbor's neighbors list."""
         if link.navigability != ApplicableDirection.STOP_TO_START:
             link.begin.get_neighbors().append(link.end)
         if link.navigability != ApplicableDirection.START_TO_STOP:
@@ -88,17 +102,21 @@ class TrackSection:
         return self.begining_links
 
     def to_rjs(self):
-        if self.begin_coordinates is None or self.end_coordinates is None:
-            geo_data = make_geo_lines((0, 0), (0, 0))
-        else:
-            geo_data = make_geo_lines(self.begin_coordinates, self.end_coordinates)
+        if self.coordinates == [(None, None), (None, None)]:
+            self.coordinates = [(0, 0), (0, 0)]
+        try:
+            geo_data = make_geo_lines(*self.coordinates)
+        except ValidationError:
+            print(f"Track section {self.label} has invalid coordinates:")
+            print(self.coordinates)
+            raise
         return infra.TrackSection(
             id=self.label,
             length=self.length,
-            line_code=0,
-            track_number=0,
-            line_name="placeholder_line",
-            track_name="placeholder_track",
+            line_code=self.line_code,
+            track_number=self.track_number,
+            line_name=self.line_name,
+            track_name=self.track_name,
             navigability=infra.ApplicableDirections[ApplicableDirection.BOTH.name],
             slopes=[slope.to_rjs() for slope in self.slopes],
             curves=[curve.to_rjs() for curve in self.curves],

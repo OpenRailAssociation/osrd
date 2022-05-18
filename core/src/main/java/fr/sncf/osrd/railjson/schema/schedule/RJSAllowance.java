@@ -8,6 +8,7 @@ public class RJSAllowance {
             PolymorphicJsonAdapterFactory.of(RJSAllowance.class, "allowance_type")
                     .withSubtype(Construction.class, "construction")
                     .withSubtype(Mareco.class, "mareco")
+                    .withSubtype(Linear.class, "linear")
     );
 
     public static final class Construction extends RJSAllowance {
@@ -35,6 +36,26 @@ public class RJSAllowance {
         }
 
         public Mareco(RJSAllowanceValue defaultValue, RJSAllowanceRange[] ranges) {
+            this.defaultValue = defaultValue;
+            this.ranges = ranges;
+        }
+    }
+
+    public static final class Linear extends RJSAllowance {
+        @Json(name = "default_value")
+        public RJSAllowanceValue defaultValue;
+
+        public RJSAllowanceRange[] ranges;
+
+        @Json(name = "capacity_speed_limit")
+        public double capacitySpeedLimit = -1;
+
+        public Linear(RJSAllowanceValue defaultValue) {
+            this.defaultValue = defaultValue;
+            this.ranges = null;
+        }
+
+        public Linear(RJSAllowanceValue defaultValue, RJSAllowanceRange[] ranges) {
             this.defaultValue = defaultValue;
             this.ranges = ranges;
         }

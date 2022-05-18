@@ -7,8 +7,10 @@ import { GiElectric } from 'react-icons/gi';
 import { IoMdSpeedometer } from 'react-icons/io';
 import { AiOutlineBlock } from 'react-icons/ai';
 import { MdSpaceBar } from 'react-icons/md';
-import { FaMapMarkerAlt } from 'react-icons/fa';
-import { TiFlowSwitch } from 'react-icons/ti';
+import BufferStopSVGFile from 'assets/pictures/layersicons/bufferstop.svg';
+import OPsSVGFile from 'assets/pictures/layersicons/ops.svg';
+import SwitchesSVGFile from 'assets/pictures/layersicons/switches.svg';
+import DetectorsSVGFile from 'assets/pictures/layersicons/detectors.svg';
 import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 
 const FormatSwitch = (props) => {
@@ -46,6 +48,27 @@ const FormatSwitch = (props) => {
   );
 };
 
+const BufferStopSVG = () => (
+  <>
+    <img src={BufferStopSVGFile} alt="Buffer stop icon" height="16" />
+  </>
+);
+const DetectorsSVG = () => (
+  <>
+    <img src={DetectorsSVGFile} alt="Buffer stop icon" height="16" />
+  </>
+);
+const OPsSVG = () => (
+  <>
+    <img src={OPsSVGFile} alt="Buffer stop icon" height="16" />
+  </>
+);
+const SwitchesSVG = () => (
+  <>
+    <img src={SwitchesSVGFile} alt="Buffer stop icon" height="16" />
+  </>
+);
+
 export default function MapSettingsLayers() {
   return (
     <div className="row">
@@ -70,12 +93,20 @@ export default function MapSettingsLayers() {
       />
       <FormatSwitch
         name="operationalpoints"
-        icon={<FaMapMarkerAlt />}
+        icon={<OPsSVG />}
         disabled
       />
       <FormatSwitch
         name="switches"
-        icon={<TiFlowSwitch />}
+        icon={<SwitchesSVG />}
+      />
+      <FormatSwitch
+        name="bufferstops"
+        icon={<BufferStopSVG />}
+      />
+      <FormatSwitch
+        name="detectors"
+        icon={<DetectorsSVG />}
       />
     </div>
   );
