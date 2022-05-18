@@ -24,6 +24,7 @@ import SearchMarker from 'common/Map/Layers/SearchMarker';
 import SignalingType from 'common/Map/Layers/SignalingType';
 import Signals from 'common/Map/Layers/Signals';
 import SpeedLimits from 'common/Map/Layers/SpeedLimits';
+import BufferStops from 'common/Map/Layers/BufferStops';
 import Switches from 'common/Map/Layers/Switches';
 import TVDs from 'common/Map/Layers/TVDs';
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
@@ -160,6 +161,7 @@ const Map = () => {
             <SignalingType geomType="geo" />
             <SpeedLimits geomType="geo" colors={colors[mapStyle]} />
             <Signals sourceTable="signals" colors={colors[mapStyle]} sourceLayer="geo" />
+            <BufferStops geomType="geo" colors={colors[mapStyle]} />
             <Switches geomType="geo" colors={colors[mapStyle]} />
           </>
         ) : (
@@ -168,6 +170,7 @@ const Map = () => {
             <OperationalPoints geomType="sch" colors={colors[mapStyle]} />
             <SpeedLimits geomType="sch" colors={colors[mapStyle]} />
             <Signals sourceTable="signals" colors={colors[mapStyle]} sourceLayer="sch" />
+            <BufferStops geomType="sch" colors={colors[mapStyle]} />
             <Switches geomType="sch" colors={colors[mapStyle]} />
           </>
         )}
