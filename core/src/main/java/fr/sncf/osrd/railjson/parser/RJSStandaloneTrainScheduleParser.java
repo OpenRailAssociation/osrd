@@ -3,6 +3,7 @@ package fr.sncf.osrd.railjson.parser;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope_sim.EnvelopePath;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
+import fr.sncf.osrd.envelope_sim.allowances.Allowance;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceDistribution;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
@@ -46,7 +47,7 @@ public class RJSStandaloneTrainScheduleParser {
             throw new InvalidSchedule("invalid initial speed");
 
         // parse allowances
-        var allowances = new ArrayList<MarecoAllowance>();
+        var allowances = new ArrayList<Allowance>();
         if (rjsTrainSchedule.allowances != null)
             for (int i = 0; i < rjsTrainSchedule.allowances.length; i++)
                 allowances.add(parseAllowance(timeStep, rollingStock, envelopePath, rjsTrainSchedule.allowances[i]));
@@ -61,12 +62,13 @@ public class RJSStandaloneTrainScheduleParser {
     }
 
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
-    private static MarecoAllowance parseAllowance(
+    private static Allowance parseAllowance(
             double timeStep,
             RollingStock rollingStock,
             EnvelopePath envelopePath,
             RJSAllowance rjsAllowance
     ) throws InvalidSchedule {
+
         if (rjsAllowance.getClass() == RJSAllowance.Construction.class) {
             var rjsConstruction = (RJSAllowance.Construction) rjsAllowance;
             if (Double.isNaN(rjsConstruction.beginPosition))
@@ -87,6 +89,7 @@ public class RJSStandaloneTrainScheduleParser {
                     )
             );
         }
+
         if (rjsAllowance.getClass() == RJSAllowance.Mareco.class) {
             var rjsMareco = (RJSAllowance.Mareco) rjsAllowance;
             if (rjsMareco.defaultValue == null)
@@ -96,6 +99,18 @@ public class RJSStandaloneTrainScheduleParser {
                     0, envelopePath.getLength(),
                     getPositiveDoubleOrDefault(rjsMareco.capacitySpeedLimit, 30 / 3.6),
                     parseAllowanceRanges(envelopePath, rjsMareco.defaultValue, rjsMareco.ranges)
+            );
+        }
+
+        if (rjsAllowance.getClass() == RJSAllowance.Linear.class) {
+            var rjsLinear = (RJSAllowance.Linear) rjsAllowance;
+            if (rjsLinear.defaultValue == null)
+                throw new InvalidSchedule("missing linear default_value");
+            return new MarecoAllowance(
+                    new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
+                    0, envelopePath.getLength(),
+                    getPositiveDoubleOrDefault(rjsLinear.capacitySpeedLimit, 30 / 3.6),
+                    parseAllowanceRanges(envelopePath, rjsLinear.defaultValue, rjsLinear.ranges)
             );
         }
 
