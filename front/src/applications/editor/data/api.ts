@@ -49,9 +49,8 @@ export async function getEditorSchema(): Promise<EditorSchema> {
           ...refTarget,
           [ref[1]]: schemaResponse[ref[1]],
         },
-      };
-    })
-    .reduce((acc, curr) => ({ ...acc, [curr.layer]: omit(curr, ['layer']) }), {} as EditorSchema);
+      } as EditorSchema[0];
+    });
   return result;
 }
 
@@ -63,7 +62,7 @@ export async function getEditorData(
   infra: number,
   layers: Array<string>,
   zone: Zone
-): Promise<{ [layer: string]: Array<EditorEntity> }> {
+): Promise<Array<EditorEntity>> {
   const bbox = zoneToBBox(zone);
   const responses = await Promise.all(
     layers.map(async (layer) => {
@@ -72,17 +71,11 @@ export async function getEditorData(
         `/layer/${layer}/objects/geo/${bbox[0]}/${bbox[1]}/${bbox[2]}/${bbox[3]}/?infra=${infra}`,
         {}
       );
-      return {
-        layer,
-        data: result.features.map((f) => ({ ...f, id: f.properties.id, objType })),
-      };
+      return result.features.map((f) => ({ ...f, id: f.properties.id, objType }));
     })
   );
-  const result = responses.reduce(
-    (acc, current) => ({ ...acc, [current.layer]: current.data }),
-    {} as { [layer: string]: Array<EditorEntity> }
-  );
-  return result;
+  console.log(responses);
+  return responses.flat();
 }
 
 /**

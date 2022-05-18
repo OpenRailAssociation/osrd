@@ -7,6 +7,7 @@ import './Notifications.scss';
 
 const TIMEOUT_MS = 5000;
 
+// TODO: review lifecycle of start/clear
 const NotificationWrapper: FC<Notification> = (notif) => {
   const [timeoutId, setTimeoutId] = useState<number | null>(null);
   const dispatch = useDispatch();
@@ -22,12 +23,16 @@ const NotificationWrapper: FC<Notification> = (notif) => {
     if (timeoutId) window.clearTimeout(timeoutId);
   }, [timeoutId]);
 
+  /**
+   * When component mount,
+   */
   useEffect(() => {
     startTimer();
     return () => {
       clearTimer();
     };
-  }, [startTimer, clearTimer]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div onMouseEnter={clearTimer} onMouseLeave={startTimer}>

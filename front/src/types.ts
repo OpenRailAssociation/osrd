@@ -52,7 +52,7 @@ export interface Notification {
 //
 // Editor data model
 //
-export type EditorSchema = { [layer: string]: { objType: string; schema: JSONSchema7 } };
+export type EditorSchema = Array<{ layer: string; objType: string; schema: JSONSchema7 }>;
 export type EditorEntity = Feature & { objType: string };
 
 //

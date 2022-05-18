@@ -16,11 +16,9 @@ import { clip } from '../utils/mapboxHelper';
 const SET_DATA = 'editor/SET_DATA';
 type ActionSetData = {
   type: typeof SET_DATA;
-  data: { [layer: string]: Array<Feature> };
+  data: Array<EditorEntity>;
 };
-export function setEditorData(data: {
-  [layer: string]: Array<Feature>;
-}): ThunkAction<ActionSetData> {
+export function setEditorData(data: ActionSetData['data']): ThunkAction<ActionSetData> {
   return (dispatch) => {
     dispatch({
       type: SET_DATA,
@@ -34,7 +32,7 @@ type ActionSelectZone = {
   type: typeof SELECT_ZONE;
   zone: Zone | null;
 };
-export function selectZone(zone: Zone | null): ThunkAction<ActionSelectZone> {
+export function selectZone(zone: ActionSelectZone['zone']): ThunkAction<ActionSelectZone> {
   return async (dispatch, getState) => {
     dispatch({
       type: SELECT_ZONE,
@@ -135,18 +133,18 @@ export interface EditorState {
   editorSchema: EditorSchema;
   editorLayers: Array<string>;
   editorZone: Zone | null;
-  editorData: { [layer: string]: Array<Feature> };
+  editorData: Array<EditorEntity>;
 }
 
 export const initialState: EditorState = {
   // Definition of entities (json schema)
-  editorSchema: {},
+  editorSchema: [],
   // ID of selected layers on which we are working
   editorLayers: ['track_sections'],
   // Edition zone:
   editorZone: null,
   // An array of Entities per layer
-  editorData: {},
+  editorData: [],
 };
 
 //
@@ -178,12 +176,12 @@ export default function reducer(inputState: EditorState, action: Actions) {
 export const dataSelector = (state: EditorState) => state.editorData;
 export const zoneSelector = (state: EditorState) => state.editorZone;
 export const clippedDataSelector = createSelector(dataSelector, zoneSelector, (data, zone) => {
-  let result: Array<FeatureCollection> = [];
+  let result: Array<EditorEntity> = [];
   if (zone && data)
-    result = Object.keys(data).map((layer) => ({
-      type: 'FeatureCollection',
-      features: data[layer].map((f) => clip(f, zone)).filter((e) => e !== null),
-    })) as Array<FeatureCollection>;
-
+    result = data.map((f) => {
+      const clippedFeature = clip(f, zone);
+      console.log(f, clippedFeature ? { ...f, geometry: clippedFeature.geometry } : f);
+      return clippedFeature ? { ...f, geometry: clippedFeature.geometry } : f;
+    });
   return result;
 });
