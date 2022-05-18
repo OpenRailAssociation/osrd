@@ -11,7 +11,7 @@ import { Feature, LineString, MultiLineString, Point } from 'geojson';
 import { Layer, Source } from 'react-map-gl';
 
 import { EditorEntity } from '../../../types';
-import { CommonToolState, DEFAULT_COMMON_TOOL_STATE, Tool } from '../tools';
+import { CommonToolState, DEFAULT_COMMON_TOOL_STATE, Tool } from './common';
 import { EditorState, save } from '../../../reducers/editor';
 import EditorZone from '../../../common/Map/Layers/EditorZone';
 import GeoJSONs, { GEOJSON_LAYER_ID } from '../../../common/Map/Layers/GeoJSONs';

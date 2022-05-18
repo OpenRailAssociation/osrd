@@ -11,7 +11,7 @@ import {
 import { MapEvent } from 'react-map-gl';
 import { isEqual } from 'lodash';
 
-import { CommonToolState, DEFAULT_COMMON_TOOL_STATE, Tool } from '../tools';
+import { CommonToolState, DEFAULT_COMMON_TOOL_STATE, Tool } from './common';
 import { Zone } from '../../../types';
 import { selectZone } from '../../../reducers/editor';
 import EditorZone from '../../../common/Map/Layers/EditorZone';

@@ -13,7 +13,7 @@ import { isEqual } from 'lodash';
 import { Feature } from 'geojson';
 import { Popup } from 'react-map-gl';
 
-import { CommonToolState, DEFAULT_COMMON_TOOL_STATE, Tool } from '../tools';
+import { CommonToolState, DEFAULT_COMMON_TOOL_STATE, Tool } from './common';
 import { EditorEntity, Item, Zone } from '../../../types';
 import { EditorState, clippedDataSelector, save } from '../../../reducers/editor';
 import { selectInZone } from '../../../utils/mapboxHelper';
