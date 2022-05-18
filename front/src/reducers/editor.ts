@@ -1,8 +1,8 @@
 import produce from 'immer';
 import { createSelector } from 'reselect';
-import { Feature, FeatureCollection, GeoJSON } from 'geojson';
+import { Feature, FeatureCollection } from 'geojson';
 
-import { ThunkAction, Zone, ApiInfrastructure, EditorSchema, EditorEntity } from '../types';
+import { ThunkAction, Zone, EditorSchema, EditorEntity } from '../types';
 import { setLoading, setSuccess, setFailure } from './main';
 import { getEditorSchema, getEditorData, editorSave } from '../applications/editor/data/api';
 import { clip } from '../utils/mapboxHelper';
@@ -10,13 +10,32 @@ import { clip } from '../utils/mapboxHelper';
 //
 // Actions
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+// When the selected data are loaded, we store them in the state
+//
+const SET_DATA = 'editor/SET_DATA';
+type ActionSetData = {
+  type: typeof SET_DATA;
+  data: { [layer: string]: Array<Feature> };
+};
+export function setEditorData(data: {
+  [layer: string]: Array<Feature>;
+}): ThunkAction<ActionSetData> {
+  return (dispatch) => {
+    dispatch({
+      type: SET_DATA,
+      data,
+    });
+  };
+}
+
 const SELECT_ZONE = 'editor/SELECT_ZONE';
 type ActionSelectZone = {
   type: typeof SELECT_ZONE;
   zone: Zone | null;
 };
 export function selectZone(zone: Zone | null): ThunkAction<ActionSelectZone> {
-  return async (dispatch: any, getState) => {
+  return async (dispatch, getState) => {
     dispatch({
       type: SELECT_ZONE,
       zone,
@@ -38,25 +57,6 @@ export function selectZone(zone: Zone | null): ThunkAction<ActionSelectZone> {
         dispatch(setFailure(e as Error));
       }
     }
-  };
-}
-
-//
-// When the selected data are loaded, we store them in the state
-//
-const SET_DATA = 'editor/SET_DATA';
-type ActionSetData = {
-  type: typeof SET_DATA;
-  data: { [layer: string]: Array<Feature> };
-};
-export function setEditorData(data: {
-  [layer: string]: Array<Feature>;
-}): ThunkAction<ActionSetData> {
-  return (dispatch) => {
-    dispatch({
-      type: SET_DATA,
-      data,
-    });
   };
 }
 

@@ -1,25 +1,24 @@
 import React, { FC, useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
 import { TFunction } from 'i18next';
 import { withTranslation } from 'react-i18next';
 import cx from 'classnames';
 
-import { LoaderState } from 'common/Loader';
-import { NotificationsState } from 'common/Notifications';
-
 import 'common/Map/Map.scss';
 import './Editor.scss';
 
-import { useParams } from 'react-router-dom';
-import { Tool, Tools, CommonToolState } from './tools';
+import { LoaderState } from '../../common/Loader';
+import { NotificationsState } from '../../common/Notifications';
 import { EditorState, loadDataModel } from '../../reducers/editor';
 import { MainState, setFailure } from '../../reducers/main';
-import Map from './Map';
-import Tipped from './components/Tipped';
-import NavButtons from './nav';
 import { updateViewport } from '../../reducers/map';
 import { updateInfraID } from '../../reducers/osrdconf';
+import { Tool, Tools, CommonToolState } from './tools';
+import Tipped from './components/Tipped';
 import { getInfrastructure, getInfrastructures } from './data/api';
+import Map from './Map';
+import NavButtons from './nav';
 
 const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   const dispatch = useDispatch();
