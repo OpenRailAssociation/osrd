@@ -24,11 +24,6 @@ import ElectrificationType from 'common/Map/Layers/ElectrificationType';
 import Hillshade from 'common/Map/Layers/Hillshade';
 import MapSearch from 'common/Map/Search/MapSearch';
 import MapSettings from 'common/Map/Settings/MapSettings';
-import MapSettingsLayers from 'common/Map/Settings/MapSettingsLayers';
-import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
-import MapSettingsShowOSM from 'common/Map/Settings/MapSettingsShowOSM';
-import MapSettingsSignals from 'common/Map/Settings/MapSettingsSignals';
-import MapSettingsTrackSources from 'common/Map/Settings/MapSettingsTrackSources';
 import OSM from 'common/Map/Layers/OSM';
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
 import Platform from 'common/Map/Layers/Platform';
@@ -41,6 +36,7 @@ import SignalingType from 'common/Map/Layers/SignalingType';
 import Signals from 'common/Map/Layers/Signals';
 import SnappedMarker from 'common/Map/Layers/SnappedMarker';
 import SpeedLimits from 'common/Map/Layers/SpeedLimits';
+import BufferStops from 'common/Map/Layers/BufferStops';
 import Switches from 'common/Map/Layers/Switches';
 /* Objects & various */
 import TVDs from 'common/Map/Layers/TVDs';
@@ -196,17 +192,7 @@ const Map = () => {
         <ButtonResetViewport updateLocalViewport={resetPitchBearing} />
       </div>
       <MapSearch active={showSearch} toggleMapSearch={toggleMapSearch} />
-      <MapSettings active={showSettings} toggleMapSettings={toggleMapSettings}>
-        <MapSettingsMapStyle />
-        <div className="my-2" />
-        <MapSettingsTrackSources />
-        <div className="my-2" />
-        <MapSettingsShowOSM />
-        <div className="mb-1 mt-3 border-bottom">Signalisation</div>
-        <MapSettingsSignals />
-        <div className="mb-1 mt-3 border-bottom">{t('map-settings:layers')}</div>
-        <MapSettingsLayers />
-      </MapSettings>
+      <MapSettings active={showSettings} toggleMapSettings={toggleMapSettings} />
       <ReactMapGL
         ref={mapRef}
         {...viewport}
@@ -253,6 +239,7 @@ const Map = () => {
             <SignalingType geomType="geo" />
             <SpeedLimits geomType="geo" colors={colors[mapStyle]} />
             <Signals sourceTable="signals" colors={colors[mapStyle]} sourceLayer="geo" />
+            <BufferStops geomType="geo" colors={colors[mapStyle]} />
             <Switches geomType="geo" colors={colors[mapStyle]} />
             <RenderPopup />
           </>
@@ -262,6 +249,7 @@ const Map = () => {
             <OperationalPoints geomType="sch" colors={colors[mapStyle]} />
             <Signals sourceTable="signals" colors={colors[mapStyle]} sourceLayer="sch" />
             <SpeedLimits geomType="sch" colors={colors[mapStyle]} />
+            <BufferStops geomType="sch" colors={colors[mapStyle]} />
             <Switches geomType="sch" colors={colors[mapStyle]} />
           </>
         )}

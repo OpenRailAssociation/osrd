@@ -11,7 +11,6 @@ export default function MapSettingsShowOSM() {
 
   return (
     <div className="d-flex align-items-center">
-      <span className="mr-2">{t('showOSM')}</span>
       <SwitchSNCF
         id="showosmwitch"
         type={SWITCH_TYPES.switch}
@@ -19,6 +18,7 @@ export default function MapSettingsShowOSM() {
         onChange={() => dispatch(updateShowOSM(!showOSM))}
         checked={showOSM}
       />
+      <span className="ml-2">{t('showOSM')}</span>
     </div>
   );
 }
