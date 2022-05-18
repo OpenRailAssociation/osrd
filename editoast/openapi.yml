@@ -113,6 +113,64 @@ paths:
                 items:
                   $ref: "#/components/schemas/OperationResult"
 
+  /infra/{id}/errors/:
+    get:
+      tags:
+        - infra
+      summary: Retrieve a paginated list of errors
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: infra id
+          required: true
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: The page number
+        - in: query
+          name: page_size
+          schema:
+            type: integer
+            default: 25
+            minimum: 10
+          description: The number of item per page
+        - in: query
+          name: exclude_warnings
+          schema:
+            type: boolean
+            default: false
+          description: Whether the response should include warnings or not
+      responses:
+        200:
+          description: A paginated list of errors
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    description: Total number of elements
+                    example: 1
+                  next:
+                    type: integer
+                    nullable: true
+                    example: null
+                    description: The index of the following page (null if no more pages available)
+                  previous:
+                    type: integer
+                    nullable: true
+                    example: null
+                    description: The index of the previous page (null if requesting the first page)
+                  results:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/InfraError"
+
   /infra/refresh/:
     post:
       tags:
@@ -142,7 +200,6 @@ paths:
                 type: array
                 items:
                   type: integer
-
 components:
   schemas:
     Infra:
@@ -161,10 +218,16 @@ components:
 
     ObjectType:
       type: string
+      description: Type of the object
       enum:
         - TrackSection
         - Signal
         - SpeedSection
+        - Detector
+        - TrackSectionLink
+        - Switch
+        - SwitchType
+        - BufferStop
 
     Operation:
       oneOf:
@@ -287,3 +350,25 @@ components:
         track_name: track name
         navigability: BOTH
         track_number: 1
+
+    InfraError:
+      type: object
+      description: An infra error or warning
+      properties:
+        obj_id:
+          type: string
+          example: 8979e17f-6704-49f6-b63e-98f68ba2d086
+          description: Id of the object linked to the error
+        obj_type:
+          $ref: "#/components/schemas/ObjectType"
+          example: Signal
+        information:
+          type: object
+          description: Information about the erorr (check schema documentation for more details)
+          example:
+            error_type: invalid_reference
+            field: track
+            is_warning: false
+            reference:
+              id: 61205924-6667-11e3-81ff-01f464e0362d
+              type: TrackSection
