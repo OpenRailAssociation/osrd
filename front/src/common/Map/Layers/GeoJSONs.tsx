@@ -1,7 +1,6 @@
 import React, { FC, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { Layer, LayerProps, Source } from 'react-map-gl';
-import { FeatureCollection } from 'geojson';
 import { keyBy } from 'lodash';
 
 import { geoMainLayer } from 'common/Map/Layers/geographiclayers';
@@ -42,7 +41,7 @@ const GeoJSONs: FC<{ colors: Theme; hoveredIDs?: Item[]; selectionIDs?: Item[] }
   return (
     <>
       {qualifiedGeoJSONs.map((geoJSON, index) => (
-        <Source key={index} type="geojson" data={geoJSON as FeatureCollection}>
+        <Source key={index} type="geojson" data={geoJSON}>
           <Layer {...(geoMainLayer(colors) as LayerProps)} id={GEOJSON_LAYER_ID} />
           <Layer
             type="line"

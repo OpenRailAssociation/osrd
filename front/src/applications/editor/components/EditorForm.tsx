@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import Form from '@rjsf/core';
-import { Feature } from 'geojson';
 import { useSelector } from 'react-redux';
-import { omit } from 'lodash';
 
 import { EditorEntity } from '../../../types';
 import { EditorState } from '../../../reducers/editor';
@@ -28,10 +26,10 @@ const EditorForm: React.FC<EditorFormProps> = ({ data, onSubmit }) => {
       {error !== null && <p className="error">{JSON.stringify(error)}</p>}
       <Form
         formData={data.properties}
-        schema={schema ? schema : {}}
-        onSubmit={(e) => {
+        schema={schema || {}}
+        onSubmit={(event) => {
           try {
-            onSubmit({ ...data, properties: { ...data.properties, ...e.formData } });
+            onSubmit({ ...data, properties: { ...data.properties, ...event.formData } });
           } catch (e) {
             setError(e);
           }

@@ -1,5 +1,5 @@
-import { EditorSchema } from '../../../types';
 import { JSONSchema7 } from 'json-schema';
+import { EditorSchema } from '../../../types';
 
 export function getObjectTypeForLayer(schema: EditorSchema, layer: string): string | undefined {
   return schema[layer] ? schema[layer].objType : undefined;

@@ -27,23 +27,27 @@ export async function getInfrastructures(): Promise<Array<ApiInfrastructure>> {
  * Call the API to get the definition of entities by layer.
  */
 export async function getEditorSchema(): Promise<EditorSchema> {
-  const response = await fetch('/editor-json-schema.json').then((response) => response.json());
+  const schemaResponse = await fetch('/editor-json-schema.json').then((response) =>
+    response.json()
+  );
   const fieldToOmit = ['id', 'geo', 'sch'];
-  const result = Object.keys(response.properties)
-    .filter((e) => response.properties[e].type === 'array')
+  const result = Object.keys(schemaResponse.properties)
+    .filter((e) => schemaResponse.properties[e].type === 'array')
     .map((e) => {
       // we assume here, that the definition of the object is ref and not inline
-      const ref = response.properties[e].items['$ref'].split('/');
-      const refTarget = response[ref[1]][ref[2]];
+      const ref = schemaResponse.properties[e].items.$ref.split('/');
+      const refTarget = schemaResponse[ref[1]][ref[2]];
       refTarget.properties = omit(refTarget.properties, fieldToOmit);
-      refTarget.required = (refTarget.required || []).filter((e) => !fieldToOmit.includes(e));
+      refTarget.required = (refTarget.required || []).filter(
+        (field) => !fieldToOmit.includes(field)
+      );
 
       return {
         layer: e,
         objType: ref[2],
         schema: {
           ...refTarget,
-          [ref[1]]: response[ref[1]],
+          [ref[1]]: schemaResponse[ref[1]],
         },
       };
     })
@@ -89,7 +93,7 @@ export async function editorSave(
   operations: {
     create?: Array<EditorEntity>;
     update?: Array<EditorEntity>;
-    remove?: Array<EditorEntity>;
+    delete?: Array<EditorEntity>;
   }
 ): Promise<Array<Feature>> {
   const payload = [
@@ -104,7 +108,7 @@ export async function editorSave(
       obj_type: feature.objType,
       railjson_patch: feature.properties,
     })),
-    ...(operations.remove || []).map((feature) => ({
+    ...(operations.delete || []).map((feature) => ({
       operation_type: 'DELETE',
       obj_id: feature.id,
       obj_type: feature.objType,
@@ -112,7 +116,5 @@ export async function editorSave(
   ];
 
   const result = await post(`/infra/${infra}`, payload, {});
-  console.log(result);
-  // TODO
-  return [];
+  return result;
 }
