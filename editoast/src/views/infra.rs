@@ -8,7 +8,6 @@ use crate::models::infra_errors::get_paginated_infra_errors;
 use crate::models::{CreateInfra, DBConnection, Infra, InvalidationZone};
 use crate::railjson::operation::{Operation, OperationResult};
 use chashmap::CHashMap;
-
 use rocket::http::Status;
 use rocket::response::status::Custom;
 use rocket::{routes, Route, State};
