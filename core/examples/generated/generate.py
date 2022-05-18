@@ -45,7 +45,9 @@ def main():
             run_script(gen_script, scripts_env, args.output_dir)
     else:
         for script_name in args.scripts:
-            script_path = scripts_dir / f"{script_name}.py"
+            script_path = Path(script_name)
+            if not script_path.is_file():
+                script_path = scripts_dir / f"{script_name}.py"
             run_script(script_path, scripts_env, args.output_dir)
 
 
