@@ -74,4 +74,13 @@ public class RJSParsingTests {
                 () -> UndirectedInfraBuilder.parseInfra(rjsInfra, new WarningRecorderImpl(true))
         );
     }
+
+    @Test
+    public void testUnlabeledLinks() throws Exception {
+        var rjsInfra = Helpers.getExampleInfra("one_line/infra.json");
+        for (var link : rjsInfra.trackSectionLinks)
+            link.id = null;
+        // We check that no warning or assertion is raised when importing the infra
+        UndirectedInfraBuilder.parseInfra(rjsInfra, new WarningRecorderImpl(true));
+    }
 }
