@@ -16,7 +16,7 @@ const NotificationWrapper: FC<Notification> = (notif) => {
       dispatch(deleteNotification(notif));
     }, TIMEOUT_MS);
     setTimeoutId(id);
-  }, [dispatch]);
+  }, [dispatch, notif]);
 
   const clearTimer = useCallback(() => {
     if (timeoutId) window.clearTimeout(timeoutId);
@@ -27,7 +27,7 @@ const NotificationWrapper: FC<Notification> = (notif) => {
     return () => {
       clearTimer();
     };
-  }, []);
+  }, [startTimer, clearTimer]);
 
   return (
     <div onMouseEnter={clearTimer} onMouseLeave={startTimer}>
@@ -58,3 +58,5 @@ export const NotificationsState = () => {
   const notifications = useSelector((state: { main: MainState }) => state.main.notifications);
   return <Notifications notifications={notifications} />;
 };
+
+export default NotificationsState;

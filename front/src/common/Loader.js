@@ -32,6 +32,7 @@ export default class Loader extends React.Component {
 const stateToProps = (state) => ({
   loading: state.main.loading,
 });
+
 export const LoaderState = connect(stateToProps)(({ loading }) => {
   if (loading && loading > 0) return <Loader position="top-right" />;
   return null;

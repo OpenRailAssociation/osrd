@@ -8,7 +8,7 @@ import { ThunkAction, Notification } from '../types';
 export const TOGGLE_DARKMODE = 'main/TOGGLE_DARKMODE';
 type ActionToggleDarkmode = { type: typeof TOGGLE_DARKMODE };
 export function toggleDarkmode(): ThunkAction<ActionToggleDarkmode> {
-  return (dispatch: any) => {
+  return (dispatch) => {
     dispatch({
       type: TOGGLE_DARKMODE,
     });
@@ -18,7 +18,7 @@ export function toggleDarkmode(): ThunkAction<ActionToggleDarkmode> {
 export const TOGGLE_FULLSCREEN = 'main/TOGGLE_FULLSCREEN';
 type ActionToggleFullscreen = { type: typeof TOGGLE_FULLSCREEN };
 export function toggleFullscreen(): ThunkAction<ActionToggleFullscreen> {
-  return (dispatch: any) => {
+  return (dispatch) => {
     dispatch({
       type: TOGGLE_FULLSCREEN,
     });
@@ -28,7 +28,7 @@ export function toggleFullscreen(): ThunkAction<ActionToggleFullscreen> {
 export const ACTION_LOADING = 'main/ACTION_LOADING';
 type ActionLoading = { type: typeof ACTION_LOADING };
 export function setLoading(): ThunkAction<ActionLoading> {
-  return (dispatch: any) => {
+  return (dispatch) => {
     dispatch({
       type: ACTION_LOADING,
     });
@@ -112,7 +112,8 @@ export const initialState: MainState = {
 //
 // State reducer
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-export default function reducer(state = initialState, action: Actions) {
+export default function reducer(inputState, action: Actions) {
+  const state = inputState || initialState;
   return produce(state, (draft) => {
     switch (action.type) {
       case TOGGLE_DARKMODE:

@@ -29,6 +29,9 @@ const ModalUnplugged: FC<{ onClose: () => void; id?: string; title?: string; t: 
         tabIndex={0}
         aria-label="Close"
         onClick={() => onClose()}
+        onKeyDown={(e) => {
+          if (e.keyCode === 13) onClose();
+        }}
       />
       <div className="modal-content">
         <div className="modal-header">
