@@ -34,11 +34,8 @@ export type Zone = RectangleZone | PolygonZone;
 export interface Item {
   id: string;
   properties: Record<string, any>;
-
-  // TODO:
-  // Refine typings
-  entity_id?: string;
 }
+
 export type PositionnedItem = Item & {
   lng: number;
   lat: number;

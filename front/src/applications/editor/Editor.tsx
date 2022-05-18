@@ -11,7 +11,7 @@ import 'common/Map/Map.scss';
 import './Editor.scss';
 
 import { useParams } from 'react-router-dom';
-import { Tool, Tools } from './tools';
+import { Tool, Tools, CommonToolState } from './tools';
 import { EditorState, loadDataModel } from '../../reducers/editor';
 import { MainState, setFailure } from '../../reducers/main';
 import Map from './Map';
@@ -25,8 +25,8 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   const dispatch = useDispatch();
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
   const { fullscreen } = useSelector((state: { main: MainState }) => state.main);
-  const [activeTool, activateTool] = useState<Tool<any>>(Tools[0]);
-  const [toolState, setToolState] = useState<any>(activeTool.getInitialState());
+  const [activeTool, activateTool] = useState<Tool<CommonToolState>>(Tools[0]);
+  const [toolState, setToolState] = useState<CommonToolState>(activeTool.getInitialState());
   const actionsGroups = activeTool.actions
     .map((group) =>
       group.filter((action) => !action.isHidden || !action.isHidden(toolState, editorState))
@@ -62,23 +62,18 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   // We take the one define in the url, and if it is absent or equals to '-1'
   // we call the api to find the latest infrastructure modified
   useEffect(() => {
-    console.log('infra', infra, infra && infra !== '-1');
-    if (infra && parseInt(infra) > 0) {
-      console.log('infra', infra);
-      getInfrastructure(parseInt(infra))
+    if (infra && parseInt(infra, 10) > 0) {
+      getInfrastructure(parseInt(infra, 10))
         .then((infrastructure) => dispatch(updateInfraID(infrastructure.id)))
         .catch(() => {
           dispatch(setFailure(new Error(t('Editor.errors.infra-not-found', { id: infra }))));
           dispatch(updateViewport(viewport, `/editor/infra`));
         });
     } else {
-      console.log('no infra');
       getInfrastructures()
         .then((infras) => {
-          console.log(infras);
           if (infras && infras.length > 0) {
             const infrastructure = infras[0];
-            console.log('pick infra', infrastructure);
             dispatch(updateInfraID(infrastructure.id));
             dispatch(updateViewport(viewport, `/editor/${infrastructure.id}`));
           } else {

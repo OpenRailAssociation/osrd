@@ -83,7 +83,7 @@ export const SelectZone: Tool<SelectZoneState> = {
         isDisabled(_state, editorState) {
           return !editorState.editorZone;
         },
-        onClick({ dispatch }, _toolState) {
+        onClick({ dispatch }) {
           dispatch<any>(selectZone(null));
         },
       },

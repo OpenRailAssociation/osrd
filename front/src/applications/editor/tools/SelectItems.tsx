@@ -172,12 +172,12 @@ export const SelectItems: Tool<SelectItemsState> = {
     if (toolState.mode !== 'single') return;
 
     let { selection } = toolState;
-    const isAlreadySelected = selection.find((item) => item.id === feature.id);
-    //TODO: replace the static layer
-    const current = (editorState.editorData['track_sections'] || []).find(
-      (item) => item.id === feature.id
+    const isAlreadySelected = selection.find((item) => item.id === feature.properties.id);
+
+    // TODO: replace the static layer
+    const current = (editorState.editorData.track_sections || []).find(
+      (item) => item.id === feature.properties.id
     );
-    console.log('current', current, editorState.editorData, feature);
     if (current) {
       if (!isAlreadySelected) {
         if (e.srcEvent.ctrlKey) {
@@ -186,7 +186,7 @@ export const SelectItems: Tool<SelectItemsState> = {
           selection = [current];
         }
       } else if (e.srcEvent.ctrlKey) {
-        selection = selection.filter((item) => item.id !== feature.id);
+        selection = selection.filter((item) => item.id !== feature.properties.id);
       } else if (selection.length === 1) {
         selection = [];
       } else {
@@ -211,7 +211,7 @@ export const SelectItems: Tool<SelectItemsState> = {
           setState({
             ...toolState,
             rectangleTopLeft: null,
-            selection: selectInZone(editorState.editorData['track_sections'] || [], {
+            selection: selectInZone(editorState.editorData.track_sections || [], {
               type: 'rectangle',
               points: [toolState.rectangleTopLeft, position],
             }),
@@ -233,7 +233,7 @@ export const SelectItems: Tool<SelectItemsState> = {
           setState({
             ...toolState,
             polygonPoints: [],
-            selection: selectInZone(editorState.editorData['track_sections'] || [], {
+            selection: selectInZone(editorState.editorData.track_sections || [], {
               type: 'polygon',
               points,
             }),
@@ -338,6 +338,7 @@ export const SelectItems: Tool<SelectItemsState> = {
 
             <div className="">
               <button
+                type="button"
                 className="btn btn-primary"
                 onClick={() => {
                   dispatch<any>(save({ delete: toolState.selection as EditorEntity[] }));
@@ -347,6 +348,7 @@ export const SelectItems: Tool<SelectItemsState> = {
                 {t('common.confirm')}
               </button>
               <button
+                type="button"
                 className="btn btn-danger"
                 onClick={() => setState({ ...toolState, showModal: null })}
               >
@@ -356,7 +358,7 @@ export const SelectItems: Tool<SelectItemsState> = {
           </Modal>
         );
       default:
-        return <></>;
+        return null;
     }
   },
 

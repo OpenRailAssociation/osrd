@@ -96,7 +96,7 @@ const MapUnplugged: FC<MapProps> = ({
           setToolState({
             ...toolState,
             hovered: {
-              id: feature.properties.OP_id as string,
+              id: feature.id,
               properties: feature.properties || {},
               lng: feature.properties.lng,
               lat: feature.properties.lat,
