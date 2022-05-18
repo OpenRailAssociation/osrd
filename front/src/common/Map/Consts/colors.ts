@@ -115,6 +115,10 @@ const colors: Record<string, Theme> = {
       text: '#555555',
       halo: '#eee',
     },
+    tracksosm: {
+      minor: '#2a686c',
+      major: '#009aa6',
+    },
     tunnel: {
       color: '#4b4b4b',
       text: '#164721',
@@ -235,6 +239,10 @@ const colors: Record<string, Theme> = {
       text: '#4895ef',
       halo: '#0b011d',
     },
+    tracksosm: {
+      minor: '#3a86ff',
+      major: '#3a86ff',
+    },
     tunnel: {
       color: '#ffbe0b',
       text: '#ffbe0b',
@@ -354,6 +362,10 @@ const colors: Record<string, Theme> = {
     trackname: {
       text: bpLight,
       halo: bpBg,
+    },
+    tracksosm: {
+      minor: bpMedium,
+      major: bpLight,
     },
     tunnel: {
       color: bpMedium,
