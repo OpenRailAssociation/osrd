@@ -268,6 +268,7 @@ export const SelectItems: Tool<SelectItemsState> = {
         toolState.hovered.properties.RA_libelle_poste,
         toolState.hovered.properties.RA_libelle_poste_metier,
         toolState.hovered.properties.OP_id_poste_metier,
+        toolState.hovered.properties.track_number,
       ].filter((s) => !!s && s !== 'null');
 
     if (toolState.hovered && !labelParts?.length) {
