@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Form from '@rjsf/core';
 import { useSelector } from 'react-redux';
 
+import './EditorForm.scss';
 import { EditorEntity } from '../../../types';
 import { EditorState } from '../../../reducers/editor';
 import { getJsonSchemaForLayer, getLayerForObjectType } from '../data/utils';

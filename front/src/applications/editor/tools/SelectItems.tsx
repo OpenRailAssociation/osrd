@@ -25,7 +25,7 @@ import EditorForm from '../components/EditorForm';
 
 export type SelectItemsState = CommonToolState & {
   mode: 'rectangle' | 'single' | 'polygon';
-  selection: Feature[];
+  selection: EditorEntity[];
   polygonPoints: [number, number][];
   rectangleTopLeft: [number, number] | null;
   showModal: 'info' | 'edit' | 'delete' | null;
@@ -172,12 +172,9 @@ export const SelectItems: Tool<SelectItemsState> = {
     if (toolState.mode !== 'single') return;
 
     let { selection } = toolState;
-    const isAlreadySelected = selection.find((item) => item.id === feature.properties.id);
+    const isAlreadySelected = selection.find((item) => item.id === feature.id);
 
-    // TODO: replace the static layer
-    const current = (editorState.editorData.track_sections || []).find(
-      (item) => item.id === feature.properties.id
-    );
+    const current = editorState.editorData.find((item) => item.id === feature.id);
     if (current) {
       if (!isAlreadySelected) {
         if (e.srcEvent.ctrlKey) {
@@ -186,7 +183,7 @@ export const SelectItems: Tool<SelectItemsState> = {
           selection = [current];
         }
       } else if (e.srcEvent.ctrlKey) {
-        selection = selection.filter((item) => item.id !== feature.properties.id);
+        selection = selection.filter((item) => item.id !== feature.id);
       } else if (selection.length === 1) {
         selection = [];
       } else {
@@ -211,7 +208,7 @@ export const SelectItems: Tool<SelectItemsState> = {
           setState({
             ...toolState,
             rectangleTopLeft: null,
-            selection: selectInZone(editorState.editorData.track_sections || [], {
+            selection: selectInZone(editorState.editorData, {
               type: 'rectangle',
               points: [toolState.rectangleTopLeft, position],
             }),
@@ -233,7 +230,7 @@ export const SelectItems: Tool<SelectItemsState> = {
           setState({
             ...toolState,
             polygonPoints: [],
-            selection: selectInZone(editorState.editorData.track_sections || [], {
+            selection: selectInZone(editorState.editorData, {
               type: 'polygon',
               points,
             }),

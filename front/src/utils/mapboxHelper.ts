@@ -19,7 +19,6 @@ import {
   MultiPoint,
   Position,
   Polygon,
-  GeoJSON,
 } from 'geojson';
 import nearestPointOnLine from '@turf/nearest-point-on-line';
 import nearestPoint from '@turf/nearest-point';
@@ -226,21 +225,13 @@ export function clip<T extends Feature | FeatureCollection>(tree: T, zone: Zone)
  * returns a selection of all items in the given dataset intersecting with the given zone. If no
  * zone is given, selects everything instead.
  */
-export function selectInZone(data: Array<GeoJSON>, zone?: Zone): Feature[] {
-  const items: Feature[] = [];
+export function selectInZone<T extends Feature>(data: Array<T>, zone?: Zone): T[] {
+  const items: T[] = [];
   const zoneFeature = zone && zoneToFeature(zone);
 
   data.forEach((geojson) => {
-    if (geojson.type === 'FeatureCollection') {
-      geojson.features.forEach((feature) => {
-        if (!zoneFeature || booleanIntersects(feature, zoneFeature)) {
-          items.push(feature);
-        }
-      });
-    } else if (geojson.type === 'Feature') {
-      if (!zoneFeature || booleanIntersects(geojson, zoneFeature)) {
-        items.push(geojson);
-      }
+    if (!zoneFeature || booleanIntersects(geojson, zoneFeature)) {
+      items.push(geojson);
     }
   });
 
