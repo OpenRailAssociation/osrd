@@ -29,8 +29,8 @@ class PathElement:
     def to_rjs(self):
         return infra.DirectionalTrackRange(
             track=self.track_section.make_rjs_ref(),
-            begin=self.begin,
-            end=self.end,
+            begin=min(self.begin, self.end),
+            end=max(self.begin, self.end),
             direction=infra.Direction[self.direction.name]
         )
 
