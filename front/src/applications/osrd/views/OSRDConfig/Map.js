@@ -39,6 +39,7 @@ import SpeedLimits from 'common/Map/Layers/SpeedLimits';
 import BufferStops from 'common/Map/Layers/BufferStops';
 import Detectors from 'common/Map/Layers/Detectors';
 import Switches from 'common/Map/Layers/Switches';
+import TracksOSM from 'common/Map/Layers/TracksOSM';
 /* Objects & various */
 import TVDs from 'common/Map/Layers/TVDs';
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
@@ -236,6 +237,7 @@ const Map = () => {
             <ElectrificationType geomType="geo" colors={colors[mapStyle]} />
             <Platform colors={colors[mapStyle]} />
             <TracksGeographic colors={colors[mapStyle]} />
+            <TracksOSM colors={colors[mapStyle]} />
             <OperationalPoints geomType="geo" colors={colors[mapStyle]} />
             <SignalingType geomType="geo" />
             <SpeedLimits geomType="geo" colors={colors[mapStyle]} />

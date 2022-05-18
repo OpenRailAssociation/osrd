@@ -30,6 +30,7 @@ import Switches from 'common/Map/Layers/Switches';
 import TVDs from 'common/Map/Layers/TVDs';
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 import TracksSchematic from 'common/Map/Layers/TracksSchematic';
+import TracksOSM from 'common/Map/Layers/TracksOSM';
 import colors from 'common/Map/Consts/colors.ts';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import { updateViewport } from 'reducers/map';
@@ -158,6 +159,7 @@ const Map = () => {
             <TVDs geomType="geo" colors={colors[mapStyle]} idHover={idHover} />
             <Platform colors={colors[mapStyle]} />
             <TracksGeographic colors={colors[mapStyle]} />
+            <TracksOSM colors={colors[mapStyle]} />
             <OperationalPoints geomType="geo" colors={colors[mapStyle]} />
             <SignalingType geomType="geo" />
             <SpeedLimits geomType="geo" colors={colors[mapStyle]} />

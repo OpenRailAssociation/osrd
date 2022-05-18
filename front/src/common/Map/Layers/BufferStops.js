@@ -13,7 +13,7 @@ const BufferStops = (props) => {
     minzoom: 12,
     'source-layer': 'buffer_stops',
     layout: {
-      'text-field': '{id}',
+      'text-field': ['slice', ['get', 'id'], 11],
       'text-font': [
         'Roboto Condensed',
       ],
