@@ -22,7 +22,7 @@ export default function Detectors(props) {
     type: 'symbol',
     'source-layer': 'detectors',
     layout: {
-      'text-field': '{id}',
+      'text-field': ['slice', ['get', 'id'], 9],
       'text-font': [
         'Roboto Condensed',
       ],
