@@ -112,6 +112,10 @@ export default function MapSettingsLayers() {
         name="bufferstops"
         icon={<BufferStopSVG />}
       />
+      <FormatSwitch
+        name="detectors"
+        icon={<DetectorsSVG />}
+      />
     </div>
   );
 }
