@@ -24,15 +24,14 @@ const GeoJSONs: FC<{ colors: Theme; hoveredIDs?: Item[]; selectionIDs?: Item[] }
   const qualifiedGeoJSONs = useMemo(() => {
     const hovered = keyBy(hoveredIDs || [], 'id');
     const selection = keyBy(selectionIDs || [], 'id');
-
     return geoJSONs.map((geoJSON) => ({
       ...geoJSON,
       features: geoJSON.features.map((feature) => ({
         ...feature,
         properties: {
           ...feature.properties,
-          ...(selection[feature.properties?.OP_id] ? { selected: true } : {}),
-          ...(hovered[feature.properties?.OP_id] ? { hovered: true } : {}),
+          ...(selection[feature.properties?.id] ? { selected: true } : {}),
+          ...(hovered[feature.properties?.id] ? { hovered: true } : {}),
         },
       })),
     }));
