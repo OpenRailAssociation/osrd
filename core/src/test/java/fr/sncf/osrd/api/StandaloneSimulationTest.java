@@ -196,10 +196,10 @@ class StandaloneSimulationTest extends ApiTest {
 
         var noAllowanceResult = simResult.baseSimulations.get(0);
         var noAllowanceTime = noAllowanceResult.headPositions.get(noAllowanceResult.headPositions.size() - 1).time;
-        var marecoResult = simResult.allowanceSimulations.get(1);
+        var marecoResult = simResult.ecoSimulations.get(1);
         var marecoTime = marecoResult.headPositions.get(marecoResult.headPositions.size() - 1).time;
         assertEquals(noAllowanceTime * 1.05, marecoTime, noAllowanceTime * 0.01);
-        assertNull(simResult.allowanceSimulations.get(0));
+        assertNull(simResult.ecoSimulations.get(0));
     }
 
 
@@ -244,12 +244,12 @@ class StandaloneSimulationTest extends ApiTest {
         var noAllowanceResult = simResult.baseSimulations.get(0);
         var noAllowanceTime =
                 noAllowanceResult.headPositions.get(noAllowanceResult.headPositions.size() - 1).time;
-        var marecoResult = simResult.allowanceSimulations.get(1);
+        var marecoResult = simResult.ecoSimulations.get(1);
         var marecoTime = marecoResult.headPositions.get(marecoResult.headPositions.size() - 1).time;
         assertEquals(noAllowanceTime + 4.5 * 60 * rangeEndPos / 1E5 + 5.5 * 60 * (10000 - rangeEndPos) / 1E5,
                 marecoTime,
                 noAllowanceTime * 0.01);
-        assertNull(simResult.allowanceSimulations.get(0));
+        assertNull(simResult.ecoSimulations.get(0));
     }
 
     @Test
@@ -282,10 +282,10 @@ class StandaloneSimulationTest extends ApiTest {
 
         var noAllowanceResult = simResult.baseSimulations.get(0);
         var noAllowanceTime = noAllowanceResult.headPositions.get(noAllowanceResult.headPositions.size() - 1).time;
-        var linearResult = simResult.allowanceSimulations.get(1);
+        var linearResult = simResult.ecoSimulations.get(1);
         var linearTime = linearResult.headPositions.get(linearResult.headPositions.size() - 1).time;
         assertEquals(noAllowanceTime * 1.05, linearTime, noAllowanceTime * 0.01);
-        assertNull(simResult.allowanceSimulations.get(0));
+        assertNull(simResult.ecoSimulations.get(0));
     }
 
     @Test
@@ -330,11 +330,11 @@ class StandaloneSimulationTest extends ApiTest {
         var noAllowanceResult = simResult.baseSimulations.get(0);
         var noAllowanceTime =
                 noAllowanceResult.headPositions.get(noAllowanceResult.headPositions.size() - 1).time;
-        var linearResult = simResult.allowanceSimulations.get(1);
+        var linearResult = simResult.ecoSimulations.get(1);
         var linearTime = linearResult.headPositions.get(linearResult.headPositions.size() - 1).time;
         assertEquals(noAllowanceTime + 4.5 * 60 * rangeEndPos / 1E5 + 5.5 * 60 * (10000 - rangeEndPos) / 1E5,
                 linearTime,
                 noAllowanceTime * 0.01);
-        assertNull(simResult.allowanceSimulations.get(0));
+        assertNull(simResult.ecoSimulations.get(0));
     }
 }

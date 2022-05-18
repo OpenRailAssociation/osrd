@@ -17,8 +17,8 @@ public class StandaloneSimResult {
 
     @Json(name = "base_simulations")
     public List<ResultTrain> baseSimulations = new ArrayList<>();
-    @Json(name = "allowance_simulations")
-    public List<ResultTrain> allowanceSimulations = new ArrayList<>();
+    @Json(name = "eco_simulations")
+    public List<ResultTrain> ecoSimulations = new ArrayList<>();
     @Json(name = "speed_limits")
     public List<List<ResultEnvelopePoint>> speedLimits = new ArrayList<>();
     public List<Warning> warnings = new ArrayList<>();
