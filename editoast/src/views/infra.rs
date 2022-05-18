@@ -157,18 +157,28 @@ fn edit(
 }
 
 /// Return the list of errors of an infra
-#[get("/<infra>/errors?<page>&<exclude_warnings>")]
+#[get("/<infra>/errors?<page>&<exclude_warnings>&<page_size>")]
 fn list_errors(
     infra: i32,
     page: Option<i64>,
+    page_size: Option<i64>,
     exclude_warnings: bool,
     conn: DBConnection,
 ) -> ApiResult<Custom<JsonValue>> {
     let page = page.unwrap_or_default().max(1);
-    let (infra_errors, count) = get_paginated_infra_errors(&conn, infra, page, exclude_warnings)?;
+    let per_page = page_size.unwrap_or(25).max(10);
+    let (infra_errors, count) =
+        get_paginated_infra_errors(&conn, infra, page, per_page, exclude_warnings)?;
+    let previous = if page == 1 { None } else { Some(page - 1) };
+    let max_page = (count as f64 / per_page as f64).ceil() as i64;
+    let next = if page >= max_page {
+        None
+    } else {
+        Some(page + 1)
+    };
     Ok(Custom(
         Status::Ok,
-        json!({ "count": count, "results": infra_errors }),
+        json!({ "count": count, "previous": previous, "next": next, "results": infra_errors }),
     ))
 }
 
