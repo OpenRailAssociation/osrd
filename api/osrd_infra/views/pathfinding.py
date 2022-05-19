@@ -161,10 +161,10 @@ def create_chart(path_steps, track_to_tree, field_name, direction_sensitive=Fals
                     offset += abs(max(track_range.begin, interval.begin) - min(track_range.end, interval.end))
                     add_chart_point(result, offset, interval.data, field_name)
             else:
-                for interval in reversed(sorted(tree.overlap(track_range.end, track_range.begin))):
+                for interval in reversed(sorted(tree.overlap(track_range.begin, track_range.end))):
                     value = -interval.data if direction_sensitive else interval.data
                     add_chart_point(result, offset, value, field_name)
-                    offset += abs(max(track_range.end, interval.begin) - min(track_range.begin, interval.end))
+                    offset += abs(max(track_range.begin, interval.begin) - min(track_range.end, interval.end))
                     add_chart_point(result, offset, value, field_name)
     return result
 

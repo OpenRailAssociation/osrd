@@ -42,8 +42,8 @@ public class RJSTrainPath {
     @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public static class RJSDirectionalTrackRange {
         public final RJSObjectRef<RJSTrackSection> track;
-        public final double begin;
-        public final double end;
+        private final double begin;
+        private final double end;
         public final EdgeDirection direction;
 
         /** RailJSON Directional Track Range constructor */
@@ -52,6 +52,24 @@ public class RJSTrainPath {
             this.begin = begin;
             this.end = end;
             this.direction = direction;
+        }
+
+        /** Return the begin offset of the track range
+         *  This function takes into account the direction so the value can be greater than getEnd()
+         */
+        public double getBegin() {
+            if (direction == EdgeDirection.START_TO_STOP)
+                return begin;
+            return end;
+        }
+
+        /** Return the end offset of the track range
+         *  This function takes into account the direction so the value can be smaller than getBegin()
+         */
+        public double getEnd() {
+            if (direction == EdgeDirection.START_TO_STOP)
+                return end;
+            return begin;
         }
     }
 }

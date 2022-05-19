@@ -44,8 +44,8 @@ public class PathfindingTest extends ApiTest {
             for (var track : route.trackSections) {
                 if (!track.trackSection.id.id.equals(waypoint.trackSection))
                     continue;
-                final var begin = Math.min(track.begin, track.end);
-                final var end = Math.max(track.begin, track.end);
+                final var begin = Math.min(track.getBegin(), track.getEnd());
+                final var end = Math.max(track.getBegin(), track.getEnd());
                 if (begin <= waypoint.offset && end >= waypoint.offset)
                     return;
             }
