@@ -48,7 +48,7 @@ public class PathfindingResult {
                 );
         var lastRoute = res.routePaths.get(res.routePaths.size() - 1);
         var lastRange = lastRoute.trackSections.get(lastRoute.trackSections.size() - 1);
-        res.addStep(new PathWaypointResult(lastRange.trackSection.id.id, lastRange.end));
+        res.addStep(new PathWaypointResult(lastRange.trackSection.id.id, lastRange.getEnd()));
         res.addGeometry(infra);
         res.warnings = warningRecorder.warnings;
         return res;
@@ -129,8 +129,8 @@ public class PathfindingResult {
 
                 if (previousTrack == null) {
                     previousTrack = trackSection;
-                    previousBegin = trackSection.begin;
-                    previousEnd = trackSection.end;
+                    previousBegin = trackSection.getBegin();
+                    previousEnd = trackSection.getEnd();
                     continue;
                 }
 
@@ -141,9 +141,9 @@ public class PathfindingResult {
                         sliceAndAdd(schList, track.getSch(), previousBegin, previousEnd, track.getLength());
                     }
                     previousTrack = trackSection;
-                    previousBegin = trackSection.begin;
+                    previousBegin = trackSection.getBegin();
                 }
-                previousEnd = trackSection.end;
+                previousEnd = trackSection.getEnd();
             }
         }
 

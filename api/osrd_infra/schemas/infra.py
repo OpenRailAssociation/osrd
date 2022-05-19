@@ -81,7 +81,7 @@ class DirectionalTrackRange(BaseModel):
 
     @root_validator
     def check_range(cls, v):
-        assert v.get("begin") < v.get("end"), "expected: begin < end"
+        assert v.get("begin") <= v.get("end"), "expected: begin <= end"
         return v
 
     def make(track, begin, end) -> "DirectionalTrackRange":
@@ -92,7 +92,21 @@ class DirectionalTrackRange(BaseModel):
             direction=Direction.START_TO_STOP if begin < end else Direction.STOP_TO_START,
         )
 
-    def length(self):
+    def get_begin(self) -> float:
+        """
+        This function return the begin offset of the track range taking into account the direction.
+        The returned value can be greatest than get_end().
+        """
+        return self.begin if self.direction == Direction.START_TO_STOP else self.end
+
+    def get_end(self) -> float:
+        """
+        This function return the end offset of the track range taking into account the direction.
+        The returned value can be smaller than get_begin().
+        """
+        return self.end if self.direction == Direction.START_TO_STOP else self.begin
+
+    def length(self) -> float:
         return abs(self.begin - self.end)
 
 

@@ -72,15 +72,27 @@ public abstract class PathfindingEndpoint implements Take {
     protected static class DirectionalTrackRangeResult {
         @Json(name = "track")
         public final RJSObjectRef<RJSTrackSection> trackSection;
-        public final double begin;
-        public final double end;
+        private final double begin;
+        private final double end;
         private final EdgeDirection direction;
 
         protected DirectionalTrackRangeResult(String trackSectionID, double begin, double end) {
             this.trackSection = new RJSObjectRef<>(trackSectionID, "TrackSection");
-            this.begin = begin;
-            this.end = end;
+            this.begin = Math.min(begin, end);
+            this.end = Math.max(begin, end);
             this.direction = begin < end ? EdgeDirection.START_TO_STOP : EdgeDirection.STOP_TO_START;
+        }
+
+        public double getBegin() {
+            if (this.direction == EdgeDirection.START_TO_STOP)
+                return this.begin;
+            return this.end;
+        }
+
+        public double getEnd() {
+            if (this.direction == EdgeDirection.START_TO_STOP)
+                return this.end;
+            return this.begin;
         }
     }
 }
