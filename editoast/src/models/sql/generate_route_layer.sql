@@ -16,15 +16,20 @@ sliced_tracks AS (
             ST_LineSubstring(
                 ST_GeomFromGeoJSON(tracks.data->'geo'),
                 GREATEST(
-                    paths.slice_begin / (tracks.data->'length')::float,
-                    0.
-                ),
-                GREATEST(
                     LEAST(
                         paths.slice_end / (tracks.data->'length')::float,
+                        paths.slice_begin / (tracks.data->'length')::float,
                         1.
                     ),
                     0.
+                ),
+                LEAST(
+                    GREATEST(
+                        paths.slice_begin / (tracks.data->'length')::float,
+                        paths.slice_end / (tracks.data->'length')::float,
+                        0.
+                    ),
+                    1.
                 )
             ),
             3857
@@ -33,15 +38,20 @@ sliced_tracks AS (
             ST_LineSubstring(
                 ST_GeomFromGeoJSON(tracks.data->'sch'),
                 GREATEST(
-                    paths.slice_begin / (tracks.data->'length')::float,
-                    0.
-                ),
-                GREATEST(
                     LEAST(
                         paths.slice_end / (tracks.data->'length')::float,
+                        paths.slice_begin / (tracks.data->'length')::float,
                         1.
                     ),
                     0.
+                ),
+                LEAST(
+                    GREATEST(
+                        paths.slice_begin / (tracks.data->'length')::float,
+                        paths.slice_end / (tracks.data->'length')::float,
+                        0.
+                    ),
+                    1.
                 )
             ),
             3857
