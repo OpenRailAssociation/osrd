@@ -43,6 +43,49 @@ pub fn generate_errors(
                 }
             }
         }
+
+        for (index, release_detector) in route.release_detectors.iter().enumerate() {
+            // Handle invalid ref for release detectors
+            let obj_id = &release_detector.obj_id;
+            let track_ref = match release_detector.obj_type {
+                ObjectType::Detector => infra_cache
+                    .detectors
+                    .get(obj_id)
+                    .map(|d| (d.track.clone(), d.position)),
+                ObjectType::BufferStop => infra_cache
+                    .buffer_stops
+                    .get(obj_id)
+                    .map(|bs| (bs.track.clone(), bs.position)),
+                _ => None,
+            };
+            let (track, position) = match track_ref {
+                None => {
+                    let error = InfraError::new_invalid_reference(
+                        format!("release_detector.{}", index),
+                        release_detector.clone(),
+                    );
+                    errors.push(to_value(error).unwrap());
+                    route_ids.push(route_id.clone());
+                    continue;
+                }
+                Some(e) => e,
+            };
+
+            // Handle release detectors outside from path
+            let track_range = route.path.iter().find(|track_range| {
+                track_range.track.obj_id == track
+                    && (track_range.begin..=track_range.end).contains(&position)
+            });
+            if track_range.is_none() {
+                let error = InfraError::new_object_out_of_path(
+                    format!("release_detector.{}", index),
+                    position,
+                    track,
+                );
+                errors.push(to_value(error).unwrap());
+                route_ids.push(route_id.clone());
+            }
+        }
     }
 
     let count = sql_query(include_str!("sql/routes_insert_errors.sql"))

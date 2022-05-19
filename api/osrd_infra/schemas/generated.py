@@ -28,6 +28,12 @@ class OutOfRange(InfraErrorTrait):
     expected_range: Tuple[float, float]
 
 
+class ObjectOutsideOfPath(InfraErrorTrait):
+    error_type: Literal["object_outside_of_path"] = Field(default="object_outside_of_path")
+    position: float
+    track: str
+
+
 # Warnings
 class EmptyObject(InfraWarningTrait):
     error_type: Literal["empty_object"] = Field(default="empty_object")
@@ -35,4 +41,4 @@ class EmptyObject(InfraWarningTrait):
 
 # Generic error
 class InfraError(BaseModel):
-    __root__: Union[InvalidReference, OutOfRange, EmptyObject] = Field(discriminator="error_type")
+    __root__: Union[InvalidReference, OutOfRange, ObjectOutsideOfPath, EmptyObject] = Field(discriminator="error_type")
