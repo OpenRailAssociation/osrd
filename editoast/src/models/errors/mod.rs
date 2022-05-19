@@ -38,6 +38,8 @@ enum InfraErrorType {
     },
     #[serde(rename = "empty_object")]
     EmptyObject,
+    #[serde(rename = "object_out_of_path")]
+    ObjectOutOfPath { position: f64, track: String },
 }
 
 impl InfraError {
@@ -65,6 +67,14 @@ impl InfraError {
             field,
             is_warning: true,
             sub_type: InfraErrorType::EmptyObject,
+        }
+    }
+
+    fn new_object_out_of_path(field: String, position: f64, track: String) -> Self {
+        Self {
+            field,
+            is_warning: false,
+            sub_type: InfraErrorType::ObjectOutOfPath { position, track },
         }
     }
 }
