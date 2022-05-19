@@ -56,7 +56,7 @@ impl From<ObjectRef> for DeleteOperation {
 mod test {
     use crate::models::infra::test::test_transaction;
     use crate::railjson::operation::create::test::{
-        create_buffer_stop, create_detector, create_link, create_route, create_signal,
+        create_buffer_stop, create_detector, create_link, create_op, create_route, create_signal,
         create_speed, create_switch, create_track,
     };
     use crate::railjson::operation::delete::DeleteOperation;
@@ -221,6 +221,26 @@ mod test {
             let res_del = sql_query(format!(
                 "SELECT COUNT (*) AS nb FROM osrd_infra_routemodel WHERE obj_id = '{}' AND infra_id = {}",
                 route.get_obj_id(),
+                infra.id
+            ))
+            .get_result::<Count>(conn).unwrap();
+
+            assert_eq!(res_del.nb, 0);
+        });
+    }
+
+    #[test]
+    fn delete_op() {
+        test_transaction(|conn, infra| {
+            let op = create_op(conn, infra.id, Default::default());
+
+            let op_deletion: DeleteOperation = op.get_ref().into();
+
+            assert!(op_deletion.apply(infra.id, conn).is_ok());
+
+            let res_del = sql_query(format!(
+                "SELECT COUNT (*) AS nb FROM osrd_infra_operationalpointmodel WHERE obj_id = '{}' AND infra_id = {}",
+                op.get_obj_id(),
                 infra.id
             ))
             .get_result::<Count>(conn).unwrap();

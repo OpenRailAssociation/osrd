@@ -7,6 +7,7 @@ use crate::models::DBConnection;
 use crate::models::DetectorLayer;
 use crate::models::Infra;
 use crate::models::InvalidationZone;
+use crate::models::OperationalPointLayer;
 use crate::models::RouteLayer;
 use crate::models::SignalLayer;
 use crate::models::SpeedSectionLayer;
@@ -42,6 +43,7 @@ pub fn refresh(
     DetectorLayer::refresh(conn, infra.id, chartos_config)?;
     BufferStopLayer::refresh(conn, infra.id, chartos_config)?;
     RouteLayer::refresh(conn, infra.id, chartos_config)?;
+    OperationalPointLayer::refresh(conn, infra.id, chartos_config)?;
 
     // Generate errors
     generate_errors(conn, infra.id, infra_cache, chartos_config)?;
@@ -68,6 +70,7 @@ pub fn update(
     DetectorLayer::update(conn, infra_id, operations, cache, zone, chartos_config)?;
     BufferStopLayer::update(conn, infra_id, operations, cache, zone, chartos_config)?;
     RouteLayer::update(conn, infra_id, operations, cache, zone, chartos_config)?;
+    OperationalPointLayer::update(conn, infra_id, operations, cache, zone, chartos_config)?;
 
     Ok(())
 }

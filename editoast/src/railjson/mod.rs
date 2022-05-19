@@ -31,6 +31,7 @@ pub enum ObjectType {
     SwitchType,
     BufferStop,
     Route,
+    OperationalPoint,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -60,6 +61,7 @@ impl ObjectType {
             ObjectType::SwitchType => todo!(),
             ObjectType::BufferStop => "osrd_infra_bufferstopmodel",
             ObjectType::Route => "osrd_infra_routemodel",
+            ObjectType::OperationalPoint => "osrd_infra_operationalpointmodel",
         }
     }
 }
@@ -204,6 +206,25 @@ pub struct BufferStop {
     #[derivative(Default(value = "0."))]
     pub position: f64,
     pub applicable_directions: ApplicableDirections,
+}
+
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[derivative(Default)]
+pub struct OperationalPoint {
+    #[derivative(Default(value = r#"generate_id("operational_point")"#))]
+    pub id: String,
+    pub parts: Vec<OperationalPointPart>,
+    pub ci: i64,
+    pub ch: String,
+    pub ch_short_label: Option<String>,
+    pub ch_long_label: Option<String>,
+    pub name: String,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct OperationalPointPart {
+    pub track: ObjectRef,
+    pub position: f64,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
