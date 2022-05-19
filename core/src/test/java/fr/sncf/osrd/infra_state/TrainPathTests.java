@@ -5,6 +5,7 @@ import static fr.sncf.osrd.infra.InfraHelpers.*;
 import static fr.sncf.osrd.infra.api.Direction.BACKWARD;
 import static fr.sncf.osrd.infra.api.Direction.FORWARD;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.infra.api.Direction;
@@ -13,6 +14,7 @@ import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
 import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
 import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
+import fr.sncf.osrd.infra_state.implementation.errors.InvalidPathError;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
 import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
@@ -173,5 +175,20 @@ public class TrainPathTests {
         assertEquals(0, envelopePath.getAverageGrade(20, 50));
         assertEquals(-10, envelopePath.getAverageGrade(50, 70));
         assertEquals(0, envelopePath.getAverageGrade(70, 80));
+    }
+
+    @Test
+    public void duplicateRouteTest() {
+        var rjsInfra = makeSingleTrackRJSInfra();
+        var infra = infraFromRJS(rjsInfra);
+        var track = infra.getTrackSection("track");
+        var route = getSignalingRoute(infra, "route_forward");
+        assertThrows(InvalidPathError.class,
+                () -> TrainPathBuilder.from(
+                        List.of(route, route),
+                        new TrackLocation(track, 0),
+                        new TrackLocation(track, 100)
+                )
+        );
     }
 }

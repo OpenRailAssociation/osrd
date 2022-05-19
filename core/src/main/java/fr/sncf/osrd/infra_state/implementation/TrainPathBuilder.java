@@ -1,6 +1,7 @@
 package fr.sncf.osrd.infra_state.implementation;
 
 import com.google.common.collect.ImmutableList;
+import fr.sncf.osrd.infra_state.implementation.errors.InvalidPathError;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.infra.api.reservation.DetectionSection;
 import fr.sncf.osrd.infra.api.reservation.DiDetector;
@@ -84,10 +85,18 @@ public class TrainPathBuilder {
         assert !path.trackRangePath().isEmpty() : "empty track range path";
         assert path.length() > 0 : "length must be strictly positive";
 
+        checkDetectorOverlap(path.detectors());
         validateDetectionSections(path);
+    }
 
-        // TODO checks that the track ranges are properly connected
-        // But this would require an actual infra, which technically isn't required otherwise
+    /** Checks that detectors don't overlap */
+    private static void checkDetectorOverlap(ImmutableList<TrainPath.LocatedElement<DiDetector>> detectors) {
+        for (int i = 1; i < detectors.size(); i++)
+            if (detectors.get(i - 1).pathOffset() >= detectors.get(i).pathOffset())
+                throw new InvalidPathError(String.format(
+                        "Detector offsets must be strictly increasing (prev = %s, next = %s)",
+                        detectors.get(i - 1), detectors.get(i)
+                ));
     }
 
     /** Checks that the detectors and detection section transitions are consistent */
