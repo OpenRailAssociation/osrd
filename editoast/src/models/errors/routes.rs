@@ -31,23 +31,16 @@ pub fn generate_errors(
 
             let track_cache = infra_cache.track_sections.get(track_id).unwrap();
             // Retrieve out of range
-            if !(0.0..=track_cache.length).contains(&path.begin) {
-                let infra_error = InfraError::new_out_of_range(
-                    format!("path.{}.begin", index),
-                    path.begin,
-                    [0.0, track_cache.length],
-                );
-                errors.push(to_value(infra_error).unwrap());
-                route_ids.push(route_id.clone());
-            }
-            if !(0.0..=track_cache.length).contains(&path.end) {
-                let infra_error = InfraError::new_out_of_range(
-                    format!("path.{}.end", index),
-                    path.begin,
-                    [0.0, track_cache.length],
-                );
-                errors.push(to_value(infra_error).unwrap());
-                route_ids.push(route_id.clone());
+            for (pos, field) in [(path.begin, "begin"), (path.end, "end")] {
+                if !(0.0..=track_cache.length).contains(&pos) {
+                    let infra_error = InfraError::new_out_of_range(
+                        format!("path.{}.{}", index, field),
+                        pos,
+                        [0.0, track_cache.length],
+                    );
+                    errors.push(to_value(infra_error).unwrap());
+                    route_ids.push(route_id.clone());
+                }
             }
         }
     }
