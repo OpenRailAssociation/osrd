@@ -42,7 +42,8 @@ export const initialState = {
   featureInfoClick: { displayPopup: false },
 };
 
-export default function reducer(state = initialState, action) {
+export default function reducer(inputState, action) {
+  const state = inputState || initialState;
   return produce(state, (draft) => {
     switch (action.type) {
       case UPDATE_NAME:

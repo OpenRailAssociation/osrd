@@ -23,7 +23,8 @@ export const initialState = {
   account: {},
 };
 
-export default function reducer(state = initialState, action) {
+export default function reducer(inputState, action) {
+  const state = inputState || initialState;
   return produce(state, (draft) => {
     switch (action.type) {
       case LOGIN_SUCCESS:

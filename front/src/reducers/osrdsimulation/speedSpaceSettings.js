@@ -10,7 +10,9 @@ export const initialState = {
   slopes: false,
 };
 
-export default function reducer(state = initialState, action) {
+export default function reducer(inputState, action) {
+  const state = inputState || initialState;
+
   return produce(state, (draft) => {
     // eslint-disable-next-line default-case
     switch (action.type) {
