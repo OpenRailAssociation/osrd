@@ -4,8 +4,6 @@ import produce from 'immer';
 
 export const UPDATE_POSITION_VALUES = 'osrdsimu/UPDATE_POSITION_VALUES';
 
-
-
 export const initialState = {
   headPosition: 0,
   tailPosition: 0,
@@ -14,26 +12,29 @@ export const initialState = {
   speed: 0,
 };
 
-export default function reducer(state = initialState, action, rootState) {
+export default function reducer(inputState, action, rootState) {
+  const state = inputState || initialState;
+
   return produce(state, (draft) => {
     // eslint-disable-next-line default-case
     switch (action.type) {
       case UPDATE_POSITION_VALUES:
       case UPDATE_TIME_POSITION_VALUES:
-        const currentTrainSimulation = rootState.consolidatedSimulation.find(consolidatedSimulation => consolidatedSimulation.trainNumber === rootState.selectedTrain)
+        const currentTrainSimulation = rootState.consolidatedSimulation.find(
+          (consolidatedSimulation) => consolidatedSimulation.trainNumber === rootState.selectedTrain
+        );
         const positionsValues = interpolateOnTime(
           currentTrainSimulation,
           ['time'],
           LIST_VALUES_NAME_SPACE_TIME,
-          action.timePosition,
+          action.timePosition
         );
         draft.headPosition = positionsValues.headPosition;
         draft.routeEndOccupancy = positionsValues.routeEndOccupancy;
         draft.routeBeginOccupancy = positionsValues.routeBeginOccupancy;
         draft.speed = positionsValues.speed;
-       break;
-      }
-
+        break;
+    }
   });
 }
 
