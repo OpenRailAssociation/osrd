@@ -318,8 +318,8 @@ export const SelectItems: Tool<SelectItemsState> = {
           >
             <EditorForm
               data={toolState.selection[0] as EditorEntity}
-              onSubmit={(data) => {
-                dispatch<any>(save({ update: [data] }));
+              onSubmit={async (data) => {
+                await dispatch<any>(save({ update: [data] }));
                 setState({ ...toolState, showModal: null });
               }}
             />

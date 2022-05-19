@@ -213,8 +213,8 @@ export const CreateLine: Tool<CreateLineState> = {
       >
         <EditorForm
           data={newLine}
-          onSubmit={(data) => {
-            dispatch<any>(save({ create: [data] }));
+          onSubmit={async (data) => {
+            await dispatch<any>(save({ create: [data] }));
             setState({ ...toolState, linePoints: [], showPropertiesModal: false });
           }}
         />
