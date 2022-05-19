@@ -35,23 +35,16 @@ pub fn generate_errors(
 
             let track_cache = infra_cache.track_sections.get(track_id).unwrap();
             // Retrieve out of range
-            if !(0.0..=track_cache.length).contains(&track_range.begin) {
-                let infra_error = InfraError::new_out_of_range(
-                    format!("track_ranges.{}.begin", index),
-                    track_range.begin,
-                    [0.0, track_cache.length],
-                );
-                errors.push(to_value(infra_error).unwrap());
-                speed_section_ids.push(speed_id.clone());
-            }
-            if !(0.0..=track_cache.length).contains(&track_range.end) {
-                let infra_error = InfraError::new_out_of_range(
-                    format!("track_ranges.{}.end", index),
-                    track_range.begin,
-                    [0.0, track_cache.length],
-                );
-                errors.push(to_value(infra_error).unwrap());
-                speed_section_ids.push(speed_id.clone());
+            for (pos, field) in [(track_range.begin, "begin"), (track_range.end, "end")] {
+                if !(0.0..=track_cache.length).contains(&pos) {
+                    let infra_error = InfraError::new_out_of_range(
+                        format!("track_ranges.{}.{}", index, field),
+                        pos,
+                        [0.0, track_cache.length],
+                    );
+                    errors.push(to_value(infra_error).unwrap());
+                    speed_section_ids.push(speed_id.clone());
+                }
             }
         }
     }
