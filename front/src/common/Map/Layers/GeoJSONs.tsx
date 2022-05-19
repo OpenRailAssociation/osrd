@@ -4,7 +4,7 @@ import { Layer, LayerProps, Source } from 'react-map-gl';
 import { keyBy } from 'lodash';
 import { FeatureCollection } from 'geojson';
 
-import { EditorEntity, Item, Theme } from '../../../types';
+import { Item, Theme } from '../../../types';
 import { clippedDataSelector, EditorState } from '../../../reducers/editor';
 import { geoMainLayer } from './geographiclayers';
 

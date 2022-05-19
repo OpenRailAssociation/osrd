@@ -10,7 +10,6 @@ import {
   MdSelectAll,
 } from 'react-icons/all';
 import { isEqual } from 'lodash';
-import { Feature } from 'geojson';
 import { Popup } from 'react-map-gl';
 
 import { CommonToolState, DEFAULT_COMMON_TOOL_STATE, Tool } from './common';

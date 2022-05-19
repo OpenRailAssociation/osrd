@@ -1,6 +1,6 @@
 import produce from 'immer';
 import { createSelector } from 'reselect';
-import { Feature, FeatureCollection } from 'geojson';
+import { Feature } from 'geojson';
 
 import { ThunkAction, Zone, EditorSchema, EditorEntity } from '../types';
 import { setLoading, setSuccess, setFailure } from './main';
@@ -180,7 +180,6 @@ export const clippedDataSelector = createSelector(dataSelector, zoneSelector, (d
   if (zone && data)
     result = data.map((f) => {
       const clippedFeature = clip(f, zone);
-      console.log(f, clippedFeature ? { ...f, geometry: clippedFeature.geometry } : f);
       return clippedFeature ? { ...f, geometry: clippedFeature.geometry } : f;
     });
   return result;
