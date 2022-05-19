@@ -74,7 +74,6 @@ export async function getEditorData(
       return result.features.map((f) => ({ ...f, id: f.properties.id, objType }));
     })
   );
-  console.log(responses);
   return responses.flat();
 }
 
