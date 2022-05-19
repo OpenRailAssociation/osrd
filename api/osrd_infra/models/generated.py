@@ -105,3 +105,14 @@ class RouteLayer(models.Model):
     class Meta:
         verbose_name_plural = "generated route layer"
         unique_together = (("infra", "obj_id"),)
+
+
+class OperationalPointLayer(models.Model):
+    infra = models.ForeignKey("Infra", on_delete=models.CASCADE)
+    obj_id = models.CharField(max_length=255)
+    geographic = models.MultiPointField(srid=settings.MAPBOX_SRID)
+    schematic = models.MultiPointField(srid=settings.MAPBOX_SRID)
+
+    class Meta:
+        verbose_name_plural = "generated operational point layer"
+        unique_together = (("infra", "obj_id"),)

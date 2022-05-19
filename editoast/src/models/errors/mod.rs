@@ -1,5 +1,6 @@
 mod buffer_stops;
 mod detectors;
+mod operational_points;
 mod routes;
 mod signals;
 mod speed_sections;
@@ -88,6 +89,7 @@ pub fn generate_errors(
     detectors::generate_errors(conn, infra, infra_cache)?;
     buffer_stops::generate_errors(conn, infra, infra_cache)?;
     routes::generate_errors(conn, infra, infra_cache)?;
+    operational_points::generate_errors(conn, infra, infra_cache)?;
 
     // Invalidate chartos cache
     invalidate_chartos_layer(infra, "errors", chartos_config);
