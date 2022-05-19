@@ -94,6 +94,9 @@ impl DataObject {
             ObjectType::Route => RailjsonObject::Route {
                 railjson: from_value(self.data.clone())?,
             },
+            ObjectType::OperationalPoint => RailjsonObject::OperationalPoint {
+                railjson: from_value(self.data.clone())?,
+            },
         };
 
         if obj_railjson.get_obj_id() != update.obj_id {

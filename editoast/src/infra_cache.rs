@@ -1,10 +1,6 @@
 use crate::models::BoundingBox;
 use crate::railjson::operation::{OperationResult, RailjsonObject};
-use crate::railjson::{
-    ApplicableDirectionsTrackRange, BufferStop, Detector, DirectionalTrackRange, LineString,
-    ObjectRef, ObjectType, Route, Signal, SpeedSection, Switch, TrackEndpoint, TrackSection,
-    TrackSectionLink,
-};
+use crate::railjson::*;
 use derivative::Derivative;
 use diesel::sql_types::{Double, Integer, Json, Text};
 use diesel::PgConnection;
@@ -42,6 +38,9 @@ pub struct InfraCache {
 
     /// List existing routes
     pub routes: HashMap<String, Route>,
+
+    /// List existing operational points
+    pub operational_points: HashMap<String, OperationalPointCache>,
 }
 
 #[derive(Debug, Clone, Derivative)]
@@ -240,6 +239,43 @@ impl From<&Switch> for SwitchCache {
     }
 }
 
+#[derive(Debug, Clone, Derivative)]
+#[derivative(Hash, PartialEq)]
+pub struct OperationalPointCache {
+    pub obj_id: String,
+    #[derivative(Hash = "ignore", PartialEq = "ignore")]
+    pub parts: Vec<OperationalPointPart>,
+}
+
+#[derive(QueryableByName, Debug, Clone)]
+pub struct OperationalPointQueryable {
+    #[sql_type = "Text"]
+    pub obj_id: String,
+    #[sql_type = "Json"]
+    pub parts: Value,
+}
+
+impl From<OperationalPointQueryable> for OperationalPointCache {
+    fn from(op: OperationalPointQueryable) -> Self {
+        Self {
+            obj_id: op.obj_id,
+            parts: serde_json::from_value(op.parts).unwrap(),
+        }
+    }
+}
+
+impl OperationalPointCache {
+    pub fn new(obj_id: String, parts: Vec<OperationalPointPart>) -> Self {
+        Self { obj_id, parts }
+    }
+}
+
+impl From<&OperationalPoint> for OperationalPointCache {
+    fn from(op: &OperationalPoint) -> Self {
+        Self::new(op.id.clone(), op.parts.clone())
+    }
+}
+
 #[derive(QueryableByName, Debug, Clone, Derivative)]
 #[derivative(Hash, PartialEq)]
 pub struct DetectorCache {
@@ -341,6 +377,19 @@ impl InfraCache {
         assert!(self.routes.insert(route.id.clone(), route).is_none());
     }
 
+    fn load_operational_point(&mut self, op: OperationalPointCache) {
+        for part in op.parts.iter() {
+            self.add_track_ref(
+                part.track.obj_id.clone(),
+                ObjectRef::new(ObjectType::OperationalPoint, op.obj_id.clone()),
+            );
+        }
+        assert!(self
+            .operational_points
+            .insert(op.obj_id.clone(), op)
+            .is_none());
+    }
+
     fn load_track_section_link(&mut self, link: TrackSectionLinkCache) {
         for endpoint in [&link.src, &link.dst] {
             self.add_track_ref(
@@ -423,6 +472,14 @@ impl InfraCache {
         .bind::<Integer, _>(infra_id)
         .load::<RouteQueryable>(conn).expect("Error loading route refs").into_iter().for_each(|route| 
             infra_cache.load_route(route.into())
+        );
+
+        // Load operational points tracks references
+        sql_query(
+            "SELECT obj_id, data->>'parts' AS parts FROM osrd_infra_operationalpointmodel WHERE infra_id = $1")
+        .bind::<Integer, _>(infra_id)
+        .load::<OperationalPointQueryable>(conn).expect("Error loading operational point refs").into_iter().for_each(|op| 
+            infra_cache.load_operational_point(op.into())
         );
 
         // Load track section links tracks references
@@ -509,6 +566,18 @@ impl InfraCache {
                 }
             }
             ObjectRef {
+                obj_type: ObjectType::OperationalPoint,
+                obj_id,
+            } => {
+                let op = self.operational_points.remove(obj_id).unwrap();
+                for part in op.parts {
+                    self.track_sections_refs
+                        .get_mut(&part.track.obj_id)
+                        .unwrap()
+                        .remove(object_ref);
+                }
+            }
+            ObjectRef {
                 obj_type: ObjectType::TrackSectionLink,
                 obj_id,
             } => {
@@ -583,6 +652,9 @@ impl InfraCache {
             RailjsonObject::Switch { railjson } => self.load_switch(railjson.into()),
             RailjsonObject::Detector { railjson } => self.load_detector(railjson.into()),
             RailjsonObject::BufferStop { railjson } => self.load_buffer_stop(railjson.into()),
+            RailjsonObject::OperationalPoint { railjson } => {
+                self.load_operational_point(railjson.into())
+            }
         }
     }
 

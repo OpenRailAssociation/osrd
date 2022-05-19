@@ -245,6 +245,37 @@
       joins:
         - "inner join osrd_infra_routemodel route on route.obj_id = layer.obj_id and route.infra_id = layer.infra_id"
 
+- name: operational_points
+  table_name: osrd_infra_operationalpointlayer
+  id_field: id
+  views:
+    - name: geo
+      on_field: geographic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "(operational_point.data->>'parts')::text as parts"
+        - "(operational_point.data->>'ci')::int as ci"
+        - "(operational_point.data->>'ch')::text as ch"
+        - "(operational_point.data->>'ch_short_label')::text as ch_short_label"
+        - "(operational_point.data->>'ch_long_label')::text as ch_long_label"
+        - "(operational_point.data->>'name')::text as name"
+      joins:
+        - "inner join osrd_infra_operationalpointmodel operational_point on operational_point.obj_id = layer.obj_id and operational_point.infra_id = layer.infra_id"
+    - name: sch
+      on_field: schematic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "(operational_point.data->>'parts')::text as parts"
+        - "(operational_point.data->>'ci')::int as ci"
+        - "(operational_point.data->>'ch')::text as ch"
+        - "(operational_point.data->>'ch_short_label')::text as ch_short_label"
+        - "(operational_point.data->>'ch_long_label')::text as ch_long_label"
+        - "(operational_point.data->>'name')::text as name"
+      joins:
+        - "inner join osrd_infra_operationalpointmodel operational_point on operational_point.obj_id = layer.obj_id and operational_point.infra_id = layer.infra_id"
+
 - name: errors
   table_name: osrd_infra_errorlayer
   id_field: id
