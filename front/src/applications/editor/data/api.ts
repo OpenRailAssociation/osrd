@@ -107,6 +107,10 @@ export async function editorSave(
     })),
   ];
 
-  const result = await post(`/infra/${infra}`, payload, {});
-  return result;
+  try {
+    const result = await post(`/infra/${infra}`, payload, {});
+    return result;
+  } catch (e) {
+    throw e;
+  }
 }

@@ -120,6 +120,7 @@ export function save(operations: {
       );
     } catch (e) {
       dispatch(setFailure(e as Error));
+      throw e;
     }
   };
 }
