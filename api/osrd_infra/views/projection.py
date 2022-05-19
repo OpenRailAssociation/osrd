@@ -36,8 +36,8 @@ class Projection:
         self.length = 0
         offset = 0
         for dir_track_range in dir_track_ranges:
-            begin = dir_track_range.begin
-            end = dir_track_range.end
+            begin = dir_track_range.get_begin()
+            end = dir_track_range.get_end()
             self.length += abs(end - begin)
             track_id = dir_track_range.track.id
             if track_id in self.tracks:
