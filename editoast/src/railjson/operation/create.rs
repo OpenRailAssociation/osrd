@@ -8,6 +8,8 @@ use diesel::{sql_query, PgConnection, RunQueryDsl};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+use super::OperationError;
+
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(tag = "obj_type", deny_unknown_fields)]
 pub enum RailjsonObject {
@@ -26,6 +28,10 @@ pub fn apply_create_operation(
     infra_id: i32,
     conn: &PgConnection,
 ) -> Result<(), Box<dyn ApiError>> {
+    let obj_id = railjson_object.get_obj_id();
+    if obj_id.is_empty() {
+        return Err(Box::new(OperationError::EmptyId));
+    }
     sql_query(format!(
         "INSERT INTO {} (infra_id, obj_id, data) VALUES ($1, $2, $3)",
         railjson_object.get_obj_type().get_table()

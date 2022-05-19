@@ -43,6 +43,8 @@ pub enum OperationError {
     // To modify
     #[error("Object '{0}', could not be found")]
     ObjectNotFound(String),
+    #[error("Empty string id is forbidden")]
+    EmptyId,
     #[error("Update operation try to modify object id, which is forbidden")]
     ModifyId,
     #[error("An internal diesel error occurred: '{}'", .0.to_string())]
@@ -57,7 +59,7 @@ impl ApiError for OperationError {
     fn get_status(&self) -> Status {
         match self {
             OperationError::ObjectNotFound(_) => Status::NotFound,
-            OperationError::ModifyId => Status::BadRequest,
+            OperationError::ModifyId | OperationError::EmptyId => Status::BadRequest,
             _ => Status::InternalServerError,
         }
     }
@@ -65,6 +67,7 @@ impl ApiError for OperationError {
     fn get_type(&self) -> &'static str {
         match self {
             OperationError::ObjectNotFound(_) => "editoast:operation:ObjectNotFound",
+            OperationError::EmptyId => "editoast:operation:EmptyId",
             OperationError::ModifyId => "editoast:operation:ModifyId",
             OperationError::DieselError(_) => "editoast:operation:DieselError",
             OperationError::JsonPatchError(_) => "editoast:operation:JsonPatchError",
