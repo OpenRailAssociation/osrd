@@ -15,9 +15,10 @@ use serde::{Deserialize, Serialize};
 use crate::client::ChartosConfig;
 use crate::{infra_cache::InfraCache, railjson::ObjectRef};
 
+use self::routes::PathEndpointField;
+
 use super::invalidate_chartos_layer;
 
-/// This
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct InfraError {
@@ -39,6 +40,12 @@ enum InfraErrorType {
     },
     #[serde(rename = "empty_path")]
     EmptyPath,
+    #[serde(rename = "path_does_not_match_endpoints")]
+    PathDoesNotMatchEndpoints {
+        expected_track: String,
+        expected_position: f64,
+        endpoint_field: PathEndpointField,
+    },
     #[serde(rename = "empty_object")]
     EmptyObject,
     #[serde(rename = "object_out_of_path")]
@@ -72,6 +79,23 @@ impl InfraError {
             field,
             is_warning: false,
             sub_type: InfraErrorType::EmptyPath,
+        }
+    }
+
+    fn new_path_does_not_match_endpoints(
+        field: String,
+        expected_track: String,
+        expected_position: f64,
+        endpoint_field: PathEndpointField,
+    ) -> Self {
+        Self {
+            field,
+            is_warning: false,
+            sub_type: InfraErrorType::PathDoesNotMatchEndpoints {
+                expected_track,
+                expected_position,
+                endpoint_field,
+            },
         }
     }
 
