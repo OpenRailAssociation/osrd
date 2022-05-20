@@ -34,6 +34,10 @@ class ObjectOutsideOfPath(InfraErrorTrait):
     track: str
 
 
+class EmptyPath(InfraErrorTrait):
+    error_type: Literal["empty_path"] = Field(default="empty_path")
+
+
 # Warnings
 class EmptyObject(InfraWarningTrait):
     error_type: Literal["empty_object"] = Field(default="empty_object")
@@ -41,4 +45,6 @@ class EmptyObject(InfraWarningTrait):
 
 # Generic error
 class InfraError(BaseModel):
-    __root__: Union[InvalidReference, OutOfRange, ObjectOutsideOfPath, EmptyObject] = Field(discriminator="error_type")
+    __root__: Union[InvalidReference, OutOfRange, EmptyPath, ObjectOutsideOfPath, EmptyObject] = Field(
+        discriminator="error_type"
+    )
