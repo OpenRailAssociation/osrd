@@ -38,13 +38,30 @@ class EmptyPath(InfraErrorTrait):
     error_type: Literal["empty_path"] = Field(default="empty_path")
 
 
+class PathDoesNotMatchEndpoints(InfraErrorTrait):
+    error_type: Literal["path_does_not_match_endpoints"] = Field(default="path_does_not_match_endpoints")
+    expected_track: str
+    expected_position: float
+    endpoint_field: Union[Literal["entry_point"], Literal["exit_point"]]
+
+
 # Warnings
 class EmptyObject(InfraWarningTrait):
     error_type: Literal["empty_object"] = Field(default="empty_object")
 
 
+class MissingRoute(InfraWarningTrait):
+    error_type: Literal["missing_route"] = Field(default="missing_route")
+
+
 # Generic error
 class InfraError(BaseModel):
-    __root__: Union[InvalidReference, OutOfRange, EmptyPath, ObjectOutsideOfPath, EmptyObject] = Field(
-        discriminator="error_type"
-    )
+    __root__: Union[
+        InvalidReference,
+        OutOfRange,
+        ObjectOutsideOfPath,
+        EmptyPath,
+        PathDoesNotMatchEndpoints,
+        EmptyObject,
+        MissingRoute,
+    ] = Field(discriminator="error_type")
