@@ -6,6 +6,7 @@ mod signals;
 mod speed_sections;
 mod switches;
 mod track_section_links;
+mod track_sections;
 
 use diesel::result::Error as DieselError;
 use diesel::{sql_query, sql_types::Integer, PgConnection, RunQueryDsl};
@@ -42,6 +43,8 @@ enum InfraErrorType {
     EmptyObject,
     #[serde(rename = "object_out_of_path")]
     ObjectOutOfPath { position: f64, track: String },
+    #[serde(rename = "missing_route")]
+    MissingRoute,
 }
 
 impl InfraError {
@@ -87,6 +90,14 @@ impl InfraError {
             sub_type: InfraErrorType::ObjectOutOfPath { position, track },
         }
     }
+
+    fn new_missing_route() -> Self {
+        Self {
+            field: Default::default(),
+            is_warning: true,
+            sub_type: InfraErrorType::MissingRoute,
+        }
+    }
 }
 
 /// This function regenerate the errors and warnings of the infra
@@ -102,6 +113,7 @@ pub fn generate_errors(
         .execute(conn)?;
 
     // Generate the errors
+    track_sections::generate_errors(conn, infra, infra_cache)?;
     signals::generate_errors(conn, infra, infra_cache)?;
     speed_sections::generate_errors(conn, infra, infra_cache)?;
     track_section_links::generate_errors(conn, infra, infra_cache)?;
