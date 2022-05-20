@@ -11,7 +11,7 @@ import { getObjectTypeForLayer } from './utils';
  * Call the API to get an infra
  */
 export async function getInfrastructure(id: number): Promise<ApiInfrastructure> {
-  const response = await get(`/infra/${id}/`);
+  const response = await get(`/editoast/infra/${id}/`);
   return response;
 }
 
@@ -19,7 +19,7 @@ export async function getInfrastructure(id: number): Promise<ApiInfrastructure> 
  * Call the API to get the list of infra
  */
 export async function getInfrastructures(): Promise<Array<ApiInfrastructure>> {
-  const response = await get(`/infra/`);
+  const response = await get(`/editoast/infra/`);
   return response;
 }
 
@@ -108,7 +108,7 @@ export async function editorSave(
   ];
 
   try {
-    const result = await post(`/infra/${infra}`, payload, {});
+    const result = await post(`/editoast/infra/${infra}`, payload, {});
     return result;
   } catch (e) {
     throw e;

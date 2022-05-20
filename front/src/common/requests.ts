@@ -6,8 +6,8 @@ import mainConfig from 'config/config';
  */
 function formatPath(path: string): string {
   let result = `${mainConfig.proxy}${path}`;
-  if (path.startsWith('/infra')) {
-    result = `${mainConfig.proxy_editoast}${path}`;
+  if (path.startsWith('/editoast')) {
+    result = `${mainConfig.proxy_editoast}${path.replace('/editoast/', '/')}`;
   }
   if (path.startsWith('/layer')) {
     result = `${mainConfig.proxy_chartis}${path}`;

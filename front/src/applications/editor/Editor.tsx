@@ -22,6 +22,7 @@ import NavButtons from './nav';
 
 const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   const dispatch = useDispatch();
+  const { infraID } = useSelector((state: { osrdconf: any }) => state.osrdconf);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
   const { fullscreen } = useSelector((state: { main: MainState }) => state.main);
   const [activeTool, activateTool] = useState<Tool<CommonToolState>>(Tools[0]);
@@ -69,19 +70,22 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
           dispatch(updateViewport(viewport, `/editor/infra`));
         });
     } else {
-      getInfrastructures()
-        .then((infras) => {
-          if (infras && infras.length > 0) {
-            const infrastructure = infras[0];
-            dispatch(updateInfraID(infrastructure.id));
-            dispatch(updateViewport(viewport, `/editor/${infrastructure.id}`));
-          } else {
-            dispatch(setFailure(new Error(t('Editor.errors.no-infra-available'))));
-          }
-        })
-        .catch((e) => {
-          dispatch(setFailure(new Error(t('Editor.errors.technical', { msg: e.message }))));
-        });
+      if (infraID) {
+        dispatch(updateViewport(viewport, `/editor/${infraID}`));
+      } else {
+        getInfrastructures()
+          .then((infras) => {
+            if (infras && infras.length > 0) {
+              const infrastructure = infras[0];
+              dispatch(updateInfraID(infrastructure.id));
+            } else {
+              dispatch(setFailure(new Error(t('Editor.errors.no-infra-available'))));
+            }
+          })
+          .catch((e) => {
+            dispatch(setFailure(new Error(t('Editor.errors.technical', { msg: e.message }))));
+          });
+      }
     }
   }, [infra]);
 
