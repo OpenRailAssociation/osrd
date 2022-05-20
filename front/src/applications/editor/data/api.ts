@@ -107,10 +107,6 @@ export async function editorSave(
     })),
   ];
 
-  try {
-    const result = await post(`/editoast/infra/${infra}`, payload, {});
-    return result;
-  } catch (e) {
-    throw e;
-  }
+  const result = await post(`/editoast/infra/${infra}`, payload, {});
+  return result;
 }
