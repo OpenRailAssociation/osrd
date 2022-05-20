@@ -15,7 +15,11 @@ pub fn generate_errors(
     let mut errors = vec![];
     let mut route_ids = vec![];
     for (route_id, route) in infra_cache.routes.iter() {
-        // TODO : empty path = error
+        if route.path.is_empty() {
+            let infra_error = InfraError::new_empty_path("path".into());
+            errors.push(to_value(infra_error).unwrap());
+            route_ids.push(route_id.clone());
+        }
 
         for (index, path) in route.path.iter().enumerate() {
             // Retrieve invalid refs
