@@ -1,6 +1,6 @@
 ---
 name: Task
-about: A new task that needs to be done
+about: A new generic task about the project
 title: ''
 labels: 'kind:task'
 assignees: ''
