@@ -773,40 +773,10 @@ components:
               time: { type: number, format: float }
               position: { type: number, format: float }
               duration: { type: number, format: float }
+        signal_aspects:
+          $ref: "#/components/schemas/SignalAspectsResult"
         route_aspects:
-          type: array
-          items:
-            type: object
-            properties:
-              signal_id:
-                type: string
-                description: id of the updated signal
-              route_id:
-                type: string
-                description: id of the affected route on the train path
-              time_start:
-                type: number
-                format: float
-                description: the aspect starts being displayed at this time
-              time_end:
-                type: number
-                format: float
-                description: the aspect stops being displayed at this time
-              position_start:
-                type: number
-                format: float
-                description: the route starts at this position on the train path
-              position_end:
-                type: number
-                format: float
-                description: the route ends at this position on the train path
-              color:
-                type: number
-                format: float
-                description: color of the aspect (Bits 24-31 are alpha, 16-23 are red, 8-15 are green, 0-7 are blue)
-              blinking:
-                type: boolean
-                description: true if the signal is blinking
+          $ref: "#/components/schemas/RouteAspectsResult"
         signals:
           type: array
           items:
@@ -827,6 +797,65 @@ components:
                 items: { type: number, format: float }
                 minItems: 2
                 maxItems: 2
+    SignalAspectsResult:
+      type: array
+      description: all signal aspect updates caused by this train
+      items:
+        type: object
+        properties:
+          signal_id:
+            type: string
+            description: id of the updated signal
+          time_start:
+            type: number
+            format: float
+            description: the aspect starts being displayed at this time
+          time_end:
+            type: number
+            format: float
+            description: the aspect stops being displayed at this time
+          color:
+            type: number
+            format: float
+            description: color of the aspect (Bits 24-31 are alpha, 16-23 are red, 8-15 are green, 0-7 are blue)
+          blinking:
+            type: boolean
+            description: true if the signal is blinking
+    RouteAspectsResult:
+      description: all route aspect updates on the projected path
+      type: array
+      items:
+        type: object
+        properties:
+          signal_id:
+            type: string
+            description: id of the updated signal
+          route_id:
+            type: string
+            description: id of the affected route on the train path
+          time_start:
+            type: number
+            format: float
+            description: the aspect starts being displayed at this time
+          time_end:
+            type: number
+            format: float
+            description: the aspect stops being displayed at this time
+          position_start:
+            type: number
+            format: float
+            description: the route starts at this position on the train path
+          position_end:
+            type: number
+            format: float
+            description: the route ends at this position on the train path
+          color:
+            type: number
+            format: float
+            description: color of the aspect (Bits 24-31 are alpha, 16-23 are red, 8-15 are green, 0-7 are blue)
+          blinking:
+            type: boolean
+            description: true if the signal is blinking
     TrainScheduleResult:
       properties:
         id:
