@@ -480,6 +480,30 @@ paths:
                     type: string
                   infra:
                     type: number
+  /timetable/{id}/conflicts/:
+    get:
+      tags:
+        - timetable
+      summary: Retrieve a list of conflicts for the given timetable, with projections on a given path
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Timetable ID
+          required: true
+        - in: query
+          name: path
+          schema:
+            type: integer
+          description: Path id used to project the train path
+      responses:
+        200:
+          description: The list of conflicts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictResponse"
   /train_schedule/standalone_simulation/:
     post:
       tags:
@@ -1064,6 +1088,33 @@ components:
             id:
               type: integer
         - $ref: "#/components/schemas/WritableTrainSchedule"
+    ConflictResponse:
+      type: array
+      items:
+        type: object
+        properties:
+          first_train:
+            type: number
+            description: ID of the train that arrives first in the conflicted area
+          second_train:
+            type: number
+            description: ID of the train that arrives last in the conflicted area
+          time_start:
+            type: number
+            format: float
+            description: Start time of the conflict
+          time_end:
+            type: number
+            format: float
+            description: End time of the conflict
+          position_start:
+            type: number
+            format: float
+            description: The conflict starts at this position. Unspecified if not on the path
+          position_end:
+            type: number
+            format: float
+            description: The conflict ends at this position. Unspecified if not on the path
     StandaloneSimulationParameters:
       properties:
         timetable:
