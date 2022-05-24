@@ -4,6 +4,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope_sim.EnvelopePath;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.allowances.Allowance;
+import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
@@ -11,10 +12,7 @@ import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.parser.exceptions.UnknownRollingStock;
-import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
-import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceRange;
-import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceValue;
-import fr.sncf.osrd.railjson.schema.schedule.RJSStandaloneTrainSchedule;
+import fr.sncf.osrd.railjson.schema.schedule.*;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import java.util.ArrayList;
@@ -48,8 +46,12 @@ public class RJSStandaloneTrainScheduleParser {
         // parse allowances
         var allowances = new ArrayList<Allowance>();
         if (rjsTrainSchedule.allowances != null)
-            for (int i = 0; i < rjsTrainSchedule.allowances.length; i++)
-                allowances.add(parseAllowance(timeStep, rollingStock, envelopePath, rjsTrainSchedule.allowances[i]));
+            for (int i = 0; i < rjsTrainSchedule.allowances.length; i++) {
+                var rjsAllowance = rjsTrainSchedule.allowances[i];
+                allowances.add(
+                        parseAllowance(timeStep, rollingStock, envelopePath, rjsAllowance)
+                );
+            }
 
         return new StandaloneTrainSchedule(rollingStock, initialSpeed, stops, allowances);
     }
@@ -68,49 +70,66 @@ public class RJSStandaloneTrainScheduleParser {
             RJSAllowance rjsAllowance
     ) throws InvalidSchedule {
 
-        if (rjsAllowance.getClass() == RJSAllowance.Construction.class) {
-            var rjsConstruction = (RJSAllowance.Construction) rjsAllowance;
-            if (Double.isNaN(rjsConstruction.beginPosition))
+        if (rjsAllowance.getClass() == RJSAllowance.EngineeringAllowance.class) {
+            var rjsEngineering = (RJSAllowance.EngineeringAllowance) rjsAllowance;
+            if (Double.isNaN(rjsEngineering.beginPosition))
                 throw new InvalidSchedule("missing construction allowance begin_position");
-            if (Double.isNaN(rjsConstruction.endPosition))
+            if (Double.isNaN(rjsEngineering.endPosition))
                 throw new InvalidSchedule("missing construction allowance end_position");
-            return new MarecoAllowance(
-                    new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
-                    rjsConstruction.beginPosition,
-                    Math.min(envelopePath.length, rjsConstruction.endPosition),
-                    getPositiveDoubleOrDefault(rjsConstruction.capacitySpeedLimit, 30 / 3.6),
-                    List.of(
-                            new AllowanceRange(
-                                    rjsConstruction.beginPosition,
-                                    rjsConstruction.endPosition,
-                                    parseAllowanceValue(rjsConstruction.value)
-                            )
-                    )
-            );
+            if (rjsEngineering.distribution == RJSAllowanceDistribution.MARECO) {
+                return new MarecoAllowance(
+                        new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
+                        rjsEngineering.beginPosition,
+                        Math.min(envelopePath.length, rjsEngineering.endPosition),
+                        getPositiveDoubleOrDefault(rjsEngineering.capacitySpeedLimit, 30 / 3.6),
+                        List.of(
+                                new AllowanceRange(
+                                        rjsEngineering.beginPosition,
+                                        rjsEngineering.endPosition,
+                                        parseAllowanceValue(rjsEngineering.value)
+                                )
+                        )
+                );
+            }
+            if (rjsEngineering.distribution == RJSAllowanceDistribution.LINEAR) {
+                return new LinearAllowance(
+                        new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
+                        rjsEngineering.beginPosition,
+                        Math.min(envelopePath.length, rjsEngineering.endPosition),
+                        getPositiveDoubleOrDefault(rjsEngineering.capacitySpeedLimit, 30 / 3.6),
+                        List.of(
+                                new AllowanceRange(
+                                        rjsEngineering.beginPosition,
+                                        rjsEngineering.endPosition,
+                                        parseAllowanceValue(rjsEngineering.value)
+                                )
+                        )
+                );
+            }
+            throw new RuntimeException("unknown allowance distribution");
         }
 
-        if (rjsAllowance.getClass() == RJSAllowance.Mareco.class) {
-            var rjsMareco = (RJSAllowance.Mareco) rjsAllowance;
-            if (rjsMareco.defaultValue == null)
-                throw new InvalidSchedule("missing mareco default_value");
-            return new MarecoAllowance(
-                    new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
-                    0, envelopePath.getLength(),
-                    getPositiveDoubleOrDefault(rjsMareco.capacitySpeedLimit, 30 / 3.6),
-                    parseAllowanceRanges(envelopePath, rjsMareco.defaultValue, rjsMareco.ranges)
-            );
-        }
-
-        if (rjsAllowance.getClass() == RJSAllowance.Linear.class) {
-            var rjsLinear = (RJSAllowance.Linear) rjsAllowance;
-            if (rjsLinear.defaultValue == null)
-                throw new InvalidSchedule("missing linear default_value");
-            return new MarecoAllowance(
-                    new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
-                    0, envelopePath.getLength(),
-                    getPositiveDoubleOrDefault(rjsLinear.capacitySpeedLimit, 30 / 3.6),
-                    parseAllowanceRanges(envelopePath, rjsLinear.defaultValue, rjsLinear.ranges)
-            );
+        if (rjsAllowance.getClass() == RJSAllowance.StandardAllowance.class) {
+            var rjsStandard = (RJSAllowance.StandardAllowance) rjsAllowance;
+            if (rjsStandard.defaultValue == null)
+                throw new InvalidSchedule("missing standard allowance default_value");
+            if (rjsStandard.distribution == RJSAllowanceDistribution.MARECO) {
+                return new MarecoAllowance(
+                        new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
+                        0, envelopePath.getLength(),
+                        getPositiveDoubleOrDefault(rjsStandard.capacitySpeedLimit, 30 / 3.6),
+                        parseAllowanceRanges(envelopePath, rjsStandard.defaultValue, rjsStandard.ranges)
+                );
+            }
+            if (rjsStandard.distribution == RJSAllowanceDistribution.LINEAR) {
+                return new LinearAllowance(
+                        new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
+                        0, envelopePath.getLength(),
+                        getPositiveDoubleOrDefault(rjsStandard.capacitySpeedLimit, 30 / 3.6),
+                        parseAllowanceRanges(envelopePath, rjsStandard.defaultValue, rjsStandard.ranges)
+                );
+            }
+            throw new RuntimeException("unknown allowance distribution");
         }
 
         throw new RuntimeException("unknown allowance type");

@@ -173,8 +173,9 @@ class StandaloneSimulationTest extends ApiTest {
 
         // build the simulation request
         var stops = new RJSTrainStop[] { RJSTrainStop.lastStop(0.1) };
-        var allowance = new RJSAllowance[] {
-                new RJSAllowance.Mareco(new RJSAllowanceValue.Percent(5)),
+        var allowance = new RJSAllowance[] { new RJSAllowance.StandardAllowance(
+                RJSAllowanceDistribution.MARECO, new RJSAllowanceValue.Percent(5)
+            )
         };
         var trains = new ArrayList<RJSStandaloneTrainSchedule>();
         trains.add(new RJSStandaloneTrainSchedule("no_allowance", "fast_rolling_stock",
@@ -212,7 +213,8 @@ class StandaloneSimulationTest extends ApiTest {
         var stops = new RJSTrainStop[] { RJSTrainStop.lastStop(0.1) };
         var rangeEndPos = 5000;
         var allowance = new RJSAllowance[] {
-                new RJSAllowance.Mareco(
+                new RJSAllowance.StandardAllowance(
+                        RJSAllowanceDistribution.MARECO,
                         new RJSAllowanceValue.TimePerDistance(4.5),
                         new RJSAllowanceRange[] {
                                 new RJSAllowanceRange(
@@ -259,8 +261,9 @@ class StandaloneSimulationTest extends ApiTest {
 
         // build the simulation request
         var stops = new RJSTrainStop[] { RJSTrainStop.lastStop(0.1) };
-        var allowance = new RJSAllowance[] {
-                new RJSAllowance.Linear(new RJSAllowanceValue.Percent(5)),
+        var allowance = new RJSAllowance[] { new RJSAllowance.StandardAllowance(
+                RJSAllowanceDistribution.LINEAR, new RJSAllowanceValue.Percent(5)
+        )
         };
         var trains = new ArrayList<RJSStandaloneTrainSchedule>();
         trains.add(new RJSStandaloneTrainSchedule("no_allowance", "fast_rolling_stock",
@@ -298,7 +301,8 @@ class StandaloneSimulationTest extends ApiTest {
         // TODO : build a method to get the path length in @{RJSTrainPath} and use it here and in the final asserts
         var rangeEndPos = 5000;
         var allowance = new RJSAllowance[] {
-                new RJSAllowance.Linear(
+                new RJSAllowance.StandardAllowance(
+                        RJSAllowanceDistribution.LINEAR,
                         new RJSAllowanceValue.TimePerDistance(4.5),
                         new RJSAllowanceRange[] {
                                 new RJSAllowanceRange(
