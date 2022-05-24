@@ -70,69 +70,42 @@ public class RJSStandaloneTrainScheduleParser {
             RJSAllowance rjsAllowance
     ) throws InvalidSchedule {
 
-        if (rjsAllowance.getClass() == RJSAllowance.EngineeringAllowance.class) {
-            var rjsEngineering = (RJSAllowance.EngineeringAllowance) rjsAllowance;
-            if (Double.isNaN(rjsEngineering.beginPosition))
-                throw new InvalidSchedule("missing construction allowance begin_position");
-            if (Double.isNaN(rjsEngineering.endPosition))
-                throw new InvalidSchedule("missing construction allowance end_position");
-            if (rjsEngineering.distribution == RJSAllowanceDistribution.MARECO) {
-                return new MarecoAllowance(
-                        new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
-                        rjsEngineering.beginPosition,
-                        Math.min(envelopePath.length, rjsEngineering.endPosition),
-                        getPositiveDoubleOrDefault(rjsEngineering.capacitySpeedLimit, 30 / 3.6),
-                        List.of(
-                                new AllowanceRange(
-                                        rjsEngineering.beginPosition,
-                                        rjsEngineering.endPosition,
-                                        parseAllowanceValue(rjsEngineering.value)
-                                )
-                        )
-                );
-            }
-            if (rjsEngineering.distribution == RJSAllowanceDistribution.LINEAR) {
-                return new LinearAllowance(
-                        new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
-                        rjsEngineering.beginPosition,
-                        Math.min(envelopePath.length, rjsEngineering.endPosition),
-                        getPositiveDoubleOrDefault(rjsEngineering.capacitySpeedLimit, 30 / 3.6),
-                        List.of(
-                                new AllowanceRange(
-                                        rjsEngineering.beginPosition,
-                                        rjsEngineering.endPosition,
-                                        parseAllowanceValue(rjsEngineering.value)
-                                )
-                        )
-                );
-            }
-            throw new RuntimeException("unknown allowance distribution");
+        var allowanceDistribution = rjsAllowance.distribution;
+        double beginPos;
+        double endPos;
+        List<AllowanceRange> ranges;
+        // parse allowance type
+        if (rjsAllowance instanceof RJSAllowance.EngineeringAllowance engineeringAllowance) {
+            beginPos = engineeringAllowance.beginPosition;
+            endPos = Math.min(envelopePath.length, engineeringAllowance.endPosition);
+            ranges = List.of(new AllowanceRange(beginPos, endPos, parseAllowanceValue(engineeringAllowance.value)));
+        } else if (rjsAllowance instanceof RJSAllowance.StandardAllowance standardAllowance) {
+            beginPos = 0;
+            endPos = envelopePath.getLength();
+            ranges = parseAllowanceRanges(envelopePath, standardAllowance.defaultValue, standardAllowance.ranges);
+        } else {
+            throw new RuntimeException("unknown allowance type");
         }
-
-        if (rjsAllowance.getClass() == RJSAllowance.StandardAllowance.class) {
-            var rjsStandard = (RJSAllowance.StandardAllowance) rjsAllowance;
-            if (rjsStandard.defaultValue == null)
-                throw new InvalidSchedule("missing standard allowance default_value");
-            if (rjsStandard.distribution == RJSAllowanceDistribution.MARECO) {
-                return new MarecoAllowance(
-                        new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
-                        0, envelopePath.getLength(),
-                        getPositiveDoubleOrDefault(rjsStandard.capacitySpeedLimit, 30 / 3.6),
-                        parseAllowanceRanges(envelopePath, rjsStandard.defaultValue, rjsStandard.ranges)
-                );
-            }
-            if (rjsStandard.distribution == RJSAllowanceDistribution.LINEAR) {
-                return new LinearAllowance(
-                        new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
-                        0, envelopePath.getLength(),
-                        getPositiveDoubleOrDefault(rjsStandard.capacitySpeedLimit, 30 / 3.6),
-                        parseAllowanceRanges(envelopePath, rjsStandard.defaultValue, rjsStandard.ranges)
-                );
-            }
-            throw new RuntimeException("unknown allowance distribution");
+        // parse allowance distribution
+        if (allowanceDistribution == RJSAllowanceDistribution.MARECO) {
+            return new MarecoAllowance(
+                    new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
+                    beginPos,
+                    endPos,
+                    getPositiveDoubleOrDefault(rjsAllowance.capacitySpeedLimit, 30 / 3.6),
+                    ranges
+            );
         }
-
-        throw new RuntimeException("unknown allowance type");
+        if (allowanceDistribution == RJSAllowanceDistribution.LINEAR) {
+            return new LinearAllowance(
+                    new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
+                    beginPos,
+                    endPos,
+                    getPositiveDoubleOrDefault(rjsAllowance.capacitySpeedLimit, 30 / 3.6),
+                    ranges
+            );
+        }
+        throw new RuntimeException("unknown allowance distribution");
     }
 
     private static List<AllowanceRange> parseAllowanceRanges(
@@ -149,7 +122,7 @@ public class RJSStandaloneTrainScheduleParser {
         // sort the range list by begin position
         var sortedRanges = Arrays.stream(ranges)
                 .sorted(Comparator.comparingDouble(range -> range.beginPos))
-                .collect(Collectors.toList());
+                .toList();
         var res = new ArrayList<AllowanceRange>();
         var lastEndPos = 0.0;
         for (var range : sortedRanges) {

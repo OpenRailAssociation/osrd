@@ -11,14 +11,15 @@ public class RJSAllowance {
     );
 
     public RJSAllowanceDistribution distribution;
+    @Json(name = "capacity_speed_limit")
+    public double capacitySpeedLimit = -1;
 
     public static final class EngineeringAllowance extends RJSAllowance {
         @Json(name = "begin_position")
         public double beginPosition = Double.NaN;
         @Json(name = "end_position")
         public double endPosition = Double.NaN;
-        @Json(name = "capacity_speed_limit")
-        public double capacitySpeedLimit = -1;
+
         public RJSAllowanceValue value;
     }
 
@@ -27,15 +28,14 @@ public class RJSAllowance {
         public RJSAllowanceValue defaultValue;
         public RJSAllowanceRange[] ranges;
 
-        @Json(name = "capacity_speed_limit")
-        public double capacitySpeedLimit = -1;
-
+        /** Constructor with default value only */
         public StandardAllowance(RJSAllowanceDistribution distribution, RJSAllowanceValue defaultValue) {
             this.distribution = distribution;
             this.defaultValue = defaultValue;
             this.ranges = null;
         }
 
+        /** Constructor with default value and ranges */
         public StandardAllowance(RJSAllowanceDistribution distribution,
                                  RJSAllowanceValue defaultValue, RJSAllowanceRange[] ranges) {
             this.distribution = distribution;
