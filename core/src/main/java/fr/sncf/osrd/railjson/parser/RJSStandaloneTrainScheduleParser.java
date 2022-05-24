@@ -4,7 +4,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope_sim.EnvelopePath;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.allowances.Allowance;
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceDistribution;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
@@ -160,19 +159,19 @@ public class RJSStandaloneTrainScheduleParser {
             var rjsTimePerDist = (RJSAllowanceValue.TimePerDistance) rjsValue;
             if (Double.isNaN(rjsTimePerDist.minutes))
                 throw new InvalidSchedule("missing minutes in time per distance allowance");
-            return new AllowanceValue.TimePerDistance(AllowanceDistribution.DISTANCE_RATIO, rjsTimePerDist.minutes);
+            return new AllowanceValue.TimePerDistance(rjsTimePerDist.minutes);
         }
         if (rjsValue.getClass() == RJSAllowanceValue.Time.class) {
             var rjsFixedTime = (RJSAllowanceValue.Time) rjsValue;
             if (Double.isNaN(rjsFixedTime.seconds))
                 throw new InvalidSchedule("missing seconds in time allowance");
-            return new AllowanceValue.FixedTime(AllowanceDistribution.TIME_RATIO, rjsFixedTime.seconds);
+            return new AllowanceValue.FixedTime(rjsFixedTime.seconds);
         }
         if (rjsValue.getClass() == RJSAllowanceValue.Percent.class) {
             var rjsPercentage = (RJSAllowanceValue.Percent) rjsValue;
             if (Double.isNaN(rjsPercentage.percentage))
                 throw new InvalidSchedule("missing percentage in percentage allowance");
-            return new AllowanceValue.Percentage(AllowanceDistribution.TIME_RATIO, rjsPercentage.percentage);
+            return new AllowanceValue.Percentage(rjsPercentage.percentage);
         }
 
         throw new RuntimeException("unknown allowance value type");
