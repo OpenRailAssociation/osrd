@@ -45,7 +45,12 @@ public abstract class AllowanceValue {
         }
 
         @Override
-        public double getSectionRatio(double sectionTime, double totalTime, double sectionDistance, double totalDistance) {
+        public double getSectionRatio(
+                double sectionTime,
+                double totalTime,
+                double sectionDistance,
+                double totalDistance
+        ) {
             return sectionTime / totalTime;
         }
     }
@@ -70,7 +75,12 @@ public abstract class AllowanceValue {
         }
 
         @Override
-        public double getSectionRatio(double sectionTime, double totalTime, double sectionDistance, double totalDistance) {
+        public double getSectionRatio(
+                double sectionTime,
+                double totalTime,
+                double sectionDistance,
+                double totalDistance
+        ) {
             return sectionTime / totalTime;
         }
     }
@@ -95,7 +105,12 @@ public abstract class AllowanceValue {
         }
 
         @Override
-        public double getSectionRatio(double sectionTime, double totalTime, double sectionDistance, double totalDistance) {
+        public double getSectionRatio(
+                double sectionTime,
+                double totalTime,
+                double sectionDistance,
+                double totalDistance
+        ) {
             return sectionDistance / totalDistance;
         }
     }
