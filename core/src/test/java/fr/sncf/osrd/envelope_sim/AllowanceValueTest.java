@@ -19,12 +19,6 @@ public class AllowanceValueTest {
     }
 
     @Test
-    public void testDistanceDistribution() {
-        var allowance = new AllowanceValue.FixedTime(8);
-        assertEquals(2, allowance.getSectionAllowanceTime(Double.NaN, Double.NaN, 1, 4));
-    }
-
-    @Test
     public void testPercentValue() {
         var allowance = new AllowanceValue.Percentage(42);
         assertEquals(42, allowance.getAllowanceTime(100, Double.NaN), 0.01);
