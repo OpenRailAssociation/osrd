@@ -81,6 +81,7 @@ def convert_simulation_results(
         "speeds": speeds,
         "stops": stops,
         "route_aspects": route_aspects,
+        "signal_aspects": build_signal_updates(simulation_result["signal_updates"], departure_time),
     }
 
 
@@ -153,6 +154,20 @@ def compute_tail_positions(head_positions, train_length: float):
             for point in curve:
                 current_curve.append({**point, "position": min(first_pos, point["position"] + train_length)})
         results.append(current_curve)
+    return results
+
+
+def build_signal_updates(signal_updates, departure_time):
+    results = []
+
+    for update in signal_updates:
+        results.append({
+            "signal_id": update["signal_id"],
+            "time_start": update["time_start"] + departure_time,
+            "time_end": update["time_end"] + departure_time,
+            "color": update["color"],
+            "blinking": update["blinking"]
+        })
     return results
 
 
