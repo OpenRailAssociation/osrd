@@ -1163,7 +1163,7 @@ components:
           properties:
             allowance_type:
               type: string
-              enum: ["standard"]
+              enum: ["engineering"]
             distribution:
               type: string
               enum: ["MARECO", "LINEAR"]
