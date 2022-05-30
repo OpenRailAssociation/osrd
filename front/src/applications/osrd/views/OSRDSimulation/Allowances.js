@@ -9,12 +9,12 @@ import DotsLoader from 'common/DotsLoader/DotsLoader';
 import { FaTrash } from 'react-icons/fa';
 import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import MarecoGlobal from 'applications/osrd/components/Simulation/Allowances/MarecoGlobal';
 import MarecoMultiRange from 'applications/osrd/components/Simulation/Allowances/MarecoMultiRange';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import OPModal from 'applications/osrd/components/Simulation/Allowances/OPModal';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
+import StandardAllowanceDefault from 'applications/osrd/components/Simulation/Allowances/StandardAllowanceDefault';
 import nextId from 'react-id-generator';
 import { useTranslation } from 'react-i18next';
 
@@ -44,13 +44,14 @@ const testextensions = [
 
 const EmptyLine = (props) => {
   const {
-    allowanceTypes, allowances, setAllowances, setUpdateAllowances, allowanceType = 'construction', marecoBeginPosition, marecoEndPosition,
+    allowanceTypes, distributionsTypes, allowances, setAllowances, setUpdateAllowances, allowanceType = 'construction', marecoBeginPosition, marecoEndPosition,
   } = props;
   const { selectedTrain } = useSelector((state) => state.osrdsimulation);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
-  const allowanceNewDatas = allowanceType === 'construction'
+  const allowanceNewDatas = allowanceType === 'engineering'
     ? {
-      allowance_type: 'construction',
+      allowance_type: 'engineering',
+      distribution: 'LINEAR',
       begin_position: 0,
       end_position: simulation.trains[selectedTrain].base.stops[
         simulation.trains[selectedTrain].base.stops.length - 1].position,
@@ -59,7 +60,8 @@ const EmptyLine = (props) => {
         seconds: 0,
       },
     } : {
-      allowance_type: 'mareco',
+      allowance_type: 'standard',
+      distribution: 'LINEAR',
       begin_position: marecoBeginPosition ?? 0,
       end_position: marecoEndPosition ?? simulation.trains[selectedTrain].base.stops[
         simulation.trains[selectedTrain].base.stops.length - 1].position,
@@ -71,6 +73,18 @@ const EmptyLine = (props) => {
   const [values, setValues] = useState(allowanceNewDatas);
   const [fromTo, setFromTo] = useState('from');
   const { t } = useTranslation(['allowances']);
+  const [distribution, setDistribution] = useState({
+    id: 'LINEAR',
+    label: t('distributions.linear'),
+
+  });
+
+  const handleDistribution = (value) => {
+    setValues({
+      ...values,
+      distribution: value.id,
+    });
+  };
 
   const handleType = (type) => {
     setValues({
@@ -98,14 +112,15 @@ const EmptyLine = (props) => {
       const newAllowances = (allowances !== null) ? Array.from(allowances) : [];
 
       console.log('NEW ALLOWANCES', newAllowances);
+      console.log('current', allowance);
       // If Mareco Amend the Mareco List, if not Mareco ist add one
-      if (allowance.allowance_type === 'mareco') {
-        newAllowances.find((d) => d.allowance_type === 'mareco')?.ranges.push(allowance);
+      if (allowance.allowance_type === 'standard') {
+        newAllowances.find((d) => d.ranges)?.ranges.push(allowance);
       } else {
         // If constuction just add
         newAllowances.push(allowance);
       }
-
+      console.log('NEW ALLOWANCES after', newAllowances);
       setAllowances(newAllowances); // This is to be resolved
       setUpdateAllowances(true);
     }
@@ -114,6 +129,7 @@ const EmptyLine = (props) => {
   return (
     <>
       <div className="row">
+
         <div className="col-md-3 d-flex align-items-center">
           <span className="mr-1">{t('from')}</span>
           <InputSNCF
@@ -162,24 +178,14 @@ const EmptyLine = (props) => {
         </div>
         <div className="col-md-2">
           <SelectSNCF
-            id="allowanceTypeSelector"
-            options={[
-              {
-                id: 'construction',
-                name: t('allowanceGlobalType.construction'),
-              },
-              {
-
-                id: 'mareco',
-                name: t('allowanceGlobalType.mareco'),
-              },
-            ]}
+            id="distributionTypeSelector"
+            options={distributionsTypes}
             selectedValue={{
-              id: values.allowance_type,
-              name: t(`allowanceGlobalType.${values.allowance_type}`),
+              id: distribution.id,
+              name: t(`distributions.${distribution}`),
             }}
-            labelKey="name"
-            onChange={handleAllowanceType}
+            labelKey="label"
+            onChange={handleDistribution}
             sm
           />
         </div>
@@ -300,6 +306,19 @@ export default function Allowances(props) {
     },
   ];
 
+  const distributionsTypes = [
+    {
+      id: 'LINEAR',
+      label: t('distributions.linear'),
+      unit: TYPEUNITS.time,
+    },
+    {
+      id: 'MARECO',
+      label: t('distributions.mareco'),
+      unit: TYPEUNITS.time,
+    },
+  ];
+
   const getAllowances = async () => {
     try {
       setIsUpdating(true);
@@ -391,11 +410,10 @@ export default function Allowances(props) {
       begin_position: d.currentSelection[0],
       end_position: d.currentSelection[1],
     }));
-    setRawExtensions(newMarecoProposal)
+    setRawExtensions(newMarecoProposal);
   };
 
   const ext = allowances.find((a) => a.allowance_type === 'mareco')?.ranges;
-
 
   return (
     <div className="osrd-simulation-container">
@@ -407,7 +425,8 @@ export default function Allowances(props) {
       {trainDetail && trainDetail.allowances && (
         <>
           <div className="h2 d-flex">
-            <MarecoGlobal
+            <StandardAllowanceDefault
+              distributionsTypes={distributionsTypes}
               allowanceTypes={allowanceTypes}
               getAllowances={getAllowances}
               setIsUpdating={setIsUpdating}
@@ -423,57 +442,82 @@ export default function Allowances(props) {
             </button>
           </div>
 
-          <div>
-            {t('allowanceByInterval')}
+          {trainDetail.allowances.find((a) => a.ranges)?.ranges?.map((allowance, idx) => (
+            <Allowance data={allowance} delAllowance={delAllowance} idx={idx} key={nextId()} />
+          ))}
+          {
+            trainDetail.allowances.find((a) => a.ranges) && (
+              <>
+              <div className="text-normal">
+            {t('specificValuesOnIntervals')}
+          </div>
+              <EmptyLine
+                setAllowances={setAllowances}
+                distributionsTypes={distributionsTypes}
+                setUpdateAllowances={setUpdateAllowances}
+                allowances={allowances}
+                distribution="mareco"
+                allowanceTypes={allowanceTypes}
+              />
+              </>
+            )
+          }
+
+          <br />
+          <div className="h2 text-normal">
+            {t('engineeringAllowances')}
           </div>
           <div className="row my-1 small">
-            <div className="col-md-1">
-              n°
-            </div>
+
             <div className="col-md-3 text-lowercase">
               {t('from')}
             </div>
             <div className="col-md-3">
               {t('to')}
             </div>
-            <div className="col-md-4">
+            <div className="col-md-2">
+              {t('to')}
+            </div>
+            <div className="col-md-3">
               {t('allowanceType')}
             </div>
+            <div className="col-md-1" />
           </div>
           {trainDetail.allowances.map((allowance, idx) => {
-            if (allowance.allowance_type !== 'mareco') {
+            if (allowance.allowance_type === 'engineering') {
               return (
                 <Allowance data={allowance} delAllowance={delAllowance} idx={idx} key={nextId()} />
               );
             }
             return null;
           })}
-          {trainDetail.allowances.find((a) => a.allowance_type === 'mareco')?.ranges?.map((allowance, idx) => (
-            <Allowance data={allowance} delAllowance={delAllowance} idx={idx} key={nextId()} />
-          ))}
-          <hr className="mt-0" />
-        </>
-      )}
-      <EmptyLine
-        setAllowances={setAllowances}
-        setUpdateAllowances={setUpdateAllowances}
-        allowances={allowances}
-        allowanceTypes={allowanceTypes}
-      />
-      {
+          <EmptyLine
+            setAllowances={setAllowances}
+            distributionsTypes={distributionsTypes}
+            setUpdateAllowances={setUpdateAllowances}
+            allowances={allowances}
+            allowanceType="engineering"
+            allowanceTypes={allowanceTypes}
+          />
+          {
         rawExtensions.map((rawExtension) => (
           <EmptyLine
             setAllowances={setAllowances}
+            distributionsTypes={distributionsTypes}
             setUpdateAllowances={setUpdateAllowances}
             allowances={allowances}
             allowanceTypes={allowanceTypes}
-            allowanceType="mareco"
+            allowanceType="engineering"
             marecoBeginPosition={rawExtension.begin_position}
             marecoEndPosition={rawExtension.end_position}
             key={nextId()}
           />
         ))
-      }
+}
+
+        </>
+      )}
+
     </div>
   );
 }
@@ -491,6 +535,7 @@ Allowance.propTypes = {
 EmptyLine.propTypes = {
   allowances: PropTypes.array,
   allowanceTypes: PropTypes.array.isRequired,
+  distributionsTypes: PropTypes.array.isRequired,
   setAllowances: PropTypes.func.isRequired,
   setUpdateAllowances: PropTypes.func.isRequired,
   allowanceType: PropTypes.string,

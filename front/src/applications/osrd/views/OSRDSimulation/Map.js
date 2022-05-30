@@ -17,10 +17,12 @@ import { useDispatch, useSelector } from 'react-redux';
 
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
+import BufferStops from 'common/Map/Layers/BufferStops';
 /* Settings & Buttons */
 import ButtonMapSearch from 'common/Map/ButtonMapSearch';
 import ButtonMapSettings from 'common/Map/ButtonMapSettings';
 import ButtonResetViewport from 'common/Map/ButtonResetViewport';
+import Detectors from 'common/Map/Layers/Detectors';
 import ElectrificationType from 'common/Map/Layers/ElectrificationType';
 import Hillshade from 'common/Map/Layers/Hillshade';
 import MapSearch from 'common/Map/Search/MapSearch';
@@ -35,13 +37,11 @@ import SearchMarker from 'common/Map/Layers/SearchMarker';
 import SignalingType from 'common/Map/Layers/SignalingType';
 import Signals from 'common/Map/Layers/Signals';
 import SpeedLimits from 'common/Map/Layers/SpeedLimits';
-import BufferStops from 'common/Map/Layers/BufferStops';
-import Detectors from 'common/Map/Layers/Detectors';
 import Switches from 'common/Map/Layers/Switches';
-import TracksOSM from 'common/Map/Layers/TracksOSM';
 /* Objects & various */
 import TVDs from 'common/Map/Layers/TVDs';
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
+import TracksOSM from 'common/Map/Layers/TracksOSM';
 import TracksSchematic from 'common/Map/Layers/TracksSchematic';
 /* Interactions */
 import TrainHoverPosition from 'applications/osrd/components/SimulationMap/TrainHoverPosition';
@@ -87,6 +87,7 @@ const Map = (props) => {
   const updateViewportChange = useCallback(
     (value) => dispatch(updateViewport(value, undefined)), [dispatch],
   );
+  const mapRef = React.useRef();
 
   const createOtherPoints = () => {
     const actualTime = datetime2sec(timePosition);
@@ -260,11 +261,17 @@ const Map = (props) => {
       dispatch(updateTimePositionValues(timePositionLocal));
     }
     if (e.features[0]) {
+
       setIdHover(e.features[0].properties.id);
     } else {
       setIdHover(undefined);
     }
   };
+
+  const onClick = (e) => {
+    console.log("Click on map");
+    console.log(mapRef.current.queryRenderedFeatures(e.point))
+  }
 
   const displayPath = () => {
     if (simulation.trains.length > 0) {
@@ -284,6 +291,10 @@ const Map = (props) => {
   };
 
   useEffect(() => {
+    mapRef.current.getMap().on('click', (e) => {
+      console.log("click on map")
+    })
+
     if (urlLat) {
       updateViewportChange({
         ...viewport,
@@ -318,6 +329,7 @@ const Map = (props) => {
       <ReactMapGL
         {...viewport}
         style={{ cursor: 'pointer' }}
+        ref={mapRef}
         width="100%"
         height="100%"
         mapStyle={osmBlankStyle}
@@ -325,6 +337,7 @@ const Map = (props) => {
         clickRadius={10}
         attributionControl={false} // Defined below
         onHover={onFeatureHover}
+        onClick={onClick}
         interactiveLayerIds={defineInteractiveLayers()}
         touchRotate
         asyncRender
