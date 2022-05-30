@@ -26,7 +26,6 @@ public class StandaloneSim {
      */
     public static StandaloneSimResult run(
             SignalingInfra infra,
-            RJSTrainPath rjsTrainsPath,
             TrainPath trainsPath,
             List<StandaloneTrainSchedule> schedules,
             double timeStep
