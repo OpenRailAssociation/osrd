@@ -94,7 +94,6 @@ export default function MapSettingsLayers() {
       <FormatSwitch
         name="operationalpoints"
         icon={<OPsSVG />}
-        disabled
       />
       <FormatSwitch
         name="switches"
