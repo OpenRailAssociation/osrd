@@ -84,7 +84,6 @@ public class StandaloneSimulationEndpoint implements Take {
             // Compute envelopes and extract metadata
             var result = StandaloneSim.run(
                     infra,
-                    request.trainsPath,
                     trainsPath,
                     trainSchedules,
                     request.timeStep
