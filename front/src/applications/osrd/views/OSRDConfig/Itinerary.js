@@ -122,7 +122,9 @@ const Itinerary = (props) => {
   const mapItinerary = (zoom = true) => {
     dispatch(updateItinerary(undefined));
 
-    if (osrdconf.origin !== undefined && osrdconf.destination !== undefined) {
+    if (osrdconf.origin !== undefined
+      && osrdconf.destination !== undefined
+      && osrdconf.rollingStockID !== undefined) {
       const params = {
         infra: osrdconf.infraID,
         steps: [],
@@ -183,26 +185,20 @@ const Itinerary = (props) => {
   };
 
   useEffect(() => {
-    console.log('OSRDCONF', osrdconf)
-
-      if (osrdconf.pathfindingID === undefined
-        || osrdconf.geojson[map.mapTrackSources] === undefined) {
-          console.log('map itinerary')
-        mapItinerary();
-      } else {
-        zoomToFeature(bbox(osrdconf.geojson[map.mapTrackSources]));
-      }
-      setLaunchPathfinding(true);
-
-
-
+    if (osrdconf.pathfindingID === undefined
+      || osrdconf.geojson[map.mapTrackSources] === undefined) {
+      mapItinerary();
+    } else {
+      zoomToFeature(bbox(osrdconf.geojson[map.mapTrackSources]));
+    }
+    setLaunchPathfinding(true);
   }, []);
 
   useEffect(() => {
     if (launchPathfinding) {
       mapItinerary();
     }
-  }, [osrdconf.origin, osrdconf.destination, map.mapTrackSources]);
+  }, [osrdconf.origin, osrdconf.destination, map.mapTrackSources, osrdconf.rollingStockID]);
 
   useEffect(() => {
     if (launchPathfinding) {
