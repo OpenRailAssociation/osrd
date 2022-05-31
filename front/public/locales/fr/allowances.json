@@ -32,7 +32,8 @@
     "linear": "Linéaire"
   },
   "perDefaultValue": "Valeur par défault",
-  "allowanceType": "Type de marge",
+  "allowanceType": "Distribution",
+  "units": "Unités",
   "allowanceTypes": {
     "time": "Temps",
     "percentage": "Pourcentage",

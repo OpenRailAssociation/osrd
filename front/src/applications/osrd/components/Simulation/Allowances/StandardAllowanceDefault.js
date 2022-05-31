@@ -61,6 +61,7 @@ export default function StandardAllowanceDefault(props) {
     console.log('update/create Mareco global');
     const marecoConf = {
       allowance_type: 'standard',
+      capacity_speed_limit: 0,
       distribution: distribution.id,
       default_value: {
         value_type: value.type,

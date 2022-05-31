@@ -51,6 +51,7 @@ const EmptyLine = (props) => {
   const allowanceNewDatas = allowanceType === 'engineering'
     ? {
       allowance_type: 'engineering',
+      capacity_speed_limit: 0,
       distribution: 'LINEAR',
       begin_position: 0,
       end_position: simulation.trains[selectedTrain].base.stops[
@@ -61,6 +62,7 @@ const EmptyLine = (props) => {
       },
     } : {
       allowance_type: 'standard',
+      capacity_speed_limit: 0,
       distribution: 'LINEAR',
       begin_position: marecoBeginPosition ?? 0,
       end_position: marecoEndPosition ?? simulation.trains[selectedTrain].base.stops[
@@ -470,16 +472,16 @@ export default function Allowances(props) {
           <div className="row my-1 small">
 
             <div className="col-md-3 text-lowercase">
-              {t('from')}
+
             </div>
             <div className="col-md-3">
-              {t('to')}
+
             </div>
             <div className="col-md-2">
-              {t('to')}
+              {t('allowanceType')}
             </div>
             <div className="col-md-3">
-              {t('allowanceType')}
+              {t('units')}
             </div>
             <div className="col-md-1" />
           </div>
