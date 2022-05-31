@@ -17,14 +17,15 @@
   "allowanceByInterval": "Marges par intervalles",
   "ecoAllowanceByInterval": "Marches Economiques par intervalles",
   "allowanceModified": {
-    "marecoAdd": "Marche économique ajoutée",
-    "marecoDel": "Marche économique supprimée",
-    "construction": "Marche de construction modifiée"
+    "marecoAdd": "Marge ajoutée",
+    "marecoDel": "Marge supprimée",
+    "construction": "Marge modifiée"
   },
   "specificValuesOnIntervals" : "Valeurs spécifiques sur intervales",
   "allowanceGlobalType": {
     "mareco": "Mareco",
     "construction": "Construction",
+    "engineering": "Construction",
     "linear": "Linéaire"
   },
   "distributions": {

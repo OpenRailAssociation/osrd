@@ -14,7 +14,7 @@ const trainscheduleURI = '/train_schedule/';
 
 export default function StandardAllowanceDefault(props) {
   const {
-    distributions, distributionsTypes, allowanceTypes, getAllowances, setIsUpdating,
+    distributionsTypes, allowanceTypes, getAllowances, setIsUpdating,
     trainDetail, TYPES_UNITS,
   } = props;
   const {
@@ -27,11 +27,7 @@ export default function StandardAllowanceDefault(props) {
     type: 'time',
     value: 0,
   });
-  const [distribution, setDistribution] = useState({
-    id: 'LINEAR',
-    label: t('distributions.linear'),
-
-  });
+  const [distribution, setDistribution] = useState({});
 
   const handleType = (type) => {
     setValue({
@@ -40,8 +36,8 @@ export default function StandardAllowanceDefault(props) {
     });
   };
 
-  const handleDistribution = (value) => {
-    setDistribution(value);
+  const handleDistribution = (e) => {
+    setDistribution(JSON.parse(e.target.value));
   };
 
   const updateTrain = async () => {
@@ -58,7 +54,6 @@ export default function StandardAllowanceDefault(props) {
 
   // In fact it is Create/Update
   const addStandard = async () => {
-    console.log('update/create Mareco global');
     const marecoConf = {
       allowance_type: 'standard',
       capacity_speed_limit: 0,
@@ -71,13 +66,15 @@ export default function StandardAllowanceDefault(props) {
     const newAllowances = [];
     let ranges = [];
     trainDetail.allowances.forEach((allowance) => {
-      if (allowance.distribution === 'standard') {
+      if (allowance.allowance_type === 'standard' && allowance.ranges) {
         ranges = allowance.ranges; // Preserve existing Ranges
       } else {
         newAllowances.push(allowance);
       }
     });
     newAllowances.push({ ...marecoConf, ranges });
+
+
     try {
       setIsUpdating(true);
       await patch(`${trainscheduleURI}${trainDetail.id}/`, {
@@ -102,7 +99,7 @@ export default function StandardAllowanceDefault(props) {
   const delStandard = async () => {
     const newAllowances = [];
     trainDetail.allowances.forEach((allowance) => {
-      if (allowance.distribution !== 'standard') {
+      if (allowance.allowance_type !== 'standard') {
         newAllowances.push(allowance);
       }
     });
@@ -134,13 +131,18 @@ export default function StandardAllowanceDefault(props) {
   useEffect(() => {
     let thereIsStandard = false;
     trainDetail.allowances.forEach((allowance) => {
-      if (allowance.allowance_type === 'standard') {
+      if (allowance.allowance_type === 'standard' && allowance.ranges) {
+        const currentDistribution = allowance.distribution;
         setValue({
           type: allowance.default_value.value_type,
           value: allowance.default_value[TYPES_UNITS[allowance.default_value.value_type]],
         });
-        setDistribution(allowance.distribution);
+        setDistribution((distribution) => ({
+          id: currentDistribution,
+          label: t(`distributions.${currentDistribution.toLowerCase()}`),
+        }));
         thereIsStandard = true;
+
       }
     });
     if (!thereIsStandard) {
@@ -164,10 +166,7 @@ export default function StandardAllowanceDefault(props) {
           <SelectSNCF
             id="distributionTypeSelector"
             options={distributionsTypes}
-            selectedValue={{
-              id: distribution.id,
-              name: t(`distributions.${distribution}`),
-            }}
+            selectedValue={distribution}
             labelKey="label"
             onChange={handleDistribution}
             sm
@@ -209,7 +208,7 @@ export default function StandardAllowanceDefault(props) {
 
 StandardAllowanceDefault.propTypes = {
   TYPES_UNITS: PropTypes.object.isRequired,
-  //distributions: PropTypes.array.isRequired,
+  // distributions: PropTypes.array.isRequired,
   distributionsTypes: PropTypes.array.isRequired,
   allowanceTypes: PropTypes.array.isRequired,
   getAllowances: PropTypes.func.isRequired,
