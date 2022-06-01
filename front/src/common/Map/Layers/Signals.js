@@ -6,16 +6,24 @@ import {
 } from 'common/Map/Consts/SignalsNames';
 import {
   Layer,
-  Source,
+  Source
 } from 'react-map-gl';
 import { MAP_URL, SIGNALS_PANELS } from 'common/Map/const';
+import React, { useEffect } from 'react';
 
 import PropTypes from 'prop-types';
-import React from 'react';
+import { useMap } from 'react-map-gl';
 import { useSelector } from 'react-redux';
 
 const Signals = (props) => {
   const { mapStyle, signalsSettings } = useSelector((state) => state.map);
+  const timePosition = useSelector((state) => state.osrdsimulation.timePosition);
+  const selectedTrain = useSelector((state) => state.osrdsimulation.selectedTrain);
+  const allowanceSettings = useSelector((state) => state.osrdsimulation.allowanceSettings);
+  const consolidatedSimulation = useSelector(
+    (state) => state.osrdsimulation.consolidatedSimulation
+  );
+  const {current: map} = useMap();
   const { infraID } = useSelector((state) => state.osrdconf);
   const {
     colors, sourceTable, sourceLayer, hovered,
@@ -27,6 +35,10 @@ const Signals = (props) => {
   } else {
     prefix = (sourceLayer === 'sch') ? 'SCH ' : '';
   }
+
+  useEffect(() => {
+    console.log("mpa ref", map)
+  }, [timePosition]);
 
   const getSignalsList = () => {
     let signalsList = [];

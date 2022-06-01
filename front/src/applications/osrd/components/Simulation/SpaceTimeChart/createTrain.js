@@ -1,5 +1,6 @@
 import {
   formatRouteAspects,
+  formatSignalAspects,
   formatStepsWithTime,
   formatStepsWithTimeMulti,
   makeStairCase,
@@ -33,6 +34,7 @@ export default function createTrain(dispatch, keyValues, simulationTrains, t) {
     );
 
     dataSimulationTrain.routeAspects = formatRouteAspects(train.base.route_aspects);
+    dataSimulationTrain.signalAspects = formatSignalAspects(train.base.signal_aspects);
 
     dataSimulationTrain.areaBlock = mergeDatasArea(
       dataSimulationTrain.routeEndOccupancy,
@@ -55,7 +57,8 @@ export default function createTrain(dispatch, keyValues, simulationTrains, t) {
       dataSimulationTrain.eco_routeBeginOccupancy = formatStepsWithTimeMulti(
         train.eco.route_begin_occupancy,
       );
-      dataSimulationTrain.eco_routeAspects = formatRouteAspects(train.eco.route_aspects?.filter(d => d.color == -65536));
+      dataSimulationTrain.eco_routeAspects = formatRouteAspects(train.eco.route_aspects);
+      dataSimulationTrain.eco_signalAspects = formatSignalAspects(train.eco.signal_aspects);
       dataSimulationTrain.eco_areaBlock = mergeDatasArea(
         dataSimulationTrain.eco_routeEndOccupancy,
         dataSimulationTrain.eco_routeBeginOccupancy,

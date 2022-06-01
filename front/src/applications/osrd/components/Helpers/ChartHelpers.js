@@ -50,6 +50,14 @@ export const formatRouteAspects = (data = []) => data
     color: colorModelToHex(step.color),
   }));
 
+export const formatSignalAspects = (data = []) => data
+  .map((step) => ({
+    ...step,
+    time_start: sec2d3datetime(step.time_start),
+    time_end: sec2d3datetime(step.time_end),
+    color: colorModelToHex(step.color),
+  }));
+
 export const makeStairCase = (data) => {
   const newData = [];
   const { length } = data;
