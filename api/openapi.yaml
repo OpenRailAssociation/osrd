@@ -250,7 +250,23 @@ paths:
     get:
       tags:
         - rolling_stock
-      summary: List all available rolling stock
+      summary: Paginated list of rolling stock
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - in: query
+          name: page_size
+          schema:
+            type: integer
+            maximum: 10000
+            minimum: 1
+            default: 100
+          description: Number of elements by page
       responses:
         200:
           description: The rolling stock list
@@ -290,7 +306,23 @@ paths:
     get:
       tags:
         - rolling_stock
-      summary: List all available rolling stock with a lighter response
+      summary: Paginated list of rolling stock with a lighter response
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - in: query
+          name: page_size
+          schema:
+            type: integer
+            maximum: 10000
+            minimum: 1
+            default: 100
+          description: Number of elements by page
       responses:
         200:
           description: The rolling stock list
@@ -330,13 +362,27 @@ paths:
     get:
       tags:
         - timetable
-      summary: List all timetable
+      summary: Paginated list of timetable
       parameters:
         - in: query
           name: infra
           schema:
             type: integer
           description: Filter timetable by infra
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+          description: Page number
+        - in: query
+          name: page_size
+          schema:
+            type: integer
+            maximum: 10000
+            minimum: 1
+            default: 100
+          description: Number of elements by page
       responses:
         200:
           description: The timetable list
