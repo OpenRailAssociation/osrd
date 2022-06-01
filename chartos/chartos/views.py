@@ -1,3 +1,4 @@
+import json
 from collections import defaultdict
 from dataclasses import asdict as dataclass_as_dict
 from typing import Dict, List, NewType, Tuple
@@ -9,7 +10,7 @@ from fastapi.responses import Response
 from pydantic import BaseModel
 from shapely.geometry import Polygon
 
-from .config import Config, get_config
+from .config import Config, Layer, View, get_config
 from .layer_cache import (
     AffectedTile,
     find_tiles,
@@ -107,7 +108,7 @@ async def mvt_view_tile(
     return ProtobufResponse(tile_data)
 
 
-async def mvt_query(psql, layer, infra, view, z, x, y) -> bytes:
+async def mvt_query(psql, layer, infra, view: View, z: int, x: int, y: int) -> bytes:
     query = (
         # prepare the bbox of the tile for use in the tile content subquery
         "WITH bbox AS (SELECT TileBBox($1, $2, $3, 3857) AS geom), "
@@ -119,7 +120,7 @@ async def mvt_query(psql, layer, infra, view, z, x, y) -> bytes:
         # come first for ST_AsMVT to index the tile on the correct geometry
         f"ST_AsMVTGeom({view.on_field}, bbox.geom, 4096, 64), "
         # select all the fields the user requested
-        f"{', '.join(view.fields)} "
+        f"{', '.join(view.get_fields(allow_json_type=False))} "
         # read from the table corresponding to the layer, as well as the bbox
         # the bbox table is built by the WITH clause of the top-level query
         f"FROM {layer.table_name} layer "
@@ -206,7 +207,7 @@ async def get_objects_in_bbox(
         # Add geometry of the object
         f"SELECT ST_Transform(layer.{view.on_field}, 4326) as geom, "
         # Add properties of the object
-        f"{', '.join(view.fields)} "
+        f"{', '.join(view.get_fields())} "
         f"FROM {layer.table_name} AS layer "
         # Add joins
         f"{' '.join(view.joins)} "
@@ -222,4 +223,4 @@ async def get_objects_in_bbox(
     async with psql.transaction(isolation="repeatable_read", readonly=True):
         (record,) = await psql.fetch(query, infra, min_x, min_y, max_x, max_y)
 
-    return record.get("geojson")
+    return json.loads(record.get("geojson"))
