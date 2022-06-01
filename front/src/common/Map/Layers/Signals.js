@@ -1,32 +1,33 @@
 import {
   ALL_SIGNAL_LAYERS,
   LIGHT_SIGNALS,
+  PANELS_DYNAMIC_STOPS,
   PANELS_STOPS,
   PANELS_TIVS,
 } from 'common/Map/Consts/SignalsNames';
 import {
   Layer,
-  Source
+  Source,
 } from 'react-map-gl';
 import { MAP_URL, SIGNALS_PANELS } from 'common/Map/const';
 import React, { useEffect } from 'react';
 
 import PropTypes from 'prop-types';
-import { useMap } from 'react-map-gl';
+import { feature } from '@turf/helpers';
 import { useSelector } from 'react-redux';
 
 const Signals = (props) => {
-  const { mapStyle, signalsSettings } = useSelector((state) => state.map);
+  const { mapStyle, signalsSettings, viewPort } = useSelector((state) => state.map);
   const timePosition = useSelector((state) => state.osrdsimulation.timePosition);
   const selectedTrain = useSelector((state) => state.osrdsimulation.selectedTrain);
   const allowanceSettings = useSelector((state) => state.osrdsimulation.allowanceSettings);
   const consolidatedSimulation = useSelector(
-    (state) => state.osrdsimulation.consolidatedSimulation
+    (state) => state.osrdsimulation.consolidatedSimulation,
   );
-  const {current: map} = useMap();
+
   const { infraID } = useSelector((state) => state.osrdconf);
   const {
-    colors, sourceTable, sourceLayer, hovered,
+    colors, sourceTable, sourceLayer, hovered, mapRef,
   } = props;
 
   let prefix;
@@ -37,8 +38,69 @@ const Signals = (props) => {
   }
 
   useEffect(() => {
-    console.log("mpa ref", map)
-  }, [timePosition]);
+    const map = mapRef?.current?.getMap();
+    if (map) {
+      //console.log('consolidatedSimulation', consolidatedSimulation[selectedTrain]);
+      const selectedTrainConsolidatedSimulation = consolidatedSimulation[selectedTrain];
+      // console.log(map.getStyle().layers)
+      //console.log(LIGHT_SIGNALS.map((panel) => `chartis/signal/${sourceLayer}/${panel}`));
+
+
+      const dynamicLayersIds = PANELS_DYNAMIC_STOPS.map((panel) => `chartis/signal/${sourceLayer}/${panel}`).filter((dynamicLayerId) => map.getLayer(dynamicLayerId));
+
+
+
+      const renderedDynamicStopsFeatures = map?.queryRenderedFeatures({ layers: dynamicLayersIds });
+
+      //console.log('All signal Aspects', selectedTrainConsolidatedSimulation.signalAspects)
+
+      renderedDynamicStopsFeatures.forEach((renderedDynamicStopsFeature) => {
+        // find the info in simulation aspects
+        const matchingSignalAspect = selectedTrainConsolidatedSimulation.signalAspects.find(
+          (signalAspect) => signalAspect.signal_id === renderedDynamicStopsFeature.id && signalAspect.time_start <= timePosition && signalAspect.time_end >= timePosition
+        );
+
+
+        //  && signalAspect.time_start < timePosition && signalAspect.time_end > timePosition,
+
+        let passingState = '';
+        if (matchingSignalAspect) {
+          switch (matchingSignalAspect.color) {
+            case 'rgba(255, 255, 0, 255)':
+              passingState = 'A';
+              break;
+            case 'rgba(0, 255, 0, 255)':
+              passingState = 'VL';
+              break;
+            default:
+              passingState = '';
+              break;
+          }
+          map.setFeatureState({
+            id: renderedDynamicStopsFeature.id,
+            source: renderedDynamicStopsFeature.source,
+            sourceLayer: renderedDynamicStopsFeature.sourceLayer,
+          }, {
+            passingState,
+          });
+        }
+
+        //console.log('renderedFeature', renderedDynamicStopsFeature);
+        //console.log(timePosition)
+
+        //console.log('matchingSignalAspect', matchingSignalAspect);
+
+
+
+
+      });
+
+      console.log(map?.queryRenderedFeatures({ layers: dynamicLayersIds }));
+    }
+
+    /*
+    console.log(map?.queryRenderedFeatures({layers: PANELS_DYNAMIC_STOPS.map(panel => `chartis/signal/${sourceLayer}/${panel}`)})) */
+  }, [timePosition, consolidatedSimulation, viewPort]);
 
   const getSignalsList = () => {
     let signalsList = [];
@@ -103,6 +165,9 @@ const Signals = (props) => {
           ['==', ['get', 'side'], 'LEFT'], 'G',
           '',
         ]];
+      case 'CARRE':
+      case 'S':
+        return ['concat', prefix, type, ' VL'];
       default:
         return `${prefix}${type}`;
     }
@@ -314,7 +379,7 @@ const Signals = (props) => {
   };
 
   return (
-    <Source type="vector" url={`${MAP_URL}/layer/${sourceTable}/mvt/${sourceLayer}/?infra=${infraID}`}>
+    <Source promoteId="id" type="vector" url={`${MAP_URL}/layer/${sourceTable}/mvt/${sourceLayer}/?infra=${infraID}`}>
       <Layer {...signalMat()} id="chartis/signal/mat" />
       <Layer {...point()} id="chartis/signal/point" />
       {signalList.map((sig) => {
@@ -346,6 +411,7 @@ Signals.propTypes = {
   colors: PropTypes.object.isRequired,
   sourceTable: PropTypes.string.isRequired,
   sourceLayer: PropTypes.string.isRequired,
+  mapRef: PropTypes.object,
 };
 
 Signals.defaultProps = {
