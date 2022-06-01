@@ -1,6 +1,10 @@
 import 'common/Map/Map.scss';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useState,
+} from 'react';
 import ReactMapGL, {
   AttributionControl,
   FlyToInterpolator,
@@ -17,10 +21,12 @@ import { useDispatch, useSelector } from 'react-redux';
 
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
+import BufferStops from 'common/Map/Layers/BufferStops';
 /* Settings & Buttons */
 import ButtonMapSearch from 'common/Map/ButtonMapSearch';
 import ButtonMapSettings from 'common/Map/ButtonMapSettings';
 import ButtonResetViewport from 'common/Map/ButtonResetViewport';
+import Detectors from 'common/Map/Layers/Detectors';
 import ElectrificationType from 'common/Map/Layers/ElectrificationType';
 import Hillshade from 'common/Map/Layers/Hillshade';
 import MapSearch from 'common/Map/Search/MapSearch';
@@ -34,13 +40,11 @@ import SearchMarker from 'common/Map/Layers/SearchMarker';
 import SignalingType from 'common/Map/Layers/SignalingType';
 import Signals from 'common/Map/Layers/Signals';
 import SpeedLimits from 'common/Map/Layers/SpeedLimits';
-import BufferStops from 'common/Map/Layers/BufferStops';
-import Detectors from 'common/Map/Layers/Detectors';
 import Switches from 'common/Map/Layers/Switches';
-import TracksOSM from 'common/Map/Layers/TracksOSM';
 /* Objects & various */
 import TVDs from 'common/Map/Layers/TVDs';
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
+import TracksOSM from 'common/Map/Layers/TracksOSM';
 import TracksSchematic from 'common/Map/Layers/TracksSchematic';
 /* Interactions */
 import TrainHoverPosition from 'applications/osrd/components/SimulationMap/TrainHoverPosition';
@@ -62,6 +66,7 @@ import { useTranslation } from 'react-i18next';
 
 const PATHFINDING_URI = '/pathfinding/';
 const INTERMEDIATE_MARKERS_QTY = 8;
+
 
 const Map = (props) => {
   const { setExtViewport } = props;
@@ -86,6 +91,7 @@ const Map = (props) => {
   const updateViewportChange = useCallback(
     (value) => dispatch(updateViewport(value, undefined)), [dispatch],
   );
+  const mapRef = React.useRef();
 
   const createOtherPoints = () => {
     const actualTime = datetime2sec(timePosition);
@@ -128,7 +134,7 @@ const Map = (props) => {
       const intermediaterMarkersPoints = [];
 
       // Representing the wagons is useless at outer zooms
-      if(viewport?.zoom > 13) {
+      if (viewport?.zoom > 13) {
         // To do: get this data from rollingstock, stored
         const trainLength = positionValues.headPosition.position
         - positionValues.tailPosition.position;
@@ -143,7 +149,6 @@ const Map = (props) => {
         }
         intermediaterMarkersPoints.push(tailPosition);
       }
-
 
       setTrainHoverPosition({
         ...position,
@@ -169,8 +174,6 @@ const Map = (props) => {
         name: train.name,
       },
     })));
-
-
   };
 
   const zoomToFeature = (boundingBox) => {
@@ -327,6 +330,7 @@ const Map = (props) => {
         interactiveLayerIds={defineInteractiveLayers()}
         touchRotate
         asyncRender
+        ref={mapRef}
       >
         <AttributionControl
           className="attribution-control"
@@ -358,7 +362,7 @@ const Map = (props) => {
             <OperationalPoints geomType="geo" colors={colors[mapStyle]} />
             <SignalingType geomType="geo" />
             <SpeedLimits geomType="geo" colors={colors[mapStyle]} />
-            <Signals sourceTable="signals" colors={colors[mapStyle]} sourceLayer="geo" />
+            <Signals mapRef={mapRef} sourceTable="signals" colors={colors[mapStyle]} sourceLayer="geo" />
             <BufferStops geomType="geo" colors={colors[mapStyle]} />
             <Detectors geomType="geo" colors={colors[mapStyle]} />
             <Switches geomType="geo" colors={colors[mapStyle]} />
@@ -366,7 +370,7 @@ const Map = (props) => {
         ) : (
           <>
             <TracksSchematic colors={colors[mapStyle]} idHover={idHover} />
-            <Signals sourceTable="signals" colors={colors[mapStyle]} sourceLayer="sch" />
+            <Signals mapRef={mapRef} sourceTable="signals" colors={colors[mapStyle]} sourceLayer="sch" />
             <SpeedLimits geomType="sch" colors={colors[mapStyle]} />
             <BufferStops geomType="sch" colors={colors[mapStyle]} />
             <Detectors geomType="sch" colors={colors[mapStyle]} />

@@ -171,6 +171,11 @@ export const PANELS_STOPS = [
   'STOP',
 ];
 
+export const PANELS_DYNAMIC_STOPS = [
+  'CARRE',
+  'S'
+];
+
 export const PANELS_TIVS = [
   'TIV A TRAM',
   'TIV D FIXE',
