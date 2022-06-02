@@ -98,19 +98,16 @@ const OSRDSimulation = () => {
         setIsEmpty(false);
       }
       const trainSchedulesIDs = timetable.train_schedules.map((train) => train.id);
+      const tempSelectedProjection = await get(`${trainscheduleURI}${trainSchedulesIDs[0]}/`);
       if (!selectedProjection) {
-        const firstTrain = await get(`${trainscheduleURI}${trainSchedulesIDs[0]}/`);
         dispatch(
-          updateSelectedProjection({
-            id: trainSchedulesIDs[0],
-            path: firstTrain.path,
-          })
+          updateSelectedProjection(tempSelectedProjection)
         );
       }
       try {
         const simulationLocal = await get(`${trainscheduleURI}results/`, {
           train_ids: trainSchedulesIDs.join(','),
-          path: selectedProjection.path,
+          path: tempSelectedProjection.path,
         });
         simulationLocal.sort((a, b) => a.base.stops[0].time > b.base.stops[0].time);
         dispatch(updateSimulation({ trains: simulationLocal }));
@@ -129,10 +126,10 @@ const OSRDSimulation = () => {
         });
         dispatch(updateAllowancesSettings(newAllowancesSettings));
       } catch (e) {
-        dispatch(
+         dispatch(
           setFailure({
             name: t('simulation:errorMessages.unableToRetrieveTrainSchedule'),
-            message: `${e.message} : ${e.response.data.detail}`,
+            message: `${e.message} `,
           })
         );
         console.log('ERROR', e);
