@@ -39,13 +39,7 @@ class TrainSchedule:
             "departure_time": self.departure_time,
             "initial_head_location": self.initial_location.format(),
             "initial_speed": self.initial_speed,
-            "phases": [
-                {
-                    "driver_sight_distance": 400,
-                    "end_location": self.end_location.format(),
-                    "type": "navigate",
-                }
-            ],
+            "final_head_location": self.end_location.format(),
             "stops": [stop.format() for stop in stops],
             "routes": [route.label for route in self.routes],
         }

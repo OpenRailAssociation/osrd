@@ -21,8 +21,13 @@ public class RJSTrainSchedule implements Identified {
     /** The initial state of the train */
     @Json(name = "initial_head_location")
     public RJSTrackLocation initialHeadLocation;
+
+    /** The final state of the train */
+    @Json(name = "final_head_location")
+    public RJSTrackLocation finalHeadLocation;
+
     @Json(name = "initial_speed")
-    public double initialSpeed = Double.NaN;
+    public double initialSpeed;
 
     public ID<RJSRoute>[] routes;
 
@@ -41,6 +46,7 @@ public class RJSTrainSchedule implements Identified {
             double departureTime,
             RJSTrackLocation initialHeadLocation,
             double initialSpeed,
+            RJSTrackLocation finalHeadLocation,
             RJSTrainStop[] stops,
             ID<RJSRoute>[] routes,
             double trainTransitionDelay
@@ -50,6 +56,7 @@ public class RJSTrainSchedule implements Identified {
         this.departureTime = departureTime;
         this.initialHeadLocation = initialHeadLocation;
         this.initialSpeed = initialSpeed;
+        this.finalHeadLocation = finalHeadLocation;
         this.stops = stops;
         this.routes = routes;
         this.trainTransitionDelay = trainTransitionDelay;
@@ -58,7 +65,7 @@ public class RJSTrainSchedule implements Identified {
     /** Copy constructor */
     public RJSTrainSchedule(RJSTrainSchedule other) {
         this(other.id, other.rollingStock, other.departureTime, other.initialHeadLocation, other.initialSpeed,
-                other.stops, other.routes, other.trainTransitionDelay);
+                other.finalHeadLocation, other.stops, other.routes, other.trainTransitionDelay);
     }
 
     @Override
