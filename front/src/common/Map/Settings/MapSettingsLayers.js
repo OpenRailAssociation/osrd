@@ -6,7 +6,7 @@ import { updateLayersSettings } from 'reducers/map';
 import { GiElectric } from 'react-icons/gi';
 import { IoMdSpeedometer } from 'react-icons/io';
 import { AiOutlineBlock } from 'react-icons/ai';
-import { MdSpaceBar } from 'react-icons/md';
+import { MdSpaceBar, MdLinearScale } from 'react-icons/md';
 import BufferStopSVGFile from 'assets/pictures/layersicons/bufferstop.svg';
 import OPsSVGFile from 'assets/pictures/layersicons/ops.svg';
 import SwitchesSVGFile from 'assets/pictures/layersicons/switches.svg';
@@ -90,6 +90,11 @@ export default function MapSettingsLayers() {
         name="tvds"
         icon={<MdSpaceBar />}
         disabled
+      />
+      <FormatSwitch
+        name="routes"
+        icon={<MdLinearScale />}
+        color="text-orange"
       />
       <FormatSwitch
         name="operationalpoints"

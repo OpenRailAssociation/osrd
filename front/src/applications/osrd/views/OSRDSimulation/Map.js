@@ -30,6 +30,7 @@ import OperationalPoints from 'common/Map/Layers/OperationalPoints';
 import Platform from 'common/Map/Layers/Platform';
 import PropTypes from 'prop-types';
 import RenderItinerary from 'applications/osrd/components/SimulationMap/RenderItinerary';
+import Routes from 'common/Map/Layers/Routes';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
 import SignalingType from 'common/Map/Layers/SignalingType';
 import Signals from 'common/Map/Layers/Signals';
@@ -357,6 +358,7 @@ const Map = (props) => {
             <TracksOSM colors={colors[mapStyle]} />
             <OperationalPoints geomType="geo" colors={colors[mapStyle]} />
             <SignalingType geomType="geo" />
+            <Routes geomType="geo" colors={colors[mapStyle]} />
             <SpeedLimits geomType="geo" colors={colors[mapStyle]} />
             <Signals sourceTable="signals" colors={colors[mapStyle]} sourceLayer="geo" />
             <BufferStops geomType="geo" colors={colors[mapStyle]} />
@@ -366,6 +368,8 @@ const Map = (props) => {
         ) : (
           <>
             <TracksSchematic colors={colors[mapStyle]} idHover={idHover} />
+            <OperationalPoints geomType="sch" colors={colors[mapStyle]} />
+            <Routes geomType="sch" colors={colors[mapStyle]} />
             <Signals sourceTable="signals" colors={colors[mapStyle]} sourceLayer="sch" />
             <SpeedLimits geomType="sch" colors={colors[mapStyle]} />
             <BufferStops geomType="sch" colors={colors[mapStyle]} />
