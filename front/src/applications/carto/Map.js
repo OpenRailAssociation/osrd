@@ -13,13 +13,13 @@ import ButtonMapSettings from 'common/Map/ButtonMapSettings';
 import ButtonResetViewport from 'common/Map/ButtonResetViewport';
 import ElectrificationType from 'common/Map/Layers/ElectrificationType';
 import Hillshade from 'common/Map/Layers/Hillshade';
-import JointsDeZones from 'common/Map/Layers/JointsDeZones';
 import MapSearch from 'common/Map/Search/MapSearch';
 import MapSettings from 'common/Map/Settings/MapSettings';
 import OSM from 'common/Map/Layers/OSM';
 /* Objects & various */
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
 import Platform from 'common/Map/Layers/Platform';
+import Routes from 'common/Map/Layers/Routes';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
 import SignalingType from 'common/Map/Layers/SignalingType';
 import Signals from 'common/Map/Layers/Signals';
@@ -162,6 +162,7 @@ const Map = () => {
             <TracksOSM colors={colors[mapStyle]} />
             <OperationalPoints geomType="geo" colors={colors[mapStyle]} />
             <SignalingType geomType="geo" />
+            <Routes geomType="geo" colors={colors[mapStyle]} />
             <SpeedLimits geomType="geo" colors={colors[mapStyle]} />
             <Signals sourceTable="signals" colors={colors[mapStyle]} sourceLayer="geo" />
             <BufferStops geomType="geo" colors={colors[mapStyle]} />
@@ -172,6 +173,7 @@ const Map = () => {
           <>
             <TracksSchematic colors={colors[mapStyle]} idHover={idHover} />
             <OperationalPoints geomType="sch" colors={colors[mapStyle]} />
+            <Routes geomType="sch" colors={colors[mapStyle]} />
             <SpeedLimits geomType="sch" colors={colors[mapStyle]} />
             <Signals sourceTable="signals" colors={colors[mapStyle]} sourceLayer="sch" />
             <BufferStops geomType="sch" colors={colors[mapStyle]} />
