@@ -82,7 +82,7 @@ export default function StandardAllowanceDefault(props) {
         allowances: newAllowances,
       });
       dispatch(setSuccess({
-        title: t('allowanceModified.marecoAdd'),
+        title: t('allowanceModified.standardAllowanceAdd'),
         text: '',
       }));
       updateTrain();
@@ -114,7 +114,7 @@ export default function StandardAllowanceDefault(props) {
         value: 0,
       });
       dispatch(setSuccess({
-        title: t('allowanceModified.marecoDel'),
+        title: t('allowanceModified.standardAllowanceDel'),
         text: '',
       }));
       updateTrain();
