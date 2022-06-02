@@ -100,8 +100,6 @@ const EmptyLine = (props) => {
       && values.value[TYPES_UNITS[values.value.value_type]] > 0) {
       const newAllowances = (allowances !== null) ? Array.from(allowances) : [];
 
-      console.log('NEW ALLOWANCES', newAllowances);
-      console.log('current', allowance);
       // If Mareco Amend the Mareco List, if not Mareco ist add one
       if (allowance.allowance_type === 'standard') {
         newAllowances.find((d) => d.ranges)?.ranges.push(allowance);
@@ -109,7 +107,7 @@ const EmptyLine = (props) => {
         // If constuction just add
         newAllowances.push(allowance);
       }
-      console.log('NEW ALLOWANCES after', newAllowances);
+
       setAllowances(newAllowances); // This is to be resolved
       setUpdateAllowances(true);
     }
@@ -342,7 +340,7 @@ export default function Allowances(props) {
       dispatch(updateSimulation({ ...simulation, trains: newSimulationTrains }));
       dispatch(updateMustRedraw(true));
       dispatch(setSuccess({
-        title: t('allowanceModified.construction'),
+        title: t('allowanceModified.anyAllowanceModified'),
         text: '',
       }));
       setIsUpdating(false);

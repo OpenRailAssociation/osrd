@@ -27,7 +27,7 @@ export default function StandardAllowanceDefault(props) {
     type: 'time',
     value: 0,
   });
-  const [distribution, setDistribution] = useState({});
+  const [distribution, setDistribution] = useState(distributionsTypes[0]);
 
   const handleType = (type) => {
     setValue({
