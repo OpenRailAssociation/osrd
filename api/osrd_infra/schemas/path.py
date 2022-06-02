@@ -11,8 +11,8 @@ from osrd_infra.schemas.infra import (
 
 
 class GeometryPointTrait(BaseModel):
-    geo: Point
-    sch: Point
+    geo: Point = Field(description="this is the type of trait and is charactherized by geometric coordinates")
+    sch: Point = Field(description="this is the type of trait and is charactherized by schematic coordinates")
 
 
 class RoutePath(BaseModel):
