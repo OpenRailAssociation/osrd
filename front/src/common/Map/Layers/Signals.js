@@ -1,7 +1,7 @@
 import {
   ALL_SIGNAL_LAYERS,
+  DYNAMIC_LIGHTS_SIGNAL_LIST,
   LIGHT_SIGNALS,
-  PANELS_DYNAMIC_STOPS,
   PANELS_STOPS,
   PANELS_TIVS,
 } from 'common/Map/Consts/SignalsNames';
@@ -10,7 +10,7 @@ import {
   Source,
 } from 'react-map-gl';
 import { MAP_URL, SIGNALS_PANELS } from 'common/Map/const';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import PropTypes from 'prop-types';
 import { feature } from '@turf/helpers';
@@ -24,6 +24,9 @@ const Signals = (props) => {
   const consolidatedSimulation = useSelector(
     (state) => state.osrdsimulation.consolidatedSimulation,
   );
+  const [stopIds, setStopsIds] = useState([])
+  const [aIds, setAIds] = useState([])
+  const [vLIds, setVLIds] = useState([])
 
   const { infraID } = useSelector((state) => state.osrdconf);
   const {
@@ -40,40 +43,47 @@ const Signals = (props) => {
   useEffect(() => {
     const map = mapRef?.current?.getMap();
     if (map) {
-      //console.log('consolidatedSimulation', consolidatedSimulation[selectedTrain]);
+      // console.log('consolidatedSimulation', consolidatedSimulation[selectedTrain]);
       const selectedTrainConsolidatedSimulation = consolidatedSimulation[selectedTrain];
       // console.log(map.getStyle().layers)
-      //console.log(LIGHT_SIGNALS.map((panel) => `chartis/signal/${sourceLayer}/${panel}`));
+      // console.log(LIGHT_SIGNALS.map((panel) => `chartis/signal/${sourceLayer}/${panel}`));
 
-
-      const dynamicLayersIds = PANELS_DYNAMIC_STOPS.map((panel) => `chartis/signal/${sourceLayer}/${panel}`).filter((dynamicLayerId) => map.getLayer(dynamicLayerId));
-
-
+      const dynamicLayersIds = LIGHT_SIGNALS.map((panel) => `chartis/signal/${sourceLayer}/${panel}`).filter((dynamicLayerId) => map.getLayer(dynamicLayerId));
 
       const renderedDynamicStopsFeatures = map?.queryRenderedFeatures({ layers: dynamicLayersIds });
 
-      //console.log('All signal Aspects', selectedTrainConsolidatedSimulation.signalAspects)
+      console.log('All signal Aspects', selectedTrainConsolidatedSimulation.signalAspects)
+
+      let stopIds = [];
+      let aIds = []
+      let vLIds = []
+
 
       renderedDynamicStopsFeatures.forEach((renderedDynamicStopsFeature) => {
         // find the info in simulation aspects
-        const matchingSignalAspect = selectedTrainConsolidatedSimulation.signalAspects.find(
-          (signalAspect) => signalAspect.signal_id === renderedDynamicStopsFeature.id && signalAspect.time_start <= timePosition && signalAspect.time_end >= timePosition
+        const matchingSignalAspect = selectedTrainConsolidatedSimulation.signalAspects.filter(
+          (signalAspect) => signalAspect.signal_id === renderedDynamicStopsFeature.id && signalAspect.time_start < timePosition && signalAspect.time_end > timePosition
         );
-
 
         //  && signalAspect.time_start < timePosition && signalAspect.time_end > timePosition,
 
-        let passingState = '';
+        let passingState = 'VL';
         if (matchingSignalAspect) {
           switch (matchingSignalAspect.color) {
             case 'rgba(255, 255, 0, 255)':
               passingState = 'A';
+              aIds.push(matchingSignalAspect.id)
               break;
             case 'rgba(0, 255, 0, 255)':
               passingState = 'VL';
+              stopIds.push(matchingSignalAspect.id)
+              break;
+            case 'rgba(255, 0, 0, 255)':
+              passingState = 'STOP';
               break;
             default:
-              passingState = '';
+              passingState = 'VL';
+              vLIds.push(matchingSignalAspect.id)
               break;
           }
           map.setFeatureState({
@@ -85,15 +95,17 @@ const Signals = (props) => {
           });
         }
 
-        //console.log('renderedFeature', renderedDynamicStopsFeature);
-        //console.log(timePosition)
-
-        //console.log('matchingSignalAspect', matchingSignalAspect);
 
 
+        console.log('renderedFeature', renderedDynamicStopsFeature);
+        console.log(timePosition)
 
-
+        console.log('matchingSignalAspect', matchingSignalAspect);
       });
+
+      setStopsIds(stopIds)
+      setAIds(aIds)
+      setVLIds(vLIds)
 
       console.log(map?.queryRenderedFeatures({ layers: dynamicLayersIds }));
     }
@@ -168,6 +180,12 @@ const Signals = (props) => {
       case 'CARRE':
       case 'S':
         return ['concat', prefix, type, ' VL'];
+      case 'CARRE A':
+      case 'S A':
+        return ['concat', prefix, type, ' A'];
+      case 'CARRE STOP':
+      case 'S STOP':
+        return ['concat', prefix, type];
       default:
         return `${prefix}${type}`;
     }
@@ -203,6 +221,61 @@ const Signals = (props) => {
       },
     });
   };
+
+  /**
+   * Helpers function for factorization issue
+   * @param {*} type
+   * @param {*} angleName
+   * @param {*} iconOffset
+   * @param {*} textOffset
+   * @param {*} minZoom
+   * @param {*} isSignal
+   * @param {*} size
+   * @returns
+   */
+  const baseSignalLayout = (type, angleName, iconOffset, textOffset, minZoom, isSignal, size) => ({
+    'text-field': ['step',
+      ['zoom'], '',
+      minZoom, ['case', isSignal, ['get', 'label'], ''],
+    ],
+    'text-font': [
+      'Roboto Condensed',
+    ],
+    'text-size': 9,
+    'text-offset': textOffset,
+    'icon-offset': ['step', ['zoom'], ['literal', [0, 0]], minZoom, iconOffset],
+    'icon-image': signalsTosprites(type),
+    'icon-size': ['step',
+      ['zoom'], (size / 2),
+      minZoom, size,
+    ],
+    'text-anchor': ['case',
+      ['==', ['get', 'side'], 'RIGHT'], 'left',
+      ['==', ['get', 'side'], 'LEFT'], 'right',
+      'center',
+    ],
+    'icon-anchor': 'center',
+    'icon-rotation-alignment': 'map',
+    'icon-pitch-alignment': 'map',
+    'text-rotation-alignment': 'map',
+    'icon-rotate': ['get', angleName],
+    'text-rotate': ['get', angleName],
+    'icon-allow-overlap': true,
+    'icon-ignore-placement': true,
+    'text-allow-overlap': true,
+  });
+
+  /**
+   * Helper function for factorization issues
+   * @param {*} colorsPaint
+   * @returns
+   */
+  const baseSignalPaint = (colorsPaint) => ({
+    'text-color': colorsPaint.signal.text,
+    'text-halo-width': 10,
+    'text-halo-color': colorsPaint.signal.halo,
+    'text-halo-blur': 0,
+  });
 
   const signalEmpty = (type, angleName, iconOffset, libelle = 'value') => {
     const excludeText = ['SIGNAUX A GAUCHE', 'SIGNAUX A DROITE'];
@@ -243,12 +316,7 @@ const Signals = (props) => {
         'icon-ignore-placement': true,
         'text-allow-overlap': true,
       },
-      paint: {
-        'text-color': colors.signal.text,
-        'text-halo-width': 10,
-        'text-halo-color': colors.signal.halo,
-        'text-halo-blur': 0,
-      },
+      paint: baseSignalPaint(colors),
 
     };
   };
@@ -286,6 +354,41 @@ const Signals = (props) => {
       'text-color': '#fff',
     },
   });
+
+  const signalA = (type, angleName, iconOffset, textOffset, minZoom, isSignal, size) => {
+    const typeFilter = (type.split(' ')[0]);
+   return ({
+    minzoom: 12,
+    type: 'symbol',
+    'source-layer': sourceTable,
+    filter: ['all',
+      ['==', 'installation_type', typeFilter],
+      //['==', ['feature-state', 'passingState'], 'A'],
+    ],
+    layout: baseSignalLayout(type, angleName, iconOffset, textOffset, minZoom, isSignal, size),
+    paint: baseSignalPaint(colors),
+
+  })};
+
+  const signalStop = (type, angleName, iconOffset, textOffset, minZoom, isSignal, size) => {
+    const typeFilter = (type.split(' ')[0]);
+    console.log('typeFilter', typeFilter)
+    console.log('stopIds', stopIds)
+    console.log('aIds', aIds)
+    console.log('vLIds', vLIds)
+
+    return ({
+    minzoom: 12,
+    type: 'symbol',
+    'source-layer': sourceTable,
+    filter: ['all',
+      ['==', 'installation_type', typeFilter],
+      //['==', ['feature-state', 'passingState'], 'STOP'],
+    ],
+    layout: baseSignalLayout(type, angleName, iconOffset, textOffset, minZoom, isSignal, size),
+    paint: baseSignalPaint(colors),
+
+  })};
 
   const signal = (type) => {
     const angleName = (sourceLayer === 'sch') ? 'angle_sch' : 'angle_geo';
@@ -329,6 +432,12 @@ const Signals = (props) => {
         return signalEmpty(type, angleName, iconOffset);
       case 'PN':
         return signalPN(angleName, iconOffset);
+      case 'CARRE A':
+      case 'S A':
+        return signalA(type, angleName, iconOffset, textOffset, minZoom, isSignal, size);
+      case 'CARRE STOP':
+      case 'S STOP':
+        return signalStop(type, angleName, iconOffset, textOffset, minZoom, isSignal, size);
       default:
     }
 
@@ -337,43 +446,8 @@ const Signals = (props) => {
       type: 'symbol',
       'source-layer': sourceTable,
       filter: ['==', 'installation_type', type],
-      layout: {
-        'text-field': ['step',
-          ['zoom'], '',
-          minZoom, ['case', isSignal, ['get', 'label'], ''],
-        ],
-        'text-font': [
-          'Roboto Condensed',
-        ],
-        'text-size': 9,
-        'text-offset': textOffset,
-        'icon-offset': ['step', ['zoom'], ['literal', [0, 0]], minZoom, iconOffset],
-        'icon-image': signalsTosprites(type),
-        'icon-size': ['step',
-          ['zoom'], (size / 2),
-          minZoom, size,
-        ],
-        'text-anchor': ['case',
-          ['==', ['get', 'side'], 'RIGHT'], 'left',
-          ['==', ['get', 'side'], 'LEFT'], 'right',
-          'center',
-        ],
-        'icon-anchor': 'center',
-        'icon-rotation-alignment': 'map',
-        'icon-pitch-alignment': 'map',
-        'text-rotation-alignment': 'map',
-        'icon-rotate': ['get', angleName],
-        'text-rotate': ['get', angleName],
-        'icon-allow-overlap': true,
-        'icon-ignore-placement': true,
-        'text-allow-overlap': true,
-      },
-      paint: {
-        'text-color': colors.signal.text,
-        'text-halo-width': 3,
-        'text-halo-color': colors.signal.halo,
-        'text-halo-blur': 0,
-      },
+      layout: baseSignalLayout(type, angleName, iconOffset, textOffset, minZoom, isSignal, size),
+      paint: baseSignalPaint(colors),
 
     });
   };

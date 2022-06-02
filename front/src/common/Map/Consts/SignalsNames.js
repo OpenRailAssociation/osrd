@@ -6,6 +6,11 @@ export const LIGHT_SIGNALS = [
   'GA',
   'ID',
   'IDD',
+  'S',
+  'CARRE A',
+  'S A',
+  'CARRE STOP',
+  'S STOP',
 ];
 
 export const SIGNALS_PANELS = [
@@ -63,7 +68,6 @@ export const SIGNALS_PANELS = [
   'REP TGV',
   'REPER VIT',
   'REV',
-  'S',
   'SAC',
   'SECT',
   'SG DIR',
@@ -171,9 +175,19 @@ export const PANELS_STOPS = [
   'STOP',
 ];
 
-export const PANELS_DYNAMIC_STOPS = [
+export const DYNAMIC_LIGHTS_SIGNAL_LIST = [
   'CARRE',
   'S'
+];
+
+export const DYNAMIC_LIGHTS_ATT = [
+  'CARRE A',
+  'S A'
+];
+
+export const DYNAMIC_LIGHTS_STOP = [
+  'CARRE STOP',
+  'S STOP'
 ];
 
 export const PANELS_TIVS = [
