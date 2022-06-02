@@ -4,6 +4,7 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import fr.sncf.osrd.cli.ApiServerCommand;
 import fr.sncf.osrd.cli.CliCommand;
+import fr.sncf.osrd.cli.StandaloneSimulationCommand;
 import fr.sncf.osrd.cli.ValidateInfra;
 import java.util.HashMap;
 
@@ -15,6 +16,7 @@ public class App {
     public static void main(String[] args) {
         var commands = new HashMap<String, CliCommand>();
         commands.put("api", new ApiServerCommand());
+        commands.put("standalone-simulation", new StandaloneSimulationCommand());
         commands.put("load-infra", new ValidateInfra());
 
         // prepare the command line parser
