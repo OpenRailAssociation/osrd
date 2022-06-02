@@ -1,6 +1,6 @@
+import PropTypes from 'prop-types';
 /* eslint-disable max-classes-per-file */
 import React from 'react';
-import PropTypes from 'prop-types';
 
 /**
  * The InputSNCF component can be used for basic inputs as well as for advanced search inputs
@@ -31,7 +31,9 @@ class InputSNCF extends React.Component {
     label: PropTypes.string,
     placeholder: PropTypes.string,
     onChange: PropTypes.func,
-    value: PropTypes.string,
+    value: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.number]),
     readonly: PropTypes.bool,
     inputProps: PropTypes.object,
     min: PropTypes.number,
