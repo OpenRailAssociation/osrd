@@ -24,9 +24,9 @@ const Signals = (props) => {
   const consolidatedSimulation = useSelector(
     (state) => state.osrdsimulation.consolidatedSimulation,
   );
-  const [stopIds, setStopsIds] = useState([])
-  const [aIds, setAIds] = useState([])
-  const [vLIds, setVLIds] = useState([])
+  const [stopIds, setStopsIds] = useState([]);
+  const [aIds, setAIds] = useState([]);
+  const [vLIds, setVLIds] = useState([]);
 
   const { infraID } = useSelector((state) => state.osrdconf);
   const {
@@ -52,38 +52,44 @@ const Signals = (props) => {
 
       const renderedDynamicStopsFeatures = map?.queryRenderedFeatures({ layers: dynamicLayersIds });
 
-      console.log('All signal Aspects', selectedTrainConsolidatedSimulation.signalAspects)
+      console.log('All signal Aspects', selectedTrainConsolidatedSimulation.signalAspects);
 
-      let stopIds = [];
-      let aIds = []
-      let vLIds = []
-
+      const stopIds = [];
+      const aIds = [];
+      const vLIds = [];
 
       renderedDynamicStopsFeatures.forEach((renderedDynamicStopsFeature) => {
         // find the info in simulation aspects
-        const matchingSignalAspect = selectedTrainConsolidatedSimulation.signalAspects.filter(
-          (signalAspect) => signalAspect.signal_id === renderedDynamicStopsFeature.id && signalAspect.time_start < timePosition && signalAspect.time_end > timePosition
+        const matchingSignalAspect = selectedTrainConsolidatedSimulation.signalAspects.find(
+          (signalAspect) => signalAspect.signal_id === renderedDynamicStopsFeature.id && signalAspect.time_start < timePosition && signalAspect.time_end > timePosition,
         );
 
         //  && signalAspect.time_start < timePosition && signalAspect.time_end > timePosition,
 
-        let passingState = 'VL';
+        let passingState = 'STOP';
         if (matchingSignalAspect) {
+          console.log(matchingSignalAspect.color);
           switch (matchingSignalAspect.color) {
             case 'rgba(255, 255, 0, 255)':
               passingState = 'A';
-              aIds.push(matchingSignalAspect.id)
+              if (aIds.indexOf(matchingSignalAspect.signal_id) === -1) {
+                aIds.push(matchingSignalAspect.signal_id);
+              }
               break;
             case 'rgba(0, 255, 0, 255)':
               passingState = 'VL';
-              stopIds.push(matchingSignalAspect.id)
+              if (vLIds.indexOf(matchingSignalAspect.signal_id) === -1) {
+                vLIds.push(matchingSignalAspect.signal_id);
+              }
               break;
             case 'rgba(255, 0, 0, 255)':
               passingState = 'STOP';
+              if (stopIds.indexOf(matchingSignalAspect.signal_id) === -1) {
+                stopIds.push(matchingSignalAspect.signal_id);
+              }
               break;
             default:
-              passingState = 'VL';
-              vLIds.push(matchingSignalAspect.id)
+              passingState = 'STOP';
               break;
           }
           map.setFeatureState({
@@ -95,17 +101,15 @@ const Signals = (props) => {
           });
         }
 
-
-
         console.log('renderedFeature', renderedDynamicStopsFeature);
-        console.log(timePosition)
+        console.log(timePosition);
 
         console.log('matchingSignalAspect', matchingSignalAspect);
       });
-
-      setStopsIds(stopIds)
-      setAIds(aIds)
-      setVLIds(vLIds)
+      console.log('vLIds compute', vLIds);
+      setStopsIds(stopIds);
+      setAIds(aIds);
+      setVLIds(vLIds);
 
       console.log(map?.queryRenderedFeatures({ layers: dynamicLayersIds }));
     }
@@ -179,10 +183,13 @@ const Signals = (props) => {
         ]];
       case 'CARRE':
       case 'S':
-        return ['concat', prefix, type, ' VL'];
+        return ['concat', prefix, type];
       case 'CARRE A':
       case 'S A':
         return ['concat', prefix, type, ' A'];
+      case 'CARRE VL':
+      case 'S VL':
+        return ['concat', prefix, type, ' VL'];
       case 'CARRE STOP':
       case 'S STOP':
         return ['concat', prefix, type];
@@ -357,38 +364,63 @@ const Signals = (props) => {
 
   const signalA = (type, angleName, iconOffset, textOffset, minZoom, isSignal, size) => {
     const typeFilter = (type.split(' ')[0]);
-   return ({
-    minzoom: 12,
-    type: 'symbol',
-    'source-layer': sourceTable,
-    filter: ['all',
-      ['==', 'installation_type', typeFilter],
-      //['==', ['feature-state', 'passingState'], 'A'],
-    ],
-    layout: baseSignalLayout(type, angleName, iconOffset, textOffset, minZoom, isSignal, size),
-    paint: baseSignalPaint(colors),
+    console.log('compute with aIds', aIds);
+    const filterA = ['in', 'id'].concat(aIds)
 
-  })};
+    return ({
+      minzoom: 12,
+      type: 'symbol',
+      'source-layer': sourceTable,
+      filter: ['all',
+        ['==', 'installation_type', typeFilter],
+        filterA,
+      ],
+      layout: baseSignalLayout(type, angleName, iconOffset, textOffset, minZoom, isSignal, size),
+      paint: baseSignalPaint(colors),
+
+    });
+  };
 
   const signalStop = (type, angleName, iconOffset, textOffset, minZoom, isSignal, size) => {
     const typeFilter = (type.split(' ')[0]);
-    console.log('typeFilter', typeFilter)
-    console.log('stopIds', stopIds)
-    console.log('aIds', aIds)
-    console.log('vLIds', vLIds)
+    console.log('typeFilter', typeFilter);
+    console.log('stopIds', stopIds);
+
+    console.log('vLIds', vLIds);
 
     return ({
-    minzoom: 12,
-    type: 'symbol',
-    'source-layer': sourceTable,
-    filter: ['all',
-      ['==', 'installation_type', typeFilter],
-      //['==', ['feature-state', 'passingState'], 'STOP'],
-    ],
-    layout: baseSignalLayout(type, angleName, iconOffset, textOffset, minZoom, isSignal, size),
-    paint: baseSignalPaint(colors),
+      minzoom: 12,
+      type: 'symbol',
+      'source-layer': sourceTable,
+      filter: ['all',
+        ['==', 'installation_type', typeFilter],
+        ['==', ['feature-state', 'passingState'], 'STOP'],
+      ],
+      layout: baseSignalLayout(type, angleName, iconOffset, textOffset, minZoom, isSignal, size),
+      paint: baseSignalPaint(colors),
 
-  })};
+    });
+  };
+
+  const signalVL = (type, angleName, iconOffset, textOffset, minZoom, isSignal, size) => {
+    const typeFilter = (type.split(' ')[0]);
+    console.log('compute with vLIds', vLIds);
+
+    const filterVL = ['in', 'id'].concat(vLIds)
+
+    return ({
+      minzoom: 12,
+      type: 'symbol',
+      'source-layer': sourceTable,
+      filter: ['all',
+        ['==', 'installation_type', typeFilter],
+        filterVL,
+      ],
+      layout: baseSignalLayout(type, angleName, iconOffset, textOffset, minZoom, isSignal, size),
+      paint: baseSignalPaint(colors),
+
+    });
+  };
 
   const signal = (type) => {
     const angleName = (sourceLayer === 'sch') ? 'angle_sch' : 'angle_geo';
@@ -435,9 +467,9 @@ const Signals = (props) => {
       case 'CARRE A':
       case 'S A':
         return signalA(type, angleName, iconOffset, textOffset, minZoom, isSignal, size);
-      case 'CARRE STOP':
-      case 'S STOP':
-        return signalStop(type, angleName, iconOffset, textOffset, minZoom, isSignal, size);
+      case 'CARRE VL':
+      case 'S VL':
+        return signalVL(type, angleName, iconOffset, textOffset, minZoom, isSignal, size);
       default:
     }
 
