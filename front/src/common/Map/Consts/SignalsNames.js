@@ -1,12 +1,17 @@
 export const LIGHT_SIGNALS = [
-  'CARRE',
-  'S',
+
   'A',
   'CV',
   'D',
   'GA',
   'ID',
   'IDD',
+  'CARRE',
+  'S',
+  'CARRE A',
+  'S A',
+  'CARRE VL',
+  'S VL',
 
 ];
 

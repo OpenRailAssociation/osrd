@@ -45,8 +45,8 @@ const Signals = (props) => {
     if (map) {
       // console.log('consolidatedSimulation', consolidatedSimulation[selectedTrain]);
       const selectedTrainConsolidatedSimulation = consolidatedSimulation[selectedTrain];
-      // console.log(map.getStyle().layers)
-      // console.log(LIGHT_SIGNALS.map((panel) => `chartis/signal/${sourceLayer}/${panel}`));
+
+      console.log(LIGHT_SIGNALS.map((panel) => `chartis/signal/${sourceLayer}/${panel}`));
 
       const dynamicLayersIds = LIGHT_SIGNALS.map((panel) => `chartis/signal/${sourceLayer}/${panel}`).filter((dynamicLayerId) => map.getLayer(dynamicLayerId));
 
@@ -64,11 +64,13 @@ const Signals = (props) => {
           (signalAspect) => signalAspect.signal_id === renderedDynamicStopsFeature.id && signalAspect.time_start < timePosition && signalAspect.time_end > timePosition,
         );
 
+        console.log("All data on this feature", selectedTrainConsolidatedSimulation.signalAspects.filter(
+          (signalAspect) => signalAspect.signal_id === renderedDynamicStopsFeature.id))
+
         //  && signalAspect.time_start < timePosition && signalAspect.time_end > timePosition,
 
         let passingState = 'STOP';
         if (matchingSignalAspect) {
-          console.log(matchingSignalAspect.color);
           switch (matchingSignalAspect.color) {
             case 'rgba(255, 255, 0, 255)':
               passingState = 'A';
@@ -100,11 +102,12 @@ const Signals = (props) => {
             passingState,
           });
         }
-
+/*
         console.log('renderedFeature', renderedDynamicStopsFeature);
         console.log(timePosition);
 
         console.log('matchingSignalAspect', matchingSignalAspect);
+        */
       });
       console.log('vLIds compute', vLIds);
       setStopsIds(stopIds);
@@ -186,12 +189,9 @@ const Signals = (props) => {
         return ['concat', prefix, type];
       case 'CARRE A':
       case 'S A':
-        return ['concat', prefix, type, ' A'];
+        return ['concat', prefix, type];
       case 'CARRE VL':
       case 'S VL':
-        return ['concat', prefix, type, ' VL'];
-      case 'CARRE STOP':
-      case 'S STOP':
         return ['concat', prefix, type];
       default:
         return `${prefix}${type}`;
@@ -364,8 +364,8 @@ const Signals = (props) => {
 
   const signalA = (type, angleName, iconOffset, textOffset, minZoom, isSignal, size) => {
     const typeFilter = (type.split(' ')[0]);
-    console.log('compute with aIds', aIds);
-    const filterA = ['in', 'id'].concat(aIds)
+    //console.log('compute with aIds', aIds);
+    const filterA = ['in', 'id'].concat(aIds);
 
     return ({
       minzoom: 12,
@@ -381,41 +381,27 @@ const Signals = (props) => {
     });
   };
 
-  const signalStop = (type, angleName, iconOffset, textOffset, minZoom, isSignal, size) => {
-    const typeFilter = (type.split(' ')[0]);
-    console.log('typeFilter', typeFilter);
-    console.log('stopIds', stopIds);
 
-    console.log('vLIds', vLIds);
-
-    return ({
-      minzoom: 12,
-      type: 'symbol',
-      'source-layer': sourceTable,
-      filter: ['all',
-        ['==', 'installation_type', typeFilter],
-        ['==', ['feature-state', 'passingState'], 'STOP'],
-      ],
-      layout: baseSignalLayout(type, angleName, iconOffset, textOffset, minZoom, isSignal, size),
-      paint: baseSignalPaint(colors),
-
-    });
-  };
 
   const signalVL = (type, angleName, iconOffset, textOffset, minZoom, isSignal, size) => {
     const typeFilter = (type.split(' ')[0]);
-    console.log('compute with vLIds', vLIds);
+    //console.log('compute with vLIds', vLIds);
 
-    const filterVL = ['in', 'id'].concat(vLIds)
+    const filterVL = ['in', 'id'].concat(vLIds);
+
+    //console.log('compute with vLIds FILTER', filterVL);
+    //console.log('compute with typeFiltere', typeFilter);
 
     return ({
       minzoom: 12,
       type: 'symbol',
       'source-layer': sourceTable,
+
       filter: ['all',
         ['==', 'installation_type', typeFilter],
         filterVL,
       ],
+
       layout: baseSignalLayout(type, angleName, iconOffset, textOffset, minZoom, isSignal, size),
       paint: baseSignalPaint(colors),
 
@@ -482,6 +468,11 @@ const Signals = (props) => {
       paint: baseSignalPaint(colors),
 
     });
+  };
+
+  const getLayerId = (sig) => {
+    if (sig.split(' ')[0] === 'CARRE' || sig.split(' ')[0] === 'S') return sig.split(' ')[0];
+    return sig;
   };
 
   return (
