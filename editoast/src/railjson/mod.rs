@@ -58,7 +58,7 @@ impl ObjectType {
             ObjectType::Detector => "osrd_infra_detectormodel",
             ObjectType::TrackSectionLink => "osrd_infra_tracksectionlinkmodel",
             ObjectType::Switch => "osrd_infra_switchmodel",
-            ObjectType::SwitchType => todo!(),
+            ObjectType::SwitchType => "osrd_infra_switchtypemodel",
             ObjectType::BufferStop => "osrd_infra_bufferstopmodel",
             ObjectType::Route => "osrd_infra_routemodel",
             ObjectType::OperationalPoint => "osrd_infra_operationalpointmodel",
@@ -176,6 +176,24 @@ pub struct Switch {
     pub group_change_delay: f64,
     pub ports: HashMap<String, TrackEndpoint>,
     pub label: String,
+}
+
+/* temporary object ref on a traksection for tests */
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[derivative(Default)]
+pub struct SwitchType {
+    #[derivative(Default(value = r#"generate_id("switchtype")"#))]
+    pub id: String,
+    pub ports: Vec<String>,
+    pub groups: HashMap<String, Vec<SwitchPortConnection>>,
+}
+
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, Hash)]
+#[derivative(Default)]
+pub struct SwitchPortConnection {
+    pub src: String,
+    pub dst: String,
+    pub bidirectional: bool,
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]

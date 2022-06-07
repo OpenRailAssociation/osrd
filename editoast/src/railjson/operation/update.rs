@@ -87,7 +87,9 @@ impl DataObject {
             ObjectType::Switch => RailjsonObject::Switch {
                 railjson: from_value(self.data.clone())?,
             },
-            ObjectType::SwitchType => todo!(),
+            ObjectType::SwitchType => RailjsonObject::SwitchType {
+                railjson: from_value(self.data.clone())?,
+            },
             ObjectType::BufferStop => RailjsonObject::BufferStop {
                 railjson: from_value(self.data.clone())?,
             },

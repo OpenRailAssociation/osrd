@@ -1,7 +1,7 @@
 use crate::error::ApiError;
 use crate::railjson::{
     BufferStop, Detector, ObjectRef, ObjectType, OperationalPoint, Route, Signal, SpeedSection,
-    Switch, TrackSection, TrackSectionLink,
+    Switch, SwitchType, TrackSection, TrackSectionLink,
 };
 use diesel::sql_types::{Integer, Json, Text};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
@@ -18,6 +18,7 @@ pub enum RailjsonObject {
     SpeedSection { railjson: SpeedSection },
     TrackSectionLink { railjson: TrackSectionLink },
     Switch { railjson: Switch },
+    SwitchType { railjson: SwitchType },
     Detector { railjson: Detector },
     BufferStop { railjson: BufferStop },
     Route { railjson: Route },
@@ -53,6 +54,7 @@ impl RailjsonObject {
             RailjsonObject::SpeedSection { railjson: _ } => ObjectType::SpeedSection,
             RailjsonObject::TrackSectionLink { railjson: _ } => ObjectType::TrackSectionLink,
             RailjsonObject::Switch { railjson: _ } => ObjectType::Switch,
+            RailjsonObject::SwitchType { railjson: _ } => ObjectType::SwitchType,
             RailjsonObject::Detector { railjson: _ } => ObjectType::Detector,
             RailjsonObject::BufferStop { railjson: _ } => ObjectType::BufferStop,
             RailjsonObject::Route { railjson: _ } => ObjectType::Route,
@@ -67,6 +69,7 @@ impl RailjsonObject {
             RailjsonObject::SpeedSection { railjson } => railjson.id.clone(),
             RailjsonObject::TrackSectionLink { railjson } => railjson.id.clone(),
             RailjsonObject::Switch { railjson } => railjson.id.clone(),
+            RailjsonObject::SwitchType { railjson } => railjson.id.clone(),
             RailjsonObject::Detector { railjson } => railjson.id.clone(),
             RailjsonObject::BufferStop { railjson } => railjson.id.clone(),
             RailjsonObject::Route { railjson } => railjson.id.clone(),
@@ -83,6 +86,7 @@ impl RailjsonObject {
                 serde_json::to_value(railjson).unwrap()
             }
             RailjsonObject::Switch { railjson } => serde_json::to_value(railjson).unwrap(),
+            RailjsonObject::SwitchType { railjson } => serde_json::to_value(railjson).unwrap(),
             RailjsonObject::Detector { railjson } => serde_json::to_value(railjson).unwrap(),
             RailjsonObject::BufferStop { railjson } => serde_json::to_value(railjson).unwrap(),
             RailjsonObject::Route { railjson } => serde_json::to_value(railjson).unwrap(),
@@ -102,8 +106,8 @@ pub mod test {
     use crate::models::infra::test::test_transaction;
     use crate::railjson::operation::create::{apply_create_operation, RailjsonObject};
     use crate::railjson::{
-        BufferStop, Detector, OperationalPoint, Route, Signal, SpeedSection, Switch, TrackSection,
-        TrackSectionLink,
+        BufferStop, Detector, OperationalPoint, Route, Signal, SpeedSection, Switch, SwitchType,
+        TrackSection, TrackSectionLink,
     };
     use diesel::PgConnection;
 
@@ -175,6 +179,12 @@ pub mod test {
         obj
     }
 
+    pub fn create_st(conn: &PgConnection, infra_id: i32, st: SwitchType) -> RailjsonObject {
+        let obj = RailjsonObject::SwitchType { railjson: st };
+        assert!(apply_create_operation(&obj, infra_id, conn).is_ok());
+        obj
+    }
+
     #[test]
     fn create_track_test() {
         test_transaction(|conn, infra| {
@@ -235,6 +245,13 @@ pub mod test {
     fn create_op_test() {
         test_transaction(|conn, infra| {
             create_op(conn, infra.id, Default::default());
+        });
+    }
+
+    #[test]
+    fn create_st_test() {
+        test_transaction(|conn, infra| {
+            create_st(conn, infra.id, Default::default());
         });
     }
 }
