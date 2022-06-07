@@ -4,6 +4,7 @@ mod operational_points;
 mod routes;
 mod signals;
 mod speed_sections;
+mod switch_types;
 mod switches;
 mod track_section_links;
 mod track_sections;
@@ -46,12 +47,20 @@ enum InfraErrorType {
         expected_position: f64,
         endpoint_field: PathEndpointField,
     },
+    #[serde(rename = "unknown_port_name")]
+    UnknownPortName { port_name: String },
+    #[serde(rename = "invalid_switch_ports")]
+    InvalidSwitchPorts,
     #[serde(rename = "empty_object")]
     EmptyObject,
     #[serde(rename = "object_out_of_path")]
     ObjectOutOfPath { position: f64, track: String },
     #[serde(rename = "missing_route")]
     MissingRoute,
+    #[serde(rename = "unused_port")]
+    UnusedPort { port_name: String },
+    #[serde(rename = "duplicated_group")]
+    DuplicatedGroup { original_group_path: String },
 }
 
 impl InfraError {
@@ -122,6 +131,40 @@ impl InfraError {
             sub_type: InfraErrorType::MissingRoute,
         }
     }
+
+    fn new_unknown_port_name(field: String, port_name: String) -> Self {
+        Self {
+            field,
+            is_warning: false,
+            sub_type: InfraErrorType::UnknownPortName { port_name },
+        }
+    }
+
+    fn new_invalid_switch_ports(field: String) -> Self {
+        Self {
+            field,
+            is_warning: false,
+            sub_type: InfraErrorType::InvalidSwitchPorts,
+        }
+    }
+
+    fn new_unused_port(field: String, port_name: String) -> Self {
+        Self {
+            field,
+            is_warning: true,
+            sub_type: InfraErrorType::UnusedPort { port_name },
+        }
+    }
+
+    fn new_duplicated_group(field: String, original_group_path: String) -> Self {
+        Self {
+            field,
+            is_warning: true,
+            sub_type: InfraErrorType::DuplicatedGroup {
+                original_group_path,
+            },
+        }
+    }
 }
 
 /// This function regenerate the errors and warnings of the infra
@@ -141,6 +184,7 @@ pub fn generate_errors(
     signals::generate_errors(conn, infra, infra_cache)?;
     speed_sections::generate_errors(conn, infra, infra_cache)?;
     track_section_links::generate_errors(conn, infra, infra_cache)?;
+    switch_types::generate_errors(conn, infra, infra_cache)?;
     switches::generate_errors(conn, infra, infra_cache)?;
     detectors::generate_errors(conn, infra, infra_cache)?;
     buffer_stops::generate_errors(conn, infra, infra_cache)?;

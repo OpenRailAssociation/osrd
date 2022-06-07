@@ -41,6 +41,9 @@ pub struct InfraCache {
 
     /// List existing operational points
     pub operational_points: HashMap<String, OperationalPointCache>,
+
+    /// List existing switch types
+    pub switch_types: HashMap<String, SwitchType>,
 }
 
 #[derive(Debug, Clone, Derivative)]
@@ -206,6 +209,7 @@ impl From<&TrackSectionLink> for TrackSectionLinkCache {
 #[derivative(Hash, PartialEq)]
 pub struct SwitchCache {
     pub obj_id: String,
+    pub switch_type: String,
     #[derivative(Hash = "ignore", PartialEq = "ignore")]
     pub ports: HashMap<String, TrackEndpoint>,
 }
@@ -214,6 +218,8 @@ pub struct SwitchCache {
 pub struct SwitchQueryable {
     #[sql_type = "Text"]
     pub obj_id: String,
+    #[sql_type = "Text"]
+    pub switch_type: String,
     #[sql_type = "Json"]
     pub ports: Value,
 }
@@ -222,20 +228,52 @@ impl From<SwitchQueryable> for SwitchCache {
     fn from(switch: SwitchQueryable) -> Self {
         Self {
             obj_id: switch.obj_id,
+            switch_type: switch.switch_type,
             ports: serde_json::from_value(switch.ports).unwrap(),
         }
     }
 }
 
 impl SwitchCache {
-    pub fn new(obj_id: String, ports: HashMap<String, TrackEndpoint>) -> Self {
-        Self { obj_id, ports }
+    pub fn new(obj_id: String, switch_type: String, ports: HashMap<String, TrackEndpoint>) -> Self {
+        Self {
+            obj_id,
+            switch_type,
+            ports,
+        }
     }
 }
 
 impl From<&Switch> for SwitchCache {
     fn from(switch: &Switch) -> Self {
-        Self::new(switch.id.clone(), switch.ports.clone())
+        Self::new(
+            switch.id.clone(),
+            switch.switch_type.obj_id.clone(),
+            switch.ports.clone(),
+        )
+    }
+}
+
+#[derive(QueryableByName, Debug, Clone)]
+pub struct SwitchTypeQueryable {
+    #[sql_type = "Text"]
+    pub obj_id: String,
+    #[sql_type = "Json"]
+    pub ports: Value,
+    #[sql_type = "Json"]
+    pub groups: Value,
+}
+
+impl From<SwitchTypeQueryable> for SwitchType {
+    fn from(switch_type: SwitchTypeQueryable) -> Self {
+        let ports: Vec<String> = serde_json::from_value(switch_type.ports).unwrap();
+        let groups: HashMap<String, Vec<SwitchPortConnection>> =
+            serde_json::from_value(switch_type.groups).unwrap();
+        SwitchType {
+            id: switch_type.obj_id,
+            ports,
+            groups,
+        }
     }
 }
 
@@ -416,6 +454,13 @@ impl InfraCache {
             .is_none());
     }
 
+    fn load_switch_type(&mut self, switch_type: SwitchType) {
+        assert!(self
+            .switch_types
+            .insert(switch_type.id.clone(), switch_type)
+            .is_none());
+    }
+
     fn load_detector(&mut self, detector: DetectorCache) {
         self.add_track_ref(
             detector.track.clone(),
@@ -492,11 +537,19 @@ impl InfraCache {
 
         // Load switch tracks references
         sql_query(
-            "SELECT obj_id, data->>'ports' AS ports FROM osrd_infra_switchmodel WHERE infra_id = $1")
+            "SELECT obj_id, data->'switch_type'->>'id' AS switch_type, data->>'ports' AS ports FROM osrd_infra_switchmodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
         .load::<SwitchQueryable>(conn).expect("Error loading switch refs").into_iter().for_each(|switch| {
             infra_cache.load_switch(switch.into());
         });
+
+        // Load switch types references
+        sql_query(
+            "SELECT obj_id, data->>'ports' AS ports, data->>'groups' AS groups FROM osrd_infra_switchtypemodel WHERE infra_id = $1")
+        .bind::<Integer, _>(infra_id)
+        .load::<SwitchTypeQueryable>(conn).expect("Error loading switch types refs").into_iter().for_each(|switch_type| 
+            infra_cache.load_switch_type(switch_type.into())
+        );
 
         // Load detector tracks references
         sql_query(
@@ -604,6 +657,12 @@ impl InfraCache {
                 }
             }
             ObjectRef {
+                obj_type: ObjectType::SwitchType,
+                obj_id,
+            } => {
+                self.switch_types.remove(obj_id).unwrap();
+            }
+            ObjectRef {
                 obj_type: ObjectType::Detector,
                 obj_id,
             } => {
@@ -629,7 +688,6 @@ impl InfraCache {
             } => {
                 self.track_sections.remove(obj_id);
             }
-            _ => (),
         }
     }
 
@@ -650,6 +708,7 @@ impl InfraCache {
                 self.load_track_section_link(railjson.into())
             }
             RailjsonObject::Switch { railjson } => self.load_switch(railjson.into()),
+            RailjsonObject::SwitchType { railjson } => self.load_switch_type(railjson.clone()),
             RailjsonObject::Detector { railjson } => self.load_detector(railjson.into()),
             RailjsonObject::BufferStop { railjson } => self.load_buffer_stop(railjson.into()),
             RailjsonObject::OperationalPoint { railjson } => {
