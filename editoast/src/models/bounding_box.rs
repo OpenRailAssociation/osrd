@@ -122,6 +122,8 @@ impl InvalidationZone {
                         Self::merge_bbox(&mut geo, &mut sch, infra_cache, track_id);
                     }
                 }
+                OperationResult::Update(RailjsonObject::SwitchType { railjson: _ })
+                | OperationResult::Create(RailjsonObject::SwitchType { railjson: _ }) => {}
                 OperationResult::Update(RailjsonObject::Detector { railjson })
                 | OperationResult::Create(RailjsonObject::Detector { railjson }) => {
                     if let Some(detector) = infra_cache.detectors.get(&railjson.id) {
@@ -220,7 +222,7 @@ impl InvalidationZone {
                 OperationResult::Delete(ObjectRef {
                     obj_type: ObjectType::SwitchType,
                     obj_id: _,
-                }) => todo!(),
+                }) => {}
             }
         }
         Self { geo, sch }
