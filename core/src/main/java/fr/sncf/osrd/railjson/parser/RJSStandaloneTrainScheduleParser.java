@@ -87,25 +87,22 @@ public class RJSStandaloneTrainScheduleParser {
             throw new RuntimeException("unknown allowance type");
         }
         // parse allowance distribution
-        if (allowanceDistribution == RJSAllowanceDistribution.MARECO) {
-            return new MarecoAllowance(
+        return switch (allowanceDistribution) {
+            case MARECO -> new MarecoAllowance(
                     new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
                     beginPos,
                     endPos,
                     getPositiveDoubleOrDefault(rjsAllowance.capacitySpeedLimit, 30 / 3.6),
                     ranges
             );
-        }
-        if (allowanceDistribution == RJSAllowanceDistribution.LINEAR) {
-            return new LinearAllowance(
+            case LINEAR -> new LinearAllowance(
                     new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
                     beginPos,
                     endPos,
                     getPositiveDoubleOrDefault(rjsAllowance.capacitySpeedLimit, 30 / 3.6),
                     ranges
             );
-        }
-        throw new RuntimeException("unknown allowance distribution");
+        };
     }
 
     private static List<AllowanceRange> parseAllowanceRanges(
