@@ -13,7 +13,7 @@ use diesel::result::Error as DieselError;
 use serde_json::to_value;
 
 /// Represent the entry or exit point of a path
-#[derive(Serialize, Deserialize, Debug, Clone, Copy, EnumIter)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, EnumIter, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub enum PathEndpointField {
     #[serde(rename = "entry_point")]
@@ -156,7 +156,7 @@ pub fn generate_errors(
                 &route.path,
                 expected_track,
                 expected_position,
-                PathEndpointField::EntryPoint,
+                path_endpoint,
             ) {
                 errors.push(to_value(error).unwrap());
                 route_ids.push(route_id.clone());
