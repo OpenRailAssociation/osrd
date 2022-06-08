@@ -85,7 +85,8 @@ public class StandaloneSimulationCommand implements CliCommand {
 
             // Add allowance
             var allowance = new RJSAllowance[] {
-                    new RJSAllowance.Linear(new RJSAllowanceValue.Percent(5)),
+                    new RJSAllowance.StandardAllowance(RJSAllowanceDistribution.LINEAR,
+                            new RJSAllowanceValue.Percent(5)),
             };
 
             var simulations = new ArrayList<StandaloneSimResult>();
