@@ -4,6 +4,7 @@ import static fr.sncf.osrd.Helpers.getExampleRollingStocks;
 import static org.junit.jupiter.api.Assertions.*;
 
 import fr.sncf.osrd.api.StandaloneSimulationEndpoint.StandaloneSimulationRequest;
+import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
@@ -252,6 +253,42 @@ class StandaloneSimulationTest extends ApiTest {
                 marecoTime,
                 noAllowanceTime * 0.01);
         assertNull(simResult.ecoSimulations.get(0));
+    }
+
+    @Test
+    public void engineeringAllowance() throws Exception {
+        // load the example infrastructure and build a test path
+        final var rjsTrainPath = tinyInfraTrainPath();
+
+        // build the simulation request
+        var stops = new RJSTrainStop[] { RJSTrainStop.lastStop(0.1) };
+        var allowance = new RJSAllowance[] { new RJSAllowance.EngineeringAllowance(
+                RJSAllowanceDistribution.MARECO, 0, 1000, new RJSAllowanceValue.Time(30), 0.01
+        )
+        };
+        var trains = new ArrayList<RJSStandaloneTrainSchedule>();
+        trains.add(new RJSStandaloneTrainSchedule("no_allowance", "fast_rolling_stock",
+                0, null, stops));
+        trains.add(new RJSStandaloneTrainSchedule("allowance", "fast_rolling_stock",
+                0, allowance, stops));
+
+        var query = new StandaloneSimulationRequest(
+                "tiny_infra/infra.json",
+                "1",
+                2,
+                getExampleRollingStocks(),
+                trains,
+                rjsTrainPath
+        );
+
+        // parse back the simulation result
+        var simResult = runStandaloneSimulation(query);
+
+        var noAllowanceResult = simResult.baseSimulations.get(0);
+        var noAllowanceTime = noAllowanceResult.headPositions.get(noAllowanceResult.headPositions.size() - 1).time;
+        var allowanceResult = simResult.ecoSimulations.get(1);
+        var allowanceTime = allowanceResult.headPositions.get(allowanceResult.headPositions.size() - 1).time;
+        assertEquals(noAllowanceTime + 30, allowanceTime, noAllowanceTime * 0.01);
     }
 
     @Test

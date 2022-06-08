@@ -21,6 +21,24 @@ public class RJSAllowance {
         public double endPosition = Double.NaN;
 
         public RJSAllowanceValue value;
+
+        /** Default constructor */
+        public EngineeringAllowance() {}
+
+        /** Constructor */
+        public EngineeringAllowance(
+                RJSAllowanceDistribution distribution,
+                double begin,
+                double end,
+                RJSAllowanceValue value,
+                double capacitySpeedLimit
+        ) {
+            this.distribution = distribution;
+            this.beginPosition = begin;
+            this.endPosition = end;
+            this.value = value;
+            this.capacitySpeedLimit = capacitySpeedLimit;
+        }
     }
 
     public static final class StandardAllowance extends RJSAllowance {
