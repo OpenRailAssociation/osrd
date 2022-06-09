@@ -19,15 +19,15 @@ jobs:
         with:
           path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
           key: yarn-${{ hashFiles('**/yarn.lock') }}
-      - uses: borales/actions-yarn@v2.3.0
+      - uses: borales/actions-yarn@v3.0.0
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         with:
           cmd: --cwd front install
-      - uses: borales/actions-yarn@v2.3.0
+      - uses: borales/actions-yarn@v3.0.0
         env:
           CI: false
         with:
           cmd: --cwd front build
-      - uses: borales/actions-yarn@v2.3.0
+      - uses: borales/actions-yarn@v3.0.0
         with:
           cmd: --cwd front --passWithNoTests test
