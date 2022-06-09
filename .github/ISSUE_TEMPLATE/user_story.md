@@ -37,3 +37,24 @@ assignees: ''
 - [ ] normal
 - [ ] difficult
 - [ ] extreme
+
+## Definition of Done 
+
+<!-- 
+The Definition of Done is an agreed-upon set of items that must be completed before a user story can be considered complete. It is applied consistently and serves as an official gate separating things from being “in progress” to “done.” 
+ -->
+
+- [ ] Produced code for presumed functionalities
+- [ ] Assumptions of User Story met
+- [ ] Project builds without errors
+- [ ] Unit tests written and passing
+- [ ] Project deployed on the test environment identical to production platform
+- [ ] Tests on devices/browsers listed in the project assumptions passed
+- [ ] Feature ok-ed by UX designer
+- [ ] QA performed & issues resolved
+- [ ] Feature is tested against acceptance criteria
+- [ ] Feature ok-ed by Product Owner
+- [ ] Refactoring completed
+- [ ] Any configuration or build changes documented
+- [ ] Documentation updated
+- [ ] Peer Code Review performed
