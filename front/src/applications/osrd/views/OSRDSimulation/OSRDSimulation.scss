@@ -144,6 +144,15 @@ select.sm {
     right: 2rem;
     bottom: 2.5rem;
   }
+  .route-aspect {
+    opacity: 0.5;
+    &.selected {
+      opacity: 1;
+      &.eco {
+        opacity: 1;
+      }
+    }
+  }
   .area {
     fill: url(#hatchPatternGray);
     &.selected {
