@@ -146,6 +146,9 @@
         - field_expr: signal.data->'side'
           field_name: side
           field_type: text
+        - field_expr: signal.data->'default_aspect'
+          field_name: default_aspect
+          field_type: text
       joins:
         - inner join osrd_infra_signalmodel signal on signal.obj_id = layer.obj_id and signal.infra_id = layer.infra_id
     - name: sch
