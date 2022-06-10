@@ -33,21 +33,21 @@ import java.util.*;
 public class StandaloneSimulationCommand implements CliCommand {
 
     @Parameter(
-            names = { "infra_path" },
+            names = { "--infra_path" },
             description = "Path to the infra railjson file to load",
             required = true
     )
     private String infraFilePath;
 
     @Parameter(
-            names = { "sim_path" },
+            names = { "--sim_path" },
             description = "Path to the sim railjson file to load",
             required = true
     )
     private String simFilePath;
 
     @Parameter(
-            names = { "res_path" },
+            names = { "--res_path" },
             description = "Path to the result file to save",
             required = true
     )
