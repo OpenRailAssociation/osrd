@@ -48,6 +48,24 @@ jobs:
           cd editoast
           cargo test --verbose -- --test-threads 2
 
+      - name: Coverage
+        uses: actions-rs/tarpaulin@v0.1
+        with:
+          args: '-r ./editoast --skip-clean'
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          # github runs PR workflows on the result of a merge commit.
+          # tell codecov the sha of the unmerged PR https://github.com/codecov/uploader/issues/525
+          override_commit: "${{ github.event.pull_request.head.sha }}"
+          name: codecov
+          flags: editoast
+          files: cobertura.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          verbose: true
+
   linter:
     name: Check format and run linter
     runs-on: ubuntu-latest
