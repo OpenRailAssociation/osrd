@@ -320,7 +320,7 @@ export const SelectItems: Tool<SelectItemsState> = {
               data={toolState.selection[0] as EditorEntity}
               onSubmit={async (data) => {
                 await dispatch<any>(save({ update: [data] }));
-                setState({ ...toolState, showModal: null });
+                setState({ ...toolState, selection: [data], showModal: null });
               }}
             />
           </Modal>

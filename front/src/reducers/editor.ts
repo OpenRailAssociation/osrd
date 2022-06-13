@@ -108,7 +108,13 @@ export function save(operations: {
     dispatch(setLoading());
     try {
       // saving the data
-      await editorSave(state.osrdconf.infraID, operations);
+      await editorSave(state.osrdconf.infraID, {
+        ...operations,
+        update: (operations.update || []).map((target) => {
+          const source = state.editor.editorData.find((e) => e.id === target.id);
+          return { source, target };
+        }),
+      });
       // reload the zone
       dispatch(selectZone(state.editor.editorZone));
       // success message
@@ -144,7 +150,7 @@ export const initialState: EditorState = {
   editorLayers: ['track_sections'],
   // Edition zone:
   editorZone: null,
-  // An array of Entities per layer
+  // An array of Entities
   editorData: [],
 };
 

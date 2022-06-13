@@ -45,6 +45,7 @@
     "d3-zoom": "^3.0.0",
     "debounce": "^1.2.0",
     "eslint-plugin-only-warn": "^1.0.2",
+    "fast-json-patch": "^3.1.1",
     "fetch-mock": "^9.4.0",
     "geojson": "^0.5.0",
     "i18next": "^19.1.0",
@@ -112,13 +113,17 @@
     "@babel/plugin-proposal-class-properties": "^7.8.3",
     "@babel/preset-env": "^7.8.4",
     "@babel/preset-react": "^7.8.3",
+    "@testing-library/dom": ">5",
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.3.2",
+    "@testing-library/user-event": "^7.1.2",
     "@types/lodash": "^4.14.168",
     "@types/react": "^17.0.39",
-    "@types/redux": "^3.6.0",
     "@types/react-redux": "^7.1.16",
     "@types/react-router": "^5.1.14",
     "@types/react-router-dom": "^5.1.7",
     "@types/react-transition-group": "^4.4.1",
+    "@types/redux": "^3.6.0",
     "babel-loader": "8.1.0",
     "eslint": "7.11.0",
     "eslint-config-airbnb": "^18.0.1",
@@ -132,12 +137,8 @@
     "eslint-plugin-react-hooks": "^4.3.0",
     "jsdoc": "^3.6.3",
     "prettier": "^2.6.2",
-    "typescript": "~4.4.4",
-    "@testing-library/jest-dom": "^4.2.4",
-    "@testing-library/react": "^9.3.2",
-    "@testing-library/user-event": "^7.1.2",
-    "@testing-library/dom": ">5",
-    "react-error-overlay": "6.0.9"
+    "react-error-overlay": "6.0.9",
+    "typescript": "~4.4.4"
   },
   "resolutions": {
     "@turf/difference": "6.0.1",
@@ -159,18 +160,18 @@
     "postcss-safe-parser": "4.0.2"
   },
   "peerDependencies": {
-    "url-parse": "^1.5.10",
-    "node-forge": "^1.2.1",
-    "marked": "^4.0.12",
-    "postcss": "^7.0.0",
-    "ws": "^8.5.0",
     "dns-packet": "^5.3.1",
     "glob-parent": "^6.0.2",
     "jsonpointer": "^5.0.0",
     "markdown-it": "^12.3.2",
+    "marked": "^4.0.12",
     "nanoid": "^3.3.1",
+    "node-forge": "^1.2.1",
     "nth-check": "^2.0.1",
+    "postcss": "^7.0.0",
     "pug": "^3.0.2",
-    "swiper": "6.5.1"
+    "swiper": "6.5.1",
+    "url-parse": "^1.5.10",
+    "ws": "^8.5.0"
   }
 }
