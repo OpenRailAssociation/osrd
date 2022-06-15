@@ -27,7 +27,11 @@ const Tipped: FC<TippedProps> = (props) => {
         position: 'relative',
       }}
     >
-      <Tag onMouseEnter={() => setShowTip(true)} onMouseLeave={() => setShowTip(false)}>
+      <Tag
+        onMouseEnter={() => setShowTip(true)}
+        onMouseLeave={() => setShowTip(false)}
+        onPointerLeave={() => setShowTip(false)}
+      >
         {target}
       </Tag>
       <CSSTransition unmountOnExit in={showTip} timeout={400} classNames="transition">
