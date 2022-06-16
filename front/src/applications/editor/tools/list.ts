@@ -2,8 +2,8 @@ import { Tool } from './types';
 
 import SelectionTool from './selection/tool';
 import ZoneSelectionTool from './zoneSelection/tool';
-import { LineCreationTool } from './lineCreation/tool';
+import TrackEditionTool from './trackEdition/tool';
 
-const TOOLS: Tool<any>[] = [ZoneSelectionTool, SelectionTool, LineCreationTool];
+const TOOLS: Tool<any>[] = [ZoneSelectionTool, SelectionTool, TrackEditionTool];
 
 export default TOOLS;

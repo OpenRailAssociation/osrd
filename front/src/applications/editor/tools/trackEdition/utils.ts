@@ -1,6 +1,6 @@
-import { EditorEntity } from '../../../../types';
+import { TrackSectionEntity } from '../../../../types';
 
-export function getNewLine(points: [number, number][]): EditorEntity {
+export function getNewLine(points: [number, number][]): TrackSectionEntity {
   return {
     type: 'Feature',
     objType: 'TrackSection',
