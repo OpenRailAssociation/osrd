@@ -6,9 +6,8 @@ import { save } from '../../../../reducers/editor';
 import { selectInZone } from '../../../../utils/mapboxHelper';
 import { GEOJSON_LAYER_ID } from '../../../../common/Map/Layers/GeoJSONs';
 import { SelectionState } from './types';
-import { SelectionLayers, SelectionMessages } from './components';
+import { SelectionLayers, SelectionMessages, SelectionLeftPanel } from './components';
 import ConfirmModal from '../../components/ConfirmModal';
-import EditorModal from '../../components/EditorModal';
 
 const SelectionTool: Tool<SelectionState> = {
   id: 'select-items',
@@ -71,6 +70,29 @@ const SelectionTool: Tool<SelectionState> = {
           });
         },
       },
+      {
+        id: 'mode-edition',
+        icon: FiEdit,
+        labelTranslationKey: 'Editor.tools.select-items.actions.edit-info.label',
+        isActive({ state }) {
+          return state.selectionState.type === 'edition';
+        },
+        isDisabled({ state }) {
+          const types = new Set<string>();
+          state.selection.forEach((item) => types.add(item.type));
+          return types.size !== 1;
+        },
+        onClick({ setState, state }) {
+          if (state.selectionState.type !== 'edition')
+            setState({
+              ...state,
+              selectionState: {
+                type: 'edition',
+                previousState: state.selectionState,
+              },
+            });
+        },
+      },
     ],
     // Selection actions:
     [
@@ -85,26 +107,6 @@ const SelectionTool: Tool<SelectionState> = {
           setState({
             ...state,
             selection: [],
-          });
-        },
-      },
-      {
-        id: 'edit-info',
-        icon: FiEdit,
-        labelTranslationKey: 'Editor.tools.select-items.actions.edit-info.label',
-        isDisabled({ state }) {
-          return state.selection.length !== 1;
-        },
-        onClick({ setState, state, openModal, dispatch }) {
-          openModal({
-            component: EditorModal,
-            arguments: {
-              entity: state.selection[0],
-            },
-            async afterSubmit({ savedEntity }) {
-              await dispatch<any>(save({ update: [savedEntity] }));
-              setState({ ...state, selection: [savedEntity] });
-            },
           });
         },
       },
@@ -225,12 +227,17 @@ const SelectionTool: Tool<SelectionState> = {
   getCursor(toolState, _editorState, { isDragging }) {
     if (isDragging) return 'move';
     if (toolState.selectionState.type === 'single' && toolState.hovered) return 'pointer';
-    if (toolState.selectionState.type !== 'single') return 'crosshair';
+    if (
+      toolState.selectionState.type === 'rectangle' ||
+      toolState.selectionState.type === 'polygon'
+    )
+      return 'crosshair';
     return 'default';
   },
 
-  messagesComponent: SelectionMessages,
   layersComponent: SelectionLayers,
+  leftPanelComponent: SelectionLeftPanel,
+  messagesComponent: SelectionMessages,
 };
 
 export default SelectionTool;

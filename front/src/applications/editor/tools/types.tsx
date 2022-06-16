@@ -4,7 +4,6 @@ import { IconType } from 'react-icons/lib/esm/iconBase';
 
 import { Item, PositionnedItem } from '../../../types';
 import {
-  EditorContextType,
   ExtendedEditorContextType,
   ReadOnlyEditorContextType,
 } from '../context';

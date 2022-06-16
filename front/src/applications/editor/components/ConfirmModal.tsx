@@ -12,12 +12,12 @@ const ConfirmModal: FC<
     <Modal onClose={cancel} title={title}>
       <p>{message}</p>
 
-      <div className="">
+      <div className="text-right">
+        <button type="button" className="btn btn-danger mr-2" onClick={cancel}>
+          {cancelLabel || t('common.cancel')}
+        </button>
         <button type="button" className="btn btn-primary" onClick={submit}>
           {confirmLabel || t('common.confirm')}
-        </button>
-        <button type="button" className="btn btn-danger" onClick={cancel}>
-          {cancelLabel || t('common.cancel')}
         </button>
       </div>
     </Modal>
