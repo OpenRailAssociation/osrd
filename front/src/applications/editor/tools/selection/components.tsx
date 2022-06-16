@@ -27,16 +27,21 @@ export const SelectionLayers: FC = () => {
 
   let selectionZone: Zone | undefined;
 
-  if (state.selectionState.type === 'rectangle' && state.selectionState.rectangleTopLeft) {
-    selectionZone = {
-      type: 'rectangle',
-      points: [state.selectionState.rectangleTopLeft, state.mousePosition],
-    };
-  } else if (state.selectionState.type === 'polygon' && state.selectionState.polygonPoints.length) {
-    selectionZone = {
-      type: 'polygon',
-      points: state.selectionState.polygonPoints.concat([state.mousePosition]),
-    };
+  if (state.mousePosition) {
+    if (state.selectionState.type === 'rectangle' && state.selectionState.rectangleTopLeft) {
+      selectionZone = {
+        type: 'rectangle',
+        points: [state.selectionState.rectangleTopLeft, state.mousePosition],
+      };
+    } else if (
+      state.selectionState.type === 'polygon' &&
+      state.selectionState.polygonPoints.length
+    ) {
+      selectionZone = {
+        type: 'polygon',
+        points: state.selectionState.polygonPoints.concat([state.mousePosition]),
+      };
+    }
   }
 
   let labelParts =
@@ -61,7 +66,7 @@ export const SelectionLayers: FC = () => {
         selectionIDs={state.selection as Item[]}
       />
       <EditorZone newZone={selectionZone} />
-      {state.selectionState.type === 'single' && state.hovered && (
+      {state.mousePosition && state.selectionState.type === 'single' && state.hovered && (
         <Popup
           className="popup"
           anchor="bottom"

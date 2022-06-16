@@ -107,6 +107,12 @@ const MapUnplugged: FC<MapProps> = ({
       }}
       onMouseMove={(e) => {
         setToolState({ ...toolState, mousePosition: e.lngLat });
+        if (activeTool.onMove) {
+          activeTool.onMove(e, extendedContext);
+        }
+      }}
+      onMouseLeave={() => {
+        setToolState({ ...toolState, mousePosition: null });
       }}
     >
       <AttributionControl

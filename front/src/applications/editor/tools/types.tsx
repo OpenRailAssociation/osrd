@@ -3,24 +3,21 @@ import { MapEvent } from 'react-map-gl';
 import { IconType } from 'react-icons/lib/esm/iconBase';
 
 import { Item, PositionnedItem } from '../../../types';
-import {
-  ExtendedEditorContextType,
-  ReadOnlyEditorContextType,
-} from '../context';
+import { ExtendedEditorContextType, ReadOnlyEditorContextType } from '../context';
 
 export interface CommonToolState {
-  mousePosition: [number, number];
+  mousePosition: [number, number] | null;
   hovered: PositionnedItem | null;
 }
 
 export const DEFAULT_COMMON_TOOL_STATE: CommonToolState = {
-  mousePosition: [NaN, NaN],
+  mousePosition: null,
   hovered: null,
 };
 
 export interface ToolAction<S> {
   id: string;
-  icon: IconType;
+  icon: ComponentType;
   labelTranslationKey: string;
   descriptionTranslationKeys?: string[];
   // Tool appearance:
@@ -47,6 +44,7 @@ export interface Tool<S> {
   onClickMap?: (e: MapEvent, context: ExtendedEditorContextType<S>) => void;
   onClickFeature?: (feature: Item, e: MapEvent, context: ExtendedEditorContextType<S>) => void;
   onHover?: (e: MapEvent, context: ExtendedEditorContextType<S>) => void;
+  onMove?: (e: MapEvent, context: ExtendedEditorContextType<S>) => void;
   getCursor?: (
     toolState: S,
     context: ExtendedEditorContextType<S>,

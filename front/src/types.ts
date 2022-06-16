@@ -54,6 +54,13 @@ export interface Notification {
 //
 export type EditorSchema = Array<{ layer: string; objType: string; schema: JSONSchema7 }>;
 export type EditorEntity = Feature & { objType: string };
+export interface TrackSectionEntity extends EditorEntity {
+  objType: 'TrackSection';
+  geometry: {
+    type: 'LineString';
+    coordinates: [number, number][];
+  };
+}
 
 //
 //  Misc

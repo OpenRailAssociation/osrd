@@ -13,18 +13,20 @@ export const ZoneSelectionLayers: FC = () => {
   const { mapStyle } = useSelector((s: { map: any }) => s.map) as { mapStyle: string };
   let newZone: Zone | undefined;
 
-  if (state.zoneState.type === 'rectangle' && state.zoneState.topLeft) {
-    newZone = {
-      type: 'rectangle',
-      points: [state.zoneState.topLeft, state.mousePosition],
-    };
-  }
+  if (state.mousePosition) {
+    if (state.zoneState.type === 'rectangle' && state.zoneState.topLeft) {
+      newZone = {
+        type: 'rectangle',
+        points: [state.zoneState.topLeft, state.mousePosition],
+      };
+    }
 
-  if (state.zoneState.type === 'polygon' && state.zoneState.points.length) {
-    newZone = {
-      type: 'polygon',
-      points: [...state.zoneState.points, state.mousePosition],
-    };
+    if (state.zoneState.type === 'polygon' && state.zoneState.points.length) {
+      newZone = {
+        type: 'polygon',
+        points: [...state.zoneState.points, state.mousePosition],
+      };
+    }
   }
 
   return (
