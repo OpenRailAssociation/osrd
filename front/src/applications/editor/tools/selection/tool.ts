@@ -79,7 +79,7 @@ const SelectionTool: Tool<SelectionState> = {
         },
         isDisabled({ state }) {
           const types = new Set<string>();
-          state.selection.forEach((item) => types.add(item.type));
+          state.selection.forEach((item) => types.add(item.objType));
           return types.size !== 1;
         },
         onClick({ setState, state }) {
