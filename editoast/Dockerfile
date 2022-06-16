@@ -1,8 +1,17 @@
-FROM rustlang/rust:nightly as builder
-
+FROM rustlang/rust:nightly as chef
 WORKDIR /app
+RUN cargo install cargo-chef
+
+FROM chef as planner
 COPY . .
-RUN cargo install --path .
+RUN cargo chef prepare --recipe-path recipe.json
+
+FROM chef as builder
+
+COPY --from=planner /app/recipe.json recipe.json
+RUN cargo chef cook --release --recipe-path recipe.json
+COPY . .
+RUN cargo install --locked --path .
 
 FROM debian:buster-slim as runner
 
