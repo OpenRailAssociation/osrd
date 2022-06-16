@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { groupBy, map } from 'lodash';
 import { IoMdRemoveCircleOutline } from 'react-icons/io';
 import { RiFocus3Line } from 'react-icons/ri';
+import { useTranslation } from 'react-i18next';
 
 import { EditorContext, EditorContextType } from '../../context';
 import { SelectionState } from './types';
@@ -13,7 +14,6 @@ import colors from '../../../../common/Map/Consts/colors';
 import EditorZone from '../../../../common/Map/Layers/EditorZone';
 import EditorForm from '../../components/EditorForm';
 import { save } from '../../../../reducers/editor';
-import { useTranslation } from 'react-i18next';
 
 export const SelectionMessages: FC = () => {
   const { t, state } = useContext(EditorContext) as EditorContextType<SelectionState>;
@@ -89,7 +89,7 @@ export const SelectionLeftPanel: FC = () => {
 
   if (selectionState.type === 'edition') {
     const types = new Set<string>();
-    selection.forEach((item) => types.add(item.type));
+    selection.forEach((item) => types.add(item.objType));
 
     if (selection.length === 1) {
       return (
@@ -139,7 +139,7 @@ export const SelectionLeftPanel: FC = () => {
   if (!selection.length) return <p className="text-center">No item selected yet</p>;
 
   if (selection.length > 5) {
-    const types = groupBy(selection, (item) => item.type);
+    const types = groupBy(selection, (item) => item.objType);
 
     return (
       <>
@@ -156,7 +156,7 @@ export const SelectionLeftPanel: FC = () => {
                   type="button"
                   className="btn btn-secondary btn-sm mr-2"
                   onClick={() =>
-                    setState({ ...state, selection: selection.filter((i) => i.type === type) })
+                    setState({ ...state, selection: selection.filter((i) => i.objType === type) })
                   }
                 >
                   <RiFocus3Line /> Focus
@@ -165,7 +165,7 @@ export const SelectionLeftPanel: FC = () => {
                   type="button"
                   className="btn btn-secondary btn-sm"
                   onClick={() =>
-                    setState({ ...state, selection: selection.filter((i) => i.type !== type) })
+                    setState({ ...state, selection: selection.filter((i) => i.objType !== type) })
                   }
                 >
                   <IoMdRemoveCircleOutline /> Deselect
@@ -185,7 +185,7 @@ export const SelectionLeftPanel: FC = () => {
         {selection.map((item) => (
           <li key={item.id} className="pb-4">
             <div className="pb-2">
-              Item <strong>{item.id}</strong> of type <strong>{item.type}</strong>
+              Item <strong>{item.id}</strong> of type <strong>{item.objType}</strong>
             </div>
             <div>
               <button
