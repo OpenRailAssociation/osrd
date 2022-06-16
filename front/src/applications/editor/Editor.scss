@@ -46,7 +46,8 @@
   }
 
   .tool-box,
-  .actions-box {
+  .actions-box,
+  .panel-box {
     padding: 1rem;
 
     display: flex;
@@ -94,6 +95,11 @@
     button:disabled {
       border: 3px solid grey;
     }
+  }
+  .panel-box {
+    width: 400px;
+    height: 100%;
+    overflow-y: auto;
   }
 
   .nav-box {
