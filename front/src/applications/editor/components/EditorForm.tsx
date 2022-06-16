@@ -15,7 +15,7 @@ interface EditorFormProps {
 /**
  * Display a form to create/update a new entity.
  */
-const EditorForm: React.FC<EditorFormProps> = ({ data, onSubmit }) => {
+const EditorForm: React.FC<EditorFormProps> = ({ data, onSubmit, children }) => {
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>(data.properties);
 
@@ -54,7 +54,9 @@ const EditorForm: React.FC<EditorFormProps> = ({ data, onSubmit }) => {
             else setError(JSON.stringify(e));
           }
         }}
-      />
+      >
+        {children}
+      </Form>
     </div>
   );
 };

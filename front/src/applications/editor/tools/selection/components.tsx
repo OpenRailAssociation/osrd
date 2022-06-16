@@ -1,6 +1,9 @@
 import React, { FC, useContext } from 'react';
 import { Popup } from 'react-map-gl';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { groupBy, map } from 'lodash';
+import { IoMdRemoveCircleOutline } from 'react-icons/io';
+import { RiFocus3Line } from 'react-icons/ri';
 
 import { EditorContext, EditorContextType } from '../../context';
 import { SelectionState } from './types';
@@ -8,6 +11,9 @@ import { Item, Zone } from '../../../../types';
 import GeoJSONs from '../../../../common/Map/Layers/GeoJSONs';
 import colors from '../../../../common/Map/Consts/colors';
 import EditorZone from '../../../../common/Map/Layers/EditorZone';
+import EditorForm from '../../components/EditorForm';
+import { save } from '../../../../reducers/editor';
+import { useTranslation } from 'react-i18next';
 
 export const SelectionMessages: FC = () => {
   const { t, state } = useContext(EditorContext) as EditorContextType<SelectionState>;
@@ -66,6 +72,137 @@ export const SelectionLayers: FC = () => {
           {labelParts && labelParts.map((s, i) => <div key={i}>{s}</div>)}
         </Popup>
       )}
+    </>
+  );
+};
+
+export const SelectionLeftPanel: FC = () => {
+  const dispatch = useDispatch();
+  const { t } = useTranslation();
+  const { state, setState } = useContext(EditorContext) as EditorContextType<SelectionState>;
+  const { selection, selectionState } = state;
+
+  if (selectionState.type === 'edition') {
+    const types = new Set<string>();
+    selection.forEach((item) => types.add(item.type));
+
+    if (selection.length === 1) {
+      return (
+        <EditorForm
+          data={selection[0]}
+          onSubmit={async (savedEntity) => {
+            await dispatch<any>(save({ update: [savedEntity] }));
+            setState({ ...state, selection: [savedEntity], selectionState: { type: 'single' } });
+          }}
+        >
+          <div className="text-right">
+            <button
+              type="button"
+              className="btn btn-danger mr-2"
+              onClick={() =>
+                setState({
+                  ...state,
+                  selectionState: selectionState.previousState || { type: 'single' },
+                })
+              }
+            >
+              {t('common.cancel')}
+            </button>
+            <button type="submit" className="btn btn-primary">
+              {t('common.confirm')}
+            </button>
+          </div>
+        </EditorForm>
+      );
+    }
+
+    if (types.size === 1) {
+      return (
+        <p className="text-center">
+          It is not yet possible to edit simultaneously items with the same type (TODO).
+        </p>
+      );
+    }
+
+    return (
+      <p className="text-center">
+        It is not possible to edit simultaneously items with different types.
+      </p>
+    );
+  }
+
+  if (!selection.length) return <p className="text-center">No item selected yet</p>;
+
+  if (selection.length > 5) {
+    const types = groupBy(selection, (item) => item.type);
+
+    return (
+      <>
+        <h4>Selection</h4>
+        <ul className="list-unstyled">
+          {map(types, (items, type) => (
+            <li key={type} className="pb-4">
+              <div className="pb-2">
+                {items.length} selected item{items.length > 1 ? 's' : ''} of type{' '}
+                <strong>{type}</strong>
+              </div>
+              <div>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm mr-2"
+                  onClick={() =>
+                    setState({ ...state, selection: selection.filter((i) => i.type === type) })
+                  }
+                >
+                  <RiFocus3Line /> Focus
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={() =>
+                    setState({ ...state, selection: selection.filter((i) => i.type !== type) })
+                  }
+                >
+                  <IoMdRemoveCircleOutline /> Deselect
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <h4>Selection</h4>
+      <ul className="list-unstyled">
+        {selection.map((item) => (
+          <li key={item.id} className="pb-4">
+            <div className="pb-2">
+              Item <strong>{item.id}</strong> of type <strong>{item.type}</strong>
+            </div>
+            <div>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm mr-2"
+                onClick={() => setState({ ...state, selection: [item] })}
+              >
+                <RiFocus3Line /> Focus
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={() =>
+                  setState({ ...state, selection: selection.filter((i) => i.id !== item.id) })
+                }
+              >
+                <IoMdRemoveCircleOutline /> Deselect
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
     </>
   );
 };
