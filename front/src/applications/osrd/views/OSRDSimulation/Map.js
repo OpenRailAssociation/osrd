@@ -116,6 +116,8 @@ const Map = (props) => {
     const line = lineString(geojsonPath.geometry.coordinates);
 
     if (positionValues.headPosition) {
+
+
       const position = along(
         line,
         positionValues.headPosition.position / 1000,
@@ -130,7 +132,7 @@ const Map = (props) => {
       const intermediaterMarkersPoints = [];
 
       // Representing the wagons is useless at outer zooms
-      if(viewport?.zoom > 13) {
+      if (viewport?.zoom > 13) {
         // To do: get this data from rollingstock, stored
         const trainLength = positionValues.headPosition.position
         - positionValues.tailPosition.position;
@@ -146,7 +148,6 @@ const Map = (props) => {
         intermediaterMarkersPoints.push(tailPosition);
       }
 
-
       setTrainHoverPosition({
         ...position,
         properties: {
@@ -154,23 +155,47 @@ const Map = (props) => {
           intermediaterMarkersPoints,
         },
       });
-
     }
 
     // Found trains including timePosition, and organize them with geojson collection of points
-    setTrainHoverPositionOthers(createOtherPoints().map((train) => ({
-      ...along(
+    setTrainHoverPositionOthers(createOtherPoints().map((train) => {
+      const position = along(
         line,
         train.head_positions.position / 1000,
         { units: 'kilometers' },
-      ),
-      properties: {
-        ...train.head_positions,
-        speed: train.speeds.speed,
-        name: train.name,
-      },
-    })));
+      );
+      const tailPosition = train.tail_position ? along(
+        line,
+        train.tail_position.position / 1000,
+        { units: 'kilometers' },
+      ) : position;
 
+      const intermediaterMarkersPoints = [];
+      // Representing the wagons is useless at outer zooms
+      if (viewport?.zoom > 13) {
+        // To do: get this data from rollingstock, stored
+        const trainLength = train.head_positions.position
+        - train.tail_positions.position;
+        for (let i = 0; i < INTERMEDIATE_MARKERS_QTY; i++) {
+          const intermediatePosition = along(
+            line,
+            (train.head_positions.position
+              - (trainLength / INTERMEDIATE_MARKERS_QTY) * i) / 1000,
+            { units: 'kilometers' },
+          );
+          intermediaterMarkersPoints.push(intermediatePosition);
+        }
+        intermediaterMarkersPoints.push(tailPosition);
+      }
+
+      return {
+        ...position,
+        properties: {
+          speed: train.speeds.speed,
+          intermediaterMarkersPoints,
+        },
+      };
+    }));
   };
 
   const zoomToFeature = (boundingBox) => {
@@ -259,7 +284,6 @@ const Map = (props) => {
       dispatch(updateTimePositionValues(timePositionLocal));
     }
     if (e.features[0]) {
-
       setIdHover(e.features[0].properties.id);
     } else {
       setIdHover(undefined);
@@ -267,9 +291,9 @@ const Map = (props) => {
   };
 
   const onClick = (e) => {
-    console.log("Click on map");
-    console.log(mapRef.current.queryRenderedFeatures(e.point))
-  }
+    console.log('Click on map');
+    console.log(mapRef.current.queryRenderedFeatures(e.point));
+  };
 
   const displayPath = () => {
     if (simulation.trains.length > 0) {
@@ -290,8 +314,8 @@ const Map = (props) => {
 
   useEffect(() => {
     mapRef.current.getMap().on('click', (e) => {
-      console.log("click on map")
-    })
+      console.log('click on map');
+    });
 
     if (urlLat) {
       updateViewportChange({
