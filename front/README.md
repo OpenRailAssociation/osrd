@@ -1,4 +1,8 @@
-# Dependencies
+# OSRD's Front
+
+[![Front](https://github.com/DGEXSolutions/osrd/actions/workflows/front.yml/badge.svg)](https://github.com/DGEXSolutions/osrd/actions/workflows/front.yml)
+
+## Dependencies
 
 ### Cross project
 * [i18n](https://www.i18next.com/) internationalization framework for javascript. Please keep it simple.
