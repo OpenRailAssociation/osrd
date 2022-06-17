@@ -4,8 +4,8 @@
   "private": true,
   "proxy": "https://api.dev.dgexsol.fr",
   "dependencies": {
-    "@nivo/core": "^0.79.0",
     "@nivo/circle-packing": "^0.79.1",
+    "@nivo/core": "^0.79.0",
     "@nivo/line": "^0.79.1",
     "@nivo/tooltip": "^0.79.0",
     "@react-three/drei": "^5.1.2",
@@ -39,10 +39,11 @@
     "babel-loader": "8.1.0",
     "copy-to-clipboard": "^3.3.1",
     "d3": "^5.16.0",
-    "d3-delaunay": "^6.0.2",
     "d3-brush": "^3.0.0",
-    "d3-selection": "^3.0.0",
+    "d3-delaunay": "^6.0.2",
     "d3-drag": "^3.0.0",
+    "d3-selection": "^3.0.0",
+    "d3-zoom": "^3.0.0",
     "debounce": "^1.2.0",
     "eslint-plugin-only-warn": "^1.0.2",
     "fetch-mock": "^9.4.0",
@@ -58,6 +59,7 @@
     "prop-types": "^15.8.1",
     "react": "^17.0.2",
     "react-beautiful-dnd": "^13.0.0",
+    "react-dev-utils": "^12.0.1",
     "react-dom": "^17.0.2",
     "react-flatpickr": "^3.10.0",
     "react-i18next": "^11.12.0",
@@ -82,8 +84,7 @@
     "turf-point": "^2.0.1",
     "uuid": "^8.3.2",
     "webpack": "4.44.2",
-    "wellknown": "^0.5.0",
-    "react-dev-utils": "^12.0.1"
+    "wellknown": "^0.5.0"
   },
   "scripts": {
     "start": "react-scripts start",
