@@ -11,23 +11,38 @@ import { TrackEditionState } from './types';
 import EditorForm from '../../components/EditorForm';
 import { save } from '../../../../reducers/editor';
 import { TrackSectionEntity } from '../../../../types';
+import { zoneToFeature } from '../../../../utils/mapboxHelper';
+import { last } from 'lodash';
 
+export const TRACK_LAYER_ID = 'trackEditionTool/new-track-path';
 export const POINTS_LAYER_ID = 'trackEditionTool/new-track-points';
+const TRACK_COLOR = '#666';
 
 export const TrackEditionLayers: FC = () => {
   const { state } = useContext(EditorContext) as EditorContextType<TrackEditionState>;
   const { mapStyle } = useSelector((s: { map: any }) => s.map) as { mapStyle: string };
 
-  const points = state.track.geometry.coordinates.slice(0);
-  if (state.editionState.type === 'addPoint' && state.mousePosition) {
+  const isAddingPointOnExistingSection =
+    typeof state.nearestPoint?.properties?.sectionIndex === 'number';
+  const points = state.track.geometry.coordinates;
+  let additionalSegment: typeof points = [];
+  if (
+    points.length &&
+    state.editionState.type === 'addPoint' &&
+    state.mousePosition &&
+    !isAddingPointOnExistingSection
+  ) {
     const lastPosition =
-      state.anchorLinePoints && state.nearestPoint
+      state.anchorLinePoints &&
+      state.nearestPoint &&
+      typeof state.nearestPoint.properties?.sectionIndex !== 'number'
         ? (state.nearestPoint.geometry.coordinates as [number, number])
         : state.mousePosition;
+
     if (state.editionState.addAtStart) {
-      points.unshift(lastPosition);
+      additionalSegment = [lastPosition, points[0]];
     } else {
-      points.push(lastPosition);
+      additionalSegment = [last(points) as [number, number], lastPosition];
     }
   }
 
@@ -46,15 +61,45 @@ export const TrackEditionLayers: FC = () => {
 
   return (
     <>
-      {!!points.length && (
-        <EditorZone
-          newZone={{
-            type: 'polygon',
-            points,
-          }}
-        />
-      )}
+      {/* Zone display */}
+      <EditorZone />
+
+      {/* Editor data layer */}
       <GeoJSONs colors={colors[mapStyle]} />
+
+      {/* Track path */}
+      <Source
+        type="geojson"
+        data={{
+          type: 'Feature',
+          properties: {},
+          geometry: {
+            type: 'LineString',
+            coordinates: points,
+          },
+        }}
+      >
+        <Layer
+          id={TRACK_LAYER_ID}
+          type="line"
+          paint={{ 'line-color': TRACK_COLOR, 'line-dasharray': [2, 2] }}
+        />
+      </Source>
+      {additionalSegment.length && (
+        <Source
+          type="geojson"
+          data={{
+            type: 'Feature',
+            properties: {},
+            geometry: {
+              type: 'LineString',
+              coordinates: additionalSegment,
+            },
+          }}
+        >
+          <Layer type="line" paint={{ 'line-color': TRACK_COLOR, 'line-dasharray': [2, 2] }} />
+        </Source>
+      )}
 
       {/* Highlighted nearest point from data */}
       {state.editionState.type === 'addPoint' && state.nearestPoint && (
@@ -76,26 +121,23 @@ export const TrackEditionLayers: FC = () => {
         type="geojson"
         data={{
           type: 'FeatureCollection',
-          features:
-            state.editionState.type !== 'addPoint'
-              ? points.map((point, index) => ({
-                  type: 'Feature',
-                  geometry: {
-                    type: 'Point',
-                    coordinates: point,
-                  },
-                  properties: { index },
-                }))
-              : [],
+          features: points.map((point, index) => ({
+            type: 'Feature',
+            geometry: {
+              type: 'Point',
+              coordinates: point,
+            },
+            properties: { index },
+          })),
         }}
       >
         <Layer
           id={POINTS_LAYER_ID}
           type="circle"
           paint={{
-            'circle-radius': 4,
+            'circle-radius': state.editionState.type !== 'addPoint' ? 4 : 2,
             'circle-color': '#fff',
-            'circle-stroke-color': '#666',
+            'circle-stroke-color': TRACK_COLOR,
             'circle-stroke-width': 1,
           }}
         />
@@ -125,7 +167,7 @@ export const TrackEditionLayers: FC = () => {
           paint={{
             'circle-radius': 4,
             'circle-color': '#fff',
-            'circle-stroke-color': '#666',
+            'circle-stroke-color': TRACK_COLOR,
             'circle-stroke-width': 3,
           }}
         />
