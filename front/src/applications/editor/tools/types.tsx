@@ -45,8 +45,8 @@ export interface Tool<S> {
   onClickFeature?: (feature: Item, e: MapEvent, context: ExtendedEditorContextType<S>) => void;
   onHover?: (e: MapEvent, context: ExtendedEditorContextType<S>) => void;
   onMove?: (e: MapEvent, context: ExtendedEditorContextType<S>) => void;
+  onKeyDown?: (e: KeyboardEvent, context: ExtendedEditorContextType<S>) => void;
   getCursor?: (
-    toolState: S,
     context: ExtendedEditorContextType<S>,
     mapState: { isLoaded: boolean; isDragging: boolean; isHovering: boolean }
   ) => string;

@@ -224,13 +224,10 @@ const SelectionTool: Tool<SelectionState> = {
   getInteractiveLayers() {
     return [GEOJSON_LAYER_ID];
   },
-  getCursor(toolState, _editorState, { isDragging }) {
+  getCursor({ state }, { isDragging }) {
     if (isDragging) return 'move';
-    if (toolState.selectionState.type === 'single' && toolState.hovered) return 'pointer';
-    if (
-      toolState.selectionState.type === 'rectangle' ||
-      toolState.selectionState.type === 'polygon'
-    )
+    if (state.selectionState.type === 'single' && state.hovered) return 'pointer';
+    if (state.selectionState.type === 'rectangle' || state.selectionState.type === 'polygon')
       return 'crosshair';
     return 'default';
   },

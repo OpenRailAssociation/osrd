@@ -11,8 +11,8 @@ export type TrackEditionState = CommonToolState & {
         type: 'addPoint';
         addAtStart: boolean;
       }
-    | { type: 'movePoint' }
-    | { type: 'deletePoint' };
+    | { type: 'movePoint'; draggedPointIndex?: number; hoveredPointIndex?: number }
+    | { type: 'deletePoint'; hoveredPointIndex?: number };
 
   // Anchoring state:
   anchorLinePoints: boolean;

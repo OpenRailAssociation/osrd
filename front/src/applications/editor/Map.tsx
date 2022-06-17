@@ -55,88 +55,95 @@ const MapUnplugged: FC<MapProps> = ({
   );
 
   return (
-    <ReactMapGL
-      {...viewport}
-      width="100%"
-      height="100%"
-      mapStyle={osmBlankStyle}
-      onViewportChange={(newViewport: ViewportProps) => setViewport(newViewport)}
-      attributionControl={false} // Defined below
-      clickRadius={activeTool.getRadius ? activeTool.getRadius(extendedContext) : DEFAULT_RADIUS}
-      touchRotate
-      asyncRender
-      doubleClickZoom={false}
-      interactiveLayerIds={
-        activeTool.getInteractiveLayers ? activeTool.getInteractiveLayers(extendedContext) : []
-      }
-      getCursor={(mapState: {
-        isLoaded: boolean;
-        isDragging: boolean;
-        isHovering: boolean;
-      }): string => {
-        return activeTool.getCursor
-          ? activeTool.getCursor(toolState, extendedContext, mapState)
-          : 'default';
-      }}
-      onClick={(e) => {
-        if (toolState.hovered && activeTool.onClickFeature) {
-          activeTool.onClickFeature(toolState.hovered, e, extendedContext);
-        }
-        if (activeTool.onClickMap) {
-          activeTool.onClickMap(e, extendedContext);
-        }
-      }}
-      onHover={(e) => {
-        const feature = (e.features || [])[0];
-
-        if (activeTool.onHover) {
-          activeTool.onHover(e, extendedContext);
-        } else if (feature) {
-          setToolState({
-            ...toolState,
-            hovered: {
-              id: feature.properties.id,
-              properties: feature.properties || {},
-              lng: feature.properties.lng,
-              lat: feature.properties.lat,
-            },
-          });
-        } else {
-          setToolState({ ...toolState, hovered: null });
-        }
-      }}
-      onMouseMove={(e) => {
-        setToolState({ ...toolState, mousePosition: e.lngLat });
-        if (activeTool.onMove) {
-          activeTool.onMove(e, extendedContext);
-        }
-      }}
-      onMouseLeave={() => {
-        setToolState({ ...toolState, mousePosition: null });
+    <div
+      tabIndex={0}
+      role="none"
+      className="w-100 h-100"
+      onKeyDown={(e) => {
+        if (activeTool.onKeyDown) activeTool.onKeyDown(e.nativeEvent, extendedContext);
       }}
     >
-      <AttributionControl
-        className="attribution-control"
-        customAttribution="©SNCF/DGEX Solutions"
-      />
-      <ScaleControl
-        maxWidth={100}
-        unit="metric"
-        style={{
-          left: 20,
-          bottom: 20,
+      <ReactMapGL
+        {...viewport}
+        width="100%"
+        height="100%"
+        mapStyle={osmBlankStyle}
+        onViewportChange={(newViewport: ViewportProps) => setViewport(newViewport)}
+        attributionControl={false} // Defined below
+        clickRadius={activeTool.getRadius ? activeTool.getRadius(extendedContext) : DEFAULT_RADIUS}
+        touchRotate
+        asyncRender
+        doubleClickZoom={false}
+        interactiveLayerIds={
+          activeTool.getInteractiveLayers ? activeTool.getInteractiveLayers(extendedContext) : []
+        }
+        getCursor={(mapState: {
+          isLoaded: boolean;
+          isDragging: boolean;
+          isHovering: boolean;
+        }): string => {
+          return activeTool.getCursor ? activeTool.getCursor(extendedContext, mapState) : 'default';
         }}
-      />
+        onClick={(e) => {
+          if (toolState.hovered && activeTool.onClickFeature) {
+            activeTool.onClickFeature(toolState.hovered, e, extendedContext);
+          }
+          if (activeTool.onClickMap) {
+            activeTool.onClickMap(e, extendedContext);
+          }
+        }}
+        onHover={(e) => {
+          const feature = (e.features || [])[0];
 
-      {/* Common layers */}
-      <Background colors={colors[mapStyle]} />
-      <OSM mapStyle={mapStyle} />
-      <Hillshade mapStyle={mapStyle} />
-      <Platform colors={colors[mapStyle]} />
+          if (activeTool.onHover) {
+            activeTool.onHover(e, extendedContext);
+          } else if (feature) {
+            setToolState({
+              ...toolState,
+              hovered: {
+                id: feature.properties.id,
+                properties: feature.properties || {},
+                lng: feature.properties.lng,
+                lat: feature.properties.lat,
+              },
+            });
+          } else {
+            setToolState({ ...toolState, hovered: null });
+          }
+        }}
+        onMouseMove={(e) => {
+          setToolState({ ...toolState, mousePosition: e.lngLat });
+          if (activeTool.onMove) {
+            activeTool.onMove(e, extendedContext);
+          }
+        }}
+        onMouseLeave={() => {
+          setToolState({ ...toolState, mousePosition: null });
+        }}
+      >
+        <AttributionControl
+          className="attribution-control"
+          customAttribution="©SNCF/DGEX Solutions"
+        />
+        <ScaleControl
+          maxWidth={100}
+          unit="metric"
+          style={{
+            left: 20,
+            bottom: 20,
+          }}
+        />
 
-      {/* Tool specific layers */}
-      {activeTool.layersComponent && <activeTool.layersComponent />}
-    </ReactMapGL>
+        {/* Common layers */}
+        <Background colors={colors[mapStyle]} />
+        <OSM mapStyle={mapStyle} />
+        <Hillshade mapStyle={mapStyle} />
+        <Platform colors={colors[mapStyle]} />
+
+        {/* Tool specific layers */}
+        {activeTool.layersComponent && <activeTool.layersComponent />}
+      </ReactMapGL>
+    </div>
   );
 };
 
