@@ -11,13 +11,14 @@ import { TrackEditionState } from './types';
 import EditorForm from '../../components/EditorForm';
 import { save } from '../../../../reducers/editor';
 import { TrackSectionEntity } from '../../../../types';
-import { Feature, MultiPoint } from 'geojson';
+
+export const POINTS_LAYER_ID = 'trackEditionTool/new-track-points';
 
 export const TrackEditionLayers: FC = () => {
   const { state } = useContext(EditorContext) as EditorContextType<TrackEditionState>;
   const { mapStyle } = useSelector((s: { map: any }) => s.map) as { mapStyle: string };
-  const points = state.track.geometry.coordinates.slice(0);
 
+  const points = state.track.geometry.coordinates.slice(0);
   if (state.editionState.type === 'addPoint' && state.mousePosition) {
     const lastPosition =
       state.anchorLinePoints && state.nearestPoint
@@ -27,6 +28,19 @@ export const TrackEditionLayers: FC = () => {
       points.unshift(lastPosition);
     } else {
       points.push(lastPosition);
+    }
+  }
+
+  let highlightedPoint: [number, number] | undefined;
+  if (state.editionState.type === 'movePoint') {
+    if (typeof state.editionState.draggedPointIndex === 'number') {
+      highlightedPoint = state.track.geometry.coordinates[state.editionState.draggedPointIndex];
+    } else if (typeof state.editionState.hoveredPointIndex === 'number') {
+      highlightedPoint = state.track.geometry.coordinates[state.editionState.hoveredPointIndex];
+    }
+  } else if (state.editionState.type === 'deletePoint') {
+    if (typeof state.editionState.hoveredPointIndex === 'number') {
+      highlightedPoint = state.track.geometry.coordinates[state.editionState.hoveredPointIndex];
     }
   }
 
@@ -42,13 +56,14 @@ export const TrackEditionLayers: FC = () => {
       )}
       <GeoJSONs colors={colors[mapStyle]} />
 
-      {state.nearestPoint && (
+      {/* Highlighted nearest point from data */}
+      {state.editionState.type === 'addPoint' && state.nearestPoint && (
         <Source type="geojson" data={state.nearestPoint}>
           <Layer
             type="circle"
             paint={{
               'circle-radius': 4,
-              'circle-color': '#ffffff',
+              'circle-color': '#fff',
               'circle-stroke-color': '#009EED',
               'circle-stroke-width': 1,
             }}
@@ -56,29 +71,65 @@ export const TrackEditionLayers: FC = () => {
         </Source>
       )}
 
-      {state.editionState.type !== 'addPoint' && (
-        <Source
-          type="geojson"
-          data={{
-            type: 'Feature',
-            geometry: {
-              type: 'MultiPoint',
-              coordinates: points,
-            },
-            properties: {},
+      {/* Track points */}
+      <Source
+        type="geojson"
+        data={{
+          type: 'FeatureCollection',
+          features:
+            state.editionState.type !== 'addPoint'
+              ? points.map((point, index) => ({
+                  type: 'Feature',
+                  geometry: {
+                    type: 'Point',
+                    coordinates: point,
+                  },
+                  properties: { index },
+                }))
+              : [],
+        }}
+      >
+        <Layer
+          id={POINTS_LAYER_ID}
+          type="circle"
+          paint={{
+            'circle-radius': 4,
+            'circle-color': '#fff',
+            'circle-stroke-color': '#666',
+            'circle-stroke-width': 1,
           }}
-        >
-          <Layer
-            type="circle"
-            paint={{
-              'circle-radius': 4,
-              'circle-color': '#ffffff',
-              'circle-stroke-color': '#009EED',
-              'circle-stroke-width': 1,
-            }}
-          />
-        </Source>
-      )}
+        />
+      </Source>
+
+      {/* Highlighted nearest point or dragged point from track */}
+      <Source
+        type="geojson"
+        data={{
+          type: 'FeatureCollection',
+          features: highlightedPoint
+            ? [
+                {
+                  type: 'Feature',
+                  properties: {},
+                  geometry: {
+                    type: 'Point',
+                    coordinates: highlightedPoint,
+                  },
+                },
+              ]
+            : [],
+        }}
+      >
+        <Layer
+          type="circle"
+          paint={{
+            'circle-radius': 4,
+            'circle-color': '#fff',
+            'circle-stroke-color': '#666',
+            'circle-stroke-width': 3,
+          }}
+        />
+      </Source>
     </>
   );
 };
@@ -94,6 +145,9 @@ export const TrackEditionLeftPanel: FC = () => {
       onSubmit={async (savedEntity) => {
         await dispatch<any>(save({ create: [savedEntity] }));
         setState({ ...state, track: savedEntity as TrackSectionEntity });
+      }}
+      onChange={(track) => {
+        setState({ ...state, track: track as TrackSectionEntity });
       }}
     >
       <div className="text-right">

@@ -191,7 +191,7 @@ const ZoneSelectionTool: Tool<ZoneSelectionState> = {
         });
       }
     } else if (state.zoneState.type === 'polygon') {
-      const points = state.zoneState.points;
+      const { points } = state.zoneState;
       const lastPoint = points[points.length - 1];
 
       if (isEqual(lastPoint, position)) {
@@ -216,7 +216,7 @@ const ZoneSelectionTool: Tool<ZoneSelectionState> = {
     // Nothing here (to prevent the default Map to update the `hovered` state for no purpose)
   },
 
-  getCursor(_state, _editorState, { isDragging }) {
+  getCursor(_context, { isDragging }) {
     if (isDragging) return 'move';
     return 'crosshair';
   },

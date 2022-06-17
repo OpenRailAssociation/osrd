@@ -10,12 +10,13 @@ import { getJsonSchemaForLayer, getLayerForObjectType } from '../data/utils';
 interface EditorFormProps {
   data: EditorEntity;
   onSubmit: (data: EditorEntity) => Promise<void>;
+  onChange?: (data: EditorEntity) => void;
 }
 
 /**
  * Display a form to create/update a new entity.
  */
-const EditorForm: React.FC<EditorFormProps> = ({ data, onSubmit, children }) => {
+const EditorForm: React.FC<EditorFormProps> = ({ data, onSubmit, onChange, children }) => {
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>(data.properties);
 
@@ -23,6 +24,10 @@ const EditorForm: React.FC<EditorFormProps> = ({ data, onSubmit, children }) => 
   const layer = getLayerForObjectType(editorState.editorSchema, data.objType);
   const schema = getJsonSchemaForLayer(editorState.editorSchema, layer || '');
   if (!schema) throw new Error(`Missing data type for ${layer}`);
+
+  useEffect(() => {
+    setFormData(data.properties);
+  }, [data]);
 
   /**
    * When errors are displayed, we scroll to them.
@@ -53,6 +58,10 @@ const EditorForm: React.FC<EditorFormProps> = ({ data, onSubmit, children }) => 
             if (e instanceof Error) setError(e.message);
             else setError(JSON.stringify(e));
           }
+        }}
+        onChange={(event) => {
+          if (onChange)
+            onChange({ ...data, properties: { ...data.properties, ...event.formData } });
         }}
       >
         {children}
