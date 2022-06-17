@@ -1,19 +1,13 @@
 package fr.sncf.osrd.envelope_sim.allowances.utils;
 
 public abstract class AllowanceValue {
-    /** Defines how the allowance is internally distributed when the trip is subdivided */
-    public final AllowanceDistribution distribution;
-
-    protected AllowanceValue(AllowanceDistribution distribution) {
-        this.distribution = distribution;
-    }
 
     /** Returns the allowance for a section of a trip, divided over time */
     public final double getSectionAllowanceTime(
             double sectionTime, double totalTime,
             double sectionDistance, double totalDistance
     ) {
-        var ratio = distribution.getSectionRatio(sectionTime, totalTime, sectionDistance, totalDistance);
+        var ratio = getSectionRatio(sectionTime, totalTime, sectionDistance, totalDistance);
         var totalAllowance = getAllowanceTime(totalTime, totalDistance);
         return ratio * totalAllowance;
     }
@@ -25,13 +19,18 @@ public abstract class AllowanceValue {
     /** Returns the allowance, given the total time and distance of the trip */
     public abstract double getAllowanceRatio(double baseTime, double distance);
 
+    /** Returns the share of the total allowance a given section gets */
+    public abstract double getSectionRatio(double sectionTime,
+                                           double totalTime,
+                                           double sectionDistance,
+                                           double totalDistance);
+
 
     /** A fixed time allowance */
     public static class FixedTime extends AllowanceValue {
         public double time;
 
-        public FixedTime(AllowanceDistribution distribution, double time) {
-            super(distribution);
+        public FixedTime(double time) {
             this.time = time;
         }
 
@@ -44,14 +43,23 @@ public abstract class AllowanceValue {
         public double getAllowanceRatio(double baseTime, double distance) {
             return time / baseTime;
         }
+
+        @Override
+        public double getSectionRatio(
+                double sectionTime,
+                double totalTime,
+                double sectionDistance,
+                double totalDistance
+        ) {
+            return sectionTime / totalTime;
+        }
     }
 
     /** An added percentage of total time */
     public static class Percentage extends AllowanceValue {
         public double percentage;
 
-        public Percentage(AllowanceDistribution distribution, double percentage) {
-            super(distribution);
+        public Percentage(double percentage) {
             this.percentage = percentage;
         }
 
@@ -65,14 +73,23 @@ public abstract class AllowanceValue {
         public double getAllowanceRatio(double baseTime, double distance) {
             return percentage / 100;
         }
+
+        @Override
+        public double getSectionRatio(
+                double sectionTime,
+                double totalTime,
+                double sectionDistance,
+                double totalDistance
+        ) {
+            return sectionTime / totalTime;
+        }
     }
 
     /** Added time in minutes per 100 km */
     public static class TimePerDistance extends AllowanceValue {
         public double timePerDistance;
 
-        public TimePerDistance(AllowanceDistribution distribution, double timePerDistance) {
-            super(distribution);
+        public TimePerDistance(double timePerDistance) {
             this.timePerDistance = timePerDistance;
         }
 
@@ -85,6 +102,16 @@ public abstract class AllowanceValue {
         @Override
         public double getAllowanceRatio(double baseTime, double distance) {
             return getAllowanceTime(baseTime, distance) / baseTime;
+        }
+
+        @Override
+        public double getSectionRatio(
+                double sectionTime,
+                double totalTime,
+                double sectionDistance,
+                double totalDistance
+        ) {
+            return sectionDistance / totalDistance;
         }
     }
 }

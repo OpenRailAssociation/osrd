@@ -46,9 +46,9 @@ export default function SpeedSpaceChart(props) {
   const dispatch = useDispatch();
   const {
     chartXGEV, mustRedraw, positionValues, selectedTrain,
-    speedSpaceSettings, timePosition,
+    speedSpaceSettings, timePosition, consolidatedSimulation
   } = useSelector((state) => state.osrdsimulation);
-  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
+ const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const [showSettings, setShowSettings] = useState(false);
   const [rotate, setRotate] = useState(false);
   const [resetChart, setResetChart] = useState(false);
@@ -152,8 +152,8 @@ export default function SpeedSpaceChart(props) {
     });
   };
 
-  const drawTrain = () => {
-    if (mustRedraw) {
+  const drawTrain = (force = false) => {
+    if (mustRedraw || force) {
       const chartLocal = createChart();
       chartLocal.drawZone.append('g').attr('id', 'speedSpaceChart').attr('class', 'chartTrain');
       drawAxisTitle(chartLocal, rotate);
@@ -196,6 +196,11 @@ export default function SpeedSpaceChart(props) {
     drawTrain();
     handleWindowResize(CHART_ID, dispatch, drawTrain, isResizeActive, setResizeActive);
   }, [chart, mustRedraw, rotate]);
+
+  useEffect(() => {
+    drawTrain(true);
+    handleWindowResize(CHART_ID, dispatch, drawTrain, isResizeActive, setResizeActive);
+  }, [consolidatedSimulation]);
 
   useEffect(() => {
     traceVerticalLine(

@@ -4,8 +4,6 @@ import static fr.sncf.osrd.envelope.EnvelopeShape.*;
 import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeTest.makeComplexMaxEffortEnvelope;
 import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeTest.makeSimpleMaxEffortEnvelope;
 import static fr.sncf.osrd.envelope_sim.MaxSpeedEnvelopeTest.TIME_STEP;
-import static fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceDistribution.DISTANCE_RATIO;
-import static fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceDistribution.TIME_RATIO;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.carrotsearch.hppc.DoubleArrayList;
@@ -34,7 +32,7 @@ public class AllowanceTests {
         return new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
     }
 
-    private static MarecoAllowance makeMarecoAllowance(
+    private static MarecoAllowance makeStandardMarecoAllowance(
             EnvelopeSimContext context, 
             double beginPos, double endPos,
             double capacitySpeedLimit,
@@ -44,7 +42,7 @@ public class AllowanceTests {
         return new MarecoAllowance(context, beginPos, endPos, capacitySpeedLimit, defaultRange);
     }
 
-    private static LinearAllowance makeLinearAllowance(
+    private static LinearAllowance makeStandardLinearAllowance(
             EnvelopeSimContext context,
             double beginPos, double endPos,
             double capacitySpeedLimit,
@@ -90,16 +88,16 @@ public class AllowanceTests {
         var testContext = makeSimpleContext(length, 0);
         var stops = new double[] { 0.5 * length, length };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
-        var allowanceValue = new AllowanceValue.Percentage(TIME_RATIO, 10);
+        var allowanceValue = new AllowanceValue.Percentage(10);
 
-        // test mareco allowance
-        var marecoAllowance = makeMarecoAllowance(
+        // test mareco distribution
+        var marecoAllowance = makeStandardMarecoAllowance(
                 testContext,
                 0, length, 0, allowanceValue);
         testBinarySearchContinuity(maxEffortEnvelope, marecoAllowance, 10, 80);
 
-        // test linear allowance
-        var linearAllowance = makeLinearAllowance(
+        // test linear distribution
+        var linearAllowance = makeStandardLinearAllowance(
                 testContext,
                 0, length, 0, allowanceValue);
         testBinarySearchContinuity(maxEffortEnvelope, linearAllowance, 8, 70);
@@ -120,8 +118,8 @@ public class AllowanceTests {
     public void testMarecoShapeFlat() {
         var length = 10_000;
         var testContext = makeSimpleContext(length, 0);
-        var allowanceValue = new AllowanceValue.Percentage(TIME_RATIO, 10);
-        var allowance = makeMarecoAllowance(
+        var allowanceValue = new AllowanceValue.Percentage(10);
+        var allowance = makeStandardMarecoAllowance(
                 testContext,
                 0, length, 0, allowanceValue);
         testAllowanceShapeFlat(testContext, allowance);
@@ -143,8 +141,8 @@ public class AllowanceTests {
     public void testMarecoShapeSteep() {
         var length = 10_000;
         var testContext = makeSimpleContext(length, 20);
-        var allowanceValue = new AllowanceValue.Percentage(TIME_RATIO, 10);
-        var allowance = makeMarecoAllowance(
+        var allowanceValue = new AllowanceValue.Percentage(10);
+        var allowance = makeStandardMarecoAllowance(
                 testContext,
                 0, length, 0, allowanceValue);
         testAllowanceShapeSteep(testContext, allowance);
@@ -187,7 +185,7 @@ public class AllowanceTests {
         assertEquals(speedEndPointBase, speedEndPoint, speedEndPointBase * tolerance);
     }
 
-    /** Test mareco allowance with percentage time */
+    /** Test mareco distribution with percentage time */
     @ParameterizedTest
     @ValueSource(doubles = {0.0, 10, 100})
     public void testPercentageTimeAllowances(double value) {
@@ -197,16 +195,16 @@ public class AllowanceTests {
         var stops = new double[] { 50_000, testContext.path.getLength() };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
 
-        var allowanceValue = new AllowanceValue.Percentage(TIME_RATIO, value);
+        var allowanceValue = new AllowanceValue.Percentage(value);
 
-        // test mareco allowance
-        var marecoAllowance = makeMarecoAllowance(
+        // test mareco distribution
+        var marecoAllowance = makeStandardMarecoAllowance(
                 testContext,
                 0, length, 0, allowanceValue);
         testAllowanceTime(maxEffortEnvelope, marecoAllowance);
 
-        // test linear allowance
-        var linearAllowance = makeLinearAllowance(
+        // test linear distribution
+        var linearAllowance = makeStandardLinearAllowance(
                 testContext,
                 0, length, 0, allowanceValue);
         testAllowanceTime(maxEffortEnvelope, linearAllowance);
@@ -222,168 +220,168 @@ public class AllowanceTests {
         var stops = new double[] { 50_000, testContext.path.getLength() };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
 
-        var allowanceValue = new AllowanceValue.TimePerDistance(DISTANCE_RATIO, value);
+        var allowanceValue = new AllowanceValue.TimePerDistance(value);
 
-        // test mareco allowance
-        var marecoAllowance = makeMarecoAllowance(
+        // test mareco distribution
+        var marecoAllowance = makeStandardMarecoAllowance(
                 testContext,
                 0, length, 0, allowanceValue);
         testAllowanceTime(maxEffortEnvelope, marecoAllowance);
 
-        // test linear allowance
-        var linearAllowance = makeLinearAllowance(
+        // test linear distribution
+        var linearAllowance = makeStandardLinearAllowance(
                 testContext,
                 0, length, 0, allowanceValue);
         testAllowanceTime(maxEffortEnvelope, linearAllowance);
     }
 
-    private void testConstructionAllowance(Envelope base, AbstractAllowanceWithRanges allowance) {
+    private void testEngineeringAllowance(Envelope base, AbstractAllowanceWithRanges allowance) {
         testAllowanceTime(base, allowance);
         testTransitionPoints(base, allowance);
     }
 
     @ParameterizedTest
     @ValueSource(doubles = {0.0, 60, 200})
-    public void testConstructionAllowancesFlat(double value) {
+    public void testEngineeringAllowancesFlat(double value) {
         var length = 100_000;
         var testContext = makeSimpleContext(length, 0);
         var stops = new double[] { 50_000, length };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
-        var allowanceValue = new AllowanceValue.FixedTime(TIME_RATIO, value);
+        var allowanceValue = new AllowanceValue.FixedTime(value);
 
-        // test mareco allowance
-        var marecoAllowance = makeMarecoAllowance(
+        // test mareco distribution
+        var marecoAllowance = makeStandardMarecoAllowance(
                 testContext,
                 0, length, 8.33, allowanceValue);
-        testConstructionAllowance(maxEffortEnvelope, marecoAllowance);
+        testEngineeringAllowance(maxEffortEnvelope, marecoAllowance);
 
-        // test linear allowance
-        var linearAllowance = makeLinearAllowance(
+        // test linear distribution
+        var linearAllowance = makeStandardLinearAllowance(
                 testContext,
                 0, length, 8.33, allowanceValue);
-        testConstructionAllowance(maxEffortEnvelope, linearAllowance);
+        testEngineeringAllowance(maxEffortEnvelope, linearAllowance);
     }
 
     @ParameterizedTest
     @ValueSource(doubles = {0.0, 60, 200})
-    public void testConstructionAllowancesSteep(double value) {
+    public void testEngineeringAllowancesSteep(double value) {
         var length = 100_000;
         var testContext = makeSimpleContext(length, 20);
         var stops = new double[] { 50000, length };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
-        var allowanceValue = new AllowanceValue.FixedTime(TIME_RATIO, value);
+        var allowanceValue = new AllowanceValue.FixedTime(value);
 
-        // test mareco allowance
-        var marecoAllowance = makeMarecoAllowance(
+        // test mareco distribution
+        var marecoAllowance = makeStandardMarecoAllowance(
                 testContext,
                 0, length, 8.33, allowanceValue);
-        testConstructionAllowance(maxEffortEnvelope, marecoAllowance);
+        testEngineeringAllowance(maxEffortEnvelope, marecoAllowance);
 
-        // test linear allowance
-        var linearAllowance = makeLinearAllowance(
+        // test linear distribution
+        var linearAllowance = makeStandardLinearAllowance(
                 testContext,
                 0, length, 8.33, allowanceValue);
-        testConstructionAllowance(maxEffortEnvelope, linearAllowance);
+        testEngineeringAllowance(maxEffortEnvelope, linearAllowance);
     }
 
-    /** Test construction with fixed time allowance on a segment */
+    /** Test engineering allowance with fixed time on a segment */
     @ParameterizedTest
     @ValueSource(doubles = {0.0, 60, 200})
-    public void testConstructionAllowancesOnSegment(double value) {
+    public void testEngineeringAllowancesOnSegment(double value) {
 
         var length = 100_000;
         var testContext = makeSimpleContext(length, 0);
         var stops = new double[] { 2_000, 50_000, length };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
-        var allowanceValue = new AllowanceValue.FixedTime(TIME_RATIO, value);
+        var allowanceValue = new AllowanceValue.FixedTime(value);
         double begin = 20_000;
         double end = 40_000;
 
-        // test mareco allowance
-        var marecoAllowance = makeMarecoAllowance(
+        // test mareco distribution
+        var marecoAllowance = makeStandardMarecoAllowance(
                 testContext,
                 begin, end, 8.33, allowanceValue);
-        testConstructionAllowance(maxEffortEnvelope, marecoAllowance);
+        testEngineeringAllowance(maxEffortEnvelope, marecoAllowance);
 
-        // test linear allowance
-        var linearAllowance = makeLinearAllowance(
+        // test linear distribution
+        var linearAllowance = makeStandardLinearAllowance(
                 testContext,
                 begin, end, 8.33, allowanceValue);
-        testConstructionAllowance(maxEffortEnvelope, linearAllowance);
+        testEngineeringAllowance(maxEffortEnvelope, linearAllowance);
     }
 
-    /** Test the construction margin with a high value on a short segment, expecting to get an error */
+    /** Test the engineering allowance with a high value on a short segment, expecting to get an error */
     @Test
-    public void testImpossibleConstructionAllowances() {
+    public void testImpossibleEngineeringAllowances() {
         var length = 100_000;
         var testContext = makeSimpleContext(length, 0);
         var stops = new double[] { 50_000, length };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
-        var allowanceValue = new AllowanceValue.FixedTime(TIME_RATIO, 20_000);
+        var allowanceValue = new AllowanceValue.FixedTime(20_000);
         double begin = 20_000;
         double end = 40_000;
 
-        // test mareco allowance
-        var marecoAllowance = makeMarecoAllowance(
+        // test mareco distribution
+        var marecoAllowance = makeStandardMarecoAllowance(
                 testContext, begin, end, 8.33, allowanceValue);
         var marecoThrown =
                 assertThrows(AllowanceConvergenceException.class, () -> marecoAllowance.apply(maxEffortEnvelope));
         assertEquals("too_much_allowance_time", marecoThrown.errorType);
 
-        // test linear allowance
-        var linearAllowance = makeLinearAllowance(
+        // test linear distribution
+        var linearAllowance = makeStandardLinearAllowance(
                 testContext, begin, end, 8.33, allowanceValue);
         var linearThrown =
                 assertThrows(AllowanceConvergenceException.class, () -> linearAllowance.apply(maxEffortEnvelope));
         assertEquals("too_much_allowance_time", linearThrown.errorType);
     }
 
-    /** Test the construction margin with a very short segment, to trigger intersectLeftRightParts method */
+    /** Test the engineering allowance with a very short segment, to trigger intersectLeftRightParts method */
     @Test
     public void testIntersectLeftRightParts() {
         var length = 100_000;
         var testContext = makeSimpleContext(length, 0);
         var stops = new double[] { 50_000, length };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
-        var allowanceValue = new AllowanceValue.FixedTime(TIME_RATIO, 20);
+        var allowanceValue = new AllowanceValue.FixedTime(20);
         double begin = 20_000;
         double end = 21_000;
 
-        // test mareco allowance
-        var marecoAllowance = makeMarecoAllowance(
+        // test mareco distribution
+        var marecoAllowance = makeStandardMarecoAllowance(
                 testContext, begin, end, 8.33, allowanceValue);
         var marecoThrown =
                 assertThrows(AllowanceConvergenceException.class, () -> marecoAllowance.apply(maxEffortEnvelope));
         assertEquals("too_much_allowance_time", marecoThrown.errorType);
 
-        // test linear allowance
-        var linearAllowance = makeLinearAllowance(
+        // test linear distribution
+        var linearAllowance = makeStandardLinearAllowance(
                 testContext, begin, end, 8.33, allowanceValue);
         var linearThrown =
                 assertThrows(AllowanceConvergenceException.class, () -> linearAllowance.apply(maxEffortEnvelope));
         assertEquals("too_much_allowance_time", linearThrown.errorType);
     }
 
-    private void testConstructionOnStandardAllowance(Envelope maxEffortEnvelope,
+    private void testEngineeringOnStandardAllowance(Envelope maxEffortEnvelope,
                                                      AbstractAllowanceWithRanges standardAllowance,
-                                                     AbstractAllowanceWithRanges constructionAllowance) {
+                                                     AbstractAllowanceWithRanges engineeringAllowance) {
         var standardEnvelope = standardAllowance.apply(maxEffortEnvelope);
-        var constructionEnvelope = constructionAllowance.apply(standardEnvelope);
+        var engineeringEnvelope = engineeringAllowance.apply(standardEnvelope);
 
         var baseTime = maxEffortEnvelope.getTotalTime();
         var standardAllowanceAddedTime = standardAllowance.getAddedTime(maxEffortEnvelope);
-        var constructionAllowanceAddedTime = constructionAllowance.getAddedTime(standardEnvelope);
-        var targetTime = baseTime + standardAllowanceAddedTime + constructionAllowanceAddedTime;
-        var marginTime = constructionEnvelope.getTotalTime();
+        var engineeringAllowanceAddedTime = engineeringAllowance.getAddedTime(standardEnvelope);
+        var targetTime = baseTime + standardAllowanceAddedTime + engineeringAllowanceAddedTime;
+        var marginTime = engineeringEnvelope.getTotalTime();
         assertEquals(marginTime, targetTime, 5 * TIME_STEP);
 
-        var constructionAllowanceTargetTime = constructionAllowance.getTargetTime(standardEnvelope);
-        assertEquals(marginTime, constructionAllowanceTargetTime, 5 * TIME_STEP);
+        var engineeringAllowanceTargetTime = engineeringAllowance.getTargetTime(standardEnvelope);
+        assertEquals(marginTime, engineeringAllowanceTargetTime, 5 * TIME_STEP);
 
     }
 
     @Test
-    public void testConstructionOnStandardAllowances() {
+    public void testEngineeringOnStandardAllowances() {
         var length = 100_000;
         var testContext = makeSimpleContext(length, 0);
         var stops = new double[] { 50_000, length };
@@ -391,65 +389,65 @@ public class AllowanceTests {
         double begin = 30_000;
         double end = 50_000;
 
-        var standardAllowanceValue = new AllowanceValue.Percentage(TIME_RATIO, 10);
-        var constructionAllowanceValue = new AllowanceValue.FixedTime(TIME_RATIO, 30);
+        var standardAllowanceValue = new AllowanceValue.Percentage(10);
+        var engineeringAllowanceValue = new AllowanceValue.FixedTime(30);
 
-        // test mareco allowance
-        var standardMarecoAllowance = makeMarecoAllowance(
+        // test mareco distribution
+        var standardMarecoAllowance = makeStandardMarecoAllowance(
                 testContext, 0, length, 8.33, standardAllowanceValue);
-        var constructionMarecoAllowance = makeMarecoAllowance(
-                testContext, begin, end, 8.33, constructionAllowanceValue);
-        testConstructionOnStandardAllowance(maxEffortEnvelope, standardMarecoAllowance, constructionMarecoAllowance);
+        var engineeringMarecoAllowance = makeStandardMarecoAllowance(
+                testContext, begin, end, 8.33, engineeringAllowanceValue);
+        testEngineeringOnStandardAllowance(maxEffortEnvelope, standardMarecoAllowance, engineeringMarecoAllowance);
 
-        // test linear allowance
-        var standardLinearAllowance = makeLinearAllowance(
+        // test linear distribution
+        var standardLinearAllowance = makeStandardLinearAllowance(
                 testContext, 0, length, 8.33, standardAllowanceValue);
-        var constructionLinearAllowance = makeLinearAllowance(
-                testContext, begin, end, 8.33, constructionAllowanceValue);
-        testConstructionOnStandardAllowance(maxEffortEnvelope, standardLinearAllowance, constructionLinearAllowance);
+        var engineeringLinearAllowance = makeStandardLinearAllowance(
+                testContext, begin, end, 8.33, engineeringAllowanceValue);
+        testEngineeringOnStandardAllowance(maxEffortEnvelope, standardLinearAllowance, engineeringLinearAllowance);
     }
 
-    private void testSeveralConstructionAllowances(Envelope maxEffortEnvelope,
+    private void testSeveralEngineeringAllowances(Envelope maxEffortEnvelope,
                                                    AbstractAllowanceWithRanges allowanceA,
                                                    AbstractAllowanceWithRanges allowanceB) {
-        var constructionEnvelopeA = allowanceA.apply(maxEffortEnvelope);
-        var constructionEnvelopeB = allowanceB.apply(constructionEnvelopeA);
+        var engineeringEnvelopeA = allowanceA.apply(maxEffortEnvelope);
+        var engineeringEnvelopeB = allowanceB.apply(engineeringEnvelopeA);
         var baseTime = maxEffortEnvelope.getTotalTime();
         var targetTime = baseTime
                 + allowanceA.getAddedTime(maxEffortEnvelope)
                 + allowanceB.getAddedTime(maxEffortEnvelope);
-        var marginTime = constructionEnvelopeB.getTotalTime();
+        var marginTime = engineeringEnvelopeB.getTotalTime();
         assertEquals(marginTime, targetTime, 2 * TIME_STEP);
     }
 
-    /** Test several construction allowances on segments */
+    /** Test several engineering allowances on segments */
     @ParameterizedTest
     @ValueSource(ints = {30_000, 50_000, 70_000})
-    public void testSeveralConstructionAllowances(double value) {
+    public void testSeveralEngineeringAllowances(double value) {
 
         var length = 100_000;
         var testContext = makeSimpleContext(length, 0);
         var stops = new double[] { 50_000, length };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
-        var allowanceValueA = new AllowanceValue.FixedTime(TIME_RATIO, 15);
-        var allowanceValueB = new AllowanceValue.FixedTime(TIME_RATIO, 30);
+        var allowanceValueA = new AllowanceValue.FixedTime(15);
+        var allowanceValueB = new AllowanceValue.FixedTime(30);
 
-        // test mareco allowance
-        var marecoAllowanceA = makeMarecoAllowance(
+        // test mareco distribution
+        var marecoAllowanceA = makeStandardMarecoAllowance(
                 testContext, 0, value, 8.33, allowanceValueA);
-        var marecoAllowanceB = makeMarecoAllowance(
+        var marecoAllowanceB = makeStandardMarecoAllowance(
                 testContext, value, length, 8.33, allowanceValueB);
-        testSeveralConstructionAllowances(maxEffortEnvelope, marecoAllowanceA, marecoAllowanceB);
+        testSeveralEngineeringAllowances(maxEffortEnvelope, marecoAllowanceA, marecoAllowanceB);
 
-        // test linear allowance
-        var linearAllowanceA = makeLinearAllowance(
+        // test linear distribution
+        var linearAllowanceA = makeStandardLinearAllowance(
                 testContext, 0, value, 8.33, allowanceValueA);
-        var linearAllowanceB = makeLinearAllowance(
+        var linearAllowanceB = makeStandardLinearAllowance(
                 testContext, value, length, 8.33, allowanceValueB);
-        testSeveralConstructionAllowances(maxEffortEnvelope, linearAllowanceA, linearAllowanceB);
+        testSeveralEngineeringAllowances(maxEffortEnvelope, linearAllowanceA, linearAllowanceB);
     }
 
-    /** Test mareco with different slopes*/
+    /** Test standard mareco allowance with different slopes*/
     @ParameterizedTest
     @ValueSource(ints = {0, 1, 2, 3, 4, 5, 6, 7})
     public void testDifferentSlopes(int slopeProfile) {
@@ -499,22 +497,22 @@ public class AllowanceTests {
         var stops = new double[] { 50_000, testContext.path.getLength() };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
 
-        var allowanceValue = new AllowanceValue.Percentage(TIME_RATIO, 40);
+        var allowanceValue = new AllowanceValue.Percentage(40);
 
-        // test mareco allowance
-        var marecoAllowance = makeMarecoAllowance(
+        // test mareco distribution
+        var marecoAllowance = makeStandardMarecoAllowance(
                 testContext,
                 0, length, 0, allowanceValue);
         testAllowanceTime(maxEffortEnvelope, marecoAllowance);
 
-        // test linear allowance
-        var linearAllowance = makeLinearAllowance(
+        // test linear distribution
+        var linearAllowance = makeStandardLinearAllowance(
                 testContext,
                 0, length, 0, allowanceValue);
         testAllowanceTime(maxEffortEnvelope, linearAllowance);
     }
 
-    /** Test mareco with different accelerating slopes*/
+    /** Test standard mareco allowance with different accelerating slopes*/
     @Test
     public void testMarecoAcceleratingSlopes() {
         double length = 100_000;
@@ -538,8 +536,8 @@ public class AllowanceTests {
         var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
         var stops = new double[]{ 50_000, length };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
-        var allowanceValue = new AllowanceValue.Percentage(TIME_RATIO, 10);
-        var allowance = makeMarecoAllowance(new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP),
+        var allowanceValue = new AllowanceValue.Percentage(10);
+        var allowance = makeStandardMarecoAllowance(new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP),
                 0, testPath.getLength(), 0, allowanceValue);
         var marecoEnvelope = allowance.apply(maxEffortEnvelope);
         var targetTime = allowance.getTargetTime(maxEffortEnvelope);
@@ -568,16 +566,16 @@ public class AllowanceTests {
     public void testShortAllowances() {
         var length = 100;
         var testContext = makeSimpleContext(length, 0);
-        var allowanceValue = new AllowanceValue.Percentage(TIME_RATIO, 10);
+        var allowanceValue = new AllowanceValue.Percentage(10);
 
-        // test mareco allowance
-        var marecoAllowance = makeMarecoAllowance(
+        // test mareco distribution
+        var marecoAllowance = makeStandardMarecoAllowance(
                 testContext,
                 0, length, 0, allowanceValue);
         makeSimpleAllowanceEnvelope(testContext, marecoAllowance, 100, false);
 
-        // test linear allowance
-        var linearAllowance = makeLinearAllowance(
+        // test linear distribution
+        var linearAllowance = makeStandardLinearAllowance(
                 testContext,
                 0, length, 0, allowanceValue);
         makeSimpleAllowanceEnvelope(testContext, linearAllowance, 100, false);
@@ -599,16 +597,16 @@ public class AllowanceTests {
             }
         }
         assert start > 0;
-        var allowanceValue = new AllowanceValue.TimePerDistance(TIME_RATIO, 10);
+        var allowanceValue = new AllowanceValue.TimePerDistance(10);
 
-        // test mareco allowance
-        var marecoAllowance = makeMarecoAllowance(
+        // test mareco distribution
+        var marecoAllowance = makeStandardMarecoAllowance(
                 testContext,
                 0, length, 0, allowanceValue);
         marecoAllowance.apply(maxEffortEnvelope);
 
-        // test linear allowance
-        var linearAllowance = makeLinearAllowance(
+        // test linear distribution
+        var linearAllowance = makeStandardLinearAllowance(
                 testContext,
                 0, length, 0, allowanceValue);
         linearAllowance.apply(maxEffortEnvelope);
@@ -629,16 +627,16 @@ public class AllowanceTests {
             }
         }
         assert end > 0;
-        var allowanceValue = new AllowanceValue.TimePerDistance(TIME_RATIO, 10);
+        var allowanceValue = new AllowanceValue.TimePerDistance(10);
 
-        // test mareco allowance
-        var marecoAllowance = makeMarecoAllowance(
+        // test mareco distribution
+        var marecoAllowance = makeStandardMarecoAllowance(
                 testContext,
                 0, length, 0, allowanceValue);
         marecoAllowance.apply(maxEffortEnvelope);
 
-        // test linear allowance
-        var linearAllowance = makeLinearAllowance(
+        // test linear distribution
+        var linearAllowance = makeStandardLinearAllowance(
                 testContext,
                 0, length, 0, allowanceValue);
         linearAllowance.apply(maxEffortEnvelope);
@@ -658,16 +656,16 @@ public class AllowanceTests {
         var end = 8000;
 
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 30, stops);
-        var allowanceValue = new AllowanceValue.FixedTime(TIME_RATIO, 10);
+        var allowanceValue = new AllowanceValue.FixedTime(10);
 
-        // test mareco allowance
-        var marecoAllowance = makeMarecoAllowance(
+        // test mareco distribution
+        var marecoAllowance = makeStandardMarecoAllowance(
                 testContext,
                 begin, end, 0, allowanceValue);
         marecoAllowance.apply(maxEffortEnvelope);
 
-        // test linear allowance
-        var linearAllowance = makeLinearAllowance(
+        // test linear distribution
+        var linearAllowance = makeStandardLinearAllowance(
                 testContext,
                 begin, end, 0, allowanceValue);
         linearAllowance.apply(maxEffortEnvelope);
@@ -684,16 +682,16 @@ public class AllowanceTests {
         var begin = 2000;
 
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 30, stops);
-        var allowanceValue = new AllowanceValue.Percentage(TIME_RATIO, 90);
+        var allowanceValue = new AllowanceValue.Percentage(90);
 
-        // test mareco allowance
-        var marecoAllowance = makeMarecoAllowance(
+        // test mareco distribution
+        var marecoAllowance = makeStandardMarecoAllowance(
                 testContext,
                 begin, length, 10, allowanceValue);
         marecoAllowance.apply(maxEffortEnvelope);
 
-        // test linear allowance
-        var linearAllowance = makeLinearAllowance(
+        // test linear distribution
+        var linearAllowance = makeStandardLinearAllowance(
                 testContext,
                 begin, length, 10, allowanceValue);
         linearAllowance.apply(maxEffortEnvelope);
@@ -703,10 +701,10 @@ public class AllowanceTests {
     public void testAllowancesErrors() {
         var length = 10_000;
         var testContext = makeSimpleContext(length, 0);
-        var allowanceValue = new AllowanceValue.Percentage(TIME_RATIO, 1e10);
+        var allowanceValue = new AllowanceValue.Percentage(1e10);
 
-        // test mareco allowance
-        var marecoAllowance = makeMarecoAllowance(
+        // test mareco distribution
+        var marecoAllowance = makeStandardMarecoAllowance(
                 testContext,
                 0, length, 0, allowanceValue);
         var marecoException = assertThrows(AllowanceConvergenceException.class, () ->
@@ -715,8 +713,8 @@ public class AllowanceTests {
         assert marecoException.errorType.equals("too_much_allowance_time");
         assert marecoException.cause == OSRDError.ErrorCause.USER;
 
-        // test linear allowance
-        var linearAllowance = makeLinearAllowance(
+        // test linear distribution
+        var linearAllowance = makeStandardLinearAllowance(
                 testContext,
                 0, length, 0, allowanceValue);
         var linearException = assertThrows(AllowanceConvergenceException.class, () ->

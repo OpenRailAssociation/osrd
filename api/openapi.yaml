@@ -1137,28 +1137,38 @@ components:
             $ref: "#/components/schemas/Allowance"
     Allowance:
       oneOf:
-        - $ref: "#/components/schemas/ConstructionAllowance"
-        - $ref: "#/components/schemas/MarecoAllowance"
+        - $ref: "#/components/schemas/EngineeringAllowance"
+        - $ref: "#/components/schemas/StandardAllowance"
       discriminator:
         propertyName: allowance_type
-    MarecoAllowance:
+    StandardAllowance:
       properties:
         allowance_type:
           type: string
-          enum: ["mareco"]
+          enum: ["standard"]
         default_value:
           $ref: "#/components/schemas/AllowanceValue"
         ranges:
           type: array
           items:
             $ref: "#/components/schemas/RangeAllowance"
-    ConstructionAllowance:
+        distribution:
+          type: string
+          enum: ["MARECO", "LINEAR"]
+        capacity_speed_limit:
+          type: float
+    EngineeringAllowance:
       allOf:
         - type: object
           properties:
             allowance_type:
               type: string
-              enum: ["construction"]
+              enum: ["engineering"]
+            distribution:
+              type: string
+              enum: ["MARECO", "LINEAR"]
+            capacity_speed_limit:
+              type: float
         - $ref: "#/components/schemas/RangeAllowance"
     RangeAllowance:
       properties:

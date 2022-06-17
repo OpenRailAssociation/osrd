@@ -7,13 +7,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { FaTrash } from 'react-icons/fa';
 import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
 import PropTypes from 'prop-types';
+import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import { useTranslation } from 'react-i18next';
 
 const trainscheduleURI = '/train_schedule/';
 
-export default function MarecoGlobal(props) {
+export default function StandardAllowanceDefault(props) {
   const {
-    allowanceTypes, getAllowances, setIsUpdating,
+    distributionsTypes, allowanceTypes, getAllowances, setIsUpdating,
     trainDetail, TYPES_UNITS,
   } = props;
   const {
@@ -26,12 +27,17 @@ export default function MarecoGlobal(props) {
     type: 'time',
     value: 0,
   });
+  const [distribution, setDistribution] = useState(distributionsTypes[0]);
 
   const handleType = (type) => {
     setValue({
       type: type.type,
       value: type.value === '' ? '' : parseInt(type.value, 10),
     });
+  };
+
+  const handleDistribution = (e) => {
+    setDistribution(JSON.parse(e.target.value));
   };
 
   const updateTrain = async () => {
@@ -47,10 +53,11 @@ export default function MarecoGlobal(props) {
   };
 
   // In fact it is Create/Update
-  const addMareco = async () => {
-    console.log("update/create Mareco global")
+  const addStandard = async () => {
     const marecoConf = {
-      allowance_type: 'mareco',
+      allowance_type: 'standard',
+      capacity_speed_limit: 0,
+      distribution: distribution.id,
       default_value: {
         value_type: value.type,
         [TYPES_UNITS[value.type]]: value.value,
@@ -59,13 +66,15 @@ export default function MarecoGlobal(props) {
     const newAllowances = [];
     let ranges = [];
     trainDetail.allowances.forEach((allowance) => {
-      if (allowance.allowance_type === 'mareco') {
+      if (allowance.allowance_type === 'standard' && allowance.ranges) {
         ranges = allowance.ranges; // Preserve existing Ranges
       } else {
         newAllowances.push(allowance);
       }
     });
     newAllowances.push({ ...marecoConf, ranges });
+
+
     try {
       setIsUpdating(true);
       await patch(`${trainscheduleURI}${trainDetail.id}/`, {
@@ -73,7 +82,7 @@ export default function MarecoGlobal(props) {
         allowances: newAllowances,
       });
       dispatch(setSuccess({
-        title: t('allowanceModified.marecoAdd'),
+        title: t('allowanceModified.standardAllowanceAdd'),
         text: '',
       }));
       updateTrain();
@@ -87,10 +96,10 @@ export default function MarecoGlobal(props) {
     setIsUpdating(false);
   };
 
-  const delMareco = async () => {
+  const delStandard = async () => {
     const newAllowances = [];
     trainDetail.allowances.forEach((allowance) => {
-      if (allowance.allowance_type !== 'mareco') {
+      if (allowance.allowance_type !== 'standard') {
         newAllowances.push(allowance);
       }
     });
@@ -105,7 +114,7 @@ export default function MarecoGlobal(props) {
         value: 0,
       });
       dispatch(setSuccess({
-        title: t('allowanceModified.marecoDel'),
+        title: t('allowanceModified.standardAllowanceDel'),
         text: '',
       }));
       updateTrain();
@@ -120,17 +129,23 @@ export default function MarecoGlobal(props) {
   };
 
   useEffect(() => {
-    let thereIsMareco = false;
+    let thereIsStandard = false;
     trainDetail.allowances.forEach((allowance) => {
-      if (allowance.allowance_type === 'mareco') {
+      if (allowance.allowance_type === 'standard' && allowance.ranges) {
+        const currentDistribution = allowance.distribution;
         setValue({
           type: allowance.default_value.value_type,
           value: allowance.default_value[TYPES_UNITS[allowance.default_value.value_type]],
         });
-        thereIsMareco = true;
+        setDistribution((distribution) => ({
+          id: currentDistribution,
+          label: t(`distributions.${currentDistribution.toLowerCase()}`),
+        }));
+        thereIsStandard = true;
+
       }
     });
-    if (!thereIsMareco) {
+    if (!thereIsStandard) {
       setValue({
         type: 'time',
         value: 0,
@@ -141,10 +156,23 @@ export default function MarecoGlobal(props) {
   return (
     <>
       <div className="row w-100 mareco">
-        <div className="col-md-4 text-normal">
-          {t('marecoWholePath')}
+        <div className="col-md-2 text-normal">
+          {t('sandardAllowancesWholePath')}
         </div>
-        <div className="col-md-4">
+        <div className="col-md-1 text-normal">
+          {t('Valeur par défault')}
+        </div>
+        <div className="col-md-3">
+          <SelectSNCF
+            id="distributionTypeSelector"
+            options={distributionsTypes}
+            selectedValue={distribution}
+            labelKey="label"
+            onChange={handleDistribution}
+            sm
+          />
+        </div>
+        <div className="col-md-3">
           <InputGroupSNCF
             id="allowanceTypeSelect"
             options={allowanceTypes}
@@ -156,7 +184,7 @@ export default function MarecoGlobal(props) {
         <div className="col-md-3">
           <button
             type="button"
-            onClick={addMareco}
+            onClick={addStandard}
             className={`btn btn-success btn-sm mr-1 ${(
               value.value === 0 ? 'disabled' : null
             )}`}
@@ -165,7 +193,7 @@ export default function MarecoGlobal(props) {
           </button>
           <button
             type="button"
-            onClick={() => delMareco(value)}
+            onClick={() => delStandard(value)}
             className={`btn btn-danger btn-sm ${(
               value.value === 0 ? 'disabled' : null
             )}`}
@@ -178,8 +206,10 @@ export default function MarecoGlobal(props) {
   );
 }
 
-MarecoGlobal.propTypes = {
+StandardAllowanceDefault.propTypes = {
   TYPES_UNITS: PropTypes.object.isRequired,
+  // distributions: PropTypes.array.isRequired,
+  distributionsTypes: PropTypes.array.isRequired,
   allowanceTypes: PropTypes.array.isRequired,
   getAllowances: PropTypes.func.isRequired,
   setIsUpdating: PropTypes.func.isRequired,

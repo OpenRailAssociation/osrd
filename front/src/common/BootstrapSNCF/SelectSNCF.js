@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+
 import { MAP_MODES } from 'common/Map/const';
+import PropTypes from 'prop-types';
 
 export default class SelectSNCF extends Component {
     static propTypes = {
@@ -30,12 +31,13 @@ export default class SelectSNCF extends Component {
       sm: false,
     }
 
-    renderOptions = (options, labelKey) => options.map((option) => {
+    renderOptions = (options, labelKey, selectedValue) => options.map((option) => {
       if (typeof option === 'string') {
         return (
           <option
             key={option}
             value={option}
+            selected = {option === selectedValue}
           >
             {option}
           </option>
@@ -45,6 +47,7 @@ export default class SelectSNCF extends Component {
         <option
           key={option.id || option.key}
           value={JSON.stringify(option)}
+          selected = {JSON.stringify(option) === JSON.stringify(selectedValue)}
         >
           {option[labelKey] || `${option.lastName} ${option.firstName}`}
         </option>
@@ -68,7 +71,7 @@ export default class SelectSNCF extends Component {
                 onChange={onChange}
                 className={`${selectStyle} ${sm && 'sm'}`}
               >
-                {this.renderOptions(options, labelKey)}
+                {this.renderOptions(options, labelKey, selectedValue)}
               </select>
             )
             : (
@@ -79,7 +82,7 @@ export default class SelectSNCF extends Component {
                 onChange={onChange}
                 className={`${selectStyle} ${sm && 'sm'}`}
               >
-                {this.renderOptions(options, labelKey)}
+                {this.renderOptions(options, labelKey, selectedValue)}
               </select>
             )}
         </>

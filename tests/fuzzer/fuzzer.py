@@ -259,7 +259,7 @@ def get_schedule(base_url: str, infra: int) -> str:
     return get_schedule(base_url, infra)
 
 
-def make_random_allowances_value(allowance_length) -> Dict:
+def make_random_allowance_value(allowance_length) -> Dict:
     if random.randint(0, 3) == 0:
         return {
             "value_type": "percentage",
@@ -276,6 +276,21 @@ def make_random_allowances_value(allowance_length) -> Dict:
     }
 
 
+def make_random_ranges(path_length: float) -> List[Dict]:
+    if random.randint(0, 1) == 0:
+        return []
+    n_transitions = 1 + 2 * random.randint(0, 3)
+    transitions = [random.random() * path_length for _ in range(n_transitions)]
+    transitions += [0, path_length]
+    transitions.sort()
+    for begin, end in zip(transitions[:1], transitions[1:]):
+        yield {
+                "begin_position": begin,
+                "end_position": end,
+                "value": make_random_allowance_value(end - begin),
+                }
+
+
 def make_random_allowances(path_length: float) -> List[Dict]:
     """
     Makes a random allowance config
@@ -285,10 +300,11 @@ def make_random_allowances(path_length: float) -> List[Dict]:
     if random.randint(0, 3) == 0:
         res.append(
             {
-                "allowance_type": "mareco",
-                "default_value": make_random_allowances_value(path_length),
-                "ranges": [],
-                "capacity_speed_limit": 1
+                "allowance_type": "standard",
+                "default_value": make_random_allowance_value(path_length),
+                "ranges": list(make_random_ranges(path_length)),
+                "capacity_speed_limit": random.random() * 10,
+                "distribution": "MARECO" if random.randint(0, 1) == 0 else "LINEAR",
             }
         )
     for _ in range(3):
@@ -297,11 +313,12 @@ def make_random_allowances(path_length: float) -> List[Dict]:
         positions = [random.random() * path_length for _ in range(2)]
         res.append(
             {
-                "allowance_type": "construction",
+                "allowance_type": "engineering",
                 "begin_position": min(positions),
                 "end_position": max(positions),
-                "value": make_random_allowances_value(max(positions) - min(positions)),
-                "capacity_speed_limit": 1
+                "value": make_random_allowance_value(max(positions) - min(positions)),
+                "capacity_speed_limit": random.random() * 10,
+                "distribution": "MARECO" if random.randint(0, 1) == 0 else "LINEAR",
             }
         )
     return res

@@ -4,8 +4,6 @@ import static fr.sncf.osrd.envelope.EnvelopeShape.*;
 import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeTest.makeComplexMaxEffortEnvelope;
 import static fr.sncf.osrd.envelope_sim.MaxEffortEnvelopeTest.makeSimpleMaxEffortEnvelope;
 import static fr.sncf.osrd.envelope_sim.MaxSpeedEnvelopeTest.TIME_STEP;
-import static fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceDistribution.DISTANCE_RATIO;
-import static fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceDistribution.TIME_RATIO;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -55,8 +53,8 @@ public class AllowanceRangesTests {
                 testContext,
                 44.4,
                 false,
-                new AllowanceValue.Percentage(TIME_RATIO, 10),
-                new AllowanceValue.Percentage(TIME_RATIO, 20));
+                new AllowanceValue.Percentage(10),
+                new AllowanceValue.Percentage(20));
         EnvelopeShape.check(marecoEnvelope,
                 INCREASING, CONSTANT, DECREASING, CONSTANT, DECREASING, DECREASING);
         assertTrue(marecoEnvelope.continuous);
@@ -70,8 +68,8 @@ public class AllowanceRangesTests {
         var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
         var stops = new double[] { 50000, testPath.getLength() };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
-        var value1 = new AllowanceValue.Percentage(TIME_RATIO, 10);
-        var value2 = new AllowanceValue.TimePerDistance(DISTANCE_RATIO, 4.5);
+        var value1 = new AllowanceValue.Percentage(10);
+        var value2 = new AllowanceValue.TimePerDistance(4.5);
         var rangesTransition = 70_000;
         var ranges = List.of(
                 new AllowanceRange(0, rangesTransition, value1),
@@ -103,9 +101,9 @@ public class AllowanceRangesTests {
         var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
         var stops = new double[] { 50000, testPath.getLength() };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
-        var value1 = new AllowanceValue.Percentage(TIME_RATIO, 15);
-        var value2 = new AllowanceValue.Percentage(TIME_RATIO, 10);
-        var value3 = new AllowanceValue.Percentage(TIME_RATIO, 5);
+        var value1 = new AllowanceValue.Percentage(15);
+        var value2 = new AllowanceValue.Percentage(10);
+        var value3 = new AllowanceValue.Percentage(5);
         var rangesTransitions = new double[] { 0, 30_000, 70_000, length };
         var ranges = List.of(
                 new AllowanceRange(rangesTransitions[0], rangesTransitions[1], value1),
@@ -141,9 +139,9 @@ public class AllowanceRangesTests {
         var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
         var stops = new double[] { 50000, testPath.getLength() };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
-        var value1 = new AllowanceValue.Percentage(TIME_RATIO, 5);
-        var value2 = new AllowanceValue.Percentage(TIME_RATIO, 10);
-        var value3 = new AllowanceValue.Percentage(TIME_RATIO, 15);
+        var value1 = new AllowanceValue.Percentage(5);
+        var value2 = new AllowanceValue.Percentage(10);
+        var value3 = new AllowanceValue.Percentage(15);
         var rangesTransitions = new double[] { 0, 30_000, 70_000, length };
         var ranges = List.of(
                 new AllowanceRange(rangesTransitions[0], rangesTransitions[1], value1),
@@ -179,8 +177,8 @@ public class AllowanceRangesTests {
         var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
         var stops = new double[] { 50000, testPath.getLength() };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
-        var value1 = new AllowanceValue.TimePerDistance(DISTANCE_RATIO, 5.5);
-        var value2 = new AllowanceValue.Percentage(TIME_RATIO, 10);
+        var value1 = new AllowanceValue.TimePerDistance(5.5);
+        var value2 = new AllowanceValue.Percentage(10);
         var rangesTransitions = new double[] { 0, 50_000, length };
         var ranges = List.of(
                 new AllowanceRange(rangesTransitions[0], rangesTransitions[1], value1),
@@ -211,9 +209,9 @@ public class AllowanceRangesTests {
         var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
         var stops = new double[] { testPath.getLength() };
         var maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops);
-        var value1 = new AllowanceValue.Percentage(TIME_RATIO, 5);
-        var value2 = new AllowanceValue.Percentage(TIME_RATIO, 20);
-        var value3 = new AllowanceValue.Percentage(TIME_RATIO, 10);
+        var value1 = new AllowanceValue.Percentage(5);
+        var value2 = new AllowanceValue.Percentage(20);
+        var value3 = new AllowanceValue.Percentage(10);
         var rangesTransitions = new double[] { 0, 30_000, 30_500, length };
         var ranges = List.of(
                 new AllowanceRange(rangesTransitions[0], rangesTransitions[1], value1),
