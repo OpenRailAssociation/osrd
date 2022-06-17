@@ -8,13 +8,19 @@ import {
   TiDeleteOutline,
 } from 'react-icons/all';
 import { Feature, LineString, MultiLineString } from 'geojson';
-import nearestPoint from '@turf/nearest-point';
+import nearestPointFn from '@turf/nearest-point';
 import { featureCollection } from '@turf/helpers';
+import nearestPointOnLine from '@turf/nearest-point-on-line';
 
 import { DEFAULT_COMMON_TOOL_STATE, Tool } from '../types';
 import { GEOJSON_LAYER_ID } from '../../../../common/Map/Layers/GeoJSONs';
 import { getNearestPoint } from '../../../../utils/mapboxHelper';
-import { POINTS_LAYER_ID, TrackEditionLayers, TrackEditionLeftPanel } from './components';
+import {
+  POINTS_LAYER_ID,
+  TRACK_LAYER_ID,
+  TrackEditionLayers,
+  TrackEditionLeftPanel,
+} from './components';
 import { TrackEditionState } from './types';
 import { getNewLine } from './utils';
 
@@ -131,7 +137,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
           }
         },
         isDisabled({ state }) {
-          return state.editionState.type !== 'addPoint' || !state.track.geometry.coordinates.length;
+          return !state.track.geometry.coordinates.length;
         },
       },
     ],
@@ -139,55 +145,78 @@ const TrackEditionTool: Tool<TrackEditionState> = {
 
   // Interactions:
   onClickMap(e, { setState, state }) {
-    if (state.editionState.type === 'addPoint') {
-      const position: [number, number] =
-        state.anchorLinePoints && state.nearestPoint
-          ? (state.nearestPoint.geometry.coordinates as [number, number])
-          : e.lngLat;
+    const { editionState, anchorLinePoints, track, nearestPoint } = state;
 
-      const points = state.track.geometry.coordinates;
-      const lastPoint = points[points.length - 1];
-
-      if (!isEqual(lastPoint, position)) {
+    if (editionState.type === 'addPoint') {
+      // Adding a point on an existing section:
+      if (
+        anchorLinePoints &&
+        nearestPoint &&
+        typeof nearestPoint.properties?.sectionIndex === 'number'
+      ) {
+        const position = nearestPoint.geometry.coordinates as [number, number];
+        const index = nearestPoint.properties.sectionIndex;
         const newState = cloneDeep(state);
-        if (state.editionState.addAtStart) {
-          newState.track.geometry.coordinates.unshift(position);
-        } else {
-          newState.track.geometry.coordinates.push(position);
-        }
+
+        newState.track.geometry.coordinates.splice(index + 1, 0, position);
+        newState.nearestPoint = null;
         setState(newState);
       }
-    } else if (state.editionState.type === 'movePoint') {
-      if (typeof state.editionState.draggedPointIndex === 'number') {
+      // Adding a new point at the extremity of the track:
+      else {
+        const position: [number, number] =
+          anchorLinePoints && nearestPoint
+            ? (nearestPoint.geometry.coordinates as [number, number])
+            : e.lngLat;
+
+        const points = track.geometry.coordinates;
+        const lastPoint = points[points.length - 1];
+
+        if (!isEqual(lastPoint, position)) {
+          const newState = cloneDeep(state);
+          if (editionState.addAtStart) {
+            newState.track.geometry.coordinates.unshift(position);
+          } else {
+            newState.track.geometry.coordinates.push(position);
+          }
+
+          newState.nearestPoint = null;
+          setState(newState);
+        }
+      }
+    } else if (editionState.type === 'movePoint') {
+      if (typeof editionState.draggedPointIndex === 'number') {
         setState({
           ...state,
           editionState: {
-            ...state.editionState,
+            ...editionState,
             draggedPointIndex: undefined,
           },
         });
-      } else if (typeof state.editionState.hoveredPointIndex === 'number') {
+      } else if (typeof editionState.hoveredPointIndex === 'number') {
         setState({
           ...state,
           editionState: {
-            ...state.editionState,
-            draggedPointIndex: state.editionState.hoveredPointIndex,
+            ...editionState,
+            draggedPointIndex: editionState.hoveredPointIndex,
             hoveredPointIndex: undefined,
           },
         });
       }
     } else if (
-      state.editionState.type === 'deletePoint' &&
-      typeof state.editionState.hoveredPointIndex === 'number'
+      editionState.type === 'deletePoint' &&
+      typeof editionState.hoveredPointIndex === 'number'
     ) {
       const newState = cloneDeep(state);
       newState.editionState = { type: 'deletePoint' };
-      newState.track.geometry.coordinates.splice(state.editionState.hoveredPointIndex, 1);
+      newState.track.geometry.coordinates.splice(editionState.hoveredPointIndex, 1);
       setState(newState);
     }
   },
   onHover(e, { setState, state }) {
-    if (state.editionState.type !== 'deletePoint' && state.anchorLinePoints) {
+    const { editionState } = state;
+
+    if (editionState.type === 'movePoint' && state.anchorLinePoints) {
       const dataFeatures = (e.features || []).filter((f) => f.layer.id === GEOJSON_LAYER_ID);
 
       setState({
@@ -196,12 +225,40 @@ const TrackEditionTool: Tool<TrackEditionState> = {
           ? getNearestPoint(dataFeatures as Feature<LineString | MultiLineString>[], e.lngLat)
           : null,
       });
+    } else if (editionState.type === 'addPoint' && state.anchorLinePoints) {
+      const closeTrackPath = (e.features || []).find((f) => f.layer.id === TRACK_LAYER_ID);
+
+      let isStateUpdated = false;
+      if (closeTrackPath) {
+        const closest = nearestPointOnLine(closeTrackPath, e.lngLat);
+        const closestPosition = closest.geometry.coordinates;
+
+        if (state.track.geometry.coordinates.every((point) => !isEqual(point, closestPosition))) {
+          closest.properties = {
+            sectionIndex: closest.properties.index,
+          };
+          setState({
+            ...state,
+            nearestPoint: closest,
+          });
+          isStateUpdated = true;
+        }
+      }
+
+      if (!isStateUpdated) {
+        const dataFeatures = (e.features || []).filter((f) => f.layer.id === GEOJSON_LAYER_ID);
+        setState({
+          ...state,
+          nearestPoint: dataFeatures.length
+            ? getNearestPoint(dataFeatures as Feature<LineString | MultiLineString>[], e.lngLat)
+            : null,
+        });
+      }
     }
 
     if (
-      (state.editionState.type === 'movePoint' &&
-        typeof state.editionState.draggedPointIndex !== 'number') ||
-      state.editionState.type === 'deletePoint'
+      (editionState.type === 'movePoint' && typeof editionState.draggedPointIndex !== 'number') ||
+      editionState.type === 'deletePoint'
     ) {
       const pointFeatures = (e.features || []).filter((f) => f.layer.id === POINTS_LAYER_ID);
 
@@ -209,16 +266,16 @@ const TrackEditionTool: Tool<TrackEditionState> = {
         setState({
           ...state,
           editionState: {
-            ...state.editionState,
+            ...editionState,
             hoveredPointIndex: undefined,
           },
         });
       } else {
-        const nearest = nearestPoint(e.lngLat, featureCollection(pointFeatures));
+        const nearest = nearestPointFn(e.lngLat, featureCollection(pointFeatures));
         setState({
           ...state,
           editionState: {
-            ...state.editionState,
+            ...editionState,
             hoveredPointIndex: nearest.properties.index as number,
           },
         });
@@ -264,7 +321,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
   },
 
   getInteractiveLayers() {
-    return [GEOJSON_LAYER_ID, POINTS_LAYER_ID];
+    return [GEOJSON_LAYER_ID, POINTS_LAYER_ID, TRACK_LAYER_ID];
   },
   getCursor({ state }, { isDragging }) {
     if (isDragging) return 'move';
