@@ -87,6 +87,7 @@ const Map = (props) => {
   const updateViewportChange = useCallback(
     (value) => dispatch(updateViewport(value, undefined)), [dispatch],
   );
+  const mapRef = React.useRef();
 
   const createOtherPoints = () => {
     const actualTime = datetime2sec(timePosition);
@@ -258,11 +259,17 @@ const Map = (props) => {
       dispatch(updateTimePositionValues(timePositionLocal));
     }
     if (e.features[0]) {
+
       setIdHover(e.features[0].properties.id);
     } else {
       setIdHover(undefined);
     }
   };
+
+  const onClick = (e) => {
+    console.log("Click on map");
+    console.log(mapRef.current.queryRenderedFeatures(e.point))
+  }
 
   const displayPath = () => {
     if (simulation.trains.length > 0) {
@@ -282,6 +289,10 @@ const Map = (props) => {
   };
 
   useEffect(() => {
+    mapRef.current.getMap().on('click', (e) => {
+      console.log("click on map")
+    })
+
     if (urlLat) {
       updateViewportChange({
         ...viewport,
@@ -316,6 +327,7 @@ const Map = (props) => {
       <ReactMapGL
         {...viewport}
         style={{ cursor: 'pointer' }}
+        ref={mapRef}
         width="100%"
         height="100%"
         mapStyle={osmBlankStyle}
@@ -323,6 +335,7 @@ const Map = (props) => {
         clickRadius={10}
         attributionControl={false} // Defined below
         onHover={onFeatureHover}
+        onClick={onClick}
         interactiveLayerIds={defineInteractiveLayers()}
         touchRotate
         asyncRender

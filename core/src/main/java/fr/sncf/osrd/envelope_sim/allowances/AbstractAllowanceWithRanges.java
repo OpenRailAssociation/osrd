@@ -245,8 +245,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
             var section = Envelope.make(envelopeRange.slice(sectionBeginPos, sectionEndPos));
             var sectionTime = section.getTotalTime();
             var sectionDistance = section.getTotalDistance();
-            var sectionRatio = value.distribution.getSectionRatio(
-                    sectionTime, baseTime, sectionDistance, baseDistance);
+            var sectionRatio = value.getSectionRatio(sectionTime, baseTime, sectionDistance, baseDistance);
             var targetTime = sectionTime + addedTime * sectionRatio;
 
             // the imposed begin and end speeds only apply to the first and last section of the range respectively

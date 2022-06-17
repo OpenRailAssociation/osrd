@@ -11,19 +11,28 @@
   "from": "De",
   "begin_position": "Début",
   "marecoWholePath": "Marche économique (trajet complet)",
+  "sandardAllowancesWholePath": "Marges de régularité",
+  "engineeringAllowances": "Marges de construction",
   "margedTrainSchedule": "Avec marges",
   "allowanceByInterval": "Marges par intervalles",
   "ecoAllowanceByInterval": "Marches Economiques par intervalles",
   "allowanceModified": {
-    "marecoAdd": "Marche économique ajoutée",
-    "marecoDel": "Marche économique supprimée",
-    "construction": "Marche de construction modifiée"
+    "standardAllowanceAdd": "Marge de régularité ajoutée / modifiée",
+    "standardAllowanceDel": "Marge de régularité supprimée",
+    "anyAllowanceModified": "Marge modifiée"
   },
+  "specificValuesOnIntervals" : "Valeurs spécifiques sur intervales",
   "allowanceGlobalType": {
-    "mareco": "Mareco",
-    "construction": "Construction"
+    "standard": "Standard",
+    "engineering": "Construction"
   },
-  "allowanceType": "Type de marge",
+  "distributions": {
+    "mareco": "Mareco",
+    "linear": "Linéaire"
+  },
+  "perDefaultValue": "Valeur par défault",
+  "allowanceType": "Distribution",
+  "units": "Unités",
   "allowanceTypes": {
     "time": "Temps",
     "percentage": "Pourcentage",

@@ -9,12 +9,12 @@ import DotsLoader from 'common/DotsLoader/DotsLoader';
 import { FaTrash } from 'react-icons/fa';
 import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import MarecoGlobal from 'applications/osrd/components/Simulation/Allowances/MarecoGlobal';
 import MarecoMultiRange from 'applications/osrd/components/Simulation/Allowances/MarecoMultiRange';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import OPModal from 'applications/osrd/components/Simulation/Allowances/OPModal';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
+import StandardAllowanceDefault from 'applications/osrd/components/Simulation/Allowances/StandardAllowanceDefault';
 import nextId from 'react-id-generator';
 import { useTranslation } from 'react-i18next';
 
@@ -32,25 +32,18 @@ const TYPES_UNITS = {
   time_per_distance: 'minutes',
 };
 
-// const testextensions = [];
-
-const testextensions = [
-  {
-    id: 0,
-    start: 0,
-    end: 15000,
-  },
-];
-
 const EmptyLine = (props) => {
   const {
-    allowanceTypes, allowances, setAllowances, setUpdateAllowances, allowanceType = 'construction', marecoBeginPosition, marecoEndPosition,
+    allowanceTypes, distributionsTypes, allowances, setAllowances, setUpdateAllowances, allowanceType = 'construction', marecoBeginPosition, marecoEndPosition, defaultDistributionId
   } = props;
+  //console.log("Display EmptyLine", allowances)
   const { selectedTrain } = useSelector((state) => state.osrdsimulation);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
-  const allowanceNewDatas = allowanceType === 'construction'
+  const allowanceNewDatas = allowanceType === 'engineering'
     ? {
-      allowance_type: 'construction',
+      allowance_type: 'engineering',
+      capacity_speed_limit: 0,
+      distribution: defaultDistributionId,
       begin_position: 0,
       end_position: simulation.trains[selectedTrain].base.stops[
         simulation.trains[selectedTrain].base.stops.length - 1].position,
@@ -59,7 +52,9 @@ const EmptyLine = (props) => {
         seconds: 0,
       },
     } : {
-      allowance_type: 'mareco',
+      allowance_type: 'standard',
+      capacity_speed_limit: 0,
+      distribution: defaultDistributionId,
       begin_position: marecoBeginPosition ?? 0,
       end_position: marecoEndPosition ?? simulation.trains[selectedTrain].base.stops[
         simulation.trains[selectedTrain].base.stops.length - 1].position,
@@ -72,6 +67,22 @@ const EmptyLine = (props) => {
   const [fromTo, setFromTo] = useState('from');
   const { t } = useTranslation(['allowances']);
 
+
+  const handleDistribution = (e) => {
+    console.log('handleDistribution', JSON.parse(e.target.value));
+    setValues({
+      ...values,
+      distribution: JSON.parse(e.target.value).id,
+    });
+  };
+
+  useEffect(() => {
+    setValues({
+      ...values,
+      distribution: defaultDistributionId,
+    });
+  }, [defaultDistributionId]);
+
   const handleType = (type) => {
     setValues({
       ...values,
@@ -82,25 +93,16 @@ const EmptyLine = (props) => {
     });
   };
 
-  const handleAllowanceType = (e) => {
-    console.log('handle Allowance Type', e.target.value);
-    console.log('handle Allowance Type, parsed', JSON.parse(e.target.value));
-    const allowance_type = JSON.parse(e.target.value)?.id;
-    setValues({
-      ...values,
-      allowance_type,
-    });
-  };
+
 
   const addAllowance = (allowance) => {
     if (values.begin_position < values.end_position
       && values.value[TYPES_UNITS[values.value.value_type]] > 0) {
       const newAllowances = (allowances !== null) ? Array.from(allowances) : [];
 
-      console.log('NEW ALLOWANCES', newAllowances);
       // If Mareco Amend the Mareco List, if not Mareco ist add one
-      if (allowance.allowance_type === 'mareco') {
-        newAllowances.find((d) => d.allowance_type === 'mareco')?.ranges.push(allowance);
+      if (allowance.allowance_type === 'standard') {
+        newAllowances.find((d) => d.ranges)?.ranges.push(allowance);
       } else {
         // If constuction just add
         newAllowances.push(allowance);
@@ -114,6 +116,7 @@ const EmptyLine = (props) => {
   return (
     <>
       <div className="row">
+
         <div className="col-md-3 d-flex align-items-center">
           <span className="mr-1">{t('from')}</span>
           <InputSNCF
@@ -131,7 +134,7 @@ const EmptyLine = (props) => {
             type="button"
             className="ml-1 btn-sm btn-primary text-uppercase"
             data-toggle="modal"
-            data-target="#op-input-modal"
+            data-target={`#op-input-modal-${allowanceType}`}
             onClick={() => setFromTo('begin_position')}
           >
             <small>{t('op')}</small>
@@ -154,7 +157,7 @@ const EmptyLine = (props) => {
             type="button"
             className="ml-1 btn-sm btn-primary text-uppercase"
             data-toggle="modal"
-            data-target="#op-input-modal"
+            data-target={`#op-input-modal-${allowanceType}`}
             onClick={() => setFromTo('end_position')}
           >
             <small>{t('op')}</small>
@@ -162,24 +165,14 @@ const EmptyLine = (props) => {
         </div>
         <div className="col-md-2">
           <SelectSNCF
-            id="allowanceTypeSelector"
-            options={[
-              {
-                id: 'construction',
-                name: t('allowanceGlobalType.construction'),
-              },
-              {
-
-                id: 'mareco',
-                name: t('allowanceGlobalType.mareco'),
-              },
-            ]}
+            id="distributionTypeSelector"
+            options={distributionsTypes}
             selectedValue={{
-              id: values.allowance_type,
-              name: t(`allowanceGlobalType.${values.allowance_type}`),
+              id: defaultDistributionId,
+              label: t(`distributions.${defaultDistributionId?.toLowerCase()}`),
             }}
-            labelKey="name"
-            onChange={handleAllowanceType}
+            labelKey="label"
+            onChange={handleDistribution}
             sm
           />
         </div>
@@ -207,7 +200,7 @@ const EmptyLine = (props) => {
           </button>
         </div>
       </div>
-      <ModalSNCF htmlID="op-input-modal">
+      <ModalSNCF htmlID={`op-input-modal-${allowanceType}`}>
         <ModalBodySNCF>
           <OPModal
             fromTo={fromTo}
@@ -239,22 +232,23 @@ const Allowance = (props) => {
         <div className="col-md-1">
           <small>{idx + 1}</small>
         </div>
-        <div className="col-md-3">
+        <div className="col-md-2 text-left">
           {position2name(data.begin_position)}
         </div>
-        <div className="col-md-3">
+        <div className="col-md-3 text-center">
           {position2name(data.end_position)}
         </div>
-        <div className="col-md-2">
-          {t(`allowanceGlobalType.${data.allowance_type}`)}
-          /
-          {t(`allowanceTypes.${data.value.value_type}`)}
+        <div className="col-md-2 text-left">
+          {t(`distributions.${data.distribution?.toLowerCase()}`)}
         </div>
-        <div className="col-md-2 text-center">
+        <div className="col-md-3 text-left">
+          {t(`allowanceTypes.${data.value.value_type}`)}
+          {' '}
+          /
           {data.value[TYPES_UNITS[data.value.value_type]]}
           {TYPEUNITS[data.value.value_type]}
         </div>
-        <div className="col-md-1 d-flex align-items-center">
+        <div className="col-md-1 d-flex align-items-right">
           <button
             type="button"
             className="btn btn-sm btn-only-icon btn-white text-danger"
@@ -300,12 +294,22 @@ export default function Allowances(props) {
     },
   ];
 
+  const distributionsTypes = [
+    {
+      id: 'LINEAR',
+      label: t('distributions.linear'),
+    },
+    {
+      id: 'MARECO',
+      label: t('distributions.mareco'),
+    },
+  ];
+
   const getAllowances = async () => {
     try {
       setIsUpdating(true);
       const result = await get(`${trainscheduleURI}${simulation.trains[selectedTrain].id}/`);
       setTrainDetail(result);
-      console.log('TRAIN DETAILS', result);
       setAllowances(result.allowances);
       setIsUpdating(false);
     } catch (e) {
@@ -336,7 +340,7 @@ export default function Allowances(props) {
       dispatch(updateSimulation({ ...simulation, trains: newSimulationTrains }));
       dispatch(updateMustRedraw(true));
       dispatch(setSuccess({
-        title: t('allowanceModified.construction'),
+        title: t('allowanceModified.anyAllowanceModified'),
         text: '',
       }));
       setIsUpdating(false);
@@ -354,10 +358,10 @@ export default function Allowances(props) {
     // change to take into considerations Mareco Ones
     const newAllowances = Array.from(allowances);
     // First check if i is a construction allowance
-    if (allowance_type === 'construction') {
+    if (allowance_type === 'engineering') {
       newAllowances.splice(idx, 1);
     } else {
-      newAllowances.find((a) => a.allowance_type === 'mareco')?.ranges.splice(idx, 1);
+      newAllowances.find((a) => a.allowance_type === 'standard')?.ranges.splice(idx, 1);
     }
 
     if (newAllowances.length === 0) {
@@ -391,11 +395,10 @@ export default function Allowances(props) {
       begin_position: d.currentSelection[0],
       end_position: d.currentSelection[1],
     }));
-    setRawExtensions(newMarecoProposal)
+    setRawExtensions(newMarecoProposal);
   };
 
-  const ext = allowances.find((a) => a.allowance_type === 'mareco')?.ranges;
-
+  const standardAllowance = allowances.find((allowance) => allowance.allowance_type === 'standard' && allowance.ranges);
 
   return (
     <div className="osrd-simulation-container">
@@ -407,7 +410,8 @@ export default function Allowances(props) {
       {trainDetail && trainDetail.allowances && (
         <>
           <div className="h2 d-flex">
-            <MarecoGlobal
+            <StandardAllowanceDefault
+              distributionsTypes={distributionsTypes}
               allowanceTypes={allowanceTypes}
               getAllowances={getAllowances}
               setIsUpdating={setIsUpdating}
@@ -422,58 +426,90 @@ export default function Allowances(props) {
               <i className="icons-arrow-up" />
             </button>
           </div>
+          {trainDetail.allowances.find((a) => a.ranges) && (
+          <>
+            <div className="text-normal">
+              {t('specificValuesOnIntervals')}
+            </div>
+          </>
+          )}
 
-          <div>
-            {t('allowanceByInterval')}
+          {trainDetail.allowances.find((a) => a.ranges)?.ranges?.map((allowance, idx) => (
+
+            <Allowance data={allowance} delAllowance={delAllowance} idx={idx} key={nextId()} />
+          ))}
+
+          {
+            trainDetail.allowances.find((a) => a.ranges) && (
+              <>
+
+                <EmptyLine
+                  defaultDistributionId={standardAllowance?.distribution}
+                  setAllowances={setAllowances}
+                  distributionsTypes={distributionsTypes}
+                  setUpdateAllowances={setUpdateAllowances}
+                  allowances={allowances}
+                  distribution="mareco"
+                  allowanceTypes={allowanceTypes}
+                />
+              </>
+            )
+          }
+
+
+          <br />
+          <div className="h2 text-normal">
+            {t('engineeringAllowances')}
           </div>
           <div className="row my-1 small">
-            <div className="col-md-1">
-              n°
-            </div>
-            <div className="col-md-3 text-lowercase">
-              {t('from')}
-            </div>
-            <div className="col-md-3">
-              {t('to')}
-            </div>
-            <div className="col-md-4">
+
+            <div className="col-md-3 text-lowercase" />
+            <div className="col-md-3" />
+            <div className="col-md-2">
               {t('allowanceType')}
             </div>
+            <div className="col-md-3">
+              {t('units')}
+            </div>
+            <div className="col-md-1" />
           </div>
           {trainDetail.allowances.map((allowance, idx) => {
-            if (allowance.allowance_type !== 'mareco') {
+            if (allowance.allowance_type === 'engineering') {
               return (
                 <Allowance data={allowance} delAllowance={delAllowance} idx={idx} key={nextId()} />
               );
             }
             return null;
           })}
-          {trainDetail.allowances.find((a) => a.allowance_type === 'mareco')?.ranges?.map((allowance, idx) => (
-            <Allowance data={allowance} delAllowance={delAllowance} idx={idx} key={nextId()} />
-          ))}
-          <hr className="mt-0" />
-        </>
-      )}
-      <EmptyLine
-        setAllowances={setAllowances}
-        setUpdateAllowances={setUpdateAllowances}
-        allowances={allowances}
-        allowanceTypes={allowanceTypes}
-      />
-      {
+          <EmptyLine
+            defaultDistributionId={standardAllowance?.distribution}
+            setAllowances={setAllowances}
+            distributionsTypes={distributionsTypes}
+            setUpdateAllowances={setUpdateAllowances}
+            allowances={allowances}
+            allowanceType="engineering"
+            allowanceTypes={allowanceTypes}
+
+          />
+          {
         rawExtensions.map((rawExtension) => (
           <EmptyLine
+            defaultDistributionId={standardAllowance?.distribution}
             setAllowances={setAllowances}
+            distributionsTypes={distributionsTypes}
             setUpdateAllowances={setUpdateAllowances}
             allowances={allowances}
             allowanceTypes={allowanceTypes}
-            allowanceType="mareco"
-            marecoBeginPosition={rawExtension.begin_position}
-            marecoEndPosition={rawExtension.end_position}
+            allowanceType="engineering"
+
             key={nextId()}
           />
         ))
-      }
+}
+
+        </>
+      )}
+
     </div>
   );
 }
@@ -491,8 +527,10 @@ Allowance.propTypes = {
 EmptyLine.propTypes = {
   allowances: PropTypes.array,
   allowanceTypes: PropTypes.array.isRequired,
+  distributionsTypes: PropTypes.array.isRequired,
   setAllowances: PropTypes.func.isRequired,
   setUpdateAllowances: PropTypes.func.isRequired,
+  defaultDistributionId: PropTypes.string,
   allowanceType: PropTypes.string,
   marecoBeginPosition: PropTypes.number,
   marecoEndPosition: PropTypes.number,

@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import List, Literal, Union
 
 from pydantic import BaseModel, Field, constr
@@ -45,24 +46,33 @@ class AllowanceValue(BaseModel):
     )
 
 
+class AllowanceDistribution(str, Enum):
+    mareco = "MARECO"
+    linear = "LINEAR"
+
+
 class RangeAllowance(BaseModel):
     begin_position: float
     end_position: float
     value: AllowanceValue
 
 
-class ConstructionAllowance(RangeAllowance):
-    allowance_type: Literal["construction"] = Field(default="construction")
+class EngineeringAllowance(RangeAllowance):
+    allowance_type: Literal["engineering"] = Field(default="engineering")
+    distribution: AllowanceDistribution
+    capacity_speed_limit: float
 
 
-class MarecoAllowance(BaseModel):
-    allowance_type: Literal["mareco"] = Field(default="mareco")
+class StandardAllowance(BaseModel):
+    allowance_type: Literal["standard"] = Field(default="standard")
     default_value: AllowanceValue
     ranges: List[RangeAllowance]
+    distribution: AllowanceDistribution
+    capacity_speed_limit: float
 
 
 class Allowance(BaseModel):
-    __root__: Union[ConstructionAllowance, MarecoAllowance] = Field(discriminator="allowance_type")
+    __root__: Union[EngineeringAllowance, StandardAllowance] = Field(discriminator="allowance_type")
 
 
 class Allowances(BaseModel):
