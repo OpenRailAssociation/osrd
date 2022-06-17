@@ -8,11 +8,13 @@ import {
   TiDeleteOutline,
 } from 'react-icons/all';
 import { Feature, LineString, MultiLineString } from 'geojson';
+import nearestPoint from '@turf/nearest-point';
+import { featureCollection } from '@turf/helpers';
 
 import { DEFAULT_COMMON_TOOL_STATE, Tool } from '../types';
 import { GEOJSON_LAYER_ID } from '../../../../common/Map/Layers/GeoJSONs';
 import { getNearestPoint } from '../../../../utils/mapboxHelper';
-import { TrackEditionLayers, TrackEditionLeftPanel } from './components';
+import { POINTS_LAYER_ID, TrackEditionLayers, TrackEditionLeftPanel } from './components';
 import { TrackEditionState } from './types';
 import { getNewLine } from './utils';
 
@@ -49,6 +51,22 @@ const TrackEditionTool: Tool<TrackEditionState> = {
   actions: [
     [
       {
+        id: 'mode-move-point',
+        icon: RiDragMoveLine,
+        labelTranslationKey: 'Editor.tools.create-line.actions.mode-move-point.label',
+        onClick({ setState, state }) {
+          setState({
+            ...state,
+            editionState: {
+              type: 'movePoint',
+            },
+          });
+        },
+        isActive({ state }) {
+          return state.editionState.type === 'movePoint';
+        },
+      },
+      {
         id: 'mode-add-point',
         icon: CgAdd,
         labelTranslationKey: 'Editor.tools.create-line.actions.mode-add-point.label',
@@ -63,22 +81,6 @@ const TrackEditionTool: Tool<TrackEditionState> = {
         },
         isActive({ state }) {
           return state.editionState.type === 'addPoint';
-        },
-      },
-      {
-        id: 'mode-move-point',
-        icon: RiDragMoveLine,
-        labelTranslationKey: 'Editor.tools.create-line.actions.mode-move-point.label',
-        onClick({ setState, state }) {
-          setState({
-            ...state,
-            editionState: {
-              type: 'movePoint',
-            },
-          });
-        },
-        isActive({ state }) {
-          return state.editionState.type === 'movePoint';
         },
       },
       {
@@ -114,7 +116,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
           return state.anchorLinePoints;
         },
         isDisabled({ state }) {
-          return state.editionState.type !== 'addPoint';
+          return state.editionState.type === 'deletePoint';
         },
       },
       {
@@ -155,36 +157,126 @@ const TrackEditionTool: Tool<TrackEditionState> = {
         }
         setState(newState);
       }
+    } else if (state.editionState.type === 'movePoint') {
+      if (typeof state.editionState.draggedPointIndex === 'number') {
+        setState({
+          ...state,
+          editionState: {
+            ...state.editionState,
+            draggedPointIndex: undefined,
+          },
+        });
+      } else if (typeof state.editionState.hoveredPointIndex === 'number') {
+        setState({
+          ...state,
+          editionState: {
+            ...state.editionState,
+            draggedPointIndex: state.editionState.hoveredPointIndex,
+            hoveredPointIndex: undefined,
+          },
+        });
+      }
+    } else if (
+      state.editionState.type === 'deletePoint' &&
+      typeof state.editionState.hoveredPointIndex === 'number'
+    ) {
+      const newState = cloneDeep(state);
+      newState.editionState = { type: 'deletePoint' };
+      newState.track.geometry.coordinates.splice(state.editionState.hoveredPointIndex, 1);
+      setState(newState);
     }
   },
   onHover(e, { setState, state }) {
-    if (!state.anchorLinePoints) {
-      return;
+    if (state.editionState.type !== 'deletePoint' && state.anchorLinePoints) {
+      const dataFeatures = (e.features || []).filter((f) => f.layer.id === GEOJSON_LAYER_ID);
+
+      setState({
+        ...state,
+        nearestPoint: dataFeatures.length
+          ? getNearestPoint(dataFeatures as Feature<LineString | MultiLineString>[], e.lngLat)
+          : null,
+      });
     }
 
-    if (e.features && e.features.length) {
-      const nearestPoint = getNearestPoint(
-        e.features as Feature<LineString | MultiLineString>[],
-        e.lngLat
-      );
-      setState({ ...state, nearestPoint });
-    } else {
-      setState({ ...state, nearestPoint: null });
+    if (
+      (state.editionState.type === 'movePoint' &&
+        typeof state.editionState.draggedPointIndex !== 'number') ||
+      state.editionState.type === 'deletePoint'
+    ) {
+      const pointFeatures = (e.features || []).filter((f) => f.layer.id === POINTS_LAYER_ID);
+
+      if (!pointFeatures.length) {
+        setState({
+          ...state,
+          editionState: {
+            ...state.editionState,
+            hoveredPointIndex: undefined,
+          },
+        });
+      } else {
+        const nearest = nearestPoint(e.lngLat, featureCollection(pointFeatures));
+        setState({
+          ...state,
+          editionState: {
+            ...state.editionState,
+            hoveredPointIndex: nearest.properties.index as number,
+          },
+        });
+      }
     }
   },
-  onMove(_e, { state }) {
-    if (state.editionState.type !== 'addPoint') {
-      // TODO:
-      // - Detect closest point of the new track
+  onMove(e, { state, setState }) {
+    if (
+      state.editionState.type === 'movePoint' &&
+      typeof state.editionState.draggedPointIndex === 'number'
+    ) {
+      const track = cloneDeep(state.track);
+      track.geometry.coordinates[state.editionState.draggedPointIndex] =
+        state.anchorLinePoints && state.nearestPoint
+          ? (state.nearestPoint.geometry.coordinates as [number, number])
+          : e.lngLat;
+
+      setState({
+        ...state,
+        track,
+      });
+    }
+  },
+  onKeyDown(e, { state, setState }) {
+    if (e.key === 'Escape') {
+      if (state.editionState.type === 'addPoint') {
+        setState({ ...state, editionState: { type: 'movePoint' } });
+      }
+
+      if (
+        state.editionState.type === 'movePoint' &&
+        typeof state.editionState.draggedPointIndex === 'number'
+      ) {
+        setState({
+          ...state,
+          editionState: {
+            ...state.editionState,
+            draggedPointIndex: undefined,
+          },
+        });
+      }
     }
   },
 
   getInteractiveLayers() {
-    return [GEOJSON_LAYER_ID];
+    return [GEOJSON_LAYER_ID, POINTS_LAYER_ID];
   },
-  getCursor(_state, _editorState, { isDragging }) {
+  getCursor({ state }, { isDragging }) {
     if (isDragging) return 'move';
-    return 'copy';
+    if (state.editionState.type === 'addPoint') return 'copy';
+    if (state.editionState.type === 'movePoint') {
+      if (typeof state.editionState.draggedPointIndex === 'number') return 'move';
+      if (typeof state.editionState.hoveredPointIndex === 'number') return 'pointer';
+    }
+    if (state.editionState.type === 'deletePoint') {
+      if (typeof state.editionState.hoveredPointIndex === 'number') return 'pointer';
+    }
+    return 'default';
   },
 
   layersComponent: TrackEditionLayers,
