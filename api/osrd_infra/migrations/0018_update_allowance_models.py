@@ -7,7 +7,7 @@ import osrd_infra.utils
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('osrd_infra', '0016_add_route_errors'),
+        ('osrd_infra', '0017_alter_errorlayer_information'),
     ]
 
     operations = [
