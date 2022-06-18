@@ -1,0 +1,36 @@
+tasks:
+  - init: |
+      export REACT_APP_API_URL="$(gp url 7000)"
+      export REACT_APP_CHARTIS_URL="$(gp url 8000)"
+      echo $REACT_APP_API_URL
+      echo $REACT_APP_CHARTIS_URL
+      docker-compose -f docker-compose-gitpod.yml config
+    command: |
+      docker-compose -f docker-compose-gitpod.yml up
+
+ports:
+- port: 3000
+  onOpen: open-browser
+- port: 7000
+  onOpen: ignore
+- port: 8080
+  onOpen: ignore
+- port: 8090
+  onOpen: ignore
+- port: 8000
+  onOpen: ignore
+- port: 5432
+  onOpen: ignore
+- port: 6379
+  onOpen: ignore
+
+vscode:
+  extensions:
+    - ms-azuretools.vscode-docker
+    - eamodio.gitlens
+    - vscjava.vscode-java-pack
+    - Pivotal.vscode-boot-dev-pack
+    - swellaby.rust-pack
+    - dsznajder.es7-react-js-snippets
+    - donjayamanne.python-extension-pack
+    - formulahendry.docker-extension-pack

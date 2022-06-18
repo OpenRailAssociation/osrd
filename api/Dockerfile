@@ -1,4 +1,4 @@
-FROM python:3.9.12-buster
+FROM python:3.9.12-slim-buster
 
 RUN useradd --create-home service
 

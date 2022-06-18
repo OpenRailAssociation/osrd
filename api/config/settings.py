@@ -44,11 +44,14 @@ INSTALLED_APPS = [
     "rest_framework_gis",
     # osrd apps
     "osrd_infra.apps.OsrdInfraConfig",
+    # cors
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    'corsheaders.middleware.CorsMiddleware',
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -218,3 +221,5 @@ OSRD_BACKEND_URL = os.getenv("OSRD_BACKEND_URL", "http://localhost:8080")
 OSRD_BACKEND_TOKEN = os.getenv("OSRD_BACKEND_TOKEN", "")
 
 CACHE_TIMEOUT = 60 * 60 * 48  # 48 hours
+
+CORS_ALLOW_ALL_ORIGINS = True

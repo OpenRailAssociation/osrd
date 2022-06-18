@@ -66,7 +66,10 @@ export function transformRequest(url, resourceType, urlmap) {
   if ((resourceType === 'Source' || resourceType === 'Tile') && url.startsWith(urlmap)) {
     return {
       url,
-      headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
+      headers: { 
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+        credentials: 'include',
+      },
     };
   }
   return null;
