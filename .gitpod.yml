@@ -1,7 +1,9 @@
 tasks:
   - init: |
-      export REACT_APP_API_URL="$(gp url 7000)"
-      export REACT_APP_CHARTIS_URL="$(gp url 8000)"
+      eval $(gp env -e REACT_APP_API_URL=$(gp url 7000))
+      eval $(gp env -e REACT_APP_CHARTIS_URL=$(gp url 8000))
+      # export REACT_APP_API_URL="$(gp url 7000)"
+      # export REACT_APP_CHARTIS_URL="$(gp url 8000)"
       echo $REACT_APP_API_URL
       echo $REACT_APP_CHARTIS_URL
       docker-compose -f docker-compose-gitpod.yml config
