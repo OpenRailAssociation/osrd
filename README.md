@@ -24,6 +24,7 @@ Please don't build any serious projects with OSRD unless you are prepared to be 
 
 ## Getting Started
 
+### local way
 You'll need:
  - Docker
  - Docker Compose
@@ -31,6 +32,12 @@ You'll need:
 ```sh
 docker-compose up
 ```
+
+### gitpod way
+
+[![Gitpod Ready-to-Code](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/from-referrer/)
+
+This will launch a remote development environment having all the docker compose stack running for the current branch/commit/pull request. 
 
 ## Contributing
 
