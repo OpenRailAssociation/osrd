@@ -35,5 +35,9 @@ ROOT_PATH = ""
 
 STATIC_URL = ROOT_PATH + "/static/"
 
+INSTALLED_APPS.append("corsheaders")
+MIDDLEWARE.append("corsheaders.middleware.CorsMiddleware")
+CORS_ALLOW_ALL_ORIGINS = True
+
 CHARTIS_URL = getenv("CHARTIS_URL", "http://localhost:7000")
 CHARTIS_TOKEN = getenv("CHARTIS_TOKEN", "")
