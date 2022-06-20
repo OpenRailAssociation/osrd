@@ -37,3 +37,5 @@ STATIC_URL = ROOT_PATH + "/static/"
 
 CHARTIS_URL = getenv("CHARTIS_URL", "http://localhost:7000")
 CHARTIS_TOKEN = getenv("CHARTIS_TOKEN", "")
+
+CORS_ALLOW_ALL_ORIGINS = True

@@ -1,14 +1,15 @@
 tasks:
   - init: |
-      eval $(gp env -e REACT_APP_API_URL=$(gp url 7000))
-      eval $(gp env -e REACT_APP_CHARTIS_URL=$(gp url 8000))
-      # export REACT_APP_API_URL="$(gp url 7000)"
-      # export REACT_APP_CHARTIS_URL="$(gp url 8000)"
-      echo $REACT_APP_API_URL
-      echo $REACT_APP_CHARTIS_URL
+      # eval $(gp env -e REACT_APP_API_URL=$(gp url 7000))
+      # eval $(gp env -e REACT_APP_CHARTIS_URL=$(gp url 8000))
+      # echo $REACT_APP_API_URL
+      # echo $REACT_APP_CHARTIS_URL
+    env : 
+      REACT_APP_API_URL: $(gp url 7000)
+      REACT_APP_CHARTIS_URL: $(gp url 8000)
       docker-compose -f docker-compose-gitpod.yml config
     command: |
-      docker-compose -f docker-compose-gitpod.yml up
+      # docker-compose -f docker-compose-gitpod.yml up
 
 ports:
 - port: 3000
@@ -28,11 +29,27 @@ ports:
 
 vscode:
   extensions:
-    - ms-azuretools.vscode-docker
-    - eamodio.gitlens
-    - vscjava.vscode-java-pack
-    - Pivotal.vscode-boot-dev-pack
-    - swellaby.rust-pack
-    - dsznajder.es7-react-js-snippets
-    - donjayamanne.python-extension-pack
-    - formulahendry.docker-extension-pack
+  # Docker
+  - ms-azuretools.vscode-docker
+  # Python
+  - ms-python.python
+  # Postgres
+  - mtxr.sqltools
+  - mtxr.sqltools-driver-pg
+  # Java / Spring
+  - vscjava.vscode-java-pack
+  - Pivotal.vscode-boot-dev-pack
+  # Rust
+  - rust-lang.rust-analyzer
+  - serayuzgur.crates
+  - hbenl.vscode-test-explorer
+  - Swellaby.vscode-rust-test-adapter
+  - ms-vscode.test-adapter-converter
+  - usernamehw.errorlens
+  # Tools
+  - eamodio.gitlens
+  - bungcip.better-toml
+  - oliversturm.fix-json
+  - redhat.vscode-yaml
+  - markis.code-coverage
+  - 42Crunch.vscode-openapi

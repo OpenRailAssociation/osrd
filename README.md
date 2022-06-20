@@ -24,7 +24,7 @@ Please don't build any serious projects with OSRD unless you are prepared to be 
 
 ## Getting Started
 
-### local way
+### Local way
 You'll need:
  - Docker
  - Docker Compose
@@ -33,7 +33,7 @@ You'll need:
 docker-compose up
 ```
 
-### gitpod way
+### Gitpod way
 
 [![Gitpod Ready-to-Code](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/from-referrer/)
 

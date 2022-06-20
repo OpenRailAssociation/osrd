@@ -1,5 +1,9 @@
 version: '3.8'
 
+volumes:
+  psql_data:
+  redis_data:
+
 services:
   postgres:
     image: postgis/postgis:13-3.2-alpine
@@ -155,10 +159,6 @@ services:
     restart: "no"
     image: alpine:latest
     command: "true"
-
-volumes:
-  psql_data:
-  redis_data:
   
 networks:
   osrd:
