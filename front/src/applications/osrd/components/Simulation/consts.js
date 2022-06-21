@@ -8,6 +8,7 @@ export const LIST_VALUES_NAME_SPACE_TIME = [
   'eco_speed',
   'margins_headPosition',
   'eco_headPosition',
+  'eco_tailPosition',
 ];
 export const LIST_VALUES_NAME_SPEED_SPACE = [
   'speed',
