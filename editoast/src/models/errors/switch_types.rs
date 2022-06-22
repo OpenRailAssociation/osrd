@@ -20,9 +20,9 @@ pub fn generate_errors(
         let mut used_port = HashSet::new();
         let mut duplicate_port_connection = HashMap::new();
 
-        for (pos, (group_name, groups)) in switch_type.groups.iter().enumerate() {
-            for group in groups {
-                for dir in [&group.src, &group.dst] {
+        for (pos, (group_name, group)) in switch_type.groups.iter().enumerate() {
+            for connection in group {
+                for dir in [&connection.src, &connection.dst] {
                     if !switch_type.ports.contains(dir) {
                         let infra_error = InfraError::new_unknown_port_name(
                             format!("groups.{}.{}", group_name, pos),
@@ -35,7 +35,7 @@ pub fn generate_errors(
                 }
             }
 
-            if let Some(duplicate_group) = duplicate_port_connection.get(groups) {
+            if let Some(duplicate_group) = duplicate_port_connection.get(group) {
                 let infra_error = InfraError::new_duplicated_group(
                     format!("groups.{}", group_name),
                     format!("groups.{}", duplicate_group),
@@ -43,7 +43,7 @@ pub fn generate_errors(
                 errors.push(to_value(infra_error).unwrap());
                 switch_type_ids.push(switch_type_id.clone());
             } else {
-                duplicate_port_connection.insert(groups, group_name);
+                duplicate_port_connection.insert(group, group_name);
             }
         }
 

@@ -25,7 +25,7 @@ pub struct InfraCache {
     pub speed_sections: HashMap<String, SpeedSection>,
 
     /// List existing track section links
-    pub track_section_links: HashMap<String, TrackSectionLinkCache>,
+    pub track_section_links: HashMap<String, TrackSectionLink>,
 
     /// List existing switches
     pub switches: HashMap<String, SwitchCache>,
@@ -176,32 +176,26 @@ impl From<RouteQueryable> for Route {
     }
 }
 
-#[derive(QueryableByName, Debug, Clone, Derivative)]
-#[derivative(Hash, PartialEq)]
-pub struct TrackSectionLinkCache {
+#[derive(QueryableByName, Debug, Clone)]
+pub struct TrackSectionLinkQueryable {
     #[sql_type = "Text"]
     pub obj_id: String,
-    #[derivative(Hash = "ignore", PartialEq = "ignore")]
-    #[sql_type = "Text"]
-    pub src: String,
-    #[derivative(Hash = "ignore", PartialEq = "ignore")]
-    #[sql_type = "Text"]
-    pub dst: String,
+    #[sql_type = "Json"]
+    pub src: Value,
+    #[sql_type = "Json"]
+    pub dst: Value,
+    #[sql_type = "Json"]
+    pub navigability: Value,
 }
 
-impl TrackSectionLinkCache {
-    pub fn new(obj_id: String, src: String, dst: String) -> Self {
-        Self { obj_id, src, dst }
-    }
-}
-
-impl From<&TrackSectionLink> for TrackSectionLinkCache {
-    fn from(link: &TrackSectionLink) -> Self {
-        Self::new(
-            link.id.clone(),
-            link.src.track.obj_id.clone(),
-            link.dst.track.obj_id.clone(),
-        )
+impl From<TrackSectionLinkQueryable> for TrackSectionLink {
+    fn from(link: TrackSectionLinkQueryable) -> Self {
+        Self {
+            id: link.obj_id.clone(),
+            src: serde_json::from_value(link.src).unwrap(),
+            dst: serde_json::from_value(link.dst).unwrap(),
+            navigability: serde_json::from_value(link.navigability).unwrap(),
+        }
     }
 }
 
@@ -428,16 +422,16 @@ impl InfraCache {
             .is_none());
     }
 
-    fn load_track_section_link(&mut self, link: TrackSectionLinkCache) {
+    fn load_track_section_link(&mut self, link: TrackSectionLink) {
         for endpoint in [&link.src, &link.dst] {
             self.add_track_ref(
-                endpoint.clone(),
-                ObjectRef::new(ObjectType::TrackSectionLink, link.obj_id.clone()),
+                endpoint.track.obj_id.clone(),
+                ObjectRef::new(ObjectType::TrackSectionLink, link.id.clone()),
             );
         }
         assert!(self
             .track_section_links
-            .insert(link.obj_id.clone(), link)
+            .insert(link.id.clone(), link)
             .is_none());
     }
 
@@ -529,10 +523,10 @@ impl InfraCache {
 
         // Load track section links tracks references
         sql_query(
-            "SELECT obj_id, data->'src'->'track'->>'id' AS src, data->'dst'->'track'->>'id' AS dst FROM osrd_infra_tracksectionlinkmodel WHERE infra_id = $1")
+            "SELECT obj_id, data->>'src' AS src, data->>'dst' AS dst, data ->>'navigability' as navigability FROM osrd_infra_tracksectionlinkmodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
-        .load::<TrackSectionLinkCache>(conn).expect("Error loading track section link refs").into_iter().for_each(|link| 
-            infra_cache.load_track_section_link(link)
+        .load::<TrackSectionLinkQueryable>(conn).expect("Error loading track section link refs").into_iter().for_each(|link| 
+            infra_cache.load_track_section_link(link.into())
         );
 
         // Load switch tracks references
@@ -636,11 +630,11 @@ impl InfraCache {
             } => {
                 let link = self.track_section_links.remove(obj_id).unwrap();
                 self.track_sections_refs
-                    .get_mut(&link.src)
+                    .get_mut(&link.src.track.obj_id)
                     .unwrap()
                     .remove(object_ref);
                 self.track_sections_refs
-                    .get_mut(&link.dst)
+                    .get_mut(&link.dst.track.obj_id)
                     .unwrap()
                     .remove(object_ref);
             }
@@ -705,7 +699,7 @@ impl InfraCache {
             RailjsonObject::SpeedSection { railjson } => self.load_speed_section(railjson.clone()),
             RailjsonObject::Route { railjson } => self.load_route(railjson.clone()),
             RailjsonObject::TrackSectionLink { railjson } => {
-                self.load_track_section_link(railjson.into())
+                self.load_track_section_link(railjson.clone())
             }
             RailjsonObject::Switch { railjson } => self.load_switch(railjson.into()),
             RailjsonObject::SwitchType { railjson } => self.load_switch_type(railjson.clone()),
