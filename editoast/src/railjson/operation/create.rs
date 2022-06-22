@@ -102,8 +102,8 @@ impl RailjsonObject {
 }
 
 #[cfg(test)]
-pub mod test {
-    use crate::models::infra::test::test_transaction;
+pub mod tests {
+    use crate::models::infra::tests::test_transaction;
     use crate::railjson::operation::create::{apply_create_operation, RailjsonObject};
     use crate::railjson::{
         BufferStop, Detector, OperationalPoint, Route, Signal, SpeedSection, Switch, SwitchType,
