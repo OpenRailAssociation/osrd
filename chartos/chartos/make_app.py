@@ -1,15 +1,14 @@
-import json
-import yaml
-import asyncpg
-from fastapi import FastAPI, Depends
-from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
 
-from .settings import Settings, get_settings, get_env_settings
+import yaml
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from .config import Config, get_config
-from .psql import PSQLPool
 from .dbinit import DBInit
+from .psql import PSQLPool
 from .redis import RedisPool
+from .settings import Settings, get_env_settings, get_settings
 from .views import router as view_router
 
 
