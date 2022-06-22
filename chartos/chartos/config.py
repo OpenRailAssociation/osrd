@@ -1,4 +1,3 @@
-import re
 from dataclasses import asdict, dataclass, field
 from typing import Dict, List, NewType, Optional
 
@@ -72,8 +71,8 @@ class View:
         )
 
     def get_fields(self, allow_json_type=True):
-        for field in self.fields:
-            yield field.get_query_part(allow_json_type)
+        for f in self.fields:
+            yield f.get_query_part(allow_json_type)
 
     def todict(self):
         return asdict(self)

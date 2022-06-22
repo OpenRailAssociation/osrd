@@ -3,7 +3,17 @@ info:
   title: Chartos
   version: 0.2.0
 paths:
-  /info/:
+  /health:
+    get:
+      summary: Health
+      operationId: health_health_get
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /info:
     get:
       summary: Info
       operationId: info_info_get
@@ -74,68 +84,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HTTPValidationError"
-  /layer/{layer_slug}/invalidate/:
-    post:
-      summary: Invalidate cache for a whole layer
-      parameters:
-        - required: true
-          schema:
-            title: Layer Slug
-            type: string
-          name: layer_slug
-          in: path
-        - required: true
-          schema:
-            title: Infra id
-            type: integer
-          name: infra
-          in: query
-      responses:
-        204:
-          description: No content
-  /layer/{layer_slug}/invalidate_bbox/:
-    post:
-      summary: Invalidate cache for a whole layer
-      parameters:
-        - required: true
-          schema:
-            title: Layer Slug
-            type: string
-          name: layer_slug
-          in: path
-        - required: true
-          schema:
-            title: Infra id
-            type: integer
-          name: infra
-          in: query
-      requestBody:
-        description: Bounding box by view
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                type: object
-                properties:
-                  view:
-                    type: string
-                    example: geo
-                  bbox:
-                    type: array
-                    items:
-                      type: array
-                      items:
-                        type: number
-                      minItems: 2
-                      maxItems: 2
-                    minItems: 2
-                    maxItems: 2
-                    example: [[2.1, 48.5], [2.5, 48.8]]
-              description: Bounding box [[minx, miny], [maxx, maxy]]
-      responses:
-        204:
-          description: No content
   /tile/{layer_slug}/{view_slug}/{z}/{x}/{y}/:
     get:
       summary: Mvt View Tile
@@ -173,7 +121,7 @@ paths:
           in: path
         - required: true
           schema:
-            title: Infra id
+            title: Infra
             type: integer
           name: infra
           in: query
@@ -190,10 +138,74 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HTTPValidationError"
+  /layer/{layer_slug}/invalidate/:
+    post:
+      summary: Invalidate Layer
+      description: Invalidate cache for a whole layer
+      operationId: invalidate_layer_layer__layer_slug__invalidate__post
+      parameters:
+        - required: true
+          schema:
+            title: Layer Slug
+            type: string
+          name: layer_slug
+          in: path
+        - required: true
+          schema:
+            title: Infra
+            type: integer
+          name: infra
+          in: query
+      responses:
+        204:
+          description: Successful Response
+        422:
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+  /layer/{layer_slug}/invalidate_bbox/:
+    post:
+      summary: Invalidate Layer Bbox
+      description: Invalidate cache for a whole layer
+      operationId: invalidate_layer_bbox_layer__layer_slug__invalidate_bbox__post
+      parameters:
+        - required: true
+          schema:
+            title: Layer Slug
+            type: string
+          name: layer_slug
+          in: path
+        - required: true
+          schema:
+            title: Infra
+            type: integer
+          name: infra
+          in: query
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: Bounding Boxes
+              type: array
+              items:
+                $ref: "#/components/schemas/BoundingBoxView"
+        required: true
+      responses:
+        204:
+          description: Successful Response
+        422:
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
   /layer/{layer_slug}/objects/{view_slug}/{min_x}/{min_y}/{max_x}/{max_y}/:
     get:
-      summary: Geojson objects in a given bounding box
-      operationId: objects_view_layer__layer_slug__objects__view_slug___get
+      summary: Get Objects In Bbox
+      description: Retrieve objects in a given bounding box
+      operationId: get_objects_in_bbox_layer__layer_slug__objects__view_slug___min_x___min_y___max_x___max_y___get
       parameters:
         - required: true
           schema:
@@ -209,22 +221,26 @@ paths:
           in: path
         - required: true
           schema:
-            title: Bounding box min X
+            title: Min X
+            type: number
           name: min_x
           in: path
         - required: true
           schema:
-            title: Bounding box min Y
+            title: Min Y
+            type: number
           name: min_y
           in: path
         - required: true
           schema:
-            title: Bounding box max X
+            title: Max X
+            type: number
           name: max_x
           in: path
         - required: true
           schema:
-            title: Bounding box max Y
+            title: Max Y
+            type: number
           name: max_y
           in: path
         - required: true
@@ -268,6 +284,29 @@ paths:
                 $ref: "#/components/schemas/HTTPValidationError"
 components:
   schemas:
+    BoundingBoxView:
+      title: BoundingBoxView
+      required:
+        - view
+        - bbox
+      type: object
+      properties:
+        view:
+          title: View
+          type: string
+        bbox:
+          title: Bbox
+          maxItems: 2
+          minItems: 2
+          type: array
+          items:
+            type: array
+            items:
+              maxItems: 2
+              minItems: 2
+              type: array
+              items:
+                type: number
     HTTPValidationError:
       title: HTTPValidationError
       type: object
@@ -289,7 +328,9 @@ components:
           title: Location
           type: array
           items:
-            type: string
+            anyOf:
+              - type: string
+              - type: integer
         msg:
           title: Message
           type: string

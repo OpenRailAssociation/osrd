@@ -1,7 +1,7 @@
 FROM python:3.10-alpine
 
-RUN apk add --no-cache libffi-dev build-base \
-       geos proj proj-dev proj-util geos-dev gdal gdal-dev gdal-tools
+RUN apk add --no-cache libffi-dev build-base
+
 RUN pip install poetry
 
 # Copy only requirements to cache them in docker layer
