@@ -324,7 +324,7 @@ pub enum Side {
     Center,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, Hash)]
 pub enum Endpoint {
     #[serde(rename = "BEGIN")]
     Begin,
@@ -332,7 +332,7 @@ pub enum Endpoint {
     End,
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[derive(Debug, Derivative, Clone, Deserialize, PartialEq, Eq, Hash, Serialize)]
 #[derivative(Default)]
 pub struct TrackEndpoint {
     #[derivative(Default(value = "Endpoint::Begin"))]
