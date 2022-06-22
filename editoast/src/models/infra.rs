@@ -149,7 +149,7 @@ impl Infra {
 }
 
 #[cfg(test)]
-pub mod test {
+pub mod tests {
     use super::Infra;
     use crate::client::PostgresConfig;
     use diesel::result::Error;

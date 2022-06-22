@@ -20,7 +20,7 @@ pub fn health(conn: DBConnection) -> &'static str {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use crate::create_server;
     use rocket::http::Status;
     use rocket::local::Client;

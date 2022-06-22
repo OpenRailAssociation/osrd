@@ -389,7 +389,7 @@ pub struct LoadingGaugeLimit {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use crate::models::BoundingBox;
 
     use super::LineString::LineString;

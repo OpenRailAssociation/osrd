@@ -109,11 +109,11 @@ impl DataObject {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::UpdateOperation;
     use crate::error::ApiError;
-    use crate::models::infra::test::test_transaction;
-    use crate::railjson::operation::create::test::{create_signal, create_speed, create_track};
+    use crate::models::infra::tests::test_transaction;
+    use crate::railjson::operation::create::tests::{create_signal, create_speed, create_track};
     use crate::railjson::operation::OperationError;
     use crate::railjson::ObjectType;
     use diesel::sql_query;
