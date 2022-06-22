@@ -1,6 +1,6 @@
-from fastapi import FastAPI
-from typing import TypeVar, Generic
+from typing import Generic, TypeVar
 
+from fastapi import FastAPI
 
 T = TypeVar("T")
 
@@ -14,6 +14,7 @@ class ValueDependable(Generic[T]):
     def setup(self, app: FastAPI, value: T):
         def override():
             return value
+
         app.dependency_overrides[self] = override
 
     def __call__(self):

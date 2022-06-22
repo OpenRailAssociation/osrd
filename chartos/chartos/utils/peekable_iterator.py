@@ -1,17 +1,13 @@
 from collections import deque
-from typing import (
-    TypeVar, Generic,
-    Iterator, Iterable,
-    Deque, Sequence,
-    Optional
-)
+from typing import TypeVar, Generic, Iterator, Iterable, Deque, Sequence, Optional
 
 
-ItemT = TypeVar('ItemT')
+ItemT = TypeVar("ItemT")
 
 
 class PeekableIterator(Generic[ItemT]):
     """Wraps any iterable and provides a lookahead buffer"""
+
     __slots__ = ("iterator", "cache")
 
     iterator: Iterator[ItemT]

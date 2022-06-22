@@ -1,5 +1,5 @@
-from aioredis import Redis, ConnectionPool
-from fastapi import FastAPI
+from aioredis import ConnectionPool, Redis
+
 from .utils import AsyncProcess, process_dependable
 
 
@@ -16,10 +16,7 @@ class RedisPool(AsyncProcess):
         await self.pool.disconnect()
 
     def acquire(self):
-        return Redis(
-            connection_pool=self.pool,
-            single_connection_client=True
-        )
+        return Redis(connection_pool=self.pool, single_connection_client=True)
 
     @process_dependable
     async def get(self) -> Redis:
