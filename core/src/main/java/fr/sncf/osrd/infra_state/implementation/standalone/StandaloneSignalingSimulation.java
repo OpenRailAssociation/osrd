@@ -1,6 +1,7 @@
 package fr.sncf.osrd.infra_state.implementation.standalone;
 
 import fr.sncf.osrd.envelope.Envelope;
+import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate;
 import fr.sncf.osrd.infra.api.signaling.Signal;
 import fr.sncf.osrd.infra.api.signaling.SignalState;
 import fr.sncf.osrd.infra_state.api.TrainPath;
@@ -43,7 +44,7 @@ public class StandaloneSignalingSimulation {
             TrainPath path,
             StandaloneState state,
             SignalizationState signalizationState,
-            Envelope trainEnvelope
+            EnvelopeTimeInterpolate trainEnvelope
     ) {
         return runWithoutEnvelope(path, state, signalizationState).stream()
                 .map(event -> addTimeToEvent(trainEnvelope, event))
@@ -51,7 +52,7 @@ public class StandaloneSignalingSimulation {
     }
 
     private static <T extends SignalState> SignalTimedEvent<T> addTimeToEvent(
-            Envelope trainEnvelope,
+            EnvelopeTimeInterpolate trainEnvelope,
             SignalEvent<T> event
     ) {
         return new SignalTimedEvent<>(
