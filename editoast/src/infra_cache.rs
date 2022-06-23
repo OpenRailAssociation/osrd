@@ -722,3 +722,116 @@ impl InfraCache {
         }
     }
 }
+
+#[cfg(test)]
+pub mod tests {
+    use std::collections::HashMap;
+
+    use crate::{
+        infra_cache::{InfraCache, SwitchCache},
+        railjson::{
+            ApplicableDirections, Endpoint, ObjectRef, ObjectType, SwitchPortConnection,
+            SwitchType, TrackEndpoint, TrackSectionLink,
+        },
+    };
+
+    pub fn create_track_endpoint<T: AsRef<str>>(endpoint: Endpoint, obj_id: T) -> TrackEndpoint {
+        TrackEndpoint {
+            endpoint,
+            track: ObjectRef {
+                obj_type: ObjectType::TrackSection,
+                obj_id: obj_id.as_ref().into(),
+            },
+        }
+    }
+
+    pub fn create_track_link_cache(
+        id: String,
+        src: TrackEndpoint,
+        dst: TrackEndpoint,
+    ) -> TrackSectionLink {
+        TrackSectionLink {
+            id,
+            src,
+            dst,
+            navigability: ApplicableDirections::Both,
+        }
+    }
+
+    pub fn create_switch_connection(src: String, dst: String) -> SwitchPortConnection {
+        SwitchPortConnection {
+            src,
+            dst,
+            bidirectional: true,
+        }
+    }
+
+    pub fn create_switch_type_point() -> SwitchType {
+        let groups = HashMap::from([
+            (
+                "LEFT".into(),
+                vec![create_switch_connection("BASE".into(), "LEFT".into())],
+            ),
+            (
+                "RIGHT".into(),
+                vec![create_switch_connection("BASE".into(), "RIGHT".into())],
+            ),
+        ]);
+        SwitchType {
+            id: "point".into(),
+            ports: vec!["BASE".into(), "LEFT".into(), "RIGHT".into()],
+            groups,
+        }
+    }
+
+    pub fn create_switch_cache_point(
+        obj_id: String,
+        base: TrackEndpoint,
+        left: TrackEndpoint,
+        right: TrackEndpoint,
+    ) -> SwitchCache {
+        let ports_list = [("BASE", base), ("LEFT", left), ("RIGHT", right)];
+        let ports: HashMap<String, TrackEndpoint> =
+            ports_list.into_iter().map(|(s, t)| (s.into(), t)).collect();
+        SwitchCache {
+            obj_id,
+            switch_type: "point".into(),
+            ports,
+        }
+    }
+
+    ///                    --------  C
+    ///                   /
+    ///  --------_--------
+    ///     A        B    \
+    ///                    --------  D
+    ///
+    pub fn create_small_infra_cache() -> InfraCache {
+        let mut infra_cache = InfraCache::default();
+
+        let link = create_track_link_cache(
+            "tracklink".into(),
+            create_track_endpoint(Endpoint::End, "A"),
+            create_track_endpoint(Endpoint::Begin, "B"),
+        );
+
+        infra_cache
+            .track_section_links
+            .insert(link.id.clone(), link);
+
+        infra_cache
+            .switch_types
+            .insert("point".into(), create_switch_type_point());
+
+        let switch = create_switch_cache_point(
+            "switch".into(),
+            create_track_endpoint(Endpoint::End, "B"),
+            create_track_endpoint(Endpoint::Begin, "C"),
+            create_track_endpoint(Endpoint::Begin, "D"),
+        );
+
+        infra_cache.switches.insert(switch.obj_id.clone(), switch);
+
+        infra_cache
+    }
+}
