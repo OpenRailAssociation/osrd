@@ -65,7 +65,7 @@ dependencies {
     // the logging API stub
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.+'  // MIT
     // the logging API implementation
-    implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'  // EPL 1.0 (incompatible) and LGPL 2.1 (compatible)
+    implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.11'  // EPL 1.0 (incompatible) and LGPL 2.1 (compatible)
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
 
     // Sentry
