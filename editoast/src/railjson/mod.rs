@@ -332,7 +332,7 @@ pub enum Endpoint {
     End,
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, PartialEq, Eq, Hash, Serialize)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, Hash)]
 #[derivative(Default)]
 pub struct TrackEndpoint {
     #[derivative(Default(value = "Endpoint::Begin"))]
