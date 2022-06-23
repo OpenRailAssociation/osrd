@@ -12,10 +12,6 @@ if settings.ROOT_PATH:
     root_path = f"{settings.ROOT_PATH}/"
 
 
-def prefix_path(path):
-    return root_path + path
-
-
 service_urlpatterns = [
     # this app exports multiple features at once,
     # hence the lack of prefix
@@ -24,7 +20,7 @@ service_urlpatterns = [
 
 
 urlpatterns = [
-    path('admin/' if not settings.WORKSPACE else prefix_path('admin/'), admin.site.urls),
+    path('admin/', admin.site.urls),
     path('health/', health),
     path(root_path, include(service_urlpatterns)),
 ]

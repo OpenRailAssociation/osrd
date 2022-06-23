@@ -67,14 +67,13 @@ services:
         environment: test
     ports: ["8000:80"]
     environment:
-      PSQL_HOST: "postgres"
-      DJANGO_SETTINGS_MODULE: "config.test"
-      CHARTIS_URL: "http://chartos"
+      OSRD_DEV: "True"
       OSRD_BACKEND_URL: "http://osrd-core"
     command:
       - /bin/sh
       - -c
       - |
+        set -e
         python3 manage.py migrate
         exec python3 manage.py runserver 0.0.0.0:80
     # bind the code inside the container
