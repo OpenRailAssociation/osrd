@@ -55,20 +55,22 @@ jobs:
           cd api
           poetry install --no-interaction --no-root -E production
       - name: Check migrations
+        env:
+          OSRD_DEV: "True"
         run: |
           cd api
           source .venv/bin/activate
           python manage.py makemigrations --check
       - name: Run migrations
         env:
-          DJANGO_SETTINGS_MODULE: config.test
+          OSRD_DEV: "True"
         run: |
           cd api
           source .venv/bin/activate
           python manage.py migrate
       - name: Run Tests
         env:
-          DJANGO_SETTINGS_MODULE: config.test
+          OSRD_DEV: "True"
         run: |
           cd api
           source .venv/bin/activate
