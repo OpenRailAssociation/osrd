@@ -1,0 +1,38 @@
+version: 2
+updates:
+  - package-ecosystem: "cargo"
+    directory: "/editoast/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "editoast:"
+  - package-ecosystem: "pip"
+    directory: "/api/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "api:"
+  - package-ecosystem: "pip"
+    directory: "/chartos/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "chartos:"
+  - package-ecosystem: "npm"
+    directory: "/front/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "front:"
+  - package-ecosystem: "gradle"
+    directory: "/core/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "core:"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "actions:"
