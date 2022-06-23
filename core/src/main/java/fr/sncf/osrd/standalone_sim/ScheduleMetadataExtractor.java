@@ -4,6 +4,8 @@ import static java.lang.Math.*;
 
 import com.google.common.collect.Sets;
 import fr.sncf.osrd.envelope.Envelope;
+import fr.sncf.osrd.envelope.EnvelopeStopWrapper;
+import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate;
 import fr.sncf.osrd.infra.api.reservation.ReservationRoute;
 import fr.sncf.osrd.infra.api.signaling.Signal;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
@@ -28,34 +30,16 @@ public class ScheduleMetadataExtractor {
             SignalingInfra infra
     ) {
         assert envelope.continuous;
+
         // Compute speeds, head and tail positions
+        var envelopeWithStops = new EnvelopeStopWrapper(envelope, schedule.stops);
         final var trainLength = schedule.rollingStock.length;
         var speeds = new ArrayList<ResultSpeed>();
         var headPositions = new ArrayList<ResultPosition>();
-        double time = 0;
-        for (var part : envelope) {
-            // Add head position points
-            for (int i = 0; i < part.pointCount(); i++) {
-                var pos = part.getPointPos(i);
-                var speed = part.getPointSpeed(i);
-                speeds.add(new ResultSpeed(time, speed, pos));
-                headPositions.add(ResultPosition.from(time, pos, trainPath));
-                if (i < part.stepCount())
-                    time += part.getStepTime(i);
-            }
 
-            if (part.getEndSpeed() > 0)
-                continue;
-
-            // Add stop duration
-            for (var stop : schedule.stops) {
-                if (stop.duration == 0. || stop.position < part.getEndPos())
-                    continue;
-                if (stop.position > part.getEndPos())
-                    break;
-                time += stop.duration;
-                headPositions.add(ResultPosition.from(time, part.getEndPos(), trainPath));
-            }
+        for (var point : envelopeWithStops.iterateCurve()) {
+            speeds.add(new ResultSpeed(point.time(), point.speed(), point.position()));
+            headPositions.add(ResultPosition.from(point.time(), point.position(), trainPath));
         }
 
         // Simplify data
@@ -70,20 +54,20 @@ public class ScheduleMetadataExtractor {
         }
 
         // Compute events
-        var events = computeEvents(infra, trainPath, trainLength, envelope);
+        var events = computeEvents(infra, trainPath, trainLength, envelopeWithStops);
 
         return new ResultTrain(
                 speeds,
                 headPositions,
                 stops,
-                makeRouteOccupancy(infra, envelope, trainPath, trainLength, events),
-                makeSignalUpdates(envelope, trainPath, events)
+                makeRouteOccupancy(infra, envelopeWithStops, trainPath, trainLength, events),
+                makeSignalUpdates(envelopeWithStops, trainPath, events)
         );
     }
 
     /** Computes the list of event for the given train path */
     public static List<StandaloneSignalingSimulation.SignalTimedEvent<?>> computeEvents(
-            SignalingInfra infra, TrainPath trainPath, double trainLength, Envelope envelope
+            SignalingInfra infra, TrainPath trainPath, double trainLength, EnvelopeTimeInterpolate envelope
     ) {
         var infraState = StandaloneState.from(trainPath, trainLength);
         var signalizationEngine = SignalizationEngine.from(infra, infraState);
@@ -97,7 +81,7 @@ public class ScheduleMetadataExtractor {
 
     /** Makes the list of SignalUpdates from the train path and envelope */
     public static Collection<SignalUpdate> makeSignalUpdates(
-            Envelope envelope,
+            EnvelopeTimeInterpolate envelope,
             TrainPath trainPath,
             List<StandaloneSignalingSimulation.SignalTimedEvent<?>> events
     ) {
@@ -120,7 +104,7 @@ public class ScheduleMetadataExtractor {
                     continue;
                 }
                 var timeStart = update.time();
-                var timeEnd = envelope.getTotalTime();
+                var timeEnd = envelope.interpolateTotalTime(envelope.getEndPos());
                 if (i < updates.size() - 1)
                     timeEnd = updates.get(i + 1).time();
                 if (timeStart == timeEnd)
@@ -148,7 +132,7 @@ public class ScheduleMetadataExtractor {
      * this method adds signal updates to display this constraint on occupancy blocks */
     private static Collection<SignalUpdate> makeOpenSignalRequirements(
             TrainPath trainPath,
-            Envelope envelope
+            EnvelopeTimeInterpolate envelope
     ) {
         var res = new HashSet<SignalUpdate>();
         for (var route : trainPath.routePath()) {
@@ -179,7 +163,7 @@ public class ScheduleMetadataExtractor {
     /** Generates the ResultOccupancyTiming objects for each route */
     public static Map<String, ResultOccupancyTiming> makeRouteOccupancy(
             SignalingInfra infra,
-            Envelope envelope,
+            EnvelopeTimeInterpolate envelope,
             TrainPath trainPath,
             double trainLength,
             List<StandaloneSignalingSimulation.SignalTimedEvent<?>> events
@@ -258,7 +242,7 @@ public class ScheduleMetadataExtractor {
     private static void validate(
             TrainPath trainPath,
             HashMap<String, ResultOccupancyTiming> times,
-            Envelope envelope,
+            EnvelopeTimeInterpolate envelope,
             double trainLength
     ) {
         for (var first : trainPath.routePath()) {

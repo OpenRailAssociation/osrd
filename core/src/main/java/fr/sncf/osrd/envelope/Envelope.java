@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
-public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelope {
+public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelope, EnvelopeTimeInterpolate {
     private final EnvelopePart[] parts;
     public final boolean continuous;
 
