@@ -25,7 +25,7 @@ jobs:
         run: sudo apt-get install -y libpq-dev
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
 
       - name: Build the containers
         uses: docker/bake-action@v1.6.0
@@ -66,7 +66,7 @@ jobs:
           args: "-r ./editoast --skip-clean"
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           # github runs PR workflows on the result of a merge commit.
           # tell codecov the sha of the unmerged PR https://github.com/codecov/uploader/issues/525
