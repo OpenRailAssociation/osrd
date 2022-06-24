@@ -57,7 +57,7 @@ dependencies {
     implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.9.1' // Apache 2.0
 
     // ClassGraph (FastClasspathScanner)
-    implementation group: 'io.github.classgraph', name: 'classgraph', version: '4.8.102' // MIT
+    implementation group: 'io.github.classgraph', name: 'classgraph', version: '4.8.147' // MIT
 
     // for debug UI
     implementation 'com.github.yannrichet:JMathPlot:1.0.1' // BSD
