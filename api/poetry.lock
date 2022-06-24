@@ -341,8 +341,8 @@ pyflakes = ">=2.4.0,<2.5.0"
 
 [[package]]
 name = "geojson-pydantic"
-version = "0.3.1"
-description = "Pydantic data models for the GeoJSON spec"
+version = "0.4.2"
+description = "Pydantic data models for the GeoJSON spec."
 category = "main"
 optional = false
 python-versions = ">=3.7"
@@ -351,8 +351,8 @@ python-versions = ">=3.7"
 pydantic = "*"
 
 [package.extras]
-dev = ["pytest", "pytest-cov", "pre-commit"]
-test = ["pytest", "pytest-cov"]
+dev = ["pre-commit"]
+test = ["pytest", "pytest-cov", "shapely"]
 
 [[package]]
 name = "gunicorn"
@@ -912,7 +912,7 @@ production = ["gunicorn", "sentry-sdk", "uvloop", "httptools", "uvicorn"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "3894615b614022d0ed9a6c50c3b92a7fbd1b62a0ffe14c83f47680a0c495bf06"
+content-hash = "d8e06a4f40554271046ab58eaf81d6171db8ad31d1d808eba0df254bce8504ea"
 
 [metadata.files]
 amqp = [
@@ -1075,7 +1075,8 @@ flake8 = [
     {file = "flake8-4.0.1.tar.gz", hash = "sha256:806e034dda44114815e23c16ef92f95c91e4c71100ff52813adf7132a6ad870d"},
 ]
 geojson-pydantic = [
-    {file = "geojson-pydantic-0.3.1.tar.gz", hash = "sha256:6542614b63f018c0ffcac4c48ade9997a6ee982bdd53af4128cce334744292b2"},
+    {file = "geojson-pydantic-0.4.2.tar.gz", hash = "sha256:fa475f59bd0e9fa713289c95ef6e7903fc9dab748abb173cb7aeb16ddbf5b9df"},
+    {file = "geojson_pydantic-0.4.2-py3-none-any.whl", hash = "sha256:7c577be3a06f694e80324371240176f54125abcb49726e2f104f2296dd5bac56"},
 ]
 gunicorn = [
     {file = "gunicorn-20.1.0-py3-none-any.whl", hash = "sha256:9dcc4547dbb1cb284accfb15ab5667a0e5d1881cc443e0677b4882a4067a807e"},
