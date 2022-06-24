@@ -38,7 +38,7 @@ jobs:
           arguments: -p core -Pspotbugs_report_xml --continue check
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           # github runs PR workflows on the result of a merge commit.
           # tell codecov the sha of the unmerged PR https://github.com/codecov/uploader/issues/525
@@ -52,7 +52,7 @@ jobs:
           verbose: true
 
       - name: Report JUnit failures
-        uses: mikepenz/action-junit-report@v2
+        uses: mikepenz/action-junit-report@v3
         if: failure()
         with:
           report_paths: "core/build/test-results/test/TEST-*.xml"
