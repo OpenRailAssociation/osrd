@@ -18,7 +18,7 @@ requests = "2.27.1"
 pillow = "9.0.1"
 intervaltree = "3.1.0"
 numpy = "1.22.1"
-pydantic = "1.9.0"
+pydantic = "1.9.1"
 geojson-pydantic = "0.3.1"
 
 # production
