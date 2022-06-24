@@ -43,7 +43,7 @@ dependencies {
     implementation group: 'com.beust', name: 'jcommander', version: '1.78'  // Apache 2.0
 
     // fast primitive collections
-    implementation group: 'com.carrotsearch', name: 'hppc', version: '0.9.0'  // Apache 2.0
+    implementation group: 'com.carrotsearch', name: 'hppc', version: '0.9.1'  // Apache 2.0
 
     // JSON parsing
     implementation 'com.squareup.moshi:moshi:1.13.0' // Apache 2.0
