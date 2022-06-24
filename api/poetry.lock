@@ -744,7 +744,7 @@ use_chardet_on_py3 = ["chardet (>=3.0.2,<5)"]
 
 [[package]]
 name = "sentry-sdk"
-version = "1.5.2"
+version = "1.6.0"
 description = "Python client for Sentry (https://sentry.io)"
 category = "main"
 optional = true
@@ -912,7 +912,7 @@ production = ["gunicorn", "sentry-sdk", "uvloop", "httptools", "uvicorn"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "3894615b614022d0ed9a6c50c3b92a7fbd1b62a0ffe14c83f47680a0c495bf06"
+content-hash = "b99a5a524543e684dd467b924a0aa7e4952477f15870698fb9635bbfcd8d3735"
 
 [metadata.files]
 amqp = [
@@ -1389,8 +1389,8 @@ requests = [
     {file = "requests-2.27.1.tar.gz", hash = "sha256:68d7c56fd5a8999887728ef304a6d12edc7be74f1cfa47714fc8b414525c9a61"},
 ]
 sentry-sdk = [
-    {file = "sentry-sdk-1.5.2.tar.gz", hash = "sha256:7bbaa32bba806ec629962f207b597e86831c7ee2c1f287c21ba7de7fea9a9c46"},
-    {file = "sentry_sdk-1.5.2-py2.py3-none-any.whl", hash = "sha256:2cec50166bcb67e1965f8073541b2321e3864cd6fd42a526bcde9f0c4e4cc3f8"},
+    {file = "sentry-sdk-1.6.0.tar.gz", hash = "sha256:b82ad57306d5546713f15d5d70daea0408cf7f998c7566db16e0e6257e51e561"},
+    {file = "sentry_sdk-1.6.0-py2.py3-none-any.whl", hash = "sha256:ddbd191b6f4e696b7845b4d87389898ae1207981faf114f968a57363aa6be03c"},
 ]
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
