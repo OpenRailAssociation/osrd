@@ -39,7 +39,7 @@ production = [
 
 [tool.poetry.dev-dependencies]
 django-debug-toolbar = "3.2.4"
-coverage = "6.2"
+coverage = "6.4.1"
 black = "21.12b0"
 isort = "5.10.1"
 pyproject-flake8 = "0.0.1a2"
