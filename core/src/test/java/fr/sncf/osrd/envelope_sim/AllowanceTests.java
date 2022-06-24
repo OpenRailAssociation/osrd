@@ -7,6 +7,7 @@ import static fr.sncf.osrd.envelope_sim.MaxSpeedEnvelopeTest.TIME_STEP;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.carrotsearch.hppc.DoubleArrayList;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.EnvelopeShape;
 import fr.sncf.osrd.envelope.EnvelopeTransitions;
@@ -67,6 +68,7 @@ public class AllowanceTests {
     }
 
     /** Test the continuity of the binary search */
+    @SuppressFBWarnings("FL_FLOATS_AS_LOOP_COUNTERS")
     private void testBinarySearchContinuity(Envelope maxEffortEnvelope,
                                             AbstractAllowanceWithRanges allowance,
                                             double lowSpeed,
@@ -514,6 +516,7 @@ public class AllowanceTests {
 
     /** Test standard mareco allowance with different accelerating slopes*/
     @Test
+    @SuppressFBWarnings("FL_FLOATS_AS_LOOP_COUNTERS")
     public void testMarecoAcceleratingSlopes() {
         double length = 100_000;
         var gradeValues = new DoubleArrayList();

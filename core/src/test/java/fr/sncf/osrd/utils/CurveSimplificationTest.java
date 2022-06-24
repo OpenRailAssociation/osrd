@@ -2,6 +2,7 @@ package fr.sncf.osrd.utils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,6 +56,7 @@ class CurveSimplificationTest {
     }
 
     @Test
+    @SuppressFBWarnings("FL_FLOATS_AS_LOOP_COUNTERS")
     public void complexSimplification() {
         var points = new ArrayList<Point>();
         for (double x = 0; x < 1000; x += 0.5)
@@ -65,6 +67,7 @@ class CurveSimplificationTest {
     }
 
     @Test
+    @SuppressFBWarnings("FL_FLOATS_AS_LOOP_COUNTERS")
     public void complexNoSimplification() {
         var points = new ArrayList<Point>();
         for (double x = 0; x < 1000; x += 0.5)
