@@ -1,10 +1,10 @@
 package fr.sncf.osrd.api;
 
 import static fr.sncf.osrd.Helpers.getExampleRollingStocks;
+import static fr.sncf.osrd.utils.takes.TakesUtils.readBodyResponse;
 import static org.junit.jupiter.api.Assertions.*;
 
 import fr.sncf.osrd.api.StandaloneSimulationEndpoint.StandaloneSimulationRequest;
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
@@ -14,7 +14,6 @@ import fr.sncf.osrd.standalone_sim.result.ResultSpeed;
 import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult;
 import org.junit.jupiter.api.Test;
 import org.takes.rq.RqFake;
-import org.takes.rs.RsPrint;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -51,9 +50,9 @@ class StandaloneSimulationTest extends ApiTest {
         var requestBody = StandaloneSimulationEndpoint.adapterRequest.toJson(request);
 
         // process it
-        var rawResponse = new RsPrint(new StandaloneSimulationEndpoint(infraHandlerMock)
+        var rawResponse = readBodyResponse(new StandaloneSimulationEndpoint(infraHandlerMock)
                 .act(new RqFake("POST", "/standalone_simulation", requestBody))
-        ).printBody();
+        );
 
         // parse the response
         var response = StandaloneSimResult.adapter.fromJson(rawResponse);

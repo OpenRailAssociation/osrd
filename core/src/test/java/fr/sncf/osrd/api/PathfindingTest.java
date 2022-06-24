@@ -3,6 +3,8 @@ package fr.sncf.osrd.api;
 import static fr.sncf.osrd.Helpers.getResourcePath;
 import static fr.sncf.osrd.Helpers.infraFromRJS;
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.POSITION_EPSILON;
+import static fr.sncf.osrd.utils.takes.TakesUtils.readBodyResponse;
+import static fr.sncf.osrd.utils.takes.TakesUtils.readHeadResponse;
 import static org.junit.jupiter.api.Assertions.*;
 
 import fr.sncf.osrd.Helpers;
@@ -24,7 +26,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.takes.rq.RqFake;
-import org.takes.rs.RsPrint;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Stream;
@@ -73,10 +74,10 @@ public class PathfindingTest extends ApiTest {
         var requestBody = PathfindingEndpoint.adapterRequest.toJson(
                 new PathfindingEndpoint.PathfindingRequest(waypoints, "tiny_infra/infra.json", "1"));
 
-        var result = new RsPrint(
+        var result = readBodyResponse(
                 new PathfindingRoutesEndpoint(infraHandlerMock).act(
                         new RqFake("POST", "/pathfinding/routes", requestBody))
-        ).printBody();
+        );
 
         var response = PathfindingRoutesEndpoint.adapterResult.fromJson(result);
         assert response != null;
@@ -114,10 +115,8 @@ public class PathfindingTest extends ApiTest {
         var requestBody = PathfindingEndpoint.adapterRequest.toJson(
                 new PathfindingEndpoint.PathfindingRequest(waypoints, "tiny_infra/infra.json", "1"));
 
-        var result = new RsPrint(
-                new PathfindingRoutesEndpoint(infraHandlerMock).act(
-                        new RqFake("POST", "/pathfinding/routes", requestBody))
-        ).printBody();
+        var result = readBodyResponse(new PathfindingRoutesEndpoint(infraHandlerMock).act(
+                        new RqFake("POST", "/pathfinding/routes", requestBody)));
 
         var response = PathfindingRoutesEndpoint.adapterResult.fromJson(result);
         assert response != null;
@@ -145,10 +144,17 @@ public class PathfindingTest extends ApiTest {
         var requestBody = PathfindingEndpoint.adapterRequest.toJson(
                 new PathfindingEndpoint.PathfindingRequest(waypoints, "tiny_infra/infra.json", "1"));
 
-        var res = new RsPrint(new PathfindingRoutesEndpoint(infraHandlerMock).act(
+        var res =  readHeadResponse(new PathfindingRoutesEndpoint(infraHandlerMock).act(
                 new RqFake("POST", "/pathfinding/routes", requestBody)
         ));
-        assertTrue(res.printHead().contains("400"));
+        var contains400 = false;
+        for (var header : res) {
+            if (header.contains("400")) {
+                contains400 = true;
+                break;
+            }
+        }
+        assertTrue(contains400);
     }
 
     @Test
@@ -219,10 +225,10 @@ public class PathfindingTest extends ApiTest {
         var requestBody = PathfindingEndpoint.adapterRequest.toJson(
                 new PathfindingEndpoint.PathfindingRequest(waypoints, "tiny_infra/infra.json"));
 
-        var result = new RsPrint(
+        var result = readBodyResponse(
                 new PathfindingRoutesEndpoint(infraHandlerMock).act(
                         new RqFake("POST", "/pathfinding/routes", requestBody))
-        ).printBody();
+        );
 
         var response = PathfindingRoutesEndpoint.adapterResult.fromJson(result);
         assert response != null;
@@ -257,10 +263,10 @@ public class PathfindingTest extends ApiTest {
         var requestBody = PathfindingEndpoint.adapterRequest.toJson(
                 new PathfindingEndpoint.PathfindingRequest(waypoints, "tiny_infra/infra.json"));
 
-        var result = new RsPrint(
+        var result = readBodyResponse(
                 new PathfindingRoutesEndpoint(infraHandlerMock).act(
                         new RqFake("POST", "/pathfinding/routes", requestBody))
-        ).printBody();
+        );
 
         var response = PathfindingRoutesEndpoint.adapterResult.fromJson(result);
         assert response != null;
@@ -277,10 +283,10 @@ public class PathfindingTest extends ApiTest {
         );
         var requestBody = PathfindingEndpoint.adapterRequest.toJson(req);
 
-        var result = new RsPrint(
+        var result = readBodyResponse(
                 new PathfindingRoutesEndpoint(infraHandlerMock).act(
                         new RqFake("POST", "/pathfinding/routes", requestBody))
-        ).printBody();
+        );
 
         var response = PathfindingRoutesEndpoint.adapterResult.fromJson(result);
         assert response != null;
