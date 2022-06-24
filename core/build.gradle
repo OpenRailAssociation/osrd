@@ -50,7 +50,7 @@ dependencies {
     implementation 'com.squareup.moshi:moshi-adapters:1.13.0'  // Apache 2.0
 
     // HTTP server framework
-    implementation group: 'org.takes', name: 'takes', version: '1.19'  // MIT
+    implementation group: 'org.takes', name: 'takes', version: '1.20'  // MIT
     implementation group: 'javax.json', name: 'javax.json-api', version: '1.1.4'  // GPLv2 with classpath exemption
 
     // HTTP client
