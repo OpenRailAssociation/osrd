@@ -9,7 +9,7 @@ authors = ["DGEX Solutions <contact@dgexsol.fr>"]
 python = ">=3.8,<3.11"
 django = "4.0.4"
 psycopg2-binary = "2.9.3"
-djangorestframework = "3.13"
+djangorestframework = "3.13.1"
 djangorestframework-gis = "0.18"
 celery = "5.2.3"
 django-redis = "5.2.0"
