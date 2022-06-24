@@ -45,7 +45,7 @@ isort = "5.10.1"
 pyproject-flake8 = "0.0.1a2"
 pytest-django = "4.5.2"
 pytest-env = "0.6.2"
-django-cors-headers = "3.11.0"
+django-cors-headers = "3.13.0"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
