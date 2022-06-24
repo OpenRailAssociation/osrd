@@ -144,7 +144,7 @@ public class PathfindingTest extends ApiTest {
         var requestBody = PathfindingEndpoint.adapterRequest.toJson(
                 new PathfindingEndpoint.PathfindingRequest(waypoints, "tiny_infra/infra.json", "1"));
 
-        var res =  readHeadResponse(new PathfindingRoutesEndpoint(infraHandlerMock).act(
+        var res = readHeadResponse(new PathfindingRoutesEndpoint(infraHandlerMock).act(
                 new RqFake("POST", "/pathfinding/routes", requestBody)
         ));
         var contains400 = false;

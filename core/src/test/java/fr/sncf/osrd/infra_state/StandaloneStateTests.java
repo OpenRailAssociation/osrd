@@ -5,6 +5,7 @@ import static fr.sncf.osrd.infra.InfraHelpers.getSignalingRoute;
 import static fr.sncf.osrd.infra.InfraHelpers.makeSingleTrackRJSInfra;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.api.reservation.DetectionSection;
 import fr.sncf.osrd.infra.api.reservation.ReservationRoute;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
@@ -94,6 +95,7 @@ public class StandaloneStateTests {
     }
 
     @Test
+    @SuppressFBWarnings("FL_FLOATS_AS_LOOP_COUNTERS")
     public void stateWithStepsTest() {
         var rjsInfra = makeSingleTrackRJSInfra();
         var infra = infraFromRJS(rjsInfra);
@@ -129,6 +131,7 @@ public class StandaloneStateTests {
     }
 
     @Test
+    @SuppressFBWarnings("FL_FLOATS_AS_LOOP_COUNTERS")
     public void conflictingRoutesTests() {
         var rjsInfra = makeSingleTrackRJSInfra();
         var infra = infraFromRJS(rjsInfra);

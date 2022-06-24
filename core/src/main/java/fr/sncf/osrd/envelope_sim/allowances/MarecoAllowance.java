@@ -1,5 +1,6 @@
 package fr.sncf.osrd.envelope_sim.allowances;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.*;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.AcceleratingSlopeCoast;
@@ -47,6 +48,7 @@ public class MarecoAllowance extends AbstractAllowanceWithRanges {
     /** Compute the initial high bound for the binary search
      *  The high bound ensures that the speed vf will be higher than the max speed of the envelope */
     @Override
+    @SuppressFBWarnings("FL_FLOATS_AS_LOOP_COUNTERS")
     protected double computeInitialHighBound(Envelope envelopeSection) {
         var sectionMaxSpeed = envelopeSection.getMaxSpeed();
         var maxSpeed = sectionMaxSpeed;
