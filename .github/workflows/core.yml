@@ -25,7 +25,7 @@ jobs:
         with:
           python-version: "3.9"
       - run: pip install -r core/examples/generated/lib/requirements.txt
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v3
         with:
           java-version: 17
       - uses: reviewdog/action-setup@v1
@@ -52,7 +52,7 @@ jobs:
           verbose: true
 
       - name: Report JUnit failures
-        uses: mikepenz/action-junit-report@v2
+        uses: mikepenz/action-junit-report@v3
         if: failure()
         with:
           report_paths: "core/build/test-results/test/TEST-*.xml"

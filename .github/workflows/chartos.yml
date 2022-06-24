@@ -51,11 +51,11 @@ jobs:
       - name: Flake8
         run: pflake8 --config chartos/pyproject.toml --format junit-xml chartos > flake8.xml
       - name: Publish flake8 report
-        uses: mikepenz/action-junit-report@v2
+        uses: mikepenz/action-junit-report@v3
         if: failure()
         with:
           report_paths: flake8.xml
-      - uses: reviewdog/action-black@v2
+      - uses: reviewdog/action-black@v3
         with:
           github_token: ${{ secrets.github_token }}
           workdir: chartos
