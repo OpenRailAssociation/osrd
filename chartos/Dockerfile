@@ -1,6 +1,6 @@
 FROM python:3.10-alpine
 
-RUN apk add --no-cache libffi-dev build-base
+RUN apk add --no-cache libffi-dev build-base cargo
 
 RUN pip install poetry
 
