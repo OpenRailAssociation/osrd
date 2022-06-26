@@ -1,7 +1,6 @@
 import json
 from collections import defaultdict
 from typing import Dict, List, NewType, Tuple
-from urllib.parse import quote as url_quote
 
 from asyncpg import Connection
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
@@ -58,9 +57,7 @@ async def mvt_view_metadata(
     layer: Layer = get_or_404(config.layers, layer_slug, "Layer")
     # Check view exists
     get_or_404(layer.views, view_slug, "Layer view")
-    tiles_url_pattern = (
-        f"{settings.root_url}/tile/{layer_slug}/{view_slug}/" "{z}/{x}/{y}" f"/?infra={url_quote(infra)}"
-    )
+    tiles_url_pattern = f"{settings.root_url}/tile/{layer_slug}/{view_slug}/" "{z}/{x}/{y}" f"/?infra={infra}"
     return {
         "type": "vector",
         "name": layer.name,
