@@ -87,7 +87,7 @@ dependencies {
 
     // for linter annotations
     compileOnly 'net.jcip:jcip-annotations:1.0'  // CC Attribution
-    compileOnly 'com.github.spotbugs:spotbugs-annotations:4.7.0'  // LGPLv2.1
+    compileOnly 'com.github.spotbugs:spotbugs-annotations:4.7.1'  // LGPLv2.1
     testCompileOnly 'net.jcip:jcip-annotations:1.0'  // CC Attribution
     testCompileOnly 'com.github.spotbugs:spotbugs-annotations:4.7.0'  // LGPLv2.1
 }
