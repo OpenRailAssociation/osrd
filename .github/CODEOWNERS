@@ -1,14 +1,14 @@
-# CI/CD and CODEOWNERS
+# --- CI - CODEOWNERS - Dependabot - Template ---
 /.github                                                 @DGEXSolutions/osrd-backend-maintainers
 
 # --- FRONT ---
-/front                                                   @nicolaswurtz
+/front                                                   @DGEXSolutions/osrd-front-maintainers
 
 # --- API ---
 /api                                                     @flomonster @multun @eckter
 
 # --- EDITOAST ---
-/editoast                                                @flomonster @multun @Tguisnet
+/editoast                                                @Tguisnet @flomonster
 
 # --- CHARTOS ---
 /chartos                                                 @flomonster @multun
@@ -18,20 +18,8 @@
 
 # --- CORE ---
 /core                                                    @DGEXSolutions/osrd-backend-maintainers
-/core/src/main/java/fr/sncf/osrd/api                     @flomonster
 *Physics*.java                                           @DGEXSolutions/osrd-physics
-*Integrator*.java                                        @DGEXSolutions/osrd-physics
 *Integration*.java                                       @DGEXSolutions/osrd-physics
 
 # Python Interactive Client
 /core/src/python_interactive_client                      @flomonster @multun
-
-# buildsystem stuff
-/core/*gradle                                            @multun
-/core/config                                             @multun
-
-# openapi
-/core/specifications                                     @DGEXSolutions/osrd-backend-maintainers
-
-# Load database
-/load-database.sh                                        @flomonster
