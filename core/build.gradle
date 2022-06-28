@@ -20,7 +20,7 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.7.0'
     id 'application'
     id 'checkstyle'
-    id 'com.github.spotbugs' version '5.0.8'
+    id 'com.github.spotbugs' version '5.0.9'
     id 'com.github.johnrengelman.shadow' version '7.1.2'
     id 'jacoco'
 }
