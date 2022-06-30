@@ -15,7 +15,6 @@ const SelectionTool: Tool<SelectionState> = {
   id: 'select-items',
   icon: BsCursor,
   labelTranslationKey: 'Editor.tools.select-items.label',
-  descriptionTranslationKeys: ['Editor.tools.select-items.description-1'],
   isDisabled(context) {
     return !context.editorState.editorZone;
   },
@@ -33,7 +32,7 @@ const SelectionTool: Tool<SelectionState> = {
       {
         id: 'mode-single',
         icon: BsCursor,
-        labelTranslationKey: 'Editor.tools.select-items.actions.single.label',
+        labelTranslationKey: 'Editor.tools.select-items.actions.single',
         isActive({ state }) {
           return state.selectionState.type === 'single';
         },
@@ -47,7 +46,7 @@ const SelectionTool: Tool<SelectionState> = {
       {
         id: 'mode-rectangle',
         icon: BiSelection,
-        labelTranslationKey: 'Editor.tools.select-items.actions.rectangle.label',
+        labelTranslationKey: 'Editor.tools.select-items.actions.rectangle',
         isActive({ state }) {
           return state.selectionState.type === 'rectangle';
         },
@@ -61,7 +60,7 @@ const SelectionTool: Tool<SelectionState> = {
       {
         id: 'mode-polygon',
         icon: FaDrawPolygon,
-        labelTranslationKey: 'Editor.tools.select-items.actions.polygon.label',
+        labelTranslationKey: 'Editor.tools.select-items.actions.polygon',
         isActive({ state }) {
           return state.selectionState.type === 'polygon';
         },
@@ -75,7 +74,7 @@ const SelectionTool: Tool<SelectionState> = {
       {
         id: 'mode-edition',
         icon: FiEdit,
-        labelTranslationKey: 'Editor.tools.select-items.actions.edit-info.label',
+        labelTranslationKey: 'Editor.tools.select-items.actions.edit-info',
         isActive({ state }) {
           return state.selectionState.type === 'edition';
         },
@@ -114,7 +113,7 @@ const SelectionTool: Tool<SelectionState> = {
       {
         id: 'unselect-all',
         icon: BiLoader,
-        labelTranslationKey: 'Editor.tools.select-items.actions.unselect-all.label',
+        labelTranslationKey: 'Editor.tools.select-items.actions.unselect-all',
         isDisabled({ state }) {
           return !state.selection.length;
         },
@@ -128,7 +127,7 @@ const SelectionTool: Tool<SelectionState> = {
       {
         id: 'delete-selection',
         icon: BsTrash,
-        labelTranslationKey: 'Editor.tools.select-items.actions.delete-selection.label',
+        labelTranslationKey: 'Editor.tools.select-items.actions.delete-selection',
         isDisabled({ state }) {
           return !state.selection.length;
         },
@@ -136,8 +135,8 @@ const SelectionTool: Tool<SelectionState> = {
           openModal({
             component: ConfirmModal,
             arguments: {
-              title: t('Editor.tools.select-items.actions.delete-selection.label'),
-              message: t('Editor.tools.select-items.actions.delete-selection.confirmation'),
+              title: t('Editor.tools.select-items.actions.delete-selection'),
+              message: t('Editor.tools.select-items.actions.confirm-delete-selection'),
             },
             afterSubmit() {
               save({ delete: state.selection });

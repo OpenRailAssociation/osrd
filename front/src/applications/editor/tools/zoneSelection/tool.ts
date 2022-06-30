@@ -20,11 +20,6 @@ const ZoneSelectionTool: Tool<ZoneSelectionState> = {
   id: 'select-zone',
   icon: MdPhotoSizeSelectSmall,
   labelTranslationKey: 'Editor.tools.select-zone.label',
-  descriptionTranslationKeys: [
-    'Editor.tools.select-zone.description-1',
-    'Editor.tools.select-zone.description-2',
-    'Editor.tools.select-zone.description-3',
-  ],
   getInitialState() {
     return {
       ...DEFAULT_COMMON_TOOL_STATE,
@@ -36,7 +31,7 @@ const ZoneSelectionTool: Tool<ZoneSelectionState> = {
       {
         id: 'select-zone-rectangle',
         icon: BiSelection,
-        labelTranslationKey: 'Editor.tools.select-zone.actions.rectangle.label',
+        labelTranslationKey: 'Editor.tools.select-zone.actions.rectangle',
         isActive({ state }) {
           return state.zoneState.type === 'rectangle';
         },
@@ -53,7 +48,7 @@ const ZoneSelectionTool: Tool<ZoneSelectionState> = {
       {
         id: 'select-zone-polygon',
         icon: FaDrawPolygon,
-        labelTranslationKey: 'Editor.tools.select-zone.actions.polygon.label',
+        labelTranslationKey: 'Editor.tools.select-zone.actions.polygon',
         isActive({ state }) {
           return state.zoneState.type === 'polygon';
         },
@@ -72,7 +67,7 @@ const ZoneSelectionTool: Tool<ZoneSelectionState> = {
       {
         id: 'unselect-zone',
         icon: TiTimesOutline,
-        labelTranslationKey: 'Editor.tools.select-zone.actions.unselect.label',
+        labelTranslationKey: 'Editor.tools.select-zone.actions.unselect',
         isDisabled({ editorState }) {
           return !editorState.editorZone;
         },
@@ -85,7 +80,7 @@ const ZoneSelectionTool: Tool<ZoneSelectionState> = {
       {
         id: 'validate-polygon',
         icon: AiOutlineCheckCircle,
-        labelTranslationKey: 'Editor.tools.select-zone.actions.validate-polygon.label',
+        labelTranslationKey: 'Editor.tools.select-zone.actions.validate-polygon',
         onClick({ dispatch, setState, state }) {
           if (state.zoneState.type === 'polygon' && state.zoneState.points) {
             dispatch<ReturnType<typeof selectZone>>(
@@ -116,7 +111,7 @@ const ZoneSelectionTool: Tool<ZoneSelectionState> = {
       {
         id: 'cancel-last-point',
         icon: AiOutlineLeftCircle,
-        labelTranslationKey: 'Editor.tools.select-zone.actions.cancel-last-point.label',
+        labelTranslationKey: 'Editor.tools.select-zone.actions.cancel-last-point',
         onClick({ setState, state }) {
           if (state.zoneState.type === 'polygon' && state.zoneState.points) {
             setState({
@@ -141,7 +136,7 @@ const ZoneSelectionTool: Tool<ZoneSelectionState> = {
       {
         id: 'cancel-polygon',
         icon: AiOutlineCloseCircle,
-        labelTranslationKey: 'Editor.tools.select-zone.actions.cancel-polygon.label',
+        labelTranslationKey: 'Editor.tools.select-zone.actions.cancel-polygon',
         onClick({ setState, state }) {
           if (state.zoneState.type === 'polygon' && state.zoneState.points) {
             setState({
