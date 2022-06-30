@@ -11,7 +11,7 @@ import EditorZone from '../../../../common/Map/Layers/EditorZone';
 import { TrackEditionState } from './types';
 import EditorForm from '../../components/EditorForm';
 import { save } from '../../../../reducers/editor';
-import { TrackSectionEntity } from '../../../../types';
+import { Item, TrackSectionEntity } from '../../../../types';
 
 export const TRACK_LAYER_ID = 'trackEditionTool/new-track-path';
 export const POINTS_LAYER_ID = 'trackEditionTool/new-track-points';
@@ -66,7 +66,10 @@ export const TrackEditionLayers: FC = () => {
       <EditorZone />
 
       {/* Editor data layer */}
-      <GeoJSONs colors={colors[mapStyle]} />
+      <GeoJSONs
+        colors={colors[mapStyle]}
+        hidden={state.track.id ? [state.track as Item] : undefined}
+      />
 
       {/* Track path */}
       <Source
