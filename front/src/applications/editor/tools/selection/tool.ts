@@ -8,6 +8,8 @@ import { GEOJSON_LAYER_ID } from '../../../../common/Map/Layers/GeoJSONs';
 import { SelectionState } from './types';
 import { SelectionLayers, SelectionMessages, SelectionLeftPanel } from './components';
 import ConfirmModal from '../../components/ConfirmModal';
+import TrackEditionTool from '../trackEdition/tool';
+import { TrackSectionEntity } from '../../../../types';
 
 const SelectionTool: Tool<SelectionState> = {
   id: 'select-items',
@@ -82,7 +84,20 @@ const SelectionTool: Tool<SelectionState> = {
           state.selection.forEach((item) => types.add(item.objType));
           return types.size !== 1;
         },
-        onClick({ setState, state }) {
+        onClick({ setState, state, switchTool }) {
+          if (state.selection.length === 1) {
+            const selectedElement = state.selection[0];
+            if (selectedElement.objType === 'TrackSection') {
+              switchTool(TrackEditionTool, {
+                track: selectedElement as TrackSectionEntity,
+                editionState: {
+                  type: 'movePoint',
+                },
+              });
+              return;
+            }
+          }
+
           if (state.selectionState.type !== 'edition')
             setState({
               ...state,
