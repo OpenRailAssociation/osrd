@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Form from '@rjsf/core';
 import { useSelector } from 'react-redux';
+import { GeoJsonProperties } from 'geojson';
 
 import './EditorForm.scss';
 import { EditorEntity } from '../../../types';
@@ -18,7 +19,7 @@ interface EditorFormProps {
  */
 const EditorForm: React.FC<EditorFormProps> = ({ data, onSubmit, onChange, children }) => {
   const [error, setError] = useState<string | null>(null);
-  const [formData, setFormData] = useState<any>(data.properties);
+  const [formData, setFormData] = useState<GeoJsonProperties>(data.properties);
 
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
   const layer = getLayerForObjectType(editorState.editorSchema, data.objType);

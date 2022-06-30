@@ -37,7 +37,7 @@ function handleAxiosError(e: unknown): Error {
     if (err.response && err.response.data) {
       if (Array.isArray(err.response.data))
         error = new Error(
-          err.response.data.map((e) => new Error(e.message || JSON.stringify(e))).join('\n')
+          err.response.data.map((e2) => new Error(e2.message || JSON.stringify(e2))).join('\n')
         );
       else error = new Error(err.response.data.message || JSON.stringify(err.response.data));
     }
@@ -57,9 +57,10 @@ function handleAxiosError(e: unknown): Error {
     error = e;
   }
 
-  return error ? error : new Error('An unknown error occured');
+  return error || new Error('An unknown error occured');
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function get<T = any>(path: string, params?: { [key: string]: unknown }): Promise<T> {
   const config = getAuthConfig();
   if (params) {
@@ -81,6 +82,7 @@ export async function get<T = any>(path: string, params?: { [key: string]: unkno
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function post<P = any, T = any>(
   path: string,
   payload: P,
@@ -94,6 +96,7 @@ export async function post<P = any, T = any>(
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function patch<P = any, T = any>(
   path: string,
   payload: P,
@@ -110,6 +113,7 @@ export async function patch<P = any, T = any>(
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function put<P = any, T = any>(
   path: string,
   payload: P,

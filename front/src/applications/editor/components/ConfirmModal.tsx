@@ -16,7 +16,7 @@ const ConfirmModal: FC<
         <button type="button" className="btn btn-danger mr-2" onClick={cancel}>
           {cancelLabel || t('common.cancel')}
         </button>
-        <button type="button" className="btn btn-primary" onClick={submit}>
+        <button type="button" className="btn btn-primary" onClick={() => submit({})}>
           {confirmLabel || t('common.confirm')}
         </button>
       </div>

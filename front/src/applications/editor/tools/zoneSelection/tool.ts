@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   AiOutlineCheckCircle,
   AiOutlineCloseCircle,
@@ -78,7 +77,7 @@ const ZoneSelectionTool: Tool<ZoneSelectionState> = {
           return !editorState.editorZone;
         },
         onClick({ dispatch }) {
-          dispatch<any>(selectZone(null));
+          dispatch<ReturnType<typeof selectZone>>(selectZone(null));
         },
       },
     ],
@@ -89,7 +88,7 @@ const ZoneSelectionTool: Tool<ZoneSelectionState> = {
         labelTranslationKey: 'Editor.tools.select-zone.actions.validate-polygon.label',
         onClick({ dispatch, setState, state }) {
           if (state.zoneState.type === 'polygon' && state.zoneState.points) {
-            dispatch<any>(
+            dispatch<ReturnType<typeof selectZone>>(
               selectZone({
                 type: 'polygon',
                 points: state.zoneState.points,
@@ -176,7 +175,7 @@ const ZoneSelectionTool: Tool<ZoneSelectionState> = {
         if (isEqual(state.zoneState.topLeft, position)) {
           setState({ ...state, zoneState: { ...state.zoneState, topLeft: null } });
         } else {
-          dispatch<any>(
+          dispatch<ReturnType<typeof selectZone>>(
             selectZone({
               type: 'rectangle',
               points: [state.zoneState.topLeft, position],
@@ -196,7 +195,7 @@ const ZoneSelectionTool: Tool<ZoneSelectionState> = {
 
       if (isEqual(lastPoint, position)) {
         if (points.length >= 3) {
-          dispatch<any>(
+          dispatch<ReturnType<typeof selectZone>>(
             selectZone({
               type: 'polygon',
               points,

@@ -4,6 +4,7 @@ import SelectionTool from './selection/tool';
 import ZoneSelectionTool from './zoneSelection/tool';
 import TrackEditionTool from './trackEdition/tool';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const TOOLS: Tool<any>[] = [ZoneSelectionTool, SelectionTool, TrackEditionTool];
 
 export default TOOLS;

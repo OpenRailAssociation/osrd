@@ -23,7 +23,9 @@ export const SelectionMessages: FC = () => {
 
 export const SelectionLayers: FC = () => {
   const { state } = useContext(EditorContext) as EditorContextType<SelectionState>;
-  const { mapStyle } = useSelector((s: { map: any }) => s.map) as { mapStyle: string };
+  const { mapStyle } = useSelector((s: { map: { mapStyle: string } }) => s.map) as {
+    mapStyle: string;
+  };
 
   let selectionZone: Zone | undefined;
 
@@ -96,7 +98,7 @@ export const SelectionLeftPanel: FC = () => {
         <EditorForm
           data={selection[0]}
           onSubmit={async (savedEntity) => {
-            await dispatch<any>(save({ update: [savedEntity] }));
+            await dispatch<ReturnType<typeof save>>(save({ update: [savedEntity] }));
             setState({ ...state, selection: [savedEntity], selectionState: { type: 'single' } });
           }}
         >
