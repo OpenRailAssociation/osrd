@@ -20,7 +20,7 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.7.0'
     id 'application'
     id 'checkstyle'
-    id 'com.github.spotbugs' version '5.0.8'
+    id 'com.github.spotbugs' version '5.0.+'
     id 'com.github.johnrengelman.shadow' version '7.1.2'
     id 'jacoco'
 }
@@ -69,7 +69,7 @@ dependencies {
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.11'
 
     // Sentry
-    implementation group: 'io.sentry', name: 'sentry', version: '6.1.3'  // MIT
+    implementation group: 'io.sentry', name: 'sentry', version: '6.1.+'  // MIT
 
     // Use JUnit Jupiter API for testing.
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'  // EPL 2.0
@@ -87,7 +87,7 @@ dependencies {
 
     // for linter annotations
     compileOnly 'net.jcip:jcip-annotations:1.0'  // CC Attribution
-    compileOnly 'com.github.spotbugs:spotbugs-annotations:4.7.0'  // LGPLv2.1
+    compileOnly 'com.github.spotbugs:spotbugs-annotations:4.7.+'  // LGPLv2.1
     testCompileOnly 'net.jcip:jcip-annotations:1.0'  // CC Attribution
     testCompileOnly 'com.github.spotbugs:spotbugs-annotations:4.7.0'  // LGPLv2.1
 }
