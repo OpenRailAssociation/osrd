@@ -4,9 +4,10 @@ import { ViewportProps } from 'react-map-gl';
 import { ComponentType, Context, createContext } from 'react';
 
 import { EditorState } from '../../reducers/editor';
-import { Tool } from './tools/types';
+// eslint-disable-next-line import/no-cycle
+import { CommonToolState, Tool } from './tools/types';
 
-export interface ModalProps<ArgumentsType, SubmitArgumentsType = {}> {
+export interface ModalProps<ArgumentsType, SubmitArgumentsType = Record<string, unknown>> {
   arguments: ArgumentsType;
   cancel: () => void;
   submit: (args: SubmitArgumentsType) => void;
@@ -38,11 +39,15 @@ export interface EditorContextType<S> {
   setState: (state: S) => void;
 
   // Switching tool:
-  switchTool: <NewToolState>(tool: Tool<NewToolState>, state?: Partial<NewToolState>) => void;
+  switchTool: <NewToolState extends CommonToolState>(
+    tool: Tool<NewToolState>,
+    state?: Partial<NewToolState>
+  ) => void;
 }
 
 export interface ExtendedEditorContextType<S> extends EditorContextType<S> {
-  dispatch: Dispatch;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  dispatch: Dispatch<any>;
   editorState: EditorState;
   mapState: {
     mapStyle: string;
@@ -57,6 +62,8 @@ export type ReadOnlyEditorContextType<S> = Omit<
   editorState: EditorState;
 };
 
-export const EditorContext = createContext<EditorContextType<unknown> | null>(null) as Context<
-  EditorContextType<unknown>
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export const EditorContext = createContext<EditorContextType<any> | null>(null) as Context<
+  EditorContextType<any>
 >;
+/* eslint-enable @typescript-eslint/no-explicit-any */

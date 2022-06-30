@@ -2,6 +2,7 @@ import React, { FC, useContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Layer, Source } from 'react-map-gl';
 import { useTranslation } from 'react-i18next';
+import { last } from 'lodash';
 
 import { EditorContext, EditorContextType } from '../../context';
 import GeoJSONs from '../../../../common/Map/Layers/GeoJSONs';
@@ -11,8 +12,6 @@ import { TrackEditionState } from './types';
 import EditorForm from '../../components/EditorForm';
 import { save } from '../../../../reducers/editor';
 import { TrackSectionEntity } from '../../../../types';
-import { zoneToFeature } from '../../../../utils/mapboxHelper';
-import { last } from 'lodash';
 
 export const TRACK_LAYER_ID = 'trackEditionTool/new-track-path';
 export const POINTS_LAYER_ID = 'trackEditionTool/new-track-points';
@@ -20,7 +19,9 @@ const TRACK_COLOR = '#666';
 
 export const TrackEditionLayers: FC = () => {
   const { state } = useContext(EditorContext) as EditorContextType<TrackEditionState>;
-  const { mapStyle } = useSelector((s: { map: any }) => s.map) as { mapStyle: string };
+  const { mapStyle } = useSelector((s: { map: { mapStyle: string } }) => s.map) as {
+    mapStyle: string;
+  };
 
   const isAddingPointOnExistingSection =
     typeof state.nearestPoint?.properties?.sectionIndex === 'number';
@@ -185,7 +186,7 @@ export const TrackEditionLeftPanel: FC = () => {
     <EditorForm
       data={state.track}
       onSubmit={async (savedEntity) => {
-        await dispatch<any>(save({ create: [savedEntity] }));
+        await dispatch<ReturnType<typeof save>>(save({ create: [savedEntity] }));
         setState({ ...state, track: savedEntity as TrackSectionEntity });
       }}
       onChange={(track) => {

@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { TFunction } from 'i18next';
 import { withTranslation } from 'react-i18next';
+import { ViewportProps } from 'react-map-gl';
 import cx from 'classnames';
 
 import 'common/Map/Map.scss';
@@ -29,15 +30,20 @@ import TOOLS from './tools/list';
 
 const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   const dispatch = useDispatch();
-  const { infraID } = useSelector((state: { osrdconf: any }) => state.osrdconf);
+  const { infraID } = useSelector((state: { osrdconf: { infraID: string } }) => state.osrdconf);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
   const { fullscreen } = useSelector((state: { main: MainState }) => state.main);
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   const [activeTool, activateTool] = useState<Tool<any>>(TOOLS[0]);
   const [toolState, setToolState] = useState<any>(activeTool.getInitialState());
   const [modal, setModal] = useState<ModalRequest<any, any> | null>(null);
+  /* eslint-enable @typescript-eslint/no-explicit-any */
 
-  const { infra, urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams<any>();
-  const { mapStyle, viewport } = useSelector((state: { map: any }) => state.map);
+  const { infra, urlLat, urlLon, urlZoom, urlBearing, urlPitch } =
+    useParams<Record<string, string>>();
+  const { mapStyle, viewport } = useSelector(
+    (state: { map: { mapStyle: string; viewport: ViewportProps } }) => state.map
+  );
   const setViewport = useCallback(
     (value) => {
       dispatch(updateViewport(value, `/editor/${infra || '-1'}`));
@@ -52,7 +58,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
       openModal: <ArgumentsType, SubmitArgumentsType>(
         request: ModalRequest<ArgumentsType, SubmitArgumentsType>
       ) => {
-        setModal(request);
+        setModal(request as ModalRequest<unknown, unknown>);
       },
       closeModal: () => {
         setModal(null);
@@ -60,7 +66,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
       activeTool,
       state: toolState,
       setState: setToolState,
-      switchTool<S>(tool: Tool<S>, state?: Partial<S>) {
+      switchTool<S extends CommonToolState>(tool: Tool<S>, state?: Partial<S>) {
         activateTool(tool);
         setToolState({ ...tool.getInitialState(), ...(state || {}) });
       },
@@ -98,6 +104,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
         pitch: parseFloat(urlPitch),
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Update the infrastructure in state
@@ -111,25 +118,23 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
           dispatch(setFailure(new Error(t('Editor.errors.infra-not-found', { id: infra }))));
           dispatch(updateViewport(viewport, `/editor/infra`));
         });
+    } else if (infraID) {
+      dispatch(updateViewport(viewport, `/editor/${infraID}`));
     } else {
-      if (infraID) {
-        dispatch(updateViewport(viewport, `/editor/${infraID}`));
-      } else {
-        getInfrastructures()
-          .then((infras) => {
-            if (infras && infras.length > 0) {
-              const infrastructure = infras[0];
-              dispatch(updateInfraID(infrastructure.id));
-            } else {
-              dispatch(setFailure(new Error(t('Editor.errors.no-infra-available'))));
-            }
-          })
-          .catch((e) => {
-            dispatch(setFailure(new Error(t('Editor.errors.technical', { msg: e.message }))));
-          });
-      }
+      getInfrastructures()
+        .then((infras) => {
+          if (infras && infras.length > 0) {
+            const infrastructure = infras[0];
+            dispatch(updateInfraID(infrastructure.id));
+          } else {
+            dispatch(setFailure(new Error(t('Editor.errors.no-infra-available'))));
+          }
+        })
+        .catch((e) => {
+          dispatch(setFailure(new Error(t('Editor.errors.technical', { msg: e.message }))));
+        });
     }
-  }, [infra]);
+  }, [dispatch, infra, infraID, t, viewport]);
 
   return (
     <EditorContext.Provider value={context as EditorContextType<unknown>}>
