@@ -20,7 +20,6 @@ export interface ToolAction<S> {
   id: string;
   icon: ComponentType;
   labelTranslationKey: string;
-  descriptionTranslationKeys?: string[];
   // Tool appearance:
   isActive?: (context: ReadOnlyEditorContextType<S>) => boolean;
   isHidden?: (context: ReadOnlyEditorContextType<S>) => boolean;
@@ -29,13 +28,12 @@ export interface ToolAction<S> {
   onClick?: (context: ExtendedEditorContextType<S>) => void;
 }
 
-export type ToolId = 'select-zone' | 'select-items' | 'create-line';
+export type ToolId = 'select-zone' | 'select-items' | 'track-edition';
 
 export interface Tool<S> {
   id: ToolId;
   icon: IconType;
   labelTranslationKey: string;
-  descriptionTranslationKeys: string[];
   actions: ToolAction<S>[][];
   getInitialState: () => S;
   isDisabled?: (context: ReadOnlyEditorContextType<S>) => boolean;

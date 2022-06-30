@@ -26,16 +26,9 @@ import { getNewLine } from './utils';
 
 const TrackEditionTool: Tool<TrackEditionState> = {
   // Zone selection:
-  id: 'create-line',
+  id: 'track-edition',
   icon: MdShowChart,
-  labelTranslationKey: 'Editor.tools.create-line.label',
-  descriptionTranslationKeys: [
-    'Editor.tools.create-line.description-1',
-    'Editor.tools.create-line.description-2',
-    'Editor.tools.create-line.description-3',
-    'Editor.tools.create-line.description-4',
-    'Editor.tools.create-line.description-5',
-  ],
+  labelTranslationKey: 'Editor.tools.track-edition.label',
   isDisabled({ editorState }) {
     return !editorState.editorZone;
   },
@@ -59,7 +52,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
       {
         id: 'mode-move-point',
         icon: RiDragMoveLine,
-        labelTranslationKey: 'Editor.tools.create-line.actions.mode-move-point.label',
+        labelTranslationKey: 'Editor.tools.track-edition.actions.mode-move-point',
         onClick({ setState, state }) {
           setState({
             ...state,
@@ -75,7 +68,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
       {
         id: 'mode-add-point',
         icon: CgAdd,
-        labelTranslationKey: 'Editor.tools.create-line.actions.mode-add-point.label',
+        labelTranslationKey: 'Editor.tools.track-edition.actions.mode-add-point',
         onClick({ setState, state }) {
           setState({
             ...state,
@@ -92,7 +85,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
       {
         id: 'mode-delete-point',
         icon: TiDeleteOutline,
-        labelTranslationKey: 'Editor.tools.create-line.actions.mode-delete-point.label',
+        labelTranslationKey: 'Editor.tools.track-edition.actions.mode-delete-point',
         onClick({ setState, state }) {
           setState({
             ...state,
@@ -110,7 +103,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
       {
         id: 'toggle-anchoring',
         icon: BiAnchor,
-        labelTranslationKey: 'Editor.tools.create-line.actions.toggle-anchoring.label',
+        labelTranslationKey: 'Editor.tools.track-edition.actions.toggle-anchoring',
         onClick({ setState, state }) {
           setState({
             ...state,
@@ -128,7 +121,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
       {
         id: 'cancel-line',
         icon: BiTrash,
-        labelTranslationKey: 'Editor.tools.create-line.actions.cancel-line.label',
+        labelTranslationKey: 'Editor.tools.track-edition.actions.cancel-line',
         onClick({ setState, state }) {
           if (state.track.geometry.coordinates.length) {
             const newState = cloneDeep(state);
