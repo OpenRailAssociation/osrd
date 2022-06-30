@@ -3,6 +3,7 @@ import { MapEvent } from 'react-map-gl';
 import { IconType } from 'react-icons/lib/esm/iconBase';
 
 import { Item, PositionnedItem } from '../../../types';
+// eslint-disable-next-line import/no-cycle
 import { ExtendedEditorContextType, ReadOnlyEditorContextType } from '../context';
 
 export interface CommonToolState {

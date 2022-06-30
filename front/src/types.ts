@@ -3,11 +3,13 @@ import { JSONSchema7 } from 'json-schema';
 import { Position, Feature } from 'geojson';
 import { ThunkAction as ReduxThunkAction } from 'redux-thunk';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type EditorModelsDefinition = any;
 
 //
 //  Redux types
 //
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ThunkAction<T extends Action> = ReduxThunkAction<void, any, unknown, T>;
 
 //
@@ -33,6 +35,7 @@ export type Zone = RectangleZone | PolygonZone;
 
 export interface Item {
   id: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   properties: Record<string, any>;
 }
 

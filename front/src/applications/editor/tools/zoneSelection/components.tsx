@@ -8,9 +8,12 @@ import EditorZone from '../../../../common/Map/Layers/EditorZone';
 import TracksGeographic from '../../../../common/Map/Layers/TracksGeographic';
 import { ZoneSelectionState } from './types';
 
+// eslint-disable-next-line import/prefer-default-export
 export const ZoneSelectionLayers: FC = () => {
   const { state } = useContext(EditorContext) as EditorContextType<ZoneSelectionState>;
-  const { mapStyle } = useSelector((s: { map: any }) => s.map) as { mapStyle: string };
+  const { mapStyle } = useSelector((s: { map: { mapStyle: string } }) => s.map) as {
+    mapStyle: string;
+  };
   let newZone: Zone | undefined;
 
   if (state.mousePosition) {

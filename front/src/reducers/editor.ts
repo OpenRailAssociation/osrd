@@ -90,7 +90,7 @@ export function loadDataModel(): ThunkAction<ActionLoadDataModel> {
 // Save modifications
 //
 const SAVE = 'editor/SAVE';
-type ActionSave = {
+export type ActionSave = {
   type: typeof SAVE;
   operations: {
     create?: Array<Feature>;
