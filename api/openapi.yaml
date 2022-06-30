@@ -700,56 +700,6 @@ components:
         modified:
           type: string
           format: date-time
-    CreateEntity:
-      properties:
-        operation:
-          type: string
-          enum: [create_entity]
-        entity_type:
-          type: string
-        components:
-          type: array
-          items:
-            type: object
-            description: List of the component field
-    DeleteEntity:
-      properties:
-        operation:
-          type: string
-          enum: [delete_entity]
-        entity_id:
-          type: integer
-    AddComponent:
-      properties:
-        operation:
-          type: string
-          enum: [add_component]
-        entity_id:
-          type: integer
-        component_type:
-          type: string
-        component:
-          type: object
-          description: List of the component field
-    UpdateComponent:
-      properties:
-        operation:
-          type: string
-          enum: [update_component]
-        component_type:
-          type: string
-        update:
-          type: object
-          description: List of the component field
-    DeleteComponent:
-      properties:
-        operation:
-          type: string
-          enum: [delete_component]
-        component_id:
-          type: integer
-        component_type:
-          type: string
     TrainScheduleResultData:
       properties:
         speeds:
@@ -1156,7 +1106,8 @@ components:
           type: string
           enum: ["MARECO", "LINEAR"]
         capacity_speed_limit:
-          type: float
+          type: number
+          format: double
     EngineeringAllowance:
       allOf:
         - type: object
@@ -1168,7 +1119,8 @@ components:
               type: string
               enum: ["MARECO", "LINEAR"]
             capacity_speed_limit:
-              type: float
+              type: number
+              format: double
         - $ref: "#/components/schemas/RangeAllowance"
     RangeAllowance:
       properties:
