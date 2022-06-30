@@ -36,6 +36,9 @@ export interface EditorContextType<S> {
   activeTool: Tool<S>;
   state: S;
   setState: (state: S) => void;
+
+  // Switching tool:
+  switchTool: <NewToolState>(tool: Tool<NewToolState>, state?: Partial<NewToolState>) => void;
 }
 
 export interface ExtendedEditorContextType<S> extends EditorContextType<S> {

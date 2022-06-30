@@ -32,8 +32,8 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   const { infraID } = useSelector((state: { osrdconf: any }) => state.osrdconf);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
   const { fullscreen } = useSelector((state: { main: MainState }) => state.main);
-  const [activeTool, activateTool] = useState<Tool<CommonToolState>>(TOOLS[0]);
-  const [toolState, setToolState] = useState<CommonToolState>(activeTool.getInitialState());
+  const [activeTool, activateTool] = useState<Tool<any>>(TOOLS[0]);
+  const [toolState, setToolState] = useState<any>(activeTool.getInitialState());
   const [modal, setModal] = useState<ModalRequest<any, any> | null>(null);
 
   const { infra, urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams<any>();
@@ -60,6 +60,10 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
       activeTool,
       state: toolState,
       setState: setToolState,
+      switchTool<S>(tool: Tool<S>, state?: Partial<S>) {
+        activateTool(tool);
+        setToolState({ ...tool.getInitialState(), ...(state || {}) });
+      },
     }),
     [activeTool, modal, t, toolState]
   );
