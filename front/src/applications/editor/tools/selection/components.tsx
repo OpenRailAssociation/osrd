@@ -125,33 +125,30 @@ export const SelectionLeftPanel: FC = () => {
 
     if (types.size === 1) {
       return (
-        <p className="text-center">
-          It is not yet possible to edit simultaneously items with the same type (TODO).
-        </p>
+        <p className="text-center">{t('Editor.tools.select-items.errors.no-multi-edition')}</p>
       );
     }
 
     return (
-      <p className="text-center">
-        It is not possible to edit simultaneously items with different types.
-      </p>
+      <p className="text-center">{t('Editor.tools.select-items.errors.no-heterogenous-edition')}</p>
     );
   }
 
-  if (!selection.length) return <p className="text-center">No item selected yet</p>;
+  if (!selection.length)
+    return <p className="text-center">{t('Editor.tools.select-items.no-selection')}</p>;
 
   if (selection.length > 5) {
     const types = groupBy(selection, (item) => item.objType);
 
     return (
       <>
-        <h4>Selection</h4>
+        <h4>{t('Editor.tools.select-items.title')}</h4>
         <ul className="list-unstyled">
           {map(types, (items, type) => (
             <li key={type} className="pb-4">
               <div className="pb-2">
-                {items.length} selected item{items.length > 1 ? 's' : ''} of type{' '}
-                <strong>{type}</strong>
+                {t('Editor.tools.select-items.selection', { count: items.length })}{' '}
+                {t('Editor.tools.select-items.of-type')} <strong>{type}</strong>
               </div>
               <div>
                 <button
@@ -161,7 +158,7 @@ export const SelectionLeftPanel: FC = () => {
                     setState({ ...state, selection: selection.filter((i) => i.objType === type) })
                   }
                 >
-                  <RiFocus3Line /> Focus
+                  <RiFocus3Line /> {t('Editor.tools.select-items.focus')}
                 </button>
                 <button
                   type="button"
@@ -170,7 +167,7 @@ export const SelectionLeftPanel: FC = () => {
                     setState({ ...state, selection: selection.filter((i) => i.objType !== type) })
                   }
                 >
-                  <IoMdRemoveCircleOutline /> Deselect
+                  <IoMdRemoveCircleOutline /> {t('Editor.tools.select-items.unselect')}
                 </button>
               </div>
             </li>
@@ -182,12 +179,13 @@ export const SelectionLeftPanel: FC = () => {
 
   return (
     <>
-      <h4>Selection</h4>
+      <h4>{t('Editor.tools.select-items.title')}</h4>
       <ul className="list-unstyled">
         {selection.map((item) => (
           <li key={item.id} className="pb-4">
             <div className="pb-2">
-              Item <strong>{item.id}</strong> of type <strong>{item.objType}</strong>
+              {t('Editor.tools.select-items.item')} <strong>{item.id}</strong>{' '}
+              {t('Editor.tools.select-items.of-type')} <strong>{item.objType}</strong>
             </div>
             <div>
               <button
@@ -195,7 +193,7 @@ export const SelectionLeftPanel: FC = () => {
                 className="btn btn-secondary btn-sm mr-2"
                 onClick={() => setState({ ...state, selection: [item] })}
               >
-                <RiFocus3Line /> Focus
+                <RiFocus3Line /> {t('Editor.tools.select-items.focus')}
               </button>
               <button
                 type="button"
@@ -204,7 +202,7 @@ export const SelectionLeftPanel: FC = () => {
                   setState({ ...state, selection: selection.filter((i) => i.id !== item.id) })
                 }
               >
-                <IoMdRemoveCircleOutline /> Deselect
+                <IoMdRemoveCircleOutline /> {t('Editor.tools.select-items.unselect')}
               </button>
             </div>
           </li>
