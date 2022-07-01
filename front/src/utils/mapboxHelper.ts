@@ -227,7 +227,7 @@ export function clip<T extends Feature | FeatureCollection>(tree: T, zone: Zone)
  */
 export function selectInZone<T extends Feature>(data: Array<T>, zone?: Zone): T[] {
   const items: T[] = [];
-  const zoneFeature = zone && zoneToFeature(zone);
+  const zoneFeature = zone && zoneToFeature(zone, true);
 
   data.forEach((geojson) => {
     if (!zoneFeature || booleanIntersects(geojson, zoneFeature)) {
