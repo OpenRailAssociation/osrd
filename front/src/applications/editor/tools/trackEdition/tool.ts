@@ -175,6 +175,13 @@ const TrackEditionTool: Tool<TrackEditionState> = {
 
           newState.nearestPoint = null;
           setState(newState);
+        } else {
+          setState({
+            ...state,
+            editionState: {
+              type: 'movePoint',
+            },
+          });
         }
       }
     } else if (editionState.type === 'movePoint') {

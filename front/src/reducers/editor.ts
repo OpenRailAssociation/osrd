@@ -108,7 +108,7 @@ export function save(operations: {
     dispatch(setLoading());
     try {
       // saving the data
-      await editorSave(state.osrdconf.infraID, {
+      const savedFeatures = await editorSave(state.osrdconf.infraID, {
         ...operations,
         update: (operations.update || []).map((target) => {
           const source = state.editor.editorData.find((e) => e.id === target.id);
@@ -124,6 +124,8 @@ export function save(operations: {
           text: `Vos modifications ont été publiées`,
         })
       );
+
+      return savedFeatures;
     } catch (e) {
       dispatch(setFailure(e as Error));
       throw e;
