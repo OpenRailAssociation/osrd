@@ -147,14 +147,25 @@ public class PathfindingTest extends ApiTest {
         var res = readHeadResponse(new PathfindingRoutesEndpoint(infraHandlerMock).act(
                 new RqFake("POST", "/pathfinding/routes", requestBody)
         ));
-        var contains400 = false;
-        for (var header : res) {
-            if (header.contains("400")) {
-                contains400 = true;
-                break;
-            }
-        }
-        assertTrue(contains400);
+        assert contains400(res);
+    }
+
+    @Test
+    public void missingTrackTest() throws IOException {
+        var waypoint = new PathfindingWaypoint(
+                "this_track_does_not_exist",
+                0,
+                EdgeDirection.STOP_TO_START
+        );
+        var waypoints = new PathfindingWaypoint[2][1];
+        waypoints[0][0] = waypoint;
+        waypoints[1][0] = waypoint;
+        var requestBody = PathfindingEndpoint.adapterRequest.toJson(
+                new PathfindingEndpoint.PathfindingRequest(waypoints, "tiny_infra/infra.json", "1"));
+        var res = readHeadResponse(new PathfindingRoutesEndpoint(infraHandlerMock).act(
+                new RqFake("POST", "/pathfinding/routes", requestBody)
+        ));
+        assert contains400(res);
     }
 
     @Test
@@ -391,5 +402,17 @@ public class PathfindingTest extends ApiTest {
     @MethodSource("provideInfraParameters")
     public void testMachingRouteOffsets(String path, boolean inverted) throws Exception {
         testAllMatchingRouteOffsets(path, inverted);
+    }
+
+    /** Returns true if the response is a 400 */
+    private static boolean contains400(List<String> res) {
+        var contains400 = false;
+        for (var header : res) {
+            if (header.contains("400")) {
+                contains400 = true;
+                break;
+            }
+        }
+        return contains400;
     }
 }
