@@ -188,13 +188,15 @@ export const SelectionLeftPanel: FC = () => {
               {t('Editor.tools.select-items.of-type')} <strong>{item.objType}</strong>
             </div>
             <div>
-              <button
-                type="button"
-                className="btn btn-secondary btn-sm mr-2"
-                onClick={() => setState({ ...state, selection: [item] })}
-              >
-                <RiFocus3Line /> {t('Editor.tools.select-items.focus')}
-              </button>
+              {selection.length > 1 && (
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm mr-2"
+                  onClick={() => setState({ ...state, selection: [item] })}
+                >
+                  <RiFocus3Line /> {t('Editor.tools.select-items.focus')}
+                </button>
+              )}
               <button
                 type="button"
                 className="btn btn-secondary btn-sm"
