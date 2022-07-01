@@ -189,7 +189,9 @@ export const TrackEditionLeftPanel: FC = () => {
     <EditorForm
       data={state.track}
       onSubmit={async (savedEntity) => {
-        await dispatch<ReturnType<typeof save>>(save({ create: [savedEntity] }));
+        await dispatch<ReturnType<typeof save>>(
+          save({ [state.track.id ? 'update' : 'create']: [savedEntity] })
+        );
         setState({ ...state, track: savedEntity as TrackSectionEntity });
       }}
       onChange={(track) => {
