@@ -226,7 +226,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
           : null,
       });
     } else if (editionState.type === 'addPoint' && state.anchorLinePoints) {
-      const closeTrackPath = (e.features || []).find((f) => f.layer.id === TRACK_LAYER_ID);
+      const closeTrackPath = state.track;
 
       let isStateUpdated = false;
       if (closeTrackPath) {
