@@ -116,7 +116,7 @@
     "@testing-library/dom": ">5",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
-    "@testing-library/user-event": "^7.1.2",
+    "@testing-library/user-event": "^14.2.1",
     "@types/lodash": "^4.14.168",
     "@types/react": "^17.0.39",
     "@types/react-redux": "^7.1.16",
