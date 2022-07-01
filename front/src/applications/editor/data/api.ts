@@ -1,10 +1,18 @@
-import { Feature } from 'geojson';
 import { omit } from 'lodash';
 import { v4 as uuid } from 'uuid';
 import { compare } from 'fast-json-patch';
 
 import { get, post } from '../../../common/requests';
-import { Zone, EditorSchema, EditorEntity, ApiInfrastructure } from '../../../types';
+import {
+  ApiInfrastructure,
+  CreateEntityOperation,
+  DeleteEntityOperation,
+  EditorEntity,
+  EditorSchema,
+  EntityOperation,
+  UpdateEntityOperation,
+  Zone,
+} from '../../../types';
 import { zoneToBBox } from '../../../utils/mapboxHelper';
 import { getObjectTypeForLayer } from './utils';
 
@@ -88,29 +96,39 @@ export async function editorSave(
     update?: Array<{ source: EditorEntity; target: EditorEntity }>;
     delete?: Array<EditorEntity>;
   }
-): Promise<Array<Feature>> {
-  const payload = [
-    ...(operations.create || []).map((feature) => ({
-      operation_type: 'CREATE',
-      obj_type: feature.objType,
-      railjson: { id: uuid(), geo: feature.geometry, sch: feature.geometry, ...feature.properties },
-    })),
-    ...(operations.update || []).map((features) => ({
-      operation_type: 'UPDATE',
-      obj_id: features.source.id,
-      obj_type: features.source.objType,
-      railjson_patch: compare(
-        { ...(features.source.properties || {}), geo: features.source.geometry },
-        { ...(features.target.properties || {}), geo: features.target.geometry }
-      ),
-    })),
-    ...(operations.delete || []).map((feature) => ({
-      operation_type: 'DELETE',
-      obj_id: feature.id,
-      obj_type: feature.objType,
-    })),
+): Promise<Array<EditorEntity>> {
+  const payload: EntityOperation[] = [
+    ...(operations.create || []).map(
+      (feature): CreateEntityOperation => ({
+        operation_type: 'CREATE',
+        obj_type: feature.objType,
+        railjson: {
+          id: uuid(),
+          geo: feature.geometry,
+          sch: feature.geometry,
+          ...feature.properties,
+        },
+      })
+    ),
+    ...(operations.update || []).map(
+      (features): UpdateEntityOperation => ({
+        operation_type: 'UPDATE',
+        obj_id: features.source.id,
+        obj_type: features.source.objType,
+        railjson_patch: compare(
+          { ...(features.source.properties || {}), geo: features.source.geometry },
+          { ...(features.target.properties || {}), geo: features.target.geometry }
+        ),
+      })
+    ),
+    ...(operations.delete || []).map(
+      (feature): DeleteEntityOperation => ({
+        operation_type: 'DELETE',
+        obj_id: feature.id,
+        obj_type: feature.objType,
+      })
+    ),
   ];
 
-  const result = await post(`/editoast/infra/${infra}`, payload, {});
-  return result;
+  return post<{}, EditorEntity[]>(`/editoast/infra/${infra}`, payload, {});
 }
