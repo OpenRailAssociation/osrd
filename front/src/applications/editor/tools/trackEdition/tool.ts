@@ -1,6 +1,8 @@
 import { cloneDeep, isEqual } from 'lodash';
 import {
   BiAnchor,
+  BiArrowFromLeft,
+  BiArrowToRight,
   BiTrash,
   CgAdd,
   MdShowChart,
@@ -39,12 +41,10 @@ const TrackEditionTool: Tool<TrackEditionState> = {
     return {
       ...DEFAULT_COMMON_TOOL_STATE,
       anchorLinePoints: true,
+      addNewPointsAtStart: false,
       nearestPoint: null,
       track: getNewLine([]),
-      editionState: {
-        type: 'addPoint',
-        addAtStart: false,
-      },
+      editionState: { type: 'addPoint' },
     };
   },
   actions: [
@@ -72,10 +72,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
         onClick({ setState, state }) {
           setState({
             ...state,
-            editionState: {
-              type: 'addPoint',
-              addAtStart: false,
-            },
+            editionState: { type: 'addPoint' },
           });
         },
         isActive({ state }) {
@@ -116,6 +113,34 @@ const TrackEditionTool: Tool<TrackEditionState> = {
         },
         isDisabled({ state }) {
           return state.editionState.type === 'deletePoint';
+        },
+      },
+      {
+        id: 'add-at-start',
+        icon: BiArrowFromLeft,
+        labelTranslationKey: 'Editor.tools.track-edition.actions.add-at-start',
+        onClick({ setState, state }) {
+          setState({
+            ...state,
+            addNewPointsAtStart: true,
+          });
+        },
+        isHidden({ state }) {
+          return state.editionState.type !== 'addPoint' || state.addNewPointsAtStart;
+        },
+      },
+      {
+        id: 'add-at-end',
+        icon: BiArrowToRight,
+        labelTranslationKey: 'Editor.tools.track-edition.actions.add-at-end',
+        onClick({ setState, state }) {
+          setState({
+            ...state,
+            addNewPointsAtStart: false,
+          });
+        },
+        isHidden({ state }) {
+          return state.editionState.type !== 'addPoint' || !state.addNewPointsAtStart;
         },
       },
       {
@@ -167,7 +192,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
 
         if (!isEqual(lastPoint, position)) {
           const newState = cloneDeep(state);
-          if (editionState.addAtStart) {
+          if (state.addNewPointsAtStart) {
             newState.track.geometry.coordinates.unshift(position);
           } else {
             newState.track.geometry.coordinates.push(position);

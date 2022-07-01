@@ -7,14 +7,12 @@ export type TrackEditionState = CommonToolState & {
   track: TrackSectionEntity;
 
   editionState:
-    | {
-        type: 'addPoint';
-        addAtStart: boolean;
-      }
+    | { type: 'addPoint' }
     | { type: 'movePoint'; draggedPointIndex?: number; hoveredPointIndex?: number }
     | { type: 'deletePoint'; hoveredPointIndex?: number };
 
   // Anchoring state:
   anchorLinePoints: boolean;
+  addNewPointsAtStart: boolean;
   nearestPoint: Feature<Point> | null;
 };

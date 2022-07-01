@@ -40,6 +40,8 @@
           "mode-add-point": "Ajouter un point",
           "mode-delete-point": "Supprimer des points",
           "toggle-anchoring": "Activer / désactiver l'ancrage automatique",
+          "add-at-start": "Ajouter les nouveaux points au début",
+          "add-at-end": "Ajouter les nouveaux points à la fin",
           "cancel-line": "Annuler la saisie en cours"
         }
       },
