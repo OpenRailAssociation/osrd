@@ -131,15 +131,16 @@ const SelectionTool: Tool<SelectionState> = {
         isDisabled({ state }) {
           return !state.selection.length;
         },
-        onClick({ openModal, state, t }) {
+        onClick({ openModal, state, setState, dispatch, t }) {
           openModal({
             component: ConfirmModal,
             arguments: {
               title: t('Editor.tools.select-items.actions.delete-selection'),
               message: t('Editor.tools.select-items.actions.confirm-delete-selection'),
             },
-            afterSubmit() {
-              save({ delete: state.selection });
+            async afterSubmit() {
+              await dispatch<ReturnType<typeof save>>(save({ delete: state.selection }));
+              setState({ ...state, selection: [] });
             },
           });
         },
