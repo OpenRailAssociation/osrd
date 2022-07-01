@@ -40,7 +40,7 @@ export const TrackEditionLayers: FC = () => {
         ? (state.nearestPoint.geometry.coordinates as [number, number])
         : state.mousePosition;
 
-    if (state.editionState.addAtStart) {
+    if (state.addNewPointsAtStart) {
       additionalSegment = [lastPosition, points[0]];
     } else {
       additionalSegment = [last(points) as [number, number], lastPosition];
