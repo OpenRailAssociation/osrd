@@ -48,7 +48,7 @@
     "fast-json-patch": "^3.1.1",
     "fetch-mock": "^9.4.0",
     "geojson": "^0.5.0",
-    "i18next": "^19.1.0",
+    "i18next": "^21.8.11",
     "i18next-browser-languagedetector": "^4.0.1",
     "i18next-xhr-backend": "^3.2.2",
     "immer": "^9.0.12",
