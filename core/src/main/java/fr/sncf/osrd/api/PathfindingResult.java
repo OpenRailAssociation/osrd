@@ -85,35 +85,36 @@ public class PathfindingResult {
             if (offset + range.getLength() >= routeRange.start()) {
                 // Truncate the range to match the part of the route we use
                 var truncatedRange = truncateTrackRange(range, offset, routeRange);
+                if (truncatedRange != null) {
+                    // List all waypoints on the track range in a tree map, with offsets from the range start as key
+                    var waypoints = new ArrayList<PathWaypointResult>();
 
-                // List all waypoints on the track range in a tree map, with offsets from the range start as key
-                var waypoints = new ArrayList<PathWaypointResult>();
+                    // Add operational points as optional waypoints
+                    for (var op : truncatedRange.getOperationalPoints())
+                        waypoints.add(PathWaypointResult.suggestion(op.element(), trackSection, op.offset()));
 
-                // Add operational points as optional waypoints
-                for (var op : truncatedRange.getOperationalPoints())
-                    waypoints.add(PathWaypointResult.suggestion(op.element(), trackSection, op.offset()));
+                    // Add user defined waypoints
+                    var truncatedRangeOffset = offset + Math.abs(truncatedRange.getStart() - range.getStart());
+                    for (int i = 0; i < waypointsOffsetsList.size(); i++) {
+                        var trackRangeOffset = waypointsOffsetsList.get(i) - truncatedRangeOffset;
 
-                // Add user defined waypoints
-                var truncatedRangeOffset = offset + Math.abs(truncatedRange.getStart() - range.getStart());
-                for (int i = 0; i < waypointsOffsetsList.size(); i++) {
-                    var trackRangeOffset = waypointsOffsetsList.get(i) - truncatedRangeOffset;
+                        // We can have tiny differences here because we accumulate offsets in a different way
+                        if (Math.abs(trackRangeOffset - truncatedRange.getLength()) < POSITION_EPSILON)
+                            trackRangeOffset = truncatedRange.getLength();
+                        if (Math.abs(trackRangeOffset) < POSITION_EPSILON)
+                            trackRangeOffset = 0;
 
-                    // We can have tiny differences here because we accumulate offsets in a different way
-                    if (Math.abs(trackRangeOffset - truncatedRange.getLength()) < POSITION_EPSILON)
-                        trackRangeOffset = truncatedRange.getLength();
-                    if (Math.abs(trackRangeOffset) < POSITION_EPSILON)
-                        trackRangeOffset = 0;
-
-                    if (trackRangeOffset >= 0 && trackRangeOffset <= truncatedRange.getLength()) {
-                        var location = truncatedRange.offsetLocation(trackRangeOffset);
-                        waypoints.add(PathWaypointResult.userDefined(location, trackRangeOffset));
-                        waypointsOffsetsList.remove(i--); // Avoids duplicates on track transitions
+                        if (trackRangeOffset >= 0 && trackRangeOffset <= truncatedRange.getLength()) {
+                            var location = truncatedRange.offsetLocation(trackRangeOffset);
+                            waypoints.add(PathWaypointResult.userDefined(location, trackRangeOffset));
+                            waypointsOffsetsList.remove(i--); // Avoids duplicates on track transitions
+                        }
                     }
-                }
 
-                // Adds all waypoints in order
-                waypoints.sort(Comparator.comparingDouble(x -> x.trackRangeOffset));
-                res.addAll(waypoints);
+                    // Adds all waypoints in order
+                    waypoints.sort(Comparator.comparingDouble(x -> x.trackRangeOffset));
+                    res.addAll(waypoints);
+                }
             }
 
             offset += range.getLength();
@@ -130,10 +131,16 @@ public class PathfindingResult {
     ) {
         var truncatedRange = range;
         if (offset < routeRange.start()) {
-            truncatedRange = truncatedRange.truncateBeginByLength(routeRange.start() - offset);
+            var truncateLength = routeRange.start() - offset;
+            if (truncateLength > truncatedRange.getLength() + POSITION_EPSILON)
+                return null;
+            truncatedRange = truncatedRange.truncateBeginByLength(truncateLength);
         }
         if (offset + range.getLength() > routeRange.end()) {
-            truncatedRange = truncatedRange.truncateEndByLength(offset + range.getLength() - routeRange.end());
+            var truncateLength = offset + range.getLength() - routeRange.end();
+            if (truncateLength > truncatedRange.getLength() + POSITION_EPSILON)
+                return null;
+            truncatedRange = truncatedRange.truncateEndByLength(truncateLength);
         }
         return truncatedRange;
     }
@@ -154,7 +161,7 @@ public class PathfindingResult {
             // Truncate the ranges to match the part of the route we use
             var truncatedRange = truncateTrackRange(range, offset, element);
             offset += range.getLength();
-            if (truncatedRange.getLength() == 0)
+            if (truncatedRange == null)
                 continue;
 
             // Add the track ranges to the result
@@ -178,6 +185,9 @@ public class PathfindingResult {
 
         for (var routePath : routePaths) {
             for (var trackSection : routePath.trackSections) {
+
+                if (trackSection.getBegin() == trackSection.getEnd())
+                    continue;
 
                 if (previousTrack == null) {
                     previousTrack = trackSection;
