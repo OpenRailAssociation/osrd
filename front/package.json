@@ -79,7 +79,7 @@
     "redux-state-sync": "^3.1.2",
     "redux-thunk": "^2.3.0",
     "reselect": "^4.0.0",
-    "sass": "^1.32.12",
+    "sass": "^1.53.0",
     "seamless-immutable": "^7.1.4",
     "turf-point": "^2.0.1",
     "uuid": "^8.3.2",
