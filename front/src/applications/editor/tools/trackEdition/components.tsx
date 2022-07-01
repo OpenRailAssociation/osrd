@@ -11,7 +11,7 @@ import EditorZone from '../../../../common/Map/Layers/EditorZone';
 import { TrackEditionState } from './types';
 import EditorForm from '../../components/EditorForm';
 import { save } from '../../../../reducers/editor';
-import { Item, TrackSectionEntity } from '../../../../types';
+import { CreateEntityOperation, Item, TrackSectionEntity } from '../../../../types';
 
 export const TRACK_LAYER_ID = 'trackEditionTool/new-track-path';
 export const POINTS_LAYER_ID = 'trackEditionTool/new-track-points';
@@ -189,10 +189,13 @@ export const TrackEditionLeftPanel: FC = () => {
     <EditorForm
       data={state.track}
       onSubmit={async (savedEntity) => {
-        await dispatch<ReturnType<typeof save>>(
+        const res = await dispatch<ReturnType<typeof save>>(
           save({ [state.track.id ? 'update' : 'create']: [savedEntity] })
         );
-        setState({ ...state, track: savedEntity as TrackSectionEntity });
+        const operation = res[0] as any as CreateEntityOperation;
+        const { id } = operation.railjson;
+
+        if (id && id !== savedEntity.id) setState({ ...state, track: { ...state.track, id } });
       }}
       onChange={(track) => {
         setState({ ...state, track: track as TrackSectionEntity });

@@ -1,7 +1,8 @@
 import { Action } from 'redux';
 import { JSONSchema7 } from 'json-schema';
-import { Position, Feature } from 'geojson';
+import { Position, Feature, GeoJsonProperties, Geometry } from 'geojson';
 import { ThunkAction as ReduxThunkAction } from 'redux-thunk';
+import { Operation } from 'fast-json-patch/module/core';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type EditorModelsDefinition = any;
@@ -10,7 +11,7 @@ export type EditorModelsDefinition = any;
 //  Redux types
 //
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type ThunkAction<T extends Action> = ReduxThunkAction<void, any, unknown, T>;
+export type ThunkAction<T extends Action, R = void> = ReduxThunkAction<R, any, unknown, T>;
 
 //
 //  Geospatial types
@@ -55,7 +56,9 @@ export interface Notification {
 //
 // Editor data model
 //
-export type EditorSchema = Array<{ layer: string; objType: string; schema: JSONSchema7 }>;
+export type ObjectType = string;
+export type EntityId = string | number | undefined;
+export type EditorSchema = Array<{ layer: string; objType: ObjectType; schema: JSONSchema7 }>;
 export type EditorEntity = Feature & { objType: string };
 export interface TrackSectionEntity extends EditorEntity {
   objType: 'TrackSection';
@@ -64,6 +67,24 @@ export interface TrackSectionEntity extends EditorEntity {
     coordinates: [number, number][];
   };
 }
+
+export interface DeleteEntityOperation {
+  operation_type: 'DELETE';
+  obj_id: EntityId;
+  obj_type: ObjectType;
+}
+export interface UpdateEntityOperation {
+  operation_type: 'UPDATE';
+  obj_id: EntityId;
+  obj_type: ObjectType;
+  railjson_patch: Operation[];
+}
+export interface CreateEntityOperation {
+  operation_type: 'CREATE';
+  obj_type: ObjectType;
+  railjson: GeoJsonProperties & { id?: EntityId; sch: Geometry; geo: Geometry };
+}
+export type EntityOperation = DeleteEntityOperation | UpdateEntityOperation | CreateEntityOperation;
 
 //
 //  Misc
