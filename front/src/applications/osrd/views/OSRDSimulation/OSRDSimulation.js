@@ -118,9 +118,9 @@ const OSRDSimulation = () => {
           if (!newAllowancesSettings[train.id]) {
             newAllowancesSettings[train.id] = {
               base: true,
-              baseBlocks: false,
+              baseBlocks: true,
               eco: true,
-              ecoBlocks: true,
+              ecoBlocks: false,
             };
           }
         });
