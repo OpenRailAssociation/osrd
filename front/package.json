@@ -127,7 +127,7 @@
     "@types/react-transition-group": "^4.4.1",
     "@types/redux": "^3.6.0",
     "babel-loader": "8.1.0",
-    "eslint": "7.11.0",
+    "eslint": "7.32.0",
     "eslint-config-airbnb": "^18.0.1",
     "eslint-config-airbnb-typescript": "^17.0.0",
     "eslint-config-airbnb-typescript-prettier": "^5.0.0",
