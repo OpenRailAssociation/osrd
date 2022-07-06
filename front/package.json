@@ -54,7 +54,7 @@
     "immer": "^9.0.12",
     "js-sha256": "^0.9.0",
     "json-schema": "^0.4.0",
-    "jwt-decode": "^2.2.0",
+    "jwt-decode": "^3.1.2",
     "lodash": "^4.17.15",
     "mapbox-gl": "1.13.2",
     "prop-types": "^15.8.1",
