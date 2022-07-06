@@ -5,7 +5,7 @@ from geojson_pydantic import LineString
 from pydantic import BaseModel, Field, constr, root_validator
 
 ALL_OBJECT_TYPES = []
-RAILJSON_VERSION = "2.2.5"
+RAILJSON_VERSION = "2.3.0"
 
 # Traits
 
@@ -172,7 +172,8 @@ class TrackSectionLink(BaseObjectTrait):
 
 
 class SpeedSection(BaseObjectTrait):
-    speed: float
+    speed_limit: Optional[float] = Field(description="Speed limit (m/s) applied by default to all trains")
+    speed_limit_by_tag: Mapping[str, float] = Field(description="Speed limit (m/s) applied to trains with a given tag")
     track_ranges: List[ApplicableDirectionsTrackRange]
 
 
