@@ -24,6 +24,7 @@ import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
 import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
 import fr.sncf.osrd.train.TestTrains;
 import org.junit.jupiter.api.Test;
+import java.util.HashMap;
 import java.util.List;
 import java.util.function.BiConsumer;
 
@@ -165,21 +166,21 @@ public class MaxSpeedEnvelopeTest {
     public void mrspFromInfraPath() {
         var rjsInfra = makeSingleTrackRJSInfra();
         rjsInfra.speedSections = List.of(
-                new RJSSpeedSection("foo1", 42, List.of(
+                new RJSSpeedSection("foo1", 42, new HashMap<>(), List.of(
                         new RJSApplicableDirectionsTrackRange(
                                 new RJSObjectRef<>("track", "TrackSection"),
                                 ApplicableDirection.BOTH,
                                 0, 30
                         )
                 )),
-                new RJSSpeedSection("foo2", 21, List.of(
+                new RJSSpeedSection("foo2", 21, new HashMap<>(), List.of(
                         new RJSApplicableDirectionsTrackRange(
                                 new RJSObjectRef<>("track", "TrackSection"),
                                 ApplicableDirection.START_TO_STOP,
                                 30, 50
                         )
                 )),
-                new RJSSpeedSection("foo3", 10.5, List.of(
+                new RJSSpeedSection("foo3", 10.5, new HashMap<>(), List.of(
                         new RJSApplicableDirectionsTrackRange(
                                 new RJSObjectRef<>("track", "TrackSection"),
                                 ApplicableDirection.STOP_TO_START,
