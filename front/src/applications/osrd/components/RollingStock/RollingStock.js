@@ -80,7 +80,7 @@ export default function RollingStock() {
   const getAllMateriel = async () => {
     if (rollingStock === undefined) {
       try {
-        const data = await get(ROLLING_STOCK_URL);
+        const data = await get(ROLLING_STOCK_URL, { page_size: 1000 });
         setRollingStock(data.results);
         setResultContent(data.results);
       } catch (e) {
