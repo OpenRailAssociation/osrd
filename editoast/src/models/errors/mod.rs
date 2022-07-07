@@ -64,20 +64,22 @@ enum InfraErrorType {
     UnusedPort { port_name: String },
     #[serde(rename = "duplicated_group")]
     DuplicatedGroup { original_group_path: String },
+    #[serde(rename = "no_buffer_stop")]
+    NoBufferStop,
 }
 
 impl InfraError {
-    fn new_invalid_reference(field: String, reference: ObjectRef) -> Self {
+    fn new_invalid_reference<T: AsRef<str>>(field: T, reference: ObjectRef) -> Self {
         Self {
-            field,
+            field: field.as_ref().into(),
             is_warning: false,
             sub_type: InfraErrorType::InvalidReference { reference },
         }
     }
 
-    fn new_out_of_range(field: String, position: f64, expected_range: [f64; 2]) -> Self {
+    fn new_out_of_range<T: AsRef<str>>(field: T, position: f64, expected_range: [f64; 2]) -> Self {
         Self {
-            field,
+            field: field.as_ref().into(),
             is_warning: false,
             sub_type: InfraErrorType::OutOfRange {
                 position,
@@ -86,22 +88,22 @@ impl InfraError {
         }
     }
 
-    fn new_empty_path(field: String) -> Self {
+    fn new_empty_path<T: AsRef<str>>(field: T) -> Self {
         Self {
-            field,
+            field: field.as_ref().into(),
             is_warning: false,
             sub_type: InfraErrorType::EmptyPath,
         }
     }
 
-    fn new_path_does_not_match_endpoints(
-        field: String,
+    fn new_path_does_not_match_endpoints<T: AsRef<str>>(
+        field: T,
         expected_track: String,
         expected_position: f64,
         endpoint_field: PathEndpointField,
     ) -> Self {
         Self {
-            field,
+            field: field.as_ref().into(),
             is_warning: false,
             sub_type: InfraErrorType::PathDoesNotMatchEndpoints {
                 expected_track,
@@ -111,17 +113,17 @@ impl InfraError {
         }
     }
 
-    fn new_empty_object(field: String) -> Self {
+    fn new_empty_object<T: AsRef<str>>(field: T) -> Self {
         Self {
-            field,
+            field: field.as_ref().into(),
             is_warning: true,
             sub_type: InfraErrorType::EmptyObject,
         }
     }
 
-    fn new_object_out_of_path(field: String, position: f64, track: String) -> Self {
+    fn new_object_out_of_path<T: AsRef<str>>(field: T, position: f64, track: String) -> Self {
         Self {
-            field,
+            field: field.as_ref().into(),
             is_warning: false,
             sub_type: InfraErrorType::ObjectOutOfPath { position, track },
         }
@@ -135,37 +137,45 @@ impl InfraError {
         }
     }
 
-    fn new_unknown_port_name(field: String, port_name: String) -> Self {
+    fn new_unknown_port_name<T: AsRef<str>>(field: T, port_name: String) -> Self {
         Self {
-            field,
+            field: field.as_ref().into(),
             is_warning: false,
             sub_type: InfraErrorType::UnknownPortName { port_name },
         }
     }
 
-    fn new_invalid_switch_ports(field: String) -> Self {
+    fn new_invalid_switch_ports<T: AsRef<str>>(field: T) -> Self {
         Self {
-            field,
+            field: field.as_ref().into(),
             is_warning: false,
             sub_type: InfraErrorType::InvalidSwitchPorts,
         }
     }
 
-    fn new_unused_port(field: String, port_name: String) -> Self {
+    fn new_unused_port<T: AsRef<str>>(field: T, port_name: String) -> Self {
         Self {
-            field,
+            field: field.as_ref().into(),
             is_warning: true,
             sub_type: InfraErrorType::UnusedPort { port_name },
         }
     }
 
-    fn new_duplicated_group(field: String, original_group_path: String) -> Self {
+    fn new_duplicated_group<T: AsRef<str>>(field: T, original_group_path: String) -> Self {
         Self {
-            field,
+            field: field.as_ref().into(),
             is_warning: true,
             sub_type: InfraErrorType::DuplicatedGroup {
                 original_group_path,
             },
+        }
+    }
+
+    fn new_no_buffer_stop<T: AsRef<str>>(field: T) -> Self {
+        Self {
+            field: field.as_ref().into(),
+            is_warning: true,
+            sub_type: InfraErrorType::NoBufferStop,
         }
     }
 }
@@ -183,10 +193,10 @@ pub fn generate_errors(
         .execute(conn)?;
 
     // Create a graph for topological errors
-    let _graph = Graph::load(infra_cache);
+    let graph = Graph::load(infra_cache);
 
     // Generate the errors
-    track_sections::generate_errors(conn, infra, infra_cache)?;
+    track_sections::generate_errors(conn, infra, infra_cache, &graph)?;
     signals::generate_errors(conn, infra, infra_cache)?;
     speed_sections::generate_errors(conn, infra, infra_cache)?;
     track_section_links::generate_errors(conn, infra, infra_cache)?;

@@ -73,6 +73,10 @@ class DuplicatedGroup(InfraWarningTrait):
     original_group_path: str
 
 
+class NoBufferStop(InfraWarningTrait):
+    error_type: Literal["no_buffer_stop"] = Field(default="no_buffer_stop")
+
+
 # Generic error
 class InfraError(BaseModel):
     __root__: Union[
@@ -87,4 +91,5 @@ class InfraError(BaseModel):
         MissingRoute,
         UnusedPort,
         DuplicatedGroup,
+        NoBufferStop,
     ] = Field(discriminator="error_type")

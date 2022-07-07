@@ -34,7 +34,7 @@ pub fn generate_errors(
         // retrieve invalid refs for switch type
         if !infra_cache.switch_types.contains_key(&switch.switch_type) {
             let obj_ref = ObjectRef::new(ObjectType::SwitchType, switch.switch_type.clone());
-            let infra_error = InfraError::new_invalid_reference("switch_type".into(), obj_ref);
+            let infra_error = InfraError::new_invalid_reference("switch_type", obj_ref);
             errors.push(to_value(infra_error).unwrap());
             switch_ids.push(switch_id.clone());
             continue;
@@ -47,7 +47,7 @@ pub fn generate_errors(
         let original_ports: HashSet<&String> = switch_type.ports.iter().collect();
         // check if switch ports match switch type ports
         if match_ports != original_ports {
-            let infra_error = InfraError::new_invalid_switch_ports("ports".into());
+            let infra_error = InfraError::new_invalid_switch_ports("ports");
             errors.push(to_value(infra_error).unwrap());
             switch_ids.push(switch_id.clone());
         }
