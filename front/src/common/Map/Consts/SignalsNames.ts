@@ -1,12 +1,4 @@
-export const LIGHT_SIGNALS = [
-  'A',
-  'CARRE',
-  'CV',
-  'D',
-  'GA',
-  'ID',
-  'IDD',
-];
+export const LIGHT_SIGNALS = ['A', 'CARRE', 'CV', 'D', 'GA', 'ID', 'IDD'];
 
 export const SIGNALS_PANELS = [
   'Aig M',
@@ -162,14 +154,7 @@ export const ALL_SIGNAL_LAYERS = [
   'Z',
 ];
 
-export const PANELS_STOPS = [
-  'ARRET VOY',
-  'ARRET',
-  'CHEVRON',
-  'LIMITETS',
-  'LM',
-  'STOP',
-];
+export const PANELS_STOPS = ['ARRET VOY', 'ARRET', 'CHEVRON', 'LIMITETS', 'LM', 'STOP'];
 
 export const PANELS_TIVS = [
   'TIV A TRAM',

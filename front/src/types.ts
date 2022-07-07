@@ -2,7 +2,7 @@ import { Action } from 'redux';
 import { JSONSchema7 } from 'json-schema';
 import { Position, Feature, GeoJsonProperties, Geometry } from 'geojson';
 import { ThunkAction as ReduxThunkAction } from 'redux-thunk';
-import { Operation } from 'fast-json-patch/module/core';
+import { Operation } from 'fast-json-patch';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type EditorModelsDefinition = any;
@@ -29,6 +29,7 @@ export interface PolygonZone {
   points: Point[];
 }
 export type Zone = RectangleZone | PolygonZone;
+export type SourceLayer = 'sch' | 'geo';
 
 //
 //  Metadata types
