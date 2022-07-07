@@ -39,7 +39,7 @@ def make_schedule_with_conflict(base_url, infra_id):
 
 def run(*args, **kwargs):
     base_url = kwargs["url"]
-    infra_id = kwargs["all_infras"]["tiny"]
+    infra_id = kwargs["all_infras"]["tiny_infra"]
     timetable, first_train, second_train, path_id = make_schedule_with_conflict(base_url, infra_id)
     r = requests.get(base_url + f"timetable/{timetable}/conflicts/", json={"path": path_id})
     if r.status_code // 100 != 2:

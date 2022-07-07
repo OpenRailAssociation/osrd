@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from enum import Enum
 from typing import Dict, Tuple, Iterable, List, Set
 import json
 import random
@@ -10,12 +11,23 @@ from pathlib import Path
 
 URL = "http://127.0.0.1:8000/"
 TIMEOUT = 15
+INFRA_ID = 1
 
 
 """
 Generates random tests, running pathfinding + simulations on random paths.
 This requires a running database setup with actual infra data, which can't be publicly available on github
 """
+
+
+class FailedTest(Exception):
+    pass
+
+
+class ErrorType(str, Enum):
+    PATHFINDING = "PATHFINDING",
+    SCHEDULE = "SCHEDULE"
+    RESULT = "RESULT"
 
 
 @dataclass
@@ -25,9 +37,21 @@ class InfraGraph:
     routes_per_entry_point: Dict[str, Set[str]]
 
 
-def run_test(infra: InfraGraph, base_url: str, infra_id: int):
+def make_error(error_type: ErrorType, code: int, error: str, infra_name: str, path_payload: Dict, **kwargs):
+    raise FailedTest({
+        "error_type": error_type.value,
+        "code": code,
+        "error": error,
+        "infra_name": infra_name,
+        "path_payload": path_payload,
+        **kwargs,
+    })
+
+
+def run_test(infra: InfraGraph, base_url: str, infra_id: int, infra_name: str):
     """
     Runs a single random test
+    :param infra_name: name of the infra, for better reporting
     :param infra: infra graph
     :param base_url: Api url
     :param infra_id: Infra id
@@ -36,7 +60,7 @@ def run_test(infra: InfraGraph, base_url: str, infra_id: int):
     path_payload = make_payload_path(infra_id, path)
     r = requests.post(base_url + "pathfinding/", json=path_payload, timeout=TIMEOUT)
     if r.status_code // 100 != 2:
-        raise RuntimeError(f"Pathfinding error {r.status_code}: payload=\n{json.dumps(path_payload)}\n{r.content}")
+        make_error(ErrorType.PATHFINDING, r.status_code, r.content.decode("utf-8"), infra_name, path_payload)
     path_id = r.json()["id"]
     rolling_stock = get_random_rolling_stock(base_url)
 
@@ -46,25 +70,35 @@ def run_test(infra: InfraGraph, base_url: str, infra_id: int):
         if r.status_code // 100 == 4:
             print("ignore: invalid user input")
             return
-        raise RuntimeError(f"Schedule error {r.status_code}: payload=\n{json.dumps(schedule_payload)}\n{r.content}")
+        make_error(ErrorType.SCHEDULE, r.status_code, r.content.decode("utf-8"), infra_name, path_payload,
+                   schedule_payload=schedule_payload)
 
     schedule_id = r.json()["ids"][0]
     r = requests.get(f"{base_url}train_schedule/{schedule_id}/result/", timeout=TIMEOUT)
     if r.status_code // 100 != 2:
-        raise RuntimeError(f"Schedule error {r.status_code}: {r.content}, id={schedule_id}\npath_payload=\n{json.dumps(path_payload)}")
+        make_error(ErrorType.RESULT, r.status_code, r.content.decode("utf-8"), infra_name, path_payload,
+                   schedule_payload=schedule_payload, schedule_id=schedule_id)
 
     print("test PASSED")
 
 
-def run(base_url: str, infra_id: int, n_test: int = 1000, log_folder: Path = None):
+def run(
+        base_url: str,
+        infra_id: int,
+        n_test: int = 1000,
+        log_folder: Path = None,
+        infra_name: str = None,
+        seed: int = 0
+):
     """
     Runs every test
+    :param seed: first seed, incremented by 1 for each individual test
+    :param infra_name: name of the infra, for better reporting
     :param base_url: url to reach the api
     :param infra_id: infra id
     :param n_test: number of tests to run
     :param log_folder: (optional) path to a folder to log errors in
     """
-    seed = 0
     infra_graph = make_graph(base_url, infra_id)
     for i in range(n_test):
         seed += 1
@@ -73,15 +107,15 @@ def run(base_url: str, infra_id: int, n_test: int = 1000, log_folder: Path = Non
         time.sleep(0.1)
 
         try:
-            run_test(infra_graph, base_url, infra_id)
+            run_test(infra_graph, base_url, infra_id, infra_name)
         except Exception as e:
             if log_folder is None:
                 raise e
             else:
                 print(e)
                 log_folder.mkdir(exist_ok=True)
-                with open(str(log_folder / f"{i}.txt"), "w") as f:
-                    print(e, file=f)
+                with open(str(log_folder / f"{i}.json"), "w") as f:
+                    print(json.dumps(e.args[0]), file=f)
 
 
 def get_random_rolling_stock(base_url: str) -> str:
@@ -350,5 +384,10 @@ def make_payload_schedule(base_url: str, infra: int, path: int, rolling_stock: s
     }
 
 
+def get_infra_name(base_url: str, infra_id: int):
+    r = requests.get(base_url + f"infra/{infra_id}/", timeout=TIMEOUT)
+    return r.json()["name"]
+
+
 if __name__ == "__main__":
-    run(URL, 1, 1000, Path(__file__).parent / "errors")
+    run(URL, INFRA_ID, 10000, Path(__file__).parent / "errors", infra_name=get_infra_name(URL, INFRA_ID))

@@ -12,6 +12,6 @@ def get_schedule(base_url, infra):
 
 def run(*args, **kwargs):
     base_url = kwargs["url"]
-    infra_id = kwargs["infra_id"]
+    infra_id = kwargs["all_infras"]["dummy"]
     get_schedule(base_url, infra_id)
     return True, ""
