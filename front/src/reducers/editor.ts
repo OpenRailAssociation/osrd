@@ -149,7 +149,7 @@ export const initialState: EditorState = {
   // Definition of entities (json schema)
   editorSchema: [],
   // ID of selected layers on which we are working
-  editorLayers: ['track_sections'],
+  editorLayers: ['track_sections', 'signals'],
   // Edition zone:
   editorZone: null,
   // An array of Entities

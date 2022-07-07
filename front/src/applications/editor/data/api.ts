@@ -20,16 +20,14 @@ import { getObjectTypeForLayer } from './utils';
  * Call the API to get an infra
  */
 export async function getInfrastructure(id: number): Promise<ApiInfrastructure> {
-  const response = await get(`/editoast/infra/${id}/`);
-  return response;
+  return get(`/editoast/infra/${id}/`);
 }
 
 /**
  * Call the API to get the list of infra
  */
 export async function getInfrastructures(): Promise<Array<ApiInfrastructure>> {
-  const response = await get(`/editoast/infra/`);
-  return response;
+  return get(`/editoast/infra/`);
 }
 
 /**
@@ -40,7 +38,7 @@ export async function getEditorSchema(): Promise<EditorSchema> {
     response.json()
   );
   const fieldToOmit = ['id', 'geo', 'sch'];
-  const result = Object.keys(schemaResponse.properties)
+  return Object.keys(schemaResponse.properties)
     .filter((e) => schemaResponse.properties[e].type === 'array')
     .map((e) => {
       // we assume here, that the definition of the object is ref and not inline
@@ -60,7 +58,6 @@ export async function getEditorSchema(): Promise<EditorSchema> {
         },
       } as EditorSchema[0];
     });
-  return result;
 }
 
 /**
@@ -130,5 +127,5 @@ export async function editorSave(
     ),
   ];
 
-  return post<{}, EditorEntity[]>(`/editoast/infra/${infra}`, payload, {});
+  return post<EntityOperation[], EditorEntity[]>(`/editoast/infra/${infra}`, payload, {});
 }
