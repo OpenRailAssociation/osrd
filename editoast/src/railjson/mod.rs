@@ -128,8 +128,9 @@ pub struct Signal {
 pub struct SpeedSection {
     #[derivative(Default(value = r#"generate_id("speed_section")"#))]
     pub id: String,
-    #[derivative(Default(value = "100."))]
-    pub speed: f64,
+    #[derivative(Default(value = "Some(100.)"))]
+    pub speed_limit: Option<f64>,
+    pub speed_limit_by_tag: HashMap<String, f64>,
     pub track_ranges: Vec<ApplicableDirectionsTrackRange>,
 }
 
