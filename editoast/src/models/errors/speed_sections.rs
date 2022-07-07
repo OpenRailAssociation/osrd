@@ -16,7 +16,7 @@ pub fn generate_errors(
     let mut speed_section_ids = vec![];
     for (speed_id, speed_section) in infra_cache.speed_sections.iter() {
         if speed_section.track_ranges.is_empty() {
-            let infra_error = InfraError::new_empty_object("track_ranges".into());
+            let infra_error = InfraError::new_empty_object("track_ranges");
             errors.push(to_value(infra_error).unwrap());
             speed_section_ids.push(speed_id.clone());
         }

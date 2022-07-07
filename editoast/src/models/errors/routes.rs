@@ -84,7 +84,7 @@ fn get_matching_endpoint_error(
 
     if track != expected_track || pos != expected_position {
         Some(InfraError::new_path_does_not_match_endpoints(
-            "path".into(),
+            "path",
             expected_track,
             expected_position,
             endpoint_field,
@@ -103,7 +103,7 @@ pub fn generate_errors(
     let mut route_ids = vec![];
     for (route_id, route) in infra_cache.routes.iter() {
         if route.path.is_empty() {
-            let infra_error = InfraError::new_empty_path("path".into());
+            let infra_error = InfraError::new_empty_path("path");
             errors.push(to_value(infra_error).unwrap());
             route_ids.push(route_id.clone());
             continue;
