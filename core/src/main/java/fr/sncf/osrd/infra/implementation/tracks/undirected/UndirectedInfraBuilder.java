@@ -145,7 +145,7 @@ public class UndirectedInfraBuilder {
 
         // Reads all the speed sections and adds the values to the tracks
         for (var speedSection : speedSections) {
-            var value = speedSection.speed;
+            var value = speedSection.speedLimit;
             for (var trackRange : speedSection.trackRanges) {
                 var track = RJSObjectParsing.getTrackSection(trackRange.track, trackSectionsByID);
                 var speedSectionMaps = track.getSpeedSections();
