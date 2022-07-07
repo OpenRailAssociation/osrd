@@ -40,6 +40,6 @@ def make_payload_schedule(base_url, infra, path, rolling_stock, departure_time=0
 
 def run(*args, **kwargs):
     base_url = kwargs["url"]
-    infra_id = kwargs["infra_id"]
+    infra_id = kwargs["all_infras"]["dummy"]
     run_simulation(base_url, infra_id)
     return True, ""

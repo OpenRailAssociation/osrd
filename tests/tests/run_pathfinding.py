@@ -42,6 +42,6 @@ def run_pathfinding(base_url, infra_id):
 
 def run(*args, **kwargs):
     base_url = kwargs["url"]
-    infra_id = kwargs["infra_id"]
+    infra_id = kwargs["all_infras"]["dummy"]
     run_pathfinding(base_url, infra_id)
     return True, ""
