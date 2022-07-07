@@ -17,7 +17,7 @@ import static org.apache.tools.ant.taskdefs.condition.Os.*
 
 plugins {
     id 'java'
-    id 'org.jetbrains.kotlin.jvm' version '1.7.0'
+    id 'org.jetbrains.kotlin.jvm' version '1.7.10'
     id 'application'
     id 'checkstyle'
     id 'com.github.spotbugs' version '5.0.+'
