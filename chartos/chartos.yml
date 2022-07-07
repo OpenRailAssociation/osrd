@@ -232,9 +232,12 @@
         - field_expr: layer.obj_id
           field_name: id
           field_type: text
-        - field_expr: speed_section.data->'speed'
-          field_name: speed
+        - field_expr: speed_section.data->'speed_limit'
+          field_name: speed_limit
           field_type: float
+        - field_expr: speed_section.data->'speed_limit_by_tag'
+          field_name: speed_limit_by_tag
+          field_type: jsonb
         - field_expr: speed_section.data->'track_ranges'
           field_name: track_ranges
           field_type: jsonb
@@ -247,9 +250,12 @@
         - field_expr: layer.obj_id
           field_name: id
           field_type: text
-        - field_expr: speed_section.data->'speed'
-          field_name: speed
+        - field_expr: speed_section.data->'speed_limit'
+          field_name: speed_limit
           field_type: float
+        - field_expr: speed_section.data->'speed_limit_by_tag'
+          field_name: speed_limit_by_tag
+          field_type: jsonb
         - field_expr: speed_section.data->'track_ranges'
           field_name: track_ranges
           field_type: jsonb
