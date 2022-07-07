@@ -2,7 +2,7 @@ use crate::models::BoundingBox;
 use crate::railjson::operation::{OperationResult, RailjsonObject};
 use crate::railjson::*;
 use derivative::Derivative;
-use diesel::sql_types::{Double, Integer, Json, Text};
+use diesel::sql_types::{Double, Integer, Json, Nullable, Text};
 use diesel::PgConnection;
 use diesel::{sql_query, QueryableByName, RunQueryDsl};
 use serde_json::Value;
@@ -129,8 +129,10 @@ pub struct SpeedSectionQueryable {
     pub obj_id: String,
     #[sql_type = "Json"]
     pub track_ranges: Value,
-    #[sql_type = "Double"]
-    pub speed: f64,
+    #[sql_type = "Nullable<Double>"]
+    pub speed_limit: Option<f64>,
+    #[sql_type = "Json"]
+    pub speed_limit_by_tag: Value,
 }
 
 impl From<SpeedSectionQueryable> for SpeedSection {
@@ -139,7 +141,8 @@ impl From<SpeedSectionQueryable> for SpeedSection {
             serde_json::from_value(speed.track_ranges).unwrap();
         SpeedSection {
             id: speed.obj_id.clone(),
-            speed: speed.speed,
+            speed_limit: speed.speed_limit,
+            speed_limit_by_tag: serde_json::from_value(speed.speed_limit_by_tag).unwrap(),
             track_ranges,
         }
     }
@@ -499,7 +502,7 @@ impl InfraCache {
 
         // Load speed sections tracks references
         sql_query(
-            "SELECT obj_id, data->>'track_ranges' AS track_ranges, (data->>'speed')::float AS speed FROM osrd_infra_speedsectionmodel WHERE infra_id = $1")
+            "SELECT obj_id, data->>'track_ranges' AS track_ranges, (data->>'speed_limit')::float AS speed_limit, data->>'speed_limit_by_tag' AS speed_limit_by_tag FROM osrd_infra_speedsectionmodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
         .load::<SpeedSectionQueryable>(conn).expect("Error loading speed section refs").into_iter().for_each(|speed| 
             infra_cache.load_speed_section(speed.into())
@@ -523,7 +526,7 @@ impl InfraCache {
 
         // Load track section links tracks references
         sql_query(
-            "SELECT obj_id, data->>'src' AS src, data->>'dst' AS dst, data ->>'navigability' as navigability FROM osrd_infra_tracksectionlinkmodel WHERE infra_id = $1")
+            "SELECT obj_id, data->>'src' AS src, data->>'dst' AS dst, (data->'navigability')::text as navigability FROM osrd_infra_tracksectionlinkmodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
         .load::<TrackSectionLinkQueryable>(conn).expect("Error loading track section link refs").into_iter().for_each(|link| 
             infra_cache.load_track_section_link(link.into())
