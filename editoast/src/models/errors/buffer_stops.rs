@@ -19,7 +19,7 @@ pub fn generate_errors(
         // Retrieve invalid refs
         if !infra_cache.track_sections.contains_key(&buffer_stop.track) {
             let obj_ref = ObjectRef::new(ObjectType::TrackSection, buffer_stop.track.clone());
-            let infra_error = InfraError::new_invalid_reference("track".into(), obj_ref);
+            let infra_error = InfraError::new_invalid_reference("track", obj_ref);
             errors.push(to_value(infra_error).unwrap());
             buffer_stop_ids.push(buffer_stop_id.clone());
             continue;
@@ -29,7 +29,7 @@ pub fn generate_errors(
         // Retrieve out of range
         if !(0.0..=track_cache.length).contains(&buffer_stop.position) {
             let infra_error = InfraError::new_out_of_range(
-                "position".into(),
+                "position",
                 buffer_stop.position,
                 [0.0, track_cache.length],
             );

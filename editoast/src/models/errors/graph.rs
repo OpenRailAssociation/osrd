@@ -54,7 +54,7 @@ impl<'a> Graph<'a> {
     /// This function returns `None` when:
     /// - the trackendpoint has no neighbours
     /// - the trackendpoint doesn't exist
-    pub fn _get_neighbours(
+    pub fn get_neighbours(
         &'a self,
         track_endpoint: &'a TrackEndpoint,
     ) -> Option<&'a HashSet<&TrackEndpoint>> {
@@ -106,7 +106,7 @@ mod tests {
         for track in 'A'..='D' {
             for endpoint in [Endpoint::Begin, Endpoint::End] {
                 let track_endpoint = create_track_endpoint(endpoint, track.to_string());
-                let branch = graph._get_neighbours(&track_endpoint);
+                let branch = graph.get_neighbours(&track_endpoint);
                 let expected_branch = res.get(&track_endpoint);
                 assert_eq!(expected_branch, branch);
             }

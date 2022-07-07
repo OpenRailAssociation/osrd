@@ -58,6 +58,28 @@ pub struct TrackCache {
     pub bbox_sch: BoundingBox,
 }
 
+impl TrackCache {
+    pub fn get_begin(&self) -> TrackEndpoint {
+        TrackEndpoint {
+            endpoint: Endpoint::Begin,
+            track: ObjectRef {
+                obj_type: ObjectType::TrackSection,
+                obj_id: self.obj_id.clone(),
+            },
+        }
+    }
+
+    pub fn get_end(&self) -> TrackEndpoint {
+        TrackEndpoint {
+            endpoint: Endpoint::End,
+            track: ObjectRef {
+                obj_type: ObjectType::TrackSection,
+                obj_id: self.obj_id.clone(),
+            },
+        }
+    }
+}
+
 impl From<&TrackSection> for TrackCache {
     fn from(track: &TrackSection) -> Self {
         TrackCache {
