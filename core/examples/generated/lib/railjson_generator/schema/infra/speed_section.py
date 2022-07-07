@@ -14,7 +14,7 @@ def _speed_section_id():
 
 @dataclass
 class SpeedSection:
-    max_speed: float
+    speed_limit: float
     track_ranges: List[ApplicableDirectionsTrackRange] = field(default_factory=list)
     label: str = field(default_factory=_speed_section_id)
 
@@ -33,6 +33,7 @@ class SpeedSection:
     def to_rjs(self):
         return infra.SpeedSection(
             id=self.label,
-            speed=self.max_speed,
+            speed_limit=self.speed_limit,
+            speed_limit_by_tag={},
             track_ranges=[track.to_rjs() for track in self.track_ranges],
         )
