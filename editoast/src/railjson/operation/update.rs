@@ -134,7 +134,7 @@ mod tests {
     }
 
     #[test]
-    fn valide_update_track() {
+    fn valid_update_track() {
         test_transaction(|conn, infra| {
             let track = create_track(conn, infra.id, Default::default());
 
@@ -163,7 +163,7 @@ mod tests {
     }
 
     #[test]
-    fn invalide_update_track() {
+    fn invalid_update_track() {
         test_transaction(|conn, infra| {
             let track = create_track(conn, infra.id, Default::default());
 
@@ -189,7 +189,7 @@ mod tests {
     }
 
     #[test]
-    fn valide_update_signal() {
+    fn valid_update_signal() {
         test_transaction(|conn, infra| {
             let signal = create_signal(conn, infra.id, Default::default());
 
@@ -218,7 +218,7 @@ mod tests {
     }
 
     #[test]
-    fn valide_update_signal_optionnal() {
+    fn valid_update_signal_optionnal() {
         test_transaction(|conn, infra| {
             let signal = create_signal(conn, infra.id, Default::default());
 
@@ -247,7 +247,7 @@ mod tests {
     }
 
     #[test]
-    fn valide_update_speed() {
+    fn valid_update_speed() {
         test_transaction(|conn, infra| {
             let speed = create_speed(conn, infra.id, Default::default());
 
@@ -256,7 +256,7 @@ mod tests {
                 obj_type: ObjectType::SpeedSection,
                 railjson_patch: from_str(
                     r#"[
-                        { "op": "replace", "path": "/speed", "value": 80.0 }
+                        { "op": "replace", "path": "/speed_limit", "value": 80.0 }
                   ]"#,
                 )
                 .unwrap(),
@@ -265,7 +265,7 @@ mod tests {
             assert!(update_speed.apply(infra.id, conn).is_ok());
 
             let updated_speed = sql_query(format!(
-                "SELECT (data->>'speed')::float as val FROM osrd_infra_speedsectionmodel WHERE obj_id = '{}' AND infra_id = {}",
+                "SELECT (data->>'speed_limit')::float as val FROM osrd_infra_speedsectionmodel WHERE obj_id = '{}' AND infra_id = {}",
                 speed.get_obj_id(),
                 infra.id
             ))
