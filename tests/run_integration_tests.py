@@ -4,7 +4,7 @@ import importlib
 import sys
 import traceback
 from pathlib import Path
-from typing import Tuple, Dict
+from typing import Tuple, Dict, List
 
 import requests
 
@@ -26,18 +26,20 @@ def setup() -> Dict[str, int]:
 
     infras = {}
     infras["dummy"] = infra_id
-    infras["tiny"] = _load_tiny_infra()
+    for infra in ["tiny_infra", "small_infra"]:
+        infras[infra] = _load_generated_infra(infra)
+        _create_schedule(infras[infra])
     return infras
 
 
-def _load_tiny_infra() -> int:
+def _load_generated_infra(name: str) -> int:
     generator = Path(__file__).resolve().parents[1] / "core/examples/generated/generate.py"
     output = Path("/tmp/osrd-generated-examples")
-    tiny_infra = output / "tiny_infra/infra.json"
-    subprocess.check_call(["python3", str(generator), str(output), "tiny_infra"])
-    subprocess.check_call(["docker", "cp", str(tiny_infra), "osrd-api:/infra.json"])
+    infra = output / f"{name}/infra.json"
+    subprocess.check_call(["python3", str(generator), str(output), name])
+    subprocess.check_call(["docker", "cp", str(infra), "osrd-api:/infra.json"])
     result = subprocess.check_output(
-        ["docker", "exec", "osrd-api", "python", "manage.py", "import_railjson", "tiny_infra", "/infra.json"],
+        ["docker", "exec", "osrd-api", "python", "manage.py", "import_railjson", name, "/infra.json"],
     )
     id = int(result.split()[-1])
     return id
@@ -70,15 +72,15 @@ def clean(infra_ids: Dict[str, int]):
 
 
 # noinspection PyBroadException
-def run_single_test(module, infra_ids) -> Tuple[bool, str]:
+def run_single_test(function, infra_ids) -> Tuple[bool, str]:
     """
     Runs a single test module
-    :param module: loaded test module, should contain a function `run(*args, **kwargs)`
-    :param infra_id: infra id
+    :param function: function to run, should have the prototype `function(*args, **kwargs)`
+    :param infra_ids: dict with all the infra ids
     :return: (test passed, error message)
     """
     try:
-        passed, error = module.run(infra_id=infra_ids["dummy"], url=URL, all_infras=infra_ids)
+        passed, error = function(url=URL, all_infras=infra_ids)
         if not passed:
             return False, error
     except Exception:
@@ -98,17 +100,31 @@ def find_test_modules():
         yield module, f.stem
 
 
-def run_all() -> int:
+def run_all(tests_to_run: List[str]) -> int:
     """
-    Runs all the tests present in the tests folder
+    Runs all the given tests. If the test list is empty, all the tests are run
+    :param tests_to_run: list of test names to run
     :return: 0 if every test passed, 1 otherwise (exit code)
     """
     infra_ids = setup()
     n_total = 0
     n_passed = 0
+    tests = {}
     for module, name in find_test_modules():
-        passed, error = run_single_test(module, infra_ids)
-        print(f"{name}: ", end="")
+        if hasattr(module, "run"):
+            tests[name] = module.run
+        else:
+            for function, function_name in module.list_tests():
+                test_name = f"{name}:{function_name}"
+                tests[test_name] = function
+
+    if not tests_to_run:
+        tests_to_run = tests.keys()
+
+    for test_name in tests_to_run:
+        function = tests[test_name]
+        passed, error = run_single_test(function, infra_ids)
+        print(f"{test_name}: ", end="")
         if passed:
             print("PASS")
             n_passed += 1
@@ -122,4 +138,4 @@ def run_all() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(run_all())
+    sys.exit(run_all(sys.argv[1:]))
