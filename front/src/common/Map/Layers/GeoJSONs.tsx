@@ -1,12 +1,12 @@
-import { keyBy } from 'lodash';
 import { useSelector } from 'react-redux';
 import React, { FC, useMemo } from 'react';
 import { FeatureCollection } from 'geojson';
-import { Layer, Source } from 'react-map-gl';
+import { Layer, LayerProps, Source } from 'react-map-gl';
+import { AnyPaint, LinePaint, SymbolPaint } from 'mapbox-gl';
 
 import { Item, Theme } from '../../../types';
 import { clippedDataSelector, EditorState } from '../../../reducers/editor';
-import { geoMainLayer } from './geographiclayers';
+import { geoMainLayer, geoServiceLayer } from './geographiclayers';
 import {
   getPointLayerProps,
   getSignalLayerProps,
@@ -14,12 +14,110 @@ import {
   SignalContext,
   SignalsSettings,
 } from './geoSignalsLayers';
+import { lineNameLayer, lineNumberLayer, trackNameLayer } from './commonLayers';
+import { getSymbolTypes } from '../../../applications/editor/data/utils';
 
 const HOVERED_COLOR = '#009EED';
-const SELECTED_COLOR = '#0c6b9a';
+const UNSELECTED_OPACITY = 0.2;
 const SIGNAL_TYPE_KEY = 'installation_type';
 
-export const GEOJSON_LAYER_ID = 'editor/geo-main-layer';
+interface PaintContext {
+  hiddenIDs: string[];
+  hoveredIDs: string[];
+  selectedIDs: string[];
+}
+
+function adaptSymbolPaint(
+  paint: SymbolPaint,
+  { selectedIDs, hoveredIDs }: PaintContext
+): SymbolPaint {
+  const opacity = typeof paint['icon-opacity'] === 'number' ? paint['icon-opacity'] : 1;
+  return {
+    ...paint,
+    ...(selectedIDs.length
+      ? {
+          'icon-opacity': [
+            'case',
+            ['in', ['get', 'id'], ['literal', selectedIDs]],
+            opacity,
+            opacity * UNSELECTED_OPACITY,
+          ],
+        }
+      : {}),
+    ...(hoveredIDs.length
+      ? {
+          'icon-halo-color': [
+            'case',
+            ['in', ['get', 'id'], ['literal', hoveredIDs]],
+            HOVERED_COLOR,
+            'rgba(0,0,0,0)',
+          ],
+          'icon-halo-width': ['case', ['in', ['get', 'id'], ['literal', hoveredIDs]], 5, 0],
+          'icon-halo-blur': ['case', ['in', ['get', 'id'], ['literal', hoveredIDs]], 5, 0],
+        }
+      : {}),
+  };
+}
+
+function adaptTextPaint(
+  paint: SymbolPaint,
+  { hoveredIDs, selectedIDs }: PaintContext
+): SymbolPaint {
+  const opacity = typeof paint['text-opacity'] === 'number' ? paint['text-opacity'] : 1;
+  return {
+    ...paint,
+    ...(selectedIDs.length
+      ? {
+          'text-opacity': [
+            'case',
+            ['in', ['get', 'id'], ['literal', selectedIDs]],
+            opacity,
+            opacity * UNSELECTED_OPACITY,
+          ],
+        }
+      : {}),
+    ...(hoveredIDs.length
+      ? {
+          'icon-halo-color': [
+            'case',
+            ['in', ['get', 'id'], ['literal', hoveredIDs]],
+            HOVERED_COLOR,
+            'rgba(0,0,0,0)',
+          ],
+          'icon-halo-width': ['case', ['in', ['get', 'id'], ['literal', hoveredIDs]], 5, 0],
+          'icon-halo-blur': ['case', ['in', ['get', 'id'], ['literal', hoveredIDs]], 5, 0],
+        }
+      : {}),
+  };
+}
+
+function adaptLinearPaint(paint: LinePaint, { selectedIDs }: PaintContext): LinePaint {
+  const opacity = typeof paint['line-opacity'] === 'number' ? paint['line-opacity'] : 1;
+  return {
+    ...paint,
+    ...(selectedIDs.length
+      ? {
+          'line-opacity': [
+            'case',
+            ['in', ['get', 'id'], ['literal', selectedIDs]],
+            opacity,
+            opacity * UNSELECTED_OPACITY,
+          ],
+        }
+      : {}),
+  };
+}
+
+function adaptPaint<T extends AnyPaint>(
+  props: LayerProps,
+  fn: (paint: T, context: PaintContext) => T,
+  context: PaintContext
+): LayerProps {
+  return {
+    ...props,
+    paint: fn((props.paint as T) || {}, context),
+  };
+}
 
 const GeoJSONs: FC<{ colors: Theme; hidden?: Item[]; hovered?: Item[]; selection?: Item[] }> = (
   props
@@ -31,41 +129,27 @@ const GeoJSONs: FC<{ colors: Theme; hidden?: Item[]; hovered?: Item[]; selection
   const editorData = useSelector((state: { editor: EditorState }) =>
     clippedDataSelector(state.editor)
   );
-
-  const geojson = useMemo(() => {
-    const hiddenIndex = keyBy(hidden || [], 'id');
-    const hoveredIndex = keyBy(hovered || [], 'id');
-    const selectionIndex = keyBy(selection || [], 'id');
-    return {
+  const geoJSON = useMemo<FeatureCollection>(
+    () => ({
       type: 'FeatureCollection',
-      features: editorData.map((feature) => ({
-        ...feature,
-        properties: {
-          ...feature.properties,
-          ...(selectionIndex[feature.properties?.id] ? { selected: true } : {}),
-          ...(hoveredIndex[feature.properties?.id] ? { hovered: true } : {}),
-          ...(hiddenIndex[feature.properties?.id] ? { hidden: true } : {}),
-        },
-      })),
-    } as FeatureCollection;
-  }, [editorData, hidden, hovered, selection]);
-
-  // SIGNALS:
-  const signalsList = useMemo(
-    () =>
-      Object.keys(
-        editorData.reduce(
-          (iter, feature) =>
-            feature.objType === 'Signal' && (feature.properties || {})[SIGNAL_TYPE_KEY]
-              ? { ...iter, [(feature.properties || {})[SIGNAL_TYPE_KEY]]: true }
-              : iter,
-          {}
-        )
-      ).map((type) => type.replace(/(^[" ]|[" ]$)/g, '')),
+      features: editorData,
+    }),
     [editorData]
   );
   const prefix = mapStyle === 'blueprint' ? 'SCHB ' : '';
-  const context: SignalContext = useMemo(
+
+  const paintContext: PaintContext = useMemo(
+    () => ({
+      hiddenIDs: (hidden || []).map((item) => item.id),
+      hoveredIDs: (hovered || []).map((item) => item.id),
+      selectedIDs: (selection || []).map((item) => item.id),
+    }),
+    [hidden, hovered, selection]
+  );
+
+  // SIGNALS:
+  const signalsList = useMemo(() => getSymbolTypes(editorData), [editorData]);
+  const signalsContext: SignalContext = useMemo(
     () => ({
       prefix,
       colors,
@@ -74,40 +158,89 @@ const GeoJSONs: FC<{ colors: Theme; hidden?: Item[]; hovered?: Item[]; selection
     }),
     [colors, prefix, signalsList]
   );
-  const propsPerType = useMemo(
+  const signalPropsPerType = useMemo(
     () =>
       signalsList.reduce(
         (iter, type) => ({
           ...iter,
-          [type]: getSignalLayerProps(context, type),
+          [type]: getSignalLayerProps(signalsContext, type),
         }),
         {}
       ),
-    [context, signalsList]
+    [signalsContext, signalsList]
   );
-  const hoveredIDs = useMemo(() => (hovered || []).map((item) => item.id), [hovered]);
 
   return (
-    <Source id="editor/geo" type="geojson" data={geojson}>
-      <Layer {...geoMainLayer(colors)} id={GEOJSON_LAYER_ID} filter={['!=', 'hidden', true]} />
+    <Source id="editor/geo" type="geojson" data={geoJSON}>
+      {/* Linear objects */}
       <Layer
-        type="line"
-        paint={{ 'line-color': HOVERED_COLOR, 'line-width': 3 }}
-        filter={['==', 'hovered', true]}
+        {...adaptPaint(geoMainLayer(colors), adaptLinearPaint, paintContext)}
+        id="editor/geo/track-main"
       />
       <Layer
-        type="line"
-        paint={{ 'line-color': SELECTED_COLOR, 'line-width': 3 }}
-        filter={['==', 'selected', true]}
+        {...adaptPaint(geoServiceLayer(colors), adaptLinearPaint, paintContext)}
+        id="editor/geo/track-service"
+      />
+      <Layer
+        {...adaptPaint(
+          {
+            ...trackNameLayer(colors),
+            filter: ['==', 'type_voie', 'VP'],
+            layout: {
+              ...trackNameLayer(colors).layout,
+              'text-field': '{track_name}',
+              'text-size': 11,
+            },
+          },
+          adaptTextPaint,
+          paintContext
+        )}
+        id="editor/geo/track-names"
+      />
+      <Layer
+        {...adaptPaint(
+          {
+            ...trackNameLayer(colors),
+            filter: ['!=', 'type_voie', 'VP'],
+            layout: {
+              ...trackNameLayer(colors).layout,
+              'text-field': '{track_name}',
+              'text-size': 10,
+            },
+          },
+          adaptTextPaint,
+          paintContext
+        )}
+        id="editor/geo/track-names"
+      />
+      <Layer
+        {...adaptPaint(
+          {
+            ...lineNumberLayer(colors),
+            layout: {
+              ...lineNumberLayer(colors).layout,
+              'text-field': '{line_code}',
+            },
+          },
+          adaptTextPaint,
+          paintContext
+        )}
+        id="editor/geo/track-numbers"
+      />
+      <Layer
+        {...adaptPaint(lineNameLayer(colors), adaptTextPaint, paintContext)}
+        id="editor/geo/line-names"
       />
 
       {/* Point objects */}
-      <Layer {...getSignalMatLayerProps(context)} id="editor/geo-signal/mat" />
-      <Layer {...getPointLayerProps(context)} id="editor/geo-signal/point" />
+      <Layer
+        {...adaptPaint(getSignalMatLayerProps(signalsContext), adaptSymbolPaint, paintContext)}
+        id="editor/geo/signal-mat"
+      />
+      <Layer {...getPointLayerProps(signalsContext)} id="editor/geo/signal-point" />
       {signalsList.map((type) => {
-        const layerId = `editor/geo-signals/${type}`;
-        const signalDef = propsPerType[type];
-        const opacity = (signalDef.paint || {})['icon-opacity'] || 1;
+        const layerId = `editor/geo/signal-${type}`;
+        const signalDef = signalPropsPerType[type];
 
         return (
           <Layer
@@ -115,12 +248,7 @@ const GeoJSONs: FC<{ colors: Theme; hidden?: Item[]; hovered?: Item[]; selection
             {...signalDef}
             id={layerId}
             filter={['==', SIGNAL_TYPE_KEY, `"${type}"`]}
-            paint={{
-              ...signalDef.paint,
-              'icon-opacity': hoveredIDs.length
-                ? ['case', ['in', 'id', ['literal', hoveredIDs]], opacity * 0.6, opacity]
-                : opacity,
-            }}
+            paint={adaptSymbolPaint(signalDef.paint, paintContext)}
           />
         );
       })}

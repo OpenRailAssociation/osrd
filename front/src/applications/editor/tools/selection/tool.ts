@@ -4,12 +4,12 @@ import { isEqual } from 'lodash';
 import { DEFAULT_COMMON_TOOL_STATE, Tool } from '../types';
 import { save } from '../../../../reducers/editor';
 import { selectInZone } from '../../../../utils/mapboxHelper';
-import { GEOJSON_LAYER_ID } from '../../../../common/Map/Layers/GeoJSONs';
 import { SelectionState } from './types';
 import { SelectionLayers, SelectionMessages, SelectionLeftPanel } from './components';
 import ConfirmModal from '../../components/ConfirmModal';
 import TrackEditionTool from '../trackEdition/tool';
 import { TrackSectionEntity } from '../../../../types';
+import { getSymbolTypes } from '../../data/utils';
 
 const SelectionTool: Tool<SelectionState> = {
   id: 'select-items',
@@ -236,8 +236,9 @@ const SelectionTool: Tool<SelectionState> = {
   },
 
   // Layers:
-  getInteractiveLayers() {
-    return [GEOJSON_LAYER_ID];
+  getInteractiveLayers({ editorState: { editorData } }) {
+    const symbolTypes = getSymbolTypes(editorData);
+    return symbolTypes.map((type) => `editor/geo/signal-${type}`).concat(['editor/geo/track-main']);
   },
   getCursor({ state }, { isDragging }) {
     if (isDragging) return 'move';
