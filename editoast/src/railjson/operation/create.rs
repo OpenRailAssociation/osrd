@@ -179,7 +179,11 @@ pub mod tests {
         obj
     }
 
-    pub fn create_st(conn: &PgConnection, infra_id: i32, st: SwitchType) -> RailjsonObject {
+    pub fn create_switch_type(
+        conn: &PgConnection,
+        infra_id: i32,
+        st: SwitchType,
+    ) -> RailjsonObject {
         let obj = RailjsonObject::SwitchType { railjson: st };
         assert!(apply_create_operation(&obj, infra_id, conn).is_ok());
         obj
@@ -251,7 +255,7 @@ pub mod tests {
     #[test]
     fn create_st_test() {
         test_transaction(|conn, infra| {
-            create_st(conn, infra.id, Default::default());
+            create_switch_type(conn, infra.id, Default::default());
         });
     }
 }
