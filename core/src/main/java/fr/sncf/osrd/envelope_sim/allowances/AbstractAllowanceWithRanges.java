@@ -322,9 +322,25 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
 
         // 2) stick phases back together
         var builder = new EnvelopeBuilder();
-        if (leftPart != null)
+        var leftPartEndSpeed = Double.NaN;
+        var rightPartBeginSpeed = Double.NaN;
+        if (leftPart != null) {
             builder.addPart(leftPart);
-        builder.addParts(coreEnvelope.slice(leftPartEndPos, rightPartBeginPos));
+            leftPartEndSpeed = leftPart.getEndSpeed();
+            assert abs(coreEnvelope.interpolateSpeed(leftPartEndPos) - leftPartEndSpeed) < 1e-8;
+        }
+        if (rightPart != null) {
+            rightPartBeginSpeed = rightPart.getBeginSpeed();
+            assert abs(coreEnvelope.interpolateSpeed(rightPartBeginPos) - rightPartBeginSpeed) < 1e-8;
+        }
+
+        // We force the left part end speed and right part begin speed, to avoid epsilon differences
+        // that would cause errors later on.
+        // The previous asserts are here to ensure we don't force speed values that are too different
+        builder.addParts(coreEnvelope.slice(
+                leftPartEndPos, leftPartEndSpeed,
+                rightPartBeginPos, rightPartBeginSpeed
+        ));
         if (rightPart != null)
             builder.addPart(rightPart);
         var result = builder.build();
