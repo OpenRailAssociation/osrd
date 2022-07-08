@@ -94,7 +94,7 @@ fn runserver(
     // Initialize infra caches
     let infra_caches = CHashMap::new();
     for infra in infras.iter() {
-        let infra_cache = InfraCache::init(&conn, infra.id);
+        let infra_cache = InfraCache::load(&conn, infra.id);
         infra_caches.insert_new(infra.id, infra_cache);
     }
 
@@ -134,7 +134,7 @@ fn generate(
             infra.name.bold(),
             infra.id
         );
-        let infra_cache = InfraCache::init(&conn, infra.id);
+        let infra_cache = InfraCache::load(&conn, infra.id);
         generate::refresh(&conn, &infra, args.force, &chartos_config, &infra_cache)?;
         println!("✅ Infra {}[{}] generated!", infra.name.bold(), infra.id);
     }

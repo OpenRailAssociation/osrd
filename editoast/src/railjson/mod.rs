@@ -34,12 +34,15 @@ pub enum ObjectType {
     OperationalPoint,
 }
 
-#[derive(Deserialize, Serialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Deserialize, Derivative, Serialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[derivative(Default)]
 #[serde(deny_unknown_fields)]
 pub struct ObjectRef {
     #[serde(rename = "type")]
+    #[derivative(Default(value = "ObjectType::TrackSection"))]
     pub obj_type: ObjectType,
     #[serde(rename = "id")]
+    #[derivative(Default(value = r#""InvalidRef".into()"#))]
     pub obj_id: String,
 }
 
@@ -93,10 +96,6 @@ pub struct TrackSection {
 pub struct Signal {
     #[derivative(Default(value = r#"generate_id("signal")"#))]
     pub id: String,
-    #[derivative(Default(value = r#"ObjectRef {
-        obj_type: ObjectType::TrackSection,
-        obj_id: "".to_string(),
-    }"#))]
     pub track: ObjectRef,
     #[derivative(Default(value = "0."))]
     pub position: f64,
@@ -128,7 +127,7 @@ pub struct Signal {
 pub struct SpeedSection {
     #[derivative(Default(value = r#"generate_id("speed_section")"#))]
     pub id: String,
-    #[derivative(Default(value = "Some(100.)"))]
+    #[derivative(Default(value = "Some(80.)"))]
     pub speed_limit: Option<f64>,
     pub speed_limit_by_tag: HashMap<String, f64>,
     pub track_ranges: Vec<ApplicableDirectionsTrackRange>,
@@ -140,15 +139,7 @@ pub struct SpeedSection {
 pub struct Route {
     #[derivative(Default(value = r#"generate_id("route")"#))]
     pub id: String,
-    #[derivative(Default(value = r#"ObjectRef {
-        obj_type: ObjectType::TrackSection,
-        obj_id: "".to_string(),
-    }"#))]
     pub entry_point: ObjectRef,
-    #[derivative(Default(value = r#"ObjectRef {
-        obj_type: ObjectType::TrackSection,
-        obj_id: "".to_string(),
-    }"#))]
     pub exit_point: ObjectRef,
     pub release_detectors: Vec<ObjectRef>,
     pub path: Vec<DirectionalTrackRange>,
@@ -170,10 +161,6 @@ pub struct TrackSectionLink {
 pub struct Switch {
     #[derivative(Default(value = r#"generate_id("switch")"#))]
     pub id: String,
-    #[derivative(Default(value = r#"ObjectRef {
-        obj_type: ObjectType::TrackSection,
-        obj_id: "".to_string(),
-    }"#))]
     pub switch_type: ObjectRef,
     pub group_change_delay: f64,
     pub ports: HashMap<String, TrackEndpoint>,
@@ -203,10 +190,6 @@ pub struct SwitchPortConnection {
 pub struct Detector {
     #[derivative(Default(value = r#"generate_id("detector")"#))]
     pub id: String,
-    #[derivative(Default(value = r#"ObjectRef {
-        obj_type: ObjectType::TrackSection,
-        obj_id: "".to_string(),
-    }"#))]
     pub track: ObjectRef,
     #[derivative(Default(value = "0."))]
     pub position: f64,
@@ -218,10 +201,6 @@ pub struct Detector {
 pub struct BufferStop {
     #[derivative(Default(value = r#"generate_id("buffer_stop")"#))]
     pub id: String,
-    #[derivative(Default(value = r#"ObjectRef {
-        obj_type: ObjectType::TrackSection,
-        obj_id: "".to_string(),
-    }"#))]
     pub track: ObjectRef,
     #[derivative(Default(value = "0."))]
     pub position: f64,
@@ -241,25 +220,31 @@ pub struct OperationalPoint {
     pub name: String,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[derivative(Default)]
 pub struct OperationalPointPart {
     pub track: ObjectRef,
     pub position: f64,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[derivative(Default)]
 pub struct ApplicableDirectionsTrackRange {
     pub track: ObjectRef,
     pub begin: f64,
+    #[derivative(Default(value = "100."))]
     pub end: f64,
     pub applicable_directions: ApplicableDirections,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[derivative(Default)]
 pub struct DirectionalTrackRange {
     pub track: ObjectRef,
     pub begin: f64,
+    #[derivative(Default(value = "100."))]
     pub end: f64,
+    #[derivative(Default(value = "Direction::StartToStop"))]
     pub direction: Direction,
 }
 
@@ -338,10 +323,6 @@ pub enum Endpoint {
 pub struct TrackEndpoint {
     #[derivative(Default(value = "Endpoint::Begin"))]
     pub endpoint: Endpoint,
-    #[derivative(Default(value = r#"ObjectRef {
-        obj_type: ObjectType::TrackSection,
-        obj_id: "".to_string(),
-    }"#))]
     pub track: ObjectRef,
 }
 
