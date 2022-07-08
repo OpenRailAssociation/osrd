@@ -9,9 +9,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.EnvelopeShape;
+import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance;
+import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceConvergenceException;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.train.TestTrains;
 import org.junit.jupiter.api.Test;
 import java.util.List;
@@ -236,5 +239,31 @@ public class AllowanceRangesTests {
         assertEquals(marginTime1, targetTime1, 2 * TIME_STEP);
         assertEquals(marginTime2, targetTime2, 2 * TIME_STEP);
         assertEquals(marginTime3, targetTime3, 2 * TIME_STEP);
+    }
+
+    /** Test with an allowance range that starts very slightly after the path start, and ends around the end
+     * of the acceleration part. This doesn't necessarily have to result in a valid envelope as we're very close
+     * to asking for an impossible allowance, but we check that it doesn't crash early */
+    @Test
+    public void testAllowanceRangeEdgeCase() {
+        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
+        var length = 100_000;
+        var testPath = new FlatPath(length, 0);
+        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
+        var stops = new double[] { testPath.getLength() };
+        var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 10, stops);
+        var value1 = new AllowanceValue.Percentage(10);
+        var rangesTransitions = new double[] { 0.1, maxEffortEnvelope.get(0).getEndPos() };
+        var ranges = List.of(
+                new AllowanceRange(rangesTransitions[0], rangesTransitions[1], value1)
+        );
+        var allowance = new LinearAllowance(
+                testContext, rangesTransitions[0], rangesTransitions[1], 0, ranges
+        );
+        try {
+            allowance.apply(maxEffortEnvelope);
+        } catch (AllowanceConvergenceException e) {
+            assertEquals(OSRDError.ErrorCause.USER, e.cause);
+        }
     }
 }
