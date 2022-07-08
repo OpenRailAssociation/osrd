@@ -480,8 +480,8 @@ impl InfraCache {
             .is_none());
     }
 
-    /// Initialize an infra cache given an infra id
-    pub fn init(conn: &PgConnection, infra_id: i32) -> InfraCache {
+    /// Given an infra id load infra cache from database
+    pub fn load(conn: &PgConnection, infra_id: i32) -> InfraCache {
         let mut infra_cache = Self::default();
 
         // Load track sections list
@@ -730,13 +730,163 @@ impl InfraCache {
 pub mod tests {
     use std::collections::HashMap;
 
-    use crate::{
-        infra_cache::{InfraCache, SwitchCache},
-        railjson::{
-            ApplicableDirections, Endpoint, ObjectRef, ObjectType, SwitchPortConnection,
-            SwitchType, TrackEndpoint, TrackSectionLink,
-        },
+    use crate::infra_cache::{InfraCache, SwitchCache};
+    use crate::models::infra::tests::test_transaction;
+    use crate::railjson::operation::create::tests::{
+        create_buffer_stop, create_detector, create_link, create_op, create_route, create_signal,
+        create_speed, create_switch, create_switch_type, create_track,
     };
+    use crate::railjson::{
+        ApplicableDirections, Endpoint, ObjectRef, ObjectType, OperationalPoint, Route,
+        SpeedSection, Switch, SwitchPortConnection, SwitchType, TrackEndpoint, TrackSectionLink,
+    };
+
+    #[test]
+    fn load_track_section() {
+        test_transaction(|conn, infra| {
+            let track = create_track(conn, infra.id, Default::default());
+            let infra_cache = InfraCache::load(conn, infra.id);
+            assert_eq!(infra_cache.track_sections.len(), 1);
+            assert!(infra_cache.track_sections.contains_key(&track.get_obj_id()));
+        });
+    }
+
+    #[test]
+    fn load_signal() {
+        test_transaction(|conn, infra| {
+            let signal = create_signal(conn, infra.id, Default::default());
+
+            let infra_cache = InfraCache::load(conn, infra.id);
+
+            assert!(infra_cache.signals.contains_key(&signal.get_obj_id()));
+            let refs = infra_cache.track_sections_refs;
+            assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+        })
+    }
+
+    #[test]
+    fn load_speed_section() {
+        test_transaction(|conn, infra| {
+            let speed = create_speed(
+                conn,
+                infra.id,
+                SpeedSection {
+                    track_ranges: vec![Default::default()],
+                    ..Default::default()
+                },
+            );
+
+            let infra_cache = InfraCache::load(conn, infra.id);
+
+            assert!(infra_cache.speed_sections.contains_key(&speed.get_obj_id()));
+            let refs = infra_cache.track_sections_refs;
+            assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+        })
+    }
+
+    #[test]
+    fn load_route() {
+        test_transaction(|conn, infra| {
+            let route = create_route(
+                conn,
+                infra.id,
+                Route {
+                    path: vec![Default::default()],
+                    ..Default::default()
+                },
+            );
+
+            let infra_cache = InfraCache::load(conn, infra.id);
+
+            assert!(infra_cache.routes.contains_key(&route.get_obj_id()));
+            let refs = infra_cache.track_sections_refs;
+            assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+        })
+    }
+
+    #[test]
+    fn load_operational_point() {
+        test_transaction(|conn, infra| {
+            let op = create_op(
+                conn,
+                infra.id,
+                OperationalPoint {
+                    parts: vec![Default::default()],
+                    ..Default::default()
+                },
+            );
+
+            let infra_cache = InfraCache::load(conn, infra.id);
+
+            assert!(infra_cache
+                .operational_points
+                .contains_key(&op.get_obj_id()));
+            let refs = infra_cache.track_sections_refs;
+            assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+        })
+    }
+
+    #[test]
+    fn load_track_section_link() {
+        test_transaction(|conn, infra| {
+            let link = create_link(conn, infra.id, Default::default());
+            let infra_cache = InfraCache::load(conn, infra.id);
+            assert!(infra_cache
+                .track_section_links
+                .contains_key(&link.get_obj_id()));
+        })
+    }
+
+    #[test]
+    fn load_switch() {
+        test_transaction(|conn, infra| {
+            let switch = create_switch(
+                conn,
+                infra.id,
+                Switch {
+                    ports: HashMap::from([("port".into(), Default::default())]),
+                    ..Default::default()
+                },
+            );
+            let infra_cache = InfraCache::load(conn, infra.id);
+            assert!(infra_cache.switches.contains_key(&switch.get_obj_id()));
+        })
+    }
+
+    #[test]
+    fn load_switch_type() {
+        test_transaction(|conn, infra| {
+            let s_type = create_switch_type(conn, infra.id, Default::default());
+            let infra_cache = InfraCache::load(conn, infra.id);
+            assert!(infra_cache.switch_types.contains_key(&s_type.get_obj_id()));
+        })
+    }
+
+    #[test]
+    fn load_detector() {
+        test_transaction(|conn, infra| {
+            let detector = create_detector(conn, infra.id, Default::default());
+
+            let infra_cache = InfraCache::load(conn, infra.id);
+
+            assert!(infra_cache.detectors.contains_key(&detector.get_obj_id()));
+            let refs = infra_cache.track_sections_refs;
+            assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+        })
+    }
+
+    #[test]
+    fn load_buffer_stop() {
+        test_transaction(|conn, infra| {
+            let bs = create_buffer_stop(conn, infra.id, Default::default());
+
+            let infra_cache = InfraCache::load(conn, infra.id);
+
+            assert!(infra_cache.buffer_stops.contains_key(&bs.get_obj_id()));
+            let refs = infra_cache.track_sections_refs;
+            assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+        })
+    }
 
     pub fn create_track_endpoint<T: AsRef<str>>(endpoint: Endpoint, obj_id: T) -> TrackEndpoint {
         TrackEndpoint {
@@ -770,20 +920,19 @@ pub mod tests {
     }
 
     pub fn create_switch_type_point() -> SwitchType {
-        let groups = HashMap::from([
-            (
-                "LEFT".into(),
-                vec![create_switch_connection("BASE".into(), "LEFT".into())],
-            ),
-            (
-                "RIGHT".into(),
-                vec![create_switch_connection("BASE".into(), "RIGHT".into())],
-            ),
-        ]);
         SwitchType {
             id: "point".into(),
             ports: vec!["BASE".into(), "LEFT".into(), "RIGHT".into()],
-            groups,
+            groups: HashMap::from([
+                (
+                    "LEFT".into(),
+                    vec![create_switch_connection("BASE".into(), "LEFT".into())],
+                ),
+                (
+                    "RIGHT".into(),
+                    vec![create_switch_connection("BASE".into(), "RIGHT".into())],
+                ),
+            ]),
         }
     }
 
