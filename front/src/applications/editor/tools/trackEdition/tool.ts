@@ -240,9 +240,13 @@ const TrackEditionTool: Tool<TrackEditionState> = {
   onHover(e, { setState, state }) {
     const { editionState } = state;
 
-    if (editionState.type === 'movePoint' && state.anchorLinePoints) {
-      const dataFeatures = (e.features || []).filter((f) => f.layer.id === 'editor/geo/track-main');
+    const dataFeatures = (e.features || []).filter(
+      (f) =>
+        f.layer.id === 'editor/geo/track-main' &&
+        (f._geometry?.type === 'LineString' || f._geometry?.type === 'MultiLineString')
+    );
 
+    if (editionState.type === 'movePoint' && state.anchorLinePoints) {
       setState({
         ...state,
         nearestPoint: dataFeatures.length
@@ -270,9 +274,6 @@ const TrackEditionTool: Tool<TrackEditionState> = {
       }
 
       if (!isStateUpdated) {
-        const dataFeatures = (e.features || []).filter(
-          (f) => f.layer.id === 'editor/geo/track-main'
-        );
         setState({
           ...state,
           nearestPoint: dataFeatures.length
