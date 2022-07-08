@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Layer } from 'react-map-gl';
-import { hoverLayer, hoverCircleLayer } from 'common/Map/Layers/commonlayers';
+import { hoverLayer, hoverCircleLayer } from 'common/Map/Layers/commonLayers';
 
 class Hover extends Component {
   static propTypes = {

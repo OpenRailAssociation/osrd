@@ -15,7 +15,6 @@ import { featureCollection } from '@turf/helpers';
 import nearestPointOnLine from '@turf/nearest-point-on-line';
 
 import { DEFAULT_COMMON_TOOL_STATE, Tool } from '../types';
-import { GEOJSON_LAYER_ID } from '../../../../common/Map/Layers/GeoJSONs';
 import { getNearestPoint } from '../../../../utils/mapboxHelper';
 import {
   POINTS_LAYER_ID,
@@ -242,7 +241,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
     const { editionState } = state;
 
     if (editionState.type === 'movePoint' && state.anchorLinePoints) {
-      const dataFeatures = (e.features || []).filter((f) => f.layer.id === GEOJSON_LAYER_ID);
+      const dataFeatures = (e.features || []).filter((f) => f.layer.id === 'editor/geo/track-main');
 
       setState({
         ...state,
@@ -271,7 +270,9 @@ const TrackEditionTool: Tool<TrackEditionState> = {
       }
 
       if (!isStateUpdated) {
-        const dataFeatures = (e.features || []).filter((f) => f.layer.id === GEOJSON_LAYER_ID);
+        const dataFeatures = (e.features || []).filter(
+          (f) => f.layer.id === 'editor/geo/track-main'
+        );
         setState({
           ...state,
           nearestPoint: dataFeatures.length
@@ -346,7 +347,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
   },
 
   getInteractiveLayers() {
-    return [GEOJSON_LAYER_ID, POINTS_LAYER_ID, TRACK_LAYER_ID];
+    return ['editor/geo/track-main', POINTS_LAYER_ID, TRACK_LAYER_ID];
   },
   getCursor({ state }, { isDragging }) {
     if (isDragging) return 'move';
