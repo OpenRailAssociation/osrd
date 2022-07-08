@@ -447,6 +447,12 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
     private Envelope intersectLeftRightParts(EnvelopePart leftPart, EnvelopePart rightPart) {
         if (rightPart == null || leftPart == null)
             throw AllowanceConvergenceException.tooMuchTime();
+        if (leftPart.getMaxSpeed() < rightPart.getMinSpeed()) {
+            // The curves don't intersect at all
+            // This sometimes happens when one part is very short compared to the time step
+            // When it happens we have very little margin to add time, so we throw a `tooMuchTime` error
+            throw AllowanceConvergenceException.tooMuchTime();
+        }
         var slicedLeftPart = leftPart.sliceWithSpeeds(
                 Double.NEGATIVE_INFINITY, NaN,
                 rightPart.getBeginPos(), rightPart.getBeginSpeed()
