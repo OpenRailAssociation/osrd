@@ -10,6 +10,8 @@ coverage:
         target: auto
         flags:
           - editoast
+    patch:
+      default: off
 
 flags:
   core:
