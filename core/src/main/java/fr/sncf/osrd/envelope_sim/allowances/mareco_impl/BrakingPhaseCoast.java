@@ -22,7 +22,7 @@ public class BrakingPhaseCoast implements CoastingOpportunity {
     @Override
     public EnvelopePart compute(Envelope base, EnvelopeSimContext context, double v1, double vf) {
         // coast backwards from the last point of braking phases above vf. forbid going below vf, continue until
-        // an intersection with the base is found. if vf was reached of no intersection was found until the starting
+        // an intersection with the base is found. if vf was reached or no intersection was found until the starting
         // point, coast forwards from the intersection / starting point.
         return CoastingGenerator.coastFromEnd(base, context, endPos, vf);
     }
