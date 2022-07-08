@@ -1,5 +1,5 @@
 import { JSONSchema7 } from 'json-schema';
-import { EditorSchema } from '../../../types';
+import { EditorEntity, EditorSchema } from '../../../types';
 
 export function getObjectTypeForLayer(schema: EditorSchema, layer: string): string | undefined {
   const item = schema.find((e) => e.layer === layer);
@@ -25,4 +25,17 @@ export function getJsonSchemaForObjectType(
 export function getLayerForObjectType(schema: EditorSchema, objType: string): string | undefined {
   const item = schema.find((e) => e.objType === objType);
   return item ? item.layer : undefined;
+}
+
+export function getSymbolTypes(editorData: EditorEntity[]): string[] {
+  const SIGNAL_TYPE_KEY = 'installation_type';
+  return Object.keys(
+    editorData.reduce(
+      (iter, feature) =>
+        feature.objType === 'Signal' && (feature.properties || {})[SIGNAL_TYPE_KEY]
+          ? { ...iter, [(feature.properties || {})[SIGNAL_TYPE_KEY]]: true }
+          : iter,
+      {}
+    )
+  ).map((type) => type.replace(/(^[" ]|[" ]$)/g, ''));
 }

@@ -1,13 +1,21 @@
-export const trackNameLayer = (colors) => ({
+import { LayerProps } from 'react-map-gl';
+
+export const trackNameLayer = (colors): LayerProps => ({
   type: 'symbol',
   layout: {
-    'text-font': [
-      'Roboto Condensed',
-    ],
+    'text-font': ['Roboto Condensed'],
     'symbol-placement': 'line',
     'text-size': 14,
+    // [jacomyal]
+    // According to TS types, 'text-allow-overlap' should be a boolean or
+    // nothing. But I don't dare yet to switch it.
+    // eslint-disable-next-line
+    // @ts-ignore
     'text-allow-overlap': {
-      stops: [[13.5, false], [14, true]],
+      stops: [
+        [13.5, false],
+        [14, true],
+      ],
     },
   },
   paint: {
@@ -18,12 +26,10 @@ export const trackNameLayer = (colors) => ({
   },
 });
 
-export const lineNameLayer = (colors) => ({
+export const lineNameLayer = (colors): LayerProps => ({
   type: 'symbol',
   layout: {
-    'text-font': [
-      'Roboto Condensed',
-    ],
+    'text-font': ['Roboto Condensed'],
     'symbol-placement': 'line-center',
     'text-field': '{line_name}',
     'text-size': 10,
@@ -37,13 +43,11 @@ export const lineNameLayer = (colors) => ({
   },
 });
 
-export const lineNumberLayer = (colors) => ({
+export const lineNumberLayer = (colors): LayerProps => ({
   type: 'symbol',
   minzoom: 11,
   layout: {
-    'text-font': [
-      'Roboto Condensed',
-    ],
+    'text-font': ['Roboto Condensed'],
     'symbol-placement': 'line',
     'text-size': 10,
     'text-offset': [0, 1],
@@ -56,7 +60,7 @@ export const lineNumberLayer = (colors) => ({
   },
 });
 
-export const hoverLayer = () => ({
+export const hoverLayer = (): LayerProps => ({
   type: 'line',
   paint: {
     'line-color': '#ffb612',
@@ -64,7 +68,7 @@ export const hoverLayer = () => ({
   },
 });
 
-export const hoverCircleLayer = () => ({
+export const hoverCircleLayer = (): LayerProps => ({
   type: 'circle',
   paint: {
     'circle-color': '#ffb612',
@@ -72,7 +76,7 @@ export const hoverCircleLayer = () => ({
   },
 });
 
-export const selectedLayer = () => ({
+export const selectedLayer = (): LayerProps => ({
   id: 'selectedLayer',
   type: 'line',
   paint: {
@@ -81,7 +85,7 @@ export const selectedLayer = () => ({
   },
 });
 
-export const selectedCircleLayer = () => ({
+export const selectedCircleLayer = (): LayerProps => ({
   id: 'selectedLayer',
   type: 'circle',
   paint: {
