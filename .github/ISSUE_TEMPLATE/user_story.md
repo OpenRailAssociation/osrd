@@ -63,8 +63,7 @@ before a user story can be considered complete. It is check whether a task
 can be moved from “in progress” to “done.” -->
 
 - [ ] Acceptance criteria are met
-- [ ] Assumptions of User Story met
 - [ ] Automated tests are written against acceptance criteria
 - [ ] Project deployed to the testing environment
-- [ ] Feature ok-ed by Product Owner
+- [ ] Story ok-ed by Product Owner
 - [ ] Documentation updated
