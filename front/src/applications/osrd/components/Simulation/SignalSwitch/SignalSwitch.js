@@ -1,6 +1,6 @@
-import { LIST_VALUES_SIGNAL_BASE, SIGNAL_BASE_DEFAULT } from 'applications/osrd/components/Simulation/consts';
 import PropTypes, { string } from 'prop-types';
 
+import { LIST_VALUES_SIGNAL_BASE } from 'applications/osrd/components/Simulation/consts';
 import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF'
 
 /**
@@ -12,10 +12,20 @@ const SignalSwitch = (props) => {
 
   const {signalBase, toggleSignal, type } = props
 
+  const options = props.options || LIST_VALUES_SIGNAL_BASE.map((val) => ({ value: val, label: val }))
+  /*
+  const [internSignalBase, setInternSignalBase] = useState(signalBase);
+
+  React.useEffect(() => {
+    setInternSignalBase(signalBase);
+  }, [signalBase]);
+*/
+  console.log("render Signal Switch")
+
   return (
   <SwitchSNCF
     type={type}
-    options={LIST_VALUES_SIGNAL_BASE.map((val) => ({ value: val, label: val }))}
+    options={options}
     id="signaBase"
     name="signalBase"
     checkedName={signalBase}

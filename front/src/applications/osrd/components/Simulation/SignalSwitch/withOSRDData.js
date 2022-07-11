@@ -1,5 +1,6 @@
 import { useDispatch, useSelector } from 'react-redux';
 
+import { LIST_VALUES_SIGNAL_BASE } from 'applications/osrd/components/Simulation/consts';
 import SignalSwitch from "./SignalSwitch";
 import { updateSignalBase } from "reducers/osrdsimulation";
 
@@ -11,6 +12,8 @@ import { updateSignalBase } from "reducers/osrdsimulation";
  const withOSRDData = (Component) => (props) => {
   const {signalBase} = useSelector((state) => state.osrdsimulation);
   const dispatch = useDispatch();
+
+  const options = LIST_VALUES_SIGNAL_BASE.map((val) => ({ value: val, label: val }))
   /**
    * Store update on toggle
    * @param {SyntheticBaseEvent} e the Event triggered by the signal UI
@@ -24,7 +27,7 @@ import { updateSignalBase } from "reducers/osrdsimulation";
       console.warn('Try to toggle Signal with unavailableValue')
     }
   };
-  return <Component {...props} signalBase={signalBase} toggleSignal={toggleSignal}></Component>
+  return <Component {...props} signalBase={signalBase} toggleSignal={toggleSignal} options={options}></Component>
 }
 
 const OSRDSwitchSNCF = withOSRDData(SignalSwitch)
