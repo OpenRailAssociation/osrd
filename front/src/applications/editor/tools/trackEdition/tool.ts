@@ -237,28 +237,26 @@ const TrackEditionTool: Tool<TrackEditionState> = {
       setState(newState);
     }
   },
-  onHover(e, { setState, state }) {
-    const { editionState } = state;
+  onHover(e, { setState, state, editorState: { editorDataIndex } }) {
+    const { editionState, track } = state;
 
-    const dataFeatures = (e.features || []).filter(
-      (f) =>
-        f.layer.id === 'editor/geo/track-main' &&
-        (f._geometry?.type === 'LineString' || f._geometry?.type === 'MultiLineString')
-    );
+    const hoveredEntities = (e.features || []).flatMap((f) => {
+      if (f.layer.id !== 'editor/geo/track-main') return [];
+      const entity = editorDataIndex[f.properties.id];
+      return entity && entity.objType === 'TrackSection' ? [entity] : [];
+    });
 
     if (editionState.type === 'movePoint' && state.anchorLinePoints) {
       setState({
         ...state,
-        nearestPoint: dataFeatures.length
-          ? getNearestPoint(dataFeatures as Feature<LineString | MultiLineString>[], e.lngLat)
+        nearestPoint: hoveredEntities.length
+          ? getNearestPoint(hoveredEntities as Feature<LineString | MultiLineString>[], e.lngLat)
           : null,
       });
     } else if (editionState.type === 'addPoint' && state.anchorLinePoints) {
-      const closeTrackPath = state.track;
-
       let isStateUpdated = false;
-      if (closeTrackPath) {
-        const closest = nearestPointOnLine(closeTrackPath, e.lngLat);
+      if (track.geometry.coordinates.length > 1) {
+        const closest = nearestPointOnLine(track, e.lngLat);
         const closestPosition = closest.geometry.coordinates;
 
         if (state.track.geometry.coordinates.every((point) => !isEqual(point, closestPosition))) {
@@ -276,8 +274,8 @@ const TrackEditionTool: Tool<TrackEditionState> = {
       if (!isStateUpdated) {
         setState({
           ...state,
-          nearestPoint: dataFeatures.length
-            ? getNearestPoint(dataFeatures as Feature<LineString | MultiLineString>[], e.lngLat)
+          nearestPoint: hoveredEntities.length
+            ? getNearestPoint(hoveredEntities as Feature<LineString | MultiLineString>[], e.lngLat)
             : null,
         });
       }

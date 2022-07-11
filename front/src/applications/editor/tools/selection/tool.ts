@@ -8,8 +8,9 @@ import { SelectionState } from './types';
 import { SelectionLayers, SelectionMessages, SelectionLeftPanel } from './components';
 import ConfirmModal from '../../components/ConfirmModal';
 import TrackEditionTool from '../trackEdition/tool';
-import { TrackSectionEntity } from '../../../../types';
+import { SignalEntity, TrackSectionEntity } from '../../../../types';
 import { getSymbolTypes } from '../../data/utils';
+import SignalEditionTool from '../signalEdition/tool';
 
 const SelectionTool: Tool<SelectionState> = {
   id: 'select-items',
@@ -92,6 +93,12 @@ const SelectionTool: Tool<SelectionState> = {
                 editionState: {
                   type: 'movePoint',
                 },
+              });
+              return;
+            }
+            if (selectedElement.objType === 'Signal') {
+              switchTool(SignalEditionTool, {
+                signal: selectedElement as SignalEntity,
               });
               return;
             }

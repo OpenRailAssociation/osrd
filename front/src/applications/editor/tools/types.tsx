@@ -28,7 +28,7 @@ export interface ToolAction<S> {
   onClick?: (context: ExtendedEditorContextType<S>) => void;
 }
 
-export type ToolId = 'select-zone' | 'select-items' | 'track-edition';
+export type ToolId = 'select-zone' | 'select-items' | 'track-edition' | 'signal-edition';
 
 export interface Tool<S> {
   id: ToolId;

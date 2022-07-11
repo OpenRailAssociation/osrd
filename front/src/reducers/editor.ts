@@ -1,4 +1,5 @@
 import produce from 'immer';
+import { keyBy } from 'lodash';
 import { createSelector } from 'reselect';
 import { Feature } from 'geojson';
 
@@ -143,6 +144,7 @@ export interface EditorState {
   editorLayers: Array<string>;
   editorZone: Zone | null;
   editorData: Array<EditorEntity>;
+  editorDataIndex: Record<string, EditorEntity>;
 }
 
 export const initialState: EditorState = {
@@ -152,8 +154,9 @@ export const initialState: EditorState = {
   editorLayers: ['track_sections', 'signals'],
   // Edition zone:
   editorZone: null,
-  // An array of Entities
+  // Editor entities:
   editorData: [],
+  editorDataIndex: {},
 };
 
 //
@@ -172,6 +175,7 @@ export default function reducer(inputState: EditorState, action: Actions) {
         break;
       case SET_DATA:
         draft.editorData = action.data;
+        draft.editorDataIndex = keyBy(action.data, 'id');
         break;
       default:
       // Nothing to do here
