@@ -1,6 +1,6 @@
 import './OSRDSimulation.scss';
-import './OSRDSimulation.scss';
 
+import { LIST_VALUES_SIGNAL_BASE, SIGNAL_BASE_DEFAULT } from 'applications/osrd/components/Simulation/consts';
 import React, { useEffect, useState } from 'react';
 import { persistentRedoSimulation, persistentUndoSimulation } from 'reducers/osrdsimulation/simulation';
 import {
@@ -10,8 +10,9 @@ import {
   updateMustRedraw,
   updateSelectedProjection,
   updateSelectedTrain,
+  updateSignalBase,
   updateSimulation,
-  updateStickyBar
+  updateStickyBar,
 } from 'reducers/osrdsimulation';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -25,6 +26,7 @@ import { Rnd } from 'react-rnd';
 import SpaceCurvesSlopes from 'applications/osrd/views/OSRDSimulation/SpaceCurvesSlopes';
 import SpaceTimeChart from 'applications/osrd/views/OSRDSimulation/SpaceTimeChart';
 import SpeedSpaceChart from 'applications/osrd/views/OSRDSimulation/SpeedSpaceChart';
+import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 import TimeButtons from 'applications/osrd/views/OSRDSimulation/TimeButtons';
 import TimeLine from 'applications/osrd/components/TimeLine/TimeLine';
 import TimeTable from 'applications/osrd/views/OSRDSimulation/TimeTable';
@@ -37,9 +39,8 @@ import { setFailure } from 'reducers/main.ts';
 import { updateViewport } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
 
-const KEY_VALUES_FOR_CONSOLIDATED_SIMULATION = ["time", "position"]
+const KEY_VALUES_FOR_CONSOLIDATED_SIMULATION = ['time', 'position'];
 const timetableURI = '/timetable/';
-
 
 export const trainscheduleURI = '/train_schedule/';
 
@@ -52,24 +53,20 @@ const OSRDSimulation = () => {
   const [displayAllowances, setDisplayAllowances] = useState(false);
 
   const [heightOfSpaceTimeChart, setHeightOfSpaceTimeChart] = useState(400);
-  const [initialHeightOfSpaceTimeChart, setInitialHeightOfSpaceTimeChart] =
-    useState(heightOfSpaceTimeChart);
+  const [initialHeightOfSpaceTimeChart, setInitialHeightOfSpaceTimeChart] = useState(heightOfSpaceTimeChart);
 
   const [heightOfSpeedSpaceChart, setHeightOfSpeedSpaceChart] = useState(250);
-  const [initialHeightOfSpeedSpaceChart, setInitialHeightOfSpeedSpaceChart] =
-    useState(heightOfSpeedSpaceChart);
+  const [initialHeightOfSpeedSpaceChart, setInitialHeightOfSpeedSpaceChart] = useState(heightOfSpeedSpaceChart);
 
   const [heightOfSpaceCurvesSlopesChart, setHeightOfSpaceCurvesSlopesChart] = useState(150);
-  const [initialHeightOfSpaceCurvesSlopesChart, setInitialHeightOfSpaceCurvesSlopesChart] =
-    useState(heightOfSpaceCurvesSlopesChart);
+  const [initialHeightOfSpaceCurvesSlopesChart, setInitialHeightOfSpaceCurvesSlopesChart] = useState(heightOfSpaceCurvesSlopesChart);
 
   const { timetableID } = useSelector((state) => state.osrdconf);
-  const { allowancesSettings, selectedProjection, departureArrivalTimes, selectedTrain, stickyBar } =
-    useSelector((state) => state.osrdsimulation);
+  const {
+    allowancesSettings, selectedProjection, departureArrivalTimes, selectedTrain, stickyBar, signalBase,
+  } = useSelector((state) => state.osrdsimulation);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
-
-
 
   if (darkmode) {
     import('./OSRDSimulationDarkMode.scss');
@@ -80,10 +77,7 @@ const OSRDSimulation = () => {
       return <h1 className="text-center">{t('simulation:noData')}</h1>;
     }
     return <CenterLoader message={t('simulation:waiting')} />;
-  }
-
-
-
+  };
 
   /**
    * Recover the time table for all the trains
@@ -101,7 +95,7 @@ const OSRDSimulation = () => {
       const tempSelectedProjection = await get(`${trainscheduleURI}${trainSchedulesIDs[0]}/`);
       if (!selectedProjection) {
         dispatch(
-          updateSelectedProjection(tempSelectedProjection)
+          updateSelectedProjection(tempSelectedProjection),
         );
       }
       try {
@@ -126,11 +120,11 @@ const OSRDSimulation = () => {
         });
         dispatch(updateAllowancesSettings(newAllowancesSettings));
       } catch (e) {
-         dispatch(
+        dispatch(
           setFailure({
             name: t('simulation:errorMessages.unableToRetrieveTrainSchedule'),
             message: `${e.message} `,
-          })
+          }),
         );
         console.log('ERROR', e);
       }
@@ -159,11 +153,11 @@ const OSRDSimulation = () => {
 
   useEffect(() => {
     // Setup the listener to undi /redo
-    window.addEventListener("keydown", handleKey)
+    window.addEventListener('keydown', handleKey);
 
     getTimetable();
     return function cleanup() {
-      window.removeEventListener("keydown", handleKey)
+      window.removeEventListener('keydown', handleKey);
       dispatch(updateSelectedProjection(undefined));
       dispatch(updateSimulation({ trains: [] }));
     };
@@ -183,18 +177,33 @@ const OSRDSimulation = () => {
           ...extViewport,
           transitionDuration: 1000,
           transitionInterpolator: new FlyToInterpolator(),
-        })
+        }),
       );
     }
   }, [extViewport]);
 
-  // With this hook we update and store the consolidatedSimuation (simualtion stucture for the selected train)
+  // With this hook we update and store
+  //the consolidatedSimuation (simualtion stucture for the selected train)
   useEffect(() => {
-    const consolidatedSimulation = (createTrain(dispatch, KEY_VALUES_FOR_CONSOLIDATED_SIMULATION, simulation.trains, t));
+    const consolidatedSimulation = (
+      createTrain(dispatch, KEY_VALUES_FOR_CONSOLIDATED_SIMULATION, simulation.trains, t));
     // Store it to allow time->position logic to be hosted by redux
     dispatch(updateConsolidatedSimulation(consolidatedSimulation));
   }, [simulation]);
 
+  /**
+   *
+   * @param {SyntheticBaseEvent} e the Event triggered by the signal UI
+   */
+  const toggleSignal = (e) => {
+    const newSignal = e?.target?.value;
+    if (typeof newSignal !== 'undefined') {
+      dispatch(updateSignalBase(newSignal));
+    }
+    else {
+      console.warn('Try to toggle Signal with unavailableValue')
+    }
+  };
 
   return (
     <>
@@ -207,6 +216,20 @@ const OSRDSimulation = () => {
           <div className="m-0 p-3">
             <div className="mb-2">
               <TimeLine />
+            </div>
+            <div className="mb-2 osrd-simulation-container">
+              <div className="ml-auto d-flex align-items-left">
+
+                <SwitchSNCF
+                  type="inline"
+                  options={LIST_VALUES_SIGNAL_BASE.map((val) => ({ value: val, label: val }))}
+                  id="signaBase"
+                  name="signalBase"
+                  checkedName={signalBase}
+                  onChange={(e) => toggleSignal(e)}
+
+                />
+              </div>
             </div>
             {displayTrainList ? (
               <div className="osrd-simulation-container mb-2">
@@ -230,7 +253,7 @@ const OSRDSimulation = () => {
                 </div>
                 <div className="small">
                   {sec2time(
-                    departureArrivalTimes[selectedTrain].arrival
+                    departureArrivalTimes[selectedTrain].arrival,
                   )}
                 </div>
                 <div className="ml-auto d-flex align-items-center">
@@ -338,12 +361,10 @@ const OSRDSimulation = () => {
                       bottomLeft: false,
                       topLeft: false,
                     }}
-                    onResizeStart={() =>
-                      setInitialHeightOfSpaceCurvesSlopesChart(heightOfSpaceCurvesSlopesChart)
-                    }
+                    onResizeStart={() => setInitialHeightOfSpaceCurvesSlopesChart(heightOfSpaceCurvesSlopesChart)}
                     onResize={(e, dir, refToElement, delta) => {
                       setHeightOfSpaceCurvesSlopesChart(
-                        initialHeightOfSpaceCurvesSlopesChart + delta.height
+                        initialHeightOfSpaceCurvesSlopesChart + delta.height,
                       );
                     }}
                     onResizeStop={() => {
