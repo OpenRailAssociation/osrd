@@ -21,8 +21,8 @@ import CenterLoader from 'common/CenterLoader/CenterLoader';
 import ContextMenu from 'applications/osrd/components/Simulation/ContextMenu';
 import { FlyToInterpolator } from 'react-map-gl';
 import Map from 'applications/osrd/views/OSRDSimulation/Map';
+import OSRDSignalSwitch from 'applications/osrd/components/Simulation/SignalSwitch/SignalSwitch.js';
 import { Rnd } from 'react-rnd';
-import SignalSwitch from 'applications/osrd/components/Simulation/SignalSwitch/SignalSwitch.js';
 import SpaceCurvesSlopes from 'applications/osrd/views/OSRDSimulation/SpaceCurvesSlopes';
 import SpaceTimeChart from 'applications/osrd/views/OSRDSimulation/SpaceTimeChart';
 import SpeedSpaceChart from 'applications/osrd/views/OSRDSimulation/SpeedSpaceChart';
@@ -207,7 +207,7 @@ const OSRDSimulation = () => {
             <div className="mb-2 osrd-simulation-container">
               <div className="ml-auto d-flex align-items-left">
 
-                <SignalSwitch />
+                <OSRDSignalSwitch />
               </div>
             </div>
             {displayTrainList ? (
