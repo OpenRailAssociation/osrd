@@ -30,12 +30,15 @@ labels: 'kind:user-story'
 
 <!-- Is there an existing mockup or wireframe for this US ? If so, please link it here. -->
 
-## Difficulty
+## Story points
 
-- [ ] easy
-- [ ] normal
-- [ ] difficult
-- [ ] extreme
+<!-- If greater than 8, split the story. -->
+
+- [ ] 1
+- [ ] 2
+- [ ] 3
+- [ ] 5
+- [ ] 8
 
 ## Definition of ready
 
