@@ -68,6 +68,13 @@ export interface TrackSectionEntity extends EditorEntity {
     coordinates: [number, number][];
   };
 }
+export interface SignalEntity extends EditorEntity {
+  objType: 'Signal';
+  geometry: {
+    type: 'Point';
+    coordinates: Position;
+  };
+}
 
 export interface DeleteEntityOperation {
   operation_type: 'DELETE';

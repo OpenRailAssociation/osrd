@@ -79,6 +79,12 @@
           "unselect": "Désélectionner la zone d'édition",
           "validate-polygon": "Valider le polygône d'édition"
         }
+      },
+      "signal-edition": {
+        "label": "Outil \"Signal\",",
+        "actions": {
+          "new-signal": "Créer un nouveau signal"
+        }
       }
     },
     "entities": {

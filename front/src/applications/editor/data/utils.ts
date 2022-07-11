@@ -27,6 +27,14 @@ export function getLayerForObjectType(schema: EditorSchema, objType: string): st
   return item ? item.layer : undefined;
 }
 
+/**
+ * This helper is here because types have excess quotes in GeoJSON for unknown
+ * reasons:
+ */
+export function cleanSymbolType(type: string): string {
+  return (type || '').replace(/(^[" ]|[" ]$)/g, '');
+}
+
 export function getSymbolTypes(editorData: EditorEntity[]): string[] {
   const SIGNAL_TYPE_KEY = 'installation_type';
   return Object.keys(
@@ -37,5 +45,5 @@ export function getSymbolTypes(editorData: EditorEntity[]): string[] {
           : iter,
       {}
     )
-  ).map((type) => type.replace(/(^[" ]|[" ]$)/g, ''));
+  ).map(cleanSymbolType);
 }

@@ -21,7 +21,7 @@ import {
   Polygon,
 } from 'geojson';
 import nearestPointOnLine from '@turf/nearest-point-on-line';
-import nearestPoint from '@turf/nearest-point';
+import nearestPoint, { NearestPoint } from '@turf/nearest-point';
 import { Zone } from '../types';
 
 /**
@@ -289,7 +289,7 @@ export function getLineGeoJSON(points: Position[]): Feature {
 export function getNearestPoint(
   lines: Feature<LineString | MultiLineString>[],
   coord: Coord
-): Feature<Point> {
+): NearestPoint {
   const nearestPoints: Feature<Point>[] = lines.map((line) => ({
     ...nearestPointOnLine(line, coord),
     properties: line.properties,

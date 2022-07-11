@@ -1,6 +1,7 @@
 import { useSelector } from 'react-redux';
 import React, { FC, useMemo } from 'react';
 import { FeatureCollection } from 'geojson';
+import { groupBy, mapValues } from 'lodash';
 import { Layer, LayerProps, Source } from 'react-map-gl';
 import { AnyPaint, LinePaint, SymbolPaint } from 'mapbox-gl';
 
@@ -121,24 +122,32 @@ function adaptProps<T extends AnyPaint>(
   return res;
 }
 
-const GeoJSONs: FC<{ colors: Theme; hidden?: Item[]; hovered?: Item[]; selection?: Item[] }> = (
-  props
-) => {
-  const { colors, hidden, hovered, selection } = props;
+const GeoJSONs: FC<{
+  colors: Theme;
+  hidden?: Item[];
+  hovered?: Item[];
+  selection?: Item[];
+  prefix?: string;
+}> = (props) => {
+  const { colors, hidden, hovered, selection, prefix = 'editor/' } = props;
   const { mapStyle } = useSelector(
     (s: { map: { mapStyle: string; signalsSettings: SignalsSettings } }) => s.map
   );
   const editorData = useSelector((state: { editor: EditorState }) =>
     clippedDataSelector(state.editor)
   );
-  const geoJSON = useMemo<FeatureCollection>(
-    () => ({
-      type: 'FeatureCollection',
-      features: editorData,
-    }),
+  const geoJSONs = useMemo<Record<string, FeatureCollection>>(
+    () =>
+      mapValues(
+        groupBy(editorData, (entity) => entity.objType),
+        (entities) =>
+          ({
+            type: 'FeatureCollection',
+            features: entities,
+          } as FeatureCollection)
+      ),
     [editorData]
   );
-  const prefix = mapStyle === 'blueprint' ? 'SCHB ' : '';
 
   const layerContext: Context = useMemo(
     () => ({
@@ -153,12 +162,12 @@ const GeoJSONs: FC<{ colors: Theme; hidden?: Item[]; hovered?: Item[]; selection
   const signalsList = useMemo(() => getSymbolTypes(editorData), [editorData]);
   const signalsContext: SignalContext = useMemo(
     () => ({
-      prefix,
       colors,
       signalsList,
       sourceLayer: 'geo',
+      prefix: mapStyle === 'blueprint' ? 'SCHB ' : '',
     }),
-    [colors, prefix, signalsList]
+    [colors, mapStyle, signalsList]
   );
   const signalPropsPerType = useMemo(
     () =>
@@ -173,91 +182,77 @@ const GeoJSONs: FC<{ colors: Theme; hidden?: Item[]; hovered?: Item[]; selection
   );
 
   return (
-    <Source id="editor/geo" type="geojson" data={geoJSON}>
-      {/* Linear objects */}
-      <Layer
-        {...adaptProps(geoMainLayer(colors), layerContext, adaptLinearPaint)}
-        id="editor/geo/track-main"
-      />
-      <Layer
-        {...adaptProps(geoServiceLayer(colors), layerContext, adaptLinearPaint)}
-        id="editor/geo/track-service"
-      />
-      <Layer
-        {...adaptProps(
-          {
-            ...trackNameLayer(colors),
-            filter: ['==', 'type_voie', 'VP'],
-            layout: {
-              ...trackNameLayer(colors).layout,
-              'text-field': '{track_name}',
-              'text-size': 11,
+    <>
+      <Source id={`${prefix}geo/trackSections`} type="geojson" data={geoJSONs.TrackSection}>
+        <Layer
+          {...adaptProps(geoMainLayer(colors), layerContext, adaptLinearPaint)}
+          id={`${prefix}geo/track-main`}
+        />
+        <Layer
+          {...adaptProps(geoServiceLayer(colors), layerContext, adaptLinearPaint)}
+          id={`${prefix}geo/track-service`}
+        />
+        <Layer
+          {...adaptProps(
+            {
+              ...trackNameLayer(colors),
+              filter: ['==', 'type_voie', 'VP'],
+              layout: {
+                ...trackNameLayer(colors).layout,
+                'text-field': '{track_name}',
+                'text-size': 11,
+              },
             },
-          },
-          layerContext,
-          adaptTextPaint
-        )}
-        id="editor/geo/track-names"
-      />
-      <Layer
-        {...adaptProps(
-          {
-            ...trackNameLayer(colors),
-            filter: ['!=', 'type_voie', 'VP'],
-            layout: {
-              ...trackNameLayer(colors).layout,
-              'text-field': '{track_name}',
-              'text-size': 10,
+            layerContext,
+            adaptTextPaint
+          )}
+          id={`${prefix}geo/track-names`}
+        />
+        <Layer
+          {...adaptProps(
+            {
+              ...lineNumberLayer(colors),
+              layout: {
+                ...lineNumberLayer(colors).layout,
+                'text-field': '{line_code}',
+              },
             },
-          },
-          layerContext,
-          adaptTextPaint
-        )}
-        id="editor/geo/track-names"
-      />
-      <Layer
-        {...adaptProps(
-          {
-            ...lineNumberLayer(colors),
-            layout: {
-              ...lineNumberLayer(colors).layout,
-              'text-field': '{line_code}',
-            },
-          },
-          layerContext,
-          adaptTextPaint
-        )}
-        id="editor/geo/track-numbers"
-      />
-      <Layer
-        {...adaptProps(lineNameLayer(colors), layerContext, adaptTextPaint)}
-        id="editor/geo/line-names"
-      />
+            layerContext,
+            adaptTextPaint
+          )}
+          id={`${prefix}geo/track-numbers`}
+        />
+        <Layer
+          {...adaptProps(lineNameLayer(colors), layerContext, adaptTextPaint)}
+          id={`${prefix}geo/line-names`}
+        />
+      </Source>
 
-      {/* Point objects */}
-      <Layer
-        {...adaptProps(getSignalMatLayerProps(signalsContext), layerContext, adaptSymbolPaint)}
-        id="editor/geo/signal-mat"
-      />
-      <Layer
-        {...adaptProps(getPointLayerProps(signalsContext), layerContext)}
-        id="editor/geo/signal-point"
-      />
-      {signalsList.map((type) => {
-        const layerId = `editor/geo/signal-${type}`;
-        const signalDef = signalPropsPerType[type];
+      <Source id={`${prefix}geo/signals`} type="geojson" data={geoJSONs.Signal}>
+        <Layer
+          {...adaptProps(getSignalMatLayerProps(signalsContext), layerContext, adaptSymbolPaint)}
+          id={`${prefix}geo/signal-mat`}
+        />
+        <Layer
+          {...adaptProps(getPointLayerProps(signalsContext), layerContext)}
+          id={`${prefix}geo/signal-point`}
+        />
+        {signalsList.map((type) => {
+          const layerId = `${prefix}geo/signal-${type}`;
+          const signalDef = signalPropsPerType[type];
 
-        return (
-          <Layer
-            key={type}
-            {...signalDef}
-            id={layerId}
-            filter={adaptFilter(['==', SIGNAL_TYPE_KEY, `"${type}"`], layerContext)}
-            paint={adaptSymbolPaint(signalDef.paint, layerContext)}
-          />
-        );
-      })}
-    </Source>
+          return (
+            <Layer
+              key={type}
+              {...signalDef}
+              id={layerId}
+              filter={adaptFilter(['==', SIGNAL_TYPE_KEY, `"${type}"`], layerContext)}
+              paint={adaptSymbolPaint(signalDef.paint, layerContext)}
+            />
+          );
+        })}
+      </Source>
+    </>
   );
 };
 
