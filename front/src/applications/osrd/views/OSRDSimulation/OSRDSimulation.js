@@ -1,6 +1,5 @@
 import './OSRDSimulation.scss';
 
-import { LIST_VALUES_SIGNAL_BASE, SIGNAL_BASE_DEFAULT } from 'applications/osrd/components/Simulation/consts';
 import React, { useEffect, useState } from 'react';
 import { persistentRedoSimulation, persistentUndoSimulation } from 'reducers/osrdsimulation/simulation';
 import {
@@ -23,10 +22,10 @@ import ContextMenu from 'applications/osrd/components/Simulation/ContextMenu';
 import { FlyToInterpolator } from 'react-map-gl';
 import Map from 'applications/osrd/views/OSRDSimulation/Map';
 import { Rnd } from 'react-rnd';
+import SignalSwitch from 'applications/osrd/components/Simulation/SignalSwitch/SignalSwitch.js';
 import SpaceCurvesSlopes from 'applications/osrd/views/OSRDSimulation/SpaceCurvesSlopes';
 import SpaceTimeChart from 'applications/osrd/views/OSRDSimulation/SpaceTimeChart';
 import SpeedSpaceChart from 'applications/osrd/views/OSRDSimulation/SpeedSpaceChart';
-import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 import TimeButtons from 'applications/osrd/views/OSRDSimulation/TimeButtons';
 import TimeLine from 'applications/osrd/components/TimeLine/TimeLine';
 import TimeTable from 'applications/osrd/views/OSRDSimulation/TimeTable';
@@ -191,19 +190,7 @@ const OSRDSimulation = () => {
     dispatch(updateConsolidatedSimulation(consolidatedSimulation));
   }, [simulation]);
 
-  /**
-   *
-   * @param {SyntheticBaseEvent} e the Event triggered by the signal UI
-   */
-  const toggleSignal = (e) => {
-    const newSignal = e?.target?.value;
-    if (typeof newSignal !== 'undefined') {
-      dispatch(updateSignalBase(newSignal));
-    }
-    else {
-      console.warn('Try to toggle Signal with unavailableValue')
-    }
-  };
+
 
   return (
     <>
@@ -220,15 +207,7 @@ const OSRDSimulation = () => {
             <div className="mb-2 osrd-simulation-container">
               <div className="ml-auto d-flex align-items-left">
 
-                <SwitchSNCF
-                  type="inline"
-                  options={LIST_VALUES_SIGNAL_BASE.map((val) => ({ value: val, label: val }))}
-                  id="signaBase"
-                  name="signalBase"
-                  checkedName={signalBase}
-                  onChange={(e) => toggleSignal(e)}
-
-                />
+                <SignalSwitch />
               </div>
             </div>
             {displayTrainList ? (
