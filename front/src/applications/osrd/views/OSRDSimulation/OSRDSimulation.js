@@ -21,7 +21,7 @@ import CenterLoader from 'common/CenterLoader/CenterLoader';
 import ContextMenu from 'applications/osrd/components/Simulation/ContextMenu';
 import { FlyToInterpolator } from 'react-map-gl';
 import Map from 'applications/osrd/views/OSRDSimulation/Map';
-import OSRDSignalSwitch from 'applications/osrd/components/Simulation/SignalSwitch/SignalSwitch.js';
+import OSRDSignalSwitch from 'applications/osrd/components/Simulation/SignalSwitch/withOSRDData';
 import { Rnd } from 'react-rnd';
 import SpaceCurvesSlopes from 'applications/osrd/views/OSRDSimulation/SpaceCurvesSlopes';
 import SpaceTimeChart from 'applications/osrd/views/OSRDSimulation/SpaceTimeChart';
