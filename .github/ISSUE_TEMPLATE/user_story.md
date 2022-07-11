@@ -14,6 +14,8 @@ labels: 'kind:user-story'
 
 <!-- Please give a brief description of the User Story. What must the user be able to do ? -->
 
+<!-- Is there an existing mockup or wireframe for this US ? If so, please link it here. -->
+
 ## Goal
 
 <!-- What is the point of this user story ? Why is it necessary ? -->
@@ -26,9 +28,6 @@ labels: 'kind:user-story'
 - [ ] Criteria 2
 - [ ] Criteria 3
 
-## Additional content
-
-<!-- Is there an existing mockup or wireframe for this US ? If so, please link it here. -->
 
 ## Story points
 
