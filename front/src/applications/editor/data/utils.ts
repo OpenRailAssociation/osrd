@@ -1,5 +1,6 @@
 import { Position } from 'geojson';
 import { JSONSchema7 } from 'json-schema';
+import { UiSchema } from '@rjsf/core';
 
 import { EditorEntity, EditorSchema } from '../../../types';
 
@@ -22,6 +23,14 @@ export function getJsonSchemaForObjectType(
 ): JSONSchema7 | undefined {
   const item = schema.find((e) => e.objType === objType);
   return item ? item.schema : undefined;
+}
+
+/**
+ * Given a JSON schema, returns its ui schema.
+ * For now it's an empty object
+ */
+export function getJsonSchemaUi(_schema: JSONSchema7): UiSchema {
+  return {};
 }
 
 export function getLayerForObjectType(schema: EditorSchema, objType: string): string | undefined {

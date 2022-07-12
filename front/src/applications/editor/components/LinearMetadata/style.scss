@@ -1,0 +1,129 @@
+$color: #0088ce;
+$tooltip-bg-color: #000;
+$tooltip-padding: 1em;
+$dataviz-height: 80px;
+$scaling-height: 1px;
+
+.linear-metadata {
+  .header {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .content {
+    .dataviz {
+      display: flex;
+      flex-wrap: nowrap;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-start;
+
+      .zoom {
+        flex-grow: 0;
+        height: $dataviz-height + $scaling-height;
+        .btn {
+          padding: 0 0.5em !important;
+          border-top-left-radius: 0;
+          border-bottom-left-radius: 0;
+        }
+      }
+
+      .linear-metadata-visualisation {
+        flex-grow: 1;
+        .data {
+          display: flex;
+          flex-wrap: nowrap;
+          flex-direction: row;
+
+          div {
+            height: $dataviz-height;
+            background-color: rgba($color, 0.5);
+
+            &:not(:last-child) {
+              border-right: 1px solid #fff;
+            }
+
+            &.highlighted {
+              background-color: $color;
+            }
+          }
+        }
+
+        .scale {
+          display: flex;
+          border-top: $scaling-height solid;
+          justify-content: space-between;
+          span {
+            padding: 2px;
+            font-size: 0.7em;
+            line-height: 0.7em;
+
+            &:not(:last-child) {
+              border-left: 1px solid;
+            }
+            &:last-child {
+              border-right: 1px solid;
+            }
+          }
+        }
+      }
+    }
+
+    .tooltip {
+      position: fixed;
+      background-color: $tooltip-bg-color;
+      opacity: 0.8;
+      max-width: 25%;
+      overflow: hidden;
+      color: #fff;
+      padding: $tooltip-padding;
+      z-index: 999;
+
+      .linear-metadata-tooltip {
+        .header {
+          display: flex;
+          flex-direction: row;
+          justify-content: space-between;
+          font-size: 0.7em;
+          margin-bottom: 1em;
+          border-bottom: 1px solid #fff;
+        }
+        .content {
+          div {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+          }
+        }
+      }
+    }
+    .linear-metadata-selection {
+      width: 90%;
+      margin: 1em auto;
+      border: 1px solid;
+      padding: 1em;
+
+      .header {
+        .btn-toolbar {
+          width: 100%;
+          display: flex;
+          justify-content: space-around;
+          margin-bottom: 1em;
+        }
+      }
+      .content {
+        legend {
+          display: none;
+        }
+        .form-group.field-object {
+          margin-bottom: 0;
+        }
+      }
+      .footer {
+        display: flex;
+        justify-content: space-around;
+      }
+    }
+  }
+}
