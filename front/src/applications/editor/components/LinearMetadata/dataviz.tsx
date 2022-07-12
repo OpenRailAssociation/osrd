@@ -8,6 +8,10 @@ import { LinearMetadataItem } from './data';
 import { LinearMetadataTooltip } from './tooltip';
 import './style.scss';
 
+function stopPropagation(e: Event) {
+  e.preventDefault();
+}
+
 export interface LinearMetadataDatavizProps<T> {
   /**
    * List of data to display (must be ordered by begin/end)
@@ -21,12 +25,6 @@ export interface LinearMetadataDatavizProps<T> {
    * Wich part of the data are visible ?
    */
   viewBox: [number, number] | null;
-  /**
-   * If there is a parent that is scrollable, you should provide a selector (ex: div.side-panel)
-   * So when the mouse over the dataviz,
-   * we remove its scrollability to allow user to use the mouse wheel for zooming
-   */
-  parentScrollableSelector?: string;
   /**
    * Events
    */
@@ -67,7 +65,6 @@ export const LinearMetadataDataviz = <T extends any>({
   data,
   viewBox,
   highlighted = [],
-  parentScrollableSelector,
   onClick,
   onMouseMove,
   onMouseOver,
@@ -77,22 +74,25 @@ export const LinearMetadataDataviz = <T extends any>({
 }: LinearMetadataDatavizProps<T>) => {
   // Html ref of the div wrapper
   const wrapper = useRef<HTMLDivElement | null>(null);
-  // The parent that is scrollable
-  const [parent, setParent] = useState<HTMLElement | null>(null);
   // Need to compute the full length of the segment, to compute size in %
   const [fullLength, setFullLength] = useState<number>(0);
   // Computed data for the viz and the viewbox
   const [data4viz, setData4viz] = useState<Array<LinearMetadataItem & { index: number }>>([]);
 
   /**
-   * When the wrapper div change or the selector
-   * => we recompute the parent element that is scrollable
+   * When the wrapper div change
+   * => we add on en event on it to catch the wheel event and prevent the scroll
+   * NOTE: the prevent default directly on the event doesn't work, that's why we need
+   * to register it on the ref (@see https://github.com/facebook/react/issues/5845)
    */
   useEffect(() => {
-    if (wrapper.current && parentScrollableSelector) {
-      setParent(wrapper.current.closest(parentScrollableSelector) as HTMLElement);
+    if (wrapper.current) {
+      wrapper.current.addEventListener('wheel', stopPropagation);
     }
-  }, [wrapper, parentScrollableSelector]);
+    return () => {
+      if (wrapper.current) wrapper.current.removeEventListener('wheel', stopPropagation);
+    };
+  }, [wrapper]);
 
   /**
    * When data or viewbox change
@@ -135,16 +135,7 @@ export const LinearMetadataDataviz = <T extends any>({
   }, [data4viz]);
 
   return (
-    <div
-      ref={wrapper}
-      className={cx('linear-metadata-visualisation')}
-      onMouseEnter={() => {
-        if (parent) parent.style['overflow-y'] = 'hidden';
-      }}
-      onMouseLeave={() => {
-        if (parent) parent.style['overflow-y'] = 'auto';
-      }}
-    >
+    <div ref={wrapper} className={cx('linear-metadata-visualisation')}>
       <div className={cx('data', highlighted.length > 0 && 'has-highlight')}>
         {data4viz.map((segment) => (
           <div
@@ -169,6 +160,7 @@ export const LinearMetadataDataviz = <T extends any>({
               if (onMouseLeave) onMouseLeave(e, data[segment.index], segment.index);
             }}
             onWheel={(e) => {
+              console.log(e);
               if (onWheel) {
                 const item = data[segment.index];
                 const pxOffset = e.nativeEvent.offsetX;
