@@ -31,7 +31,7 @@ def setup() -> Dict[str, int]:
 
 
 def _load_tiny_infra() -> int:
-    generator = Path(__file__).parents[1] / "core/examples/generated/generate.py"
+    generator = Path(__file__).resolve().parents[1] / "core/examples/generated/generate.py"
     output = Path("/tmp/osrd-generated-examples")
     tiny_infra = output / "tiny_infra/infra.json"
     subprocess.check_call(["python3", str(generator), str(output), "tiny_infra"])

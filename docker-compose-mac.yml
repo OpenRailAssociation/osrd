@@ -69,6 +69,7 @@ services:
     environment:
       OSRD_DEV: "True"
       OSRD_BACKEND_URL: "http://osrd-core"
+      POSTGRES_HOST: "osrd-postgres"
     command:
       - /bin/sh
       - -c
