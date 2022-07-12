@@ -7,10 +7,14 @@ import './EditorForm.scss';
 import { EditorEntity } from '../../../types';
 import { EditorState } from '../../../reducers/editor';
 import { getJsonSchemaForLayer, getJsonSchemaUi, getLayerForObjectType } from '../data/utils';
-import { FormComponent } from './LinearMetadata';
+import { FormComponent, FormBeginEndWidget } from './LinearMetadata';
 
 const fields = {
   ArrayField: FormComponent,
+};
+
+const widgets = {
+  BeginEndWidget: FormBeginEndWidget,
 };
 
 interface EditorFormProps {
@@ -55,6 +59,7 @@ const EditorForm: React.FC<EditorFormProps> = ({ data, onSubmit, onChange, child
       )}
       <Form
         fields={fields}
+        widgets={widgets}
         uiSchema={uiSchema}
         schema={schema}
         formData={formData}

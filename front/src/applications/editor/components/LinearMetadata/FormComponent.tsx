@@ -59,7 +59,6 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
             data={data}
             viewBox={viewBox}
             highlighted={[hovered ?? -1, selected ?? -1].filter((e) => e > -1)}
-            parentScrollableSelector={'div.panel-box'}
             onMouseEnter={(_e, _item, index) => setHovered(index)}
             onMouseLeave={() => setHovered(null)}
             onMouseMove={(e) => {
@@ -82,10 +81,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
               setHovered(null);
             }}
             onWheel={(e, _item, _index, point) => {
-              e.preventDefault();
-              e.stopPropagation();
               setViewBox(getZoomedViewBox(data, viewBox, e.deltaY > 0 ? 'OUT' : 'IN', point));
-              return false;
             }}
           />
           <div className="btn-group-vertical zoom">
@@ -183,9 +179,27 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
             <div className="content">
               <Fields.SchemaField
                 schema={itemSchema(schema, registry.rootSchema)}
+                uiSchema={{
+                  begin: {
+                    'ui:widget': 'BeginEndWidget',
+                    'ui:readonly': selected === 0,
+                    'ui:options': {
+                      min: selected !== 0 ? data[selected - 1].begin + 1 : 0,
+                      max: data[selected].end - 1,
+                    },
+                  },
+                  end: {
+                    'ui:widget': 'BeginEndWidget',
+                    'ui:readonly': selected === data.length - 1,
+                    'ui:options': {
+                      min: data[selected].begin + 1,
+                      max: selected !== data.length - 1 ? data[selected + 1].end - 1 : 0,
+                    },
+                  },
+                }}
                 formData={data[selected]}
                 registry={registry}
-                onChange={debounce((e) => {
+                onChange={(e) => {
                   const item = { ...e };
                   let newData = [...data];
                   // we keep the old value for begin and end
@@ -210,7 +224,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
                     );
                   }
                   onChange(newData);
-                }, 500)}
+                }}
               />
             </div>
             <div className="footer">
