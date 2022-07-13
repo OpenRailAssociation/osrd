@@ -66,7 +66,7 @@
     "react-i18next": "^11.17.4",
     "react-icons": "^4.4.0",
     "react-id-generator": "^3.0.0",
-    "react-map-gl": "^5.3.11",
+    "react-map-gl": "^7.0.17",
     "react-redux": "^7.2.0",
     "react-rnd": "^10.3.7",
     "react-router-dom": "^5.1.2",
