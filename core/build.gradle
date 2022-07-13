@@ -34,7 +34,7 @@ repositories {
 dependencies {
     // kotlin
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib'  // Apache 2.0
-    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: '1.6.3'  // Apache 2.0
+    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: '1.6.4'  // Apache 2.0
 
     // base primitives
     implementation group: 'com.google.guava', name: 'guava', version: '31.1-jre'  // Apache 2.0
