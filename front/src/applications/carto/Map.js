@@ -6,11 +6,13 @@ import { useDispatch, useSelector } from 'react-redux';
 
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
+import BufferStops from 'common/Map/Layers/BufferStops';
 import ButtonFullscreen from 'common/ButtonFullscreen';
 /* Settings & Buttons */
 import ButtonMapSearch from 'common/Map/ButtonMapSearch';
 import ButtonMapSettings from 'common/Map/ButtonMapSettings';
 import ButtonResetViewport from 'common/Map/ButtonResetViewport';
+import Detectors from 'common/Map/Layers/Detectors';
 import ElectrificationType from 'common/Map/Layers/ElectrificationType';
 import Hillshade from 'common/Map/Layers/Hillshade';
 import MapSearch from 'common/Map/Search/MapSearch';
@@ -24,13 +26,11 @@ import SearchMarker from 'common/Map/Layers/SearchMarker';
 import SignalingType from 'common/Map/Layers/SignalingType';
 import Signals from 'common/Map/Layers/Signals';
 import SpeedLimits from 'common/Map/Layers/SpeedLimits';
-import BufferStops from 'common/Map/Layers/BufferStops';
-import Detectors from 'common/Map/Layers/Detectors';
 import Switches from 'common/Map/Layers/Switches';
 import TVDs from 'common/Map/Layers/TVDs';
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
-import TracksSchematic from 'common/Map/Layers/TracksSchematic';
 import TracksOSM from 'common/Map/Layers/TracksOSM';
+import TracksSchematic from 'common/Map/Layers/TracksSchematic';
 import colors from 'common/Map/Consts/colors.ts';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import { updateViewport } from 'reducers/map';
@@ -75,7 +75,7 @@ const Map = () => {
   };
 
   const onFeatureClick = (e) => {
-    console.log('coucou', e.features);
+
   };
 
   const onFeatureHover = (e) => {

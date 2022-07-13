@@ -166,18 +166,44 @@ const Map = (props) => {
     }
 
     // Found trains including timePosition, and organize them with geojson collection of points
-    setTrainHoverPositionOthers(createOtherPoints().map((train) => ({
-      ...along(
+    setTrainHoverPositionOthers(createOtherPoints().map((train) => {
+      const position = along(
         line,
         train.head_positions.position / 1000,
         { units: 'kilometers' },
-      ),
-      properties: {
-        ...train.head_positions,
-        speed: train.speeds.speed,
-        name: train.name,
-      },
-    })));
+      );
+      const tailPosition = train.tail_position ? along(
+        line,
+        train.tail_position.position / 1000,
+        { units: 'kilometers' },
+      ) : position;
+
+      const intermediaterMarkersPoints = [];
+      // Representing the wagons is useless at outer zooms
+      if (viewport?.zoom > 13) {
+        // To do: get this data from rollingstock, stored
+        const trainLength = train.head_positions.position
+        - train.tail_positions.position;
+        for (let i = 0; i < INTERMEDIATE_MARKERS_QTY; i++) {
+          const intermediatePosition = along(
+            line,
+            (train.head_positions.position
+              - (trainLength / INTERMEDIATE_MARKERS_QTY) * i) / 1000,
+            { units: 'kilometers' },
+          );
+          intermediaterMarkersPoints.push(intermediatePosition);
+        }
+        intermediaterMarkersPoints.push(tailPosition);
+      }
+
+      return {
+        ...position,
+        properties: {
+          speed: train.speeds.speed,
+          intermediaterMarkersPoints,
+        },
+      };
+    }));
   };
 
   const zoomToFeature = (boundingBox) => {

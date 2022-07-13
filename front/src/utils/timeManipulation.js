@@ -19,7 +19,7 @@ export function sec2time(sec) {
 }
 
 export function sec2datetime(sec) {
-  return d3.timeParse('%H:%M:%S')(sec2time(sec));
+  return d3.timeParse('%H:%M:%S')(sec2time(sec)); // We conder it's utc to avoid +0 delta
 }
 
 export function time2sec(time) {
