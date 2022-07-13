@@ -1,4 +1,6 @@
+import { Position } from 'geojson';
 import { JSONSchema7 } from 'json-schema';
+
 import { EditorEntity, EditorSchema } from '../../../types';
 
 export function getObjectTypeForLayer(schema: EditorSchema, layer: string): string | undefined {
@@ -46,4 +48,8 @@ export function getSymbolTypes(editorData: EditorEntity[]): string[] {
       {}
     )
   ).map(cleanSymbolType);
+}
+
+export function getAngle([x1, y1]: Position, [x2, y2]: Position): number {
+  return (Math.atan((x2 - x1) / (y2 - y1)) * 180) / Math.PI;
 }

@@ -1,12 +1,23 @@
-import { cloneDeep } from 'lodash';
+import { cloneDeep, isEqual } from 'lodash';
 import { Feature, LineString } from 'geojson';
-import { FaMapSigns, BiTrash } from 'react-icons/all';
+import { FaMapSigns, BiReset, AiOutlinePlus } from 'react-icons/all';
 
 import { DEFAULT_COMMON_TOOL_STATE, Tool } from '../types';
 import { getNearestPoint } from '../../../../utils/mapboxHelper';
 import { SIGNAL_LAYER_ID, SignalEditionLayers, SignalEditionLeftPanel } from './components';
 import { SignalEditionState } from './types';
 import { getNewSignal } from './utils';
+
+function getInitialState(): SignalEditionState {
+  const signal = getNewSignal();
+  return {
+    ...DEFAULT_COMMON_TOOL_STATE,
+    signal,
+    initialSignal: signal,
+    isDragging: true,
+    nearestPoint: null,
+  };
+}
 
 const SignalEditionTool: Tool<SignalEditionState> = {
   id: 'signal-edition',
@@ -18,30 +29,29 @@ const SignalEditionTool: Tool<SignalEditionState> = {
   getRadius() {
     return 50;
   },
-  getInitialState() {
-    const signal = getNewSignal([1, 1]);
-    return {
-      ...DEFAULT_COMMON_TOOL_STATE,
-      signal,
-      initialSignal: signal,
-      isDragging: false,
-      nearestPoint: null,
-    };
-  },
+  getInitialState,
   actions: [
     [
       {
-        id: 'new-signal',
-        icon: BiTrash,
-        labelTranslationKey: 'Editor.tools.signal-edition.actions.new-signal',
-        onClick({ setState, state, mapState }) {
+        id: 'reset-signal',
+        icon: BiReset,
+        labelTranslationKey: 'Editor.tools.signal-edition.actions.reset-signal',
+        onClick({ setState, state }) {
           setState({
-            ...state,
-            signal: getNewSignal([
-              mapState.viewport.latitude || 0,
-              mapState.viewport.longitude || 0,
-            ]),
+            ...getInitialState(),
+            signal: state.initialSignal,
           });
+        },
+        isDisabled({ state }) {
+          return isEqual(state.signal, state.initialSignal);
+        },
+      },
+      {
+        id: 'new-signal',
+        icon: AiOutlinePlus,
+        labelTranslationKey: 'Editor.tools.signal-edition.actions.new-signal',
+        onClick({ setState }) {
+          setState(getInitialState());
         },
       },
     ],
@@ -61,9 +71,13 @@ const SignalEditionTool: Tool<SignalEditionState> = {
 
     if (isDragging && nearestPoint) {
       const newSignal = cloneDeep(signal);
-      newSignal.geometry.coordinates = nearestPoint.feature.geometry.coordinates;
+      newSignal.geometry = {
+        type: 'Point',
+        coordinates: nearestPoint.feature.geometry.coordinates,
+      };
       newSignal.properties = newSignal.properties || {};
       newSignal.properties.track = { id: nearestPoint.trackSectionID, type: 'TrackSection' };
+      newSignal.properties.angle_geo = nearestPoint.angle;
 
       setState({
         ...state,
@@ -86,9 +100,11 @@ const SignalEditionTool: Tool<SignalEditionState> = {
     if (isDragging) {
       if (hoveredTracks.length) {
         const nearestPoint = getNearestPoint(hoveredTracks, e.lngLat);
+        const angle = nearestPoint.properties.angleAtPoint;
         setState({
           ...state,
           nearestPoint: {
+            angle,
             feature: nearestPoint,
             trackSectionID: hoveredTracks[nearestPoint.properties.featureIndex].id as string,
           },
@@ -116,11 +132,17 @@ const SignalEditionTool: Tool<SignalEditionState> = {
     if (isDragging) {
       const newSignal = cloneDeep(signal);
       if (nearestPoint) {
-        newSignal.geometry.coordinates = nearestPoint.feature.geometry.coordinates;
+        newSignal.geometry = {
+          type: 'Point',
+          coordinates: nearestPoint.feature.geometry.coordinates,
+        };
         newSignal.properties = newSignal.properties || {};
         newSignal.properties.track = { id: nearestPoint.trackSectionID, type: 'TrackSection' };
       } else {
-        newSignal.geometry.coordinates = e.lngLat;
+        newSignal.geometry = {
+          type: 'Point',
+          coordinates: e.lngLat,
+        };
         newSignal.properties = newSignal.properties || {};
         newSignal.properties.track = null;
       }
@@ -144,6 +166,7 @@ const SignalEditionTool: Tool<SignalEditionState> = {
   },
   getCursor({ state }, { isDragging }) {
     if (isDragging || state.isDragging) return 'move';
+    if (state.isHoveringTarget) return 'pointer';
     return 'default';
   },
 
