@@ -18,3 +18,11 @@ export const LIST_VALUES_NAME_SPEED_SPACE = [
 export const LIST_VALUES_NAME_SPACE_CURVES_SLOPES = [
   'slopesCurve',
 ];
+
+// Signal Base is the Signaling system chosen for results display
+
+export const SIGNAL_BASE_DEFAULT = 'BAL3';
+
+export const LIST_VALUES_SIGNAL_BASE = [
+  'BAL3'
+];
