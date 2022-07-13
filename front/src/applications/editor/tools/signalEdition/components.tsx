@@ -19,7 +19,7 @@ export const SIGNAL_LAYER_ID = 'signalEditionTool/new-signal';
 
 export const SignalEditionLayers: FC = () => {
   const {
-    state: { signal, nearestPoint, isDragging, mousePosition },
+    state: { signal, nearestPoint, mousePosition },
   } = useContext(EditorContext) as EditorContextType<SignalEditionState>;
   const { mapStyle } = useSelector((s: { map: { mapStyle: string } }) => s.map) as {
     mapStyle: string;
@@ -37,7 +37,9 @@ export const SignalEditionLayers: FC = () => {
   );
 
   let renderedSignal: SignalEntity | null = null;
-  if (isDragging && nearestPoint) {
+  if (signal.geometry) {
+    renderedSignal = signal as SignalEntity;
+  } else if (nearestPoint) {
     renderedSignal = {
       ...signal,
       geometry: nearestPoint.feature.geometry,
@@ -46,8 +48,6 @@ export const SignalEditionLayers: FC = () => {
         angle_geo: nearestPoint.angle,
       },
     };
-  } else if (signal.geometry) {
-    renderedSignal = signal as SignalEntity;
   } else if (mousePosition) {
     renderedSignal = { ...signal, geometry: { type: 'Point', coordinates: mousePosition } };
   }
@@ -61,7 +61,16 @@ export const SignalEditionLayers: FC = () => {
       <GeoJSONs
         colors={colors[mapStyle]}
         hidden={signal.id ? [signal as Item] : undefined}
-        selection={[signal as Item]}
+        selection={
+          signal.id
+            ? [signal as Item]
+            : [
+                {
+                  ...signal,
+                  id: 'NEW SIGNAL',
+                } as Item,
+              ]
+        }
       />
 
       {/* Edited signal */}
@@ -102,7 +111,7 @@ export const SignalEditionLeftPanel: FC = () => {
         <button
           type="submit"
           className="btn btn-primary"
-          disabled={!state.signal.properties?.track}
+          disabled={!state.signal.properties?.track || !state.signal.geometry}
         >
           {t('common.save')}
         </button>

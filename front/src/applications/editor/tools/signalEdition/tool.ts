@@ -1,4 +1,4 @@
-import { cloneDeep, isEqual } from 'lodash';
+import { cloneDeep, isEqual, omit } from 'lodash';
 import { Feature, LineString } from 'geojson';
 import { FaMapSigns, BiReset, AiOutlinePlus } from 'react-icons/all';
 
@@ -14,7 +14,6 @@ function getInitialState(): SignalEditionState {
     ...DEFAULT_COMMON_TOOL_STATE,
     signal,
     initialSignal: signal,
-    isDragging: true,
     nearestPoint: null,
   };
 }
@@ -27,7 +26,7 @@ const SignalEditionTool: Tool<SignalEditionState> = {
     return !editorState.editorZone;
   },
   getRadius() {
-    return 50;
+    return 20;
   },
   getInitialState,
   actions: [
@@ -59,17 +58,17 @@ const SignalEditionTool: Tool<SignalEditionState> = {
 
   // Interactions:
   onClickMap(_e, { setState, state }) {
-    const { isDragging, isHoveringTarget, signal, nearestPoint } = state;
+    const { isHoveringTarget, signal, nearestPoint } = state;
 
-    if (!isDragging && isHoveringTarget) {
+    if (signal.geometry && isHoveringTarget) {
       setState({
         ...state,
-        isDragging: true,
         isHoveringTarget: false,
+        signal: omit(signal, 'geometry'),
       });
     }
 
-    if (isDragging && nearestPoint) {
+    if (!signal.geometry && nearestPoint) {
       const newSignal = cloneDeep(signal);
       newSignal.geometry = {
         type: 'Point',
@@ -82,13 +81,12 @@ const SignalEditionTool: Tool<SignalEditionState> = {
       setState({
         ...state,
         signal: newSignal,
-        isDragging: false,
         nearestPoint: null,
       });
     }
   },
   onHover(e, { setState, state, editorState: { editorDataIndex } }) {
-    const { isDragging } = state;
+    const { signal } = state;
 
     const hoveredTarget = (e.features || []).find((f) => f.layer.id === SIGNAL_LAYER_ID);
     const hoveredTracks = (e.features || []).flatMap((f) => {
@@ -97,7 +95,7 @@ const SignalEditionTool: Tool<SignalEditionState> = {
       return entity && entity.objType === 'TrackSection' ? [entity] : [];
     }) as Feature<LineString>[];
 
-    if (isDragging) {
+    if (!signal.geometry) {
       if (hoveredTracks.length) {
         const nearestPoint = getNearestPoint(hoveredTracks, e.lngLat);
         const angle = nearestPoint.properties.angleAtPoint;
@@ -127,45 +125,12 @@ const SignalEditionTool: Tool<SignalEditionState> = {
       });
     }
   },
-  onMove(e, { state, setState }) {
-    const { isDragging, signal, nearestPoint } = state;
-    if (isDragging) {
-      const newSignal = cloneDeep(signal);
-      if (nearestPoint) {
-        newSignal.geometry = {
-          type: 'Point',
-          coordinates: nearestPoint.feature.geometry.coordinates,
-        };
-        newSignal.properties = newSignal.properties || {};
-        newSignal.properties.track = { id: nearestPoint.trackSectionID, type: 'TrackSection' };
-      } else {
-        newSignal.geometry = {
-          type: 'Point',
-          coordinates: e.lngLat,
-        };
-        newSignal.properties = newSignal.properties || {};
-        newSignal.properties.track = null;
-      }
-
-      setState({
-        ...state,
-        signal: newSignal,
-      });
-    }
-  },
-  onKeyDown(e, { state, setState }) {
-    if (e.key === 'Escape') {
-      if (state.isDragging) {
-        setState({ ...state, nearestPoint: null, isDragging: false, signal: state.initialSignal });
-      }
-    }
-  },
 
   getInteractiveLayers() {
     return ['editor/geo/track-main', SIGNAL_LAYER_ID];
   },
   getCursor({ state }, { isDragging }) {
-    if (isDragging || state.isDragging) return 'move';
+    if (isDragging || !state.signal.geometry) return 'move';
     if (state.isHoveringTarget) return 'pointer';
     return 'default';
   },

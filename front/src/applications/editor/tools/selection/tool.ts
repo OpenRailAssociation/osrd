@@ -100,7 +100,6 @@ const SelectionTool: Tool<SelectionState> = {
               switchTool(SignalEditionTool, {
                 initialSignal: selectedElement as SignalEntity,
                 signal: selectedElement as SignalEntity,
-                isDragging: false,
               });
               return;
             }

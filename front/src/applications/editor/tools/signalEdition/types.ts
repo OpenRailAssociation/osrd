@@ -6,7 +6,6 @@ import { SignalEntity } from '../../../../types';
 export type SignalEditionState = CommonToolState & {
   initialSignal: MakeOptional<SignalEntity, 'geometry'>;
   signal: MakeOptional<SignalEntity, 'geometry'>;
-  isDragging?: boolean;
   isHoveringTarget?: boolean;
   nearestPoint: { feature: Feature<Point>; trackSectionID: string; angle: number } | null;
 };
