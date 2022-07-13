@@ -10,7 +10,6 @@ export const UPDATE_FILTERED_USERS = 'profile/UPDATE_FILTERED_USERS';
 export const UPDATE_NEW_USER = 'profile/UPDATE_NEW_USER';
 export const UPDATE_ERROR = 'profile/UPDATE_ERROR';
 
-
 // Reducer
 const initialState = {
   search: '',
@@ -21,7 +20,8 @@ const initialState = {
   error: null,
 };
 
-export default function reducer(state = initialState, action) {
+export default function reducer(inputState, action) {
+  const state = inputState || initialState;
   return produce(state, (draft) => {
     // eslint-disable-next-line default-case
     switch (action.type) {

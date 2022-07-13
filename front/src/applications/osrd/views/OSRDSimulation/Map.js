@@ -70,7 +70,7 @@ const Map = (props) => {
     viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings, zoom,
   } = useSelector((state) => state.map);
   const {
-    isPlaying, selectedTrain, positionValues, timePosition,
+    isPlaying, selectedTrain, positionValues, timePosition, allowancesSettings,
   } = useSelector((state) => state.osrdsimulation);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const { t } = useTranslation(['map-settings']);
@@ -89,17 +89,25 @@ const Map = (props) => {
   );
   const mapRef = React.useRef();
 
+  /**
+   *
+   * @param {int} trainId
+   * @returns correct key (eco or base) to get positions in a train simulation
+   */
+  const getRegimeKey = (trainId) => (allowancesSettings && allowancesSettings[trainId]?.ecoBlocks ? 'eco' : 'base');
+
   const createOtherPoints = () => {
     const actualTime = datetime2sec(timePosition);
     // First find trains where actual time from position is between start & stop
     const concernedTrains = [];
     simulation.trains.forEach((train, idx) => {
-      if (actualTime >= train.base.head_positions[0][0].time
-        && actualTime <= train.base.head_positions[
-          train.base.head_positions.length - 1][
-          train.base.head_positions[train.base.head_positions.length - 1].length - 1].time
+      const key = getRegimeKey(train.id);
+      if (actualTime >= train[key].head_positions[0][0].time
+        && actualTime <= train[key].head_positions[
+          train[key].head_positions.length - 1][
+          train[key].head_positions[train[key].head_positions.length - 1].length - 1].time
         && idx !== selectedTrain) {
-        const interpolation = interpolateOnTime(train.base, ['time', 'position'], ['head_positions', 'tail_positions', 'speeds'], actualTime);
+        const interpolation = interpolateOnTime(train[key], ['time', 'position'], ['head_positions', 'tail_positions', 'speeds'], actualTime);
         if (interpolation.head_positions && interpolation.speeds) {
           concernedTrains.push({
             ...interpolation,
@@ -114,18 +122,18 @@ const Map = (props) => {
 
   const getSimulationPositions = () => {
     const line = lineString(geojsonPath.geometry.coordinates);
-
-    if (positionValues.headPosition) {
-
-
+    const id = simulation.trains[selectedTrain]?.id;
+    const headKey = allowancesSettings && id && allowancesSettings[id]?.ecoBlocks ? 'eco_headPosition' : 'headPosition';
+    const tailKey = allowancesSettings && id && allowancesSettings[id]?.ecoBlocks ? 'eco_tailPosition' : 'tailPosition';
+    if (positionValues[headKey]) {
       const position = along(
         line,
-        positionValues.headPosition.position / 1000,
+        positionValues[headKey].position / 1000,
         { units: 'kilometers' },
       );
-      const tailPosition = positionValues.tailPosition ? along(
+      const tailPosition = positionValues[tailKey] ? along(
         line,
-        positionValues.tailPosition.position / 1000,
+        positionValues[tailKey].position / 1000,
         { units: 'kilometers' },
       ) : position;
 
@@ -134,12 +142,12 @@ const Map = (props) => {
       // Representing the wagons is useless at outer zooms
       if (viewport?.zoom > 13) {
         // To do: get this data from rollingstock, stored
-        const trainLength = positionValues.headPosition.position
-        - positionValues.tailPosition.position;
+        const trainLength = positionValues[headKey].position
+        - positionValues[tailKey].position;
         for (let i = 0; i < INTERMEDIATE_MARKERS_QTY; i++) {
           const intermediatePosition = along(
             line,
-            (positionValues.headPosition.position
+            (positionValues[headKey].position
               - (trainLength / INTERMEDIATE_MARKERS_QTY) * i) / 1000,
             { units: 'kilometers' },
           );
@@ -257,7 +265,8 @@ const Map = (props) => {
     if (!isPlaying && e) {
       const line = lineString(geojsonPath.geometry.coordinates);
       const cursorPoint = point(e.lngLat);
-      const startCoordinates = getDirection(simulation.trains[selectedTrain].base.head_positions)
+      const key = getRegimeKey(simulation.trains[selectedTrain].id);
+      const startCoordinates = getDirection(simulation.trains[selectedTrain][key].head_positions)
         ? [
           geojsonPath.geometry.coordinates[0][0],
           geojsonPath.geometry.coordinates[0][1],
@@ -277,7 +286,7 @@ const Map = (props) => {
       const sliced = lineSlice(start, cursorPoint, line);
       const positionLocal = lineLength(sliced, { units: 'kilometers' }) * 1000;
       const timePositionLocal = interpolateOnPosition(
-        { speed: simulation.trains[selectedTrain].base.speeds },
+        { speed: simulation.trains[selectedTrain][key].speeds },
         ['position', 'speed'],
         positionLocal,
       );
@@ -314,7 +323,7 @@ const Map = (props) => {
 
   useEffect(() => {
     mapRef.current.getMap().on('click', (e) => {
-      console.log('click on map');
+
     });
 
     if (urlLat) {

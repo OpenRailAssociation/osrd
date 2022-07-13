@@ -182,7 +182,7 @@ fn list_errors(
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use crate::create_server;
     use crate::models::Infra;
     use rocket::http::{ContentType, Status};

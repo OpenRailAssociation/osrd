@@ -102,8 +102,8 @@ impl RailjsonObject {
 }
 
 #[cfg(test)]
-pub mod test {
-    use crate::models::infra::test::test_transaction;
+pub mod tests {
+    use crate::models::infra::tests::test_transaction;
     use crate::railjson::operation::create::{apply_create_operation, RailjsonObject};
     use crate::railjson::{
         BufferStop, Detector, OperationalPoint, Route, Signal, SpeedSection, Switch, SwitchType,
@@ -179,7 +179,11 @@ pub mod test {
         obj
     }
 
-    pub fn create_st(conn: &PgConnection, infra_id: i32, st: SwitchType) -> RailjsonObject {
+    pub fn create_switch_type(
+        conn: &PgConnection,
+        infra_id: i32,
+        st: SwitchType,
+    ) -> RailjsonObject {
         let obj = RailjsonObject::SwitchType { railjson: st };
         assert!(apply_create_operation(&obj, infra_id, conn).is_ok());
         obj
@@ -251,7 +255,7 @@ pub mod test {
     #[test]
     fn create_st_test() {
         test_transaction(|conn, infra| {
-            create_st(conn, infra.id, Default::default());
+            create_switch_type(conn, infra.id, Default::default());
         });
     }
 }

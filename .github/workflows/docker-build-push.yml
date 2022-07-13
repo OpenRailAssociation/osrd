@@ -1,3 +1,5 @@
+name: Build & Push to DockerHub
+
 on:
   workflow_dispatch:
   push:
@@ -6,6 +8,7 @@ on:
 
 jobs:
   build_push_core:
+    name: Core
     uses: DGEXSolutions/osrd/.github/workflows/docker-build-push-template.yml@dev
     with:
       context: core
@@ -15,6 +18,7 @@ jobs:
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
   build_push_api:
+    name: API
     uses: DGEXSolutions/osrd/.github/workflows/docker-build-push-template.yml@dev
     with:
       context: api
@@ -26,6 +30,7 @@ jobs:
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
   build_push_chartos:
+    name: Chartos
     uses: DGEXSolutions/osrd/.github/workflows/docker-build-push-template.yml@dev
     with:
       context: chartos
@@ -35,6 +40,7 @@ jobs:
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
   build_push_front:
+    name: Front
     uses: DGEXSolutions/osrd/.github/workflows/docker-build-push-template.yml@dev
     with:
       context: front
@@ -49,6 +55,7 @@ jobs:
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
   build_push_editoast:
+    name: Editoast
     uses: DGEXSolutions/osrd/.github/workflows/docker-build-push-template.yml@dev
     with:
       context: editoast

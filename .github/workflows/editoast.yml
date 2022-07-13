@@ -5,13 +5,18 @@ on:
   pull_request:
     paths:
       - editoast/**
+  push:
+    branches:
+      - dev
+      - staging
+      - prod
 
 jobs:
   test:
     name: Run tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           # run the CI on the actual latest commit of the PR, not the attempted merge
           ref: ${{ github.event.pull_request.head.sha }}
@@ -20,10 +25,10 @@ jobs:
         run: sudo apt-get install -y libpq-dev
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
 
       - name: Build the containers
-        uses: docker/bake-action@v1.6.0
+        uses: docker/bake-action@v2
         with:
           load: true
           files: "docker-compose.yml"
@@ -32,7 +37,7 @@ jobs:
             *.cache-from=type=gha
             *.cache-to=type=gha,mode=max
 
-      - name: Startup the postgres and api
+      - name: Startup the postgres, api and chartos
         run: "docker-compose up --no-build -d postgres api chartos"
         env:
           DOCKER_BUILDKIT: 1
@@ -43,6 +48,13 @@ jobs:
           toolchain: nightly
           override: true
 
+      - name: Load cached venv
+        uses: actions/cache@v3
+        id: cached-cargo-dependencies
+        with:
+          path: editoast/target/
+          key: osrd-chartos-venv-${{ hashFiles('editoast/Cargo.lock') }}
+
       - name: Test
         run: |
           cd editoast
@@ -51,10 +63,10 @@ jobs:
       - name: Coverage
         uses: actions-rs/tarpaulin@v0.1
         with:
-          args: '-r ./editoast --skip-clean'
+          args: "-r ./editoast --skip-clean"
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           # github runs PR workflows on the result of a merge commit.
           # tell codecov the sha of the unmerged PR https://github.com/codecov/uploader/issues/525
@@ -70,7 +82,7 @@ jobs:
     name: Check format and run linter
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           # run the CI on the actual latest commit of the PR, not the attempted merge
           ref: ${{ github.event.pull_request.head.sha }}
@@ -79,6 +91,12 @@ jobs:
           toolchain: nightly
           components: rustfmt, clippy
           override: true
+      - name: Load cached venv
+        uses: actions/cache@v3
+        id: cached-cargo-dependencies
+        with:
+          path: editoast/target/
+          key: osrd-chartos-venv-${{ hashFiles('editoast/Cargo.lock') }}
       - name: Format check
         run: |
           cd editoast
@@ -87,4 +105,4 @@ jobs:
         uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --all-features --manifest-path=editoast/Cargo.toml
+          args: --all-features --manifest-path=editoast/Cargo.toml -- -D warnings

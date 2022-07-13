@@ -1,5 +1,7 @@
 # OSRD's API
 
+[![API](https://github.com/DGEXSolutions/osrd/actions/workflows/api.yml/badge.svg)](https://github.com/DGEXSolutions/osrd/actions/workflows/api.yml)
+
 This service handle OSRD models and schema using [Django](https://www.djangoproject.com/).
 Multiple extension are used such as:
   - [Django Rest Framework](https://www.django-rest-framework.org/)
@@ -15,17 +17,17 @@ extension.
   - The simpliest way to do it is using docker compose: `docker-compose up -d --build postgres`.
 - [Poetry](https://python-poetry.org/) a python package manager.
 
-The django configuration to use while developing is `config.test`.
+To get a django configuration suitable for local development, set `OSRD_DEV=1`.
 
 ```sh
 # Install dependencies
 poetry install
 
 # Apply migrations
-DJANGO_SETTINGS_MODULE="config.test" python manage.py migrate
+OSRD_DEV=1 python manage.py migrate
 
 # Run server
-DJANGO_SETTINGS_MODULE="config.test" python manage.py runserver
+OSRD_DEV=1 python manage.py runserver
 ```
 
 The API webserver should now be running you can try to access the admin panel: http://localhost:8000/admin/

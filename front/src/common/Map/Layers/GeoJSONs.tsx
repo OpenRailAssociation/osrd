@@ -1,62 +1,64 @@
 import React, { FC, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { Layer, LayerProps, Source } from 'react-map-gl';
-import { FeatureCollection } from 'geojson';
 import { keyBy } from 'lodash';
+import { FeatureCollection } from 'geojson';
 
-import { geoMainLayer } from 'common/Map/Layers/geographiclayers';
-import { clippedDataSelector, EditorState } from 'reducers/editor';
 import { Item, Theme } from '../../../types';
+import { clippedDataSelector, EditorState } from '../../../reducers/editor';
+import { geoMainLayer } from './geographiclayers';
 
 const HOVERED_COLOR = '#009EED';
 const SELECTED_COLOR = '#0c6b9a';
 
 export const GEOJSON_LAYER_ID = 'editor/geo-main-layer';
 
-const GeoJSONs: FC<{ colors: Theme; hoveredIDs?: Item[]; selectionIDs?: Item[] }> = ({
+const GeoJSONs: FC<{ colors: Theme; hidden?: Item[]; hovered?: Item[]; selection?: Item[] }> = ({
   colors,
-  hoveredIDs,
-  selectionIDs,
+  hidden,
+  hovered,
+  selection,
 }) => {
-  const geoJSONs = useSelector((state: { editor: EditorState }) =>
+  const editorData = useSelector((state: { editor: EditorState }) =>
     clippedDataSelector(state.editor)
   );
 
-  const qualifiedGeoJSONs = useMemo(() => {
-    const hovered = keyBy(hoveredIDs || [], 'id');
-    const selection = keyBy(selectionIDs || [], 'id');
-
-    return geoJSONs.map((geoJSON) => ({
-      ...geoJSON,
-      features: geoJSON.features.map((feature) => ({
+  const geojson = useMemo(() => {
+    const hiddenIndex = keyBy(hidden || [], 'id');
+    const hoveredIndex = keyBy(hovered || [], 'id');
+    const selectionIndex = keyBy(selection || [], 'id');
+    return {
+      type: 'FeatureCollection',
+      features: editorData.map((feature) => ({
         ...feature,
         properties: {
           ...feature.properties,
-          ...(selection[feature.properties?.OP_id] ? { selected: true } : {}),
-          ...(hovered[feature.properties?.OP_id] ? { hovered: true } : {}),
+          ...(selectionIndex[feature.properties?.id] ? { selected: true } : {}),
+          ...(hoveredIndex[feature.properties?.id] ? { hovered: true } : {}),
+          ...(hiddenIndex[feature.properties?.id] ? { hidden: true } : {}),
         },
       })),
-    }));
-  }, [geoJSONs, hoveredIDs, selectionIDs]);
+    } as FeatureCollection;
+  }, [editorData, hidden, hovered, selection]);
 
   return (
-    <>
-      {qualifiedGeoJSONs.map((geoJSON, index) => (
-        <Source key={index} type="geojson" data={geoJSON as FeatureCollection}>
-          <Layer {...(geoMainLayer(colors) as LayerProps)} id={GEOJSON_LAYER_ID} />
-          <Layer
-            type="line"
-            paint={{ 'line-color': HOVERED_COLOR, 'line-width': 3 }}
-            filter={['==', 'hovered', true]}
-          />
-          <Layer
-            type="line"
-            paint={{ 'line-color': SELECTED_COLOR, 'line-width': 3 }}
-            filter={['==', 'selected', true]}
-          />
-        </Source>
-      ))}
-    </>
+    <Source type="geojson" data={geojson}>
+      <Layer
+        {...(geoMainLayer(colors) as LayerProps)}
+        id={GEOJSON_LAYER_ID}
+        filter={['!=', 'hidden', true]}
+      />
+      <Layer
+        type="line"
+        paint={{ 'line-color': HOVERED_COLOR, 'line-width': 3 }}
+        filter={['==', 'hovered', true]}
+      />
+      <Layer
+        type="line"
+        paint={{ 'line-color': SELECTED_COLOR, 'line-width': 3 }}
+        filter={['==', 'selected', true]}
+      />
+    </Source>
   );
 };
 

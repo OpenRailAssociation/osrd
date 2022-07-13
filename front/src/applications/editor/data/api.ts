@@ -1,189 +1,134 @@
-import { GeoJSON } from 'geojson';
-import { JSONSchema7 } from 'json-schema';
-import { get, post } from '../../../common/requests';
 import { omit } from 'lodash';
+import { v4 as uuid } from 'uuid';
+import { compare } from 'fast-json-patch';
+
+import { get, post } from '../../../common/requests';
 import {
-  EditorOperation,
+  ApiInfrastructure,
+  CreateEntityOperation,
+  DeleteEntityOperation,
+  EditorEntity,
+  EditorSchema,
+  EntityOperation,
+  UpdateEntityOperation,
   Zone,
-  EditorComponentsDefintion,
-  EditorModelsDefinition,
-} from '../../types';
-import { zoneToFeature } from '../../../utils/mapboxHelper';
-import { EntityModel } from './entity';
-import i18n from './../../../i18n';
-
-interface ApiInfrastructure {
-  id: number;
-  name: string;
-  owner: string;
-  created: Date;
-  modified: Date;
-}
-
-interface ApiSchemaResponseEntity {
-  entity_name: string;
-  components: Array<string>;
-}
-interface ApiSchemaResponseComponent {
-  component_name: string;
-  fields: Array<{ name: string; type: string }>;
-}
-interface ApiSchemaResponse {
-  entities: Array<ApiSchemaResponseEntity>;
-  components: Array<ApiSchemaResponseComponent>;
-}
+} from '../../../types';
+import { zoneToBBox } from '../../../utils/mapboxHelper';
+import { getObjectTypeForLayer } from './utils';
 
 /**
  * Call the API to get an infra
  */
 export async function getInfrastructure(id: number): Promise<ApiInfrastructure> {
-  const data = await get(`/infra/${id}`, {}, true);
-  return {
-    ...data,
-    created: new Date(data.created),
-    modified: new Date(data.modified),
-  } as ApiInfrastructure;
+  const response = await get(`/editoast/infra/${id}/`);
+  return response;
 }
+
 /**
  * Call the API to get the list of infra
  */
 export async function getInfrastructures(): Promise<Array<ApiInfrastructure>> {
-  const data = await get(`/infra/`, {}, true);
-  return data.results.map((infra: ApiInfrastructure) => {
-    return {
-      ...infra,
-      created: new Date(data.created),
-      modified: new Date(data.modified),
-    };
-  });
+  const response = await get(`/editoast/infra/`);
+  return response;
 }
 
 /**
- * Call the API to get the definition of entities and components
+ * Call the API to get the definition of entities by layer.
  */
-export async function getEditorModelDefinition(): Promise<{
-  components: EditorComponentsDefintion;
-  entities: EditorModelsDefinition;
-}> {
-  const result: {
-    components: EditorComponentsDefintion;
-    entities: EditorModelsDefinition;
-  } = {
-    components: {},
-    entities: {},
-  };
-  const data: ApiSchemaResponse = await get('/schema/', {}, true);
+export async function getEditorSchema(): Promise<EditorSchema> {
+  const schemaResponse = await fetch('/editor-json-schema.json').then((response) =>
+    response.json()
+  );
+  const fieldToOmit = ['id', 'geo', 'sch'];
+  const result = Object.keys(schemaResponse.properties)
+    .filter((e) => schemaResponse.properties[e].type === 'array')
+    .map((e) => {
+      // we assume here, that the definition of the object is ref and not inline
+      const ref = schemaResponse.properties[e].items.$ref.split('/');
+      const refTarget = schemaResponse[ref[1]][ref[2]];
+      refTarget.properties = omit(refTarget.properties, fieldToOmit);
+      refTarget.required = (refTarget.required || []).filter(
+        (field) => !fieldToOmit.includes(field)
+      );
 
-  // parse the response and build the result
-  data.entities.forEach((entity: ApiSchemaResponseEntity) => {
-    result.entities[entity.entity_name] = entity.components;
-  });
-  data.components.forEach((component: ApiSchemaResponseComponent) => {
-    const jsonSchema: JSONSchema7 = {
-      type: 'object',
-      title: i18n.t(`Editor.entities.${component.component_name}`),
-      properties: {},
-      required: [],
-    };
-    component.fields
-      .filter(
-        (field: { name: string; type: string }) => !['component_id', 'entity'].includes(field.name),
-      )
-      .forEach((field: { name: string; type: string }) => {
-        jsonSchema.properties[field.name] = {
-          title: i18n.t(`Editor.entities.${component.component_name}-${field.name}`),
-        };
-        switch (field.type) {
-          case 'integer':
-          case 'string':
-            jsonSchema.properties[field.name].type = field.type;
-            jsonSchema.required.push(field.name);
-            break;
-          case 'float':
-            jsonSchema.properties[field.name].type = 'number';
-            jsonSchema.required.push(field.name);
-            break;
-          // for PK
-          default:
-            jsonSchema.properties[field.name].type = 'integer';
-            break;
-        }
-      });
-    result.components[component.component_name] = jsonSchema;
-  });
+      return {
+        layer: e,
+        objType: ref[2],
+        schema: {
+          ...refTarget,
+          [ref[1]]: schemaResponse[ref[1]],
+        },
+      } as EditorSchema[0];
+    });
   return result;
 }
 
 /**
  * Call the API for geojson.
  */
-export async function getEditorEntities(
+export async function getEditorData(
+  schema: EditorSchema,
   infra: number,
   layers: Array<string>,
-  zone: Zone,
-  entitiesDefinintion: EditorEntitiesDefinition | null,
-  componentsDefinition: EditorComponentsDefinition | null,
-): Promise<Array<EntityModel>> {
-  const geoJson = zoneToFeature(zone, true);
+  zone: Zone
+): Promise<Array<EditorEntity>> {
+  const bbox = zoneToBBox(zone);
   const responses = await Promise.all(
-    layers.map((layer) =>
-      get(
-        `/infra/${infra}/geojson/`,
-        {
-          query: geoJson.geometry,
-        },
-        true,
-      ),
-    ),
+    layers.map(async (layer) => {
+      const objType = getObjectTypeForLayer(schema, layer);
+      const result = await get(
+        `/layer/${layer}/objects/geo/${bbox[0]}/${bbox[1]}/${bbox[2]}/${bbox[3]}/?infra=${infra}`,
+        {}
+      );
+      return result.features.map((f) => ({ ...f, id: f.properties.id, objType }));
+    })
   );
-  return responses.flatMap((response) =>
-    response.features.map(
-      (obj) => new EntityModel(obj.properties, entitiesDefinintion, componentsDefinition),
-    ),
-  );
+  return responses.flat();
 }
 
 /**
  * Call the API to update the database.
  */
-export async function saveEditorEntities(
+export async function editorSave(
   infra: number,
-  entities: Array<EntityModel>,
-): Promise<Array<EntityModel>> {
-  const operations = entities.flatMap((entity: EntityModel) => entity.getOperations());
-  const response = await post(
-    `/infra/${infra}/edit/`,
-    operations.map((operation) => {
-      if (operation.operation === 'create_entity') return omit(operation, ['entity_id']);
-      else return operation;
-    }),
-    {},
-    true,
-  );
+  operations: {
+    create?: Array<EditorEntity>;
+    update?: Array<{ source: EditorEntity; target: EditorEntity }>;
+    delete?: Array<EditorEntity>;
+  }
+): Promise<Array<EditorEntity>> {
+  const payload: EntityOperation[] = [
+    ...(operations.create || []).map(
+      (feature): CreateEntityOperation => ({
+        operation_type: 'CREATE',
+        obj_type: feature.objType,
+        railjson: {
+          id: uuid(),
+          geo: feature.geometry,
+          sch: feature.geometry,
+          ...feature.properties,
+        },
+      })
+    ),
+    ...(operations.update || []).map(
+      (features): UpdateEntityOperation => ({
+        operation_type: 'UPDATE',
+        obj_id: features.source.id,
+        obj_type: features.source.objType,
+        railjson_patch: compare(
+          { ...(features.source.properties || {}), geo: features.source.geometry },
+          { ...(features.target.properties || {}), geo: features.target.geometry }
+        ),
+      })
+    ),
+    ...(operations.delete || []).map(
+      (feature): DeleteEntityOperation => ({
+        operation_type: 'DELETE',
+        obj_id: feature.id,
+        obj_type: feature.objType,
+      })
+    ),
+  ];
 
-  // rebuild the entities list
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  let newEntities = [...entities];
-
-  // parse the response to add ids to new entities
-  response.forEach((result, index) => {
-    const operation = operations[index];
-
-    if (operation.operation === 'create_entity') {
-      const entity = newEntities.find((entity) => entity.entity_id === operation.entity_id);
-      entity.entity_id = result.entity_id;
-      entity.components = entity.components.map((component, index) => {
-        component.component_id = result.component_ids[index];
-        return component;
-      });
-      newEntities = newEntities.filter((entity) => entity.entity_id !== operation.entity_id);
-      newEntities.push(entity);
-    }
-
-    if (operation.operation === 'delete_entity') {
-      newEntities = newEntities.filter((entity) => entity.entity_id !== operation.entity_id);
-    }
-  });
-
-  return newEntities;
+  return post<{}, EditorEntity[]>(`/editoast/infra/${infra}`, payload, {});
 }

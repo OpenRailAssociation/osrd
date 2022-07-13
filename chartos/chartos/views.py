@@ -1,14 +1,11 @@
 import json
 from collections import defaultdict
-from dataclasses import asdict as dataclass_as_dict
 from typing import Dict, List, NewType, Tuple
-from urllib.parse import quote as url_quote
 
 from asyncpg import Connection
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from fastapi.responses import Response
 from pydantic import BaseModel
-from shapely.geometry import Polygon
 
 from .config import Config, Layer, View, get_config
 from .layer_cache import (
@@ -53,15 +50,14 @@ def get_or_404(elements, key, array_name):
 async def mvt_view_metadata(
     layer_slug: str,
     view_slug: str,
-    infra: str = Query(...),
+    infra: int = Query(...),
     config: Config = Depends(get_config),
     settings: Settings = Depends(get_settings),
 ):
     layer: Layer = get_or_404(config.layers, layer_slug, "Layer")
-    view = get_or_404(layer.views, view_slug, "Layer view")
-    tiles_url_pattern = (
-        f"{settings.root_url}/tile/{layer_slug}/{view_slug}/" "{z}/{x}/{y}" f"/?infra={url_quote(infra)}"
-    )
+    # Check view exists
+    get_or_404(layer.views, view_slug, "Layer view")
+    tiles_url_pattern = f"{settings.root_url}/tile/{layer_slug}/{view_slug}/" "{z}/{x}/{y}" f"/?infra={infra}"
     return {
         "type": "vector",
         "name": layer.name,
@@ -82,10 +78,10 @@ class ProtobufResponse(Response):
 async def mvt_view_tile(
     layer_slug: str,
     view_slug: str,
-    infra: str,
     z: int,
     x: int,
     y: int,
+    infra: int = Query(...),
     config: Config = Depends(get_config),
     psql: Connection = Depends(PSQLPool.get),
     redis=Depends(RedisPool.get),
@@ -148,7 +144,7 @@ async def mvt_query(psql, layer, infra, view: View, z: int, x: int, y: int) -> b
 @router.post("/layer/{layer_slug}/invalidate/", status_code=204, response_class=Response)
 async def invalidate_layer(
     layer_slug: str,
-    infra: str,
+    infra: int = Query(...),
     config: Config = Depends(get_config),
     redis: RedisPool = Depends(RedisPool.get),
 ):
@@ -168,7 +164,7 @@ class BoundingBoxView(BaseModel):
 @router.post("/layer/{layer_slug}/invalidate_bbox/", status_code=204, response_class=Response)
 async def invalidate_layer_bbox(
     layer_slug: str,
-    infra: str,
+    infra: int = Query(...),
     bounding_boxes: List[BoundingBoxView] = Body(...),
     config: Config = Depends(get_config),
     redis: RedisPool = Depends(RedisPool.get),
@@ -179,7 +175,6 @@ async def invalidate_layer_bbox(
     affected_tiles: Dict[View, List[AffectedTile]] = defaultdict(set)
     for bbox in bounding_boxes:
         view = get_or_404(layer.views, bbox.view, "Layer view")
-        polygon = Polygon.from_bounds(bbox.bbox[0][0], bbox.bbox[0][1], bbox.bbox[1][0], bbox.bbox[1][1])
         affected_tiles[view] = find_tiles(settings.max_zoom, bbox.bbox)
     await invalidate_cache(redis, layer, infra, affected_tiles)
 
@@ -216,7 +211,8 @@ async def get_objects_in_bbox(
         # Filter by objects inside the bounding box
         f"AND layer.{view.on_field} && ST_Transform(ST_MakeEnvelope($2, $3, $4, $5, 4326), 3857)) "
         # Return a geojson feature collection
-        "SELECT jsonb_build_object('type', 'FeatureCollection', 'features', COALESCE(jsonb_agg(ST_AsGeoJSON(collect.*)::jsonb), '[]'::jsonb)) AS geojson "
+        "SELECT jsonb_build_object('type', 'FeatureCollection', 'features', "
+        "COALESCE(jsonb_agg(ST_AsGeoJSON(collect.*)::jsonb), '[]'::jsonb)) AS geojson "
         "FROM collect"
     )
 

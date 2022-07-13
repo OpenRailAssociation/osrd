@@ -1,45 +1,94 @@
-import React, { FC, useCallback, useEffect, useState } from 'react';
+import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
 import { TFunction } from 'i18next';
 import { withTranslation } from 'react-i18next';
+import { ViewportProps } from 'react-map-gl';
 import cx from 'classnames';
-
-import { LoaderState } from 'common/Loader';
-import { NotificationsState } from 'common/Notifications';
 
 import 'common/Map/Map.scss';
 import './Editor.scss';
 
-import { useParams } from 'react-router-dom';
-import { Tool, Tools } from './tools';
-import { EditorState, setInfrastructure, loadDataModel } from '../../reducers/editor';
+import { LoaderState } from '../../common/Loader';
+import { NotificationsState } from '../../common/Notifications';
+import { EditorState, loadDataModel } from '../../reducers/editor';
 import { MainState, setFailure } from '../../reducers/main';
-import Map from './Map';
-import Tipped from './components/Tipped';
-import NavButtons from './nav';
 import { updateViewport } from '../../reducers/map';
-import { getInfrastructure, getInfrastructures } from './data//api';
+import { updateInfraID } from '../../reducers/osrdconf';
+import Tipped from './components/Tipped';
+import { getInfrastructure, getInfrastructures } from './data/api';
+import Map from './Map';
+import NavButtons from './nav';
+import {
+  EditorContext,
+  EditorContextType,
+  ExtendedEditorContextType,
+  ModalRequest,
+} from './context';
+import { CommonToolState, Tool } from './tools/types';
+import TOOLS from './tools/list';
 
 const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   const dispatch = useDispatch();
+  const { infraID } = useSelector((state: { osrdconf: { infraID: string } }) => state.osrdconf);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
   const { fullscreen } = useSelector((state: { main: MainState }) => state.main);
-  const [activeTool, activateTool] = useState<Tool<any>>(Tools[0]);
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const [activeTool, activateTool] = useState<Tool<any>>(TOOLS[0]);
   const [toolState, setToolState] = useState<any>(activeTool.getInitialState());
-  const actionsGroups = activeTool.actions
-    .map((group) =>
-      group.filter((action) => !action.isHidden || !action.isHidden(toolState, editorState)),
-    )
-    .filter((group) => group.length);
+  const [modal, setModal] = useState<ModalRequest<any, any> | null>(null);
+  /* eslint-enable @typescript-eslint/no-explicit-any */
 
-  const { infra, urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
-  const { mapStyle, viewport } = useSelector((state: { map: any }) => state.map);
+  const { infra, urlLat, urlLon, urlZoom, urlBearing, urlPitch } =
+    useParams<Record<string, string>>();
+  const { mapStyle, viewport } = useSelector(
+    (state: { map: { mapStyle: string; viewport: ViewportProps } }) => state.map
+  );
   const setViewport = useCallback(
     (value) => {
-      dispatch(updateViewport(value, `/editor/${infra ? infra : '-1'}`));
+      dispatch(updateViewport(value, `/editor/${infra || '-1'}`));
     },
-    [dispatch, updateViewport, infra],
+    [dispatch, infra]
   );
+
+  const context = useMemo<EditorContextType<CommonToolState>>(
+    () => ({
+      t,
+      modal,
+      openModal: <ArgumentsType, SubmitArgumentsType>(
+        request: ModalRequest<ArgumentsType, SubmitArgumentsType>
+      ) => {
+        setModal(request as ModalRequest<unknown, unknown>);
+      },
+      closeModal: () => {
+        setModal(null);
+      },
+      activeTool,
+      state: toolState,
+      setState: setToolState,
+      switchTool<S extends CommonToolState>(tool: Tool<S>, state?: Partial<S>) {
+        activateTool(tool);
+        setToolState({ ...tool.getInitialState(), ...(state || {}) });
+      },
+    }),
+    [activeTool, modal, t, toolState]
+  );
+  const extendedContext = useMemo<ExtendedEditorContextType<CommonToolState>>(
+    () => ({
+      ...context,
+      dispatch,
+      editorState,
+      mapState: {
+        viewport,
+        mapStyle,
+      },
+    }),
+    [context, dispatch, editorState, mapStyle, viewport]
+  );
+
+  const actionsGroups = activeTool.actions
+    .map((group) => group.filter((action) => !action.isHidden || !action.isHidden(extendedContext)))
+    .filter((group) => group.length);
 
   // Initial viewport:
   useEffect(() => {
@@ -55,26 +104,28 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
         pitch: parseFloat(urlPitch),
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Update the infrastructure in state
   // We take the one define in the url, and if it is absent or equals to '-1'
   // we call the api to find the latest infrastructure modified
   useEffect(() => {
-    if (infra && infra !== '-1') {
-      getInfrastructure(parseInt(infra))
-        .then((infrastructure) => dispatch(setInfrastructure(infrastructure)))
-        .catch((e) => {
+    if (infra && parseInt(infra, 10) > 0) {
+      getInfrastructure(parseInt(infra, 10))
+        .then((infrastructure) => dispatch(updateInfraID(infrastructure.id)))
+        .catch(() => {
           dispatch(setFailure(new Error(t('Editor.errors.infra-not-found', { id: infra }))));
-          dispatch(updateViewport(viewport, `/editor/${infrastructure.id}`));
+          dispatch(updateViewport(viewport, `/editor/infra`));
         });
+    } else if (infraID) {
+      dispatch(updateViewport(viewport, `/editor/${infraID}`));
     } else {
       getInfrastructures()
         .then((infras) => {
           if (infras && infras.length > 0) {
-            const infra = infras.sort((a, b) => (a.modified < b.modified ? 1 : -1))[0];
-            dispatch(setInfrastructure(infra));
-            dispatch(updateViewport(viewport, `/editor/${infra.id}`));
+            const infrastructure = infras[0];
+            dispatch(updateInfraID(infrastructure.id));
           } else {
             dispatch(setFailure(new Error(t('Editor.errors.no-infra-available'))));
           }
@@ -83,66 +134,29 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
           dispatch(setFailure(new Error(t('Editor.errors.technical', { msg: e.message }))));
         });
     }
-  }, [infra]);
+  }, [dispatch, infra, infraID, t, viewport]);
 
   return (
-    <main
-      className={`editor-root mastcontainer mastcontainer-map${fullscreen ? ' fullscreen' : ''}`}
-    >
-      <div className="layout">
-        <div className="tool-box">
-          {Tools.map((tool) => {
-            const { id, icon: IconComponent, labelTranslationKey, isDisabled } = tool;
-            const label = t(labelTranslationKey);
-
-            return (
-              <Tipped key={id} mode="right">
-                <button
-                  type="button"
-                  className={cx('btn-rounded', id === activeTool.id && 'active', 'editor-btn')}
-                  onClick={() => {
-                    activateTool(tool);
-                    setToolState(tool.getInitialState());
-                  }}
-                  disabled={isDisabled && isDisabled(editorState)}
-                >
-                  <span className="sr-only">{label}</span>
-                  <IconComponent />
-                </button>
-                <span>{label}</span>
-              </Tipped>
-            );
-          })}
-        </div>
-        <div className="actions-box">
-          {actionsGroups.flatMap((actionsGroup, i, a) => {
-            const actions = actionsGroup.map((action) => {
-              const {
-                id,
-                icon: IconComponent,
-                labelTranslationKey,
-                isDisabled,
-                isActive,
-                onClick,
-              } = action;
+    <EditorContext.Provider value={context as EditorContextType<unknown>}>
+      <main
+        className={`editor-root mastcontainer mastcontainer-map${fullscreen ? ' fullscreen' : ''}`}
+      >
+        <div className="layout">
+          <div className="tool-box">
+            {TOOLS.map((tool) => {
+              const { id, icon: IconComponent, labelTranslationKey, isDisabled } = tool;
               const label = t(labelTranslationKey);
 
               return (
                 <Tipped key={id} mode="right">
                   <button
-                    key={id}
                     type="button"
-                    className={cx(
-                      'editor-btn',
-                      'btn-rounded',
-                      isActive && isActive(toolState, editorState) ? 'active' : '',
-                    )}
+                    className={cx('btn-rounded', id === activeTool.id && 'active', 'editor-btn')}
                     onClick={() => {
-                      if (onClick) {
-                        onClick({ setState: setToolState, dispatch }, toolState, editorState);
-                      }
+                      activateTool(tool);
+                      setToolState(tool.getInitialState());
                     }}
-                    disabled={isDisabled && isDisabled(toolState, editorState)}
+                    disabled={isDisabled && isDisabled(extendedContext)}
                   >
                     <span className="sr-only">{label}</span>
                     <IconComponent />
@@ -150,84 +164,138 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
                   <span>{label}</span>
                 </Tipped>
               );
-            });
+            })}
+          </div>
+          <div className="actions-box">
+            {actionsGroups.flatMap((actionsGroup, i, a) => {
+              const actions = actionsGroup.map((action) => {
+                const {
+                  id,
+                  icon: IconComponent,
+                  labelTranslationKey,
+                  isDisabled,
+                  isActive,
+                  onClick,
+                } = action;
+                const label = t(labelTranslationKey);
 
-            return i < a.length - 1
-              ? [...actions, <div key={`separator-${i}`} className="separator" />]
-              : actions;
-          })}
-        </div>
-        <div className="map-wrapper">
-          <div className="map">
-            <Map
-              {...{
-                toolState,
-                setToolState,
-                viewport,
-                setViewport,
-                activeTool,
-                mapStyle,
-              }}
-            />
+                return (
+                  <Tipped key={id} mode="right">
+                    <button
+                      key={id}
+                      type="button"
+                      className={cx(
+                        'editor-btn',
+                        'btn-rounded',
+                        isActive && isActive(extendedContext) ? 'active' : ''
+                      )}
+                      onClick={() => {
+                        if (onClick) {
+                          onClick(extendedContext);
+                        }
+                      }}
+                      disabled={isDisabled && isDisabled(extendedContext)}
+                    >
+                      <span className="sr-only">{label}</span>
+                      <IconComponent />
+                    </button>
+                    <span>{label}</span>
+                  </Tipped>
+                );
+              });
 
-            <div className="nav-box">
-              {NavButtons.flatMap((navButtons, i, a) => {
-                const buttons = navButtons.map((navButton) => {
-                  const {
-                    id,
-                    icon: IconComponent,
-                    labelTranslationKey,
-                    isDisabled,
-                    isActive,
-                    onClick,
-                  } = navButton;
-                  const label = t(labelTranslationKey);
+              return i < a.length - 1
+                ? [...actions, <div key={`separator-${i}`} className="separator" />]
+                : actions;
+            })}
+          </div>
+          {activeTool.leftPanelComponent && (
+            <div className="panel-box">
+              <activeTool.leftPanelComponent />
+            </div>
+          )}
+          <div className="map-wrapper">
+            <div className="map">
+              <Map
+                {...{
+                  toolState,
+                  setToolState,
+                  viewport,
+                  setViewport,
+                  activeTool,
+                  mapStyle,
+                }}
+              />
 
-                  return (
-                    <Tipped key={id} mode="left">
-                      <button
-                        key={id}
-                        type="button"
-                        className={cx(
-                          'editor-btn',
-                          'btn-rounded',
-                          isActive && isActive(editorState) ? 'active' : '',
-                        )}
-                        onClick={() => {
-                          if (onClick) {
-                            onClick({ dispatch, setViewport, viewport }, editorState);
-                          }
-                        }}
-                        disabled={isDisabled && isDisabled(editorState)}
-                      >
-                        <span className="sr-only">{label}</span>
-                        <IconComponent />
-                      </button>
-                      <span>{label}</span>
-                    </Tipped>
-                  );
-                });
+              <div className="nav-box">
+                {NavButtons.flatMap((navButtons, i, a) => {
+                  const buttons = navButtons.map((navButton) => {
+                    const {
+                      id,
+                      icon: IconComponent,
+                      labelTranslationKey,
+                      isDisabled,
+                      isActive,
+                      onClick,
+                    } = navButton;
+                    const label = t(labelTranslationKey);
 
-                if (i < a.length - 1)
-                  return buttons.concat([<div key={`separator-${i}`} className="separator" />]);
-                return buttons;
-              })}
+                    return (
+                      <Tipped key={id} mode="left">
+                        <button
+                          key={id}
+                          type="button"
+                          className={cx(
+                            'editor-btn',
+                            'btn-rounded',
+                            isActive && isActive(editorState) ? 'active' : ''
+                          )}
+                          onClick={() => {
+                            if (onClick) {
+                              onClick({ dispatch, setViewport, viewport }, editorState);
+                            }
+                          }}
+                          disabled={isDisabled && isDisabled(editorState)}
+                        >
+                          <span className="sr-only">{label}</span>
+                          <IconComponent />
+                        </button>
+                        <span>{label}</span>
+                      </Tipped>
+                    );
+                  });
+
+                  if (i < a.length - 1)
+                    return buttons.concat([<div key={`separator-${i}`} className="separator" />]);
+                  return buttons;
+                })}
+              </div>
+            </div>
+            <div className="messages-bar">
+              {activeTool.messagesComponent && <activeTool.messagesComponent />}
             </div>
           </div>
-          <div className="messages-bar">
-            {(activeTool.getMessages && activeTool.getMessages({ t }, toolState, editorState)) ||
-              null}
-          </div>
         </div>
-      </div>
 
-      <LoaderState />
-      <NotificationsState />
+        <LoaderState />
+        <NotificationsState />
 
-      {(activeTool.getDOM &&
-        activeTool.getDOM({ dispatch, setState: setToolState, t }, toolState, editorState)) ||
-        null}
-    </main>
+        {modal &&
+          React.createElement(modal.component, {
+            arguments: modal.arguments,
+            cancel: () => {
+              if (modal.beforeCancel) modal.beforeCancel();
+              setModal(null);
+              if (modal.afterCancel) modal.afterCancel();
+            },
+            submit: (args) => {
+              if (modal.beforeSubmit) modal.beforeSubmit(args);
+              setModal(null);
+              if (modal.afterSubmit) modal.afterSubmit(args);
+            },
+          })}
+      </main>
+    </EditorContext.Provider>
   );
 };
 

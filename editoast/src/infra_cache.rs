@@ -2,7 +2,7 @@ use crate::models::BoundingBox;
 use crate::railjson::operation::{OperationResult, RailjsonObject};
 use crate::railjson::*;
 use derivative::Derivative;
-use diesel::sql_types::{Double, Integer, Json, Text};
+use diesel::sql_types::{Double, Integer, Json, Nullable, Text};
 use diesel::PgConnection;
 use diesel::{sql_query, QueryableByName, RunQueryDsl};
 use serde_json::Value;
@@ -25,7 +25,7 @@ pub struct InfraCache {
     pub speed_sections: HashMap<String, SpeedSection>,
 
     /// List existing track section links
-    pub track_section_links: HashMap<String, TrackSectionLinkCache>,
+    pub track_section_links: HashMap<String, TrackSectionLink>,
 
     /// List existing switches
     pub switches: HashMap<String, SwitchCache>,
@@ -129,8 +129,10 @@ pub struct SpeedSectionQueryable {
     pub obj_id: String,
     #[sql_type = "Json"]
     pub track_ranges: Value,
-    #[sql_type = "Double"]
-    pub speed: f64,
+    #[sql_type = "Nullable<Double>"]
+    pub speed_limit: Option<f64>,
+    #[sql_type = "Json"]
+    pub speed_limit_by_tag: Value,
 }
 
 impl From<SpeedSectionQueryable> for SpeedSection {
@@ -139,7 +141,8 @@ impl From<SpeedSectionQueryable> for SpeedSection {
             serde_json::from_value(speed.track_ranges).unwrap();
         SpeedSection {
             id: speed.obj_id.clone(),
-            speed: speed.speed,
+            speed_limit: speed.speed_limit,
+            speed_limit_by_tag: serde_json::from_value(speed.speed_limit_by_tag).unwrap(),
             track_ranges,
         }
     }
@@ -176,32 +179,26 @@ impl From<RouteQueryable> for Route {
     }
 }
 
-#[derive(QueryableByName, Debug, Clone, Derivative)]
-#[derivative(Hash, PartialEq)]
-pub struct TrackSectionLinkCache {
+#[derive(QueryableByName, Debug, Clone)]
+pub struct TrackSectionLinkQueryable {
     #[sql_type = "Text"]
     pub obj_id: String,
-    #[derivative(Hash = "ignore", PartialEq = "ignore")]
-    #[sql_type = "Text"]
-    pub src: String,
-    #[derivative(Hash = "ignore", PartialEq = "ignore")]
-    #[sql_type = "Text"]
-    pub dst: String,
+    #[sql_type = "Json"]
+    pub src: Value,
+    #[sql_type = "Json"]
+    pub dst: Value,
+    #[sql_type = "Json"]
+    pub navigability: Value,
 }
 
-impl TrackSectionLinkCache {
-    pub fn new(obj_id: String, src: String, dst: String) -> Self {
-        Self { obj_id, src, dst }
-    }
-}
-
-impl From<&TrackSectionLink> for TrackSectionLinkCache {
-    fn from(link: &TrackSectionLink) -> Self {
-        Self::new(
-            link.id.clone(),
-            link.src.track.obj_id.clone(),
-            link.dst.track.obj_id.clone(),
-        )
+impl From<TrackSectionLinkQueryable> for TrackSectionLink {
+    fn from(link: TrackSectionLinkQueryable) -> Self {
+        Self {
+            id: link.obj_id.clone(),
+            src: serde_json::from_value(link.src).unwrap(),
+            dst: serde_json::from_value(link.dst).unwrap(),
+            navigability: serde_json::from_value(link.navigability).unwrap(),
+        }
     }
 }
 
@@ -428,16 +425,16 @@ impl InfraCache {
             .is_none());
     }
 
-    fn load_track_section_link(&mut self, link: TrackSectionLinkCache) {
+    fn load_track_section_link(&mut self, link: TrackSectionLink) {
         for endpoint in [&link.src, &link.dst] {
             self.add_track_ref(
-                endpoint.clone(),
-                ObjectRef::new(ObjectType::TrackSectionLink, link.obj_id.clone()),
+                endpoint.track.obj_id.clone(),
+                ObjectRef::new(ObjectType::TrackSectionLink, link.id.clone()),
             );
         }
         assert!(self
             .track_section_links
-            .insert(link.obj_id.clone(), link)
+            .insert(link.id.clone(), link)
             .is_none());
     }
 
@@ -483,8 +480,8 @@ impl InfraCache {
             .is_none());
     }
 
-    /// Initialize an infra cache given an infra id
-    pub fn init(conn: &PgConnection, infra_id: i32) -> InfraCache {
+    /// Given an infra id load infra cache from database
+    pub fn load(conn: &PgConnection, infra_id: i32) -> InfraCache {
         let mut infra_cache = Self::default();
 
         // Load track sections list
@@ -505,7 +502,7 @@ impl InfraCache {
 
         // Load speed sections tracks references
         sql_query(
-            "SELECT obj_id, data->>'track_ranges' AS track_ranges, (data->>'speed')::float AS speed FROM osrd_infra_speedsectionmodel WHERE infra_id = $1")
+            "SELECT obj_id, data->>'track_ranges' AS track_ranges, (data->>'speed_limit')::float AS speed_limit, data->>'speed_limit_by_tag' AS speed_limit_by_tag FROM osrd_infra_speedsectionmodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
         .load::<SpeedSectionQueryable>(conn).expect("Error loading speed section refs").into_iter().for_each(|speed| 
             infra_cache.load_speed_section(speed.into())
@@ -529,10 +526,10 @@ impl InfraCache {
 
         // Load track section links tracks references
         sql_query(
-            "SELECT obj_id, data->'src'->'track'->>'id' AS src, data->'dst'->'track'->>'id' AS dst FROM osrd_infra_tracksectionlinkmodel WHERE infra_id = $1")
+            "SELECT obj_id, data->>'src' AS src, data->>'dst' AS dst, (data->'navigability')::text as navigability FROM osrd_infra_tracksectionlinkmodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
-        .load::<TrackSectionLinkCache>(conn).expect("Error loading track section link refs").into_iter().for_each(|link| 
-            infra_cache.load_track_section_link(link)
+        .load::<TrackSectionLinkQueryable>(conn).expect("Error loading track section link refs").into_iter().for_each(|link| 
+            infra_cache.load_track_section_link(link.into())
         );
 
         // Load switch tracks references
@@ -636,11 +633,11 @@ impl InfraCache {
             } => {
                 let link = self.track_section_links.remove(obj_id).unwrap();
                 self.track_sections_refs
-                    .get_mut(&link.src)
+                    .get_mut(&link.src.track.obj_id)
                     .unwrap()
                     .remove(object_ref);
                 self.track_sections_refs
-                    .get_mut(&link.dst)
+                    .get_mut(&link.dst.track.obj_id)
                     .unwrap()
                     .remove(object_ref);
             }
@@ -705,7 +702,7 @@ impl InfraCache {
             RailjsonObject::SpeedSection { railjson } => self.load_speed_section(railjson.clone()),
             RailjsonObject::Route { railjson } => self.load_route(railjson.clone()),
             RailjsonObject::TrackSectionLink { railjson } => {
-                self.load_track_section_link(railjson.into())
+                self.load_track_section_link(railjson.clone())
             }
             RailjsonObject::Switch { railjson } => self.load_switch(railjson.into()),
             RailjsonObject::SwitchType { railjson } => self.load_switch_type(railjson.clone()),
@@ -726,5 +723,267 @@ impl InfraCache {
                 OperationResult::Create(railjson_obj) => self.apply_create(railjson_obj),
             }
         }
+    }
+}
+
+#[cfg(test)]
+pub mod tests {
+    use std::collections::HashMap;
+
+    use crate::infra_cache::{InfraCache, SwitchCache};
+    use crate::models::infra::tests::test_transaction;
+    use crate::railjson::operation::create::tests::{
+        create_buffer_stop, create_detector, create_link, create_op, create_route, create_signal,
+        create_speed, create_switch, create_switch_type, create_track,
+    };
+    use crate::railjson::{
+        ApplicableDirections, Endpoint, ObjectRef, ObjectType, OperationalPoint, Route,
+        SpeedSection, Switch, SwitchPortConnection, SwitchType, TrackEndpoint, TrackSectionLink,
+    };
+
+    #[test]
+    fn load_track_section() {
+        test_transaction(|conn, infra| {
+            let track = create_track(conn, infra.id, Default::default());
+            let infra_cache = InfraCache::load(conn, infra.id);
+            assert_eq!(infra_cache.track_sections.len(), 1);
+            assert!(infra_cache.track_sections.contains_key(&track.get_obj_id()));
+        });
+    }
+
+    #[test]
+    fn load_signal() {
+        test_transaction(|conn, infra| {
+            let signal = create_signal(conn, infra.id, Default::default());
+
+            let infra_cache = InfraCache::load(conn, infra.id);
+
+            assert!(infra_cache.signals.contains_key(&signal.get_obj_id()));
+            let refs = infra_cache.track_sections_refs;
+            assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+        })
+    }
+
+    #[test]
+    fn load_speed_section() {
+        test_transaction(|conn, infra| {
+            let speed = create_speed(
+                conn,
+                infra.id,
+                SpeedSection {
+                    track_ranges: vec![Default::default()],
+                    ..Default::default()
+                },
+            );
+
+            let infra_cache = InfraCache::load(conn, infra.id);
+
+            assert!(infra_cache.speed_sections.contains_key(&speed.get_obj_id()));
+            let refs = infra_cache.track_sections_refs;
+            assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+        })
+    }
+
+    #[test]
+    fn load_route() {
+        test_transaction(|conn, infra| {
+            let route = create_route(
+                conn,
+                infra.id,
+                Route {
+                    path: vec![Default::default()],
+                    ..Default::default()
+                },
+            );
+
+            let infra_cache = InfraCache::load(conn, infra.id);
+
+            assert!(infra_cache.routes.contains_key(&route.get_obj_id()));
+            let refs = infra_cache.track_sections_refs;
+            assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+        })
+    }
+
+    #[test]
+    fn load_operational_point() {
+        test_transaction(|conn, infra| {
+            let op = create_op(
+                conn,
+                infra.id,
+                OperationalPoint {
+                    parts: vec![Default::default()],
+                    ..Default::default()
+                },
+            );
+
+            let infra_cache = InfraCache::load(conn, infra.id);
+
+            assert!(infra_cache
+                .operational_points
+                .contains_key(&op.get_obj_id()));
+            let refs = infra_cache.track_sections_refs;
+            assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+        })
+    }
+
+    #[test]
+    fn load_track_section_link() {
+        test_transaction(|conn, infra| {
+            let link = create_link(conn, infra.id, Default::default());
+            let infra_cache = InfraCache::load(conn, infra.id);
+            assert!(infra_cache
+                .track_section_links
+                .contains_key(&link.get_obj_id()));
+        })
+    }
+
+    #[test]
+    fn load_switch() {
+        test_transaction(|conn, infra| {
+            let switch = create_switch(
+                conn,
+                infra.id,
+                Switch {
+                    ports: HashMap::from([("port".into(), Default::default())]),
+                    ..Default::default()
+                },
+            );
+            let infra_cache = InfraCache::load(conn, infra.id);
+            assert!(infra_cache.switches.contains_key(&switch.get_obj_id()));
+        })
+    }
+
+    #[test]
+    fn load_switch_type() {
+        test_transaction(|conn, infra| {
+            let s_type = create_switch_type(conn, infra.id, Default::default());
+            let infra_cache = InfraCache::load(conn, infra.id);
+            assert!(infra_cache.switch_types.contains_key(&s_type.get_obj_id()));
+        })
+    }
+
+    #[test]
+    fn load_detector() {
+        test_transaction(|conn, infra| {
+            let detector = create_detector(conn, infra.id, Default::default());
+
+            let infra_cache = InfraCache::load(conn, infra.id);
+
+            assert!(infra_cache.detectors.contains_key(&detector.get_obj_id()));
+            let refs = infra_cache.track_sections_refs;
+            assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+        })
+    }
+
+    #[test]
+    fn load_buffer_stop() {
+        test_transaction(|conn, infra| {
+            let bs = create_buffer_stop(conn, infra.id, Default::default());
+
+            let infra_cache = InfraCache::load(conn, infra.id);
+
+            assert!(infra_cache.buffer_stops.contains_key(&bs.get_obj_id()));
+            let refs = infra_cache.track_sections_refs;
+            assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+        })
+    }
+
+    pub fn create_track_endpoint<T: AsRef<str>>(endpoint: Endpoint, obj_id: T) -> TrackEndpoint {
+        TrackEndpoint {
+            endpoint,
+            track: ObjectRef {
+                obj_type: ObjectType::TrackSection,
+                obj_id: obj_id.as_ref().into(),
+            },
+        }
+    }
+
+    pub fn create_track_link_cache(
+        id: String,
+        src: TrackEndpoint,
+        dst: TrackEndpoint,
+    ) -> TrackSectionLink {
+        TrackSectionLink {
+            id,
+            src,
+            dst,
+            navigability: ApplicableDirections::Both,
+        }
+    }
+
+    pub fn create_switch_connection(src: String, dst: String) -> SwitchPortConnection {
+        SwitchPortConnection {
+            src,
+            dst,
+            bidirectional: true,
+        }
+    }
+
+    pub fn create_switch_type_point() -> SwitchType {
+        SwitchType {
+            id: "point".into(),
+            ports: vec!["BASE".into(), "LEFT".into(), "RIGHT".into()],
+            groups: HashMap::from([
+                (
+                    "LEFT".into(),
+                    vec![create_switch_connection("BASE".into(), "LEFT".into())],
+                ),
+                (
+                    "RIGHT".into(),
+                    vec![create_switch_connection("BASE".into(), "RIGHT".into())],
+                ),
+            ]),
+        }
+    }
+
+    pub fn create_switch_cache_point(
+        obj_id: String,
+        base: TrackEndpoint,
+        left: TrackEndpoint,
+        right: TrackEndpoint,
+    ) -> SwitchCache {
+        let ports_list = [("BASE", base), ("LEFT", left), ("RIGHT", right)];
+        let ports: HashMap<String, TrackEndpoint> =
+            ports_list.into_iter().map(|(s, t)| (s.into(), t)).collect();
+        SwitchCache {
+            obj_id,
+            switch_type: "point".into(),
+            ports,
+        }
+    }
+
+    ///                    --------  C
+    ///                   /
+    ///  --------_--------
+    ///     A        B    \
+    ///                    --------  D
+    ///
+    pub fn create_small_infra_cache() -> InfraCache {
+        let mut infra_cache = InfraCache::default();
+
+        let link = create_track_link_cache(
+            "tracklink".into(),
+            create_track_endpoint(Endpoint::End, "A"),
+            create_track_endpoint(Endpoint::Begin, "B"),
+        );
+
+        infra_cache
+            .track_section_links
+            .insert(link.id.clone(), link);
+
+        infra_cache
+            .switch_types
+            .insert("point".into(), create_switch_type_point());
+
+        let switch = create_switch_cache_point(
+            "switch".into(),
+            create_track_endpoint(Endpoint::End, "B"),
+            create_track_endpoint(Endpoint::Begin, "C"),
+            create_track_endpoint(Endpoint::Begin, "D"),
+        );
+
+        infra_cache.switches.insert(switch.obj_id.clone(), switch);
+
+        infra_cache
     }
 }

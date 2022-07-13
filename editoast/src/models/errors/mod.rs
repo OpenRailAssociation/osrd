@@ -1,5 +1,6 @@
 mod buffer_stops;
 mod detectors;
+mod graph;
 mod operational_points;
 mod routes;
 mod signals;
@@ -19,6 +20,8 @@ use crate::{infra_cache::InfraCache, railjson::ObjectRef};
 use self::routes::PathEndpointField;
 
 use super::invalidate_chartos_layer;
+
+use graph::Graph;
 
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -178,6 +181,9 @@ pub fn generate_errors(
     sql_query("DELETE FROM osrd_infra_errorlayer WHERE infra_id = $1")
         .bind::<Integer, _>(infra)
         .execute(conn)?;
+
+    // Create a graph for topological errors
+    let _graph = Graph::load(infra_cache);
 
     // Generate the errors
     track_sections::generate_errors(conn, infra, infra_cache)?;

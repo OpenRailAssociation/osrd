@@ -14,6 +14,8 @@ labels: 'kind:user-story'
 
 <!-- Please give a brief description of the User Story. What must the user be able to do ? -->
 
+<!-- Is there an existing mockup or wireframe for this US ? If so, please link it here. -->
+
 ## Goal
 
 <!-- What is the point of this user story ? Why is it necessary ? -->
@@ -26,16 +28,16 @@ labels: 'kind:user-story'
 - [ ] Criteria 2
 - [ ] Criteria 3
 
-## Additional content
 
-<!-- Is there an existing mockup or wireframe for this US ? If so, please link it here. -->
+## Story points
 
-## Difficulty
+<!-- If greater than 8, split the story. -->
 
-- [ ] easy
-- [ ] normal
-- [ ] difficult
-- [ ] extreme
+- [ ] 1
+- [ ] 2
+- [ ] 3
+- [ ] 5
+- [ ] 8
 
 ## Definition of ready
 
@@ -61,8 +63,7 @@ before a user story can be considered complete. It is check whether a task
 can be moved from “in progress” to “done.” -->
 
 - [ ] Acceptance criteria are met
-- [ ] Assumptions of User Story met
 - [ ] Automated tests are written against acceptance criteria
 - [ ] Project deployed to the testing environment
-- [ ] Feature ok-ed by Product Owner
+- [ ] Story ok-ed by Product Owner
 - [ ] Documentation updated

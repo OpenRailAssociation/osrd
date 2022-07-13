@@ -1,5 +1,5 @@
 import asyncpg
-from fastapi import FastAPI
+
 from .utils import AsyncProcess, process_dependable
 
 

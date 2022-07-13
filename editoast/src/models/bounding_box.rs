@@ -104,7 +104,7 @@ impl InvalidationZone {
                 OperationResult::Update(RailjsonObject::TrackSectionLink { railjson })
                 | OperationResult::Create(RailjsonObject::TrackSectionLink { railjson }) => {
                     if let Some(link) = infra_cache.track_section_links.get(&railjson.id) {
-                        Self::merge_bbox(&mut geo, &mut sch, infra_cache, &link.src);
+                        Self::merge_bbox(&mut geo, &mut sch, infra_cache, &link.src.track.obj_id);
                     };
                     let track_id = &railjson.src.track.obj_id;
                     Self::merge_bbox(&mut geo, &mut sch, infra_cache, track_id);
@@ -185,7 +185,7 @@ impl InvalidationZone {
                     obj_id,
                 }) => {
                     if let Some(link) = infra_cache.track_section_links.get(obj_id) {
-                        Self::merge_bbox(&mut geo, &mut sch, infra_cache, &link.src);
+                        Self::merge_bbox(&mut geo, &mut sch, infra_cache, &link.src.track.obj_id);
                     }
                 }
                 OperationResult::Delete(ObjectRef {

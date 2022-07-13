@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.envelope.Envelope;
+import fr.sncf.osrd.envelope.EnvelopeStopWrapper;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
@@ -20,6 +21,7 @@ import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.standalone_sim.result.ResultOccupancyTiming;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.TestTrains;
+import fr.sncf.osrd.train.TrainStop;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -220,6 +222,35 @@ public class ScheduleMetadataExtractorTests {
                 testRollingStock.maxSpeed, new double[]{}
         );
         checkSignalUpdates(infra, envelope, path, testRollingStock.length);
+        checkStopDelay(infra, envelope, path, testRollingStock.length);
+    }
+
+    /** Tests that the signaling events are properly delayed after a stop */
+    private void checkStopDelay(SignalingInfra infra, Envelope envelope, TrainPath path, double length) {
+        var envelopeWithStops = new EnvelopeStopWrapper(envelope, List.of(new TrainStop(1000, 4242)));
+        var eventsWithStop = ScheduleMetadataExtractor.computeEvents(
+                infra,
+                path,
+                length,
+                envelopeWithStops
+        );
+        var eventsWithoutStop = ScheduleMetadataExtractor.computeEvents(
+                infra,
+                path,
+                length,
+                envelope
+        );
+
+        assertEquals(eventsWithStop.size(), eventsWithoutStop.size());
+        for (int i = 0; i < eventsWithStop.size(); i++) {
+            var eventWithStop = eventsWithStop.get(i);
+            var eventWithoutStop = eventsWithoutStop.get(i);
+            assertEquals(eventWithStop.position(), eventWithoutStop.position());
+            if (eventWithStop.position() < 1000)
+                assertEquals(eventWithoutStop.time(), eventWithStop.time());
+            else
+                assertEquals(eventWithoutStop.time() + 4242, eventWithStop.time());
+        }
     }
 
     /** Checks that the generated signal updates are valid */
