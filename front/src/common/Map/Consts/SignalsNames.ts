@@ -154,6 +154,8 @@ export const ALL_SIGNAL_LAYERS = [
   'Z',
 ];
 
+export const ALL_SIGNAL_LAYERS_SET = new Set(ALL_SIGNAL_LAYERS);
+
 export const PANELS_STOPS = ['ARRET VOY', 'ARRET', 'CHEVRON', 'LIMITETS', 'LM', 'STOP'];
 
 export const PANELS_TIVS = [

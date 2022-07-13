@@ -1,14 +1,19 @@
 import { SignalEntity } from '../../../../types';
+import { MakeOptional } from '../types';
 
 // eslint-disable-next-line import/prefer-default-export
-export function getNewSignal(point: [number, number]): SignalEntity {
+export function getNewSignal(point?: [number, number]): MakeOptional<SignalEntity, 'geometry'> {
   return {
     type: 'Feature',
     objType: 'Signal',
-    geometry: {
-      type: 'Point',
-      coordinates: point,
+    properties: {
+      installation_type: 'DIVERS',
     },
-    properties: {},
+    geometry: point
+      ? {
+          type: 'Point',
+          coordinates: point,
+        }
+      : undefined,
   };
 }

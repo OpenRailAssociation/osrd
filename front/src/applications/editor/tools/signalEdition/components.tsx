@@ -2,6 +2,7 @@ import React, { FC, useContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Layer, Source } from 'react-map-gl';
 import { useTranslation } from 'react-i18next';
+import { featureCollection } from '@turf/helpers';
 
 import { EditorContext, EditorContextType } from '../../context';
 import GeoJSONs from '../../../../common/Map/Layers/GeoJSONs';
@@ -18,7 +19,7 @@ export const SIGNAL_LAYER_ID = 'signalEditionTool/new-signal';
 
 export const SignalEditionLayers: FC = () => {
   const {
-    state: { signal, nearestPoint, isDragging },
+    state: { signal, nearestPoint, isDragging, mousePosition },
   } = useContext(EditorContext) as EditorContextType<SignalEditionState>;
   const { mapStyle } = useSelector((s: { map: { mapStyle: string } }) => s.map) as {
     mapStyle: string;
@@ -35,13 +36,21 @@ export const SignalEditionLayers: FC = () => {
     type
   );
 
-  const renderedSignal: SignalEntity =
-    isDragging && nearestPoint
-      ? {
-          ...signal,
-          geometry: nearestPoint.feature.geometry,
-        }
-      : signal;
+  let renderedSignal: SignalEntity | null = null;
+  if (isDragging && nearestPoint) {
+    renderedSignal = {
+      ...signal,
+      geometry: nearestPoint.feature.geometry,
+      properties: {
+        ...signal.properties,
+        angle_geo: nearestPoint.angle,
+      },
+    };
+  } else if (signal.geometry) {
+    renderedSignal = signal as SignalEntity;
+  } else if (mousePosition) {
+    renderedSignal = { ...signal, geometry: { type: 'Point', coordinates: mousePosition } };
+  }
 
   return (
     <>
@@ -49,19 +58,17 @@ export const SignalEditionLayers: FC = () => {
       <EditorZone />
 
       {/* Editor data layer */}
-      <GeoJSONs colors={colors[mapStyle]} hidden={signal.id ? [signal as Item] : undefined} />
+      <GeoJSONs
+        colors={colors[mapStyle]}
+        hidden={signal.id ? [signal as Item] : undefined}
+        selection={[signal as Item]}
+      />
 
       {/* Edited signal */}
-      <Source type="geojson" data={renderedSignal}>
+      <Source type="geojson" data={renderedSignal || featureCollection([])}>
         <Layer
           {...layerProps}
           filter={['==', 'installation_type', `"${type}"`]}
-          paint={{
-            ...(layerProps.paint || {}),
-            'icon-halo-width': 5,
-            'icon-halo-color': 'rgba(0, 0, 0, 1)',
-            'icon-halo-blur': 0,
-          }}
           id={SIGNAL_LAYER_ID}
         />
       </Source>
@@ -76,7 +83,7 @@ export const SignalEditionLeftPanel: FC = () => {
 
   return (
     <EditorForm
-      data={state.signal}
+      data={state.signal as SignalEntity}
       onSubmit={async (savedEntity) => {
         const res = await dispatch<ReturnType<typeof save>>(
           save({ [state.signal.id ? 'update' : 'create']: [savedEntity] })

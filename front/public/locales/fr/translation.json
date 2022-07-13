@@ -83,6 +83,7 @@
       "signal-edition": {
         "label": "Outil \"Signal\",",
         "actions": {
+          "reset-signal": "Réinitialiser les données",
           "new-signal": "Créer un nouveau signal"
         }
       }

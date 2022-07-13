@@ -6,6 +6,9 @@ import { Item, PositionnedItem } from '../../../types';
 // eslint-disable-next-line import/no-cycle
 import { ExtendedEditorContextType, ReadOnlyEditorContextType } from '../context';
 
+// UTILS
+export type MakeOptional<Type, Key extends keyof Type> = Omit<Type, Key> & Partial<Pick<Type, Key>>;
+
 export interface CommonToolState {
   mousePosition: [number, number] | null;
   hovered: PositionnedItem | null;
