@@ -50,6 +50,9 @@ export function getSymbolTypes(editorData: EditorEntity[]): string[] {
   ).map(cleanSymbolType);
 }
 
-export function getAngle([x1, y1]: Position, [x2, y2]: Position): number {
+export function getAngle(p1: Position | undefined, p2: Position | undefined): number {
+  if (!Array.isArray(p1) || !Array.isArray(p2)) return 0;
+  const [x1, y1] = p1;
+  const [x2, y2] = p2;
   return (Math.atan((x2 - x1) / (y2 - y1)) * 180) / Math.PI;
 }
