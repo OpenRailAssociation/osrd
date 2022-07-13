@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:version="1.1-dev (ccb98c3c56, 2020-01-19)"
+   sodipodi:docname="pan_rev.svg"
+   height="64"
+   width="64"
+   version="1.1"
+   id="svg2">
+  <sodipodi:namedview
+     inkscape:current-layer="svg2"
+     inkscape:window-maximized="1"
+     inkscape:window-y="28"
+     inkscape:window-x="0"
+     inkscape:cy="31.605295"
+     inkscape:cx="27.849594"
+     inkscape:zoom="8.8125"
+     showgrid="true"
+     id="namedview14"
+     inkscape:window-height="1024"
+     inkscape:window-width="1920"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     inkscape:document-rotation="0"
+     bordercolor="#666666"
+     pagecolor="#ffffff"
+     inkscape:showpageshadow="false"
+     showborder="false">
+    <inkscape:grid
+       type="xygrid"
+       id="grid836" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata8">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs6" />
+  <rect
+     y="-1.8326024e-07"
+     x="-1.4843751e-07"
+     height="64"
+     width="64"
+     id="rect2987"
+     style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.636824" />
+  <rect
+     y="2.9675395"
+     x="2.9675395"
+     height="58.064922"
+     width="58.064919"
+     id="rect2989"
+     style="fill:none;stroke:#ffffff;stroke-width:3.93508;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+  <g
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:24px;line-height:1.25;font-family:Roboto;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:3"
+     id="text837"
+     aria-label="REV">
+    <path
+       id="path839"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:PoliceSNCF;fill:#ffffff;stroke-width:3"
+       d="m 21.628906,27.171875 q 0,-1.3125 -0.609375,-2.601563 -0.609375,-1.265625 -1.617187,-2.34375 -1.054688,-1.03125 -2.367188,-1.617187 Q 15.746094,20 14.433594,20 H 7.2148437 v 24 h 4.3359373 v -9.609375 h 2.882813 q 0.539062,0 1.054687,0.257812 0.515625,0.234375 0.9375,0.632813 0.398438,0.421875 0.632813,0.9375 0.234375,0.539062 0.234375,1.054687 V 44 h 4.335937 v -6.726563 q 0,-1.242187 -0.28125,-2.179687 -0.304687,-0.9375 -0.726562,-1.523438 -0.421875,-0.609375 -0.773438,-0.890625 -0.351562,-0.257812 -0.609375,-0.445312 l 0.04687,-0.04687 q 0.28125,-0.28125 0.632813,-0.65625 0.328125,-0.375 0.75,-1.054688 0.375,-0.65625 0.679687,-1.5 0.28125,-0.84375 0.28125,-1.804687 z m -7.195312,2.90625 H 11.550781 V 24.3125 h 2.882813 q 0.539062,0 1.054687,0.257812 0.515625,0.234375 0.9375,0.632813 0.398438,0.421875 0.632813,0.9375 0.234375,0.539062 0.234375,1.054687 0,0.539063 -0.234375,1.03125 -0.234375,0.539063 -0.632813,0.9375 -0.421875,0.421875 -0.9375,0.679688 -0.515625,0.234375 -1.054687,0.234375 z" />
+    <path
+       id="path841"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:PoliceSNCF;fill:#ffffff;stroke-width:3"
+       d="M 29.902344,29.773437 V 24.3125 H 39.980469 V 20 H 25.566406 V 44 H 39.980469 V 39.6875 H 29.902344 v -5.601563 h 4.3125 v -4.3125 z" />
+    <path
+       id="path843"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:PoliceSNCF;fill:#ffffff;stroke-width:3"
+       d="M 49.566406,32.820312 46.707031,20 h -4.335937 l 5.039062,24 h 4.335938 l 5.039062,-24 h -4.078125 z" />
+  </g>
+</svg>

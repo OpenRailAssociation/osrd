@@ -1,0 +1,296 @@
+- name: track_sections
+  table_name: osrd_infra_tracksectionlayer
+  id_field: id
+  views:
+    - name: geo
+      on_field: geographic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "(track_section.data->>'length')::float as length"
+        - "(track_section.data->>'line_code')::int as line_code"
+        - "(track_section.data->>'line_name')::text as line_name"
+        - "(track_section.data->>'track_number')::int as track_number"
+        - "(track_section.data->>'track_name')::text as track_name"
+        - "(track_section.data->>'navigability')::text as navigability"
+        - "(track_section.data->>'slopes')::text as slopes"
+        - "(track_section.data->>'curves')::text as curves"
+      joins:
+        - "inner join osrd_infra_tracksectionmodel track_section on track_section.obj_id = layer.obj_id and track_section.infra_id = layer.infra_id"
+    - name: sch
+      on_field: schematic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "(track_section.data->>'length')::float as length"
+        - "(track_section.data->>'line_code')::int as line_code"
+        - "(track_section.data->>'line_name')::text as line_name"
+        - "(track_section.data->>'track_number')::int as track_number"
+        - "(track_section.data->>'track_name')::text as track_name"
+        - "(track_section.data->>'navigability')::text as navigability"
+        - "(track_section.data->>'slopes')::text as slopes"
+        - "(track_section.data->>'curves')::text as curves"
+        - "(track_section.data->>'loading_gauge_limits')::text as loading_gauge_limits"
+      joins:
+        - "inner join osrd_infra_tracksectionmodel track_section on track_section.obj_id = layer.obj_id and track_section.infra_id = layer.infra_id"
+
+- name: signals
+  table_name: osrd_infra_signallayer
+  id_field: id
+  views:
+    - name: geo
+      on_field: geographic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "(signal.data->>'track')::text as track"
+        - "(signal.data->>'position')::float as position"
+        - "(signal.data->>'direction')::text as direction"
+        - "(signal.data->>'sight_distance')::float as sight_distance"
+        - "(signal.data->>'linked_detector')::text as linked_detector"
+        - "(signal.data->>'aspects')::text as aspects"
+        - "(signal.data->>'angle_sch')::float as angle_sch"
+        - "(signal.data->>'angle_geo')::float as angle_geo"
+        - "(signal.data->>'type_code')::text as type_code"
+        - "(signal.data->>'support_type')::text as support_type"
+        - "(signal.data->>'is_in_service')::boolean as is_in_service"
+        - "(signal.data->>'is_lightable')::boolean as is_lightable"
+        - "(signal.data->>'is_operational')::boolean as is_operational"
+        - "(signal.data->>'comment')::text as comment"
+        - "(signal.data->>'physical_organization_group')::text as physical_organization_group"
+        - "(signal.data->>'responsible_group')::text as responsible_group"
+        - "(signal.data->>'label')::text as label"
+        - "(signal.data->>'installation_type')::text as installation_type"
+        - "(signal.data->>'value')::text as value"
+        - "(signal.data->>'side')::text as side"
+      joins:
+        - "inner join osrd_infra_signalmodel signal on signal.obj_id = layer.obj_id and signal.infra_id = layer.infra_id"
+    - name: sch
+      on_field: schematic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "(signal.data->>'track')::text as track"
+        - "(signal.data->>'position')::float as position"
+        - "(signal.data->>'direction')::text as direction"
+        - "(signal.data->>'sight_distance')::float as sight_distance"
+        - "(signal.data->>'linked_detector')::text as linked_detector"
+        - "(signal.data->>'aspects')::text as aspects"
+        - "(signal.data->>'angle_sch')::float as angle_sch"
+        - "(signal.data->>'angle_geo')::float as angle_geo"
+        - "(signal.data->>'type_code')::text as type_code"
+        - "(signal.data->>'support_type')::text as support_type"
+        - "(signal.data->>'is_in_service')::boolean as is_in_service"
+        - "(signal.data->>'is_lightable')::boolean as is_lightable"
+        - "(signal.data->>'is_operational')::boolean as is_operational"
+        - "(signal.data->>'comment')::text as comment"
+        - "(signal.data->>'physical_organization_group')::text as physical_organization_group"
+        - "(signal.data->>'responsible_group')::text as responsible_group"
+        - "(signal.data->>'label')::text as label"
+        - "(signal.data->>'installation_type')::text as installation_type"
+        - "(signal.data->>'value')::text as value"
+        - "(signal.data->>'side')::text as side"
+      joins:
+        - "inner join osrd_infra_signalmodel signal on signal.obj_id = layer.obj_id and signal.infra_id = layer.infra_id"
+
+- name: speed_sections
+  table_name: osrd_infra_speedsectionlayer
+  id_field: id
+  views:
+    - name: geo
+      on_field: geographic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "(speed_section.data->>'speed')::float as speed"
+        - "(speed_section.data->>'track_ranges')::text as track_ranges"
+      joins:
+        - "inner join osrd_infra_speedsectionmodel speed_section on speed_section.obj_id = layer.obj_id and speed_section.infra_id = layer.infra_id"
+    - name: sch
+      on_field: schematic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "(speed_section.data->>'speed')::float as speed"
+        - "(speed_section.data->>'track_ranges')::text as track_ranges"
+      joins:
+        - "inner join osrd_infra_speedsectionmodel speed_section on speed_section.obj_id = layer.obj_id and speed_section.infra_id = layer.infra_id"
+
+- name: track_section_links
+  table_name: osrd_infra_tracksectionlinklayer
+  id_field: id
+  views:
+    - name: geo
+      on_field: geographic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "(track_section_link.data->>'src')::text as src"
+        - "(track_section_link.data->>'dst')::text as dst"
+        - "(track_section_link.data->>'navigability')::text as navigability"
+      joins:
+        - "inner join osrd_infra_tracksectionlinkmodel track_section_link on track_section_link.obj_id = layer.obj_id and track_section_link.infra_id = layer.infra_id"
+    - name: sch
+      on_field: schematic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "(track_section_link.data->>'src')::text as src"
+        - "(track_section_link.data->>'dst')::text as dst"
+        - "(track_section_link.data->>'navigability')::text as navigability"
+      joins:
+        - "inner join osrd_infra_tracksectionlinkmodel track_section_link on track_section_link.obj_id = layer.obj_id and track_section_link.infra_id = layer.infra_id"
+
+- name: switches
+  table_name: osrd_infra_switchlayer
+  id_field: id
+  views:
+    - name: geo
+      on_field: geographic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "(switch.data->>'switch_type')::text as switch_type"
+        - "(switch.data->>'group_change_delay')::float as group_change_delay"
+        - "(switch.data->>'ports')::text as ports"
+        - "(switch.data->>'label')::text as label"
+      joins:
+        - "inner join osrd_infra_switchmodel switch on switch.obj_id = layer.obj_id and switch.infra_id = layer.infra_id"
+    - name: sch
+      on_field: schematic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "(switch.data->>'switch_type')::text as switch_type"
+        - "(switch.data->>'group_change_delay')::float as group_change_delay"
+        - "(switch.data->>'ports')::text as ports"
+        - "(switch.data->>'label')::text as label"
+      joins:
+        - "inner join osrd_infra_switchmodel switch on switch.obj_id = layer.obj_id and switch.infra_id = layer.infra_id"
+
+- name: detectors
+  table_name: osrd_infra_detectorlayer
+  id_field: id
+  views:
+    - name: geo
+      on_field: geographic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "(detector.data->>'track')::text as track"
+        - "(detector.data->>'position')::float as position"
+        - "(detector.data->>'applicable_directions')::text as applicable_directions"
+      joins:
+        - "inner join osrd_infra_detectormodel detector on detector.obj_id = layer.obj_id and detector.infra_id = layer.infra_id"
+    - name: sch
+      on_field: schematic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "(detector.data->>'track')::text as track"
+        - "(detector.data->>'position')::float as position"
+        - "(detector.data->>'applicable_directions')::text as applicable_directions"
+      joins:
+        - "inner join osrd_infra_detectormodel detector on detector.obj_id = layer.obj_id and detector.infra_id = layer.infra_id"
+
+- name: buffer_stops
+  table_name: osrd_infra_bufferstoplayer
+  id_field: id
+  views:
+    - name: geo
+      on_field: geographic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "(buffer_stop.data->>'track')::text as track"
+        - "(buffer_stop.data->>'position')::float as position"
+        - "(buffer_stop.data->>'applicable_directions')::text as applicable_directions"
+      joins:
+        - "inner join osrd_infra_bufferstopmodel buffer_stop on buffer_stop.obj_id = layer.obj_id and buffer_stop.infra_id = layer.infra_id"
+    - name: sch
+      on_field: schematic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "(buffer_stop.data->>'track')::text as track"
+        - "(buffer_stop.data->>'position')::float as position"
+        - "(buffer_stop.data->>'applicable_directions')::text as applicable_directions"
+      joins:
+        - "inner join osrd_infra_bufferstopmodel buffer_stop on buffer_stop.obj_id = layer.obj_id and buffer_stop.infra_id = layer.infra_id"
+
+- name: routes
+  table_name: osrd_infra_routelayer
+  id_field: id
+  views:
+    - name: geo
+      on_field: geographic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "(route.data->>'entry_point')::text as entry_point"
+        - "(route.data->>'exit_point')::text as exit_point"
+        - "(route.data->>'release_detectors')::text as release_detectors"
+        - "(route.data->>'path')::text as path"
+      joins:
+        - "inner join osrd_infra_routemodel route on route.obj_id = layer.obj_id and route.infra_id = layer.infra_id"
+    - name: sch
+      on_field: schematic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "(route.data->>'entry_point')::text as entry_point"
+        - "(route.data->>'exit_point')::text as exit_point"
+        - "(route.data->>'release_detectors')::text as release_detectors"
+        - "(route.data->>'path')::text as path"
+      joins:
+        - "inner join osrd_infra_routemodel route on route.obj_id = layer.obj_id and route.infra_id = layer.infra_id"
+
+- name: operational_points
+  table_name: osrd_infra_operationalpointlayer
+  id_field: id
+  views:
+    - name: geo
+      on_field: geographic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "(operational_point.data->>'parts')::text as parts"
+        - "(operational_point.data->>'ci')::int as ci"
+        - "(operational_point.data->>'ch')::text as ch"
+        - "(operational_point.data->>'ch_short_label')::text as ch_short_label"
+        - "(operational_point.data->>'ch_long_label')::text as ch_long_label"
+        - "(operational_point.data->>'name')::text as name"
+      joins:
+        - "inner join osrd_infra_operationalpointmodel operational_point on operational_point.obj_id = layer.obj_id and operational_point.infra_id = layer.infra_id"
+    - name: sch
+      on_field: schematic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "(operational_point.data->>'parts')::text as parts"
+        - "(operational_point.data->>'ci')::int as ci"
+        - "(operational_point.data->>'ch')::text as ch"
+        - "(operational_point.data->>'ch_short_label')::text as ch_short_label"
+        - "(operational_point.data->>'ch_long_label')::text as ch_long_label"
+        - "(operational_point.data->>'name')::text as name"
+      joins:
+        - "inner join osrd_infra_operationalpointmodel operational_point on operational_point.obj_id = layer.obj_id and operational_point.infra_id = layer.infra_id"
+
+- name: errors
+  table_name: osrd_infra_errorlayer
+  id_field: id
+  views:
+    - name: geo
+      on_field: geographic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "layer.obj_type as type"
+        - "layer.information::text as information"
+    - name: sch
+      on_field: schematic
+      cache_duration: 3600
+      fields:
+        - "layer.obj_id as id"
+        - "layer.obj_type as type"
+        - "layer.information::text as information"

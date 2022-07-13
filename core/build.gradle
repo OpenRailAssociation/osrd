@@ -1,0 +1,222 @@
+// this project is licensed under LGPLv3.
+// DO NOT ADD any dependency which isn't compatible with LGPLv3, such as:
+//  - GPLv2, GPLv2+
+//  - GPLv3, GPLv3+
+//  - EPL 1.0
+//
+// The following licenses were checked for compatibility for use as libraries:
+//  - Apache 2.0
+//  - MIT
+//  - BSD licenses
+//  - EPL2.0 (see https://www.eclipse.org/legal/epl-2.0/faq.php#h.hsnsfg4e0htq)
+//  - LGPLv2, LGPLv2+, LGPLv3
+//  - GPLv2 with classpath exception
+//  - CC Attribution
+
+import static org.apache.tools.ant.taskdefs.condition.Os.*
+
+plugins {
+    id 'java'
+    id 'org.jetbrains.kotlin.jvm' version '1.6.10'
+    id 'application'
+    id 'checkstyle'
+    id 'com.github.spotbugs' version '5.0.6'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'jacoco'
+}
+
+// region DEPENDENCIES
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // kotlin
+    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib'  // Apache 2.0
+    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: '1.6.1'  // Apache 2.0
+
+    // base primitives
+    implementation group: 'com.google.guava', name: 'guava', version: '31.1-jre'  // Apache 2.0
+
+    // command line parsing
+    implementation group: 'com.beust', name: 'jcommander', version: '1.78'  // Apache 2.0
+
+    // fast primitive collections
+    implementation group: 'com.carrotsearch', name: 'hppc', version: '0.9.0'  // Apache 2.0
+
+    // JSON parsing
+    implementation 'com.squareup.moshi:moshi:1.13.0' // Apache 2.0
+    implementation 'com.squareup.moshi:moshi-adapters:1.13.0'  // Apache 2.0
+
+    // HTTP server framework
+    implementation group: 'org.takes', name: 'takes', version: '1.19'  // MIT
+    implementation group: 'javax.json', name: 'javax.json-api', version: '1.1.4'  // GPLv2 with classpath exemption
+
+    // HTTP client
+    implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.9.1' // Apache 2.0
+
+    // ClassGraph (FastClasspathScanner)
+    implementation group: 'io.github.classgraph', name: 'classgraph', version: '4.8.102' // MIT
+
+    // for debug UI
+    implementation 'com.github.yannrichet:JMathPlot:1.0.1' // BSD
+
+    // the logging API stub
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.+'  // MIT
+    // the logging API implementation
+    implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'  // EPL 1.0 (incompatible) and LGPL 2.1 (compatible)
+    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+
+    // Sentry
+    implementation group: 'io.sentry', name: 'sentry', version: '5.0.1'  // MIT
+
+    // Use JUnit Jupiter API for testing.
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'  // EPL 2.0
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.8.2'  // EPL 2.0
+    // Use JUnit Jupiter Engine for testing.
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'  // EPL 2.0
+    // jqwik for property based testing
+    testImplementation 'net.jqwik:jqwik:1.6.3'  // EPL 2.0
+    // mockito for mocking
+    testImplementation 'org.mockito:mockito-inline:4.3.1'  // MIT
+    testImplementation 'org.mockito:mockito-junit-jupiter:4.3.1'  // MIT
+
+    // Only needed to run tests in a version of IntelliJ IDEA that bundles older versions
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.8.2'  // EPL 2.0
+
+    // for linter annotations
+    compileOnly 'net.jcip:jcip-annotations:1.0'  // CC Attribution
+    compileOnly 'com.github.spotbugs:spotbugs-annotations:4.5.3'  // LGPLv2.1
+    testCompileOnly 'net.jcip:jcip-annotations:1.0'  // CC Attribution
+    testCompileOnly 'com.github.spotbugs:spotbugs-annotations:4.5.3'  // LGPLv2.1
+}
+
+// endregion
+
+// region MAIN
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+}
+
+application {
+    mainClass = 'fr.sncf.osrd.App'
+}
+
+def genExamplesDir = "$buildDir/generated_examples"
+
+sourceSets {
+    test {
+        resources {
+            // TODO: figure out the proper way to add generated resources to a source set
+            //  https://docs.gradle.org/current/dsl/org.gradle.api.tasks.SourceSetOutput.html
+            srcDirs = ["examples", genExamplesDir]
+        }
+    }
+}
+
+archivesBaseName = "osrd"
+
+run {
+    enableAssertions = true
+}
+
+// endregion
+
+// region TESTS
+
+test {
+    useJUnitPlatform {
+        includeEngines 'jqwik', 'junit-jupiter'
+    }
+}
+
+def genExamples = tasks.register("genExamples", Exec) {
+    inputs.files(fileTree('examples/generated/')).withPropertyName('sourceFiles')
+    outputs.dir(genExamplesDir).withPropertyName('outputDir')
+    def python = isFamily(FAMILY_WINDOWS) ? "python.exe" : "python3"
+    commandLine python, "examples/generated/generate.py", genExamplesDir
+}
+
+genExamples.configure {
+    onlyIf { !project.hasProperty('skipGenExamples') }
+}
+
+processTestResources.configure {
+    dependsOn genExamples
+}
+
+// endregion
+
+// region CODE_QUALITY
+
+checkstyle {
+    toolVersion '9.2'
+    configFile rootProject.file('config/checkstyle/checkstyle.xml')
+    ignoreFailures false
+    maxWarnings 0
+    showViolations true
+}
+
+tasks.withType(Checkstyle) {
+    reports {
+        xml.required = true
+    }
+}
+
+// enable all linter warnings, and error out on warnings
+tasks.withType(JavaCompile) {
+    options.compilerArgs << "-Xlint:all" << "-Werror"
+    options.encoding = "UTF-8"
+}
+
+spotbugs {
+    ignoreFailures = false
+    showStackTraces = true
+    showProgress = true
+    // can also be 'more' or 'default'
+    effort = 'max'
+    // report all diagnosed bugs
+    reportLevel = 'low'
+    maxHeapSize = '1g'
+    excludeFilter = file('config/spotbugs/exclude.xml')
+}
+
+tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
+    if (project.hasProperty("spotbugs_report_xml")) {
+        reports { xml.required = true }
+    } else {
+        reports { html.required = true }
+    }
+}
+
+test {
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    reports {
+        xml.required = true
+    }
+}
+
+// endregion
+
+// region KOTLIN
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
+        jvmTarget = "17"
+    }
+}
+
+// endregion
+
+tasks.register("printSettings", DefaultTask) {
+    doLast {
+        println "java.home " + System.getProperty('java.home')
+    }
+}
+

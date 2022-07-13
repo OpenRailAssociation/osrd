@@ -1,0 +1,120 @@
+{
+  "rolling_stocks": [],
+  "train_schedules": [
+    {
+      "id": "Test_1.",
+      "rolling_stock": "short_fast_rolling_stock",
+      "departure_time": 0,
+      "initial_head_location": {
+        "track_section": "tr.12",
+        "offset": 50
+      },
+      "initial_speed": 0,
+      "routes": [
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81"
+      ],
+      "phases": [
+        {
+          "type": "navigate",
+          "driver_sight_distance": 400,
+          "end_location": {
+            "track_section": "tr.81",
+            "offset": 200
+          }
+        }
+      ],
+      "stops": [
+        {
+          "duration": 1,
+          "position": -1
+        }
+      ]
+    },{
+      "id": "Test_2.",
+      "rolling_stock": "short_slow_rolling_stock",
+      "departure_time": 50,
+      "initial_head_location": {
+        "track_section": "tr.12",
+        "offset": 50
+      },
+      "initial_speed": 0,
+      "routes": [
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81"
+      ],
+      "phases": [
+        {
+          "type": "navigate",
+          "driver_sight_distance": 400,
+          "end_location": {
+            "track_section": "tr.81",
+            "offset": 200
+          }
+        }
+      ],
+      "stops": [
+        {
+          "duration": 1,
+          "position": -1
+        }
+      ]
+    },{
+      "id": "Test_3.",
+      "rolling_stock": "fast_rolling_stock",
+      "departure_time": 100,
+      "initial_head_location": {
+        "track_section": "tr.12",
+        "offset": 50
+      },
+      "initial_speed": 0,
+      "routes": [
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81",
+        "rt.12", "rt.23", "rt.34", "rt.45", "rt.56", "rt.67", "rt.78", "rt.81"
+      ],
+      "phases": [
+        {
+          "type": "navigate",
+          "driver_sight_distance": 400,
+          "end_location": {
+            "track_section": "tr.81",
+            "offset": 200
+          }
+        }
+      ],
+      "stops": [
+        {
+          "duration": 1,
+          "position": -1
+        }
+      ]
+    }
+  ]
+}

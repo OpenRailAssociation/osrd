@@ -1,0 +1,24 @@
+{
+  "tags": {
+      "allowUnknownTags": true
+  },
+  "source": {
+      "include": ["./src"]
+  },
+  "plugins": [
+      "plugins/markdown",
+      "better-docs/component"
+  ],
+  "opts": {
+      "encoding": "utf8",
+      "destination": "docs/",
+      "recurse": true,
+      "verbose": true,
+      "template": "./node_modules/better-docs"
+  },
+  "templates": {
+    "better-docs": {
+        "name": "SUPER FRONT Documentation"
+    }
+}
+}

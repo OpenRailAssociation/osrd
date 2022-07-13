@@ -1,0 +1,23 @@
+.rollingstock-search-filters {
+  background-color: var(--coolgray15);
+}
+.rollingstock-container {
+  &:hover {
+    .rollingstock-header, .rollingstock-body, .rollingstock-footer {
+      border-color: var(--coolgray3);
+    }
+  }
+  &.active {
+    .rollingstock-header, .rollingstock-body, .rollingstock-footer {
+      border-color: var(--blue);
+    }
+  }
+}
+.rollingstock-header {
+  background-color: var(--gray);
+  border-color: var(--gray);
+}
+
+.rollingstock-body, .rollingstock-footer {
+  border-color: var(--gray);
+}

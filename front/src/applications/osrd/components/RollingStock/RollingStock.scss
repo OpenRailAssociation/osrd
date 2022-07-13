@@ -1,0 +1,121 @@
+/* Filters */
+.rollingstock-search {
+  display: block;
+  position: relative;
+  height: 100%;
+}
+.rollingstock-search-filters {
+  display: block;
+  position: relative;
+  background-color: #fff;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 4px;
+
+  @media screen and (max-width: 767px) {
+    height: 17rem;
+  }
+}
+
+/* Results */
+.rollingstock-search-list {
+  display: block;
+  position: relative;
+  overflow: auto;
+  height: 60vh;
+  padding-right: .5rem;
+
+  .loader {
+    margin-top: 1rem;
+    transform: none;
+  }
+}
+
+.rollingstock-container {
+  display: block;
+  position: relative;
+  width: 100%;
+  cursor: pointer;
+  transition: .2s;
+  border-radius: 4px;
+  &:hover {
+    .rollingstock-header, .rollingstock-body, .rollingstock-footer {
+      border-color: #333;
+    }
+  }
+  &.active {
+    .rollingstock-header, .rollingstock-body, .rollingstock-footer {
+      border-color: #0088ce;
+    }
+  }
+}
+
+.rollingstock-header {
+  border-radius: 4px 4px 0 0;
+  background-color: #d7d7d7;
+  padding: 0 .5rem;
+  height: 2rem;
+  overflow: hidden;
+  border-top: 2px solid #d7d7d7;
+  border-left: 2px solid #d7d7d7;
+  border-right: 2px solid #d7d7d7;
+  transition: .2s;
+  .rollingstock-title {
+    display: flex;
+    justify-content: space-between;
+    margin-right: 1rem;
+    font-weight: bold;
+    font-size: 1.25rem;
+  }
+}
+.rollingstock-img {
+  width: 100%;
+  position: relative;
+  white-space: nowrap;
+  flex-grow: 20;
+  overflow: hidden;
+}
+.rollingstock-img img {
+  display: inline-block;
+  position: relative;
+  vertical-align: baseline;
+}
+.rollingstock-img-scale {
+  transform: scale(.4);
+  transform-origin: left;
+}
+
+.rollingstock-body {
+  padding: 0 .5rem;
+  border-left: 2px solid #d7d7d7;
+  border-right: 2px solid #d7d7d7;
+  transition: .2s;
+  font-size: .8rem;
+  font-weight: lighter;
+  .rollingstock-details-table {
+  }
+  .curve-container {
+    height: 15rem;
+  }
+}
+
+.rollingstock-footer {
+  padding: 0 .5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 0 0 4px 4px;
+  font-size: .8rem;
+  transition: .2s;
+  border-left: 2px solid #d7d7d7;
+  border-right: 2px solid #d7d7d7;
+  border-bottom: 2px solid #d7d7d7;
+}
+.rollingstock-footer svg {
+  vertical-align: top;
+  font-size: 1.1rem;
+  margin-right: 3px;
+}
+.rollingstock-footer small {
+  font-size: 80%;
+}

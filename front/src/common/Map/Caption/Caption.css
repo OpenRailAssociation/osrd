@@ -1,0 +1,13 @@
+.caption {
+  position: fixed;
+  right: 0;
+  top: 10rem;
+  background-color: white;
+  z-index: 1000;
+  color: #747678;
+}
+
+.caption-img {
+  width: 30px;
+  height: 30px;
+}

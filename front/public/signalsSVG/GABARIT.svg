@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svg2"
+   version="1.1"
+   inkscape:version="1.0alpha2 (a30573dbe8, 2019-07-23)"
+   width="64"
+   height="64"
+   sodipodi:docname="sig_tunnel.svg">
+  <metadata
+     id="metadata8">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs6" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1024"
+     id="namedview4"
+     showgrid="true"
+     inkscape:snap-bbox="true"
+     inkscape:bbox-paths="true"
+     inkscape:bbox-nodes="true"
+     inkscape:snap-bbox-edge-midpoints="true"
+     inkscape:snap-bbox-midpoints="true"
+     inkscape:object-paths="true"
+     inkscape:object-nodes="true"
+     inkscape:snap-intersection-paths="true"
+     inkscape:snap-smooth-nodes="true"
+     inkscape:snap-midpoints="true"
+     inkscape:snap-object-midpoints="true"
+     inkscape:snap-center="true"
+     inkscape:snap-page="true"
+     inkscape:zoom="4.6732673"
+     inkscape:cx="51.878192"
+     inkscape:cy="14.571078"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="text828"
+     inkscape:document-rotation="0">
+    <inkscape:grid
+       spacingy="0.64"
+       spacingx="0.64"
+       id="grid845"
+       type="xygrid" />
+  </sodipodi:namedview>
+  <g
+     id="g3769"
+     transform="translate(-107.73191,-4.8418837)">
+    <g
+       id="g830">
+      <g
+         id="text828"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:45.7426px;line-height:1.25;font-family:'Traveling _Typewriter';-inkscape-font-specification:'Traveling _Typewriter, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:5.71782"
+         transform="scale(1.1039209,0.905862)"
+         aria-label="GARE">
+        <rect
+           style="opacity:1;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:3.64125;stop-opacity:1"
+           id="rect2987"
+           width="57.975166"
+           height="70.65094"
+           x="97.590248"
+           y="5.3450565" />
+        <g
+           transform="translate(-55.076405)"
+           style="fill:#ffffff"
+           id="g858">
+          <rect
+             style="vector-effect:none;fill:#ffffff;stroke:none;stroke-width:10.6905;stroke-linecap:round;stroke-linejoin:round;stop-color:#000000"
+             id="rect847"
+             width="8.6962757"
+             height="56.520752"
+             x="158.46417"
+             y="12.410151" />
+          <rect
+             y="-204.8443"
+             x="12.410151"
+             height="46.380135"
+             width="10.597641"
+             id="rect849"
+             style="vector-effect:none;fill:#ffffff;stroke:none;stroke-width:10.6905;stroke-linecap:round;stroke-linejoin:round;stop-color:#000000"
+             transform="rotate(90)" />
+          <rect
+             y="12.410151"
+             x="196.14803"
+             height="56.520752"
+             width="8.6962757"
+             id="rect853"
+             style="vector-effect:none;fill:#ffffff;stroke:none;stroke-width:10.6905;stroke-linecap:round;stroke-linejoin:round;stop-color:#000000" />
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

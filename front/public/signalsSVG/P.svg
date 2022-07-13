@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   id="svg2"
+   version="1.1"
+   width="64"
+   height="64">
+  <metadata
+     id="metadata8">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs6" />
+  <g
+     id="g3769"
+     transform="translate(-107.73191,-4.8418837)">
+    <rect
+       y="4.8418837"
+       x="107.73191"
+       height="64"
+       width="64"
+       id="rect2987"
+       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.636824" />
+    <rect
+       y="5.8418837"
+       x="108.73191"
+       height="62"
+       width="62"
+       id="rect852"
+       style="fill:#ffffff;stroke:none;stroke-width:0.984127;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;paint-order:markers stroke fill;stop-color:#000000" />
+    <g
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:50px;line-height:1.25;font-family:Roboto;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:6.25"
+       id="text836"
+       aria-label="P">
+      <path
+         id="path835"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:PoliceSNCF;stroke-width:6.25"
+         d="M 133.75047,32.837978 V 20.82626 h 6.00585 q 1.12305,0 2.19727,0.537109 1.07422,0.488281 1.95313,1.318359 0.83007,0.878907 1.31835,1.953125 0.48829,1.123047 0.48829,2.197266 0,1.123047 -0.48829,2.148437 -0.48828,1.123047 -1.31835,1.953125 -0.87891,0.878907 -1.95313,1.416016 -1.12305,0.488281 -2.19727,0.488281 z m 0,8.984375 h 6.00585 q 2.73438,0 5.41993,-1.220703 2.68554,-1.269531 4.93164,-3.466797 2.14843,-2.148437 3.36914,-4.833984 1.26953,-2.685547 1.26953,-5.46875 0,-2.734375 -1.26953,-5.419922 -1.26953,-2.685547 -3.36914,-4.931641 -2.19727,-2.148437 -4.93164,-3.36914 -2.68555,-1.269531 -5.41993,-1.269531 h -15.03906 v 50 h 9.03321 z" />
+    </g>
+  </g>
+</svg>

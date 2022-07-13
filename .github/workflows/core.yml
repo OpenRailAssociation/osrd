@@ -1,0 +1,78 @@
+name: Test Core
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - core/**
+  push:
+    branches:
+      - dev
+      - staging
+      - prod
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          # run the CI on the actual latest commit of the PR, not the attempted merge
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - run: pip install -r core/examples/generated/lib/requirements.txt
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 17
+      - uses: reviewdog/action-setup@v1
+        with:
+          reviewdog_version: latest
+
+      - uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: 7.3
+          arguments: -p core -Pspotbugs_report_xml --continue check
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          # github runs PR workflows on the result of a merge commit.
+          # tell codecov the sha of the unmerged PR https://github.com/codecov/uploader/issues/525
+          override_commit: "${{ github.event.pull_request.head.sha }}"
+          name: codecov
+          flags: unittests,core
+          directory: ./core/build/reports/jacoco/test
+          files: jacocoTestReport.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          verbose: true
+
+      - name: Report JUnit failures
+        uses: mikepenz/action-junit-report@v2
+        if: failure()
+        with:
+          report_paths: "core/build/test-results/test/TEST-*.xml"
+          require_tests: true
+
+      - name: Report checkstyle lints
+        if: failure()
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        run: |
+          for report_path in core/build/reports/checkstyle/*.xml; do
+              report="${report_path##*/}"
+              sourceset_name="${report%.xml}"
+              report_name="Checkstyle ${sourceset_name}"
+              echo "Uploading ${report_name}"
+              reviewdog -name "${report_name}" -reporter=github-pr-check -f=checkstyle < "${report_path}"
+          done
+
+      - name: Report spotbugs lints
+        if: failure()
+        uses: jwgmeligmeyling/spotbugs-github-action@v1.2
+        with:
+          path: "core/build/reports/spotbugs/*.xml"

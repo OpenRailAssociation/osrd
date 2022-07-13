@@ -1,0 +1,10 @@
+{
+  "simulation_time_step": 1,
+  "infra_path": "infra.json",
+  "simulation_path": "simulation_keyboard.json",
+  "extra_rolling_stock_dirs": ["../rolling_stocks"],
+  "show_viewer": true,
+  "realtime_viewer": true,
+  "change_replay_check": true,
+  "simulation_step_pause": 0.2
+}

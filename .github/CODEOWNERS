@@ -1,0 +1,37 @@
+# CI/CD and CODEOWNERS
+/.github                                                 @DGEXSolutions/osrd-backend-maintainers
+
+# --- FRONT ---
+/front                                                   @nicolaswurtz
+
+# --- API ---
+/api                                                     @flomonster @multun @eckter
+
+# --- EDITOAST ---
+/editoast                                                @flomonster @multun @Tguisnet
+
+# --- CHARTOS ---
+/chartos                                                 @flomonster @multun
+
+# --- INTEGRATION TESTS  ---
+/tests                                                   @eckter
+
+# --- CORE ---
+/core                                                    @DGEXSolutions/osrd-backend-maintainers
+/core/src/main/java/fr/sncf/osrd/api                     @flomonster
+*Physics*.java                                           @DGEXSolutions/osrd-physics
+*Integrator*.java                                        @DGEXSolutions/osrd-physics
+*Integration*.java                                       @DGEXSolutions/osrd-physics
+
+# Python Interactive Client
+/core/src/python_interactive_client                      @flomonster @multun
+
+# buildsystem stuff
+/core/*gradle                                            @multun
+/core/config                                             @multun
+
+# openapi
+/core/specifications                                     @DGEXSolutions/osrd-backend-maintainers
+
+# Load database
+/load-database.sh                                        @flomonster

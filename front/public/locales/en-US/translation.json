@@ -1,0 +1,21 @@
+{
+    "Login": {
+        "pleaseconnect": "Please connect",
+        "trying": "Trying to reconnect...",
+        "username": "Username",
+        "password": "Password",
+        "connect": "Connect",
+        "englishFlag": "english flag",
+        "frenchFlag": "french flag"
+    },
+    "nav": {
+        "home": "Home",
+        "about": "About",
+        "map": "Map",
+        "contact": "Contact"
+    },
+    "common": {
+        "loading": "Chargement..."
+      }
+
+}

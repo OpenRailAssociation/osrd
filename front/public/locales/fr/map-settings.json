@@ -1,0 +1,28 @@
+{
+  "all": "Tous les signaux",
+  "bufferstops": "Heurtoirs",
+  "detectors": "Détecteurs",
+  "electrification": "Électrification",
+  "jdz": "Joints de zone",
+  "layers": "Couches de données",
+  "lights": "Signaux lumineux",
+  "mapSettings": "Paramètres cartographie",
+  "mapstyles": {
+    "blueprint": "Blueprint",
+    "darkmode": "Sombre",
+    "normal": "Normal"
+  },
+  "operationalpoints": "Points remarquables",
+  "signalingtype": "Type de block",
+  "showOSM": "Afficher le fond de carte",
+  "showOSMtracksections": "Afficher les voies OSM",
+  "speedlimits": "Vitesses limites",
+  "stops": "Pancartes d'arrêt",
+  "switches": "Appareils de voie",
+  "tivs": "Limites de vitesse",
+  "tracksources": {
+    "geographic": "Géographique",
+    "schematic": "Schématique"
+  },
+  "tvds": "Circuits de voie"
+}

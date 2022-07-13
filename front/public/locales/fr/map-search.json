@@ -1,0 +1,14 @@
+{
+  "linecode": "Code ligne",
+  "name": "Nom",
+  "noresult": "Aucun résultat",
+  "placeholderline": "Numéro de ligne",
+  "placeholdername": "Nom, appelation, libellé",
+  "pk": "PK",
+  "search": "Rechercher",
+  "signal": "Signal",
+  "signalbox": "Poste",
+  "station": "Gare",
+  "trackname": "Voie",
+  "type": "Type"
+}

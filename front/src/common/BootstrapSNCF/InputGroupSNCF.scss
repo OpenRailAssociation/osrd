@@ -1,0 +1,17 @@
+.input-group-sm {
+  button {
+    height: 1.875rem;
+    font-size: .875rem;
+    padding: .125rem 1.5rem;
+  }
+  .form-control-container {
+    height: 1.875rem;
+    input.form-control {
+      min-height: auto;
+      font-size: .875rem;
+    }
+  }
+}
+.dropdown-item {
+  cursor: pointer;
+}

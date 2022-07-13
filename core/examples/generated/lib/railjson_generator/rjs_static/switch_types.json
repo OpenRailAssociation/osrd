@@ -1,0 +1,88 @@
+[
+    {
+        "id": "point",
+        "ports": [
+            "base",
+            "left",
+            "right"
+        ],
+        "groups": {
+            "LEFT": [
+                {
+                    "src": "base",
+                    "dst": "left",
+                    "bidirectional": true
+                }
+            ],
+            "RIGHT": [
+                {
+                    "src": "base",
+                    "dst": "right",
+                    "bidirectional": true
+                }
+            ]
+        }
+    },
+    {
+        "id": "cross",
+        "ports": [
+            "north",
+            "south",
+            "east",
+            "west"
+        ],
+        "groups": {
+            "static": [
+                {
+                    "dst": "west",
+                    "src": "east",
+                    "bidirectional": true
+                },
+                {
+                    "dst": "south",
+                    "src": "north",
+                    "bidirectional": true
+                }
+            ]
+        }
+    },
+    {
+        "id": "double_cross",
+        "ports": [
+            "north_1",
+            "north_2",
+            "south_1",
+            "south_2"
+        ],
+        "groups": {
+            "N1_S1": [
+                {
+                    "dst": "south_1",
+                    "src": "north_1",
+                    "bidirectional": true
+                }
+            ],
+            "N1_S2": [
+                {
+                    "dst": "south_2",
+                    "src": "north_1",
+                    "bidirectional": true
+                }
+            ],
+            "N2_S1": [
+                {
+                    "dst": "south_1",
+                    "src": "north_2",
+                    "bidirectional": true
+                }
+            ],
+            "N2_S2": [
+                {
+                    "dst": "south_2",
+                    "src": "north_2",
+                    "bidirectional": true
+                }
+            ]
+        }
+    }
+]
