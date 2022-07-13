@@ -77,7 +77,7 @@
     "redux-persist": "^6.0.0",
     "redux-persist-transform-compress": "^4.2.0",
     "redux-persist-transform-filter": "0.0.20",
-    "redux-state-sync": "^3.1.2",
+    "redux-state-sync": "^3.1.4",
     "redux-thunk": "^2.3.0",
     "reselect": "^4.1.6",
     "sass": "^1.53.0",
