@@ -34,7 +34,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
     return !editorState.editorZone;
   },
   getRadius() {
-    return 50;
+    return 20;
   },
   getInitialState() {
     return {

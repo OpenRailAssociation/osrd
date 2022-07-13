@@ -7,7 +7,7 @@ export function getNewSignal(point?: [number, number]): MakeOptional<SignalEntit
     type: 'Feature',
     objType: 'Signal',
     properties: {
-      installation_type: 'DIVERS',
+      installation_type: '"S"',
     },
     geometry: point
       ? {
