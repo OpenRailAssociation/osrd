@@ -3,6 +3,7 @@ import { LayerProps } from 'react-map-gl';
 
 import {
   ALL_SIGNAL_LAYERS,
+  ALL_SIGNAL_LAYERS_SET,
   LIGHT_SIGNALS,
   PANELS_STOPS,
   PANELS_TIVS,
@@ -108,7 +109,7 @@ export function signalsToSprites(
         ['case', ['==', ['get', 'side'], 'RIGHT'], 'D', ['==', ['get', 'side'], 'LEFT'], 'G', ''],
       ];
     default:
-      return `${prefix}${type}`;
+      return ALL_SIGNAL_LAYERS_SET.has(type) ? `${prefix}${type}` : `${prefix}UNKNOWN`;
   }
 }
 

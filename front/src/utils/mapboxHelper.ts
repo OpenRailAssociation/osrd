@@ -5,8 +5,6 @@ import booleanIntersects from '@turf/boolean-intersects';
 import bbox from '@turf/bbox';
 import lineIntersect from '@turf/line-intersect';
 import lineSlice from '@turf/line-slice';
-
-/* Types */
 import { MapController, ViewportProps, WebMercatorViewport } from 'react-map-gl';
 import { MjolnirEvent } from 'react-map-gl/dist/es5/utils/map-controller';
 import { BBox, Coord, featureCollection } from '@turf/helpers';
@@ -22,7 +20,9 @@ import {
 } from 'geojson';
 import nearestPointOnLine from '@turf/nearest-point-on-line';
 import nearestPoint, { NearestPoint } from '@turf/nearest-point';
+
 import { Zone } from '../types';
+import { getAngle } from '../applications/editor/data/utils';
 
 /**
  * This class allows binding keyboard events to react-map-gl. Since those events are not supported
@@ -286,14 +286,22 @@ export function getLineGeoJSON(points: Position[]): Feature {
  * Give a list of lines or multilines and a specific position, returns the nearest point to that
  * position on any of those lines.
  */
-export function getNearestPoint(
-  lines: Feature<LineString | MultiLineString>[],
-  coord: Coord
-): NearestPoint {
-  const nearestPoints: Feature<Point>[] = lines.map((line) => ({
-    ...nearestPointOnLine(line, coord),
-    properties: line.properties,
-  }));
+export function getNearestPoint(lines: Feature<LineString>[], coord: Coord): NearestPoint {
+  const nearestPoints: Feature<Point>[] = lines.map((line) => {
+    const point = nearestPointOnLine(line, coord);
+    const angle = getAngle(
+      line.geometry.coordinates[point.properties.index as number],
+      line.geometry.coordinates[(point.properties.index as number) + 1]
+    );
+    return {
+      ...point,
+      properties: {
+        ...point.properties,
+        ...line.properties,
+        angleAtPoint: angle,
+      },
+    };
+  });
 
   return nearestPoint(coord, featureCollection(nearestPoints));
 }

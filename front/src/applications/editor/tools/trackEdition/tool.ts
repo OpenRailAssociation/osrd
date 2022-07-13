@@ -9,7 +9,7 @@ import {
   RiDragMoveLine,
   TiDeleteOutline,
 } from 'react-icons/all';
-import { Feature, LineString, MultiLineString } from 'geojson';
+import { Feature, LineString } from 'geojson';
 import nearestPointFn from '@turf/nearest-point';
 import { featureCollection } from '@turf/helpers';
 import nearestPointOnLine from '@turf/nearest-point-on-line';
@@ -250,7 +250,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
       setState({
         ...state,
         nearestPoint: hoveredEntities.length
-          ? getNearestPoint(hoveredEntities as Feature<LineString | MultiLineString>[], e.lngLat)
+          ? getNearestPoint(hoveredEntities as Feature<LineString>[], e.lngLat)
           : null,
       });
     } else if (editionState.type === 'addPoint' && state.anchorLinePoints) {
@@ -275,7 +275,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
         setState({
           ...state,
           nearestPoint: hoveredEntities.length
-            ? getNearestPoint(hoveredEntities as Feature<LineString | MultiLineString>[], e.lngLat)
+            ? getNearestPoint(hoveredEntities as Feature<LineString>[], e.lngLat)
             : null,
         });
       }
