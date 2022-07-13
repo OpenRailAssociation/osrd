@@ -69,7 +69,7 @@
     "react-map-gl": "^5.3.11",
     "react-redux": "^7.2.0",
     "react-rnd": "^10.3.7",
-    "react-router-dom": "^5.1.2",
+    "react-router-dom": "^6.3.0",
     "react-scripts": "^4.0.3",
     "react-transition-group": "^4.4.2",
     "redux": "^4.2.0",
