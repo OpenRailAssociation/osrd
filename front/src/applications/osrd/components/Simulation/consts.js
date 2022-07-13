@@ -21,9 +21,8 @@ export const LIST_VALUES_NAME_SPACE_CURVES_SLOPES = [
 
 // Signal Base is the Signaling system chosen for results display
 
-export const SIGNAL_BASE_DEFAULT = 'ERTMS';
+export const SIGNAL_BASE_DEFAULT = 'BAL3';
 
 export const LIST_VALUES_SIGNAL_BASE = [
-  'BAL3',
-  'ERTMS'
+  'BAL3'
 ];
