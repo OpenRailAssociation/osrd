@@ -34,7 +34,7 @@ class PathWaypoint(GeometryPointTrait, TrackLocationTrait):
 
     name: Optional[str] = Field(description="Name of the point")
     suggestion: bool
-    duration: float = Field(description="Duration of the stop if there is a stop at this point", ge=0)
+    duration: float = Field(description="Duration in seconds of the stop if there is a stop at this point", ge=0)
 
 
 class PathPayload(BaseModel):
@@ -47,8 +47,8 @@ class PathPayload(BaseModel):
 class SlopePoint(BaseModel):
     """This class is used to characterize each available slope of the path."""
 
-    position: float = Field(description="Position of the corresponding slope", ge=0)
-    gradient: float = Field(description="Gradient corresponding at the position of the path")
+    position: float = Field(description="Position in meters of the corresponding slope", ge=0)
+    gradient: float = Field(description="Gradient in meters per kilometers corresponding at the position of the path")
 
 
 class Slopes(BaseModel):
@@ -60,8 +60,8 @@ class Slopes(BaseModel):
 class CurvePoint(BaseModel):
     """This class is used to characterize each available curve of the path."""
 
-    position: float = Field(description="Position of the corresponding curve", ge=0)
-    radius: float = Field(description="Radius corresponding at the position of the path", ge=0)
+    position: float = Field(description="Position in meters of the corresponding curve", ge=0)
+    radius: float = Field(description="Radius in meters corresponding at the position of the path", ge=0)
 
 
 class Curves(BaseModel):
