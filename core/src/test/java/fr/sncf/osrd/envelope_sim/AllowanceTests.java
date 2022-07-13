@@ -726,4 +726,37 @@ public class AllowanceTests {
         assert linearException.errorType.equals("too_much_allowance_time");
         assert linearException.cause == OSRDError.ErrorCause.USER;
     }
+
+    @Test
+    public void testMarecoAfterLinear() {
+        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
+
+        var length = 2524;
+        var testPath = new FlatPath(length, 0);
+        var testContext = new EnvelopeSimContext(testRollingStock, testPath, 2.0);
+        var stops = new double[] { length };
+
+        var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 100, stops);
+
+        var firstAllowance = new LinearAllowance(
+                testContext,
+                655,
+                2258,
+                9.1,
+                List.of(
+                        new AllowanceRange(655, 2258, new AllowanceValue.Percentage(8.1))
+                )
+        );
+
+        var secondAllowance = new MarecoAllowance(
+                testContext,
+                485,
+                2286,
+                3.44,
+                List.of(
+                        new AllowanceRange(485, 2286, new AllowanceValue.Percentage(13))
+                )
+        );
+        secondAllowance.apply(firstAllowance.apply(maxEffortEnvelope));
+    }
 }
