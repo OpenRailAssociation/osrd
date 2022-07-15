@@ -1,9 +1,9 @@
-import { FaMapSigns } from 'react-icons/all';
+import { BsSkipEnd, FaMapSigns, MdSensors } from 'react-icons/all';
 
-import { getNewSignal } from './utils';
 import getPointEditionTool from './tool-factory';
-import { SignalEntity } from '../../../../types';
-import { SignalEditionLayers } from './components';
+import { getNewBufferStop, getNewDetector, getNewSignal } from './utils';
+import { BufferStopEntity, DetectorEntity, SignalEntity } from '../../../../types';
+import { BufferStopEditionLayers, DetectorEditionLayers, SignalEditionLayers } from './components';
 
 export const SignalEditionTool = getPointEditionTool<SignalEntity>({
   id: 'signal',
@@ -11,4 +11,18 @@ export const SignalEditionTool = getPointEditionTool<SignalEntity>({
   getNewEntity: getNewSignal,
   layersComponent: SignalEditionLayers,
   requiresAngle: true,
+});
+
+export const DetectorEditionTool = getPointEditionTool<DetectorEntity>({
+  id: 'detector',
+  icon: MdSensors,
+  getNewEntity: getNewDetector,
+  layersComponent: DetectorEditionLayers,
+});
+
+export const BufferStopEditionTool = getPointEditionTool<BufferStopEntity>({
+  id: 'buffer-stop',
+  icon: BsSkipEnd,
+  getNewEntity: getNewBufferStop,
+  layersComponent: BufferStopEditionLayers,
 });
