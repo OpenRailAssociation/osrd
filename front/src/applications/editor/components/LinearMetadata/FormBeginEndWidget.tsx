@@ -3,7 +3,7 @@ import { WidgetProps } from '@rjsf/core';
 
 export const FormBeginEndWidget: React.FC<WidgetProps> = (props) => {
   console.log(props);
-  const { id, label, value, required, readonly, onChange, options } = props;
+  const { id, label, value, required, readonly, onChange, options, rawErrors } = props;
   return (
     <div>
       {readonly ? (
@@ -15,10 +15,15 @@ export const FormBeginEndWidget: React.FC<WidgetProps> = (props) => {
           required={required}
           type="number"
           step="1"
+          min={options.min as number}
+          max={options.max as number}
           value={value}
           onChange={(e) => onChange(e.target.value)}
         />
       )}
+      {rawErrors?.map((e) => (
+        <p className="text-danger">{e}</p>
+      ))}
     </div>
   );
 };

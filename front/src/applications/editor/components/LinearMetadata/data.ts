@@ -40,8 +40,8 @@ function lineStringToFeature(line: LineString): Feature<LineString> {
 /**
  * Fix a linear metadata
  * - if empty it generate one
- * - sort it by begin
- * - if there is gap, it is created
+ * - if there is a gap at begin/end or inside, it is created
+ * - if there is an overlaps, remove it
  */
 export function fixLinearMetadataItems<T>(
   value: Array<LinearMetadataItem<T>> | undefined,
@@ -57,20 +57,32 @@ export function fixLinearMetadataItems<T>(
   return sortBy(value, ['begin']).flatMap((item, index, array) => {
     let result: Array<LinearMetadataItem<T>> = [];
 
-    // check for no gap at start
-    if (index === 0 && item.begin !== 0)
-      result.push({ begin: 0, end: item.begin } as LinearMetadataItem<T>);
+    if (index === 0) {
+      // check for no gap at start
+      if (item.begin !== 0) {
+        result.push({ begin: 0, end: item.begin } as LinearMetadataItem<T>);
+      }
+      result.push(item);
+    }
 
-    result.push(item);
-
-    // check for no gap inside
-    const next = array[index + 1];
-    if (next && item.end !== next.begin)
-      result.push({ begin: item.end, end: next.begin } as LinearMetadataItem<T>);
+    if (index > 0) {
+      const prev = array[index - 1];
+      // normal way
+      if (prev.end === item.begin) {
+        result.push(item);
+      }
+      //
+      // if there is gap with the previous
+      if (prev.end < item.begin) {
+        result.push({ begin: prev.end, end: item.begin } as LinearMetadataItem<T>);
+        result.push(item);
+      }
+    }
 
     // Check for gap at the end
-    if (!next && item.end !== lineLength)
+    if (index === array.length - 1 && item.end !== lineLength) {
       result.push({ begin: item.end, end: lineLength } as LinearMetadataItem<T>);
+    }
 
     return result;
   });
@@ -315,8 +327,20 @@ export function mergeIn<T>(
   }
 }
 
-const ZOOM_RATIO = 0.25;
+// Zoom by 25%
+const ZOOM_RATIO = 0.75;
+// Min size (in meter) of the viewbox
 const MIN_SIZE_TO_DISPLAY = 10;
+
+/**
+ * Compute the new viewbox after a zoom.
+ *
+ * @param data The linear data
+ * @param currentViewBox The actual viewbox (so before the zoom)
+ * @param zoom The zoom operation (in or out)
+ * @param point The point on the line on which the user zoom (in meter from the point 0)
+ * @returns The zoomed viewbox, or null if the newbox is equal to the full display
+ */
 export function getZoomedViewBox<T>(
   data: Array<LinearMetadataItem<T>>,
   currentViewBox: [number, number] | null,
@@ -330,7 +354,8 @@ export function getZoomedViewBox<T>(
   const fullDistance = max - min;
 
   const viewBox: [number, number] = currentViewBox ? currentViewBox : [min, max];
-  let distanceToDisplay = (viewBox[1] - viewBox[0]) * (zoom === 'IN' ? ZOOM_RATIO : ZOOM_RATIO + 1);
+  let distanceToDisplay =
+    (viewBox[1] - viewBox[0]) * (zoom === 'IN' ? ZOOM_RATIO : 1 - ZOOM_RATIO + 1);
 
   // if the distance to display if higher than the original one
   // we display everything, so return null
@@ -345,13 +370,53 @@ export function getZoomedViewBox<T>(
   // let's try to add the distance on each side
   let begin = point - distanceToDisplay / 2;
   let end = point + distanceToDisplay / 2;
-  if (begin >= min && end <= max) {
+  if (min <= begin && end <= max) {
     return [begin, end];
   }
 
+  // if begin < min, it means that the begin is outside
+  // so we need to add the diff at the end
+  // otherwise, it means that the end is outside
+  // so we need to add the diff at the begin
   if (begin < min) {
     return [min, end + (min - begin)];
   } else {
-    return [begin - (end - max), end];
+    return [begin - (end - max), max];
+  }
+}
+
+/**
+ * Compute the new viewbox after a translation.
+ *
+ * @param data The linear data
+ * @param currentViewBox The actual viewbox (so before the zoom)
+ * @param translation The translation in meter
+ * @returns The zoomed viewbox, or null if the newbox is equal to the full display
+ */
+export function transalteViewBox<T>(
+  data: Array<LinearMetadataItem<T>>,
+  currentViewBox: [number, number] | null,
+  translation: number
+): [number, number] | null {
+  // can't perform a translation on no data
+  if (data.length === 0) return null;
+  // can't perform a translation if not zoomed
+  if (!currentViewBox) return null;
+
+  const min = data[0].begin;
+  const max = last(data)?.end || 0;
+  const distanceToDisplay = currentViewBox[1] - currentViewBox[0];
+
+  // if translation on the left, we do it on the min
+  if (translation < 0) {
+    // new min is the min minus the transaltion or 0
+    const newMin = currentViewBox[0] + translation > 0 ? currentViewBox[0] + translation : 0;
+    return [newMin, newMin + distanceToDisplay];
+  }
+  // if translation on the right, we do it on the max
+  else {
+    // new max is the max plus the transaltion or max
+    const newMax = currentViewBox[1] + translation < max ? currentViewBox[1] + translation : max;
+    return [newMax - distanceToDisplay, newMax];
   }
 }
