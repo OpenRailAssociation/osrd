@@ -39,7 +39,8 @@ function handleAxiosError(e: unknown): Error {
         error = new Error(
           err.response.data.map((e2) => new Error(e2.message || JSON.stringify(e2))).join('\n')
         );
-      else error = new Error(err.response.data.message || JSON.stringify(err.response.data));
+      else
+        error = new Error((err.response.data as any).message || JSON.stringify(err.response.data));
     }
     if (!error && err.response && err.response.status) {
       error = new Error(`Request failed: ${err.response.status}`);
