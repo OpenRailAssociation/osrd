@@ -43,14 +43,14 @@ services:
       postgres: {condition: service_healthy}
       redis: {condition: service_healthy}
     restart: unless-stopped
-    command: "uvicorn --factory chartos:make_app --host 0.0.0.0 --port 7000"
+    command: "uvicorn --factory chartos:make_app --host 0.0.0.0 --port 7070"
     environment:
-      ROOT_URL: "http://localhost:7000"
+      ROOT_URL: "http://localhost:7070"
       CONFIG_PATH: "/code/chartos.yml"
       PSQL_DSN: "postgres://osrd:password@localhost:5432/osrd"
       REDIS_URL: "redis://localhost:6379"
     healthcheck:
-      test: ["CMD", "python", "-c", "from urllib.request import urlopen; exit(0 if urlopen('http://localhost:7000/health').status == 200 else 1)"]
+      test: ["CMD", "python", "-c", "from urllib.request import urlopen; exit(0 if urlopen('http://localhost:7070/health').status == 200 else 1)"]
       start_period: 4s
       interval: 5s
 
@@ -110,7 +110,7 @@ services:
         NGINX_CONFIG: "nginx-dev.conf"
         REACT_APP_LOCAL_BACKEND: "True"
         REACT_APP_API_URL: "http://localhost:8000"
-        REACT_APP_CHARTIS_URL: "http://localhost:7000"
+        REACT_APP_CHARTIS_URL: "http://localhost:7070"
         REACT_APP_EDITOAST_URL: "http://localhost:8090"
     restart: unless-stopped
     ports: ["3000:80"]
