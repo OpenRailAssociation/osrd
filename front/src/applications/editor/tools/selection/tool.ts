@@ -8,9 +8,18 @@ import { SelectionState } from './types';
 import { SelectionLayers, SelectionMessages, SelectionLeftPanel } from './components';
 import ConfirmModal from '../../components/ConfirmModal';
 import TrackEditionTool from '../trackEdition/tool';
-import { SignalEntity, TrackSectionEntity } from '../../../../types';
+import {
+  BufferStopEntity,
+  DetectorEntity,
+  SignalEntity,
+  TrackSectionEntity,
+} from '../../../../types';
 import { getSymbolTypes } from '../../data/utils';
-import { SignalEditionTool } from '../pointEdition/tools';
+import {
+  BufferStopEditionTool,
+  DetectorEditionTool,
+  SignalEditionTool,
+} from '../pointEdition/tools';
 
 const SelectionTool: Tool<SelectionState> = {
   id: 'select-items',
@@ -100,6 +109,20 @@ const SelectionTool: Tool<SelectionState> = {
               switchTool(SignalEditionTool, {
                 initialEntity: selectedElement as SignalEntity,
                 entity: selectedElement as SignalEntity,
+              });
+              return;
+            }
+            if (selectedElement.objType === 'BufferStop') {
+              switchTool(BufferStopEditionTool, {
+                initialEntity: selectedElement as BufferStopEntity,
+                entity: selectedElement as BufferStopEntity,
+              });
+              return;
+            }
+            if (selectedElement.objType === 'Detector') {
+              switchTool(DetectorEditionTool, {
+                initialEntity: selectedElement as DetectorEntity,
+                entity: selectedElement as DetectorEntity,
               });
               return;
             }
@@ -246,7 +269,9 @@ const SelectionTool: Tool<SelectionState> = {
   // Layers:
   getInteractiveLayers({ editorState: { editorData } }) {
     const symbolTypes = getSymbolTypes(editorData);
-    return symbolTypes.map((type) => `editor/geo/signal-${type}`).concat(['editor/geo/track-main']);
+    return symbolTypes
+      .map((type) => `editor/geo/signal-${type}`)
+      .concat(['editor/geo/track-main', 'editor/geo/buffer-stop-main', 'editor/geo/detector-main']);
   },
   getCursor({ state }, { isDragging }) {
     if (isDragging) return 'move';

@@ -1,7 +1,6 @@
-import { SignalEntity } from '../../../../types';
+import { BufferStopEntity, DetectorEntity, SignalEntity } from '../../../../types';
 import { MakeOptional } from '../types';
 
-// eslint-disable-next-line import/prefer-default-export
 export function getNewSignal(point?: [number, number]): MakeOptional<SignalEntity, 'geometry'> {
   return {
     type: 'Feature',
@@ -9,6 +8,36 @@ export function getNewSignal(point?: [number, number]): MakeOptional<SignalEntit
     properties: {
       installation_type: '"S"',
     },
+    geometry: point
+      ? {
+          type: 'Point',
+          coordinates: point,
+        }
+      : undefined,
+  };
+}
+
+export function getNewBufferStop(
+  point?: [number, number]
+): MakeOptional<BufferStopEntity, 'geometry'> {
+  return {
+    type: 'Feature',
+    objType: 'BufferStop',
+    properties: {},
+    geometry: point
+      ? {
+          type: 'Point',
+          coordinates: point,
+        }
+      : undefined,
+  };
+}
+
+export function getNewDetector(point?: [number, number]): MakeOptional<DetectorEntity, 'geometry'> {
+  return {
+    type: 'Feature',
+    objType: 'Detector',
+    properties: {},
     geometry: point
       ? {
           type: 'Point',

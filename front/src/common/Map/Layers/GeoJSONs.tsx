@@ -17,6 +17,8 @@ import {
 } from './geoSignalsLayers';
 import { lineNameLayer, lineNumberLayer, trackNameLayer } from './commonLayers';
 import { getSymbolTypes } from '../../../applications/editor/data/utils';
+import { getBufferStopsLayerProps } from './BufferStops';
+import { getDetectorsLayerProps, getDetectorsNameLayerProps } from './Detectors';
 
 const HOVERED_COLOR = '#009EED';
 const UNSELECTED_OPACITY = 0.2;
@@ -251,6 +253,24 @@ const GeoJSONs: FC<{
             />
           );
         })}
+      </Source>
+
+      <Source id={`${prefix}geo/buffer_stops`} type="geojson" data={geoJSONs.BufferStop}>
+        <Layer
+          {...adaptProps(getBufferStopsLayerProps(signalsContext), layerContext, adaptSymbolPaint)}
+          id={`${prefix}geo/buffer-stop-main`}
+        />
+      </Source>
+
+      <Source id={`${prefix}geo/detectors`} type="geojson" data={geoJSONs.Detector}>
+        <Layer
+          {...adaptProps(getDetectorsLayerProps(signalsContext), layerContext, adaptSymbolPaint)}
+          id={`${prefix}geo/detector-main`}
+        />
+        <Layer
+          {...adaptProps(getDetectorsNameLayerProps(signalsContext), layerContext, adaptTextPaint)}
+          id={`${prefix}geo/detector-name`}
+        />
       </Source>
     </>
   );
