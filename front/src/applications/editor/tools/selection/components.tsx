@@ -99,7 +99,7 @@ export const SelectionLeftPanel: FC = () => {
         <EditorForm
           data={selection[0]}
           onSubmit={async (savedEntity) => {
-            await dispatch<ReturnType<typeof save>>(save({ update: [savedEntity] }));
+            await dispatch(save({ update: [savedEntity] }));
             setState({ ...state, selection: [savedEntity], selectionState: { type: 'single' } });
           }}
         >

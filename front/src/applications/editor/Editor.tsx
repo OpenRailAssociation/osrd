@@ -49,7 +49,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
     (value) => {
       dispatch(updateViewport(value, `/editor/${infraID || '-1'}`));
     },
-    [dispatch, infra]
+    [dispatch, infraID]
   );
 
   const context = useMemo<EditorContextType<CommonToolState>>(
