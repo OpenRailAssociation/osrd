@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { withTranslation } from 'react-i18next';
-import { Route, Switch } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 
 import config from '../../config/config';
 import logo from '../../assets/logo_osrd_seul_blanc.svg';
@@ -19,14 +19,13 @@ class HomeEditorUnplugged extends React.Component {
       <>
         <NavBarSNCF appName={t('Editor.title')} logo={logo} />
         <div className="no-mastnav">
-          <Switch>
-            <Route exact path="/editor/">
-              <Editor urlmap={config.proxy} />
-            </Route>
-            <Route path="/editor/:infra/:urlLat/:urlLon/:urlZoom/:urlBearing/:urlPitch">
-              <Editor urlmap={config.proxy} />
-            </Route>
-          </Switch>
+          <Routes>
+            <Route path="/" element={<Editor urlmap={config.proxy} />} />
+            <Route
+              path="/:infra/:urlLat/:urlLon/:urlZoom/:urlBearing/:urlPitch"
+              element={<Editor urlmap={config.proxy} />}
+            />
+          </Routes>
         </div>
       </>
     );

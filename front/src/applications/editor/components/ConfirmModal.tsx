@@ -1,7 +1,8 @@
 import React, { FC, useContext } from 'react';
 
-import { EditorContext, ModalProps } from '../context';
+import { EditorContext } from '../context';
 import Modal from './Modal';
+import { ModalProps } from '../tools/types';
 
 const ConfirmModal: FC<
   ModalProps<{ message: string; title?: string; confirmLabel?: string; cancelLabel?: string }>
