@@ -1,6 +1,6 @@
 import { Action } from 'redux';
 import { JSONSchema7 } from 'json-schema';
-import { Position, Feature, GeoJsonProperties, Geometry } from 'geojson';
+import { Position, Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
 import { ThunkAction as ReduxThunkAction } from 'redux-thunk';
 import { Operation } from 'fast-json-patch';
 
@@ -16,17 +16,16 @@ export type ThunkAction<T extends Action, R = void> = ReduxThunkAction<R, any, u
 //
 //  Geospatial types
 //
-export type Point = Position;
-export type Bbox = [Point, Point];
-export type Path = Array<Point>;
+export type Bbox = [Position, Position];
+export type Path = Array<Position>;
 
 export interface RectangleZone {
   type: 'rectangle';
-  points: [Point, Point];
+  points: [Position, Position];
 }
 export interface PolygonZone {
   type: 'polygon';
-  points: Point[];
+  points: Position[];
 }
 export type Zone = RectangleZone | PolygonZone;
 export type SourceLayer = 'sch' | 'geo';
@@ -60,7 +59,10 @@ export interface Notification {
 export type ObjectType = string;
 export type EntityId = string | number | undefined;
 export type EditorSchema = Array<{ layer: string; objType: ObjectType; schema: JSONSchema7 }>;
-export type EditorEntity = Feature & { objType: string };
+export type EditorEntity<G extends Geometry | null = Geometry, P = GeoJsonProperties> = Feature<
+  G,
+  P
+> & { objType: string };
 export interface TrackSectionEntity extends EditorEntity {
   objType: 'TrackSection';
   geometry: {
@@ -68,12 +70,12 @@ export interface TrackSectionEntity extends EditorEntity {
     coordinates: [number, number][];
   };
 }
-export interface SignalEntity extends EditorEntity {
+export interface SignalEntity
+  extends EditorEntity<
+    Point,
+    { track?: { id: string; type: string }; angle_geo?: number; installation_type?: string }
+  > {
   objType: 'Signal';
-  geometry: {
-    type: 'Point';
-    coordinates: Position;
-  };
 }
 
 export interface DeleteEntityOperation {

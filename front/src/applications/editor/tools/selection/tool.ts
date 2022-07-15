@@ -10,7 +10,7 @@ import ConfirmModal from '../../components/ConfirmModal';
 import TrackEditionTool from '../trackEdition/tool';
 import { SignalEntity, TrackSectionEntity } from '../../../../types';
 import { getSymbolTypes } from '../../data/utils';
-import SignalEditionTool from '../signalEdition/tool';
+import { SignalEditionTool } from '../pointEdition/tools';
 
 const SelectionTool: Tool<SelectionState> = {
   id: 'select-items',
@@ -98,8 +98,8 @@ const SelectionTool: Tool<SelectionState> = {
             }
             if (selectedElement.objType === 'Signal') {
               switchTool(SignalEditionTool, {
-                initialSignal: selectedElement as SignalEntity,
-                signal: selectedElement as SignalEntity,
+                initialEntity: selectedElement as SignalEntity,
+                entity: selectedElement as SignalEntity,
               });
               return;
             }
