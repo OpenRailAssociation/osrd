@@ -1,8 +1,19 @@
 $color: #0088ce;
+$color-highlight: #82be00;
+$color-nodata: #333;
 $tooltip-bg-color: #000;
 $tooltip-padding: 1em;
-$dataviz-height: 80px;
+$dataviz-height: 6em;
 $scaling-height: 1px;
+$scaling-y-width: 1.5em;
+
+@mixin unselectable {
+  -moz-user-select: -moz-none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
 
 .linear-metadata {
   .header {
@@ -21,7 +32,7 @@ $scaling-height: 1px;
 
       .zoom {
         flex-grow: 0;
-        height: $dataviz-height + $scaling-height;
+        height: calc($dataviz-height + $scaling-height);
         .btn {
           padding: 0 0.5em !important;
           border-top-left-radius: 0;
@@ -30,21 +41,45 @@ $scaling-height: 1px;
       }
 
       .linear-metadata-visualisation {
+        @include unselectable;
         flex-grow: 1;
+        padding-left: $scaling-y-width;
+
         .data {
+          @include unselectable;
           display: flex;
           flex-wrap: nowrap;
           flex-direction: row;
 
-          div {
+          &.drag {
+            cursor: grabbing;
+          }
+
+          div:not(.scale) {
             height: $dataviz-height;
-            background-color: rgba($color, 0.5);
+            background-color: rgba($color, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
 
             &:not(:last-child) {
               border-right: 1px solid #fff;
             }
 
             &.highlighted {
+              background-color: rgba($color-highlight, 0.2);
+              div {
+                background-color: $color-highlight;
+              }
+            }
+
+            &.no-data:not(.highlighted) {
+              background-color: rgba($color-nodata, 0.5);
+            }
+
+            div {
+              @include unselectable;
+              width: 100%;
               background-color: $color;
             }
           }
@@ -52,18 +87,38 @@ $scaling-height: 1px;
 
         .scale {
           display: flex;
-          border-top: $scaling-height solid;
           justify-content: space-between;
           span {
             padding: 2px;
-            font-size: 0.7em;
+            font-size: 0.6em;
             line-height: 0.7em;
+            overflow: hidden;
+          }
 
-            &:not(:last-child) {
-              border-left: 1px solid;
+          &.scale-x {
+            border-top: $scaling-height solid;
+            span {
+              &:not(:last-child) {
+                border-left: 1px solid;
+              }
+              &:last-child {
+                border-right: 1px solid;
+              }
             }
-            &:last-child {
-              border-right: 1px solid;
+          }
+          &.scale-y {
+            flex-direction: column-reverse;
+            border-right: $scaling-height solid;
+            margin-left: -$scaling-y-width;
+            width: $scaling-y-width;
+            span {
+              text-align: right;
+              &:not(:last-child) {
+                border-bottom: 1px solid;
+              }
+              &:last-child {
+                border-top: 1px solid;
+              }
             }
           }
         }
@@ -119,10 +174,10 @@ $scaling-height: 1px;
         .form-group.field-object {
           margin-bottom: 0;
         }
-      }
-      .footer {
-        display: flex;
-        justify-content: space-around;
+        .buttons {
+          display: flex;
+          justify-content: space-around;
+        }
       }
     }
   }
