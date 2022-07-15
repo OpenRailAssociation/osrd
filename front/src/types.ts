@@ -77,6 +77,14 @@ export interface SignalEntity
   > {
   objType: 'Signal';
 }
+export interface BufferStopEntity
+  extends EditorEntity<Point, { track?: { id: string; type: string } }> {
+  objType: 'BufferStop';
+}
+export interface DetectorEntity
+  extends EditorEntity<Point, { track?: { id: string; type: string } }> {
+  objType: 'Detector';
+}
 
 export interface DeleteEntityOperation {
   operation_type: 'DELETE';

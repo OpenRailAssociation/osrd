@@ -11,9 +11,21 @@ import EditorZone from '../../../../common/Map/Layers/EditorZone';
 import { PointEditionState } from './types';
 import EditorForm from '../../components/EditorForm';
 import { save } from '../../../../reducers/editor';
-import { CreateEntityOperation, EditorEntity, Item, SignalEntity } from '../../../../types';
+import {
+  BufferStopEntity,
+  CreateEntityOperation,
+  DetectorEntity,
+  EditorEntity,
+  Item,
+  SignalEntity,
+} from '../../../../types';
 import { getSignalLayerProps } from '../../../../common/Map/Layers/geoSignalsLayers';
 import { cleanSymbolType } from '../../data/utils';
+import {
+  getDetectorsLayerProps,
+  getDetectorsNameLayerProps,
+} from '../../../../common/Map/Layers/Detectors';
+import { getBufferStopsLayerProps } from '../../../../common/Map/Layers/BufferStops';
 
 export const POINT_LAYER_ID = 'pointEditionTool/new-entity';
 
@@ -123,6 +135,113 @@ export const SignalEditionLayers: FC = () => {
           filter={['==', 'installation_type', `"${type}"`]}
           id={POINT_LAYER_ID}
         />
+      </Source>
+    </>
+  );
+};
+
+export const DetectorEditionLayers: FC = () => {
+  const {
+    state: { entity, nearestPoint, mousePosition },
+  } = useContext(EditorContext) as EditorContextType<PointEditionState<DetectorEntity>>;
+  const { mapStyle } = useSelector((s: { map: { mapStyle: string } }) => s.map) as {
+    mapStyle: string;
+  };
+
+  const theme = colors[mapStyle];
+  const layerProps = getDetectorsLayerProps({ colors: theme });
+  const layerNameProps = getDetectorsNameLayerProps({ colors: theme });
+
+  let renderedEntity: DetectorEntity | null = null;
+  if (entity.geometry) {
+    renderedEntity = entity as DetectorEntity;
+  } else if (nearestPoint) {
+    renderedEntity = {
+      ...entity,
+      geometry: nearestPoint.feature.geometry,
+      properties: entity.properties,
+    };
+  } else if (mousePosition) {
+    renderedEntity = { ...entity, geometry: { type: 'Point', coordinates: mousePosition } };
+  }
+
+  return (
+    <>
+      {/* Zone display */}
+      <EditorZone />
+
+      {/* Editor data layer */}
+      <GeoJSONs
+        colors={colors[mapStyle]}
+        hidden={entity.id ? [entity as Item] : undefined}
+        selection={
+          entity.id
+            ? [entity as Item]
+            : [
+                {
+                  ...entity,
+                  id: 'NEW SIGNAL',
+                } as Item,
+              ]
+        }
+      />
+
+      {/* Edited signal */}
+      <Source type="geojson" data={renderedEntity || featureCollection([])}>
+        <Layer {...layerProps} id={POINT_LAYER_ID} />
+        <Layer {...layerNameProps} />
+      </Source>
+    </>
+  );
+};
+
+export const BufferStopEditionLayers: FC = () => {
+  const {
+    state: { entity, nearestPoint, mousePosition },
+  } = useContext(EditorContext) as EditorContextType<PointEditionState<BufferStopEntity>>;
+  const { mapStyle } = useSelector((s: { map: { mapStyle: string } }) => s.map) as {
+    mapStyle: string;
+  };
+
+  const layerProps = getBufferStopsLayerProps({});
+
+  let renderedEntity: BufferStopEntity | null = null;
+  if (entity.geometry) {
+    renderedEntity = entity as BufferStopEntity;
+  } else if (nearestPoint) {
+    renderedEntity = {
+      ...entity,
+      geometry: nearestPoint.feature.geometry,
+      properties: entity.properties,
+    };
+  } else if (mousePosition) {
+    renderedEntity = { ...entity, geometry: { type: 'Point', coordinates: mousePosition } };
+  }
+
+  return (
+    <>
+      {/* Zone display */}
+      <EditorZone />
+
+      {/* Editor data layer */}
+      <GeoJSONs
+        colors={colors[mapStyle]}
+        hidden={entity.id ? [entity as Item] : undefined}
+        selection={
+          entity.id
+            ? [entity as Item]
+            : [
+                {
+                  ...entity,
+                  id: 'NEW SIGNAL',
+                } as Item,
+              ]
+        }
+      />
+
+      {/* Edited signal */}
+      <Source type="geojson" data={renderedEntity || featureCollection([])}>
+        <Layer {...layerProps} id={POINT_LAYER_ID} />
       </Source>
     </>
   );

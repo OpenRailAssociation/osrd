@@ -83,8 +83,22 @@
       "signal-edition": {
         "label": "Outil \"Signal\",",
         "actions": {
-          "reset-signal": "Réinitialiser les données",
-          "new-signal": "Créer un nouveau signal"
+          "reset-entity": "Réinitialiser les données",
+          "new-entity": "Créer un nouveau signal"
+        }
+      },
+      "buffer-stop-edition": {
+        "label": "Outil \"Heurtoir\",",
+        "actions": {
+          "reset-entity": "Réinitialiser les données",
+          "new-entity": "Créer un nouveau heurtoir"
+        }
+      },
+      "detector-edition": {
+        "label": "Outil \"Détecteur\",",
+        "actions": {
+          "reset-entity": "Réinitialiser les données",
+          "new-entity": "Créer un nouveau détecteur"
         }
       }
     },
