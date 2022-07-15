@@ -1,9 +1,9 @@
-import React, { useState, useRef } from 'react';
-import { FieldProps, utils } from '@rjsf/core';
+import React, { useState, useRef, useEffect } from 'react';
+import Form, { FieldProps, utils } from '@rjsf/core';
 import Fields from '@rjsf/core/lib/components/fields';
-import { JSONSchema7 } from 'json-schema';
+import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import { LineString } from 'geojson';
-import { last, omit, debounce } from 'lodash';
+import { last, omit, debounce, head } from 'lodash';
 import cx from 'classnames';
 import { BiZoomIn, BiZoomOut } from 'react-icons/bi';
 import {
@@ -25,11 +25,43 @@ import {
 } from './data';
 import { LinearMetadataDataviz } from './dataviz';
 import { LinearMetadataTooltip } from './tooltip';
+import { FormBeginEndWidget } from './FormBeginEndWidget';
 import './style.scss';
 
-function itemSchema(fieldSchema: JSONSchema7, rootSchema: JSONSchema7): JSONSchema7 {
-  return utils.retrieveSchema(fieldSchema.items as JSONSchema7, rootSchema);
+function itemSchema(
+  fieldSchema: JSONSchema7,
+  rootSchema: JSONSchema7,
+  enhancement: { [key: string]: JSONSchema7Definition } = {}
+): JSONSchema7 {
+  const schema = utils.retrieveSchema(fieldSchema.items as JSONSchema7, rootSchema);
+  if (!schema.properties?.begin || !schema.properties?.end)
+    throw new Error('Not a linear metadata item');
+
+  const result = {
+    ...schema,
+    properties: {
+      begin: Object.assign({}, schema.properties.begin, enhancement.begin ? enhancement.begin : {}),
+      end: Object.assign({}, schema.properties.end, enhancement.end ? enhancement.end : {}),
+      ...Object.keys(schema.properties)
+        .filter((k) => !['begin', 'end'].includes(k))
+        .map((k) => ({ name: k, schema: schema.properties ? schema.properties[k] : {} }))
+        .reduce((acc, curr) => {
+          acc[curr.name] = Object.assign(
+            {},
+            curr.schema,
+            enhancement[curr.name] ? enhancement[curr.name] : {}
+          );
+          return acc;
+        }, {} as { [key: string]: JSONSchema7Definition }),
+    },
+    definitions: rootSchema.definitions,
+  };
+  return result;
 }
+
+const widgets = {
+  BeginEndWidget: FormBeginEndWidget,
+};
 
 export const FormComponent: React.FC<FieldProps> = (props) => {
   const { name, formData, schema, onChange, formContext, registry } = props;
@@ -43,10 +75,36 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   // Wich segment is selected
   const [selected, setSelected] = useState<number | null>(null);
+  // Value of the selected item (needed for the its modification)
+  const [selectedData, setSelectedData] = useState<LinearMetadataItem | null>(null);
   // Wich segment is hovered
   const [hovered, setHovered] = useState<number | null>(null);
+
   // Fix the data (sort, fix gap, ...)
   const data = fixLinearMetadataItems(formData, formContext.geometry);
+
+  // Compute the JSON schema of the linear metadata item
+  const jsonSchema = itemSchema(schema, registry.rootSchema);
+
+  // Guess the value field of the linear metadata item
+  const valueField = head(
+    Object.keys(jsonSchema.properties || {})
+      .filter((e) => !['begin', 'end'].includes(e))
+      .map((e) => ({
+        name: e,
+        type: jsonSchema.properties ? (jsonSchema.properties[e] as JSONSchema7).type : '',
+      }))
+      .filter((e) => e.type === 'number' || e.type === 'integer')
+      .map((e) => e.name)
+  );
+
+  /**
+   * When selected element change
+   * => set its data in the state
+   */
+  useEffect(() => {
+    setSelectedData(selected !== null ? data[selected] : null);
+  }, [selected]);
 
   return (
     <div className="linear-metadata">
@@ -57,17 +115,12 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
         <div className="dataviz">
           <LinearMetadataDataviz
             data={data}
+            field={valueField}
             viewBox={viewBox}
             highlighted={[hovered ?? -1, selected ?? -1].filter((e) => e > -1)}
             onMouseEnter={(_e, _item, index) => setHovered(index)}
             onMouseLeave={() => setHovered(null)}
             onMouseMove={(e) => {
-              if (tooltipRef.current) {
-                tooltipPosition([e.nativeEvent.x, e.nativeEvent.y], tooltipRef.current);
-              }
-            }}
-            onMouseOver={(e, _item, index) => {
-              setHovered(index);
               if (tooltipRef.current) {
                 tooltipPosition([e.nativeEvent.x, e.nativeEvent.y], tooltipRef.current);
               }
@@ -83,6 +136,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
             onWheel={(e, _item, _index, point) => {
               setViewBox(getZoomedViewBox(data, viewBox, e.deltaY > 0 ? 'OUT' : 'IN', point));
             }}
+            onViewBoxChange={setViewBox}
           />
           <div className="btn-group-vertical zoom">
             <button
@@ -107,15 +161,12 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
         {/* Data visualisation tooltip when item is hovered */}
         {hovered !== null && (
           <div className="tooltip" ref={tooltipRef}>
-            <LinearMetadataTooltip
-              item={data[hovered]}
-              schema={itemSchema(schema, registry.rootSchema)}
-            />
+            <LinearMetadataTooltip item={data[hovered]} schema={jsonSchema} />
           </div>
         )}
 
         {/* Display the selection */}
-        {selected !== null && (
+        {selectedData !== null && selected !== null && (
           <div className="linear-metadata-selection">
             <div className="header">
               <div className="btn-toolbar" role="toolbar">
@@ -148,8 +199,8 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
                     type="button"
                     title="Split"
                     onClick={() => {
-                      const item = data[selected];
-                      const splitPosition = item.begin + (item.end - item.begin) / 2;
+                      const splitPosition =
+                        selectedData.begin + (selectedData.end - selectedData.begin) / 2;
                       onChange(splitAt(data, splitPosition));
                     }}
                   >
@@ -177,64 +228,72 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
               </div>
             </div>
             <div className="content">
-              <Fields.SchemaField
-                schema={itemSchema(schema, registry.rootSchema)}
-                uiSchema={{
+              <Form
+                id={`selected-${selected}`}
+                widgets={widgets}
+                liveValidate={true}
+                schema={itemSchema(schema, registry.rootSchema, {
                   begin: {
-                    'ui:widget': 'BeginEndWidget',
-                    'ui:readonly': selected === 0,
-                    'ui:options': {
-                      min: selected !== 0 ? data[selected - 1].begin + 1 : 0,
-                      max: data[selected].end - 1,
-                    },
+                    minimum: selected !== 0 ? data[selected - 1].begin + 1 : 0,
+                    maximum: data[selected].end - 1,
                   },
                   end: {
-                    'ui:widget': 'BeginEndWidget',
+                    minimum: data[selected].begin + 1,
+                    maximum:
+                      selected !== data.length - 1 ? data[selected + 1].end - 1 : selectedData.end,
+                  },
+                })}
+                uiSchema={{
+                  begin: {
+                    'ui:readonly': selected === 0,
+                  },
+                  end: {
                     'ui:readonly': selected === data.length - 1,
-                    'ui:options': {
-                      min: data[selected].begin + 1,
-                      max: selected !== data.length - 1 ? data[selected + 1].end - 1 : 0,
-                    },
                   },
                 }}
-                formData={data[selected]}
-                registry={registry}
-                onChange={(e) => {
-                  const item = { ...e };
+                formData={selectedData}
+                onChange={(e) => setSelectedData(e.formData)}
+                onSubmit={(e, reactEvent) => {
+                  console.log(e, reactEvent);
+                  const item = { ...e.formData };
                   let newData = [...data];
                   // we keep the old value for begin and end
                   // they will be change in the resize function if needed
                   newData[selected] = { ...newData[selected], ...omit(e, ['begin', 'end']) };
 
                   // Check if there is a resize
-                  if (data[selected].begin !== item.begin) {
+                  if (selectedData.begin !== item.begin) {
                     newData = resizeSegment(
                       [...newData],
                       selected,
-                      item.begin - data[selected].begin,
+                      item.begin - selectedData.begin,
                       'begin'
                     );
                   }
-                  if (data[selected].end !== item.end) {
+                  if (selectedData.end !== item.end) {
                     newData = resizeSegment(
                       [...newData],
                       selected,
-                      item.end - data[selected].end,
+                      item.end - selectedData.end,
                       'end'
                     );
                   }
                   onChange(newData);
                 }}
-              />
-            </div>
-            <div className="footer">
-              <button
-                type="button"
-                className="btn btn-outline-dark"
-                onClick={() => setSelected(null)}
               >
-                Close
-              </button>
+                <div className="buttons">
+                  <button
+                    type="button"
+                    className="btn btn-outline-dark mx-1"
+                    onClick={() => setSelected(null)}
+                  >
+                    Close
+                  </button>
+                  <button type="submit" className="btn btn-success" form={`selected-${selected}`}>
+                    Submit
+                  </button>
+                </div>
+              </Form>
             </div>
           </div>
         )}

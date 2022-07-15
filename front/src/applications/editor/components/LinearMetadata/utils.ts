@@ -1,3 +1,5 @@
+import { isNil, omit, values } from 'lodash';
+
 /**
  * Round a number to the upper (or lower) number.
  */
@@ -5,6 +7,20 @@ export function roundNumber(value: number, upper = false): number {
   const round = Math.round(value);
   if (upper) return round < value ? round + 1 : round;
   else return round > value ? round - 1 : round;
+}
+
+/**
+ * Check if the object value are all null or undefined or not.
+ *
+ * @param obj The object to check
+ * @param fields2omit A list of field to omit to check
+ * @returns True if all fields are nil, false otherwise
+ */
+export function isNilObject(
+  obj: { [key: string]: unknown },
+  fields2omit: Array<string> = []
+): boolean {
+  return values(omit(obj, fields2omit)).every((e) => isNil(e));
 }
 
 /**

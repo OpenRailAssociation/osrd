@@ -4,9 +4,7 @@
   "properties": {
     "version": {
       "title": "Version",
-      "enum": [
-        "2.2.3"
-      ],
+      "enum": ["2.2.3"],
       "type": "string"
     },
     "operational_points": {
@@ -116,10 +114,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "id",
-        "type"
-      ]
+      "required": ["id", "type"]
     },
     "OperationalPointPart": {
       "title": "OperationalPointPart",
@@ -133,10 +128,7 @@
           "type": "number"
         }
       },
-      "required": [
-        "track",
-        "position"
-      ]
+      "required": ["track", "position"]
     },
     "OperationalPoint": {
       "title": "OperationalPoint",
@@ -179,21 +171,12 @@
           "type": "string"
         }
       },
-      "required": [
-        "id",
-        "parts",
-        "ci",
-        "ch",
-        "name"
-      ]
+      "required": ["id", "parts", "ci", "ch", "name"]
     },
     "Direction": {
       "title": "Direction",
       "description": "An enumeration.",
-      "enum": [
-        "START_TO_STOP",
-        "STOP_TO_START"
-      ],
+      "enum": ["START_TO_STOP", "STOP_TO_START"],
       "type": "string"
     },
     "DirectionalTrackRange": {
@@ -215,12 +198,7 @@
           "$ref": "#/definitions/Direction"
         }
       },
-      "required": [
-        "track",
-        "begin",
-        "end",
-        "direction"
-      ]
+      "required": ["track", "begin", "end", "direction"]
     },
     "Route": {
       "title": "Route",
@@ -252,13 +230,7 @@
           }
         }
       },
-      "required": [
-        "id",
-        "entry_point",
-        "exit_point",
-        "release_detectors",
-        "path"
-      ]
+      "required": ["id", "entry_point", "exit_point", "release_detectors", "path"]
     },
     "SwitchPortConnection": {
       "title": "SwitchPortConnection",
@@ -277,11 +249,7 @@
           "type": "boolean"
         }
       },
-      "required": [
-        "src",
-        "dst",
-        "bidirectional"
-      ]
+      "required": ["src", "dst", "bidirectional"]
     },
     "SwitchType": {
       "title": "SwitchType",
@@ -310,19 +278,12 @@
           }
         }
       },
-      "required": [
-        "id",
-        "ports",
-        "groups"
-      ]
+      "required": ["id", "ports", "groups"]
     },
     "Endpoint": {
       "title": "Endpoint",
       "description": "An enumeration.",
-      "enum": [
-        "BEGIN",
-        "END"
-      ],
+      "enum": ["BEGIN", "END"],
       "type": "string"
     },
     "TrackEndpoint": {
@@ -336,10 +297,7 @@
           "$ref": "#/definitions/ObjectReference"
         }
       },
-      "required": [
-        "endpoint",
-        "track"
-      ]
+      "required": ["endpoint", "track"]
     },
     "Switch": {
       "title": "Switch",
@@ -369,22 +327,12 @@
           "type": "string"
         }
       },
-      "required": [
-        "id",
-        "switch_type",
-        "group_change_delay",
-        "ports",
-        "label"
-      ]
+      "required": ["id", "switch_type", "group_change_delay", "ports", "label"]
     },
     "ApplicableDirections": {
       "title": "ApplicableDirections",
       "description": "An enumeration.",
-      "enum": [
-        "START_TO_STOP",
-        "STOP_TO_START",
-        "BOTH"
-      ],
+      "enum": ["START_TO_STOP", "STOP_TO_START", "BOTH"],
       "type": "string"
     },
     "TrackSectionLink": {
@@ -406,12 +354,7 @@
           "$ref": "#/definitions/ApplicableDirections"
         }
       },
-      "required": [
-        "id",
-        "src",
-        "dst",
-        "navigability"
-      ]
+      "required": ["id", "src", "dst", "navigability"]
     },
     "LineString": {
       "title": "LineString",
@@ -497,9 +440,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "coordinates"
-      ]
+      "required": ["coordinates"]
     },
     "Slope": {
       "title": "Slope",
@@ -518,11 +459,7 @@
           "type": "number"
         }
       },
-      "required": [
-        "gradient",
-        "begin",
-        "end"
-      ]
+      "required": ["gradient", "begin", "end"]
     },
     "Curve": {
       "title": "Curve",
@@ -541,34 +478,16 @@
           "type": "number"
         }
       },
-      "required": [
-        "radius",
-        "begin",
-        "end"
-      ]
+      "required": ["radius", "begin", "end"]
     },
     "LoadingGaugeType": {
       "title": "LoadingGaugeType",
-      "description": "An enumeration.",
-      "enum": [
-        "G1",
-        "G2",
-        "GA",
-        "GB",
-        "GB1",
-        "GC",
-        "FR3.3",
-        "FR3.3/GB/G2"
-      ],
+      "enum": ["G1", "G2", "GA", "GB", "GB1", "GC", "FR3.3", "FR3.3/GB/G2"],
       "type": "string"
     },
     "ApplicableTrainType": {
       "title": "ApplicableTrainType",
-      "description": "An enumeration.",
-      "enum": [
-        "FREIGHT",
-        "PASSENGER"
-      ],
+      "enum": ["FREIGHT", "PASSENGER"],
       "type": "string"
     },
     "LoadingGaugeLimit": {
@@ -590,12 +509,7 @@
           "$ref": "#/definitions/ApplicableTrainType"
         }
       },
-      "required": [
-        "category",
-        "begin",
-        "end",
-        "applicable_train_type"
-      ]
+      "required": ["category", "begin", "end", "applicable_train_type"]
     },
     "TrackSection": {
       "title": "TrackSection",
@@ -692,12 +606,7 @@
           "$ref": "#/definitions/ApplicableDirections"
         }
       },
-      "required": [
-        "track",
-        "begin",
-        "end",
-        "applicable_directions"
-      ]
+      "required": ["track", "begin", "end", "applicable_directions"]
     },
     "SpeedSection": {
       "title": "SpeedSection",
@@ -720,11 +629,7 @@
           }
         }
       },
-      "required": [
-        "id",
-        "speed",
-        "track_ranges"
-      ]
+      "required": ["id", "speed", "track_ranges"]
     },
     "Catenary": {
       "title": "Catenary",
@@ -747,20 +652,12 @@
           }
         }
       },
-      "required": [
-        "id",
-        "voltage",
-        "track_ranges"
-      ]
+      "required": ["id", "voltage", "track_ranges"]
     },
     "Side": {
       "title": "Side",
       "description": "An enumeration.",
-      "enum": [
-        "LEFT",
-        "RIGHT",
-        "CENTER"
-      ],
+      "enum": ["LEFT", "RIGHT", "CENTER"],
       "type": "string"
     },
     "Signal": {
@@ -862,13 +759,7 @@
           ]
         }
       },
-      "required": [
-        "track",
-        "position",
-        "id",
-        "direction",
-        "sight_distance"
-      ]
+      "required": ["track", "position", "id", "direction", "sight_distance"]
     },
     "BufferStop": {
       "title": "BufferStop",
@@ -890,12 +781,7 @@
           "$ref": "#/definitions/ApplicableDirections"
         }
       },
-      "required": [
-        "track",
-        "position",
-        "id",
-        "applicable_directions"
-      ]
+      "required": ["track", "position", "id", "applicable_directions"]
     },
     "Detector": {
       "title": "Detector",
@@ -917,12 +803,7 @@
           "$ref": "#/definitions/ApplicableDirections"
         }
       },
-      "required": [
-        "track",
-        "position",
-        "id",
-        "applicable_directions"
-      ]
+      "required": ["track", "position", "id", "applicable_directions"]
     }
   }
 }
