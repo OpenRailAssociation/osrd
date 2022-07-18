@@ -5,7 +5,7 @@ from geojson_pydantic import LineString
 from pydantic import BaseModel, Field, constr, root_validator
 
 ALL_OBJECT_TYPES = []
-RAILJSON_VERSION = "2.3.1"
+RAILJSON_INFRA_VERSION = "2.3.1"
 
 # Traits
 
@@ -257,7 +257,7 @@ class Detector(BaseObjectTrait, TrackLocationTrait):
 
 
 class RailJsonInfra(BaseModel):
-    version: Literal[RAILJSON_VERSION]
+    version: Literal[RAILJSON_INFRA_VERSION]
     operational_points: List[OperationalPoint]
     routes: List[Route]
     switch_types: List[SwitchType]

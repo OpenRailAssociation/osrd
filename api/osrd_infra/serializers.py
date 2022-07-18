@@ -36,13 +36,13 @@ class InfraSerializer(ModelSerializer):
 class RollingStockSerializer(ModelSerializer):
     class Meta:
         model = RollingStock
-        fields = "__all__"
+        exclude = ["image"]
 
 
 class LightRollingStockSerializer(ModelSerializer):
     class Meta:
         model = RollingStock
-        exclude = ["tractive_effort_curves", "rolling_resistance"]
+        exclude = ["image", "effort_curve"]
 
 
 # PATH FINDING

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Mapping
+from typing import Dict, List
 
 from django.db import connection, transaction
 
@@ -34,7 +34,7 @@ def import_objects(objects: List[BaseObjectTrait], infra: Infra, max_bulk_size=f
 
 
 @transaction.atomic
-def import_infra(railjson: Mapping, infra_name: str):
+def import_infra(railjson: Dict, infra_name: str):
     # Parse railjson payload
     railjson: RailJsonInfra = RailJsonInfra.parse_obj(railjson)
 

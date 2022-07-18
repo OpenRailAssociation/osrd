@@ -129,9 +129,7 @@ def get_random_rolling_stock(base_url: str) -> str:
         raise RuntimeError(f"Rolling stock error {r.status_code}: {r.content}")
     stocks = r.json()["results"]
     rolling_stock = random.choice(stocks)
-    if rolling_stock["tractive_effort_curves"]["SC"]:
-        return rolling_stock["id"]
-    return get_random_rolling_stock(base_url)
+    return rolling_stock["name"]
 
 
 def format_route_node(waypoint_id, direction):

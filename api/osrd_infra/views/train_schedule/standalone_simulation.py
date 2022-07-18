@@ -45,7 +45,7 @@ def create_backend_request_payload(train_schedules: List[TrainScheduleModel]):
             {
                 "id": schedule.train_name,
                 "stops": stops,
-                "rolling_stock": schedule.rolling_stock.railjson_id,
+                "rolling_stock": schedule.rolling_stock.name,
                 "initial_speed": schedule.initial_speed,
                 "allowances": schedule.allowances,
             }
@@ -54,7 +54,7 @@ def create_backend_request_payload(train_schedules: List[TrainScheduleModel]):
     return {
         "infra": train_schedules[0].timetable.infra.pk,
         "expected_version": train_schedules[0].timetable.infra.version,
-        "rolling_stocks": [rs.to_railjson() for rs in rolling_stocks],
+        "rolling_stocks": [rs.to_schema().dict() for rs in rolling_stocks],
         "trains_path": {"route_paths": path_payload["route_paths"]},
         "train_schedules": schedules_payload,
     }

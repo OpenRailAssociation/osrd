@@ -3,10 +3,13 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
 from config import settings
-from osrd_infra.models import TrainScheduleModel, PathModel
+from osrd_infra.models import PathModel, TrainScheduleModel
 from osrd_infra.serializers import PathSerializer, STDCMInputSerializer
-from osrd_infra.views import parse_waypoint, fetch_track_sections, postprocess_path
-from osrd_infra.views.train_schedule import process_simulation_response, create_simulation_report
+from osrd_infra.views import fetch_track_sections, parse_waypoint, postprocess_path
+from osrd_infra.views.train_schedule import (
+    create_simulation_report,
+    process_simulation_response,
+)
 
 
 def get_track_ids(request):
@@ -36,11 +39,13 @@ def make_route_occupancies(timetable):
         if not sim:
             sim = schedule.base_simulation
         for route_id, occupancy in sim["route_occupancies"].items():
-            res.append({
-                "id": route_id,
-                "start_occupancy_time": occupancy["time_head_occupy"],
-                "end_occupancy_time": occupancy["time_tail_free"],
-            })
+            res.append(
+                {
+                    "id": route_id,
+                    "start_occupancy_time": occupancy["time_head_occupy"],
+                    "end_occupancy_time": occupancy["time_tail_free"],
+                }
+            )
     return res
 
 
@@ -56,10 +61,10 @@ def make_stdcm_core_payload(request):
     res = {
         "infra": infra.pk,
         "expected_version": infra.version,
-        "rolling_stock": request["rolling_stock"].to_railjson(),
+        "rolling_stock": request["rolling_stock"].to_schema().dict(),
         "start_points": start_points,
         "end_points": end_points,
-        "route_occupancies": make_route_occupancies(request["timetable"])
+        "route_occupancies": make_route_occupancies(request["timetable"]),
     }
     if "start_time" in request:
         res["start_time"] = request["start_time"]

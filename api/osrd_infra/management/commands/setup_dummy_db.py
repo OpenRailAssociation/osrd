@@ -19,12 +19,9 @@ class Command(BaseCommand):
     help = "Generates a basic DB setup for unit tests"
 
     def handle(self, *args, **options):
-        existing = RollingStock.objects.filter(name="fast_rolling_stock").first()
-        if existing is not None:
-            existing.delete()
         rolling_stock_path = Path(__file__).parents[3] / "static" / "example_rolling_stock.json"
-        with open(rolling_stock_path.resolve(), "r") as f:
-            RollingStock.from_railjson(json.load(f))
+        with open(rolling_stock_path.resolve()) as f:
+            RollingStock.import_railjson(json.load(f), force=True)
 
         infra = Infra.objects.create(
             name="dummy_infra",

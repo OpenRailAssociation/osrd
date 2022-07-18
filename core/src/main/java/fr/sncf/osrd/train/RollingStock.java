@@ -27,11 +27,6 @@ public class RollingStock implements PhysicsRollingStock {
     /** the deceleration of the train, in m/s^2 */
     public final double gamma;
 
-    public final String source;
-
-    @Json(name = "verbose_name")
-    public final String verboseName;
-
     /** the length of the train, in meters. */
     public final double length;
 
@@ -169,8 +164,6 @@ public class RollingStock implements PhysicsRollingStock {
     /** Creates a new rolling stock (a physical train inventory item). */
     public RollingStock(
             String id,
-            String source,
-            String verboseName,
             double length,
             double mass,
             double inertiaCoefficient,
@@ -187,8 +180,6 @@ public class RollingStock implements PhysicsRollingStock {
             RJSLoadingGaugeType loadingGaugeType
     ) {
         this.id = id;
-        this.source = source;
-        this.verboseName = verboseName;
         this.A = a;
         this.B = b;
         this.C = c;
