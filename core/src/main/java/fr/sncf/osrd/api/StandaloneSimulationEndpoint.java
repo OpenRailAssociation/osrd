@@ -69,7 +69,7 @@ public class StandaloneSimulationEndpoint implements Take {
             // Parse rolling stocks
             var rollingStocks = new HashMap<String, RollingStock>();
             for (var rjsRollingStock : request.rollingStocks)
-                rollingStocks.put(rjsRollingStock.id, RJSRollingStockParser.parse(rjsRollingStock));
+                rollingStocks.put(rjsRollingStock.getID(), RJSRollingStockParser.parse(rjsRollingStock));
 
             // Parse trainsPath
             var trainsPath = TrainPathBuilder.from(infra, request.trainsPath);

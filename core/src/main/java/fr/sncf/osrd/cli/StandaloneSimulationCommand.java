@@ -79,8 +79,8 @@ public class StandaloneSimulationCommand implements CliCommand {
             var rollingStocks = new HashMap<String, RollingStock>();
 
             for (var rjsRollingStock : rjsSimulation.rollingStocks) {
-                rjsRollingStock.loadingGaugeType = RJSLoadingGaugeType.G1;
-                rollingStocks.put(rjsRollingStock.id, RJSRollingStockParser.parse(rjsRollingStock));
+                rjsRollingStock.loadingGauge = RJSLoadingGaugeType.G1;
+                rollingStocks.put(rjsRollingStock.getID(), RJSRollingStockParser.parse(rjsRollingStock));
             }
 
             // Add allowance

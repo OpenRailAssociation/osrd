@@ -7,8 +7,6 @@ import java.util.List;
 public class TestTrains {
     public static final RollingStock FAST_NO_FRICTION_TRAIN = new RollingStock(
             "no friction train",
-            "test source",
-            "no friction train verbose name",
             200, 1, 1, 0,
             0,
             0,
@@ -47,8 +45,6 @@ public class TestTrains {
 
         VERY_SHORT_FAST_TRAIN = new RollingStock(
                 "fast train",
-                "fast train source",
-                "fast train verbose name",
                 1, trainMass, 1.05, (0.65 * trainMass) / 100,
                 ((0.008 * trainMass) / 100) * 3.6,
                 (((0.00012 * trainMass) / 100) * 3.6) * 3.6,
@@ -64,8 +60,6 @@ public class TestTrains {
 
         VERY_LONG_FAST_TRAIN = new RollingStock(
                 "fast train",
-                "fast train source",
-                "fast train verbose name",
                 100000, trainMass, 1.05, (0.65 * trainMass) / 100,
                 ((0.008 * trainMass) / 100) * 3.6,
                 (((0.00012 * trainMass) / 100) * 3.6) * 3.6,
@@ -81,8 +75,6 @@ public class TestTrains {
 
         REALISTIC_FAST_TRAIN = new RollingStock(
                 "fast train",
-                "fast train source",
-                "fast train verbose name",
                 400, trainMass, 1.05, (0.65 * trainMass) / 100,
                 ((0.008 * trainMass) / 100) * 3.6,
                 (((0.00012 * trainMass) / 100) * 3.6) * 3.6,
@@ -98,8 +90,6 @@ public class TestTrains {
 
         REALISTIC_FAST_TRAIN_MAX_DEC_TYPE = new RollingStock(
                 "fast train",
-                "fast train source",
-                "fast train verbose",
                 400, trainMass, 1.05, (0.65 * trainMass) / 100,
                 ((0.008 * trainMass) / 100) * 3.6,
                 (((0.00012 * trainMass) / 100) * 3.6) * 3.6,
@@ -115,8 +105,6 @@ public class TestTrains {
 
         FAST_TRAIN_LARGE_GAUGE = new RollingStock(
                 "fast train",
-                "fast train source",
-                "fast train verbose name",
                 400, trainMass, 1.05, (0.65 * trainMass) / 100,
                 ((0.008 * trainMass) / 100) * 3.6,
                 (((0.00012 * trainMass) / 100) * 3.6) * 3.6,
