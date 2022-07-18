@@ -29,16 +29,11 @@ assignees: ''
 - [ ] Criteria 2
 - [ ] Criteria 3
 
-
 ## Story points
 
 <!-- If greater than 8, split the story. -->
 
-- [ ] 1
-- [ ] 2
-- [ ] 3
-- [ ] 5
-- [ ] 8
+1 / 2 / 3 / 5 / 8
 
 ## Definition of ready
 
