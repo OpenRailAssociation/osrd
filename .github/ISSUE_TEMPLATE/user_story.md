@@ -6,9 +6,9 @@ labels: 'kind:user-story'
 
 ## User
 
-- [X] Study officer
-- [ ] Manager
-- [ ] Other (please write it here)
+<!-- Please keep the right users, and write a specific user if that's relevant. Who's that story for ? -->
+
+Study officer / Manager / Other
 
 ## Description
 
@@ -33,11 +33,7 @@ labels: 'kind:user-story'
 
 <!-- If greater than 8, split the story. -->
 
-- [ ] 1
-- [ ] 2
-- [ ] 3
-- [ ] 5
-- [ ] 8
+1 / 2 / 3 / 5 / 8
 
 ## Definition of ready
 
