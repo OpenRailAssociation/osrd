@@ -1,9 +1,15 @@
 import json
-import mock
 
+import mock
 from django.test import TestCase
 
-from osrd_infra.models import Infra, Timetable, TrainScheduleModel, RollingStock, TrackSectionModel
+from osrd_infra.models import (
+    Infra,
+    RollingStock,
+    Timetable,
+    TrackSectionModel,
+    TrainScheduleModel,
+)
 from osrd_infra.views.stdcm import compute_stdcm
 
 
@@ -12,28 +18,34 @@ def make_dummy_linestring():
 
 
 def mock_api_call(payload):
-    sim = [{
-        "speeds": [{"time": 0}, {"time": 100}],
-        "head_positions": [
-            {"time": 0, "track_section": "track", "offset": 0, "path_offset": 0},
-            {"time": 100, "track_section": "track", "offset": 100, "path_offset": 100},
-        ],
-        "stops": [],
-        "route_occupancies": {},
-        "signal_updates": {},
-    }]
+    sim = [
+        {
+            "speeds": [{"time": 0}, {"time": 100}],
+            "head_positions": [
+                {"time": 0, "track_section": "track", "offset": 0, "path_offset": 0},
+                {"time": 100, "track_section": "track", "offset": 100, "path_offset": 100},
+            ],
+            "stops": [],
+            "route_occupancies": {},
+            "signal_updates": {},
+        }
+    ]
     return {
         "path": {
-            "route_paths": [{
-                "route": {"id": "route_1", "type": "Route"},
-                "signaling_type": "BAL3",
-                "track_sections": [{
-                    "track": {"id": "track", "type": "TrackSection"},
-                    "begin": 0,
-                    "end": 100,
-                    "direction": "START_TO_STOP",
-                }]
-            }],
+            "route_paths": [
+                {
+                    "route": {"id": "route_1", "type": "Route"},
+                    "signaling_type": "BAL3",
+                    "track_sections": [
+                        {
+                            "track": {"id": "track", "type": "TrackSection"},
+                            "begin": 0,
+                            "end": 100,
+                            "direction": "START_TO_STOP",
+                        }
+                    ],
+                }
+            ],
             "path_waypoints": [],
             "geographic": make_dummy_linestring(),
             "schematic": make_dummy_linestring(),
@@ -62,7 +74,7 @@ class STDCMTestCase(TestCase):
             },
             obj_id="track",
         )
-        self.rolling_stock = RollingStock.from_railjson(json.load(open("static/example_rolling_stock.json")))
+        self.rolling_stock = RollingStock.import_railjson(json.load(open("static/example_rolling_stock.json")))
         self.schedule = TrainScheduleModel.objects.create(
             timetable=self.timetable,
             base_simulation={},
@@ -80,14 +92,17 @@ class STDCMTestCase(TestCase):
             "route_2": {"time_head_occupy": 21, "time_tail_free": 63},
         }
         self.schedule.save()
-        result = compute_stdcm({
-            "infra": self.infra,
-            "rolling_stock": self.rolling_stock,
-            "timetable": self.timetable,
-            "start_time": 0,
-            "start_points": [{"track_section": "track", "offset": 0}],
-            "end_points": [{"track_section": "track", "offset": 100}],
-        }, 42)
+        result = compute_stdcm(
+            {
+                "infra": self.infra,
+                "rolling_stock": self.rolling_stock,
+                "timetable": self.timetable,
+                "start_time": 0,
+                "start_points": [{"track_section": "track", "offset": 0}],
+                "end_points": [{"track_section": "track", "offset": 100}],
+            },
+            42,
+        )
 
         # Check the payload sent to the core
         request_payload = mock.call_args[0][0]
@@ -105,7 +120,7 @@ class STDCMTestCase(TestCase):
         ]
         assert expected_occupancies == request_payload["route_occupancies"]
         assert self.infra.pk == request_payload["infra"]
-        assert self.rolling_stock.railjson_id == request_payload["rolling_stock"]["id"]
+        assert self.rolling_stock.name == request_payload["rolling_stock"]["name"]
         assert 0 == request_payload["start_time"]
         assert "end_time" not in request_payload
 

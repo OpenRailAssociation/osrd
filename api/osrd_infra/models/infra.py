@@ -2,7 +2,7 @@ from django.contrib.gis.db import models
 
 from osrd_infra.schemas.infra import (
     ALL_OBJECT_TYPES,
-    RAILJSON_VERSION,
+    RAILJSON_INFRA_VERSION,
     BufferStop,
     Catenary,
     Detector,
@@ -23,7 +23,7 @@ OBJ_TO_MODEL = {}
 
 class Infra(models.Model):
     name = models.CharField(max_length=128)
-    railjson_version = models.CharField(editable=False, max_length=16, default=RAILJSON_VERSION)
+    railjson_version = models.CharField(editable=False, max_length=16, default=RAILJSON_INFRA_VERSION)
     owner = models.UUIDField(editable=False, default="00000000-0000-0000-0000-000000000000")
     version = models.CharField(editable=False, max_length=40, default="1")
     generated_version = models.CharField(editable=False, max_length=40, null=True)
