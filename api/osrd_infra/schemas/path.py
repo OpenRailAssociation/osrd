@@ -23,6 +23,7 @@ class RoutePath(BaseModel):
 
 class PathWaypoint(GeometryPointTrait, TrackLocationTrait):
     name: Optional[str]
+    id: Optional[str]
     suggestion: bool
     duration: float
 
