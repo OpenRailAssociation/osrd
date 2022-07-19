@@ -15,16 +15,16 @@
         - field_expr: track_section.data->'line_code'
           field_name: line_code
           field_type: int
-        - field_expr: track_section.data->'line_name'
+        - field_expr: track_section.data->>'line_name'
           field_name: line_name
           field_type: text
         - field_expr: track_section.data->'track_number'
           field_name: track_number
           field_type: int
-        - field_expr: track_section.data->'track_name'
+        - field_expr: track_section.data->>'track_name'
           field_name: track_name
           field_type: text
-        - field_expr: track_section.data->'navigability'
+        - field_expr: track_section.data->>'navigability'
           field_name: navigability
           field_type: text
         - field_expr: track_section.data->'slopes'
@@ -51,16 +51,16 @@
         - field_expr: track_section.data->'line_code'
           field_name: line_code
           field_type: int
-        - field_expr: track_section.data->'line_name'
+        - field_expr: track_section.data->>'line_name'
           field_name: line_name
           field_type: text
         - field_expr: track_section.data->'track_number'
           field_name: track_number
           field_type: int
-        - field_expr: track_section.data->'track_name'
+        - field_expr: track_section.data->>'track_name'
           field_name: track_name
           field_type: text
-        - field_expr: track_section.data->'navigability'
+        - field_expr: track_section.data->>'navigability'
           field_name: navigability
           field_type: text
         - field_expr: track_section.data->'slopes'
@@ -92,7 +92,7 @@
         - field_expr: signal.data->'position'
           field_name: position
           field_type: float
-        - field_expr: signal.data->'direction'
+        - field_expr: signal.data->>'direction'
           field_name: direction
           field_type: text
         - field_expr: signal.data->'sight_distance'
@@ -110,10 +110,10 @@
         - field_expr: signal.data->'angle_geo'
           field_name: angle_geo
           field_type: float
-        - field_expr: signal.data->'type_code'
+        - field_expr: signal.data->>'type_code'
           field_name: type_code
           field_type: text
-        - field_expr: signal.data->'support_type'
+        - field_expr: signal.data->>'support_type'
           field_name: support_type
           field_type: text
         - field_expr: signal.data->'is_in_service'
@@ -125,28 +125,28 @@
         - field_expr: signal.data->'is_operational'
           field_name: is_operational
           field_type: boolean
-        - field_expr: signal.data->'comment'
+        - field_expr: signal.data->>'comment'
           field_name: comment
           field_type: text
-        - field_expr: signal.data->'physical_organization_group'
+        - field_expr: signal.data->>'physical_organization_group'
           field_name: physical_organization_group
           field_type: text
-        - field_expr: signal.data->'responsible_group'
+        - field_expr: signal.data->>'responsible_group'
           field_name: responsible_group
           field_type: text
-        - field_expr: signal.data->'label'
+        - field_expr: signal.data->>'label'
           field_name: label
           field_type: text
-        - field_expr: signal.data->'installation_type'
+        - field_expr: signal.data->>'installation_type'
           field_name: installation_type
           field_type: text
-        - field_expr: signal.data->'value'
+        - field_expr: signal.data->>'value'
           field_name: value
           field_type: text
-        - field_expr: signal.data->'side'
+        - field_expr: signal.data->>'side'
           field_name: side
           field_type: text
-        - field_expr: signal.data->'default_aspect'
+        - field_expr: signal.data->>'default_aspect'
           field_name: default_aspect
           field_type: text
       joins:
@@ -164,7 +164,7 @@
         - field_expr: signal.data->'position'
           field_name: position
           field_type: float
-        - field_expr: signal.data->'direction'
+        - field_expr: signal.data->>'direction'
           field_name: direction
           field_type: text
         - field_expr: signal.data->'sight_distance'
@@ -182,10 +182,10 @@
         - field_expr: signal.data->'angle_geo'
           field_name: angle_geo
           field_type: float
-        - field_expr: signal.data->'type_code'
+        - field_expr: signal.data->>'type_code'
           field_name: type_code
           field_type: text
-        - field_expr: signal.data->'support_type'
+        - field_expr: signal.data->>'support_type'
           field_name: support_type
           field_type: text
         - field_expr: signal.data->'is_in_service'
@@ -197,25 +197,25 @@
         - field_expr: signal.data->'is_operational'
           field_name: is_operational
           field_type: boolean
-        - field_expr: signal.data->'comment'
+        - field_expr: signal.data->>'comment'
           field_name: comment
           field_type: text
-        - field_expr: signal.data->'physical_organization_group'
+        - field_expr: signal.data->>'physical_organization_group'
           field_name: physical_organization_group
           field_type: text
-        - field_expr: signal.data->'responsible_group'
+        - field_expr: signal.data->>'responsible_group'
           field_name: responsible_group
           field_type: text
-        - field_expr: signal.data->'label'
+        - field_expr: signal.data->>'label'
           field_name: label
           field_type: text
-        - field_expr: signal.data->'installation_type'
+        - field_expr: signal.data->>'installation_type'
           field_name: installation_type
           field_type: text
-        - field_expr: signal.data->'value'
+        - field_expr: signal.data->>'value'
           field_name: value
           field_type: text
-        - field_expr: signal.data->'side'
+        - field_expr: signal.data->>'side'
           field_name: side
           field_type: text
       joins:
@@ -279,7 +279,7 @@
         - field_expr: track_section_link.data->'dst'
           field_name: dst
           field_type: jsonb
-        - field_expr: track_section_link.data->'navigability'
+        - field_expr: track_section_link.data->>'navigability'
           field_name: navigability
           field_type: text
       joins:
@@ -297,7 +297,7 @@
         - field_expr: track_section_link.data->'dst'
           field_name: dst
           field_type: jsonb
-        - field_expr: track_section_link.data->'navigability'
+        - field_expr: track_section_link.data->>'navigability'
           field_name: navigability
           field_type: text
       joins:
@@ -323,7 +323,7 @@
         - field_expr: switch.data->'ports'
           field_name: ports
           field_type: jsonb
-        - field_expr: switch.data->'label'
+        - field_expr: switch.data->>'label'
           field_name: label
           field_type: text
       joins:
@@ -344,7 +344,7 @@
         - field_expr: switch.data->'ports'
           field_name: ports
           field_type: jsonb
-        - field_expr: switch.data->'label'
+        - field_expr: switch.data->>'label'
           field_name: label
           field_type: text
       joins:
@@ -367,7 +367,7 @@
         - field_expr: detector.data->'position'
           field_name: position
           field_type: float
-        - field_expr: detector.data->'applicable_directions'
+        - field_expr: detector.data->>'applicable_directions'
           field_name: applicable_directions
           field_type: text
       joins:
@@ -385,7 +385,7 @@
         - field_expr: detector.data->'position'
           field_name: position
           field_type: float
-        - field_expr: detector.data->'applicable_directions'
+        - field_expr: detector.data->>'applicable_directions'
           field_name: applicable_directions
           field_type: text
       joins:
@@ -408,7 +408,7 @@
         - field_expr: buffer_stop.data->'position'
           field_name: position
           field_type: float
-        - field_expr: buffer_stop.data->'applicable_directions'
+        - field_expr: buffer_stop.data->>'applicable_directions'
           field_name: applicable_directions
           field_type: text
       joins:
@@ -426,7 +426,7 @@
         - field_expr: buffer_stop.data->'position'
           field_name: position
           field_type: float
-        - field_expr: buffer_stop.data->'applicable_directions'
+        - field_expr: buffer_stop.data->>'applicable_directions'
           field_name: applicable_directions
           field_type: text
       joins:
@@ -496,16 +496,16 @@
         - field_expr: operational_point.data->'ci'
           field_name: ci
           field_type: int
-        - field_expr: operational_point.data->'ch'
+        - field_expr: operational_point.data->>'ch'
           field_name: ch
           field_type: text
-        - field_expr: operational_point.data->'ch_short_label'
+        - field_expr: operational_point.data->>'ch_short_label'
           field_name: ch_short_label
           field_type: text
-        - field_expr: operational_point.data->'ch_long_label'
+        - field_expr: operational_point.data->>'ch_long_label'
           field_name: ch_long_label
           field_type: text
-        - field_expr: operational_point.data->'name'
+        - field_expr: operational_point.data->>'name'
           field_name: name
           field_type: text
       joins:
@@ -523,16 +523,16 @@
         - field_expr: operational_point.data->'ci'
           field_name: ci
           field_type: int
-        - field_expr: operational_point.data->'ch'
+        - field_expr: operational_point.data->>'ch'
           field_name: ch
           field_type: text
-        - field_expr: operational_point.data->'ch_short_label'
+        - field_expr: operational_point.data->>'ch_short_label'
           field_name: ch_short_label
           field_type: text
-        - field_expr: operational_point.data->'ch_long_label'
+        - field_expr: operational_point.data->>'ch_long_label'
           field_name: ch_long_label
           field_type: text
-        - field_expr: operational_point.data->'name'
+        - field_expr: operational_point.data->>'name'
           field_name: name
           field_type: text
       joins:
