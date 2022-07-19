@@ -43,7 +43,7 @@ def compute_path_payload(infra, back_payload, step_durations, track_map) -> Path
             path_waypoint["duration"] = 0
 
         # Retrieve name from operation point ID
-        op_id = path_waypoint.pop("id", None)
+        op_id = path_waypoint.get("id", None)
         if op_id is not None:
             op = OperationalPointModel.objects.get(infra=infra, obj_id=op_id).into_obj()
             path_waypoint["name"] = op.name
@@ -196,12 +196,14 @@ def compute_path(path, request_data, owner):
     rolling_stocks = request_data.get("rolling_stocks", [])
 
     waypoints, step_durations = parse_steps_input(request_data["steps"], infra)
-    payload = request_pathfinding({
-        "infra": infra.pk,
-        "expected_version": infra.version,
-        "waypoints": waypoints,
-        "rolling_stocks": [r.to_railjson() for r in rolling_stocks]
-    })
+    payload = request_pathfinding(
+        {
+            "infra": infra.pk,
+            "expected_version": infra.version,
+            "waypoints": waypoints,
+            "rolling_stocks": [r.to_railjson() for r in rolling_stocks],
+        }
+    )
     path.geographic = json.dumps(payload.pop("geographic"))
     path.schematic = json.dumps(payload.pop("schematic"))
 
