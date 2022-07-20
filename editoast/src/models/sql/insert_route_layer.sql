@@ -60,8 +60,6 @@ sliced_tracks AS (
     FROM paths
         INNER JOIN osrd_infra_tracksectionmodel AS tracks ON tracks.obj_id = paths.track_id
         AND tracks.infra_id = $1
-        AND paths.slice_begin < (tracks.data->'length')::float
-        AND paths.slice_begin != paths.slice_end
 )
 INSERT INTO osrd_infra_routelayer (obj_id, infra_id, geographic, schematic)
 SELECT route_id,
@@ -69,4 +67,6 @@ SELECT route_id,
     St_Collect(geo),
     St_Collect(sch)
 FROM sliced_tracks
+WHERE GeometryType(sliced_tracks.geo) = 'LINESTRING'
+    AND GeometryType(sliced_tracks.sch) = 'LINESTRING'
 GROUP BY route_id
