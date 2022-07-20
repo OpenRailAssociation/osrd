@@ -2,10 +2,9 @@ use crate::models::BoundingBox;
 use crate::railjson::operation::{OperationResult, RailjsonObject};
 use crate::railjson::*;
 use derivative::Derivative;
-use diesel::sql_types::{Double, Integer, Json, Nullable, Text};
+use diesel::sql_types::{Double, Integer, Nullable, Text};
 use diesel::PgConnection;
 use diesel::{sql_query, QueryableByName, RunQueryDsl};
-use serde_json::Value;
 use std::collections::{HashMap, HashSet};
 
 /// Contains infra cached data used to generate layers and errors
@@ -71,8 +70,8 @@ impl From<&TrackSection> for TrackCache {
 
 impl From<TrackQueryable> for TrackCache {
     fn from(track: TrackQueryable) -> Self {
-        let geo: LineString = serde_json::from_value(track.geo).unwrap();
-        let sch: LineString = serde_json::from_value(track.sch).unwrap();
+        let geo: LineString = serde_json::from_str(&track.geo).unwrap();
+        let sch: LineString = serde_json::from_str(&track.sch).unwrap();
         Self {
             obj_id: track.obj_id,
             length: track.length,
@@ -88,10 +87,10 @@ pub struct TrackQueryable {
     pub obj_id: String,
     #[sql_type = "Double"]
     pub length: f64,
-    #[sql_type = "Json"]
-    pub geo: Value,
-    #[sql_type = "Json"]
-    pub sch: Value,
+    #[sql_type = "Text"]
+    pub geo: String,
+    #[sql_type = "Text"]
+    pub sch: String,
 }
 
 #[derive(QueryableByName, Debug, Clone, Derivative)]
@@ -127,22 +126,22 @@ impl From<&Signal> for SignalCache {
 pub struct SpeedSectionQueryable {
     #[sql_type = "Text"]
     pub obj_id: String,
-    #[sql_type = "Json"]
-    pub track_ranges: Value,
+    #[sql_type = "Text"]
+    pub track_ranges: String,
     #[sql_type = "Nullable<Double>"]
     pub speed_limit: Option<f64>,
-    #[sql_type = "Json"]
-    pub speed_limit_by_tag: Value,
+    #[sql_type = "Text"]
+    pub speed_limit_by_tag: String,
 }
 
 impl From<SpeedSectionQueryable> for SpeedSection {
     fn from(speed: SpeedSectionQueryable) -> Self {
         let track_ranges: Vec<ApplicableDirectionsTrackRange> =
-            serde_json::from_value(speed.track_ranges).unwrap();
+            serde_json::from_str(&speed.track_ranges).unwrap();
         SpeedSection {
             id: speed.obj_id.clone(),
             speed_limit: speed.speed_limit,
-            speed_limit_by_tag: serde_json::from_value(speed.speed_limit_by_tag).unwrap(),
+            speed_limit_by_tag: serde_json::from_str(&speed.speed_limit_by_tag).unwrap(),
             track_ranges,
         }
     }
@@ -152,23 +151,23 @@ impl From<SpeedSectionQueryable> for SpeedSection {
 pub struct RouteQueryable {
     #[sql_type = "Text"]
     pub obj_id: String,
-    #[sql_type = "Json"]
-    pub entry_point: Value,
-    #[sql_type = "Json"]
-    pub exit_point: Value,
-    #[sql_type = "Json"]
-    pub release_detectors: Value,
-    #[sql_type = "Json"]
-    pub path: Value,
+    #[sql_type = "Text"]
+    pub entry_point: String,
+    #[sql_type = "Text"]
+    pub exit_point: String,
+    #[sql_type = "Text"]
+    pub release_detectors: String,
+    #[sql_type = "Text"]
+    pub path: String,
 }
 
 impl From<RouteQueryable> for Route {
     fn from(route: RouteQueryable) -> Self {
-        let entry_point: ObjectRef = serde_json::from_value(route.entry_point).unwrap();
-        let exit_point: ObjectRef = serde_json::from_value(route.exit_point).unwrap();
+        let entry_point: ObjectRef = serde_json::from_str(&route.entry_point).unwrap();
+        let exit_point: ObjectRef = serde_json::from_str(&route.exit_point).unwrap();
         let release_detectors: Vec<ObjectRef> =
-            serde_json::from_value(route.release_detectors).unwrap();
-        let path: Vec<DirectionalTrackRange> = serde_json::from_value(route.path).unwrap();
+            serde_json::from_str(&route.release_detectors).unwrap();
+        let path: Vec<DirectionalTrackRange> = serde_json::from_str(&route.path).unwrap();
         Route {
             id: route.obj_id,
             entry_point,
@@ -183,21 +182,21 @@ impl From<RouteQueryable> for Route {
 pub struct TrackSectionLinkQueryable {
     #[sql_type = "Text"]
     pub obj_id: String,
-    #[sql_type = "Json"]
-    pub src: Value,
-    #[sql_type = "Json"]
-    pub dst: Value,
-    #[sql_type = "Json"]
-    pub navigability: Value,
+    #[sql_type = "Text"]
+    pub src: String,
+    #[sql_type = "Text"]
+    pub dst: String,
+    #[sql_type = "Text"]
+    pub navigability: String,
 }
 
 impl From<TrackSectionLinkQueryable> for TrackSectionLink {
     fn from(link: TrackSectionLinkQueryable) -> Self {
         Self {
             id: link.obj_id.clone(),
-            src: serde_json::from_value(link.src).unwrap(),
-            dst: serde_json::from_value(link.dst).unwrap(),
-            navigability: serde_json::from_value(link.navigability).unwrap(),
+            src: serde_json::from_str(&link.src).unwrap(),
+            dst: serde_json::from_str(&link.dst).unwrap(),
+            navigability: serde_json::from_str(&link.navigability).unwrap(),
         }
     }
 }
@@ -217,8 +216,8 @@ pub struct SwitchQueryable {
     pub obj_id: String,
     #[sql_type = "Text"]
     pub switch_type: String,
-    #[sql_type = "Json"]
-    pub ports: Value,
+    #[sql_type = "Text"]
+    pub ports: String,
 }
 
 impl From<SwitchQueryable> for SwitchCache {
@@ -226,7 +225,7 @@ impl From<SwitchQueryable> for SwitchCache {
         Self {
             obj_id: switch.obj_id,
             switch_type: switch.switch_type,
-            ports: serde_json::from_value(switch.ports).unwrap(),
+            ports: serde_json::from_str(&switch.ports).unwrap(),
         }
     }
 }
@@ -255,17 +254,17 @@ impl From<&Switch> for SwitchCache {
 pub struct SwitchTypeQueryable {
     #[sql_type = "Text"]
     pub obj_id: String,
-    #[sql_type = "Json"]
-    pub ports: Value,
-    #[sql_type = "Json"]
-    pub groups: Value,
+    #[sql_type = "Text"]
+    pub ports: String,
+    #[sql_type = "Text"]
+    pub groups: String,
 }
 
 impl From<SwitchTypeQueryable> for SwitchType {
     fn from(switch_type: SwitchTypeQueryable) -> Self {
-        let ports: Vec<String> = serde_json::from_value(switch_type.ports).unwrap();
+        let ports: Vec<String> = serde_json::from_str(&switch_type.ports).unwrap();
         let groups: HashMap<String, Vec<SwitchPortConnection>> =
-            serde_json::from_value(switch_type.groups).unwrap();
+            serde_json::from_str(&switch_type.groups).unwrap();
         SwitchType {
             id: switch_type.obj_id,
             ports,
@@ -286,15 +285,15 @@ pub struct OperationalPointCache {
 pub struct OperationalPointQueryable {
     #[sql_type = "Text"]
     pub obj_id: String,
-    #[sql_type = "Json"]
-    pub parts: Value,
+    #[sql_type = "Text"]
+    pub parts: String,
 }
 
 impl From<OperationalPointQueryable> for OperationalPointCache {
     fn from(op: OperationalPointQueryable) -> Self {
         Self {
             obj_id: op.obj_id,
-            parts: serde_json::from_value(op.parts).unwrap(),
+            parts: serde_json::from_str(&op.parts).unwrap(),
         }
     }
 }
