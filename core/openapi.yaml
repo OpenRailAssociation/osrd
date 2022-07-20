@@ -33,29 +33,6 @@ paths:
     post:
       tags:
       - pathfinding
-      summary: Find a path in the route graph that passes through waypoints.
-      operationId: pathfinding_routes
-      requestBody:
-        description: Infrastructure id and waypoints
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PathfindingRequest'
-        required: true
-      responses:
-        200:
-          description: Path found
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/PathfindingRoutesResult'
-        400:
-          description: The request body is invalid
-  /pathfinding/tracks:
-    post:
-      tags:
-      - pathfinding
       summary: Find a path in the track section graph that passes through waypoints.
       operationId: pathfinding_tracks
       requestBody:
@@ -75,7 +52,7 @@ paths:
                   $ref: '#/components/schemas/PathfindingTracksResult'
         400:
           description: The request body is invalid
-  /simulation:
+  /standalone_simulation:
     post:
       tags:
       - simulation
@@ -179,6 +156,29 @@ components:
           type: number
           format: double
           minimum: 0
+    DirectedTrackSectionRange:
+      required:
+      - track_section
+      - begin_position
+      - end_position
+      - direction
+      properties:
+        track_section:
+          type: string
+        begin_position:
+          type: number
+          format: double
+          minimum: 0
+        end_position:
+          type: number
+          format: double
+          minimum: 0
+        direction:
+          type: integer
+          description: "{0: START_TO_STOP, 1: STOP_TO_START}"
+          enum:
+            - 0
+            - 1
     RollingStock:
       required:
       - id
@@ -470,15 +470,43 @@ components:
               - track_section: "track_destination"
                 direction: "STOP_TO_START"
                 offset: 138.32
+    RoutePath:
+      type: object
+      properties:
+        track_sections:
+          type: array
+        signaling_type:
+          type: string
+    TrainsPath:
+      type: object
+      description: "Full train path as a list of routes"
+      properties:
+        route_paths:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/RoutePath'
     SimulationRequest:
       required:
       - infra
       - rolling_stocks
       - train_schedules
+      - trains_path
       properties:
         infra:
           type: string
           example: "infraID"
+        expected_version:
+          type: string
+          example: "infraVersion"
+        time_step:
+          description: "The time step which shall be used for all simulation"
+          type: number
+          format: double
+          example: 2.0
+        trains_path:
+          description: "The path used by trains"
+          $ref: '#/components/schemas/TrainsPath'
         rolling_stocks:
           type: array
           minItems: 1
@@ -489,3 +517,4 @@ components:
           minItems: 1
           items:
             $ref: '#/components/schemas/TrainSchedule'
+
