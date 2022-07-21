@@ -34,11 +34,13 @@ pub fn generate_errors(
         if graph.get_neighbours(&track_cache.get_begin()).is_none()
             || graph.get_neighbours(&track_cache.get_end()).is_none()
         {
-            let track_refs = infra_cache.track_sections_refs.get(track_id).unwrap();
+            let track_refs = infra_cache.track_sections_refs.get(track_id);
 
-            if track_refs
-                .iter()
-                .any(|x| x.obj_type == ObjectType::BufferStop)
+            if track_refs.is_none()
+                || track_refs
+                    .unwrap()
+                    .iter()
+                    .any(|x| x.obj_type == ObjectType::BufferStop)
             {
                 let infra_error = InfraError::new_no_buffer_stop("buffer_stop");
                 errors.push(to_value(infra_error).unwrap());
