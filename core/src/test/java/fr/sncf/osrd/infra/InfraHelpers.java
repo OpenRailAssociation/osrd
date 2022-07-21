@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.RangeMap;
 import com.google.common.collect.Sets;
 import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.Network;
@@ -28,7 +29,6 @@ import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSBufferStop;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrainDetector;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.SingleDirectionalRJSTrackRange;
-import fr.sncf.osrd.utils.DoubleRangeMap;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -236,12 +236,13 @@ public class InfraHelpers {
     }
 
     /** Sets the speed sections on the track, bypassing visibility */
-    public static void setTrackSpeedSections(TrackSection track, EnumMap<Direction, DoubleRangeMap> speedSections) {
+    public static void setTrackSpeedSections(TrackSection track,
+                                             EnumMap<Direction, RangeMap<Double, Double>> speedSections) {
         setPrivateField(track, "speedSections", speedSections);
     }
 
     /** Sets the gradients on the track, bypassing visibility */
-    public static void setGradient(TrackSection track, EnumMap<Direction, DoubleRangeMap> gradients) {
+    public static void setGradient(TrackSection track, EnumMap<Direction, RangeMap<Double, Double>> gradients) {
         setPrivateField(track, "gradients", gradients);
     }
 

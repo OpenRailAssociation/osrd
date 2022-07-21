@@ -7,8 +7,6 @@ import fr.sncf.osrd.infra.api.tracks.undirected.Detector;
 import fr.sncf.osrd.infra.api.tracks.undirected.LoadingGaugeConstraint;
 import fr.sncf.osrd.infra.api.tracks.undirected.OperationalPoint;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackSection;
-import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
-import fr.sncf.osrd.utils.DoubleRangeMap;
 import fr.sncf.osrd.utils.geom.LineString;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.EnumMap;
@@ -18,8 +16,8 @@ public class TrackSectionImpl implements TrackSection {
     private final double length;
     private final String id;
     private final ImmutableSet<OperationalPoint> operationalPoints;
-    EnumMap<Direction, DoubleRangeMap> speedSections;
-    EnumMap<Direction, DoubleRangeMap> gradients;
+    EnumMap<Direction, RangeMap<Double, Double>> speedSections;
+    EnumMap<Direction, RangeMap<Double, Double>> gradients;
     ImmutableList<Detector> detectors = ImmutableList.of();
     int index;
     private final LineString geo;
@@ -76,12 +74,12 @@ public class TrackSectionImpl implements TrackSection {
     }
 
     @Override
-    public EnumMap<Direction, DoubleRangeMap> getGradients() {
+    public EnumMap<Direction, RangeMap<Double, Double>> getGradients() {
         return gradients;
     }
 
     @Override
-    public EnumMap<Direction, DoubleRangeMap> getSpeedSections() {
+    public EnumMap<Direction, RangeMap<Double, Double>> getSpeedSections() {
         return speedSections;
     }
 

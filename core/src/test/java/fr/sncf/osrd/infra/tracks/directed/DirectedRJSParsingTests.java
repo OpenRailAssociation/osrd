@@ -2,9 +2,9 @@ package fr.sncf.osrd.infra.tracks.directed;
 
 import static fr.sncf.osrd.infra.InfraHelpers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 import com.google.common.graph.NetworkBuilder;
 import com.google.common.graph.Traverser;
 import fr.sncf.osrd.Helpers;
@@ -17,7 +17,7 @@ import fr.sncf.osrd.infra.implementation.tracks.directed.DirectedInfraBuilder;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.infra.implementation.tracks.undirected.*;
 import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
-import fr.sncf.osrd.utils.DoubleRangeMap;
+import fr.sncf.osrd.utils.RangeMapUtils;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -228,11 +228,11 @@ public class DirectedRJSParsingTests {
     @Test
     public void trackViewRangesTest() {
         final var edge = new TrackSectionImpl(100, "edge");
-        var speedSections = new EnumMap<Direction, DoubleRangeMap>(Direction.class);
-        var map = new DoubleRangeMap();
-        map.addRange(0, 100, 0);
-        map.addRange(0, 30, 30);
-        map.addRange(60, 80, -10);
+        var speedSections = new EnumMap<Direction, RangeMap<Double, Double>>(Direction.class);
+        var map = TreeRangeMap.<Double, Double>create();
+        map.put(Range.closed(0., 100.), 0.);
+        map.put(Range.closed(0., 30.), 30.);
+        map.put(Range.closed(60., 80.), -10.);
         for (var dir : Direction.values())
             speedSections.put(dir, map);
         setTrackSpeedSections(edge, speedSections);
@@ -248,10 +248,10 @@ public class DirectedRJSParsingTests {
                 new TrackRangeView(50, 90, edgeF),
                 new TrackRangeView(90, 100, edgeF)
         );
-        assertEquals(
+        assertTrue(RangeMapUtils.equalsIgnoringTransitions(
                 getSpeedsOnRange(path1),
                 getSpeedsOnRange(path2)
-        );
+        ));
 
         var path3 = List.of(
                 new TrackRangeView(0, 100, edgeB)
@@ -262,19 +262,19 @@ public class DirectedRJSParsingTests {
                 new TrackRangeView(15, 50, edgeB),
                 new TrackRangeView(0, 15, edgeB)
         );
-        assertEquals(
+        assertTrue(RangeMapUtils.equalsIgnoringTransitions(
                 getSpeedsOnRange(path3),
                 getSpeedsOnRange(path4)
-        );
+        ));
 
-        var inverted = new DoubleRangeMap();
-        inverted.addRange(0, 100, 0);
-        inverted.addRange(70, 100, 30);
-        inverted.addRange(20, 40, -10);
-        assertEquals(
+        var inverted = TreeRangeMap.<Double, Double>create();
+        inverted.put(Range.closed(0., 100.), 0.);
+        inverted.put(Range.closed(70., 100.), 30.);
+        inverted.put(Range.closed(20., 40.), -10.);
+        assertTrue(RangeMapUtils.equalsIgnoringTransitions(
                 inverted,
                 getSpeedsOnRange(path3)
-        );
+        ));
     }
 
     private record Pair(Detector detector, double position) {}
@@ -293,19 +293,21 @@ public class DirectedRJSParsingTests {
     }
 
     /** Merges all the speed sections on a list of ranges */
-    private static DoubleRangeMap getSpeedsOnRange(List<TrackRangeView> ranges) {
+    private static RangeMap<Double, Double> getSpeedsOnRange(List<TrackRangeView> ranges) {
         var pos = 0.;
-        var res = new DoubleRangeMap();
+        var res = TreeRangeMap.<Double, Double>create();
         for (var range : ranges) {
             var sections = range.getSpeedSections();
-            for (var section : sections.getValuesInRange(0, range.getLength()).entrySet())
-                res.addRange(
-                        section.getKey().getBeginPosition() + pos,
-                        section.getKey().getEndPosition() + pos,
+            for (var section : sections.subRangeMap(Range.closed(0., range.getLength())).asMapOfRanges().entrySet())
+                res.putCoalescing(
+                        Range.closed(
+                                section.getKey().lowerEndpoint() + pos,
+                                section.getKey().upperEndpoint() + pos
+                        ),
                         section.getValue()
                 );
             pos += range.getLength();
         }
-        return res.simplify();
+        return res;
     }
 }
