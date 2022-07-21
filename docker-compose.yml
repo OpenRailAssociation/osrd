@@ -50,7 +50,7 @@ services:
       PSQL_DSN: "postgres://osrd:password@localhost:5432/osrd"
       REDIS_URL: "redis://localhost:6379"
     healthcheck:
-      test: ["CMD", "python", "-c", "from urllib.request import urlopen; exit(0 if urlopen('http://localhost:7000/health').status == 200 else 1)"]
+      test: ["CMD", "python", "-c", "from urllib.request import urlopen; exit(0 if urlopen('http://localhost:7000/health/').status == 200 else 1)"]
       start_period: 4s
       interval: 5s
 

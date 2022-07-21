@@ -3,7 +3,7 @@ info:
   title: Chartos
   version: 0.2.0
 paths:
-  /health:
+  /health/:
     get:
       summary: Health
       operationId: health_health_get
@@ -13,7 +13,7 @@ paths:
           content:
             application/json:
               schema: {}
-  /info:
+  /info/:
     get:
       summary: Info
       operationId: info_info_get

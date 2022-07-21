@@ -23,7 +23,7 @@ from .settings import Settings, get_settings
 router = APIRouter()
 
 
-@router.get("/health")
+@router.get("/health/")
 async def health(
     psql: Connection = Depends(PSQLPool.get),
     redis: RedisPool = Depends(RedisPool.get),
@@ -33,7 +33,7 @@ async def health(
     return ""
 
 
-@router.get("/info")
+@router.get("/info/")
 async def info(config: Config = Depends(get_config)):
     return config.todict()
 
