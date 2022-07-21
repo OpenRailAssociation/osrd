@@ -8,6 +8,7 @@ import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.train.RollingStock;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 

@@ -15,10 +15,14 @@ import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackEndpoint;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSectionLink;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSApplicableDirectionsTrackRange;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
 import fr.sncf.osrd.reporting.warnings.StrictWarningError;
 import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class RJSParsingTests {
 
@@ -82,5 +86,28 @@ public class RJSParsingTests {
             link.id = null;
         // We check that no warning or assertion is raised when importing the infra
         UndirectedInfraBuilder.parseInfra(rjsInfra, new WarningRecorderImpl(true));
+    }
+
+    @Test
+    public void testOverlappingSpeedSections() throws Exception {
+        var rjsInfra = Helpers.getExampleInfra("one_line/infra.json");
+        var track = rjsInfra.trackSections.iterator().next();
+        rjsInfra.speedSections = List.of(
+                new RJSSpeedSection("id", 42, Map.of(), List.of(new RJSApplicableDirectionsTrackRange(
+                        new RJSObjectRef<>(track.id, "TrackSection"),
+                        ApplicableDirection.START_TO_STOP,
+                        0,
+                        10
+                ))),
+            new RJSSpeedSection("id", 42, Map.of(), List.of(new RJSApplicableDirectionsTrackRange(
+                    new RJSObjectRef<>(track.id, "TrackSection"),
+                    ApplicableDirection.START_TO_STOP,
+                    5,
+                    15
+            )))
+        );
+        assertThrows(InvalidInfraError.class, () ->
+                UndirectedInfraBuilder.parseInfra(rjsInfra, new WarningRecorderImpl(true))
+        );
     }
 }

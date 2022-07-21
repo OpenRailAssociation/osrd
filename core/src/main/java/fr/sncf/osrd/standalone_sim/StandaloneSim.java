@@ -40,8 +40,8 @@ public class StandaloneSim {
         for (var trainSchedule : schedules) {
             if (!cacheMaxEffort.containsKey(trainSchedule)) {
                 // MRSP & SpeedLimits
-                var mrsp = MRSP.from(trainsPath, trainSchedule.rollingStock, true);
-                var speedLimits = MRSP.from(trainsPath, trainSchedule.rollingStock, false);
+                var mrsp = MRSP.from(trainsPath, trainSchedule.rollingStock, true, trainSchedule.tags);
+                var speedLimits = MRSP.from(trainsPath, trainSchedule.rollingStock, false, trainSchedule.tags);
                 cacheSpeedLimits.put(trainSchedule, ResultEnvelopePoint.from(speedLimits));
 
                 // Base

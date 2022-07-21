@@ -10,6 +10,7 @@ import com.google.common.graph.Traverser;
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.tracks.undirected.Detector;
+import fr.sncf.osrd.infra.api.tracks.undirected.SpeedLimits;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackEdge;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackNode;
 import fr.sncf.osrd.infra.implementation.tracks.directed.DiTrackEdgeImpl;
@@ -228,11 +229,11 @@ public class DirectedRJSParsingTests {
     @Test
     public void trackViewRangesTest() {
         final var edge = new TrackSectionImpl(100, "edge");
-        var speedSections = new EnumMap<Direction, RangeMap<Double, Double>>(Direction.class);
-        var map = TreeRangeMap.<Double, Double>create();
-        map.put(Range.closed(0., 100.), 0.);
-        map.put(Range.closed(0., 30.), 30.);
-        map.put(Range.closed(60., 80.), -10.);
+        var speedSections = new EnumMap<Direction, RangeMap<Double, SpeedLimits>>(Direction.class);
+        var map = TreeRangeMap.<Double, SpeedLimits>create();
+        map.put(Range.closed(0., 100.), new SpeedLimits(0, ImmutableMap.of()));
+        map.put(Range.closed(0., 30.), new SpeedLimits(30, ImmutableMap.of()));
+        map.put(Range.closed(60., 80.), new SpeedLimits(-10, ImmutableMap.of()));
         for (var dir : Direction.values())
             speedSections.put(dir, map);
         setTrackSpeedSections(edge, speedSections);
@@ -304,7 +305,7 @@ public class DirectedRJSParsingTests {
                                 section.getKey().lowerEndpoint() + pos,
                                 section.getKey().upperEndpoint() + pos
                         ),
-                        section.getValue()
+                        section.getValue().getSpeedLimit(Set.of())
                 );
             pos += range.getLength();
         }

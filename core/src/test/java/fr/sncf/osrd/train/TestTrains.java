@@ -2,6 +2,7 @@ package fr.sncf.osrd.train;
 
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 import java.util.ArrayList;
+import java.util.List;
 
 public class TestTrains {
     public static final RollingStock FAST_NO_FRICTION_TRAIN = new RollingStock(
