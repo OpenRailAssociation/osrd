@@ -7,22 +7,20 @@ import static fr.sncf.osrd.infra.api.Direction.FORWARD;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.google.common.collect.Range;
+import com.google.common.collect.RangeMap;
+import com.google.common.collect.TreeRangeMap;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
-import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
-import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
 import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.infra_state.implementation.errors.InvalidPathError;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
-import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
-import fr.sncf.osrd.utils.DoubleRangeMap;
 import org.junit.jupiter.api.Test;
 import java.util.EnumMap;
 import java.util.List;
-import java.util.Set;
 
 public class TrainPathTests {
 
@@ -154,11 +152,11 @@ public class TrainPathTests {
 
     @Test
     public void envelopeTrainPathTests() {
-        var gradients = new EnumMap<Direction, DoubleRangeMap>(Direction.class);
-        var map = new DoubleRangeMap();
-        map.addRange(0, 100, 0);
-        map.addRange(0, 30, 30);
-        map.addRange(60, 80, -10);
+        var gradients = new EnumMap<Direction, RangeMap<Double, Double>>(Direction.class);
+        var map = TreeRangeMap.<Double, Double>create();
+        map.put(Range.closed(0., 100.), 0.);
+        map.put(Range.closed(0., 30.), 30.);
+        map.put(Range.closed(60., 80.), -10.);
         for (var dir : Direction.values())
             gradients.put(dir, map);
         var rjsInfra = makeSingleTrackRJSInfra();

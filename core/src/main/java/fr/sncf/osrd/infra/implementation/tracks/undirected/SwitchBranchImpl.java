@@ -3,14 +3,12 @@ package fr.sncf.osrd.infra.implementation.tracks.undirected;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableRangeMap;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.RangeMap;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.tracks.undirected.Detector;
 import fr.sncf.osrd.infra.api.tracks.undirected.LoadingGaugeConstraint;
 import fr.sncf.osrd.infra.api.tracks.undirected.Switch;
 import fr.sncf.osrd.infra.api.tracks.undirected.SwitchBranch;
-import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
-import fr.sncf.osrd.utils.DoubleRangeMap;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.EnumMap;
 import java.util.Map;
@@ -23,9 +21,9 @@ public class SwitchBranchImpl implements SwitchBranch {
     public final String dstPort;
 
     /** static mapping from direction to empty map. Avoids unnecessary object instantiations */
-    private static final EnumMap<Direction, DoubleRangeMap> emptyMap = new EnumMap<>(Map.of(
-            Direction.FORWARD, new DoubleRangeMap(),
-            Direction.BACKWARD, new DoubleRangeMap()
+    private static final EnumMap<Direction, RangeMap<Double, Double>> emptyMap = new EnumMap<>(Map.of(
+            Direction.FORWARD, ImmutableRangeMap.of(),
+            Direction.BACKWARD, ImmutableRangeMap.of()
     ));
 
     /** Constructor */
@@ -45,12 +43,12 @@ public class SwitchBranchImpl implements SwitchBranch {
     }
 
     @Override
-    public EnumMap<Direction, DoubleRangeMap> getGradients() {
+    public EnumMap<Direction, RangeMap<Double, Double>> getGradients() {
         return emptyMap;
     }
 
     @Override
-    public EnumMap<Direction, DoubleRangeMap> getSpeedSections() {
+    public EnumMap<Direction, RangeMap<Double, Double>> getSpeedSections() {
         return emptyMap;
     }
 

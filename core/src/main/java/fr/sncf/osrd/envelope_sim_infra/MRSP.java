@@ -1,5 +1,6 @@
 package fr.sncf.osrd.envelope_sim_infra;
 
+import com.google.common.collect.Range;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.EnvelopeAttr;
 import fr.sncf.osrd.envelope.MRSPEnvelopeBuilder;
@@ -46,11 +47,12 @@ public class MRSP {
         for (var range : ranges) {
             if (range.getLength() == 0)
                 continue;
-            for (var speedRange : range.getSpeedSections().getValuesInRange(0, range.getLength()).entrySet()) {
+            var subMap = range.getSpeedSections().subRangeMap(Range.closed(0., range.getLength()));
+            for (var speedRange : subMap.asMapOfRanges().entrySet()) {
                 // compute where this limit is active from and to
                 var interval = speedRange.getKey();
-                var begin = offset + interval.getBeginPosition();
-                var end = offset + interval.getEndPosition();
+                var begin = offset + interval.lowerEndpoint();
+                var end = offset + interval.upperEndpoint();
                 if (addRollingStockLength) {
                     end += rollingStock.length;
                     if (end > pathLength)
