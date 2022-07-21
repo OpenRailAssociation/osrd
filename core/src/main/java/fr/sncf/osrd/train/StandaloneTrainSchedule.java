@@ -2,8 +2,10 @@ package fr.sncf.osrd.train;
 
 import com.carrotsearch.hppc.DoubleArrayList;
 import fr.sncf.osrd.envelope_sim.allowances.Allowance;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class StandaloneTrainSchedule {
     /** The identifier of the rolling stock for this train */
@@ -15,17 +17,21 @@ public class StandaloneTrainSchedule {
 
     public final List<? extends Allowance> allowances;
 
+    public final Collection<String> tags;
+
     /** Standalone Train Schedule constructor */
     public StandaloneTrainSchedule(
             RollingStock rollingStock,
             double initialSpeed,
             List<TrainStop> stops,
-            List<? extends Allowance> allowances
+            List<? extends Allowance> allowances,
+            Collection<String> tags
     ) {
         this.rollingStock = rollingStock;
         this.initialSpeed = initialSpeed;
         this.stops = stops;
         this.allowances = allowances;
+        this.tags = tags;
     }
 
     @Override

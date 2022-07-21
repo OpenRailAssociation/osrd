@@ -94,7 +94,8 @@ public class StandaloneSimulationCommand implements CliCommand {
             for (RJSTrainSchedule schedule : rjsSimulation.trainSchedules) {
                 // Convert RJSTrainSchedule to RJSStandaloneTrainSchedule
                 var standSched = new RJSStandaloneTrainSchedule(
-                        schedule.id, schedule.rollingStock, schedule.initialSpeed, allowance, schedule.stops
+                        schedule.id, schedule.rollingStock, schedule.initialSpeed,
+                        allowance, schedule.stops, schedule.tags
                 );
 
                 var routeList = new ArrayList<SignalingRoute>();

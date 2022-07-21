@@ -26,6 +26,7 @@ import fr.sncf.osrd.train.TestTrains;
 import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BiConsumer;
 
 
@@ -196,7 +197,7 @@ public class MaxSpeedEnvelopeTest {
         );
         var testRollingStock = TestTrains.VERY_SHORT_FAST_TRAIN;
 
-        var mrsp = MRSP.from(path, testRollingStock, true);
+        var mrsp = MRSP.from(path, testRollingStock, true, Set.of());
         assertEquals(42, mrsp.interpolateSpeedRightDir(0, 1));
         assertEquals(42, mrsp.interpolateSpeedRightDir(15, 1));
         assertEquals(42, mrsp.interpolateSpeedRightDir(29, 1));

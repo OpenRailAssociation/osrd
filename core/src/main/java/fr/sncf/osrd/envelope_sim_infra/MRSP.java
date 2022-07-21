@@ -9,7 +9,9 @@ import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.train.RollingStock;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /** MRSP = most restrictive speed profile: maximum speed allowed at any given point */
 public class MRSP {
@@ -25,12 +27,22 @@ public class MRSP {
     }
 
     /** Computes the most restricted speed profile from a path */
-    public static Envelope from(TrainPath trainPath, RollingStock rollingStock, boolean addRollingStockLength) {
-        return from(TrainPath.removeLocation(trainPath.trackRangePath()), rollingStock, addRollingStockLength);
+    public static Envelope from(
+            TrainPath trainPath,
+            RollingStock rollingStock,
+            boolean addRollingStockLength,
+            Collection<String> tags
+    ) {
+        return from(TrainPath.removeLocation(trainPath.trackRangePath()), rollingStock, addRollingStockLength, tags);
     }
 
     /** Computes the most restricted speed profile from a list of track ranges */
-    public static Envelope from(List<TrackRangeView> ranges, RollingStock rollingStock, boolean addRollingStockLength) {
+    public static Envelope from(
+            List<TrackRangeView> ranges,
+            RollingStock rollingStock,
+            boolean addRollingStockLength,
+            Collection<String> tags
+    ) {
         var builder = new MRSPEnvelopeBuilder();
         var pathLength = 0.;
         for (var r : ranges)
@@ -58,8 +70,8 @@ public class MRSP {
                     if (end > pathLength)
                         end = pathLength;
                 }
-                var speed = speedRange.getValue();
-                if (speed.isInfinite() || speed == 0)
+                var speed = speedRange.getValue().getSpeedLimit(tags);
+                if (Double.isInfinite(speed) || speed == 0)
                     continue;
 
                 // Add the envelope part corresponding to the restricted speed section
