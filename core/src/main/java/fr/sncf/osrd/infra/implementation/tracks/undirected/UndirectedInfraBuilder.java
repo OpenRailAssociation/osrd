@@ -22,7 +22,6 @@ import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
 import fr.sncf.osrd.reporting.warnings.Warning;
 import fr.sncf.osrd.reporting.warnings.WarningRecorder;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
-import fr.sncf.osrd.utils.DoubleRangeMap;
 import java.util.*;
 
 @SuppressFBWarnings({"NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD"})
@@ -134,10 +133,10 @@ public class UndirectedInfraBuilder {
     ) {
         // Creates the maps and fills them with 0
         for (var track : trackSectionsByID.values()) {
-            var trackSpeedSections = new EnumMap<Direction, DoubleRangeMap>(Direction.class);
+            var trackSpeedSections = new EnumMap<Direction, RangeMap<Double, Double>>(Direction.class);
             for (var dir : Direction.values()) {
-                var newMap = new DoubleRangeMap();
-                newMap.addRange(0., track.getLength(), 0.);
+                var newMap = TreeRangeMap.<Double, Double>create();
+                newMap.putCoalescing(Range.closed(0., track.getLength()), 0.);
                 trackSpeedSections.put(dir, newMap);
             }
             track.speedSections = trackSpeedSections;
@@ -150,10 +149,16 @@ public class UndirectedInfraBuilder {
                 var track = RJSObjectParsing.getTrackSection(trackRange.track, trackSectionsByID);
                 var speedSectionMaps = track.getSpeedSections();
                 if (trackRange.applicableDirections.appliesToNormal()) {
-                    speedSectionMaps.get(Direction.FORWARD).addRange(trackRange.begin, trackRange.end, value);
+                    speedSectionMaps.get(Direction.FORWARD).putCoalescing(
+                            Range.closed(trackRange.begin, trackRange.end),
+                            value
+                    );
                 }
                 if (trackRange.applicableDirections.appliesToReverse()) {
-                    speedSectionMaps.get(Direction.BACKWARD).addRange(trackRange.begin, trackRange.end, value);
+                    speedSectionMaps.get(Direction.BACKWARD).putCoalescing(
+                            Range.closed(trackRange.begin, trackRange.end),
+                            value
+                    );
                 }
             }
         }
@@ -247,12 +252,12 @@ public class UndirectedInfraBuilder {
         };
     }
 
-    /** Creates the two DoubleRangeMaps with gradient values */
-    private EnumMap<Direction, DoubleRangeMap> makeGradients(RJSTrackSection track) {
-        var res = new EnumMap<Direction, DoubleRangeMap>(Direction.class);
+    /** Creates the two RangeMaps with gradient values */
+    private EnumMap<Direction, RangeMap<Double, Double>> makeGradients(RJSTrackSection track) {
+        var res = new EnumMap<Direction, RangeMap<Double, Double>>(Direction.class);
         for (var dir : Direction.values()) {
-            var newMap = new DoubleRangeMap();
-            newMap.addRange(0., track.length, 0.);
+            var newMap = TreeRangeMap.<Double, Double>create();
+            newMap.putCoalescing(Range.closed(0., track.length), 0.);
             res.put(dir, newMap);
         }
 
@@ -265,7 +270,10 @@ public class UndirectedInfraBuilder {
                             String.format("Track '%s' has a slope with an invalid range", track.id));
                 if (rjsSlope.gradient != 0.) {
                     for (var dir : Direction.values())
-                        res.get(dir).addRange(rjsSlope.begin, rjsSlope.end, rjsSlope.gradient * dir.sign);
+                        res.get(dir).putCoalescing(
+                                Range.closed(rjsSlope.begin, rjsSlope.end),
+                                rjsSlope.gradient * dir.sign
+                        );
                 }
             }
         }
@@ -275,7 +283,7 @@ public class UndirectedInfraBuilder {
     }
 
     /** Inserts curves as extra gradient values */
-    private static void addCurvesToGradients(DoubleRangeMap gradients, RJSTrackSection track) {
+    private static void addCurvesToGradients(RangeMap<Double, Double> gradients, RJSTrackSection track) {
         // Insert curves: gradient + 800 / radius
         if (track.curves != null)
             for (var rjsCurve : track.curves) {
@@ -287,15 +295,10 @@ public class UndirectedInfraBuilder {
                 if (rjsCurve.radius == 0.)
                     continue;
 
-                var floorEndEntry = gradients.floorEntry(rjsCurve.end);
-                gradients.put(rjsCurve.end, floorEndEntry.getValue());
-
-                var floorBeginEntry = gradients.floorEntry(rjsCurve.begin);
-                if (floorBeginEntry.getKey() < rjsCurve.begin)
-                    gradients.put(rjsCurve.begin, floorBeginEntry.getValue() + 800. / abs(rjsCurve.radius));
-
-                for (var slopeEntry : gradients.subMap(rjsCurve.begin, rjsCurve.end).entrySet())
-                    gradients.put(slopeEntry.getKey(), slopeEntry.getValue() + 800. / abs(rjsCurve.radius));
+                var subMap = gradients.subRangeMap(Range.open(rjsCurve.begin, rjsCurve.end));
+                var entries = new HashMap<>(subMap.asMapOfRanges());
+                for (var entry : entries.entrySet())
+                    gradients.putCoalescing(entry.getKey(), entry.getValue() + 800. / abs(rjsCurve.radius));
             }
     }
 

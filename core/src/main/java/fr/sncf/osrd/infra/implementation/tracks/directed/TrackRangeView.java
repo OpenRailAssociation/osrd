@@ -3,13 +3,12 @@ package fr.sncf.osrd.infra.implementation.tracks.directed;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableRangeMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
+import com.google.common.collect.RangeMap;
+import com.google.common.collect.TreeRangeMap;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.tracks.directed.DiTrackEdge;
 import fr.sncf.osrd.infra.api.tracks.undirected.*;
-import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
-import fr.sncf.osrd.utils.DoubleRangeMap;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.Comparator;
 import java.util.List;
@@ -69,7 +68,7 @@ public class TrackRangeView {
     }
 
     /** Returns the speed sections with positions referring to the track range (0 = directed start of the range) */
-    public DoubleRangeMap getSpeedSections() {
+    public RangeMap<Double, Double> getSpeedSections() {
         var originalSpeedSections = track.getEdge().getSpeedSections().get(track.getDirection());
         return convertMap(originalSpeedSections);
     }
@@ -85,7 +84,7 @@ public class TrackRangeView {
     }
 
     /** Returns the gradients with positions referring to the track range (0 = directed start of the range) */
-    public DoubleRangeMap getGradients() {
+    public RangeMap<Double, Double> getGradients() {
         var originalGradients = track.getEdge().getGradients().get(track.getDirection());
         return convertMap(originalGradients);
     }
@@ -165,30 +164,12 @@ public class TrackRangeView {
         return track.getDirection().equals(Direction.FORWARD) ? end : begin;
     }
 
-    /** Converts a DoubleRangeMap based on the original track so that the positions refer to the range */
-    private DoubleRangeMap convertMap(DoubleRangeMap map) {
-        var res = new DoubleRangeMap();
-        for (var entry : map.getValuesInRange(begin, end).entrySet()) {
-            var rangeStart = convertPosition(entry.getKey().getBeginPosition());
-            var rangeEnd = convertPosition(entry.getKey().getEndPosition());
-            if (rangeStart > rangeEnd) {
-                var tmp = rangeStart;
-                rangeStart = rangeEnd;
-                rangeEnd = tmp;
-            }
-            if (rangeStart != rangeEnd)
-                res.addRange(rangeStart, rangeEnd, entry.getValue());
-        }
-        return res.simplify();
-    }
-
-    /** Returns the blocked gauge types projected on the range */
-    public ImmutableRangeMap<Double, LoadingGaugeConstraint> getBlockedGaugeTypes() {
-        // TODO: once DoubleRangeMap have been migrated to RangeMap, merge this method with the other one
+    /** Converts a RangeMap based on the original track so that the positions refer to the range */
+    private <T> ImmutableRangeMap<Double, T> convertMap(RangeMap<Double, T> map) {
         if (getLength() == 0)
             return ImmutableRangeMap.of();
-        var builder = ImmutableRangeMap.<Double, LoadingGaugeConstraint>builder();
-        var subMap = track.getEdge().getLoadingGaugeConstraints().subRangeMap(Range.open(begin, end));
+        var builder = ImmutableRangeMap.<Double, T>builder();
+        var subMap = map.subRangeMap(Range.open(begin, end));
         for (var entry : subMap.asMapOfRanges().entrySet()) {
             var rangeStart = convertPosition(entry.getKey().lowerEndpoint());
             var rangeEnd = convertPosition(entry.getKey().upperEndpoint());
@@ -201,6 +182,11 @@ public class TrackRangeView {
                 builder.put(Range.open(rangeStart, rangeEnd), entry.getValue());
         }
         return builder.build();
+    }
+
+    /** Returns the blocked gauge types projected on the range */
+    public ImmutableRangeMap<Double, LoadingGaugeConstraint> getBlockedGaugeTypes() {
+        return convertMap(track.getEdge().getLoadingGaugeConstraints());
     }
 
     /** Converts a position on the original track to one referring to the range itself.*/

@@ -1,6 +1,7 @@
 package fr.sncf.osrd.envelope_sim_infra;
 
 import com.carrotsearch.hppc.DoubleArrayList;
+import com.google.common.collect.Range;
 import fr.sncf.osrd.envelope_sim.EnvelopePath;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.infra_state.api.TrainPath;
@@ -18,11 +19,10 @@ public class EnvelopeTrainPath {
 
         for (var range : trackSectionPath) {
             if (range.getLength() > 0) {
-                var grades = range.getGradients().getValuesInRange(0, range.getLength());
-                for (var interval : new TreeSet<>(grades.keySet())) {
-                    gradePositions.add(length + interval.getEndPosition());
-                    gradeValues.add(grades.get(interval));
-
+                var grades = range.getGradients().subRangeMap(Range.closed(0., range.getLength())).asMapOfRanges();
+                for (var entry : grades.entrySet()) {
+                    gradePositions.add(length + entry.getKey().upperEndpoint());
+                    gradeValues.add(entry.getValue());
                 }
                 length += range.getLength();
             }

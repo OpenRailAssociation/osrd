@@ -3,9 +3,8 @@ package fr.sncf.osrd.infra.api.tracks.undirected;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.RangeMap;
 import fr.sncf.osrd.infra.api.Direction;
-import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
-import fr.sncf.osrd.utils.DoubleRangeMap;
 import fr.sncf.osrd.utils.geom.LineString;
 import java.util.EnumMap;
 
@@ -18,10 +17,10 @@ public sealed interface TrackEdge permits SwitchBranch, TrackSection {
     ImmutableList<Detector> getDetectors();
 
     /** List of gradients on the track for a given direction (corrected with curves) */
-    EnumMap<Direction, DoubleRangeMap> getGradients();
+    EnumMap<Direction, RangeMap<Double, Double>> getGradients();
 
     /** List of speed sections on the track for a given direction */
-    EnumMap<Direction, DoubleRangeMap> getSpeedSections();
+    EnumMap<Direction, RangeMap<Double, Double>> getSpeedSections();
 
     /** Global unique index starting at 0, used for union finds */
     int getIndex();
