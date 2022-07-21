@@ -5,10 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.RangeMap;
 import fr.sncf.osrd.infra.api.Direction;
-import fr.sncf.osrd.infra.api.tracks.undirected.Detector;
-import fr.sncf.osrd.infra.api.tracks.undirected.LoadingGaugeConstraint;
-import fr.sncf.osrd.infra.api.tracks.undirected.Switch;
-import fr.sncf.osrd.infra.api.tracks.undirected.SwitchBranch;
+import fr.sncf.osrd.infra.api.tracks.undirected.*;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.EnumMap;
 import java.util.Map;
@@ -48,8 +45,11 @@ public class SwitchBranchImpl implements SwitchBranch {
     }
 
     @Override
-    public EnumMap<Direction, RangeMap<Double, Double>> getSpeedSections() {
-        return emptyMap;
+    public EnumMap<Direction, RangeMap<Double, SpeedLimits>> getSpeedSections() {
+        return new EnumMap<>(Map.of(
+                Direction.FORWARD, ImmutableRangeMap.of(),
+                Direction.BACKWARD, ImmutableRangeMap.of()
+        ));
     }
 
     @Override

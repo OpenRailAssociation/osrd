@@ -15,12 +15,8 @@ import fr.sncf.osrd.railjson.parser.exceptions.UnknownRollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.*;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class RJSStandaloneTrainScheduleParser {
     /** Parses a RailJSON standalone train schedule */
@@ -37,8 +33,6 @@ public class RJSStandaloneTrainScheduleParser {
         if (rollingStock == null)
             throw new UnknownRollingStock(rollingStockID);
 
-        var stops = RJSStopsParser.parse(rjsTrainSchedule.stops, infra, trainPath);
-
         var initialSpeed = rjsTrainSchedule.initialSpeed;
         if (Double.isNaN(initialSpeed) || initialSpeed < 0)
             throw new InvalidSchedule("invalid initial speed");
@@ -53,7 +47,11 @@ public class RJSStandaloneTrainScheduleParser {
                 );
             }
 
-        return new StandaloneTrainSchedule(rollingStock, initialSpeed, stops, allowances);
+        var tags = rjsTrainSchedule.tags;
+        if (tags == null)
+            tags = Set.of();
+        var stops = RJSStopsParser.parse(rjsTrainSchedule.stops, infra, trainPath);
+        return new StandaloneTrainSchedule(rollingStock, initialSpeed, stops, allowances, tags);
     }
 
     private static double getPositiveDoubleOrDefault(double rjsInput, double defaultValue) {

@@ -133,10 +133,11 @@ public class UndirectedInfraBuilder {
     ) {
         // Creates the maps and fills them with 0
         for (var track : trackSectionsByID.values()) {
-            var trackSpeedSections = new EnumMap<Direction, RangeMap<Double, Double>>(Direction.class);
+            var trackSpeedSections = new EnumMap<Direction, RangeMap<Double, SpeedLimits>>(Direction.class);
             for (var dir : Direction.values()) {
-                var newMap = TreeRangeMap.<Double, Double>create();
-                newMap.putCoalescing(Range.closed(0., track.getLength()), 0.);
+                var newMap = TreeRangeMap.<Double, SpeedLimits>create();
+                newMap.put(Range.closed(0., track.getLength()),
+                        new SpeedLimits(Double.POSITIVE_INFINITY, ImmutableMap.of()));
                 trackSpeedSections.put(dir, newMap);
             }
             track.speedSections = trackSpeedSections;
@@ -144,23 +145,39 @@ public class UndirectedInfraBuilder {
 
         // Reads all the speed sections and adds the values to the tracks
         for (var speedSection : speedSections) {
-            var value = speedSection.speedLimit;
+            var value = SpeedLimits.from(speedSection);
             for (var trackRange : speedSection.trackRanges) {
                 var track = RJSObjectParsing.getTrackSection(trackRange.track, trackSectionsByID);
                 var speedSectionMaps = track.getSpeedSections();
                 if (trackRange.applicableDirections.appliesToNormal()) {
+                    checkNoSpeedOverlap(speedSectionMaps.get(Direction.FORWARD),
+                            trackRange.begin, trackRange.end, track.getID());
                     speedSectionMaps.get(Direction.FORWARD).putCoalescing(
                             Range.closed(trackRange.begin, trackRange.end),
                             value
                     );
                 }
                 if (trackRange.applicableDirections.appliesToReverse()) {
+                    checkNoSpeedOverlap(speedSectionMaps.get(Direction.BACKWARD),
+                            trackRange.begin, trackRange.end, track.getID());
                     speedSectionMaps.get(Direction.BACKWARD).putCoalescing(
                             Range.closed(trackRange.begin, trackRange.end),
                             value
                     );
                 }
             }
+        }
+    }
+
+    /** Checks that the speed sections don't overlap */
+    private static void checkNoSpeedOverlap(RangeMap<Double, SpeedLimits> map, double begin, double end, String track) {
+        var subRange = map.subRangeMap(Range.open(begin, end));
+        for (var entry : subRange.asMapOfRanges().entrySet()) {
+            if (Double.isFinite(entry.getValue().getSpeedLimit(List.of())))
+                throw new InvalidInfraError(String.format(
+                        "Overlapping speed limit on track %s (from %f to %f)",
+                        track, entry.getKey().lowerEndpoint(), entry.getKey().upperEndpoint()
+                ));
         }
     }
 

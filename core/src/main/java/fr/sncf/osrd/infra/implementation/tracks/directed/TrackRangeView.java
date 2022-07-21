@@ -68,7 +68,7 @@ public class TrackRangeView {
     }
 
     /** Returns the speed sections with positions referring to the track range (0 = directed start of the range) */
-    public RangeMap<Double, Double> getSpeedSections() {
+    public RangeMap<Double, SpeedLimits> getSpeedSections() {
         var originalSpeedSections = track.getEdge().getSpeedSections().get(track.getDirection());
         return convertMap(originalSpeedSections);
     }

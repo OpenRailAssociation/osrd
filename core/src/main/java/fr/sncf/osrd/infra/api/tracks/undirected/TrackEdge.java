@@ -20,7 +20,7 @@ public sealed interface TrackEdge permits SwitchBranch, TrackSection {
     EnumMap<Direction, RangeMap<Double, Double>> getGradients();
 
     /** List of speed sections on the track for a given direction */
-    EnumMap<Direction, RangeMap<Double, Double>> getSpeedSections();
+    EnumMap<Direction, RangeMap<Double, SpeedLimits>> getSpeedSections();
 
     /** Global unique index starting at 0, used for union finds */
     int getIndex();

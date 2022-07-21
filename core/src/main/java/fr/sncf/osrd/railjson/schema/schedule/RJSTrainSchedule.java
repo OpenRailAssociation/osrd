@@ -5,6 +5,7 @@ import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.railjson.schema.common.RJSTrackLocation;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
+import java.util.Collection;
 
 public class RJSTrainSchedule implements Identified {
     /** The identifier of this train */
@@ -34,6 +35,8 @@ public class RJSTrainSchedule implements Identified {
     /** List of stops */
     public RJSTrainStop[] stops;
 
+    public Collection<String> tags;
+
     /** The delay in seconds between the previous train and this train.
      * Can only be specified if previous_train_id is also set. Defaults to 0. */
     @Json(name = "train_transition_delay")
@@ -49,7 +52,8 @@ public class RJSTrainSchedule implements Identified {
             RJSTrackLocation finalHeadLocation,
             RJSTrainStop[] stops,
             ID<RJSRoute>[] routes,
-            double trainTransitionDelay
+            double trainTransitionDelay,
+            Collection<String> tags
     ) {
         this.id = id;
         this.rollingStock = rollingStock;
@@ -60,12 +64,13 @@ public class RJSTrainSchedule implements Identified {
         this.stops = stops;
         this.routes = routes;
         this.trainTransitionDelay = trainTransitionDelay;
+        this.tags = tags;
     }
 
     /** Copy constructor */
     public RJSTrainSchedule(RJSTrainSchedule other) {
         this(other.id, other.rollingStock, other.departureTime, other.initialHeadLocation, other.initialSpeed,
-                other.finalHeadLocation, other.stops, other.routes, other.trainTransitionDelay);
+                other.finalHeadLocation, other.stops, other.routes, other.trainTransitionDelay, other.tags);
     }
 
     @Override

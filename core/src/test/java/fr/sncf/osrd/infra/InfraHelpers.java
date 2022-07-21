@@ -237,7 +237,7 @@ public class InfraHelpers {
 
     /** Sets the speed sections on the track, bypassing visibility */
     public static void setTrackSpeedSections(TrackSection track,
-                                             EnumMap<Direction, RangeMap<Double, Double>> speedSections) {
+                                             EnumMap<Direction, RangeMap<Double, SpeedLimits>> speedSections) {
         setPrivateField(track, "speedSections", speedSections);
     }
 
