@@ -58,6 +58,7 @@ def reproduce_test(path_to_json, *args, **kwargs):
 def list_tests():
     dir = Path(__file__).parent.resolve() / "fuzzer_outputs"
     for f in dir.iterdir():
-        def run_test(func=f, *args, **kwargs):
-            return reproduce_test(func, *args, **kwargs)
-        yield run_test, f.stem
+        if f.is_file():
+            def run_test(func=f, *args, **kwargs):
+                return reproduce_test(func, *args, **kwargs)
+            yield run_test, f.stem
