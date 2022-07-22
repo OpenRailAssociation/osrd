@@ -1,5 +1,6 @@
 package fr.sncf.osrd.envelope.part;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.EnvelopeAttr;
 import fr.sncf.osrd.envelope.EnvelopePhysics;
 import fr.sncf.osrd.envelope.EnvelopePoint;
@@ -89,6 +90,7 @@ public final class ConstrainedEnvelopePartBuilder implements InteractiveEnvelope
     }
 
     @Override
+    @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
     public boolean addStep(double position, double speed, double timeDelta) {
         assert !hadIntersection();
 
@@ -99,7 +101,12 @@ public final class ConstrainedEnvelopePartBuilder implements InteractiveEnvelope
         if (intersection != null) {
             position = intersection.position;
             speed = intersection.speed;
-            timeDelta = EnvelopePhysics.interpolateStepTime(lastPos, position, lastSpeed, speed);
+            if (position == lastPos) {
+                assert Math.abs(speed - lastSpeed) < 1e-8;
+                speed = lastSpeed;
+                timeDelta = 0;
+            } else
+                timeDelta = EnvelopePhysics.interpolateStepTime(lastPos, position, lastSpeed, speed);
         }
 
         lastPos = position;
