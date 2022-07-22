@@ -20,6 +20,7 @@ import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.train.TestTrains;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -728,6 +729,7 @@ public class AllowanceTests {
     }
 
     @Test
+    @Disabled("see https://github.com/DGEXSolutions/osrd/issues/1401")
     public void testMarecoAfterLinear() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
 
