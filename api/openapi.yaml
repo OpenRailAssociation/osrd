@@ -14,6 +14,8 @@ tags:
     description: Train Schedule
   - name: pathfinding
     description: Pathfinding
+  - name: stdcm
+    description: Short term DCM
 
 paths:
   /infra/:
@@ -725,6 +727,36 @@ paths:
                   properties: { ... }
                   required: [...]
                   definitions: { ... }
+  /stdcm/:
+    post:
+      tags:
+        - stdcm
+      summary: Find a stdcm and return a simulation result
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/STDCMRequest"
+      responses:
+        200:
+          description: Simulation result
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - properties:
+                      simulation:
+                        $ref: "#/components/schemas/TrainScheduleResult"
+                      path:
+                        $ref: "#/components/schemas/Path"
+                  - type: object
+                    properties:
+                      error:
+                        type: string
+                        description: Error message
+                        example: No path could be found
+        400:
+          description: The request body is invalid
 components:
   schemas:
     Infra:
@@ -931,17 +963,44 @@ components:
                 type: number
                 format: float
               waypoints:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    track_section:
-                      type: integer
-                    geo_coordinate:
-                      type: array
-                      items: { type: number, format: float }
-                      minItems: 2
-                      maxItems: 2
+                $ref: "#/components/schemas/Waypoint"
+    Waypoint:
+      type: array
+      items:
+        type: object
+        properties:
+          track_section:
+            type: integer
+          geo_coordinate:
+            type: array
+            items: { type: number, format: float }
+            minItems: 2
+            maxItems: 2
+    STDCMRequest:
+      properties:
+        infra:
+          type: integer
+        rolling_stock:
+          type: integer
+        timetable:
+          type: integer
+          description: timetable ID
+        start_time:
+          type: number
+          format: double
+        end_time:
+          type: number
+          format: double
+        start_points:
+          type: array
+          items:
+            $ref: "#/components/schemas/Waypoint"
+            minimum: 1
+        end_points:
+          type: array
+          items:
+            $ref: "#/components/schemas/Waypoint"
+            minimum: 1
     Path:
       properties:
         id:
