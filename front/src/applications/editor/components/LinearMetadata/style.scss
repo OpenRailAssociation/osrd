@@ -46,25 +46,19 @@ $scaling-y-width: 1.5em;
         @include unselectable;
         flex-grow: 1;
         padding-left: $scaling-y-width;
-        position: relative;
 
-        .axis-zero {
-          position: absolute;
-          width: 100%;
-          border-bottom: 1px solid red;
-          z-index: 1;
-        }
         .data {
           @include unselectable;
           display: flex;
           flex-wrap: nowrap;
           flex-direction: row;
+          position: relative;
 
           &.drag {
             cursor: grabbing;
           }
 
-          div:not(.scale) {
+          div:not(.scale):not(.axis-zero) {
             height: $dataviz-height;
             background-color: rgba($color, 0.1);
             display: flex;
@@ -98,6 +92,13 @@ $scaling-y-width: 1.5em;
               background-color: $color;
             }
           }
+        }
+
+        .axis-zero {
+          position: absolute !important;
+          width: 100%;
+          border-bottom: 1px solid red;
+          z-index: 1;
         }
 
         .scale {

@@ -290,7 +290,7 @@ export function splitAt<T>(
 
 /**
  * Merge a segment with one of its sibling, define by the policy.
- * NOTE: Property of selected item will be lost,we take the ones from the sibling.
+ * NOTE: Property of selected item will override the sibling one.
 
  * @param linearMetadata The linear metadata we work on
  * @param index The element that will be merged
@@ -313,7 +313,7 @@ export function mergeIn<T>(
     const element = linearMetadata[index];
     return [
       ...linearMetadata.slice(0, index - 1),
-      { ...left, end: element.end },
+      { ...element, begin: left.begin },
       ...linearMetadata.slice(index + 1),
     ];
   } else {
@@ -321,7 +321,7 @@ export function mergeIn<T>(
     const element = linearMetadata[index];
     return [
       ...linearMetadata.slice(0, index),
-      { ...right, begin: element.begin },
+      { ...element, end: right.end },
       ...linearMetadata.slice(index + 2),
     ];
   }
