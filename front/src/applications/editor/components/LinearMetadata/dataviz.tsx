@@ -249,6 +249,7 @@ export const LinearMetadataDataviz = <T extends any>({
       if (draginStartAt && onViewBoxChange) {
         onViewBoxChange(fnDragX(e));
         setDraginStartAt(null);
+        // setTimeout(() => setDraginStartAt(null), 0);
         e.stopPropagation();
         e.preventDefault();
       }
@@ -274,6 +275,14 @@ export const LinearMetadataDataviz = <T extends any>({
 
   return (
     <div className={cx('linear-metadata-visualisation')}>
+      {min < 0 && max > 0 && (
+        <div
+          className="axis-zero"
+          style={{
+            top: `${100 - ((0 - min) / (max - min)) * 100}%`,
+          }}
+        />
+      )}
       <div
         ref={wrapper}
         className={cx('data', highlighted.length > 0 && 'has-highlight', draginStartAt && 'drag')}
