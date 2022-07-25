@@ -19,6 +19,7 @@ import {
   LinearMetadataItem,
   fixLinearMetadataItems,
   getZoomedViewBox,
+  transalteViewBox,
   splitAt,
   mergeIn,
   resizeSegment,
@@ -101,10 +102,30 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
   /**
    * When selected element change
    * => set its data in the state
+   * => recompute viewbox so selected element is always visible ()
    */
-  useEffect(() => {
-    setSelectedData(selected !== null ? data[selected] : null);
-  }, [selected]);
+  useEffect(
+    () => {
+      setSelectedData(selected !== null ? data[selected] : null);
+      if (selected !== null) {
+        setViewBox((prev) => {
+          // case of no zoom
+          if (prev === null) return null;
+          // if the selected is left outside
+          if (data[selected].end <= prev[0]) {
+            return transalteViewBox(data, prev, data[selected].begin - prev[0]);
+          }
+          // if the selected is right outside
+          if (prev[1] <= data[selected].begin) {
+            return transalteViewBox(data, prev, data[selected].end - prev[1]);
+          }
+          return prev;
+        });
+      }
+    },
+    // The "data" is omitted here, otherwise it is walways refreshed
+    [selected]
+  );
 
   return (
     <div className="linear-metadata">
@@ -201,7 +222,8 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
                     onClick={() => {
                       const splitPosition =
                         selectedData.begin + (selectedData.end - selectedData.begin) / 2;
-                      onChange(splitAt(data, splitPosition));
+                      const newData = splitAt(data, splitPosition);
+                      onChange(newData);
                     }}
                   >
                     <BsLayoutSplit />
@@ -228,7 +250,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
               </div>
             </div>
             <div className="content">
-              <Form
+              <Fields.ObjectField
                 id={`selected-${selected}`}
                 widgets={widgets}
                 liveValidate={true}
@@ -252,7 +274,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
                   },
                 }}
                 formData={selectedData}
-                onChange={(e) => setSelectedData(e.formData)}
+                onChange={(e) => setSelectedData(e)}
                 onSubmit={(e, reactEvent) => {
                   console.log(e, reactEvent);
                   const item = { ...e.formData };
@@ -293,7 +315,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
                     Submit
                   </button>
                 </div>
-              </Form>
+              </Fields.ObjectField>
             </div>
           </div>
         )}
