@@ -1,29 +1,29 @@
 openapi: 3.0.1
 info:
   title: OSRD Core
-  description: 'OSRD backend api description.'
+  description: "OSRD backend api description."
   termsOfService: http://swagger.io/terms/
   license:
     name: GNU GPLv3
     url: https://www.gnu.org/licenses/gpl-3.0.fr.html
   version: 0.1.0
 servers:
-- url: http://gateway.dgexsol.fr/osrd/
-  description: Production server
-- url: http://gateway.staging.dgexsol.fr/osrd/
-  description: Staging server
+  - url: http://gateway.dev.dgexsol.fr/osrd/
+    description: Dev server
+  - url: http://gateway.staging.dgexsol.fr/osrd/
+    description: Staging server
 tags:
-- name: health
-  description: Check server health
-- name: pathfinding
-  description: Execute pathfinding on the infrastructure
-- name: simulation
-  description: Simulate a schedule on the infrastructure
+  - name: health
+    description: Check server health
+  - name: pathfinding
+    description: Execute pathfinding on the infrastructure
+  - name: simulation
+    description: Simulate a schedule on the infrastructure
 paths:
   /health:
     get:
       tags:
-      - health
+        - health
       summary: Check server health
       operationId: health
       responses:
@@ -32,7 +32,7 @@ paths:
   /pathfinding/routes:
     post:
       tags:
-      - pathfinding
+        - pathfinding
       summary: Find a path in the route graph that passes through waypoints.
       operationId: pathfinding_routes
       requestBody:
@@ -40,7 +40,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PathfindingRequest'
+              $ref: "#/components/schemas/PathfindingRequest"
         required: true
       responses:
         200:
@@ -49,13 +49,13 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/PathfindingRoutesResult'
+                  $ref: "#/components/schemas/PathfindingRoutesResult"
         400:
           description: The request body is invalid
   /pathfinding/tracks:
     post:
       tags:
-      - pathfinding
+        - pathfinding
       summary: Find a path in the track section graph that passes through waypoints.
       operationId: pathfinding_tracks
       requestBody:
@@ -63,7 +63,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PathfindingRequest'
+              $ref: "#/components/schemas/PathfindingRequest"
         required: true
       responses:
         200:
@@ -72,13 +72,46 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/PathfindingTracksResult'
+                  $ref: "#/components/schemas/PathfindingTracksResult"
         400:
           description: The request body is invalid
+
+  /stdcm:
+    post:
+      tags:
+        - stdcm
+      summary: Find a stdcm and return a simulation result
+      requestBody:
+        description: Infrastructure, waypoints and route occupancies
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/STDCMRequest"
+      responses:
+        200:
+          description: Simulation result
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - properties:
+                      simulation:
+                        $ref: "#/components/schemas/SimulationResult"
+                      path:
+                        $ref: "#/components/schemas/PathfindingRoutesResult"
+                  - type: object
+                    properties:
+                      error:
+                        type: string
+                        description: Error message
+                        example: No path could be found
+        400:
+          description: The request body is invalid
+
   /simulation:
     post:
       tags:
-      - simulation
+        - simulation
       summary: Simulate a scenario.
       operationId: simulation
       requestBody:
@@ -86,7 +119,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SimulationRequest'
+              $ref: "#/components/schemas/SimulationRequest"
         required: true
       responses:
         200:
@@ -95,32 +128,32 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/SimulationResult'
+                  $ref: "#/components/schemas/SimulationResult"
         400:
           description: The request body is invalid
 components:
   schemas:
     Waypoint:
       required:
-      - track_section
-      - direction
-      - offset
+        - track_section
+        - direction
+        - offset
       properties:
         track_section:
           type: string
         direction:
           type: string
           enum:
-          - START_TO_STOP
-          - STOP_TO_START
+            - START_TO_STOP
+            - STOP_TO_START
         offset:
           type: number
           format: double
           minimum: 0
     PathfindingRoutesResult:
       required:
-      - track_sections
-      - routes
+        - track_sections
+        - routes
       properties:
         routes:
           type: array
@@ -131,31 +164,31 @@ components:
           type: array
           minItems: 1
           items:
-            $ref: '#/components/schemas/TrackSectionRange'
+            $ref: "#/components/schemas/TrackSectionRange"
       example:
-       routes: ["route_foo", "route_bar"]
-       track_sections:
-       -  track_section: "track_foo"
-          begin_position: 4.2
-          end_position: 178.3
+        routes: ["route_foo", "route_bar"]
+        track_sections:
+          - track_section: "track_foo"
+            begin_position: 4.2
+            end_position: 178.3
     PathfindingTracksResult:
       required:
-      - track_sections
+        - track_sections
       properties:
         track_sections:
           type: array
           minItems: 1
           items:
-            $ref: '#/components/schemas/TrackSectionRange'
+            $ref: "#/components/schemas/TrackSectionRange"
       example:
-       track_sections:
-       -  track_section: "track_foo"
-          begin_position: 4.2
-          end_position: 178.3
+        track_sections:
+          - track_section: "track_foo"
+            begin_position: 4.2
+            end_position: 178.3
     TrackLocation:
       required:
-      - track_section
-      - offset
+        - track_section
+        - offset
       properties:
         track_section:
           type: string
@@ -165,9 +198,9 @@ components:
           minimum: 0
     TrackSectionRange:
       required:
-      - track_section
-      - begin_position
-      - end_position
+        - track_section
+        - begin_position
+        - end_position
       properties:
         track_section:
           type: string
@@ -181,18 +214,18 @@ components:
           minimum: 0
     RollingStock:
       required:
-      - id
-      - length
-      - mass
-      - inertia_coefficient
-      - rolling_resistance
-      - capabilities
-      - max_speed
-      - startup_time
-      - startup_acceleration
-      - comfort_acceleration
-      - timetable_gamma
-      - tractive_effort_curve
+        - id
+        - length
+        - mass
+        - inertia_coefficient
+        - rolling_resistance
+        - capabilities
+        - max_speed
+        - startup_time
+        - startup_acceleration
+        - comfort_acceleration
+        - timetable_gamma
+        - tractive_effort_curve
       properties:
         id:
           type: string
@@ -213,22 +246,22 @@ components:
           example: 1.05
         rolling_resistance:
           oneOf:
-          - $ref: '#/components/schemas/RollingResistanceDavis'
+            - $ref: "#/components/schemas/RollingResistanceDavis"
           discriminator:
             propertyName: type
             mapping:
-              davis: '#/components/schemas/RollingResistanceDavis'
+              davis: "#/components/schemas/RollingResistanceDavis"
         capabilities:
           type: array
           items:
             type: string
             enum:
-            - TVM300
-            - TVM430
-            - ETCS1
-            - ETCS2
-            - ETCS3
-            - KVB
+              - TVM300
+              - TVM430
+              - ETCS1
+              - ETCS2
+              - ETCS3
+              - KVB
         max_speed:
           type: number
           format: double
@@ -267,22 +300,22 @@ components:
               max_effort: 400000
     RollingResistanceDavis:
       required:
-      - type
-      - A
-      - B
-      - C
+        - type
+        - A
+        - B
+        - C
       properties:
         type:
           type: string
         A:
-           type: number
-           format: double
+          type: number
+          format: double
         B:
-           type: number
-           format: double
+          type: number
+          format: double
         C:
-           type: number
-           format: double
+          type: number
+          format: double
       example:
         type: "davis"
         A: 5400
@@ -290,13 +323,13 @@ components:
         C: 12
     TrainSchedule:
       required:
-      - id
-      - rolling_stock
-      - departure_time
-      - initial_head_location
-      - initial_route
-      - initial_speed
-      - phases
+        - id
+        - rolling_stock
+        - departure_time
+        - initial_head_location
+        - initial_route
+        - initial_speed
+        - phases
       properties:
         id:
           type: string
@@ -309,7 +342,7 @@ components:
           format: double
           minimum: 0
         initial_head_location:
-          $ref: '#/components/schemas/TrackLocation'
+          $ref: "#/components/schemas/TrackLocation"
         initial_route:
           type: string
         initial_speed:
@@ -319,19 +352,19 @@ components:
           type: array
           items:
             oneOf:
-            - $ref: '#/components/schemas/NavigatePhase'
-            - $ref: '#/components/schemas/StopPhase'
+              - $ref: "#/components/schemas/NavigatePhase"
+              - $ref: "#/components/schemas/StopPhase"
             discriminator:
               propertyName: type
               mapping:
-                navigate: '#/components/schemas/NavigatePhase'
-                stop: '#/components/schemas/StopPhase'
+                navigate: "#/components/schemas/NavigatePhase"
+                stop: "#/components/schemas/StopPhase"
     NavigatePhase:
       required:
-      - type
-      - routes
-      - end_location
-      - driver_sight_distance
+        - type
+        - routes
+        - end_location
+        - driver_sight_distance
       properties:
         type:
           type: string
@@ -342,7 +375,7 @@ components:
             type: string
           example: ["route1", "route2", "route3"]
         end_location:
-          $ref: '#/components/schemas/TrackLocation'
+          $ref: "#/components/schemas/TrackLocation"
         driver_sight_distance:
           type: number
           format: double
@@ -350,8 +383,8 @@ components:
           example: 400
     StopPhase:
       required:
-      - type
-      - duration
+        - type
+        - duration
       properties:
         type:
           type: string
@@ -363,21 +396,21 @@ components:
           example: 600
     SimulationResult:
       oneOf:
-      - $ref: '#/components/schemas/SimulationResultRouteStatus'
-      - $ref: '#/components/schemas/SimulationResultTrainLocation'
-      - $ref: '#/components/schemas/SimulationResultSignalChange'
+        - $ref: "#/components/schemas/SimulationResultRouteStatus"
+        - $ref: "#/components/schemas/SimulationResultTrainLocation"
+        - $ref: "#/components/schemas/SimulationResultSignalChange"
       discriminator:
         propertyName: type
         mapping:
-          route_status: '#/components/schemas/SimulationResultRouteStatus'
-          train_location: '#/components/schemas/SimulationResultTrainLocation'
-          signal_change: '#/components/schemas/SimulationResultSignalChange'
+          route_status: "#/components/schemas/SimulationResultRouteStatus"
+          train_location: "#/components/schemas/SimulationResultTrainLocation"
+          signal_change: "#/components/schemas/SimulationResultSignalChange"
     SimulationResultRouteStatus:
       required:
-      - type
-      - time
-      - id
-      - status
+        - type
+        - time
+        - id
+        - status
       properties:
         type:
           type: string
@@ -391,18 +424,18 @@ components:
         status:
           type: string
           enum:
-          - FREE
-          - RESERVED
-          - OCCUPIED
-          - CONFLICT
-          - REQUESTED
+            - FREE
+            - RESERVED
+            - OCCUPIED
+            - CONFLICT
+            - REQUESTED
     SimulationResultTrainLocation:
       required:
-      - type
-      - time
-      - train_name
-      - track_section
-      - offset
+        - type
+        - time
+        - train_name
+        - track_section
+        - offset
       properties:
         type:
           type: string
@@ -423,10 +456,10 @@ components:
           example: 42
     SimulationResultSignalChange:
       required:
-      - type
-      - time
-      - signal
-      - aspects
+        - type
+        - time
+        - signal
+        - aspects
       properties:
         type:
           type: string
@@ -444,8 +477,8 @@ components:
             example: "AspectID"
     PathfindingRequest:
       required:
-      - infra
-      - waypoints
+        - infra
+        - waypoints
       properties:
         infra:
           type: string
@@ -457,24 +490,59 @@ components:
             type: array
             minItems: 1
             items:
-              $ref: '#/components/schemas/Waypoint'
+              $ref: "#/components/schemas/Waypoint"
           example:
-            -
-              - track_section: "track_departure"
+            - - track_section: "track_departure"
                 direction: "START_TO_STOP"
                 offset: 4.2
               - track_section: "track_departure_bis"
                 direction: "START_TO_STOP"
                 offset: 14.2
-            -
-              - track_section: "track_destination"
+            - - track_section: "track_destination"
                 direction: "STOP_TO_START"
                 offset: 138.32
+    STDCMRequest:
+      properties:
+        infra:
+          type: string
+          example: "infraID"
+        rolling_stocks:
+          $ref: "#/components/schemas/RollingStock"
+        route_occupancies:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: Route ID
+              start_occupancy_time:
+                type: number
+                format: double
+              end_occupancy_time:
+                type: number
+                format: double
+        start_time:
+          type: number
+          format: double
+        end_time:
+          type: number
+          format: double
+        start_points:
+          type: array
+          items:
+            $ref: "#/components/schemas/Waypoint"
+            minimum: 1
+        end_points:
+          type: array
+          items:
+            $ref: "#/components/schemas/Waypoint"
+            minimum: 1
     SimulationRequest:
       required:
-      - infra
-      - rolling_stocks
-      - train_schedules
+        - infra
+        - rolling_stocks
+        - train_schedules
       properties:
         infra:
           type: string
@@ -483,9 +551,9 @@ components:
           type: array
           minItems: 1
           items:
-            $ref: '#/components/schemas/RollingStock'
+            $ref: "#/components/schemas/RollingStock"
         train_schedules:
           type: array
           minItems: 1
           items:
-            $ref: '#/components/schemas/TrainSchedule'
+            $ref: "#/components/schemas/TrainSchedule"
