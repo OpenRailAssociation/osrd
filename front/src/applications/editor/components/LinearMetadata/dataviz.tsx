@@ -275,26 +275,21 @@ export const LinearMetadataDataviz = <T extends any>({
 
   return (
     <div className={cx('linear-metadata-visualisation')}>
-      {min < 0 && max > 0 && (
-        <div
-          className="axis-zero"
-          style={{
-            top: `${100 - ((0 - min) / (max - min)) * 100}%`,
-          }}
-        />
-      )}
       <div
         ref={wrapper}
         className={cx('data', highlighted.length > 0 && 'has-highlight', draginStartAt && 'drag')}
       >
         <>
+          {min < 0 && max > 0 && (
+            <div className="axis-zero" style={computeStyleForDataValue(0, min, max)} />
+          )}
           {field && min !== max && <Scale className="scale-y" begin={min} end={max} />}
           {data4viz.map((segment) => (
             <div
               key={`${segment.begin}-${segment.end}`}
               className={cx(
                 highlighted.includes(segment.index) && 'highlighted',
-                field && !data[segment.index][field] && 'no-data',
+                field && (!data[segment.index] || !data[segment.index][field]) && 'no-data',
                 !field && isNilObject(data[segment.index], ['begin', 'end', 'index']) && 'no-data'
               )}
               style={{
@@ -324,8 +319,6 @@ export const LinearMetadataDataviz = <T extends any>({
               }}
               onMouseDown={(e) => {
                 setDraginStartAt(e.clientX);
-                // to avoid to display tooltip when dragin
-                // if (onMouseLeave) onMouseLeave(e, data[segment.index], segment.index);
               }}
               onWheel={(e) => {
                 if (!draginStartAt && onWheel) {
@@ -337,7 +330,7 @@ export const LinearMetadataDataviz = <T extends any>({
                 }
               }}
             >
-              {field && data[segment.index][field] && (
+              {field && data[segment.index] && data[segment.index][field] && (
                 <div style={computeStyleForDataValue(data[segment.index][field], min, max)}></div>
               )}
             </div>
