@@ -2898,7 +2898,7 @@
   dependencies:
     "@turf/helpers" "^6.5.0"
 
-"@turf/bbox@*", "@turf/bbox@^6.0.1":
+"@turf/bbox@*", "@turf/bbox@^6.0.1", "@turf/bbox@^6.5.0":
   version "6.5.0"
   resolved "https://registry.yarnpkg.com/@turf/bbox/-/bbox-6.5.0.tgz#bec30a744019eae420dac9ea46fb75caa44d8dc5"
   integrity sha512-RBbLaao5hXTYyyg577iuMtDB8ehxMlUqHEJiMs8jT1GHkFhr6sYre3lmLsPeYEi/ZKj5TP5tt7fkzNdJ4GIVyw==
@@ -3035,6 +3035,22 @@
     "@turf/invariant" "^6.5.0"
     "@turf/nearest-point-on-line" "^6.5.0"
 
+"@turf/line-split@^6.5.0":
+  version "6.5.0"
+  resolved "https://registry.yarnpkg.com/@turf/line-split/-/line-split-6.5.0.tgz#116d7fbf714457878225187f5820ef98db7b02c2"
+  integrity sha512-/rwUMVr9OI2ccJjw7/6eTN53URtGThNSD5I0GgxyFXMtxWiloRJ9MTff8jBbtPWrRka/Sh2GkwucVRAEakx9Sw==
+  dependencies:
+    "@turf/bbox" "^6.5.0"
+    "@turf/helpers" "^6.5.0"
+    "@turf/invariant" "^6.5.0"
+    "@turf/line-intersect" "^6.5.0"
+    "@turf/line-segment" "^6.5.0"
+    "@turf/meta" "^6.5.0"
+    "@turf/nearest-point-on-line" "^6.5.0"
+    "@turf/square" "^6.5.0"
+    "@turf/truncate" "^6.5.0"
+    geojson-rbush "3.x"
+
 "@turf/mask@^6.5.0":
   version "6.5.0"
   resolved "https://registry.yarnpkg.com/@turf/mask/-/mask-6.5.0.tgz#a97f355ee071ac60d8d3782ae39e5bb4b4e26857"
@@ -3080,6 +3096,22 @@
   dependencies:
     "@turf/helpers" "^6.5.0"
     "@turf/invariant" "^6.5.0"
+
+"@turf/square@^6.5.0":
+  version "6.5.0"
+  resolved "https://registry.yarnpkg.com/@turf/square/-/square-6.5.0.tgz#ab43eef99d39c36157ab5b80416bbeba1f6b2122"
+  integrity sha512-BM2UyWDmiuHCadVhHXKIx5CQQbNCpOxB6S/aCNOCLbhCeypKX5Q0Aosc5YcmCJgkwO5BERCC6Ee7NMbNB2vHmQ==
+  dependencies:
+    "@turf/distance" "^6.5.0"
+    "@turf/helpers" "^6.5.0"
+
+"@turf/truncate@^6.5.0":
+  version "6.5.0"
+  resolved "https://registry.yarnpkg.com/@turf/truncate/-/truncate-6.5.0.tgz#c3a16cad959f1be1c5156157d5555c64b19185d8"
+  integrity sha512-pFxg71pLk+eJj134Z9yUoRhIi8vqnnKvCYwdT4x/DQl/19RVdq1tV3yqOT3gcTQNfniteylL5qV1uTBDV5sgrg==
+  dependencies:
+    "@turf/helpers" "^6.5.0"
+    "@turf/meta" "^6.5.0"
 
 "@types/aria-query@^4.2.0":
   version "4.2.2"

@@ -31,9 +31,11 @@ $scaling-y-width: 1.5em;
       align-items: flex-start;
 
       .zoom {
+        z-index: 2;
         flex-grow: 0;
         height: calc($dataviz-height + $scaling-height);
         .btn {
+          background-color: #fff;
           padding: 0 0.5em !important;
           border-top-left-radius: 0;
           border-bottom-left-radius: 0;
@@ -44,7 +46,14 @@ $scaling-y-width: 1.5em;
         @include unselectable;
         flex-grow: 1;
         padding-left: $scaling-y-width;
+        position: relative;
 
+        .axis-zero {
+          position: absolute;
+          width: 100%;
+          border-bottom: 1px solid red;
+          z-index: 1;
+        }
         .data {
           @include unselectable;
           display: flex;
@@ -73,8 +82,14 @@ $scaling-y-width: 1.5em;
               }
             }
 
-            &.no-data:not(.highlighted) {
-              background-color: rgba($color-nodata, 0.5);
+            &.no-data {
+              background-image: repeating-linear-gradient(
+                -55deg,
+                $color-nodata,
+                $color-nodata 1px,
+                transparent 2px,
+                transparent 10px
+              );
             }
 
             div {
