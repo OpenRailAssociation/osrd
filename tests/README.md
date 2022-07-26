@@ -37,4 +37,4 @@ Note: you need a docker running locally *with at least one infra imported*.
 It can be a generated infra, or it can be imported from some other DB.
 
 If the test is run on a generated infra, the json containing the error report
-can be copied to `tests/fuzzer_outputs/` to integrate it into the test suite.
+can be copied to `tests/regression_fuzzer_tests/` to integrate it into the test suite.
