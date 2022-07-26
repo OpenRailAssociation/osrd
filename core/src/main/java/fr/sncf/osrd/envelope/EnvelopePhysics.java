@@ -174,4 +174,36 @@ public class EnvelopePhysics {
             interpolatedPosition = minPos;
         return interpolatedPosition;
     }
+
+    /** Returns if two EnvelopeParts intersect */
+    public static boolean areIntersecting(EnvelopePart a, EnvelopePart b) {
+        if (a == null || b == null
+                || a.getMaxSpeed() < b.getMinSpeed()
+                || b.getMaxSpeed() < a.getMinSpeed()
+                || a.getEndPos() < b.getBeginPos()
+                || b.getEndPos() < a.getBeginPos())
+            return false;
+
+        var beginPos = Math.max(a.getBeginPos(), b.getBeginPos());
+        var aPositions = a.clonePositions();
+        var aSpeeds = a.cloneSpeeds();
+
+        var stepIndex = a.getStepIndex(beginPos);
+        var endPos = Math.min(a.getEndPos(), b.getEndPos());
+
+        var speedDiff = a.interpolateSpeed(beginPos) - b.interpolateSpeed(beginPos);
+        var initialSpeedDiffSign = Math.signum(speedDiff);
+        var pos = aPositions[stepIndex];
+
+        // using the intermediate value theorem, a and b intersect if and only if a - b change its sign
+        // a and b being continuous EnvelopeParts
+        while (pos < endPos) {
+            speedDiff = aSpeeds[stepIndex] - b.interpolateSpeed(pos);
+            stepIndex++;
+            pos = aPositions[stepIndex];
+            if (Math.signum(speedDiff) != initialSpeedDiffSign)
+                return true;
+        }
+        return false;
+    }
 }

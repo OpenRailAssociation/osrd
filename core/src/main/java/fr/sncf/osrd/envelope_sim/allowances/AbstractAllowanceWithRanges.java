@@ -6,10 +6,7 @@ import static java.lang.Double.NaN;
 import static java.lang.Math.abs;
 
 import com.carrotsearch.hppc.DoubleArrayList;
-import fr.sncf.osrd.envelope.Envelope;
-import fr.sncf.osrd.envelope.EnvelopeAttr;
-import fr.sncf.osrd.envelope.EnvelopeBuilder;
-import fr.sncf.osrd.envelope.EnvelopeSpeedCap;
+import fr.sncf.osrd.envelope.*;
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
@@ -315,10 +312,13 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         var rightPart = computeRightJunction(base, coreEnvelopeWithLeft, imposedEndSpeed);
         var rightPartBeginPos = rightPart != null ? rightPart.getBeginPos() : base.getEndPos();
 
-        // if the junction parts touch or intersect, there is no core phase
-        if (rightPartBeginPos <= leftPartEndPos) {
+        if (EnvelopePhysics.areIntersecting(rightPart, leftPart)) {
+            // if the junction parts touch or intersect, there is no core phase
             return intersectLeftRightParts(leftPart, rightPart);
-        }
+        } else if (rightPartBeginPos < leftPartEndPos)
+            // if the junction parts neither touch nor intersect but their positions overlap,
+            // it is physically impossible to meet the two imposed speeds
+            throw AllowanceConvergenceException.tooMuchTime();
 
         // 2) stick phases back together
         var builder = new EnvelopeBuilder();
