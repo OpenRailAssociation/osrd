@@ -1,68 +1,66 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Link, matchPath, withRouter } from 'react-router-dom';
+import { useLocation } from 'react-router';
+import { Link, matchPath } from 'react-router-dom';
 
-class MastNavItemSNCF extends React.Component {
-  static propTypes = {
-    link: PropTypes.string.isRequired,
-    linkname: PropTypes.string.isRequired,
-    icon: PropTypes.oneOfType([PropTypes.string, PropTypes.object]).isRequired,
-    bottom: PropTypes.bool,
-    location: PropTypes.object.isRequired,
-    customAction: PropTypes.func,
-  }
+const MastNavItemSNCF = (props) => {
+  const { link, linkname, icon, bottom, customAction } = props;
+  const location = useLocation();
 
-  static defaultProps = {
-    customAction: () => {},
-  }
-
-  render() {
-    const {
-      link, linkname, icon, bottom, location, customAction,
-    } = this.props;
-
-    const match = matchPath(location.pathname, {
+  const match = matchPath(
+    {
       path: link,
-      exact: false,
-      strict: false,
-    });
+      end: false,
+      caseSensitive: false,
+    },
+    location.pathname
+  );
 
-    const mastNavItemSNCFActive = (match !== null) ? 'active' : '';
+  const mastNavItemSNCFActive = match !== null ? 'active' : '';
 
-    const iconHTML = typeof icon === 'object' ? <i className="icons-size-1x5">{icon}</i> : <i className={`${icon} icons-size-1x5`} aria-hidden="true" />;
-
-    return (bottom === true) ? (
-      <div className="mastnav-bottom d-none d-lg-block">
-        <Link
-          to={link}
-          onClick={match !== null ? customAction : () => {}}
-          className="mastnav-item mastnav-item-horizontal"
-        >
-          {iconHTML}
-          <span className="font-weight-medium">
-            {linkname}
-          </span>
-        </Link>
-      </div>
+  const iconHTML =
+    typeof icon === 'object' ? (
+      <i className="icons-size-1x5">{icon}</i>
     ) : (
-      <li>
-        <Link
-          to={link}
-          onClick={match !== null ? customAction : () => {}}
-          className={`mastnav-item ${mastNavItemSNCFActive}`}
-        >
-          {iconHTML}
-          <span className="font-weight-medium">
-            {linkname}
-          </span>
-        </Link>
-      </li>
+      <i className={`${icon} icons-size-1x5`} aria-hidden="true" />
     );
-  }
-}
+
+  return bottom === true ? (
+    <div className="mastnav-bottom d-none d-lg-block">
+      <Link
+        to={link}
+        onClick={match !== null ? customAction : () => {}}
+        className="mastnav-item mastnav-item-horizontal"
+      >
+        {iconHTML}
+        <span className="font-weight-medium">{linkname}</span>
+      </Link>
+    </div>
+  ) : (
+    <li>
+      <Link
+        to={link}
+        onClick={match !== null ? customAction : () => {}}
+        className={`mastnav-item ${mastNavItemSNCFActive}`}
+      >
+        {iconHTML}
+        <span className="font-weight-medium">{linkname}</span>
+      </Link>
+    </li>
+  );
+};
+
+MastNavItemSNCF.propTypes = {
+  link: PropTypes.string.isRequired,
+  linkname: PropTypes.string.isRequired,
+  icon: PropTypes.oneOfType([PropTypes.string, PropTypes.object]).isRequired,
+  bottom: PropTypes.bool,
+  customAction: PropTypes.func,
+};
 
 MastNavItemSNCF.defaultProps = {
   bottom: false,
+  customAction: () => {},
 };
 
-export default withRouter(MastNavItemSNCF);
+export default MastNavItemSNCF;

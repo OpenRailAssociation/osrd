@@ -1,10 +1,66 @@
 import { ComponentType } from 'react';
-import { MapEvent } from 'react-map-gl';
+import { Dispatch } from 'redux';
+import { MapEvent, ViewportProps } from 'react-map-gl';
 import { IconType } from 'react-icons/lib/esm/iconBase';
+import { TFunction } from 'i18next';
 
 import { Item, PositionnedItem } from '../../../types';
-// eslint-disable-next-line import/no-cycle
-import { ExtendedEditorContextType, ReadOnlyEditorContextType } from '../context';
+import { EditorState } from '../../../reducers/editor';
+
+export interface ModalProps<ArgumentsType, SubmitArgumentsType = Record<string, unknown>> {
+  arguments: ArgumentsType;
+  cancel: () => void;
+  submit: (args: SubmitArgumentsType) => void;
+}
+
+export interface ModalRequest<ArgumentsType, SubmitArgumentsType> {
+  component: ComponentType<ModalProps<ArgumentsType, SubmitArgumentsType>>;
+  arguments: ArgumentsType;
+  beforeCancel?: () => void;
+  afterCancel?: () => void;
+  beforeSubmit?: (args: SubmitArgumentsType) => void;
+  afterSubmit?: (args: SubmitArgumentsType) => void;
+}
+
+export interface EditorContextType<S> {
+  // Localisation:
+  t: TFunction;
+
+  // Modals management:
+  modal: ModalRequest<unknown, unknown> | null;
+  openModal: <ArgumentsType, SubmitArgumentsType>(
+    request: ModalRequest<ArgumentsType, SubmitArgumentsType>
+  ) => void;
+  closeModal: () => void;
+
+  // Tool logic:
+  activeTool: Tool<S>;
+  state: S;
+  setState: (state: S) => void;
+
+  // Switching tool:
+  switchTool: <NewToolState extends CommonToolState>(
+    tool: Tool<NewToolState>,
+    state?: Partial<NewToolState>
+  ) => void;
+}
+
+export interface ExtendedEditorContextType<S> extends EditorContextType<S> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  dispatch: Dispatch<any>;
+  editorState: EditorState;
+  mapState: {
+    mapStyle: string;
+    viewport: ViewportProps;
+  };
+}
+
+export type ReadOnlyEditorContextType<S> = Omit<
+  ExtendedEditorContextType<S>,
+  'setState' | 'openModal' | 'closeModal'
+> & {
+  editorState: EditorState;
+};
 
 // UTILS
 export type MakeOptional<Type, Key extends keyof Type> = Omit<Type, Key> & Partial<Pick<Type, Key>>;

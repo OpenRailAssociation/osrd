@@ -1,9 +1,9 @@
 import React, { FC } from 'react';
 
-import { ModalProps } from '../context';
 import Modal from './Modal';
 import EditorForm from './EditorForm';
 import { EditorEntity } from '../../../types';
+import { ModalProps } from '../tools/types';
 
 const EditorModal: FC<
   ModalProps<{ entity: EditorEntity; title?: string }, { savedEntity: EditorEntity }>

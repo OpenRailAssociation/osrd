@@ -4,7 +4,7 @@ import { Layer, Source } from 'react-map-gl';
 import { useTranslation } from 'react-i18next';
 import { featureCollection } from '@turf/helpers';
 
-import { EditorContext, EditorContextType } from '../../context';
+import { EditorContext } from '../../context';
 import GeoJSONs from '../../../../common/Map/Layers/GeoJSONs';
 import colors from '../../../../common/Map/Consts/colors';
 import EditorZone from '../../../../common/Map/Layers/EditorZone';
@@ -26,6 +26,7 @@ import {
   getDetectorsNameLayerProps,
 } from '../../../../common/Map/Layers/Detectors';
 import { getBufferStopsLayerProps } from '../../../../common/Map/Layers/BufferStops';
+import { EditorContextType } from '../types';
 
 export const POINT_LAYER_ID = 'pointEditionTool/new-entity';
 
@@ -43,7 +44,7 @@ export const PointEditionLeftPanel: FC = <Entity extends EditorEntity>() => {
     <EditorForm
       data={state.entity as Entity}
       onSubmit={async (savedEntity) => {
-        const res = await dispatch<ReturnType<typeof save>>(
+        const res = await dispatch(
           save({ [state.entity.id ? 'update' : 'create']: [savedEntity] })
         );
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

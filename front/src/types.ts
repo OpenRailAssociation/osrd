@@ -1,8 +1,11 @@
 import { Action } from 'redux';
 import { JSONSchema7 } from 'json-schema';
 import { Position, Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
-import { ThunkAction as ReduxThunkAction } from 'redux-thunk';
 import { Operation } from 'fast-json-patch';
+import { ThunkAction as ReduxThunkAction } from 'redux-thunk';
+// Next line because:
+// https://github.com/reduxjs/redux-thunk/issues/333#issuecomment-1107532912
+import type {} from 'redux-thunk/extend-redux';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type EditorModelsDefinition = any;

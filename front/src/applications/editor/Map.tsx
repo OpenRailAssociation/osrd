@@ -15,8 +15,8 @@ import Platform from '../../common/Map/Layers/Platform';
 import osmBlankStyle from '../../common/Map/Layers/osmBlankStyle';
 
 import { EditorState } from '../../reducers/editor';
-import { EditorContext, EditorContextType, ExtendedEditorContextType } from './context';
-import { CommonToolState, Tool } from './tools/types';
+import { EditorContext } from './context';
+import { CommonToolState, EditorContextType, ExtendedEditorContextType, Tool } from './tools/types';
 
 const DEFAULT_RADIUS = 6;
 
