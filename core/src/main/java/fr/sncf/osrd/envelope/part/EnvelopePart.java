@@ -363,6 +363,18 @@ public final class EnvelopePart implements SearchableEnvelope {
         return positions.length;
     }
 
+    /** get step index in EnvelopePart a which includes beginPos */
+    public int getStepIndex(double position) {
+        assert position >= getBeginPos() && position <= getEndPos();
+
+        var stepIndex = 0;
+        var stepEndPos = positions[stepIndex + 1];
+        while (stepEndPos < position) {
+            stepIndex++;
+            stepEndPos = positions[stepIndex + 1];
+        }
+        return stepIndex;
+    }
     // endregion
 
     // region INTERPOLATION
