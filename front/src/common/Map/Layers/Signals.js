@@ -45,11 +45,11 @@ const Signals = (props) => {
     return signalsList;
   };
 
-  const signalList = getSignalsList();
+  const signalsList = getSignalsList();
   const context = {
     prefix,
     colors,
-    signalList,
+    signalsList,
     sourceLayer,
     sourceTable,
   };
@@ -61,7 +61,7 @@ const Signals = (props) => {
     >
       <Layer {...getSignalMatLayerProps(context)} id="chartis/signal/mat" />
       <Layer {...getPointLayerProps(context)} id="chartis/signal/point" />
-      {signalList.map((sig) => {
+      {signalsList.map((sig) => {
         const layerId = `chartis/signal/${sourceLayer}/${sig}`;
         const isHovered = hovered && hovered.layer === layerId;
         const signalDef = getSignalLayerProps(context, sig);
