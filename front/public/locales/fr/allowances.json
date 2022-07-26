@@ -19,7 +19,8 @@
   "allowanceModified": {
     "standardAllowanceAdd": "Marge de régularité ajoutée / modifiée",
     "standardAllowanceDel": "Marge de régularité supprimée",
-    "anyAllowanceModified": "Marge modifiée"
+    "anyAllowanceModified": "Marge modifiée",
+    "anyAllowanceModificationError": "Erreur à la modification de marge"
   },
   "specificValuesOnIntervals" : "Valeurs spécifiques sur intervales",
   "allowanceGlobalType": {
