@@ -34,9 +34,9 @@ const TYPES_UNITS = {
 
 const EmptyLine = (props) => {
   const {
-    allowanceTypes, distributionsTypes, allowances, setAllowances, setUpdateAllowances, allowanceType = 'construction', marecoBeginPosition, marecoEndPosition, defaultDistributionId
+    allowanceTypes, distributionsTypes, allowances, setAllowances, setUpdateAllowances, allowanceType = 'construction', marecoBeginPosition, marecoEndPosition, defaultDistributionId,
   } = props;
-  //console.log("Display EmptyLine", allowances)
+  // console.log("Display EmptyLine", allowances)
   const { selectedTrain } = useSelector((state) => state.osrdsimulation);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const allowanceNewDatas = allowanceType === 'engineering'
@@ -67,7 +67,6 @@ const EmptyLine = (props) => {
   const [fromTo, setFromTo] = useState('from');
   const { t } = useTranslation(['allowances']);
 
-
   const handleDistribution = (e) => {
     console.log('handleDistribution', JSON.parse(e.target.value));
     setValues({
@@ -92,8 +91,6 @@ const EmptyLine = (props) => {
       },
     });
   };
-
-
 
   const addAllowance = (allowance) => {
     if (values.begin_position < values.end_position
@@ -294,6 +291,7 @@ export default function Allowances(props) {
     },
   ];
 
+  // Do not change the keys (id, label) without checking implications
   const distributionsTypes = [
     {
       id: 'LINEAR',
@@ -349,7 +347,7 @@ export default function Allowances(props) {
       console.log('ERROR', e);
       dispatch(setFailure({
         name: e.name,
-        message: e.request.responseText,
+        message: t('allowanceModified.anyAllowanceModificationError'),
       }));
     }
   };
@@ -399,6 +397,10 @@ export default function Allowances(props) {
   };
 
   const standardAllowance = allowances.find((allowance) => allowance.allowance_type === 'standard' && allowance.ranges);
+
+  // Engineergin can be defined alone, yet its default distribution depends on eventuel defined standard margin
+
+  const defaultEngineeringDistributionId = standardAllowance?.distribution || distributionsTypes[0]?.id;
 
   return (
     <div className="osrd-simulation-container">
@@ -456,7 +458,6 @@ export default function Allowances(props) {
             )
           }
 
-
           <br />
           <div className="h2 text-normal">
             {t('engineeringAllowances')}
@@ -482,7 +483,7 @@ export default function Allowances(props) {
             return null;
           })}
           <EmptyLine
-            defaultDistributionId={standardAllowance?.distribution}
+            defaultDistributionId={defaultEngineeringDistributionId}
             setAllowances={setAllowances}
             distributionsTypes={distributionsTypes}
             setUpdateAllowances={setUpdateAllowances}
@@ -494,7 +495,7 @@ export default function Allowances(props) {
           {
         rawExtensions.map((rawExtension) => (
           <EmptyLine
-            defaultDistributionId={standardAllowance?.distribution}
+            defaultDistributionId={defaultEngineeringDistributionId}
             setAllowances={setAllowances}
             distributionsTypes={distributionsTypes}
             setUpdateAllowances={setUpdateAllowances}
