@@ -3,7 +3,7 @@ import Form, { FieldProps, utils } from '@rjsf/core';
 import Fields from '@rjsf/core/lib/components/fields';
 import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import { LineString } from 'geojson';
-import { last, omit, debounce, head } from 'lodash';
+import { last, omit, head } from 'lodash';
 import cx from 'classnames';
 import { BiZoomIn, BiZoomOut } from 'react-icons/bi';
 import {
@@ -60,6 +60,28 @@ function itemSchema(
   return result;
 }
 
+/**
+ * Helper function that move the viewbox so the selected element is visible.
+ */
+function viewboxForSelection(
+  data: Array<LinearMetadataItem>,
+  vb: [number, number] | null,
+  selected: number
+): [number, number] | null {
+  // case of no zoom
+  if (vb === null) return null;
+
+  // if the selected is left outside
+  if (data[selected].end <= vb[0]) {
+    return transalteViewBox(data, vb, data[selected].begin - vb[0]);
+  }
+  // if the selected is right outside
+  if (vb[1] <= data[selected].begin) {
+    return transalteViewBox(data, vb, data[selected].end - vb[1]);
+  }
+  return vb;
+}
+
 const widgets = {
   BeginEndWidget: FormBeginEndWidget,
 };
@@ -82,7 +104,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
   const [hovered, setHovered] = useState<number | null>(null);
 
   // Fix the data (sort, fix gap, ...)
-  const data = fixLinearMetadataItems(formData, formContext.geometry);
+  const [data, setData] = useState<Array<LinearMetadataItem>>([]);
 
   // Compute the JSON schema of the linear metadata item
   const jsonSchema = itemSchema(schema, registry.rootSchema);
@@ -100,6 +122,13 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
   );
 
   /**
+   *
+   */
+  useEffect(() => {
+    setData(fixLinearMetadataItems(formData, formContext.geometry));
+  }, [formData, formContext.geometry]);
+
+  /**
    * When selected element change
    * => set its data in the state
    * => recompute viewbox so selected element is always visible ()
@@ -107,24 +136,9 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
   useEffect(
     () => {
       setSelectedData(selected !== null ? data[selected] : null);
-      if (selected !== null) {
-        setViewBox((prev) => {
-          // case of no zoom
-          if (prev === null) return null;
-          // if the selected is left outside
-          if (data[selected].end <= prev[0]) {
-            return transalteViewBox(data, prev, data[selected].begin - prev[0]);
-          }
-          // if the selected is right outside
-          if (prev[1] <= data[selected].begin) {
-            return transalteViewBox(data, prev, data[selected].end - prev[1]);
-          }
-          return prev;
-        });
-      }
     },
-    // The "data" is omitted here, otherwise it is walways refreshed
-    [selected]
+    // The "data" is omitted here, otherwise it is always refreshed
+    [selected, data]
   );
 
   return (
@@ -197,7 +211,9 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
                   title="Previous"
                   disabled={selected === 0}
                   onClick={() => {
-                    setSelected(selected - 1);
+                    const newSelected = selected - 1;
+                    setSelected(newSelected);
+                    setViewBox((vb) => viewboxForSelection(data, vb, newSelected));
                   }}
                 >
                   <BsChevronLeft />
@@ -243,20 +259,26 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
                   type="button"
                   title="Next"
                   disabled={selected === data.length - 1}
-                  onClick={() => setSelected(selected + 1)}
+                  onClick={() => {
+                    const newSelected = selected + 1;
+                    setSelected(newSelected);
+                    setViewBox((vb) => viewboxForSelection(data, vb, newSelected));
+                  }}
                 >
                   <BsChevronRight />
                 </button>
               </div>
             </div>
             <div className="content">
-              <Fields.ObjectField
+              <Form
                 id={`selected-${selected}`}
-                widgets={widgets}
+                name="selected"
                 liveValidate={true}
+                tagName="div"
                 schema={itemSchema(schema, registry.rootSchema, {
                   begin: {
-                    minimum: selected !== 0 ? data[selected - 1].begin + 1 : 0,
+                    minimum:
+                      selected !== null && data[selected - 1] ? data[selected - 1].begin + 1 : 0,
                     maximum: data[selected].end - 1,
                   },
                   end: {
@@ -267,40 +289,53 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
                 })}
                 uiSchema={{
                   begin: {
+                    'ui:widget': FormBeginEndWidget,
                     'ui:readonly': selected === 0,
                   },
                   end: {
+                    'ui:widget': FormBeginEndWidget,
                     'ui:readonly': selected === data.length - 1,
                   },
                 }}
                 formData={selectedData}
-                onChange={(e) => setSelectedData(e)}
-                onSubmit={(e, reactEvent) => {
-                  console.log(e, reactEvent);
-                  const item = { ...e.formData };
-                  let newData = [...data];
-                  // we keep the old value for begin and end
-                  // they will be change in the resize function if needed
-                  newData[selected] = { ...newData[selected], ...omit(e, ['begin', 'end']) };
+                onChange={(e) => {
+                  if (e.errors.length === 0) {
+                    const newItem = e.formData;
+                    const oldItem = data[selected];
+                    let newData = [...data];
+                    // we keep the old value for begin and end
+                    // they will be change in the resize function if needed
+                    newData[selected] = {
+                      ...oldItem,
+                      ...omit(newItem, ['begin', 'end']),
+                    };
 
-                  // Check if there is a resize
-                  if (selectedData.begin !== item.begin) {
-                    newData = resizeSegment(
-                      [...newData],
-                      selected,
-                      item.begin - selectedData.begin,
-                      'begin'
-                    );
+                    // Check if there is a resize
+                    try {
+                      if (newItem.begin !== oldItem.begin) {
+                        newData = resizeSegment(
+                          [...newData],
+                          selected,
+                          newItem.begin - oldItem.begin,
+                          'begin'
+                        );
+                      }
+                      if (oldItem.end !== newItem.end) {
+                        newData = resizeSegment(
+                          [...newData],
+                          selected,
+                          newItem.end - oldItem.end,
+                          'end'
+                        );
+                      }
+                      onChange(newData);
+                    } catch (e) {
+                      // TODO: Should display the resize error
+                      console.log('ERROR', e);
+                    } finally {
+                      setSelectedData(newItem);
+                    }
                   }
-                  if (selectedData.end !== item.end) {
-                    newData = resizeSegment(
-                      [...newData],
-                      selected,
-                      item.end - selectedData.end,
-                      'end'
-                    );
-                  }
-                  onChange(newData);
                 }}
               >
                 <div className="buttons">
@@ -311,11 +346,8 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
                   >
                     Close
                   </button>
-                  <button type="submit" className="btn btn-success" form={`selected-${selected}`}>
-                    Submit
-                  </button>
                 </div>
-              </Fields.ObjectField>
+              </Form>
             </div>
           </div>
         )}

@@ -55,12 +55,13 @@ const EditorForm: React.FC<EditorFormProps> = ({ data, onSubmit, onChange, child
       )}
       <Form
         fields={fields}
+        action={undefined}
+        method={undefined}
         uiSchema={uiSchema}
         schema={schema}
         formData={formData}
         formContext={{ geometry: data.geometry }}
         onSubmit={async (event) => {
-          console.log(event);
           try {
             setError(null);
             setFormData(event.formData);

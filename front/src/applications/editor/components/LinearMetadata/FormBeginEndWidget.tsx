@@ -2,12 +2,11 @@ import React, { useState, useRef } from 'react';
 import { WidgetProps } from '@rjsf/core';
 
 export const FormBeginEndWidget: React.FC<WidgetProps> = (props) => {
-  console.log(props);
-  const { id, label, value, required, readonly, onChange, options, rawErrors } = props;
+  const { id, label, value, required, readonly, onChange, options, rawErrors, schema } = props;
   return (
     <div>
       {readonly ? (
-        <span className="form-control bg-light">{value}</span>
+        <span className="form-control readonly bg-light">{value}</span>
       ) : (
         <input
           className="form-control"
@@ -15,8 +14,8 @@ export const FormBeginEndWidget: React.FC<WidgetProps> = (props) => {
           required={required}
           type="number"
           step="1"
-          min={options.min as number}
-          max={options.max as number}
+          min={schema.minimum || (options.min as number)}
+          max={schema.maximum || (options.max as number)}
           value={value}
           onChange={(e) => onChange(e.target.value)}
         />
