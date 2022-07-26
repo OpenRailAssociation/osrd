@@ -190,10 +190,10 @@ export const LinearMetadataDataviz = <T extends any>({
    */
   useEffect(() => {
     if (field) {
-      const min = minBy(data, field);
-      const max = maxBy(data, field);
-      setMin(min && min[field] < 0 ? min[field] : 0);
-      setMax(max && max[field] > 0 ? max[field] : 0);
+      const dMin = minBy(data, field);
+      const dMax = maxBy(data, field);
+      setMin(dMin && dMin[field] < 0 ? dMin[field] : 0);
+      setMax(dMax && dMax[field] > 0 ? dMax[field] : 0);
     } else {
       setMin(0);
       setMax(0);
@@ -280,16 +280,22 @@ export const LinearMetadataDataviz = <T extends any>({
         className={cx('data', highlighted.length > 0 && 'has-highlight', draginStartAt && 'drag')}
       >
         <>
+          {/* Display the 0 axis if it's necessary */}
           {min < 0 && max > 0 && (
             <div className="axis-zero" style={computeStyleForDataValue(0, min, max)} />
           )}
+          {/* Display the Y axis if there is one */}
           {field && min !== max && <Scale className="scale-y" begin={min} end={max} />}
+
+          {/* Create one div per item for the X axis */}
           {data4viz.map((segment) => (
             <div
               key={`${segment.begin}-${segment.end}`}
               className={cx(
                 highlighted.includes(segment.index) && 'highlighted',
-                field && (!data[segment.index] || !data[segment.index][field]) && 'no-data',
+                field &&
+                  (data[segment.index] === undefined || data[segment.index][field] === undefined) &&
+                  'no-data',
                 !field && isNilObject(data[segment.index], ['begin', 'end', 'index']) && 'no-data'
               )}
               style={{
@@ -330,18 +336,23 @@ export const LinearMetadataDataviz = <T extends any>({
                 }
               }}
             >
-              {field && data[segment.index] && data[segment.index][field] && (
-                <div style={computeStyleForDataValue(data[segment.index][field], min, max)}></div>
-              )}
+              {/* Create an inner div for the Y axis */}
+              {field &&
+                data[segment.index] !== undefined &&
+                data[segment.index][field] !== undefined && (
+                  <div style={computeStyleForDataValue(data[segment.index][field], min, max)}></div>
+                )}
             </div>
           ))}
         </>
       </div>
+
+      {/* Display the X axis*/}
       <Scale
         className="scale-x"
         begin={head(data4viz)?.begin || 0}
         end={last(data4viz)?.end || 0}
-        min={0}
+        min={head(data)?.begin || 0}
         max={last(data)?.end || 0}
       />
     </div>
