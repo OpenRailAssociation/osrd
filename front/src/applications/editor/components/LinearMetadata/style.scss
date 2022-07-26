@@ -194,6 +194,14 @@ $scaling-y-width: 1.5em;
           display: flex;
           justify-content: space-around;
         }
+        .form-control:not(.readonly) {
+          border: 1px solid #747678;
+          background-color: #fff;
+
+          &:focus {
+            border-color: $color;
+          }
+        }
       }
     }
   }
