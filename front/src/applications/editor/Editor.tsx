@@ -19,13 +19,14 @@ import Tipped from './components/Tipped';
 import { getInfrastructure, getInfrastructures } from './data/api';
 import Map from './Map';
 import NavButtons from './nav';
+import { EditorContext } from './context';
 import {
-  EditorContext,
+  CommonToolState,
   EditorContextType,
   ExtendedEditorContextType,
   ModalRequest,
-} from './context';
-import { CommonToolState, Tool } from './tools/types';
+  Tool,
+} from './tools/types';
 import TOOLS from './tools/list';
 
 const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
@@ -46,9 +47,9 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   );
   const setViewport = useCallback(
     (value) => {
-      dispatch(updateViewport(value, `/editor/${infra || '-1'}`));
+      dispatch(updateViewport(value, `/editor/${infraID || '-1'}`));
     },
-    [dispatch, infra]
+    [dispatch, infraID]
   );
 
   const context = useMemo<EditorContextType<CommonToolState>>(
@@ -97,11 +98,11 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
     if (urlLat) {
       setViewport({
         ...viewport,
-        latitude: parseFloat(urlLat),
-        longitude: parseFloat(urlLon),
-        zoom: parseFloat(urlZoom),
-        bearing: parseFloat(urlBearing),
-        pitch: parseFloat(urlPitch),
+        latitude: parseFloat(urlLat || '0'),
+        longitude: parseFloat(urlLon || '0'),
+        zoom: parseFloat(urlZoom || '1'),
+        bearing: parseFloat(urlBearing || '1'),
+        pitch: parseFloat(urlPitch || '1'),
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

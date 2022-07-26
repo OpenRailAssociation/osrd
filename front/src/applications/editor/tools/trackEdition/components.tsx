@@ -4,7 +4,7 @@ import { Layer, Source } from 'react-map-gl';
 import { useTranslation } from 'react-i18next';
 import { last } from 'lodash';
 
-import { EditorContext, EditorContextType } from '../../context';
+import { EditorContext } from '../../context';
 import GeoJSONs from '../../../../common/Map/Layers/GeoJSONs';
 import colors from '../../../../common/Map/Consts/colors';
 import EditorZone from '../../../../common/Map/Layers/EditorZone';
@@ -12,6 +12,7 @@ import { TrackEditionState } from './types';
 import EditorForm from '../../components/EditorForm';
 import { save } from '../../../../reducers/editor';
 import { CreateEntityOperation, Item, TrackSectionEntity } from '../../../../types';
+import { EditorContextType } from '../types';
 
 export const TRACK_LAYER_ID = 'trackEditionTool/new-track-path';
 export const POINTS_LAYER_ID = 'trackEditionTool/new-track-points';
@@ -189,9 +190,7 @@ export const TrackEditionLeftPanel: FC = () => {
     <EditorForm
       data={state.track}
       onSubmit={async (savedEntity) => {
-        const res = await dispatch<ReturnType<typeof save>>(
-          save({ [state.track.id ? 'update' : 'create']: [savedEntity] })
-        );
+        const res = await dispatch(save({ [state.track.id ? 'update' : 'create']: [savedEntity] }));
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const operation = res[0] as any as CreateEntityOperation;
         const { id } = operation.railjson;

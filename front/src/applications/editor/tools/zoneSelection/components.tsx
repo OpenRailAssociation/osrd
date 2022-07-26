@@ -1,12 +1,13 @@
 import React, { FC, useContext } from 'react';
 import { useSelector } from 'react-redux';
 
-import { EditorContext, EditorContextType } from '../../context';
+import { EditorContext } from '../../context';
 import { Zone } from '../../../../types';
 import colors from '../../../../common/Map/Consts/colors';
 import EditorZone from '../../../../common/Map/Layers/EditorZone';
 import TracksGeographic from '../../../../common/Map/Layers/TracksGeographic';
 import { ZoneSelectionState } from './types';
+import { EditorContextType } from '../types';
 
 // eslint-disable-next-line import/prefer-default-export
 export const ZoneSelectionLayers: FC = () => {

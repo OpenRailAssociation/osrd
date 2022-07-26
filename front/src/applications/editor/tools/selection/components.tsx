@@ -6,7 +6,7 @@ import { IoMdRemoveCircleOutline } from 'react-icons/io';
 import { RiFocus3Line } from 'react-icons/ri';
 import { useTranslation } from 'react-i18next';
 
-import { EditorContext, EditorContextType } from '../../context';
+import { EditorContext } from '../../context';
 import { SelectionState } from './types';
 import { Item, Zone } from '../../../../types';
 import GeoJSONs from '../../../../common/Map/Layers/GeoJSONs';
@@ -14,6 +14,7 @@ import colors from '../../../../common/Map/Consts/colors';
 import EditorZone from '../../../../common/Map/Layers/EditorZone';
 import EditorForm from '../../components/EditorForm';
 import { save } from '../../../../reducers/editor';
+import { EditorContextType } from '../types';
 
 export const SelectionMessages: FC = () => {
   const { t, state } = useContext(EditorContext) as EditorContextType<SelectionState>;
@@ -98,7 +99,7 @@ export const SelectionLeftPanel: FC = () => {
         <EditorForm
           data={selection[0]}
           onSubmit={async (savedEntity) => {
-            await dispatch<ReturnType<typeof save>>(save({ update: [savedEntity] }));
+            await dispatch(save({ update: [savedEntity] }));
             setState({ ...state, selection: [savedEntity], selectionState: { type: 'single' } });
           }}
         >

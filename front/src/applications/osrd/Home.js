@@ -2,7 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { withTranslation } from 'react-i18next';
 import { connect } from 'react-redux';
-import { Route, Switch, Redirect } from 'react-router-dom';
+import { Navigate } from 'react-router';
+import { Route, Routes } from 'react-router-dom';
 import MastNavSNCF from 'common/BootstrapSNCF/MastNavSNCF';
 import MastNavItemSNCF from 'common/BootstrapSNCF/MastNavItemSNCF';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
@@ -17,36 +18,51 @@ class HomeOSRD extends React.Component {
   static propTypes = {
     t: PropTypes.func.isRequired,
     osrdsimulation: PropTypes.object.isRequired,
-  }
+  };
 
   render() {
     const { t, osrdsimulation } = this.props;
     return (
       <>
         <MastNavSNCF
-          items={(
+          items={
             <>
-              <MastNavItemSNCF link="/osrd/settings" linkname={t('osrd.nav.home')} icon="icons-itinerary-train-station" />
-              <MastNavItemSNCF link="/osrd/simulation" linkname={t('osrd.nav.simulation')} icon="icons-itinerary-train" />
+              <MastNavItemSNCF
+                link="/osrd/settings"
+                linkname={t('osrd.nav.home')}
+                icon="icons-itinerary-train-station"
+              />
+              <MastNavItemSNCF
+                link="/osrd/simulation"
+                linkname={t('osrd.nav.simulation')}
+                icon="icons-itinerary-train"
+              />
             </>
-          )}
+          }
           itemsBottom={
-            <MastNavItemSNCF link="/osrd/contact" linkname={t('osrd.nav.contact')} icon="icons-support" bottom />
+            <MastNavItemSNCF
+              link="/osrd/contact"
+              linkname={t('osrd.nav.contact')}
+              icon="icons-support"
+              bottom
+            />
           }
         />
         <NavBarSNCF appName="OSRD" logo={logo} />
-        <Switch>
-          <Route path="/osrd/settings">
-            <OSRDConfig />
-          </Route>
-          <Route path="/osrd/about">
-            <AboutOSRD />
-          </Route>
-          <Route path="/osrd/simulation">
-            <OSRDSimulation />
-          </Route>
-          <Redirect to={osrdsimulation.redirectToGraph ? '/osrd/simulation' : '/osrd/settings'} />
-        </Switch>
+        <Routes>
+          <Route path="/settings" element={<OSRDConfig />} />
+          <Route path="/about" element={<AboutOSRD />} />
+          <Route path="/simulation" element={<OSRDSimulation />} />
+          <Route
+            path=""
+            element={
+              <Navigate
+                to={osrdsimulation.redirectToGraph ? '/osrd/simulation' : '/osrd/settings'}
+                replace
+              />
+            }
+          />
+        </Routes>
         <NotificationsState />
       </>
     );
