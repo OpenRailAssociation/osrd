@@ -97,6 +97,7 @@ public class UndirectedInfraBuilder {
 
     /** Creates all the track section links that haven't already been created by switches */
     private void addRemainingLinks(RJSInfra infra) {
+        int generatedID = 0;
         for (var link : infra.trackSectionLinks) {
             var srcID = link.src.track.id.id;
             var dstID = link.dst.track.id.id;
@@ -115,6 +116,10 @@ public class UndirectedInfraBuilder {
                         oldSrcNode,
                         oldDstNode
                 ));
+            }
+            if (link.id == null || link.id.equals("")) {
+                // Forcing a unique ID avoids node equality troubles, and makes debugging easier
+                link.id = String.format("generated_%d", generatedID++);
             }
             var newNode = new TrackNodeImpl.Joint(link.id);
             addNode(srcID, link.src.endpoint, newNode);
@@ -140,7 +145,7 @@ public class UndirectedInfraBuilder {
 
         // Reads all the speed sections and adds the values to the tracks
         for (var speedSection : speedSections) {
-            var value = speedSection.speed;
+            var value = speedSection.speedLimit;
             for (var trackRange : speedSection.trackRanges) {
                 var track = RJSObjectParsing.getTrackSection(trackRange.track, trackSectionsByID);
                 var speedSectionMaps = track.getSpeedSections();

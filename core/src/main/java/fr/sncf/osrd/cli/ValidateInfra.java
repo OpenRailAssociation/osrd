@@ -21,19 +21,20 @@ public class ValidateInfra implements CliCommand {
     @Override
     @ExcludeFromGeneratedCodeCoverage
     public int run() {
+        var warningRecorder = new WarningRecorderImpl(false);
         try {
             var rjs = RJSParser.parseRailJSONFromFile(infraPath);
-            var warningRecorder = new WarningRecorderImpl(false);
             SignalingInfraBuilder.fromRJSInfra(
                     rjs,
                     Set.of(new BAL3(warningRecorder)),
                     warningRecorder
             );
-            warningRecorder.report();
             return 0;
         } catch (Exception e) {
             e.printStackTrace();
             return 1;
+        } finally {
+            warningRecorder.report();
         }
     }
 }

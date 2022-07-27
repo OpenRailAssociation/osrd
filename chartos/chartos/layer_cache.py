@@ -1,10 +1,6 @@
 from dataclasses import dataclass
 from math import asinh, atan, degrees, floor, pi, radians, sinh, tan
-from typing import Collection, Dict, Iterable, Iterator, List, Optional, Set, Tuple
-
-from fastapi.responses import JSONResponse
-from shapely.geometry import Polygon
-from shapely.prepared import prep
+from typing import Dict, List, Set, Tuple
 
 from .config import Layer, View
 

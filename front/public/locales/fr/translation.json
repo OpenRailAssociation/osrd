@@ -12,6 +12,7 @@
     "filter": "Filtrer",
     "itinerary": "Itinéraire",
     "loading": "Chargement...",
+    "save": "Save",
     "search": "Rechercher",
     "settings": "Paramètres",
     "sort": "Tri",
@@ -32,84 +33,73 @@
       "technical": "Une erreur technique est survenue : {{msg}}"
     },
     "tools": {
-      "create-line": {
+      "track-edition": {
+        "label": "Outil \"Ligne\",",
         "actions": {
-          "cancel-last-point": {
-            "label": "Annuler le dernier point saisi"
-          },
-          "cancel-line": {
-            "label": "Annuler toute la ligne saisie"
-          },
-          "toggle-anchoring": {
-            "label": "Permettre d'ancrer les points sur les lignes existantes"
-          },
-          "validate-line": {
-            "label": "Valider la ligne"
-          }
-        },
-        "description-1": "1er clic : Début de la création de la ligne",
-        "description-2": "Clics suivants : Ajout de points dans le chemin de la ligne",
-        "description-3": "Double-click : Ajout du dernier point de la ligne, validation du chemin",
-        "description-4": "Touch Échap : Annulation du dernier point",
-        "description-5": "Touch Entrée : Validation du chemin",
-        "label": "Création d'une nouvelle ligne",
-        "properties": "Propriétés"
+          "mode-move-point": "Déplacer les points",
+          "mode-add-point": "Ajouter un point",
+          "mode-delete-point": "Supprimer des points",
+          "toggle-anchoring": "Activer / désactiver l'ancrage automatique",
+          "add-at-start": "Ajouter les nouveaux points au début",
+          "add-at-end": "Ajouter les nouveaux points à la fin",
+          "cancel-line": "Annuler la saisie en cours"
+        }
       },
       "select-items": {
+        "label": "Outil \"Sélection\"",
+        "title": "Sélection",
         "actions": {
-          "delete-selection": {
-            "label": "[TODO] Supprimer les éléments sélectionnés"
-          },
-          "edit-info": {
-            "label": "Modifier les métadonnées de l'élément sélectionné"
-          },
-          "polygon": {
-            "label": "Sélection Polygône"
-          },
-          "rectangle": {
-            "label": "Sélection Rectangle"
-          },
-          "select-all": {
-            "label": "Tout sélectionner"
-          },
-          "delete-selection": {
-            "label": "Supprimer les éléments sélectionnés",
-            "confirmation": "Êtes-vous sur de vouloir supprimer les éléments de la selection ?"
-          }
+          "single": "Sélection simple",
+          "rectangle": "Sélection rectangle",
+          "polygon": "Sélection polygône",
+          "edit-info": "Éditer la sélection",
+          "unselect-all": "Tout désélectionner",
+          "delete-selection": "Supprimer la sélection",
+          "confirm-delete-selection": "Êtes-vous sûr(e) de vouloir supprimer la sélection ?"
         },
-        "description-1": "Clic sur un élément : Affichage de ses propriétés",
-        "edit-line": "Édition des métadonnées d'un élément",
-        "focus": "Focus sur un élément",
-        "label": "Sélection d'un élément",
+        "errors": {
+          "no-multi-edition": "Il n'est pas encore possible d'éditer plusieurs éléments en même temps (TODO).",
+          "no-heterogenous-edition": "Il n'est pas possible d'éditer plusieurs éléments de différents types en même temps."
+        },
+        "focus": "Focus",
+        "unselect": "Désélectionner",
+        "item": "Élément",
         "no-selection": "Aucun élément sélectionné",
         "selection": "{{count}} élément sélectionné",
-        "selection_plural": "{{count}} éléments sélectionnés"
+        "selection_plural": "{{count}} éléments sélectionnés",
+        "of-type": "de type"
       },
       "select-zone": {
+        "label": "Sélection de la zone d'édition",
         "actions": {
-          "cancel-last-point": {
-            "label": "Annuler le dernier point saisi"
-          },
-          "cancel-polygon": {
-            "label": "Annuler le polygône"
-          },
-          "polygon": {
-            "label": "Sélection Polygône"
-          },
-          "rectangle": {
-            "label": "Sélection Rectangle"
-          },
-          "unselect": {
-            "label": "Désélectionner la zone d'édition"
-          },
-          "validate-polygon": {
-            "label": "Valider le polygône d'édition"
-          }
-        },
-        "description-1": "1er clic : Début de la sélection",
-        "description-2": "2nd clic : Fin de la sélection",
-        "description-3": "Touch Échap : Annulation de la sélection en cours",
-        "label": "Sélection de la zone d'édition"
+          "cancel-last-point": "Annuler le dernier point saisi",
+          "cancel-polygon": "Annuler le polygône",
+          "polygon": "Sélection Polygône",
+          "rectangle": "Sélection Rectangle",
+          "unselect": "Désélectionner la zone d'édition",
+          "validate-polygon": "Valider le polygône d'édition"
+        }
+      },
+      "signal-edition": {
+        "label": "Outil \"Signal\",",
+        "actions": {
+          "reset-entity": "Réinitialiser les données",
+          "new-entity": "Créer un nouveau signal"
+        }
+      },
+      "buffer-stop-edition": {
+        "label": "Outil \"Heurtoir\",",
+        "actions": {
+          "reset-entity": "Réinitialiser les données",
+          "new-entity": "Créer un nouveau heurtoir"
+        }
+      },
+      "detector-edition": {
+        "label": "Outil \"Détecteur\",",
+        "actions": {
+          "reset-entity": "Réinitialiser les données",
+          "new-entity": "Créer un nouveau détecteur"
+        }
       }
     },
     "entities": {

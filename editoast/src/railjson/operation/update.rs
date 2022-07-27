@@ -87,7 +87,9 @@ impl DataObject {
             ObjectType::Switch => RailjsonObject::Switch {
                 railjson: from_value(self.data.clone())?,
             },
-            ObjectType::SwitchType => todo!(),
+            ObjectType::SwitchType => RailjsonObject::SwitchType {
+                railjson: from_value(self.data.clone())?,
+            },
             ObjectType::BufferStop => RailjsonObject::BufferStop {
                 railjson: from_value(self.data.clone())?,
             },
@@ -107,11 +109,11 @@ impl DataObject {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::UpdateOperation;
     use crate::error::ApiError;
-    use crate::models::infra::test::test_transaction;
-    use crate::railjson::operation::create::test::{create_signal, create_speed, create_track};
+    use crate::models::infra::tests::test_transaction;
+    use crate::railjson::operation::create::tests::{create_signal, create_speed, create_track};
     use crate::railjson::operation::OperationError;
     use crate::railjson::ObjectType;
     use diesel::sql_query;
@@ -132,7 +134,7 @@ mod test {
     }
 
     #[test]
-    fn valide_update_track() {
+    fn valid_update_track() {
         test_transaction(|conn, infra| {
             let track = create_track(conn, infra.id, Default::default());
 
@@ -161,7 +163,7 @@ mod test {
     }
 
     #[test]
-    fn invalide_update_track() {
+    fn invalid_update_track() {
         test_transaction(|conn, infra| {
             let track = create_track(conn, infra.id, Default::default());
 
@@ -187,7 +189,7 @@ mod test {
     }
 
     #[test]
-    fn valide_update_signal() {
+    fn valid_update_signal() {
         test_transaction(|conn, infra| {
             let signal = create_signal(conn, infra.id, Default::default());
 
@@ -216,7 +218,7 @@ mod test {
     }
 
     #[test]
-    fn valide_update_signal_optionnal() {
+    fn valid_update_signal_optionnal() {
         test_transaction(|conn, infra| {
             let signal = create_signal(conn, infra.id, Default::default());
 
@@ -245,7 +247,7 @@ mod test {
     }
 
     #[test]
-    fn valide_update_speed() {
+    fn valid_update_speed() {
         test_transaction(|conn, infra| {
             let speed = create_speed(conn, infra.id, Default::default());
 
@@ -254,7 +256,7 @@ mod test {
                 obj_type: ObjectType::SpeedSection,
                 railjson_patch: from_str(
                     r#"[
-                        { "op": "replace", "path": "/speed", "value": 80.0 }
+                        { "op": "replace", "path": "/speed_limit", "value": 80.0 }
                   ]"#,
                 )
                 .unwrap(),
@@ -263,7 +265,7 @@ mod test {
             assert!(update_speed.apply(infra.id, conn).is_ok());
 
             let updated_speed = sql_query(format!(
-                "SELECT (data->>'speed')::float as val FROM osrd_infra_speedsectionmodel WHERE obj_id = '{}' AND infra_id = {}",
+                "SELECT (data->>'speed_limit')::float as val FROM osrd_infra_speedsectionmodel WHERE obj_id = '{}' AND infra_id = {}",
                 speed.get_obj_id(),
                 infra.id
             ))

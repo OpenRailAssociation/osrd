@@ -19,16 +19,18 @@ def run_simulation(base_url, infra_id):
     return schedule_id
 
 
-def make_payload_schedule(base_url, infra, path, rolling_stock):
+def make_payload_schedule(base_url, infra, path, rolling_stock, departure_time=0, timetable=None):
+    if timetable is None:
+        timetable = get_schedule(base_url, infra)
     return {
-        "timetable": get_schedule(base_url, infra),
+        "timetable": timetable,
         "path": path,
         "schedules": [
             {
                 "train_name": "foo",
                 "labels": [],
                 "allowances": [],
-                "departure_time": 0,
+                "departure_time": departure_time,
                 "initial_speed": 0,
                 "rolling_stock": rolling_stock,
             }

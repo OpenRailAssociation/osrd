@@ -1,4 +1,4 @@
-import React, { FC, PropsWithChildren, useState } from 'react';
+import React, { FC, useState } from 'react';
 import { Notification } from '../../types';
 /**
  * Display the date to the "from ago" format.
@@ -9,16 +9,16 @@ import { Notification } from '../../types';
 function dateToFromAgo(date: Date): string {
   const seconds = Math.round((Date.now() - date.getTime()) / 1000);
   const prefix = seconds < 0 ? 'dans' : 'il y a';
-  const asbSecond = Math.abs(seconds);
+  const absSecond = Math.abs(seconds);
 
   const times = [
-    asbSecond / 60 / 60 / 24 / 365, // years
-    asbSecond / 60 / 60 / 24 / 30, // months
-    asbSecond / 60 / 60 / 24 / 7, // weeks
-    asbSecond / 60 / 60 / 24, // days
-    asbSecond / 60 / 60, // hours
-    asbSecond / 60, // minutes
-    asbSecond, // seconds
+    absSecond / 60 / 60 / 24 / 365, // years
+    absSecond / 60 / 60 / 24 / 30, // months
+    absSecond / 60 / 60 / 24 / 7, // weeks
+    absSecond / 60 / 60 / 24, // days
+    absSecond / 60 / 60, // hours
+    absSecond / 60, // minutes
+    absSecond, // seconds
   ];
 
   return (
@@ -53,7 +53,7 @@ const ToastSNCF: FC<Notification> = ({ title, date, type = 'info', text }) => {
         &nbsp;
         <strong className="mr-auto">{title || type}</strong>
         {date && <small>{dateToFromAgo(date)}</small>}
-        <button className="ml-2 mb-1 close" onClick={() => setOpen(false)}>
+        <button type="button" className="ml-2 mb-1 close" onClick={() => setOpen(false)}>
           <span>&times;</span>
         </button>
       </div>

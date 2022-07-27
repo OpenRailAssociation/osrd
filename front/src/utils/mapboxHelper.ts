@@ -5,8 +5,6 @@ import booleanIntersects from '@turf/boolean-intersects';
 import bbox from '@turf/bbox';
 import lineIntersect from '@turf/line-intersect';
 import lineSlice from '@turf/line-slice';
-
-/* Types */
 import { MapController, ViewportProps, WebMercatorViewport } from 'react-map-gl';
 import { MjolnirEvent } from 'react-map-gl/dist/es5/utils/map-controller';
 import { BBox, Coord, featureCollection } from '@turf/helpers';
@@ -19,11 +17,12 @@ import {
   MultiPoint,
   Position,
   Polygon,
-  GeoJSON,
 } from 'geojson';
-import { Item, Zone } from '../types';
 import nearestPointOnLine from '@turf/nearest-point-on-line';
-import nearestPoint from '@turf/nearest-point';
+import nearestPoint, { NearestPoint } from '@turf/nearest-point';
+
+import { Zone } from '../types';
+import { getAngle } from '../applications/editor/data/utils';
 
 /**
  * This class allows binding keyboard events to react-map-gl. Since those events are not supported
@@ -50,68 +49,6 @@ export class KeyDownMapController extends MapController {
 
     return super.handleEvent(event);
   }
-}
-
-/**
- * This helper takes a Feature *or* a FeatureCollection and a bounding zone, and returns the input
- * Feature or FeatureCollection, but clipped inside the bounding zone. It filters out Points and
- * MultiPoints, and clips LineStrings and MultiLineStrings using @turf/bboxClip (when possible).
- */
-export function clip<T extends Feature | FeatureCollection>(tree: T, zone: Zone): T | null {
-  if (tree.type === 'FeatureCollection') {
-    return {
-      ...tree,
-      features: (tree as FeatureCollection).features.flatMap((f) => {
-        const res = clip(f, zone);
-        if (!res) return [];
-        return [res];
-      }),
-    };
-  }
-
-  if (tree.type === 'Feature') {
-    const feature = tree as Feature;
-
-    if (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString') {
-      if (zone.type === 'polygon') {
-        const clipped = intersectPolygonLine(
-          zoneToFeature(zone, true) as Feature<Polygon>,
-          feature as Feature<LineString | MultiLineString>
-        );
-        return clipped ? (clipped as T) : null;
-      }
-
-      const clipped = bboxClip(
-        feature as Feature<LineString | MultiLineString>,
-        zoneToBBox(zone)
-      ) as Feature<LineString | MultiLineString>;
-      return clipped.geometry.coordinates.length ? (clipped as T) : null;
-    }
-
-    const polygon = zoneToFeature(zone, true).geometry as Polygon;
-
-    if (feature.geometry.type === 'Point') {
-      return booleanPointInPolygon((feature as Feature<Point>).geometry.coordinates, polygon)
-        ? tree
-        : null;
-    }
-
-    if (feature.geometry.type === 'MultiPoint') {
-      const res: Feature<MultiPoint> = {
-        ...feature,
-        geometry: {
-          ...feature.geometry,
-          coordinates: feature.geometry.coordinates.filter((position) =>
-            booleanPointInPolygon(position, polygon)
-          ),
-        },
-      };
-
-      return res.geometry.coordinates.length ? (res as T) : null;
-    }
-  }
-
-  return tree;
 }
 
 /**
@@ -155,6 +92,8 @@ export function zoneToFeature(zone: Zone, close = false): Feature {
             },
       };
     }
+    default:
+      throw new Error('Zone is neither a polygone, neither a rectangle');
   }
 }
 
@@ -220,25 +159,79 @@ export function intersectPolygonLine(
 }
 
 /**
+ * This helper takes a Feature *or* a FeatureCollection and a bounding zone, and returns the input
+ * Feature or FeatureCollection, but clipped inside the bounding zone. It filters out Points and
+ * MultiPoints, and clips LineStrings and MultiLineStrings using @turf/bboxClip (when possible).
+ */
+export function clip<T extends Feature | FeatureCollection>(tree: T, zone: Zone): T | null {
+  if (tree.type === 'FeatureCollection') {
+    return {
+      ...tree,
+      features: (tree as FeatureCollection).features.flatMap((f) => {
+        const res = clip(f, zone);
+        if (!res) return [];
+        return [res];
+      }),
+    };
+  }
+
+  if (tree.type === 'Feature') {
+    const feature = tree as Feature;
+
+    if (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString') {
+      if (zone.type === 'polygon') {
+        const clipped = intersectPolygonLine(
+          zoneToFeature(zone, true) as Feature<Polygon>,
+          feature as Feature<LineString | MultiLineString>
+        );
+        return clipped ? (clipped as T) : null;
+      }
+
+      const clipped = bboxClip(
+        feature as Feature<LineString | MultiLineString>,
+        zoneToBBox(zone)
+      ) as Feature<LineString | MultiLineString>;
+      return clipped.geometry.coordinates.length ? (clipped as T) : null;
+    }
+
+    const polygon = zoneToFeature(zone, true).geometry as Polygon;
+
+    if (feature.geometry.type === 'Point') {
+      return booleanPointInPolygon((feature as Feature<Point>).geometry.coordinates, polygon)
+        ? tree
+        : null;
+    }
+
+    if (feature.geometry.type === 'MultiPoint') {
+      const res: Feature<MultiPoint> = {
+        ...feature,
+        geometry: {
+          ...feature.geometry,
+          coordinates: feature.geometry.coordinates.filter((position) =>
+            booleanPointInPolygon(position, polygon)
+          ),
+        },
+      };
+
+      return res.geometry.coordinates.length ? (res as T) : null;
+    }
+  }
+
+  return tree;
+}
+
+/**
  * This helpers takes an array of GeoJSON objects (as the editor data we use) and a zone, and
  * returns a selection of all items in the given dataset intersecting with the given zone. If no
  * zone is given, selects everything instead.
  */
-export function selectInZone(data: GeoJSON[], zone?: Zone): Item[] {
-  const items: Item[] = [];
-  const zoneFeature = zone && zoneToFeature(zone);
+export function selectInZone<T extends Feature>(data: Array<T>, zone?: Zone): T[] {
+  const items: T[] = [];
+  const zoneFeature = zone && zoneToFeature(zone, true);
 
   data.forEach((geojson) => {
-    if (geojson.type === 'FeatureCollection') {
-      geojson.features.forEach((feature) => {
-        if (!zoneFeature || booleanIntersects(feature, zoneFeature)) {
-          items.push({ id: feature.properties?.OP_id, properties: feature.properties || {} });
-        }
-      });
-    } else if (geojson.type === 'Feature') {
-      if (!zoneFeature || booleanIntersects(geojson, zoneFeature)) {
-        items.push({ id: geojson.properties?.OP_id, properties: geojson.properties || {} });
-      }
+    if (!zoneFeature || booleanIntersects(geojson, zoneFeature)) {
+      items.push(geojson);
     }
   });
 
@@ -293,14 +286,22 @@ export function getLineGeoJSON(points: Position[]): Feature {
  * Give a list of lines or multilines and a specific position, returns the nearest point to that
  * position on any of those lines.
  */
-export function getNearestPoint(
-  lines: Feature<LineString | MultiLineString>[],
-  coord: Coord
-): Feature<Point> {
-  const nearestPoints: Feature<Point>[] = lines.map((line) => ({
-    ...nearestPointOnLine(line, coord),
-    properties: line.properties,
-  }));
+export function getNearestPoint(lines: Feature<LineString>[], coord: Coord): NearestPoint {
+  const nearestPoints: Feature<Point>[] = lines.map((line) => {
+    const point = nearestPointOnLine(line, coord);
+    const angle = getAngle(
+      line.geometry.coordinates[point.properties.index as number],
+      line.geometry.coordinates[(point.properties.index as number) + 1]
+    );
+    return {
+      ...point,
+      properties: {
+        ...point.properties,
+        ...line.properties,
+        angleAtPoint: angle,
+      },
+    };
+  });
 
   return nearestPoint(coord, featureCollection(nearestPoints));
 }

@@ -45,6 +45,15 @@ class PathDoesNotMatchEndpoints(InfraErrorTrait):
     endpoint_field: Union[Literal["entry_point"], Literal["exit_point"]]
 
 
+class UnknownPortName(InfraErrorTrait):
+    error_type: Literal["unknown_port_name"] = Field(default="unknown_port_name")
+    port_name: str
+
+
+class InvalidSwitchPorts(InfraErrorTrait):
+    error_type: Literal["invalid_switch_ports"] = Field(default="invalid_switch_ports")
+
+
 # Warnings
 class EmptyObject(InfraWarningTrait):
     error_type: Literal["empty_object"] = Field(default="empty_object")
@@ -52,6 +61,20 @@ class EmptyObject(InfraWarningTrait):
 
 class MissingRoute(InfraWarningTrait):
     error_type: Literal["missing_route"] = Field(default="missing_route")
+
+
+class UnusedPort(InfraWarningTrait):
+    error_type: Literal["unused_port"] = Field(default="unused_port")
+    port_name: str
+
+
+class DuplicatedGroup(InfraWarningTrait):
+    error_type: Literal["duplicated_group"] = Field(default="duplicated_group")
+    original_group_path: str
+
+
+class NoBufferStop(InfraWarningTrait):
+    error_type: Literal["no_buffer_stop"] = Field(default="no_buffer_stop")
 
 
 # Generic error
@@ -62,6 +85,11 @@ class InfraError(BaseModel):
         ObjectOutsideOfPath,
         EmptyPath,
         PathDoesNotMatchEndpoints,
+        UnknownPortName,
+        InvalidSwitchPorts,
         EmptyObject,
         MissingRoute,
+        UnusedPort,
+        DuplicatedGroup,
+        NoBufferStop,
     ] = Field(discriminator="error_type")

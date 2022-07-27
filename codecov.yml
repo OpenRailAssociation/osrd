@@ -1,0 +1,24 @@
+coverage:
+  status:
+    project:
+      default: off
+      core:
+        target: auto
+        flags:
+          - core
+      editoast:
+        target: auto
+        flags:
+          - editoast
+    patch:
+      default: off
+
+flags:
+  core:
+    paths:
+      - core/
+    carryforward: true
+  editoast:
+    paths:
+      - editoast/
+    carryforward: true

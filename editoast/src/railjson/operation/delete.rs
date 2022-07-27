@@ -53,9 +53,9 @@ impl From<ObjectRef> for DeleteOperation {
 }
 
 #[cfg(test)]
-mod test {
-    use crate::models::infra::test::test_transaction;
-    use crate::railjson::operation::create::test::{
+mod tests {
+    use crate::models::infra::tests::test_transaction;
+    use crate::railjson::operation::create::tests::{
         create_buffer_stop, create_detector, create_link, create_op, create_route, create_signal,
         create_speed, create_switch, create_track,
     };

@@ -25,6 +25,7 @@ import org.takes.rs.RsText;
 import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
     public static final JsonAdapter<PathfindingResult> adapterResult = new Moshi
@@ -69,7 +70,7 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
 
             var res = PathfindingResult.make(path, infra, warningRecorder);
 
-            validate(infra, res);
+            validate(infra, res, reqWaypoints);
 
             return new RsJson(new RsWithBody(adapterResult.toJson(res)));
         } catch (Throwable ex) {
@@ -106,7 +107,7 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
     }
 
     /** Checks that the results make sense */
-    private void validate(SignalingInfra infra, PathfindingResult res) {
+    private void validate(SignalingInfra infra, PathfindingResult res, PathfindingWaypoint[][] reqWaypoints) {
         var start = res.pathWaypoints.get(0);
         var end = res.pathWaypoints.get(res.pathWaypoints.size() - 1);
         var startLocation = new TrackLocation(infra.getTrackSection(start.track.id.id), start.position);
@@ -124,6 +125,16 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
             var next = path.trackRangePath().get(i).element().track.getEdge();
             assert prev == next || infra.getTrackGraph().adjacentEdges(prev).contains(next)
                     : "The path goes over consecutive tracks that are not adjacent";
+        }
+
+        // Checks that at least one waypoint of each step is on the path
+        var tracksOnPath = res.routePaths.stream()
+                .flatMap(route -> route.trackSections.stream())
+                .map(track -> track.trackSection.id.id)
+                .collect(Collectors.toSet());
+        for (var step : reqWaypoints) {
+            assert Arrays.stream(step)
+                    .anyMatch(waypoint -> tracksOnPath.contains(waypoint.trackSection));
         }
     }
 

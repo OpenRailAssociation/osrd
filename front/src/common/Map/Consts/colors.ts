@@ -84,6 +84,10 @@ const colors: Record<string, Theme> = {
     railyard: {
       text: '#2c457a',
     },
+    routes: {
+      text: '#e05206',
+      halo: '#ffffff',
+    },
     signal: {
       text: '#333333',
       halo: '#ffffff',
@@ -208,6 +212,10 @@ const colors: Record<string, Theme> = {
     railyard: {
       text: '#8095c3',
     },
+    routes: {
+      text: '#e05206',
+      halo: '#ffffff',
+    },
     signal: {
       text: '#eeeeee',
       halo: '#000000',
@@ -331,6 +339,10 @@ const colors: Record<string, Theme> = {
     },
     railyard: {
       text: bpLight,
+    },
+    routes: {
+      text: bpLight,
+      halo: bpBg,
     },
     signal: {
       text: bpLight,

@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
-import os
+from os import getenv
 from importlib.util import find_spec
 from pathlib import Path
 
@@ -17,11 +17,47 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
+def getenv_bool(var_name, default=False):
+    env_var = getenv(var_name, "")
+    if not env_var:
+        return default
+    return env_var.lower() in ("1", "true")
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "BeZPeRmxngJAbJECmraxvpvLQebOYPNACjqGwujizGcIGHuEIz"
+
+def getenv_list(varname):
+    val = getenv(varname)
+    if not val:
+        return []
+    return val.split(",")
+
+
+OSRD_DEV = getenv_bool("OSRD_DEV")
+OSRD_DEBUG = getenv_bool("OSRD_DEBUG", default=OSRD_DEV)
+OSRD_DEBUG_TOOLBAR = getenv_bool("OSRD_DEBUG_TOOLBAR", default=False)
+OSRD_SKIP_AUTH = getenv_bool("OSRD_SKIP_AUTH", default=OSRD_DEBUG)
+OSRD_ROOT_PATH = getenv("OSRD_ROOT_PATH", "")
+
+# is requests are fed through a reverse proxy, the name of the header which
+# contains the protocol needs to be configured for CSRF to work
+PROXY_PROTO_HEADER = getenv("PROXY_PROTO_HEADER")
+
+OSRD_BACKEND_URL = getenv("OSRD_BACKEND_URL")
+OSRD_BACKEND_TOKEN = getenv("OSRD_BACKEND_TOKEN", "")
+
+POSTGRES_DB = getenv("POSTGRES_DB", "osrd")
+POSTGRES_USER = getenv("POSTGRES_USER", "osrd")
+POSTGRES_PASSWORD = getenv("POSTGRES_PASSWORD", "password")
+POSTGRES_HOST = getenv("POSTGRES_HOST", "localhost")
+
+REDIS_CACHE_URI = getenv("REDIS_CACHE_URI")
+
+
+SENTRY_DSN = getenv("SENTRY_DSN")
+SENTRY_REALM = getenv("SENTRY_REALM")
+
+
+if PROXY_PROTO_HEADER is not None:
+    SECURE_PROXY_SSL_HEADER = (PROXY_PROTO_HEADER, 'https')
 
 
 RAILJSON_SRID = 4326
@@ -85,8 +121,32 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 
 # A postgis database is required
-DATABASES = {}
+DATABASES = {
+    "default": {
+        "ENGINE": "django.contrib.gis.db.backends.postgis",
+        "NAME": POSTGRES_DB,
+        "USER": POSTGRES_USER,
+        "PASSWORD": POSTGRES_PASSWORD,
+        "HOST": POSTGRES_HOST,
+    },
+}
 
+
+# Setup redis
+CACHES = {}
+if REDIS_CACHE_URI is not None:
+    CACHES["default"] = {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": REDIS_CACHE_URI,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+else:
+    CACHES["default"] = {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "osrd-api",
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -124,37 +184,37 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
-ROOT_PATH = "osrd"
+ROOT_PATH = OSRD_ROOT_PATH
 
 STATIC_URL = "/static/"
 
 APPEND_SLASH = False
 
-WORKSPACE = False
+
+if not OSRD_DEV:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
-def getenv_bool(var_name, default=False):
-    env_var = os.getenv(var_name, "")
-    if not env_var:
-        return default
-    return env_var.lower() in ("1", "true")
-
-
-OSRD_DEV_SETUP = getenv_bool("OSRD_DEV_SETUP")
-OSRD_DEBUG = getenv_bool("OSRD_DEBUG", default=OSRD_DEV_SETUP)
-OSRD_DEBUG_TOOLBAR = getenv_bool("OSRD_DEBUG_TOOLBAR", default=False)
-OSRD_SKIP_AUTH = getenv_bool("OSRD_SKIP_AUTH", default=OSRD_DEBUG)
-
-
-if OSRD_DEV_SETUP:
+if OSRD_DEV:
     ALLOWED_HOSTS = ["*"]
     INTERNAL_IPS = ["127.0.0.1"]
+    INSTALLED_APPS.append("corsheaders")
+    MIDDLEWARE.append("corsheaders.middleware.CorsMiddleware")
+    CORS_ALLOW_ALL_ORIGINS = True
 else:
-    ALLOWED_HOSTS = []
+    ALLOWED_HOSTS = getenv_list("ALLOWED_HOSTS")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = OSRD_DEBUG
+
+SECRET_KEY = getenv("SECRET_KEY")
+
+if SECRET_KEY is None:
+    if not OSRD_DEV:
+        raise RuntimeError("Missing SECRET_KEY")
+    SECRET_KEY = "BeZPeRmxngJAbJECmraxvpvLQebOYPNACjqGwujizGcIGHuEIz"
+
 
 # enable django debug toolbar if it is installed
 if OSRD_DEBUG_TOOLBAR and find_spec("debug_toolbar") is not None:
@@ -178,11 +238,14 @@ if OSRD_DEBUG_TOOLBAR and find_spec("debug_toolbar") is not None:
     ]
 
 if OSRD_SKIP_AUTH:
-    MIDDLEWARE += ["config.test_middleware.LocalUserMiddleware"]
-    REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] = ["config.test_middleware.TestGatewayAuth"]
+    MIDDLEWARE += ["config.middleware.LocalUserMiddleware"]
+    REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] = ["config.middleware.TestGatewayAuth"]
+else:
+    MIDDLEWARE += ["config.middleware.GatewayUserMiddleware"]
+    REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] = ["config.middleware.GatewayAuth"]
 
 logging_handlers = {}
-for handler in os.getenv("LOGGERS", "").split(","):
+for handler in getenv_list("LOGGERS"):
     handler_name = handler
     handler_level = "DEBUG"
 
@@ -214,7 +277,15 @@ LOGGING = {
     "loggers": logging_handlers,
 }
 
-OSRD_BACKEND_URL = os.getenv("OSRD_BACKEND_URL", "http://localhost:8080")
-OSRD_BACKEND_TOKEN = os.getenv("OSRD_BACKEND_TOKEN", "")
 
-CACHE_TIMEOUT = 60 * 60 * 48  # 48 hours
+if SENTRY_DSN is not None:
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration()],
+        traces_sample_rate=0.0,
+        send_default_pii=True,
+        environment=SENTRY_REALM,
+    )

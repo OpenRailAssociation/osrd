@@ -31,7 +31,7 @@ export interface NavButton {
       viewport: ViewportProps;
       setViewport: (newViewport: ViewportProps) => void;
     },
-    editorState: EditorState,
+    editorState: EditorState
   ) => void;
 }
 
@@ -92,7 +92,7 @@ const NavButtons: NavButton[][] = [
       id: 'layers',
       icon: FiLayers,
       labelTranslationKey: 'Editor.nav.toggle-layers',
-      onClick({}, editorState) {
+      onClick() {
         // TODO
       },
     },

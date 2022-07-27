@@ -1,21 +1,22 @@
-import React, { FC } from 'react';
+import React, { FC, useContext, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import ReactMapGL, { AttributionControl, ScaleControl, ViewportProps } from 'react-map-gl';
 import { withTranslation } from 'react-i18next';
 import { TFunction } from 'i18next';
 
-import colors from 'common/Map/Consts/colors';
-import 'common/Map/Map.scss';
+import colors from '../../common/Map/Consts/colors';
+import '../../common/Map/Map.scss';
 
 /* Main data & layers */
-import Background from 'common/Map/Layers/Background';
-import OSM from 'common/Map/Layers/OSM';
-import Hillshade from 'common/Map/Layers/Hillshade';
-import Platform from 'common/Map/Layers/Platform';
-import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
+import Background from '../../common/Map/Layers/Background';
+import OSM from '../../common/Map/Layers/OSM';
+import Hillshade from '../../common/Map/Layers/Hillshade';
+import Platform from '../../common/Map/Layers/Platform';
+import osmBlankStyle from '../../common/Map/Layers/osmBlankStyle';
 
 import { EditorState } from '../../reducers/editor';
-import { CommonToolState, Tool } from './tools';
+import { EditorContext, EditorContextType, ExtendedEditorContextType } from './context';
+import { CommonToolState, Tool } from './tools/types';
 
 const DEFAULT_RADIUS = 6;
 
@@ -30,7 +31,6 @@ interface MapProps<S extends CommonToolState = CommonToolState> {
 }
 
 const MapUnplugged: FC<MapProps> = ({
-  t,
   toolState,
   setToolState,
   activeTool,
@@ -39,10 +39,31 @@ const MapUnplugged: FC<MapProps> = ({
   setViewport,
 }) => {
   const dispatch = useDispatch();
+  const context = useContext(EditorContext) as EditorContextType<CommonToolState>;
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
+  const extendedContext = useMemo<ExtendedEditorContextType<CommonToolState>>(
+    () => ({
+      ...context,
+      dispatch,
+      editorState,
+      mapState: {
+        viewport,
+        mapStyle,
+      },
+    }),
+    [context, dispatch, editorState, mapStyle, viewport]
+  );
 
   return (
-    <>
+    <div
+      // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+      tabIndex={0}
+      role="none"
+      className="w-100 h-100"
+      onKeyDown={(e) => {
+        if (activeTool.onKeyDown) activeTool.onKeyDown(e.nativeEvent, extendedContext);
+      }}
+    >
       <ReactMapGL
         {...viewport}
         width="100%"
@@ -50,56 +71,38 @@ const MapUnplugged: FC<MapProps> = ({
         mapStyle={osmBlankStyle}
         onViewportChange={(newViewport: ViewportProps) => setViewport(newViewport)}
         attributionControl={false} // Defined below
-        clickRadius={
-          activeTool.getRadius ? activeTool.getRadius(toolState, editorState) : DEFAULT_RADIUS
-        }
+        clickRadius={activeTool.getRadius ? activeTool.getRadius(extendedContext) : DEFAULT_RADIUS}
         touchRotate
         asyncRender
         doubleClickZoom={false}
         interactiveLayerIds={
-          activeTool.getInteractiveLayers
-            ? activeTool.getInteractiveLayers(
-                { mapStyle, dispatch, setState: setToolState, t },
-                toolState,
-                editorState
-              )
-            : []
+          activeTool.getInteractiveLayers ? activeTool.getInteractiveLayers(extendedContext) : []
         }
         getCursor={(mapState: {
           isLoaded: boolean;
           isDragging: boolean;
           isHovering: boolean;
         }): string => {
-          if (activeTool.getCursor) {
-            return activeTool.getCursor(toolState, editorState, mapState);
-          } else {
-            return 'default';
-          }
+          return activeTool.getCursor ? activeTool.getCursor(extendedContext, mapState) : 'default';
         }}
         onClick={(e) => {
           if (toolState.hovered && activeTool.onClickFeature) {
-            activeTool.onClickFeature(
-              toolState.hovered,
-              e,
-              { dispatch, setState: setToolState },
-              toolState,
-              editorState
-            );
+            activeTool.onClickFeature(toolState.hovered, e, extendedContext);
           }
           if (activeTool.onClickMap) {
-            activeTool.onClickMap(e, { dispatch, setState: setToolState }, toolState, editorState);
+            activeTool.onClickMap(e, extendedContext);
           }
         }}
         onHover={(e) => {
           const feature = (e.features || [])[0];
 
           if (activeTool.onHover) {
-            activeTool.onHover(e, { dispatch, setState: setToolState }, toolState, editorState);
+            activeTool.onHover(e, extendedContext);
           } else if (feature) {
             setToolState({
               ...toolState,
               hovered: {
-                id: feature.properties.OP_id as string,
+                id: feature.properties.id,
                 properties: feature.properties || {},
                 lng: feature.properties.lng,
                 lat: feature.properties.lat,
@@ -111,6 +114,12 @@ const MapUnplugged: FC<MapProps> = ({
         }}
         onMouseMove={(e) => {
           setToolState({ ...toolState, mousePosition: e.lngLat });
+          if (activeTool.onMove) {
+            activeTool.onMove(e, extendedContext);
+          }
+        }}
+        onMouseLeave={() => {
+          setToolState({ ...toolState, mousePosition: null });
         }}
       >
         <AttributionControl
@@ -133,14 +142,9 @@ const MapUnplugged: FC<MapProps> = ({
         <Platform colors={colors[mapStyle]} />
 
         {/* Tool specific layers */}
-        {activeTool.getLayers &&
-          activeTool.getLayers(
-            { mapStyle, dispatch, setState: setToolState, t },
-            toolState,
-            editorState
-          )}
+        {activeTool.layersComponent && <activeTool.layersComponent />}
       </ReactMapGL>
-    </>
+    </div>
   );
 };
 

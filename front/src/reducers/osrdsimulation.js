@@ -1,10 +1,8 @@
+import { LIST_VALUES_NAME_SPACE_TIME, LIST_VALUES_SIGNAL_BASE, SIGNAL_BASE_DEFAULT } from '../applications/osrd/components/Simulation/consts';
 import { REDO_SIMULATION, UNDO_SIMULATION } from './osrdsimulation/simulation';
 
-import { LIST_VALUES_NAME_SPACE_TIME } from '../applications/osrd/components/Simulation/consts';
 import { MdFreeBreakfast } from 'react-icons/md';
-import {
-  interpolateOnTime,
-} from '../applications/osrd/components/Helpers/ChartHelpers';
+import { interpolateOnTime } from '../applications/osrd/components/Helpers/ChartHelpers';
 import { offsetSeconds } from '../applications/osrd/components/Helpers/ChartHelpers';
 import produce from 'immer';
 /* eslint-disable default-case */
@@ -23,21 +21,20 @@ export const UPDATE_SELECTED_PROJECTION = 'osrdsimu/UPDATE_SELECTED_PROJECTION';
 export const UPDATE_SELECTED_TRAIN = 'osrdsimu/UPDATE_SELECTED_TRAIN';
 export const UPDATE_SIMULATION = 'osrdsimu/UPDATE_SIMULATION';
 export const UPDATE_SPEEDSPACE_SETTINGS = 'osrdsimu/UPDATE_SPEEDSPACE_SETTINGS';
+export const UPDATE_SIGNAL_BASE = 'osrdsimu/UPDATE_SIGNAL_BASE';
 export const UPDATE_STICKYBAR = 'osrdsimu/UPDATE_STICKYBAR';
 export const UPDATE_TIME_POSITION = 'osrdsimu/UPDATE_TIME_POSITION';
 export const UPDATE_TIME_POSITION_VALUES = 'osrdsimu/UPDATE_TIME_POSITION_VALUES';
 export const UPDATE_CONSOLIDATED_SIMULATION = 'osrdsimu/UPDATE_CONSOLIDATED_SIMULATION';
 export const UPDATE_DEPARTURE_ARRIVAL_TIMES = 'osrdsimu/UPDATE_DEPARTURE_ARRIVAL_TIMES';
 
-export const departureArrivalTimes = (simulation, dragOffset) => simulation.trains.map((train) => ({
+export const departureArrivalTimes = (simulation, dragOffset) =>
+  simulation.trains.map((train) => ({
     labels: train.labels,
     name: train.name,
     departure: offsetSeconds(train.base.stops[0].time + dragOffset),
-    arrival: offsetSeconds(
-      train.base.stops[train.base.stops.length - 1].time + dragOffset
-    ),
-  }))
-
+    arrival: offsetSeconds(train.base.stops[train.base.stops.length - 1].time + dragOffset),
+  }));
 
 // Reducer
 export const initialState = {
@@ -63,14 +60,16 @@ export const initialState = {
     slopes: false,
   },
   stickyBar: true,
+  signalBase: SIGNAL_BASE_DEFAULT,
   timePosition: undefined,
   consolidatedSimulation: null,
-  departureArrivalTimes: []
+  departureArrivalTimes: [],
 };
 
-export default function reducer(state = initialState, action) {
+export default function reducer(inputState, action) {
+  const state = inputState || initialState;
   return produce(state, (draft) => {
-    if (!state.simulation) draft.simulation = undoableSimulation(state.simulation, action)
+    if (!state.simulation) draft.simulation = undoableSimulation(state.simulation, action);
     switch (action.type) {
       case UPDATE_CHART:
         draft.chart = action.chart;
@@ -101,7 +100,7 @@ export default function reducer(state = initialState, action) {
         break;
       case UPDATE_SELECTED_TRAIN:
         draft.selectedTrain = action.selectedTrain;
-        break
+        break;
       case UPDATE_DEPARTURE_ARRIVAL_TIMES:
         draft.departureArrivalTimes = action.departureArrivalTimes;
         break;
@@ -111,12 +110,15 @@ export default function reducer(state = initialState, action) {
         break;
       case UNDO_SIMULATION:
       case REDO_SIMULATION:
-      // get only the present, thanks
+        // get only the present, thanks
         draft.simulation = undoableSimulation(state.simulation, action);
         draft.departureArrivalTimes = departureArrivalTimes(draft.simulation.present, 0);
         break;
       case UPDATE_SPEEDSPACE_SETTINGS:
         draft.speedSpaceSettings = action.speedSpaceSettings;
+        break;
+      case UPDATE_SIGNAL_BASE:
+        draft.signalBase = action.signalBase;
         break;
       case UPDATE_STICKYBAR:
         draft.stickyBar = action.stickyBar;
@@ -131,21 +133,21 @@ export default function reducer(state = initialState, action) {
         draft.timePosition = action.timePosition;
         // position value will be computed depending on current data simulation
         // eslint-disable-next-line no-case-declarations
-        const currentTrainSimulation = state.consolidatedSimulation.find(consolidatedSimulation => consolidatedSimulation.trainNumber === state.selectedTrain)
+        const currentTrainSimulation = state.consolidatedSimulation.find(
+          (consolidatedSimulation) => consolidatedSimulation.trainNumber === state.selectedTrain
+        );
         const positionsValues = interpolateOnTime(
           currentTrainSimulation,
           ['time'],
           LIST_VALUES_NAME_SPACE_TIME,
-          action.timePosition,
+          action.timePosition
         );
-        draft.positionValues = positionsValues
+        draft.positionValues = positionsValues;
         break;
       }
     }
   });
 }
-
-
 
 // Functions
 export function updateChart(chart) {
@@ -249,6 +251,14 @@ export function updateStickyBar(stickyBar) {
     dispatch({
       type: UPDATE_STICKYBAR,
       stickyBar,
+    });
+  };
+}
+export function updateSignalBase(signalBase) {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_SIGNAL_BASE,
+      signalBase,
     });
   };
 }

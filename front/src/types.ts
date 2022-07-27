@@ -1,42 +1,45 @@
 import { Action } from 'redux';
 import { JSONSchema7 } from 'json-schema';
-import { Position } from 'geojson';
+import { Position, Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
 import { ThunkAction as ReduxThunkAction } from 'redux-thunk';
+import { Operation } from 'fast-json-patch';
 
-export type EditorModelsDefinition = any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type EditorModelsDefinition = any;
 
 //
 //  Redux types
 //
-export type ThunkAction<T extends Action> = ReduxThunkAction<void, any, unknown, T>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type ThunkAction<T extends Action, R = void> = ReduxThunkAction<R, any, unknown, T>;
 
 //
 //  Geospatial types
 //
-export type Point = Position;
-export type Bbox = [Point, Point];
-export type Path = Array<Point>;
+export type Bbox = [Position, Position];
+export type Path = Array<Position>;
 
 export interface RectangleZone {
   type: 'rectangle';
-  points: [Point, Point];
+  points: [Position, Position];
 }
 export interface PolygonZone {
   type: 'polygon';
-  points: Point[];
+  points: Position[];
 }
 export type Zone = RectangleZone | PolygonZone;
+export type SourceLayer = 'sch' | 'geo';
 
 //
 //  Metadata types
 //
-type uuid = string;
-type flags = string; // Should match /[01]{7}/
 
 export interface Item {
   id: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   properties: Record<string, any>;
 }
+
 export type PositionnedItem = Item & {
   lng: number;
   lat: number;
@@ -51,34 +54,55 @@ export interface Notification {
 }
 
 //
-// Editor actions
-//
-export interface EditorOperationCreateEntity {
-  operation: 'create_entity';
-  entity_type: string;
-  components: Array<{ component_type: string; component: unknown }>;
-}
-export interface EditorOperationUpdateComponent {
-  operation: 'update_component';
-  component_id: number;
-  component_type: string;
-  update: { [key: string]: unknown };
-}
-export interface EditorOperationDeleteEntity {
-  operation: 'delete_entity';
-  entity_id: number;
-}
-
-export type EditorOperation =
-  | EditorOperationCreateEntity
-  | EditorOperationUpdateComponent
-  | EditorOperationDeleteEntity;
-
-//
 // Editor data model
 //
-export type EditorComponentsDefintion = { [key: string]: JSONSchema7 };
-export type EditorEntitiesDefinition = { [key: string]: Array<keyof EditorComponentsDefintion> };
+export type ObjectType = string;
+export type EntityId = string | number | undefined;
+export type EditorSchema = Array<{ layer: string; objType: ObjectType; schema: JSONSchema7 }>;
+export type EditorEntity<G extends Geometry | null = Geometry, P = GeoJsonProperties> = Feature<
+  G,
+  P
+> & { objType: string };
+export interface TrackSectionEntity extends EditorEntity {
+  objType: 'TrackSection';
+  geometry: {
+    type: 'LineString';
+    coordinates: [number, number][];
+  };
+}
+export interface SignalEntity
+  extends EditorEntity<
+    Point,
+    { track?: { id: string; type: string }; angle_geo?: number; installation_type?: string }
+  > {
+  objType: 'Signal';
+}
+export interface BufferStopEntity
+  extends EditorEntity<Point, { track?: { id: string; type: string } }> {
+  objType: 'BufferStop';
+}
+export interface DetectorEntity
+  extends EditorEntity<Point, { track?: { id: string; type: string } }> {
+  objType: 'Detector';
+}
+
+export interface DeleteEntityOperation {
+  operation_type: 'DELETE';
+  obj_id: EntityId;
+  obj_type: ObjectType;
+}
+export interface UpdateEntityOperation {
+  operation_type: 'UPDATE';
+  obj_id: EntityId;
+  obj_type: ObjectType;
+  railjson_patch: Operation[];
+}
+export interface CreateEntityOperation {
+  operation_type: 'CREATE';
+  obj_type: ObjectType;
+  railjson: GeoJsonProperties & { id?: EntityId; sch: Geometry; geo: Geometry };
+}
+export type EntityOperation = DeleteEntityOperation | UpdateEntityOperation | CreateEntityOperation;
 
 //
 //  Misc
@@ -86,3 +110,12 @@ export type EditorEntitiesDefinition = { [key: string]: Array<keyof EditorCompon
 export type Theme = {
   [key: string]: { [key: string]: string };
 };
+
+//
+// API
+//
+export interface ApiInfrastructure {
+  id: number;
+  name: string;
+  version: string;
+}

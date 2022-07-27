@@ -1,5 +1,8 @@
 # OSRD's Simulation backend
 
+[![Core](https://github.com/DGEXSolutions/osrd/actions/workflows/core.yml/badge.svg)](https://github.com/DGEXSolutions/osrd/actions/workflows/core.yml)
+[![Codecov](https://codecov.io/gh/DGEXSolutions/osrd/branch/dev/graph/badge.svg?token=O3NAHQ01NO&flag=core)](https://codecov.io/gh/DGEXSolutions/osrd)
+
 ## Design Goals
 
 * **Microscopic**: The movement of trains should be accurately simulated, as well as their interactions with interlocking / signaling
@@ -22,15 +25,16 @@ Many of these goals currently aren't _yet_ fulfilled: the simulation is pretty s
  - [X] API server mode
  - [ ] ERTMS support
  - [ ] Parallel integration of train movement
- - [ ] Variable step integration
+ - [X] Variable step integration
  - [ ] Driver behavior model
  - [ ] ~~Rewrite everything in Rust~~
 
 ## Getting Started
 
 You'll need:
- - Java 11
+ - Java 17
  - Python >= 3.8 (For generating example / test files)
+ - Install python requirements here: [examples/generated/lib/requirements.txt](examples/generated/lib/requirements.txt)
 
 ```sh
 # on Linux / MacOS
@@ -39,8 +43,9 @@ You'll need:
 # on Windows
 gradlew.bat processTestResources shadowJar
 
-java -jar build/libs/osrd-all.jar \
-    simulate \
-    --config build/resources/test/tiny_infra/config_railjson.json \
-    -o sim_changelog_output.json
+# Run as service
+java -jar build/libs/osrd-all.jar api -p 8080
+
+# Check that an infra can be loaded
+java -jar build/libs/osrd-all.jar load-infra --path RAILJSON_INFRA
 ```

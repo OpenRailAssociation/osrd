@@ -25,7 +25,13 @@ const ModalUnplugged: FC<{ onClose: () => void; id?: string; title?: string; t: 
       <div
         className="modal-backdrop"
         style={{ background: '#0003', zIndex: 'unset' }}
+        role="button"
+        tabIndex={0}
+        aria-label="Close"
         onClick={() => onClose()}
+        onKeyDown={(e) => {
+          if (e.keyCode === 13) onClose();
+        }}
       />
       <div className="modal-content">
         <div className="modal-header">

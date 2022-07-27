@@ -104,7 +104,7 @@ impl InvalidationZone {
                 OperationResult::Update(RailjsonObject::TrackSectionLink { railjson })
                 | OperationResult::Create(RailjsonObject::TrackSectionLink { railjson }) => {
                     if let Some(link) = infra_cache.track_section_links.get(&railjson.id) {
-                        Self::merge_bbox(&mut geo, &mut sch, infra_cache, &link.src);
+                        Self::merge_bbox(&mut geo, &mut sch, infra_cache, &link.src.track.obj_id);
                     };
                     let track_id = &railjson.src.track.obj_id;
                     Self::merge_bbox(&mut geo, &mut sch, infra_cache, track_id);
@@ -122,6 +122,8 @@ impl InvalidationZone {
                         Self::merge_bbox(&mut geo, &mut sch, infra_cache, track_id);
                     }
                 }
+                OperationResult::Update(RailjsonObject::SwitchType { railjson: _ })
+                | OperationResult::Create(RailjsonObject::SwitchType { railjson: _ }) => {}
                 OperationResult::Update(RailjsonObject::Detector { railjson })
                 | OperationResult::Create(RailjsonObject::Detector { railjson }) => {
                     if let Some(detector) = infra_cache.detectors.get(&railjson.id) {
@@ -183,7 +185,7 @@ impl InvalidationZone {
                     obj_id,
                 }) => {
                     if let Some(link) = infra_cache.track_section_links.get(obj_id) {
-                        Self::merge_bbox(&mut geo, &mut sch, infra_cache, &link.src);
+                        Self::merge_bbox(&mut geo, &mut sch, infra_cache, &link.src.track.obj_id);
                     }
                 }
                 OperationResult::Delete(ObjectRef {
@@ -220,7 +222,7 @@ impl InvalidationZone {
                 OperationResult::Delete(ObjectRef {
                     obj_type: ObjectType::SwitchType,
                     obj_id: _,
-                }) => todo!(),
+                }) => {}
             }
         }
         Self { geo, sch }

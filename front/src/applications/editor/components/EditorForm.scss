@@ -1,0 +1,37 @@
+.glyphicon::before {
+  font-family: icons !important;
+  font-style: normal;
+  font-weight: normal !important;
+  vertical-align: top;
+}
+.glyphicon-plus::before {
+  content: '\f101';
+}
+.glyphicon-remove::before {
+  content: '\f129';
+}
+.glyphicon-arrow-up::before {
+  content: '\f10a';
+}
+.glyphicon-arrow-down::before {
+  content: '\f106';
+}
+
+form.rjsf {
+  .array-item-list,
+  fieldset.field-array > .row {
+    margin: 0 1em;
+
+    .array-item {
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      .col-xs-9 {
+        width: 75%;
+      }
+      .col-xs-3 {
+        width: 25%;
+      }
+    }
+  }
+}

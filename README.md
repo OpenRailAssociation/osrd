@@ -1,12 +1,17 @@
-[![OSRD](assets/branding/osrd_small.svg)](https://github.com/DGEXSolutions/osrd)
-[![public money, public code](assets/PMPC_badge.svg)](https://publiccode.eu/)
+<p align="center">
+  <a href="https://github.com/DGEXSolutions/osrd">
+    <img src="assets/branding/osrd_small.svg" width="200px" alt="OSRD logo"/>
+  </a>
+  <a href="https://publiccode.eu/">
+    <img src="assets/PMPC_badge.svg" width="200px" alt="Public Money Public Code"/>
+  </a>
+</p>
 
-[![license](https://img.shields.io/badge/license-LGPL-blue.svg)](https://github.com/DGEXSolutions/osrd/blob/dev/LICENSE)
-[![Integration](https://github.com/DGEXSolutions/osrd/actions/workflows/integration_tests.yml/badge.svg)](https://github.com/DGEXSolutions/osrd/actions/workflows/integration_tests.yml)
-[![Core](https://github.com/DGEXSolutions/osrd/actions/workflows/core.yml/badge.svg)](https://github.com/DGEXSolutions/osrd/actions/workflows/core.yml)
-[![API](https://github.com/DGEXSolutions/osrd/actions/workflows/api.yml/badge.svg)](https://github.com/DGEXSolutions/osrd/actions/workflows/api.yml)
-[![Front](https://github.com/DGEXSolutions/osrd/actions/workflows/front.yml/badge.svg)](https://github.com/DGEXSolutions/osrd/actions/workflows/front.yml)
-[![codecov](https://codecov.io/gh/DGEXSolutions/osrd/branch/dev/graph/badge.svg?token=O3NAHQ01NO)](https://codecov.io/gh/DGEXSolutions/osrd)
+<p align="center">
+  <a href="https://dgexsolutions.github.io/osrd-website/en/developers/contribute/"><img src="https://img.shields.io/github/contributors-anon/DGEXSolutions/osrd" alt="Contributors badge" /></a>
+  <a href="https://github.com/DGEXSolutions/osrd/blob/dev/LICENSE"><img src="https://img.shields.io/badge/license-LGPL-blue.svg" alt="LGPL License badge" /></a>
+  <a href="https://github.com/DGEXSolutions/osrd/actions/workflows/integration_tests.yml"><img src="https://github.com/DGEXSolutions/osrd/actions/workflows/integration_tests.yml/badge.svg" alt="Integration Status" /></a>
+</p>
 
 ## What is OSRD?
 

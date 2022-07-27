@@ -6,7 +6,7 @@ import {
 } from 'react-icons/fa';
 import React, { useState } from 'react';
 import { datetime2time, sec2datetime, time2datetime } from 'utils/timeManipulation';
-import { updateIsPlaying, updateTimePosition } from 'reducers/osrdsimulation';
+import { updateIsPlaying, updateTimePositionValues } from 'reducers/osrdsimulation';
 import { useDispatch, useSelector } from 'react-redux';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
@@ -29,7 +29,7 @@ export default function TimeButtons() {
   const stop = () => {
     clearInterval(playInterval);
     setPlayInterval(undefined);
-    dispatch(updateTimePosition(sec2datetime(simulation.trains[selectedTrain].base.stops[0].time)));
+    dispatch(updateTimePositionValues(sec2datetime(simulation.trains[selectedTrain].base.stops[0].time)));
     dispatch(updateIsPlaying(false));
   };
   const pause = () => {
@@ -48,7 +48,7 @@ export default function TimeButtons() {
       } else {
         i += factor.steps;
       }
-      dispatch(updateTimePosition(new Date(i * 1000)));
+      dispatch(updateTimePositionValues(new Date(i * 1000)));
     }, factor.ms);
     setPlayInterval(playIntervalLocal);
     dispatch(updateIsPlaying(true));
@@ -69,7 +69,7 @@ export default function TimeButtons() {
   };
 
   const changeTimePosition = (e) => {
-    dispatch(updateTimePosition(time2datetime(e.target.value)));
+    dispatch(updateTimePositionValues(time2datetime(e.target.value)));
   };
 
   return (

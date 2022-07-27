@@ -1,8 +1,4 @@
-import asyncpg
-from fastapi import FastAPI
-from .config import Layer
-from .utils import AsyncProcess, process_dependable
-
+from .utils import AsyncProcess
 
 tilebbox_func = """
     create or replace function TileBBox (z int, x int, y int, srid int = 3857)

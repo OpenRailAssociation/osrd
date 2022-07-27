@@ -10,7 +10,6 @@ import editorReducer from './editor.ts';
 import osrdconfReducer from './osrdconf';
 import osrdsimulationReducer from './osrdsimulation';
 import rollingStockReducer from './rollingstock';
-// import phritReducer from './phrit';
 
 const compressor = createCompressor({
   whitelist: ['rollingstock'],
@@ -27,38 +26,19 @@ const mapWhiteList = [
   'signalsSettings',
 ];
 
-const userWhiteList = [
-  'account',
-];
+const userWhiteList = ['account'];
 
-const mainWhiteList = [
-  'fullscreen',
-  'darkmode',
-];
+const mainWhiteList = ['fullscreen', 'darkmode'];
 
-const simulationWhiteList = [
-  'marginsSettings',
-];
+const simulationWhiteList = ['marginsSettings'];
 
-const saveMapFilter = createFilter(
-  'map',
-  mapWhiteList,
-);
+const saveMapFilter = createFilter('map', mapWhiteList);
 
-const saveUserFilter = createFilter(
-  'user',
-  userWhiteList,
-);
+const saveUserFilter = createFilter('user', userWhiteList);
 
-const saveMainFilter = createFilter(
-  'main',
-  mainWhiteList,
-);
+const saveMainFilter = createFilter('main', mainWhiteList);
 
-const saveSimulationFilter = createFilter(
-  'osrdsimulation',
-  simulationWhiteList,
-);
+const saveSimulationFilter = createFilter('osrdsimulation', simulationWhiteList);
 
 // Useful to only blacklist a sub-propertie of osrdconf
 const osrdconfPersistConfig = {

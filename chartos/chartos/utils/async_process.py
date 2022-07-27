@@ -1,4 +1,5 @@
-from typing import Any, ClassVar, List, Dict
+from typing import Any, ClassVar, List
+
 from fastapi import FastAPI
 
 
@@ -20,6 +21,7 @@ def make_async_stub(class_name, method_name):
             f"thus {class_name}.{method_name} isn't usable. "
             f"Please call {class_name}.setup(app, ...) before starting the app"
         )
+
     return _async_stub
 
 

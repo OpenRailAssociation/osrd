@@ -50,6 +50,12 @@ export const formatRouteAspects = (data = []) => data
     color: colorModelToHex(step.color),
   }));
 
+/**
+ * Signal Aspects (state of signals in the simulation depending on time)
+ * need some formatting before inclusion in consolidatedSimulation
+ * @param {Array} data
+ * @returns
+ */
 export const formatSignalAspects = (data = []) => data
   .map((step) => ({
     ...step,
@@ -57,6 +63,7 @@ export const formatSignalAspects = (data = []) => data
     time_end: sec2d3datetime(step.time_end),
     color: colorModelToHex(step.color),
   }));
+
 
 export const makeStairCase = (data) => {
   const newData = [];

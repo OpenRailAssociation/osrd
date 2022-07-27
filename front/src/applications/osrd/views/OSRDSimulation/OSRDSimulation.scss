@@ -210,6 +210,16 @@ select.sm {
   fill: var(--coolgray7);
 }
 
+.route-aspect {
+  opacity: 0.5;
+  &.selected {
+    opacity: 1;
+    &.eco {
+      opacity: 1;
+    }
+  }
+}
+
 /* ALLOWANCES */
 .mareco {
   z-index: 2;
@@ -359,6 +369,7 @@ select.sm {
     }
   }
 }
+
 
 
 /* OPERATIONAL POINTS */

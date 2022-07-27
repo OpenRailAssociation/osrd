@@ -16,7 +16,7 @@ pub fn generate_errors(
     let mut op_ids = vec![];
     for (op_id, op) in infra_cache.operational_points.iter() {
         if op.parts.is_empty() {
-            let infra_error = InfraError::new_empty_object("parts".into());
+            let infra_error = InfraError::new_empty_object("parts");
             errors.push(to_value(infra_error).unwrap());
             op_ids.push(op_id.clone());
         }

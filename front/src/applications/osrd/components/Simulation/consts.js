@@ -8,6 +8,7 @@ export const LIST_VALUES_NAME_SPACE_TIME = [
   'eco_speed',
   'margins_headPosition',
   'eco_headPosition',
+  'eco_tailPosition',
 ];
 export const LIST_VALUES_NAME_SPEED_SPACE = [
   'speed',
@@ -16,4 +17,12 @@ export const LIST_VALUES_NAME_SPEED_SPACE = [
 ];
 export const LIST_VALUES_NAME_SPACE_CURVES_SLOPES = [
   'slopesCurve',
+];
+
+// Signal Base is the Signaling system chosen for results display
+
+export const SIGNAL_BASE_DEFAULT = 'BAL3';
+
+export const LIST_VALUES_SIGNAL_BASE = [
+  'BAL3'
 ];

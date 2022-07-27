@@ -1,0 +1,44 @@
+version: 2
+updates:
+  - package-ecosystem: "cargo"
+    directory: "/editoast/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "editoast:"
+    open-pull-requests-limit: 100
+  - package-ecosystem: "pip"
+    directory: "/api/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "api:"
+    open-pull-requests-limit: 100
+  - package-ecosystem: "pip"
+    directory: "/chartos/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "chartos:"
+    open-pull-requests-limit: 100
+  - package-ecosystem: "npm"
+    directory: "/front/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "front:"
+    open-pull-requests-limit: 100
+  - package-ecosystem: "gradle"
+    directory: "/core/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "core:"
+    open-pull-requests-limit: 100
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "actions:"
+    open-pull-requests-limit: 100

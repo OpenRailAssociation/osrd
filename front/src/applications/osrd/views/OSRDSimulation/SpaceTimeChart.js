@@ -55,6 +55,7 @@ export default function SpaceTimeChart(props) {
     selectedProjection,
     selectedTrain,
     timePosition,
+    consolidatedSimulation
   } = useSelector((state) => state.osrdsimulation);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const keyValues = ['time', 'position'];
@@ -201,12 +202,16 @@ export default function SpaceTimeChart(props) {
   }, [dragEnding]);
 
   useEffect(() => {
+    setResetChart(true);
+  }, [consolidatedSimulation]);
+
+  useEffect(() => {
     setDataSimulation(createTrain(dispatch, keyValues, simulation.trains, t));
     if (dataSimulation) {
       drawAllTrains(resetChart);
       handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
     }
-  }, [mustRedraw, rotate, selectedTrain]);
+  }, [mustRedraw, rotate, selectedTrain, consolidatedSimulation]);
 
   // ADN: trigger a redraw on every simulation change. This is the right pattern.
   useEffect(() => {

@@ -1,91 +1,33 @@
-# osrd
+# OSRD's API
 
-## Using the API
+[![API](https://github.com/DGEXSolutions/osrd/actions/workflows/api.yml/badge.svg)](https://github.com/DGEXSolutions/osrd/actions/workflows/api.yml)
 
-Using the API requires getting an API token at https://cerbere.dev.dgexsol.fr/
+This service handle OSRD models and schema using [Django](https://www.djangoproject.com/).
+Multiple extension are used such as:
+  - [Django Rest Framework](https://www.django-rest-framework.org/)
+  - [Django Rest Framework Gis](https://github.com/openwisp/django-rest-framework-gis)
+  - [Pydantic](https://pydantic-docs.helpmanual.io/)
 
-The API base URL is at https://gateway.dev.dgexsol.fr/osrd/
+## Getting Started
 
-```sh
-curl -H "Authorization: bearer ${API_TOKEN}" https://gateway.dev.dgexsol.fr/osrd/${ENDPOINT}
-```
+If you want to contribute to thise service you need:
 
-The infrastructure API revolves around the concepts of entities and components:
+- A running [postgres](https://www.postgresql.org/) server with [postgis](https://postgis.net/)
+extension.
+  - The simpliest way to do it is using docker compose: `docker-compose up -d --build postgres`.
+- [Poetry](https://python-poetry.org/) a python package manager.
 
- - an entity has a type, a unique identifying number, and components
- - each component has, depending on its type, a number of fields
- - entities are declared with a fixed set of allowed components
-
-### Creating a new infrastructure
-
-```sh
-curl -X POST -H 'Content-Type: application/json' -d @- ${BASE}/infra/ <<EOF
-{"name": "test infra"}
-EOF
-```
-
-### Creating entities
-
-Entities live in a given infrastructure, which must be given as a URL parameter
+To get a django configuration suitable for local development, set `OSRD_DEV=1`.
 
 ```sh
-curl -X POST -H 'Content-Type: application/json' -d @- ${BASE}/infra/${INFRA_ID}/edit/ <<EOF
-[
-    {
-        "operation": "create_entity",
-        "entity_type": "track_section",
-        "components": [
-            {
-                "component_type": "track_section",
-                "component": {"length": 42}
-            },
-            {
-                "component_type": "identifier",
-                "component": {"database": "gaia", "name": "Test."}
-            },
-            {
-                "component_type": "geo_line_location",
-                "component": {
-                    "geographic": {"type":"LineString","coordinates":[[42, 42],[43, 42]]},
-                    "schematic": {"type":"LineString","coordinates":[[42, 42],[43, 42]]}
-                }
-            }
-        ]
-    }
-]
-EOF
+# Install dependencies
+poetry install
+
+# Apply migrations
+OSRD_DEV=1 python manage.py migrate
+
+# Run server
+OSRD_DEV=1 python manage.py runserver
 ```
 
-**Beware, dragons! Some entities have mandatory components, but this isn't yet enforced.**
-
-
-### Querying entities by ID
-
-```sh
-curl ${BASE}/ecs/entity/track_section/${TRACK_SECTION_ENTITY_ID}/
-```
-
-
-### Adding components
-
-```sh
-curl -X POST -H 'Content-Type: application/json' -d @- ${BASE}/infra/${INFRA_ID}/edit/ <<EOF
-[
-    {
-        "operation": "add_component",
-        "entity_id": ${ENTITY_ID},
-        "component_type": "identifier",
-        "component: {"database": "gaia", "name": "FooBar"}
-    }
-]
-EOF
-```
-
-
-### Querying entities by geographical position
-
-This is a test endpoint, a cached version is provided by chartis. Any geojson object can be used as a bounding box:
-
-```sh
-curl "${BASE}/infra/1/geojson/?query=%7B%0A%22type%22%3A%22Polygon%22%2C%0A%22coordinates%22%3A%5B%0A%5B%0A%5B-27.303581%2C-48.458352%5D%2C%0A%5B106.373722%2C-48.458352%5D%2C%0A%5B106.373722%2C55.776573%5D%2C%0A%5B-27.303581%2C55.776573%5D%2C%0A%5B-27.303581%2C-48.458352%5D%0A%5D%0A%5D%0A%7D"
-```
+The API webserver should now be running you can try to access the admin panel: http://localhost:8000/admin/

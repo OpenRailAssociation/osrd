@@ -6,20 +6,15 @@ authors = ["DGEX Solutions <contact@dgexsol.fr>"]
 
 [tool.poetry.dependencies]
 # base
-python = "^3.8"
+python = "^3.10"
 fastapi = "^0"
 aioredis = "^2"
 asyncpg = { version = "^0" }
 uvicorn = { version = "^0", extras = ["standard"] }
 
-# shapes and stuff
-shapely = "^1"
-pyproj = "^3"  # CRS transformations
-
-
 # production
 gunicorn = {version = "20.1.0", optional = true}
-sentry-sdk = {version = "0.20.2", optional = true}
+sentry-sdk = {version = "1.7.2", optional = true}
 pydantic = "^1.9.0"
 
 [tool.poetry.extras]

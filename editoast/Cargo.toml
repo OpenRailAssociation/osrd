@@ -10,19 +10,19 @@ license = "LGPL-3.0"
 
 [dependencies]
 chashmap = "2.2.2"
-clap = { version = "3.1.6", features = ["derive", "env"] }
+clap = { version = "~3.2.12", features = ["derive", "env"] }
 colored = "2.0.0"
 derivative = "2.2.0"
 diesel = { version = "1.4.8", features = ["postgres", "uuidv07", "serde_json"] }
 json-patch = "0.2.6"
 rand = "0.8.5"
-reqwest = { version="0.11.10", features=["blocking", "json"] }
-rocket = "0.4.10"
-rocket_contrib = {version="0.4.10", features=["json", "diesel_postgres_pool", "uuid"]}
+reqwest = { version="~0.11.11", features=["blocking", "json"] }
+rocket = "~0.4.11"
+rocket_contrib = {version="~0.4.11", features=["json", "diesel_postgres_pool", "uuid"]}
 rocket_cors = "0.5.2"
-serde = "1.0.136"
-serde_derive = "1.0.136"
-serde_json = "1.0.79"
-strum = "0.24"
-strum_macros = "0.24"
-thiserror = "1.0.30"
+serde = "~1.0.139"
+serde_derive = "~1.0.138"
+serde_json = "~1.0.82"
+strum = "~0.24.1"
+strum_macros = "~0.24.2"
+thiserror = "~1.0.31"

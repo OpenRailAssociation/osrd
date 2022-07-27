@@ -40,18 +40,18 @@ public class Helpers {
         return parseRollingStockDir(getResourcePath("rolling_stocks/"));
     }
 
-    public static RJSInfra getExampleInfra(String infraPath) throws Exception {
+    public static RJSInfra getExampleInfra(String infraPath) throws IOException, URISyntaxException {
         return deserializeResource(RJSInfra.adapter, infraPath);
     }
 
     private static <T> T deserializeResource(
             JsonAdapter<T> adapter,
             String resourcePath
-    ) throws Exception {
+    ) throws IOException, URISyntaxException {
         ClassLoader loader = Helpers.class.getClassLoader();
         var resourceURL = loader.getResource(resourcePath);
         if (resourceURL == null)
-            throw new Exception("can't find resource " + resourcePath);
+            throw new IOException("can't find resource " + resourcePath);
         return MoshiUtils.deserialize(adapter, Paths.get(resourceURL.toURI()));
     }
 

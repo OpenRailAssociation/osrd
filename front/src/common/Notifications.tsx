@@ -16,21 +16,26 @@ const NotificationWrapper: FC<Notification> = (notif) => {
       dispatch(deleteNotification(notif));
     }, TIMEOUT_MS);
     setTimeoutId(id);
-  }, [dispatch]);
+  }, [dispatch, notif]);
 
   const clearTimer = useCallback(() => {
     if (timeoutId) window.clearTimeout(timeoutId);
   }, [timeoutId]);
 
+  /**
+   * When component mount, we start the timer
+   * and clean-up it on unmount
+   */
   useEffect(() => {
     startTimer();
     return () => {
       clearTimer();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <div onMouseEnter={clearTimer} onMouseLeave={startTimer}>
+    <div onMouseEnter={() => clearTimer()} onMouseLeave={() => startTimer()}>
       <ToastSNCF {...notif} />
     </div>
   );
@@ -58,3 +63,5 @@ export const NotificationsState = () => {
   const notifications = useSelector((state: { main: MainState }) => state.main.notifications);
   return <Notifications notifications={notifications} />;
 };
+
+export default NotificationsState;

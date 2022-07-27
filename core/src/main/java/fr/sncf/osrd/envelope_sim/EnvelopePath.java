@@ -72,6 +72,7 @@ public class EnvelopePath implements PhysicsPath {
     }
 
     @Override
+    @SuppressFBWarnings("FL_FLOATS_AS_LOOP_COUNTERS")
     public double findHighGradePosition(double position, double endPos, double length, double gradeThreshold) {
         // TODO: skip sections which don't have high enough slopes
         while (position <= endPos) {

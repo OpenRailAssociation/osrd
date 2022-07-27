@@ -1,8 +1,6 @@
 /* eslint-disable default-case */
 import produce from 'immer';
-import {
-  transformRequest, gpsRound,
-} from 'utils/helpers';
+import { transformRequest, gpsRound } from 'utils/helpers';
 import history from 'main/history';
 import { MAP_URL } from 'common/Map/const';
 
@@ -49,6 +47,7 @@ export const initialState = {
     detectors: false,
     electrification: false,
     operationalpoints: false,
+    routes: false,
     signalingtype: true,
     speedlimits: false,
     switches: false,
@@ -57,7 +56,8 @@ export const initialState = {
   mapSearchMarker: undefined,
 };
 
-export default function reducer(state = initialState, action) {
+export default function reducer(inputState, action) {
+  const state = inputState || initialState;
   return produce(state, (draft) => {
     switch (action.type) {
       case UPDATE_VIEWPORT:
@@ -72,9 +72,8 @@ export default function reducer(state = initialState, action) {
         draft.viewport.transitionInterpolator = action.viewport.transitionInterpolator;
         break;
       case UPDATE_TRANSFORM_REQUEST:
-        draft.viewport.transformRequest = (url, resourceType) => (
-          transformRequest(url, resourceType, MAP_URL)
-        );
+        draft.viewport.transformRequest = (url, resourceType) =>
+          transformRequest(url, resourceType, MAP_URL);
         break;
       case UPDATE_MAPSTYLE:
         draft.mapStyle = action.mapStyle;
@@ -121,7 +120,11 @@ export function updateViewport(viewport, baseUrl = undefined, updateRouter = tru
   return (dispatch) => {
     dispatch(updateViewportAction(viewport));
     if (baseUrl !== undefined && updateRouter) {
-      history.push(`${baseUrl}/${gpsRound(viewport.latitude)}/${gpsRound(viewport.longitude)}/${gpsRound(viewport.zoom)}/${gpsRound(viewport.bearing)}/${gpsRound(viewport.pitch)}`);
+      history.push(
+        `${baseUrl}/${gpsRound(viewport.latitude)}/${gpsRound(viewport.longitude)}/${gpsRound(
+          viewport.zoom
+        )}/${gpsRound(viewport.bearing)}/${gpsRound(viewport.pitch)}`
+      );
     }
   };
 }

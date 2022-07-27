@@ -5,6 +5,11 @@ on:
   pull_request:
     paths:
       - api/**
+  push:
+    branches:
+      - dev
+      - staging
+      - prod
 
 jobs:
   test:
@@ -27,11 +32,11 @@ jobs:
           --health-retries 5
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: 3.9
+          python-version: "3.9"
       - name: Install GDAL
         run: sudo apt-get install -y gdal-bin
       - name: Install Poetry
@@ -39,31 +44,33 @@ jobs:
         with:
           virtualenvs-in-project: true
       - name: Load cached venv
+        uses: actions/cache@v3
         id: cached-poetry-dependencies
-        uses: actions/cache@v2
         with:
           path: api/.venv
-          key: osrd-api-venv-${{ hashFiles('**/poetry.lock') }}
+          key: osrd-api-venv-${{ hashFiles('api/poetry.lock') }}
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: |
           cd api
           poetry install --no-interaction --no-root -E production
       - name: Check migrations
+        env:
+          OSRD_DEV: "True"
         run: |
           cd api
           source .venv/bin/activate
           python manage.py makemigrations --check
       - name: Run migrations
         env:
-          DJANGO_SETTINGS_MODULE: config.test
+          OSRD_DEV: "True"
         run: |
           cd api
           source .venv/bin/activate
           python manage.py migrate
       - name: Run Tests
         env:
-          DJANGO_SETTINGS_MODULE: config.test
+          OSRD_DEV: "True"
         run: |
           cd api
           source .venv/bin/activate
@@ -73,17 +80,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: 3.9
+          python-version: "3.9"
       - name: Install flake8
         run: pip install pyproject-flake8 flake8_formatter_junit_xml
       - name: Flake8
         run: pflake8 --config api/pyproject.toml --format junit-xml api > flake8.xml
       - name: Publish flake8 report
-        uses: mikepenz/action-junit-report@v2
+        uses: mikepenz/action-junit-report@v3
         if: failure()
         with:
           report_paths: flake8.xml

@@ -1,5 +1,8 @@
 # Editoast
 
+[![Test Editoast](https://github.com/DGEXSolutions/osrd/actions/workflows/editoast.yml/badge.svg)](https://github.com/DGEXSolutions/osrd/actions/workflows/editoast.yml)
+[![Codecov](https://codecov.io/gh/DGEXSolutions/osrd/branch/dev/graph/badge.svg?token=O3NAHQ01NO&flag=editoast)](https://codecov.io/gh/DGEXSolutions/osrd)
+
 This service allow to edit an infrastructure using railjson schema.
 It will apply modification and update generated data such as object geometry.
 
@@ -28,7 +31,8 @@ $ cargo run -- runserver
 Here a list of components to help you in your development:
 
  - [rustfmt](https://github.com/rust-lang/rust-clippy): Format the whole code `cargo fmt`
- - [clippy](): Run a powerful linter `cargo clippy`
+ - [clippy](https://github.com/rust-lang/rust-clippy): Run a powerful linter `cargo clippy`
+ - [tarpaulin](https://github.com/xd009642/tarpaulin): Check code coverage `cargo tarpaulin --skip-clean -o Lcov --output-dir target/tarpaulin/`
 
 To install them simply run:
  ```

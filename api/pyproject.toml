@@ -7,26 +7,25 @@ authors = ["DGEX Solutions <contact@dgexsol.fr>"]
 [tool.poetry.dependencies]
 # base
 python = ">=3.8,<3.11"
-django = "4.0.4"
-psycopg2-binary = "2.9.3"
-djangorestframework = "3.13"
-djangorestframework-gis = "0.18"
-celery = "5.2.3"
-django-redis = "5.2.0"
-jsonschema = "4.4.0"
-requests = "2.27.1"
-pillow = "9.0.1"
+django = "4.0.6"
+numpy = "1.23.1"
 intervaltree = "3.1.0"
-numpy = "1.22.1"
-pydantic = "1.9.0"
-geojson-pydantic = "0.3.1"
+psycopg2-binary = "2.9.3"
+djangorestframework = "3.13.1"
+djangorestframework-gis = "1.0"
+django-redis = "5.2.0"
+jsonschema = "4.7.2"
+requests = "2.28.1"
+pillow = "^9"
+pydantic = "1.9.1"
+geojson-pydantic = "0.4.3"
 
 # production
 gunicorn = {version = "20.1.0", optional = true}
-sentry-sdk = {version = "1.5.2", optional = true}
+sentry-sdk = {version = "1.7.2", optional = true}
 uvloop = {version = "0.16.0", optional = true}
-httptools = {version = "0.3.0", optional = true}
-uvicorn = {version = "0.17.0", optional = true}
+httptools = {version = "0.4.0", optional = true}
+uvicorn = {version = "0.18.2", optional = true}
 
 [tool.poetry.extras]
 production = [
@@ -38,39 +37,11 @@ production = [
 ]
 
 [tool.poetry.dev-dependencies]
-django-debug-toolbar = "3.2.4"
-coverage = "6.2"
-black = "21.12b0"
+django-debug-toolbar = "3.5.0"
+black = "22.6.0"
 isort = "5.10.1"
-pyproject-flake8 = "0.0.1a2"
-pytest-django = "4.5.2"
-pytest-env = "0.6.2"
-django-cors-headers = "3.11.0"
-
-[tool.pytest.ini_options]
-minversion = "6.0"
-addopts = "--ds=config.kube --create-db -v -s"
-python_files = ["tests.py", "test_*.py"]
-junit_family = "xunit2"
-filterwarnings = [
-    "ignore::PendingDeprecationWarning",
-]
-env = [
-    #'TEST_SERVER=127.0.0.1:8000', # for local test
-]
-
-[tool.coverage.run]
-omit = [
-    ".*",
-    "*/*-packages/*",
-    "venv/*",
-    "*/migrations/*",
-    "*/config/*",
-    "*/tests/*",
-]
-
-[tool.coverage.report]
-fail_under = 70
+pyproject-flake8 = "0.0.1a4"
+django-cors-headers = "3.13.0"
 
 [tool.flake8]
 ignore = "W503,E203"

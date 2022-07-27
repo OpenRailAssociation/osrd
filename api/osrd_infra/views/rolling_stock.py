@@ -1,9 +1,11 @@
-from osrd_infra.serializers import RollingStockSerializer, LightRollingStockSerializer
-from osrd_infra.models import RollingStock
-from rest_framework.viewsets import GenericViewSet
 from rest_framework import mixins
-from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
+
+from osrd_infra.models import RollingStock
+from osrd_infra.serializers import LightRollingStockSerializer, RollingStockSerializer
+from osrd_infra.views.pagination import CustomPageNumberPagination
 
 
 class RollingStockView(
@@ -16,6 +18,7 @@ class RollingStockView(
 ):
     queryset = RollingStock.objects.order_by("id")
     serializer_class = RollingStockSerializer
+    pagination_class = CustomPageNumberPagination
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user.sub)
@@ -32,3 +35,4 @@ class LightRollingStockView(
 ):
     queryset = RollingStock.objects.order_by("id")
     serializer_class = LightRollingStockSerializer
+    pagination_class = CustomPageNumberPagination

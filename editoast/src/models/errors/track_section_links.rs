@@ -17,18 +17,18 @@ pub fn generate_errors(
 
     for (link_id, link) in infra_cache.track_section_links.iter() {
         // Retrieve invalid refs
-        if !infra_cache.track_sections.contains_key(&link.src) {
-            let obj_ref = ObjectRef::new(ObjectType::TrackSection, link.src.clone());
-            let infra_error = InfraError::new_invalid_reference("src.track".into(), obj_ref);
-            errors.push(to_value(infra_error).unwrap());
-            link_ids.push(link_id.clone());
-        }
 
-        if !infra_cache.track_sections.contains_key(&link.dst) {
-            let obj_ref = ObjectRef::new(ObjectType::TrackSection, link.dst.clone());
-            let infra_error = InfraError::new_invalid_reference("dst.track".into(), obj_ref);
-            errors.push(to_value(infra_error).unwrap());
-            link_ids.push(link_id.clone());
+        for (track_ref, pos) in [
+            (link.src.track.obj_id.clone(), "src"),
+            (link.dst.track.obj_id.clone(), "dst"),
+        ] {
+            if !infra_cache.track_sections.contains_key(&track_ref) {
+                let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_ref);
+                let infra_error =
+                    InfraError::new_invalid_reference(format!("{}.track", pos), obj_ref);
+                errors.push(to_value(infra_error).unwrap());
+                link_ids.push(link_id.clone());
+            }
         }
     }
 

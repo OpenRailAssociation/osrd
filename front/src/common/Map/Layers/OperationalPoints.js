@@ -70,7 +70,7 @@ export default function OperationalPoints(props) {
     <Source
       id={`osrd_operational_point_${geomType}`}
       type="vector"
-      url={`${MAP_URL}/layer/operational_points/mvt/${geomType}/?version=${infraID}`}
+      url={`${MAP_URL}/layer/operational_points/mvt/${geomType}/?infra=${infraID}`}
     >
       <Layer {...layerPoint} id={`chartis/osrd_operational_point/${geomType}`} />
       <Layer {...layerName} id={`chartis/osrd_operational_point_name/${geomType}`} />

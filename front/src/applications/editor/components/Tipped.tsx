@@ -1,10 +1,10 @@
 import React, { FC, HTMLAttributes, useState } from 'react';
+import { CSSTransition } from 'react-transition-group';
 import cx from 'classnames';
 
 import './Tipped.scss';
-import { CSSTransition } from 'react-transition-group';
 
-interface TippedProps extends HTMLAttributes<any> {
+interface TippedProps extends HTMLAttributes<unknown> {
   children: [JSX.Element, JSX.Element];
   tag?: keyof JSX.IntrinsicElements;
   rootTag?: keyof JSX.IntrinsicElements;
@@ -27,7 +27,11 @@ const Tipped: FC<TippedProps> = (props) => {
         position: 'relative',
       }}
     >
-      <Tag onMouseEnter={() => setShowTip(true)} onMouseLeave={() => setShowTip(false)}>
+      <Tag
+        onMouseEnter={() => setShowTip(true)}
+        onMouseLeave={() => setShowTip(false)}
+        onPointerLeave={() => setShowTip(false)}
+      >
         {target}
       </Tag>
       <CSSTransition unmountOnExit in={showTip} timeout={400} classNames="transition">

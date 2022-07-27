@@ -1,9 +1,11 @@
 mod buffer_stops;
 mod detectors;
+mod graph;
 mod operational_points;
 mod routes;
 mod signals;
 mod speed_sections;
+mod switch_types;
 mod switches;
 mod track_section_links;
 mod track_sections;
@@ -18,6 +20,8 @@ use crate::{infra_cache::InfraCache, railjson::ObjectRef};
 use self::routes::PathEndpointField;
 
 use super::invalidate_chartos_layer;
+
+use graph::Graph;
 
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -46,26 +50,36 @@ enum InfraErrorType {
         expected_position: f64,
         endpoint_field: PathEndpointField,
     },
+    #[serde(rename = "unknown_port_name")]
+    UnknownPortName { port_name: String },
+    #[serde(rename = "invalid_switch_ports")]
+    InvalidSwitchPorts,
     #[serde(rename = "empty_object")]
     EmptyObject,
     #[serde(rename = "object_out_of_path")]
     ObjectOutOfPath { position: f64, track: String },
     #[serde(rename = "missing_route")]
     MissingRoute,
+    #[serde(rename = "unused_port")]
+    UnusedPort { port_name: String },
+    #[serde(rename = "duplicated_group")]
+    DuplicatedGroup { original_group_path: String },
+    #[serde(rename = "no_buffer_stop")]
+    NoBufferStop,
 }
 
 impl InfraError {
-    fn new_invalid_reference(field: String, reference: ObjectRef) -> Self {
+    fn new_invalid_reference<T: AsRef<str>>(field: T, reference: ObjectRef) -> Self {
         Self {
-            field,
+            field: field.as_ref().into(),
             is_warning: false,
             sub_type: InfraErrorType::InvalidReference { reference },
         }
     }
 
-    fn new_out_of_range(field: String, position: f64, expected_range: [f64; 2]) -> Self {
+    fn new_out_of_range<T: AsRef<str>>(field: T, position: f64, expected_range: [f64; 2]) -> Self {
         Self {
-            field,
+            field: field.as_ref().into(),
             is_warning: false,
             sub_type: InfraErrorType::OutOfRange {
                 position,
@@ -74,22 +88,22 @@ impl InfraError {
         }
     }
 
-    fn new_empty_path(field: String) -> Self {
+    fn new_empty_path<T: AsRef<str>>(field: T) -> Self {
         Self {
-            field,
+            field: field.as_ref().into(),
             is_warning: false,
             sub_type: InfraErrorType::EmptyPath,
         }
     }
 
-    fn new_path_does_not_match_endpoints(
-        field: String,
+    fn new_path_does_not_match_endpoints<T: AsRef<str>>(
+        field: T,
         expected_track: String,
         expected_position: f64,
         endpoint_field: PathEndpointField,
     ) -> Self {
         Self {
-            field,
+            field: field.as_ref().into(),
             is_warning: false,
             sub_type: InfraErrorType::PathDoesNotMatchEndpoints {
                 expected_track,
@@ -99,17 +113,17 @@ impl InfraError {
         }
     }
 
-    fn new_empty_object(field: String) -> Self {
+    fn new_empty_object<T: AsRef<str>>(field: T) -> Self {
         Self {
-            field,
+            field: field.as_ref().into(),
             is_warning: true,
             sub_type: InfraErrorType::EmptyObject,
         }
     }
 
-    fn new_object_out_of_path(field: String, position: f64, track: String) -> Self {
+    fn new_object_out_of_path<T: AsRef<str>>(field: T, position: f64, track: String) -> Self {
         Self {
-            field,
+            field: field.as_ref().into(),
             is_warning: false,
             sub_type: InfraErrorType::ObjectOutOfPath { position, track },
         }
@@ -120,6 +134,48 @@ impl InfraError {
             field: Default::default(),
             is_warning: true,
             sub_type: InfraErrorType::MissingRoute,
+        }
+    }
+
+    fn new_unknown_port_name<T: AsRef<str>>(field: T, port_name: String) -> Self {
+        Self {
+            field: field.as_ref().into(),
+            is_warning: false,
+            sub_type: InfraErrorType::UnknownPortName { port_name },
+        }
+    }
+
+    fn new_invalid_switch_ports<T: AsRef<str>>(field: T) -> Self {
+        Self {
+            field: field.as_ref().into(),
+            is_warning: false,
+            sub_type: InfraErrorType::InvalidSwitchPorts,
+        }
+    }
+
+    fn new_unused_port<T: AsRef<str>>(field: T, port_name: String) -> Self {
+        Self {
+            field: field.as_ref().into(),
+            is_warning: true,
+            sub_type: InfraErrorType::UnusedPort { port_name },
+        }
+    }
+
+    fn new_duplicated_group<T: AsRef<str>>(field: T, original_group_path: String) -> Self {
+        Self {
+            field: field.as_ref().into(),
+            is_warning: true,
+            sub_type: InfraErrorType::DuplicatedGroup {
+                original_group_path,
+            },
+        }
+    }
+
+    fn new_no_buffer_stop<T: AsRef<str>>(field: T) -> Self {
+        Self {
+            field: field.as_ref().into(),
+            is_warning: true,
+            sub_type: InfraErrorType::NoBufferStop,
         }
     }
 }
@@ -136,11 +192,15 @@ pub fn generate_errors(
         .bind::<Integer, _>(infra)
         .execute(conn)?;
 
+    // Create a graph for topological errors
+    let graph = Graph::load(infra_cache);
+
     // Generate the errors
-    track_sections::generate_errors(conn, infra, infra_cache)?;
+    track_sections::generate_errors(conn, infra, infra_cache, &graph)?;
     signals::generate_errors(conn, infra, infra_cache)?;
     speed_sections::generate_errors(conn, infra, infra_cache)?;
     track_section_links::generate_errors(conn, infra, infra_cache)?;
+    switch_types::generate_errors(conn, infra, infra_cache)?;
     switches::generate_errors(conn, infra, infra_cache)?;
     detectors::generate_errors(conn, infra, infra_cache)?;
     buffer_stops::generate_errors(conn, infra, infra_cache)?;

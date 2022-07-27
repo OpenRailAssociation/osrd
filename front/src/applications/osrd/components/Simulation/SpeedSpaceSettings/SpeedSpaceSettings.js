@@ -1,9 +1,10 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { useSelector, useDispatch } from 'react-redux';
-import { useTranslation } from 'react-i18next';
 import { updateMustRedraw, updateSpeedSpaceSettings } from 'reducers/osrdsimulation';
+import { useDispatch, useSelector } from 'react-redux';
+
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
+import PropTypes from 'prop-types';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 export default function SpeedSpaceSettings(props) {
   const { showSettings } = props;
@@ -33,6 +34,7 @@ export default function SpeedSpaceSettings(props) {
         label={t('speedSpaceSettings.altitude')}
         checked={speedSpaceSettings.altitude}
         onChange={() => toggleSetting('altitude')}
+        type="checkbox"
       />
       <CheckboxRadioSNCF
         id="speedSpaceSettings-curves"
@@ -40,6 +42,7 @@ export default function SpeedSpaceSettings(props) {
         label={t('speedSpaceSettings.curves')}
         checked={speedSpaceSettings.curves}
         onChange={() => toggleSetting('curves')}
+        type="checkbox"
       />
       <CheckboxRadioSNCF
         id="speedSpaceSettings-maxSpeed"
@@ -47,6 +50,7 @@ export default function SpeedSpaceSettings(props) {
         label={t('speedSpaceSettings.maxSpeed')}
         checked={speedSpaceSettings.maxSpeed}
         onChange={() => toggleSetting('maxSpeed')}
+        type="checkbox"
       />
       <CheckboxRadioSNCF
         id="speedSpaceSettings-slopes"
@@ -54,6 +58,7 @@ export default function SpeedSpaceSettings(props) {
         label={t('speedSpaceSettings.slopes')}
         checked={speedSpaceSettings.slopes}
         onChange={() => toggleSetting('slopes')}
+        type="checkbox"
       />
     </div>
   );

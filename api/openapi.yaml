@@ -250,7 +250,23 @@ paths:
     get:
       tags:
         - rolling_stock
-      summary: List all available rolling stock
+      summary: Paginated list of rolling stock
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - in: query
+          name: page_size
+          schema:
+            type: integer
+            maximum: 10000
+            minimum: 1
+            default: 100
+          description: Number of elements by page
       responses:
         200:
           description: The rolling stock list
@@ -290,7 +306,23 @@ paths:
     get:
       tags:
         - rolling_stock
-      summary: List all available rolling stock with a lighter response
+      summary: Paginated list of rolling stock with a lighter response
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - in: query
+          name: page_size
+          schema:
+            type: integer
+            maximum: 10000
+            minimum: 1
+            default: 100
+          description: Number of elements by page
       responses:
         200:
           description: The rolling stock list
@@ -330,13 +362,27 @@ paths:
     get:
       tags:
         - timetable
-      summary: List all timetable
+      summary: Paginated list of timetable
       parameters:
         - in: query
           name: infra
           schema:
             type: integer
           description: Filter timetable by infra
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+          description: Page number
+        - in: query
+          name: page_size
+          schema:
+            type: integer
+            maximum: 10000
+            minimum: 1
+            default: 100
+          description: Number of elements by page
       responses:
         200:
           description: The timetable list
@@ -654,56 +700,6 @@ components:
         modified:
           type: string
           format: date-time
-    CreateEntity:
-      properties:
-        operation:
-          type: string
-          enum: [create_entity]
-        entity_type:
-          type: string
-        components:
-          type: array
-          items:
-            type: object
-            description: List of the component field
-    DeleteEntity:
-      properties:
-        operation:
-          type: string
-          enum: [delete_entity]
-        entity_id:
-          type: integer
-    AddComponent:
-      properties:
-        operation:
-          type: string
-          enum: [add_component]
-        entity_id:
-          type: integer
-        component_type:
-          type: string
-        component:
-          type: object
-          description: List of the component field
-    UpdateComponent:
-      properties:
-        operation:
-          type: string
-          enum: [update_component]
-        component_type:
-          type: string
-        update:
-          type: object
-          description: List of the component field
-    DeleteComponent:
-      properties:
-        operation:
-          type: string
-          enum: [delete_component]
-        component_id:
-          type: integer
-        component_type:
-          type: string
     TrainScheduleResultData:
       properties:
         speeds:
@@ -1091,28 +1087,40 @@ components:
             $ref: "#/components/schemas/Allowance"
     Allowance:
       oneOf:
-        - $ref: "#/components/schemas/ConstructionAllowance"
-        - $ref: "#/components/schemas/MarecoAllowance"
+        - $ref: "#/components/schemas/EngineeringAllowance"
+        - $ref: "#/components/schemas/StandardAllowance"
       discriminator:
         propertyName: allowance_type
-    MarecoAllowance:
+    StandardAllowance:
       properties:
         allowance_type:
           type: string
-          enum: ["mareco"]
+          enum: ["standard"]
         default_value:
           $ref: "#/components/schemas/AllowanceValue"
         ranges:
           type: array
           items:
             $ref: "#/components/schemas/RangeAllowance"
-    ConstructionAllowance:
+        distribution:
+          type: string
+          enum: ["MARECO", "LINEAR"]
+        capacity_speed_limit:
+          type: number
+          format: double
+    EngineeringAllowance:
       allOf:
         - type: object
           properties:
             allowance_type:
               type: string
-              enum: ["construction"]
+              enum: ["engineering"]
+            distribution:
+              type: string
+              enum: ["MARECO", "LINEAR"]
+            capacity_speed_limit:
+              type: number
+              format: double
         - $ref: "#/components/schemas/RangeAllowance"
     RangeAllowance:
       properties:
