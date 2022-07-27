@@ -1,8 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React from 'react';
 import { WidgetProps } from '@rjsf/core';
 
 export const FormBeginEndWidget: React.FC<WidgetProps> = (props) => {
-  const { id, label, value, required, readonly, onChange, options, rawErrors, schema } = props;
+  const { id, value, required, readonly, onChange, options, schema } = props;
   return (
     <div>
       {readonly ? (
@@ -13,16 +13,14 @@ export const FormBeginEndWidget: React.FC<WidgetProps> = (props) => {
           id={id}
           required={required}
           type="number"
-          step="1"
           min={schema.minimum || (options.min as number)}
           max={schema.maximum || (options.max as number)}
+          step="any"
           value={value}
           onChange={(e) => onChange(e.target.value)}
         />
       )}
-      {rawErrors?.map((e) => (
-        <p className="text-danger">{e}</p>
-      ))}
     </div>
   );
 };
+export default FormBeginEndWidget;
