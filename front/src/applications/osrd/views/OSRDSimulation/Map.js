@@ -404,7 +404,7 @@ const Map = (props) => {
             <SignalingType geomType="geo" />
             <Routes geomType="geo" colors={colors[mapStyle]} />
             <SpeedLimits geomType="geo" colors={colors[mapStyle]} />
-            <Signals sourceTable="signals" colors={colors[mapStyle]} sourceLayer="geo" />
+            <Signals mapRef={mapRef} sourceTable="signals" colors={colors[mapStyle]} sourceLayer="geo" />
             <BufferStops geomType="geo" colors={colors[mapStyle]} />
             <Detectors geomType="geo" colors={colors[mapStyle]} />
             <Switches geomType="geo" colors={colors[mapStyle]} />
@@ -414,7 +414,7 @@ const Map = (props) => {
             <TracksSchematic colors={colors[mapStyle]} idHover={idHover} />
             <OperationalPoints geomType="sch" colors={colors[mapStyle]} />
             <Routes geomType="sch" colors={colors[mapStyle]} />
-            <Signals sourceTable="signals" colors={colors[mapStyle]} sourceLayer="sch" />
+            <Signals mapRef={mapRef} sourceTable="signals" colors={colors[mapStyle]} sourceLayer="sch" />
             <SpeedLimits geomType="sch" colors={colors[mapStyle]} />
             <BufferStops geomType="sch" colors={colors[mapStyle]} />
             <Detectors geomType="sch" colors={colors[mapStyle]} />

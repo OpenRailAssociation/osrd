@@ -1,6 +1,3 @@
-import { SymbolLayout } from 'mapbox-gl';
-import { LayerProps } from 'react-map-gl';
-
 import {
   ALL_SIGNAL_LAYERS,
   ALL_SIGNAL_LAYERS_SET,
@@ -8,8 +5,11 @@ import {
   PANELS_STOPS,
   PANELS_TIVS,
 } from 'common/Map/Consts/SignalsNames';
-import { SIGNALS_PANELS } from 'common/Map/const';
 import { SourceLayer, Theme } from '../../../types';
+
+import { LayerProps } from 'react-map-gl';
+import { SIGNALS_PANELS } from 'common/Map/const';
+import { SymbolLayout } from 'mapbox-gl';
 
 export interface SignalsSettings {
   all?: boolean;
@@ -24,6 +24,19 @@ export interface SignalContext {
   sourceTable?: string;
   colors: Theme;
   signalsList: string[];
+
+}
+
+interface ChangeSignalContext {
+  yellowSignalIds?:string[],
+  greenSignalsIds?:string[],
+  redSignalIds?:string[]
+}
+
+const defaultChangeSignalsIds = {
+  yellowSignalIds : [],
+  greenSignalsIds: [],
+  redSignalIds: []
 }
 
 export function getSignalsList(signalsSettings: SignalsSettings) {
@@ -108,6 +121,13 @@ export function signalsToSprites(
         ' ',
         ['case', ['==', ['get', 'side'], 'RIGHT'], 'D', ['==', ['get', 'side'], 'LEFT'], 'G', ''],
       ];
+      case 'CARRE':
+      case 'S':
+      case 'CARRE A':
+      case 'S A':
+      case 'CARRE VL':
+      case 'S VL':
+        return ['concat', prefix, type];
     default:
       return ALL_SIGNAL_LAYERS_SET.has(type) ? `${prefix}${type}` : `${prefix}UNKNOWN`;
   }
@@ -263,10 +283,169 @@ export function getSignalPNLayerProps(
   return props;
 }
 
-export function getSignalLayerProps(context: SignalContext, type: string): LayerProps {
+export function getSignalALayerProps(
+  context : SignalContext,
+  _type: string,
+  iconOffset: SymbolLayout['icon-offset'],
+  changeSignalContext: ChangeSignalContext
+): LayerProps {
+  const { sourceTable, sourceLayer } = context
+  const { yellowSignalIds = [] } = changeSignalContext
+  const angleName = getAngleName(sourceLayer);
+  const typeFilter = (_type.split(' ')[0]);
+  const filterA = ['in', 'id'].concat(yellowSignalIds)
+  const props: LayerProps = {
+    type: 'symbol',
+    minzoom: 12,
+    filter: ['all',
+        ['==', 'installation_type', typeFilter],
+        filterA,
+      ],
+    layout: {
+      'text-field': '{label}',
+      'text-font': ['SNCF'],
+      'text-size': 8,
+      'text-offset': [
+        'case',
+        ['==', ['get', 'side'], 'RIGHT'],
+        ['literal', [3.5, -3.5]],
+        ['==', ['get', 'side'], 'LEFT'],
+        ['literal', [-3.5, -3.5]],
+        ['literal', [0, 0]],
+      ],
+      'icon-offset': iconOffset,
+      'icon-image': signalsToSprites(context, _type),
+      'icon-size': 0.5,
+      'text-anchor': 'center',
+      'icon-rotation-alignment': 'map',
+      'icon-pitch-alignment': 'map',
+      'text-rotation-alignment': 'map',
+      'icon-rotate': ['get', angleName],
+      'text-rotate': ['get', angleName],
+      'icon-allow-overlap': true,
+      'icon-ignore-placement': true,
+      'text-allow-overlap': true,
+    },
+    paint: {
+      'text-color': '#fff',
+    },
+  };
+
+  if (typeof sourceTable === 'string') props['source-layer'] = sourceTable;
+
+  return props;
+}
+
+export function getSignalVLLayerProps(
+  context: SignalContext,
+  _type: string,
+  iconOffset: SymbolLayout['icon-offset'],
+  changeSignalContext: ChangeSignalContext
+): LayerProps {
+  const { sourceTable, sourceLayer } = context
+  const {greenSignalsIds = [] } = changeSignalContext
+  const angleName = getAngleName(sourceLayer);
+  const typeFilter = (_type.split(' ')[0]);
+  const props: LayerProps = {
+    type: 'symbol',
+    minzoom: 12,
+    filter: ['all',
+        ['==', 'installation_type', typeFilter]
+      ],
+    layout: {
+      'text-field': '{label}',
+      'text-font': ['SNCF'],
+      'text-size': 8,
+      'text-offset': [
+        'case',
+        ['==', ['get', 'side'], 'RIGHT'],
+        ['literal', [3.5, -3.5]],
+        ['==', ['get', 'side'], 'LEFT'],
+        ['literal', [-3.5, -3.5]],
+        ['literal', [0, 0]],
+      ],
+      'icon-offset': iconOffset,
+      'icon-image': signalsToSprites(context, _type),
+      'icon-size': 0.5,
+      'text-anchor': 'center',
+      'icon-rotation-alignment': 'map',
+      'icon-pitch-alignment': 'map',
+      'text-rotation-alignment': 'map',
+      'icon-rotate': ['get', angleName],
+      'text-rotate': ['get', angleName],
+      'icon-allow-overlap': true,
+      'icon-ignore-placement': true,
+      'text-allow-overlap': true,
+    },
+    paint: {
+      'text-color': '#fff',
+    },
+  };
+
+  if (typeof sourceTable === 'string') props['source-layer'] = sourceTable;
+
+  return props;
+}
+
+export function getSignalStopLayerProps(
+  context: SignalContext,
+  _type: string,
+  iconOffset: SymbolLayout['icon-offset'],
+  changeSignalContext: ChangeSignalContext
+): LayerProps {
+  const { sourceTable, sourceLayer } = context
+  const { redSignalIds = [] } = changeSignalContext
+  const angleName = getAngleName(sourceLayer);
+  const typeFilter = (_type.split(' ')[0]);
+  const filterA = ['in', 'id'].concat(redSignalIds)
+
+  const props: LayerProps = {
+    type: 'symbol',
+    minzoom: 12,
+    filter: ['all',
+        ['==', 'installation_type', typeFilter],
+        filterA,
+      ],
+    layout: {
+      'text-field': '{label}',
+      'text-font': ['SNCF'],
+      'text-size': 8,
+      'text-offset': [
+        'case',
+        ['==', ['get', 'side'], 'RIGHT'],
+        ['literal', [3.5, -3.5]],
+        ['==', ['get', 'side'], 'LEFT'],
+        ['literal', [-3.5, -3.5]],
+        ['literal', [0, 0]],
+      ],
+      'icon-offset': iconOffset,
+      'icon-image': signalsToSprites(context, _type),
+      'icon-size': 0.5,
+      'text-anchor': 'center',
+      'icon-rotation-alignment': 'map',
+      'icon-pitch-alignment': 'map',
+      'text-rotation-alignment': 'map',
+      'icon-rotate': ['get', angleName],
+      'text-rotate': ['get', angleName],
+      'icon-allow-overlap': true,
+      'icon-ignore-placement': true,
+      'text-allow-overlap': true,
+    },
+    paint: {
+      'text-color': '#fff',
+    },
+  };
+
+  if (typeof sourceTable === 'string') props['source-layer'] = sourceTable;
+
+  return props;
+}
+
+
+
+export function getSignalLayerProps(context: SignalContext, type: string, changeSignalContext: ChangeSignalContext = defaultChangeSignalsIds): LayerProps {
   const { sourceTable, sourceLayer, prefix, colors } = context;
   const angleName = sourceLayer === 'sch' ? 'angle_sch' : 'angle_geo';
-
   let size = 0.4;
   let offsetY = -105;
   let iconOffsetX = 55;
@@ -312,6 +491,15 @@ export function getSignalLayerProps(context: SignalContext, type: string): Layer
       return getSignalEmptyLayerProps(context, type, iconOffset);
     case 'PN':
       return getSignalPNLayerProps(context, type, iconOffset);
+    case 'CARRE A':
+    case 'S A':
+      return getSignalALayerProps(context, type, iconOffset, changeSignalContext);
+    case 'CARRE VL':
+      case 'S VL':
+        return getSignalVLLayerProps(context, type, iconOffset, changeSignalContext);
+    case 'CARRE':
+    case 'S':
+      return getSignalStopLayerProps(context, type, iconOffset, changeSignalContext);
     default:
   }
 

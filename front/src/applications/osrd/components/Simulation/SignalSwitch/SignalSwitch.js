@@ -20,7 +20,7 @@ const SignalSwitch = (props) => {
     setInternSignalBase(signalBase);
   }, [signalBase]);
 */
-  console.log("render Signal Switch")
+
 
   return (
   <SwitchSNCF
