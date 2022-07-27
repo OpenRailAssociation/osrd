@@ -1,3 +1,6 @@
+from pathlib import Path
+
+from django.db import connection
 from django.http import HttpResponse
 from rest_framework import mixins, status
 from rest_framework.decorators import action
@@ -8,6 +11,9 @@ from osrd_infra.models import Infra
 from osrd_infra.schemas.infra import RailJsonInfra
 from osrd_infra.serializers import InfraSerializer
 from osrd_infra.views.railjson import import_infra, serialize_infra
+
+CURRENT_DIR = Path(__file__).parent
+GET_SPEED_LIMIT_TAGS = open(CURRENT_DIR / "sql/get_speed_limit_tags.sql").read()
 
 
 class InfraView(
@@ -34,4 +40,16 @@ class InfraView(
 
     @action(detail=False, methods=["get"])
     def schema(self, request):
+        """Returns infra schema"""
         return Response(RailJsonInfra.schema())
+
+    @action(detail=True, methods=["get"])
+    def speed_limit_tags(self, request, pk=None):
+        """Returns the set of speed limit tags for a given infra"""
+        # Check if infra exists
+        self.get_object()
+
+        with connection.cursor() as cursor:
+            cursor.execute(GET_SPEED_LIMIT_TAGS, [pk])
+            res = [row[0] for row in cursor]
+        return Response(res)
