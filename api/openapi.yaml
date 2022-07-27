@@ -664,6 +664,21 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/TrainScheduleResult"
+  /infra/{id}/speed_limit_tags/:
+    get:
+      tags:
+        - infra
+      summary: List all speed limit tags
+      responses:
+        200:
+          description: Tags list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                example: ["freight", "heavy_load"]
   /infra/schema/:
     get:
       tags:
