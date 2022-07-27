@@ -117,16 +117,17 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
         .then((infrastructure) => dispatch(updateInfraID(infrastructure.id)))
         .catch(() => {
           dispatch(setFailure(new Error(t('Editor.errors.infra-not-found', { id: infra }))));
-          dispatch(updateViewport(viewport, `/editor/infra`));
+          dispatch(updateViewport(viewport, `/editor/`));
         });
     } else if (infraID) {
-      dispatch(updateViewport(viewport, `/editor/${infraID}`));
+      dispatch(updateViewport({}, `/editor/${infraID}`));
     } else {
       getInfrastructures()
         .then((infras) => {
           if (infras && infras.length > 0) {
             const infrastructure = infras[0];
             dispatch(updateInfraID(infrastructure.id));
+            dispatch(updateViewport(viewport, `/editor/${infrastructure.id}`));
           } else {
             dispatch(setFailure(new Error(t('Editor.errors.no-infra-available'))));
           }
@@ -135,7 +136,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
           dispatch(setFailure(new Error(t('Editor.errors.technical', { msg: e.message }))));
         });
     }
-  }, [dispatch, infra, infraID, t, viewport]);
+  }, [dispatch, infra, infraID, t]);
 
   return (
     <EditorContext.Provider value={context as EditorContextType<unknown>}>
