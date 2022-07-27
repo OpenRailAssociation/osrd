@@ -25,14 +25,6 @@ export function getJsonSchemaForObjectType(
   return item ? item.schema : undefined;
 }
 
-/**
- * Given a JSON schema, returns its ui schema.
- * For now it's an empty object
- */
-export function getJsonSchemaUi(_schema: JSONSchema7): UiSchema {
-  return {};
-}
-
 export function getLayerForObjectType(schema: EditorSchema, objType: string): string | undefined {
   const item = schema.find((e) => e.objType === objType);
   return item ? item.layer : undefined;

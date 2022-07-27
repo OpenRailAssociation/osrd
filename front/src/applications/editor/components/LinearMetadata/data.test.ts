@@ -4,14 +4,7 @@ import distance from '@turf/distance';
 import length from '@turf/length';
 import along from '@turf/along';
 
-import {
-  LinearMetadataItem,
-  create,
-  update,
-  resizeSegment,
-  splitAt,
-  mergeIn,
-} from './linearMetadata';
+import { LinearMetadataItem, update, resizeSegment, splitAt, mergeIn } from './data';
 
 const DEBUG = false;
 
@@ -176,25 +169,6 @@ function generateGeoJson<T>(
 }
 
 describe('Testing linear metadata functions', () => {
-  it('Creation should work', () => {
-    const initValue = { degree: Math.random() };
-
-    [
-      { line: simpleLine, title: 'simple' },
-      { line: complexeLine, title: 'complexe' },
-    ].forEach((test) => {
-      const result = create<{ degree: number }>(test.line, initValue);
-      if (DEBUG) console.log(test.title, JSON.stringify(generateGeoJson(result, test.line)));
-
-      // test
-      checkWrapperValidity(result, test.line, test.title);
-      assert.equal(result.length, test.line.coordinates.length - 1);
-      result.forEach((value) => {
-        assert.equal(value.degree, initValue.degree);
-      });
-    });
-  });
-
   it('Impact on move point should work', () => {
     const newLine = {
       type: 'LineString',
@@ -274,7 +248,7 @@ describe('Testing linear metadata functions', () => {
       }
     });
 
-    it('increase should work on the last item', () => {
+    it('increase on the last item (means increase the length) should', () => {
       const wrapper: Array<LinearMetadataItem<Degree>> = [
         { begin: 0, end: 10, degree: 0 },
         { begin: 10, end: 20, degree: 0 },
@@ -283,15 +257,10 @@ describe('Testing linear metadata functions', () => {
       ];
       const result = resizeSegment(wrapper, 3, 5);
 
-      // check the decrease of the prev element
-      assert.equal(result[2].begin, 20);
-      assert.equal(result[2].end, 25);
-      // check the increase of the last element
-      assert.equal(result[3].begin, 25);
-      assert.equal(result[3].end, 40);
+      assert.equal(result[3].end, 45);
     });
 
-    it('decrease should work on the last item', () => {
+    it('decrease on the last item (means reducing the length) should work', () => {
       const wrapper: Array<LinearMetadataItem<Degree>> = [
         { begin: 0, end: 10, degree: 0 },
         { begin: 10, end: 20, degree: 0 },
@@ -300,12 +269,7 @@ describe('Testing linear metadata functions', () => {
       ];
       const result = resizeSegment(wrapper, 3, -5);
 
-      // check the increase of the prev element
-      assert.equal(result[2].begin, 20);
-      assert.equal(result[2].end, 35);
-      // check the decrease of the last element
-      assert.equal(result[3].begin, 35);
-      assert.equal(result[3].end, 40);
+      assert.equal(result[3].end, 35);
     });
 
     it('increase should work', () => {

@@ -2,17 +2,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import Form, { FieldProps, utils } from '@rjsf/core';
 import Fields from '@rjsf/core/lib/components/fields';
 import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
-import { LineString } from 'geojson';
-import { last, omit, head } from 'lodash';
-import cx from 'classnames';
+import { omit, head } from 'lodash';
 import { BiZoomIn, BiZoomOut } from 'react-icons/bi';
-import {
-  BsBoxArrowInLeft,
-  BsLayoutSplit,
-  BsBoxArrowInRight,
-  BsChevronLeft,
-  BsChevronRight,
-} from 'react-icons/bs';
+import { BsBoxArrowInLeft, BsBoxArrowInRight, BsChevronLeft, BsChevronRight } from 'react-icons/bs';
+import { IoIosCut } from 'react-icons/io';
+import { useTranslation } from 'react-i18next';
 
 import { tooltipPosition } from './utils';
 import {
@@ -23,6 +17,7 @@ import {
   splitAt,
   mergeIn,
   resizeSegment,
+  getLineStringDistance,
 } from './data';
 import { LinearMetadataDataviz } from './dataviz';
 import { LinearMetadataTooltip } from './tooltip';
@@ -38,6 +33,7 @@ function itemSchema(
   if (!schema.properties?.begin || !schema.properties?.end)
     throw new Error('Not a linear metadata item');
 
+  /* eslint-disable prefer-object-spread */
   const result = {
     ...schema,
     properties: {
@@ -57,6 +53,7 @@ function itemSchema(
     },
     definitions: rootSchema.definitions,
   };
+  /* eslint-enable prefer-object-spread */
   return result;
 }
 
@@ -82,15 +79,9 @@ function viewboxForSelection(
   return vb;
 }
 
-const widgets = {
-  BeginEndWidget: FormBeginEndWidget,
-};
-
 export const FormComponent: React.FC<FieldProps> = (props) => {
   const { name, formData, schema, onChange, formContext, registry } = props;
-  // in case it's an array but the geometry is not a line
-  if (!formContext.geometry || formContext.geometry.type !== 'LineString')
-    return <Fields.ArrayField {...props} />;
+  const { t } = useTranslation();
 
   // Wich segment area is visible
   const [viewBox, setViewBox] = useState<[number, number] | null>(null);
@@ -102,10 +93,10 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
   const [selectedData, setSelectedData] = useState<LinearMetadataItem | null>(null);
   // Wich segment is hovered
   const [hovered, setHovered] = useState<number | null>(null);
-
+  // Mode of the dataviz
+  const [mode, setMode] = useState<'dragging' | 'resizing' | null>(null);
   // Fix the data (sort, fix gap, ...)
   const [data, setData] = useState<Array<LinearMetadataItem>>([]);
-
   // Compute the JSON schema of the linear metadata item
   const jsonSchema = itemSchema(schema, registry.rootSchema);
 
@@ -122,11 +113,18 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
   );
 
   /**
-   *
+   * When the formData changed or the form context
+   * => we recompute the linearmedata
    */
   useEffect(() => {
-    setData(fixLinearMetadataItems(formData, formContext.geometry));
-  }, [formData, formContext.geometry]);
+    setData(
+      fixLinearMetadataItems(
+        formData,
+        formContext.length || getLineStringDistance(formContext.geometry),
+        valueField ? { fieldName: valueField, defaultValue: 0 } : undefined
+      )
+    );
+  }, [formData, formContext.length, formContext.geometry, valueField]);
 
   /**
    * When selected element change
@@ -141,10 +139,14 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
     [selected, data]
   );
 
+  // in case it's an array but the geometry is not a line
+  if (!formContext.geometry || formContext.geometry.type !== 'LineString')
+    return <Fields.ArrayField {...props} />;
+
   return (
     <div className="linear-metadata">
       <div className="header">
-        <label>{schema.title || name}</label>
+        <h4 className="control-label">{schema.title || name}</h4>
       </div>
       <div className="content">
         <div className="dataviz">
@@ -153,29 +155,45 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
             field={valueField}
             viewBox={viewBox}
             highlighted={[hovered ?? -1, selected ?? -1].filter((e) => e > -1)}
-            onMouseEnter={(_e, _item, index) => setHovered(index)}
-            onMouseLeave={() => setHovered(null)}
+            onMouseEnter={(_e, _item, index) => {
+              if (mode === null) setHovered(index);
+            }}
+            onMouseLeave={() => {
+              if (mode === null) setHovered(null);
+            }}
             onMouseMove={(e) => {
               if (tooltipRef.current) {
                 tooltipPosition([e.nativeEvent.x, e.nativeEvent.y], tooltipRef.current);
               }
             }}
             onClick={(_e, _item, index) => {
-              setSelected((old) => {
+              if (mode === null) {
                 // case when you click on the already selected item => reset
-                if ((old ?? -1) === index) return null;
-                else return index;
-              });
-              setHovered(null);
+                setSelected((old) => ((old ?? -1) === index ? null : index));
+                setHovered(null);
+              }
             }}
             onWheel={(e, _item, _index, point) => {
               setViewBox(getZoomedViewBox(data, viewBox, e.deltaY > 0 ? 'OUT' : 'IN', point));
             }}
-            onViewBoxChange={setViewBox}
+            onDragX={(gap, finalize) => {
+              setMode(!finalize ? 'dragging' : null);
+              setViewBox((vb) => transalteViewBox(data, vb, gap));
+            }}
+            onResize={(index, gap, finalized) => {
+              setMode(!finalized ? 'resizing' : null);
+              try {
+                const newData = resizeSegment(data, index, gap, 'end', { segmentMinSize: 5 });
+                if (finalized) onChange(newData);
+                else setData(newData);
+              } catch (e) {
+                // TODO: should we display it ?
+              }
+            }}
           />
           <div className="btn-group-vertical zoom">
             <button
-              title="Zoom In"
+              title={t('common.zoom-in')}
               type="button"
               className="btn btn-sm btn-outline-secondary"
               onClick={() => setViewBox(getZoomedViewBox(data, viewBox, 'IN'))}
@@ -183,7 +201,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
               <BiZoomIn />
             </button>
             <button
-              title="Zoom Out"
+              title={t('common.zoom-out')}
               type="button"
               className="btn btn-sm btn-outline-secondary"
               onClick={() => setViewBox(getZoomedViewBox(data, viewBox, 'OUT'))}
@@ -194,7 +212,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
         </div>
 
         {/* Data visualisation tooltip when item is hovered */}
-        {hovered !== null && (
+        {mode !== 'dragging' && hovered !== null && (
           <div className="tooltip" ref={tooltipRef}>
             <LinearMetadataTooltip item={data[hovered]} schema={jsonSchema} />
           </div>
@@ -208,7 +226,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
                 <button
                   className="btn btn-sm btn-secondary"
                   type="button"
-                  title="Previous"
+                  title={t('common.previous')}
                   disabled={selected === 0}
                   onClick={() => {
                     const newSelected = selected - 1;
@@ -222,7 +240,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
                   <button
                     className="btn btn-sm btn-secondary"
                     type="button"
-                    title="Fusion with left"
+                    title={t('Editor.linear-metadata.merge-with-left')}
                     disabled={selected === 0}
                     onClick={() => {
                       onChange(mergeIn(data, selected, 'left'));
@@ -234,7 +252,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
                   <button
                     className="btn btn-sm btn-secondary"
                     type="button"
-                    title="Split"
+                    title={t('Editor.linear-metadata.split')}
                     onClick={() => {
                       const splitPosition =
                         selectedData.begin + (selectedData.end - selectedData.begin) / 2;
@@ -242,12 +260,12 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
                       onChange(newData);
                     }}
                   >
-                    <BsLayoutSplit />
+                    <IoIosCut />
                   </button>
                   <button
                     className="btn btn-sm btn-secondary"
                     type="button"
-                    title="Fusion with right"
+                    title={t('Editor.linear-metadata.merge-with-right')}
                     disabled={selected === data.length - 1}
                     onClick={() => onChange(mergeIn(data, selected, 'right'))}
                   >
@@ -257,7 +275,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
                 <button
                   className="btn btn-sm btn-secondary"
                   type="button"
-                  title="Next"
+                  title={t('common.next')}
                   disabled={selected === data.length - 1}
                   onClick={() => {
                     const newSelected = selected + 1;
@@ -273,7 +291,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
               <Form
                 id={`selected-${selected}`}
                 name="selected"
-                liveValidate={true}
+                liveValidate
                 tagName="div"
                 schema={itemSchema(schema, registry.rootSchema, {
                   begin: {
@@ -329,9 +347,8 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
                         );
                       }
                       onChange(newData);
-                    } catch (e) {
-                      // TODO: Should display the resize error
-                      console.log('ERROR', e);
+                    } catch (error) {
+                      // TODO: Should we display the resize error ?
                     } finally {
                       setSelectedData(newItem);
                     }
@@ -341,10 +358,11 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
                 <div className="buttons">
                   <button
                     type="button"
+                    title={t('common.close')}
                     className="btn btn-outline-dark mx-1"
                     onClick={() => setSelected(null)}
                   >
-                    Close
+                    {t('common.close')}
                   </button>
                 </div>
               </Form>
@@ -355,3 +373,5 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
     </div>
   );
 };
+
+export default FormComponent;

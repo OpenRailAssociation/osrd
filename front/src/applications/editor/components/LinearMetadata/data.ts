@@ -1,8 +1,16 @@
-import { FeatureCollection, Feature, Point, LineString, Position } from 'geojson';
-import { tail, last, differenceWith, isEqual, sortBy } from 'lodash';
-import distance from '@turf/distance';
+import { Feature, Point, LineString, Position } from 'geojson';
+import { last, differenceWith, isEqual, sortBy } from 'lodash';
 import lineSplit from '@turf/line-split';
-import length from '@turf/length';
+import fnLength from '@turf/length';
+
+// Min size of a linear metadata segment
+const SEGMENT_MIN_SIZE = 1;
+// Delta error between the user length input and the length of the geometry
+export const DISTANCE_ERROR_RANGE = 0.01;
+// Zoom by 25%
+const ZOOM_RATIO = 0.75;
+// Min size (in meter) of the viewbox
+const MIN_SIZE_TO_DISPLAY = 10;
 
 /**
  *  Generic type for Linear Metadata
@@ -38,93 +46,164 @@ function lineStringToFeature(line: LineString): Feature<LineString> {
 }
 
 /**
+ * Returns the length of a lineString in meters.
+ */
+export function getLineStringDistance(line: LineString): number {
+  return Math.round(fnLength(lineStringToFeature(line)) * 1000);
+}
+
+/**
+ * When you change the size of a segment, you need to impact it on the chain.
+ * What we do is to substract the gap from its neighbor (see beginOrEnd).
+ *
+ * @param linearMetadata  The linear metadata we work on, already sorted
+ * @param itemChangeIndex The index in the linearMetadata of the changed element
+ * @param gap The size we need to add (or remove if negative)
+ * @param beginOrEnd do the change at begin or the end of the item ?
+ * @param opts Options of this functions (like the min size of segment)
+ * @throws An error if the given index doesn't exist
+ * @throws An error if gap is bigger than the sibling element
+ * @throws An error if gap is negative and is bigger than the element size
+ */
+export function resizeSegment<T>(
+  linearMetadata: Array<LinearMetadataItem<T>>,
+  itemChangeIndex: number,
+  gap: number,
+  beginOrEnd: 'begin' | 'end' = 'end',
+  opts: { segmentMinSize: number } = { segmentMinSize: SEGMENT_MIN_SIZE }
+): Array<LinearMetadataItem<T>> {
+  if (itemChangeIndex >= linearMetadata.length) throw new Error("Given index doesn't exist");
+  if (
+    linearMetadata[itemChangeIndex].end - linearMetadata[itemChangeIndex].begin + gap <
+    opts.segmentMinSize
+  )
+    throw new Error('There is not enought space on the element');
+
+  // if you try to edit begin on first segment
+  if (itemChangeIndex === 0 && beginOrEnd === 'begin') {
+    throw new Error("Can't change begin on first segment");
+  }
+
+  return linearMetadata.map((item, index) => {
+    const result = { ...item };
+    if (beginOrEnd === 'begin') {
+      if (index === itemChangeIndex - 1) {
+        result.end += gap;
+      }
+      if (index === itemChangeIndex) {
+        result.begin += gap;
+      }
+    } else {
+      if (index === itemChangeIndex) {
+        result.end += gap;
+      }
+      if (index === itemChangeIndex + 1) {
+        result.begin += gap;
+      }
+    }
+    return result;
+  });
+}
+
+/**
  * Fix a linear metadata
  * - if empty it generate one
  * - if there is a gap at begin/end or inside, it is created
  * - if there is an overlaps, remove it
+ * @param value The linear metadata
+ * @param lineLength The full length of the linearmetadata (should be computed from the LineString or given by the user)
+ * @param opts If defined, it allows the function to fill gaps with default field value
  */
 export function fixLinearMetadataItems<T>(
   value: Array<LinearMetadataItem<T>> | undefined,
-  line: LineString
+  lineLength: number,
+  opts?: { fieldName: string; defaultValue: unknown }
 ): Array<LinearMetadataItem<T>> {
   // simple scenario
   if (!value || value.length === 0) {
-    return create(line, {} as T, 'none');
+    return [
+      {
+        begin: 0,
+        end: lineLength,
+        ...(opts ? { [opts.fieldName]: opts.defaultValue } : {}),
+      } as LinearMetadataItem<T>,
+    ];
   }
 
-  const lineLength = length(lineStringToFeature(line)) * 1000;
-  // Order the array and fix it if there a gap in it
-  return sortBy(value, ['begin']).flatMap((item, index, array) => {
-    let result: Array<LinearMetadataItem<T>> = [];
+  // Order the array and fix it by filling gaps if there are some
+  let fixedLinearMetadata = sortBy(value, ['begin']).flatMap((item, index, array) => {
+    const result: Array<LinearMetadataItem<T>> = [];
 
+    // we remove the item if it begins after the end of the line
+    if (item.begin >= lineLength) return [];
+
+    // check for no gap at start
     if (index === 0) {
-      // check for no gap at start
       if (item.begin !== 0) {
-        result.push({ begin: 0, end: item.begin } as LinearMetadataItem<T>);
+        result.push({
+          ...(opts ? { [opts.fieldName]: opts.defaultValue } : {}),
+          begin: 0,
+          end: item.begin,
+        } as LinearMetadataItem<T>);
       }
       result.push(item);
     }
 
     if (index > 0) {
       const prev = array[index - 1];
+
       // normal way
       if (prev.end === item.begin) {
-        result.push(item);
+        result.push({
+          ...(opts ? { [opts.fieldName]: opts.defaultValue } : {}),
+          ...item,
+        });
       }
-      //
+
       // if there is gap with the previous
       if (prev.end < item.begin) {
-        result.push({ begin: prev.end, end: item.begin } as LinearMetadataItem<T>);
-        result.push(item);
+        result.push({
+          ...(opts ? { [opts.fieldName]: opts.defaultValue } : {}),
+          begin: prev.end,
+          end: item.begin,
+        } as LinearMetadataItem<T>);
+        result.push({
+          ...(opts ? { [opts.fieldName]: opts.defaultValue } : {}),
+          ...item,
+        });
       }
     }
 
     // Check for gap at the end
-    if (index === array.length - 1 && item.end !== lineLength) {
-      result.push({ begin: item.end, end: lineLength } as LinearMetadataItem<T>);
+    if (index === array.length - 1 && item.end < lineLength) {
+      result.push({
+        ...(opts ? { [opts.fieldName]: opts.defaultValue } : {}),
+        begin: item.end,
+        end: lineLength,
+      } as LinearMetadataItem<T>);
     }
 
     return result;
   });
-}
 
-/**
- * Given a  LineString, creates the linear metadata segmentationts.
- *
- * @param line The LineString on which we need to create the linear segments
- * @param initValue The value we use to init each segment
- * @returns The linear metadata array (sorted by begin/end).
- */
-export function create<T>(
-  line: LineString,
-  initValue: T,
-  cutting: 'none' | 'segment' = 'segment'
-): Array<LinearMetadataItem<T>> {
-  switch (cutting) {
-    case 'none':
-      return [
-        {
-          ...initValue,
-          begin: 0,
-          end: length(lineStringToFeature(line)) * 1000,
-        },
-      ];
-    default:
-      return tail(line.coordinates).reduce((acc, curr, index) => {
-        // because we took the tail, the index match the prev index in the original array
-        const start = line.coordinates[index];
-        // compute the distance between start & end in meter
-        const length = distance(coordinateToFeature(start), coordinateToFeature(curr)) * 1000;
-        // compute the begin distance
-        const begin = index > 0 ? acc[index - 1].end : 0;
-        acc.push({
-          begin,
-          end: begin + length,
-          ...initValue,
-        });
-        return acc;
-      }, [] as Array<LinearMetadataItem<T>>);
+  // if the fixed lm is bigger than the lineLeight (the opposite is not possible, we already fix gaps)
+  const tail = last(fixedLinearMetadata);
+  if (tail && tail.end > lineLength) {
+    let reduceLeft = tail.end - lineLength;
+    let index = fixedLinearMetadata.length - 1;
+    while (reduceLeft > 0 && index >= 0) {
+      const itemLength = fixedLinearMetadata[index].end - fixedLinearMetadata[index].begin;
+      if (itemLength > SEGMENT_MIN_SIZE) {
+        const gap =
+          itemLength - SEGMENT_MIN_SIZE < reduceLeft ? itemLength - SEGMENT_MIN_SIZE : reduceLeft;
+        fixedLinearMetadata = resizeSegment(fixedLinearMetadata, index, -1 * gap);
+        reduceLeft -= gap;
+      }
+      index -= 1;
+    }
   }
+
+  return fixedLinearMetadata;
 }
 
 /**
@@ -168,7 +247,7 @@ export function update<T>(
     lineStringToFeature(sourceLine),
     coordinateToFeature(sourcePoint)
   ).features[0];
-  const pointDistance = length(sourceLineToPoint) * 1000;
+  const pointDistance = fnLength(sourceLineToPoint) * 1000;
   const closestLinearItem = linearMetadata.reduce(
     (acc, curr, index) => {
       const distanceToPoint = Math.min(
@@ -189,7 +268,7 @@ export function update<T>(
   //  - and for the impacted item, we add the delta
   // NOTE: the delta can be negative (ex: deletion)
   const delta =
-    (length(lineStringToFeature(targetLine)) - length(lineStringToFeature(sourceLine))) * 1000;
+    (fnLength(lineStringToFeature(targetLine)) - fnLength(lineStringToFeature(sourceLine))) * 1000;
   return [
     ...linearMetadata.slice(0, closestLinearItem.index),
     {
@@ -202,60 +281,6 @@ export function update<T>(
       end: item.end + delta,
     })),
   ];
-}
-
-/**
- * When you change the size of a segment, you need to impact on the chain.
- * What we do is to substract the gap from its right neighbor.
- *
- * @param linearMetadata  The linear metadata we work on, already sorted
- * @param itemChangeIndex The index in the linearMetadata of the changed element
- * @param gap The size we need to add (or remove if negative)
- * @param opts Options of this functions (like the min size of segment)
- * @throws An error if the given index doesn't exist
- * @throws An error if gap is bigger than the sibling element
- * @throws An error if gap is negative and is bigger than the element size
- * @throws An error wrapper has NOT 2 element
- */
-export function resizeSegment<T>(
-  linearMetadata: Array<LinearMetadataItem<T>>,
-  itemChangeIndex: number,
-  gap: number,
-  beginOrEnd: 'begin' | 'end' = 'end',
-  opts: { segmentMinSize: number } = { segmentMinSize: 1 }
-): Array<LinearMetadataItem<T>> {
-  if (linearMetadata.length < 2) throw new Error('Linear metadata has less than 2 elements');
-  if (itemChangeIndex >= linearMetadata.length) throw new Error("Given index doesn't exist");
-  if (
-    linearMetadata[itemChangeIndex].end - linearMetadata[itemChangeIndex].begin + gap <
-    opts.segmentMinSize
-  )
-    throw new Error('There is not enought space on the element');
-
-  // if you try to edit begin on first segment
-  if (itemChangeIndex === 0 && beginOrEnd === 'begin') {
-    throw new Error("Can't change begin on first segment");
-  }
-
-  return linearMetadata.map((item, index) => {
-    let result = { ...item };
-    if (beginOrEnd === 'begin') {
-      if (index === itemChangeIndex - 1) {
-        result.end = result.end + gap;
-      }
-      if (index === itemChangeIndex) {
-        result.begin = result.begin + gap;
-      }
-    } else {
-      if (index === itemChangeIndex) {
-        result.end = result.end + gap;
-      }
-      if (index === itemChangeIndex + 1) {
-        result.begin = result.begin + gap;
-      }
-    }
-    return result;
-  });
 }
 
 /**
@@ -281,9 +306,8 @@ export function splitAt<T>(
           { ...item, begin: item.begin, end: distance },
           { ...item, begin: distance, end: item.end },
         ];
-      } else {
-        return [item];
       }
+      return [item];
     })
     .flat();
 }
@@ -302,7 +326,7 @@ export function mergeIn<T>(
   index: number,
   policy: 'left' | 'right'
 ): Array<LinearMetadataItem<T>> {
-  if (!(0 <= index && index < linearMetadata.length)) throw new Error('Bad merge index');
+  if (!(index >= 0 && index < linearMetadata.length)) throw new Error('Bad merge index');
   if (policy === 'left' && index === 0)
     throw new Error('Target segment is outside the linear metadata');
   if (policy === 'right' && index === linearMetadata.length - 1)
@@ -316,21 +340,16 @@ export function mergeIn<T>(
       { ...element, begin: left.begin },
       ...linearMetadata.slice(index + 1),
     ];
-  } else {
-    const right = linearMetadata[index + 1];
-    const element = linearMetadata[index];
-    return [
-      ...linearMetadata.slice(0, index),
-      { ...element, end: right.end },
-      ...linearMetadata.slice(index + 2),
-    ];
   }
-}
 
-// Zoom by 25%
-const ZOOM_RATIO = 0.75;
-// Min size (in meter) of the viewbox
-const MIN_SIZE_TO_DISPLAY = 10;
+  const right = linearMetadata[index + 1];
+  const element = linearMetadata[index];
+  return [
+    ...linearMetadata.slice(0, index),
+    { ...element, end: right.end },
+    ...linearMetadata.slice(index + 2),
+  ];
+}
 
 /**
  * Compute the new viewbox after a zoom.
@@ -353,7 +372,7 @@ export function getZoomedViewBox<T>(
   const max = last(data)?.end || 0;
   const fullDistance = max - min;
 
-  const viewBox: [number, number] = currentViewBox ? currentViewBox : [min, max];
+  const viewBox: [number, number] = currentViewBox || [min, max];
   let distanceToDisplay =
     (viewBox[1] - viewBox[0]) * (zoom === 'IN' ? ZOOM_RATIO : 1 - ZOOM_RATIO + 1);
 
@@ -365,11 +384,11 @@ export function getZoomedViewBox<T>(
   if (distanceToDisplay < MIN_SIZE_TO_DISPLAY) distanceToDisplay = MIN_SIZE_TO_DISPLAY;
 
   // Compute the point on which we do the zoom
-  const point = onPoint ? onPoint : viewBox[0] + (viewBox[1] - viewBox[0]) / 2;
+  const point = onPoint || viewBox[0] + (viewBox[1] - viewBox[0]) / 2;
 
   // let's try to add the distance on each side
-  let begin = point - distanceToDisplay / 2;
-  let end = point + distanceToDisplay / 2;
+  const begin = point - distanceToDisplay / 2;
+  const end = point + distanceToDisplay / 2;
   if (min <= begin && end <= max) {
     return [begin, end];
   }
@@ -380,9 +399,8 @@ export function getZoomedViewBox<T>(
   // so we need to add the diff at the begin
   if (begin < min) {
     return [min, end + (min - begin)];
-  } else {
-    return [begin - (end - max), max];
   }
+  return [begin - (end - max), max];
 }
 
 /**
@@ -403,7 +421,6 @@ export function transalteViewBox<T>(
   // can't perform a translation if not zoomed
   if (!currentViewBox) return null;
 
-  const min = data[0].begin;
   const max = last(data)?.end || 0;
   const distanceToDisplay = currentViewBox[1] - currentViewBox[0];
 
@@ -413,10 +430,45 @@ export function transalteViewBox<T>(
     const newMin = currentViewBox[0] + translation > 0 ? currentViewBox[0] + translation : 0;
     return [newMin, newMin + distanceToDisplay];
   }
+
   // if translation on the right, we do it on the max
-  else {
-    // new max is the max plus the transaltion or max
-    const newMax = currentViewBox[1] + translation < max ? currentViewBox[1] + translation : max;
-    return [newMax - distanceToDisplay, newMax];
-  }
+  // new max is the max plus the transaltion or max
+  const newMax = currentViewBox[1] + translation < max ? currentViewBox[1] + translation : max;
+  return [newMax - distanceToDisplay, newMax];
+}
+
+/**
+ * Given a linearmetadata and viewbox, this function returns
+ * the cropped linearmetadata (and also add the index)
+ */
+export function cropForDatavizViewbox(
+  data: Array<LinearMetadataItem>,
+  currentViewBox: [number, number] | null
+): Array<LinearMetadataItem & { index: number }> {
+  return (
+    [...data]
+      // we add the index so events are able to send the index
+      // eslint-disable-next-line prefer-object-spread
+      .map((segment, index) => Object.assign({}, segment, { index }))
+      // we filter elements that croos or are inside the viewbox
+      .filter((e) => {
+        if (!currentViewBox) return true;
+        // if one extrimity is in (ie. overlaps or full in)
+        if (currentViewBox[0] <= e.begin && e.begin <= currentViewBox[1]) return true;
+        if (currentViewBox[0] <= e.end && e.end <= currentViewBox[1]) return true;
+        // if include the viewbox
+        if (e.begin <= currentViewBox[0] && currentViewBox[1] <= e.end) return true;
+        // else
+        return false;
+      })
+      // we crop the extremities if needed
+      .map((e) => {
+        if (!currentViewBox) return e;
+        return {
+          index: e.index,
+          begin: e.begin < currentViewBox[0] ? currentViewBox[0] : e.begin,
+          end: e.end > currentViewBox[1] ? currentViewBox[1] : e.end,
+        };
+      })
+  );
 }
