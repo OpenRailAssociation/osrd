@@ -6,7 +6,7 @@ import { isNil, omit, values } from 'lodash';
 export function roundNumber(value: number, upper = false): number {
   const round = Math.round(value);
   if (upper) return round < value ? round + 1 : round;
-  else return round > value ? round - 1 : round;
+  return round > value ? round - 1 : round;
 }
 
 /**
@@ -42,10 +42,10 @@ export function tooltipPosition(coordinates: [number, number], element: HTMLElem
   const elementHeight = element.offsetHeight;
 
   // compute diagonals
-  const diagTopLeft = Math.pow(mouseX, 2) + Math.pow(mouseY, 2);
-  const diagTopRight = Math.pow(maxX - mouseX, 2) + Math.pow(mouseY, 2);
-  const diagBottomleft = Math.pow(mouseX, 2) + Math.pow(maxY - mouseY, 2);
-  const diagBottomRight = Math.pow(maxX - mouseX, 2) + Math.pow(maxY - mouseY, 2);
+  const diagTopLeft = mouseX ** 2 + mouseY ** 2;
+  const diagTopRight = (maxX - mouseX) ** 2 + mouseY ** 2;
+  const diagBottomleft = mouseX ** 2 + (maxY - mouseY) ** 2;
+  const diagBottomRight = (maxX - mouseX) ** 2 + (maxY - mouseY) ** 2;
 
   if (diagTopLeft > diagTopRight && diagTopLeft > diagBottomleft && diagTopLeft > diagBottomRight) {
     // display in top / Left
@@ -72,4 +72,12 @@ export function tooltipPosition(coordinates: [number, number], element: HTMLElem
     element.style.top = `${mouseY + offset}px`;
     element.style.left = `${mouseX + offset}px`;
   }
+}
+
+/**
+ * Just the event preventdefault.
+ * Usefull for listeners.
+ */
+export function preventDefault(e: Event) {
+  e.preventDefault();
 }

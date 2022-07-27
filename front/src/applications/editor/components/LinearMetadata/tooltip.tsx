@@ -8,7 +8,7 @@ interface LinearMetadataTooltipProps<T> {
   schema: JSONSchema7;
 }
 
-export const LinearMetadataTooltip = <T extends any>({
+export const LinearMetadataTooltip = <T extends Record<string, unknown>>({
   item,
   schema,
 }: LinearMetadataTooltipProps<T>) => {
@@ -36,3 +36,5 @@ export const LinearMetadataTooltip = <T extends any>({
     </div>
   );
 };
+
+export default LinearMetadataTooltip;

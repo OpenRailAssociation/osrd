@@ -6,8 +6,8 @@ import { GeoJsonProperties } from 'geojson';
 import './EditorForm.scss';
 import { EditorEntity } from '../../../types';
 import { EditorState } from '../../../reducers/editor';
-import { getJsonSchemaForLayer, getJsonSchemaUi, getLayerForObjectType } from '../data/utils';
-import { FormComponent } from './LinearMetadata';
+import { getJsonSchemaForLayer, getLayerForObjectType } from '../data/utils';
+import { FormComponent, FormLineStringLength } from './LinearMetadata';
 
 const fields = {
   ArrayField: FormComponent,
@@ -30,7 +30,6 @@ const EditorForm: React.FC<EditorFormProps> = ({ data, onSubmit, onChange, child
   const layer = getLayerForObjectType(editorState.editorSchema, data.objType);
   const schema = getJsonSchemaForLayer(editorState.editorSchema, layer || '');
   if (!schema) throw new Error(`Missing data type for ${layer}`);
-  const uiSchema = getJsonSchemaUi(schema);
 
   useEffect(() => {
     setFormData(data.properties);
@@ -57,10 +56,15 @@ const EditorForm: React.FC<EditorFormProps> = ({ data, onSubmit, onChange, child
         fields={fields}
         action={undefined}
         method={undefined}
-        uiSchema={uiSchema}
         schema={schema}
+        liveValidate
+        uiSchema={{
+          length: {
+            'ui:widget': FormLineStringLength,
+          },
+        }}
         formData={formData}
-        formContext={{ geometry: data.geometry }}
+        formContext={{ geometry: data.geometry, length: formData ? formData.length : undefined }}
         onSubmit={async (event) => {
           try {
             setError(null);

@@ -1,11 +1,15 @@
+// SNCF color blue green
 $color: #0088ce;
+// SNCF color green
 $color-highlight: #82be00;
-$color-nodata: #333;
-$tooltip-bg-color: #000;
+
+$color-nodata: var(--error);
+$tooltip-bg-color: var(--black);
 $tooltip-padding: 1em;
 $dataviz-height: 6em;
 $scaling-height: 1px;
 $scaling-y-width: 1.5em;
+$resize-width: 3px;
 
 @mixin unselectable {
   -moz-user-select: -moz-none;
@@ -36,9 +40,14 @@ $scaling-y-width: 1.5em;
         height: calc($dataviz-height + $scaling-height);
         .btn {
           background-color: #fff;
-          padding: 0 0.5em !important;
+          padding: 0 0.25em !important;
           border-top-left-radius: 0;
           border-bottom-left-radius: 0;
+          border-left-width: 0;
+          &:focus,
+          &:hover {
+            color: #000;
+          }
         }
       }
 
@@ -53,32 +62,42 @@ $scaling-y-width: 1.5em;
           flex-wrap: nowrap;
           flex-direction: row;
           position: relative;
+          border: 0 dotted;
+          border-left-width: 1px;
+          border-right-width: 1px;
 
-          &.drag {
-            cursor: grabbing;
+          &.start-visible {
+            border-left-style: solid;
+          }
+          &.end-visible {
+            border-right-style: solid;
           }
 
-          div:not(.scale):not(.axis-zero) {
+          &.dragging {
+            cursor: grabbing;
+          }
+          &.resizing {
+            cursor: col-resize;
+          }
+
+          div.item {
             height: $dataviz-height;
             background-color: rgba($color, 0.1);
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
+            align-items: flex-end;
             justify-content: flex-end;
-
-            &:not(:last-child) {
-              border-right: 1px solid #fff;
-            }
 
             &.highlighted {
               background-color: rgba($color-highlight, 0.2);
-              div {
+              div.value {
                 background-color: $color-highlight;
               }
             }
 
             &.no-data {
               background-image: repeating-linear-gradient(
-                -55deg,
+                45deg,
                 $color-nodata,
                 $color-nodata 1px,
                 transparent 2px,
@@ -86,10 +105,23 @@ $scaling-y-width: 1.5em;
               );
             }
 
-            div {
+            div.value {
               @include unselectable;
-              width: 100%;
+              width: calc(100% - $resize-width);
+              flex-grow: 1;
               background-color: $color;
+            }
+
+            div.resize {
+              width: $resize-width;
+              height: 100%;
+              cursor: col-resize;
+              background-color: #fff;
+
+              &:hover,
+              &.selected {
+                background-color: #000;
+              }
             }
           }
         }
@@ -109,6 +141,7 @@ $scaling-y-width: 1.5em;
             font-size: 0.6em;
             line-height: 0.7em;
             overflow: hidden;
+            align-self: end;
           }
 
           &.scale-x {
@@ -124,7 +157,6 @@ $scaling-y-width: 1.5em;
           }
           &.scale-y {
             flex-direction: column-reverse;
-            border-right: $scaling-height solid;
             margin-left: -$scaling-y-width;
             width: $scaling-y-width;
             span {
@@ -193,14 +225,6 @@ $scaling-y-width: 1.5em;
         .buttons {
           display: flex;
           justify-content: space-around;
-        }
-        .form-control:not(.readonly) {
-          border: 1px solid #747678;
-          background-color: #fff;
-
-          &:focus {
-            border-color: $color;
-          }
         }
       }
     }
