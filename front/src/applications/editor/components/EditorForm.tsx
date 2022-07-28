@@ -32,9 +32,9 @@ const EditorForm: React.FC<EditorFormProps> = ({ data, onSubmit, onChange, child
   if (!schema) throw new Error(`Missing data type for ${layer}`);
 
   useEffect(() => {
-    const entity = entityFixLinearMetadata(data);
+    const entity = entityFixLinearMetadata(data, schema);
     setFormData(entity.properties);
-  }, [data]);
+  }, [data, schema]);
 
   /**
    * When errors are displayed, we scroll to them.
