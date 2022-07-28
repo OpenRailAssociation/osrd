@@ -318,6 +318,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
           ? (state.nearestPoint.geometry.coordinates as [number, number])
           : e.lngLat;
 
+      // TODO : impact the move on LMs
       setState({
         ...state,
         track,

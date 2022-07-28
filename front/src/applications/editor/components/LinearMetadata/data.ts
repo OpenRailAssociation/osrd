@@ -1,7 +1,8 @@
 import { Feature, Point, LineString, Position } from 'geojson';
-import { last, differenceWith, isEqual, sortBy } from 'lodash';
+import { last, differenceWith, isEqual, sortBy, isArray, isNil } from 'lodash';
 import lineSplit from '@turf/line-split';
 import fnLength from '@turf/length';
+import { EditorEntity } from '../../../../types';
 
 // Min size of a linear metadata segment
 const SEGMENT_MIN_SIZE = 1;
@@ -471,4 +472,43 @@ export function cropForDatavizViewbox(
         };
       })
   );
+}
+
+/**
+ * Given an entity this function check if it contains somes linear metadata,
+ * and fix them.
+ * If no modification has been done, the initial object is returned
+ */
+export function entityFixLinearMetadata(entity: EditorEntity): EditorEntity {
+  if (entity.geometry.type !== 'LineString') return entity;
+
+  // Compute/get the length of the geometry
+  // we need it to fix LM
+  let geometryLength = getLineStringDistance(entity.geometry);
+  if (entity.properties && entity.properties.length) {
+    geometryLength = entity.properties.length;
+  }
+
+  const result = { ...entity, properties: { ...(entity.properties ?? {}) } };
+  let hasBeenModified = false;
+  if (entity.properties) {
+    const { properties } = entity;
+
+    // We search properties that are an array of begin/end
+    // and we call the fix method
+    Object.keys(properties).forEach((prop) => {
+      if (isArray(properties[prop])) {
+        const lm = properties[prop] as Array<{ begin?: number; end?: number }>;
+        if (lm.length > 0 && !isNil(lm[0].begin) && !isNil(lm[0].end)) {
+          (result.properties as { [key: string]: unknown })[prop] = fixLinearMetadataItems(
+            lm as Array<LinearMetadataItem>,
+            geometryLength
+          );
+          hasBeenModified = true;
+        }
+      }
+    });
+  }
+
+  return hasBeenModified ? result : entity;
 }
