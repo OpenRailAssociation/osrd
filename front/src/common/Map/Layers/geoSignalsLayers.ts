@@ -142,7 +142,7 @@ export function getSignalMatLayerProps({
 
   const props: LayerProps = {
     type: 'symbol',
-    minzoom: 14,
+    minzoom: 12,
     filter: ['in', ['get', 'installation_type'], ['literal', signalsList]],
     paint: {},
     layout: {
@@ -283,6 +283,9 @@ export function getSignalPNLayerProps(
   return props;
 }
 
+const signalTextOffsetX = 5
+const signalTextOffsetY = -1
+
 export function getSignalALayerProps(
   context : SignalContext,
   _type: string,
@@ -308,9 +311,9 @@ export function getSignalALayerProps(
       'text-offset': [
         'case',
         ['==', ['get', 'side'], 'RIGHT'],
-        ['literal', [3.5, -3.5]],
+        ['literal', [signalTextOffsetX, signalTextOffsetY]],
         ['==', ['get', 'side'], 'LEFT'],
-        ['literal', [-3.5, -3.5]],
+        ['literal', [signalTextOffsetX * -1, signalTextOffsetY]],
         ['literal', [0, 0]],
       ],
       'icon-offset': iconOffset,
@@ -359,9 +362,9 @@ export function getSignalVLLayerProps(
       'text-offset': [
         'case',
         ['==', ['get', 'side'], 'RIGHT'],
-        ['literal', [3.5, -3.5]],
+        ['literal', [signalTextOffsetX, signalTextOffsetY]],
         ['==', ['get', 'side'], 'LEFT'],
-        ['literal', [-3.5, -3.5]],
+        ['literal', [signalTextOffsetX * -1, signalTextOffsetY]],
         ['literal', [0, 0]],
       ],
       'icon-offset': iconOffset,
@@ -378,7 +381,7 @@ export function getSignalVLLayerProps(
       'text-allow-overlap': true,
     },
     paint: {
-      'text-color': '#fff',
+      'text-color': '#777',
     },
   };
 
@@ -413,9 +416,9 @@ export function getSignalStopLayerProps(
       'text-offset': [
         'case',
         ['==', ['get', 'side'], 'RIGHT'],
-        ['literal', [3.5, -3.5]],
+        ['literal', [signalTextOffsetX, signalTextOffsetY]],
         ['==', ['get', 'side'], 'LEFT'],
-        ['literal', [-3.5, -3.5]],
+        ['literal', [signalTextOffsetX * -1, signalTextOffsetY]],
         ['literal', [0, 0]],
       ],
       'icon-offset': iconOffset,
@@ -448,10 +451,11 @@ export function getSignalLayerProps(context: SignalContext, type: string, change
   const angleName = sourceLayer === 'sch' ? 'angle_sch' : 'angle_geo';
   let size = 0.4;
   let offsetY = -105;
-  let iconOffsetX = 55;
-  let textOffsetX = 3;
+  let iconOffsetX = 45;
+  let textOffsetX = 30;
+  let textOffsetY = 5;
   let isSignal = true;
-  if (SIGNALS_PANELS.indexOf(type) !== -1) {
+  if (SIGNALS_PANELS.indexOf(type) !== -1 && SIGNALS_PANELS.indexOf(type) === -1) {
     size = 0.4;
     iconOffsetX = 55;
     textOffsetX = 3;
@@ -462,15 +466,20 @@ export function getSignalLayerProps(context: SignalContext, type: string, change
     iconOffsetX = 30;
     offsetY = -80;
   }
+  /*
+  if (SIGNALS_PANELS.indexOf(type) !== -1) {
+    offsetY = -105;
+  }
+  */
 
   const minZoom = 14;
 
   const textOffset: SymbolLayout['text-offset'] = [
     'case',
     ['==', ['get', 'side'], 'RIGHT'],
-    ['literal', [textOffsetX, -0.3]],
+    ['literal', [textOffsetX, textOffsetY]],
     ['==', ['get', 'side'], 'LEFT'],
-    ['literal', [textOffsetX * -1, -0.3]],
+    ['literal', [textOffsetX * -1, textOffsetY]],
     ['literal', [2, 0]],
   ];
 
