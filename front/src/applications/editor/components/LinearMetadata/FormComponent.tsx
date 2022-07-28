@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Form, { FieldProps, utils } from '@rjsf/core';
 import Fields from '@rjsf/core/lib/components/fields';
 import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
-import { omit, head } from 'lodash';
+import { omit, head, max as fnMax, min as fnMin } from 'lodash';
 import { BiZoomIn, BiZoomOut } from 'react-icons/bi';
 import { BsBoxArrowInLeft, BsBoxArrowInRight, BsChevronLeft, BsChevronRight } from 'react-icons/bs';
 import { IoIosCut } from 'react-icons/io';
@@ -16,6 +16,7 @@ import {
   splitAt,
   mergeIn,
   resizeSegment,
+  SEGMENT_MIN_SIZE,
 } from './data';
 import { LinearMetadataDataviz } from './dataviz';
 import { LinearMetadataTooltip } from './tooltip';
@@ -26,10 +27,12 @@ function itemSchema(
   fieldSchema: JSONSchema7,
   rootSchema: JSONSchema7,
   enhancement: { [key: string]: JSONSchema7Definition } = {}
-): JSONSchema7 {
+): JSONSchema7 | undefined {
   const schema = utils.retrieveSchema(fieldSchema.items as JSONSchema7, rootSchema);
-  if (!schema.properties?.begin || !schema.properties?.end)
-    throw new Error('Not a linear metadata item');
+  if (!schema.properties?.begin || !schema.properties?.end) {
+    // Not a linear metadata item
+    return undefined;
+  }
 
   /* eslint-disable prefer-object-spread */
   const result = {
@@ -81,11 +84,6 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
   const { name, formData, schema, onChange, formContext, registry } = props;
   const { t } = useTranslation();
 
-  /* eslint-disable  react-hooks/rules-of-hooks */
-  // in case it's an array but the geometry is not a line
-  if (!formContext.geometry || formContext.geometry.type !== 'LineString')
-    return <Fields.ArrayField {...props} />;
-
   // Wich segment area is visible
   const [viewBox, setViewBox] = useState<[number, number] | null>(null);
   // Ref for the tooltip
@@ -106,11 +104,11 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
 
   // Guess the value field of the linear metadata item
   const valueField = head(
-    Object.keys(jsonSchema.properties || {})
+    Object.keys(jsonSchema?.properties || {})
       .filter((e) => !['begin', 'end'].includes(e))
       .map((e) => ({
         name: e,
-        type: jsonSchema.properties ? (jsonSchema.properties[e] as JSONSchema7).type : '',
+        type: jsonSchema?.properties ? (jsonSchema?.properties[e] as JSONSchema7).type : '',
       }))
       .filter((e) => e.type === 'number' || e.type === 'integer')
       .map((e) => e.name)
@@ -136,236 +134,253 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
     // The "data" is omitted here, otherwise it is always refreshed
     [selected, data]
   );
-  /* eslint-enable  react-hooks/rules-of-hooks */
 
   return (
-    <div className="linear-metadata">
-      <div className="header">
-        <h4 className="control-label">{schema.title || name}</h4>
-      </div>
-      <div className="content">
-        <div className="dataviz">
-          <LinearMetadataDataviz
-            data={data}
-            field={valueField}
-            viewBox={viewBox}
-            highlighted={[hovered ?? -1, selected ?? -1].filter((e) => e > -1)}
-            onMouseEnter={(_e, _item, index) => {
-              if (mode === null) setHovered(index);
-            }}
-            onMouseLeave={() => {
-              if (mode === null) setHovered(null);
-            }}
-            onMouseMove={(e) => {
-              if (tooltipRef.current) {
-                tooltipPosition([e.nativeEvent.x, e.nativeEvent.y], tooltipRef.current);
-              }
-            }}
-            onClick={(_e, _item, index) => {
-              if (mode === null) {
-                // case when you click on the already selected item => reset
-                setSelected((old) => ((old ?? -1) === index ? null : index));
-                setHovered(null);
-              }
-            }}
-            onWheel={(e, _item, _index, point) => {
-              setViewBox(getZoomedViewBox(data, viewBox, e.deltaY > 0 ? 'OUT' : 'IN', point));
-            }}
-            onDragX={(gap, finalize) => {
-              setMode(!finalize ? 'dragging' : null);
-              setViewBox((vb) => transalteViewBox(data, vb, gap));
-            }}
-            onResize={(index, gap, finalized) => {
-              setMode(!finalized ? 'resizing' : null);
-              try {
-                const newData = resizeSegment(data, index, gap, 'end', { segmentMinSize: 5 });
-                if (finalized) onChange(newData);
-                else setData(newData);
-              } catch (e) {
-                // TODO: should we display it ?
-              }
-            }}
-          />
-          <div className="btn-group-vertical zoom">
-            <button
-              title={t('common.zoom-in')}
-              type="button"
-              className="btn btn-sm btn-outline-secondary"
-              onClick={() => setViewBox(getZoomedViewBox(data, viewBox, 'IN'))}
-            >
-              <BiZoomIn />
-            </button>
-            <button
-              title={t('common.zoom-out')}
-              type="button"
-              className="btn btn-sm btn-outline-secondary"
-              onClick={() => setViewBox(getZoomedViewBox(data, viewBox, 'OUT'))}
-            >
-              <BiZoomOut />
-            </button>
+    <>
+      {!jsonSchema ? (
+        <Fields.ArrayField {...props} />
+      ) : (
+        <div className="linear-metadata">
+          <div className="header">
+            <h4 className="control-label">{schema.title || name}</h4>
           </div>
-        </div>
-
-        {/* Data visualisation tooltip when item is hovered */}
-        {mode !== 'dragging' && hovered !== null && (
-          <div className="tooltip" ref={tooltipRef}>
-            <LinearMetadataTooltip item={data[hovered]} schema={jsonSchema} />
-          </div>
-        )}
-
-        {/* Display the selection */}
-        {selectedData !== null && selected !== null && (
-          <div className="linear-metadata-selection">
-            <div className="header">
-              <div className="btn-toolbar" role="toolbar">
+          <div className="content">
+            <div className="dataviz">
+              <LinearMetadataDataviz
+                data={data}
+                field={valueField}
+                viewBox={viewBox}
+                highlighted={[hovered ?? -1, selected ?? -1].filter((e) => e > -1)}
+                onMouseEnter={(_e, _item, index) => {
+                  if (mode === null) setHovered(index);
+                }}
+                onMouseLeave={() => {
+                  if (mode === null) setHovered(null);
+                }}
+                onMouseMove={(e) => {
+                  if (tooltipRef.current) {
+                    tooltipPosition([e.nativeEvent.x, e.nativeEvent.y], tooltipRef.current);
+                  }
+                }}
+                onClick={(_e, _item, index) => {
+                  if (mode === null) {
+                    // case when you click on the already selected item => reset
+                    setSelected((old) => ((old ?? -1) === index ? null : index));
+                    setHovered(null);
+                  }
+                }}
+                onWheel={(e, _item, _index, point) => {
+                  setViewBox(getZoomedViewBox(data, viewBox, e.deltaY > 0 ? 'OUT' : 'IN', point));
+                }}
+                onDragX={(gap, finalize) => {
+                  setMode(!finalize ? 'dragging' : null);
+                  setViewBox((vb) => transalteViewBox(data, vb, gap));
+                }}
+                onResize={(index, gap, finalized) => {
+                  setMode(!finalized ? 'resizing' : null);
+                  try {
+                    const newData = resizeSegment(data, index, gap, 'end', { segmentMinSize: 5 });
+                    if (finalized) onChange(newData);
+                    else setData(newData);
+                  } catch (e) {
+                    // TODO: should we display it ?
+                  }
+                }}
+              />
+              <div className="btn-group-vertical zoom">
                 <button
-                  className="btn btn-sm btn-secondary"
+                  title={t('common.zoom-in')}
                   type="button"
-                  title={t('common.previous')}
-                  disabled={selected === 0}
-                  onClick={() => {
-                    const newSelected = selected - 1;
-                    setSelected(newSelected);
-                    setViewBox((vb) => viewboxForSelection(data, vb, newSelected));
-                  }}
+                  className="btn btn-sm btn-outline-secondary"
+                  onClick={() => setViewBox(getZoomedViewBox(data, viewBox, 'IN'))}
                 >
-                  <BsChevronLeft />
+                  <BiZoomIn />
                 </button>
-                <div className="btn-group">
-                  <button
-                    className="btn btn-sm btn-secondary"
-                    type="button"
-                    title={t('Editor.linear-metadata.merge-with-left')}
-                    disabled={selected === 0}
-                    onClick={() => {
-                      onChange(mergeIn(data, selected, 'left'));
-                      setSelected(selected - 1);
-                    }}
-                  >
-                    <BsBoxArrowInLeft />
-                  </button>
-                  <button
-                    className="btn btn-sm btn-secondary"
-                    type="button"
-                    title={t('Editor.linear-metadata.split')}
-                    onClick={() => {
-                      const splitPosition =
-                        selectedData.begin + (selectedData.end - selectedData.begin) / 2;
-                      const newData = splitAt(data, splitPosition);
-                      onChange(newData);
-                    }}
-                  >
-                    <IoIosCut />
-                  </button>
-                  <button
-                    className="btn btn-sm btn-secondary"
-                    type="button"
-                    title={t('Editor.linear-metadata.merge-with-right')}
-                    disabled={selected === data.length - 1}
-                    onClick={() => onChange(mergeIn(data, selected, 'right'))}
-                  >
-                    <BsBoxArrowInRight />
-                  </button>
-                </div>
                 <button
-                  className="btn btn-sm btn-secondary"
+                  title={t('common.zoom-out')}
                   type="button"
-                  title={t('common.next')}
-                  disabled={selected === data.length - 1}
-                  onClick={() => {
-                    const newSelected = selected + 1;
-                    setSelected(newSelected);
-                    setViewBox((vb) => viewboxForSelection(data, vb, newSelected));
-                  }}
+                  className="btn btn-sm btn-outline-secondary"
+                  onClick={() => setViewBox(getZoomedViewBox(data, viewBox, 'OUT'))}
                 >
-                  <BsChevronRight />
+                  <BiZoomOut />
                 </button>
               </div>
             </div>
-            <div className="content">
-              <Form
-                id={`selected-${selected}`}
-                name="selected"
-                liveValidate
-                tagName="div"
-                schema={itemSchema(schema, registry.rootSchema, {
-                  begin: {
-                    minimum:
-                      selected !== null && data[selected - 1] ? data[selected - 1].begin + 1 : 0,
-                    maximum: data[selected].end - 1,
-                  },
-                  end: {
-                    minimum: data[selected].begin + 1,
-                    maximum:
-                      selected !== data.length - 1 ? data[selected + 1].end - 1 : selectedData.end,
-                  },
-                })}
-                uiSchema={{
-                  begin: {
-                    'ui:widget': FormBeginEndWidget,
-                    'ui:readonly': selected === 0,
-                  },
-                  end: {
-                    'ui:widget': FormBeginEndWidget,
-                    'ui:readonly': selected === data.length - 1,
-                  },
-                }}
-                formData={selectedData}
-                onChange={(e) => {
-                  if (e.errors.length === 0) {
-                    const newItem = e.formData;
-                    const oldItem = data[selected];
-                    let newData = [...data];
-                    // we keep the old value for begin and end
-                    // they will be change in the resize function if needed
-                    newData[selected] = {
-                      ...oldItem,
-                      ...omit(newItem, ['begin', 'end']),
-                    };
 
-                    // Check if there is a resize
-                    try {
-                      if (newItem.begin !== oldItem.begin) {
-                        newData = resizeSegment(
-                          [...newData],
-                          selected,
-                          newItem.begin - oldItem.begin,
-                          'begin'
-                        );
-                      }
-                      if (oldItem.end !== newItem.end) {
-                        newData = resizeSegment(
-                          [...newData],
-                          selected,
-                          newItem.end - oldItem.end,
-                          'end'
-                        );
-                      }
-                      onChange(newData);
-                    } catch (error) {
-                      // TODO: Should we display the resize error ?
-                    } finally {
-                      setSelectedData(newItem);
-                    }
-                  }
-                }}
-              >
-                <div className="buttons">
-                  <button
-                    type="button"
-                    title={t('common.close')}
-                    className="btn btn-outline-dark mx-1"
-                    onClick={() => setSelected(null)}
-                  >
-                    {t('common.close')}
-                  </button>
+            {/* Data visualisation tooltip when item is hovered */}
+            {mode !== 'dragging' && hovered !== null && (
+              <div className="tooltip" ref={tooltipRef}>
+                <LinearMetadataTooltip item={data[hovered]} schema={jsonSchema} />
+              </div>
+            )}
+
+            {/* Display the selection */}
+            {selectedData !== null && selected !== null && (
+              <div className="linear-metadata-selection">
+                <div className="header">
+                  <div className="btn-toolbar" role="toolbar">
+                    <button
+                      className="btn btn-sm btn-secondary"
+                      type="button"
+                      title={t('common.previous')}
+                      disabled={selected === 0}
+                      onClick={() => {
+                        const newSelected = selected - 1;
+                        setSelected(newSelected);
+                        setViewBox((vb) => viewboxForSelection(data, vb, newSelected));
+                      }}
+                    >
+                      <BsChevronLeft />
+                    </button>
+                    <div className="btn-group">
+                      <button
+                        className="btn btn-sm btn-secondary"
+                        type="button"
+                        title={t('Editor.linear-metadata.merge-with-left')}
+                        disabled={selected === 0}
+                        onClick={() => {
+                          onChange(mergeIn(data, selected, 'left'));
+                          setSelected(selected - 1);
+                        }}
+                      >
+                        <BsBoxArrowInLeft />
+                      </button>
+                      <button
+                        className="btn btn-sm btn-secondary"
+                        type="button"
+                        title={t('Editor.linear-metadata.split')}
+                        onClick={() => {
+                          const splitPosition =
+                            selectedData.begin + (selectedData.end - selectedData.begin) / 2;
+                          const newData = splitAt(data, splitPosition);
+                          onChange(newData);
+                        }}
+                      >
+                        <IoIosCut />
+                      </button>
+                      <button
+                        className="btn btn-sm btn-secondary"
+                        type="button"
+                        title={t('Editor.linear-metadata.merge-with-right')}
+                        disabled={selected === data.length - 1}
+                        onClick={() => onChange(mergeIn(data, selected, 'right'))}
+                      >
+                        <BsBoxArrowInRight />
+                      </button>
+                    </div>
+                    <button
+                      className="btn btn-sm btn-secondary"
+                      type="button"
+                      title={t('common.next')}
+                      disabled={selected === data.length - 1}
+                      onClick={() => {
+                        const newSelected = selected + 1;
+                        setSelected(newSelected);
+                        setViewBox((vb) => viewboxForSelection(data, vb, newSelected));
+                      }}
+                    >
+                      <BsChevronRight />
+                    </button>
+                  </div>
                 </div>
-              </Form>
-            </div>
+                <div className="content">
+                  <Form
+                    id={`selected-${selected}`}
+                    name="selected"
+                    liveValidate
+                    tagName="div"
+                    schema={
+                      itemSchema(schema, registry.rootSchema, {
+                        begin: {
+                          minimum:
+                            selected !== null && data[selected - 1]
+                              ? fnMin([
+                                  selectedData.begin,
+                                  data[selected - 1].begin + SEGMENT_MIN_SIZE,
+                                ])
+                              : 0,
+                          maximum: fnMax([selectedData.begin, selectedData.end - SEGMENT_MIN_SIZE]),
+                        },
+                        end: {
+                          minimum: fnMin([
+                            selectedData.end,
+                            data[selected].begin + SEGMENT_MIN_SIZE,
+                          ]),
+                          maximum:
+                            selected !== data.length - 1
+                              ? fnMax([selectedData.end, data[selected + 1].end - SEGMENT_MIN_SIZE])
+                              : selectedData.end,
+                        },
+                      }) || {}
+                    }
+                    uiSchema={{
+                      begin: {
+                        'ui:widget': FormBeginEndWidget,
+                        'ui:readonly': selected === 0,
+                      },
+                      end: {
+                        'ui:widget': FormBeginEndWidget,
+                        'ui:readonly': selected === data.length - 1,
+                      },
+                    }}
+                    formData={selectedData}
+                    onChange={(e) => {
+                      if (e.errors.length === 0) {
+                        const newItem = e.formData;
+                        const oldItem = data[selected];
+                        let newData = [...data];
+                        // we keep the old value for begin and end
+                        // they will be change in the resize function if needed
+                        newData[selected] = {
+                          ...oldItem,
+                          ...omit(newItem, ['begin', 'end']),
+                        };
+
+                        // Check if there is a resize
+                        try {
+                          if (newItem.begin !== oldItem.begin) {
+                            newData = resizeSegment(
+                              [...newData],
+                              selected,
+                              newItem.begin - oldItem.begin,
+                              'begin'
+                            );
+                          }
+                          if (oldItem.end !== newItem.end) {
+                            newData = resizeSegment(
+                              [...newData],
+                              selected,
+                              newItem.end - oldItem.end,
+                              'end'
+                            );
+                          }
+                          onChange(newData);
+                        } catch (error) {
+                          // TODO: Should we display the resize error ?
+                        } finally {
+                          setSelectedData(newItem);
+                        }
+                      }
+                    }}
+                  >
+                    <div className="buttons">
+                      <button
+                        type="button"
+                        title={t('common.close')}
+                        className="btn btn-outline-dark mx-1"
+                        onClick={() => setSelected(null)}
+                      >
+                        {t('common.close')}
+                      </button>
+                    </div>
+                  </Form>
+                </div>
+              </div>
+            )}
           </div>
-        )}
-      </div>
-    </div>
+        </div>
+      )}
+    </>
   );
 };
 

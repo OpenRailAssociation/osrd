@@ -2,10 +2,12 @@ import { Feature, Point, LineString, Position } from 'geojson';
 import { last, differenceWith, isEqual, sortBy, isArray, isNil } from 'lodash';
 import lineSplit from '@turf/line-split';
 import fnLength from '@turf/length';
+import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
+
 import { EditorEntity } from '../../../../types';
 
 // Min size of a linear metadata segment
-const SEGMENT_MIN_SIZE = 1;
+export const SEGMENT_MIN_SIZE = 1;
 // Delta error between the user length input and the length of the geometry
 export const DISTANCE_ERROR_RANGE = 0.01;
 // Zoom by 25%
@@ -475,11 +477,37 @@ export function cropForDatavizViewbox(
 }
 
 /**
+ * Given a JSON schema, return the props name that are a linear metadata.
+ * A Linear metadata is an array type with a ref
+ * The ref should contains a begin & end
+ */
+export function getLinearMetadataProperties(schema: JSONSchema7): Array<string> {
+  return Object.keys(schema?.properties || {})
+    .map((prop) => {
+      const propSchema = (schema?.properties || {})[prop] as JSONSchema7;
+      if (propSchema.type === 'array' && propSchema.items && propSchema.items['$ref']) {
+        const refName = propSchema.items['$ref'].replace('#/definitions/', '');
+        const refSchema = (schema.definitions || {})[refName] as JSONSchema7;
+        if (
+          refSchema &&
+          refSchema.properties &&
+          refSchema.properties.begin &&
+          refSchema.properties.end
+        )
+          return prop;
+      }
+      return null;
+    })
+    .filter((n) => n !== null) as Array<string>;
+}
+
+/**
  * Given an entity this function check if it contains somes linear metadata,
  * and fix them.
  * If no modification has been done, the initial object is returned
  */
-export function entityFixLinearMetadata(entity: EditorEntity): EditorEntity {
+export function entityFixLinearMetadata(entity: EditorEntity, schema: JSONSchema7): EditorEntity {
+  // check that the geo is a line
   if (!entity.geometry || entity.geometry.type !== 'LineString') return entity;
 
   // Compute/get the length of the geometry
@@ -489,26 +517,18 @@ export function entityFixLinearMetadata(entity: EditorEntity): EditorEntity {
     geometryLength = entity.properties.length;
   }
 
+  // get the LM props from the schema
+  const lmProps = getLinearMetadataProperties(schema);
   const result = { ...entity, properties: { ...(entity.properties ?? {}) } };
   let hasBeenModified = false;
-  if (entity.properties) {
-    const { properties } = entity;
-
-    // We search properties that are an array of begin/end
-    // and we call the fix method
-    Object.keys(properties).forEach((prop) => {
-      if (isArray(properties[prop])) {
-        const lm = properties[prop] as Array<{ begin?: number; end?: number }>;
-        if (lm.length > 0 && !isNil(lm[0].begin) && !isNil(lm[0].end)) {
-          (result.properties as { [key: string]: unknown })[prop] = fixLinearMetadataItems(
-            lm as Array<LinearMetadataItem>,
-            geometryLength
-          );
-          hasBeenModified = true;
-        }
-      }
-    });
-  }
+  const { properties } = entity;
+  lmProps.forEach((name) => {
+    (result.properties as { [key: string]: unknown })[name] = fixLinearMetadataItems(
+      ((properties || {})[name] || []) as Array<LinearMetadataItem>,
+      geometryLength
+    );
+    hasBeenModified = true;
+  });
 
   return hasBeenModified ? result : entity;
 }
