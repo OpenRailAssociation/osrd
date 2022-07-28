@@ -3,7 +3,7 @@ import React, { FC, useMemo } from 'react';
 import { FeatureCollection } from 'geojson';
 import { groupBy, mapValues } from 'lodash';
 import { Layer, LayerProps, Source } from 'react-map-gl';
-import { AnyPaint, LinePaint, SymbolPaint } from 'mapbox-gl';
+import { AnyPaint, CirclePaint, LinePaint, SymbolPaint } from 'mapbox-gl';
 
 import { Item, Theme } from '../../../types';
 import { clippedDataSelector, EditorState } from '../../../reducers/editor';
@@ -37,6 +37,30 @@ function adaptSymbolPaint(paint: SymbolPaint, { selectedIDs, hoveredIDs }: Conte
     ...(selectedIDs.length
       ? {
           'icon-opacity': [
+            'case',
+            ['in', ['get', 'id'], ['literal', selectedIDs]],
+            opacity,
+            opacity * UNSELECTED_OPACITY,
+          ],
+        }
+      : {}),
+    ...(hoveredIDs.length
+      ? {
+          'icon-halo-color': ['case', ['in', 'id', ...hoveredIDs], HOVERED_COLOR, 'rgba(0,0,0,0)'],
+          'icon-halo-width': ['case', ['in', 'id', ...hoveredIDs], 5, 0],
+          'icon-halo-blur': ['case', ['in', 'id', ...hoveredIDs], 5, 0],
+        }
+      : {}),
+  };
+}
+
+function adaptCirclePaint(paint: CirclePaint, { selectedIDs, hoveredIDs }: Context): CirclePaint {
+  const opacity = typeof paint['icon-opacity'] === 'number' ? paint['icon-opacity'] : 1;
+  return {
+    ...paint,
+    ...(selectedIDs.length
+      ? {
+          'circle-opacity': [
             'case',
             ['in', ['get', 'id'], ['literal', selectedIDs]],
             opacity,
@@ -264,7 +288,7 @@ const GeoJSONs: FC<{
 
       <Source id={`${prefix}geo/detectors`} type="geojson" data={geoJSONs.Detector}>
         <Layer
-          {...adaptProps(getDetectorsLayerProps(signalsContext), layerContext, adaptSymbolPaint)}
+          {...adaptProps(getDetectorsLayerProps(signalsContext), layerContext, adaptCirclePaint)}
           id={`${prefix}geo/detector-main`}
         />
         <Layer
