@@ -2,7 +2,7 @@ import { Feature, Point, LineString, Position } from 'geojson';
 import { last, differenceWith, isEqual, sortBy, isArray, isNil } from 'lodash';
 import lineSplit from '@turf/line-split';
 import fnLength from '@turf/length';
-import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
+import { JSONSchema7 } from 'json-schema';
 
 import { EditorEntity } from '../../../../types';
 
@@ -239,6 +239,7 @@ export function update<T>(
     diff = differenceWith(targetLine.coordinates, sourceLine.coordinates, isEqual);
   // if no diff, we return the original linear metadata
   if (diff.length === 0) return linearMetadata;
+
   // We take the first one
   // TODO: an impovment can be to take the one in the middle if there are many
   const sourcePoint = diff[0];
@@ -485,9 +486,11 @@ export function getLinearMetadataProperties(schema: JSONSchema7): Array<string> 
   return Object.keys(schema?.properties || {})
     .map((prop) => {
       const propSchema = (schema?.properties || {})[prop] as JSONSchema7;
+      /* eslint-disable dot-notation */
       if (propSchema.type === 'array' && propSchema.items && propSchema.items['$ref']) {
         const refName = propSchema.items['$ref'].replace('#/definitions/', '');
         const refSchema = (schema.definitions || {})[refName] as JSONSchema7;
+        /* eslint-enable dot-notation */
         if (
           refSchema &&
           refSchema.properties &&
@@ -504,7 +507,11 @@ export function getLinearMetadataProperties(schema: JSONSchema7): Array<string> 
 /**
  * Given an entity this function check if it contains somes linear metadata,
  * and fix them.
- * If no modification has been done, the initial object is returned
+ * NOTE: If no modification has been done, the initial object is returned.
+
+ * @param entity The entity with linear metadata
+ * @param schema The JSON schema of the entity
+ * @returns The entity where all the linear metadata are fixed
  */
 export function entityFixLinearMetadata(entity: EditorEntity, schema: JSONSchema7): EditorEntity {
   // check that the geo is a line
@@ -531,4 +538,32 @@ export function entityFixLinearMetadata(entity: EditorEntity, schema: JSONSchema
   });
 
   return hasBeenModified ? result : entity;
+}
+
+/**
+ * TODO: need to be check and tested (specially the underlying update function)
+ * Do the impact on the linear metadata for a modification on lineString.
+ *
+ * @param entity The entity that has been modified and need to be impacted
+ * @param sourceLine The original LineString (before the change)
+ * @returns The entity modified in adquation
+ */
+export function entityDoUpdate<T extends EditorEntity>(entity: T, sourceLine: LineString): T {
+  if (entity.geometry.type === 'LineString' && !isNil(entity.properties)) {
+    const newProps = {};
+    Object.keys(entity.properties).forEach((name) => {
+      const value = (entity.properties as { [key: string]: unknown })[name];
+      // is a LM ?
+      if (isArray(value) && value.length > 0 && !isNil(value[0].begin) && !isNil(value[0].end)) {
+        newProps[name] = update(sourceLine, entity.geometry as LineString, value);
+      } else {
+        newProps[name] = value;
+      }
+    });
+    // eslint-disable-next-line dot-notation
+    newProps['length'] = getLineStringDistance(entity.geometry as LineString);
+
+    return { ...entity, properties: newProps };
+  }
+  return entity;
 }
