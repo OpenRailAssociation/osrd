@@ -117,7 +117,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
         .then((infrastructure) => dispatch(updateInfraID(infrastructure.id)))
         .catch(() => {
           dispatch(setFailure(new Error(t('Editor.errors.infra-not-found', { id: infra }))));
-          dispatch(updateViewport(viewport, `/editor/`));
+          dispatch(updateViewport({}, `/editor/`));
         });
     } else if (infraID) {
       dispatch(updateViewport({}, `/editor/${infraID}`));
@@ -127,7 +127,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
           if (infras && infras.length > 0) {
             const infrastructure = infras[0];
             dispatch(updateInfraID(infrastructure.id));
-            dispatch(updateViewport(viewport, `/editor/${infrastructure.id}`));
+            dispatch(updateViewport({}, `/editor/${infrastructure.id}`));
           } else {
             dispatch(setFailure(new Error(t('Editor.errors.no-infra-available'))));
           }
