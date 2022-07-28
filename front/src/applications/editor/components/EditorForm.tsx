@@ -7,7 +7,7 @@ import './EditorForm.scss';
 import { EditorEntity } from '../../../types';
 import { EditorState } from '../../../reducers/editor';
 import { getJsonSchemaForLayer, getLayerForObjectType } from '../data/utils';
-import { FormComponent, FormLineStringLength } from './LinearMetadata';
+import { FormComponent, FormLineStringLength, entityFixLinearMetadata } from './LinearMetadata';
 
 const fields = {
   ArrayField: FormComponent,
@@ -32,7 +32,8 @@ const EditorForm: React.FC<EditorFormProps> = ({ data, onSubmit, onChange, child
   if (!schema) throw new Error(`Missing data type for ${layer}`);
 
   useEffect(() => {
-    setFormData(data.properties);
+    const entity = entityFixLinearMetadata(data);
+    setFormData(entity.properties);
   }, [data]);
 
   /**
@@ -57,7 +58,6 @@ const EditorForm: React.FC<EditorFormProps> = ({ data, onSubmit, onChange, child
         action={undefined}
         method={undefined}
         schema={schema}
-        liveValidate
         uiSchema={{
           length: {
             'ui:widget': FormLineStringLength,

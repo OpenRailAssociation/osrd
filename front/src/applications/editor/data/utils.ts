@@ -1,6 +1,5 @@
 import { Position } from 'geojson';
 import { JSONSchema7 } from 'json-schema';
-import { UiSchema } from '@rjsf/core';
 
 import { EditorEntity, EditorSchema } from '../../../types';
 

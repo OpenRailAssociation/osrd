@@ -11,13 +11,11 @@ import { useTranslation } from 'react-i18next';
 import { tooltipPosition } from './utils';
 import {
   LinearMetadataItem,
-  fixLinearMetadataItems,
   getZoomedViewBox,
   transalteViewBox,
   splitAt,
   mergeIn,
   resizeSegment,
-  getLineStringDistance,
 } from './data';
 import { LinearMetadataDataviz } from './dataviz';
 import { LinearMetadataTooltip } from './tooltip';
@@ -117,14 +115,8 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
    * => we recompute the linearmedata
    */
   useEffect(() => {
-    setData(
-      fixLinearMetadataItems(
-        formData,
-        formContext.length || getLineStringDistance(formContext.geometry),
-        valueField ? { fieldName: valueField, defaultValue: 0 } : undefined
-      )
-    );
-  }, [formData, formContext.length, formContext.geometry, valueField]);
+    setData(formData);
+  }, [formData]);
 
   /**
    * When selected element change
