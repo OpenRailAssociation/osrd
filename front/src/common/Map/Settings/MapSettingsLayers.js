@@ -4,7 +4,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { updateLayersSettings } from 'reducers/map';
 import { GiElectric } from 'react-icons/gi';
-import { IoMdSpeedometer } from 'react-icons/io';
 import { AiOutlineBlock } from 'react-icons/ai';
 import { MdSpaceBar, MdLinearScale } from 'react-icons/md';
 import BufferStopSVGFile from 'assets/pictures/layersicons/bufferstop.svg';
@@ -81,10 +80,6 @@ export default function MapSettingsLayers() {
         name="signalingtype"
         icon={<AiOutlineBlock />}
         disabled
-      />
-      <FormatSwitch
-        name="speedlimits"
-        icon={<IoMdSpeedometer />}
       />
       <FormatSwitch
         name="tvds"
