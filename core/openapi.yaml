@@ -8,8 +8,8 @@ info:
     url: https://www.gnu.org/licenses/gpl-3.0.fr.html
   version: 0.1.0
 servers:
-  - url: http://gateway.dgexsol.fr/osrd/
-    description: Production server
+  - url: http://gateway.dev.dgexsol.fr/osrd/
+    description: Dev server
   - url: http://gateway.staging.dgexsol.fr/osrd/
     description: Staging server
 tags:
