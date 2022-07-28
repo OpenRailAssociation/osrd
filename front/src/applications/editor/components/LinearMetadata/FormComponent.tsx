@@ -81,6 +81,11 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
   const { name, formData, schema, onChange, formContext, registry } = props;
   const { t } = useTranslation();
 
+  /* eslint-disable  react-hooks/rules-of-hooks */
+  // in case it's an array but the geometry is not a line
+  if (!formContext.geometry || formContext.geometry.type !== 'LineString')
+    return <Fields.ArrayField {...props} />;
+
   // Wich segment area is visible
   const [viewBox, setViewBox] = useState<[number, number] | null>(null);
   // Ref for the tooltip
@@ -95,6 +100,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
   const [mode, setMode] = useState<'dragging' | 'resizing' | null>(null);
   // Fix the data (sort, fix gap, ...)
   const [data, setData] = useState<Array<LinearMetadataItem>>([]);
+
   // Compute the JSON schema of the linear metadata item
   const jsonSchema = itemSchema(schema, registry.rootSchema);
 
@@ -130,10 +136,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
     // The "data" is omitted here, otherwise it is always refreshed
     [selected, data]
   );
-
-  // in case it's an array but the geometry is not a line
-  if (!formContext.geometry || formContext.geometry.type !== 'LineString')
-    return <Fields.ArrayField {...props} />;
+  /* eslint-enable  react-hooks/rules-of-hooks */
 
   return (
     <div className="linear-metadata">
