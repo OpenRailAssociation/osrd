@@ -24,6 +24,7 @@ import {
 } from './components';
 import { TrackEditionState } from './types';
 import { getNewLine } from './utils';
+import { entityDoUpdate } from '../../components/LinearMetadata';
 
 const TrackEditionTool: Tool<TrackEditionState> = {
   // Zone selection:
@@ -176,6 +177,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
         const newState = cloneDeep(state);
 
         newState.track.geometry.coordinates.splice(index + 1, 0, position);
+        newState.track = entityDoUpdate(newState.track, state.track.geometry);
         newState.nearestPoint = null;
         setState(newState);
       }
@@ -234,6 +236,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
       const newState = cloneDeep(state);
       newState.editionState = { type: 'deletePoint' };
       newState.track.geometry.coordinates.splice(editionState.hoveredPointIndex, 1);
+      newState.track = entityDoUpdate(newState.track, state.track.geometry);
       setState(newState);
     }
   },
@@ -318,10 +321,9 @@ const TrackEditionTool: Tool<TrackEditionState> = {
           ? (state.nearestPoint.geometry.coordinates as [number, number])
           : e.lngLat;
 
-      // TODO : impact the move on LMs
       setState({
         ...state,
-        track,
+        track: entityDoUpdate(track, state.track.geometry),
       });
     }
   },
