@@ -49,6 +49,7 @@ export const initialState = {
     operationalpoints: false,
     routes: false,
     signalingtype: true,
+    speedlimittag: undefined,
     speedlimits: false,
     switches: false,
     tvds: false,
