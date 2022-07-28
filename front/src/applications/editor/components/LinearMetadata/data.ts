@@ -480,7 +480,7 @@ export function cropForDatavizViewbox(
  * If no modification has been done, the initial object is returned
  */
 export function entityFixLinearMetadata(entity: EditorEntity): EditorEntity {
-  if (entity.geometry.type !== 'LineString') return entity;
+  if (!entity.geometry || entity.geometry.type !== 'LineString') return entity;
 
   // Compute/get the length of the geometry
   // we need it to fix LM
