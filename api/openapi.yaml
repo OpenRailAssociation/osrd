@@ -928,6 +928,22 @@ components:
         schematic:
           type: object
           description: GeoJson format
+        slopes:
+          description: Slopes on the path
+          type: array
+          items:
+            type: object
+            properties:
+              gradient: { type: number, format: float }
+              position: { type: number, format: float }
+        curves:
+          description: Curves on the path
+          type: array
+          items:
+            type: object
+            properties:
+              radius: { type: number, format: float }
+              position: { type: number, format: float }
         steps:
           type: array
           items:
