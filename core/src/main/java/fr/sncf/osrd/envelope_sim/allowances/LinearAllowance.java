@@ -2,6 +2,7 @@ package fr.sncf.osrd.envelope_sim.allowances;
 
 import fr.sncf.osrd.envelope.*;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
+import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import java.util.*;
@@ -44,7 +45,15 @@ public class LinearAllowance extends AbstractAllowanceWithRanges {
             var scaledSpeeds = Arrays.stream(speeds)
                     .map(x -> x * ratio)
                     .toArray();
-            var scaledPart = EnvelopePart.generateTimes(positions, scaledSpeeds);
+            var attr = part.getAttr(EnvelopeProfile.class);
+            var attrs = List.<EnvelopeAttr>of();
+            if (attr != null)
+                attrs = List.of(attr);
+            var scaledPart = EnvelopePart.generateTimes(
+                    attrs,
+                    positions,
+                    scaledSpeeds
+            );
             builder.addPart(scaledPart);
         }
         return builder.build();

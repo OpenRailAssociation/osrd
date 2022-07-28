@@ -729,7 +729,6 @@ public class AllowanceTests {
     }
 
     @Test
-    @Disabled("see https://github.com/DGEXSolutions/osrd/issues/1401")
     public void testMarecoAfterLinear() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
 
