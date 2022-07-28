@@ -295,6 +295,7 @@ export const LinearMetadataDataviz = <T extends any>({
     };
   }, [resizing, onResize, wrapper, fullLength]);
 
+  console.log(fullLength);
   return (
     <div className={cx('linear-metadata-visualisation')}>
       <div
@@ -318,7 +319,7 @@ export const LinearMetadataDataviz = <T extends any>({
         {/* Create one div per item for the X axis */}
         {data4viz.map((segment) => (
           <div
-            key={`${segment.index}-${segment.begin}-${segment.end}`}
+            key={`${segment.index}-${segment.begin}-${segment.end}-${fullLength}`}
             className={cx(
               'item',
               highlighted.includes(segment.index) && 'highlighted',
