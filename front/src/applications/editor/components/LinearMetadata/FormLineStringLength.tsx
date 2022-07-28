@@ -29,10 +29,8 @@ export const FormLineStringLength: React.FC<WidgetProps> = (props) => {
    * => if it is valid, we call the onChange
    */
   useEffect(() => {
-    if (length >= min && length <= max) {
-      onChange(length);
-    }
-  }, [length, min, max, onChange]);
+    setLength(value);
+  }, [value]);
 
   return (
     <div>
@@ -49,7 +47,9 @@ export const FormLineStringLength: React.FC<WidgetProps> = (props) => {
           step="any"
           value={length}
           onChange={(e) => {
-            setLength(parseFloat(e.target.value));
+            const nValue = parseFloat(e.target.value);
+            if (nValue >= min && nValue <= max) onChange(nValue);
+            else setLength(nValue);
           }}
         />
       )}
@@ -60,7 +60,7 @@ export const FormLineStringLength: React.FC<WidgetProps> = (props) => {
             type="button"
             className="btn btn-link btn-secondary"
             title={t('Editor.linear-metadata.sync-length-with-geometry')}
-            onClick={() => setLength(geoLength)}
+            onClick={() => onChange(geoLength)}
           >
             {t('Editor.linear-metadata.sync-length-with-geometry')}
           </button>
