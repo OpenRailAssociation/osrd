@@ -318,7 +318,7 @@ export const LinearMetadataDataviz = <T extends any>({
         {/* Create one div per item for the X axis */}
         {data4viz.map((segment) => (
           <div
-            key={`${segment.begin}-${segment.end}`}
+            key={`${segment.index}-${segment.begin}-${segment.end}`}
             className={cx(
               'item',
               highlighted.includes(segment.index) && 'highlighted',
