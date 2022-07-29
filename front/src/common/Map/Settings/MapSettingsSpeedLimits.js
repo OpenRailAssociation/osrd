@@ -73,6 +73,7 @@ const FormatSwitch = (props) => {
           id=""
           options={speedLimitsTags}
           onChange={dispatchSetSpeedLimitsTags}
+          selectedValue={layersSettings.speedlimittag}
           sm
         />
       </div>
