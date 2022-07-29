@@ -1,5 +1,5 @@
 import { Feature, Point, LineString, Position } from 'geojson';
-import { last, differenceWith, isEqual, sortBy, isArray, isNil } from 'lodash';
+import { last, differenceWith, cloneDeep, isEqual, sortBy, isArray, isNil } from 'lodash';
 import lineSplit from '@turf/line-split';
 import fnLength from '@turf/length';
 import { JSONSchema7 } from 'json-schema';
@@ -65,47 +65,99 @@ export function getLineStringDistance(line: LineString): number {
  * @param beginOrEnd do the change at begin or the end of the item ?
  * @param opts Options of this functions (like the min size of segment)
  * @throws An error if the given index doesn't exist
- * @throws An error if gap is bigger than the sibling element
- * @throws An error if gap is negative and is bigger than the element size
+ * @returns An object composed of the new linearMetadata and its new position
  */
 export function resizeSegment<T>(
   linearMetadata: Array<LinearMetadataItem<T>>,
   itemChangeIndex: number,
   gap: number,
-  beginOrEnd: 'begin' | 'end' = 'end',
-  opts: { segmentMinSize: number } = { segmentMinSize: SEGMENT_MIN_SIZE }
-): Array<LinearMetadataItem<T>> {
+  beginOrEnd: 'begin' | 'end' = 'end'
+): { result: Array<LinearMetadataItem<T>>; newIndexMapping: Record<number, number | null> } {
   if (itemChangeIndex >= linearMetadata.length) throw new Error("Given index doesn't exist");
-  if (
-    linearMetadata[itemChangeIndex].end - linearMetadata[itemChangeIndex].begin + gap <
-    opts.segmentMinSize
-  )
-    throw new Error('There is not enought space on the element');
 
-  // if you try to edit begin on first segment
-  if (itemChangeIndex === 0 && beginOrEnd === 'begin') {
-    throw new Error("Can't change begin on first segment");
-  }
+  const newIndexMapping = linearMetadata.reduce((acc, _curr, index) => {
+    acc[index] = index;
+    return acc;
+  }, {} as Record<number, number | null>);
 
-  return linearMetadata.map((item, index) => {
-    const result = { ...item };
-    if (beginOrEnd === 'begin') {
-      if (index === itemChangeIndex - 1) {
-        result.end += gap;
+  if (itemChangeIndex === 0 && beginOrEnd === 'begin')
+    return { result: linearMetadata, newIndexMapping };
+  if (itemChangeIndex === linearMetadata.length - 1 && beginOrEnd === 'end')
+    return { result: linearMetadata, newIndexMapping };
+
+  const min = linearMetadata[0].begin;
+  const max = last(linearMetadata)?.end || 0;
+
+  // apply the modification on the segment
+  let result = cloneDeep(linearMetadata);
+  if (beginOrEnd === 'begin') result[itemChangeIndex].begin += gap;
+  else result[itemChangeIndex].end += gap;
+  // can't move before min.
+  if (result[itemChangeIndex].begin < min) result[itemChangeIndex].begin = 0;
+  // can't move after max.
+  if (result[itemChangeIndex].end > max) result[itemChangeIndex].end = max;
+
+  // compute new width
+  const newWidth = result[itemChangeIndex].end - result[itemChangeIndex].begin;
+  const oldWidth = linearMetadata[itemChangeIndex].end - linearMetadata[itemChangeIndex].begin;
+
+  if (newWidth > 0) {
+    // if element width has reduced, the impact is easy (only sibling)
+    if (newWidth < oldWidth) {
+      if (itemChangeIndex > 0) {
+        result[itemChangeIndex - 1].end = result[itemChangeIndex].begin;
       }
-      if (index === itemChangeIndex) {
-        result.begin += gap;
+      if (itemChangeIndex < result.length - 1) {
+        result[itemChangeIndex + 1].begin = result[itemChangeIndex].end;
       }
-    } else {
-      if (index === itemChangeIndex) {
-        result.end += gap;
-      }
-      if (index === itemChangeIndex + 1) {
-        result.begin += gap;
-      }
+      return { result, newIndexMapping };
     }
-    return result;
-  });
+
+    // if element width has increase, the impact is easy (only sibling)
+    // fix the LM for the overlap
+    const itemChanged = result[itemChangeIndex];
+    const newIndex = [] as Array<number>;
+    result = result.flatMap((item, index) => {
+      if (index === itemChangeIndex) {
+        if (newWidth > 0) {
+          newIndex.push(index);
+          return [item];
+        }
+        // else
+        newIndexMapping[index] = null;
+        return [];
+      }
+
+      // case full overlap => remove
+      if (item.begin >= itemChanged.begin && item.end <= itemChanged.end) {
+        newIndexMapping[index] = null;
+        return [];
+      }
+      // case partial overlap at the end
+      if (item.begin <= itemChanged.begin && item.end >= itemChanged.begin) {
+        newIndex.push(index);
+        return [{ ...item, end: itemChanged.begin }];
+      }
+
+      // case partial overlap at the start
+      if (item.begin <= itemChanged.end && item.end >= itemChanged.end) {
+        newIndex.push(index);
+        return [{ ...item, begin: itemChanged.end }];
+      }
+
+      newIndex.push(index);
+      return [item];
+    });
+
+    // update newIndexMapping with the newIndex
+    newIndex.forEach((o, n) => {
+      newIndexMapping[o] = n;
+    });
+
+    return { result, newIndexMapping };
+  }
+  // else
+  return resizeSegment(result, itemChangeIndex + 1, newWidth - oldWidth, 'begin');
 }
 
 /**
@@ -199,7 +251,7 @@ export function fixLinearMetadataItems<T>(
       if (itemLength > SEGMENT_MIN_SIZE) {
         const gap =
           itemLength - SEGMENT_MIN_SIZE < reduceLeft ? itemLength - SEGMENT_MIN_SIZE : reduceLeft;
-        fixedLinearMetadata = resizeSegment(fixedLinearMetadata, index, -1 * gap);
+        fixedLinearMetadata = resizeSegment(fixedLinearMetadata, index, -1 * gap).result;
         reduceLeft -= gap;
       }
       index -= 1;

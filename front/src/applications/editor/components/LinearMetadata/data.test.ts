@@ -248,7 +248,7 @@ describe('Testing linear metadata functions', () => {
       }
     });
 
-    it('increase on the last item (means increase the length) should', () => {
+    it('increase on the last item should do nothing', () => {
       const wrapper: Array<LinearMetadataItem<Degree>> = [
         { begin: 0, end: 10, degree: 0 },
         { begin: 10, end: 20, degree: 0 },
@@ -256,11 +256,10 @@ describe('Testing linear metadata functions', () => {
         { begin: 30, end: 40, degree: 0 },
       ];
       const result = resizeSegment(wrapper, 3, 5);
-
-      assert.equal(result[3].end, 45);
+      assert.equal(result.result[3].end, 40);
     });
 
-    it('decrease on the last item (means reducing the length) should work', () => {
+    it('decrease on the last item should work', () => {
       const wrapper: Array<LinearMetadataItem<Degree>> = [
         { begin: 0, end: 10, degree: 0 },
         { begin: 10, end: 20, degree: 0 },
@@ -268,8 +267,7 @@ describe('Testing linear metadata functions', () => {
         { begin: 30, end: 40, degree: 0 },
       ];
       const result = resizeSegment(wrapper, 3, -5);
-
-      assert.equal(result[3].end, 35);
+      assert.equal(result.result[3].end, 40);
     });
 
     it('increase should work', () => {
@@ -282,11 +280,11 @@ describe('Testing linear metadata functions', () => {
       const result = resizeSegment(wrapper, 2, 5);
 
       // check the decrease of the prev element
-      assert.equal(result[2].begin, 20);
-      assert.equal(result[2].end, 35);
+      assert.equal(result.result[2].begin, 20);
+      assert.equal(result.result[2].end, 35);
       // check the increase of the last element
-      assert.equal(result[3].begin, 35);
-      assert.equal(result[3].end, 40);
+      assert.equal(result.result[3].begin, 35);
+      assert.equal(result.result[3].end, 40);
     });
 
     it('decrease should work', () => {
@@ -299,11 +297,11 @@ describe('Testing linear metadata functions', () => {
       const result = resizeSegment(wrapper, 2, -5);
 
       // check the increase of the prev element
-      assert.equal(result[2].begin, 20);
-      assert.equal(result[2].end, 25);
+      assert.equal(result.result[2].begin, 20);
+      assert.equal(result.result[2].end, 25);
       // check the decrease of the last element
-      assert.equal(result[3].begin, 25);
-      assert.equal(result[3].end, 40);
+      assert.equal(result.result[3].begin, 25);
+      assert.equal(result.result[3].end, 40);
     });
 
     it('decrease more than the element size should fail', () => {
