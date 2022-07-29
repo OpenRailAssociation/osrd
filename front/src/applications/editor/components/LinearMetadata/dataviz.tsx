@@ -27,6 +27,20 @@ function computeStyleForDataValue(value: number, min: number, max: number): CSSP
   };
 }
 
+/**
+ * Get the linear metadata mouse position from a react event.
+ */
+function getPositionFromMouseEvent(
+  event: React.MouseEvent<HTMLDivElement>,
+  segment: LinearMetadataItem
+): number {
+  const target = event.target as HTMLDivElement;
+  if (target.className.includes('resize')) return segment.end;
+  const pxOffset = event.nativeEvent.offsetX;
+  const pxSize = target.offsetWidth;
+  return Math.round(segment.begin + (pxOffset / pxSize) * (segment.end - segment.begin));
+}
+
 const Scale: React.FC<{
   className?: string;
   begin: number;
@@ -90,7 +104,12 @@ export interface LinearMetadataDatavizProps<T> {
   /**
    * Event when the mouse move on a data item
    */
-  onMouseMove?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+  onMouseMove?: (
+    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
+    item: LinearMetadataItem<T>,
+    index: number,
+    point: number // point on the linear metadata
+  ) => void;
 
   /**
    * Event on click on a data item
@@ -98,7 +117,18 @@ export interface LinearMetadataDatavizProps<T> {
   onClick?: (
     e: React.MouseEvent<HTMLDivElement, MouseEvent>,
     item: LinearMetadataItem<T>,
-    index: number
+    index: number,
+    point: number // point on the linear metadata
+  ) => void;
+
+  /**
+   * Event on click on a data item
+   */
+  onDoubleClick?: (
+    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
+    item: LinearMetadataItem<T>,
+    index: number,
+    point: number // point on the linear metadata
   ) => void;
 
   /**
@@ -107,7 +137,8 @@ export interface LinearMetadataDatavizProps<T> {
   onMouseOver?: (
     e: React.MouseEvent<HTMLDivElement, MouseEvent>,
     item: LinearMetadataItem<T>,
-    index: number
+    index: number,
+    point: number // point on the linear metadata
   ) => void;
 
   /**
@@ -116,7 +147,8 @@ export interface LinearMetadataDatavizProps<T> {
   onMouseEnter?: (
     e: React.MouseEvent<HTMLDivElement, MouseEvent>,
     item: LinearMetadataItem<T>,
-    index: number
+    index: number,
+    point: number // point on the linear metadata
   ) => void;
 
   /**
@@ -125,7 +157,8 @@ export interface LinearMetadataDatavizProps<T> {
   onMouseLeave?: (
     e: React.MouseEvent<HTMLDivElement, MouseEvent>,
     item: LinearMetadataItem<T>,
-    index: number
+    index: number,
+    point: number // point on the linear metadata
   ) => void;
 
   /**
@@ -159,6 +192,7 @@ export const LinearMetadataDataviz = <T extends any>({
   viewBox,
   highlighted = [],
   onClick,
+  onDoubleClick,
   onMouseMove,
   onMouseOver,
   onMouseEnter,
@@ -332,25 +366,45 @@ export const LinearMetadataDataviz = <T extends any>({
             }}
             onClick={(e) => {
               if (!draginStartAt && onClick) {
-                onClick(e, data[segment.index], segment.index);
+                const item = data[segment.index];
+                const point = getPositionFromMouseEvent(e, item);
+                onClick(e, item, segment.index, point);
+              }
+            }}
+            onDoubleClick={(e) => {
+              if (!draginStartAt && onDoubleClick) {
+                const item = data[segment.index];
+                const point = getPositionFromMouseEvent(e, item);
+                onDoubleClick(e, item, segment.index, point);
               }
             }}
             onMouseOver={(e) => {
               if (!draginStartAt && onMouseOver) {
-                onMouseOver(e, data[segment.index], segment.index);
+                const item = data[segment.index];
+                const point = getPositionFromMouseEvent(e, item);
+                onMouseOver(e, item, segment.index, point);
               }
             }}
             onMouseMove={(e) => {
               if (!draginStartAt && onMouseMove) {
-                onMouseMove(e);
+                const item = data[segment.index];
+                const point = getPositionFromMouseEvent(e, item);
+                onMouseMove(e, item, segment.index, point);
               }
             }}
             onMouseEnter={(e) => {
-              if (!draginStartAt && onMouseEnter)
-                onMouseEnter(e, data[segment.index], segment.index);
+              if (!draginStartAt && onMouseEnter) {
+                const item = data[segment.index];
+                const point = getPositionFromMouseEvent(e, item);
+                onMouseEnter(e, item, segment.index, point);
+              }
             }}
             onMouseLeave={(e) => {
-              if (onMouseLeave) onMouseLeave(e, data[segment.index], segment.index);
+              if (onMouseLeave) {
+                const item = data[segment.index];
+                const point = getPositionFromMouseEvent(e, item);
+                onMouseLeave(e, item, segment.index, point);
+              }
             }}
             onMouseDown={(e) => {
               setDraginStartAt(e.clientX);
@@ -358,10 +412,8 @@ export const LinearMetadataDataviz = <T extends any>({
             onWheel={(e) => {
               if (!draginStartAt && onWheel) {
                 const item = data[segment.index];
-                const pxOffset = e.nativeEvent.offsetX;
-                const pxSize = (e.target as HTMLDivElement).offsetWidth;
-                const point = item.begin + (pxOffset / pxSize) * (item.end - item.begin);
-                onWheel(e, data[segment.index], segment.index, point);
+                const point = getPositionFromMouseEvent(e, item);
+                onWheel(e, item, segment.index, point);
               }
             }}
           >
@@ -381,6 +433,7 @@ export const LinearMetadataDataviz = <T extends any>({
             {/* Create a div for the resize */}
             {segment.index < data.length - 1 && segment.end === data[segment.index].end && (
               <div
+                title="Resize"
                 className={cx('resize', resizing && resizing.index === segment.index && 'selected')}
                 onClick={(e) => {
                   e.stopPropagation();

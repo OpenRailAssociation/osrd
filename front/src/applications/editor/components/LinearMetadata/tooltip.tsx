@@ -5,11 +5,13 @@ import { LinearMetadataItem } from './data';
 
 interface LinearMetadataTooltipProps<T> {
   item: LinearMetadataItem<T>;
+  point?: number;
   schema: JSONSchema7;
 }
 
 export const LinearMetadataTooltip = <T extends Record<string, unknown>>({
   item,
+  point,
   schema,
 }: LinearMetadataTooltipProps<T>) => {
   const properties = Object.keys(schema.properties || {}).filter(
@@ -20,7 +22,15 @@ export const LinearMetadataTooltip = <T extends Record<string, unknown>>({
     <div className="linear-metadata-tooltip">
       <div className="header">
         <span>{Math.round(item.begin)}</span>
-        <span className="mx-3" />
+        {point &&
+          Math.round(point) !== Math.round(item.begin) &&
+          Math.round(point) !== Math.round(item.end) && (
+            <>
+              <span>-</span>
+              <span>{Math.round(point)}</span>
+            </>
+          )}
+        <span>-</span>
         <span>{Math.round(item.end)}</span>
       </div>
       <div className="content">
