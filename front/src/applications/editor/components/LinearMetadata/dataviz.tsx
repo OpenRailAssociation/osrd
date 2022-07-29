@@ -274,13 +274,13 @@ export const LinearMetadataDataviz = <T extends any>({
       fnUp = (e) => {
         const delta = ((e.clientX - resizing.startAt) / wrapperWidth) * fullLength;
         setResizing(null);
-        setTimeout(() => onResize(resizing.index, delta, true), 0);
+        onResize(resizing.index, delta, true);
       };
       // function for mouve
       fnMove = (e) => {
         const delta = ((e.clientX - resizing.startAt) / wrapperWidth) * fullLength;
-        setResizing({ ...resizing, startAt: e.clientX });
-        setTimeout(() => onResize(resizing.index, delta, false), 0);
+        // setResizing({ ...resizing, startAt: e.clientX });
+        onResize(resizing.index, delta, false);
       };
 
       document.addEventListener('mouseup', fnUp, true);
@@ -295,7 +295,7 @@ export const LinearMetadataDataviz = <T extends any>({
     };
   }, [resizing, onResize, wrapper, fullLength]);
 
-  console.log(fullLength);
+  console.log(resizing);
   return (
     <div className={cx('linear-metadata-visualisation')}>
       <div
