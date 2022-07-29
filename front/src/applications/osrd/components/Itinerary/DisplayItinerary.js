@@ -32,7 +32,14 @@ export default function DisplayItinerary(props) {
       <h2 className="d-flex align-items-center mb-0 pl-4">
         <span className="mr-1 h2 text-success"><RiMapPin2Fill /></span>
         <span>{t('osrdconf:origin')}</span>
-        <small className="ml-1">{osrdconf.pathfindingID}</small>
+        <button
+          type="button"
+          data-toggle="modal"
+          data-target="#modalPathJSONDetail"
+          className="btn btn-link"
+        >
+          <small className="ml-1">{osrdconf.pathfindingID}</small>
+        </button>
       </h2>
       <div className="mb-3 d-flex align-items-center w-100 osrd-config-place">
         {osrdconf.origin !== undefined ? (
