@@ -90,7 +90,7 @@ export const TrackEditionLayers: FC = () => {
           paint={{ 'line-color': TRACK_COLOR, 'line-dasharray': [2, 2] }}
         />
       </Source>
-      {additionalSegment.length && (
+      {additionalSegment.length > 0 && (
         <Source
           type="geojson"
           data={{
