@@ -15,11 +15,13 @@
   "operationalpoints": "Points remarquables",
   "routes": "Cantons",
   "signalingtype": "Type de block",
+  "signalisation": "Signalisation",
   "showOSM": "Afficher le fond de carte",
   "showOSMtracksections": "Afficher les voies OSM",
   "speedlimits": "Vitesses limites",
   "stops": "Pancartes d'arrêt",
   "switches": "Appareils de voie",
+  "tags": "Catégories",
   "tivs": "Limites de vitesse",
   "tracksources": {
     "geographic": "Géographique",
