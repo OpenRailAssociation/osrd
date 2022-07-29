@@ -1,7 +1,8 @@
 // SNCF color blue green
-$color: #0088ce;
+$color: var(--primary);
 // SNCF color green
-$color-highlight: #82be00;
+$color-highlight: var(--success);
+$white: var(--white);
 
 $color-nodata: var(--danger);
 $tooltip-bg-color: var(--black);
@@ -10,6 +11,14 @@ $dataviz-height: 6em;
 $scaling-height: 1px;
 $scaling-y-width: 1.5em;
 $resize-width: 3px;
+
+// lighten ~ mix with white function
+@function mixw($variable, $opacity) {
+  @return unquote(
+    'linear-gradient(to top,rgba(255, 255, 255,' + $opacity + '),rgba(255, 255, 255,' + $opacity +
+      ')) ' + $variable
+  );
+}
 
 @mixin unselectable {
   -moz-user-select: -moz-none;
@@ -82,20 +91,14 @@ $resize-width: 3px;
 
           div.item {
             height: $dataviz-height;
-            background-color: rgba($color, 0.1);
+            background: mixw($color, 0.9);
             display: flex;
             flex-direction: row;
             align-items: flex-end;
             justify-content: flex-end;
 
-            &.highlighted {
-              background-color: rgba($color-highlight, 0.2);
-              div.value {
-                background-color: $color-highlight;
-              }
-            }
-
             &.no-data {
+              background-color: mixw($color, 0.9);
               background-image: repeating-linear-gradient(
                 45deg,
                 $color-nodata,
@@ -103,6 +106,13 @@ $resize-width: 3px;
                 transparent 2px,
                 transparent 10px
               );
+            }
+
+            &.highlighted {
+              background-color: $white;
+              div.value {
+                background-color: $color-highlight;
+              }
             }
 
             div.value {
