@@ -1,6 +1,10 @@
 form.rjsf {
+  .form-control {
+    border: none;
+    border-style: 90%;
+    border-bottom: 1px solid var(--primary);
+  }
   .form-control:not(.readonly) {
-    border: 1px solid #747678;
     background-color: var(--white);
 
     &:focus {

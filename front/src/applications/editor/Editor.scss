@@ -1,7 +1,8 @@
 .editor-root {
-  $blue: var(--blue);
-  $white: white;
-  $grey: #d0d0d0;
+  $blue: var(--primary);
+  $blue-dark: var(--primary-dark);
+  $white: var(--white);
+  $gray: var(--gray);
 
   padding-top: 3.75rem; // Header height
 
@@ -29,11 +30,11 @@
 
     &.active:not(:disabled) {
       color: $white;
-      background: $blue;
+      background: $blue-dark;
     }
 
     &:disabled {
-      color: $grey;
+      color: $gray;
     }
   }
 
@@ -58,15 +59,14 @@
     }
 
     .separator {
-      border-bottom: 2px solid $grey;
+      border-bottom: 2px solid $gray;
       margin: 0 5px 0.5rem;
     }
   }
 
   .tool-box {
-    background: #0088ce;
-
     button.active:not(:disabled) {
+      background: $blue-dark;
       border: 3px solid $white;
 
       &::after {
@@ -93,7 +93,7 @@
       border: 3px solid $blue;
     }
     button:disabled {
-      border: 3px solid grey;
+      border: 3px solid $gray;
     }
   }
   .panel-box {
