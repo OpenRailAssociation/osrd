@@ -313,7 +313,6 @@ export const LinearMetadataDataviz = <T extends any>({
       // function for mouve
       fnMove = (e) => {
         const delta = ((e.clientX - resizing.startAt) / wrapperWidth) * fullLength;
-        // setResizing({ ...resizing, startAt: e.clientX });
         onResize(resizing.index, delta, false);
       };
 
@@ -365,42 +364,42 @@ export const LinearMetadataDataviz = <T extends any>({
               width: `${((segment.end - segment.begin) / fullLength) * 100}%`,
             }}
             onClick={(e) => {
-              if (!draginStartAt && onClick) {
+              if (!draginStartAt && onClick && data[segment.index]) {
                 const item = data[segment.index];
                 const point = getPositionFromMouseEvent(e, item);
                 onClick(e, item, segment.index, point);
               }
             }}
             onDoubleClick={(e) => {
-              if (!draginStartAt && onDoubleClick) {
+              if (!draginStartAt && onDoubleClick && data[segment.index]) {
                 const item = data[segment.index];
                 const point = getPositionFromMouseEvent(e, item);
                 onDoubleClick(e, item, segment.index, point);
               }
             }}
             onMouseOver={(e) => {
-              if (!draginStartAt && onMouseOver) {
+              if (!draginStartAt && onMouseOver && data[segment.index]) {
                 const item = data[segment.index];
                 const point = getPositionFromMouseEvent(e, item);
                 onMouseOver(e, item, segment.index, point);
               }
             }}
             onMouseMove={(e) => {
-              if (!draginStartAt && onMouseMove) {
+              if (!draginStartAt && onMouseMove && data[segment.index]) {
                 const item = data[segment.index];
                 const point = getPositionFromMouseEvent(e, item);
                 onMouseMove(e, item, segment.index, point);
               }
             }}
             onMouseEnter={(e) => {
-              if (!draginStartAt && onMouseEnter) {
+              if (!draginStartAt && onMouseEnter && data[segment.index]) {
                 const item = data[segment.index];
                 const point = getPositionFromMouseEvent(e, item);
                 onMouseEnter(e, item, segment.index, point);
               }
             }}
             onMouseLeave={(e) => {
-              if (onMouseLeave) {
+              if (onMouseLeave && data[segment.index]) {
                 const item = data[segment.index];
                 const point = getPositionFromMouseEvent(e, item);
                 onMouseLeave(e, item, segment.index, point);
@@ -410,7 +409,7 @@ export const LinearMetadataDataviz = <T extends any>({
               setDraginStartAt(e.clientX);
             }}
             onWheel={(e) => {
-              if (!draginStartAt && onWheel) {
+              if (!draginStartAt && onWheel && data[segment.index]) {
                 const item = data[segment.index];
                 const point = getPositionFromMouseEvent(e, item);
                 onWheel(e, item, segment.index, point);

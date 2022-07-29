@@ -144,7 +144,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
         className={`editor-root mastcontainer mastcontainer-map${fullscreen ? ' fullscreen' : ''}`}
       >
         <div className="layout">
-          <div className="tool-box">
+          <div className="tool-box bg-primary">
             {TOOLS.map((tool) => {
               const { id, icon: IconComponent, labelTranslationKey, isDisabled } = tool;
               const label = t(labelTranslationKey);

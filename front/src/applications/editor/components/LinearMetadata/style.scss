@@ -106,6 +106,10 @@ $resize-width: 3px;
                 transparent 2px,
                 transparent 10px
               );
+
+              &.highlighted {
+                background-color: $color-highlight;
+              }
             }
 
             &.highlighted {
