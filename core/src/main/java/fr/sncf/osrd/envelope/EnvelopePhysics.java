@@ -188,7 +188,7 @@ public class EnvelopePhysics {
         var aPositions = a.clonePositions();
         var aSpeeds = a.cloneSpeeds();
 
-        var stepIndex = a.getStepIndex(beginPos);
+        var stepIndex = a.findLeft(beginPos);
         var endPos = Math.min(a.getEndPos(), b.getEndPos());
 
         var speedDiff = a.interpolateSpeed(beginPos) - b.interpolateSpeed(beginPos);
@@ -197,13 +197,15 @@ public class EnvelopePhysics {
 
         // using the intermediate value theorem, a and b intersect if and only if a - b change its sign
         // a and b being continuous EnvelopeParts
-        while (pos < endPos) {
+        while (Math.signum(speedDiff) == initialSpeedDiffSign) {
             speedDiff = aSpeeds[stepIndex] - b.interpolateSpeed(pos);
             stepIndex++;
             pos = aPositions[stepIndex];
-            if (Math.signum(speedDiff) != initialSpeedDiffSign)
-                return true;
+            if (pos >= endPos) {
+                speedDiff = a.interpolateSpeed(endPos) - b.interpolateSpeed(endPos);
+                return Math.signum(speedDiff) != initialSpeedDiffSign;
+            }
         }
-        return false;
+        return true;
     }
 }

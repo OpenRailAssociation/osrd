@@ -1,6 +1,8 @@
 package fr.sncf.osrd.envelope;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import fr.sncf.osrd.envelope.EnvelopeTestUtils.TestAttr;
@@ -86,5 +88,39 @@ class EnvelopePartTest {
         assertEquals(ep1.hashCode(), ep2.hashCode());
         assertNotEquals(ep1, ep3);
         assertNotEquals(ep1.hashCode(), ep3.hashCode());
+    }
+
+    @Test
+    void testAreIntersecting() {
+        // 4 ooooooooooooooooX <------ ep4
+        //                 X
+        // 3     --------X-------- <-- ep1
+        //             X
+        // 2         X  <------------- ep2
+        //         X
+        // 1 ****X**************** <-- ep3
+        //     X
+        // 0 X
+        //   0   1   2   3   4   5
+        final var ep1 = EnvelopePart.generateTimes(
+                new double[] {1, 5},
+                new double[] {3, 3}
+        );
+        final var ep2 = EnvelopePart.generateTimes(
+                new double[] {0, 4},
+                new double[] {0, 4}
+        );
+        final var ep3 = EnvelopePart.generateTimes(
+                new double[] {0, 5},
+                new double[] {1, 1}
+        );
+        final var ep4 = EnvelopePart.generateTimes(
+                new double[] {0, 4},
+                new double[] {4, 4}
+        );
+        assertTrue(EnvelopePhysics.areIntersecting(ep1, ep2));
+        assertTrue(EnvelopePhysics.areIntersecting(ep2, ep3));
+        assertFalse(EnvelopePhysics.areIntersecting(ep1, ep3));
+        assertTrue(EnvelopePhysics.areIntersecting(ep2, ep4));
     }
 }
