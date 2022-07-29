@@ -142,7 +142,7 @@ export function getSignalMatLayerProps({
 
   const props: LayerProps = {
     type: 'symbol',
-    minzoom: 14,
+    minzoom: 12,
     filter: ['in', 'installation_type', ...signalsList],
     paint: {},
     layout: {
