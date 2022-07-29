@@ -295,7 +295,6 @@ export const LinearMetadataDataviz = <T extends any>({
     };
   }, [resizing, onResize, wrapper, fullLength]);
 
-  console.log(resizing);
   return (
     <div className={cx('linear-metadata-visualisation')}>
       <div
@@ -375,6 +374,9 @@ export const LinearMetadataDataviz = <T extends any>({
                   style={computeStyleForDataValue(data[segment.index][field], min, max)}
                 />
               )}
+            {!field && !isNilObject(data[segment.index], ['begin', 'end', 'index']) && (
+              <div className="value" style={{ height: '100%' }} />
+            )}
 
             {/* Create a div for the resize */}
             {segment.index < data.length - 1 && segment.end === data[segment.index].end && (
