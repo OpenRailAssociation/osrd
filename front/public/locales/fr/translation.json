@@ -12,25 +12,28 @@
     "filter": "Filtrer",
     "itinerary": "Itinéraire",
     "loading": "Chargement...",
-    "save": "Save",
+    "save": "Sauvegarder",
     "search": "Rechercher",
     "settings": "Paramètres",
     "sort": "Tri",
-    "train(s)": "train(s)"
+    "train(s)": "train(s)",
+    "previous": "Précedent",
+    "next": "Suivant",
+    "zoom-in": "Zoomer",
+    "zoom-out": "Dézoomer"
   },
   "Editor": {
     "title": "Éditeur",
     "tool-help": "Voir la description de l'outil actif",
     "nav": {
       "recenter": "Recentrer la carte",
-      "toggle-layers": "[TODO] Choisir les couches à afficher",
-      "zoom-in": "Zoomer",
-      "zoom-out": "Dézoomer"
+      "toggle-layers": "[TODO] Choisir les couches à afficher"
     },
     "errors": {
       "infra-not-found": "L'infrastructure {{id}} non trouvée",
       "no-infra-available": "Votre compte n'est lié à aucune infrastructure",
-      "technical": "Une erreur technique est survenue : {{msg}}"
+      "technical": "Une erreur technique est survenue : {{msg}}",
+      "length-out-of-sync-with-geometry": "La distance renseignée est trop éloignée de celle de la géométrie (Doit être compris entre {{min}} et {{max}})"
     },
     "tools": {
       "track-edition": {
@@ -101,6 +104,12 @@
           "new-entity": "Créer un nouveau détecteur"
         }
       }
+    },
+    "linear-metadata": {
+      "merge-with-right": "Fusionner avec l'élément suivant",
+      "merge-with-left": "Fusionner avec l'élément précédent",
+      "split": "Couper l'élément en deux",
+      "sync-length-with-geometry": "Synchroniser avec la géométrie"
     },
     "entities": {
       "track_section": "Track section",

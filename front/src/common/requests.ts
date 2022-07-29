@@ -84,13 +84,13 @@ export async function get<T = any>(path: string, params?: { [key: string]: unkno
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function post<P = any, T = any>(
+export async function post<P = any, R = any>(
   path: string,
   payload: P,
   config: AxiosRequestConfig = {}
-): Promise<T> {
+): Promise<R> {
   try {
-    const res = await axios.post<T>(formatPath(path), payload, { ...getAuthConfig(), ...config });
+    const res = await axios.post<R>(formatPath(path), payload, { ...getAuthConfig(), ...config });
     return res.data;
   } catch (err) {
     throw handleAxiosError(err);

@@ -40,7 +40,7 @@ const NavButtons: NavButton[][] = [
     {
       id: 'zoom-in',
       icon: FiZoomIn,
-      labelTranslationKey: 'Editor.nav.zoom-in',
+      labelTranslationKey: 'common.zoom-in',
       onClick({ setViewport, viewport }) {
         setViewport({
           ...viewport,
@@ -54,7 +54,7 @@ const NavButtons: NavButton[][] = [
     {
       id: 'zoom-out',
       icon: FiZoomOut,
-      labelTranslationKey: 'Editor.nav.zoom-out',
+      labelTranslationKey: 'common.zoom-out',
       onClick({ setViewport, viewport }) {
         setViewport({
           ...viewport,

@@ -61,15 +61,7 @@ export default function reducer(inputState, action) {
   return produce(state, (draft) => {
     switch (action.type) {
       case UPDATE_VIEWPORT:
-        draft.viewport.width = action.viewport.width;
-        draft.viewport.height = action.viewport.height;
-        draft.viewport.latitude = action.viewport.latitude;
-        draft.viewport.longitude = action.viewport.longitude;
-        draft.viewport.zoom = action.viewport.zoom;
-        draft.viewport.bearing = action.viewport.bearing;
-        draft.viewport.pitch = action.viewport.pitch;
-        draft.viewport.transitionDuration = action.viewport.transitionDuration;
-        draft.viewport.transitionInterpolator = action.viewport.transitionInterpolator;
+        draft.viewport = { ...draft.viewport, ...action.viewport };
         break;
       case UPDATE_TRANSFORM_REQUEST:
         draft.viewport.transformRequest = (url, resourceType) =>

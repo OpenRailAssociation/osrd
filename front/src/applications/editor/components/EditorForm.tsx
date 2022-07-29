@@ -7,6 +7,11 @@ import './EditorForm.scss';
 import { EditorEntity } from '../../../types';
 import { EditorState } from '../../../reducers/editor';
 import { getJsonSchemaForLayer, getLayerForObjectType } from '../data/utils';
+import { FormComponent, FormLineStringLength, entityFixLinearMetadata } from './LinearMetadata';
+
+const fields = {
+  ArrayField: FormComponent,
+};
 
 interface EditorFormProps {
   data: EditorEntity;
@@ -27,8 +32,9 @@ const EditorForm: React.FC<EditorFormProps> = ({ data, onSubmit, onChange, child
   if (!schema) throw new Error(`Missing data type for ${layer}`);
 
   useEffect(() => {
-    setFormData(data.properties);
-  }, [data]);
+    const entity = entityFixLinearMetadata(data, schema);
+    setFormData(entity.properties);
+  }, [data, schema]);
 
   /**
    * When errors are displayed, we scroll to them.
@@ -48,8 +54,17 @@ const EditorForm: React.FC<EditorFormProps> = ({ data, onSubmit, onChange, child
         </div>
       )}
       <Form
+        fields={fields}
+        action={undefined}
+        method={undefined}
+        schema={schema}
+        uiSchema={{
+          length: {
+            'ui:widget': FormLineStringLength,
+          },
+        }}
         formData={formData}
-        schema={schema || {}}
+        formContext={{ geometry: data.geometry, length: formData ? formData.length : undefined }}
         onSubmit={async (event) => {
           try {
             setError(null);

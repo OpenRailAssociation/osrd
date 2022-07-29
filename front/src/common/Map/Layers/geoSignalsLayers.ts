@@ -68,7 +68,7 @@ export function getPointLayerProps({
   const props: LayerProps = {
     type: 'circle',
     minzoom: 9,
-    filter: ['in', ['get', 'installation_type'], ['literal', signalsList]],
+    filter: ['in', 'installation_type', ...signalsList],
     paint: {
       'circle-color': colors.signal.point,
       'circle-radius': 3,
@@ -142,8 +142,8 @@ export function getSignalMatLayerProps({
 
   const props: LayerProps = {
     type: 'symbol',
-    minzoom: 12,
-    filter: ['in', ['get', 'installation_type'], ['literal', signalsList]],
+    minzoom: 14,
+    filter: ['in', 'installation_type', ...signalsList],
     paint: {},
     layout: {
       'text-field': '', // '{installation_type} / {value} / {label}',
