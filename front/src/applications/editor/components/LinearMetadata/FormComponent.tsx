@@ -93,11 +93,14 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
   // Value of the selected item (needed for the its modification)
   const [selectedData, setSelectedData] = useState<LinearMetadataItem | null>(null);
   // Wich segment is hovered
-  const [hovered, setHovered] = useState<number | null>(null);
+  const [hovered, setHovered] = useState<{ index: number; point: number } | null>(null);
   // Mode of the dataviz
   const [mode, setMode] = useState<'dragging' | 'resizing' | null>(null);
   // Fix the data (sort, fix gap, ...)
   const [data, setData] = useState<Array<LinearMetadataItem>>([]);
+  // For mouse click / doubleClick
+  const [clickTimeout, setClickTimeout] = useState<number | null>(null);
+  const [clickPrevent, setClickPrevent] = useState<boolean>(false);
 
   // Compute the JSON schema of the linear metadata item
   const jsonSchema = itemSchema(schema, registry.rootSchema);
@@ -147,24 +150,37 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
             data={data}
             field={valueField}
             viewBox={viewBox}
-            highlighted={[hovered ?? -1, selected ?? -1].filter((e) => e > -1)}
-            onMouseEnter={(_e, _item, index) => {
-              if (mode === null) setHovered(index);
+            highlighted={[hovered ? hovered.index : -1, selected ?? -1].filter((e) => e > -1)}
+            onMouseEnter={(_e, _item, index, point) => {
+              if (mode === null) setHovered({ index, point });
             }}
             onMouseLeave={() => {
               if (mode === null) setHovered(null);
             }}
-            onMouseMove={(e) => {
+            onMouseMove={(e, _item, _index, point) => {
               if (tooltipRef.current) {
                 tooltipPosition([e.nativeEvent.x, e.nativeEvent.y], tooltipRef.current);
+                setHovered((old) => (old ? { ...old, point } : null));
               }
             }}
             onClick={(_e, _item, index) => {
               if (mode === null) {
-                // case when you click on the already selected item => reset
-                setSelected((old) => ((old ?? -1) === index ? null : index));
-                setHovered(null);
+                const timer = window.setTimeout(() => {
+                  if (!clickPrevent) {
+                    // case when you click on the already selected item => reset
+                    setSelected((old) => ((old ?? -1) === index ? null : index));
+                    setHovered(null);
+                  }
+                  setClickPrevent(false);
+                }, 150) as number;
+                setClickTimeout(timer);
               }
+            }}
+            onDoubleClick={(_e, _item, _index, point) => {
+              if (clickTimeout) clearTimeout(clickTimeout);
+              setClickPrevent(true);
+              const newData = splitAt(data, point);
+              onChange(newData);
             }}
             onWheel={(e, _item, _index, point) => {
               setViewBox(getZoomedViewBox(data, viewBox, e.deltaY > 0 ? 'OUT' : 'IN', point));
@@ -207,7 +223,11 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
         {/* Data visualisation tooltip when item is hovered */}
         {mode !== 'dragging' && hovered !== null && (
           <div className="tooltip" ref={tooltipRef}>
-            <LinearMetadataTooltip item={data[hovered]} schema={jsonSchema} />
+            <LinearMetadataTooltip
+              item={data[hovered.index]}
+              point={!mode ? hovered.point : undefined}
+              schema={jsonSchema}
+            />
           </div>
         )}
 
