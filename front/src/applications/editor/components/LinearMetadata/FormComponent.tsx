@@ -176,7 +176,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
             onResize={(index, gap, finalized) => {
               setMode(!finalized ? 'resizing' : null);
               try {
-                const newData = resizeSegment(data, index, gap, 'end', { segmentMinSize: 5 });
+                const newData = resizeSegment(formData, index, gap, 'end', { segmentMinSize: 5 });
                 if (finalized) onChange(newData);
                 else setData(newData);
               } catch (e) {
