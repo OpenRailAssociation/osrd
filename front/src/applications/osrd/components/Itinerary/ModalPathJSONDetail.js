@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
+import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import { get } from 'common/requests.ts';
 import { setFailure } from 'reducers/main.ts';
 
@@ -20,6 +21,7 @@ export default function ModalPathJSONDetail(props) {
   const dispatch = useDispatch();
   const { pathfindingID } = useSelector((state) => state.osrdconf);
   const [pathJSONDetail, setPathJSONDetail] = useState(undefined);
+  const textareaRef = useRef(null);
   const { pathfindingInProgress } = props;
   const { t } = useTranslation('osrdconf');
 
@@ -27,7 +29,7 @@ export default function ModalPathJSONDetail(props) {
     try {
       const pathJSON = await get(`/pathfinding/${pathfindingID}/`, params, {}, true);
       setPathJSONDetail(pathJSON);
-      console.log(pathJSON);
+      console.log('coucou', pathJSON);
     } catch (e) {
       dispatch(setFailure({
         name: t('errorMessages.unableToRetrievePath'),
@@ -37,12 +39,20 @@ export default function ModalPathJSONDetail(props) {
     }
   };
 
+  const copyToClipboard = (e) => {
+    textareaRef.current.select();
+    document.execCommand('copy');
+    // This is just personal preference.
+    // I prefer to not show the whole text area selected.
+    e.target.focus();
+  };
+
   useEffect(() => {
     getPathJSON();
   }, []);
 
   return (
-    <ModalSNCF htmlID="modalPathJSONDetail">
+    <ModalSNCF htmlID="modalPathJSONDetail" size="xl">
       <ModalHeaderSNCF>
         <h1>{`PathFinding n°${pathfindingID}`}</h1>
         <button className="btn btn-only-icon close" type="button" data-dismiss="modal">
@@ -50,13 +60,24 @@ export default function ModalPathJSONDetail(props) {
         </button>
       </ModalHeaderSNCF>
       <ModalBodySNCF>
-        <div className="suggered-vias">
-          {pathfindingInProgress && <LoaderPathfindingInProgress />}
-          <code>
-            Coucou
-          </code>
+        {pathfindingInProgress && <LoaderPathfindingInProgress />}
+        <div
+          className="form-control-container"
+          style={{ 'max-height': '50vh' }}
+        >
+          <textarea
+            className="form-control stretchy"
+            ref={textareaRef}
+            value={JSON.stringify(pathJSONDetail, null, 2)}
+            style={{ 'max-height': '50vh' }}
+          />
         </div>
       </ModalBodySNCF>
+      <ModalFooterSNCF>
+        <button className="btn btn-primary" type="button" onClick={copyToClipboard}>
+          Copy to clipboard
+        </button>
+      </ModalFooterSNCF>
     </ModalSNCF>
   );
 }
