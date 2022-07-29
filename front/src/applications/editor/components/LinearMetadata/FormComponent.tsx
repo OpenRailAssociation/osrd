@@ -3,7 +3,7 @@ import Form, { FieldProps, utils } from '@rjsf/core';
 import Fields from '@rjsf/core/lib/components/fields';
 import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import { omit, head, max as fnMax, min as fnMin } from 'lodash';
-import { BiZoomIn, BiZoomOut } from 'react-icons/bi';
+import { TbZoomIn, TbZoomOut, TbZoomCancel } from 'react-icons/tb';
 import { BsBoxArrowInLeft, BsBoxArrowInRight, BsChevronLeft, BsChevronRight } from 'react-icons/bs';
 import { IoIosCut } from 'react-icons/io';
 import { useTranslation } from 'react-i18next';
@@ -123,6 +123,8 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
    */
   useEffect(() => {
     setData(formData);
+    setSelected((old) => (old && !!formData[old] ? null : old));
+    setHovered((old) => (old && !!formData[old.index] ? null : old));
   }, [formData]);
 
   /**
@@ -132,7 +134,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
    */
   useEffect(
     () => {
-      setSelectedData(selected !== null ? data[selected] : null);
+      setSelectedData(selected !== null && data[selected] ? data[selected] : null);
     },
     // The "data" is omitted here, otherwise it is always refreshed
     [selected, data]
@@ -192,9 +194,19 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
             onResize={(index, gap, finalized) => {
               setMode(!finalized ? 'resizing' : null);
               try {
-                const newData = resizeSegment(formData, index, gap, 'end', { segmentMinSize: 5 });
-                if (finalized) onChange(newData);
-                else setData(newData);
+                const result = resizeSegment(formData, index, gap, 'end');
+                if (finalized) onChange(result.result);
+                else {
+                  setData(result.result);
+
+                  // if index has changed, we need to impact the index modification
+                  if (hovered && result.newIndexMapping[hovered.index] === null) {
+                    setHovered({ ...hovered, index: fnMax([0, hovered.index - 1]) || 0 });
+                  }
+                  if (selected && result.newIndexMapping[selected] === null) {
+                    setSelected(null);
+                  }
+                }
               } catch (e) {
                 // TODO: should we display it ?
               }
@@ -207,21 +219,31 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
               className="btn btn-sm btn-outline-secondary"
               onClick={() => setViewBox(getZoomedViewBox(data, viewBox, 'IN'))}
             >
-              <BiZoomIn />
+              <TbZoomIn />
+            </button>
+            <button
+              title={t('common.zoom-reset')}
+              type="button"
+              disabled={viewBox === null}
+              className="btn btn-sm btn-outline-secondary"
+              onClick={() => setViewBox(null)}
+            >
+              <TbZoomCancel />
             </button>
             <button
               title={t('common.zoom-out')}
               type="button"
+              disabled={viewBox === null}
               className="btn btn-sm btn-outline-secondary"
               onClick={() => setViewBox(getZoomedViewBox(data, viewBox, 'OUT'))}
             >
-              <BiZoomOut />
+              <TbZoomOut />
             </button>
           </div>
         </div>
 
         {/* Data visualisation tooltip when item is hovered */}
-        {mode !== 'dragging' && hovered !== null && (
+        {mode !== 'dragging' && hovered !== null && data[hovered.index] && (
           <div className="tooltip" ref={tooltipRef}>
             <LinearMetadataTooltip
               item={data[hovered.index]}
@@ -232,7 +254,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
         )}
 
         {/* Display the selection */}
-        {selectedData !== null && selected !== null && (
+        {selectedData !== null && selected !== null && data[selected] && (
           <div className="linear-metadata-selection">
             <div className="header">
               <div className="btn-toolbar" role="toolbar">
@@ -309,10 +331,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
                 schema={
                   itemSchema(schema, registry.rootSchema, {
                     begin: {
-                      minimum:
-                        selected !== null && data[selected - 1]
-                          ? fnMin([selectedData.begin, data[selected - 1].begin + SEGMENT_MIN_SIZE])
-                          : 0,
+                      minimum: 0,
                       maximum: fnMax([selectedData.begin, selectedData.end - SEGMENT_MIN_SIZE]),
                     },
                     end: {
@@ -350,20 +369,22 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
                     // Check if there is a resize
                     try {
                       if (newItem.begin !== oldItem.begin) {
-                        newData = resizeSegment(
+                        const resizeBegin = resizeSegment(
                           [...newData],
                           selected,
                           newItem.begin - oldItem.begin,
                           'begin'
                         );
+                        newData = resizeBegin.result;
                       }
                       if (oldItem.end !== newItem.end) {
-                        newData = resizeSegment(
+                        const resizeEnd = resizeSegment(
                           [...newData],
                           selected,
                           newItem.end - oldItem.end,
                           'end'
                         );
+                        newData = resizeEnd.result;
                       }
                       onChange(newData);
                     } catch (error) {

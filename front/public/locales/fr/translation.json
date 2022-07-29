@@ -20,7 +20,8 @@
     "previous": "Précedent",
     "next": "Suivant",
     "zoom-in": "Zoomer",
-    "zoom-out": "Dézoomer"
+    "zoom-out": "Dézoomer",
+    "zoom-reset": "Réinitialiser le zoom"
   },
   "Editor": {
     "title": "Éditeur",
