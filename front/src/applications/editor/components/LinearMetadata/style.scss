@@ -202,7 +202,7 @@ $resize-width: 3px;
       }
     }
     .linear-metadata-selection {
-      width: 90%;
+      width: calc(100% - 1em);
       margin: 1em auto;
       border: 1px solid;
       padding: 1em;
