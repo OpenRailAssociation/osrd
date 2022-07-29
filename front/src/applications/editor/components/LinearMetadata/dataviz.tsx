@@ -336,7 +336,7 @@ export const LinearMetadataDataviz = <T extends any>({
         className={cx(
           'data',
           highlighted.length > 0 && 'has-highlight',
-          draginStartAt && 'dragging',
+          viewBox !== null && draginStartAt && 'dragging',
           resizing && 'resizing',
           (viewBox === null || viewBox[0] === 0) && 'start-visible',
           (viewBox === null || viewBox[1] === last(data)?.end) && 'end-visible'
