@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import DisplayItinerary from 'applications/osrd/components/Itinerary/DisplayItinerary';
 import ModalSugerredVias from 'applications/osrd/components/Itinerary/ModalSuggeredVias';
+import ModalPathJSONDetail from 'applications/osrd/components/Itinerary/ModalPathJSONDetail';
 import PropTypes from 'prop-types';
 import { WebMercatorViewport } from 'react-map-gl';
 import bbox from '@turf/bbox';
@@ -217,6 +218,9 @@ const Itinerary = (props) => {
         convertPathfindingVias={convertPathfindingVias}
         inverseOD={inverseOD}
         removeAllVias={removeAllVias}
+        pathfindingInProgress={pathfindingInProgress}
+      />
+      <ModalPathJSONDetail
         pathfindingInProgress={pathfindingInProgress}
       />
     </>
