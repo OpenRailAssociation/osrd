@@ -73,7 +73,7 @@
     "react-router": "^6.3.0",
     "react-router-dom": "^6.3.0",
     "react-scripts": "^4.0.3",
-    "react-transition-group": "^4.4.2",
+    "react-transition-group": "^4.4.5",
     "redux": "^4.2.0",
     "redux-mock-store": "^1.5.4",
     "redux-persist": "^6.0.0",
