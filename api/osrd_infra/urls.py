@@ -7,6 +7,7 @@ from osrd_infra.views import (
     RollingStockView,
     TimetableView,
 )
+from osrd_infra.views.stdcm import STDCM
 from osrd_infra.views.train_schedule import TrainScheduleView
 
 router = DefaultRouter(trailing_slash=True)
@@ -16,5 +17,6 @@ router.register("light_rolling_stock", LightRollingStockView, basename="light_ro
 router.register("pathfinding", PathfindingView, basename="pathfinding")
 router.register("timetable", TimetableView, basename="timetable")
 router.register("train_schedule", TrainScheduleView, basename="train_schedule")
+router.register("stdcm", STDCM, basename="stdcm")
 
 urlpatterns = router.urls

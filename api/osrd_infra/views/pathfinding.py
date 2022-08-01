@@ -118,27 +118,33 @@ def parse_steps_input(steps, infra):
         step_result = []
         step_durations.append(step["duration"])
         for waypoint in step["waypoints"]:
-            try:
-                track = track_map[waypoint["track_section"]]
-            except KeyError:
-                raise InvalidPathfindingInput(f"Track section '{waypoint['track_section']}' doesn't exists")
-            if "geo_coordinate" in waypoint:
-                offset = track["geo"].project_normalized(Point(waypoint["geo_coordinate"]))
-                offset = offset * track["length"]
-            elif "offset" in waypoint:
-                offset = waypoint["offset"]
-            else:
-                raise InvalidPathfindingInput("waypoint missing offset or geo_coordinate")
-            parsed_waypoint = {
-                "track_section": track["id"],
-                "offset": offset,
-            }
-            # Allow both direction
-            step_result.append({**parsed_waypoint, "direction": "START_TO_STOP"})
-            step_result.append({**parsed_waypoint, "direction": "STOP_TO_START"})
+            step_result += parse_waypoint(waypoint, track_map)
         waypoints.append(step_result)
 
     return waypoints, step_durations
+
+
+def parse_waypoint(waypoint, track_map):
+    try:
+        track = track_map[waypoint["track_section"]]
+    except KeyError:
+        raise InvalidPathfindingInput(f"Track section '{waypoint['track_section']}' doesn't exists")
+    if "geo_coordinate" in waypoint:
+        offset = track["geo"].project_normalized(Point(waypoint["geo_coordinate"]))
+        offset = offset * track["length"]
+    elif "offset" in waypoint:
+        offset = waypoint["offset"]
+    else:
+        raise InvalidPathfindingInput("waypoint missing offset or geo_coordinate")
+    parsed_waypoint = {
+        "track_section": track["id"],
+        "offset": offset,
+    }
+    # Allow both direction
+    return [
+        {**parsed_waypoint, "direction": "START_TO_STOP"},
+        {**parsed_waypoint, "direction": "STOP_TO_START"},
+    ]
 
 
 def add_chart_point(result, position, value, field_name):
@@ -191,19 +197,7 @@ def compute_curves(payload: PathPayload, track_map: Mapping[str, TrackSection]):
     return create_chart(payload.route_paths, trees, "radius", direction_sensitive=True)
 
 
-def compute_path(path, request_data, owner):
-    infra = request_data["infra"]
-    rolling_stocks = request_data.get("rolling_stocks", [])
-
-    waypoints, step_durations = parse_steps_input(request_data["steps"], infra)
-    payload = request_pathfinding(
-        {
-            "infra": infra.pk,
-            "expected_version": infra.version,
-            "waypoints": waypoints,
-            "rolling_stocks": [r.to_railjson() for r in rolling_stocks],
-        }
-    )
+def postprocess_path(path, payload, infra, owner, step_durations):
     path.geographic = json.dumps(payload.pop("geographic"))
     path.schematic = json.dumps(payload.pop("schematic"))
 
@@ -218,6 +212,22 @@ def compute_path(path, request_data, owner):
     path.slopes = compute_slopes(payload, track_map)
 
     path.save()
+
+
+def compute_path(path, request_data, owner):
+    infra = request_data["infra"]
+    rolling_stocks = request_data.get("rolling_stocks", [])
+
+    waypoints, step_durations = parse_steps_input(request_data["steps"], infra)
+    payload = request_pathfinding(
+        {
+            "infra": infra.pk,
+            "expected_version": infra.version,
+            "waypoints": waypoints,
+            "rolling_stocks": [r.to_railjson() for r in rolling_stocks],
+        }
+    )
+    postprocess_path(path, payload, infra, owner, step_durations)
 
 
 class PathfindingView(
