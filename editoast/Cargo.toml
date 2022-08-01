@@ -20,7 +20,7 @@ reqwest = { version="~0.11.11", features=["blocking", "json"] }
 rocket = "~0.4.11"
 rocket_contrib = {version="~0.4.11", features=["json", "diesel_postgres_pool", "uuid"]}
 rocket_cors = "0.5.2"
-serde = "~1.0.140"
+serde = "~1.0.141"
 serde_derive = "~1.0.138"
 serde_json = "~1.0.82"
 strum = "~0.24.1"
