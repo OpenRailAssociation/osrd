@@ -124,3 +124,27 @@ class StandaloneSimulationSerializer(Serializer):
         for schedule in validated_data["schedules"]:
             schedules.append(TrainScheduleModel(timetable=timetable, path=path, **schedule))
         return schedules
+
+
+# STDCM
+
+
+class STDCMInputSerializer(Serializer):
+    class WaypointInputSerializer(Serializer):
+        track_section = serializers.CharField(max_length=255)
+        geo_coordinate = serializers.JSONField(required=False)
+        offset = serializers.FloatField(required=False)
+
+    infra = serializers.PrimaryKeyRelatedField(queryset=Infra.objects.all())
+    timetable = serializers.PrimaryKeyRelatedField(queryset=Timetable.objects.all())
+    start_time = serializers.FloatField()
+    end_time = serializers.FloatField()
+    start_points = serializers.ListField(
+        min_length=1,
+        child=WaypointInputSerializer(),
+    )
+    end_points = serializers.ListField(
+        min_length=1,
+        child=WaypointInputSerializer(),
+    )
+    rolling_stock = serializers.PrimaryKeyRelatedField(queryset=RollingStock.objects.all())
