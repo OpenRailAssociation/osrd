@@ -4,7 +4,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import fr.sncf.osrd.api.InfraCacheStatusEndpoint;
 import fr.sncf.osrd.api.InfraManager;
-import fr.sncf.osrd.api.PathfindingRoutesEndpoint;
+import fr.sncf.osrd.api.pathfinding.PathfindingRoutesEndpoint;
 import fr.sncf.osrd.api.StandaloneSimulationEndpoint;
 import io.sentry.Sentry;
 import org.slf4j.Logger;

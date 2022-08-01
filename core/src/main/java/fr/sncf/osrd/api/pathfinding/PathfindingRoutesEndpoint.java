@@ -1,8 +1,10 @@
-package fr.sncf.osrd.api;
+package fr.sncf.osrd.api.pathfinding;
 
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
-import fr.sncf.osrd.api.pathfinding_constraints.LoadingGaugeConstraints;
+import fr.sncf.osrd.api.ExceptionHandler;
+import fr.sncf.osrd.api.InfraManager;
+import fr.sncf.osrd.api.pathfinding.request.PathfindingRequest;
+import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
+import fr.sncf.osrd.api.pathfinding.response.PathfindingResult;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
@@ -10,15 +12,13 @@ import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
-import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
 import fr.sncf.osrd.train.RollingStock;
-import fr.sncf.osrd.utils.geom.LineString;
-import fr.sncf.osrd.utils.geom.Point;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.takes.Request;
 import org.takes.Response;
+import org.takes.Take;
 import org.takes.rq.RqPrint;
 import org.takes.rs.RsJson;
 import org.takes.rs.RsText;
@@ -27,19 +27,11 @@ import org.takes.rs.RsWithStatus;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
-    public static final JsonAdapter<PathfindingResult> adapterResult = new Moshi
-            .Builder()
-            .add(ID.Adapter.FACTORY)
-            .add(new LineString.Adapter())
-            .add(new Point.Adapter())
-            .build()
-            .adapter(PathfindingResult.class)
-            .failOnUnknown();
-
+public class PathfindingRoutesEndpoint implements Take {
+    private final InfraManager infraManager;
 
     public PathfindingRoutesEndpoint(InfraManager infraHandler) {
-        super(infraHandler);
+        this.infraManager = infraHandler;
     }
 
     @Override
@@ -47,19 +39,19 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
         var warningRecorder = new WarningRecorderImpl(false);
         try {
             var body = new RqPrint(req).printBody();
-            var request = adapterRequest.fromJson(body);
+            var request = PathfindingRequest.adapter.fromJson(body);
             if (request == null)
                 return new RsWithStatus(new RsText("missing request body"), 400);
 
-            var reqWaypoints = request.waypoints;
+            var reqWaypoints = request.waypoints();
 
             // load infra
-            var infra = infraManager.load(request.infra, request.expectedVersion, warningRecorder);
+            var infra = infraManager.load(request.infra(), request.expectedVersion(), warningRecorder);
 
             // load rolling stocks
             var rollingStocks = List.<RollingStock>of();
-            if (request.rollingStocks != null)
-                rollingStocks = request.rollingStocks.stream()
+            if (request.rollingStocks() != null)
+                rollingStocks = request.rollingStocks().stream()
                         .map(RJSRollingStockParser::parse)
                         .toList();
 
@@ -72,7 +64,7 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
 
             validate(infra, res, reqWaypoints);
 
-            return new RsJson(new RsWithBody(adapterResult.toJson(res)));
+            return new RsJson(new RsWithBody(PathfindingResult.adapterResult.toJson(res)));
         } catch (Throwable ex) {
             // TODO: include warnings in the response
             return ExceptionHandler.handle(ex);
@@ -134,7 +126,7 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
                 .collect(Collectors.toSet());
         for (var step : reqWaypoints) {
             assert Arrays.stream(step)
-                    .anyMatch(waypoint -> tracksOnPath.contains(waypoint.trackSection));
+                    .anyMatch(waypoint -> tracksOnPath.contains(waypoint.trackSection()));
         }
     }
 
@@ -144,17 +136,17 @@ public class PathfindingRoutesEndpoint extends PathfindingEndpoint {
             PathfindingWaypoint waypoint
     ) {
         var res = new HashSet<Pathfinding.EdgeLocation<SignalingRoute>>();
-        var edge = infra.getEdge(waypoint.trackSection, Direction.fromEdgeDir(waypoint.direction));
+        var edge = infra.getEdge(waypoint.trackSection(), Direction.fromEdgeDir(waypoint.direction()));
         if (edge == null)
             throw new InvalidSchedule(
-                    String.format("Track %s referenced in path step does not exist", waypoint.trackSection)
+                    String.format("Track %s referenced in path step does not exist", waypoint.trackSection())
             );
         for (var entry : infra.getRoutesOnEdges().get(edge)) {
             var signalingRoutes = infra.getRouteMap().get(entry.route());
             for (var signalingRoute : signalingRoutes) {
-                var waypointOffsetFromStart = waypoint.offset;
-                if (waypoint.direction.equals(EdgeDirection.STOP_TO_START))
-                    waypointOffsetFromStart = edge.getEdge().getLength() - waypoint.offset;
+                var waypointOffsetFromStart = waypoint.offset();
+                if (waypoint.direction().equals(EdgeDirection.STOP_TO_START))
+                    waypointOffsetFromStart = edge.getEdge().getLength() - waypoint.offset();
                 var offset = waypointOffsetFromStart - entry.startOffset();
                 if (offset >= 0 && offset <= signalingRoute.getInfraRoute().getLength())
                     res.add(new Pathfinding.EdgeLocation<>(signalingRoute, offset));
