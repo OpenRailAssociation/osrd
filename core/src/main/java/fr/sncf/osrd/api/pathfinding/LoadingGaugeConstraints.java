@@ -1,4 +1,4 @@
-package fr.sncf.osrd.api.pathfinding_constraints;
+package fr.sncf.osrd.api.pathfinding;
 
 import fr.sncf.osrd.infra.api.reservation.ReservationRoute;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
