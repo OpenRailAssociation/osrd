@@ -8,7 +8,10 @@ import static fr.sncf.osrd.utils.takes.TakesUtils.readHeadResponse;
 import static org.junit.jupiter.api.Assertions.*;
 
 import fr.sncf.osrd.Helpers;
-import fr.sncf.osrd.api.PathfindingEndpoint.PathfindingWaypoint;
+import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
+import fr.sncf.osrd.api.pathfinding.request.PathfindingRequest;
+import fr.sncf.osrd.api.pathfinding.response.PathfindingResult;
+import fr.sncf.osrd.api.pathfinding.PathfindingRoutesEndpoint;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
 import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
@@ -33,7 +36,11 @@ import java.util.stream.Stream;
 
 public class PathfindingTest extends ApiTest {
     private static PathfindingWaypoint[] makeBidirectionalEndPoint(PathfindingWaypoint point) {
-        var waypointInverted = new PathfindingWaypoint(point.trackSection, point.offset, point.direction.opposite());
+        var waypointInverted = new PathfindingWaypoint(
+                point.trackSection(),
+                point.offset(),
+                point.direction().opposite()
+        );
         return new PathfindingWaypoint[]{point, waypointInverted};
     }
 
@@ -43,11 +50,11 @@ public class PathfindingTest extends ApiTest {
     ) {
         for (var route : result.routePaths) {
             for (var track : route.trackSections) {
-                if (!track.trackSection.id.id.equals(waypoint.trackSection))
+                if (!track.trackSection.id.id.equals(waypoint.trackSection()))
                     continue;
                 final var begin = Math.min(track.getBegin(), track.getEnd());
                 final var end = Math.max(track.getBegin(), track.getEnd());
-                if (begin <= waypoint.offset && end >= waypoint.offset)
+                if (begin <= waypoint.offset() && end >= waypoint.offset())
                     return;
             }
         }
@@ -71,15 +78,15 @@ public class PathfindingTest extends ApiTest {
         var waypoints = new PathfindingWaypoint[2][];
         waypoints[0] = waypointsStart;
         waypoints[1] = waypointsEnd;
-        var requestBody = PathfindingEndpoint.adapterRequest.toJson(
-                new PathfindingEndpoint.PathfindingRequest(waypoints, "tiny_infra/infra.json", "1"));
+        var requestBody = PathfindingRequest.adapter.toJson(
+                new PathfindingRequest(waypoints, "tiny_infra/infra.json", "1", null));
 
         var result = readBodyResponse(
                 new PathfindingRoutesEndpoint(infraHandlerMock).act(
                         new RqFake("POST", "/pathfinding/routes", requestBody))
         );
 
-        var response = PathfindingRoutesEndpoint.adapterResult.fromJson(result);
+        var response = PathfindingResult.adapterResult.fromJson(result);
         assert response != null;
 
         assertEquals(2, response.routePaths.size());
@@ -112,13 +119,13 @@ public class PathfindingTest extends ApiTest {
         waypoints[0] = makeBidirectionalEndPoint(waypointStart);
         waypoints[1] = makeBidirectionalEndPoint(waypointMid);
         waypoints[2] = makeBidirectionalEndPoint(waypointEnd);
-        var requestBody = PathfindingEndpoint.adapterRequest.toJson(
-                new PathfindingEndpoint.PathfindingRequest(waypoints, "tiny_infra/infra.json", "1"));
+        var requestBody = PathfindingRequest.adapter.toJson(
+                new PathfindingRequest(waypoints, "tiny_infra/infra.json", "1", null));
 
         var result = readBodyResponse(new PathfindingRoutesEndpoint(infraHandlerMock).act(
                         new RqFake("POST", "/pathfinding/routes", requestBody)));
 
-        var response = PathfindingRoutesEndpoint.adapterResult.fromJson(result);
+        var response = PathfindingResult.adapterResult.fromJson(result);
         assert response != null;
 
         assertEquals(2, response.routePaths.size());
@@ -141,8 +148,8 @@ public class PathfindingTest extends ApiTest {
         var waypoints = new PathfindingWaypoint[2][1];
         waypoints[0][0] = waypointStart;
         waypoints[1][0] = waypointEnd;
-        var requestBody = PathfindingEndpoint.adapterRequest.toJson(
-                new PathfindingEndpoint.PathfindingRequest(waypoints, "tiny_infra/infra.json", "1"));
+        var requestBody = PathfindingRequest.adapter.toJson(
+                new PathfindingRequest(waypoints, "tiny_infra/infra.json", "1", null));
 
         var res = readHeadResponse(new PathfindingRoutesEndpoint(infraHandlerMock).act(
                 new RqFake("POST", "/pathfinding/routes", requestBody)
@@ -160,8 +167,8 @@ public class PathfindingTest extends ApiTest {
         var waypoints = new PathfindingWaypoint[2][1];
         waypoints[0][0] = waypoint;
         waypoints[1][0] = waypoint;
-        var requestBody = PathfindingEndpoint.adapterRequest.toJson(
-                new PathfindingEndpoint.PathfindingRequest(waypoints, "tiny_infra/infra.json", "1"));
+        var requestBody = PathfindingRequest.adapter.toJson(
+                new PathfindingRequest(waypoints, "tiny_infra/infra.json", "1", null));
         var res = readHeadResponse(new PathfindingRoutesEndpoint(infraHandlerMock).act(
                 new RqFake("POST", "/pathfinding/routes", requestBody)
         ));
@@ -233,15 +240,15 @@ public class PathfindingTest extends ApiTest {
         var waypoints = new PathfindingWaypoint[2][];
         waypoints[0] = waypointsStart;
         waypoints[1] = waypointsEnd;
-        var requestBody = PathfindingEndpoint.adapterRequest.toJson(
-                new PathfindingEndpoint.PathfindingRequest(waypoints, "tiny_infra/infra.json"));
+        var requestBody = PathfindingRequest.adapter.toJson(
+                new PathfindingRequest(waypoints, "tiny_infra/infra.json", null, null));
 
         var result = readBodyResponse(
                 new PathfindingRoutesEndpoint(infraHandlerMock).act(
                         new RqFake("POST", "/pathfinding/routes", requestBody))
         );
 
-        var response = PathfindingRoutesEndpoint.adapterResult.fromJson(result);
+        var response = PathfindingResult.adapterResult.fromJson(result);
         assert response != null;
         expectWaypointInPathResult(response, waypointStart);
         expectWaypointInPathResult(response, waypointEnd);
@@ -271,15 +278,15 @@ public class PathfindingTest extends ApiTest {
         var waypoints = new PathfindingWaypoint[2][];
         waypoints[0] = waypointsStart;
         waypoints[1] = waypointsEnd;
-        var requestBody = PathfindingEndpoint.adapterRequest.toJson(
-                new PathfindingEndpoint.PathfindingRequest(waypoints, "tiny_infra/infra.json"));
+        var requestBody = PathfindingRequest.adapter.toJson(
+                new PathfindingRequest(waypoints, "tiny_infra/infra.json", null, null));
 
         var result = readBodyResponse(
                 new PathfindingRoutesEndpoint(infraHandlerMock).act(
                         new RqFake("POST", "/pathfinding/routes", requestBody))
         );
 
-        var response = PathfindingRoutesEndpoint.adapterResult.fromJson(result);
+        var response = PathfindingResult.adapterResult.fromJson(result);
         assert response != null;
         expectWaypointInPathResult(response, waypointStart);
         expectWaypointInPathResult(response, waypointEnd);
@@ -292,14 +299,14 @@ public class PathfindingTest extends ApiTest {
                 rootPath + "/simulation.json",
                 inverted
         );
-        var requestBody = PathfindingEndpoint.adapterRequest.toJson(req);
+        var requestBody = PathfindingRequest.adapter.toJson(req);
 
         var result = readBodyResponse(
                 new PathfindingRoutesEndpoint(infraHandlerMock).act(
                         new RqFake("POST", "/pathfinding/routes", requestBody))
         );
 
-        var response = PathfindingRoutesEndpoint.adapterResult.fromJson(result);
+        var response = PathfindingResult.adapterResult.fromJson(result);
         assert response != null;
         assertTrue(response.pathWaypoints.size() >= 2);
     }
@@ -339,7 +346,7 @@ public class PathfindingTest extends ApiTest {
 
     /** Generates a pathfinding request from infra + simulation files.
      * The requested path follows the path of a train. */
-    private static PathfindingEndpoint.PathfindingRequest requestFromExampleInfra(
+    private static PathfindingRequest requestFromExampleInfra(
             String infraPath,
             String simPath,
             boolean inverted
@@ -358,7 +365,7 @@ public class PathfindingTest extends ApiTest {
         var endIndex = inverted ? 0 : 1;
         waypoints[startIndex] = convertLocToWaypoint(startLoc.trackSection.id, startLoc.offset);
         waypoints[endIndex] = convertLocToWaypoint(endLoc.track().getID(), endLoc.offset());
-        return new PathfindingEndpoint.PathfindingRequest(waypoints, infraPath);
+        return new PathfindingRequest(waypoints, infraPath, null, null);
     }
 
     /** Checks that the waypoints match when converting back and forth into a route offset */
@@ -375,12 +382,14 @@ public class PathfindingTest extends ApiTest {
                     .filter(wp -> !wp.suggestion)
                     .toList();
             assertEquals(1, userDefinedWaypoints.size());
-            if (waypoint.offset <= 0 || waypoint.offset >= infra.getTrackSection(waypoint.trackSection).getLength()) {
+            var waypointOff = waypoint.offset();
+            var waypointTrack = waypoint.trackSection();
+            if (waypointOff <= 0 || waypointOff >= infra.getTrackSection(waypointTrack).getLength()) {
                 // Waypoints placed on track transitions can be on either side
                 continue;
             }
-            assertEquals(waypoint.trackSection, userDefinedWaypoints.get(0).track.id.id);
-            assertEquals(waypoint.offset, userDefinedWaypoints.get(0).position, POSITION_EPSILON);
+            assertEquals(waypointTrack, userDefinedWaypoints.get(0).track.id.id);
+            assertEquals(waypointOff, userDefinedWaypoints.get(0).position, POSITION_EPSILON);
         }
     }
 
@@ -393,7 +402,7 @@ public class PathfindingTest extends ApiTest {
         );
         var rjsInfra = Helpers.getExampleInfra(infraPath + "/infra.json");
         var infra = infraFromRJS(rjsInfra);
-        for (var waypointList : req.waypoints)
+        for (var waypointList : req.waypoints())
             for (var waypoint : waypointList)
                 testMatchingRouteOffsets(infra, waypoint);
     }
