@@ -16,7 +16,7 @@ from osrd_infra.models import OperationalPointModel, PathModel, TrackSectionMode
 from osrd_infra.schemas.infra import Direction, TrackSection
 from osrd_infra.schemas.path import PathPayload
 from osrd_infra.serializers import PathInputSerializer, PathSerializer
-from osrd_infra.utils import line_string_slice_points, make_exception_from_error
+from osrd_infra.utils import make_exception_from_error
 
 
 class InternalPathfindingError(APIException):
@@ -86,25 +86,6 @@ def fetch_track_sections_from_payload(infra, payload):
         for track in route["track_sections"]:
             ids.append(track["track"]["id"])
     return fetch_track_sections(infra, ids)
-
-
-def get_geojson_path(payload: PathPayload, track_map: Mapping[str, TrackSection]):
-    geographic, schematic = [], []
-
-    for path_step in payload.route_paths:
-        for track_range in path_step.track_sections:
-            track = track_map[track_range.track.id]
-
-            # normalize positions
-            norm_begin = track_range.begin / track["length"]
-            norm_end = track_range.end / track["length"]
-            assert norm_begin >= 0.0 and norm_begin <= 1.0
-            assert norm_end >= 0.0 and norm_end <= 1.0
-
-            geographic += line_string_slice_points(track["geo"], norm_begin, norm_end)
-            schematic += line_string_slice_points(track["sch"], norm_begin, norm_end)
-    res = LineString(geographic).json, LineString(schematic).json
-    return res
 
 
 def parse_steps_input(steps, infra):
