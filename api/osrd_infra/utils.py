@@ -3,8 +3,6 @@ from time import perf_counter
 from typing import List, Optional, Tuple
 
 import jsonschema
-import numpy as np
-from django.contrib.gis.geos import LineString
 from django.core.validators import BaseValidator
 from rest_framework.exceptions import ValidationError
 
@@ -15,52 +13,6 @@ class JSONSchemaValidator(BaseValidator):
             jsonschema.validate(data, schema)
         except jsonschema.exceptions.ValidationError as e:
             raise ValidationError(e.message, code="invalid")
-
-
-def line_string_slice_points(line_string, begin_normalized, end_normalized):
-    if begin_normalized > end_normalized:
-        # Compute the line string from end to start then reverse the result
-        res = line_string_slice(line_string, end_normalized, begin_normalized)
-        res.reverse()
-        return res
-
-    points = line_string.array
-    length = line_string.length
-    norm_distance = 0
-    i = 0
-
-    # Add first point
-    positions = [line_string.interpolate_normalized(begin_normalized)]
-
-    # Skip first points
-    while norm_distance <= begin_normalized and i + 1 < len(points):
-        norm_distance += np.linalg.norm(points[i] - points[i + 1]) / length
-        i += 1
-
-    # Add intermediate points
-    while norm_distance < end_normalized and i + 1 < len(points):
-        positions.append(list(points[i]))
-        norm_distance += np.linalg.norm(points[i] - points[i + 1]) / length
-        i += 1
-
-    # Add last point
-    positions.append(line_string.interpolate_normalized(end_normalized))
-    return positions
-
-
-def line_string_slice(line_string, begin_normalized, end_normalized):
-    points = line_string_slice_points(line_string, begin_normalized, end_normalized)
-    return LineString(points)
-
-
-def track_section_range_geom(length, geo, sch, start_offset, end_offset):
-    begin_normalized = start_offset / length
-    end_normalized = end_offset / length
-    res = []
-    for geom in (geo, sch):
-        sliced = line_string_slice(geo, begin_normalized, end_normalized)
-        res.append(sliced)
-    return tuple(res)
 
 
 @dataclass
