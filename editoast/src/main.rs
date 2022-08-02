@@ -22,7 +22,7 @@ use colored::*;
 use diesel::{Connection, PgConnection};
 use infra_cache::InfraCache;
 use models::{DBConnection, Infra};
-use rocket::config::Value;
+use rocket::config::{Limits, Value};
 use rocket::Rocket;
 use rocket_cors::CorsOptions;
 use std::collections::HashMap;
@@ -66,6 +66,9 @@ pub fn create_server(
     config
         .extras
         .insert("databases".to_string(), databases.into());
+
+    // Set limits to 250MiB
+    config.set_limits(Limits::default().limit("json", 250 * 1024 * 1024));
 
     // Setup CORS
     let cors = CorsOptions::default().to_cors().unwrap();
