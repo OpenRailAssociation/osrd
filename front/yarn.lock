@@ -2846,10 +2846,10 @@
     "@testing-library/dom" "^8.0.0"
     "@types/react-dom" "<18.0.0"
 
-"@testing-library/user-event@^14.2.1":
-  version "14.2.1"
-  resolved "https://registry.yarnpkg.com/@testing-library/user-event/-/user-event-14.2.1.tgz#8c5ff2d004544bb2220e1d864f7267fe7eb6c556"
-  integrity sha512-HOr1QiODrq+0j9lKU5i10y9TbhxMBMRMGimNx10asdmau9cb8Xb1Vyg0GvTwyIL2ziQyh2kAloOtAQFBQVuecA==
+"@testing-library/user-event@^14.4.0":
+  version "14.4.0"
+  resolved "https://registry.yarnpkg.com/@testing-library/user-event/-/user-event-14.4.0.tgz#d1935bc13d903cb943c19994e29630a5352a9434"
+  integrity sha512-S1QbHbTy8ROlYdvIlgnrfeaX7H8Xw73hAS8jpQ5bMx016idgr6J/7cWBFHD8o2Dxz4YjXOkkGYTapzbqWhCmyw==
 
 "@tootallnate/once@1":
   version "1.1.2"
