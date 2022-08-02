@@ -2,6 +2,7 @@ package fr.sncf.osrd.envelope_sim.allowances;
 
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
+import static fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceConvergenceException.tooMuchTime;
 import static java.lang.Double.NaN;
 import static java.lang.Math.abs;
 
@@ -105,7 +106,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
 
     private static RuntimeException makeError(DoubleBinarySearch search) {
         if (!search.hasRaisedLowBound())
-            throw AllowanceConvergenceException.tooMuchTime();
+            throw tooMuchTime();
         else if (!search.hasLoweredHighBound())
             throw AllowanceConvergenceException.notEnoughTime();
         else
@@ -221,7 +222,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         }
         // if the total target time isn't actually reachable, throw error
         if (totalTargetTime > slowestRunningTime)
-            throw AllowanceConvergenceException.tooMuchTime();
+            throw tooMuchTime();
 
         var rangeBeginPos = envelopeRange.getBeginPos();
         var rangeEndPos = envelopeRange.getEndPos();
@@ -306,6 +307,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
 
         // 1) compute the potential junction parts (slowdown or speedup)
         var leftPart = computeLeftJunction(base, coreEnvelope, imposedBeginSpeed);
+
         var leftPartEndPos = leftPart != null ? leftPart.getEndPos() : base.getBeginPos();
         var coreEnvelopeWithLeft = computeEnvelopeWithLeftJunction(base, coreEnvelope, leftPart);
 
@@ -315,10 +317,12 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         if (EnvelopePhysics.areIntersecting(rightPart, leftPart)) {
             // if the junction parts touch or intersect, there is no core phase
             return intersectLeftRightParts(leftPart, rightPart);
-        } else if (rightPartBeginPos < leftPartEndPos)
+        }
+        if (rightPartBeginPos < leftPartEndPos) {
             // if the junction parts neither touch nor intersect but their positions overlap,
             // it is physically impossible to meet the two imposed speeds
-            throw AllowanceConvergenceException.tooMuchTime();
+            throw tooMuchTime();
+        }
 
         // 2) stick phases back together
         var builder = new EnvelopeBuilder();
@@ -364,6 +368,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         constraints.add(new PositionConstraint(envelopeSection.getBeginPos(), envelopeSection.getEndPos()));
 
         var partBuilder = new EnvelopePartBuilder();
+        int lastIntersection = -1;
         // if the imposed speed is above the target, compute slowdown, else, compute speedup
         if (imposedBeginSpeed > envelopeTarget.getBeginSpeed()) {
             constraints.add(new EnvelopeConstraint(envelopeTarget, FLOOR));
@@ -374,6 +379,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
             EnvelopeDeceleration.decelerate(
                     context, envelopeSection.getBeginPos(), imposedBeginSpeed, constrainedBuilder, 1
             );
+            lastIntersection = constrainedBuilder.lastIntersection;
         } else if (imposedBeginSpeed < envelopeSection.getBeginSpeed()) {
             constraints.add(new EnvelopeConstraint(envelopeTarget, CEILING));
             constraints.add(new EnvelopeConstraint(envelopeSection, CEILING));
@@ -384,6 +390,12 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
             EnvelopeAcceleration.accelerate(
                     context, envelopeSection.getBeginPos(), imposedBeginSpeed, constrainedBuilder, 1
             );
+            lastIntersection = constrainedBuilder.lastIntersection;
+        }
+        if (lastIntersection == 0) {
+            // The end of the part has been reached without crossing the target envelope
+            // The resulting envelope won't be continuous in this case, the allowance is too restrictive
+            throw tooMuchTime();
         }
         if (partBuilder.isEmpty())
             return null;
@@ -402,6 +414,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         var constraints = new ArrayList<EnvelopePartConstraint>();
         constraints.add(new PositionConstraint(envelopeSection.getBeginPos(), envelopeSection.getEndPos()));
 
+        int lastIntersection = -1;
         var partBuilder = new EnvelopePartBuilder();
         // if the imposed speed is above the target compute speed-up, else, compute slow-down
         if (imposedEndSpeed > envelopeTarget.getEndSpeed()) {
@@ -413,6 +426,7 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
             EnvelopeAcceleration.accelerate(
                     context, envelopeSection.getEndPos(), imposedEndSpeed, constrainedBuilder, -1
             );
+            lastIntersection = constrainedBuilder.lastIntersection;
         } else if (imposedEndSpeed < envelopeSection.getEndSpeed()) {
             constraints.add(new EnvelopeConstraint(envelopeTarget, CEILING));
             constraints.add(new EnvelopeConstraint(envelopeSection, CEILING));
@@ -423,6 +437,12 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
             EnvelopeDeceleration.decelerate(
                     context, envelopeSection.getEndPos(), imposedEndSpeed, constrainedBuilder, -1
             );
+            lastIntersection = constrainedBuilder.lastIntersection;
+        }
+        if (lastIntersection == 0) {
+            // The end of the part has been reached without crossing the target envelope
+            // The resulting envelope won't be continuous in this case, the allowance is too restrictive
+            throw tooMuchTime();
         }
         if (partBuilder.isEmpty())
             return null;
@@ -446,12 +466,12 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
     /** If the left and right part intersect, build an envelope with the intersection */
     private Envelope intersectLeftRightParts(EnvelopePart leftPart, EnvelopePart rightPart) {
         if (rightPart == null || leftPart == null)
-            throw AllowanceConvergenceException.tooMuchTime();
+            throw tooMuchTime();
         if (leftPart.getMaxSpeed() < rightPart.getMinSpeed()) {
             // The curves don't intersect at all
             // This sometimes happens when one part is very short compared to the time step
             // When it happens we have very little margin to add time, so we throw a `tooMuchTime` error
-            throw AllowanceConvergenceException.tooMuchTime();
+            throw tooMuchTime();
         }
         var slicedLeftPart = leftPart.sliceWithSpeeds(
                 Double.NEGATIVE_INFINITY, NaN,
