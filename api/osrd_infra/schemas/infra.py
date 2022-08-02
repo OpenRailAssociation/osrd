@@ -5,7 +5,7 @@ from geojson_pydantic import LineString
 from pydantic import BaseModel, Field, constr, root_validator
 
 ALL_OBJECT_TYPES = []
-RAILJSON_VERSION = "2.3.0"
+RAILJSON_VERSION = "2.3.1"
 
 # Traits
 
@@ -71,6 +71,7 @@ class LoadingGaugeType(str, Enum):
     GC = "GC"
     FR3_3 = "FR3.3"
     FR3_3_GB_G2 = "FR3.3/GB/G2"
+    GLOTT = "GLOTT"
 
 
 class DirectionalTrackRange(BaseModel):
@@ -128,11 +129,13 @@ class OperationalPointPart(TrackLocationTrait):
 
 class OperationalPoint(BaseObjectTrait):
     parts: List[OperationalPointPart]
+    name: constr(max_length=255)
+    uic: int
     ci: int
     ch: constr(max_length=2)
     ch_short_label: Optional[constr(max_length=255)]
     ch_long_label: Optional[constr(max_length=255)]
-    name: constr(max_length=255)
+    trigram: constr(max_length=3)
 
 
 class TrackEndpoint(BaseModel):
