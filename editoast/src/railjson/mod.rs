@@ -213,11 +213,13 @@ pub struct OperationalPoint {
     #[derivative(Default(value = r#"generate_id("operational_point")"#))]
     pub id: String,
     pub parts: Vec<OperationalPointPart>,
+    pub uic: i64,
     pub ci: i64,
     pub ch: String,
     pub ch_short_label: Option<String>,
     pub ch_long_label: Option<String>,
     pub name: String,
+    pub trigram: String,
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
@@ -337,13 +339,17 @@ pub enum ApplicableTrainType {
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub enum LoadingGaugeType {
     G1,
+    G2,
     GA,
     GB,
     GB1,
-    GB2,
     GC,
     #[serde(rename = "FR3.3")]
-    FR3_3,
+    Fr3_3,
+    #[serde(rename = "FR3.3/GB/G2")]
+    Fr3_3GbG2,
+    #[serde(rename = "GLOTT")]
+    Glott,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]

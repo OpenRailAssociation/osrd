@@ -7,10 +7,12 @@ import infra
 @dataclass
 class OperationalPoint:
     label: str
+    trigram: str
     parts: List
 
-    def __init__(self, label: str):
+    def __init__(self, label: str, trigram: str = None):
         self.label = label
+        self.trigram = trigram or label[:3].upper()
         self.parts = list()
 
     def add_part(self, track, offset):

@@ -496,6 +496,9 @@
         - field_expr: operational_point.data->'ci'
           field_name: ci
           field_type: int
+        - field_expr: operational_point.data->'uic'
+          field_name: uic
+          field_type: int
         - field_expr: operational_point.data->>'ch'
           field_name: ch
           field_type: text
@@ -507,6 +510,9 @@
           field_type: text
         - field_expr: operational_point.data->>'name'
           field_name: name
+          field_type: text
+        - field_expr: operational_point.data->>'trigram'
+          field_name: trigram
           field_type: text
       joins:
         - inner join osrd_infra_operationalpointmodel operational_point on operational_point.obj_id = layer.obj_id and operational_point.infra_id = layer.infra_id
@@ -523,6 +529,9 @@
         - field_expr: operational_point.data->'ci'
           field_name: ci
           field_type: int
+        - field_expr: operational_point.data->'uic'
+          field_name: uic
+          field_type: int
         - field_expr: operational_point.data->>'ch'
           field_name: ch
           field_type: text
@@ -534,6 +543,9 @@
           field_type: text
         - field_expr: operational_point.data->>'name'
           field_name: name
+          field_type: text
+        - field_expr: operational_point.data->>'trigram'
+          field_name: trigram
           field_type: text
       joins:
         - inner join osrd_infra_operationalpointmodel operational_point on operational_point.obj_id = layer.obj_id and operational_point.infra_id = layer.infra_id
