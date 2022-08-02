@@ -1,6 +1,7 @@
 package fr.sncf.osrd.infra.api.tracks.undirected;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
 import java.util.Collection;
 import java.util.Set;
@@ -38,5 +39,25 @@ public class SpeedLimits {
             return min;
         else
             return defaultSpeedLimit;
+    }
+
+
+    /** Merges two overlapping speed limits, picking the most restrictive speed for each category */
+    public static SpeedLimits merge(SpeedLimits a, SpeedLimits b) {
+        if (a == null)
+            return b;
+        if (b == null)
+            return a;
+        var defaultSpeed = Double.min(a.defaultSpeedLimit, b.defaultSpeedLimit);
+        var categories = Sets.union(a.speedLimitByTag.keySet(), b.speedLimitByTag.keySet());
+        var builder = ImmutableMap.<String, Double>builder();
+        for (var category : categories) {
+            Double speedA = a.speedLimitByTag.getOrDefault(category, Double.POSITIVE_INFINITY);
+            Double speedB = b.speedLimitByTag.getOrDefault(category, Double.POSITIVE_INFINITY);
+            assert speedA != null && speedB != null;
+            var speed = Double.min(speedA, speedB);
+            builder.put(category, speed);
+        }
+        return new SpeedLimits(defaultSpeed, builder.build());
     }
 }

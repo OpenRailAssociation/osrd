@@ -150,34 +150,20 @@ public class UndirectedInfraBuilder {
                 var track = RJSObjectParsing.getTrackSection(trackRange.track, trackSectionsByID);
                 var speedSectionMaps = track.getSpeedSections();
                 if (trackRange.applicableDirections.appliesToNormal()) {
-                    checkNoSpeedOverlap(speedSectionMaps.get(Direction.FORWARD),
-                            trackRange.begin, trackRange.end, track.getID());
-                    speedSectionMaps.get(Direction.FORWARD).putCoalescing(
+                    speedSectionMaps.get(Direction.FORWARD).merge(
                             Range.closed(trackRange.begin, trackRange.end),
-                            value
+                            value,
+                            SpeedLimits::merge
                     );
                 }
                 if (trackRange.applicableDirections.appliesToReverse()) {
-                    checkNoSpeedOverlap(speedSectionMaps.get(Direction.BACKWARD),
-                            trackRange.begin, trackRange.end, track.getID());
-                    speedSectionMaps.get(Direction.BACKWARD).putCoalescing(
+                    speedSectionMaps.get(Direction.BACKWARD).merge(
                             Range.closed(trackRange.begin, trackRange.end),
-                            value
+                            value,
+                            SpeedLimits::merge
                     );
                 }
             }
-        }
-    }
-
-    /** Checks that the speed sections don't overlap */
-    private static void checkNoSpeedOverlap(RangeMap<Double, SpeedLimits> map, double begin, double end, String track) {
-        var subRange = map.subRangeMap(Range.open(begin, end));
-        for (var entry : subRange.asMapOfRanges().entrySet()) {
-            if (Double.isFinite(entry.getValue().getSpeedLimit(List.of())))
-                throw new InvalidInfraError(String.format(
-                        "Overlapping speed limit on track %s (from %f to %f)",
-                        track, entry.getKey().lowerEndpoint(), entry.getKey().upperEndpoint()
-                ));
         }
     }
 

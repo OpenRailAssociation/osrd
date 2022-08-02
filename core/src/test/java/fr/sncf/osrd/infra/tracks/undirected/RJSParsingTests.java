@@ -3,11 +3,14 @@ package fr.sncf.osrd.infra.tracks.undirected;
 import static com.google.common.collect.Iterables.contains;
 import static fr.sncf.osrd.infra.InfraHelpers.getTrack;
 import static fr.sncf.osrd.infra.InfraHelpers.toUndirected;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static fr.sncf.osrd.utils.RangeMapUtils.equalsIgnoringTransitions;
+import static org.junit.jupiter.api.Assertions.*;
 
+import com.google.common.collect.*;
 import com.google.common.graph.Traverser;
 import fr.sncf.osrd.Helpers;
+import fr.sncf.osrd.infra.api.Direction;
+import fr.sncf.osrd.infra.api.tracks.undirected.SpeedLimits;
 import fr.sncf.osrd.infra.errors.InvalidInfraError;
 import fr.sncf.osrd.infra.implementation.tracks.undirected.UndirectedInfraBuilder;
 import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
@@ -93,21 +96,41 @@ public class RJSParsingTests {
         var rjsInfra = Helpers.getExampleInfra("one_line/infra.json");
         var track = rjsInfra.trackSections.iterator().next();
         rjsInfra.speedSections = List.of(
-                new RJSSpeedSection("id", 42, Map.of(), List.of(new RJSApplicableDirectionsTrackRange(
+                new RJSSpeedSection("id", 42, Map.of(
+                        "category1", 10.,
+                        "category2", 20.
+                ), List.of(new RJSApplicableDirectionsTrackRange(
                         new RJSObjectRef<>(track.id, "TrackSection"),
                         ApplicableDirection.START_TO_STOP,
                         0,
                         10
                 ))),
-            new RJSSpeedSection("id", 42, Map.of(), List.of(new RJSApplicableDirectionsTrackRange(
+            new RJSSpeedSection("id", 45, Map.of(
+                    "category2", 12.,
+                    "category3", 17.
+            ), List.of(new RJSApplicableDirectionsTrackRange(
                     new RJSObjectRef<>(track.id, "TrackSection"),
                     ApplicableDirection.START_TO_STOP,
                     5,
                     15
             )))
         );
-        assertThrows(InvalidInfraError.class, () ->
-                UndirectedInfraBuilder.parseInfra(rjsInfra, new WarningRecorderImpl(true))
-        );
+        var parsedInfra = UndirectedInfraBuilder.parseInfra(rjsInfra, new WarningRecorderImpl(true));
+        var expected = TreeRangeMap.<Double, SpeedLimits>create();
+        expected.put(Range.closed(0., 5.), new SpeedLimits(42, ImmutableMap.of(
+                "category1", 10.,
+                "category2", 20.
+        )));
+        expected.put(Range.closed(5., 10.), new SpeedLimits(42, ImmutableMap.of(
+                "category1", 10.,
+                "category2", 12.,
+                "category3", 17.
+        )));
+        expected.put(Range.closed(10., 15.), new SpeedLimits(45, ImmutableMap.of(
+                "category2", 12.,
+                "category3", 17.
+        )));
+        var speedLimits = parsedInfra.getTrackSection(track.id).getSpeedSections().get(Direction.FORWARD);
+        equalsIgnoringTransitions(expected, speedLimits);
     }
 }
