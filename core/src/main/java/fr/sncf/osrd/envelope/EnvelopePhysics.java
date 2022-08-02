@@ -198,6 +198,7 @@ public class EnvelopePhysics {
         // using the intermediate value theorem, a and b intersect if and only if a - b change its sign
         // a and b being continuous EnvelopeParts
         while (Math.signum(speedDiff) == initialSpeedDiffSign) {
+            pos = clamp(pos, b.getBeginPos(), b.getEndPos());
             speedDiff = aSpeeds[stepIndex] - b.interpolateSpeed(pos);
             stepIndex++;
             pos = aPositions[stepIndex];
@@ -207,5 +208,10 @@ public class EnvelopePhysics {
             }
         }
         return true;
+    }
+
+    /** Limits the value to the given ranges, returns the boundary if it's outside */
+    private static double clamp(double value, double min, double max) {
+        return Double.min(max, Double.max(min, value));
     }
 }
