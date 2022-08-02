@@ -729,6 +729,29 @@ public class AllowanceTests {
     }
 
     @Test
+    public void testShortLinear() {
+        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
+
+        var length = 1000;
+        var testPath = new FlatPath(length, 0);
+        var testContext = new EnvelopeSimContext(testRollingStock, testPath, 2.0);
+        var stops = new double[] { length };
+
+        var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 100, stops);
+
+        var allowance = new LinearAllowance(
+                testContext,
+                800,
+                810,
+                10,
+                List.of(
+                        new AllowanceRange(800, 810, new AllowanceValue.Percentage(10))
+                )
+        );
+        assertThrows(AllowanceConvergenceException.class, () -> allowance.apply(maxEffortEnvelope));
+    }
+
+    @Test
     public void testMarecoAfterLinear() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
 
