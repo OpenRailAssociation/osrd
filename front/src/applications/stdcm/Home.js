@@ -2,22 +2,20 @@ import 'applications/osrd/osrd.scss';
 
 import { Route, Routes } from 'react-router-dom';
 
-import AboutOSRD from './About';
+import AboutOSRD from '../osrd/About';
 import MastNavItemSNCF from 'common/BootstrapSNCF/MastNavItemSNCF';
 import MastNavSNCF from 'common/BootstrapSNCF/MastNavSNCF';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { Navigate } from 'react-router';
 import { NotificationsState } from 'common/Notifications.tsx';
-import OSRDConfig from './views/OSRDConfig/OSRDConfig';
-import OSRDSTDCM from '../stdcm/views/OSRDSTDCM';
-import OSRDSimulation from './views/OSRDSimulation/OSRDSimulation';
+import OSRDSTDCM from './views/OSRDSTDCM';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { connect } from 'react-redux';
 import logo from 'assets/logo_osrd_seul_blanc.svg';
 import { withTranslation } from 'react-i18next';
 
-class HomeOSRD extends React.Component {
+class HomeStdcm extends React.Component {
   static propTypes = {
     t: PropTypes.func.isRequired,
     osrdsimulation: PropTypes.object.isRequired,
@@ -31,15 +29,11 @@ class HomeOSRD extends React.Component {
           items={
             <>
               <MastNavItemSNCF
-                link="/osrd/settings"
+                link="/stdcm"
                 linkname={t('osrd.nav.home')}
                 icon="icons-itinerary-train-station"
               />
-              <MastNavItemSNCF
-                link="/osrd/simulation"
-                linkname={t('osrd.nav.simulation')}
-                icon="icons-itinerary-train"
-              />
+
             </>
           }
           itemsBottom={
@@ -53,19 +47,13 @@ class HomeOSRD extends React.Component {
         />
         <NavBarSNCF appName="OSRD" logo={logo} />
         <Routes>
-          <Route path="/settings" element={<OSRDConfig />} />
-          <Route path="/about" element={<AboutOSRD />} />
-          <Route path="/simulation" element={<OSRDSimulation />} />
 
-          <Route
-            path=""
-            element={
-              <Navigate
-                to={osrdsimulation.redirectToGraph ? '/osrd/simulation' : '/osrd/settings'}
-                replace
-              />
-            }
-          />
+          <Route path="/about" element={<AboutOSRD />} />
+
+          <Route path="" element={<OSRDSTDCM />} />
+
+
+
         </Routes>
         <NotificationsState />
       </>
@@ -77,4 +65,4 @@ const mapStateToProps = (state) => ({
   osrdsimulation: state.osrdsimulation,
 });
 
-export default connect(mapStateToProps)(withTranslation()(HomeOSRD));
+export default connect(mapStateToProps)(withTranslation()(HomeStdcm));

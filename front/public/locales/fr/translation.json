@@ -119,7 +119,8 @@
   "Home": {
     "map": "Cartographie",
     "editor": "Éditeur d'infrastructure",
-    "timetable": "Grilles horaires"
+    "timetable": "Grilles horaires",
+    "stdcm": "Sillons de dernière minute (en travaux)"
   },
   "Login": {
     "connect": "Se connecter",

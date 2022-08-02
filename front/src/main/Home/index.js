@@ -1,14 +1,15 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
-import { useTranslation } from 'react-i18next';
-import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
+import './Home.css';
+
 import Card from 'common/BootstrapSNCF/CardSNCF/CardSNCF';
-import osrdLogo from 'assets/pictures/osrd.png';
-import timetablePic from 'assets/pictures/timetable.png';
-import logo from 'assets/logo_osrd_seul_blanc.svg';
+import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
+import React from 'react';
 import cartoPic from 'assets/pictures/carto.png';
 import editorPic from 'assets/pictures/editor.png';
-import './Home.css';
+import logo from 'assets/logo_osrd_seul_blanc.svg';
+import osrdLogo from 'assets/pictures/osrd.png';
+import timetablePic from 'assets/pictures/timetable.png';
+import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
 export default function Home() {
   const user = useSelector((state) => state.user);
@@ -32,6 +33,9 @@ export default function Home() {
             </div>
             <div className="col-sm-6 col-md-3 col-lg-2 mb-2">
               <Card img={editorPic} title={t('Home.editor')} link="/editor" />
+            </div>
+            <div className="col-sm-6 col-md-3 col-lg-2 mb-2">
+              <Card img={timetablePic} title={t('Home.stdcm')} link="/stdcm" />
             </div>
           </div>
         </div>
