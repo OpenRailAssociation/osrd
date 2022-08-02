@@ -8,6 +8,7 @@ import static fr.sncf.osrd.utils.takes.TakesUtils.readHeadResponse;
 import static org.junit.jupiter.api.Assertions.*;
 
 import fr.sncf.osrd.Helpers;
+import fr.sncf.osrd.api.pathfinding.PathfindingResultConverter;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingRequest;
 import fr.sncf.osrd.api.pathfinding.response.PathfindingResult;
@@ -377,7 +378,7 @@ public class PathfindingTest extends ApiTest {
                     loc.offset() / 2,
                     loc.offset() + (loc.edge().getInfraRoute().getLength() - loc.offset()) / 2
             );
-            var waypoints = PathfindingResult.getWaypointsOnRoute(routeRange, Set.of(loc.offset()));
+            var waypoints = PathfindingResultConverter.getWaypointsOnRoute(routeRange, Set.of(loc.offset()));
             var userDefinedWaypoints = waypoints.stream()
                     .filter(wp -> !wp.suggestion)
                     .toList();

@@ -60,7 +60,7 @@ public class PathfindingRoutesEndpoint implements Take {
             if (path == null)
                 return new RsWithStatus(new RsText("No path could be found"), 400);
 
-            var res = PathfindingResult.make(path, infra, warningRecorder);
+            var res = PathfindingResultConverter.convert(path, infra, warningRecorder);
 
             validate(infra, res, reqWaypoints);
 

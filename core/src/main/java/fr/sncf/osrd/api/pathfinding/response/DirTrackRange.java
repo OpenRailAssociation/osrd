@@ -14,11 +14,18 @@ public class DirTrackRange {
     public final double end;
     public final EdgeDirection direction;
 
-    protected DirTrackRange(String trackSectionID, double begin, double end) {
+    /** Create a new directional track range */
+    public DirTrackRange(String trackSectionID, double begin, double end) {
         this.trackSection = new RJSObjectRef<>(trackSectionID, "TrackSection");
-        this.begin = Math.min(begin, end);
-        this.end = Math.max(begin, end);
-        this.direction = begin < end ? EdgeDirection.START_TO_STOP : EdgeDirection.STOP_TO_START;
+        if (begin < end) {
+            this.direction = EdgeDirection.START_TO_STOP;
+            this.begin = begin;
+            this.end = end;
+        } else {
+            this.direction = EdgeDirection.STOP_TO_START;
+            this.begin = end;
+            this.end = begin;
+        }
     }
 
     /** Returns the offset at which this range starts, taking direction into account */
