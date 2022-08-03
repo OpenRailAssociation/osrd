@@ -33,11 +33,6 @@ asgi-lifespan = "^1"
 # used for querying the server during tests
 httpx = "*"
 
-# coverage = "5.5"
-# black = "21.9b0"
-# isort = "^5"
-# pyproject-flake8 = "0.0.1a2"
-
 [tool.coverage.run]
 omit = [
     ".*",
