@@ -13,6 +13,7 @@ public class SpeedLimits {
 
     /** Constructor */
     public SpeedLimits(double defaultSpeedLimit, ImmutableMap<String, Double> speedLimitByTag) {
+        assert !Double.isNaN(defaultSpeedLimit);
         this.defaultSpeedLimit = defaultSpeedLimit;
         this.speedLimitByTag = speedLimitByTag;
     }
@@ -25,8 +26,6 @@ public class SpeedLimits {
         );
     }
 
-
-
     /** Returns the speed limit for the given tags */
     public double getSpeedLimit(Collection<String> tags) {
         var min = Double.POSITIVE_INFINITY;
@@ -35,10 +34,9 @@ public class SpeedLimits {
             if (value != null)
                 min = Double.min(min, value);
         }
-        if (Double.isFinite(min) || Double.isNaN(defaultSpeedLimit))
+        if (Double.isFinite(min))
             return min;
-        else
-            return defaultSpeedLimit;
+        return defaultSpeedLimit;
     }
 
 
