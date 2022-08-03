@@ -47,7 +47,7 @@ jobs:
         with:
           python-version: "3.10"
       - name: Install flake8
-        run: pip install pyproject-flake8 flake8_formatter_junit_xml
+        run: pip install pyproject-flake8 flake8_formatter_junit_xml flake8==4.0.1
       - name: Flake8
         run: pflake8 --config chartos/pyproject.toml --format junit-xml chartos > flake8.xml
       - name: Publish flake8 report
