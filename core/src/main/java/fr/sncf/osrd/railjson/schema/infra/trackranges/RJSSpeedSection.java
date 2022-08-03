@@ -10,7 +10,7 @@ import java.util.Map;
 public class RJSSpeedSection implements Identified {
     public String id;
     @Json(name = "speed_limit")
-    public double speedLimit;
+    public double speedLimit = Double.POSITIVE_INFINITY;
     @Json(name = "speed_limit_by_tag")
     public Map<String, Double> speedLimitByTag;
 
@@ -28,6 +28,10 @@ public class RJSSpeedSection implements Identified {
         this.speedLimit = speedLimit;
         this.speedLimitByTag = speedLimitByTag;
         this.trackRanges = trackRanges;
+    }
+
+    /** Create an uninitialized speed section (used by the deserializer). */
+    public RJSSpeedSection() {
     }
 
     @Override
