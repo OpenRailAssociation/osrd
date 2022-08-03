@@ -37,7 +37,7 @@
     "babel-eslint": "^10.1.0",
     "babel-loader": "8.1.0",
     "classnames": "^2.3.1",
-    "copy-to-clipboard": "^3.3.1",
+    "copy-to-clipboard": "^3.3.2",
     "d3": "^5.16.0",
     "d3-brush": "^3.0.0",
     "d3-delaunay": "^6.0.2",
