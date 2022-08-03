@@ -7,7 +7,7 @@ from chartos.utils import ValueDependable
 
 
 class Settings(BaseSettings):
-    config_path: str = "/config/chartos.yaml"
+    config_path: str = "chartos.yml"
     allowed_origins: List[str] = ["*"]
 
     max_zoom: int = 18
@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     psql_user: Optional[str] = None
     psql_password: Optional[str] = None
     redis_url: str = "redis://localhost:6379"
+    max_tiles: int = 250_000
 
     def psql_settings(self):
         return {

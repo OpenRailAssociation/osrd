@@ -1,16 +1,16 @@
 from dataclasses import dataclass
 from math import asinh, atan, degrees, floor, pi, radians, sinh, tan
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 from .config import Layer, View
 
 
-def get_layer_cache_prefix(layer, version):
-    return f"chartis.layer.{layer.name}.version_{version}"
+def get_layer_cache_prefix(layer, infra):
+    return f"chartis.layer.{layer.name}.infra_{infra}"
 
 
-def get_view_cache_prefix(layer, version, view):
-    layer_prefix = get_layer_cache_prefix(layer, version)
+def get_view_cache_prefix(layer, infra, view):
+    layer_prefix = get_layer_cache_prefix(layer, infra)
     return f"{layer_prefix}.{view.name}"
 
 
@@ -48,16 +48,30 @@ def find_tiles(max_zoom, bbox) -> List[AffectedTile]:
     for zoom in range(max_zoom + 1):
         nw_x, nw_y = get_xy(bbox[0][1], bbox[0][0], zoom)
         se_x, se_y = get_xy(bbox[1][1], bbox[1][0], zoom)
+        assert nw_x <= se_x
+        assert se_y <= nw_y
         for x in range(nw_x, se_x + 1):
             for y in range(se_y, nw_y + 1):
                 affected_tiles.append(AffectedTile(x, y, zoom))
     return affected_tiles
 
 
-async def invalidate_cache(redis, layer: Layer, version: str, affected_tiles: Dict[View, Set[AffectedTile]]):
+def count_tiles(max_zoom, bbox) -> int:
+    """Count the number of tiles in a bbox"""
+    count = 0
+    for zoom in range(max_zoom + 1):
+        nw_x, nw_y = get_xy(bbox[0][1], bbox[0][0], zoom)
+        se_x, se_y = get_xy(bbox[1][1], bbox[1][0], zoom)
+        assert nw_x <= se_x
+        assert se_y <= nw_y
+        count += (se_x - nw_x) * (nw_y - se_y)
+    return count
+
+
+async def invalidate_cache(redis, layer: Layer, infra: str, affected_tiles: Dict[View, Set[AffectedTile]]):
     evicted_keys = []
     for view, view_affected_tiles in affected_tiles.items():
-        cache_location = get_view_cache_prefix(layer, version, view)
+        cache_location = get_view_cache_prefix(layer, infra, view)
         for tile in view_affected_tiles:
             evicted_keys.append(get_cache_tile_key(cache_location, tile))
 
@@ -65,15 +79,20 @@ async def invalidate_cache(redis, layer: Layer, version: str, affected_tiles: Di
         await redis.delete(*evicted_keys)
 
 
-async def invalidate_full_layer_cache(redis, layer: Layer, version: str):
+async def invalidate_full_layer_cache(redis, layer: Layer, infra: str, view: Optional[View] = None):
     """
     Invalidate cache for a whole layer
 
     Args:
-        layer_slug (str): The layer for which the cache has to be invalidated.
+        layer: The layer for which the cache has to be invalidated.
+        view: The view for which the cache has to be invalidated. If None, all view are invalidated.
     """
-    layer_prefix = get_layer_cache_prefix(layer, version)
-    key_pattern = f"{layer_prefix}.*"
+    if view is None:
+        prefix = get_layer_cache_prefix(layer, infra)
+    else:
+        prefix = get_view_cache_prefix(layer, infra, view)
+
+    key_pattern = f"{prefix}.*"
 
     delete_args = await redis.keys(key_pattern)
     if delete_args:
