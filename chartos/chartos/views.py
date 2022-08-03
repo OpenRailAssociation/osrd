@@ -5,7 +5,7 @@ from typing import Dict, List, NewType, Tuple
 from asyncpg import Connection
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from fastapi.responses import Response
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from .config import Config, Layer, View, get_config
 from .layer_cache import (
@@ -160,6 +160,12 @@ BoundingBox = NewType("BoundingBox", Tuple[Tuple[float, float], Tuple[float, flo
 class BoundingBoxView(BaseModel):
     view: str
     bbox: BoundingBox
+
+    @validator("bbox")
+    def validate_bbox(cls, bbox):
+        if bbox[0][0] > bbox[1][0] or bbox[0][1] > bbox[1][1]:
+            raise ValueError("Invalid bounding box, minx/miny must be less than maxx/maxy")
+        return bbox
 
 
 @router.post("/layer/{layer_slug}/invalidate_bbox/", status_code=204, response_class=Response)
