@@ -10,6 +10,7 @@ from pydantic import BaseModel
 from .config import Config, Layer, View, get_config
 from .layer_cache import (
     AffectedTile,
+    count_tiles,
     find_tiles,
     get_cache_tile_key,
     get_view_cache_prefix,
@@ -175,8 +176,14 @@ async def invalidate_layer_bbox(
     affected_tiles: Dict[View, List[AffectedTile]] = defaultdict(set)
     for bbox in bounding_boxes:
         view = get_or_404(layer.views, bbox.view, "Layer view")
+        # For optimization reasons, if there is too much tiles to invalidate, we invalidate the whole view.
+        if count_tiles(settings.max_zoom, bbox.bbox) > settings.max_tiles:
+            await invalidate_full_layer_cache(redis, layer, infra, view)
+            continue
         affected_tiles[view] = find_tiles(settings.max_zoom, bbox.bbox)
-    await invalidate_cache(redis, layer, infra, affected_tiles)
+
+    if affected_tiles:
+        await invalidate_cache(redis, layer, infra, affected_tiles)
 
 
 @router.get("/layer/{layer_slug}/objects/{view_slug}/{min_x}/{min_y}/{max_x}/{max_y}/")
