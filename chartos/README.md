@@ -12,15 +12,16 @@ To setup an environment with all dependencies, run `poetry install`.
 
 You can override the default configuration using environment variables:
 
-| Variable        | Default Value                                  |
-| --------------- | ---------------------------------------------- |
-| `ROOT_URL`      | `http://localhost:8000`                        |
-| `CONFIG_PATH`   | `chartos.yml`                                  |
-| `PSQL_DSN`      | `postgres://osrd:password@localhost:5432/osrd` |
-| `PSQL_USER`     | `None`                                         |
-| `PSQL_PASSWORD` | `None`                                         |
-| `REDIS_URL`     | `redis://localhost:6379`                       |
-| `MAX_ZOOM`      | `18`                                           |
+| Variable        | Description                                    | Default Value                                  |
+| --------------- | ---------------------------------------------- | ---------------------------------------------- |
+| `ROOT_URL`      | Service root url                               | `http://localhost:8000`                        |
+| `CONFIG_PATH`   | Path to the layers configuration               | `chartos.yml`                                  |
+| `PSQL_DSN`      | Postgresql connexion DSN                       | `postgres://osrd:password@localhost:5432/osrd` |
+| `PSQL_USER`     | Postgresql user                                | `None`                                         |
+| `PSQL_PASSWORD` | Postgresql password                            | `None`                                         |
+| `REDIS_URL`     | Redis connexion url                            | `redis://localhost:6379`                       |
+| `MAX_ZOOM`      | Max zoom allowed                               | `18`                                           |
+| `MAX_TILES`     | Max number of tiles invalidate at once         | `250_000`                                      |
 
 Then to run the service:
 ```shell
