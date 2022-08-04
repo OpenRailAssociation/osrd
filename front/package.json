@@ -82,7 +82,7 @@
     "redux-state-sync": "^3.1.2",
     "redux-thunk": "^2.3.0",
     "reselect": "^4.1.6",
-    "sass": "^1.53.0",
+    "sass": "^1.54.2",
     "seamless-immutable": "^7.1.4",
     "short-number": "^1.0.7",
     "turf-point": "^2.0.1",
