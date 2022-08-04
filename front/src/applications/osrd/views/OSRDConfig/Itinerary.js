@@ -24,7 +24,7 @@ const itineraryURI = '/pathfinding/';
 const Itinerary = (props) => {
   const [launchPathfinding, setLaunchPathfinding] = useState(false);
   const [pathfindingInProgress, setPathfindingInProgress] = useState(false);
-  const { updateExtViewport } = props;
+  const { updateExtViewport, mode } = props;
   const dispatch = useDispatch();
   const map = useSelector((state) => state.map);
   const osrdconf = useSelector((state) => state.osrdconf);
@@ -210,7 +210,7 @@ const Itinerary = (props) => {
     <>
       <div className="osrd-config-item mb-2">
         <div className="osrd-config-item-container">
-          <DisplayItinerary zoomToFeaturePoint={zoomToFeaturePoint} />
+          <DisplayItinerary mode={mode} zoomToFeaturePoint={zoomToFeaturePoint} />
         </div>
       </div>
       <ModalSugerredVias

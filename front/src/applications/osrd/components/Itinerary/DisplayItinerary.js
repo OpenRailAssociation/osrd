@@ -1,25 +1,37 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { store } from 'Store';
-import { useSelector, useDispatch } from 'react-redux';
-import { useTranslation } from 'react-i18next';
 import {
   RiMapPin2Fill,
   RiMapPin3Fill,
   RiMapPin5Fill,
 } from 'react-icons/ri';
-import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import DisplayVias from 'applications/osrd/components/Itinerary/DisplayVias';
 import {
-  updateOrigin, updateOriginTime, updateOriginSpeed, updateDestination,
+  updateDestination,
+  updateDestinationDate,
+  updateDestinationTime,
+  updateOrigin,
+  updateOriginDate,
+  updateOriginSpeed,
+  updateOriginTime,
 } from 'reducers/osrdconf';
+import { useDispatch, useSelector } from 'react-redux';
+
+import DatePickerSNCF from 'common/BootstrapSNCF/DatePickerSNCF/DatePickerSNCF';
+import DisplayVias from 'applications/osrd/components/Itinerary/DisplayVias';
 import { GiPathDistance } from 'react-icons/gi';
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import PropTypes from 'prop-types';
+import React from 'react';
+import { store } from 'Store';
+import { useTranslation } from 'react-i18next';
 
 export default function DisplayItinerary(props) {
   const osrdconf = useSelector((state) => state.osrdconf);
   const dispatch = useDispatch();
   const { t } = useTranslation(['osrdconf']);
-  const { zoomToFeaturePoint } = props;
+  const { zoomToFeaturePoint, mode } = props;
+
+  const stdcmModeChange = (e) => {
+    console.log('stdcmModeChange', stdcmModeChange);
+  };
 
   return (
     <div className={
@@ -50,29 +62,60 @@ export default function DisplayItinerary(props) {
                   {osrdconf.origin.name ? osrdconf.origin.name : osrdconf.origin.id.split('-')[0]}
                 </strong>
               </div>
-              <div className="ml-auto osrd-config-time mr-1">
-                <InputSNCF
-                  type="time"
-                  id="osrd-config-time-origin"
-                  onChange={(e) => dispatch(updateOriginTime(e.target.value))}
-                  value={osrdconf.originTime}
-                  sm
-                  noMargin
-                />
+              <div className="ml-auto d-flex mr-1">
+                { mode === 'stdcm'
+                  && (
+                  <>
+                    <input
+                      type="radio"
+                      id="stdcmMode"
+                      name="stdcmMode"
+                    // className="custom-control-input"
+                      checked={osrdconf.stdcmMode === 'byOrigin'}
+                      onChange={stdcmModeChange}
+                      value="byOrigin"
+
+                    />
+
+                  </>
+                  )}
+                <div className="d-flex">
+                  { mode === 'stdcm'
+                  && (
+                    <input
+                      type="date"
+                      className="form-control form-control-sm"
+                      onChange={(e) => dispatch(updateOriginDate(e.target.value))}
+                      value={osrdconf.originDate}
+                    />
+                  )}
+                  <InputSNCF
+                    type="time"
+                    id="osrd-config-time-origin"
+                    onChange={(e) => dispatch(updateOriginTime(e.target.value))}
+                    value={osrdconf.originTime}
+                    sm
+                    noMargin
+                  />
+                </div>
+
               </div>
-              <div className="osrd-config-speed">
-                <InputSNCF
-                  type="number"
-                  id="osrd-config-speed-origin"
-                  onChange={(e) => dispatch(updateOriginSpeed(e.target.value))}
-                  value={osrdconf.originSpeed}
-                  unit="km/h"
-                  min={0}
-                  max={1000}
-                  sm
-                  noMargin
-                />
-              </div>
+              { mode === 'simulation'
+                  && (
+                  <div className="osrd-config-speed">
+                    <InputSNCF
+                      type="number"
+                      id="osrd-config-speed-origin"
+                      onChange={(e) => dispatch(updateOriginSpeed(e.target.value))}
+                      value={osrdconf.originSpeed}
+                      unit="km/h"
+                      min={0}
+                      max={1000}
+                      sm
+                      noMargin
+                    />
+                  </div>
+                  )}
               <button className="btn btn-sm btn-only-icon btn-white" type="button" onClick={() => store.dispatch(updateOrigin(undefined))}>
                 <i className="icons-circle-delete" />
                 <span className="sr-only" aria-hidden="true">Delete</span>
@@ -123,6 +166,46 @@ export default function DisplayItinerary(props) {
                   {osrdconf.destination.name ? osrdconf.destination.name : osrdconf.destination.id.split('-')[0]}
                 </strong>
               </div>
+
+              { mode === 'stdcm'
+                  && (
+                  <div className="ml-auto d-flex mr-1">
+
+                    <>
+                      <input
+                        type="radio"
+                        id="stdcmMode"
+                        name="stdcmMode"
+                    // className="custom-control-input"
+                        checked={osrdconf.stdcmMode === 'byDestination'}
+                        onChange={stdcmModeChange}
+                        value="byDestination"
+                      />
+
+                    </>
+
+                    <div className="d-flex">
+
+                    <input
+                      type="date"
+                      className="form-control form-control-sm"
+                      onChange={(e) => dispatch(updateDestinationDate(e.target.value))}
+                      value={osrdconf.destinationDate}
+                    />
+
+                      <InputSNCF
+                        type="time"
+                        id="osrd-config-time-origin"
+                        onChange={(e) => dispatch(updateDestinationTime(e.target.value))}
+                        value={osrdconf.destinationTime}
+                        sm
+                        noMargin
+                      />
+                    </div>
+
+                  </div>
+                  )}
+
               <button className="btn btn-sm btn-only-icon btn-white" type="button" onClick={() => store.dispatch(updateDestination(undefined))}>
                 <i className="icons-circle-delete" />
                 <span className="sr-only" aria-hidden="true">Delete</span>

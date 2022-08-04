@@ -4,6 +4,6 @@ import React  from 'react';
 export default function OSRDSTDCM() {
 
   return (
-    <OSRDConfig />
+    <OSRDConfig mode="stdcm" />
   );
 }

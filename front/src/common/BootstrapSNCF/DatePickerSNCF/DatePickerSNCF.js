@@ -1,11 +1,12 @@
+import './DatePickerSNCF.css';
+
 import React, { Component } from 'react';
-import { withTranslation } from 'react-i18next';
-import PropTypes from 'prop-types';
-import nextId from 'react-id-generator';
+
 import Flatpickr from 'react-flatpickr';
 import { French } from 'flatpickr/dist/l10n/fr';
-
-import './DatePickerSNCF.css';
+import PropTypes from 'prop-types';
+import nextId from 'react-id-generator';
+import { withTranslation } from 'react-i18next';
 
 export const PICKER_MODES = {
   single: 'single',
@@ -64,8 +65,7 @@ class RawDatePickerSNCF extends Component {
 
       return (
         <div aria-hidden="true">
-          <label htmlFor="range" className="font-weight-medium mb-2">{t('Logs.filters.date')}</label>
-          <div className="flatpickr-wrapper">
+           <div className="flatpickr-wrapper">
             <div data-component="picker" data-mode="range">
               <div className="input-group" data-toggle>
                 <div className="form-control-container">
