@@ -1,7 +1,6 @@
 package fr.sncf.osrd.infra.tracks.undirected;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.google.common.collect.ImmutableMap;
 import fr.sncf.osrd.infra.api.tracks.undirected.SpeedLimits;
