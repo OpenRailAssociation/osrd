@@ -314,14 +314,9 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
         var rightPart = computeRightJunction(base, coreEnvelopeWithLeft, imposedEndSpeed);
         var rightPartBeginPos = rightPart != null ? rightPart.getBeginPos() : base.getEndPos();
 
-        if (EnvelopePhysics.areIntersecting(rightPart, leftPart)) {
+        if (rightPartBeginPos < leftPartEndPos) {
             // if the junction parts touch or intersect, there is no core phase
             return intersectLeftRightParts(leftPart, rightPart);
-        }
-        if (rightPartBeginPos < leftPartEndPos) {
-            // if the junction parts neither touch nor intersect but their positions overlap,
-            // it is physically impossible to meet the two imposed speeds
-            throw tooMuchTime();
         }
 
         // 2) stick phases back together
@@ -467,16 +462,16 @@ public abstract class AbstractAllowanceWithRanges implements Allowance {
     private Envelope intersectLeftRightParts(EnvelopePart leftPart, EnvelopePart rightPart) {
         if (rightPart == null || leftPart == null)
             throw tooMuchTime();
-        if (leftPart.getMaxSpeed() < rightPart.getMinSpeed()) {
+        var slicedLeftPart = leftPart.sliceWithSpeeds(
+                Double.NEGATIVE_INFINITY, NaN,
+                rightPart.getBeginPos(), rightPart.getBeginSpeed()
+        );
+        if (slicedLeftPart == null || slicedLeftPart.getEndPos() != rightPart.getBeginPos()) {
             // The curves don't intersect at all
             // This sometimes happens when one part is very short compared to the time step
             // When it happens we have very little margin to add time, so we throw a `tooMuchTime` error
             throw tooMuchTime();
         }
-        var slicedLeftPart = leftPart.sliceWithSpeeds(
-                Double.NEGATIVE_INFINITY, NaN,
-                rightPart.getBeginPos(), rightPart.getBeginSpeed()
-        );
         return Envelope.make(slicedLeftPart, rightPart);
     }
 }
