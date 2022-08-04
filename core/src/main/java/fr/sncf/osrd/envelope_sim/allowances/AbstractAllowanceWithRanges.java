@@ -29,8 +29,7 @@ import java.util.Comparator;
 import java.util.List;
 
 public abstract class AbstractAllowanceWithRanges implements Allowance {
-
-    public final Logger logger = LoggerFactory.getLogger(Allowance.class);
+    public static final Logger logger = LoggerFactory.getLogger(Allowance.class);
 
     public final EnvelopeSimContext context;
 
