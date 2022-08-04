@@ -8,6 +8,7 @@
   "errorMessages": {
     "noDestination": "La destination n'est pas définie",
     "noName": "Veuillez choisir un nom pour le train",
+    "noExistingInfra": "Aucune intrastructure disponible",
     "noOrigin": "L'origine n'est pas définie",
     "noOriginTime": "Veuillez renseigner l'horaire de départ à l'origine",
     "noRollingStock": "La composition de train n'est pas renseignée",
@@ -15,8 +16,10 @@
     "trainScheduleTitle": "Une erreur est survenue",
     "unableToRetrieveInfra": "Récupération infra impossible",
     "unableToRetrieveInfraList": "Récupération liste d'infra impossible",
+    "unableToRetrievePath": "Impossible de récupérer un chemin",
     "unableToRetrievePathfinding": "Impossible de tracer un chemin",
     "unableToRetrieveRollingStock": "Récupération matériel impossible",
+    "unableToRetrieveTags": "Impossible de récupérer les étiquettes",
     "unableToRetrieveTimetable": "Récupération grille horaire impossible",
     "unableToRetrieveTimetableList": "Récupération liste de grilles horaires impossible"
   },
