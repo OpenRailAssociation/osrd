@@ -1,7 +1,11 @@
+import { DEFAULT_MODE, DEFAULT_STDCM_MODE } from 'applications/osrd/consts';
+
 /* eslint-disable default-case */
 import produce from 'immer';
 
 // Action Types
+export const UPDATE_MODE = 'osrdconf/UPDATE_MODE';
+export const UPDATE_STDCM_MODE = 'osrdconf/UPDATE_STDCM_MODE';
 export const UPDATE_NAME = 'osrdconf/UPDATE_NAME';
 export const UPDATE_LABELS = 'osrdconf/UPDATE_LABELS';
 export const UPDATE_INFRA_ID = 'osrdconf/UPDATE_INFRA_ID';
@@ -29,6 +33,8 @@ export const UPDATE_FEATURE_INFO_CLICK_OSRD = 'osrdconf/UPDATE_FEATURE_INFO_CLIC
 // Reducer
 export const initialState = {
   name: '',
+  mode: DEFAULT_MODE.simulation,
+  stdcmMode: DEFAULT_STDCM_MODE,
   labels: [],
   infraID: undefined,
   pathfindingID: undefined,
@@ -49,6 +55,12 @@ export default function reducer(inputState, action) {
   const state = inputState || initialState;
   return produce(state, (draft) => {
     switch (action.type) {
+      case UPDATE_MODE:
+        draft.mode = action.mode;
+        break;
+      case UPDATE_STDCM_MODE:
+        draft.stdcmMode = action.stdcmMode;
+        break;
       case UPDATE_NAME:
         draft.name = action.name;
         break;
@@ -133,6 +145,22 @@ export function updateName(name) {
     dispatch({
       type: UPDATE_NAME,
       name,
+    });
+  };
+}
+export function updateMode(mode) {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_MODE,
+      mode,
+    });
+  };
+}
+export function updateStdcmMode(stdcmMode) {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_STDCM_MODE,
+      stdcmMode,
     });
   };
 }

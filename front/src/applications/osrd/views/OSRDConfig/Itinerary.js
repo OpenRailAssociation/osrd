@@ -210,7 +210,7 @@ const Itinerary = (props) => {
     <>
       <div className="osrd-config-item mb-2">
         <div className="osrd-config-item-container">
-          <DisplayItinerary mode={mode} zoomToFeaturePoint={zoomToFeaturePoint} />
+          <DisplayItinerary zoomToFeaturePoint={zoomToFeaturePoint} />
         </div>
       </div>
       <ModalSugerredVias

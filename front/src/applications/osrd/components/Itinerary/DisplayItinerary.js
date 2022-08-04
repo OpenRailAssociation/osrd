@@ -11,6 +11,7 @@ import {
   updateOriginDate,
   updateOriginSpeed,
   updateOriginTime,
+  updateStdcmMode
 } from 'reducers/osrdconf';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -18,6 +19,7 @@ import DatePickerSNCF from 'common/BootstrapSNCF/DatePickerSNCF/DatePickerSNCF';
 import DisplayVias from 'applications/osrd/components/Itinerary/DisplayVias';
 import { GiPathDistance } from 'react-icons/gi';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import { MODES } from '../../consts';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { store } from 'Store';
@@ -25,13 +27,10 @@ import { useTranslation } from 'react-i18next';
 
 export default function DisplayItinerary(props) {
   const osrdconf = useSelector((state) => state.osrdconf);
+  const mode = useSelector((state) => state.osrdconf.mode );
   const dispatch = useDispatch();
   const { t } = useTranslation(['osrdconf']);
-  const { zoomToFeaturePoint, mode } = props;
-
-  const stdcmModeChange = (e) => {
-    console.log('stdcmModeChange', stdcmModeChange);
-  };
+  const { zoomToFeaturePoint } = props;
 
   return (
     <div className={
@@ -63,7 +62,7 @@ export default function DisplayItinerary(props) {
                 </strong>
               </div>
               <div className="ml-auto d-flex mr-1">
-                { mode === 'stdcm'
+                { mode === MODES.stdcm
                   && (
                   <>
                     <input
@@ -72,7 +71,7 @@ export default function DisplayItinerary(props) {
                       name="stdcmMode"
                     // className="custom-control-input"
                       checked={osrdconf.stdcmMode === 'byOrigin'}
-                      onChange={stdcmModeChange}
+                      onChange={(e) => dispatch(updateStdcmMode(e.target.value))}
                       value="byOrigin"
 
                     />
@@ -80,13 +79,14 @@ export default function DisplayItinerary(props) {
                   </>
                   )}
                 <div className="d-flex">
-                  { mode === 'stdcm'
+                  { mode === MODES.stdcm
                   && (
                     <input
                       type="date"
                       className="form-control form-control-sm"
                       onChange={(e) => dispatch(updateOriginDate(e.target.value))}
                       value={osrdconf.originDate}
+                      disabled={osrdconf.stdcmMode === 'byDestination'}
                     />
                   )}
                   <InputSNCF
@@ -96,11 +96,12 @@ export default function DisplayItinerary(props) {
                     value={osrdconf.originTime}
                     sm
                     noMargin
+                    readonly={osrdconf.stdcmMode === 'byDestination'}
                   />
                 </div>
 
               </div>
-              { mode === 'simulation'
+              { mode === MODES.simulation
                   && (
                   <div className="osrd-config-speed">
                     <InputSNCF
@@ -167,7 +168,7 @@ export default function DisplayItinerary(props) {
                 </strong>
               </div>
 
-              { mode === 'stdcm'
+              { mode === MODES.stdcm
                   && (
                   <div className="ml-auto d-flex mr-1">
 
@@ -176,9 +177,8 @@ export default function DisplayItinerary(props) {
                         type="radio"
                         id="stdcmMode"
                         name="stdcmMode"
-                    // className="custom-control-input"
                         checked={osrdconf.stdcmMode === 'byDestination'}
-                        onChange={stdcmModeChange}
+                        onChange={(e) => dispatch(updateStdcmMode(e.target.value))}
                         value="byDestination"
                       />
 
@@ -186,12 +186,13 @@ export default function DisplayItinerary(props) {
 
                     <div className="d-flex">
 
-                    <input
-                      type="date"
-                      className="form-control form-control-sm"
-                      onChange={(e) => dispatch(updateDestinationDate(e.target.value))}
-                      value={osrdconf.destinationDate}
-                    />
+                      <input
+                        type="date"
+                        className="form-control form-control-sm"
+                        onChange={(e) => dispatch(updateDestinationDate(e.target.value))}
+                        value={osrdconf.destinationDate}
+                        disabled={osrdconf.stdcmMode === 'byOrigin'}
+                      />
 
                       <InputSNCF
                         type="time"
@@ -200,6 +201,7 @@ export default function DisplayItinerary(props) {
                         value={osrdconf.destinationTime}
                         sm
                         noMargin
+                        readonly={osrdconf.stdcmMode === 'byOrigin'}
                       />
                     </div>
 
