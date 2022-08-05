@@ -950,11 +950,8 @@ components:
       properties:
         infra:
           type: integer
-        rolling_stocks:
-          type: array
-          minItems: 1
-          items:
-            type: integer
+        rolling_stock:
+          type: integer
         timetable:
           type: integer
           description: timetable ID

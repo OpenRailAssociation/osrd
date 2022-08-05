@@ -507,10 +507,7 @@ components:
           type: string
           example: "infraID"
         rolling_stocks:
-          type: array
-          minItems: 1
-          items:
-            $ref: "#/components/schemas/RollingStock"
+          $ref: "#/components/schemas/RollingStock"
         route_occupancies:
           type: array
           items:
