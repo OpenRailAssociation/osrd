@@ -1,6 +1,10 @@
 {
   "addTrainSchedule": "Ajouter",
   "apply": "Appliquer",
+  "cancelRequest": "Annuler la requête",
+  "stdcmComputation": "Calcul de l'itinéraire",
+  "searchingItinerary": "Nous recherchons un itinéraire pour vote demande....",
+  "pleaseWait": "Veuillez patientez",
   "blocktype": "Type de block",
   "chooseOnMap": "Choisir sur la carte",
   "composition": "Composition",

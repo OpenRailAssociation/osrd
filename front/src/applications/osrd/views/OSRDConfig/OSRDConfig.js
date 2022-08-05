@@ -64,9 +64,9 @@ export default function OSRDConfig(props) {
           { mode === MODES.stdcm
             && (
             <div className="osrd-config-stdcm-apply">
-            <button className="btn btn-sm  btn-primary " type="button" onClick={() => {}}>
+            <button className="btn btn-sm  btn-primary " type="button" data-toggle="modal" data-target="#stdcmRequestModal">
               {t('osrdconf:apply')}
-              <span className="sr-only" aria-hidden="true">Delete</span>
+              <span className="sr-only" aria-hidden="true">{t('osrdconf:apply')}</span>
             </button>
             </div>
             )}
