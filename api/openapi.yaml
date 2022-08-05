@@ -283,6 +283,17 @@ paths:
                     type: array
                     items:
                       $ref: "#/components/schemas/RollingStock"
+    post:
+      tags:
+        - rolling_stock
+      summary: Create a rolling stock
+      responses:
+        200:
+          description: The rolling stock list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RollingStock"
   /rolling_stock/{id}/:
     get:
       tags:
@@ -969,19 +980,68 @@ components:
                 minItems: 2
                 maxItems: 2
     RollingStock:
+      allOf:
+        - $ref: "#/components/schemas/LightRollingStock"
+        - type: object
+          properties:
+            effort_curve:
+              type: object
+              properties:
+                speeds:
+                  type: array
+                  minItems: 2
+                  items:
+                    type: number
+                    format: float
+                max_efforts:
+                  type: array
+                  minItems: 2
+                  items:
+                    type: number
+                    format: float
+    LightRollingStock:
       properties:
-        id:
-          type: number
-        name:
+        version:
           type: string
-        owner:
+          example: "2.1"
+        name:
           type: string
         length:
           type: number
-        mass:
+          format: float
+        max_speed:
           type: number
+          format: float
+        startup_time:
+          type: number
+          format: float
+        startup_acceleration:
+          type: number
+          format: float
+        comfort_acceleration:
+          type: number
+          format: float
+        gamma:
+          type: object
+          properties:
+            type:
+              type: string
+              enum: ["CONST", "MAX"]
+            value:
+              type: number
+              format: float
         inertia_coefficient:
           type: number
+          format: float
+        power_class:
+          type: number
+        features:
+          type: array
+          items:
+            type: string
+        mass:
+          type: number
+          format: float
         rolling_resistance:
           type: object
           properties:
@@ -993,68 +1053,19 @@ components:
               type: number
             type:
               type: string
-        capabilities:
-          type: array
-          items:
-            type: string
-        max_speed:
-          type: number
-        startup_time:
-          type: number
-        startup_acceleration:
-          type: number
-        comfort_acceleration:
-          type: number
-        timetable_gamma:
-          type: number
-        tractive_effort_curves:
-          type: object
-          properties:
-            SC:
-              type: array
-              items:
-                type: object
-                properties:
-                  speed: {}
-                  max_effort: {}
-        traction_mode:
+              enum: ["davis"]
+        loading_gauge:
           type: string
-        power_class:
-          type: number
-        image: {}
-    LightRollingStock:
-      properties:
-        id:
-          type: number
-        name:
-          type: string
-        owner:
-          type: string
-        length:
-          type: number
-        mass:
-          type: number
-        inertia_coefficient:
-          type: number
-        capabilities:
-          type: array
-          items:
-            type: string
-        max_speed:
-          type: number
-        startup_time:
-          type: number
-        startup_acceleration:
-          type: number
-        comfort_acceleration:
-          type: number
-        timetable_gamma:
-          type: number
-        traction_mode:
-          type: string
-        power_class:
-          type: number
-        image: {}
+          enum:
+            - "G1"
+            - "G2"
+            - "GA"
+            - "GB"
+            - "GB1"
+            - "GC"
+            - "FR3.3"
+            - "FR3.3/GB/G2"
+            - "GLOTT"
     TrainSchedule:
       allOf:
         - type: object
