@@ -245,7 +245,8 @@ class Signal(BaseObjectTrait, TrackLocationTrait):
     installation_type: Optional[str]
     value: Optional[str]
     side: Side = Field(Side.CENTER, description="Side of the signal on the track")
-    default_aspect: Optional[str] = Field(description="Aspect displayed when no train is around")
+    default_aspect: Optional[str] = Field(description="Name of the aspect displayed when no train is around")
+    default_aspect_color: Optional[int] = Field(description="Color of the default aspect")
 
 
 class BufferStop(BaseObjectTrait, TrackLocationTrait):

@@ -120,6 +120,7 @@ pub struct Signal {
     pub value: Option<String>,
     pub side: Side,
     pub default_aspect: String,
+    pub default_aspect_color: Option<i32>,
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
