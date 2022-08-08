@@ -10,7 +10,7 @@
     "@nivo/tooltip": "^0.79.0",
     "@react-three/drei": "^5.1.2",
     "@react-three/fiber": "^6.1.5",
-    "@rjsf/core": "^4.2.0",
+    "@rjsf/core": "^4.2.3",
     "@sentry/browser": "^7.5.0",
     "@sentry/tracing": "^7.5.0",
     "@sncf/bootstrap-sncf.metier.reseau": "^4.3.1-r6-beta2",
