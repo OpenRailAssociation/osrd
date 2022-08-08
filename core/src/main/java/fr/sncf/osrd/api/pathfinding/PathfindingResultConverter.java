@@ -11,11 +11,9 @@ import fr.sncf.osrd.api.pathfinding.response.RoutePathResult;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackSection;
-import fr.sncf.osrd.infra.implementation.RJSObjectParsing;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
 import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
-import fr.sncf.osrd.utils.geom.LineString;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -41,6 +39,7 @@ public class PathfindingResultConverter {
         for (var waypoint : path.waypoints())
             userDefinedWaypointsPerRoute.put(waypoint.edge(), waypoint.offset());
 
+        // for each signaling route slice, find the waypoints on this slice, and merge these with user defined waypoints
         for (var signalingRouteEdgeRange : path.ranges()) {
             if (signalingRouteEdgeRange.start() < signalingRouteEdgeRange.end())
                 res.routePaths.add(makeRouteResult(signalingRouteEdgeRange));
@@ -51,7 +50,9 @@ public class PathfindingResultConverter {
             for (var waypoint : waypoints)
                 addStep(res, waypoint);
         }
-        addGeometry(res, infra);
+
+        // iterate on all the track section ranges of all routes, and build a schematic and geographic result geometry
+        GeomUtils.addGeometry(res, infra);
         res.warnings = warningRecorder.warnings;
         return res;
     }
@@ -164,81 +165,6 @@ public class PathfindingResultConverter {
             ));
         }
         return routeResult;
-    }
-
-    /** Generates the path geometry */
-    static void addGeometry(PathfindingResult res, SignalingInfra infra) {
-        var geoList = new ArrayList<LineString>();
-        var schList = new ArrayList<LineString>();
-
-        DirTrackRange previousTrack = null;
-        double previousBegin = 0;
-        double previousEnd = 0;
-
-        for (var routePath : res.routePaths) {
-            for (var trackSection : routePath.trackSections) {
-
-                if (trackSection.getBegin() == trackSection.getEnd())
-                    continue;
-
-                if (previousTrack == null) {
-                    previousTrack = trackSection;
-                    previousBegin = trackSection.getBegin();
-                    previousEnd = trackSection.getEnd();
-                    continue;
-                }
-
-                if (previousTrack.trackSection.id.id.compareTo(trackSection.trackSection.id.id) != 0) {
-                    if (Double.compare(previousBegin, previousEnd) != 0) {
-                        var track = RJSObjectParsing.getTrackSection(previousTrack.trackSection, infra);
-                        sliceAndAdd(geoList, track.getGeo(), previousBegin, previousEnd, track.getLength());
-                        sliceAndAdd(schList, track.getSch(), previousBegin, previousEnd, track.getLength());
-                    }
-                    previousTrack = trackSection;
-                    previousBegin = trackSection.getBegin();
-                }
-                previousEnd = trackSection.getEnd();
-            }
-        }
-
-        assert previousTrack != null;
-        var track = RJSObjectParsing.getTrackSection(previousTrack.trackSection, infra);
-        sliceAndAdd(geoList, track.getGeo(), previousBegin, previousEnd, track.getLength());
-        sliceAndAdd(schList, track.getSch(), previousBegin, previousEnd, track.getLength());
-
-        res.geographic = concatenate(geoList);
-        res.schematic = concatenate(schList);
-    }
-
-    /** Concatenates a list of LineString into a single LineString.
-     * If not enough values are present, we return the default [0, 1] line. */
-    private static LineString concatenate(List<LineString> list) {
-        if (list.size() >= 2)
-            return LineString.concatenate(list);
-        else if (list.size() == 1)
-            return list.get(0);
-        return LineString.make(
-                new double[] {0., 1.},
-                new double[] {0., 1.}
-        );
-    }
-
-    /** If the lineString isn't null, slice it from previousBegin to previousEnd and add it to res */
-    private static void sliceAndAdd(
-            List<LineString> res,
-            LineString lineString,
-            double previousBegin,
-            double previousEnd,
-            double trackLength
-    ) {
-        if (lineString == null)
-            return;
-        if (trackLength == 0) {
-            assert previousBegin == 0;
-            assert previousEnd == 0;
-            res.add(lineString);
-        } else
-            res.add(lineString.slice(previousBegin / trackLength, previousEnd / trackLength));
     }
 
     /** Adds a single waypoint to the result */
