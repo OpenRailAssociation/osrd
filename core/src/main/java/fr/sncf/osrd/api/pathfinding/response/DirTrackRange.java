@@ -6,7 +6,6 @@ import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 
-@SuppressFBWarnings("URF_UNREAD_FIELD")
 public class DirTrackRange {
     @Json(name = "track")
     public final RJSObjectRef<RJSTrackSection> trackSection;
