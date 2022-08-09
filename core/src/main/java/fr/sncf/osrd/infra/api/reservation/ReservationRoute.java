@@ -26,4 +26,15 @@ public interface ReservationRoute {
 
     /** Returns true if the route is controlled (needs to be requested) */
     boolean isControlled();
+
+    /** Returns the entry detector of this route */
+    default DiDetector getEntryDetector() {
+        return getDetectorPath().get(0);
+    }
+
+    /** Returns the exit detector of this route */
+    default DiDetector getExitDetector() {
+        var path = getDetectorPath();
+        return path.get(path.size() - 1);
+    }
 }
