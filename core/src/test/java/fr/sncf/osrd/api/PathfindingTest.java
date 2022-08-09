@@ -38,9 +38,9 @@ import java.util.stream.Stream;
 public class PathfindingTest extends ApiTest {
     private static PathfindingWaypoint[] makeBidirectionalEndPoint(PathfindingWaypoint point) {
         var waypointInverted = new PathfindingWaypoint(
-                point.trackSection(),
-                point.offset(),
-                point.direction().opposite()
+                point.trackSection,
+                point.offset,
+                point.direction.opposite()
         );
         return new PathfindingWaypoint[]{point, waypointInverted};
     }
@@ -51,11 +51,11 @@ public class PathfindingTest extends ApiTest {
     ) {
         for (var route : result.routePaths) {
             for (var track : route.trackSections) {
-                if (!track.trackSection.id.id.equals(waypoint.trackSection()))
+                if (!track.trackSection.id.id.equals(waypoint.trackSection))
                     continue;
                 final var begin = Math.min(track.getBegin(), track.getEnd());
                 final var end = Math.max(track.getBegin(), track.getEnd());
-                if (begin <= waypoint.offset() && end >= waypoint.offset())
+                if (begin <= waypoint.offset && end >= waypoint.offset)
                     return;
             }
         }
@@ -383,8 +383,8 @@ public class PathfindingTest extends ApiTest {
                     .filter(wp -> !wp.suggestion)
                     .toList();
             assertEquals(1, userDefinedWaypoints.size());
-            var waypointOff = waypoint.offset();
-            var waypointTrack = waypoint.trackSection();
+            var waypointOff = waypoint.offset;
+            var waypointTrack = waypoint.trackSection;
             if (waypointOff <= 0 || waypointOff >= infra.getTrackSection(waypointTrack).getLength()) {
                 // Waypoints placed on track transitions can be on either side
                 continue;
@@ -403,7 +403,7 @@ public class PathfindingTest extends ApiTest {
         );
         var rjsInfra = Helpers.getExampleInfra(infraPath + "/infra.json");
         var infra = infraFromRJS(rjsInfra);
-        for (var waypointList : req.waypoints())
+        for (var waypointList : req.waypoints)
             for (var waypoint : waypointList)
                 testMatchingRouteOffsets(infra, waypoint);
     }
