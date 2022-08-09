@@ -4,6 +4,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import fr.sncf.osrd.api.InfraCacheStatusEndpoint;
 import fr.sncf.osrd.api.InfraManager;
+import fr.sncf.osrd.api.stdcm.STDCMEndpoint;
 import fr.sncf.osrd.api.pathfinding.PathfindingRoutesEndpoint;
 import fr.sncf.osrd.api.StandaloneSimulationEndpoint;
 import io.sentry.Sentry;
@@ -64,7 +65,8 @@ public final class ApiServerCommand implements CliCommand {
                     new FkRegex("/health", ""),
                     new FkRegex("/pathfinding/routes", new PathfindingRoutesEndpoint(infraManager)),
                     new FkRegex("/standalone_simulation", new StandaloneSimulationEndpoint(infraManager)),
-                    new FkRegex("/cache_status", new InfraCacheStatusEndpoint(infraManager))
+                    new FkRegex("/cache_status", new InfraCacheStatusEndpoint(infraManager)),
+                    new FkRegex("/stdcm", new STDCMEndpoint(infraManager))
             );
 
             // the list of pages which should be displayed on error

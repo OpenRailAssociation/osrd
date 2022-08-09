@@ -99,6 +99,11 @@ public class SignalingInfraTests {
             }
 
             @Override
+            public Signal<?> getExitSignal() {
+                return null;
+            }
+
+            @Override
             public String getSignalingType() {
                 return "Dummy";
             }
