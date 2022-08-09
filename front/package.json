@@ -121,7 +121,7 @@
     "@testing-library/dom": ">5",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^12.1.5",
-    "@testing-library/user-event": "^14.2.1",
+    "@testing-library/user-event": "^14.4.3",
     "@types/lodash": "^4.14.182",
     "@types/react": "^17.0.39",
     "@types/react-transition-group": "^4.4.5",
