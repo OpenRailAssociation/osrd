@@ -1,7 +1,7 @@
 use crate::error::ApiError;
 use crate::railjson::{
-    BufferStop, Detector, ObjectRef, ObjectType, OperationalPoint, Route, Signal, SpeedSection,
-    Switch, SwitchType, TrackSection, TrackSectionLink,
+    BufferStop, Catenary, Detector, ObjectRef, ObjectType, OperationalPoint, Route, Signal,
+    SpeedSection, Switch, SwitchType, TrackSection, TrackSectionLink,
 };
 use diesel::sql_types::{Integer, Json, Text};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
@@ -23,6 +23,7 @@ pub enum RailjsonObject {
     BufferStop { railjson: BufferStop },
     Route { railjson: Route },
     OperationalPoint { railjson: OperationalPoint },
+    Catenary { railjson: Catenary },
 }
 
 pub fn apply_create_operation(
@@ -59,6 +60,7 @@ impl RailjsonObject {
             RailjsonObject::BufferStop { railjson: _ } => ObjectType::BufferStop,
             RailjsonObject::Route { railjson: _ } => ObjectType::Route,
             RailjsonObject::OperationalPoint { railjson: _ } => ObjectType::OperationalPoint,
+            RailjsonObject::Catenary { railjson: _ } => ObjectType::Catenary,
         }
     }
 
@@ -74,6 +76,7 @@ impl RailjsonObject {
             RailjsonObject::BufferStop { railjson } => railjson.id.clone(),
             RailjsonObject::Route { railjson } => railjson.id.clone(),
             RailjsonObject::OperationalPoint { railjson } => railjson.id.clone(),
+            RailjsonObject::Catenary { railjson } => railjson.id.clone(),
         }
     }
 
@@ -93,6 +96,7 @@ impl RailjsonObject {
             RailjsonObject::OperationalPoint { railjson } => {
                 serde_json::to_value(railjson).unwrap()
             }
+            RailjsonObject::Catenary { railjson } => serde_json::to_value(railjson).unwrap(),
         }
     }
 
@@ -106,8 +110,8 @@ pub mod tests {
     use crate::models::infra::tests::test_transaction;
     use crate::railjson::operation::create::{apply_create_operation, RailjsonObject};
     use crate::railjson::{
-        BufferStop, Detector, OperationalPoint, Route, Signal, SpeedSection, Switch, SwitchType,
-        TrackSection, TrackSectionLink,
+        BufferStop, Catenary, Detector, OperationalPoint, Route, Signal, SpeedSection, Switch,
+        SwitchType, TrackSection, TrackSectionLink,
     };
     use diesel::PgConnection;
 
@@ -189,6 +193,16 @@ pub mod tests {
         obj
     }
 
+    pub fn create_catenary(
+        conn: &PgConnection,
+        infra_id: i32,
+        catenary: Catenary,
+    ) -> RailjsonObject {
+        let obj = RailjsonObject::Catenary { railjson: catenary };
+        assert!(apply_create_operation(&obj, infra_id, conn).is_ok());
+        obj
+    }
+
     #[test]
     fn create_track_test() {
         test_transaction(|conn, infra| {
@@ -253,9 +267,16 @@ pub mod tests {
     }
 
     #[test]
-    fn create_st_test() {
+    fn create_switch_type_test() {
         test_transaction(|conn, infra| {
             create_switch_type(conn, infra.id, Default::default());
+        });
+    }
+
+    #[test]
+    fn create_catenary_test() {
+        test_transaction(|conn, infra| {
+            create_catenary(conn, infra.id, Default::default());
         });
     }
 }
