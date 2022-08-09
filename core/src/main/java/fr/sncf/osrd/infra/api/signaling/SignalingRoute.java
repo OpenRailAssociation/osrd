@@ -8,6 +8,9 @@ public interface SignalingRoute {
     /** Returns the entry signal for the route */
     Signal<? extends SignalState> getEntrySignal();
 
+    /** Returns the exit signal for the route */
+    Signal<? extends SignalState> getExitSignal();
+
     /** Returns a string representing the signaling type of the route (BAL3, TVM, BAPR...) */
     String getSignalingType();
 }
