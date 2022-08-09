@@ -1,77 +1,46 @@
-import React, {useEffect}  from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { MODES } from '../../osrd/consts';
 import OSRDConfig from '../../osrd/views/OSRDConfig/OSRDConfig';
+import OSRDStdcmResults from './OSRDStdcmResults'
 import StdcmRequestModal from './StdcmRequestModal';
 import { updateMode } from '../../../reducers/osrdconf';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
+export const stdcmRequestStatus = {
+  idle: 'IDLE',
+  pending: 'PENDING',
+  success: 'SUCCESS',
+  rejected: 'REJECTED',
+  canceled: 'CANCELED',
+  noresults: 'NORESULTS'
+}
+
 export default function OSRDSTDCM() {
   const { t } = useTranslation(['translation', 'osrdconf']);
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
+  const [currentStdcmRequestStatus, setCurrentStdcmRequestStatus] = useState(null);
+  const [currentStdcmRequestResults, setCurrentStdcmRequestResults] = useState(null);
   useEffect(() => {
-    dispatch(updateMode(MODES.stdcm))
+    dispatch(updateMode(MODES.stdcm));
   }, []);
 
-  const stdcmRequest = async () => {
-    try {
-
-      const controller = new AbortController();
-
-      const fakeRequest = new Promise((resolve, reject) => {
-
-        const fakeTener = setTimeout(() => {
-          const fakeStaticData = {}
-          resolve(fakeStaticData);
-        }, 3000);
-
-        controller.signal.addEventListener("abort", () => {
-          clearTimeout(fakeTener)
-          reject();
-        });
-
-      });
-
-      fakeRequest.then((result) => {
-        // Update simu in redux with data;
-        // Close the modal
-        console.log("Accomplished Promise")
-      })
-
-      fakeRequest.catch((result) => {
-        // Update simu in redux with data;
-        // Close the modal
-        console.log("rejected Promise")
-      })
-
-      return fakeRequest
-      // When http ready, do:
-      /*
-      cancelTokenSource.current = axios.CancelToken.source();
-
-      // build the request
-
-      const { data } = await axios.get("https://yesno.wtf/api", {
-        cancelToken: cancelTokenSource.current.token
-      });
-      */
-
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  const cancelStdcmRequest = () => {
-
-    // when http ready
-    //cancelTokenSource.current.cancel();
-  };
+  useEffect(() => {
+    console.log("new status", currentStdcmRequestStatus)
+  }, [currentStdcmRequestStatus]);
 
   return (
     <>
-      <OSRDConfig />
-      <StdcmRequestModal />
+      <OSRDConfig
+        setCurrentStdcmRequestStatus={setCurrentStdcmRequestStatus}
+      />
+      <StdcmRequestModal
+        setCurrentStdcmRequestResults={setCurrentStdcmRequestResults}
+        setCurrentStdcmRequestStatus={setCurrentStdcmRequestStatus}
+        currentStdcmRequestStatus = {currentStdcmRequestStatus}
+      />
+      <OSRDStdcmResults currentStdcmRequestStatus = {currentStdcmRequestStatus} />
     </>
   );
 }

@@ -12,6 +12,7 @@ import { MODES } from '../../consts';
 import Map from 'applications/osrd/views/OSRDConfig/Map';
 import RollingStockSelector from 'applications/osrd/views/OSRDConfig/RollingStockSelector';
 import TimetableSelector from 'applications/osrd/views/OSRDConfig/TimetableSelector';
+import { stdcmRequestStatus } from 'applications/stdcm/views/OSRDSTDCM';
 import { updateViewport } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
 
@@ -22,6 +23,7 @@ export default function OSRDConfig(props) {
   const { t } = useTranslation(['translation', 'osrdconf']);
   const [extViewport, setExtViewport] = useState(undefined);
   const [mustUpdateTimetable, setMustUpdateTimetable] = useState(true);
+  const { setCurrentStdcmRequestStatus } = props;
 
   if (darkmode) {
     import('./OSRDConfigDarkMode.scss');
@@ -64,10 +66,16 @@ export default function OSRDConfig(props) {
           { mode === MODES.stdcm
             && (
             <div className="osrd-config-stdcm-apply">
-            <button className="btn btn-sm  btn-primary " type="button" data-toggle="modal" data-target="#stdcmRequestModal">
-              {t('osrdconf:apply')}
-              <span className="sr-only" aria-hidden="true">{t('osrdconf:apply')}</span>
-            </button>
+              <button
+                className="btn btn-sm  btn-primary "
+                type="button"
+                data-toggle="modal"
+                data-target="#stdcmRequestModal"
+                onClick={() => {setCurrentStdcmRequestStatus(stdcmRequestStatus.pending)}}
+              >
+                {t('osrdconf:apply')}
+                <span className="sr-only" aria-hidden="true">{t('osrdconf:apply')}</span>
+              </button>
             </div>
             )}
 

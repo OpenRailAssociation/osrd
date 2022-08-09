@@ -40,7 +40,7 @@ import { updateMode } from 'reducers/osrdconf';
 import { updateViewport } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
 
-const KEY_VALUES_FOR_CONSOLIDATED_SIMULATION = ['time', 'position'];
+export const KEY_VALUES_FOR_CONSOLIDATED_SIMULATION = ['time', 'position'];
 const timetableURI = '/timetable/';
 
 export const trainscheduleURI = '/train_schedule/';
