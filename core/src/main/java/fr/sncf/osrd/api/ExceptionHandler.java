@@ -1,5 +1,6 @@
 package fr.sncf.osrd.api;
 
+import com.squareup.moshi.Json;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import io.sentry.Sentry;
 import org.takes.Response;
@@ -43,10 +44,15 @@ public class ExceptionHandler {
         public static final String osrdErrorType = "assert_error";
         private static final long serialVersionUID = 1662852082101020410L;
 
+        @Json(name = "assert_message")
+        public final String assertMessage;
+
+        @Json(name = "stack_trace")
         public final List<String> stackTrace;
 
         protected AssertWrapper(AssertionError ex) {
             super(ex.getMessage(), ErrorCause.INTERNAL);
+            this.assertMessage = ex.getMessage();
             stackTrace = convertStackTrace(ex.getStackTrace());
         }
 
