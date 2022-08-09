@@ -56,8 +56,8 @@ impl From<ObjectRef> for DeleteOperation {
 mod tests {
     use crate::models::infra::tests::test_transaction;
     use crate::railjson::operation::create::tests::{
-        create_buffer_stop, create_detector, create_link, create_op, create_route, create_signal,
-        create_speed, create_switch, create_track,
+        create_buffer_stop, create_catenary, create_detector, create_link, create_op, create_route,
+        create_signal, create_speed, create_switch, create_track,
     };
     use crate::railjson::operation::delete::DeleteOperation;
     use diesel::sql_types::BigInt;
@@ -241,6 +241,26 @@ mod tests {
             let res_del = sql_query(format!(
                 "SELECT COUNT (*) AS nb FROM osrd_infra_operationalpointmodel WHERE obj_id = '{}' AND infra_id = {}",
                 op.get_obj_id(),
+                infra.id
+            ))
+            .get_result::<Count>(conn).unwrap();
+
+            assert_eq!(res_del.nb, 0);
+        });
+    }
+
+    #[test]
+    fn delete_catenary() {
+        test_transaction(|conn, infra| {
+            let catenary = create_catenary(conn, infra.id, Default::default());
+
+            let op_deletion: DeleteOperation = catenary.get_ref().into();
+
+            assert!(op_deletion.apply(infra.id, conn).is_ok());
+
+            let res_del = sql_query(format!(
+                "SELECT COUNT (*) AS nb FROM osrd_infra_catenarymodel WHERE obj_id = '{}' AND infra_id = {}",
+                catenary.get_obj_id(),
                 infra.id
             ))
             .get_result::<Count>(conn).unwrap();

@@ -32,6 +32,7 @@ pub enum ObjectType {
     BufferStop,
     Route,
     OperationalPoint,
+    Catenary,
 }
 
 #[derive(Deserialize, Derivative, Serialize, Clone, Debug, PartialEq, Eq, Hash)]
@@ -65,6 +66,7 @@ impl ObjectType {
             ObjectType::BufferStop => "osrd_infra_bufferstopmodel",
             ObjectType::Route => "osrd_infra_routemodel",
             ObjectType::OperationalPoint => "osrd_infra_operationalpointmodel",
+            ObjectType::Catenary => "osrd_infra_catenarymodel",
         }
     }
 }
@@ -92,6 +94,7 @@ pub struct TrackSection {
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct Signal {
     #[derivative(Default(value = r#"generate_id("signal")"#))]
@@ -123,6 +126,7 @@ pub struct Signal {
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct SpeedSection {
     #[derivative(Default(value = r#"generate_id("speed_section")"#))]
@@ -135,6 +139,7 @@ pub struct SpeedSection {
 
 /* temporary object ref on a traksection for tests */
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct Route {
     #[derivative(Default(value = r#"generate_id("route")"#))]
@@ -146,6 +151,7 @@ pub struct Route {
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct TrackSectionLink {
     #[derivative(Default(value = r#"generate_id("track_section_link")"#))]
@@ -157,6 +163,7 @@ pub struct TrackSectionLink {
 
 /* temporary object ref on a traksection for tests */
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct Switch {
     #[derivative(Default(value = r#"generate_id("switch")"#))]
@@ -169,6 +176,7 @@ pub struct Switch {
 
 /* temporary object ref on a traksection for tests */
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct SwitchType {
     #[derivative(Default(value = r#"generate_id("switchtype")"#))]
@@ -178,6 +186,7 @@ pub struct SwitchType {
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, Hash)]
+#[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct SwitchPortConnection {
     pub src: String,
@@ -186,6 +195,7 @@ pub struct SwitchPortConnection {
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct Detector {
     #[derivative(Default(value = r#"generate_id("detector")"#))]
@@ -197,6 +207,7 @@ pub struct Detector {
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct BufferStop {
     #[derivative(Default(value = r#"generate_id("buffer_stop")"#))]
@@ -208,6 +219,7 @@ pub struct BufferStop {
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct OperationalPoint {
     #[derivative(Default(value = r#"generate_id("operational_point")"#))]
@@ -223,6 +235,7 @@ pub struct OperationalPoint {
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct OperationalPointPart {
     pub track: ObjectRef,
@@ -230,6 +243,7 @@ pub struct OperationalPointPart {
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct ApplicableDirectionsTrackRange {
     pub track: ObjectRef,
@@ -240,6 +254,7 @@ pub struct ApplicableDirectionsTrackRange {
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct DirectionalTrackRange {
     pub track: ObjectRef,
@@ -321,6 +336,7 @@ pub enum Endpoint {
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, Hash)]
+#[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct TrackEndpoint {
     #[derivative(Default(value = "Endpoint::Begin"))]
@@ -375,6 +391,16 @@ pub struct LoadingGaugeLimit {
     pub applicable_train_type: ApplicableTrainType,
     pub begin: f64,
     pub end: f64,
+}
+
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+#[derivative(Default)]
+pub struct Catenary {
+    #[derivative(Default(value = r#"generate_id("catenary")"#))]
+    pub id: String,
+    pub voltage: f64,
+    pub track_ranges: Vec<ApplicableDirectionsTrackRange>,
 }
 
 #[cfg(test)]

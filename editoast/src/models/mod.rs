@@ -1,5 +1,6 @@
 mod bounding_box;
 mod buffer_stop_layer;
+mod catenary_layer;
 mod detector_layer;
 pub mod errors;
 pub mod infra;
@@ -14,6 +15,7 @@ mod track_section_link_layer;
 
 pub use bounding_box::{BoundingBox, InvalidationZone};
 pub use buffer_stop_layer::BufferStopLayer;
+pub use catenary_layer::CatenaryLayer;
 pub use detector_layer::DetectorLayer;
 pub use infra::{CreateInfra, Infra, InfraError};
 pub use operational_point_layer::OperationalPointLayer;
