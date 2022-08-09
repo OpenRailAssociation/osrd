@@ -43,15 +43,15 @@ public class PathfindingRoutesEndpoint implements Take {
             if (request == null)
                 return new RsWithStatus(new RsText("missing request body"), 400);
 
-            var reqWaypoints = request.waypoints();
+            var reqWaypoints = request.waypoints;
 
             // load infra
-            var infra = infraManager.load(request.infra(), request.expectedVersion(), warningRecorder);
+            var infra = infraManager.load(request.infra, request.expectedVersion, warningRecorder);
 
             // load rolling stocks
             var rollingStocks = List.<RollingStock>of();
-            if (request.rollingStocks() != null)
-                rollingStocks = request.rollingStocks().stream()
+            if (request.rollingStocks != null)
+                rollingStocks = request.rollingStocks.stream()
                         .map(RJSRollingStockParser::parse)
                         .toList();
 
@@ -126,7 +126,7 @@ public class PathfindingRoutesEndpoint implements Take {
                 .collect(Collectors.toSet());
         for (var step : reqWaypoints) {
             assert Arrays.stream(step)
-                    .anyMatch(waypoint -> tracksOnPath.contains(waypoint.trackSection()));
+                    .anyMatch(waypoint -> tracksOnPath.contains(waypoint.trackSection));
         }
     }
 
@@ -136,17 +136,17 @@ public class PathfindingRoutesEndpoint implements Take {
             PathfindingWaypoint waypoint
     ) {
         var res = new HashSet<Pathfinding.EdgeLocation<SignalingRoute>>();
-        var edge = infra.getEdge(waypoint.trackSection(), Direction.fromEdgeDir(waypoint.direction()));
+        var edge = infra.getEdge(waypoint.trackSection, Direction.fromEdgeDir(waypoint.direction));
         if (edge == null)
             throw new InvalidSchedule(
-                    String.format("Track %s referenced in path step does not exist", waypoint.trackSection())
+                    String.format("Track %s referenced in path step does not exist", waypoint.trackSection)
             );
         for (var entry : infra.getRoutesOnEdges().get(edge)) {
             var signalingRoutes = infra.getRouteMap().get(entry.route());
             for (var signalingRoute : signalingRoutes) {
-                var waypointOffsetFromStart = waypoint.offset();
-                if (waypoint.direction().equals(EdgeDirection.STOP_TO_START))
-                    waypointOffsetFromStart = edge.getEdge().getLength() - waypoint.offset();
+                var waypointOffsetFromStart = waypoint.offset;
+                if (waypoint.direction.equals(EdgeDirection.STOP_TO_START))
+                    waypointOffsetFromStart = edge.getEdge().getLength() - waypoint.offset;
                 var offset = waypointOffsetFromStart - entry.startOffset();
                 if (offset >= 0 && offset <= signalingRoute.getInfraRoute().getLength())
                     res.add(new Pathfinding.EdgeLocation<>(signalingRoute, offset));
