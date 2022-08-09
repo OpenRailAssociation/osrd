@@ -43,6 +43,9 @@ pub struct InfraCache {
 
     /// List existing switch types
     pub switch_types: HashMap<String, SwitchType>,
+
+    /// List existing catenaries
+    pub catenaries: HashMap<String, Catenary>,
 }
 
 #[derive(Debug, Clone, Derivative)]
@@ -284,13 +287,10 @@ pub struct SwitchTypeQueryable {
 
 impl From<SwitchTypeQueryable> for SwitchType {
     fn from(switch_type: SwitchTypeQueryable) -> Self {
-        let ports: Vec<String> = serde_json::from_str(&switch_type.ports).unwrap();
-        let groups: HashMap<String, Vec<SwitchPortConnection>> =
-            serde_json::from_str(&switch_type.groups).unwrap();
         SwitchType {
             id: switch_type.obj_id,
-            ports,
-            groups,
+            ports: serde_json::from_str(&switch_type.ports).unwrap(),
+            groups: serde_json::from_str(&switch_type.groups).unwrap(),
         }
     }
 }
@@ -387,6 +387,26 @@ impl BufferStopCache {
 impl From<&BufferStop> for BufferStopCache {
     fn from(stop: &BufferStop) -> Self {
         Self::new(stop.id.clone(), stop.track.obj_id.clone(), stop.position)
+    }
+}
+
+#[derive(QueryableByName, Debug, Clone)]
+pub struct CatenaryQueryable {
+    #[sql_type = "Text"]
+    pub obj_id: String,
+    #[sql_type = "Double"]
+    pub voltage: f64,
+    #[sql_type = "Text"]
+    pub track_ranges: String,
+}
+
+impl From<CatenaryQueryable> for Catenary {
+    fn from(catenary: CatenaryQueryable) -> Self {
+        Self {
+            id: catenary.obj_id,
+            voltage: catenary.voltage,
+            track_ranges: serde_json::from_str(&catenary.track_ranges).unwrap(),
+        }
     }
 }
 
@@ -501,6 +521,19 @@ impl InfraCache {
             .is_none());
     }
 
+    fn load_catenary(&mut self, catenary: Catenary) {
+        for track_range in catenary.track_ranges.iter() {
+            self.add_track_ref(
+                track_range.track.obj_id.clone(),
+                ObjectRef::new(ObjectType::Catenary, catenary.id.clone()),
+            );
+        }
+        assert!(self
+            .catenaries
+            .insert(catenary.id.clone(), catenary)
+            .is_none());
+    }
+
     /// Given an infra id load infra cache from database
     pub fn load(conn: &PgConnection, infra_id: i32) -> InfraCache {
         let mut infra_cache = Self::default();
@@ -583,6 +616,14 @@ impl InfraCache {
         .bind::<Integer, _>(infra_id)
         .load::<BufferStopCache>(conn).expect("Error loading buffer stop refs").into_iter().for_each(|buffer_stop| 
             infra_cache.load_buffer_stop(buffer_stop)
+        );
+
+        // Load catenary tracks references
+        sql_query(
+            "SELECT obj_id, (data->>'voltage')::float AS voltage, data->>'track_ranges' AS track_ranges FROM osrd_infra_catenarymodel WHERE infra_id = $1")
+        .bind::<Integer, _>(infra_id)
+        .load::<CatenaryQueryable>(conn).expect("Error loading catenary refs").into_iter().for_each(|catenary| 
+            infra_cache.load_catenary(catenary.into())
         );
 
         infra_cache
@@ -706,6 +747,18 @@ impl InfraCache {
             } => {
                 self.track_sections.remove(obj_id);
             }
+            ObjectRef {
+                obj_type: ObjectType::Catenary,
+                obj_id,
+            } => {
+                let catenary = self.catenaries.remove(obj_id).unwrap();
+                for track_range in catenary.track_ranges {
+                    self.track_sections_refs
+                        .get_mut(&track_range.track.obj_id)
+                        .unwrap()
+                        .remove(object_ref);
+                }
+            }
         }
     }
 
@@ -732,6 +785,7 @@ impl InfraCache {
             RailjsonObject::OperationalPoint { railjson } => {
                 self.load_operational_point(railjson.into())
             }
+            RailjsonObject::Catenary { railjson } => self.load_catenary(railjson.clone()),
         }
     }
 
@@ -754,11 +808,11 @@ pub mod tests {
     use crate::infra_cache::{InfraCache, SwitchCache};
     use crate::models::infra::tests::test_transaction;
     use crate::railjson::operation::create::tests::{
-        create_buffer_stop, create_detector, create_link, create_op, create_route, create_signal,
-        create_speed, create_switch, create_switch_type, create_track,
+        create_buffer_stop, create_catenary, create_detector, create_link, create_op, create_route,
+        create_signal, create_speed, create_switch, create_switch_type, create_track,
     };
     use crate::railjson::{
-        ApplicableDirections, Endpoint, ObjectRef, ObjectType, OperationalPoint, Route,
+        ApplicableDirections, Catenary, Endpoint, ObjectRef, ObjectType, OperationalPoint, Route,
         SpeedSection, Switch, SwitchPortConnection, SwitchType, TrackEndpoint, TrackSectionLink,
     };
 
@@ -904,6 +958,26 @@ pub mod tests {
             let infra_cache = InfraCache::load(conn, infra.id);
 
             assert!(infra_cache.buffer_stops.contains_key(&bs.get_obj_id()));
+            let refs = infra_cache.track_sections_refs;
+            assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+        })
+    }
+
+    #[test]
+    fn load_catenary() {
+        test_transaction(|conn, infra| {
+            let catenary = create_catenary(
+                conn,
+                infra.id,
+                Catenary {
+                    track_ranges: vec![Default::default()],
+                    ..Default::default()
+                },
+            );
+
+            let infra_cache = InfraCache::load(conn, infra.id);
+
+            assert!(infra_cache.catenaries.contains_key(&catenary.get_obj_id()));
             let refs = infra_cache.track_sections_refs;
             assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
         })

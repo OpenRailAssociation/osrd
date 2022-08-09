@@ -138,6 +138,17 @@ impl InvalidationZone {
                     };
                     Self::merge_bbox(&mut geo, &mut sch, infra_cache, &railjson.track.obj_id);
                 }
+                OperationResult::Update(RailjsonObject::Catenary { railjson })
+                | OperationResult::Create(RailjsonObject::Catenary { railjson }) => {
+                    if let Some(catenary) = infra_cache.catenaries.get(&railjson.id) {
+                        for track_id in catenary.track_ranges.iter().map(|r| &r.track.obj_id) {
+                            Self::merge_bbox(&mut geo, &mut sch, infra_cache, track_id);
+                        }
+                    }
+                    for track_id in railjson.track_ranges.iter().map(|r| &r.track.obj_id) {
+                        Self::merge_bbox(&mut geo, &mut sch, infra_cache, track_id);
+                    }
+                }
                 OperationResult::Delete(ObjectRef {
                     obj_type: ObjectType::TrackSection,
                     obj_id,
@@ -223,6 +234,16 @@ impl InvalidationZone {
                     obj_type: ObjectType::SwitchType,
                     obj_id: _,
                 }) => {}
+                OperationResult::Delete(ObjectRef {
+                    obj_type: ObjectType::Catenary,
+                    obj_id,
+                }) => {
+                    if let Some(catenary) = infra_cache.catenaries.get(obj_id) {
+                        for track_id in catenary.track_ranges.iter().map(|r| &r.track.obj_id) {
+                            Self::merge_bbox(&mut geo, &mut sch, infra_cache, track_id);
+                        }
+                    }
+                }
             }
         }
         Self { geo, sch }
@@ -247,5 +268,13 @@ mod tests {
         let a = BoundingBox((0., 0.), (1., 1.));
         min.union(&a);
         assert_eq!(min, a);
+    }
+
+    #[test]
+    fn test_validity() {
+        assert!(BoundingBox((0., 0.), (1., 1.)).is_valid());
+        assert!(!BoundingBox((1., 0.), (0., 1.)).is_valid());
+        assert!(!BoundingBox((0., 1.), (1., 0.)).is_valid());
+        assert!(!BoundingBox::default().is_valid());
     }
 }
