@@ -127,8 +127,8 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
   useEffect(() => {
     setIsHelpOpened(false);
     setData(formData);
-    setSelected((old) => (old && !!formData[old] ? null : old));
-    setHovered((old) => (old && !!formData[old.index] ? null : old));
+    setSelected((old) => (old !== null && formData[old] ? old : null));
+    setHovered((old) => (old != null && formData[old.index] ? old : null));
   }, [formData]);
 
   /**
