@@ -92,23 +92,23 @@ public class Pathfinding {
         builder.makeNodes(nodes);
 
         index.add(ID0);
-        index.add(SOL.get(0).get(0).getID());
+        index.add(SOL.get(0).get(0).id);
 
         for (int i = 0; i < SOL.size(); i++) {
-            builder.makeEdge(index.indexOf(ID0), index.indexOf(SOL.get(i).get(0).getID()), 0);
+            builder.makeEdge(index.indexOf(ID0), index.indexOf(SOL.get(i).get(0).id), 0);
             for (int j = 0; j < SOL.get(i).size() - 1; j++) {
                 BlockUse currentB = SOL.get(i).get(j);
                 BlockUse nextB = SOL.get(i).get(j + 1);
 
-                var capacity = currentB.getL() * (currentB.getTf() - currentB.getT());
+                var capacity = currentB.length * (currentB.reservationEndTime - currentB.reservationStartTime);
 
-                var ID1 = currentB.getID() + "/" + i;
+                var ID1 = currentB.id + "/" + i;
                 if (j == 0 || j == SOL.get(i).size() - 1)
-                    ID1 = currentB.getID();
+                    ID1 = currentB.id;
 
-                var ID2 = nextB.getID() + "/" + i;
+                var ID2 = nextB.id + "/" + i;
                 if (j == SOL.get(i).size() - 2)
-                    ID2 = nextB.getID();
+                    ID2 = nextB.id;
 
                 if (!index.contains(ID1))
                     index.add(ID1);

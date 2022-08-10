@@ -9,9 +9,7 @@ import java.util.Objects;
 public class PathGenerator {
     public static ArrayList<ArrayList<BlockUse>> generatePaths(
             STDCMConfig config,
-            ArrayList<BlockUse> Bfree,
-            int beginSignal,
-            int endSignal
+            ArrayList<BlockUse> Bfree
     ) {
         var residualCapacity = new ArrayList<ArrayList<ArrayList<BlockUse>>>();
         var B2next = new ArrayList<ArrayList<BlockUse>>();
@@ -27,22 +25,22 @@ public class PathGenerator {
 
         int lim = 8600;
 
-        int Xs = beginSignal;
-        int Xfs = endSignal;
+        String Xs = config.startBlockEntrySig;
+        String Xfs = config.startBlockExitSig;
 
         int k = 0;
         for (var blockA : Bfree) {
             for (var blockB : Bfree) {
                 double Tv = Ds / Vc;
-                double Tr = Lt / Vc + blockA.getL() / Vc;
-                double Tj = blockB.getL() / Vc;
+                double Tr = Lt / Vc + blockA.length / Vc;
+                double Tj = blockB.length / Vc;
                 double Tj1 = 300 / Vc;
                 var Tm = Tv + Tr + Tj;
-                var Cm = (Ds + Lt + blockB.getL()) / Vc;
-                if (blockA.getTf() - blockB.getT() >= Cm
-                        && blockB.getTf() - blockA.getT() >= Tm + Tj1
-                        && blockA.getXf() == blockB.getX()
-                        && blockA.getX() != blockB.getXf()) {
+                var Cm = (Ds + Lt + blockB.length) / Vc;
+                if (blockA.reservationEndTime - blockB.reservationStartTime >= Cm
+                        && blockB.reservationEndTime - blockA.reservationStartTime >= Tm + Tj1
+                        && blockA.exitSig.equals(blockB.entrySig)
+                        && !blockA.entrySig.equals(blockB.exitSig)) {
                     B2next.add(new ArrayList<>());
                     B2next.get(k).add(blockA);
                     B2next.get(k).add(blockB);
@@ -63,14 +61,14 @@ public class PathGenerator {
             k = 0;
 
             for (int i = 0; i < tem; i++) {
-                for (int j = 0; j < B2next.size(); j++) {
-                    if (residualCapacity.get(z).get(i).get(0).getX() == Xs &&
-                            residualCapacity.get(z).get(i).get(0).getXf() == Xfs &&
-                            Objects.equals(residualCapacity.get(z).get(i).get(residualCapacity.get(z).get(i).size() - 1).getID(), B2next.get(j).get(0).getID()) &&
-                            !residualCapacity.get(z).get(i).contains(B2next.get(j).get(1)) && k < lim) {
+                for (ArrayList<BlockUse> blockUses : B2next) {
+                    if (residualCapacity.get(z).get(i).get(0).entrySig.equals(Xs)
+                            && residualCapacity.get(z).get(i).get(0).exitSig.equals(Xfs)
+                            && Objects.equals(residualCapacity.get(z).get(i).get(residualCapacity.get(z).get(i).size() - 1).id, blockUses.get(0).id)
+                            && !residualCapacity.get(z).get(i).contains(blockUses.get(1)) && k < lim) {
                         Bnext.add(new ArrayList<>());
                         Bnext.get(k).addAll(residualCapacity.get(z).get(i));
-                        Bnext.get(k).add(B2next.get(j).get(1));
+                        Bnext.get(k).add(blockUses.get(1));
                         k++;
                     }
                 }
@@ -91,14 +89,14 @@ public class PathGenerator {
                 double dt = 400 / Vc + Lt / Vc;
                 for (int tes = 0; tes < residualCapacity.get(zz).get(i).size(); tes++) {
                     if (tes == residualCapacity.get(zz).get(i).size() - 1) {
-                        dt = dt + residualCapacity.get(zz).get(i).get(tes).getL() / Vc + 1500 / Vc;
+                        dt = dt + residualCapacity.get(zz).get(i).get(tes).length / Vc + 1500 / Vc;
                     } else {
-                        dt = dt + residualCapacity.get(zz).get(i).get(tes).getL() / Vc;
+                        dt = dt + residualCapacity.get(zz).get(i).get(tes).length / Vc;
                     }
                 }
 
-                if (residualCapacity.get(zz).get(i).get(residualCapacity.get(zz).get(i).size() - 1).getTf() - residualCapacity.get(zz).get(i).get(0).getT() >= dt
-                        && residualCapacity.get(zz).get(i).get(residualCapacity.get(zz).get(i).size() - 1).getTf() - residualCapacity.get(zz).get(i).get(0).getT() < config.maxTime) {
+                if (residualCapacity.get(zz).get(i).get(residualCapacity.get(zz).get(i).size() - 1).reservationEndTime - residualCapacity.get(zz).get(i).get(0).reservationStartTime >= dt
+                        && residualCapacity.get(zz).get(i).get(residualCapacity.get(zz).get(i).size() - 1).reservationEndTime - residualCapacity.get(zz).get(i).get(0).reservationStartTime < config.maxTime) {
                     Get2.get(zz).add(new ArrayList<>());
                     Get2.get(zz).get(etii).addAll(residualCapacity.get(zz).get(i));
                     etii++;

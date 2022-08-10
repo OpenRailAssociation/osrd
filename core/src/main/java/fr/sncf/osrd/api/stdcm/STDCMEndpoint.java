@@ -177,15 +177,15 @@ public class STDCMEndpoint implements Take {
 
     public static class RouteOccupancy {
         /** ID of the occupied route */
-        String id;
+        public String id;
 
         /** Time at which the route starts being occupied */
         @Json(name = "start_occupancy_time")
-        double startOccupancyTime;
+        public double startOccupancyTime;
 
         /** Time at which the route ends being occupied */
         @Json(name = "end_occupancy_time")
-        double endOccupancyTime;
+        public double endOccupancyTime;
 
         public RouteOccupancy(String id, double startOccupancyTime, double endOccupancyTime) {
             this.id = id;

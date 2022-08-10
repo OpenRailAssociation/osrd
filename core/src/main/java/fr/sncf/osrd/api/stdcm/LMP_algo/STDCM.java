@@ -7,64 +7,91 @@ import fr.sncf.osrd.api.stdcm.LMP_algo.legacy.digital_capacity_generator;
 import fr.sncf.osrd.api.stdcm.LMP_algo.legacy.max_usable_capacity;
 import fr.sncf.osrd.api.stdcm.Objects.BlockUse;
 import fr.sncf.osrd.api.stdcm.STDCMEndpoint;
+import fr.sncf.osrd.api.stdcm.STDCMEndpoint.RouteOccupancy;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.train.RollingStock;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.*;
 
 public class STDCM {
-    public static ArrayList<BlockUse> getUsableCapacity() throws ParseException {
-        // first array level: is per GET (per itinerary)
-        // second array level: per route
-        // third level: occupancy per route
-        ArrayList<ArrayList<ArrayList<BlockUse>>> perTrainOccupancy = new ArrayList<>();
+    private static ArrayList<BlockUse> computeBlockUsableCapacity(SignalingInfra infra, RollingStock rollingStock, String id, List<RouteOccupancy> occupancies) {
+        occupancies.sort(Comparator.comparingDouble(blockUse -> blockUse.startOccupancyTime));
 
-        // this step takes the occupancy of each GET, and merges it with all the other GETs
-        // at the end of the process, all GETs have the occupancy times from other GETs.
-        var combinedOccupancy = OccupancyIntersector.intersect(perTrainOccupancy);
+        var route = infra.findSignalingRoute(id, "BAL3");
+        var entrySignal = route.getEntrySignal().getID();
+        var exitSignal = route.getEntrySignal().getID();
+        var res = new ArrayList<BlockUse>();
 
-        // This step takes as an input the previous GETs and computes the digital capacity for each one
-        // as an output we will have  a list of the digital capacity of each route
-        // represented as blocks of digital capacity
-        digital_capacity_generator dcg = new digital_capacity_generator();
-        combinedOccupancy = dcg.digital_capacity(perTrainOccupancy, combinedOccupancy);
-
-        // This step stores all the digital capacity blocks in a one array
-        var Bfree = new ArrayList<BlockUse>();
-        for (int k = 0; k < combinedOccupancy.size(); k++) {
-            for (int i = 0; i < combinedOccupancy.get(k).size(); i++) {
-                for (int j = 0; j < combinedOccupancy.get(k).get(i).size(); j++) {
-                    var block = combinedOccupancy.get(k).get(i).get(j);
-                    Bfree.add(new BlockUse(block.getT(), block.getTf(), block.getX(), block.getXf(), "(" + k + "," + i + "," + j + ")", block.getL(), 200));
-                }
+        // +-----+----+----+-------+----------+
+        // |     |////|    |///////|          |
+        // +-----+----+----+-------+----------+
+        double lastOccupied = Double.NEGATIVE_INFINITY;
+        for (var occupancy : occupancies) {
+            // coalesce overlapping / continuous occupancies together
+            if (occupancy.startOccupancyTime <= lastOccupied) {
+                lastOccupied = occupancy.endOccupancyTime;
+                continue;
             }
-        }
 
-        // This step regroups all the digital capacity block per route
-        max_usable_capacity muc = new max_usable_capacity();
-        return muc.max_usable_capacity(Bfree);
+            var startTime = lastOccupied;
+            var endTime = occupancy.startOccupancyTime;
+            var length = route.getInfraRoute().getLength();
+            var maxSpeed = route.getInfraRoute().getTrackRanges()
+                    .stream()
+                    // for each track section range the route spans onto
+                    .map(trackRange -> {
+                        // get the speed limits on this speed section range
+                        return trackRange.getSpeedSections().asMapOfRanges().values().stream()
+                                // TODO: speed limits per category
+                                // compute the limit for our rolling stock
+                                .map(speedLimits -> speedLimits.getSpeedLimit(List.of()))
+                                // find the minimum
+                                .reduce(Double.POSITIVE_INFINITY, Math::min)
+                    })
+                    // find the minimum
+                    .reduce(Double.POSITIVE_INFINITY, Math::min);
+            res.add(new BlockUse(startTime, endTime, entrySignal, exitSignal, id, length, maxSpeed));
+            lastOccupied = occupancy.endOccupancyTime;
+        }
+        return res;
     }
 
-    public static ArrayList<ArrayList<BlockUse>> run(SignalingInfra infra, RollingStock rollingStock, double startTime, double endTime, Collection<PathfindingWaypoint> startPoint, Collection<PathfindingWaypoint> endPoint, Collection<STDCMEndpoint.RouteOccupancy> occupancy) throws IOException, ParseException {
-        double maxTime = 3 * 3.6 * Math.pow(10, 6);
-        var config = new STDCMConfig(infra, rollingStock, startTime, endTime, startPoint, endPoint, occupancy, maxTime, 400.);
+    private static ArrayList<BlockUse> getUsableCapacity(SignalingInfra infra, Collection<RouteOccupancy> occupancies) {
+        // 1) sort occupancies per block
+        var perBlockOccupancy = new HashMap<String, List<RouteOccupancy>>();
+        for (var occupancy : occupancies) {
+            var blockOccupancy = perBlockOccupancy.computeIfAbsent(occupancy.id, id -> new ArrayList<>());
+            blockOccupancy.add(occupancy);
+        }
+
+        // 2) compute the usable capacity (the not-occupied time lapses for all blocks)
+        var res = new ArrayList<BlockUse>();
+        for (var blockOccupancies : perBlockOccupancy.values())
+            res.addAll(computeBlockUsableCapacity(blockOccupancies));
+        return res;
+    }
+
+    public static ArrayList<ArrayList<BlockUse>> run(SignalingInfra infra, RollingStock rollingStock, double startTime, double endTime, Collection<PathfindingWaypoint> startPoint, Collection<PathfindingWaypoint> endPoint, Collection<RouteOccupancy> occupancy) throws IOException, ParseException {
+        // TODO: adapt input
+        var usableCapacity = getUsableCapacity(infra, occupancy);
 
         // TODO: find the IDs of the start and end signal
-        int beginSignal = 0;
-        int endSignal = 0;
+        String startBlockEntrySig = null;
+        String startBlockExitSig = null;
+        String exitBlockEntrySig = null;
+        String exitBlockExitSig = null;
 
-        // compute usable capacity
-        var Bfree = getUsableCapacity();
+        double maxTime = 3 * 3.6 * Math.pow(10, 6);
+        var config = new STDCMConfig(rollingStock, startTime, endTime, maxTime, 400., startBlockEntrySig, startBlockExitSig, exitBlockEntrySig, exitBlockExitSig);
 
         // Get creation from routeOccupancy
 
         // This step generates all the possible paths that links the start and end location while taking into account
         // the simulation's parameters, by performing a physics simulation.
         // this step defines the nodes and edges of the final graph
-        ArrayList<ArrayList<BlockUse>> paths = PathGenerator.generatePaths(config, Bfree, beginSignal, endSignal);
+        var paths = PathGenerator.generatePaths(config, usableCapacity);
 
         // This step calculates the weight of each edge
         var SOL2 = DCM_paths.DCM_paths(config, paths);

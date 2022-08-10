@@ -23,8 +23,8 @@ public class OccupancyIntersector {
             for (int i = 0; i < Get1.get(k).size(); i++) {
                 for (int j = 0; j < Get1.get(k).get(i).size(); j++) {
                     var cur = Get1.get(k).get(i).get(j);
-                    B2free.add(new BlockUse(cur.getT(), cur.getTf(), cur.getX(), cur.getXf(), cur.getID(), cur.getL(), 200));
-                    B22free.add(new BlockUse(cur.getT(), cur.getTf(), cur.getX(), cur.getXf(), cur.getID(), cur.getL(), 200));
+                    B2free.add(new BlockUse(cur.reservationStartTime, cur.reservationEndTime, cur.entrySig, cur.exitSig, cur.id, cur.length, 200));
+                    B22free.add(new BlockUse(cur.reservationStartTime, cur.reservationEndTime, cur.entrySig, cur.exitSig, cur.id, cur.length, 200));
                 }
             }
         }
@@ -36,14 +36,14 @@ public class OccupancyIntersector {
                 var intersected_block = blockUse;
 
                 //Update starting occupancy time of the main_block
-                if (main_block.getT() < intersected_block.getTf() && main_block.getT() > intersected_block.getT() && main_block.getX() == intersected_block.getX() && main_block.getXf() == intersected_block.getXf() && !Objects.equals(main_block.getID(), intersected_block.getID())) {
-                    main_block.setT(intersected_block.getT());
+                if (main_block.reservationStartTime < intersected_block.reservationEndTime && main_block.reservationStartTime > intersected_block.reservationStartTime && main_block.entrySig == intersected_block.entrySig && main_block.exitSig == intersected_block.exitSig && !Objects.equals(main_block.id, intersected_block.id)) {
+                    main_block.reservationStartTime = intersected_block.reservationStartTime;
                     test = true;
                 }
 
                 //Updating ending occupancy time of the main_block
-                if (main_block.getTf() < intersected_block.getTf() && main_block.getTf() > intersected_block.getT() && main_block.getX() == intersected_block.getX() && main_block.getXf() == intersected_block.getXf() && !Objects.equals(main_block.getID(), intersected_block.getID())) {
-                    main_block.setTf(intersected_block.getTf());
+                if (main_block.reservationEndTime < intersected_block.reservationEndTime && main_block.reservationEndTime > intersected_block.reservationStartTime && main_block.entrySig == intersected_block.entrySig && main_block.exitSig == intersected_block.exitSig && !Objects.equals(main_block.id, intersected_block.id)) {
+                    main_block.reservationEndTime = intersected_block.reservationEndTime;
                     test = true;
                 }
             }
@@ -62,12 +62,12 @@ public class OccupancyIntersector {
                     var block = Get1.get(k).get(i).get(j);
                     do {
                         ind++;
-                        if (block.getID() == B2free.get(ind).getID()) {
-                            block.setT(B2free.get(ind).getT());
-                            block.setTf(B2free.get(ind).getTf());
+                        if (block.id == B2free.get(ind).id) {
+                            block.reservationStartTime = B2free.get(ind).reservationStartTime;
+                            block.reservationEndTime = B2free.get(ind).reservationEndTime;
                         }
 
-                    } while (block.getID() != B2free.get(ind).getID());
+                    } while (block.id != B2free.get(ind).id);
 
                     ind = -1;
                 }

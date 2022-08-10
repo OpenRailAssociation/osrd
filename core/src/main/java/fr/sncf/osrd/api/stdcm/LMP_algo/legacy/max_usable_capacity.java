@@ -3,8 +3,6 @@ package fr.sncf.osrd.api.stdcm.LMP_algo.legacy;
 
 import fr.sncf.osrd.api.stdcm.Objects.BlockUse;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 
@@ -37,20 +35,20 @@ public class max_usable_capacity {
                         set = set + 1;
                     }
 
-                    if (Bfree.get(start).getX() != Bfree.get(ind).getX() && Bfree.get(start).getXf() != Bfree.get(ind).getXf() && nw == 0) {
+                    if (Bfree.get(start).entrySig != Bfree.get(ind).entrySig && Bfree.get(start).exitSig != Bfree.get(ind).exitSig && nw == 0) {
                         Tsort.add(new ArrayList<BlockUse>());
                         set = set + 1;
                         nw = 1;
                     }
 
-                    if (Bfree.get(start).getX() == Bfree.get(ind).getX() && Bfree.get(start).getXf() == Bfree.get(ind).getXf()) {
+                    if (Bfree.get(start).entrySig == Bfree.get(ind).entrySig && Bfree.get(start).exitSig == Bfree.get(ind).exitSig) {
                         Tsort.get(set).add(Bfree.get(ind));
                         nw = 0;
                         indexs.add(ind);
 
                     }
 
-                    if (Bfree.get(start).getX() != Bfree.get(ind).getX() && Bfree.get(start).getXf() != Bfree.get(ind).getXf() && out == 0) {
+                    if (Bfree.get(start).entrySig != Bfree.get(ind).entrySig && Bfree.get(start).exitSig != Bfree.get(ind).exitSig && out == 0) {
                         restart = ind;
                         out = 1;
                     }
@@ -71,20 +69,20 @@ public class max_usable_capacity {
             }
 
             for (int i = 0; i < B2free.size(); i++) {
-                BlockUse fb = new BlockUse(B2free.get(i).getT(), B2free.get(i).getTf(), B2free.get(i).getX(), B2free.get(i).getXf(), B2free.get(i).getID(), B2free.get(i).getL(), 200);
+                BlockUse fb = new BlockUse(B2free.get(i).reservationStartTime, B2free.get(i).reservationEndTime, B2free.get(i).entrySig, B2free.get(i).exitSig, B2free.get(i).id, B2free.get(i).length, 200);
                 for (int j = 0; j < B2free.size(); j++) {
                     BlockUse intervalj = B2free.get(j);
-                    if (intervalj.getT() < fb.getTf() && intervalj.getTf() > fb.getT() && i != j) {
-                        double T = Math.max(fb.getT(), intervalj.getT());
-                        double Tf = Math.min(fb.getTf(), intervalj.getTf());
-                        fb.setT(T);
-                        fb.setTf(Tf);
+                    if (intervalj.reservationStartTime < fb.reservationEndTime && intervalj.reservationEndTime > fb.reservationStartTime && i != j) {
+                        double T = Math.max(fb.reservationStartTime, intervalj.reservationStartTime);
+                        double Tf = Math.min(fb.reservationEndTime, intervalj.reservationEndTime);
+                        fb.reservationStartTime = T;
+                        fb.reservationEndTime = Tf;
                     }
                 }
 
-                if (Ttab.isEmpty() || !Ttab.contains(fb.getT())) {
-                    Ttab.add(fb.getT());
-                    Maxbf.add(new BlockUse(fb.getT(), fb.getTf(), fb.getX(), fb.getXf(), fb.getID(), fb.getL(), 200));
+                if (Ttab.isEmpty() || !Ttab.contains(fb.reservationStartTime)) {
+                    Ttab.add(fb.reservationStartTime);
+                    Maxbf.add(new BlockUse(fb.reservationStartTime, fb.reservationEndTime, fb.entrySig, fb.exitSig, fb.id, fb.length, 200));
                 }
             }
 

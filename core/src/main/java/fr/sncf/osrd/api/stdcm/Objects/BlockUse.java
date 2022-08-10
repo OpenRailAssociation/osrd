@@ -7,23 +7,23 @@ public class BlockUse {
      * The time at which the block starts to be occupied, which includes the driver lookahead and aspect cascade.
      * By definition equal to Tv.
      */
-    private double T;
+    public double reservationStartTime;
 
     /**
      * The time at which the block stops to be occupied, which includes the driver lookahead and aspect cascade.
      * By definition equal to Tfj.
      */
-    private double Tf;
+    public double reservationEndTime;
 
     /**
-     * Pk of the entry signal.
+     * ID of the entry signal.
      */
-    private int X;
+    public String entrySig;
 
     /**
-     * Pk of the exit signal.
+     * ID of the exit signal.
      */
-    private int Xf;
+    public String exitSig;
 
     /**
      * The block occupancy identifier. It is a "debug" compound identifier.
@@ -33,62 +33,26 @@ public class BlockUse {
      * The tuple (X, Xf) uniquely identifies blocks.
      * This is not the identifier of the physical block, but rather a compound identifier of the occupancy of the block.
      */
-    private String ID;
+    public final String id;
 
     /**
      * The length in meters, which is used for physics computations.
      */
-    private int L;
+    public final double length;
 
-     /**
-     * The max speed on this block. If it does not make sense, just take the lowest allowed speed in this block.
-     */
-    private double Vmax;
+    /**
+    * The max speed on this block. If it does not make sense, just take the lowest allowed speed in this block.
+    */
+    public final double maxSpeed;
 
-    public BlockUse(double pT, double pTf, int pX, int pXf, String pID, int pL, double pVmax) {
-        T = pT;
-        Tf = pTf;
-        X = pX;
-        Xf = pXf;
-        ID = pID;
-        L = pL;
-
-        Vmax = pVmax;
-     }
-
-    public double getT() {
-        return T;
-    }
-
-    public double getTf() {
-        return Tf;
-    }
-
-    public int getX() {
-        return X;
-    }
-
-    public int getXf() {
-        return Xf;
-    }
-
-    public String getID() {
-        return ID;
-    }
-
-    public double getVmax() {
-        return Vmax;
-    }
-
-    public int getL() {
-        return L;
-    }
-
-    public void setT(double pT) {
-        T = pT;
-    }
-
-    public void setTf(double pTf) {
-        Tf = pTf;
+    /** Create a new block occupancy */
+    public BlockUse(double reservationStartTime, double reservationEndTime, String entrySig, String exitSig, String id, double length, double maxSpeed) {
+        this.reservationStartTime = reservationStartTime;
+        this.reservationEndTime = reservationEndTime;
+        this.entrySig = entrySig;
+        this.exitSig = exitSig;
+        this.id = id;
+        this.length = length;
+        this.maxSpeed = maxSpeed;
     }
 }
