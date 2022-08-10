@@ -136,7 +136,7 @@
     "eslint-plugin-jsx-a11y": "^6.6.0",
     "eslint-plugin-react": "^7.30.1",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "jsdoc": "^3.6.3",
+    "jsdoc": "^3.6.11",
     "prettier": "^2.7.1",
     "react-error-overlay": "6.0.9",
     "typescript": "~4.7.4"
