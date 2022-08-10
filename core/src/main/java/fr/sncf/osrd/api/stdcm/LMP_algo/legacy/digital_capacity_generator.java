@@ -1,4 +1,4 @@
-package fr.sncf.osrd.api.stdcm.LMP_algo;
+package fr.sncf.osrd.api.stdcm.LMP_algo.legacy;
 
 
 
