@@ -1,7 +1,11 @@
+import { DEFAULT_MODE, DEFAULT_STDCM_MODE } from 'applications/osrd/consts';
+
 /* eslint-disable default-case */
 import produce from 'immer';
 
 // Action Types
+export const UPDATE_MODE = 'osrdconf/UPDATE_MODE';
+export const UPDATE_STDCM_MODE = 'osrdconf/UPDATE_STDCM_MODE';
 export const UPDATE_NAME = 'osrdconf/UPDATE_NAME';
 export const UPDATE_LABELS = 'osrdconf/UPDATE_LABELS';
 export const UPDATE_INFRA_ID = 'osrdconf/UPDATE_INFRA_ID';
@@ -11,6 +15,7 @@ export const UPDATE_ROLLINGSTOCK_ID = 'osrdconf/UPDATE_ROLLINGSTOCK_ID';
 export const UPDATE_ORIGIN = 'osrdconf/UPDATE_ORIGIN';
 export const UPDATE_ORIGIN_SPEED = 'osrdconf/UPDATE_ORIGIN_SPEED';
 export const UPDATE_ORIGIN_TIME = 'osrdconf/UPDATE_ORIGIN_TIME';
+export const UPDATE_ORIGIN_DATE = 'osrdconf/UPDATE_ORIGIN_DATE';
 export const REPLACE_VIAS = 'osrdconf/REPLACE_VIAS';
 export const UPDATE_VIAS = 'osrdconf/UPDATE_VIAS';
 export const UPDATE_VIA_STOPTIME = 'osrdconf/UPDATE_VIA_STOPTIME';
@@ -19,6 +24,8 @@ export const UPDATE_SUGGERED_VIAS = 'osrdconf/UPDATE_SUGGERED_VIAS';
 export const DELETE_VIAS = 'osrdconf/DELETE_VIAS';
 export const DELETE_ITINERARY = 'osrdconfDELETE_ITINERARY';
 export const UPDATE_DESTINATION = 'osrdconf/UPDATE_DESTINATION';
+export const UPDATE_DESTINATION_TIME = 'osrdconf/UPDATE_UPDATE_DESTINATION_TIME';
+export const UPDATE_DESTINATION_DATE = 'osrdconf/UPDATE_UPDATE_DESTINATION_DATE';
 export const UPDATE_TRAINCOMPO = 'osrdconf/UPDATE_TRAINCOMPO';
 export const UPDATE_ITINERARY = 'osrdconf/UPDATE_ITINERARY';
 export const UPDATE_FEATURE_INFO_CLICK_OSRD = 'osrdconf/UPDATE_FEATURE_INFO_CLICK_OSRD';
@@ -26,6 +33,8 @@ export const UPDATE_FEATURE_INFO_CLICK_OSRD = 'osrdconf/UPDATE_FEATURE_INFO_CLIC
 // Reducer
 export const initialState = {
   name: '',
+  mode: DEFAULT_MODE.simulation,
+  stdcmMode: DEFAULT_STDCM_MODE,
   labels: [],
   infraID: undefined,
   pathfindingID: undefined,
@@ -46,6 +55,12 @@ export default function reducer(inputState, action) {
   const state = inputState || initialState;
   return produce(state, (draft) => {
     switch (action.type) {
+      case UPDATE_MODE:
+        draft.mode = action.mode;
+        break;
+      case UPDATE_STDCM_MODE:
+        draft.stdcmMode = action.stdcmMode;
+        break;
       case UPDATE_NAME:
         draft.name = action.name;
         break;
@@ -72,6 +87,9 @@ export default function reducer(inputState, action) {
         break;
       case UPDATE_ORIGIN_TIME:
         draft.originTime = action.originTime;
+        break;
+      case UPDATE_ORIGIN_DATE:
+        draft.originDate = action.originDate;
         break;
       case REPLACE_VIAS:
         draft.vias = action.vias;
@@ -102,6 +120,12 @@ export default function reducer(inputState, action) {
       case UPDATE_DESTINATION:
         draft.destination = action.destination;
         break;
+      case UPDATE_DESTINATION_DATE:
+        draft.destinationDate = action.destinationDate;
+        break;
+      case UPDATE_DESTINATION_TIME:
+        draft.destinationTime = action.destinationTime;
+        break;
       case UPDATE_TRAINCOMPO:
         draft.trainCompo = action.trainCompo;
         break;
@@ -121,6 +145,22 @@ export function updateName(name) {
     dispatch({
       type: UPDATE_NAME,
       name,
+    });
+  };
+}
+export function updateMode(mode) {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_MODE,
+      mode,
+    });
+  };
+}
+export function updateStdcmMode(stdcmMode) {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_STDCM_MODE,
+      stdcmMode,
     });
   };
 }
@@ -188,6 +228,14 @@ export function updateOriginTime(originTime) {
     });
   };
 }
+export function updateOriginDate(originDate) {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_ORIGIN_DATE,
+      originDate,
+    });
+  };
+}
 export function replaceVias(vias) {
   return (dispatch) => {
     dispatch({
@@ -248,6 +296,22 @@ export function updateDestination(destination) {
     dispatch({
       type: UPDATE_DESTINATION,
       destination,
+    });
+  };
+}
+export function updateDestinationTime(destinationTime) {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_DESTINATION_TIME,
+      destinationTime,
+    });
+  };
+}
+export function updateDestinationDate(destinationDate) {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_DESTINATION_DATE,
+      destinationDate,
     });
   };
 }

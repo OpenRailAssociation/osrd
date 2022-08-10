@@ -43,3 +43,17 @@ export const SNCFCOLORS = {
 };
 
 export const DUMMYCONST = null;
+
+export const MODES = {
+  simulation: 'SIMULATION',
+  stdcm: 'STDCM'
+}
+
+export const DEFAULT_MODE = MODES.simulation
+
+export const STDCM_MODES = {
+  byOrigin: 'BY_ORIGIN',
+  byDestination: 'BY_DESTINATION'
+}
+
+export const DEFAULT_STDCM_MODE = STDCM_MODES.byOrigin
