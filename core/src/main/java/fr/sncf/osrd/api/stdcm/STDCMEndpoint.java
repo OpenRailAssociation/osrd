@@ -1,11 +1,14 @@
-package fr.sncf.osrd.api;
+package fr.sncf.osrd.api.stdcm;
 
 import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.api.ExceptionHandler;
+import fr.sncf.osrd.api.InfraManager;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.api.pathfinding.response.PathfindingResult;
+import fr.sncf.osrd.api.stdcm.Launcher.Launcher;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
@@ -73,8 +76,24 @@ public class STDCMEndpoint implements Take {
             // Parse rolling stock
             var rollingStock = RJSRollingStockParser.parse(request.rollingStock);
 
+            //starting time
+            var startTime= request.startTime;
+
+            //ending time
+            var endTime= request.endTime;
+
+            //starting location
+            var startPoint = request.startPoints;
+
+            //end location
+            var endPoint= request.endPoints;
+
+            //route occupancy
+            var occupancy=request.RouteOccupancies;
+
             // Compute STDCM
-            // TODO
+            var DCM_path = Launcher.main(infra, rollingStock, startTime, endTime, startPoint, endPoint, occupancy);
+
             var result = new STDCMResponse(null, null);
 
             return new RsJson(new RsWithBody(STDCMResponse.adapter.toJson(result)));
