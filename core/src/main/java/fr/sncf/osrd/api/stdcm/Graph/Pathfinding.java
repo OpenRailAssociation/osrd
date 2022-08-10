@@ -61,20 +61,19 @@ public class Pathfinding {
         }
     }
 
-    public static List<SimpleGraphBuilder.Edge> shortest_LMP(ImmutableNetwork g, SimpleGraphBuilder builder) {
+    public static List<SimpleGraphBuilder.Edge> shortest_LMP(ImmutableNetwork<SimpleGraphBuilder.Node, SimpleGraphBuilder.Edge> g, SimpleGraphBuilder builder) {
         return Pathfinding_algo.findEdgePath(
                 g,
                 List.of(List.of(builder.getEdgeLocation(start)),
                         List.of(
                                 builder.getEdgeLocation(end)
                         )
-                )
-                ,
+                ),
                 edge -> edge.length
         );
     }
 
-    public static ImmutableNetwork graph_generation(SimpleGraphBuilder builder) {
+    public static ImmutableNetwork<SimpleGraphBuilder.Node, SimpleGraphBuilder.Edge> graph_generation(SimpleGraphBuilder builder) {
         return builder.build();
     }
 
@@ -86,7 +85,6 @@ public class Pathfinding {
         var IDn = "end";
 
         var nodes = 3; //first node is the same for all paths thus we will have the same starting edge for all paths
-        var last = "";
         for (int i = 0; i < SOL.size(); i++) {
             nodes += SOL.get(i).size();
         }

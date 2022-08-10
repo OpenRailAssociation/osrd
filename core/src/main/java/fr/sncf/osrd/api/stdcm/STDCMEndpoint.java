@@ -8,11 +8,8 @@ import fr.sncf.osrd.api.ExceptionHandler;
 import fr.sncf.osrd.api.InfraManager;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.api.pathfinding.response.PathfindingResult;
-import fr.sncf.osrd.api.stdcm.Launcher.Launcher;
-import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
-import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
+import fr.sncf.osrd.api.stdcm.LMP_algo.STDCM;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
-import fr.sncf.osrd.railjson.parser.RJSStandaloneTrainScheduleParser;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.common.ID;
@@ -20,13 +17,8 @@ import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceValue;
-import fr.sncf.osrd.railjson.schema.schedule.RJSStandaloneTrainSchedule;
-import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
 import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
-import fr.sncf.osrd.standalone_sim.StandaloneSim;
 import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult;
-import fr.sncf.osrd.train.RollingStock;
-import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;
@@ -35,11 +27,7 @@ import org.takes.rs.RsJson;
 import org.takes.rs.RsText;
 import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
-
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
 
 
 public class STDCMEndpoint implements Take {
@@ -92,7 +80,7 @@ public class STDCMEndpoint implements Take {
             var occupancy=request.RouteOccupancies;
 
             // Compute STDCM
-            var DCM_path = Launcher.main(infra, rollingStock, startTime, endTime, startPoint, endPoint, occupancy);
+            var DCM_path = STDCM.run(infra, rollingStock, startTime, endTime, startPoint, endPoint, occupancy);
 
             var result = new STDCMResponse(null, null);
 

@@ -124,7 +124,7 @@ public class DCM_paths {
         return Math.min(V, max_speed(current, Vmat));
     }
 
-    public static double T_green(BlockUse current, double speed) throws ParseException {
+    public static double T_green(BlockUse current, double speed) {
         double dt = 0;
         dt = 400 / speed;
         return dt;
