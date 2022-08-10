@@ -6,8 +6,10 @@ import { omit, head, max as fnMax, min as fnMin } from 'lodash';
 import { TbZoomIn, TbZoomOut, TbZoomCancel } from 'react-icons/tb';
 import { BsBoxArrowInLeft, BsBoxArrowInRight, BsChevronLeft, BsChevronRight } from 'react-icons/bs';
 import { IoIosCut } from 'react-icons/io';
+import { MdOutlineHelpOutline } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
 
+import Modal from '../Modal';
 import { tooltipPosition } from './utils';
 import {
   LinearMetadataItem,
@@ -83,6 +85,7 @@ function viewboxForSelection(
 export const FormComponent: React.FC<FieldProps> = (props) => {
   const { name, formData, schema, onChange, registry } = props;
   const { t } = useTranslation();
+  const [isHelpOpened, setIsHelpOpened] = useState<boolean>(false);
 
   // Wich segment area is visible
   const [viewBox, setViewBox] = useState<[number, number] | null>(null);
@@ -122,6 +125,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
    * => we recompute the linearmedata
    */
   useEffect(() => {
+    setIsHelpOpened(false);
     setData(formData);
     setSelected((old) => (old && !!formData[old] ? null : old));
     setHovered((old) => (old && !!formData[old.index] ? null : old));
@@ -144,7 +148,15 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
   return (
     <div className="linear-metadata">
       <div className="header">
-        <h4 className="control-label">{schema.title || name}</h4>
+        <h4 className="control-label m-0">{schema.title || name}</h4>
+        <button
+          type="button"
+          className="btn btn-unstyled p-1 ml-1"
+          title={t('common.help-display')}
+          onClick={() => setIsHelpOpened(true)}
+        >
+          <MdOutlineHelpOutline />
+        </button>
       </div>
       <div className="content">
         <div className="dataviz">
@@ -410,6 +422,12 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
           </div>
         )}
       </div>
+
+      {isHelpOpened && (
+        <Modal onClose={() => setIsHelpOpened(false)} title={t('common.help')}>
+          <p>{t('Editor.linear-metadata.help')}</p>
+        </Modal>
+      )}
     </div>
   );
 };
