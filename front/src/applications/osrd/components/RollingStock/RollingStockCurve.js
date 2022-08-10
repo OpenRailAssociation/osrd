@@ -7,7 +7,13 @@ const COLORS = ['#e05206', '#303383', '#6e1e78', '#a1006b', '#cd0037', '#e05206'
 
 // Format GOC Curves to NIVO format
 const parseData = (label, color, curve) => {
-  const curveFormatted = curve.map((item) => ({ x: item.speed * 3.6, y: item.max_effort / 1000 }));
+  // Have to transform data, will change when we'll have multiples curves,
+  // so initial transformation is commented :
+  // const curveFormatted = curve.map((item)
+  // => ({ x: item.speed * 3.6, y: item.max_effort / 1000 }));
+  const curveFormatted = curve.speeds.map(
+    (speed, index) => ({ x: speed * 3.6, y: curve.max_efforts[index] / 1000 }),
+  );
 
   const curveFormattedSorted = curveFormatted.sort(
     (a, b) => (a.x > b.x ? 1 : -1),
@@ -36,8 +42,12 @@ const formatTooltip = (props) => (
 
 export default function RollingStockCurve(props) {
   const { data } = props;
-  const curves = Object.keys(data).map((name, index) => parseData(
-    name, curveColor(index), data[name],
+
+  // Have to put data into an array when it will be more than one curve
+  const transformedData = { first: data };
+
+  const curves = Object.keys(transformedData).map((name, index) => parseData(
+    name, curveColor(index), transformedData[name],
   ));
 
   return (
