@@ -107,7 +107,7 @@ export default function RollingStockCard(props) {
                   <tr>
                     <td className="text-primary">{t('timetableGamma')}</td>
                     <td>
-                      {data.timetable_gamma * -1}
+                      {data.gamma.value * -1}
                       <span className="small text-muted ml-1">m/s²</span>
                     </td>
                   </tr>
@@ -134,11 +134,11 @@ export default function RollingStockCard(props) {
                   />
                 </>
               ) : null}
-              {data.capabilities.length > 0 ? (
+              {data.features && data.features.length > 0 ? (
                 <div>
-                  {t('capabilities')}
+                  {t('features')}
                   <span className="ml-1">
-                    {data.capabilities.join(', ')}
+                    {data.features.join(', ')}
                   </span>
                 </div>
               ) : null}
@@ -179,7 +179,7 @@ export default function RollingStockCard(props) {
           <div className="row">
             <div className="col-md-12">
               <div className="curve-container">
-                <RollingStockCurve data={data.tractive_effort_curves} />
+                <RollingStockCurve data={data.effort_curve} />
               </div>
             </div>
           </div>
