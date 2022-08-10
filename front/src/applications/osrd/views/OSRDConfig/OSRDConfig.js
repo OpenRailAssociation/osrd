@@ -69,8 +69,6 @@ export default function OSRDConfig(props) {
               <button
                 className="btn btn-sm  btn-primary "
                 type="button"
-                data-toggle="modal"
-                data-target="#stdcmRequestModal"
                 onClick={() => {setCurrentStdcmRequestStatus(stdcmRequestStatus.pending)}}
               >
                 {t('osrdconf:apply')}

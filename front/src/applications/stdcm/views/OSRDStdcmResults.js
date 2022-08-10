@@ -24,18 +24,20 @@ export default function OSRDStcdmResults(props) {
     stdcmResultsSection = (
       <main className="osrd-config-mastcontainer mastcontainer">
         <div className="row m-0 px-1 py-3">
+          <div className="col-sm-12">
+            <div className="osrd-config-item-container ">
+              <h1 className=" text-center text-info"><b>{t('osrdconf:stdcmResults')}</b></h1>
+              <div className="osrd-config-item mb-2">
+                <h2>{t('osrdconf:spaceSpeedGraphic')}</h2>
+                <div className="speedspacechart-container" style={{ height: '250px' }}>
 
-          <div className="osrd-config-item-container mb-2">
-            <h2>{t('osrdconf:cancelRequest')}</h2>
-            <div className="osrd-config-item">
-              <div className="speedspacechart-container" style={{ height: '250px' }}>
-
-                <SpeedSpaceChart heightOfSpeedSpaceChart={250} showSettings={false} />
+                  <SpeedSpaceChart heightOfSpeedSpaceChart={250} showSettings={false} />
+                </div>
               </div>
-            </div>
-            <div className="osrd-config-item">
-              <div className="col-sm-12">
-                <TimeTable />
+              <div className="osrd-config-item">
+                <div className="col-sm-12">
+                  <TimeTable />
+                </div>
               </div>
             </div>
           </div>
@@ -45,8 +47,13 @@ export default function OSRDStcdmResults(props) {
   } else if (currentStdcmRequestStatus === stdcmRequestStatus.noresults) {
     stdcmResultsSection = (
       <main className="osrd-config-mastcontainer mastcontainer">
-        <div className="osrd-config-item-container mb-2">
-          <h2>{t('osrdconf:noResults')}</h2>
+        <div className="row m-0 px-1 py-3">
+          <div className="col-sm-12">
+            <div className="osrd-config-item-container">
+              <h1 className="text-center text-info">{t('osrdconf:stdcmResults')}</h1>
+              <p>{t('osrdconf:stdcmNoResults')}</p>
+            </div>
+          </div>
         </div>
       </main>
     );
