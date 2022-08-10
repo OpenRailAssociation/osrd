@@ -53,6 +53,7 @@ class RollingStock(models.Model):
     power_class = models.PositiveIntegerField()
     features = ArrayField(
         models.CharField(max_length=255),
+        blank=True,
         help_text=_("A list of features the train exhibits, such as ERTMS support"),
     )
     mass = models.FloatField(help_text=_("The mass of the train, in kilograms"))
@@ -60,7 +61,7 @@ class RollingStock(models.Model):
         help_text=_("The formula to use to compute rolling resistance"),
         validators=[JSONSchemaValidator(limit_value=RollingResistance.schema())],
     )
-    loading_gauge = models.CharField(max_length=16, choices=[(x.name, x.name) for x in LoadingGaugeType])
+    loading_gauge = models.CharField(max_length=16, choices=[(x.value, x.name) for x in LoadingGaugeType])
     image = models.ImageField(null=True, blank=True)
 
     def __str__(self):
@@ -74,6 +75,7 @@ class RollingStock(models.Model):
         data = self.__dict__.copy()
         data.pop("_state")
         data.pop("image")
+        data.pop("id")
         return RollingStockSchema(**data)
 
     @staticmethod
