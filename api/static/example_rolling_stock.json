@@ -1,15 +1,10 @@
 {
     "version": "2.1",
-    "name": "fast_rolling_stock",
     "length": 400,
     "max_speed": 80,
     "startup_time": 10,
     "startup_acceleration": 0.05,
     "comfort_acceleration": 0.25,
-    "gamma": {
-        "type": "CONST",
-        "value": 0.5
-    },
     "inertia_coefficient": 1.05,
     "features": [
         "TVM300",
@@ -18,40 +13,40 @@
         "ETCS2",
         "KVB"
     ],
-    "source": "fast_rolling_stock",
-    "verbose_name": "fast_rolling_stock",
-    "type": null,
-    "sub_type": null,
-    "series": null,
-    "sub_series": null,
-    "variant": null,
-    "units_count": 1,
+    "power_class": 5,
+    "name": "fast_rolling_stock",
+    "mass": 900000,
+    "loading_gauge": "G1",
+    "gamma": {
+        "value": 0.5,
+        "type": "CONST"
+    },
     "effort_curve": {
         "speeds": [
-            0,
-            5,
-            10,
-            15,
-            20,
-            22,
-            27,
-            32,
-            37,
-            42,
-            47,
-            52,
-            57,
-            62,
-            67,
-            72,
-            77
+            0.0,
+            5.0,
+            10.0,
+            15.0,
+            20.0,
+            22.0,
+            27.0,
+            32.0,
+            37.0,
+            42.0,
+            47.0,
+            52.0,
+            57.0,
+            62.0,
+            67.0,
+            72.0,
+            77.0
         ],
         "max_efforts": [
             441666.6666666667,
             439473.6842105263,
             435714.28571428574,
             427777.77777777775,
-            400000,
+            400000.0,
             350971.5388299929,
             347206.93642395496,
             346938.7385068534,
@@ -71,16 +66,5 @@
         "A": 5400.0,
         "B": 200.0,
         "C": 12.0
-    },
-    "liveries": [],
-    "power_class": 5,
-    "mass": 900000,
-    "modes": [
-        {
-            "type": "diesel",
-            "rolling_resistance_profile": "default_resistance_profile",
-            "effort_curve_profile": "default_curve_profile"
-        }
-    ],
-    "loading_gauge": "G1"
+    }
 }

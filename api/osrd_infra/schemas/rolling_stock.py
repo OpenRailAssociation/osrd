@@ -3,6 +3,7 @@ from typing import List, Literal
 
 from pydantic import (
     BaseModel,
+    Extra,
     Field,
     PositiveFloat,
     confloat,
@@ -12,19 +13,19 @@ from pydantic import (
     root_validator,
 )
 
-from osrd_infra.schemas.infra import LoadingGaugeType
+from .infra import LoadingGaugeType
 
 RAILJSON_ROLLING_STOCK_VERSION = "2.1"
 
 
-class RollingResistance(BaseModel):
+class RollingResistance(BaseModel, extra=Extra.forbid):
     type: Literal["davis"]
     A: confloat(ge=0)
     B: confloat(ge=0)
     C: confloat(ge=0)
 
 
-class EffortCurve(BaseModel):
+class EffortCurve(BaseModel, extra=Extra.forbid):
     speeds: conlist(confloat(ge=0), min_items=2)
     max_efforts: conlist(confloat(ge=0), min_items=2)
 
@@ -39,12 +40,12 @@ class GammaType(str, Enum):
     MAX = "MAX"
 
 
-class Gamma(BaseModel):
+class Gamma(BaseModel, extra=Extra.forbid):
     type: GammaType
     value: PositiveFloat
 
 
-class RollingStock(BaseModel):
+class RollingStock(BaseModel, extra=Extra.forbid):
     version: Literal[RAILJSON_ROLLING_STOCK_VERSION] = Field(default=RAILJSON_ROLLING_STOCK_VERSION)
     name: constr(max_length=255)
     effort_curve: EffortCurve = Field(description="A curve mapping speed (in m/s) to maximum traction (in newtons)")

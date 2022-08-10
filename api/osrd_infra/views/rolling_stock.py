@@ -11,6 +11,7 @@ class RollingStockView(
     mixins.DestroyModelMixin,
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
     GenericViewSet,
 ):
     queryset = RollingStock.objects.order_by("id")
