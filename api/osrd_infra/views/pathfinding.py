@@ -205,7 +205,7 @@ def compute_path(path, request_data, owner):
             "infra": infra.pk,
             "expected_version": infra.version,
             "waypoints": waypoints,
-            "rolling_stocks": [r.to_railjson() for r in rolling_stocks],
+            "rolling_stocks": [rs.to_schema().dict() for rs in rolling_stocks],
         }
     )
     postprocess_path(path, payload, infra, owner, step_durations)
