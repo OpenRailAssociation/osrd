@@ -52,7 +52,7 @@ public class STDCM {
 
     public ArrayList<ArrayList<BlockUse>> run(SignalingInfra infra, RollingStock rollingStock, double startTime, double endTime, Collection<PathfindingWaypoint> startPoint, Collection<PathfindingWaypoint> endPoint, Collection<STDCMEndpoint.RouteOccupancy> occupancy) throws IOException, ParseException {
         double maxTime = 3 * 3.6 * Math.pow(10, 6);
-        var config = new STDCMConfig(infra, rollingStock, startTime, endTime, startPoint, endPoint, occupancy, maxTime);
+        var config = new STDCMConfig(infra, rollingStock, startTime, endTime, startPoint, endPoint, occupancy, maxTime, 400.);
 
         // compute usable capacity
         var Bfree = getUsableCapacity();
@@ -65,6 +65,6 @@ public class STDCM {
         ArrayList<ArrayList<BlockUse>> paths = PathGenerator.path_generator(config, Bfree);
 
         //This step calculates the weight of each edge
-        return DCM_paths.DCM_paths(paths);
+        return DCM_paths.DCM_paths(config, paths);
     }
 }

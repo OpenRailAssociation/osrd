@@ -15,7 +15,7 @@ import java.util.Collection;
 import java.util.Objects;
 
 public class PathGenerator {
-    public static ArrayList<ArrayList<BlockUse>> path_generator(STDCMConfig config, ArrayList<BlockUse> Bfree) throws ParseException {
+    public static ArrayList<ArrayList<BlockUse>> path_generator(STDCMConfig config, ArrayList<BlockUse> Bfree) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 
         // residual capacity
@@ -31,14 +31,12 @@ public class PathGenerator {
         // TODO: get it from the infra graph
         double Vc = (float) 160 / 3600; // Vitesse max canton
 
-        double Cm = 1; //"01:00:00"; // Chevauchement mini
-        double Tm = 0; //"03:00:00"; // Temps mini par canton
         int lim = 8600;
 
         int Xs = config.startPoint;
         int Xfs = config.endPoint;
 
-        Tempo tem = new Tempo();
+        var tem = new Tempo();
         int k = 0;
         for (var blockA : Bfree) {
             for (var blockB : Bfree) {
@@ -46,12 +44,12 @@ public class PathGenerator {
                 double Tr = Lt / Vc + blockA.getL() / Vc;
                 double Tj = blockB.getL() / Vc;
                 double Tj1 = 300 / Vc;
-                Tm = Tv + Tr + Tj;
-                Cm = (Ds + Lt + blockB.getL()) / Vc;
-                if (dateFormat.parse(blockA.getTf()).getTime() - dateFormat.parse(blockB.getT()).getTime() >= Cm &&
-                        dateFormat.parse(blockB.getTf()).getTime() - dateFormat.parse(blockA.getT()).getTime() >= Tm + Tj1 &&
-                        blockA.getXf() == blockB.getX() &&
-                        blockA.getX() != blockB.getXf()) {
+                var Tm = Tv + Tr + Tj;
+                var Cm = (Ds + Lt + blockB.getL()) / Vc;
+                if (blockA.getTf() - blockB.getT() >= Cm
+                        && blockB.getTf() - blockA.getT() >= Tm + Tj1
+                        && blockA.getXf() == blockB.getX()
+                        && blockA.getX() != blockB.getXf()) {
                     B2next.add(new ArrayList<>());
                     B2next.get(k).add(blockA);
                     B2next.get(k).add(blockB);
@@ -107,7 +105,8 @@ public class PathGenerator {
                     }
                 }
 
-                if (dateFormat.parse(Bvar.get(zz).get(i).get(Bvar.get(zz).get(i).size() - 1).getTf()).getTime() - dateFormat.parse(Bvar.get(zz).get(i).get(0).getT()).getTime() >= dt && dateFormat.parse(Bvar.get(zz).get(i).get(Bvar.get(zz).get(i).size() - 1).getTf()).getTime() - dateFormat.parse(Bvar.get(zz).get(i).get(0).getT()).getTime() < config.maxTime) {
+                if (Bvar.get(zz).get(i).get(Bvar.get(zz).get(i).size() - 1).getTf() - Bvar.get(zz).get(i).get(0).getT() >= dt
+                        && Bvar.get(zz).get(i).get(Bvar.get(zz).get(i).size() - 1).getTf() - Bvar.get(zz).get(i).get(0).getT() < config.maxTime) {
                     Get2.get(zz).add(new ArrayList<>());
                     Get2.get(zz).get(etii).addAll(Bvar.get(zz).get(i));
                     etii++;

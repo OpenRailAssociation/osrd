@@ -36,13 +36,13 @@ public class OccupancyIntersector {
                 var intersected_block = blockUse;
 
                 //Update starting occupancy time of the main_block
-                if (dateFormat.parse(main_block.getT()).getTime() < dateFormat.parse(intersected_block.getTf()).getTime() && dateFormat.parse(main_block.getT()).getTime() > dateFormat.parse(intersected_block.getT()).getTime() && main_block.getX() == intersected_block.getX() && main_block.getXf() == intersected_block.getXf() && !Objects.equals(main_block.getID(), intersected_block.getID())) {
+                if (main_block.getT() < intersected_block.getTf() && main_block.getT() > intersected_block.getT() && main_block.getX() == intersected_block.getX() && main_block.getXf() == intersected_block.getXf() && !Objects.equals(main_block.getID(), intersected_block.getID())) {
                     main_block.setT(intersected_block.getT());
                     test = true;
                 }
 
                 //Updating ending occupancy time of the main_block
-                if (dateFormat.parse(main_block.getTf()).getTime() < dateFormat.parse(intersected_block.getTf()).getTime() && dateFormat.parse(main_block.getTf()).getTime() > dateFormat.parse(intersected_block.getT()).getTime() && main_block.getX() == intersected_block.getX() && main_block.getXf() == intersected_block.getXf() && !Objects.equals(main_block.getID(), intersected_block.getID())) {
+                if (main_block.getTf() < intersected_block.getTf() && main_block.getTf() > intersected_block.getT() && main_block.getX() == intersected_block.getX() && main_block.getXf() == intersected_block.getXf() && !Objects.equals(main_block.getID(), intersected_block.getID())) {
                     main_block.setTf(intersected_block.getTf());
                     test = true;
                 }

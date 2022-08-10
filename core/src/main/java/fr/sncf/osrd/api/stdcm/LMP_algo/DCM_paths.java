@@ -8,39 +8,32 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 public class DCM_paths {
-    public static ArrayList<ArrayList<BlockUse>> DCM_paths(ArrayList<ArrayList<BlockUse>> paths) throws ParseException {
-        //data
+    public static ArrayList<ArrayList<BlockUse>> DCM_paths(STDCMConfig config, ArrayList<ArrayList<BlockUse>> paths) throws ParseException {
         double Lt = 600; // Longueur train
-        double Ds = 400; // Safety distance 400m
         double Vc = (float) 160 / 3600; // Vitesse max canton
         String Lh = "23:59:59"; //Last hour
         double Cm = 1; //"01:00:00"; // Chevauchement mini
         double Tm = 0; //"03:00:00"; // Temps mini par canton
         int lim = 8600;
-        double Safety_distance = 400;
         int Xs = 72;
         int Xfs = 73;
         int Xe = 90;
         int Xfe = 91;
-        String endTime = "10:00:00";
-        String startTime = "06:25:00";
+        double startTime = config.startTime;
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-
-        var early_mode = true;
-        ArrayList<ArrayList<BlockUse>> UPaths = new ArrayList<ArrayList<BlockUse>>();
+        var UPaths = new ArrayList<ArrayList<BlockUse>>();
         for (var path : paths) {
             if (path.get(path.size() - 1).getX() == Xe && path.get(path.size() - 1).getXf() == Xfe && path.get(0).getX() == Xs && path.get(0).getXf() == Xfs) {
                 // if we want to switch to not early, do this instead
                 // dateFormat.parse(path.get(path.size() - 1).getTf()).getTime() >= dateFormat.parse(endTime).getTime() && dateFormat.parse(path.get(path.size() - 1).getT()).getTime() < dateFormat.parse(endTime).getTime()) {
-                if (dateFormat.parse(path.get(0).getTf()).getTime() >= dateFormat.parse(startTime).getTime() && dateFormat.parse(path.get(0).getT()).getTime() < dateFormat.parse(startTime).getTime())
+                if (path.get(0).getTf() >= startTime && path.get(0).getT() < startTime)
                     UPaths.add(path);
             }
         }
 
         var SOL2 = new ArrayList<ArrayList<BlockUse>>();
 
-        String starting = startTime;
+        double starting = startTime;
 
         double Tf = 0;
         double Tsr = 0;
@@ -48,7 +41,7 @@ public class DCM_paths {
         double Tsn = 0;
 
         for (int zz = 0; zz < UPaths.size(); zz++) {
-            double Ts = dateFormat.parse(starting).getTime();
+            double Ts = starting;
             double dtv = 0;
             double dtr = 0;
             double dtj = 0;
@@ -58,7 +51,7 @@ public class DCM_paths {
             double speed_n = 0;
             double pre_speed = 0;
 
-            Ts = Math.max(Ts, dateFormat.parse(UPaths.get(zz).get(0).getT()).getTime());
+            Ts = Math.max(Ts, UPaths.get(zz).get(0).getT());
 
             SOL2.add(new ArrayList<>());
 
@@ -71,7 +64,7 @@ public class DCM_paths {
                     Tsr = Ts;
 
                 //crrent speed
-                speed = calculated_speed(currentB, nextB, Tsr, Vc, Safety_distance);
+                speed = calculated_speed(currentB, nextB, Tsr, Vc, config);
                 //current block occupation time
                 if (i == 0)
                     dtr = T_red(currentB, Lt, speed);
@@ -81,11 +74,11 @@ public class DCM_paths {
                 // safety time to the next block
                 dtv_n = T_green(currentB, speed);
                 // starting allocation time in the next block
-                Tsn = Ts + dtv + (currentB.getL() - Safety_distance) / speed;
+                Tsn = Ts + dtv + (currentB.getL() - config.safetyDistance) / speed;
                 // starting occupation time in the next block
                 Tsrn = Tsn + dtv_n;
                 // next block speed
-                speed_n = calculated_speed(nextB, nextB2, Tsrn, Vc, Safety_distance); // over speed estimation!!!!
+                speed_n = calculated_speed(nextB, nextB2, Tsrn, Vc, config); // over speed estimation!!!!
                 // next block occupation time
                 dtr_n = T_red(nextB, Lt, speed_n) + T_length(nextB, Lt, speed);
                 // current block free time allocation
@@ -97,12 +90,12 @@ public class DCM_paths {
                 else
                     Tf = Tf + dtj;
 
-                if (Tf > dateFormat.parse(currentB.getTf()).getTime()) {
+                if (Tf > currentB.getTf()) {
                     SOL2.get(zz).clear();
                     break;
                 }
 
-                SOL2.get(zz).add(new BlockUse(dateFormat.format(Ts), dateFormat.format(Tf), UPaths.get(zz).get(i).getX(), UPaths.get(zz).get(i).getXf(), UPaths.get(zz).get(i).getID(), UPaths.get(zz).get(i).getL(), speed * 3600 / 1000));
+                SOL2.get(zz).add(new BlockUse(Ts, Tf, UPaths.get(zz).get(i).getX(), UPaths.get(zz).get(i).getXf(), UPaths.get(zz).get(i).getID(), UPaths.get(zz).get(i).getL(), speed * 3600 / 1000));
 
                 Ts = Tsn;
 
@@ -120,12 +113,11 @@ public class DCM_paths {
         return Math.min(current.getVmax(), Vmat);
     }
 
-    public static double calculated_speed(BlockUse current, BlockUse next, double Ts, double Vmat, double safety_distance) throws ParseException {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+    public static double calculated_speed(BlockUse current, BlockUse next, double Ts, double Vmat, STDCMConfig config) {
         double V = 0;
 
-        if (dateFormat.parse(next.getT()).getTime() > Ts) {
-            V = (current.getL() - safety_distance) / (dateFormat.parse(next.getT()).getTime() - Ts);
+        if (next.getT() > Ts) {
+            V = (current.getL() - config.safetyDistance) / (next.getT() - Ts);
         } else {
             return max_speed(current, Vmat);
         }

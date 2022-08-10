@@ -7,13 +7,13 @@ public class BlockUse {
      * The time at which the block starts to be occupied, which includes the driver lookahead and aspect cascade.
      * By definition equal to Tv.
      */
-    private String T;
+    private double T;
 
     /**
      * The time at which the block stops to be occupied, which includes the driver lookahead and aspect cascade.
      * By definition equal to Tfj.
      */
-    private String Tf;
+    private double Tf;
 
     /**
      * Pk of the entry signal.
@@ -45,7 +45,7 @@ public class BlockUse {
      */
     private double Vmax;
 
-    public BlockUse(String pT, String pTf, int pX, int pXf, String pID, int pL, double pVmax) {
+    public BlockUse(double pT, double pTf, int pX, int pXf, String pID, int pL, double pVmax) {
         T = pT;
         Tf = pTf;
         X = pX;
@@ -56,11 +56,11 @@ public class BlockUse {
         Vmax = pVmax;
      }
 
-    public String getT() {
+    public double getT() {
         return T;
     }
 
-    public String getTf() {
+    public double getTf() {
         return Tf;
     }
 
@@ -84,13 +84,11 @@ public class BlockUse {
         return L;
     }
 
-
-
-    public void setT(String pT) {
+    public void setT(double pT) {
         T = pT;
     }
 
-    public void setTf(String pTf) {
+    public void setTf(double pTf) {
         Tf = pTf;
     }
 }

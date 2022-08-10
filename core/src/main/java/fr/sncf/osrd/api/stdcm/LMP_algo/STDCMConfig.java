@@ -4,7 +4,6 @@ import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.api.stdcm.STDCMEndpoint;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.train.RollingStock;
-
 import java.util.Collection;
 
 public final class STDCMConfig {
@@ -16,6 +15,7 @@ public final class STDCMConfig {
     public final Collection<PathfindingWaypoint> endPoint;
     public final Collection<STDCMEndpoint.RouteOccupancy> occupancy;
     public final double maxTime;
+    public final double safetyDistance;
 
     /** A self-contained STDCM input configuration */
     public STDCMConfig(
@@ -26,7 +26,8 @@ public final class STDCMConfig {
             Collection<PathfindingWaypoint> startPoint,
             Collection<PathfindingWaypoint> endPoint,
             Collection<STDCMEndpoint.RouteOccupancy> occupancy,
-            double maxTime) {
+            double maxTime, double safetyDistance
+    ) {
         this.infra = infra;
         this.rollingStock = rollingStock;
         this.startTime = startTime;
@@ -35,5 +36,6 @@ public final class STDCMConfig {
         this.endPoint = endPoint;
         this.occupancy = occupancy;
         this.maxTime = maxTime;
+        this.safetyDistance = safetyDistance;
     }
 }
