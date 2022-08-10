@@ -40,9 +40,9 @@ const EditorForm: React.FC<EditorFormProps> = ({ data, onSubmit, onChange, child
    * When errors are displayed, we scroll to them.
    */
   useEffect(() => {
-    const modal = document.getElementsByClassName('modal-body')[0];
-    if (error && modal) {
-      modal.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+    const container = document.getElementsByClassName('panel-box')[0];
+    if (error && container) {
+      container.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
     }
   }, [error]);
 
