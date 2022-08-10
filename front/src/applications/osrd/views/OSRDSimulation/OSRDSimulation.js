@@ -20,6 +20,7 @@ import ButtonFullscreen from 'common/ButtonFullscreen';
 import CenterLoader from 'common/CenterLoader/CenterLoader';
 import ContextMenu from 'applications/osrd/components/Simulation/ContextMenu';
 import { FlyToInterpolator } from 'react-map-gl';
+import { MODES } from '../../consts';
 import Map from 'applications/osrd/views/OSRDSimulation/Map';
 import OSRDSignalSwitch from 'applications/osrd/components/Simulation/SignalSwitch/withOSRDData';
 import { Rnd } from 'react-rnd';
@@ -35,10 +36,11 @@ import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/
 import { get } from 'common/requests';
 import { sec2time } from 'utils/timeManipulation';
 import { setFailure } from 'reducers/main.ts';
+import { updateMode } from 'reducers/osrdconf';
 import { updateViewport } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
 
-const KEY_VALUES_FOR_CONSOLIDATED_SIMULATION = ['time', 'position'];
+export const KEY_VALUES_FOR_CONSOLIDATED_SIMULATION = ['time', 'position'];
 const timetableURI = '/timetable/';
 
 export const trainscheduleURI = '/train_schedule/';
@@ -149,6 +151,7 @@ const OSRDSimulation = () => {
       dispatch(persistentRedoSimulation());
     }
   };
+
 
   useEffect(() => {
     // Setup the listener to undi /redo

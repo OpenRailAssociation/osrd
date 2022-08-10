@@ -25,7 +25,7 @@ const itineraryURI = '/pathfinding/';
 const Itinerary = (props) => {
   const [launchPathfinding, setLaunchPathfinding] = useState(false);
   const [pathfindingInProgress, setPathfindingInProgress] = useState(false);
-  const { updateExtViewport } = props;
+  const { updateExtViewport, mode } = props;
   const dispatch = useDispatch();
   const map = useSelector((state) => state.map);
   const osrdconf = useSelector((state) => state.osrdconf);

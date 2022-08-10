@@ -68,6 +68,7 @@
     "react-icons": "^4.4.0",
     "react-id-generator": "^3.0.0",
     "react-map-gl": "^5.3.11",
+    "react-modal": "^3.15.1",
     "react-redux": "^8.0.2",
     "react-rnd": "^10.3.7",
     "react-router": "^6.3.0",
@@ -137,7 +138,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "jsdoc": "^3.6.3",
     "prettier": "^2.7.1",
-    "react-error-overlay": "6.0.11",
+    "react-error-overlay": "6.0.9",
     "typescript": "~4.7.4"
   },
   "resolutions": {
