@@ -1,7 +1,5 @@
-package fr.sncf.osrd.api.stdcm.LMP_algo;
+package fr.sncf.osrd.api.stdcm;
 
-
-import fr.sncf.osrd.api.stdcm.Objects.BlockUse;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -31,6 +29,12 @@ public class PathGenerator {
         int k = 0;
         for (var blockA : Bfree) {
             for (var blockB : Bfree) {
+                // only process the block pair if:
+                //  - you can go from blockA from blockB
+                //  - blockB does not loop back to the start of blockA
+                if (!blockA.exitSig.equals(blockB.entrySig) || blockB.exitSig.equals(blockA.entrySig))
+                    continue;
+
                 double Tv = Ds / Vc;
                 double Tr = Lt / Vc + blockA.length / Vc;
                 double Tj = blockB.length / Vc;
@@ -38,9 +42,7 @@ public class PathGenerator {
                 var Tm = Tv + Tr + Tj;
                 var Cm = (Ds + Lt + blockB.length) / Vc;
                 if (blockA.reservationEndTime - blockB.reservationStartTime >= Cm
-                        && blockB.reservationEndTime - blockA.reservationStartTime >= Tm + Tj1
-                        && blockA.exitSig.equals(blockB.entrySig)
-                        && !blockA.entrySig.equals(blockB.exitSig)) {
+                        && blockB.reservationEndTime - blockA.reservationStartTime >= Tm + Tj1) {
                     B2next.add(new ArrayList<>());
                     B2next.get(k).add(blockA);
                     B2next.get(k).add(blockB);

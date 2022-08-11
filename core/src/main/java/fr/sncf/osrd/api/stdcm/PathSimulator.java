@@ -1,12 +1,10 @@
-package fr.sncf.osrd.api.stdcm.LMP_algo;
+package fr.sncf.osrd.api.stdcm;
 
-
-import fr.sncf.osrd.api.stdcm.Objects.BlockUse;
 
 import java.util.ArrayList;
 
-public class DCM_paths {
-    public static ArrayList<ArrayList<BlockUse>> DCM_paths(
+public class PathSimulator {
+    public static ArrayList<ArrayList<BlockUse>> simulatePaths(
             STDCMConfig config,
             ArrayList<ArrayList<BlockUse>> paths
     ) {
@@ -16,8 +14,8 @@ public class DCM_paths {
 
         var UPaths = new ArrayList<ArrayList<BlockUse>>();
         for (var path : paths) {
-            if (path.get(path.size() - 1).entrySig.equals(config.exitBlockEntrySig)
-                    && path.get(path.size() - 1).exitSig.equals(config.exitBlockExitSig)
+            if (path.get(path.size() - 1).entrySig.equals(config.endBlockEntrySig)
+                    && path.get(path.size() - 1).exitSig.equals(config.endBlockExitSig)
                     && path.get(0).entrySig.equals(config.startBlockEntrySig)
                     && path.get(0).exitSig.equals(config.startBlockExitSig)) {
                 // if we want to switch to not early, do this instead
@@ -116,7 +114,6 @@ public class DCM_paths {
     public static double T_green(double speed) {
         return 400 / speed;
     }
-
 
     public static double T_red(BlockUse current, double Lmat, double V) {
         return current.length / V;

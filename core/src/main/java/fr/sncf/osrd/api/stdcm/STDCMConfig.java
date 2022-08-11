@@ -1,4 +1,4 @@
-package fr.sncf.osrd.api.stdcm.LMP_algo;
+package fr.sncf.osrd.api.stdcm;
 
 import fr.sncf.osrd.train.RollingStock;
 
@@ -11,8 +11,8 @@ public final class STDCMConfig {
 
     public final String startBlockEntrySig;
     public final String startBlockExitSig;
-    public final String exitBlockEntrySig;
-    public final String exitBlockExitSig;
+    public final String endBlockEntrySig;
+    public final String endBlockExitSig;
 
 
     // TODO: figure out where this stuff should go
@@ -28,7 +28,7 @@ public final class STDCMConfig {
             double endTime,
             double maxTime, double safetyDistance,
             String startBlockEntrySig, String startBlockExitSig,
-            String exitBlockEntrySig, String exitBlockExitSig
+            String endBlockEntrySig, String endBlockExitSig
     ) {
         this.rollingStock = rollingStock;
         this.startTime = startTime;
@@ -37,7 +37,7 @@ public final class STDCMConfig {
         this.safetyDistance = safetyDistance;
         this.startBlockEntrySig = startBlockEntrySig;
         this.startBlockExitSig = startBlockExitSig;
-        this.exitBlockEntrySig = exitBlockEntrySig;
-        this.exitBlockExitSig = exitBlockExitSig;
+        this.endBlockEntrySig = endBlockEntrySig;
+        this.endBlockExitSig = endBlockExitSig;
     }
 }

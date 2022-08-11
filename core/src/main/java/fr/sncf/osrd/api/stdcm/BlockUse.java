@@ -1,4 +1,4 @@
-package fr.sncf.osrd.api.stdcm.Objects;
+package fr.sncf.osrd.api.stdcm;
 
 /** A block occupancy "time span" */
 public class BlockUse {
@@ -54,5 +54,9 @@ public class BlockUse {
         this.id = id;
         this.length = length;
         this.maxSpeed = maxSpeed;
+    }
+
+    public double impactWeight() {
+        return length * (reservationEndTime - reservationStartTime);
     }
 }
