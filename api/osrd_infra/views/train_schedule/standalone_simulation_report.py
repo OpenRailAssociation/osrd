@@ -166,7 +166,8 @@ def build_signal_updates(signal_updates, departure_time):
             "time_start": update["time_start"] + departure_time,
             "time_end": update["time_end"] + departure_time,
             "color": update["color"],
-            "blinking": update["blinking"]
+            "blinking": update["blinking"],
+            "aspect_label": update["aspect_label"]
         })
     return results
 
