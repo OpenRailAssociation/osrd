@@ -172,6 +172,53 @@ public class AllowanceRangesTests {
         assertEquals(marginTime3, targetTime3, 2 * TIME_STEP);
     }
 
+    /** Test that we can add precisely the needed time in adjacent ranges */
+    @Test
+    public void testRangesPassageTime() {
+        var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
+        var length = 90_000;
+        var testPath = new FlatPath(length, 0);
+        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
+        var stops = new double[] { testPath.getLength() };
+        var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 100, stops);
+        var value1 = new AllowanceValue.FixedTime(50);
+        var value2 = new AllowanceValue.FixedTime(60);
+        var value3 = new AllowanceValue.FixedTime(80);
+        var rangesTransitions = new double[] { 0, 30_000, 60_000, length };
+        var ranges = List.of(
+                new AllowanceRange(rangesTransitions[0], rangesTransitions[1], value1),
+                new AllowanceRange(rangesTransitions[1], rangesTransitions[2], value2),
+                new AllowanceRange(rangesTransitions[2], rangesTransitions[3], value3)
+        );
+        var allowance = new MarecoAllowance(
+                testContext, 0, testPath.getLength(), 1, ranges
+        );
+        var marecoEnvelope = allowance.apply(maxEffortEnvelope);
+
+        // Check that we lose as much time as specified
+        assertEquals(
+                maxEffortEnvelope.interpolateTotalTime(rangesTransitions[1]) + value1.time,
+                marecoEnvelope.interpolateTotalTime(rangesTransitions[1]),
+                2 * TIME_STEP
+        );
+        assertEquals(
+                maxEffortEnvelope.interpolateTotalTime(rangesTransitions[2]) + value1.time + value2.time,
+                marecoEnvelope.interpolateTotalTime(rangesTransitions[2]),
+                2 * TIME_STEP
+        );
+        assertEquals(
+                maxEffortEnvelope.interpolateTotalTime(rangesTransitions[3]) + value1.time + value2.time + value3.time,
+                marecoEnvelope.interpolateTotalTime(rangesTransitions[3]),
+                2 * TIME_STEP
+        );
+
+        // Checks that we don't accelerate to match the original speed for transitions
+        assertTrue(marecoEnvelope.interpolateSpeed(rangesTransitions[1])
+                < maxEffortEnvelope.interpolateSpeed(rangesTransitions[1]));
+        assertTrue(marecoEnvelope.interpolateSpeed(rangesTransitions[2])
+                < maxEffortEnvelope.interpolateSpeed(rangesTransitions[2]));
+    }
+
     /** Test ranges with intersections being precisely on a stop point */
     @Test
     public void testRangesOnStopPoint() {
