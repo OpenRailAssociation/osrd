@@ -17,7 +17,7 @@ django-redis = "5.2.0"
 jsonschema = "4.7.2"
 requests = "2.28.1"
 pillow = "^9"
-pydantic = "1.9.1"
+pydantic = "1.9.2"
 geojson-pydantic = "0.4.3"
 
 # production
