@@ -10,7 +10,7 @@ public class PathGenerator {
             ArrayList<BlockUse> Bfree
     ) {
         var residualCapacity = new ArrayList<ArrayList<ArrayList<BlockUse>>>();
-        var B2next = new ArrayList<ArrayList<BlockUse>>();
+        var consecutiveBlockPairs = new ArrayList<ArrayList<BlockUse>>();
         var Get2 = new ArrayList<ArrayList<ArrayList<BlockUse>>>();
         var paths = new ArrayList<ArrayList<BlockUse>>();
 
@@ -21,18 +21,17 @@ public class PathGenerator {
         // TODO: get it from the infra graph
         double Vc = (float) 160 / 3600; // Vitesse max canton
 
-        int lim = 8600;
+        var Xs = config.startBlockEntrySig;
+        var Xfs = config.startBlockExitSig;
 
-        String Xs = config.startBlockEntrySig;
-        String Xfs = config.startBlockExitSig;
-
-        int k = 0;
         for (var blockA : Bfree) {
             for (var blockB : Bfree) {
                 // only process the block pair if:
                 //  - you can go from blockA from blockB
                 //  - blockB does not loop back to the start of blockA
-                if (!blockA.getExitSig().equals(blockB.getEntrySig()) || blockB.getExitSig().equals(blockA.getEntrySig()))
+                // TODO: cleanup this comment
+                // || (blockB.getExitSig() != null && blockB.getExitSig() == blockA.getEntrySig())
+                if (blockA.getExitSig() == null || blockA.getExitSig() != blockB.getEntrySig())
                     continue;
 
                 double Tv = Ds / Vc;
@@ -43,45 +42,45 @@ public class PathGenerator {
                 var Cm = (Ds + Lt + blockB.getLength()) / Vc;
                 if (blockA.reservationEndTime - blockB.reservationStartTime >= Cm
                         && blockB.reservationEndTime - blockA.reservationStartTime >= Tm + Tj1) {
-                    B2next.add(new ArrayList<>());
-                    B2next.get(k).add(blockA);
-                    B2next.get(k).add(blockB);
-                    k++;
+                    var pair = new ArrayList<BlockUse>();
+                    pair.add(blockA);
+                    pair.add(blockB);
+                    consecutiveBlockPairs.add(pair);
                 }
             }
         }
 
         // All routes
-        int tem = B2next.size();
+        int tem = consecutiveBlockPairs.size();
         int z = 0;
         residualCapacity.add(new ArrayList<>());
-        residualCapacity.get(z).addAll(B2next);
+        residualCapacity.get(z).addAll(consecutiveBlockPairs);
 
-        ArrayList<ArrayList<BlockUse>> Bnext;
+        ArrayList<ArrayList<BlockUse>> consecutiveBlocks;
         do {
-            Bnext = new ArrayList<>();
-            k = 0;
+            consecutiveBlocks = new ArrayList<>();
 
             for (int i = 0; i < tem; i++) {
-                for (ArrayList<BlockUse> blockUses : B2next) {
-                    if (residualCapacity.get(z).get(i).get(0).getEntrySig().equals(Xs)
-                            && residualCapacity.get(z).get(i).get(0).getExitSig().equals(Xfs)
-                            && residualCapacity.get(z).get(i).get(residualCapacity.get(z).get(i).size() - 1).block == blockUses.get(0).block
-                            && !residualCapacity.get(z).get(i).contains(blockUses.get(1)) && k < lim) {
-                        Bnext.add(new ArrayList<>());
-                        Bnext.get(k).addAll(residualCapacity.get(z).get(i));
-                        Bnext.get(k).add(blockUses.get(1));
-                        k++;
+                for (var consBlockPair : consecutiveBlockPairs) {
+                    var curBlockUse = consBlockPair.get(0);
+                    var nextBlockUse = consBlockPair.get(1);
+                    if (residualCapacity.get(z).get(i).get(0).getEntrySig() == Xs
+                            && residualCapacity.get(z).get(i).get(0).getExitSig() == Xfs
+                            && residualCapacity.get(z).get(i).get(residualCapacity.get(z).get(i).size() - 1).block == curBlockUse.block
+                            && !residualCapacity.get(z).get(i).contains(nextBlockUse)) {
+                        var chain = new ArrayList<>(residualCapacity.get(z).get(i));
+                        chain.add(nextBlockUse);
+                        consecutiveBlocks.add(chain);
                     }
                 }
             }
 
-            if (Bnext.size() != 0) {
-                tem = Bnext.size();
-                residualCapacity.add(new ArrayList<>(Bnext));
+            if (consecutiveBlocks.size() != 0) {
+                tem = consecutiveBlocks.size();
+                residualCapacity.add(new ArrayList<>(consecutiveBlocks));
                 z++;
             }
-        } while (Bnext.size() != 0);
+        } while (consecutiveBlocks.size() != 0);
 
         for (int zz = 0; zz < residualCapacity.size(); zz++) {
             Get2.add(new ArrayList<>());

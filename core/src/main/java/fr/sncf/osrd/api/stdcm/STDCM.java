@@ -15,8 +15,8 @@ public class STDCM {
         occupancies.sort(Comparator.comparingDouble(blockUse -> blockUse.startOccupancyTime));
 
         var route = infra.findSignalingRoute(id, "BAL3");
-        var entrySignal = route.getEntrySignal().getID();
-        var exitSignal = route.getEntrySignal().getID();
+        var entrySignal = route.getEntrySignal();
+        var exitSignal = route.getEntrySignal();
         var length = route.getInfraRoute().getLength();
         var maxSpeed = route.getInfraRoute().getTrackRanges()
                 .stream()
@@ -51,6 +51,8 @@ public class STDCM {
             res.add(new BlockUse(block, startTime, endTime));
             lastOccupied = occupancy.endOccupancyTime;
         }
+        if (lastOccupied != Double.NEGATIVE_INFINITY)
+            res.add(new BlockUse(block, lastOccupied, Double.POSITIVE_INFINITY));
         return res;
     }
 
@@ -85,6 +87,7 @@ public class STDCM {
             bestPath = possiblePath;
         }
 
+        assert bestPath != null : "no best path found";
         return bestPath;
     }
 
@@ -102,10 +105,10 @@ public class STDCM {
         var startRoute = startLocation.edge();
         var endRoute = endLocation.edge();
 
-        String startBlockEntrySig = startRoute.getEntrySignal().getID();
-        String startBlockExitSig = startRoute.getExitSignal().getID();
-        String endBlockEntrySig = endRoute.getEntrySignal().getID();
-        String endBlockExitSig = endRoute.getExitSignal().getID();
+        var startBlockEntrySig = startRoute.getEntrySignal();
+        var startBlockExitSig = startRoute.getExitSignal();
+        var endBlockEntrySig = endRoute.getEntrySignal();
+        var endBlockExitSig = endRoute.getExitSignal();
 
         double maxTime = 3 * 3.6 * Math.pow(10, 6);
         var config = new STDCMConfig(rollingStock, startTime, endTime, maxTime, 400.,

@@ -7,6 +7,7 @@ import fr.sncf.osrd.infra.api.reservation.DiDetector;
 import fr.sncf.osrd.infra.api.reservation.ReservationInfra;
 import fr.sncf.osrd.infra.api.reservation.ReservationRoute;
 import fr.sncf.osrd.infra.api.signaling.Signal;
+import fr.sncf.osrd.infra.api.signaling.SignalState;
 import fr.sncf.osrd.infra.api.signaling.SignalingModule;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.implementation.RJSObjectParsing;
@@ -50,7 +51,12 @@ public class BAL3 implements SignalingModule {
         public Signal<?> getEntrySignal() {
             return entrySignal;
         }
-        
+
+        @Override
+        public Signal<? extends SignalState> getExitSignal() {
+            return exitSignal;
+        }
+
         public String getSignalingType() {
             return "BAL3";
         }

@@ -1,5 +1,7 @@
 package fr.sncf.osrd.api.stdcm;
 
+import fr.sncf.osrd.infra.api.signaling.Signal;
+
 /** A block occupancy "time span" */
 public class BlockUse {
     /**
@@ -30,14 +32,14 @@ public class BlockUse {
     /**
      * ID of the entry signal.
      */
-    public String getEntrySig() {
+    public Signal<?> getEntrySig() {
         return block.entrySig;
     }
 
     /**
      * ID of the exit signal.
      */
-    public String getExitSig() {
+    public Signal<?>  getExitSig() {
         return block.exitSig;
     }
 

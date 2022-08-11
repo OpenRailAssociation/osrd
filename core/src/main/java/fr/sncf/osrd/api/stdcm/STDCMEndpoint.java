@@ -13,7 +13,6 @@ import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
-import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
@@ -39,8 +38,6 @@ import org.takes.rs.RsJson;
 import org.takes.rs.RsText;
 import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
-
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -65,14 +62,14 @@ public class STDCMEndpoint implements Take {
 
     private static List<EdgeLocation<SignalingRoute>> findRoutes(SignalingInfra infra, PathfindingWaypoint waypoint) {
         var res = new ArrayList<EdgeLocation<SignalingRoute>>();
-        var edge = infra.getEdge(waypoint.trackSection(), Direction.fromEdgeDir(waypoint.direction()));
+        var edge = infra.getEdge(waypoint.trackSection, Direction.fromEdgeDir(waypoint.direction));
         assert (edge != null);
         for (var entry : infra.getRoutesOnEdges().get(edge)) {
             var signalingRoutes = infra.getRouteMap().get(entry.route());
             for (var signalingRoute : signalingRoutes) {
-                var waypointOffsetFromStart = waypoint.offset();
-                if (waypoint.direction().equals(EdgeDirection.STOP_TO_START))
-                    waypointOffsetFromStart = edge.getEdge().getLength() - waypoint.offset();
+                var waypointOffsetFromStart = waypoint.offset;
+                if (waypoint.direction.equals(EdgeDirection.STOP_TO_START))
+                    waypointOffsetFromStart = edge.getEdge().getLength() - waypoint.offset;
                 var offset = waypointOffsetFromStart - entry.startOffset();
                 if (offset >= 0 && offset <= signalingRoute.getInfraRoute().getLength())
                     res.add(new EdgeLocation<>(signalingRoute, offset));
