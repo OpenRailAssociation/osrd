@@ -283,8 +283,50 @@ export function getSignalPNLayerProps(
   return props;
 }
 
-const signalTextOffsetX = 5
-const signalTextOffsetY = -1
+
+
+/**
+ * Provide Layouts (similar) for
+ * @param angleName
+ * @param iconOffset
+ * @param context
+ * @param _type
+ * @returns
+ */
+const getMovableSignalLayout = function (
+  angleName, iconOffset, context, _type) :any {
+
+    const signalTextOffsetX = 5
+    const signalTextOffsetY = -1
+
+    return {
+      'text-field': '{label}',
+    'text-font': ['SNCF'],
+    'text-size': 8,
+    'text-offset': [
+      'case',
+      ['==', ['get', 'side'], 'RIGHT'],
+      ['literal', [signalTextOffsetX, signalTextOffsetY]],
+      ['==', ['get', 'side'], 'LEFT'],
+      ['literal', [signalTextOffsetX * -1, signalTextOffsetY]],
+      ['==', ['get', 'side'], 'CENTER'],
+      ['literal', [signalTextOffsetX * -0.7, signalTextOffsetY * 0.5]],
+      ['literal', [0, 0]],
+    ],
+    'icon-offset': iconOffset,
+    'icon-image': signalsToSprites(context, _type),
+    'icon-size': 0.5,
+    'text-anchor': 'center',
+    'icon-rotation-alignment': 'map',
+    'icon-pitch-alignment': 'map',
+    'text-rotation-alignment': 'map',
+    'icon-rotate': ['get', angleName],
+    'text-rotate': ['get', angleName],
+    'icon-allow-overlap': true,
+    'icon-ignore-placement': true,
+    'text-allow-overlap': true,
+  }
+}
 
 export function getSignalALayerProps(
   context : SignalContext,
@@ -304,31 +346,8 @@ export function getSignalALayerProps(
         ['==', 'installation_type', typeFilter],
         filterA,
       ],
-    layout: {
-      'text-field': '{label}',
-      'text-font': ['SNCF'],
-      'text-size': 8,
-      'text-offset': [
-        'case',
-        ['==', ['get', 'side'], 'RIGHT'],
-        ['literal', [signalTextOffsetX, signalTextOffsetY]],
-        ['==', ['get', 'side'], 'LEFT'],
-        ['literal', [signalTextOffsetX * -1, signalTextOffsetY]],
-        ['literal', [0, 0]],
-      ],
-      'icon-offset': iconOffset,
-      'icon-image': signalsToSprites(context, _type),
-      'icon-size': 0.5,
-      'text-anchor': 'center',
-      'icon-rotation-alignment': 'map',
-      'icon-pitch-alignment': 'map',
-      'text-rotation-alignment': 'map',
-      'icon-rotate': ['get', angleName],
-      'text-rotate': ['get', angleName],
-      'icon-allow-overlap': true,
-      'icon-ignore-placement': true,
-      'text-allow-overlap': true,
-    },
+    layout: getMovableSignalLayout(angleName, iconOffset, context, _type),
+
     paint: {
       'text-color': '#fff',
     },
@@ -355,31 +374,7 @@ export function getSignalVLLayerProps(
     filter: ['all',
         ['==', 'installation_type', typeFilter]
       ],
-    layout: {
-      'text-field': '{label}',
-      'text-font': ['SNCF'],
-      'text-size': 8,
-      'text-offset': [
-        'case',
-        ['==', ['get', 'side'], 'RIGHT'],
-        ['literal', [signalTextOffsetX, signalTextOffsetY]],
-        ['==', ['get', 'side'], 'LEFT'],
-        ['literal', [signalTextOffsetX * -1, signalTextOffsetY]],
-        ['literal', [0, 0]],
-      ],
-      'icon-offset': iconOffset,
-      'icon-image': signalsToSprites(context, _type),
-      'icon-size': 0.5,
-      'text-anchor': 'center',
-      'icon-rotation-alignment': 'map',
-      'icon-pitch-alignment': 'map',
-      'text-rotation-alignment': 'map',
-      'icon-rotate': ['get', angleName],
-      'text-rotate': ['get', angleName],
-      'icon-allow-overlap': true,
-      'icon-ignore-placement': true,
-      'text-allow-overlap': true,
-    },
+    layout: getMovableSignalLayout(angleName, iconOffset, context, _type),
     paint: {
       'text-color': '#777',
     },
@@ -409,31 +404,7 @@ export function getSignalStopLayerProps(
         ['==', 'installation_type', typeFilter],
         filterA,
       ],
-    layout: {
-      'text-field': '{label}',
-      'text-font': ['SNCF'],
-      'text-size': 8,
-      'text-offset': [
-        'case',
-        ['==', ['get', 'side'], 'RIGHT'],
-        ['literal', [signalTextOffsetX, signalTextOffsetY]],
-        ['==', ['get', 'side'], 'LEFT'],
-        ['literal', [signalTextOffsetX * -1, signalTextOffsetY]],
-        ['literal', [0, 0]],
-      ],
-      'icon-offset': iconOffset,
-      'icon-image': signalsToSprites(context, _type),
-      'icon-size': 0.5,
-      'text-anchor': 'center',
-      'icon-rotation-alignment': 'map',
-      'icon-pitch-alignment': 'map',
-      'text-rotation-alignment': 'map',
-      'icon-rotate': ['get', angleName],
-      'text-rotate': ['get', angleName],
-      'icon-allow-overlap': true,
-      'icon-ignore-placement': true,
-      'text-allow-overlap': true,
-    },
+    layout: getMovableSignalLayout(angleName, iconOffset, context, _type),
     paint: {
       'text-color': '#fff',
     },
