@@ -47,8 +47,15 @@ export default function InfraSelector() {
     if (infraID !== undefined) {
       getInfra(infraID);
     } else if (infrasList !== undefined) {
-      setSelectedInfra(infrasList.results[0]);
-      dispatch(updateInfraID(infrasList.results[0].id));
+      if (infrasList.results[0] !== undefined) {
+        setSelectedInfra(infrasList.results[0]);
+        dispatch(updateInfraID(infrasList.results[0].id));
+      } else {
+        dispatch(setFailure({
+          name: t('errorMessages.noExistingInfra'),
+          message: '',
+        }));
+      }
     } else {
       getInfrasList();
     }
