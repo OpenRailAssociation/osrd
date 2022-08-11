@@ -36,7 +36,6 @@ pub fn refresh(
     }
 
     // Generate layers
-    CatenaryLayer::refresh(conn, infra.id, chartos_config)?;
     TrackSectionLayer::refresh(conn, infra.id, chartos_config)?;
     SignalLayer::refresh(conn, infra.id, chartos_config)?;
     SpeedSectionLayer::refresh(conn, infra.id, chartos_config)?;
@@ -46,6 +45,7 @@ pub fn refresh(
     BufferStopLayer::refresh(conn, infra.id, chartos_config)?;
     RouteLayer::refresh(conn, infra.id, chartos_config)?;
     OperationalPointLayer::refresh(conn, infra.id, chartos_config)?;
+    CatenaryLayer::refresh(conn, infra.id, chartos_config)?;
 
     // Generate errors
     generate_errors(conn, infra.id, infra_cache, chartos_config)?;
@@ -64,7 +64,6 @@ pub fn update(
     zone: &InvalidationZone,
     chartos_config: &ChartosConfig,
 ) -> Result<(), Box<dyn ApiError>> {
-    CatenaryLayer::update(conn, infra_id, operations, cache, zone, chartos_config)?;
     TrackSectionLayer::update(conn, infra_id, operations, zone, chartos_config)?;
     SignalLayer::update(conn, infra_id, operations, cache, zone, chartos_config)?;
     SpeedSectionLayer::update(conn, infra_id, operations, cache, zone, chartos_config)?;
@@ -74,6 +73,7 @@ pub fn update(
     BufferStopLayer::update(conn, infra_id, operations, cache, zone, chartos_config)?;
     RouteLayer::update(conn, infra_id, operations, cache, zone, chartos_config)?;
     OperationalPointLayer::update(conn, infra_id, operations, cache, zone, chartos_config)?;
+    CatenaryLayer::update(conn, infra_id, operations, cache, zone, chartos_config)?;
 
     Ok(())
 }
