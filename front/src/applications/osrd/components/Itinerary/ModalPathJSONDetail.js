@@ -49,7 +49,7 @@ export default function ModalPathJSONDetail(props) {
 
   useEffect(() => {
     getPathJSON();
-  }, []);
+  }, [pathfindingID]);
 
   return (
     <ModalSNCF htmlID="modalPathJSONDetail" size="xl">
