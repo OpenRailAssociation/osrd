@@ -3,7 +3,6 @@ package fr.sncf.osrd.standalone_sim.result;
 import com.google.common.base.MoreObjects;
 import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.infra.api.signaling.SignalState;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.Set;
 
@@ -32,6 +31,10 @@ public class SignalUpdate {
     /** True if the signal is blinking */
     public final boolean blinking;
 
+    /** Name of this signal aspect */
+    @Json(name = "aspect_label")
+    public final String aspectLabel;
+
     /** Constructor */
     public SignalUpdate(
             String signalID,
@@ -39,7 +42,8 @@ public class SignalUpdate {
             double timeStart,
             double timeEnd,
             int color,
-            boolean blinking
+            boolean blinking,
+            String aspectLabel
     ) {
         this.signalID = signalID;
         this.routeIDs = routeIDs;
@@ -47,6 +51,7 @@ public class SignalUpdate {
         this.timeEnd = timeEnd;
         this.color = color;
         this.blinking = blinking;
+        this.aspectLabel = aspectLabel;
     }
 
     @Override

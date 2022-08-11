@@ -118,7 +118,8 @@ public class ScheduleMetadataExtractor {
                         timeStart,
                         timeEnd,
                         update.state().getRGBColor(),
-                        false
+                        false,
+                        update.state().getAspectLabel()
                 ));
             }
         }
@@ -150,9 +151,9 @@ public class ScheduleMetadataExtractor {
                         envelope.interpolateTotalTime(sightPosition),
                         envelope.interpolateTotalTime(route.pathOffset()),
                         entrySignal.getLeastRestrictiveState().getRGBColor(),
-                        false
+                        false,
+                        entrySignal.getLeastRestrictiveState().getAspectLabel()
                 );
-                System.out.println(newUpdate);
                 res.add(newUpdate);
             }
         }
