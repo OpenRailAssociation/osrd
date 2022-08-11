@@ -2,17 +2,16 @@ package fr.sncf.osrd.api.stdcm;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 
 public class PathGenerator {
-    public static ArrayList<ArrayList<BlockUse>> generatePaths(
+    public static ArrayList<List<BlockUse>> generatePaths(
             STDCMConfig config,
-            ArrayList<BlockUse> Bfree
+            ArrayList<BlockUse> freeBlockUses
     ) {
-        var residualCapacity = new ArrayList<ArrayList<ArrayList<BlockUse>>>();
-        var consecutiveBlockPairs = new ArrayList<ArrayList<BlockUse>>();
-        var Get2 = new ArrayList<ArrayList<ArrayList<BlockUse>>>();
-        var paths = new ArrayList<ArrayList<BlockUse>>();
+        var nextBlocksMap = new HashMap<BlockUse, List<BlockUse>>();
 
         // data
         double Lt = config.rollingStock.length; // Longueur train
@@ -21,93 +20,94 @@ public class PathGenerator {
         // TODO: get it from the infra graph
         double Vc = (float) 160 / 3600; // Vitesse max canton
 
-        var Xs = config.startBlockEntrySig;
-        var Xfs = config.startBlockExitSig;
-
-        for (var blockA : Bfree) {
-            for (var blockB : Bfree) {
+        for (var curBlock : freeBlockUses) {
+            var nextBlocks = new ArrayList<BlockUse>();
+            nextBlocksMap.put(curBlock, nextBlocks);
+            for (var nextBlock : freeBlockUses) {
                 // only process the block pair if:
                 //  - you can go from blockA from blockB
                 //  - blockB does not loop back to the start of blockA
                 // TODO: cleanup this comment
                 // || (blockB.getExitSig() != null && blockB.getExitSig() == blockA.getEntrySig())
-                if (blockA.getExitSig() == null || blockA.getExitSig() != blockB.getEntrySig())
+                if (curBlock.getExitSig() == null || curBlock.getExitSig() != nextBlock.getEntrySig())
                     continue;
 
                 double Tv = Ds / Vc;
-                double Tr = Lt / Vc + blockA.getLength() / Vc;
-                double Tj = blockB.getLength() / Vc;
+                double Tr = Lt / Vc + curBlock.getLength() / Vc;
+                double Tj = nextBlock.getLength() / Vc;
                 double Tj1 = 300 / Vc;
                 var Tm = Tv + Tr + Tj;
-                var Cm = (Ds + Lt + blockB.getLength()) / Vc;
-                if (blockA.reservationEndTime - blockB.reservationStartTime >= Cm
-                        && blockB.reservationEndTime - blockA.reservationStartTime >= Tm + Tj1) {
-                    var pair = new ArrayList<BlockUse>();
-                    pair.add(blockA);
-                    pair.add(blockB);
-                    consecutiveBlockPairs.add(pair);
-                }
+                var Cm = (Ds + Lt + nextBlock.getLength()) / Vc;
+                if (curBlock.reservationEndTime - nextBlock.reservationStartTime >= Cm
+                        && nextBlock.reservationEndTime - curBlock.reservationStartTime >= Tm + Tj1)
+                    nextBlocks.add(nextBlock);
             }
         }
 
+        // find the set of all block uses which can start a path
+        var startBlockUses = new ArrayList<BlockUse>();
+        for (var curBlock : freeBlockUses)
+            if (config.startSignalingRoutes.contains(curBlock.block.route))
+                startBlockUses.add(curBlock);
+
         // All routes
-        int tem = consecutiveBlockPairs.size();
-        int z = 0;
-        residualCapacity.add(new ArrayList<>());
-        residualCapacity.get(z).addAll(consecutiveBlockPairs);
+        // residualCapacity[0] is the set of all paths of length 1
+        // residualCapacity[1] is the set of all paths of length 2
 
-        ArrayList<ArrayList<BlockUse>> consecutiveBlocks;
-        do {
-            consecutiveBlocks = new ArrayList<>();
+        // fill an initial set of paths with a length of 1
+        var initialPathsSet = new ArrayList<List<BlockUse>>();
+        for (var startBlock : startBlockUses)
+            initialPathsSet.add(List.of(startBlock));
 
-            for (int i = 0; i < tem; i++) {
-                for (var consBlockPair : consecutiveBlockPairs) {
-                    var curBlockUse = consBlockPair.get(0);
-                    var nextBlockUse = consBlockPair.get(1);
-                    if (residualCapacity.get(z).get(i).get(0).getEntrySig() == Xs
-                            && residualCapacity.get(z).get(i).get(0).getExitSig() == Xfs
-                            && residualCapacity.get(z).get(i).get(residualCapacity.get(z).get(i).size() - 1).block == curBlockUse.block
-                            && !residualCapacity.get(z).get(i).contains(nextBlockUse)) {
-                        var chain = new ArrayList<>(residualCapacity.get(z).get(i));
-                        chain.add(nextBlockUse);
-                        consecutiveBlocks.add(chain);
-                    }
+        // while longer paths can be built, do so
+        var longestChains = initialPathsSet;
+        var residualCapacity = new ArrayList<List<List<BlockUse>>>();
+        while (!longestChains.isEmpty()) {
+            residualCapacity.add(new ArrayList<>(longestChains));
+            // build the next length of paths from the last iteration
+            var nextChainLenSet = new ArrayList<List<BlockUse>>();
+            for (var possiblePath : longestChains) {
+                var lastBlockUse = possiblePath.get(possiblePath.size() - 1);
+                for (var possibleNextBlock : nextBlocksMap.get(lastBlockUse)) {
+                    // avoid loops
+                    if (possiblePath.contains(possibleNextBlock))
+                        continue;
+                    var newPath = new ArrayList<>(possiblePath);
+                    newPath.add(possibleNextBlock);
+                    nextChainLenSet.add(newPath);
                 }
             }
+            longestChains = nextChainLenSet;
+        }
 
-            if (consecutiveBlocks.size() != 0) {
-                tem = consecutiveBlocks.size();
-                residualCapacity.add(new ArrayList<>(consecutiveBlocks));
-                z++;
-            }
-        } while (consecutiveBlocks.size() != 0);
+        var newResCap = new ArrayList<List<List<BlockUse>>>();
+        for (var oldCapCur : residualCapacity) {
+            var newCapLevel = new ArrayList<List<BlockUse>>();
+            newResCap.add(newCapLevel);
 
-        for (int zz = 0; zz < residualCapacity.size(); zz++) {
-            Get2.add(new ArrayList<>());
-            var etii = 0;
-
-            for (int i = 0; i < residualCapacity.get(zz).size(); i++) {
+            for (var curPath : oldCapCur) {
                 double dt = 400 / Vc + Lt / Vc;
-                for (int tes = 0; tes < residualCapacity.get(zz).get(i).size(); tes++) {
-                    if (tes == residualCapacity.get(zz).get(i).size() - 1) {
-                        dt = dt + residualCapacity.get(zz).get(i).get(tes).getLength() / Vc + 1500 / Vc;
+                for (int tes = 0; tes < curPath.size(); tes++) {
+                    if (tes == curPath.size() - 1) {
+                        dt = dt + curPath.get(tes).getLength() / Vc + 1500 / Vc;
                     } else {
-                        dt = dt + residualCapacity.get(zz).get(i).get(tes).getLength() / Vc;
+                        dt = dt + curPath.get(tes).getLength() / Vc;
                     }
                 }
 
-                if (residualCapacity.get(zz).get(i).get(residualCapacity.get(zz).get(i).size() - 1).reservationEndTime - residualCapacity.get(zz).get(i).get(0).reservationStartTime >= dt
-                        && residualCapacity.get(zz).get(i).get(residualCapacity.get(zz).get(i).size() - 1).reservationEndTime - residualCapacity.get(zz).get(i).get(0).reservationStartTime < config.maxTime) {
-                    Get2.get(zz).add(new ArrayList<>());
-                    Get2.get(zz).get(etii).addAll(residualCapacity.get(zz).get(i));
-                    etii++;
+                var curPathStart = curPath.get(0);
+                var curPathEnd = curPath.get(curPath.size() - 1);
+                if (curPathEnd.reservationEndTime - curPathStart.reservationStartTime >= dt
+                        && curPathEnd.reservationEndTime - curPathStart.reservationStartTime < config.maxTime) {
+                    newCapLevel.add(new ArrayList<>(curPath));
                 }
             }
         }
 
         residualCapacity.clear();
-        residualCapacity.addAll(Get2);
+        residualCapacity.addAll(newResCap);
 
+        var paths = new ArrayList<List<BlockUse>>();
         int pat = 0;
         for (var arrayLists : residualCapacity) {
             for (var arrayList : arrayLists) {

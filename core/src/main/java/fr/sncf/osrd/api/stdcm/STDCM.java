@@ -72,12 +72,12 @@ public class STDCM {
         return res;
     }
 
-    public static ArrayList<BlockUse> findBestPath(
-            ArrayList<ArrayList<BlockUse>> allPossiblePaths,
+    public static List<BlockUse> findBestPath(
+            ArrayList<List<BlockUse>> allPossiblePaths,
             Function<BlockUse, Double> weightFunc
     ) {
         double bestWeight = Double.POSITIVE_INFINITY;
-        ArrayList<BlockUse> bestPath = null;
+        List<BlockUse> bestPath = null;
 
         for (var possiblePath : allPossiblePaths) {
             double pathWeight = possiblePath.stream().map(weightFunc).reduce(0., Double::sum);
@@ -91,7 +91,7 @@ public class STDCM {
         return bestPath;
     }
 
-    public static ArrayList<BlockUse> run(
+    public static List<BlockUse> run(
             SignalingInfra infra,
             RollingStock rollingStock,
             double startTime,
@@ -112,7 +112,7 @@ public class STDCM {
 
         double maxTime = 3 * 3.6 * Math.pow(10, 6);
         var config = new STDCMConfig(rollingStock, startTime, endTime, maxTime, 400.,
-                startBlockEntrySig, startBlockExitSig, endBlockEntrySig, endBlockExitSig);
+                Set.of(startRoute), startBlockEntrySig, startBlockExitSig, endBlockEntrySig, endBlockExitSig);
 
         // This step generates all the possible paths that links the start and end location.
         // If going from a block to the next at the train's max speed is impossible, the path is discarded

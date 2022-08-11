@@ -1,7 +1,10 @@
 package fr.sncf.osrd.api.stdcm;
 
 import fr.sncf.osrd.infra.api.signaling.Signal;
+import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.train.RollingStock;
+
+import java.util.Set;
 
 public final class STDCMConfig {
     public final RollingStock rollingStock;
@@ -10,6 +13,7 @@ public final class STDCMConfig {
     public final double maxTime;
     public final double safetyDistance;
 
+    public final Set<SignalingRoute> startSignalingRoutes;
     public final Signal<?> startBlockEntrySig;
     public final Signal<?> startBlockExitSig;
     public final Signal<?> endBlockEntrySig;
@@ -28,7 +32,7 @@ public final class STDCMConfig {
             double startTime,
             double endTime,
             double maxTime, double safetyDistance,
-            Signal<?> startBlockEntrySig, Signal<?> startBlockExitSig,
+            Set<SignalingRoute> startSignalingRoutes, Signal<?> startBlockEntrySig, Signal<?> startBlockExitSig,
             Signal<?> endBlockEntrySig, Signal<?> endBlockExitSig
     ) {
         this.rollingStock = rollingStock;
@@ -36,6 +40,7 @@ public final class STDCMConfig {
         this.endTime = endTime;
         this.maxTime = maxTime;
         this.safetyDistance = safetyDistance;
+        this.startSignalingRoutes = startSignalingRoutes;
         this.startBlockEntrySig = startBlockEntrySig;
         this.startBlockExitSig = startBlockExitSig;
         this.endBlockEntrySig = endBlockEntrySig;

@@ -2,17 +2,18 @@ package fr.sncf.osrd.api.stdcm;
 
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class PathSimulator {
-    public static ArrayList<ArrayList<BlockUse>> simulatePaths(
+    public static ArrayList<List<BlockUse>> simulatePaths(
             STDCMConfig config,
-            ArrayList<ArrayList<BlockUse>> paths
+            ArrayList<List<BlockUse>> paths
     ) {
         double Lt = 600; // Longueur train
         double Vc = (float) 160 / 3600; // Vitesse max canton
         double startTime = config.startTime;
 
-        var UPaths = new ArrayList<ArrayList<BlockUse>>();
+        var UPaths = new ArrayList<List<BlockUse>>();
         for (var path : paths) {
             if (path.get(path.size() - 1).getEntrySig().equals(config.endBlockEntrySig)
                     && path.get(path.size() - 1).getExitSig().equals(config.endBlockExitSig)
@@ -25,7 +26,7 @@ public class PathSimulator {
             }
         }
 
-        var SOL2 = new ArrayList<ArrayList<BlockUse>>();
+        var SOL2 = new ArrayList<List<BlockUse>>();
 
         double starting = startTime;
 
