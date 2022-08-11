@@ -829,6 +829,9 @@ components:
               blinking:
                 type: boolean
                 description: true if the signal is blinking
+              aspect_label:
+                type: string
+                description: label of the new signal aspect
         signals:
           type: array
           items:

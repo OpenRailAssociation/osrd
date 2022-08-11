@@ -38,9 +38,9 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
     public BAL3SignalState getLeastRestrictiveState() {
         assert canDisplayGreen != null : "signal.setup() has not been called";
         if (canDisplayGreen)
-            return new BAL3SignalState(BAL3.Aspect.GREEN);
+            return makeSignalState(BAL3.Aspect.GREEN);
         else
-            return new BAL3SignalState(BAL3.Aspect.YELLOW);
+            return makeSignalState(BAL3.Aspect.YELLOW);
     }
 
 
@@ -49,12 +49,12 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
         var isControlled = protectedRoutes.stream()
                 .anyMatch(route -> route.getInfraRoute().isControlled());
         if (isControlled)
-            return new BAL3SignalState(BAL3.Aspect.RED);
+            return makeSignalState(BAL3.Aspect.RED);
 
         for (var route : protectedRoutes) {
             if (route.exitSignal() instanceof BAL3Signal bal3Signal
                     && bal3Signal.getInitialState().aspect == BAL3.Aspect.RED)
-                return new BAL3SignalState(BAL3.Aspect.YELLOW); // next signal is red by default -> yellow
+                return makeSignalState(BAL3.Aspect.YELLOW); // next signal is red by default -> yellow
         }
 
         return getLeastRestrictiveState();
@@ -73,13 +73,13 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
                 reservedRoutes.add(route);
         if (reservedRoutes.isEmpty())
             // All routes starting from this signal are blocked -> red
-            return new BAL3SignalState(BAL3.Aspect.RED);
+            return makeSignalState(BAL3.Aspect.RED);
 
         if (reservedRoutes.stream().anyMatch(r -> r.infraRoute().isControlled())) {
             // At lease one route needs to be reserved
             if (reservedRoutes.stream().noneMatch(r -> state.getState(r.infraRoute()).summarize().equals(RESERVED))) {
                 // No route is reserved -> red
-                return new BAL3SignalState(BAL3.Aspect.RED);
+                return makeSignalState(BAL3.Aspect.RED);
             }
         }
 
@@ -87,7 +87,7 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
         for (var route : reservedRoutes) {
             if (state.getState(route.getInfraRoute()).summarize().equals(RESERVED)) {
                 if (isNextRouteBlocked(route, signalization))
-                    return new BAL3SignalState(BAL3.Aspect.YELLOW);
+                    return makeSignalState(BAL3.Aspect.YELLOW);
                 else {
                     // A route is reserved and lead to a signal that isn't red, we don't need to check the rest
                     return getLeastRestrictiveState();
@@ -98,7 +98,7 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
         // If no reserved route, we check all free routes starting from this signal
         for (var route : reservedRoutes) {
             if (isNextRouteBlocked(route, signalization))
-                return new BAL3SignalState(BAL3.Aspect.YELLOW);
+                return makeSignalState(BAL3.Aspect.YELLOW);
         }
         return getLeastRestrictiveState();
     }
@@ -143,6 +143,11 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
     @Override
     public double getSightDistance() {
         return sightDistance;
+    }
+
+    /** Creates a signal state linked to this signal */
+    private BAL3SignalState makeSignalState(BAL3.Aspect aspect) {
+        return new BAL3SignalState(this, aspect);
     }
 
     /** Finish setting up everything, to be called once protected routes have been set */

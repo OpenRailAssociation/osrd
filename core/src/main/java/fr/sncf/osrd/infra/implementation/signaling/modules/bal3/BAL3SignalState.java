@@ -8,8 +8,10 @@ import java.util.Objects;
 
 public class BAL3SignalState implements SignalState {
     public final BAL3.Aspect aspect;
+    private final BAL3Signal signal;
 
-    public BAL3SignalState(BAL3.Aspect aspect) {
+    public BAL3SignalState(BAL3Signal signal, BAL3.Aspect aspect) {
+        this.signal = signal;
         this.aspect = aspect;
     }
 
@@ -19,6 +21,24 @@ public class BAL3SignalState implements SignalState {
             case GREEN -> Color.GREEN.getRGB();
             case YELLOW -> Color.YELLOW.getRGB();
             case RED -> Color.RED.getRGB();
+        };
+    }
+
+    @Override
+    public String getAspectLabel() {
+        if (signal.getInitialState().aspect.equals(BAL3.Aspect.RED)) {
+            // "Carre" signal (red by default)
+            return switch (aspect) {
+                case GREEN -> "CARRE VL";
+                case YELLOW -> "CARRE A";
+                case RED -> "CARRE";
+            };
+        }
+        // Otherwise, "semaphore" signal
+        return switch (aspect) {
+            case GREEN -> "S VL";
+            case YELLOW -> "S A";
+            case RED -> "S";
         };
     }
 
