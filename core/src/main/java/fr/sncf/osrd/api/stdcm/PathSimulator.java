@@ -14,10 +14,10 @@ public class PathSimulator {
 
         var UPaths = new ArrayList<ArrayList<BlockUse>>();
         for (var path : paths) {
-            if (path.get(path.size() - 1).entrySig.equals(config.endBlockEntrySig)
-                    && path.get(path.size() - 1).exitSig.equals(config.endBlockExitSig)
-                    && path.get(0).entrySig.equals(config.startBlockEntrySig)
-                    && path.get(0).exitSig.equals(config.startBlockExitSig)) {
+            if (path.get(path.size() - 1).getEntrySig().equals(config.endBlockEntrySig)
+                    && path.get(path.size() - 1).getExitSig().equals(config.endBlockExitSig)
+                    && path.get(0).getEntrySig().equals(config.startBlockEntrySig)
+                    && path.get(0).getExitSig().equals(config.startBlockExitSig)) {
                 // if we want to switch to not early, do this instead
                 // dateFormat.parse(path.get(path.size() - 1).getTf()).getTime() >= dateFormat.parse(endTime).getTime() && dateFormat.parse(path.get(path.size() - 1).getT()).getTime() < dateFormat.parse(endTime).getTime()) {
                 if (path.get(0).reservationEndTime >= startTime && path.get(0).reservationStartTime < startTime)
@@ -33,18 +33,19 @@ public class PathSimulator {
         double Tsr = 0;
 
         for (int zz = 0; zz < UPaths.size(); zz++) {
+            var curPath = UPaths.get(zz);
             double Ts = starting;
             double dtv = 0;
             double pre_speed = 0;
 
-            Ts = Math.max(Ts, UPaths.get(zz).get(0).reservationStartTime);
+            Ts = Math.max(Ts, curPath.get(0).reservationStartTime);
 
             SOL2.add(new ArrayList<>());
 
-            for (int i = 0; i < UPaths.get(zz).size() - 2; i++) {
-                BlockUse currentB = UPaths.get(zz).get(i);
-                BlockUse nextB = UPaths.get(zz).get(i + 1);
-                BlockUse nextB2 = UPaths.get(zz).get(i + 2);
+            for (int i = 0; i < curPath.size() - 2; i++) {
+                BlockUse currentB = curPath.get(i);
+                BlockUse nextB = curPath.get(i + 1);
+                BlockUse nextB2 = curPath.get(i + 2);
 
                 if (i == 0)
                     Tsr = Ts;
@@ -61,7 +62,7 @@ public class PathSimulator {
                 // safety time to the next block
                 double dtv_n = T_green(speed);
                 // starting allocation time in the next block
-                double Tsn = Ts + dtv + (currentB.length - config.safetyDistance) / speed;
+                double Tsn = Ts + dtv + (currentB.getLength() - config.safetyDistance) / speed;
                 // starting occupation time in the next block
                 double Tsrn = Tsn + dtv_n;
                 // next block speed
@@ -82,7 +83,7 @@ public class PathSimulator {
                     break;
                 }
 
-                SOL2.get(zz).add(new BlockUse(Ts, Tf, UPaths.get(zz).get(i).entrySig, UPaths.get(zz).get(i).exitSig, UPaths.get(zz).get(i).id, UPaths.get(zz).get(i).length, speed * 3600 / 1000));
+                SOL2.get(zz).add(new BlockUse(currentB.block, Ts, Tf));
 
                 Ts = Tsn;
 
@@ -97,14 +98,14 @@ public class PathSimulator {
     }
 
     public static double max_speed(BlockUse current, double Vmat) {
-        return Math.min(current.maxSpeed, Vmat);
+        return Math.min(current.getMaxSpeed(), Vmat);
     }
 
     public static double calculated_speed(BlockUse current, BlockUse next, double Ts, double Vmat, STDCMConfig config) {
         double V = 0;
 
         if (next.reservationStartTime > Ts) {
-            V = (current.length - config.safetyDistance) / (next.reservationStartTime - Ts);
+            V = (current.getLength() - config.safetyDistance) / (next.reservationStartTime - Ts);
         } else {
             return max_speed(current, Vmat);
         }
@@ -116,7 +117,7 @@ public class PathSimulator {
     }
 
     public static double T_red(BlockUse current, double Lmat, double V) {
-        return current.length / V;
+        return current.getLength() / V;
     }
 
     public static double T_length(double Lmat, double V) {

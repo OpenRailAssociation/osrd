@@ -32,15 +32,15 @@ public class PathGenerator {
                 // only process the block pair if:
                 //  - you can go from blockA from blockB
                 //  - blockB does not loop back to the start of blockA
-                if (!blockA.exitSig.equals(blockB.entrySig) || blockB.exitSig.equals(blockA.entrySig))
+                if (!blockA.getExitSig().equals(blockB.getEntrySig()) || blockB.getExitSig().equals(blockA.getEntrySig()))
                     continue;
 
                 double Tv = Ds / Vc;
-                double Tr = Lt / Vc + blockA.length / Vc;
-                double Tj = blockB.length / Vc;
+                double Tr = Lt / Vc + blockA.getLength() / Vc;
+                double Tj = blockB.getLength() / Vc;
                 double Tj1 = 300 / Vc;
                 var Tm = Tv + Tr + Tj;
-                var Cm = (Ds + Lt + blockB.length) / Vc;
+                var Cm = (Ds + Lt + blockB.getLength()) / Vc;
                 if (blockA.reservationEndTime - blockB.reservationStartTime >= Cm
                         && blockB.reservationEndTime - blockA.reservationStartTime >= Tm + Tj1) {
                     B2next.add(new ArrayList<>());
@@ -64,9 +64,9 @@ public class PathGenerator {
 
             for (int i = 0; i < tem; i++) {
                 for (ArrayList<BlockUse> blockUses : B2next) {
-                    if (residualCapacity.get(z).get(i).get(0).entrySig.equals(Xs)
-                            && residualCapacity.get(z).get(i).get(0).exitSig.equals(Xfs)
-                            && Objects.equals(residualCapacity.get(z).get(i).get(residualCapacity.get(z).get(i).size() - 1).id, blockUses.get(0).id)
+                    if (residualCapacity.get(z).get(i).get(0).getEntrySig().equals(Xs)
+                            && residualCapacity.get(z).get(i).get(0).getExitSig().equals(Xfs)
+                            && residualCapacity.get(z).get(i).get(residualCapacity.get(z).get(i).size() - 1).block == blockUses.get(0).block
                             && !residualCapacity.get(z).get(i).contains(blockUses.get(1)) && k < lim) {
                         Bnext.add(new ArrayList<>());
                         Bnext.get(k).addAll(residualCapacity.get(z).get(i));
@@ -91,9 +91,9 @@ public class PathGenerator {
                 double dt = 400 / Vc + Lt / Vc;
                 for (int tes = 0; tes < residualCapacity.get(zz).get(i).size(); tes++) {
                     if (tes == residualCapacity.get(zz).get(i).size() - 1) {
-                        dt = dt + residualCapacity.get(zz).get(i).get(tes).length / Vc + 1500 / Vc;
+                        dt = dt + residualCapacity.get(zz).get(i).get(tes).getLength() / Vc + 1500 / Vc;
                     } else {
-                        dt = dt + residualCapacity.get(zz).get(i).get(tes).length / Vc;
+                        dt = dt + residualCapacity.get(zz).get(i).get(tes).getLength() / Vc;
                     }
                 }
 
