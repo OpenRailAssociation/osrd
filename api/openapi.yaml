@@ -1106,6 +1106,9 @@ components:
                 type: array
                 items:
                   $ref: "#/components/schemas/Allowance"
+              speed_limit_category:
+                description: Train category for speed limits
+                type: string
     WritableTrainSchedule:
       properties:
         train_name:
