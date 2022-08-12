@@ -17,13 +17,13 @@ import { useDispatch, useSelector } from 'react-redux';
 
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
-import BufferStops from 'common/Map/Layers/BufferStops';
+import BufferStops from 'common/Map/Layers/BufferStops.tsx';
 /* Settings & Buttons */
 import ButtonMapSearch from 'common/Map/ButtonMapSearch';
 import ButtonMapSettings from 'common/Map/ButtonMapSettings';
 import ButtonResetViewport from 'common/Map/ButtonResetViewport';
-import Detectors from 'common/Map/Layers/Detectors';
-import ElectrificationType from 'common/Map/Layers/ElectrificationType';
+import Detectors from 'common/Map/Layers/Detectors.tsx';
+import Catenaries from 'common/Map/Layers/Catenaries';
 import Hillshade from 'common/Map/Layers/Hillshade';
 import MapSearch from 'common/Map/Search/MapSearch';
 import MapSettings from 'common/Map/Settings/MapSettings';
@@ -395,7 +395,7 @@ const Map = (props) => {
         {/* Have to  duplicate objects with sourceLayer to avoid cache problems in mapbox */}
         {mapTrackSources === 'geographic' ? (
           <>
-            <ElectrificationType geomType="geo" colors={colors[mapStyle]} />
+            <Catenaries geomType="geo" colors={colors[mapStyle]} />
             <TVDs geomType="geo" colors={colors[mapStyle]} idHover={idHover} />
             <Platform colors={colors[mapStyle]} />
             <TracksGeographic colors={colors[mapStyle]} />

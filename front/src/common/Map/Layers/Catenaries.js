@@ -4,11 +4,11 @@ import { useSelector } from 'react-redux';
 import { Source, Layer } from 'react-map-gl';
 import { MAP_URL } from 'common/Map/const.ts';
 
-export default function ElectrificationType(props) {
+export default function Catenaries(props) {
   const { layersSettings } = useSelector((state) => state.map);
   const { infraID } = useSelector((state) => state.osrdconf);
   const { geomType, colors } = props;
-  const electrificationParams = {
+  const catenariesParams = {
     type: 'line',
     'source-layer': 'catenaries',
     minzoom: 5,
@@ -34,7 +34,7 @@ export default function ElectrificationType(props) {
     },
   };
 
-  const electrificationTextParams = {
+  const catenariesTextParams = {
     type: 'symbol',
     'source-layer': 'catenaries',
     minzoom: 5,
@@ -68,27 +68,27 @@ export default function ElectrificationType(props) {
     },
   };
 
-  return layersSettings.electrification && (
+  return layersSettings.catenaries ? (
     <Source
       id={`catenaries_${geomType}`}
       type="vector"
       url={`${MAP_URL}/layer/catenaries/mvt/${geomType}/?infra=${infraID}`}
     >
       <Layer
-        {...electrificationParams}
+        {...catenariesParams}
         beforeId={`chartis/tracks-${geomType}/main`}
         id={`chartis/catenaries/${geomType}`}
       />
       <Layer
-        {...electrificationTextParams}
+        {...catenariesTextParams}
         beforeId={`chartis/tracks-${geomType}/main`}
         id={`chartis/catenaries_names/${geomType}`}
       />
     </Source>
-  );
+  ) : null;
 }
 
-ElectrificationType.propTypes = {
+Catenaries.propTypes = {
   geomType: PropTypes.string.isRequired,
   colors: PropTypes.object.isRequired,
 };

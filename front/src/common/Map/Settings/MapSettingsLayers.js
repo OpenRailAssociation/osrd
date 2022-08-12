@@ -72,7 +72,7 @@ export default function MapSettingsLayers() {
   return (
     <div className="row">
       <FormatSwitch
-        name="electrification"
+        name="catenaries"
         icon={<GiElectric />}
       />
       <FormatSwitch
