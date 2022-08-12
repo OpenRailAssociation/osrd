@@ -1,14 +1,14 @@
-mod buffer_stops;
-mod detectors;
-mod graph;
-mod operational_points;
-mod routes;
-mod signals;
-mod speed_sections;
-mod switch_types;
-mod switches;
-mod track_section_links;
-mod track_sections;
+pub mod buffer_stops;
+pub mod detectors;
+pub mod graph;
+pub mod operational_points;
+pub mod routes;
+pub mod signals;
+pub mod speed_sections;
+pub mod switch_types;
+pub mod switches;
+pub mod track_section_links;
+pub mod track_sections;
 
 use diesel::result::Error as DieselError;
 use diesel::{sql_query, sql_types::Integer, PgConnection, RunQueryDsl};
@@ -196,16 +196,16 @@ pub fn generate_errors(
     let graph = Graph::load(infra_cache);
 
     // Generate the errors
-    track_sections::generate_errors(conn, infra, infra_cache, &graph)?;
-    signals::generate_errors(conn, infra, infra_cache)?;
-    speed_sections::generate_errors(conn, infra, infra_cache)?;
-    track_section_links::generate_errors(conn, infra, infra_cache)?;
-    switch_types::generate_errors(conn, infra, infra_cache)?;
-    switches::generate_errors(conn, infra, infra_cache)?;
-    detectors::generate_errors(conn, infra, infra_cache)?;
-    buffer_stops::generate_errors(conn, infra, infra_cache)?;
-    routes::generate_errors(conn, infra, infra_cache)?;
-    operational_points::generate_errors(conn, infra, infra_cache)?;
+    track_sections::insert_errors(conn, infra, infra_cache, &graph)?;
+    signals::insert_errors(conn, infra, infra_cache)?;
+    speed_sections::insert_errors(conn, infra, infra_cache)?;
+    track_section_links::insert_errors(conn, infra, infra_cache)?;
+    switch_types::insert_errors(conn, infra, infra_cache)?;
+    switches::insert_errors(conn, infra, infra_cache)?;
+    detectors::insert_errors(conn, infra, infra_cache)?;
+    buffer_stops::insert_errors(conn, infra, infra_cache)?;
+    routes::insert_errors(conn, infra, infra_cache)?;
+    operational_points::insert_errors(conn, infra, infra_cache)?;
 
     // Invalidate chartos cache
     invalidate_chartos_layer(infra, "errors", chartos_config);
