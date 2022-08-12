@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { Source, Layer } from 'react-map-gl';
-import { MAP_URL } from 'common/Map/const';
+import { MAP_URL } from 'common/Map/const.ts';
 
 export default function ElectrificationType(props) {
   const { layersSettings } = useSelector((state) => state.map);
@@ -10,7 +10,7 @@ export default function ElectrificationType(props) {
   const { geomType, colors } = props;
   const electrificationParams = {
     type: 'line',
-    'source-layer': 'catenary_sections',
+    'source-layer': 'catenaries',
     minzoom: 5,
     maxzoom: 24,
     layout: {
@@ -36,7 +36,7 @@ export default function ElectrificationType(props) {
 
   const electrificationTextParams = {
     type: 'symbol',
-    'source-layer': 'catenary_sections',
+    'source-layer': 'catenaries',
     minzoom: 5,
     maxzoom: 24,
     layout: {
@@ -70,19 +70,19 @@ export default function ElectrificationType(props) {
 
   return layersSettings.electrification && (
     <Source
-      id={`catenary_sections_${geomType}`}
+      id={`catenaries_${geomType}`}
       type="vector"
-      url={`${MAP_URL}/layer/catenary_sections/mvt/${geomType}/?version=${infraID}`}
+      url={`${MAP_URL}/layer/catenaries/mvt/${geomType}/?infra=${infraID}`}
     >
       <Layer
         {...electrificationParams}
         beforeId={`chartis/tracks-${geomType}/main`}
-        id={`chartis/catenary_sections/${geomType}`}
+        id={`chartis/catenaries/${geomType}`}
       />
       <Layer
         {...electrificationTextParams}
         beforeId={`chartis/tracks-${geomType}/main`}
-        id={`chartis/catenary_sections_names/${geomType}`}
+        id={`chartis/catenaries_names/${geomType}`}
       />
     </Source>
   );
