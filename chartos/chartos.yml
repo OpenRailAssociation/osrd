@@ -116,13 +116,13 @@
         - field_expr: signal.data->>'support_type'
           field_name: support_type
           field_type: text
-        - field_expr: signal.data->'is_in_service'
+        - field_expr: signal.data->>'is_in_service'
           field_name: is_in_service
           field_type: boolean
-        - field_expr: signal.data->'is_lightable'
+        - field_expr: signal.data->>'is_lightable'
           field_name: is_lightable
           field_type: boolean
-        - field_expr: signal.data->'is_operational'
+        - field_expr: signal.data->>'is_operational'
           field_name: is_operational
           field_type: boolean
         - field_expr: signal.data->>'comment'
@@ -188,13 +188,13 @@
         - field_expr: signal.data->>'support_type'
           field_name: support_type
           field_type: text
-        - field_expr: signal.data->'is_in_service'
+        - field_expr: signal.data->>'is_in_service'
           field_name: is_in_service
           field_type: boolean
-        - field_expr: signal.data->'is_lightable'
+        - field_expr: signal.data->>'is_lightable'
           field_name: is_lightable
           field_type: boolean
-        - field_expr: signal.data->'is_operational'
+        - field_expr: signal.data->>'is_operational'
           field_name: is_operational
           field_type: boolean
         - field_expr: signal.data->>'comment'
