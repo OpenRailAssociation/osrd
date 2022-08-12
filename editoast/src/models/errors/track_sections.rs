@@ -7,12 +7,28 @@ use diesel::sql_types::{Array, Integer, Json, Text};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
 use serde_json::to_value;
 
-pub fn generate_errors(
+pub fn insert_errors(
     conn: &PgConnection,
     infra_id: i32,
     infra_cache: &InfraCache,
     graph: &Graph,
 ) -> Result<(), DieselError> {
+    let (errors, track_ids) = generate_errors(infra_cache, graph);
+
+    let count = sql_query(include_str!("sql/track_sections_insert_errors.sql"))
+        .bind::<Integer, _>(infra_id)
+        .bind::<Array<Text>, _>(&track_ids)
+        .bind::<Array<Json>, _>(&errors)
+        .execute(conn)?;
+    assert_eq!(count, track_ids.len());
+
+    Ok(())
+}
+
+pub fn generate_errors(
+    infra_cache: &InfraCache,
+    graph: &Graph,
+) -> (Vec<serde_json::Value>, Vec<String>) {
     let mut errors = vec![];
     let mut track_ids = vec![];
 
@@ -29,7 +45,6 @@ pub fn generate_errors(
     }
 
     // topological error : no buffer stop on graph leaves
-
     for (track_id, track_cache) in infra_cache.track_sections.iter() {
         if graph.get_neighbours(&track_cache.get_begin()).is_none()
             || graph.get_neighbours(&track_cache.get_end()).is_none()
@@ -37,7 +52,7 @@ pub fn generate_errors(
             let track_refs = infra_cache.track_sections_refs.get(track_id);
 
             if track_refs.is_none()
-                || track_refs
+                || !track_refs
                     .unwrap()
                     .iter()
                     .any(|x| x.obj_type == ObjectType::BufferStop)
@@ -48,13 +63,5 @@ pub fn generate_errors(
             }
         }
     }
-
-    let count = sql_query(include_str!("sql/track_sections_insert_errors.sql"))
-        .bind::<Integer, _>(infra_id)
-        .bind::<Array<Text>, _>(&track_ids)
-        .bind::<Array<Json>, _>(&errors)
-        .execute(conn)?;
-    assert_eq!(count, track_ids.len());
-
-    Ok(())
+    (errors, track_ids)
 }

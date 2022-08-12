@@ -418,11 +418,11 @@ impl InfraCache {
             .insert(obj_ref);
     }
 
-    fn load_track_section(&mut self, track: TrackCache) {
+    pub fn load_track_section(&mut self, track: TrackCache) {
         self.track_sections.insert(track.obj_id.clone(), track);
     }
 
-    fn load_signal(&mut self, signal: SignalCache) {
+    pub fn load_signal(&mut self, signal: SignalCache) {
         self.add_track_ref(
             signal.track.clone(),
             ObjectRef::new(ObjectType::Signal, signal.obj_id.clone()),
@@ -430,7 +430,7 @@ impl InfraCache {
         assert!(self.signals.insert(signal.obj_id.clone(), signal).is_none());
     }
 
-    fn load_speed_section(&mut self, speed: SpeedSection) {
+    pub fn load_speed_section(&mut self, speed: SpeedSection) {
         for track_range in speed.track_ranges.iter() {
             self.add_track_ref(
                 track_range.track.obj_id.clone(),
@@ -443,7 +443,7 @@ impl InfraCache {
             .is_none());
     }
 
-    fn load_route(&mut self, route: Route) {
+    pub fn load_route(&mut self, route: Route) {
         for path in route.path.iter() {
             self.add_track_ref(
                 path.track.obj_id.clone(),
@@ -453,7 +453,7 @@ impl InfraCache {
         assert!(self.routes.insert(route.id.clone(), route).is_none());
     }
 
-    fn load_operational_point(&mut self, op: OperationalPointCache) {
+    pub fn load_operational_point(&mut self, op: OperationalPointCache) {
         for part in op.parts.iter() {
             self.add_track_ref(
                 part.track.obj_id.clone(),
@@ -466,7 +466,7 @@ impl InfraCache {
             .is_none());
     }
 
-    fn load_track_section_link(&mut self, link: TrackSectionLink) {
+    pub fn load_track_section_link(&mut self, link: TrackSectionLink) {
         for endpoint in [&link.src, &link.dst] {
             self.add_track_ref(
                 endpoint.track.obj_id.clone(),
@@ -479,7 +479,7 @@ impl InfraCache {
             .is_none());
     }
 
-    fn load_switch(&mut self, switch: SwitchCache) {
+    pub fn load_switch(&mut self, switch: SwitchCache) {
         for port in switch.ports.iter() {
             self.add_track_ref(
                 port.1.track.obj_id.clone(),
@@ -492,14 +492,14 @@ impl InfraCache {
             .is_none());
     }
 
-    fn load_switch_type(&mut self, switch_type: SwitchType) {
+    pub fn load_switch_type(&mut self, switch_type: SwitchType) {
         assert!(self
             .switch_types
             .insert(switch_type.id.clone(), switch_type)
             .is_none());
     }
 
-    fn load_detector(&mut self, detector: DetectorCache) {
+    pub fn load_detector(&mut self, detector: DetectorCache) {
         self.add_track_ref(
             detector.track.clone(),
             ObjectRef::new(ObjectType::Detector, detector.obj_id.clone()),
@@ -510,7 +510,7 @@ impl InfraCache {
             .is_none());
     }
 
-    fn load_buffer_stop(&mut self, buffer_stop: BufferStopCache) {
+    pub fn load_buffer_stop(&mut self, buffer_stop: BufferStopCache) {
         self.add_track_ref(
             buffer_stop.track.clone(),
             ObjectRef::new(ObjectType::BufferStop, buffer_stop.obj_id.clone()),
@@ -806,15 +806,25 @@ pub mod tests {
     use std::collections::HashMap;
 
     use crate::infra_cache::{InfraCache, SwitchCache};
+    use crate::models::errors::graph::Graph;
     use crate::models::infra::tests::test_transaction;
+    use crate::models::BoundingBox;
     use crate::railjson::operation::create::tests::{
         create_buffer_stop, create_catenary, create_detector, create_link, create_op, create_route,
         create_signal, create_speed, create_switch, create_switch_type, create_track,
     };
     use crate::railjson::{
-        ApplicableDirections, Catenary, Endpoint, ObjectRef, ObjectType, OperationalPoint, Route,
-        SpeedSection, Switch, SwitchPortConnection, SwitchType, TrackEndpoint, TrackSectionLink,
+        ApplicableDirections, Catenary, Direction, DirectionalTrackRange, Endpoint, ObjectRef,
+        ObjectType, OperationalPoint, Route, SpeedSection, Switch, SwitchPortConnection,
+        SwitchType, TrackEndpoint, TrackSectionLink,
     };
+
+    use crate::models::errors::{
+        buffer_stops, detectors, operational_points, routes, signals, speed_sections, switch_types,
+        switches, track_section_links, track_sections,
+    };
+
+    use super::{BufferStopCache, DetectorCache, TrackCache};
 
     #[test]
     fn load_track_section() {
@@ -983,6 +993,15 @@ pub mod tests {
         })
     }
 
+    pub fn create_track_section_cache(obj_id: String, length: f64) -> TrackCache {
+        TrackCache {
+            obj_id,
+            length,
+            bbox_geo: BoundingBox::default(),
+            bbox_sch: BoundingBox::default(),
+        }
+    }
+
     pub fn create_track_endpoint<T: AsRef<str>>(endpoint: Endpoint, obj_id: T) -> TrackEndpoint {
         TrackEndpoint {
             endpoint,
@@ -993,13 +1012,65 @@ pub mod tests {
         }
     }
 
-    pub fn create_track_link_cache(
-        id: String,
+    pub fn create_detector_cache<T: AsRef<str>>(
+        obj_id: T,
+        track: T,
+        position: f64,
+    ) -> DetectorCache {
+        DetectorCache {
+            obj_id: obj_id.as_ref().into(),
+            track: track.as_ref().into(),
+            position,
+        }
+    }
+
+    pub fn create_buffer_stop_cache<T: AsRef<str>>(
+        obj_id: T,
+        track: T,
+        position: f64,
+    ) -> BufferStopCache {
+        BufferStopCache {
+            obj_id: obj_id.as_ref().into(),
+            track: track.as_ref().into(),
+            position,
+        }
+    }
+
+    pub fn create_route_cache<T: AsRef<str>>(
+        id: T,
+        entry_point: ObjectRef,
+        exit_point: ObjectRef,
+        release_detectors: Vec<ObjectRef>,
+        path_list: Vec<(T, f64, f64, Direction)>,
+    ) -> Route {
+        let mut path = vec![];
+        for (obj_id, begin, end, direction) in path_list {
+            path.push(DirectionalTrackRange {
+                track: ObjectRef {
+                    obj_type: ObjectType::TrackSection,
+                    obj_id: obj_id.as_ref().into(),
+                },
+                begin,
+                end,
+                direction,
+            });
+        }
+        Route {
+            id: id.as_ref().into(),
+            entry_point,
+            exit_point,
+            release_detectors,
+            path,
+        }
+    }
+
+    pub fn create_track_link_cache<T: AsRef<str>>(
+        id: T,
         src: TrackEndpoint,
         dst: TrackEndpoint,
     ) -> TrackSectionLink {
         TrackSectionLink {
-            id,
+            id: id.as_ref().into(),
             src,
             dst,
             navigability: ApplicableDirections::Both,
@@ -1047,28 +1118,89 @@ pub mod tests {
         }
     }
 
-    ///                    --------  C
-    ///                   /
-    ///  --------_--------
+    ///                    -------| C
+    ///              D1   /
+    /// |--------_---*---
     ///     A        B    \
-    ///                    --------  D
+    ///                    -------| D
+    ///
+    /// No speed section
+    /// No signal
+    /// No operational point
     ///
     pub fn create_small_infra_cache() -> InfraCache {
         let mut infra_cache = InfraCache::default();
 
+        for id in 'A'..='D' {
+            infra_cache.load_track_section(create_track_section_cache(id.into(), 500.))
+        }
+
+        infra_cache.load_detector(create_detector_cache("D1", "B", 250.));
+
+        infra_cache.load_buffer_stop(create_buffer_stop_cache("BF1", "A", 20.));
+        infra_cache.load_buffer_stop(create_buffer_stop_cache("BF2", "C", 480.));
+        infra_cache.load_buffer_stop(create_buffer_stop_cache("BF3", "D", 480.));
+
+        let r1_path = vec![
+            ("A", 20., 500., Direction::StartToStop),
+            ("B", 0., 250., Direction::StartToStop),
+        ];
+        infra_cache.load_route(create_route_cache(
+            "R1",
+            ObjectRef {
+                obj_type: ObjectType::BufferStop,
+                obj_id: "BF1".into(),
+            },
+            ObjectRef {
+                obj_type: ObjectType::Detector,
+                obj_id: "D1".into(),
+            },
+            vec![],
+            r1_path,
+        ));
+        let r2_path = vec![
+            ("B", 250., 500., Direction::StartToStop),
+            ("C", 0., 480., Direction::StartToStop),
+        ];
+        infra_cache.load_route(create_route_cache(
+            "R2",
+            ObjectRef {
+                obj_type: ObjectType::Detector,
+                obj_id: "D1".into(),
+            },
+            ObjectRef {
+                obj_type: ObjectType::BufferStop,
+                obj_id: "BF2".into(),
+            },
+            vec![],
+            r2_path,
+        ));
+        let r3_path = vec![
+            ("B", 250., 500., Direction::StartToStop),
+            ("D", 0., 480., Direction::StartToStop),
+        ];
+        infra_cache.load_route(create_route_cache(
+            "R3",
+            ObjectRef {
+                obj_type: ObjectType::Detector,
+                obj_id: "D1".into(),
+            },
+            ObjectRef {
+                obj_type: ObjectType::BufferStop,
+                obj_id: "BF3".into(),
+            },
+            vec![],
+            r3_path,
+        ));
+
         let link = create_track_link_cache(
-            "tracklink".into(),
+            "tracklink",
             create_track_endpoint(Endpoint::End, "A"),
             create_track_endpoint(Endpoint::Begin, "B"),
         );
+        infra_cache.load_track_section_link(link);
 
-        infra_cache
-            .track_section_links
-            .insert(link.id.clone(), link);
-
-        infra_cache
-            .switch_types
-            .insert("point".into(), create_switch_type_point());
+        infra_cache.load_switch_type(create_switch_type_point());
 
         let switch = create_switch_cache_point(
             "switch".into(),
@@ -1076,9 +1208,39 @@ pub mod tests {
             create_track_endpoint(Endpoint::Begin, "C"),
             create_track_endpoint(Endpoint::Begin, "D"),
         );
-
-        infra_cache.switches.insert(switch.obj_id.clone(), switch);
+        infra_cache.load_switch(switch);
 
         infra_cache
+    }
+
+    #[test]
+    fn small_infra_cache_validation() {
+        let small_infra_cache = create_small_infra_cache();
+
+        let graph = Graph::load(&small_infra_cache);
+
+        // Generate the errors
+        assert!(track_sections::generate_errors(&small_infra_cache, &graph)
+            .0
+            .is_empty());
+        assert!(signals::generate_errors(&small_infra_cache).0.is_empty());
+        assert!(speed_sections::generate_errors(&small_infra_cache)
+            .0
+            .is_empty());
+        assert!(track_section_links::generate_errors(&small_infra_cache)
+            .0
+            .is_empty());
+        assert!(switch_types::generate_errors(&small_infra_cache)
+            .0
+            .is_empty());
+        assert!(switches::generate_errors(&small_infra_cache).0.is_empty());
+        assert!(detectors::generate_errors(&small_infra_cache).0.is_empty());
+        assert!(buffer_stops::generate_errors(&small_infra_cache)
+            .0
+            .is_empty());
+        assert!(routes::generate_errors(&small_infra_cache).0.is_empty());
+        assert!(operational_points::generate_errors(&small_infra_cache)
+            .0
+            .is_empty());
     }
 }

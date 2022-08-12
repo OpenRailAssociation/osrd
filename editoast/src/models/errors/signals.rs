@@ -7,11 +7,24 @@ use crate::{infra_cache::InfraCache, railjson::ObjectRef};
 use diesel::result::Error as DieselError;
 use serde_json::to_value;
 
-pub fn generate_errors(
+pub fn insert_errors(
     conn: &PgConnection,
     infra_id: i32,
     infra_cache: &InfraCache,
 ) -> Result<(), DieselError> {
+    let (errors, signal_ids) = generate_errors(infra_cache);
+
+    let count = sql_query(include_str!("sql/signals_insert_errors.sql"))
+        .bind::<Integer, _>(infra_id)
+        .bind::<Array<Text>, _>(&signal_ids)
+        .bind::<Array<Json>, _>(&errors)
+        .execute(conn)?;
+    assert_eq!(count, signal_ids.len());
+
+    Ok(())
+}
+
+pub fn generate_errors(infra_cache: &InfraCache) -> (Vec<serde_json::Value>, Vec<String>) {
     let mut errors = vec![];
     let mut signal_ids = vec![];
 
@@ -38,12 +51,5 @@ pub fn generate_errors(
         }
     }
 
-    let count = sql_query(include_str!("sql/signals_insert_errors.sql"))
-        .bind::<Integer, _>(infra_id)
-        .bind::<Array<Text>, _>(&signal_ids)
-        .bind::<Array<Json>, _>(&errors)
-        .execute(conn)?;
-    assert_eq!(count, signal_ids.len());
-
-    Ok(())
+    (errors, signal_ids)
 }
