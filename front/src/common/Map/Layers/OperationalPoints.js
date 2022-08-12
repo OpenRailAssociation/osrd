@@ -41,7 +41,7 @@ export default function OperationalPoints(props) {
       'text-size': 12,
       'text-anchor': 'left',
       'text-justify': 'left',
-      'text-allow-overlap': true,
+      'text-allow-overlap': false,
       'text-ignore-placement': false,
       'text-offset': [0.75, 0.10],
       visibility: 'visible',
