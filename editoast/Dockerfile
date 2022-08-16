@@ -16,7 +16,7 @@ RUN cargo install --locked --path .
 FROM debian:buster-slim as runner
 
 RUN apt update -yqq
-RUN apt install -yqq --no-install-recommends libpq-dev curl
+RUN apt install -yqq --no-install-recommends libpq-dev curl ca-certificates
 RUN apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
   && rm -rf /var/lib/apt/lists/*
 
