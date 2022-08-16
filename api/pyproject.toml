@@ -7,22 +7,22 @@ authors = ["DGEX Solutions <contact@dgexsol.fr>"]
 [tool.poetry.dependencies]
 # base
 python = ">=3.8,<3.11"
-django = "4.0.6"
-numpy = "1.23.1"
+django = "4.1"
+numpy = "1.23.2"
 intervaltree = "3.1.0"
 psycopg2-binary = "2.9.3"
 djangorestframework = "3.13.1"
 djangorestframework-gis = "1.0"
 django-redis = "5.2.0"
-jsonschema = "4.7.2"
+jsonschema = "4.9.1"
 requests = "2.28.1"
 pillow = "^9"
-pydantic = "1.9.1"
+pydantic = "1.9.2"
 geojson-pydantic = "0.4.3"
 
 # production
 gunicorn = {version = "20.1.0", optional = true}
-sentry-sdk = {version = "1.8.0", optional = true}
+sentry-sdk = {version = "1.9.4", optional = true}
 uvloop = {version = "0.16.0", optional = true}
 httptools = {version = "0.4.0", optional = true}
 uvicorn = {version = "0.18.2", optional = true}
@@ -43,7 +43,7 @@ production = [
 django-debug-toolbar = "3.5.0"
 black = "22.6.0"
 isort = "5.10.1"
-pyproject-flake8 = "0.0.1a4"
+pyproject-flake8 = "0.0.1a5"
 django-cors-headers = "3.13.0"
 
 [tool.flake8]
