@@ -18,9 +18,9 @@ pub fn generate_errors(
 
     for track_id in infra_cache.track_sections.keys() {
         if let Some(e) = infra_cache.track_sections_refs.get(track_id) {
-            if e.iter()
-                .find(|obj_ref| obj_ref.obj_type == ObjectType::Route)
-                == None
+            if !e
+                .iter()
+                .any(|obj_ref| obj_ref.obj_type == ObjectType::Route)
             {
                 errors.push(to_value(InfraError::new_missing_route()).unwrap());
                 track_ids.push((*track_id).clone());
