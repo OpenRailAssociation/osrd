@@ -65,3 +65,44 @@ pub fn generate_errors(
     }
     (errors, track_ids)
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::{
+        infra_cache::tests::create_small_infra_cache,
+        models::errors::graph::Graph,
+        railjson::{ObjectRef, ObjectType},
+    };
+    use serde_json::to_value;
+
+    use super::generate_errors;
+    use super::InfraError;
+
+    #[test]
+    fn missing_route() {
+        let mut infra_cache = create_small_infra_cache();
+        let obj_ref = ObjectRef::new(ObjectType::Route, "R1".into());
+        infra_cache.apply_delete(&obj_ref);
+        let graph = Graph::load(&infra_cache);
+        let (errors, ids) = generate_errors(&infra_cache, &graph);
+        assert_eq!(1, errors.len());
+        assert_eq!(1, ids.len());
+        let infra_error = InfraError::new_missing_route();
+        assert_eq!(to_value(infra_error).unwrap(), errors[0]);
+        assert_eq!("A", ids[0]);
+    }
+
+    #[test]
+    fn missing_buffer_stop() {
+        let mut infra_cache = create_small_infra_cache();
+        let obj_ref = ObjectRef::new(ObjectType::BufferStop, "BF1".into());
+        infra_cache.apply_delete(&obj_ref);
+        let graph = Graph::load(&infra_cache);
+        let (errors, ids) = generate_errors(&infra_cache, &graph);
+        assert_eq!(1, errors.len());
+        assert_eq!(1, ids.len());
+        let infra_error = InfraError::new_no_buffer_stop("buffer_stop");
+        assert_eq!(to_value(infra_error).unwrap(), errors[0]);
+        assert_eq!("A", ids[0]);
+    }
+}
