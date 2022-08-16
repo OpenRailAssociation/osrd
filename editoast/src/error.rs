@@ -60,6 +60,17 @@ impl From<DieselError> for EditoastError {
     }
 }
 
+impl<T: ApiError> From<T> for EditoastError {
+    fn from(api_err: T) -> Self {
+        Self::create(
+            api_err.get_type(),
+            api_err.to_string(),
+            api_err.get_status(),
+            api_err.extra(),
+        )
+    }
+}
+
 impl From<Box<dyn ApiError>> for EditoastError {
     fn from(api_err: Box<dyn ApiError>) -> Self {
         Self::create(

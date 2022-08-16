@@ -171,6 +171,35 @@ paths:
                     items:
                       $ref: "#/components/schemas/InfraError"
 
+  /infra/{id}/switch_types/:
+    get:
+      tags:
+        - infra
+      summary: Retrieve a list of switch types
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: infra id
+          required: true
+      responses:
+        200:
+          description: A list of switch types
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  description: A switch type following Railjson spec
+                  example:
+                    id: Point
+                    ports: [LEFT, RIGHT, BASE]
+                    groups:
+                      LEFT: { src: BASE, dst: LEFT, bidirectional: true }
+                      RIGHT: { src: BASE, dst: RIGHT, bidirectional: true }
+
   /infra/refresh/:
     post:
       tags:
