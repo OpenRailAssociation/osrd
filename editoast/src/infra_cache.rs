@@ -641,7 +641,7 @@ impl InfraCache {
     }
 
     /// Apply delete operation to the infra cache
-    fn apply_delete(&mut self, object_ref: &ObjectRef) {
+    pub fn apply_delete(&mut self, object_ref: &ObjectRef) {
         match object_ref {
             ObjectRef {
                 obj_type: ObjectType::Signal,
@@ -1025,6 +1025,18 @@ pub mod tests {
     }
 
     pub fn create_buffer_stop_cache<T: AsRef<str>>(
+        obj_id: T,
+        track: T,
+        position: f64,
+    ) -> BufferStopCache {
+        BufferStopCache {
+            obj_id: obj_id.as_ref().into(),
+            track: track.as_ref().into(),
+            position,
+        }
+    }
+
+    pub fn create_operational_point_cache<T: AsRef<str>>(
         obj_id: T,
         track: T,
         position: f64,
