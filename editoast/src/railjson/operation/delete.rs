@@ -5,9 +5,9 @@ use crate::railjson::ObjectType;
 use diesel::sql_types::{Integer, Text};
 use diesel::RunQueryDsl;
 use diesel::{sql_query, PgConnection};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 /// A delete operation. Contains same information as a object ref but has another serialization.
 pub struct DeleteOperation {

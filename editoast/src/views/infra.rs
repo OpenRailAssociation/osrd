@@ -5,8 +5,9 @@ use crate::generate;
 use crate::infra_cache::InfraCache;
 use crate::models::errors::generate_errors;
 use crate::models::infra_errors::get_paginated_infra_errors;
-use crate::models::{CreateInfra, DBConnection, Infra, InvalidationZone};
+use crate::models::{CreateInfra, DBConnection, Infra, InfraError, InvalidationZone};
 use crate::railjson::operation::{Operation, OperationResult};
+use crate::railjson::SwitchType;
 use chashmap::CHashMap;
 use rocket::http::Status;
 use rocket::response::status::Custom;
@@ -14,7 +15,16 @@ use rocket::{routes, Route, State};
 use rocket_contrib::json::{Json, JsonError, JsonValue};
 
 pub fn routes() -> Vec<Route> {
-    routes![list, get, edit, create, delete, refresh, list_errors]
+    routes![
+        list,
+        get,
+        edit,
+        create,
+        delete,
+        refresh,
+        list_errors,
+        get_switch_types
+    ]
 }
 
 /// Refresh infra generated data
@@ -181,16 +191,36 @@ fn list_errors(
     ))
 }
 
+/// Return the railjson list of switch types
+#[get("/<infra>/switch_types")]
+fn get_switch_types(
+    infra: i32,
+    infra_caches: State<CHashMap<i32, InfraCache>>,
+) -> ApiResult<Custom<Json<Vec<SwitchType>>>> {
+    let infra = match infra_caches.get(&infra) {
+        Some(infra) => infra,
+        None => return Err(InfraError::NotFound(infra).into()),
+    };
+
+    Ok(Custom(
+        Status::Ok,
+        Json(infra.switch_types.values().cloned().collect()),
+    ))
+}
+
 #[cfg(test)]
 mod tests {
     use crate::create_server;
+    use crate::infra_cache::tests::create_switch_type_point;
     use crate::models::Infra;
+    use crate::railjson::operation::{Operation, RailjsonObject};
+    use crate::railjson::SwitchType;
     use rocket::http::{ContentType, Status};
     use rocket::local::Client;
     use serde::Deserialize;
 
     #[test]
-    fn infras_list() {
+    fn infra_list() {
         let rocket = create_server(
             Default::default(),
             6000,
@@ -204,7 +234,7 @@ mod tests {
     }
 
     #[test]
-    fn infras_create_delete() {
+    fn infra_create_delete() {
         let rocket = create_server(
             Default::default(),
             6000,
@@ -233,7 +263,7 @@ mod tests {
     }
 
     #[test]
-    fn infras_get() {
+    fn infra_get() {
         let rocket = create_server(
             Default::default(),
             6000,
@@ -271,7 +301,7 @@ mod tests {
     }
 
     #[test]
-    fn infras_refresh() {
+    fn infra_refresh() {
         let rocket = create_server(
             Default::default(),
             6000,
@@ -311,7 +341,7 @@ mod tests {
     }
 
     #[test]
-    fn infras_refresh_force() {
+    fn infra_refresh_force() {
         let rocket = create_server(
             Default::default(),
             6000,
@@ -345,6 +375,57 @@ mod tests {
         let refresh: InfraRefreshedResponse =
             serde_json::from_str(body_refresh.unwrap().as_str()).unwrap();
         assert!(refresh.infra_refreshed.contains(&infra.id));
+
+        let delete_infra = client.delete(format!("/infra/{}", infra.id)).dispatch();
+        assert_eq!(delete_infra.status(), Status::NoContent);
+    }
+
+    #[test]
+    fn infra_get_switch_types() {
+        let rocket = create_server(
+            Default::default(),
+            6000,
+            &Default::default(),
+            Default::default(),
+        );
+
+        let client = Client::new(rocket).expect("valid rocket instance");
+
+        let mut create_infra = client
+            .post("/infra")
+            .header(ContentType::JSON)
+            .body(r#"{"name":"get_switch_types"}"#)
+            .dispatch();
+
+        assert_eq!(create_infra.status(), Status::Created);
+
+        let body_infra = create_infra.body_string();
+        assert!(body_infra.is_some());
+        let infra: Infra = serde_json::from_str(body_infra.unwrap().as_str()).unwrap();
+
+        let switch_type = create_switch_type_point();
+        let operation = Operation::Create(Box::new(RailjsonObject::SwitchType {
+            railjson: switch_type.clone(),
+        }));
+
+        let create_switch_type = client
+            .post(format!("/infra/{}/", infra.id))
+            .header(ContentType::JSON)
+            .body(serde_json::to_string(&vec![operation]).unwrap())
+            .dispatch();
+        assert_eq!(create_switch_type.status(), Status::Ok);
+
+        let mut get_switch_types = client
+            .get(format!("/infra/{}/switch_types/", infra.id))
+            .dispatch();
+        assert_eq!(get_switch_types.status(), Status::Ok);
+        let body_switch_types = get_switch_types.body_string();
+        assert!(body_switch_types.is_some());
+
+        let switch_types: Vec<SwitchType> =
+            serde_json::from_str(body_switch_types.unwrap().as_str()).unwrap();
+        assert!(switch_types.len() == 1);
+        assert_eq!(switch_types[0].id, switch_type.id);
 
         let delete_infra = client.delete(format!("/infra/{}", infra.id)).dispatch();
         assert_eq!(delete_infra.status(), Status::NoContent);
