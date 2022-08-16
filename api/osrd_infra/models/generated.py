@@ -3,7 +3,7 @@ from django.contrib.gis.db import models
 
 from osrd_infra.schemas.generated import InfraError
 from osrd_infra.schemas.infra import ALL_OBJECT_TYPES
-from osrd_infra.utils import JSONSchemaValidator
+from osrd_infra.utils import PydanticValidator
 
 
 class ErrorLayer(models.Model):
@@ -13,7 +13,7 @@ class ErrorLayer(models.Model):
     obj_id = models.CharField(max_length=255)
     geographic = models.GeometryField(srid=settings.MAPBOX_SRID, null=True)
     schematic = models.GeometryField(srid=settings.MAPBOX_SRID, null=True)
-    information = models.JSONField(validators=[JSONSchemaValidator(limit_value=InfraError.schema())])
+    information = models.JSONField(validators=[PydanticValidator(InfraError)])
 
     class Meta:
         verbose_name_plural = "generated errors"

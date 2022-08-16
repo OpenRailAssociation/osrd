@@ -12,7 +12,7 @@ from osrd_infra.schemas.rolling_stock import (
     RollingResistance,
 )
 from osrd_infra.schemas.rolling_stock import RollingStock as RollingStockSchema
-from osrd_infra.utils import JSONSchemaValidator
+from osrd_infra.utils import PydanticValidator
 
 
 class RollingStock(models.Model):
@@ -24,7 +24,7 @@ class RollingStock(models.Model):
     )
     effort_curve = models.JSONField(
         help_text=_("A curve mapping speed (in m/s) to maximum traction (in newtons)"),
-        validators=[JSONSchemaValidator(limit_value=EffortCurve.schema())],
+        validators=[PydanticValidator(EffortCurve)],
     )
     length = models.FloatField(
         help_text=_("The length of the train, in meters"),
@@ -42,7 +42,7 @@ class RollingStock(models.Model):
         help_text=_("The maximum operational acceleration, in m/s^2"),
     )
     gamma = models.JSONField(
-        validators=[JSONSchemaValidator(limit_value=Gamma.schema())],
+        validators=[PydanticValidator(Gamma)],
         help_text=_("The const or max braking coefficient, for timetabling purposes, in m/s^2"),
     )
     inertia_coefficient = models.FloatField(
@@ -59,7 +59,7 @@ class RollingStock(models.Model):
     mass = models.FloatField(help_text=_("The mass of the train, in kilograms"))
     rolling_resistance = models.JSONField(
         help_text=_("The formula to use to compute rolling resistance"),
-        validators=[JSONSchemaValidator(limit_value=RollingResistance.schema())],
+        validators=[PydanticValidator(RollingResistance)],
     )
     loading_gauge = models.CharField(max_length=16, choices=[(x.value, x.name) for x in LoadingGaugeType])
     image = models.ImageField(null=True, blank=True)

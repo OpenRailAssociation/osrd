@@ -3,16 +3,16 @@ from django.contrib.gis.db import models
 
 from osrd_infra.models import Infra
 from osrd_infra.schemas.path import Curves, PathPayload, Slopes
-from osrd_infra.utils import JSONSchemaValidator
+from osrd_infra.utils import PydanticValidator
 
 
 class PathModel(models.Model):
     owner = models.UUIDField(editable=False, default="00000000-0000-0000-0000-000000000000")
     infra = models.ForeignKey(Infra, on_delete=models.CASCADE)
     created = models.DateTimeField(editable=False, auto_now_add=True)
-    payload = models.JSONField(validators=[JSONSchemaValidator(limit_value=PathPayload.schema())])
-    slopes = models.JSONField(validators=[JSONSchemaValidator(limit_value=Slopes.schema())])
-    curves = models.JSONField(validators=[JSONSchemaValidator(limit_value=Curves.schema())])
+    payload = models.JSONField(validators=[PydanticValidator(PathPayload)])
+    slopes = models.JSONField(validators=[PydanticValidator(Slopes)])
+    curves = models.JSONField(validators=[PydanticValidator(Curves)])
     geographic = models.LineStringField(srid=settings.RAILJSON_SRID)
     schematic = models.LineStringField(srid=settings.RAILJSON_SRID)
 
