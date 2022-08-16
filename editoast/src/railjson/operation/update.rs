@@ -5,10 +5,10 @@ use crate::railjson::ObjectType;
 use diesel::sql_types::{Integer, Json, Jsonb, Text};
 use diesel::{sql_query, PgConnection, QueryableByName, RunQueryDsl};
 use json_patch::Patch;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::{from_value, Value};
 
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct UpdateOperation {
     pub obj_id: String,

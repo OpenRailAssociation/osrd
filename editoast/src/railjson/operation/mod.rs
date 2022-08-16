@@ -16,7 +16,7 @@ pub use self::delete::DeleteOperation;
 pub use create::RailjsonObject;
 pub use update::UpdateOperation;
 
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(tag = "operation_type", deny_unknown_fields)]
 pub enum Operation {
     #[serde(rename = "CREATE")]
