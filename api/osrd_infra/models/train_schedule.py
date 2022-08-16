@@ -2,7 +2,7 @@ from django.contrib.gis.db import models
 
 from osrd_infra.models import PathModel, RollingStock, Timetable
 from osrd_infra.schemas.train_schedule import MRPS, Allowances, TrainScheduleLabels
-from osrd_infra.utils import JSONSchemaValidator
+from osrd_infra.utils import PydanticValidator
 
 
 class TrainScheduleModel(models.Model):
@@ -12,8 +12,8 @@ class TrainScheduleModel(models.Model):
     departure_time = models.FloatField()
     path = models.ForeignKey(PathModel, on_delete=models.CASCADE)
     initial_speed = models.FloatField()
-    labels = models.JSONField(default=[], validators=[JSONSchemaValidator(limit_value=TrainScheduleLabels.schema())])
-    allowances = models.JSONField(default=[], validators=[JSONSchemaValidator(limit_value=Allowances.schema())])
-    mrsp = models.JSONField(validators=[JSONSchemaValidator(limit_value=MRPS.schema())])
+    labels = models.JSONField(default=[], validators=[PydanticValidator(TrainScheduleLabels)])
+    allowances = models.JSONField(default=[], validators=[PydanticValidator(Allowances)])
+    mrsp = models.JSONField(validators=[PydanticValidator(MRPS)])
     base_simulation = models.JSONField()
     eco_simulation = models.JSONField(null=True)

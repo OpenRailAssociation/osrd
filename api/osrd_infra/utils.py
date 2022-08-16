@@ -1,18 +1,26 @@
 from dataclasses import dataclass, field
 from time import perf_counter
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
-import jsonschema
 from django.core.validators import BaseValidator
+from pydantic import BaseModel
+from pydantic import ValidationError as PydanticValidationError
 from rest_framework.exceptions import ValidationError
 
 
-class JSONSchemaValidator(BaseValidator):
-    def compare(self, data, schema):
+class PydanticValidator(BaseValidator):
+    def __init__(self, pydantic_class: BaseModel):
+        self.pydantic_class = pydantic_class
+        super().__init__(limit_value=self._get_pydantic_class)
+
+    def _get_pydantic_class(self):
+        return self.pydantic_class
+
+    def compare(self, data: Dict, schema: BaseModel):
         try:
-            jsonschema.validate(data, schema)
-        except jsonschema.exceptions.ValidationError as e:
-            raise ValidationError(e.message, code="invalid")
+            schema.validate(data)
+        except PydanticValidationError as e:
+            raise ValidationError(str(e), code="invalid")
 
 
 @dataclass
