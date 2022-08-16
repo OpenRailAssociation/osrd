@@ -11,11 +11,11 @@ import fr.sncf.osrd.reporting.ErrorContext;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra_state.api.TrainPath;
-import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
 import fr.sncf.osrd.standalone_sim.result.ResultEnvelopePoint;
 import fr.sncf.osrd.standalone_sim.result.ResultTrain;
 import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -69,7 +69,21 @@ public class StandaloneSim {
             result.baseSimulations.add(cacheMaxEffort.get(trainSchedule));
             result.ecoSimulations.add(cacheEco.getOrDefault(trainSchedule, null));
         }
+        validate(trainsPath, result);
         return result;
+    }
+
+    /** Run some assertions to check the validity of the result */
+    private static void validate(TrainPath trainsPath, StandaloneSimResult result) {
+        var simulations = new ArrayList<ResultTrain>();
+        simulations.addAll(result.baseSimulations);
+        simulations.addAll(result.ecoSimulations);
+        for (var route : trainsPath.routePath()) {
+            System.out.println(route.element().getInfraRoute().getID());
+            for (var sim : simulations)
+                if (sim != null)
+                    assert sim.routeOccupancies.containsKey(route.element().getInfraRoute().getID());
+        }
     }
 
     private static Envelope computeMaxEffortEnvelope(
