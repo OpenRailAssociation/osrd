@@ -2,7 +2,6 @@ package fr.sncf.osrd.envelope.part;
 
 import static fr.sncf.osrd.envelope.EnvelopePhysics.intersectStepWithSpeed;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.EnvelopeAttr;
 import fr.sncf.osrd.envelope.EnvelopePhysics;
 import fr.sncf.osrd.envelope.SearchableEnvelope;
@@ -63,7 +62,6 @@ public final class EnvelopePart implements SearchableEnvelope {
     // region CONSTRUCTORS
 
     /** Creates an EnvelopePart */
-    @SuppressFBWarnings({"EI_EXPOSE_REP2"})
     @ExcludeFromGeneratedCodeCoverage
     public EnvelopePart(
             Map<Class<? extends EnvelopeAttr>, EnvelopeAttr> attrs,
@@ -90,7 +88,6 @@ public final class EnvelopePart implements SearchableEnvelope {
     }
 
     /** Creates an EnvelopePart */
-    @SuppressFBWarnings({"EI_EXPOSE_REP2"})
     @ExcludeFromGeneratedCodeCoverage
     public EnvelopePart(
             Iterable<EnvelopeAttr> attrs,

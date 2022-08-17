@@ -24,8 +24,23 @@ public class RollingStock implements PhysicsRollingStock {
      * the maximum possible deceleration value */
     public final RollingStock.GammaType gammaType;
 
-    /** the deceleration of the train, in m/s^2 */
+    /** the deceleration of the train, in m/s² */
     public final double gamma;
+
+    /** A_brake_emergency: the emergency braking decelerations for ERTMS ETCS 2, in m/s² */
+    public final double[] gammaBrakeEmergency;
+
+    /** A_brake_service: the service braking decelerations for ERTMS ETCS 2, in m/s² */
+    public final double[] gammaBrakeService;
+
+    /** A_brake_normal_service: the service braking decelerations used to compute guidance curve in ETCS 2, in m/s² */
+    public final double[] gammaBrakeNormalService;
+
+    /** Kdry_rst: the rolling stock deceleration correction factors for dry rails, used in ETCS 2 */
+    public final double[] kDry;
+
+    /** Kwet_rst: the rolling stock deceleration correction factors for wet rails, used in ETCS 2 */
+    public final double[] kWet;
 
     /** the length of the train, in meters. */
     public final double length;
@@ -103,11 +118,6 @@ public class RollingStock implements PhysicsRollingStock {
     public double getRollingResistanceDeriv(double speed) {
         speed = Math.abs(speed);
         return B + 2 * C * speed;
-    }
-
-    @Override
-    public double getRollingResistanceSecDeriv(double speed) {
-        return 2 * C;
     }
 
     @Override
@@ -190,6 +200,57 @@ public class RollingStock implements PhysicsRollingStock {
         this.comfortAcceleration = comfortAcceleration;
         this.gamma = gamma;
         this.gammaType = gammaType;
+        this.gammaBrakeEmergency = null;
+        this.gammaBrakeService = null;
+        this.gammaBrakeNormalService = null;
+        this.kDry = null;
+        this.kWet = null;
+        this.mass = mass;
+        this.inertiaCoefficient = inertiaCoefficient;
+        this.tractiveEffortCurve = tractiveEffortCurve;
+        this.inertia = mass * inertiaCoefficient;
+        this.loadingGaugeType = loadingGaugeType;
+    }
+
+    /** Creates a new rolling stock adapted to ERTMS ETCS 2. */
+    public RollingStock(
+            String id,
+            double length,
+            double mass,
+            double inertiaCoefficient,
+            double a,
+            double b,
+            double c,
+            double maxSpeed,
+            double startUpTime,
+            double startUpAcceleration,
+            double comfortAcceleration,
+            double gamma,
+            GammaType gammaType,
+            double[] gammaBrakeEmergency,
+            double[] gammaBrakeService,
+            double[] gammaBrakeNormalService,
+            double[] kDry,
+            double[] kWet,
+            TractiveEffortPoint[] tractiveEffortCurve,
+            RJSLoadingGaugeType loadingGaugeType
+    ) {
+        this.id = id;
+        this.A = a;
+        this.B = b;
+        this.C = c;
+        this.length = length;
+        this.maxSpeed = maxSpeed;
+        this.startUpTime = startUpTime;
+        this.startUpAcceleration = startUpAcceleration;
+        this.comfortAcceleration = comfortAcceleration;
+        this.gamma = gamma;
+        this.gammaType = gammaType;
+        this.gammaBrakeEmergency = gammaBrakeEmergency;
+        this.gammaBrakeService = gammaBrakeService;
+        this.gammaBrakeNormalService = gammaBrakeNormalService;
+        this.kDry = kDry;
+        this.kWet = kWet;
         this.mass = mass;
         this.inertiaCoefficient = inertiaCoefficient;
         this.tractiveEffortCurve = tractiveEffortCurve;
