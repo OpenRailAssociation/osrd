@@ -52,10 +52,16 @@ public class PathSimulator {
             var curRealisticPath = new ArrayList<BlockUse>();
             realisticPaths.add(curRealisticPath);
 
-            for (int i = 0; i < curPath.size() - 2; i++) {
-                var currentB = curPath.get(i);
-                var nextB = curPath.get(i + 1);
-                var nextB2 = curPath.get(i + 2);
+            for (int i = 0; i < curPath.size(); i++) {
+                final var currentB = curPath.get(i);
+                BlockUse nextB = null;
+                BlockUse nextB2 = null;
+
+                if (i < curPath.size() - 1)
+                    nextB = curPath.get(i + 1);
+
+                if (i < curPath.size() - 2)
+                    nextB2 = curPath.get(i + 2);
 
                 if (i == 0)
                     Tsr = Ts;
@@ -76,12 +82,14 @@ public class PathSimulator {
                 // starting occupation time in the next block
                 double Tsrn = Tsn + dtv_n;
                 // next block speed
-                double speed_n = calculated_speed(nextB, nextB2, Tsrn, Vc, config); // over speed estimation!!!!
-                // next block occupation time
-                double dtr_n = T_red(nextB, Lt, speed_n) + T_length(Lt, speed);
-                // current block free time allocation
-                double dtj = dtr_n;
-
+                double dtj = 0;
+                if (nextB != null) {
+                    double speed_n = calculated_speed(nextB, nextB2, Tsrn, Vc, config); // over speed estimation!!!!
+                    // next block occupation time
+                    double dtr_n = T_red(nextB, Lt, speed_n) + T_length(Lt, speed);
+                    // current block free time allocation
+                    dtj = dtr_n;
+                }
                 // current block final allocation time
                 if (i == 0)
                     Tf = Ts + dtv + dtr + dtj;
@@ -116,7 +124,7 @@ public class PathSimulator {
     public static double calculated_speed(BlockUse current, BlockUse next, double Ts, double Vmat, STDCMConfig config) {
         double V = 0;
 
-        if (next.reservationStartTime > Ts) {
+        if (next != null && next.reservationStartTime > Ts) {
             V = (current.getLength() - config.safetyDistance) / (next.reservationStartTime - Ts);
         } else {
             return max_speed(current, Vmat);
