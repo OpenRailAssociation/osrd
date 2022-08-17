@@ -10,14 +10,10 @@ public final class STDCMConfig {
     public final RollingStock rollingStock;
     public final double startTime;
     public final double endTime;
-    public final double maxTime;
     public final double safetyDistance;
 
     public final Set<SignalingRoute> startSignalingRoutes;
-    public final Signal<?> startBlockEntrySig;
-    public final Signal<?> startBlockExitSig;
-    public final Signal<?> endBlockEntrySig;
-    public final Signal<?> endBlockExitSig;
+    public final Set<SignalingRoute> endSignalingRoutes;
 
 
     // TODO: figure out where this stuff should go
@@ -31,19 +27,15 @@ public final class STDCMConfig {
             RollingStock rollingStock,
             double startTime,
             double endTime,
-            double maxTime, double safetyDistance,
-            Set<SignalingRoute> startSignalingRoutes, Signal<?> startBlockEntrySig, Signal<?> startBlockExitSig,
-            Signal<?> endBlockEntrySig, Signal<?> endBlockExitSig
+            double safetyDistance,
+            Set<SignalingRoute> startSignalingRoutes,
+            Set<SignalingRoute> endSignalingRoutes
     ) {
         this.rollingStock = rollingStock;
         this.startTime = startTime;
         this.endTime = endTime;
-        this.maxTime = maxTime;
         this.safetyDistance = safetyDistance;
         this.startSignalingRoutes = startSignalingRoutes;
-        this.startBlockEntrySig = startBlockEntrySig;
-        this.startBlockExitSig = startBlockExitSig;
-        this.endBlockEntrySig = endBlockEntrySig;
-        this.endBlockExitSig = endBlockExitSig;
+        this.endSignalingRoutes = endSignalingRoutes;
     }
 }

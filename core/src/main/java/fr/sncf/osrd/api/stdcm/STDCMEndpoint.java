@@ -7,6 +7,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.api.ExceptionHandler;
 import fr.sncf.osrd.api.InfraManager;
 import fr.sncf.osrd.api.pathfinding.PathfindingResultConverter;
+import fr.sncf.osrd.api.pathfinding.PathfindingRoutesEndpoint;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.api.pathfinding.response.PathfindingResult;
 import fr.sncf.osrd.infra.api.Direction;
@@ -30,6 +31,8 @@ import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.graph.Pathfinding.EdgeLocation;
 import fr.sncf.osrd.utils.graph.Pathfinding.EdgeRange;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;
@@ -40,11 +43,14 @@ import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
 
 public class STDCMEndpoint implements Take {
+    static final Logger logger = LoggerFactory.getLogger(STDCMEndpoint.class);
+
     private final InfraManager infraManager;
 
     public static final JsonAdapter<STDCMRequest> adapterRequest = new Moshi
@@ -142,16 +148,27 @@ public class STDCMEndpoint implements Take {
             var startLocations = findRoutes(infra, request.startPoints);
             var endLocations = findRoutes(infra, request.endPoints);
 
-            // TODO: the current stdcm algorithm only works from a single start / end route, but the exposed API
-            //   can take multiple start / end track locations, which all can yield multiple routes. That's not good.
-            var startLocation = startLocations.get(0);
-            var endLocation = endLocations.get(0);
+            var waypoints = new PathfindingWaypoint[][] {
+                    request.startPoints.toArray(new PathfindingWaypoint[0]),
+                    request.endPoints.toArray(new PathfindingWaypoint[0]),
+            };
+            var expectedPath = PathfindingRoutesEndpoint.runPathfinding(infra, waypoints, List.of(rollingStock));
+            for (var route : expectedPath.ranges())
+                logger.info("{}", route.edge().getInfraRoute().getID());
 
             // Compute STDCM
-            var stdcmPath = STDCM.run(infra, rollingStock, startTime, endTime, startLocation, endLocation, occupancy);
-            var osrdPath = new Pathfinding.Result<>(convertResultPath(stdcmPath, startLocation, endLocation), List.of()); // FIXME
+            var stdcmPath = STDCM.run(expectedPath, infra, rollingStock, startTime, endTime, startLocations, endLocations, occupancy);
+            // find which start / end location were used
+            var startLocMap = new HashMap<SignalingRoute, EdgeLocation<SignalingRoute>>();
+            for (var loc : startLocations)
+                startLocMap.put(loc.edge(), loc);
+            var endLocMap = new HashMap<SignalingRoute, EdgeLocation<SignalingRoute>>();
+            for (var loc : endLocations)
+                endLocMap.put(loc.edge(), loc);
+            var startLocation = startLocMap.get(stdcmPath.get(0).block.route);
+            var endLocation = endLocMap.get(stdcmPath.get(stdcmPath.size() - 1).block.route);
+            var osrdPath = new Pathfinding.Result<>(convertResultPath(stdcmPath, startLocation, endLocation), List.of());
             var pathfindingRes = PathfindingResultConverter.convert(osrdPath, infra, new WarningRecorderImpl(false));
-
             var trainSchedule = new StandaloneTrainSchedule(rollingStock, 0., List.of(), List.of(), List.of());
             var signalingRoutePath = stdcmPath.stream().map(blockUse -> blockUse.block.route).collect(Collectors.toList());
             var trainPath = TrainPathBuilder.from(signalingRoutePath, routeToTrackLocation(startLocation), routeToTrackLocation(endLocation));

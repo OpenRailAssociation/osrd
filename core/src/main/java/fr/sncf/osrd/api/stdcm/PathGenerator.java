@@ -18,7 +18,7 @@ public class PathGenerator {
         double Ds = 400; // Safety distance 400m
 
         // TODO: get it from the infra graph
-        double Vc = (float) 160 / 3600; // Vitesse max canton
+        double Vc = (float) 160 / 3.6; // Vitesse max canton
 
         for (var curBlock : freeBlockUses) {
             var nextBlocks = new ArrayList<BlockUse>();
@@ -29,7 +29,8 @@ public class PathGenerator {
                 //  - blockB does not loop back to the start of blockA
                 // TODO: cleanup this comment
                 // || (blockB.getExitSig() != null && blockB.getExitSig() == blockA.getEntrySig())
-                if (curBlock.getExitSig() == null || curBlock.getExitSig() != nextBlock.getEntrySig())
+                if (!curBlock.block.route.getInfraRoute().getExitDetector().equals(
+                        nextBlock.block.route.getInfraRoute().getEntryDetector()))
                     continue;
 
                 double Tv = Ds / Vc;
@@ -89,18 +90,16 @@ public class PathGenerator {
                 double dt = 400 / Vc + Lt / Vc;
                 for (int tes = 0; tes < curPath.size(); tes++) {
                     if (tes == curPath.size() - 1) {
-                        dt = dt + curPath.get(tes).getLength() / Vc + 1500 / Vc;
+                        dt += curPath.get(tes).getLength() / Vc + 1500 / Vc;
                     } else {
-                        dt = dt + curPath.get(tes).getLength() / Vc;
+                        dt += curPath.get(tes).getLength() / Vc;
                     }
                 }
 
                 var curPathStart = curPath.get(0);
                 var curPathEnd = curPath.get(curPath.size() - 1);
-                if (curPathEnd.reservationEndTime - curPathStart.reservationStartTime >= dt
-                        && curPathEnd.reservationEndTime - curPathStart.reservationStartTime < config.maxTime) {
+                if (curPathEnd.reservationEndTime - curPathStart.reservationStartTime >= dt)
                     newCapLevel.add(new ArrayList<>(curPath));
-                }
             }
         }
 
@@ -108,16 +107,11 @@ public class PathGenerator {
         residualCapacity.addAll(newResCap);
 
         var paths = new ArrayList<List<BlockUse>>();
-        int pat = 0;
-        for (var arrayLists : residualCapacity) {
-            for (var arrayList : arrayLists) {
-                if (!arrayList.isEmpty()) {
-                    paths.add(new ArrayList<>());
-                    paths.get(pat).addAll(arrayList);
-                    pat++;
-                }
+        for (var level : residualCapacity)
+            for (var path : level) {
+                assert !path.isEmpty();
+                paths.add(path);
             }
-        }
         return paths;
     }
 }

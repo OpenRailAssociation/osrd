@@ -10,43 +10,52 @@ public class PathSimulator {
             ArrayList<List<BlockUse>> paths
     ) {
         double Lt = 600; // Longueur train
-        double Vc = (float) 160 / 3600; // Vitesse max canton
+        double Vc = (float) 160 / 3.6; // Vitesse max canton
         double startTime = config.startTime;
 
-        var UPaths = new ArrayList<List<BlockUse>>();
-        for (var path : paths) {
-            if (path.get(path.size() - 1).getEntrySig().equals(config.endBlockEntrySig)
-                    && path.get(path.size() - 1).getExitSig().equals(config.endBlockExitSig)
-                    && path.get(0).getEntrySig().equals(config.startBlockEntrySig)
-                    && path.get(0).getExitSig().equals(config.startBlockExitSig)) {
+        {
+            var filteredPaths = new ArrayList<List<BlockUse>>();
+            for (var path : paths) {
+                var pathLastBlock = path.get(path.size() - 1);
+                if (!config.endSignalingRoutes.contains(pathLastBlock.block.route))
+                    continue;
+
+                // skip paths which start being free after the train starts
+                if (path.get(0).reservationStartTime >= startTime)
+                    continue;
+
+                // skip paths which stop being free before the train starts
+                if (path.get(0).reservationEndTime < startTime)
+                    continue;
+
                 // if we want to switch to not early, do this instead
                 // dateFormat.parse(path.get(path.size() - 1).getTf()).getTime() >= dateFormat.parse(endTime).getTime() && dateFormat.parse(path.get(path.size() - 1).getT()).getTime() < dateFormat.parse(endTime).getTime()) {
-                if (path.get(0).reservationEndTime >= startTime && path.get(0).reservationStartTime < startTime)
-                    UPaths.add(path);
+                filteredPaths.add(path);
             }
+            paths = filteredPaths;
         }
 
-        var SOL2 = new ArrayList<List<BlockUse>>();
+        var realisticPaths = new ArrayList<List<BlockUse>>();
 
         double starting = startTime;
 
         double Tf = 0;
         double Tsr = 0;
 
-        for (int zz = 0; zz < UPaths.size(); zz++) {
-            var curPath = UPaths.get(zz);
+        for (var curPath : paths) {
             double Ts = starting;
             double dtv = 0;
             double pre_speed = 0;
 
             Ts = Math.max(Ts, curPath.get(0).reservationStartTime);
 
-            SOL2.add(new ArrayList<>());
+            var curRealisticPath = new ArrayList<BlockUse>();
+            realisticPaths.add(curRealisticPath);
 
             for (int i = 0; i < curPath.size() - 2; i++) {
-                BlockUse currentB = curPath.get(i);
-                BlockUse nextB = curPath.get(i + 1);
-                BlockUse nextB2 = curPath.get(i + 2);
+                var currentB = curPath.get(i);
+                var nextB = curPath.get(i + 1);
+                var nextB2 = curPath.get(i + 2);
 
                 if (i == 0)
                     Tsr = Ts;
@@ -80,11 +89,11 @@ public class PathSimulator {
                     Tf = Tf + dtj;
 
                 if (Tf > currentB.reservationEndTime) {
-                    SOL2.get(zz).clear();
+                    curRealisticPath.clear();
                     break;
                 }
 
-                SOL2.get(zz).add(new BlockUse(currentB.block, Ts, Tf));
+                curRealisticPath.add(new BlockUse(currentB.block, Ts, Tf));
 
                 Ts = Tsn;
 
@@ -94,8 +103,8 @@ public class PathSimulator {
             }
         }
 
-        SOL2.removeIf(item -> item.size() == 0);
-        return SOL2;
+        realisticPaths.removeIf(item -> item.size() == 0);
+        return realisticPaths;
     }
 
     public static double max_speed(BlockUse current, double Vmat) {

@@ -4,16 +4,22 @@ import fr.sncf.osrd.api.stdcm.STDCMEndpoint.RouteOccupancy;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.train.RollingStock;
+import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.graph.Pathfinding.EdgeLocation;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class STDCM {
-    private static ArrayList<BlockUse> computeBlockUsableCapacity(SignalingInfra infra, RollingStock rollingStock, String id, List<RouteOccupancy> occupancies) {
-        occupancies.sort(Comparator.comparingDouble(blockUse -> blockUse.startOccupancyTime));
+    static final Logger logger = LoggerFactory.getLogger(STDCM.class);
 
+    public static final double TIME_WORLD_START = 0.;
+    public static final double TIME_WORLD_END = 3600. * 24;
+
+    private static Block makeBlock(SignalingInfra infra, RollingStock rollingStock, String id) {
         var route = infra.findSignalingRoute(id, "BAL3");
         var entrySignal = route.getEntrySignal();
         var exitSignal = route.getEntrySignal();
@@ -32,13 +38,18 @@ public class STDCM {
                 })
                 // find the minimum
                 .reduce(Double.POSITIVE_INFINITY, Math::min);
-        var block = new Block(route, entrySignal, exitSignal, id, length, maxSpeed);
+        return new Block(route, entrySignal, exitSignal, id, length, maxSpeed);
+    }
+
+    private static ArrayList<BlockUse> computeBlockUsableCapacity(Block block, List<RouteOccupancy> occupancies) {
+        occupancies.sort(Comparator.comparingDouble(blockUse -> blockUse.startOccupancyTime));
+
         var res = new ArrayList<BlockUse>();
 
         // +-----+----+----+-------+----------+
         // |     |////|    |///////|          |
         // +-----+----+----+-------+----------+
-        double lastOccupied = Double.NEGATIVE_INFINITY;
+        double lastOccupied = TIME_WORLD_START;
         for (var occupancy : occupancies) {
             // coalesce overlapping / continuous occupancies together
             if (occupancy.startOccupancyTime <= lastOccupied) {
@@ -51,23 +62,28 @@ public class STDCM {
             res.add(new BlockUse(block, startTime, endTime));
             lastOccupied = occupancy.endOccupancyTime;
         }
-        if (lastOccupied != Double.NEGATIVE_INFINITY)
-            res.add(new BlockUse(block, lastOccupied, Double.POSITIVE_INFINITY));
+        res.add(new BlockUse(block, lastOccupied, TIME_WORLD_END));
         return res;
     }
 
-    private static ArrayList<BlockUse> getUsableCapacity(SignalingInfra infra, RollingStock rollingStock, Collection<RouteOccupancy> occupancies) {
+
+
+    private static Map<Block, List<BlockUse>> getUsableCapacity(SignalingInfra infra, RollingStock rollingStock, Collection<RouteOccupancy> occupancies) {
         // 1) sort occupancies per block
         var perBlockOccupancy = new HashMap<String, List<RouteOccupancy>>();
+        for (var routeID : infra.getReservationRouteMap().keySet())
+            perBlockOccupancy.put(routeID, new ArrayList<>());
+
         for (var occupancy : occupancies) {
-            var blockOccupancy = perBlockOccupancy.computeIfAbsent(occupancy.id, id -> new ArrayList<>());
+            var blockOccupancy = perBlockOccupancy.get(occupancy.id);
             blockOccupancy.add(occupancy);
         }
 
         // 2) compute the usable capacity (the not-occupied time lapses for all blocks)
-        var res = new ArrayList<BlockUse>();
+        var res = new HashMap<Block, List<BlockUse>>();
         perBlockOccupancy.forEach((id, blockOccupancy) -> {
-            res.addAll(computeBlockUsableCapacity(infra, rollingStock, id, blockOccupancy));
+            var block = makeBlock(infra, rollingStock, id);
+            res.put(block, computeBlockUsableCapacity(block, blockOccupancy));
         });
         return res;
     }
@@ -92,31 +108,30 @@ public class STDCM {
     }
 
     public static List<BlockUse> run(
+            Pathfinding.Result<SignalingRoute> expectedPath,
             SignalingInfra infra,
             RollingStock rollingStock,
             double startTime,
             double endTime,
-            EdgeLocation<SignalingRoute> startLocation,
-            EdgeLocation<SignalingRoute> endLocation,
+            List<EdgeLocation<SignalingRoute>> startLocations,
+            List<EdgeLocation<SignalingRoute>> endLocations,
             Collection<RouteOccupancy> occupancy
     ) throws IOException {
         var usableCapacity = getUsableCapacity(infra, rollingStock, occupancy);
 
-        var startRoute = startLocation.edge();
-        var endRoute = endLocation.edge();
+        var flatUsableCapacity = new ArrayList<BlockUse>();
+        for (var blockUses : usableCapacity.values())
+            flatUsableCapacity.addAll(blockUses);
 
-        var startBlockEntrySig = startRoute.getEntrySignal();
-        var startBlockExitSig = startRoute.getExitSignal();
-        var endBlockEntrySig = endRoute.getEntrySignal();
-        var endBlockExitSig = endRoute.getExitSignal();
+        var startLocationEdges = startLocations.stream().map(EdgeLocation::edge).collect(Collectors.toSet());
+        var endLocationEdges = endLocations.stream().map(EdgeLocation::edge).collect(Collectors.toSet());
 
-        double maxTime = 3 * 3.6 * Math.pow(10, 6);
-        var config = new STDCMConfig(rollingStock, startTime, endTime, maxTime, 400.,
-                Set.of(startRoute), startBlockEntrySig, startBlockExitSig, endBlockEntrySig, endBlockExitSig);
+        var config = new STDCMConfig(rollingStock, startTime, endTime, 400.,
+                startLocationEdges, endLocationEdges);
 
         // This step generates all the possible paths that links the start and end location.
         // If going from a block to the next at the train's max speed is impossible, the path is discarded
-        var allNaivePaths = PathGenerator.generatePaths(config, usableCapacity);
+        var allNaivePaths = PathGenerator.generatePaths(config, flatUsableCapacity);
 
         // This step calculates the weight of each edge
         var allRealisticPaths = PathSimulator.simulatePaths(config, allNaivePaths);
