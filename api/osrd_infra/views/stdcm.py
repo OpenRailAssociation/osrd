@@ -1,15 +1,29 @@
 import requests
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
+from rest_framework.exceptions import APIException
 
 from config import settings
 from osrd_infra.models import PathModel, TrainScheduleModel
 from osrd_infra.serializers import PathSerializer, STDCMInputSerializer
+from osrd_infra.utils import make_exception_from_error
 from osrd_infra.views import fetch_track_sections, parse_waypoint, postprocess_path
 from osrd_infra.views.train_schedule import (
     create_simulation_report,
     process_simulation_response,
 )
+
+
+class InternalSTDCMError(APIException):
+    status_code = 500
+    default_detail = "An internal STDCM error occurred"
+    default_code = "internal_stdcm_error"
+
+
+class InvalidSTDCMInput(APIException):
+    status_code = 400
+    default_detail = "The STDCM request had invalid inputs"
+    default_code = "stdcm_invalid_input"
 
 
 def get_track_ids(request):
@@ -27,7 +41,7 @@ def request_stdcm(payload):
         json=payload,
     )
     if not response:
-        raise RuntimeError("TODO")
+        raise make_exception_from_error(response, InvalidSTDCMInput, InternalSTDCMError)
     return response.json()
 
 
