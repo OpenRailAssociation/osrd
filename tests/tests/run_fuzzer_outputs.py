@@ -4,7 +4,7 @@ from pathlib import Path
 import requests
 
 from tests.get_rolling_stocks import get_rolling_stock
-from tests.get_schedule import get_schedule
+from tests.get_timetable import get_timetable
 
 
 def pathfinding_with_payload(base_url, payload, infra_id, accept_400):
@@ -35,7 +35,7 @@ def reproduce_test(path_to_json, *args, **kwargs):
     stop_after_schedule = fuzzer_output["error_type"] == "SCHEDULE"
 
     infra_id = all_infras[fuzzer_output["infra_name"]]
-    timetable = get_schedule(base_url, infra_id)
+    timetable = get_timetable(base_url, infra_id)
     path_id = pathfinding_with_payload(base_url, fuzzer_output["path_payload"], infra_id, stop_after_pathfinding)
     if stop_after_pathfinding:
         return True, ""

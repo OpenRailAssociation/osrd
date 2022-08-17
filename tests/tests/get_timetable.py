@@ -1,10 +1,10 @@
 import requests
 
 
-def get_schedule(base_url, infra):
+def get_timetable(base_url, infra):
     r = requests.get(base_url + "timetable/")
     if r.status_code // 100 != 2:
-        raise RuntimeError(f"Rolling stock error {r.status_code}: {r.content}")
+        raise RuntimeError(f"Timetable error {r.status_code}: {r.content}")
     schedules = r.json()["results"]
     schedule = next(filter(lambda s: s["infra"] == infra, schedules))
     return schedule["id"]
@@ -13,5 +13,5 @@ def get_schedule(base_url, infra):
 def run(*args, **kwargs):
     base_url = kwargs["url"]
     infra_id = kwargs["all_infras"]["dummy"]
-    get_schedule(base_url, infra_id)
+    get_timetable(base_url, infra_id)
     return True, ""
