@@ -56,9 +56,8 @@ def reproduce_test(path_to_json, *args, **kwargs):
 
 
 def list_tests():
-    dir = Path(__file__).parent.resolve() / "regression_fuzzer_tests"
-    for f in dir.iterdir():
-        if f.is_file():
-            def run_test(func=f, *args, **kwargs):
-                return reproduce_test(func, *args, **kwargs)
-            yield run_test, f.stem
+    dir = Path(__file__).parent.resolve()
+    for f in dir.glob("*.json"):
+        def run_test(func=f, *args, **kwargs):
+            return reproduce_test(func, *args, **kwargs)
+        yield run_test, f.stem
