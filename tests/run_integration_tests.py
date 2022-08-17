@@ -93,11 +93,13 @@ def find_test_modules():
     Generator returning a list of modules
     :return: (module, file name)
     """
-    root = Path(__file__).parent / "tests"
-    for f in root.glob("*.py"):
-        test_module = f"{root.stem}.{f.stem}"
-        module = importlib.import_module(test_module)
-        yield module, f.stem
+    root = Path(__file__).parent
+    test_folder = root / "tests"
+    for f in test_folder.glob("**/*.py"):
+        module_name = ".".join(f.relative_to(root).with_suffix("").parts)
+        test_name = "/".join(f.relative_to(test_folder).with_suffix("").parts)
+        module = importlib.import_module(module_name)
+        yield module, test_name
 
 
 def run_all(tests_to_run: List[str]) -> int:
@@ -113,7 +115,7 @@ def run_all(tests_to_run: List[str]) -> int:
     for module, name in find_test_modules():
         if hasattr(module, "run"):
             tests[name] = module.run
-        else:
+        elif hasattr(module, "list_tests"):
             for function, function_name in module.list_tests():
                 test_name = f"{name}:{function_name}"
                 tests[test_name] = function
