@@ -3,7 +3,7 @@ import json
 import requests
 
 from tests.get_rolling_stocks import get_rolling_stock
-from tests.get_schedule import get_schedule
+from tests.get_timetable import get_timetable
 from tests.run_pathfinding import run_pathfinding
 
 
@@ -21,7 +21,7 @@ def run_simulation(base_url, infra_id):
 
 def make_payload_schedule(base_url, infra, path, rolling_stock, departure_time=0, timetable=None):
     if timetable is None:
-        timetable = get_schedule(base_url, infra)
+        timetable = get_timetable(base_url, infra)
     return {
         "timetable": timetable,
         "path": path,
