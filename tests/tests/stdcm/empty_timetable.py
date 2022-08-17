@@ -1,5 +1,3 @@
-import json
-
 import requests
 
 from tests.get_rolling_stocks import get_rolling_stock
@@ -29,6 +27,4 @@ def run(*args, **kwargs):
     delete_timetable(base_url, timetable)
     if r.status_code // 100 != 2:
         raise RuntimeError(f"STDCM error {r.status_code}: {r.content}")
-    response = r.json()
-    print(r)
     return True, ""
