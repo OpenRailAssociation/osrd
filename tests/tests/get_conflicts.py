@@ -4,19 +4,8 @@ import requests
 
 from tests.get_rolling_stocks import get_rolling_stock
 from tests.run_pathfinding import run_pathfinding
-from tests.run_simulation import run_simulation, make_payload_schedule
-
-
-def create_timetable(base_url, infra_id):
-    timetable_payload = {
-        "name": "foo",
-        "infra": infra_id
-    }
-    r = requests.post(base_url + "timetable/", json=timetable_payload)
-    if r.status_code // 100 != 2:
-        err = f"Error creating timetable {r.status_code}: {r.content}, payload={json.dumps(timetable_payload)}"
-        raise RuntimeError(err)
-    return r.json()["id"]
+from tests.run_simulation import make_payload_schedule
+from tests.utils.timetable import delete_timetable, create_timetable
 
 
 def make_schedule_with_conflict(base_url, infra_id):
@@ -42,6 +31,7 @@ def run(*args, **kwargs):
     infra_id = kwargs["all_infras"]["tiny_infra"]
     timetable, first_train, second_train, path_id = make_schedule_with_conflict(base_url, infra_id)
     r = requests.get(base_url + f"timetable/{timetable}/conflicts/", json={"path": path_id})
+    delete_timetable(base_url, timetable)
     if r.status_code // 100 != 2:
         raise RuntimeError(f"conflicts error {r.status_code}: {r.content}, {timetable=}, {path_id=}")
     response = r.json()

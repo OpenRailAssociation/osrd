@@ -32,7 +32,6 @@ def run_pathfinding(base_url, infra_id):
                 ]
             }
         ]
-
     }
     r = requests.post(base_url + "pathfinding/", json=path_payload)
     if r.status_code // 100 != 2:
