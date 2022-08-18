@@ -4,6 +4,7 @@ import fr.sncf.osrd.api.ExceptionHandler;
 import fr.sncf.osrd.api.InfraManager;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingRequest;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
+import fr.sncf.osrd.api.pathfinding.response.NoPathFoundError;
 import fr.sncf.osrd.api.pathfinding.response.PathfindingResult;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
@@ -57,8 +58,10 @@ public class PathfindingRoutesEndpoint implements Take {
 
             var path = runPathfinding(infra, reqWaypoints, rollingStocks);
 
-            if (path == null)
-                return new RsWithStatus(new RsText("No path could be found"), 400);
+            if (path == null) {
+                var error = new NoPathFoundError("No path could be found");
+                return ExceptionHandler.toResponse(error);
+            }
 
             var res = PathfindingResultConverter.convert(path, infra, warningRecorder);
 

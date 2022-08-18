@@ -108,7 +108,6 @@ public class STDCM {
             bestPath = possiblePath;
         }
 
-        assert bestPath != null : "no best path found";
         return bestPath;
     }
 
