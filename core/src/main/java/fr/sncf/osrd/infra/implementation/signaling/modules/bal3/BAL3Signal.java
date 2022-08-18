@@ -20,6 +20,7 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
     private final String id;
     private final double sightDistance;
     private Boolean canDisplayGreen = null;
+    private BAL3SignalState cachedInitialState = null;
 
     public BAL3Signal(String id, double sightDistance) {
         this.id = id;
@@ -46,6 +47,15 @@ public class BAL3Signal implements Signal<BAL3SignalState> {
 
     @Override
     public BAL3SignalState getInitialState() {
+        if (cachedInitialState == null)
+            cachedInitialState = computeInitialState();
+        return cachedInitialState;
+    }
+
+    private BAL3SignalState computeInitialState() {
+        assert cachedInitialState == null;
+        cachedInitialState = makeSignalState(BAL3.Aspect.GREEN); // Avoids infinite recursions caused by loops
+
         var isControlled = protectedRoutes.stream()
                 .anyMatch(route -> route.getInfraRoute().isControlled());
         if (isControlled)
