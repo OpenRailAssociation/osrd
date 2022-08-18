@@ -114,7 +114,6 @@ public class STDCM {
 
     /** Runs the main STDCM algorithm */
     public static List<BlockUse> run(
-            Pathfinding.Result<SignalingRoute> expectedPath,
             SignalingInfra infra,
             RollingStock rollingStock,
             double startTime,

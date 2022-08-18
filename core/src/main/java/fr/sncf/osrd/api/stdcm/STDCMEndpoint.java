@@ -3,13 +3,16 @@ package fr.sncf.osrd.api.stdcm;
 import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.api.ExceptionHandler;
 import fr.sncf.osrd.api.InfraManager;
 import fr.sncf.osrd.api.pathfinding.PathfindingResultConverter;
-import fr.sncf.osrd.api.pathfinding.PathfindingRoutesEndpoint;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
-import fr.sncf.osrd.api.pathfinding.response.PathfindingResult;
+import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
+import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
+import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
+import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
+import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
+import fr.sncf.osrd.envelope_sim_infra.MRSP;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
@@ -21,11 +24,12 @@ import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance;
-import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceValue;
 import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
+import fr.sncf.osrd.standalone_sim.ScheduleMetadataExtractor;
 import fr.sncf.osrd.standalone_sim.StandaloneSim;
+import fr.sncf.osrd.standalone_sim.result.ResultEnvelopePoint;
 import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.utils.graph.Pathfinding;
@@ -142,31 +146,22 @@ public class STDCMEndpoint implements Take {
             if (request == null)
                 return new RsWithStatus(new RsText("missing request body"), 400);
 
+            // parse input data
             var infra = infraManager.load(request.infra, request.expectedVersion, warningRecorder);
             var rollingStock = RJSRollingStockParser.parse(request.rollingStock);
             var startTime = request.startTime;
             var endTime = request.endTime;
             var occupancy = request.routeOccupancies;
-
             var startLocations = findRoutes(infra, request.startPoints);
             var endLocations = findRoutes(infra, request.endPoints);
 
-            var waypoints = new PathfindingWaypoint[][] {
-                    request.startPoints.toArray(new PathfindingWaypoint[0]),
-                    request.endPoints.toArray(new PathfindingWaypoint[0]),
-            };
-            var expectedPath = PathfindingRoutesEndpoint.runPathfinding(infra, waypoints, List.of(rollingStock));
-            for (var route : expectedPath.ranges())
-                logger.info("{}", route.edge().getInfraRoute().getID());
+            assert Double.isFinite(startTime);
 
-            // Compute STDCM
-            var stdcmPath = STDCM.run(
-                    expectedPath, infra, rollingStock,
-                    startTime, endTime,
-                    startLocations, endLocations,
-                    occupancy
-            );
-            // find which start / end location were used
+            // Run STDCM
+            var stdcmPath = STDCM.run(infra, rollingStock, startTime, endTime, startLocations, endLocations, occupancy);
+
+            // Convert the STDCM path (which sort of works with signaling routes) to a pathfinding result, which works
+            // with route ranges. This involves deducing start and end location offsets.
             var startLocMap = new HashMap<SignalingRoute, EdgeLocation<SignalingRoute>>();
             for (var loc : startLocations)
                 startLocMap.put(loc.edge(), loc);
@@ -175,133 +170,81 @@ public class STDCMEndpoint implements Take {
                 endLocMap.put(loc.edge(), loc);
             var startLocation = startLocMap.get(stdcmPath.get(0).block.route);
             var endLocation = endLocMap.get(stdcmPath.get(stdcmPath.size() - 1).block.route);
+
+            // Run a regular OSRD simulation
+            var trainSchedule = new StandaloneTrainSchedule(rollingStock, 0., List.of(), List.of(), List.of());
+            var signalingRoutePath = stdcmPath.stream().map(blockUse -> blockUse.block.route).toList();
+            var trainPath = TrainPathBuilder.from(
+                    signalingRoutePath,
+                    routeToTrackLocation(startLocation),
+                    routeToTrackLocation(endLocation)
+            );
+
+            var envelopePath = EnvelopeTrainPath.from(trainPath);
+            var timeStep = 2.;
+
+            // Compute the most restricted speed profile
+            var mrsp = MRSP.from(trainPath, trainSchedule.rollingStock, true, trainSchedule.tags);
+            final var speedLimits = MRSP.from(trainPath, trainSchedule.rollingStock, false, trainSchedule.tags);
+
+            // Compute an unrestricted, max effort trip
+            var baseEnvelope = StandaloneSim.computeMaxEffortEnvelope(mrsp, timeStep, envelopePath, trainSchedule);
+
+            // Modify this trip so it complies with STDCM block occupation restrictions
+            // Step 1: find the position of block starts in the envelope path
+            double[] blockBounds = new double[stdcmPath.size() + 1];
+            assert trainPath.routePath().size() == stdcmPath.size();
+            var routePath = trainPath.routePath();
+            for (int i = 0; i < routePath.size(); i++)
+                blockBounds[i] = routePath.get(i).pathOffset();
+            blockBounds[0] = 0.;
+            blockBounds[stdcmPath.size()] = envelopePath.length;
+
+            // Step 2: compile the times at which the train would reach each block start without margins
+            double[] blockEntryTimes = new double[stdcmPath.size()];
+            for (int i = 0; i < stdcmPath.size(); i++)
+                blockEntryTimes[i] = baseEnvelope.interpolateTotalTime(blockBounds[i]);
+
+            // Step 3: add margins so the train reaches its block in the allotted time range
+            var allowanceRanges = new ArrayList<AllowanceRange>();
+            var totalDelay = 0.;
+            for (int i = 0; i < stdcmPath.size(); i++) {
+                var simulatedEntryTime = startTime + blockEntryTimes[i] + totalDelay;
+                var allowedEntryTime = stdcmPath.get(i).reservationStartTime;
+                logger.info("block {}: sim entry time {}, allowed time {}", i, simulatedEntryTime, allowedEntryTime);
+                var blockDelay = 0.;
+                if (simulatedEntryTime < allowedEntryTime)
+                    blockDelay = allowedEntryTime - simulatedEntryTime + 1.;
+                totalDelay += blockDelay;
+                var allowanceValue = new AllowanceValue.FixedTime(blockDelay);
+                allowanceRanges.add(new AllowanceRange(blockBounds[i], blockBounds[i + 1], allowanceValue));
+            }
+
+            var allowance = new MarecoAllowance(
+                    new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
+                    0,
+                    envelopePath.length,
+                    5 / 3.6,
+                    allowanceRanges
+            );
+            var stdcmEnvelope = StandaloneSim.applyAllowances(baseEnvelope, List.of(allowance));
+
+            var simResult = new StandaloneSimResult();
+            simResult.speedLimits.add(ResultEnvelopePoint.from(speedLimits));
+            simResult.baseSimulations.add(ScheduleMetadataExtractor.run(
+                    stdcmEnvelope, trainPath, trainSchedule, infra));
+            simResult.ecoSimulations.add(null);
+
+            // Build the result
             var osrdPath = new Pathfinding.Result<>(
                     convertResultPath(stdcmPath, startLocation, endLocation),
                     List.of()
             );
             var pathfindingRes = PathfindingResultConverter.convert(osrdPath, infra, new WarningRecorderImpl(false));
-            var trainSchedule = new StandaloneTrainSchedule(rollingStock, 0., List.of(), List.of(), List.of());
-            var routePath = stdcmPath.stream().map(blockUse -> blockUse.block.route).collect(Collectors.toList());
-            var trainPath = TrainPathBuilder.from(
-                    routePath,
-                    routeToTrackLocation(startLocation),
-                    routeToTrackLocation(endLocation)
-            );
-            var simResult = StandaloneSim.run(
-                    infra,
-                    trainPath,
-                    List.of(trainSchedule),
-                    2.
-            );
-            var result = new STDCMResponse(simResult, pathfindingRes);
-            return new RsJson(new RsWithBody(STDCMResponse.adapter.toJson(result)));
+            var response = new STDCMResponse(simResult, pathfindingRes);
+            return new RsJson(new RsWithBody(STDCMResponse.adapter.toJson(response)));
         } catch (Throwable ex) {
             return ExceptionHandler.handle(ex);
-        }
-    }
-
-    public static final class STDCMResponse {
-        public static final JsonAdapter<STDCMResponse> adapter = new Moshi
-                .Builder()
-                .build()
-                .adapter(STDCMResponse.class);
-
-        public StandaloneSimResult simulation;
-
-        public PathfindingResult path;
-
-        public STDCMResponse(StandaloneSimResult simulation, PathfindingResult path) {
-            this.simulation = simulation;
-            this.path = path;
-        }
-    }
-
-    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
-    public static final class STDCMRequest {
-        /**
-         * Infra id
-         */
-        public String infra;
-
-        /**
-         * Infra version
-         */
-        @Json(name = "expected_version")
-        public String expectedVersion;
-
-        /**
-         * Rolling stock used for this request
-         */
-        @Json(name = "rolling_stock")
-        public RJSRollingStock rollingStock;
-
-        /**
-         * Route occupancies in the given timetable
-         */
-        @Json(name = "route_occupancies")
-        public Collection<RouteOccupancy> routeOccupancies;
-
-        /**
-         * List of possible start points for the train
-         */
-        @Json(name = "start_points")
-        public Collection<PathfindingWaypoint> startPoints;
-
-        /**
-         * List of possible start points for the train
-         */
-        @Json(name = "end_points")
-        public Collection<PathfindingWaypoint> endPoints;
-
-        /**
-         * Train start time
-         */
-        @Json(name = "start_time")
-        public double startTime;
-
-        /**
-         * Train end time
-         */
-        @Json(name = "end_time")
-        public double endTime;
-
-        /**
-         * Create a default STDCMRequest
-         */
-        public STDCMRequest() {
-            this(
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    Double.NaN,
-                    Double.NaN
-            );
-        }
-
-        /**
-         * Creates a STDCMRequest
-         */
-        public STDCMRequest(
-                String infra,
-                String expectedVersion,
-                RJSRollingStock rollingStock,
-                Collection<RouteOccupancy> routeOccupancies,
-                Collection<PathfindingWaypoint> startPoints,
-                Collection<PathfindingWaypoint> endPoints,
-                double startTime,
-                double endTime
-        ) {
-            this.infra = infra;
-            this.expectedVersion = expectedVersion;
-            this.rollingStock = rollingStock;
-            this.routeOccupancies = routeOccupancies;
-            this.startPoints = startPoints;
-            this.endPoints = endPoints;
-            this.startTime = startTime;
-            this.endTime = endTime;
         }
     }
 

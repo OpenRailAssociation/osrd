@@ -73,7 +73,8 @@ public class StandaloneSim {
         return result;
     }
 
-    private static Envelope computeMaxEffortEnvelope(
+    /** Compute the max effort envelope given a path, MRSP and a schedule */
+    public static Envelope computeMaxEffortEnvelope(
             Envelope mrsp,
             double timeStep,
             EnvelopePath envelopePath,
@@ -86,7 +87,8 @@ public class StandaloneSim {
         return MaxEffortEnvelope.from(context, schedule.initialSpeed, maxSpeedEnvelope);
     }
 
-    private static Envelope applyAllowances(
+    /** Apply a list of allowances, in order */
+    public static Envelope applyAllowances(
             Envelope maxEffortEnvelope,
             List<? extends Allowance> allowances
     ) {
