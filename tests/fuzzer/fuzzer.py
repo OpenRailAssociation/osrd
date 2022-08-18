@@ -377,6 +377,7 @@ def make_payload_schedule(base_url: str, infra: int, path: int, rolling_stock: i
                 "allowances": make_random_allowances(path_length),
                 "initial_speed": 0,
                 "rolling_stock": rolling_stock,
+                "speed_limit_category": "foo",
             }
         ],
     }
