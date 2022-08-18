@@ -9,8 +9,8 @@ from typing import Tuple, Dict, List
 import requests
 
 
-URL = "http://127.0.0.1:8000/"
-EDITOAST_URL = "http://127.0.0.1:8090/"
+URL = "http://localhost:8000/"
+EDITOAST_URL = "http://localhost:8090/"
 
 
 def setup() -> Dict[str, int]:

@@ -36,3 +36,9 @@ pub struct GenerateArgs {
     #[clap(short, long, help = "Force refresh")]
     pub force: bool,
 }
+
+/// Retrieve the secret key from the environment variable `SECRET_KEY`.
+/// Return `None` if the environment variable is not set.
+pub fn get_secret_key() -> Option<String> {
+    std::env::var("SECRET_KEY").ok()
+}
