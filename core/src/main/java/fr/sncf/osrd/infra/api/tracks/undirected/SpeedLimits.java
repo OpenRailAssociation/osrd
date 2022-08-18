@@ -21,7 +21,7 @@ public class SpeedLimits {
     /** Directly creates a SpeedLimits instance from the railjson dict */
     public static SpeedLimits from(RJSSpeedSection rjsSpeedSection) {
         return new SpeedLimits(
-                rjsSpeedSection.speedLimit,
+                rjsSpeedSection.getSpeedLimit(),
                 ImmutableMap.copyOf(rjsSpeedSection.speedLimitByTag)
         );
     }
