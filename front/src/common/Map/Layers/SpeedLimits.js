@@ -1,6 +1,6 @@
 import { Layer, Source } from 'react-map-gl';
 
-import { MAP_URL } from 'common/Map/const';
+import { MAP_URL } from 'common/Map/const.ts';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { useSelector } from 'react-redux';
@@ -28,14 +28,16 @@ export default function SpeedLimits(props) {
         8,
       ],
     ]],
-    ['get', 'speed_limit'],
+    ['to-number', ['get', 'speed_limit']],
   ]]];
+  const speedSectionFilter = ['all', ['has', 'speed_limit'], ['>', uglyJSONParsingOfSpeedLimitByTags, 0]];
 
   const speedValuePointParams = {
     type: 'symbol',
     'source-layer': 'speed_sections',
     minzoom: 9,
     maxzoom: 24,
+    filter: speedSectionFilter,
     layout: {
       visibility: 'visible',
       'text-font': ['Roboto Bold'],
@@ -61,7 +63,7 @@ export default function SpeedLimits(props) {
     'source-layer': 'speed_sections',
     minzoom: 9,
     maxzoom: 24,
-    filter: ['all', ['has', 'speed_limit']],
+    filter: speedSectionFilter,
     layout: {
       visibility: 'visible',
       'text-font': ['Roboto Bold'],
@@ -85,6 +87,7 @@ export default function SpeedLimits(props) {
     'source-layer': 'speed_sections',
     minzoom: 6,
     maxzoom: 24,
+    filter: speedSectionFilter,
     layout: {
       visibility: 'visible',
       'line-cap': 'round',
