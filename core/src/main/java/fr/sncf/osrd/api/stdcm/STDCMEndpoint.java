@@ -7,6 +7,7 @@ import fr.sncf.osrd.api.ExceptionHandler;
 import fr.sncf.osrd.api.InfraManager;
 import fr.sncf.osrd.api.pathfinding.PathfindingResultConverter;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
+import fr.sncf.osrd.api.pathfinding.response.NoPathFoundError;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
@@ -26,6 +27,7 @@ import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceValue;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
 import fr.sncf.osrd.standalone_sim.ScheduleMetadataExtractor;
 import fr.sncf.osrd.standalone_sim.StandaloneSim;
@@ -159,6 +161,10 @@ public class STDCMEndpoint implements Take {
 
             // Run STDCM
             var stdcmPath = STDCM.run(infra, rollingStock, startTime, endTime, startLocations, endLocations, occupancy);
+            if (stdcmPath == null) {
+                var error = new NoPathFoundError("No STDCM path could be found");
+                return ExceptionHandler.toResponse(error);
+            }
 
             // Convert the STDCM path (which sort of works with signaling routes) to a pathfinding result, which works
             // with route ranges. This involves deducing start and end location offsets.
