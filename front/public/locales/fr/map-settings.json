@@ -1,8 +1,8 @@
 {
   "all": "Tous les signaux",
   "bufferstops": "Heurtoirs",
+  "catenaries": "Électrification",
   "detectors": "Détecteurs",
-  "electrification": "Électrification",
   "jdz": "Joints de zone",
   "layers": "Couches de données",
   "lights": "Signaux lumineux",

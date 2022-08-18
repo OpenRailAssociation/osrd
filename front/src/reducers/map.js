@@ -44,8 +44,8 @@ export const initialState = {
   },
   layersSettings: {
     bufferstops: false,
+    catenaries: false,
     detectors: false,
-    electrification: false,
     operationalpoints: false,
     routes: false,
     signalingtype: true,
