@@ -20,7 +20,7 @@ import Background from 'common/Map/Layers/Background';
 import ButtonMapSearch from 'common/Map/ButtonMapSearch';
 import ButtonMapSettings from 'common/Map/ButtonMapSettings';
 import ButtonResetViewport from 'common/Map/ButtonResetViewport';
-import ElectrificationType from 'common/Map/Layers/ElectrificationType';
+import Catenaries from 'common/Map/Layers/Catenaries';
 import Hillshade from 'common/Map/Layers/Hillshade';
 import MapSearch from 'common/Map/Search/MapSearch';
 import MapSettings from 'common/Map/Settings/MapSettings';
@@ -37,8 +37,8 @@ import SignalingType from 'common/Map/Layers/SignalingType';
 import Signals from 'common/Map/Layers/Signals';
 import SnappedMarker from 'common/Map/Layers/SnappedMarker';
 import SpeedLimits from 'common/Map/Layers/SpeedLimits';
-import BufferStops from 'common/Map/Layers/BufferStops';
-import Detectors from 'common/Map/Layers/Detectors';
+import BufferStops from 'common/Map/Layers/BufferStops.tsx';
+import Detectors from 'common/Map/Layers/Detectors.tsx';
 import Switches from 'common/Map/Layers/Switches';
 import TracksOSM from 'common/Map/Layers/TracksOSM';
 /* Objects & various */
@@ -51,13 +51,11 @@ import turfNearestPointOnLine from '@turf/nearest-point-on-line';
 import { updateFeatureInfoClickOSRD } from 'reducers/osrdconf';
 import { updateViewport } from 'reducers/map';
 import { useParams } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 
 const Map = () => {
   const {
     viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings,
   } = useSelector((state) => state.map);
-  const { t } = useTranslation(['map-settings']);
   const [showSearch, setShowSearch] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [idHover, setIdHover] = useState(undefined);
@@ -235,7 +233,7 @@ const Map = () => {
         {mapTrackSources === 'geographic' ? (
           <>
             <TVDs geomType="geo" colors={colors[mapStyle]} idHover={idHover} />
-            <ElectrificationType geomType="geo" colors={colors[mapStyle]} />
+            <Catenaries geomType="geo" colors={colors[mapStyle]} />
             <Platform colors={colors[mapStyle]} />
             <TracksGeographic colors={colors[mapStyle]} />
             <TracksOSM colors={colors[mapStyle]} />

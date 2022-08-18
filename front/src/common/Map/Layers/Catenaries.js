@@ -4,11 +4,11 @@ import { useSelector } from 'react-redux';
 import { Source, Layer } from 'react-map-gl';
 import { MAP_URL } from 'common/Map/const.ts';
 
-export default function ElectrificationType(props) {
+export default function Catenaries(props) {
   const { layersSettings } = useSelector((state) => state.map);
   const { infraID } = useSelector((state) => state.osrdconf);
   const { geomType, colors } = props;
-  const electrificationParams = {
+  const catenariesParams = {
     type: 'line',
     'source-layer': 'catenaries',
     minzoom: 5,
@@ -19,12 +19,12 @@ export default function ElectrificationType(props) {
     },
     paint: {
       'line-color': ['case',
-        ['==', ['get', 'voltage'], '15000'], colors.powerline.color15000V1623,
-        ['==', ['get', 'voltage'], '3000'], colors.powerline.color3000V,
-        ['==', ['get', 'voltage'], '1500'], colors.powerline.color1500V,
-        ['==', ['get', 'voltage'], '850'], colors.powerline.color850V,
-        ['==', ['get', 'voltage'], '800'], colors.powerline.color800V,
-        ['==', ['get', 'voltage'], '750'], colors.powerline.color750V,
+        ['==', ['get', 'voltage'], 15000], colors.powerline.color15000V1623,
+        ['==', ['get', 'voltage'], 3000], colors.powerline.color3000V,
+        ['==', ['get', 'voltage'], 1500], colors.powerline.color1500V,
+        ['==', ['get', 'voltage'], 850], colors.powerline.color850V,
+        ['==', ['get', 'voltage'], 800], colors.powerline.color800V,
+        ['==', ['get', 'voltage'], 750], colors.powerline.color750V,
         colors.powerline.color25000V,
       ],
       'line-width': 6,
@@ -34,7 +34,7 @@ export default function ElectrificationType(props) {
     },
   };
 
-  const electrificationTextParams = {
+  const catenariesTextParams = {
     type: 'symbol',
     'source-layer': 'catenaries',
     minzoom: 5,
@@ -57,38 +57,38 @@ export default function ElectrificationType(props) {
     },
     paint: {
       'text-color': ['case',
-        ['==', ['get', 'voltage'], '15000'], colors.powerline.color15000V1623,
-        ['==', ['get', 'voltage'], '3000'], colors.powerline.color3000V,
-        ['==', ['get', 'voltage'], '1500'], colors.powerline.color1500V,
-        ['==', ['get', 'voltage'], '850'], colors.powerline.color850V,
-        ['==', ['get', 'voltage'], '800'], colors.powerline.color800V,
-        ['==', ['get', 'voltage'], '750'], colors.powerline.color750V,
+        ['==', ['get', 'voltage'], 15000], colors.powerline.color15000V1623,
+        ['==', ['get', 'voltage'], 3000], colors.powerline.color3000V,
+        ['==', ['get', 'voltage'], 1500], colors.powerline.color1500V,
+        ['==', ['get', 'voltage'], 850], colors.powerline.color850V,
+        ['==', ['get', 'voltage'], 800], colors.powerline.color800V,
+        ['==', ['get', 'voltage'], 750], colors.powerline.color750V,
         colors.powerline.color25000V,
       ],
     },
   };
 
-  return layersSettings.electrification && (
+  return layersSettings.catenaries ? (
     <Source
       id={`catenaries_${geomType}`}
       type="vector"
       url={`${MAP_URL}/layer/catenaries/mvt/${geomType}/?infra=${infraID}`}
     >
       <Layer
-        {...electrificationParams}
+        {...catenariesParams}
         beforeId={`chartis/tracks-${geomType}/main`}
         id={`chartis/catenaries/${geomType}`}
       />
       <Layer
-        {...electrificationTextParams}
+        {...catenariesTextParams}
         beforeId={`chartis/tracks-${geomType}/main`}
         id={`chartis/catenaries_names/${geomType}`}
       />
     </Source>
-  );
+  ) : null;
 }
 
-ElectrificationType.propTypes = {
+Catenaries.propTypes = {
   geomType: PropTypes.string.isRequired,
   colors: PropTypes.object.isRequired,
 };
