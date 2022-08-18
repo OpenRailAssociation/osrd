@@ -15,20 +15,32 @@ export default function OperationalPoints(props) {
       'circle-stroke-color': '#82be00',
       'circle-stroke-width': 2,
       'circle-color': 'rgba(255, 255, 255, 0)',
-      'circle-radius': 4,
+      'circle-radius': 3,
     },
   };
 
   const layerName = {
     type: 'symbol',
     'source-layer': 'operational_points',
+    minzoom: 9,
     layout: {
-      'text-field': '{name}',
+      'text-field': ['concat',
+        ['get', 'name'],
+        ' / ',
+        ['get', 'trigram'],
+        ['case',
+          ['in', ['get', 'ch'], ['literal', ['BV', '00']]],
+          '',
+          ['concat', '\n', ['get', 'ch_long_label']],
+        ],
+        // ['concat', '\n', ['get', 'uic']],
+      ],
       'text-font': [
         'Roboto Condensed',
       ],
       'text-size': 12,
       'text-anchor': 'left',
+      'text-justify': 'left',
       'text-allow-overlap': false,
       'text-ignore-placement': false,
       'text-offset': [0.75, 0.10],
@@ -42,20 +54,29 @@ export default function OperationalPoints(props) {
     },
   };
 
-  const layerNameCH = {
+  const layerNameShort = {
     type: 'symbol',
     'source-layer': 'operational_points',
-    minzoom: 9,
+    maxzoom: 9,
+    minzoom: 7,
     layout: {
-      'text-field': '{ch_long_label}',
+      'text-field': ['concat',
+        ['get', 'trigram'],
+        ' ',
+        ['case',
+          ['in', ['get', 'ch'], ['literal', ['BV', '00']]],
+          '',
+          ['get', 'ch'],
+        ],
+      ],
       'text-font': [
         'Roboto Condensed',
       ],
-      'text-size': 9,
+      'text-size': 10,
       'text-anchor': 'left',
       'text-allow-overlap': true,
-      'text-ignore-placement': true,
-      'text-offset': [1, 1.25],
+      'text-ignore-placement': false,
+      'text-offset': [0.75, 0.10],
       visibility: 'visible',
     },
     paint: {
@@ -73,8 +94,8 @@ export default function OperationalPoints(props) {
       url={`${MAP_URL}/layer/operational_points/mvt/${geomType}/?infra=${infraID}`}
     >
       <Layer {...layerPoint} id={`chartis/osrd_operational_point/${geomType}`} />
+      <Layer {...layerNameShort} id={`chartis/osrd_operational_point_name_short/${geomType}`} />
       <Layer {...layerName} id={`chartis/osrd_operational_point_name/${geomType}`} />
-      <Layer {...layerNameCH} id={`chartis/osrd_operational_point_name_CH/${geomType}`} />
     </Source>
   );
 }
