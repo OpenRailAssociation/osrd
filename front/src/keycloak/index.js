@@ -1,5 +1,5 @@
+import { KEYCLOAK_CONFIG as keycloakConfig } from 'config/config';
 import Keycloak from './keycloak';
-import keycloakConfig from './keycloak.json';
 
 const kc = Keycloak(keycloakConfig);
 
