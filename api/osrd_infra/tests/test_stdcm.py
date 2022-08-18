@@ -50,7 +50,7 @@ def mock_api_call(payload):
             "geographic": make_dummy_linestring(),
             "schematic": make_dummy_linestring(),
         },
-        "schedule": {
+        "simulation": {
             "base_simulations": sim,
             "eco_simulations": sim,
             "speed_limits": [[]],
