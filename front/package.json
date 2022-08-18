@@ -12,7 +12,7 @@
     "@react-three/fiber": "^6.1.5",
     "@rjsf/core": "^4.2.0",
     "@sentry/browser": "^7.5.0",
-    "@sentry/tracing": "^7.5.0",
+    "@sentry/tracing": "^7.11.1",
     "@sncf/bootstrap-sncf.metier.reseau": "^4.3.1-r6-beta2",
     "@turf/along": "^6.5.0",
     "@turf/bbox": "^6.0.1",
