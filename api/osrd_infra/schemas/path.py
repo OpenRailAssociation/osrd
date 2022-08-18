@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from geojson_pydantic import Point
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from osrd_infra.schemas.infra import (
     DirectionalTrackRange,
@@ -11,41 +11,63 @@ from osrd_infra.schemas.infra import (
 
 
 class GeometryPointTrait(BaseModel):
-    geo: Point
-    sch: Point
+    """This class is used to define coordinates of points present on the path."""
+
+    geo: Point = Field(description="Geographic coordinates of a point")
+    sch: Point = Field(description="Schematic coordinates of a point")
 
 
 class RoutePath(BaseModel):
-    route: ObjectReference
-    track_sections: List[DirectionalTrackRange]
-    signaling_type: str
+    """This class defines the path by dividing it according to the routes it takes."""
+
+    route: ObjectReference = Field(description="Identifier and type of the corresponding route")
+    track_sections: List[DirectionalTrackRange] = Field(
+        description="Identifier, direction, begin and end offset of the corresponding track section"
+    )
+    signaling_type: str = Field(description="Type of signalisation on the corresponding route")
 
 
 class PathWaypoint(GeometryPointTrait, TrackLocationTrait):
-    name: Optional[str]
-    id: Optional[str]
+    """This class is used to characterize each waypoint of the path.
+    Each waypoint is defined with its coordinates, its name, its corresponding track, its duration and its position."""
+
+    name: Optional[str] = Field(description="Name of the point")
     suggestion: bool
-    duration: float
+    duration: float = Field(description="Duration in seconds of the stop if there is a stop at this point", ge=0)
 
 
 class PathPayload(BaseModel):
-    route_paths: List[RoutePath]
-    path_waypoints: List[PathWaypoint]
+    """This class is used to define the whole path."""
+
+    route_paths: List[RoutePath] = Field(description="List of the path divided into routes that it follows")
+    path_waypoints: List[PathWaypoint] = Field(description="List of differents waypoints taken on the path")
 
 
 class SlopePoint(BaseModel):
-    position: float
-    gradient: float
+    """This class is used to characterize each available slope of the path."""
+
+    position: float = Field(description="Relative position in meters of the corresponding slope", ge=0)
+    gradient: float = Field(description="Corresponding gradient measured in meters per kilometers")
 
 
 class Slopes(BaseModel):
-    __root__: List[SlopePoint]
+    """This class simply gathers all the information concerning the slope of the path in a list."""
+
+    __root__: List[SlopePoint] = Field(description="List of all slopes of the path")
 
 
 class CurvePoint(BaseModel):
-    position: float
-    radius: float
+    """This class is used to characterize each available curve of the path."""
+
+    position: float = Field(description="Relative position in meters of the corresponding curve", ge=0)
+    radius: float = Field(description="Corresponding radius of curvature measured in meters", ge=0)
 
 
 class Curves(BaseModel):
-    __root__: List[CurvePoint]
+    """This class simply gathers all the information concerning the curve of the path in a list."""
+
+    __root__: List[CurvePoint] = Field(description="List of all curves of the path")
+
+
+if __name__ == "__main__":
+    print(PathPayload.schema_json(indent=2))
