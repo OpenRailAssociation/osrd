@@ -11,8 +11,8 @@ public class PathSimulator {
             STDCMConfig config,
             ArrayList<List<BlockUse>> paths
     ) {
-        double Lt = 600; // Longueur train
-        double Vc = (float) 160 / 3.6; // Vitesse max canton
+        double Lt = config.rollingStock.length; // Longueur train
+        double Vmat = config.rollingStock.maxSpeed; // max speed rollingstock
         double startTime = config.startTime;
 
         {
@@ -67,7 +67,7 @@ public class PathSimulator {
                     Tsr = Ts;
 
                 // current speed
-                double speed = calculated_speed(currentB, nextB, Tsr, Vc, config);
+                double speed = calculated_speed(currentB, nextB, Tsr, Vmat, config);
                 //current block occupation time
                 double dtr;
                 if (i == 0)
@@ -84,7 +84,7 @@ public class PathSimulator {
                 // next block speed
                 double dtj = 0;
                 if (nextB != null) {
-                    double speed_n = calculated_speed(nextB, nextB2, Tsrn, Vc, config); // over speed estimation!!!!
+                    double speed_n = calculated_speed(nextB, nextB2, Tsrn, Vmat, config); // over speed estimation!!!!
                     // next block occupation time
                     double dtr_n = T_red(nextB, Lt, speed_n) + T_length(Lt, speed);
                     // current block free time allocation

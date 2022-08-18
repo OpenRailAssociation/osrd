@@ -18,9 +18,9 @@ public class ExceptionHandler {
         ex.printStackTrace();
         Sentry.captureException(ex);
         if (ex instanceof OSRDError)
-            return convertOSRDErrorToResponse((OSRDError) ex);
+            return toResponse((OSRDError) ex);
         else if (ex instanceof AssertionError)
-            return convertOSRDErrorToResponse(new AssertWrapper((AssertionError) ex));
+            return toResponse(new AssertWrapper((AssertionError) ex));
         else {
             return new RsWithStatus(
                     new RsWithBody(ex.toString()),
@@ -29,7 +29,8 @@ public class ExceptionHandler {
         }
     }
 
-    private static Response convertOSRDErrorToResponse(OSRDError ex) {
+    /** Converts an OSRD error to a server response */
+    public static Response toResponse(OSRDError ex) {
         int code = ex.cause == OSRDError.ErrorCause.USER ? 400 : 500;
         return new RsWithStatus(
                 new RsJson(
