@@ -1,6 +1,7 @@
 package fr.sncf.osrd.envelope_sim;
 
 import fr.sncf.osrd.train.RollingStock;
+import fr.sncf.osrd.envelope_sim.EnvelopeSimContext.UseCase;
 
 /**
  * An utility class to help simulate the train, using numerical integration.
@@ -19,15 +20,19 @@ public final class TrainPhysicsIntegrator {
     private final Action action;
     private final double directionSign;
 
+    private final UseCase useCase;
+
     private TrainPhysicsIntegrator(
             PhysicsRollingStock rollingStock,
             PhysicsPath path,
             Action action,
+            UseCase useCase,
             double directionSign
     ) {
         this.rollingStock = rollingStock;
         this.path = path;
         this.action = action;
+        this.useCase = useCase;
         this.directionSign = directionSign;
     }
 
@@ -40,7 +45,7 @@ public final class TrainPhysicsIntegrator {
             double directionSign
     ) {
         return step(
-                context.rollingStock, context.path, context.timeStep,
+                context.rollingStock, context.path, context.timeStep, context.useCase,
                 initialLocation, initialSpeed, action, directionSign
         );
     }
@@ -50,12 +55,13 @@ public final class TrainPhysicsIntegrator {
             PhysicsRollingStock rollingStock,
             PhysicsPath path,
             double timeStep,
+            EnvelopeSimContext.UseCase useCase,
             double initialLocation,
             double initialSpeed,
             Action action,
             double directionSign
     ) {
-        var integrator = new TrainPhysicsIntegrator(rollingStock, path, action, directionSign);
+        var integrator = new TrainPhysicsIntegrator(rollingStock, path, action, useCase, directionSign);
         var halfStep = timeStep / 2;
         var step1 = integrator.step(halfStep, initialLocation, initialSpeed);
         var step2 = integrator.step(halfStep, initialLocation + step1.positionDelta, step1.endSpeed);
@@ -82,8 +88,12 @@ public final class TrainPhysicsIntegrator {
         if (action == Action.ACCELERATE)
             tractionForce = maxTractionForce;
 
-        if (action == Action.BRAKE)
-            brakingForce = rollingStock.getMaxBrakingForce(speed);
+        if (action == Action.BRAKE) {
+            if (useCase == UseCase.RUNNING_TIME_CALCULATION)
+                brakingForce = rollingStock.getMaxBrakingForce(speed);
+            if (useCase == UseCase.ETCS_EBD)
+                brakingForce = rollingStock.getEmergencyBrakingForce(speed);
+        }
 
         double acceleration = computeAcceleration(rollingStock, rollingResistance,
                 weightForce, speed, tractionForce, brakingForce, directionSign);

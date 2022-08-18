@@ -5,6 +5,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 import java.util.Collection;
+import java.util.HashMap;
 
 
 /**
@@ -28,19 +29,19 @@ public class RollingStock implements PhysicsRollingStock {
     public final double gamma;
 
     /** A_brake_emergency: the emergency braking decelerations for ERTMS ETCS 2, in m/s² */
-    public final double[] gammaBrakeEmergency;
+    public final HashMap<Double, Double> gammaBrakeEmergency;
 
     /** A_brake_service: the service braking decelerations for ERTMS ETCS 2, in m/s² */
-    public final double[] gammaBrakeService;
+    public final HashMap<Double, Double> gammaBrakeService;
 
     /** A_brake_normal_service: the service braking decelerations used to compute guidance curve in ETCS 2, in m/s² */
-    public final double[] gammaBrakeNormalService;
+    public final HashMap<Double, Double> gammaBrakeNormalService;
 
     /** Kdry_rst: the rolling stock deceleration correction factors for dry rails, used in ETCS 2 */
-    public final double[] kDry;
+    public final HashMap<Double, Double> kDry;
 
     /** Kwet_rst: the rolling stock deceleration correction factors for wet rails, used in ETCS 2 */
-    public final double[] kWet;
+    public final HashMap<Double, Double> kWet;
 
     /** the length of the train, in meters. */
     public final double length;
@@ -123,6 +124,12 @@ public class RollingStock implements PhysicsRollingStock {
     @Override
     public double getMaxBrakingForce(double speed) {
         return gamma * inertia;
+    }
+
+    @Override
+    public double getEmergencyBrakingForce(double speed) {
+        // TODO : build a Sorted Double Map and call it here
+        return gammaBrakeEmergency * inertia;
     }
 
     @Override
