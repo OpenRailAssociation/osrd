@@ -192,7 +192,7 @@ class Migration(migrations.Migration):
                 (
                     "mrsp",
                     models.JSONField(
-                        validators=[osrd_infra.utils.PydanticValidator(osrd_infra.schemas.train_schedule.MRPS)]
+                        validators=[osrd_infra.utils.PydanticValidator(osrd_infra.schemas.train_schedule.MRSP)]
                     ),
                 ),
                 ("base_simulation", models.JSONField()),

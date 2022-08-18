@@ -1,7 +1,7 @@
 from django.contrib.gis.db import models
 
 from osrd_infra.models import PathModel, RollingStock, Timetable
-from osrd_infra.schemas.train_schedule import MRPS, Allowances, TrainScheduleLabels
+from osrd_infra.schemas.train_schedule import MRSP, Allowances, TrainScheduleLabels
 from osrd_infra.utils import PydanticValidator
 
 
@@ -14,7 +14,7 @@ class TrainScheduleModel(models.Model):
     initial_speed = models.FloatField()
     labels = models.JSONField(default=[], validators=[PydanticValidator(TrainScheduleLabels)])
     allowances = models.JSONField(default=[], validators=[PydanticValidator(Allowances)])
-    mrsp = models.JSONField(validators=[PydanticValidator(MRPS)])
+    mrsp = models.JSONField(validators=[PydanticValidator(MRSP)])
     base_simulation = models.JSONField()
     eco_simulation = models.JSONField(null=True)
     speed_limit_category = models.CharField(max_length=128)
