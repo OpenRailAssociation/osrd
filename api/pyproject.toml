@@ -39,7 +39,7 @@ production = [
 ]
 
 [tool.poetry.dev-dependencies]
-django-debug-toolbar = "3.5.0"
+django-debug-toolbar = "3.6.0"
 black = "22.6.0"
 isort = "5.10.1"
 pyproject-flake8 = "0.0.1a5"
