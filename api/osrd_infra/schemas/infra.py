@@ -424,18 +424,16 @@ class RailJsonInfra(BaseModel):
     operational_points: List[OperationalPoint] = Field(
         description="List of operational points of the corresponding infra"
     )
-    routes: List[Route] = Field(description="List of routes of the corresponding infra")
-    switch_types: List[SwitchType] = Field(description="List of switch types of the corresponding infra")
-    switches: List[Switch] = Field(description="List of switches of the corresponding infra")
-    track_section_links: List[TrackSectionLink] = Field(
-        description="List of track section links of the corresponding infra"
-    )
-    track_sections: List[TrackSection] = Field(description="List of track sections of the corresponding infra")
-    catenaries: List[Catenary] = Field(description="List of catenaries of the corresponding infra")
-    signals: List[Signal] = Field(description="List of signals of the corresponding infra")
-    buffer_stops: List[BufferStop] = Field(description="List of buffer stops of the corresponding infra")
-    detectors: List[Detector] = Field(description="List of detectors of the corresponding infra")
-    default_aspect: Optional[str] = Field(description="Aspect displayed when no train is around")
+    routes: List[Route] = Field(description="Routes of the infra")
+    switch_types: List[SwitchType] = Field(description="Switch types of the infra")
+    switches: List[Switch] = Field(description="Switches of the infra")
+    track_section_links: List[TrackSectionLink] = Field(description="Track section links of the infra")
+    track_sections: List[TrackSection] = Field(description="Track sections of the infra")
+    speed_sections: List[SpeedSection] = Field(description="Speed sections of the infra")
+    catenaries: List[Catenary] = Field(description="Catenaries of the infra")
+    signals: List[Signal] = Field(description="Signals of the infra")
+    buffer_stops: List[BufferStop] = Field(description="Buffer stops of the infra")
+    detectors: List[Detector] = Field(description="Detectors of the infra")
 
 
 for t in BaseObjectTrait.__subclasses__():
