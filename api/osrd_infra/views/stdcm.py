@@ -106,7 +106,7 @@ def compute_stdcm(request, user):
     schedule.initial_speed = 0
     schedule.rolling_stock = request["rolling_stock"]
 
-    process_simulation_response([schedule], core_output["schedule"])
+    process_simulation_response([schedule], core_output["simulation"])
     sim_result = create_simulation_report(schedule, path)
     return {
         "path": {
