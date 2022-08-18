@@ -3,6 +3,7 @@ package fr.sncf.osrd.standalone_sim;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.EnvelopePath;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
+import fr.sncf.osrd.envelope_sim.allowances.Allowance;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
@@ -55,7 +56,7 @@ public class StandaloneSim {
 
                 // Eco
                 if (!trainSchedule.allowances.isEmpty()) {
-                    var ecoEnvelope = applyAllowances(envelope, trainSchedule);
+                    var ecoEnvelope = applyAllowances(envelope, trainSchedule.allowances);
                     var simEcoResultTrain = ScheduleMetadataExtractor.run(
                             ecoEnvelope,
                             trainsPath,
@@ -87,12 +88,12 @@ public class StandaloneSim {
 
     private static Envelope applyAllowances(
             Envelope maxEffortEnvelope,
-            StandaloneTrainSchedule schedule
+            List<? extends Allowance> allowances
     ) {
         var result = maxEffortEnvelope;
-        for (int i = 0; i < schedule.allowances.size(); i++) {
+        for (int i = 0; i < allowances.size(); i++) {
             try {
-                result = schedule.allowances.get(i).apply(result);
+                result = allowances.get(i).apply(result);
             } catch (OSRDError e) {
                 throw e.withContext(new ErrorContext.Allowance(i));
             }
