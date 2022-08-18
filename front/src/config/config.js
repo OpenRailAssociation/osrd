@@ -9,7 +9,7 @@ export const MAIN_API = {
 };
 
 export const KEYCLOAK_CONFIG = {
-  realm: process.env.REACT_APP_KEYCLOAK_REALM, // shared or staging
+  realm: process.env.REACT_APP_KEYCLOAK_REALM || 'shared', // shared or staging
   url: 'https://keycloak.shared.dgexsol.fr/auth/',
   'ssl-required': 'external',
   resource: 'gateway',
