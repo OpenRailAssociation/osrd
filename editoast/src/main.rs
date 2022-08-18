@@ -70,6 +70,17 @@ pub fn create_server(
     // Set limits to 250MiB
     config.set_limits(Limits::default().limit("json", 250 * 1024 * 1024));
 
+    // Set secret key
+    if let Some(secret_key) = client::get_secret_key() {
+        config.set_secret_key(secret_key).unwrap();
+    } else if !config.environment.is_dev() {
+        eprintln!(
+            "{}",
+            "Error: No secret key set. This is a security risk!".red()
+        );
+        exit(1);
+    }
+
     // Setup CORS
     let cors = CorsOptions::default().to_cors().unwrap();
 
