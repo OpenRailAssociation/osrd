@@ -1,12 +1,11 @@
 package fr.sncf.osrd.train;
 
-import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
-import java.util.Collection;
 import java.util.HashMap;
-
+import java.util.Map.Entry;
+import java.util.SortedMap;
 
 /**
  * The immutable characteristics of a specific train.
@@ -29,13 +28,13 @@ public class RollingStock implements PhysicsRollingStock {
     public final double gamma;
 
     /** A_brake_emergency: the emergency braking decelerations for ERTMS ETCS 2, in m/s² */
-    public final HashMap<Double, Double> gammaBrakeEmergency;
+    public final SortedMap<Double, Double> gammaBrakeEmergency;
 
     /** A_brake_service: the service braking decelerations for ERTMS ETCS 2, in m/s² */
-    public final HashMap<Double, Double> gammaBrakeService;
+    public final SortedMap<Double, Double> gammaBrakeService;
 
     /** A_brake_normal_service: the service braking decelerations used to compute guidance curve in ETCS 2, in m/s² */
-    public final HashMap<Double, Double> gammaBrakeNormalService;
+    public final SortedMap<Double, Double> gammaBrakeNormalService;
 
     /** Kdry_rst: the rolling stock deceleration correction factors for dry rails, used in ETCS 2 */
     public final HashMap<Double, Double> kDry;
@@ -128,8 +127,35 @@ public class RollingStock implements PhysicsRollingStock {
 
     @Override
     public double getEmergencyBrakingForce(double speed) {
-        // TODO : build a Sorted Double Map and call it here
-        return gammaBrakeEmergency * inertia;
+        assert gammaBrakeEmergency != null;
+        for (Entry mapElement : gammaBrakeEmergency.entrySet()) {
+            double mapSpeed = (double) mapElement.getKey();
+            if (Math.abs(speed) <= mapSpeed)
+            return (double)mapElement.getValue() * inertia;
+        }
+        return gammaBrakeEmergency.get(gammaBrakeEmergency.lastKey()) * inertia;
+    }
+
+    @Override
+    public double getServiceBrakingForce(double speed) {
+        assert gammaBrakeService != null;
+        for (Entry mapElement : gammaBrakeService.entrySet()) {
+            double mapSpeed = (double) mapElement.getKey();
+            if (Math.abs(speed) <= mapSpeed)
+                return (double)mapElement.getValue() * inertia;
+        }
+        return gammaBrakeService.get(gammaBrakeService.lastKey()) * inertia;
+    }
+
+    @Override
+    public double getNormalServiceBrakingForce(double speed) {
+        assert gammaBrakeNormalService != null;
+        for (Entry mapElement : gammaBrakeNormalService.entrySet()) {
+            double mapSpeed = (double) mapElement.getKey();
+            if (Math.abs(speed) <= mapSpeed)
+                return (double)mapElement.getValue() * inertia;
+        }
+        return gammaBrakeNormalService.get(gammaBrakeNormalService.lastKey()) * inertia;
     }
 
     @Override
@@ -234,11 +260,11 @@ public class RollingStock implements PhysicsRollingStock {
             double comfortAcceleration,
             double gamma,
             GammaType gammaType,
-            double[] gammaBrakeEmergency,
-            double[] gammaBrakeService,
-            double[] gammaBrakeNormalService,
-            double[] kDry,
-            double[] kWet,
+            SortedMap<Double,Double> gammaBrakeEmergency,
+            SortedMap<Double,Double> gammaBrakeService,
+            SortedMap<Double,Double> gammaBrakeNormalService,
+            HashMap<Double,Double> kDry,
+            HashMap<Double,Double> kWet,
             TractiveEffortPoint[] tractiveEffortCurve,
             RJSLoadingGaugeType loadingGaugeType
     ) {

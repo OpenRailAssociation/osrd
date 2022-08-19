@@ -5,7 +5,8 @@ public class EnvelopeSimContext {
     static enum UseCase {
         RUNNING_TIME_CALCULATION,
         ETCS_EBD,
-        ETCS_SBD
+        ETCS_SBD,
+        ETCS_GUI
     }
 
     public final PhysicsRollingStock rollingStock;

@@ -99,7 +99,7 @@ public class BrakingCurves {
                 new SpeedConstraint(0, FLOOR),
                 new EnvelopeConstraint(mrsp, CEILING)
         );
-        EnvelopeDeceleration.decelerateEBD(context, targetPosition, targetSpeed, overlayBuilder, -1);
+        EnvelopeDeceleration.decelerate(context, targetPosition, targetSpeed, overlayBuilder, -1);
 
         return partBuilder.build();
     }

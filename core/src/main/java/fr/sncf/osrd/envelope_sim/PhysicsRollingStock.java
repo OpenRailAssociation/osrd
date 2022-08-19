@@ -35,4 +35,10 @@ public interface PhysicsRollingStock {
 
     /** The emergency braking force which can be applied at a given speed, in newtons */
     double getEmergencyBrakingForce(double speed);
+
+    /** The service braking force which can be applied at a given speed, in newtons */
+    double getServiceBrakingForce(double speed);
+
+    /** The normal service braking force which can be applied at a given speed, in newtons */
+    double getNormalServiceBrakingForce(double speed);
 }
