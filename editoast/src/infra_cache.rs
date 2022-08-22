@@ -815,8 +815,8 @@ pub mod tests {
     };
     use crate::railjson::{
         ApplicableDirections, Catenary, Direction, DirectionalTrackRange, Endpoint, ObjectRef,
-        ObjectType, OperationalPoint, Route, SpeedSection, Switch, SwitchPortConnection,
-        SwitchType, TrackEndpoint, TrackSectionLink,
+        ObjectType, OperationalPoint, OperationalPointPart, Route, SpeedSection, Switch,
+        SwitchPortConnection, SwitchType, TrackEndpoint, TrackSectionLink,
     };
 
     use crate::models::errors::{
@@ -824,7 +824,7 @@ pub mod tests {
         switches, track_section_links, track_sections,
     };
 
-    use super::{BufferStopCache, DetectorCache, TrackCache};
+    use super::{BufferStopCache, DetectorCache, OperationalPointCache, TrackCache};
 
     #[test]
     fn load_track_section() {
@@ -1040,11 +1040,16 @@ pub mod tests {
         obj_id: T,
         track: T,
         position: f64,
-    ) -> BufferStopCache {
-        BufferStopCache {
+    ) -> OperationalPointCache {
+        OperationalPointCache {
             obj_id: obj_id.as_ref().into(),
-            track: track.as_ref().into(),
-            position,
+            parts: vec![OperationalPointPart {
+                track: ObjectRef {
+                    obj_type: ObjectType::TrackSection,
+                    obj_id: track.as_ref().into(),
+                },
+                position,
+            }],
         }
     }
 
