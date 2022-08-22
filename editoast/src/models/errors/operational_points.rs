@@ -66,7 +66,7 @@ pub fn generate_errors(infra_cache: &InfraCache) -> (Vec<serde_json::Value>, Vec
 #[cfg(test)]
 mod tests {
     use crate::{
-        infra_cache::tests::{create_detector_cache, create_small_infra_cache},
+        infra_cache::tests::{create_operational_point_cache, create_small_infra_cache},
         railjson::{ObjectRef, ObjectType},
     };
     use serde_json::to_value;
@@ -77,25 +77,25 @@ mod tests {
     #[test]
     fn invalid_ref() {
         let mut infra_cache = create_small_infra_cache();
-        infra_cache.load_detector(create_detector_cache("D_error", "E", 250.));
+        infra_cache.load_operational_point(create_operational_point_cache("OP_error", "E", 250.));
         let (errors, ids) = generate_errors(&infra_cache);
         assert_eq!(1, errors.len());
         assert_eq!(1, ids.len());
         let obj_ref = ObjectRef::new(ObjectType::TrackSection, "E".into());
-        let infra_error = InfraError::new_invalid_reference("track", obj_ref);
+        let infra_error = InfraError::new_invalid_reference("parts.0.track", obj_ref);
         assert_eq!(to_value(infra_error).unwrap(), errors[0]);
-        assert_eq!("D_error", ids[0]);
+        assert_eq!("OP_error", ids[0]);
     }
 
     #[test]
     fn out_of_range() {
         let mut infra_cache = create_small_infra_cache();
-        infra_cache.load_detector(create_detector_cache("D_error", "A", 530.));
+        infra_cache.load_operational_point(create_operational_point_cache("OP_error", "A", 530.));
         let (errors, ids) = generate_errors(&infra_cache);
         assert_eq!(1, errors.len());
         assert_eq!(1, ids.len());
-        let infra_error = InfraError::new_out_of_range("position", 530., [0.0, 500.]);
+        let infra_error = InfraError::new_out_of_range("parts.0.position", 530., [0.0, 500.]);
         assert_eq!(to_value(infra_error).unwrap(), errors[0]);
-        assert_eq!("D_error", ids[0]);
+        assert_eq!("OP_error", ids[0]);
     }
 }
