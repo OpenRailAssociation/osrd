@@ -2,6 +2,8 @@ package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
+import fr.sncf.osrd.infra_state.implementation.standalone.StandaloneSimulationError;
+import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStockField;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -128,34 +130,34 @@ public class RollingStock implements PhysicsRollingStock {
     @Override
     public double getEmergencyBrakingForce(double speed) {
         assert gammaBrakeEmergency != null;
-        for (Entry mapElement : gammaBrakeEmergency.entrySet()) {
-            double mapSpeed = (double) mapElement.getKey();
+        for (var mapElement : gammaBrakeEmergency.entrySet()) {
+            double mapSpeed = mapElement.getKey();
             if (Math.abs(speed) <= mapSpeed)
-            return (double)mapElement.getValue() * inertia;
+                return mapElement.getValue() * inertia;
         }
-        return gammaBrakeEmergency.get(gammaBrakeEmergency.lastKey()) * inertia;
+        throw new InvalidRollingStockField("gammaBrakeEmergency", "no value for the given speed");
     }
 
     @Override
     public double getServiceBrakingForce(double speed) {
         assert gammaBrakeService != null;
-        for (Entry mapElement : gammaBrakeService.entrySet()) {
-            double mapSpeed = (double) mapElement.getKey();
+        for (var mapElement : gammaBrakeService.entrySet()) {
+            double mapSpeed = mapElement.getKey();
             if (Math.abs(speed) <= mapSpeed)
-                return (double)mapElement.getValue() * inertia;
+                return mapElement.getValue() * inertia;
         }
-        return gammaBrakeService.get(gammaBrakeService.lastKey()) * inertia;
+        throw new InvalidRollingStockField("gammaBrakeService", "no value for the given speed");
     }
 
     @Override
     public double getNormalServiceBrakingForce(double speed) {
         assert gammaBrakeNormalService != null;
-        for (Entry mapElement : gammaBrakeNormalService.entrySet()) {
-            double mapSpeed = (double) mapElement.getKey();
+        for (var mapElement : gammaBrakeNormalService.entrySet()) {
+            double mapSpeed = mapElement.getKey();
             if (Math.abs(speed) <= mapSpeed)
-                return (double)mapElement.getValue() * inertia;
+                return mapElement.getValue() * inertia;
         }
-        return gammaBrakeNormalService.get(gammaBrakeNormalService.lastKey()) * inertia;
+        throw new InvalidRollingStockField("gammaBrakeNormalService", "no value for the given speed");
     }
 
     @Override
