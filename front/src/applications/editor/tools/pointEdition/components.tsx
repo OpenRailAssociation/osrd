@@ -1,8 +1,11 @@
+import { omit } from 'lodash';
 import React, { FC, useContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Layer, Source } from 'react-map-gl';
 import { useTranslation } from 'react-i18next';
 import { featureCollection } from '@turf/helpers';
+import along from '@turf/along';
+import { Feature, LineString } from 'geojson';
 
 import { EditorContext } from '../../context';
 import GeoJSONs from '../../../../common/Map/Layers/GeoJSONs';
@@ -26,7 +29,7 @@ import {
   getDetectorsNameLayerProps,
 } from '../../../../common/Map/Layers/Detectors';
 import { getBufferStopsLayerProps } from '../../../../common/Map/Layers/BufferStops';
-import { EditorContextType } from '../types';
+import { EditorContextType, ExtendedEditorContextType } from '../types';
 
 export const POINT_LAYER_ID = 'pointEditionTool/new-entity';
 
@@ -36,7 +39,7 @@ export const POINT_LAYER_ID = 'pointEditionTool/new-entity';
 export const PointEditionLeftPanel: FC = <Entity extends EditorEntity>() => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const { state, setState } = useContext(EditorContext) as EditorContextType<
+  const { state, setState, editorState } = useContext(EditorContext) as ExtendedEditorContextType<
     PointEditionState<Entity>
   >;
 
@@ -54,7 +57,23 @@ export const PointEditionLeftPanel: FC = <Entity extends EditorEntity>() => {
         if (id && id !== savedEntity.id) setState({ ...state, entity: { ...state.entity, id } });
       }}
       onChange={(entity) => {
-        setState({ ...state, entity: entity as Entity });
+        const additionalUpdate: Partial<Entity> = {};
+
+        const newPosition = entity.properties?.position;
+        const oldPosition = state.entity.properties?.position;
+        const trackId = entity.properties?.track?.id;
+        if (
+          typeof trackId === 'string' &&
+          typeof newPosition === 'number' &&
+          typeof oldPosition === 'number' &&
+          newPosition !== oldPosition
+        ) {
+          const line = editorState.editorDataIndex[trackId];
+          const point = along(line as Feature<LineString>, newPosition, { units: 'meters' });
+          additionalUpdate.geometry = point.geometry;
+        }
+
+        setState({ ...state, entity: { ...(entity as Entity), ...additionalUpdate } });
       }}
     >
       <div className="text-right">

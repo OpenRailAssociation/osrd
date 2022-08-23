@@ -68,8 +68,9 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
       state: toolState,
       setState: setToolState,
       switchTool<S extends CommonToolState>(tool: Tool<S>, state?: Partial<S>) {
+        const fullState = { ...tool.getInitialState(), ...(state || {}) };
         activateTool(tool);
-        setToolState({ ...tool.getInitialState(), ...(state || {}) });
+        setToolState(fullState);
       },
     }),
     [activeTool, modal, t, toolState]
@@ -138,8 +139,18 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
     }
   }, [dispatch, infra, infraID, t]);
 
+  // Lifecycle events on tools:
+  useEffect(() => {
+    if (activeTool.onMount) activeTool.onMount(extendedContext);
+
+    return () => {
+      if (activeTool.onUnmount) activeTool.onUnmount(extendedContext);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTool]);
+
   return (
-    <EditorContext.Provider value={context as EditorContextType<unknown>}>
+    <EditorContext.Provider value={extendedContext as EditorContextType<unknown>}>
       <main
         className={`editor-root mastcontainer mastcontainer-map${fullscreen ? ' fullscreen' : ''}`}
       >

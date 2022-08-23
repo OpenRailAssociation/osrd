@@ -110,10 +110,7 @@ export async function editorSave(
         operation_type: 'UPDATE',
         obj_id: features.source.id,
         obj_type: features.source.objType,
-        railjson_patch: compare(
-          { ...(features.source.properties || {}), geo: features.source.geometry },
-          { ...(features.target.properties || {}), geo: features.target.geometry }
-        ),
+        railjson_patch: compare(features.source.properties || {}, features.target.properties || {}),
       })
     ),
     ...(operations.delete || []).map(

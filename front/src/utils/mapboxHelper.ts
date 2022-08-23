@@ -288,7 +288,7 @@ export function getLineGeoJSON(points: Position[]): Feature {
  */
 export function getNearestPoint(lines: Feature<LineString>[], coord: Coord): NearestPoint {
   const nearestPoints: Feature<Point>[] = lines.map((line) => {
-    const point = nearestPointOnLine(line, coord);
+    const point = nearestPointOnLine(line, coord, { units: 'meters' });
     const angle = getAngle(
       line.geometry.coordinates[point.properties.index as number],
       line.geometry.coordinates[(point.properties.index as number) + 1]
