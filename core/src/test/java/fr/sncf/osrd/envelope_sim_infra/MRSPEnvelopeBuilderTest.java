@@ -1,4 +1,4 @@
-package fr.sncf.osrd.envelope;
+package fr.sncf.osrd.envelope_sim_infra;
 
 import static fr.sncf.osrd.envelope_sim.EnvelopeProfile.CONSTANT_SPEED;
 import static fr.sncf.osrd.envelope_sim_infra.MRSP.LimitKind.SPEED_LIMIT;
@@ -7,9 +7,12 @@ import static fr.sncf.osrd.infra.InfraHelpers.setTrackSpeedSections;
 import static fr.sncf.osrd.train.TestTrains.*;
 
 import com.google.common.collect.*;
+import fr.sncf.osrd.envelope.Envelope;
+import fr.sncf.osrd.envelope.EnvelopeAttr;
+import fr.sncf.osrd.envelope.EnvelopeTestUtils;
 import fr.sncf.osrd.envelope.EnvelopeTestUtils.TestAttr;
+import fr.sncf.osrd.envelope.MRSPEnvelopeBuilder;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
-import fr.sncf.osrd.envelope_sim_infra.MRSP;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.tracks.undirected.SpeedLimits;
 import fr.sncf.osrd.infra.implementation.tracks.directed.DiTrackEdgeImpl;

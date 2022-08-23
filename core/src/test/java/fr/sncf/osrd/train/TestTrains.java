@@ -1,8 +1,7 @@
 package fr.sncf.osrd.train;
 
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class TestTrains {
     public static final RollingStock FAST_NO_FRICTION_TRAIN = new RollingStock(
@@ -42,6 +41,16 @@ public class TestTrains {
             tractiveEffortCurve.add(new RollingStock.TractiveEffortPoint(speed, effort));
         }
         tractiveEffortCurve.add(new RollingStock.TractiveEffortPoint(maxSpeed, minEffort));
+
+        SortedMap<Double, Double> gammaBrakeEmergency = new TreeMap<>();
+        gammaBrakeEmergency.put(0., 0.81);
+        gammaBrakeEmergency.put(40., 0.72);
+        gammaBrakeEmergency.put(80., 0.66);
+        gammaBrakeEmergency.put(100., 0.64);
+        gammaBrakeEmergency.put(155., 0.44);
+        gammaBrakeEmergency.put(180., 0.48);
+        gammaBrakeEmergency.put(250., 0.4);
+        gammaBrakeEmergency.put(300., 0.4);
 
         VERY_SHORT_FAST_TRAIN = new RollingStock(
                 "fast train",
@@ -84,6 +93,11 @@ public class TestTrains {
                 0.25,
                 0.5,
                 RollingStock.GammaType.CONST,
+                gammaBrakeEmergency,
+                null,
+                null,
+                null,
+                null,
                 tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
                 RJSLoadingGaugeType.G1
         );

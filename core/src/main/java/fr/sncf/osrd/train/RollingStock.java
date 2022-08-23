@@ -262,11 +262,11 @@ public class RollingStock implements PhysicsRollingStock {
             double comfortAcceleration,
             double gamma,
             GammaType gammaType,
-            SortedMap<Double,Double> gammaBrakeEmergency,
-            SortedMap<Double,Double> gammaBrakeService,
-            SortedMap<Double,Double> gammaBrakeNormalService,
-            HashMap<Double,Double> kDry,
-            HashMap<Double,Double> kWet,
+            SortedMap<Double, Double> gammaBrakeEmergency,
+            SortedMap<Double, Double> gammaBrakeService,
+            SortedMap<Double, Double> gammaBrakeNormalService,
+            HashMap<Double, Double> kDry,
+            HashMap<Double, Double> kWet,
             TractiveEffortPoint[] tractiveEffortCurve,
             RJSLoadingGaugeType loadingGaugeType
     ) {

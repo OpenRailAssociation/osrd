@@ -106,9 +106,11 @@ public class BrakingCurves {
             var detectors = range.getDetectors();
             for (var detector : detectors) {
                 var detectorPosition = range.begin + detector.offset();
-                var brakingCurve =
-                        computeEBDCurve(context, mrsp, detectorPosition, 0);
-                detectorsEBDCurves.add(brakingCurve);
+                if (detectorPosition > 0 && detectorPosition <= trainPath.length()) {
+                    var brakingCurve =
+                            computeEBDCurve(context, mrsp, detectorPosition, 0);
+                    detectorsEBDCurves.add(brakingCurve);
+                }
             }
         }
         return detectorsEBDCurves;
@@ -121,7 +123,7 @@ public class BrakingCurves {
                                                 Envelope mrsp,
                                                 double targetPosition,
                                                 double targetSpeed) {
-        // if the stopPosition is zero, or above path length, the input is invalid
+        // if the stopPosition is below zero, or above path length, the input is invalid
         if (targetPosition <= 0.0 || targetPosition > context.path.getLength())
             throw new RuntimeException(String.format(
                     "Trying to compute ETCS braking curve from out of bounds ERTMS marker board (position = %f,"
