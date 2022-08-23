@@ -1,11 +1,13 @@
 import { Feature, Point, LineString, Position } from 'geojson';
 import { last, differenceWith, cloneDeep, isEqual, sortBy, isArray, isNil } from 'lodash';
+import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
+import { utils } from '@rjsf/core';
 import lineSplit from '@turf/line-split';
 import fnLength from '@turf/length';
-import { JSONSchema7 } from 'json-schema';
 
 import { EditorEntity } from '../../../../types';
 
+export const LINEAR_METADATA_FIELDS = ['slopes', 'curves'];
 // Min size of a linear metadata segment
 export const SEGMENT_MIN_SIZE = 1;
 // Delta error between the user length input and the length of the geometry
@@ -539,7 +541,12 @@ export function getLinearMetadataProperties(schema: JSONSchema7): Array<string> 
     .map((prop) => {
       const propSchema = (schema?.properties || {})[prop] as JSONSchema7;
       /* eslint-disable dot-notation */
-      if (propSchema.type === 'array' && propSchema.items && propSchema.items['$ref']) {
+      if (
+        LINEAR_METADATA_FIELDS.includes(prop) &&
+        propSchema.type === 'array' &&
+        propSchema.items &&
+        propSchema.items['$ref']
+      ) {
         const refName = propSchema.items['$ref'].replace('#/definitions/', '');
         const refSchema = (schema.definitions || {})[refName] as JSONSchema7;
         /* eslint-enable dot-notation */
@@ -554,42 +561,6 @@ export function getLinearMetadataProperties(schema: JSONSchema7): Array<string> 
       return null;
     })
     .filter((n) => n !== null) as Array<string>;
-}
-
-/**
- * Given an entity this function check if it contains somes linear metadata,
- * and fix them.
- * NOTE: If no modification has been done, the initial object is returned.
-
- * @param entity The entity with linear metadata
- * @param schema The JSON schema of the entity
- * @returns The entity where all the linear metadata are fixed
- */
-export function entityFixLinearMetadata(entity: EditorEntity, schema: JSONSchema7): EditorEntity {
-  // check that the geo is a line
-  if (!entity.geometry || entity.geometry.type !== 'LineString') return entity;
-
-  // Compute/get the length of the geometry
-  // we need it to fix LM
-  let geometryLength = getLineStringDistance(entity.geometry);
-  if (entity.properties && entity.properties.length) {
-    geometryLength = entity.properties.length;
-  }
-
-  // get the LM props from the schema
-  const lmProps = getLinearMetadataProperties(schema);
-  const result = { ...entity, properties: { ...(entity.properties ?? {}) } };
-  let hasBeenModified = false;
-  const { properties } = entity;
-  lmProps.forEach((name) => {
-    (result.properties as { [key: string]: unknown })[name] = fixLinearMetadataItems(
-      ((properties || {})[name] || []) as Array<LinearMetadataItem>,
-      geometryLength
-    );
-    hasBeenModified = true;
-  });
-
-  return hasBeenModified ? result : entity;
 }
 
 /**
@@ -618,4 +589,80 @@ export function entityDoUpdate<T extends EditorEntity>(entity: T, sourceLine: Li
     return { ...entity, properties: newProps };
   }
   return entity;
+}
+
+/**
+ * In a form for a field, compute/enhance its JSON schema,
+ * By adding min & max on 'begin' & 'end' sub-fields if needed.
+ * For a linear Metadata
+ */
+export function getFieldJsonSchema(
+  fieldSchema: JSONSchema7,
+  rootSchema: JSONSchema7,
+  enhancement: { [key: string]: JSONSchema7Definition } = {}
+): JSONSchema7 {
+  let result = { ...fieldSchema };
+  if (fieldSchema.items) {
+    const itemsSchema = utils.retrieveSchema(fieldSchema.items as JSONSchema7, rootSchema);
+    if (itemsSchema.properties?.begin && itemsSchema.properties?.end) {
+      /* eslint-disable prefer-object-spread */
+      result = {
+        ...result,
+        items: {
+          ...itemsSchema,
+          properties: {
+            begin: Object.assign(
+              {},
+              itemsSchema.properties?.begin || {},
+              enhancement.begin ? enhancement.begin : {}
+            ),
+            end: Object.assign(
+              {},
+              itemsSchema.properties?.end || {},
+              enhancement.end ? enhancement.end : {}
+            ),
+            ...Object.keys(itemsSchema.properties || {})
+              .filter((k) => !['begin', 'end'].includes(k))
+              .map((k) => ({
+                name: k,
+                schema: itemsSchema.properties ? itemsSchema.properties[k] : {},
+              }))
+              .reduce((acc, curr) => {
+                acc[curr.name] = Object.assign(
+                  {},
+                  curr.schema,
+                  enhancement[curr.name] ? enhancement[curr.name] : {}
+                );
+                return acc;
+              }, {} as { [key: string]: JSONSchema7Definition }),
+          },
+        },
+        definitions: rootSchema.definitions,
+      } as JSONSchema7;
+      /* eslint-enable prefer-object-spread */
+    }
+  }
+  return result;
+}
+
+/**
+ * Helper function that move the viewbox so the selected element is visible.
+ */
+export function viewboxForSelection(
+  data: Array<LinearMetadataItem>,
+  vb: [number, number] | null,
+  selected: number
+): [number, number] | null {
+  // case of no zoom
+  if (vb === null) return null;
+
+  // if the selected is left outside
+  if (data[selected].end <= vb[0]) {
+    return transalteViewBox(data, vb, data[selected].begin - vb[0]);
+  }
+  // if the selected is right outside
+  if (vb[1] <= data[selected].begin) {
+    return transalteViewBox(data, vb, data[selected].end - vb[1]);
+  }
+  return vb;
 }
