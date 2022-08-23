@@ -52,6 +52,16 @@ public class TestTrains {
         gammaBrakeEmergency.put(250., 0.4);
         gammaBrakeEmergency.put(300., 0.4);
 
+        SortedMap<Double, Double> gammaBrakeService = new TreeMap<>();
+        gammaBrakeService.put(0., 0.41);
+        gammaBrakeService.put(40., 0.42);
+        gammaBrakeService.put(80., 0.46);
+        gammaBrakeService.put(100., 0.45);
+        gammaBrakeService.put(155., 0.45);
+        gammaBrakeService.put(180., 0.49);
+        gammaBrakeService.put(250., 0.41);
+        gammaBrakeService.put(300., 0.41);
+
         VERY_SHORT_FAST_TRAIN = new RollingStock(
                 "fast train",
                 1, trainMass, 1.05, (0.65 * trainMass) / 100,
@@ -94,7 +104,7 @@ public class TestTrains {
                 0.5,
                 RollingStock.GammaType.CONST,
                 gammaBrakeEmergency,
-                null,
+                gammaBrakeService,
                 null,
                 null,
                 null,

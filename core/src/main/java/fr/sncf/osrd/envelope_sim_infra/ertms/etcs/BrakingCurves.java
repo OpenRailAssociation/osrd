@@ -2,7 +2,8 @@ package fr.sncf.osrd.envelope_sim_infra.ertms.etcs;
 
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
-import static fr.sncf.osrd.envelope_sim.EnvelopeSimContext.UseCase.ETCS_EBD;
+import static fr.sncf.osrd.envelope_sim.EnvelopeSimContext.UseCase.*;
+import static fr.sncf.osrd.envelope_sim_infra.ertms.etcs.BrakingCurves.BrakingCurveType.*;
 
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.EnvelopeCursor;
@@ -11,47 +12,76 @@ import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
-import fr.sncf.osrd.envelope_sim.EnvelopePath;
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.infra_state.api.TrainPath;
-import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import java.util.ArrayList;
 import java.util.List;
 
 public class BrakingCurves {
 
-    /** Computes the ETCS braking curves from a path, a schedule,  */
+    public enum BrakingCurveType {
+        EBD,
+        EBI,
+        SBD,
+        SBI1,
+        SBI2,
+        PS,
+        IND
+    }
+
+    /** Computes the ETCS braking curves from a path, a schedule, a time step, and a MRSP envelope */
     public static List<EnvelopePart> from(
             TrainPath trainPath,
             StandaloneTrainSchedule schedule,
             double timeStep,
             Envelope mrsp
     ) {
-        var rollingStock = schedule.rollingStock;
-        var stops = schedule.getStopsPositions();
-        var envelopePath = EnvelopeTrainPath.from(trainPath);
-        var context = new EnvelopeSimContext(rollingStock, envelopePath, timeStep, ETCS_EBD);
+        var totalEBDCurves = computeETCSBrakingCurves(EBD, trainPath, schedule, timeStep, mrsp);
+        var totalSBDCurves = computeETCSBrakingCurves(SBD, trainPath, schedule, timeStep, mrsp);
+        var totalCurves = new ArrayList<EnvelopePart>();
+        totalCurves.addAll(totalEBDCurves);
+        totalCurves.addAll(totalSBDCurves);
+        return totalCurves;
+    }
 
-        var detectorsEBDCurves = computeEBDCurvesAtDetectors(trainPath, context, mrsp);
-        var slowdownsEBDCurves = computeEBDCurvesAtSlowdowns(context, mrsp);
-        var stopsEBDCurves = computeEBDCurvesAtStops(context, stops, mrsp);
-        var totalEBDCurves = new ArrayList<EnvelopePart>();
-        totalEBDCurves.addAll(detectorsEBDCurves);
-        totalEBDCurves.addAll(slowdownsEBDCurves);
-        totalEBDCurves.addAll(stopsEBDCurves);
-        return totalEBDCurves;
+    private static List<EnvelopePart> computeETCSBrakingCurves(
+            BrakingCurveType type,
+            TrainPath trainPath,
+            StandaloneTrainSchedule schedule,
+            double timeStep,
+            Envelope mrsp
+    ) {
+        var rollingStock = schedule.rollingStock;
+        var stopPositions = schedule.getStopsPositions();
+        var envelopePath = EnvelopeTrainPath.from(trainPath);
+        EnvelopeSimContext context;
+
+        switch (type) {
+            case EBD -> context = new EnvelopeSimContext(rollingStock, envelopePath, timeStep, ETCS_EBD);
+            case SBD -> context = new EnvelopeSimContext(rollingStock, envelopePath, timeStep, ETCS_SBD);
+            default -> context = new EnvelopeSimContext(rollingStock, envelopePath, timeStep, RUNNING_TIME_CALCULATION);
+        }
+
+        var detectorsCurves = computeBrakingCurvesAtDetectors(trainPath, context, mrsp);
+        var slowdownsCurves = computeBrakingCurvesAtSlowdowns(context, mrsp);
+        var stopsCurves = computeBrakingCurvesAtStops(context, stopPositions, mrsp);
+        var totalCurves = new ArrayList<EnvelopePart>();
+        totalCurves.addAll(detectorsCurves);
+        totalCurves.addAll(slowdownsCurves);
+        totalCurves.addAll(stopsCurves);
+        return totalCurves;
     }
 
 
     /**
      * Compute an EBD curve at every stop
      */
-    private static List<EnvelopePart> computeEBDCurvesAtStops(
+    private static List<EnvelopePart> computeBrakingCurvesAtStops(
             EnvelopeSimContext context,
             double[] stopPositions,
             Envelope mrsp
@@ -70,7 +100,7 @@ public class BrakingCurves {
     /**
      * Compute an EBD curve at every slowdown
      */
-    private static List<EnvelopePart> computeEBDCurvesAtSlowdowns(
+    private static List<EnvelopePart> computeBrakingCurvesAtSlowdowns(
             EnvelopeSimContext context,
             Envelope mrsp
     ) {
@@ -91,7 +121,7 @@ public class BrakingCurves {
     /**
      * Compute an EBD curve at every detector
      */
-    private static List<EnvelopePart> computeEBDCurvesAtDetectors(
+    private static List<EnvelopePart> computeBrakingCurvesAtDetectors(
             TrainPath trainPath,
             EnvelopeSimContext context,
             Envelope mrsp

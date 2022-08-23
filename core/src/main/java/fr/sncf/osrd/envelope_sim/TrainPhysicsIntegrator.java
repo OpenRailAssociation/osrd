@@ -89,14 +89,12 @@ public final class TrainPhysicsIntegrator {
             tractionForce = maxTractionForce;
 
         if (action == Action.BRAKE) {
-            if (useCase == UseCase.RUNNING_TIME_CALCULATION)
-                brakingForce = rollingStock.getMaxBrakingForce(speed);
-            if (useCase == UseCase.ETCS_EBD)
-                brakingForce = rollingStock.getEmergencyBrakingForce(speed);
-            if (useCase == UseCase.ETCS_SBD)
-                brakingForce = rollingStock.getServiceBrakingForce(speed);
-            if (useCase == UseCase.ETCS_GUI)
-                brakingForce = rollingStock.getNormalServiceBrakingForce(speed);
+            switch (useCase) {
+                case RUNNING_TIME_CALCULATION -> brakingForce = rollingStock.getMaxBrakingForce(speed);
+                case ETCS_EBD -> brakingForce = rollingStock.getEmergencyBrakingForce(speed);
+                case ETCS_SBD -> brakingForce = rollingStock.getServiceBrakingForce(speed);
+                case ETCS_GUI -> brakingForce = rollingStock.getNormalServiceBrakingForce(speed);
+            }
         }
 
         double acceleration = computeAcceleration(rollingStock, rollingResistance,

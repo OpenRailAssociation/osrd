@@ -3,10 +3,12 @@ package fr.sncf.osrd.envelope_sim_infra;
 import static fr.sncf.osrd.Helpers.infraFromRJS;
 import static fr.sncf.osrd.envelope_sim.MaxSpeedEnvelopeTest.*;
 import static fr.sncf.osrd.infra.InfraHelpers.getSignalingRoute;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.EnvelopeDebug;
+import fr.sncf.osrd.envelope.EnvelopeTestUtils;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.FlatPath;
 import fr.sncf.osrd.envelope_sim_infra.ertms.etcs.BrakingCurves;
@@ -55,5 +57,9 @@ public class ETCSBrakingCurvesTest {
         }
         plotBuilder.add(mrsp, "mrsp");
         plotBuilder.plot();
+        var numberOfDetectors = path.detectors().size();
+        var numberOfStops = stops.size();
+        var numberOfCurves = ebdBrakingCurves.size();
+        assertEquals(numberOfCurves, numberOfDetectors + numberOfStops);
     }
 }

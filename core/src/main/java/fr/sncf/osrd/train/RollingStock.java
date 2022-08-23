@@ -2,11 +2,9 @@ package fr.sncf.osrd.train;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
-import fr.sncf.osrd.infra_state.implementation.standalone.StandaloneSimulationError;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStockField;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 import java.util.HashMap;
-import java.util.Map.Entry;
 import java.util.SortedMap;
 
 /**
