@@ -76,16 +76,21 @@ export interface TrackSectionEntity extends EditorEntity {
 export interface SignalEntity
   extends EditorEntity<
     Point,
-    { track?: { id: string; type: string }; angle_geo?: number; installation_type?: string }
+    {
+      track?: { id: string; type: string };
+      position?: number;
+      angle_geo?: number;
+      installation_type?: string;
+    }
   > {
   objType: 'Signal';
 }
 export interface BufferStopEntity
-  extends EditorEntity<Point, { track?: { id: string; type: string } }> {
+  extends EditorEntity<Point, { track?: { id: string; type: string }; position?: number }> {
   objType: 'BufferStop';
 }
 export interface DetectorEntity
-  extends EditorEntity<Point, { track?: { id: string; type: string } }> {
+  extends EditorEntity<Point, { track?: { id: string; type: string }; position?: number }> {
   objType: 'Detector';
 }
 

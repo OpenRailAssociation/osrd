@@ -3,6 +3,7 @@ import { cloneDeep, isEqual, omit } from 'lodash';
 import { Feature, LineString, Point } from 'geojson';
 import { BiReset, AiOutlinePlus } from 'react-icons/all';
 import { IconType } from 'react-icons';
+import nearestPointOnLine from '@turf/nearest-point-on-line';
 
 import { DEFAULT_COMMON_TOOL_STATE, MakeOptional, Tool } from '../types';
 import { getNearestPoint } from '../../../../utils/mapboxHelper';
@@ -19,7 +20,10 @@ interface PointEditionToolParams<Entity extends EditorEntity> {
 }
 
 function getPointEditionTool<
-  Entity extends EditorEntity<Point, { track?: { id: string; type: string }; angle_geo?: number }>
+  Entity extends EditorEntity<
+    Point,
+    { track?: { id: string; type: string }; position?: number; angle_geo?: number }
+  >
 >({
   id,
   icon,
@@ -94,6 +98,7 @@ function getPointEditionTool<
           coordinates: nearestPoint.feature.geometry.coordinates,
         };
         newEntity.properties = newEntity.properties || {};
+        newEntity.properties.position = nearestPoint.position;
         newEntity.properties.track = { id: nearestPoint.trackSectionID, type: 'TrackSection' };
 
         if (requiresAngle) {
@@ -121,11 +126,13 @@ function getPointEditionTool<
         if (hoveredTracks.length) {
           const nearestPoint = getNearestPoint(hoveredTracks, e.lngLat);
           const angle = nearestPoint.properties.angleAtPoint;
+
           setState({
             ...state,
             nearestPoint: {
               angle,
               feature: nearestPoint,
+              position: nearestPoint.properties.location,
               trackSectionID: hoveredTracks[nearestPoint.properties.featureIndex].id as string,
             },
           });
@@ -145,6 +152,37 @@ function getPointEditionTool<
           ...state,
           isHoveringTarget: false,
         });
+      }
+    },
+
+    // Lifecycle:
+    onMount({ state: { entity }, editorState }) {
+      const trackId = entity.properties?.track?.id;
+
+      if (trackId) {
+        const line = editorState.editorDataIndex[trackId];
+
+        const dbPosition = entity.properties.position;
+        const computedPosition = nearestPointOnLine(
+          line as Feature<LineString>,
+          entity as Feature<Point>,
+          { units: 'meters' }
+        ).properties?.location;
+
+        if (
+          typeof dbPosition === 'number' &&
+          typeof computedPosition === 'number' &&
+          Math.abs(dbPosition - computedPosition) >= 1
+        ) {
+          // eslint-disable-next-line no-console
+          console.warn(
+            `
+The entity ${entity.id} position computed by Turf.js does not match the one from the database:
+  -> Database position: ${dbPosition}
+  -> Turf.js position: ${computedPosition}
+`
+          );
+        }
       }
     },
 

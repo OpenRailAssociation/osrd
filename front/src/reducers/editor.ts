@@ -6,7 +6,6 @@ import { Feature } from 'geojson';
 import { ThunkAction, Zone, EditorSchema, EditorEntity } from '../types';
 import { setLoading, setSuccess, setFailure } from './main';
 import { getEditorSchema, getEditorData, editorSave } from '../applications/editor/data/api';
-import { clip } from '../utils/mapboxHelper';
 
 //
 // Actions
@@ -188,12 +187,23 @@ export default function reducer(inputState: EditorState, action: Actions) {
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 export const dataSelector = (state: EditorState) => state.editorData;
 export const zoneSelector = (state: EditorState) => state.editorZone;
-export const clippedDataSelector = createSelector(dataSelector, zoneSelector, (data, zone) => {
-  let result: Array<EditorEntity> = [];
-  if (zone && data)
-    result = data.map((f) => {
-      const clippedFeature = clip(f, zone);
-      return clippedFeature ? { ...f, geometry: clippedFeature.geometry } : f;
-    });
-  return result;
-});
+export const clippedDataSelector = createSelector(
+  dataSelector,
+  zoneSelector,
+  (
+    data
+    // zone
+  ) => {
+    // [jacomyal]
+    // The following code is commented at least for now, because we need the full
+    // track sections to properly compute point item coordinates from their
+    // positions:
+    // let result: Array<EditorEntity> = [];
+    // if (zone && data)
+    //   result = data.map((f) => {
+    //     const clippedFeature = clip(f, zone);
+    //     return clippedFeature ? { ...f, geometry: clippedFeature.geometry } : f;
+    //   });
+    return data;
+  }
+);

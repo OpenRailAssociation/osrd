@@ -97,6 +97,8 @@ export interface Tool<S> {
   getRadius?: (context: ReadOnlyEditorContextType<S>) => number;
 
   // Interactions with Mapbox:
+  onMount?: (context: ExtendedEditorContextType<S>) => void;
+  onUnmount?: (context: ExtendedEditorContextType<S>) => void;
   onClickMap?: (e: MapEvent, context: ExtendedEditorContextType<S>) => void;
   onClickFeature?: (feature: Item, e: MapEvent, context: ExtendedEditorContextType<S>) => void;
   onHover?: (e: MapEvent, context: ExtendedEditorContextType<S>) => void;
