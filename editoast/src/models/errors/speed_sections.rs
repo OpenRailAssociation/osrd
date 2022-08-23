@@ -64,3 +64,42 @@ pub fn generate_errors(infra_cache: &InfraCache) -> (Vec<serde_json::Value>, Vec
 
     (errors, speed_section_ids)
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::{
+        infra_cache::tests::{create_small_infra_cache, create_speed_section_cache},
+        railjson::{ObjectRef, ObjectType},
+    };
+    use serde_json::to_value;
+
+    use super::generate_errors;
+    use super::InfraError;
+
+    #[test]
+    fn invalid_ref() {
+        let mut infra_cache = create_small_infra_cache();
+        let track_ranges_error = vec![("A", 20., 500.), ("E", 0., 500.), ("B", 0., 250.)];
+        infra_cache.load_speed_section(create_speed_section_cache("SP_error", track_ranges_error));
+        let (errors, ids) = generate_errors(&infra_cache);
+        assert_eq!(1, errors.len());
+        assert_eq!(1, ids.len());
+        let obj_ref = ObjectRef::new(ObjectType::TrackSection, "E".into());
+        let infra_error = InfraError::new_invalid_reference("track_ranges.1", obj_ref);
+        assert_eq!(to_value(infra_error).unwrap(), errors[0]);
+        assert_eq!("SP_error", ids[0]);
+    }
+
+    #[test]
+    fn out_of_range() {
+        let mut infra_cache = create_small_infra_cache();
+        let track_ranges_error = vec![("A", 20., 530.), ("B", 0., 250.)];
+        infra_cache.load_speed_section(create_speed_section_cache("SP_error", track_ranges_error));
+        let (errors, ids) = generate_errors(&infra_cache);
+        assert_eq!(1, errors.len());
+        assert_eq!(1, ids.len());
+        let infra_error = InfraError::new_out_of_range("track_ranges.0.end", 530., [0.0, 500.]);
+        assert_eq!(to_value(infra_error).unwrap(), errors[0]);
+        assert_eq!("SP_error", ids[0]);
+    }
+}
