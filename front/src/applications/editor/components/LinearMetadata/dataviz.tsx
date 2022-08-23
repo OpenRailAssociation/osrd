@@ -187,7 +187,7 @@ export interface LinearMetadataDatavizProps<T> {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const LinearMetadataDataviz = <T extends any>({
-  data,
+  data = [],
   field,
   viewBox,
   highlighted = [],
