@@ -7,7 +7,7 @@ import './EditorForm.scss';
 import { EditorEntity } from '../../../types';
 import { EditorState } from '../../../reducers/editor';
 import { getJsonSchemaForLayer, getLayerForObjectType } from '../data/utils';
-import { FormComponent, FormLineStringLength, entityFixLinearMetadata } from './LinearMetadata';
+import { FormComponent, FormLineStringLength } from './LinearMetadata';
 
 const fields = {
   ArrayField: FormComponent,
@@ -31,9 +31,12 @@ const EditorForm: React.FC<EditorFormProps> = ({ data, onSubmit, onChange, child
   const schema = getJsonSchemaForLayer(editorState.editorSchema, layer || '');
   if (!schema) throw new Error(`Missing data type for ${layer}`);
 
+  /**
+   * When data or schema change
+   * => recompute formData by fixing LM
+   */
   useEffect(() => {
-    const entity = entityFixLinearMetadata(data, schema);
-    setFormData(entity.properties);
+    setFormData(data.properties);
   }, [data, schema]);
 
   /**
@@ -64,7 +67,7 @@ const EditorForm: React.FC<EditorFormProps> = ({ data, onSubmit, onChange, child
           },
         }}
         formData={formData}
-        formContext={{ geometry: data.geometry, length: formData ? formData.length : undefined }}
+        formContext={{ geometry: data.geometry }}
         onSubmit={async (event) => {
           try {
             setError(null);
@@ -76,8 +79,10 @@ const EditorForm: React.FC<EditorFormProps> = ({ data, onSubmit, onChange, child
           }
         }}
         onChange={(event) => {
-          if (onChange)
+          if (onChange) {
+            console.log(event.formData);
             onChange({ ...data, properties: { ...data.properties, ...event.formData } });
+          }
         }}
       >
         {children}
