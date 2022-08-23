@@ -26,11 +26,11 @@ public class StandaloneSim {
      */
     public static StandaloneSimResult run(
             SignalingInfra infra,
-            TrainPath trainsPath,
+            TrainPath trainPath,
             List<StandaloneTrainSchedule> schedules,
             double timeStep
     ) {
-        var envelopePath = EnvelopeTrainPath.from(trainsPath);
+        var envelopePath = EnvelopeTrainPath.from(trainPath);
 
         // Compute envelopes
         var result = new StandaloneSimResult();
@@ -40,25 +40,25 @@ public class StandaloneSim {
         for (var trainSchedule : schedules) {
             if (!cacheMaxEffort.containsKey(trainSchedule)) {
                 // MRSP & SpeedLimits
-                var mrsp = MRSP.from(trainsPath, trainSchedule.rollingStock, true, trainSchedule.tags);
-                var speedLimits = MRSP.from(trainsPath, trainSchedule.rollingStock, false, trainSchedule.tags);
+                var mrsp = MRSP.from(trainPath, trainSchedule.rollingStock, true, trainSchedule.tags);
+                var speedLimits = MRSP.from(trainPath, trainSchedule.rollingStock, false, trainSchedule.tags);
                 cacheSpeedLimits.put(trainSchedule, ResultEnvelopePoint.from(speedLimits));
 
                 // Base
                 var envelope = computeMaxEffortEnvelope(mrsp, timeStep, envelopePath, trainSchedule);
                 var simResultTrain = ScheduleMetadataExtractor.run(
                         envelope,
-                        trainsPath,
+                        trainPath,
                         trainSchedule,
                         infra);
                 cacheMaxEffort.put(trainSchedule, simResultTrain);
 
-                // Eco
+                // Allowances
                 if (!trainSchedule.allowances.isEmpty()) {
                     var ecoEnvelope = applyAllowances(envelope, trainSchedule);
                     var simEcoResultTrain = ScheduleMetadataExtractor.run(
                             ecoEnvelope,
-                            trainsPath,
+                            trainPath,
                             trainSchedule,
                             infra);
                     cacheEco.put(trainSchedule, simEcoResultTrain);

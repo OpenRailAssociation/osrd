@@ -19,7 +19,7 @@ import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
  * It is the max speed allowed at any given point, ignoring allowances
  */
 public class MaxSpeedEnvelope {
-    static boolean increase(double prevPos, double prevSpeed, double nextPos, double nextSpeed) {
+    public static boolean increase(double prevPos, double prevSpeed, double nextPos, double nextSpeed) {
         // Works for both accelerations (forwards) and decelerations (backwards)
         return prevSpeed < nextSpeed;
     }

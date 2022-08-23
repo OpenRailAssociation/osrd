@@ -2,7 +2,7 @@ package fr.sncf.osrd.envelope_sim;
 
 public class EnvelopeSimContext {
 
-    static enum UseCase {
+    public static enum UseCase {
         RUNNING_TIME_CALCULATION,
         ETCS_EBD,
         ETCS_SBD,

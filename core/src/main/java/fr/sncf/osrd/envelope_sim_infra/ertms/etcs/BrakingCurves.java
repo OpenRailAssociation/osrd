@@ -2,89 +2,125 @@ package fr.sncf.osrd.envelope_sim_infra.ertms.etcs;
 
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
+import static fr.sncf.osrd.envelope_sim.EnvelopeSimContext.UseCase.ETCS_EBD;
 
-import com.google.common.collect.Range;
 import fr.sncf.osrd.envelope.Envelope;
-import fr.sncf.osrd.envelope.MRSPEnvelopeBuilder;
-import fr.sncf.osrd.envelope.OverlayEnvelopeBuilder;
+import fr.sncf.osrd.envelope.EnvelopeCursor;
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
+import fr.sncf.osrd.envelope_sim.EnvelopePath;
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
-import fr.sncf.osrd.envelope_sim.StopMeta;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
-import fr.sncf.osrd.envelope_sim_infra.MRSP;
-import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
+import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
+import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.train.RollingStock;
-import java.util.Collection;
+import fr.sncf.osrd.train.StandaloneTrainSchedule;
+import java.util.ArrayList;
 import java.util.List;
 
 public class BrakingCurves {
 
-    /** Computes the ETCS braking curves from a path */
-    public static Envelope from(
+    /** Computes the ETCS braking curves from a path, a schedule,  */
+    public static List<EnvelopePart> from(
             TrainPath trainPath,
-            RollingStock rollingStock,
-            Collection<String> tags
+            StandaloneTrainSchedule schedule,
+            double timeStep,
+            Envelope mrsp
     ) {
-        return from(TrainPath.removeLocation(trainPath.trackRangePath()), rollingStock, tags);
+        var rollingStock = schedule.rollingStock;
+        var stops = schedule.getStopsPositions();
+        var envelopePath = EnvelopeTrainPath.from(trainPath);
+        var context = new EnvelopeSimContext(rollingStock, envelopePath, timeStep, ETCS_EBD);
+
+        var detectorsEBDCurves = computeEBDCurvesAtDetectors(trainPath, context, mrsp);
+        var slowdownsEBDCurves = computeEBDCurvesAtSlowdowns(context, mrsp);
+        var stopsEBDCurves = computeEBDCurvesAtStops(context, stops, mrsp);
+        var totalEBDCurves = new ArrayList<EnvelopePart>();
+        totalEBDCurves.addAll(detectorsEBDCurves);
+        totalEBDCurves.addAll(slowdownsEBDCurves);
+        totalEBDCurves.addAll(stopsEBDCurves);
+        return totalEBDCurves;
     }
 
-    /** Computes the ETCS braking curves from a list of track ranges */
-    public static Envelope from(
-            List<TrackRangeView> ranges,
-            RollingStock rollingStock,
-            Collection<String> tags
+
+    /**
+     * Compute an EBD curve at every stop
+     */
+    private static List<EnvelopePart> computeEBDCurvesAtStops(
+            EnvelopeSimContext context,
+            double[] stopPositions,
+            Envelope mrsp
     ) {
-        var builder = new MRSPEnvelopeBuilder();
-        var pathLength = 0.;
-        for (var r : ranges)
-            pathLength += r.getLength();
 
-        // add a limit for the maximum speed the hardware is rated for
-        builder.addPart(EnvelopePart.generateTimes(
-                List.of(EnvelopeProfile.CONSTANT_SPEED, MRSP.LimitKind.TRAIN_LIMIT),
-                new double[] { 0, pathLength },
-                new double[] { rollingStock.maxSpeed, rollingStock.maxSpeed }
-        ));
+        var stopsEBDCurves = new ArrayList<EnvelopePart>();
+        for (var pos : stopPositions) {
+            var brakingCurve =
+                    computeEBDCurve(context, mrsp, pos, 0);
+            stopsEBDCurves.add(brakingCurve);
+        }
+        return stopsEBDCurves;
+    }
 
-        var offset = 0.;
+
+    /**
+     * Compute an EBD curve at every slowdown
+     */
+    private static List<EnvelopePart> computeEBDCurvesAtSlowdowns(
+            EnvelopeSimContext context,
+            Envelope mrsp
+    ) {
+
+        var cursor = EnvelopeCursor.backward(mrsp);
+        var slowdownEBDCurves = new ArrayList<EnvelopePart>();
+
+        while (cursor.findPartTransition(MaxSpeedEnvelope::increase)) {
+            var brakingCurve =
+                    computeEBDCurve(context, mrsp, cursor.getPosition(), cursor.getSpeed());
+            slowdownEBDCurves.add(brakingCurve);
+            cursor.nextPart();
+        }
+        return slowdownEBDCurves;
+    }
+
+
+    /**
+     * Compute an EBD curve at every detector
+     */
+    private static List<EnvelopePart> computeEBDCurvesAtDetectors(
+            TrainPath trainPath,
+            EnvelopeSimContext context,
+            Envelope mrsp
+    ) {
+        var ranges = TrainPath.removeLocation(trainPath.trackRangePath());
+
+        var detectorsEBDCurves = new ArrayList<EnvelopePart>();
+
         for (var range : ranges) {
             if (range.getLength() == 0)
                 continue;
-            var subMap = range.getSpeedSections().subRangeMap(Range.closed(0., range.getLength()));
-            for (var speedRange : subMap.asMapOfRanges().entrySet()) {
-                // compute where this limit is active from and to
-                var interval = speedRange.getKey();
-                var begin = offset + interval.lowerEndpoint();
-                var end = offset + interval.upperEndpoint();
-                var speed = speedRange.getValue().getSpeedLimit(tags);
-                if (Double.isInfinite(speed) || speed == 0)
-                    continue;
-
-                // Add the envelope part corresponding to the restricted speed section
-                builder.addPart(EnvelopePart.generateTimes(
-                        List.of(EnvelopeProfile.CONSTANT_SPEED, MRSP.LimitKind.SPEED_LIMIT),
-                        new double[]{begin, end},
-                        new double[]{speed, speed}
-                ));
+            var detectors = range.getDetectors();
+            for (var detector : detectors) {
+                var detectorPosition = range.begin + detector.offset();
+                var brakingCurve =
+                        computeEBDCurve(context, mrsp, detectorPosition, 0);
+                detectorsEBDCurves.add(brakingCurve);
             }
-            offset += range.getLength();
         }
-        return builder.build();
+        return detectorsEBDCurves;
     }
 
     /**
      * EBD = Emergency Brake Deceleration
      */
-    private EnvelopePart computeEBD(EnvelopeSimContext context,
-                                    Envelope mrsp,
-                                    double targetPosition,
-                                    double targetSpeed) {
+    private static EnvelopePart computeEBDCurve(EnvelopeSimContext context,
+                                                Envelope mrsp,
+                                                double targetPosition,
+                                                double targetSpeed) {
         // if the stopPosition is zero, or above path length, the input is invalid
         if (targetPosition <= 0.0 || targetPosition > context.path.getLength())
             throw new RuntimeException(String.format(
