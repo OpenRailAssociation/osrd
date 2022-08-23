@@ -34,9 +34,7 @@ export async function getInfrastructures(): Promise<Array<ApiInfrastructure>> {
  * Call the API to get the definition of entities by layer.
  */
 export async function getEditorSchema(): Promise<EditorSchema> {
-  const schemaResponse = await fetch('/editor-json-schema.json').then((response) =>
-    response.json()
-  );
+  const schemaResponse = await get('/infra/schema/');
   const fieldToOmit = ['id', 'geo', 'sch'];
   return Object.keys(schemaResponse.properties)
     .filter((e) => schemaResponse.properties[e].type === 'array')
