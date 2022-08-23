@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import Form, { FieldProps, utils } from '@rjsf/core';
 import Fields from '@rjsf/core/lib/components/fields';
 import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
-import { omit, head, max as fnMax, min as fnMin } from 'lodash';
+import { omit, head, max as fnMax, min as fnMin, isNil } from 'lodash';
 import { TbZoomIn, TbZoomOut, TbZoomCancel } from 'react-icons/tb';
 import { BsBoxArrowInLeft, BsBoxArrowInRight, BsChevronLeft, BsChevronRight } from 'react-icons/bs';
 import { IoIosCut } from 'react-icons/io';
@@ -22,68 +22,18 @@ import {
 } from './data';
 import { LinearMetadataDataviz } from './dataviz';
 import { LinearMetadataTooltip } from './tooltip';
+import {
+  LINEAR_METADATA_FIELDS,
+  getFieldJsonSchema,
+  viewboxForSelection,
+  getLineStringDistance,
+  fixLinearMetadataItems,
+} from './data';
 import { FormBeginEndWidget } from './FormBeginEndWidget';
 import './style.scss';
 
-function itemSchema(
-  fieldSchema: JSONSchema7,
-  rootSchema: JSONSchema7,
-  enhancement: { [key: string]: JSONSchema7Definition } = {}
-): JSONSchema7 | undefined {
-  const schema = utils.retrieveSchema(fieldSchema.items as JSONSchema7, rootSchema);
-  if (!schema.properties?.begin || !schema.properties?.end) {
-    // Not a linear metadata item
-    return undefined;
-  }
-
-  /* eslint-disable prefer-object-spread */
-  const result = {
-    ...schema,
-    properties: {
-      begin: Object.assign({}, schema.properties.begin, enhancement.begin ? enhancement.begin : {}),
-      end: Object.assign({}, schema.properties.end, enhancement.end ? enhancement.end : {}),
-      ...Object.keys(schema.properties)
-        .filter((k) => !['begin', 'end'].includes(k))
-        .map((k) => ({ name: k, schema: schema.properties ? schema.properties[k] : {} }))
-        .reduce((acc, curr) => {
-          acc[curr.name] = Object.assign(
-            {},
-            curr.schema,
-            enhancement[curr.name] ? enhancement[curr.name] : {}
-          );
-          return acc;
-        }, {} as { [key: string]: JSONSchema7Definition }),
-    },
-    definitions: rootSchema.definitions,
-  };
-  /* eslint-enable prefer-object-spread */
-  return result;
-}
-
-/**
- * Helper function that move the viewbox so the selected element is visible.
- */
-function viewboxForSelection(
-  data: Array<LinearMetadataItem>,
-  vb: [number, number] | null,
-  selected: number
-): [number, number] | null {
-  // case of no zoom
-  if (vb === null) return null;
-
-  // if the selected is left outside
-  if (data[selected].end <= vb[0]) {
-    return transalteViewBox(data, vb, data[selected].begin - vb[0]);
-  }
-  // if the selected is right outside
-  if (vb[1] <= data[selected].begin) {
-    return transalteViewBox(data, vb, data[selected].end - vb[1]);
-  }
-  return vb;
-}
-
 export const FormComponent: React.FC<FieldProps> = (props) => {
-  const { name, formData, schema, onChange, registry } = props;
+  const { name, formContext, formData, schema, onChange, registry } = props;
   const { t } = useTranslation();
   const [isHelpOpened, setIsHelpOpened] = useState<boolean>(false);
 
@@ -106,45 +56,81 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
   const [clickPrevent, setClickPrevent] = useState<boolean>(false);
 
   // Compute the JSON schema of the linear metadata item
-  const jsonSchema = itemSchema(schema, registry.rootSchema);
-
-  // Guess the value field of the linear metadata item
-  const valueField = head(
-    Object.keys(jsonSchema?.properties || {})
-      .filter((e) => !['begin', 'end'].includes(e))
-      .map((e) => ({
-        name: e,
-        type: jsonSchema?.properties ? (jsonSchema?.properties[e] as JSONSchema7).type : '',
-      }))
-      .filter((e) => e.type === 'number' || e.type === 'integer')
-      .map((e) => e.name)
+  const distance = useMemo(
+    () =>
+      formContext.geometry.type === 'LineString' ? getLineStringDistance(formContext.geometry) : 0,
+    [formContext.geometry]
   );
 
+  const jsonSchema = useMemo(() => {
+    return getFieldJsonSchema(
+      schema,
+      registry.rootSchema,
+      distance
+        ? {
+            begin: {
+              minimum: 0,
+              maximum: distance,
+            },
+            end: {
+              minimum: 0,
+              maximum: distance,
+            },
+          }
+        : {}
+    );
+  }, [schema, registry.rootSchema, distance]);
+
+  // Guess the value field of the linear metadata item
+  const valueField = useMemo(() => {
+    const field = head(
+      Object.keys(jsonSchema?.items ? (jsonSchema.items as JSONSchema7).properties || {} : {})
+        .filter((e) => !['begin', 'end'].includes(e))
+        .map((e) => {
+          const properties = (jsonSchema as any)?.items?.properties as JSONSchema7;
+          return {
+            name: e,
+            type: properties ? properties[e].type || '' : '',
+          };
+        })
+        .filter((e) => e.type === 'number' || e.type === 'integer')
+        .map((e) => e.name)
+    );
+    return field;
+  }, [jsonSchema]);
+
+  const customOnChange = useCallback(
+    (data: Array<LinearMetadataItem>) => {
+      onChange(data.filter((e) => (valueField ? !isNil(e[valueField]) : true)));
+    },
+    [onChange, valueField]
+  );
+
+  const fixedData = useMemo(() => fixLinearMetadataItems(formData, distance), [formData, distance]);
+
   /**
-   * When the formData changed or the form context
+   * When the formData changed
    * => we recompute the linearmedata
    */
   useEffect(() => {
     setIsHelpOpened(false);
-    setData(formData);
-    setSelected((old) => (old !== null && formData[old] ? old : null));
-    setHovered((old) => (old != null && formData[old.index] ? old : null));
-  }, [formData]);
+    setData(fixedData);
+    setSelected((old) => (old !== null && fixedData[old] ? old : null));
+    setHovered((old) => (old != null && fixedData[old.index] ? old : null));
+  }, [fixedData]);
 
   /**
    * When selected element change
    * => set its data in the state
    * => recompute viewbox so selected element is always visible ()
    */
-  useEffect(
-    () => {
-      setSelectedData(selected !== null && data[selected] ? data[selected] : null);
-    },
-    // The "data" is omitted here, otherwise it is always refreshed
-    [selected, data]
-  );
+  useEffect(() => {
+    setSelectedData(selected !== null && data[selected] ? data[selected] : null);
+  }, [selected, data]);
 
-  if (!jsonSchema) return <Fields.ArrayField {...props} />;
+  if (!LINEAR_METADATA_FIELDS.includes(name))
+    return <Fields.ArrayField {...props} schema={jsonSchema} />;
+
   return (
     <div className="linear-metadata">
       <div className="header">
@@ -194,7 +180,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
               if (clickTimeout) clearTimeout(clickTimeout);
               setClickPrevent(true);
               const newData = splitAt(data, point);
-              onChange(newData);
+              customOnChange(newData);
             }}
             onWheel={(e, _item, _index, point) => {
               setViewBox(getZoomedViewBox(data, viewBox, e.deltaY > 0 ? 'OUT' : 'IN', point));
@@ -206,8 +192,8 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
             onResize={(index, gap, finalized) => {
               setMode(!finalized ? 'resizing' : null);
               try {
-                const result = resizeSegment(formData, index, gap, 'end');
-                if (finalized) onChange(result.result);
+                const result = resizeSegment(fixedData, index, gap, 'end');
+                if (finalized) customOnChange(result.result);
                 else {
                   setData(result.result);
 
@@ -260,7 +246,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
             <LinearMetadataTooltip
               item={data[hovered.index]}
               point={!mode ? hovered.point : undefined}
-              schema={jsonSchema}
+              schema={jsonSchema.items as JSONSchema7}
             />
           </div>
         )}
@@ -290,7 +276,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
                     title={t('Editor.linear-metadata.merge-with-left')}
                     disabled={selected === 0}
                     onClick={() => {
-                      onChange(mergeIn(data, selected, 'left'));
+                      customOnChange(mergeIn(data, selected, 'left'));
                       setSelected(selected - 1);
                     }}
                   >
@@ -304,7 +290,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
                       const splitPosition =
                         selectedData.begin + (selectedData.end - selectedData.begin) / 2;
                       const newData = splitAt(data, splitPosition);
-                      onChange(newData);
+                      customOnChange(newData);
                     }}
                   >
                     <IoIosCut />
@@ -314,7 +300,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
                     type="button"
                     title={t('Editor.linear-metadata.merge-with-right')}
                     disabled={selected === data.length - 1}
-                    onClick={() => onChange(mergeIn(data, selected, 'right'))}
+                    onClick={() => customOnChange(mergeIn(data, selected, 'right'))}
                   >
                     <BsBoxArrowInRight />
                   </button>
@@ -341,7 +327,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
                 liveValidate
                 tagName="div"
                 schema={
-                  itemSchema(schema, registry.rootSchema, {
+                  (getFieldJsonSchema(schema, registry.rootSchema, {
                     begin: {
                       minimum: 0,
                       maximum: fnMax([selectedData.begin, selectedData.end - SEGMENT_MIN_SIZE]),
@@ -353,7 +339,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
                           ? fnMax([selectedData.end, data[selected + 1].end - SEGMENT_MIN_SIZE])
                           : selectedData.end,
                     },
-                  }) || {}
+                  }).items as JSONSchema7) || {}
                 }
                 uiSchema={{
                   begin: {
@@ -398,7 +384,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
                         );
                         newData = resizeEnd.result;
                       }
-                      onChange(newData);
+                      customOnChange(newData);
                     } catch (error) {
                       // TODO: Should we display the resize error ?
                     } finally {
