@@ -814,9 +814,10 @@ pub mod tests {
         create_signal, create_speed, create_switch, create_switch_type, create_track,
     };
     use crate::railjson::{
-        ApplicableDirections, Catenary, Direction, DirectionalTrackRange, Endpoint, ObjectRef,
-        ObjectType, OperationalPoint, OperationalPointPart, Route, SpeedSection, Switch,
-        SwitchPortConnection, SwitchType, TrackEndpoint, TrackSectionLink,
+        ApplicableDirections, ApplicableDirectionsTrackRange, Catenary, Direction,
+        DirectionalTrackRange, Endpoint, ObjectRef, ObjectType, OperationalPoint,
+        OperationalPointPart, Route, SpeedSection, Switch, SwitchPortConnection, SwitchType,
+        TrackEndpoint, TrackSectionLink,
     };
 
     use crate::models::errors::{
@@ -824,7 +825,7 @@ pub mod tests {
         switches, track_section_links, track_sections,
     };
 
-    use super::{BufferStopCache, DetectorCache, OperationalPointCache, TrackCache};
+    use super::{BufferStopCache, DetectorCache, OperationalPointCache, SignalCache, TrackCache};
 
     #[test]
     fn load_track_section() {
@@ -1012,6 +1013,14 @@ pub mod tests {
         }
     }
 
+    pub fn create_signal_cache<T: AsRef<str>>(obj_id: T, track: T, position: f64) -> SignalCache {
+        SignalCache {
+            obj_id: obj_id.as_ref().into(),
+            track: track.as_ref().into(),
+            position,
+        }
+    }
+
     pub fn create_detector_cache<T: AsRef<str>>(
         obj_id: T,
         track: T,
@@ -1050,6 +1059,30 @@ pub mod tests {
                 },
                 position,
             }],
+        }
+    }
+
+    pub fn create_speed_section_cache<T: AsRef<str>>(
+        id: T,
+        range_list: Vec<(T, f64, f64)>,
+    ) -> SpeedSection {
+        let mut track_ranges = vec![];
+        for (obj_id, begin, end) in range_list {
+            track_ranges.push(ApplicableDirectionsTrackRange {
+                track: ObjectRef {
+                    obj_type: ObjectType::TrackSection,
+                    obj_id: obj_id.as_ref().into(),
+                },
+                begin,
+                end,
+                applicable_directions: ApplicableDirections::Both,
+            });
+        }
+        SpeedSection {
+            id: id.as_ref().into(),
+            speed_limit: None,
+            speed_limit_by_tag: HashMap::default(),
+            track_ranges,
         }
     }
 
@@ -1102,35 +1135,30 @@ pub mod tests {
         }
     }
 
-    pub fn create_switch_type_point() -> SwitchType {
+    pub fn create_switch_type_point<T: AsRef<str>>(
+        id: T,
+        groups: HashMap<String, Vec<SwitchPortConnection>>,
+    ) -> SwitchType {
         SwitchType {
-            id: "point".into(),
+            id: id.as_ref().into(),
             ports: vec!["BASE".into(), "LEFT".into(), "RIGHT".into()],
-            groups: HashMap::from([
-                (
-                    "LEFT".into(),
-                    vec![create_switch_connection("BASE".into(), "LEFT".into())],
-                ),
-                (
-                    "RIGHT".into(),
-                    vec![create_switch_connection("BASE".into(), "RIGHT".into())],
-                ),
-            ]),
+            groups,
         }
     }
 
     pub fn create_switch_cache_point(
         obj_id: String,
-        base: TrackEndpoint,
-        left: TrackEndpoint,
-        right: TrackEndpoint,
+        base: (&str, TrackEndpoint),
+        left: (&str, TrackEndpoint),
+        right: (&str, TrackEndpoint),
+        switch_type: String,
     ) -> SwitchCache {
-        let ports_list = [("BASE", base), ("LEFT", left), ("RIGHT", right)];
+        let ports_list = [base, left, right];
         let ports: HashMap<String, TrackEndpoint> =
             ports_list.into_iter().map(|(s, t)| (s.into(), t)).collect();
         SwitchCache {
             obj_id,
-            switch_type: "point".into(),
+            switch_type,
             ports,
         }
     }
@@ -1217,13 +1245,26 @@ pub mod tests {
         );
         infra_cache.load_track_section_link(link);
 
-        infra_cache.load_switch_type(create_switch_type_point());
+        infra_cache.load_switch_type(create_switch_type_point(
+            "point",
+            HashMap::from([
+                (
+                    "LEFT".into(),
+                    vec![create_switch_connection("BASE".into(), "LEFT".into())],
+                ),
+                (
+                    "RIGHT".into(),
+                    vec![create_switch_connection("BASE".into(), "RIGHT".into())],
+                ),
+            ]),
+        ));
 
         let switch = create_switch_cache_point(
             "switch".into(),
-            create_track_endpoint(Endpoint::End, "B"),
-            create_track_endpoint(Endpoint::Begin, "C"),
-            create_track_endpoint(Endpoint::Begin, "D"),
+            ("BASE", create_track_endpoint(Endpoint::End, "B")),
+            ("LEFT", create_track_endpoint(Endpoint::Begin, "C")),
+            ("RIGHT", create_track_endpoint(Endpoint::Begin, "D")),
+            "point".into(),
         );
         infra_cache.load_switch(switch);
 
