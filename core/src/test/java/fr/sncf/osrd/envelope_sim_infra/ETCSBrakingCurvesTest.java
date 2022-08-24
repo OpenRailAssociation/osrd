@@ -46,6 +46,6 @@ public class ETCSBrakingCurvesTest {
         plotBuilder.plot();
         var numberOfDetectors = path.detectors().size();
         var numberOfCurves = ebdBrakingCurves.size();
-        assertEquals(numberOfCurves, numberOfDetectors);
+        assertEquals(2 * numberOfDetectors, numberOfCurves);
     }
 }

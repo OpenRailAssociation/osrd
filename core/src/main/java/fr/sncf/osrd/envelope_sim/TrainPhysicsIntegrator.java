@@ -91,9 +91,18 @@ public final class TrainPhysicsIntegrator {
         if (action == Action.BRAKE) {
             switch (useCase) {
                 case RUNNING_TIME -> brakingForce = rollingStock.getMaxBrakingForce(speed);
-                case ETCS_EBD -> brakingForce = rollingStock.getEmergencyBrakingForce(speed);
-                case ETCS_SBD -> brakingForce = rollingStock.getServiceBrakingForce(speed);
-                case ETCS_GUI -> brakingForce = rollingStock.getNormalServiceBrakingForce(speed);
+                case ETCS_EBD -> {
+                    brakingForce = rollingStock.getEmergencyBrakingForce(speed);
+                    weightForce = getWorstCaseWeightForce(rollingStock, path, position);
+                }
+                case ETCS_SBD -> {
+                    brakingForce = rollingStock.getServiceBrakingForce(speed);
+                    weightForce = getWorstCaseWeightForce(rollingStock, path, position);
+                }
+                case ETCS_GUI -> {
+                    brakingForce = rollingStock.getNormalServiceBrakingForce(speed);
+                    weightForce = getWorstCaseWeightForce(rollingStock, path, position);
+                }
             }
         }
 
@@ -117,11 +126,11 @@ public final class TrainPhysicsIntegrator {
     public static double getWorstCaseWeightForce(PhysicsRollingStock rollingStock, PhysicsPath path, double headPosition) {
         var tailPosition = Math.min(Math.max(0, headPosition - rollingStock.getLength()), path.getLength());
         headPosition = Math.min(Math.max(0, headPosition), path.getLength());
-        var averageGrade = path.getAverageGrade(tailPosition, headPosition);
+        var lowestGrade = path.getLowestGrade(tailPosition, headPosition);
         // get an angle from a meter per km elevation difference
         // the curve's radius is taken into account in meanTrainGrade
-        var angle = Math.atan(averageGrade / 1000.0);  // from m/km to m/m
-        return -rollingStock.getMass() * 9.81 * Math.sin(angle);
+        var angle = Math.atan(lowestGrade / 1000.0);  // from m/km to m/m
+        return -rollingStock.getInertia() * Math.sin(angle);
     }
 
     private double getAcceleration(
@@ -130,13 +139,16 @@ public final class TrainPhysicsIntegrator {
             double tractionForce,
             double brakingForce
     ) {
+        // in case of braking, several cases are possible
         if (brakingForce > 0) {
             if (useCase == TIMETABLE)
                 return rollingStock.getTimetableDeceleration();
             if (useCase == ETCS_EBD)
-                return rollingStock.getEmergencyBrakingForce(speed) + weightForce * rollingStock.getInertia();
+                return (- rollingStock.getEmergencyBrakingForce(speed) + weightForce) / rollingStock.getInertia();
             if (useCase == ETCS_SBD)
-                return rollingStock.getServiceBrakingForce(speed) + weightForce * rollingStock.getInertia();
+                return (- rollingStock.getServiceBrakingForce(speed) + weightForce) / rollingStock.getInertia();
+            if (useCase == ETCS_GUI)
+                return (- rollingStock.getServiceBrakingForce(speed) + weightForce) / rollingStock.getInertia();
         }
 
         return computeAcceleration(
