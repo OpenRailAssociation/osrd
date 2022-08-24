@@ -44,6 +44,7 @@
   "origin": "Origine",
   "rollingstock": "Matériel",
   "simulation": "Simulation",
+  "speedLimitByTag": "Catégorie statistique",
   "stopSimulation": "Stopper",
   "timetable": "Grille horaire",
   "timetablechoose": "Choix ou ajout d'une grille horaire",

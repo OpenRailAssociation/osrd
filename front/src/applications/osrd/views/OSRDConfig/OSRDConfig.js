@@ -8,13 +8,14 @@ import AddTrainSchedule from 'applications/osrd/views/OSRDConfig/AddTrainSchedul
 import { FlyToInterpolator } from 'react-map-gl';
 import InfraSelector from 'applications/osrd/views/OSRDConfig/InfraSelector';
 import Itinerary from 'applications/osrd/views/OSRDConfig/Itinerary';
-import { MODES } from '../../consts';
 import Map from 'applications/osrd/views/OSRDConfig/Map';
 import RollingStockSelector from 'applications/osrd/views/OSRDConfig/RollingStockSelector';
 import TimetableSelector from 'applications/osrd/views/OSRDConfig/TimetableSelector';
+import SpeedLimitByTagSelector from 'applications/osrd/views/OSRDConfig/SpeedLimitByTagSelector';
 import { stdcmRequestStatus } from 'applications/stdcm/views/OSRDSTDCM';
 import { updateViewport } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
+import { MODES } from '../../consts';
 
 export default function OSRDConfig(props) {
   const { fullscreen, darkmode } = useSelector((state) => state.main);
@@ -43,17 +44,22 @@ export default function OSRDConfig(props) {
     <main className={`osrd-config-mastcontainer mastcontainer${fullscreen ? ' fullscreen' : ''}`}>
       <div className="row m-0 px-1 py-3 h-100">
         <div className="col-sm-6">
-
-          <InfraSelector />
-          <TimetableSelector
-            mustUpdateTimetable={mustUpdateTimetable}
-            setMustUpdateTimetable={setMustUpdateTimetable}
-          />
-          <RollingStockSelector />
+          <div className="row">
+            <div className="col-xl-6">
+              <InfraSelector />
+              <RollingStockSelector />
+              <SpeedLimitByTagSelector />
+            </div>
+            <div className="col-xl-6">
+              <TimetableSelector
+                mustUpdateTimetable={mustUpdateTimetable}
+                setMustUpdateTimetable={setMustUpdateTimetable}
+              />
+            </div>
+          </div>
           <Itinerary
             title={t('translation:common.itinerary')}
             updateExtViewport={setExtViewport}
-
           />
           <AddTrainLabels />
           { mode === MODES.simulation
