@@ -2,12 +2,11 @@ package fr.sncf.osrd.envelope_sim;
 
 import static fr.sncf.osrd.envelope_sim.EnvelopeSimContext.UseCase.*;
 
-import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext.UseCase;
 
 /**
- * An utility class to help simulate the train, using numerical integration.
- * It's used when simulating the train, and it is passed to speed controllers so they can take decisions
+ * A utility class to help simulate the train, using numerical integration.
+ * It's used when simulating the train, and it is passed to speed controllers, so they can take decisions
  * about what action to make. Once speed controllers took a decision, this same class is used to compute
  * the next position and speed of the train.
  */
@@ -92,7 +91,7 @@ public final class TrainPhysicsIntegrator {
             switch (useCase) {
                 case RUNNING_TIME -> brakingForce = rollingStock.getMaxBrakingForce(speed);
                 case ETCS_EBD -> {
-                    brakingForce = rollingStock.getEmergencyBrakingForce(speed);
+                    brakingForce = rollingStock.getSafeBrakingForce(speed);
                     weightForce = getWorstCaseWeightForce(rollingStock, path, position);
                 }
                 case ETCS_SBD -> {
@@ -144,11 +143,11 @@ public final class TrainPhysicsIntegrator {
             if (useCase == TIMETABLE)
                 return rollingStock.getTimetableDeceleration();
             if (useCase == ETCS_EBD)
-                return (- rollingStock.getEmergencyBrakingForce(speed) + weightForce) / rollingStock.getInertia();
+                return (- rollingStock.getSafeBrakingForce(speed) + weightForce) / rollingStock.getInertia();
             if (useCase == ETCS_SBD)
                 return (- rollingStock.getServiceBrakingForce(speed) + weightForce) / rollingStock.getInertia();
             if (useCase == ETCS_GUI)
-                return (- rollingStock.getServiceBrakingForce(speed) + weightForce) / rollingStock.getInertia();
+                return (- rollingStock.getNormalServiceBrakingForce(speed) + weightForce) / rollingStock.getInertia();
         }
 
         return computeAcceleration(

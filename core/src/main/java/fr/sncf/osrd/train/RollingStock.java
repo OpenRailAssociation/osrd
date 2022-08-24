@@ -1,12 +1,11 @@
 package fr.sncf.osrd.train;
 
-import static java.lang.Double.NaN;
+import static fr.sncf.osrd.envelope_sim_infra.ertms.etcs.NationalDefaultData.*;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStockField;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
-import java.util.HashMap;
 import java.util.SortedMap;
 
 /**
@@ -36,11 +35,17 @@ public class RollingStock implements PhysicsRollingStock {
     /** A_brake_normal_service: the service braking decelerations used to compute guidance curve in ETCS 2, in m/s² */
     public final SortedMap<Double, Double> gammaBrakeNormalService;
 
-    /** Kdry_rst: the rolling stock deceleration correction factors for dry rails, used in ETCS 2 */
+    /** Kdry_rst: the rolling stock deceleration correction factors for dry rails, used in ETCS 2, expressed  */
     public final SortedMap<Double, Double> kDry;
 
     /** Kwet_rst: the rolling stock deceleration correction factors for wet rails, used in ETCS 2 */
     public final SortedMap<Double, Double> kWet;
+
+    /** Kn+(V): the correction factor on normal service deceleration in positive gradients, used in ETCS 2 */
+    public final SortedMap<Double, Double> kNPos;
+
+    /** Kn+(V): the correction factor on normal service deceleration in negative gradients, used in ETCS 2 */
+    public final SortedMap<Double, Double> kNNeg;
 
     /** the length of the train, in meters. */
     public final double length;
@@ -131,14 +136,45 @@ public class RollingStock implements PhysicsRollingStock {
     }
 
     @Override
-    public double getEmergencyBrakingForce(double speed) {
+    public double getSafeBrakingForce(double speed) {
+        assert gammaBrakeEmergency != null;
+        var aBrakeEmergency = getEmergencyBrakingDeceleration(speed);
+        var kDry = getRollingStockCorrectionFactorDry(speed, M_NVEBCL);
+        var kWet = getRollingStockCorrectionFactorWet(speed);
+        return kDry * (kWet + M_NVAVADH * (1 - kWet)) * aBrakeEmergency * inertia;
+    }
+
+    private double getEmergencyBrakingDeceleration(double speed) {
         assert gammaBrakeEmergency != null;
         for (var mapElement : gammaBrakeEmergency.entrySet()) {
             double mapSpeed = mapElement.getKey();
-            if (Math.abs(speed) <= mapSpeed)
-                return mapElement.getValue() * inertia;
+            if (Math.abs(speed) <= mapSpeed) {
+                return mapElement.getValue();
+            }
         }
         throw new InvalidRollingStockField("gammaBrakeEmergency", "no value for the given speed");
+    }
+
+    private double getRollingStockCorrectionFactorDry(double speed, double confidenceLevel) {
+        assert kDry != null;
+        for (var mapElement : kDry.entrySet()) {
+            double mapSpeed = mapElement.getKey();
+            if (Math.abs(speed) <= mapSpeed) {
+                return mapElement.getValue() * confidenceLevel;
+            }
+        }
+        throw new InvalidRollingStockField("kDry", "no value for the given speed");
+    }
+
+    private double getRollingStockCorrectionFactorWet(double speed) {
+        assert kWet != null;
+        for (var mapElement : kWet.entrySet()) {
+            double mapSpeed = mapElement.getKey();
+            if (Math.abs(speed) <= mapSpeed) {
+                return mapElement.getValue();
+            }
+        }
+        throw new InvalidRollingStockField("kWet", "no value for the given speed");
     }
 
     @Override
@@ -228,6 +264,8 @@ public class RollingStock implements PhysicsRollingStock {
         this.gammaBrakeNormalService = null;
         this.kDry = null;
         this.kWet = null;
+        this.kNPos = null;
+        this.kNNeg = null;
         this.mass = mass;
         this.inertiaCoefficient = inertiaCoefficient;
         this.tractiveEffortCurve = tractiveEffortCurve;
@@ -255,6 +293,8 @@ public class RollingStock implements PhysicsRollingStock {
             SortedMap<Double, Double> gammaBrakeNormalService,
             SortedMap<Double, Double> kDry,
             SortedMap<Double, Double> kWet,
+            SortedMap<Double, Double> kNPos,
+            SortedMap<Double, Double> kNNeg,
             TractiveEffortPoint[] tractiveEffortCurve,
             RJSLoadingGaugeType loadingGaugeType
     ) {
@@ -274,6 +314,8 @@ public class RollingStock implements PhysicsRollingStock {
         this.gammaBrakeNormalService = gammaBrakeNormalService;
         this.kDry = kDry;
         this.kWet = kWet;
+        this.kNPos = kNPos;
+        this.kNNeg = kNNeg;
         this.mass = mass;
         this.inertiaCoefficient = inertiaCoefficient;
         this.tractiveEffortCurve = tractiveEffortCurve;

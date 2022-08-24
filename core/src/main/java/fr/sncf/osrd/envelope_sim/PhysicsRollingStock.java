@@ -29,7 +29,7 @@ public interface PhysicsRollingStock {
     double getMaxBrakingForce(double speed);
 
     /** The emergency braking force which can be applied at a given speed, in newtons */
-    double getEmergencyBrakingForce(double speed);
+    double getSafeBrakingForce(double speed);
 
     /** The service braking force which can be applied at a given speed, in newtons */
     double getServiceBrakingForce(double speed);
