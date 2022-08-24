@@ -43,24 +43,27 @@ public class TestTrains {
         tractiveEffortCurve.add(new RollingStock.TractiveEffortPoint(maxSpeed, minEffort));
 
         SortedMap<Double, Double> gammaBrakeEmergency = new TreeMap<>();
-        gammaBrakeEmergency.put(0., 0.81);
-        gammaBrakeEmergency.put(40., 0.81);
-        gammaBrakeEmergency.put(80., 0.72);
-        gammaBrakeEmergency.put(100., 0.66);
-        gammaBrakeEmergency.put(155., 0.64);
-        gammaBrakeEmergency.put(180., 0.44);
-        gammaBrakeEmergency.put(250., 0.48);
-        gammaBrakeEmergency.put(300., 0.4);
+        gammaBrakeEmergency.put(0., 1.11);
+        gammaBrakeEmergency.put(30., 1.11);
+        gammaBrakeEmergency.put(60., 1.25);
+        gammaBrakeEmergency.put(200., 1.34);
+        gammaBrakeEmergency.put(220., 1.17);
+        gammaBrakeEmergency.put(340., 0.94);
 
         SortedMap<Double, Double> gammaBrakeService = new TreeMap<>();
-        gammaBrakeService.put(0., 0.41);
-        gammaBrakeService.put(40., 0.41);
-        gammaBrakeService.put(80., 0.42);
-        gammaBrakeService.put(100., 0.46);
-        gammaBrakeService.put(155., 0.45);
-        gammaBrakeService.put(180., 0.45);
-        gammaBrakeService.put(250., 0.49);
-        gammaBrakeService.put(300., 0.41);
+        for (var elem : gammaBrakeEmergency.entrySet()) {
+            gammaBrakeService.put(elem.getKey(), elem.getValue() * 2 / 3);
+        }
+
+        SortedMap<Double, Double> kDry = new TreeMap<>();
+        kDry.put(0., 0.72);
+        kDry.put(30., 0.72);
+        kDry.put(220., 0.69);
+        kDry.put(340., 0.7);
+
+        SortedMap<Double, Double> kWet = new TreeMap<>();
+        kWet.put(0., 0.89);
+        kWet.put(340., 0.89);
 
         VERY_SHORT_FAST_TRAIN = new RollingStock(
                 "fast train",
@@ -106,8 +109,8 @@ public class TestTrains {
                 gammaBrakeEmergency,
                 gammaBrakeService,
                 null,
-                null,
-                null,
+                kDry,
+                kWet,
                 tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
                 RJSLoadingGaugeType.G1
         );

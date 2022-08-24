@@ -37,10 +37,10 @@ public class RollingStock implements PhysicsRollingStock {
     public final SortedMap<Double, Double> gammaBrakeNormalService;
 
     /** Kdry_rst: the rolling stock deceleration correction factors for dry rails, used in ETCS 2 */
-    public final HashMap<Double, Double> kDry;
+    public final SortedMap<Double, Double> kDry;
 
     /** Kwet_rst: the rolling stock deceleration correction factors for wet rails, used in ETCS 2 */
-    public final HashMap<Double, Double> kWet;
+    public final SortedMap<Double, Double> kWet;
 
     /** the length of the train, in meters. */
     public final double length;
@@ -253,8 +253,8 @@ public class RollingStock implements PhysicsRollingStock {
             SortedMap<Double, Double> gammaBrakeEmergency,
             SortedMap<Double, Double> gammaBrakeService,
             SortedMap<Double, Double> gammaBrakeNormalService,
-            HashMap<Double, Double> kDry,
-            HashMap<Double, Double> kWet,
+            SortedMap<Double, Double> kDry,
+            SortedMap<Double, Double> kWet,
             TractiveEffortPoint[] tractiveEffortCurve,
             RJSLoadingGaugeType loadingGaugeType
     ) {
