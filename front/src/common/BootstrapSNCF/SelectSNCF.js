@@ -27,7 +27,7 @@ const renderOptions = (options, labelKey, selectedValue) => options.map((option)
 
 export default function SelectSNCF(props) {
   const {
-    id, title, name, options, selectedValue, onChange, labelKey, selectStyle, mode, sm,
+    id, title, name, options, selectedValue, onChange, labelKey, selectStyle, sm,
   } = props;
 
   return (
@@ -58,7 +58,6 @@ SelectSNCF.propTypes = {
   onChange: PropTypes.func.isRequired,
   labelKey: PropTypes.string,
   selectStyle: PropTypes.string,
-  mode: PropTypes.string,
   sm: PropTypes.bool,
 };
 
@@ -67,6 +66,5 @@ SelectSNCF.defaultProps = {
   labelKey: 'name',
   selectStyle: '',
   name: '',
-  mode: '',
   sm: false,
 };

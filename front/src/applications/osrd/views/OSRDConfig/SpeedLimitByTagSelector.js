@@ -6,7 +6,7 @@ import { setFailure } from 'reducers/main.ts';
 import { get } from 'common/requests.ts';
 import icon from 'assets/pictures/speedometer.svg';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
-import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
+import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 
 export default function SpeedLimitByTagSelector() {
   const dispatch = useDispatch();
@@ -41,7 +41,7 @@ export default function SpeedLimitByTagSelector() {
             <img width="32px" className="mr-2" src={icon} alt="infraIcon" />
             <span className="text-muted">{t('speedLimitByTag')}</span>
             {speedLimitsTags !== undefined ? (
-              <SelectSNCF
+              <SelectImprovedSNCF
                 id=""
                 options={speedLimitsTags}
                 onChange={(e) => updateSpeedLimitByTag(e.target.value)}
