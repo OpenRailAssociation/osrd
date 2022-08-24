@@ -61,9 +61,6 @@ public class RJSRollingStockParser {
         if (rjsRollingStock.loadingGauge == null)
             throw new MissingRollingStockField("loading_gauge");
 
-        if (isNaN(rjsRollingStock.mass))
-            throw new MissingRollingStockField("mass");
-
         var rollingResistance = parseRollingResistance(rjsRollingStock.rollingResistance);
 
         return new RollingStock(

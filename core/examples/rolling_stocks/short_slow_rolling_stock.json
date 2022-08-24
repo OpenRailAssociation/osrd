@@ -17,10 +17,8 @@
     "name": "short_slow_rolling_stock",
     "mass": 900000,
     "loading_gauge": "G1",
-    "gamma": {
-        "value": 0.5,
-        "type": "CONST"
-    },
+    "timetable_gamma": 0.5,
+    "max_braking_force": 0,
     "effort_curve": {
         "speeds": [
             0.0,

@@ -2,6 +2,7 @@ package fr.sncf.osrd.envelope_sim;
 
 import static fr.sncf.osrd.envelope.EnvelopeShape.CONSTANT;
 import static fr.sncf.osrd.envelope.EnvelopeShape.DECREASING;
+import static fr.sncf.osrd.envelope_sim.EnvelopeSimContext.UseCase.RUNNING_TIME;
 import static fr.sncf.osrd.envelope_sim_infra.MRSP.LimitKind.SPEED_LIMIT;
 import static fr.sncf.osrd.infra.InfraHelpers.makeSingleTrackRJSInfra;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -130,7 +131,7 @@ public class MaxSpeedEnvelopeTest {
     public void testFlatNonConstDec() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN_MAX_DEC_TYPE;
         var testPath = new FlatPath(10000, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
+        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, RUNNING_TIME);
         var stops = new double[] { 8500 };
 
         var flatMRSP = makeSimpleMRSP(testContext, 44.4);

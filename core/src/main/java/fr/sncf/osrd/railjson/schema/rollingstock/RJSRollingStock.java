@@ -68,11 +68,13 @@ public class RJSRollingStock implements Identified {
     /**
      * The braking deceleration coefficient used for timetable calculation.
      */
+    @Json(name = "timetable_gamma")
     public double timetableGamma = Double.NaN;
 
     /**
      * The max braking force of the rolling stock.
      */
+    @Json(name = "max_braking_force")
     public double maxBrakingForce = Double.NaN;
 
     /**

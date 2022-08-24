@@ -140,7 +140,7 @@ public final class TrainPhysicsIntegrator {
             double brakingForce
     ) {
         // in case of braking, several cases are possible
-        if (brakingForce > 0) {
+        if (action == Action.BRAKE) {
             if (useCase == TIMETABLE)
                 return rollingStock.getTimetableDeceleration();
             if (useCase == ETCS_EBD)
@@ -173,10 +173,6 @@ public final class TrainPhysicsIntegrator {
 
         assert brakingForce >= 0.;
         assert tractionForce >= 0.;
-
-        if (brakingForce > 0)
-            //TODO : make sure this is ok
-            return rollingStock.getTimetableDeceleration();
 
         // the sum of forces that always go the direction opposite to the train's movement
         double oppositeForce = rollingResistance + brakingForce;

@@ -21,7 +21,7 @@ public class EnvelopeSimContext {
         this.rollingStock = rollingStock;
         this.path = path;
         this.timeStep = timeStep;
-        this.useCase = UseCase.RUNNING_TIME;
+        this.useCase = UseCase.TIMETABLE;
     }
 
     /** Creates a context suitable to run a specific ETCS braking curve envelopePart */

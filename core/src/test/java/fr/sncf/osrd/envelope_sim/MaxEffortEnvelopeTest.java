@@ -1,6 +1,7 @@
 package fr.sncf.osrd.envelope_sim;
 
 import static fr.sncf.osrd.envelope.EnvelopeShape.*;
+import static fr.sncf.osrd.envelope_sim.EnvelopeSimContext.UseCase.RUNNING_TIME;
 import static fr.sncf.osrd.envelope_sim.MaxSpeedEnvelopeTest.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -64,7 +65,7 @@ public class MaxEffortEnvelopeTest {
     public void testFlatNonConstDec() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN_MAX_DEC_TYPE;
         var testPath = new FlatPath(10000, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
+        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, RUNNING_TIME);
         var stops = new double[] { 6000, testPath.getLength() };
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 44.4, stops);
         EnvelopeShape.check(maxEffortEnvelope, INCREASING, CONSTANT, DECREASING, INCREASING, CONSTANT, DECREASING);
@@ -94,7 +95,7 @@ public class MaxEffortEnvelopeTest {
     public void testSteepNonConstDec() {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN_MAX_DEC_TYPE;
         var testPath = new FlatPath(10000, 20);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP);
+        var testContext = new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, RUNNING_TIME);
         var stops = new double[] { 6000, testPath.getLength() };
         var maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 44.4, stops);
         EnvelopeShape.check(maxEffortEnvelope, INCREASING, DECREASING, INCREASING, DECREASING);
