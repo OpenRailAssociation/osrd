@@ -38,16 +38,14 @@ public class ETCSBrakingCurvesTest {
 
         var mrsp = makeSimpleMRSP(testContext, 40);
         var brakingCurves = BrakingCurves.from(path, testRollingStock, TIME_STEP, mrsp);
-        /**
         var plotBuilder = new EnvelopeDebug.PlotBuilder();
         for (var curve : brakingCurves) {
             plotBuilder.add(Envelope.make(curve), "A");
         }
         plotBuilder.add(mrsp, "mrsp");
         plotBuilder.plot();
-        */
         var numberOfDetectors = path.detectors().size();
         var numberOfCurves = brakingCurves.size();
-        assertEquals(2 * numberOfDetectors, numberOfCurves);
+        assertEquals(3 * numberOfDetectors, numberOfCurves);
     }
 }

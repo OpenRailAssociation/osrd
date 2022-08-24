@@ -36,4 +36,7 @@ public interface PhysicsRollingStock {
 
     /** The normal service braking force which can be applied at a given speed, in newtons */
     double getNormalServiceBrakingForce(double speed);
+
+    /** The weight force correction applied for guidance computation in ETCS 2, in newtons */
+    double getGradientCorrection(double weightForce, double speed);
 }

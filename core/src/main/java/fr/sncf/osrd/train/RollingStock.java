@@ -27,13 +27,13 @@ public class RollingStock implements PhysicsRollingStock {
     public final double timetableGamma;
 
     /** A_brake_emergency: the emergency braking decelerations for ERTMS ETCS 2, in m/s² */
-    public final SortedMap<Double, Double> gammaBrakeEmergency;
+    public final SortedMap<Double, Double> gammaEmergency;
 
     /** A_brake_service: the service braking decelerations for ERTMS ETCS 2, in m/s² */
-    public final SortedMap<Double, Double> gammaBrakeService;
+    public final SortedMap<Double, Double> gammaService;
 
     /** A_brake_normal_service: the service braking decelerations used to compute guidance curve in ETCS 2, in m/s² */
-    public final SortedMap<Double, Double> gammaBrakeNormalService;
+    public final SortedMap<Double, Double> gammaNormalService;
 
     /** Kdry_rst: the rolling stock deceleration correction factors for dry rails, used in ETCS 2, expressed  */
     public final SortedMap<Double, Double> kDry;
@@ -137,7 +137,7 @@ public class RollingStock implements PhysicsRollingStock {
 
     @Override
     public double getSafeBrakingForce(double speed) {
-        assert gammaBrakeEmergency != null;
+        assert gammaEmergency != null;
         var aBrakeEmergency = getEmergencyBrakingDeceleration(speed);
         var kDry = getRollingStockCorrectionFactorDry(speed, M_NVEBCL);
         var kWet = getRollingStockCorrectionFactorWet(speed);
@@ -145,14 +145,14 @@ public class RollingStock implements PhysicsRollingStock {
     }
 
     private double getEmergencyBrakingDeceleration(double speed) {
-        assert gammaBrakeEmergency != null;
-        for (var mapElement : gammaBrakeEmergency.entrySet()) {
+        assert gammaEmergency != null;
+        for (var mapElement : gammaEmergency.entrySet()) {
             double mapSpeed = mapElement.getKey();
             if (Math.abs(speed) <= mapSpeed) {
                 return mapElement.getValue();
             }
         }
-        throw new InvalidRollingStockField("gammaBrakeEmergency", "no value for the given speed");
+        throw new InvalidRollingStockField("gammaEmergency", "no value for the given speed");
     }
 
     private double getRollingStockCorrectionFactorDry(double speed, double confidenceLevel) {
@@ -179,24 +179,45 @@ public class RollingStock implements PhysicsRollingStock {
 
     @Override
     public double getServiceBrakingForce(double speed) {
-        assert gammaBrakeService != null;
-        for (var mapElement : gammaBrakeService.entrySet()) {
+        assert gammaService != null;
+        for (var mapElement : gammaService.entrySet()) {
             double mapSpeed = mapElement.getKey();
             if (Math.abs(speed) <= mapSpeed)
                 return mapElement.getValue() * inertia;
         }
-        throw new InvalidRollingStockField("gammaBrakeService", "no value for the given speed");
+        throw new InvalidRollingStockField("gammaService", "no value for the given speed");
     }
 
     @Override
     public double getNormalServiceBrakingForce(double speed) {
-        assert gammaBrakeNormalService != null;
-        for (var mapElement : gammaBrakeNormalService.entrySet()) {
+        assert gammaNormalService != null;
+        for (var mapElement : gammaNormalService.entrySet()) {
             double mapSpeed = mapElement.getKey();
             if (Math.abs(speed) <= mapSpeed)
                 return mapElement.getValue() * inertia;
         }
-        throw new InvalidRollingStockField("gammaBrakeNormalService", "no value for the given speed");
+        throw new InvalidRollingStockField("gammaNormalService", "no value for the given speed");
+    }
+
+    @Override
+    public double getGradientCorrection(double grade, double speed) {
+        assert kNPos != null;
+        assert kNNeg != null;
+        if (grade < 0) {
+            for (var k : kNPos.entrySet()) {
+                double mapSpeed = k.getKey();
+                if (Math.abs(speed) <= mapSpeed)
+                    return - k.getValue() * grade;
+            }
+            throw new InvalidRollingStockField("kNPos", "no value for the given speed");
+        } else {
+            for (var k : kNNeg.entrySet()) {
+                double mapSpeed = k.getKey();
+                if (Math.abs(speed) <= mapSpeed)
+                    return - k.getValue() * grade;
+            }
+            throw new InvalidRollingStockField("kNNeg", "no value for the given speed");
+        }
     }
 
     public static final class TractiveEffortPoint {
@@ -259,9 +280,9 @@ public class RollingStock implements PhysicsRollingStock {
         this.comfortAcceleration = comfortAcceleration;
         this.timetableGamma = timetableGamma;
         this.maxBrakingForce = maxBrakingForce;
-        this.gammaBrakeEmergency = null;
-        this.gammaBrakeService = null;
-        this.gammaBrakeNormalService = null;
+        this.gammaEmergency = null;
+        this.gammaService = null;
+        this.gammaNormalService = null;
         this.kDry = null;
         this.kWet = null;
         this.kNPos = null;
@@ -309,9 +330,9 @@ public class RollingStock implements PhysicsRollingStock {
         this.comfortAcceleration = comfortAcceleration;
         this.timetableGamma = timetableGamma;
         this.maxBrakingForce = maxBrakingForce;
-        this.gammaBrakeEmergency = gammaBrakeEmergency;
-        this.gammaBrakeService = gammaBrakeService;
-        this.gammaBrakeNormalService = gammaBrakeNormalService;
+        this.gammaEmergency = gammaBrakeEmergency;
+        this.gammaService = gammaBrakeService;
+        this.gammaNormalService = gammaBrakeNormalService;
         this.kDry = kDry;
         this.kWet = kWet;
         this.kNPos = kNPos;

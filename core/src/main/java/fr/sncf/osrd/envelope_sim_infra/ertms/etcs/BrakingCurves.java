@@ -19,7 +19,6 @@ import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.train.RollingStock;
-import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +30,7 @@ public class BrakingCurves {
         SBD,
         SBI1,
         SBI2,
+        GUI,
         PS,
         IND
     }
@@ -44,9 +44,11 @@ public class BrakingCurves {
     ) {
         var totalEBDCurves = computeETCSBrakingCurves(EBD, trainPath, rollingStock, timeStep, mrsp);
         var totalSBDCurves = computeETCSBrakingCurves(SBD, trainPath, rollingStock, timeStep, mrsp);
+        var totalGUICurves = computeETCSBrakingCurves(GUI, trainPath, rollingStock, timeStep, mrsp);
         var totalCurves = new ArrayList<EnvelopePart>();
         totalCurves.addAll(totalEBDCurves);
         totalCurves.addAll(totalSBDCurves);
+        totalCurves.addAll(totalGUICurves);
         return totalCurves;
     }
 
@@ -63,6 +65,7 @@ public class BrakingCurves {
         switch (type) {
             case EBD -> context = new EnvelopeSimContext(rollingStock, envelopePath, timeStep, ETCS_EBD);
             case SBD -> context = new EnvelopeSimContext(rollingStock, envelopePath, timeStep, ETCS_SBD);
+            case GUI -> context = new EnvelopeSimContext(rollingStock, envelopePath, timeStep, ETCS_GUI);
             default -> context = new EnvelopeSimContext(rollingStock, envelopePath, timeStep, RUNNING_TIME);
         }
 

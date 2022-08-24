@@ -1,7 +1,6 @@
 package fr.sncf.osrd.envelope_physics;
 
-import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.getAverageWeightForce;
-import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.newtonStep;
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.*;
 import static fr.sncf.osrd.envelope_sim.allowances.mareco_impl.CoastingGenerator.coastFromBeginning;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -100,7 +99,8 @@ public class TrainPhysics {
 
         // make a huge traction effort
         double rollingResistance = TEST_ROLLING_STOCK.getRollingResistance(speed);
-        double weightForce = getAverageWeightForce(TEST_ROLLING_STOCK, testPath, position);
+        double grade = getAverageGrade(TEST_ROLLING_STOCK, testPath, position);
+        double weightForce = getWeightForce(TEST_ROLLING_STOCK, grade);
         var acceleration = TrainPhysicsIntegrator.computeAcceleration(TEST_ROLLING_STOCK,
                 rollingResistance, weightForce, speed, 500000.0, 0, +1);
         var step = newtonStep(TIME_STEP, speed, acceleration, +1);

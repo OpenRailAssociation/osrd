@@ -42,18 +42,23 @@ public class TestTrains {
         }
         tractiveEffortCurve.add(new RollingStock.TractiveEffortPoint(maxSpeed, minEffort));
 
-        SortedMap<Double, Double> gammaBrakeEmergency = new TreeMap<>();
-        gammaBrakeEmergency.put(0., 1.11);
-        gammaBrakeEmergency.put(30., 1.11);
-        gammaBrakeEmergency.put(60., 1.25);
-        gammaBrakeEmergency.put(200., 1.34);
-        gammaBrakeEmergency.put(220., 1.17);
-        gammaBrakeEmergency.put(340., 0.94);
+        SortedMap<Double, Double> gammaEmergency = new TreeMap<>();
+        gammaEmergency.put(0., 1.11);
+        gammaEmergency.put(30., 1.11);
+        gammaEmergency.put(60., 1.25);
+        gammaEmergency.put(200., 1.34);
+        gammaEmergency.put(220., 1.17);
+        gammaEmergency.put(340., 0.94);
 
-        SortedMap<Double, Double> gammaBrakeService = new TreeMap<>();
-        for (var elem : gammaBrakeEmergency.entrySet()) {
-            gammaBrakeService.put(elem.getKey(), elem.getValue() * 2 / 3);
+        SortedMap<Double, Double> gammaService = new TreeMap<>();
+        for (var elem : gammaEmergency.entrySet()) {
+            gammaService.put(elem.getKey(), elem.getValue() * 2 / 3);
         }
+
+        SortedMap<Double, Double> gammaNormalService = new TreeMap<>();
+        gammaNormalService.put(0., 0.60);
+        gammaNormalService.put(230., 0.60);
+        gammaNormalService.put(340., 0.35);
 
         SortedMap<Double, Double> kDry = new TreeMap<>();
         kDry.put(0., 0.72);
@@ -64,6 +69,14 @@ public class TestTrains {
         SortedMap<Double, Double> kWet = new TreeMap<>();
         kWet.put(0., 0.89);
         kWet.put(340., 0.89);
+
+        SortedMap<Double, Double> kNPos = new TreeMap<>();
+        kNPos.put(0., 6.74e-3);
+        kNPos.put(340., 6.74e-3);
+
+        SortedMap<Double, Double> kNNeg = new TreeMap<>();
+        kNNeg.put(0., 1.74e-3);
+        kNNeg.put(340., 1.74e-3);
 
         VERY_SHORT_FAST_TRAIN = new RollingStock(
                 "fast train",
@@ -106,11 +119,13 @@ public class TestTrains {
                 0.25,
                 0.5,
                 0,
-                gammaBrakeEmergency,
-                gammaBrakeService,
-                null,
+                gammaEmergency,
+                gammaService,
+                gammaNormalService,
                 kDry,
                 kWet,
+                kNPos,
+                kNNeg,
                 tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
                 RJSLoadingGaugeType.G1
         );

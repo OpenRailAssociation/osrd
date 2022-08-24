@@ -82,25 +82,29 @@ public final class TrainPhysicsIntegrator {
 
         double tractionForce = 0;
         double brakingForce = 0;
-        double weightForce = getAverageWeightForce(rollingStock, path, position);
+        double grade = getAverageGrade(rollingStock, path, position);
+        double weightForce = getWeightForce(rollingStock, grade);
 
         if (action == Action.ACCELERATE)
-            tractionForce = rollingStock.getMaxEffort(speed);;
+            tractionForce = rollingStock.getMaxEffort(speed);
 
         if (action == Action.BRAKE) {
             switch (useCase) {
                 case RUNNING_TIME -> brakingForce = rollingStock.getMaxBrakingForce(speed);
                 case ETCS_EBD -> {
                     brakingForce = rollingStock.getSafeBrakingForce(speed);
-                    weightForce = getWorstCaseWeightForce(rollingStock, path, position);
+                    grade = getLowestGrade(rollingStock, path, position);
+                    weightForce = getWeightForce(rollingStock, grade);
                 }
                 case ETCS_SBD -> {
                     brakingForce = rollingStock.getServiceBrakingForce(speed);
-                    weightForce = getWorstCaseWeightForce(rollingStock, path, position);
+                    grade = getLowestGrade(rollingStock, path, position);
+                    weightForce = getWeightForce(rollingStock, grade);
                 }
                 case ETCS_GUI -> {
                     brakingForce = rollingStock.getNormalServiceBrakingForce(speed);
-                    weightForce = getWorstCaseWeightForce(rollingStock, path, position);
+                    grade = getLowestGrade(rollingStock, path, position);
+                    weightForce = getWeightForce(rollingStock, grade);
                 }
             }
         }
@@ -109,27 +113,27 @@ public final class TrainPhysicsIntegrator {
         return newtonStep(timeStep, speed, acceleration, directionSign);
     }
 
-    /** Compute the average weight force of a rolling stock at a given position on a given path */
-    public static double getAverageWeightForce(PhysicsRollingStock rollingStock, PhysicsPath path, double headPosition) {
+    /** Compute the average grade of a rolling stock at a given position on a given path */
+    public static double getAverageGrade(PhysicsRollingStock rollingStock, PhysicsPath path, double headPosition) {
         var tailPosition = Math.min(Math.max(0, headPosition - rollingStock.getLength()), path.getLength());
         headPosition = Math.min(Math.max(0, headPosition), path.getLength());
-        var averageGrade = path.getAverageGrade(tailPosition, headPosition);
-        // get an angle from a meter per km elevation difference
-        // the curve's radius is taken into account in meanTrainGrade
-        var angle = Math.atan(averageGrade / 1000.0);  // from m/km to m/m
-        return -rollingStock.getMass() * 9.81 * Math.sin(angle);
+        return path.getAverageGrade(tailPosition, headPosition);
     }
 
-    /** Compute the worst weight force of a rolling stock at a given position on a given path,
+    /** Compute the lowest grade of a rolling stock at a given position on a given path,
      * corresponding to the most downhill part under the train */
-    public static double getWorstCaseWeightForce(PhysicsRollingStock rollingStock, PhysicsPath path, double headPosition) {
+    public static double getLowestGrade(PhysicsRollingStock rollingStock, PhysicsPath path, double headPosition) {
         var tailPosition = Math.min(Math.max(0, headPosition - rollingStock.getLength()), path.getLength());
         headPosition = Math.min(Math.max(0, headPosition), path.getLength());
-        var lowestGrade = path.getLowestGrade(tailPosition, headPosition);
+        return path.getLowestGrade(tailPosition, headPosition);
+    }
+
+    /** Compute a weight force given a rolling stock and a grade value, in m/km */
+    public static double getWeightForce(PhysicsRollingStock rollingStock, double grade) {
         // get an angle from a meter per km elevation difference
         // the curve's radius is taken into account in meanTrainGrade
-        var angle = Math.atan(lowestGrade / 1000.0);  // from m/km to m/m
-        return -rollingStock.getInertia() * Math.sin(angle);
+        var angle = grade / 1000.0;  // from m/km to m/m
+        return -rollingStock.getMass() * 9.81 * angle;
     }
 
     private double getAcceleration(
@@ -147,7 +151,10 @@ public final class TrainPhysicsIntegrator {
             if (useCase == ETCS_SBD)
                 return (- rollingStock.getServiceBrakingForce(speed) + weightForce) / rollingStock.getInertia();
             if (useCase == ETCS_GUI)
-                return (- rollingStock.getNormalServiceBrakingForce(speed) + weightForce) / rollingStock.getInertia();
+                return (- rollingStock.getNormalServiceBrakingForce(speed)
+                        + weightForce
+                        + rollingStock.getGradientCorrection(weightForce, speed))
+                        / rollingStock.getInertia();
         }
 
         return computeAcceleration(
