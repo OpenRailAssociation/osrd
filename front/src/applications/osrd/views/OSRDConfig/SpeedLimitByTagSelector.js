@@ -40,13 +40,15 @@ export default function SpeedLimitByTagSelector() {
           <div className="h2 mb-0">
             <img width="32px" className="mr-2" src={icon} alt="infraIcon" />
             <span className="text-muted">{t('speedLimitByTag')}</span>
-            <SelectSNCF
-              id=""
-              options={speedLimitsTags}
-              onChange={(e) => updateSpeedLimitByTag(e.target.value)}
-              selectedValue={speedLimitByTag}
-              sm
-            />
+            {speedLimitsTags !== undefined ? (
+              <SelectSNCF
+                id=""
+                options={speedLimitsTags}
+                onChange={(e) => updateSpeedLimitByTag(e.target.value)}
+                selectedValue={speedLimitByTag}
+                sm
+              />
+            ) : <span className="ml-3"><DotsLoader /></span> }
           </div>
         </div>
       </div>
