@@ -7,6 +7,9 @@ public interface PhysicsPath {
     /** The average slope on a given range, in meters per kilometers */
     double getAverageGrade(double begin, double end);
 
+    /** The lowest slope on a given range, in meters per kilometers */
+    double getLowestGrade(double begin, double end);
+
     /** Finds the next position for which getAverageGrade(position, position - length) is greater than gradeThreshold
      * @param position the starting point of the search
      * @param endPos the position where the search ends

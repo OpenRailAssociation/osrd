@@ -1,6 +1,6 @@
 package fr.sncf.osrd.envelope_physics;
 
-import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.getWeightForce;
+import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.getAverageWeightForce;
 import static fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.newtonStep;
 import static fr.sncf.osrd.envelope_sim.allowances.mareco_impl.CoastingGenerator.coastFromBeginning;
 import static org.junit.jupiter.api.Assertions.*;
@@ -8,14 +8,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
-import fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraint;
 import fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType;
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
 import fr.sncf.osrd.envelope_sim.Action;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.FlatPath;
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator;
-import fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.TestTrains;
@@ -102,7 +100,7 @@ public class TrainPhysics {
 
         // make a huge traction effort
         double rollingResistance = TEST_ROLLING_STOCK.getRollingResistance(speed);
-        double weightForce = getWeightForce(TEST_ROLLING_STOCK, testPath, position);
+        double weightForce = getAverageWeightForce(TEST_ROLLING_STOCK, testPath, position);
         var acceleration = TrainPhysicsIntegrator.computeAcceleration(TEST_ROLLING_STOCK,
                 rollingResistance, weightForce, speed, 500000.0, 0, +1);
         var step = newtonStep(TIME_STEP, speed, acceleration, +1);

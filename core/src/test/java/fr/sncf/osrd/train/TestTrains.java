@@ -14,7 +14,7 @@ public class TestTrains {
             1,
             1,
             1,
-            RollingStock.GammaType.CONST,
+            1,
             new RollingStock.TractiveEffortPoint[] {
                     new RollingStock.TractiveEffortPoint(0, 1)
             },
@@ -44,22 +44,22 @@ public class TestTrains {
 
         SortedMap<Double, Double> gammaBrakeEmergency = new TreeMap<>();
         gammaBrakeEmergency.put(0., 0.81);
-        gammaBrakeEmergency.put(40., 0.72);
-        gammaBrakeEmergency.put(80., 0.66);
-        gammaBrakeEmergency.put(100., 0.64);
-        gammaBrakeEmergency.put(155., 0.44);
-        gammaBrakeEmergency.put(180., 0.48);
-        gammaBrakeEmergency.put(250., 0.4);
+        gammaBrakeEmergency.put(40., 0.81);
+        gammaBrakeEmergency.put(80., 0.72);
+        gammaBrakeEmergency.put(100., 0.66);
+        gammaBrakeEmergency.put(155., 0.64);
+        gammaBrakeEmergency.put(180., 0.44);
+        gammaBrakeEmergency.put(250., 0.48);
         gammaBrakeEmergency.put(300., 0.4);
 
         SortedMap<Double, Double> gammaBrakeService = new TreeMap<>();
         gammaBrakeService.put(0., 0.41);
-        gammaBrakeService.put(40., 0.42);
-        gammaBrakeService.put(80., 0.46);
-        gammaBrakeService.put(100., 0.45);
+        gammaBrakeService.put(40., 0.41);
+        gammaBrakeService.put(80., 0.42);
+        gammaBrakeService.put(100., 0.46);
         gammaBrakeService.put(155., 0.45);
-        gammaBrakeService.put(180., 0.49);
-        gammaBrakeService.put(250., 0.41);
+        gammaBrakeService.put(180., 0.45);
+        gammaBrakeService.put(250., 0.49);
         gammaBrakeService.put(300., 0.41);
 
         VERY_SHORT_FAST_TRAIN = new RollingStock(
@@ -72,7 +72,7 @@ public class TestTrains {
                 0.05,
                 0.25,
                 0.5,
-                RollingStock.GammaType.CONST,
+                0,
                 tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
                 RJSLoadingGaugeType.G1
         );
@@ -87,7 +87,7 @@ public class TestTrains {
                 0.05,
                 0.25,
                 0.5,
-                RollingStock.GammaType.CONST,
+                0,
                 tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
                 RJSLoadingGaugeType.G1
         );
@@ -102,7 +102,7 @@ public class TestTrains {
                 0.05,
                 0.25,
                 0.5,
-                RollingStock.GammaType.CONST,
+                0,
                 gammaBrakeEmergency,
                 gammaBrakeService,
                 null,
@@ -121,8 +121,8 @@ public class TestTrains {
                 30,
                 0.05,
                 0.25,
-                0.95,
-                RollingStock.GammaType.MAX,
+                0,
+                0.95 * trainMass * 1.05,
                 tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
                 RJSLoadingGaugeType.G1
         );
@@ -137,7 +137,7 @@ public class TestTrains {
                 0.05,
                 0.25,
                 0.5,
-                RollingStock.GammaType.CONST,
+                0,
                 tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
                 RJSLoadingGaugeType.GC
         );

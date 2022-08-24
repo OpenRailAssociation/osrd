@@ -2,8 +2,9 @@ package fr.sncf.osrd.envelope_sim;
 
 public class EnvelopeSimContext {
 
-    public static enum UseCase {
-        RUNNING_TIME_CALCULATION,
+    public enum UseCase {
+        TIMETABLE,
+        RUNNING_TIME,
         ETCS_EBD,
         ETCS_SBD,
         ETCS_GUI
@@ -20,7 +21,7 @@ public class EnvelopeSimContext {
         this.rollingStock = rollingStock;
         this.path = path;
         this.timeStep = timeStep;
-        this.useCase = UseCase.RUNNING_TIME_CALCULATION;
+        this.useCase = UseCase.RUNNING_TIME;
     }
 
     /** Creates a context suitable to run a specific ETCS braking curve envelopePart */

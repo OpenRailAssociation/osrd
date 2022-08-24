@@ -1,5 +1,7 @@
 package fr.sncf.osrd.envelope_sim;
 
+import static fr.sncf.osrd.envelope_sim.EnvelopeSimContext.UseCase.*;
+
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext.UseCase;
 
@@ -81,29 +83,26 @@ public final class TrainPhysicsIntegrator {
 
         double tractionForce = 0;
         double brakingForce = 0;
-        double maxTractionForce = rollingStock.getMaxEffort(speed);
-        double rollingResistance = rollingStock.getRollingResistance(speed);
-        double weightForce = getWeightForce(rollingStock, path, position);
+        double weightForce = getAverageWeightForce(rollingStock, path, position);
 
         if (action == Action.ACCELERATE)
-            tractionForce = maxTractionForce;
+            tractionForce = rollingStock.getMaxEffort(speed);;
 
         if (action == Action.BRAKE) {
             switch (useCase) {
-                case RUNNING_TIME_CALCULATION -> brakingForce = rollingStock.getMaxBrakingForce(speed);
+                case RUNNING_TIME -> brakingForce = rollingStock.getMaxBrakingForce(speed);
                 case ETCS_EBD -> brakingForce = rollingStock.getEmergencyBrakingForce(speed);
                 case ETCS_SBD -> brakingForce = rollingStock.getServiceBrakingForce(speed);
                 case ETCS_GUI -> brakingForce = rollingStock.getNormalServiceBrakingForce(speed);
             }
         }
 
-        double acceleration = computeAcceleration(rollingStock, rollingResistance,
-                weightForce, speed, tractionForce, brakingForce, directionSign);
+        double acceleration = getAcceleration(weightForce, speed, tractionForce, brakingForce);
         return newtonStep(timeStep, speed, acceleration, directionSign);
     }
 
-    /** Compute the weight force of a rolling stock at a given position on a given path */
-    public static double getWeightForce(PhysicsRollingStock rollingStock, PhysicsPath path, double headPosition) {
+    /** Compute the average weight force of a rolling stock at a given position on a given path */
+    public static double getAverageWeightForce(PhysicsRollingStock rollingStock, PhysicsPath path, double headPosition) {
         var tailPosition = Math.min(Math.max(0, headPosition - rollingStock.getLength()), path.getLength());
         headPosition = Math.min(Math.max(0, headPosition), path.getLength());
         var averageGrade = path.getAverageGrade(tailPosition, headPosition);
@@ -111,6 +110,43 @@ public final class TrainPhysicsIntegrator {
         // the curve's radius is taken into account in meanTrainGrade
         var angle = Math.atan(averageGrade / 1000.0);  // from m/km to m/m
         return -rollingStock.getMass() * 9.81 * Math.sin(angle);
+    }
+
+    /** Compute the worst weight force of a rolling stock at a given position on a given path,
+     * corresponding to the most downhill part under the train */
+    public static double getWorstCaseWeightForce(PhysicsRollingStock rollingStock, PhysicsPath path, double headPosition) {
+        var tailPosition = Math.min(Math.max(0, headPosition - rollingStock.getLength()), path.getLength());
+        headPosition = Math.min(Math.max(0, headPosition), path.getLength());
+        var averageGrade = path.getAverageGrade(tailPosition, headPosition);
+        // get an angle from a meter per km elevation difference
+        // the curve's radius is taken into account in meanTrainGrade
+        var angle = Math.atan(averageGrade / 1000.0);  // from m/km to m/m
+        return -rollingStock.getMass() * 9.81 * Math.sin(angle);
+    }
+
+    private double getAcceleration(
+            double weightForce,
+            double speed,
+            double tractionForce,
+            double brakingForce
+    ) {
+        if (brakingForce > 0) {
+            if (useCase == TIMETABLE)
+                return rollingStock.getTimetableDeceleration();
+            if (useCase == ETCS_EBD)
+                return rollingStock.getEmergencyBrakingForce(speed) + weightForce * rollingStock.getInertia();
+            if (useCase == ETCS_SBD)
+                return rollingStock.getServiceBrakingForce(speed) + weightForce * rollingStock.getInertia();
+        }
+
+        return computeAcceleration(
+                rollingStock,
+                rollingStock.getRollingResistance(speed),
+                weightForce,
+                speed,
+                tractionForce,
+                brakingForce,
+                directionSign);
     }
 
     /** Compute the acceleration given a rolling stock, different forces, a speed, and a direction */
@@ -126,8 +162,9 @@ public final class TrainPhysicsIntegrator {
         assert brakingForce >= 0.;
         assert tractionForce >= 0.;
 
-        if (brakingForce > 0 && rollingStock.getGammaType() == RollingStock.GammaType.CONST)
-            return rollingStock.getDeceleration();
+        if (brakingForce > 0)
+            //TODO : make sure this is ok
+            return rollingStock.getTimetableDeceleration();
 
         // the sum of forces that always go the direction opposite to the train's movement
         double oppositeForce = rollingResistance + brakingForce;

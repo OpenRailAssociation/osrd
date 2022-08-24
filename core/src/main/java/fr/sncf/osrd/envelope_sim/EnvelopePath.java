@@ -17,7 +17,7 @@ public class EnvelopePath implements PhysicsPath {
      * Creates a new envelope path, which can be used to perform envelope simulations.
      * @param length the length of the path
      * @param gradePositions the points at which the grade (slope) changes
-     * @param gradeValues the values between consecutive pairs of grande positions
+     * @param gradeValues the values between consecutive pairs of grade positions
      */
     @SuppressFBWarnings({"EI_EXPOSE_REP2"})
     public EnvelopePath(double length, double[] gradePositions, double[] gradeValues) {
@@ -64,11 +64,36 @@ public class EnvelopePath implements PhysicsPath {
         return gradeCumSum[gradeRangeIndex] + gradeValues[gradeRangeIndex] * (position - gradeRangeStart);
     }
 
+
+    /** For a given position, return the index of the position just before in gradePositions */
+    public int getIndexBeforePos(double position) {
+        assert position <= gradePositions[gradePositions.length - 1] && position >= gradePositions[0];
+        for (int i = 0; i < gradePositions.length; i++) {
+            var pos = gradePositions[i];
+            if (pos > position)
+                return i - 1;
+        }
+        return gradePositions.length - 1;
+    }
+
     @Override
     public double getAverageGrade(double begin, double end) {
         if (begin == end)
             return getCumGrade(begin);
         return (getCumGrade(end) - getCumGrade(begin)) / (end - begin);
+    }
+
+    @Override
+    public double getLowestGrade(double begin, double end) {
+        int indexBegin = getIndexBeforePos(begin);
+        int indexEnd = getIndexBeforePos(end);
+        var lowestGradient = gradeValues[indexBegin];
+        for (int i = indexBegin; i < indexEnd; i++) {
+            var grad = gradeValues[i];
+            if (grad < lowestGradient)
+                lowestGradient = grad;
+        }
+        return lowestGradient;
     }
 
     @Override

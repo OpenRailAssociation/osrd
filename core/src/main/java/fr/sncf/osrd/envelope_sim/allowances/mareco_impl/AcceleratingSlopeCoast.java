@@ -98,7 +98,7 @@ public class AcceleratingSlopeCoast implements CoastingOpportunity {
 
             // initializing variables
             double position = cursor.getPosition();
-            double weightForce = TrainPhysicsIntegrator.getWeightForce(context.rollingStock, context.path, position);
+            double weightForce = TrainPhysicsIntegrator.getAverageWeightForce(context.rollingStock, context.path, position);
             var naturalAcceleration = TrainPhysicsIntegrator.computeAcceleration(context.rollingStock,
                     rollingResistance, weightForce, speed, 0, 0, 1);
 
@@ -129,7 +129,7 @@ public class AcceleratingSlopeCoast implements CoastingOpportunity {
                 if (cursor.hasReachedEnd())
                     break;
                 position = cursor.getPosition();
-                weightForce = TrainPhysicsIntegrator.getWeightForce(context.rollingStock, context.path, position);
+                weightForce = TrainPhysicsIntegrator.getAverageWeightForce(context.rollingStock, context.path, position);
                 naturalAcceleration = TrainPhysicsIntegrator.computeAcceleration(context.rollingStock,
                         rollingResistance, weightForce, speed, 0, 0, 1);
             }

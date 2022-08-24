@@ -18,6 +18,7 @@ import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.infra_state.api.TrainPath;
+import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,12 +38,12 @@ public class BrakingCurves {
     /** Computes the ETCS braking curves from a path, a schedule, a time step, and a MRSP envelope */
     public static List<EnvelopePart> from(
             TrainPath trainPath,
-            StandaloneTrainSchedule schedule,
+            RollingStock rollingStock,
             double timeStep,
             Envelope mrsp
     ) {
-        var totalEBDCurves = computeETCSBrakingCurves(EBD, trainPath, schedule, timeStep, mrsp);
-        var totalSBDCurves = computeETCSBrakingCurves(SBD, trainPath, schedule, timeStep, mrsp);
+        var totalEBDCurves = computeETCSBrakingCurves(EBD, trainPath, rollingStock, timeStep, mrsp);
+        var totalSBDCurves = computeETCSBrakingCurves(SBD, trainPath, rollingStock, timeStep, mrsp);
         var totalCurves = new ArrayList<EnvelopePart>();
         totalCurves.addAll(totalEBDCurves);
         totalCurves.addAll(totalSBDCurves);
@@ -52,53 +53,30 @@ public class BrakingCurves {
     private static List<EnvelopePart> computeETCSBrakingCurves(
             BrakingCurveType type,
             TrainPath trainPath,
-            StandaloneTrainSchedule schedule,
+            RollingStock rollingStock,
             double timeStep,
             Envelope mrsp
     ) {
-        var rollingStock = schedule.rollingStock;
-        var stopPositions = schedule.getStopsPositions();
         var envelopePath = EnvelopeTrainPath.from(trainPath);
         EnvelopeSimContext context;
 
         switch (type) {
             case EBD -> context = new EnvelopeSimContext(rollingStock, envelopePath, timeStep, ETCS_EBD);
             case SBD -> context = new EnvelopeSimContext(rollingStock, envelopePath, timeStep, ETCS_SBD);
-            default -> context = new EnvelopeSimContext(rollingStock, envelopePath, timeStep, RUNNING_TIME_CALCULATION);
+            default -> context = new EnvelopeSimContext(rollingStock, envelopePath, timeStep, RUNNING_TIME);
         }
 
-        var detectorsCurves = computeBrakingCurvesAtDetectors(trainPath, context, mrsp);
+        var markerBoardsCurves = computeBrakingCurvesAtMarkerBoards(trainPath, context, mrsp);
         var slowdownsCurves = computeBrakingCurvesAtSlowdowns(context, mrsp);
-        var stopsCurves = computeBrakingCurvesAtStops(context, stopPositions, mrsp);
         var totalCurves = new ArrayList<EnvelopePart>();
-        totalCurves.addAll(detectorsCurves);
+        totalCurves.addAll(markerBoardsCurves);
         totalCurves.addAll(slowdownsCurves);
-        totalCurves.addAll(stopsCurves);
         return totalCurves;
     }
 
 
     /**
-     * Compute an EBD curve at every stop
-     */
-    private static List<EnvelopePart> computeBrakingCurvesAtStops(
-            EnvelopeSimContext context,
-            double[] stopPositions,
-            Envelope mrsp
-    ) {
-
-        var stopsEBDCurves = new ArrayList<EnvelopePart>();
-        for (var pos : stopPositions) {
-            var brakingCurve =
-                    computeEBDCurve(context, mrsp, pos, 0);
-            stopsEBDCurves.add(brakingCurve);
-        }
-        return stopsEBDCurves;
-    }
-
-
-    /**
-     * Compute an EBD curve at every slowdown
+     * Compute braking curves at every slowdown
      */
     private static List<EnvelopePart> computeBrakingCurvesAtSlowdowns(
             EnvelopeSimContext context,
@@ -106,22 +84,22 @@ public class BrakingCurves {
     ) {
 
         var cursor = EnvelopeCursor.backward(mrsp);
-        var slowdownEBDCurves = new ArrayList<EnvelopePart>();
+        var slowdownBrakingCurves = new ArrayList<EnvelopePart>();
 
         while (cursor.findPartTransition(MaxSpeedEnvelope::increase)) {
             var brakingCurve =
-                    computeEBDCurve(context, mrsp, cursor.getPosition(), cursor.getSpeed());
-            slowdownEBDCurves.add(brakingCurve);
+                    computeBrakingCurve(context, mrsp, cursor.getPosition(), cursor.getSpeed());
+            slowdownBrakingCurves.add(brakingCurve);
             cursor.nextPart();
         }
-        return slowdownEBDCurves;
+        return slowdownBrakingCurves;
     }
 
 
     /**
-     * Compute an EBD curve at every detector
+     * Compute braking curves at every marker board
      */
-    private static List<EnvelopePart> computeBrakingCurvesAtDetectors(
+    private static List<EnvelopePart> computeBrakingCurvesAtMarkerBoards(
             TrainPath trainPath,
             EnvelopeSimContext context,
             Envelope mrsp
@@ -133,12 +111,12 @@ public class BrakingCurves {
         for (var range : ranges) {
             if (range.getLength() == 0)
                 continue;
-            var detectors = range.getDetectors();
-            for (var detector : detectors) {
+            var markerBoards = range.getDetectors();
+            for (var detector : markerBoards) {
                 var detectorPosition = range.begin + detector.offset();
                 if (detectorPosition > 0 && detectorPosition <= trainPath.length()) {
                     var brakingCurve =
-                            computeEBDCurve(context, mrsp, detectorPosition, 0);
+                            computeBrakingCurve(context, mrsp, detectorPosition, 0);
                     detectorsEBDCurves.add(brakingCurve);
                 }
             }
@@ -149,10 +127,10 @@ public class BrakingCurves {
     /**
      * EBD = Emergency Brake Deceleration
      */
-    private static EnvelopePart computeEBDCurve(EnvelopeSimContext context,
-                                                Envelope mrsp,
-                                                double targetPosition,
-                                                double targetSpeed) {
+    private static EnvelopePart computeBrakingCurve(EnvelopeSimContext context,
+                                                    Envelope mrsp,
+                                                    double targetPosition,
+                                                    double targetSpeed) {
         // if the stopPosition is below zero, or above path length, the input is invalid
         if (targetPosition <= 0.0 || targetPosition > context.path.getLength())
             throw new RuntimeException(String.format(

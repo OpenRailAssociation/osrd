@@ -1,5 +1,7 @@
 package fr.sncf.osrd.train;
 
+import static java.lang.Double.NaN;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStockField;
@@ -19,13 +21,11 @@ public class RollingStock implements PhysicsRollingStock {
     public final double B; // in newtons / (m/s)
     public final double C; // in newtons / (m/s^2)
 
-    /** the kind of deceleration input of the train. It can be:
-     * a constant value
-     * the maximum possible deceleration value */
-    public final RollingStock.GammaType gammaType;
+    /** the maximum braking force of the train, in N */
+    public final double maxBrakingForce;
 
-    /** the deceleration of the train, in m/s² */
-    public final double gamma;
+    /** the constant deceleration of the train use for time table calculation, in m/s² */
+    public final double timetableGamma;
 
     /** A_brake_emergency: the emergency braking decelerations for ERTMS ETCS 2, in m/s² */
     public final SortedMap<Double, Double> gammaBrakeEmergency;
@@ -121,8 +121,13 @@ public class RollingStock implements PhysicsRollingStock {
     }
 
     @Override
+    public double getTimetableDeceleration() {
+        return -timetableGamma;
+    }
+
+    @Override
     public double getMaxBrakingForce(double speed) {
-        return gamma * inertia;
+        return maxBrakingForce;
     }
 
     @Override
@@ -158,16 +163,6 @@ public class RollingStock implements PhysicsRollingStock {
         throw new InvalidRollingStockField("gammaBrakeNormalService", "no value for the given speed");
     }
 
-    @Override
-    public GammaType getGammaType() {
-        return gammaType;
-    }
-
-    public enum GammaType {
-        CONST,
-        MAX
-    }
-
     public static final class TractiveEffortPoint {
         public final double speed;
         public final double maxEffort;
@@ -176,11 +171,6 @@ public class RollingStock implements PhysicsRollingStock {
             this.speed = speed;
             this.maxEffort = maxEffort;
         }
-    }
-
-    /** Returns Gamma */
-    public double getDeceleration() {
-        return - gamma;
     }
 
     /**
@@ -217,8 +207,8 @@ public class RollingStock implements PhysicsRollingStock {
             double startUpTime,
             double startUpAcceleration,
             double comfortAcceleration,
-            double gamma,
-            GammaType gammaType,
+            double timetableGamma,
+            double maxBrakingForce,
             TractiveEffortPoint[] tractiveEffortCurve,
             RJSLoadingGaugeType loadingGaugeType
     ) {
@@ -231,8 +221,8 @@ public class RollingStock implements PhysicsRollingStock {
         this.startUpTime = startUpTime;
         this.startUpAcceleration = startUpAcceleration;
         this.comfortAcceleration = comfortAcceleration;
-        this.gamma = gamma;
-        this.gammaType = gammaType;
+        this.timetableGamma = timetableGamma;
+        this.maxBrakingForce = maxBrakingForce;
         this.gammaBrakeEmergency = null;
         this.gammaBrakeService = null;
         this.gammaBrakeNormalService = null;
@@ -258,8 +248,8 @@ public class RollingStock implements PhysicsRollingStock {
             double startUpTime,
             double startUpAcceleration,
             double comfortAcceleration,
-            double gamma,
-            GammaType gammaType,
+            double timetableGamma,
+            double maxBrakingForce,
             SortedMap<Double, Double> gammaBrakeEmergency,
             SortedMap<Double, Double> gammaBrakeService,
             SortedMap<Double, Double> gammaBrakeNormalService,
@@ -277,8 +267,8 @@ public class RollingStock implements PhysicsRollingStock {
         this.startUpTime = startUpTime;
         this.startUpAcceleration = startUpAcceleration;
         this.comfortAcceleration = comfortAcceleration;
-        this.gamma = gamma;
-        this.gammaType = gammaType;
+        this.timetableGamma = timetableGamma;
+        this.maxBrakingForce = maxBrakingForce;
         this.gammaBrakeEmergency = gammaBrakeEmergency;
         this.gammaBrakeService = gammaBrakeService;
         this.gammaBrakeNormalService = gammaBrakeNormalService;

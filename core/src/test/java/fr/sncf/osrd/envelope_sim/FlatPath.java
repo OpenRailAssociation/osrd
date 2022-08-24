@@ -20,6 +20,11 @@ public class FlatPath implements PhysicsPath {
     }
 
     @Override
+    public double getLowestGrade(double begin, double end) {
+        return slope;
+    }
+
+    @Override
     public double findHighGradePosition(double position, double endPos, double length, double gradeThreshold) {
         if (slope > gradeThreshold)
             return position;

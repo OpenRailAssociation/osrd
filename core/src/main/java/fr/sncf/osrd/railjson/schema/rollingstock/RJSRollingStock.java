@@ -5,7 +5,6 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.Identified;
-import fr.sncf.osrd.train.RollingStock;
 
 public class RJSRollingStock implements Identified {
     public static final JsonAdapter<RJSRollingStock> adapter = new Moshi
@@ -67,10 +66,14 @@ public class RJSRollingStock implements Identified {
     public double comfortAcceleration = Double.NaN;
 
     /**
-     * The braking deceleration coefficient can be the max or constant (depends on type field).
+     * The braking deceleration coefficient used for timetable calculation.
      */
-    public RJSGamma gamma = null;
+    public double timetableGamma = Double.NaN;
 
+    /**
+     * The max braking force of the rolling stock.
+     */
+    public double maxBrakingForce = Double.NaN;
 
     /**
      * Inertia coefficient.
@@ -110,7 +113,6 @@ public class RJSRollingStock implements Identified {
     @SuppressFBWarnings("UWF_NULL_FIELD")
     public static final class RJSGamma {
         public double value = Double.NaN;
-        public RollingStock.GammaType type = null;
     }
 
     @Override

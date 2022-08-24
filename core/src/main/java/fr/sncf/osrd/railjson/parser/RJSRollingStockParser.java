@@ -1,5 +1,7 @@
 package fr.sncf.osrd.railjson.parser;
 
+import static java.lang.Double.isNaN;
+
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStockField;
 import fr.sncf.osrd.railjson.parser.exceptions.MissingRollingStockField;
@@ -23,25 +25,28 @@ public class RJSRollingStockParser {
         if (rjsRollingStock.name == null)
             throw new MissingRollingStockField("name");
 
-        if (Double.isNaN(rjsRollingStock.length))
+        if (isNaN(rjsRollingStock.length))
             throw new MissingRollingStockField("length");
 
-        if (Double.isNaN(rjsRollingStock.maxSpeed))
+        if (isNaN(rjsRollingStock.maxSpeed))
             throw new MissingRollingStockField("max_speed");
 
-        if (Double.isNaN(rjsRollingStock.startUpTime))
+        if (isNaN(rjsRollingStock.startUpTime))
             throw new MissingRollingStockField("startup_time");
 
-        if (Double.isNaN(rjsRollingStock.startUpAcceleration))
+        if (isNaN(rjsRollingStock.startUpAcceleration))
             throw new MissingRollingStockField("startup_acceleration");
 
-        if (Double.isNaN(rjsRollingStock.comfortAcceleration))
+        if (isNaN(rjsRollingStock.comfortAcceleration))
             throw new MissingRollingStockField("comfort_acceleration");
 
-        if (rjsRollingStock.gamma == null)
-            throw new MissingRollingStockField("gamma");
+        if (isNaN(rjsRollingStock.timetableGamma))
+            throw new MissingRollingStockField("timetable_gamma");
 
-        if (Double.isNaN(rjsRollingStock.inertiaCoefficient))
+        if (isNaN(rjsRollingStock.maxBrakingForce))
+            throw new MissingRollingStockField("max_braking_force");
+
+        if (isNaN(rjsRollingStock.inertiaCoefficient))
             throw new MissingRollingStockField("inertia_coefficient");
 
         if (rjsRollingStock.powerClass < 0)
@@ -50,13 +55,13 @@ public class RJSRollingStockParser {
         if (rjsRollingStock.features == null)
             throw new MissingRollingStockField("features");
 
-        if (Double.isNaN(rjsRollingStock.mass))
+        if (isNaN(rjsRollingStock.mass))
             throw new MissingRollingStockField("mass");
 
         if (rjsRollingStock.loadingGauge == null)
             throw new MissingRollingStockField("loading_gauge");
 
-        if (Double.isNaN(rjsRollingStock.mass))
+        if (isNaN(rjsRollingStock.mass))
             throw new MissingRollingStockField("mass");
 
         var rollingResistance = parseRollingResistance(rjsRollingStock.rollingResistance);
@@ -73,8 +78,8 @@ public class RJSRollingStockParser {
                 rjsRollingStock.startUpTime,
                 rjsRollingStock.startUpAcceleration,
                 rjsRollingStock.comfortAcceleration,
-                rjsRollingStock.gamma.value,
-                rjsRollingStock.gamma.type,
+                rjsRollingStock.timetableGamma,
+                rjsRollingStock.maxBrakingForce,
                 tractiveEffortCurve,
                 rjsRollingStock.loadingGauge
         );

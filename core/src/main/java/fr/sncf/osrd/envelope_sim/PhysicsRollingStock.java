@@ -1,7 +1,5 @@
 package fr.sncf.osrd.envelope_sim;
 
-import fr.sncf.osrd.train.RollingStock;
-
 public interface PhysicsRollingStock {
     /** The mass of the train, in kilograms */
     double getMass();
@@ -15,9 +13,6 @@ public interface PhysicsRollingStock {
     /** The maximum speed the train can reach, in m/s */
     double getMaxSpeed();
 
-    /** The type of gamma input of the train */
-    RollingStock.GammaType getGammaType();
-
     /** The resistance to movement at a given speed, in newtons */
     double getRollingResistance(double speed);
 
@@ -27,8 +22,8 @@ public interface PhysicsRollingStock {
     /** The maximum traction effort which can be deployed at a given speed, in newtons */
     double getMaxEffort(double speed);
 
-    /** The maximum constant deceleration, in m/s^2 */
-    double getDeceleration();
+    /** The maximum constant deceleration used for timetable calculation, in m/s^2 */
+    double getTimetableDeceleration();
 
     /** The maximum braking force which can be applied at a given speed, in newtons */
     double getMaxBrakingForce(double speed);
