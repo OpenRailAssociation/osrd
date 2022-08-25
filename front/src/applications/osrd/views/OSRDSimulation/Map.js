@@ -55,7 +55,6 @@ import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import { updateTimePositionValues } from 'reducers/osrdsimulation';
 import { updateViewport } from 'reducers/map';
 import { useParams } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 
 const PATHFINDING_URI = '/pathfinding/';
 const INTERMEDIATE_MARKERS_QTY = 8;
@@ -69,9 +68,6 @@ const Map = (props) => {
     isPlaying, selectedTrain, positionValues, timePosition, allowancesSettings,
   } = useSelector((state) => state.osrdsimulation);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
-  const { t } = useTranslation(['map-settings']);
-  const [showSearch, setShowSearch] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const [geojsonPath, setGeojsonPath] = useState(undefined);
   const [trainHoverPositionOthers, setTrainHoverPositionOthers] = useState(undefined);
   const [trainHoverPosition, setTrainHoverPosition] = useState(undefined);
@@ -248,13 +244,6 @@ const Map = (props) => {
       transitionDuration: 1000,
       transitionInterpolator: new FlyToInterpolator(),
     });
-  };
-
-  const toggleMapSearch = () => {
-    setShowSearch(!showSearch);
-  };
-  const toggleMapSettings = () => {
-    setShowSettings(!showSettings);
   };
 
   const onFeatureHover = (e) => {

@@ -52,8 +52,6 @@ const Map = () => {
   const {
     viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings,
   } = useSelector((state) => state.map);
-  const [showSearch, setShowSearch] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const [idHover, setIdHover] = useState(undefined);
   const [trackSectionHover, setTrackSectionHover] = useState(undefined);
   const [lngLatHover, setLngLatHover] = useState(undefined);
@@ -81,13 +79,6 @@ const Map = () => {
       transitionDuration: 1000,
       transitionInterpolator: new FlyToInterpolator(),
     });
-  };
-
-  const toggleMapSearch = () => {
-    setShowSearch(!showSearch);
-  };
-  const toggleMapSettings = () => {
-    setShowSettings(!showSettings);
   };
 
   const onFeatureClick = (e) => {

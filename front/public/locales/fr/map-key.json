@@ -1,3 +1,7 @@
 {
-  "keyTitle": "Légende"
+  "alternatingCurrent": "Alternatif",
+  "directCurrent": "Continu",
+  "catenaries": "Électrification",
+  "keyTitle": "Légende",
+  "speedlimit": "Vitesse"
 }
