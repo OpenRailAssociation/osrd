@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("osrd_infra", "0027_alter_catenarylayer_schematic"),
+        ("osrd_infra", "0001_initial"),
     ]
 
     operations = [
