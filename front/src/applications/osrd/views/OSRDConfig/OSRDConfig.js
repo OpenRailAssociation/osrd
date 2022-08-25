@@ -75,7 +75,7 @@ export default function OSRDConfig(props) {
               <button
                 className="btn btn-sm  btn-primary "
                 type="button"
-                onClick={() => {setCurrentStdcmRequestStatus(stdcmRequestStatus.pending)}}
+                onClick={() => setCurrentStdcmRequestStatus(stdcmRequestStatus.pending)}
               >
                 {t('osrdconf:apply')}
                 <span className="sr-only" aria-hidden="true">{t('osrdconf:apply')}</span>

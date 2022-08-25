@@ -21,6 +21,7 @@
     "noOrigin": "L'origine n'est pas définie",
     "noOriginTime": "Veuillez renseigner l'horaire de départ à l'origine",
     "noRollingStock": "La composition de train n'est pas renseignée",
+    "noSpeedLimitByTag": "Veuilez choisir une catégorie statistique",
     "noTimetable": "Veuillez choisir ou créer une grille horaire",
     "trainScheduleTitle": "Une erreur est survenue",
     "unableToRetrieveInfra": "Récupération infra impossible",
