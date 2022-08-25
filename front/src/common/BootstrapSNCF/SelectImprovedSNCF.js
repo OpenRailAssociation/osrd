@@ -11,6 +11,7 @@ export default function SelectSNCF(props) {
 
   const selectItem = (selectedOption) => {
     setSelectedItem(selectedOption);
+    onChange(selectedOption);
     setIsOpen(false);
   };
 
@@ -44,8 +45,7 @@ export default function SelectSNCF(props) {
             </p>
             <div className="input-group-append input-group-last">
               <button className="btn btn-primary btn-only-icon " type="button" aria-expanded="false" aria-controls="selecttoggle">
-                <i className="icons-arrow-down icons-size-x75" aria-hidden="true" />
-                <span className="sr-only">Sélectionner</span>
+                <i className={`${(isOpen ? 'icons-arrow-up' : 'icons-arrow-down')} icons-size-x75`} aria-hidden="true" />
               </button>
             </div>
           </div>

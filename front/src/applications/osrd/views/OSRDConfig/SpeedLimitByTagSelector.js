@@ -44,7 +44,7 @@ export default function SpeedLimitByTagSelector() {
               <SelectImprovedSNCF
                 id=""
                 options={speedLimitsTags}
-                onChange={(e) => updateSpeedLimitByTag(e.target.value)}
+                onChange={(e) => updateSpeedLimitByTag(e)}
                 selectedValue={speedLimitByTag}
                 sm
               />
