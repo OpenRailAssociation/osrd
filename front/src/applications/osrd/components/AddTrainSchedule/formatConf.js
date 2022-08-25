@@ -57,6 +57,7 @@ export default function formatConf(dispatch, setFailure, t, osrdconf, originTime
       departure_time: originTime,
       initial_speed: Math.abs(osrdconf.originSpeed / 3.6),
       rolling_stock: osrdconf.rollingStockID,
+      speed_limit_category: osrdconf.speedLimitByTag,
     };
     return osrdConfSchedule;
   }
