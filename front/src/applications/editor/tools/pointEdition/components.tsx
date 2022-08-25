@@ -1,4 +1,3 @@
-import { omit } from 'lodash';
 import React, { FC, useContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Layer, Source } from 'react-map-gl';
@@ -48,7 +47,18 @@ export const PointEditionLeftPanel: FC = <Entity extends EditorEntity>() => {
       data={state.entity as Entity}
       onSubmit={async (savedEntity) => {
         const res = await dispatch(
-          save({ [state.entity.id ? 'update' : 'create']: [savedEntity] })
+          save(
+            state.entity.id
+              ? {
+                  update: [
+                    {
+                      source: editorState.editorDataIndex[state.entity.id as string],
+                      target: savedEntity,
+                    },
+                  ],
+                }
+              : { create: [savedEntity] }
+          )
         );
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const operation = res[0] as any as CreateEntityOperation;

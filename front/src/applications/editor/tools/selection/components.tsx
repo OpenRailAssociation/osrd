@@ -14,7 +14,7 @@ import colors from '../../../../common/Map/Consts/colors';
 import EditorZone from '../../../../common/Map/Layers/EditorZone';
 import EditorForm from '../../components/EditorForm';
 import { save } from '../../../../reducers/editor';
-import { EditorContextType } from '../types';
+import { EditorContextType, ExtendedEditorContextType } from '../types';
 
 export const SelectionMessages: FC = () => {
   const { t, state } = useContext(EditorContext) as EditorContextType<SelectionState>;
@@ -87,7 +87,9 @@ export const SelectionLayers: FC = () => {
 export const SelectionLeftPanel: FC = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const { state, setState } = useContext(EditorContext) as EditorContextType<SelectionState>;
+  const { state, setState, editorState } = useContext(
+    EditorContext
+  ) as ExtendedEditorContextType<SelectionState>;
   const { selection, selectionState } = state;
 
   if (selectionState.type === 'edition') {
@@ -99,7 +101,16 @@ export const SelectionLeftPanel: FC = () => {
         <EditorForm
           data={selection[0]}
           onSubmit={async (savedEntity) => {
-            await dispatch(save({ update: [savedEntity] }));
+            await dispatch(
+              save({
+                update: [
+                  {
+                    source: editorState.editorDataIndex[savedEntity.id as string],
+                    target: savedEntity,
+                  },
+                ],
+              })
+            );
             setState({ ...state, selection: [savedEntity], selectionState: { type: 'single' } });
           }}
         >

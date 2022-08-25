@@ -12,7 +12,8 @@ import { TrackEditionState } from './types';
 import EditorForm from '../../components/EditorForm';
 import { save } from '../../../../reducers/editor';
 import { CreateEntityOperation, Item, TrackSectionEntity } from '../../../../types';
-import { EditorContextType } from '../types';
+import { EditorContextType, ExtendedEditorContextType } from '../types';
+import { injectGeometry } from './utils';
 
 export const TRACK_LAYER_ID = 'trackEditionTool/new-track-path';
 export const POINTS_LAYER_ID = 'trackEditionTool/new-track-points';
@@ -184,13 +185,28 @@ export const TrackEditionLayers: FC = () => {
 export const TrackEditionLeftPanel: FC = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const { state, setState } = useContext(EditorContext) as EditorContextType<TrackEditionState>;
+  const { state, setState, editorState } = useContext(
+    EditorContext
+  ) as ExtendedEditorContextType<TrackEditionState>;
 
   return (
     <EditorForm
       data={state.track}
       onSubmit={async (savedEntity) => {
-        const res = await dispatch(save({ [state.track.id ? 'update' : 'create']: [savedEntity] }));
+        const res = await dispatch(
+          save(
+            state.track.id
+              ? {
+                  update: [
+                    {
+                      source: injectGeometry(editorState.editorDataIndex[state.track.id as string]),
+                      target: injectGeometry(savedEntity),
+                    },
+                  ],
+                }
+              : { create: [injectGeometry(savedEntity)] }
+          )
+        );
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const operation = res[0] as any as CreateEntityOperation;
         const { id } = operation.railjson;
