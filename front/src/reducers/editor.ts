@@ -100,7 +100,7 @@ export type ActionSave = {
 };
 export function save(operations: {
   create?: Array<EditorEntity>;
-  update?: Array<EditorEntity>;
+  update?: Array<{ source: EditorEntity; target: EditorEntity }>;
   delete?: Array<EditorEntity>;
 }): ThunkAction<ActionSave> {
   return async (dispatch, getState) => {
@@ -108,13 +108,7 @@ export function save(operations: {
     dispatch(setLoading());
     try {
       // saving the data
-      const savedFeatures = await editorSave(state.osrdconf.infraID, {
-        ...operations,
-        update: (operations.update || []).map((target) => {
-          const source = state.editor.editorData.find((e) => e.id === target.id);
-          return { source, target };
-        }),
-      });
+      const savedFeatures = await editorSave(state.osrdconf.infraID, operations);
       // reload the zone
       dispatch(selectZone(state.editor.editorZone));
       // success message
