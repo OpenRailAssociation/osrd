@@ -12,6 +12,7 @@ export const UPDATE_INFRA_ID = 'osrdconf/UPDATE_INFRA_ID';
 export const UPDATE_PATHFINDING_ID = 'osrdconf/UPDATE_PATHFINDING_ID';
 export const UPDATE_TIMETABLE_ID = 'osrdconf/UPDATE_TIMETABLE_ID';
 export const UPDATE_ROLLINGSTOCK_ID = 'osrdconf/UPDATE_ROLLINGSTOCK_ID';
+export const UPDATE_SPEED_LIMIT_BY_TAG = 'osrdconf/UPDATE_SPEED_LIMIT_BY_TAG';
 export const UPDATE_ORIGIN = 'osrdconf/UPDATE_ORIGIN';
 export const UPDATE_ORIGIN_SPEED = 'osrdconf/UPDATE_ORIGIN_SPEED';
 export const UPDATE_ORIGIN_TIME = 'osrdconf/UPDATE_ORIGIN_TIME';
@@ -40,6 +41,7 @@ export const initialState = {
   pathfindingID: undefined,
   timetableID: undefined,
   rollingStockID: undefined,
+  speedLimitByTag: undefined,
   origin: undefined,
   originSpeed: 0,
   originTime: undefined,
@@ -78,6 +80,9 @@ export default function reducer(inputState, action) {
         break;
       case UPDATE_ROLLINGSTOCK_ID:
         draft.rollingStockID = action.rollingStockID;
+        break;
+      case UPDATE_SPEED_LIMIT_BY_TAG:
+        draft.speedLimitByTag = action.speedLimitByTag;
         break;
       case UPDATE_ORIGIN:
         draft.origin = action.origin;
@@ -201,6 +206,14 @@ export function updateRollingStockID(rollingStockID) {
     dispatch({
       type: UPDATE_ROLLINGSTOCK_ID,
       rollingStockID,
+    });
+  };
+}
+export function updateSpeedLimitByTag(speedLimitByTag) {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_SPEED_LIMIT_BY_TAG,
+      speedLimitByTag,
     });
   };
 }
