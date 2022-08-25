@@ -1,6 +1,7 @@
 package fr.sncf.osrd.train;
 
 import static fr.sncf.osrd.envelope_sim_infra.ertms.etcs.NationalDefaultData.*;
+import static java.lang.Double.NaN;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
@@ -23,7 +24,7 @@ public class RollingStock implements PhysicsRollingStock {
     /** the maximum braking force of the train, in N */
     public final double maxBrakingForce;
 
-    /** the constant deceleration of the train use for time table calculation, in m/s² */
+    /** the constant deceleration of the train use for timetable calculation, in m/s² */
     public final double timetableGamma;
 
     /** A_brake_emergency: the emergency braking decelerations for ERTMS ETCS 2, in m/s² */
@@ -46,6 +47,18 @@ public class RollingStock implements PhysicsRollingStock {
 
     /** Kn+(V): the correction factor on normal service deceleration in negative gradients, used in ETCS 2 */
     public final SortedMap<Double, Double> kNNeg;
+
+    /** Time delay from the traction cut off command to the moment the acceleration due to traction is zero */
+    public double tTractionCutOff;
+
+    /** Time service break used for SBI1 computation */
+    public double tBs1;
+
+    /** Time service break used for SBI2 computation */
+    public double tBs2;
+
+    /** Safe brake buildup time */
+    public double tBe;
 
     /** the length of the train, in meters. */
     public final double length;
@@ -139,9 +152,9 @@ public class RollingStock implements PhysicsRollingStock {
     public double getSafeBrakingForce(double speed) {
         assert gammaEmergency != null;
         var aBrakeEmergency = getEmergencyBrakingDeceleration(speed);
-        var kDry = getRollingStockCorrectionFactorDry(speed, M_NVEBCL);
+        var kDry = getRollingStockCorrectionFactorDry(speed, mNvebcl);
         var kWet = getRollingStockCorrectionFactorWet(speed);
-        return kDry * (kWet + M_NVAVADH * (1 - kWet)) * aBrakeEmergency * inertia;
+        return kDry * (kWet + mNvavadh * (1 - kWet)) * aBrakeEmergency * inertia;
     }
 
     private double getEmergencyBrakingDeceleration(double speed) {
@@ -287,6 +300,10 @@ public class RollingStock implements PhysicsRollingStock {
         this.kWet = null;
         this.kNPos = null;
         this.kNNeg = null;
+        this.tTractionCutOff = NaN;
+        this.tBs1 = NaN;
+        this.tBs2 = NaN;
+        this.tBe = NaN;
         this.mass = mass;
         this.inertiaCoefficient = inertiaCoefficient;
         this.tractiveEffortCurve = tractiveEffortCurve;
@@ -316,6 +333,10 @@ public class RollingStock implements PhysicsRollingStock {
             SortedMap<Double, Double> kWet,
             SortedMap<Double, Double> kNPos,
             SortedMap<Double, Double> kNNeg,
+            double tTractionCutOff,
+            double tBs1,
+            double tBs2,
+            double tBe,
             TractiveEffortPoint[] tractiveEffortCurve,
             RJSLoadingGaugeType loadingGaugeType
     ) {
@@ -337,6 +358,10 @@ public class RollingStock implements PhysicsRollingStock {
         this.kWet = kWet;
         this.kNPos = kNPos;
         this.kNNeg = kNNeg;
+        this.tTractionCutOff = tTractionCutOff;
+        this.tBs1 = tBs1;
+        this.tBs2 = tBs2;
+        this.tBe = tBe;
         this.mass = mass;
         this.inertiaCoefficient = inertiaCoefficient;
         this.tractiveEffortCurve = tractiveEffortCurve;

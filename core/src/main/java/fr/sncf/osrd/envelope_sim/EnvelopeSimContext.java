@@ -6,13 +6,8 @@ public class EnvelopeSimContext {
         TIMETABLE,
         RUNNING_TIME,
         ETCS_EBD,
-        ETCS_EBI,
         ETCS_SBD,
-        ETCS_SBI1,
-        ETCS_SBI2,
-        ETCS_GUI,
-        ETCS_PS,
-        ETCS_IND
+        ETCS_GUI
     }
 
     public final PhysicsRollingStock rollingStock;

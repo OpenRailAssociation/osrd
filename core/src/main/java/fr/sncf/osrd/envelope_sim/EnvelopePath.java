@@ -67,7 +67,10 @@ public class EnvelopePath implements PhysicsPath {
 
     /** For a given position, return the index of the position just before in gradePositions */
     public int getIndexBeforePos(double position) {
-        assert position <= gradePositions[gradePositions.length - 1] && position >= gradePositions[0];
+        if (position <= gradePositions[0])
+            return 0;
+        if (position >= gradePositions[gradePositions.length - 1])
+            return gradePositions.length - 1;
         for (int i = 0; i < gradePositions.length; i++) {
             var pos = gradePositions[i];
             if (pos > position)

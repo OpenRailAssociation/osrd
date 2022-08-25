@@ -7,9 +7,12 @@ public class NationalDefaultData {
     }
 
     /** National Value Available Adhesion */
-    public static final double M_NVAVADH = 0;
+    public static final double mNvavadh = 0;
 
     /** Emergency Brake Confidence Level */
-    public static final double M_NVEBCL = 1 - 1E-9;
+    public static final double mNvebcl = 1 - 1E-9;
+
+    /** Permission to inhibit the compensation of the speed measurement accuracy */
+    public static final boolean qNvinhsmicperm = false;
 
 }

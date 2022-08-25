@@ -78,6 +78,11 @@ public class TestTrains {
         kNNeg.put(0., 1.74e-3);
         kNNeg.put(340., 1.74e-3);
 
+        double tTractionCutOff = 0;
+        double tBs1 = 2;
+        double tBs2 = 2;
+        double tBe = 2.5;
+
         VERY_SHORT_FAST_TRAIN = new RollingStock(
                 "fast train",
                 1, trainMass, 1.05, (0.65 * trainMass) / 100,
@@ -126,6 +131,10 @@ public class TestTrains {
                 kWet,
                 kNPos,
                 kNNeg,
+                tTractionCutOff,
+                tBs1,
+                tBs2,
+                tBe,
                 tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
                 RJSLoadingGaugeType.G1
         );

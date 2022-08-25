@@ -23,4 +23,13 @@ public class FixedValueData {
     public static final double t41 = 1; // s
     public static final double mRotatingMax = 15; // %
     public static final double mRotatingMin = 2; // %
+
+    /**  */
+    public static double vUra(double speed) {
+        if (speed <= 30 / 3.6)
+            return 2 / 3.6;
+        // vUra(30km/h) = 2km/h & vUra(500km/h) = 12km/h with a linear interpolation in between
+        // this gives the following equation : y = (x + 64) / 47, still in km/h
+        else return ((speed + 64) / 47) / 3.6;
+    }
 }
