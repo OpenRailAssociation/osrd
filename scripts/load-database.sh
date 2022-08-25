@@ -11,4 +11,5 @@ fi
 docker cp "$1" osrd-postgres:/backup-osrd
 # restoring the backend can partialy fail, and that's sometimes ok
 docker exec osrd-postgres pg_restore -d osrd -x -c /backup-osrd || true
+docker exec osrd-api python3 manage.py migrate
 docker exec osrd-editoast editoast generate
