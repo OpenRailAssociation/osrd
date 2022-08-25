@@ -1,6 +1,8 @@
 package fr.sncf.osrd.api.stdcm;
 
+import com.google.common.base.MoreObjects;
 import fr.sncf.osrd.infra.api.signaling.Signal;
+import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 
 /** A block occupancy "time span" */
 public class BlockUse {
@@ -67,5 +69,15 @@ public class BlockUse {
     */
     public double getMaxSpeed() {
         return block.maxSpeed;
+    }
+
+    @Override
+    @ExcludeFromGeneratedCodeCoverage
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("block", block)
+                .add("reservationStartTime", reservationStartTime)
+                .add("reservationEndTime", reservationEndTime)
+                .toString();
     }
 }

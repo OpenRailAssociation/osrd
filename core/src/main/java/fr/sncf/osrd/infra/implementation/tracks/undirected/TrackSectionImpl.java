@@ -58,6 +58,9 @@ public class TrackSectionImpl implements TrackSection {
         this.geo = null;
         this.sch = null;
         this.operationalPoints = ImmutableSet.of();
+        speedSections = new EnumMap<>(Direction.class);
+        for (var dir : Direction.values())
+            speedSections.put(dir, ImmutableRangeMap.of());
     }
 
     @Override
