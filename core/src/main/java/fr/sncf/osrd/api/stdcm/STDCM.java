@@ -120,7 +120,7 @@ public class STDCM {
             List<EdgeLocation<SignalingRoute>> startLocations,
             List<EdgeLocation<SignalingRoute>> endLocations,
             Collection<RouteOccupancy> occupancy
-    ) throws IOException {
+    ) {
         var usableCapacity = getUsableCapacity(infra, rollingStock, occupancy);
 
         var flatUsableCapacity = new ArrayList<BlockUse>();

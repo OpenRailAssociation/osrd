@@ -23,7 +23,7 @@ public class PathSimulator {
                     continue;
 
                 // skip paths which start being free after the train starts
-                if (path.get(0).reservationStartTime >= startTime)
+                if (path.get(0).reservationStartTime > startTime)
                     continue;
 
                 // skip paths which stop being free before the train starts
