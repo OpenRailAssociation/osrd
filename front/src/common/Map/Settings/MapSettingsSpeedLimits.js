@@ -5,7 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { updateLayersSettings } from 'reducers/map';
 import { IoMdSpeedometer } from 'react-icons/io';
 import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
-import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
+import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
+import DotsLoader from 'common/DotsLoader/DotsLoader';
 import { get } from 'common/requests.ts';
 import { setFailure } from 'reducers/main.ts';
 
@@ -14,7 +15,7 @@ const FormatSwitch = (props) => {
   const { t } = useTranslation(['map-settings']);
   const { layersSettings } = useSelector((state) => state.map);
   const { infraID } = useSelector((state) => state.osrdconf);
-  const [speedLimitsTags, setSpeedLimitsTags] = useState([]);
+  const [speedLimitsTags, setSpeedLimitsTags] = useState(undefined);
   const {
     name, icon, color, disabled = false,
   } = props;
@@ -26,17 +27,17 @@ const FormatSwitch = (props) => {
     }));
   };
 
-  const dispatchSetSpeedLimitsTags = (e) => {
+  const dispatchSetSpeedLimitsTags = (item) => {
     dispatch(updateLayersSettings({
       ...layersSettings,
-      speedlimittag: e.target.value,
+      speedlimittag: item,
     }));
   };
 
   const getTagsList = async (zoom, params) => {
     try {
       const tagsList = await get(`/infra/${infraID}/speed_limit_tags/`, params, {}, true);
-      setSpeedLimitsTags(['undefined'].concat(tagsList));
+      setSpeedLimitsTags([t('noSpeedLimitByTag')].concat(tagsList));
     } catch (e) {
       dispatch(setFailure({
         name: t('errorMessages.unableToRetrieveTags'),
@@ -69,13 +70,15 @@ const FormatSwitch = (props) => {
         </div>
       </div>
       <div className="col-lg-6">
-        <SelectSNCF
-          id=""
-          options={speedLimitsTags}
-          onChange={dispatchSetSpeedLimitsTags}
-          selectedValue={layersSettings.speedlimittag}
-          sm
-        />
+        {speedLimitsTags ? (
+          <SelectImprovedSNCF
+            options={speedLimitsTags}
+            onChange={dispatchSetSpeedLimitsTags}
+            selectedValue={layersSettings.speedlimittag}
+            sm
+            withSearch
+          />
+        ) : <span className="ml-3"><DotsLoader /></span> }
       </div>
     </>
   );
