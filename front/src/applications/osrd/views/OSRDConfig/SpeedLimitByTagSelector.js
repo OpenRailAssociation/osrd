@@ -10,7 +10,7 @@ import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 
 export default function SpeedLimitByTagSelector() {
   const dispatch = useDispatch();
-  const [speedLimitsTags, setSpeedLimitsTags] = useState([]);
+  const [speedLimitsTags, setSpeedLimitsTags] = useState(undefined);
   const { infraID, speedLimitByTag } = useSelector((state) => state.osrdconf);
   const { t } = useTranslation(['osrdconf']);
 
