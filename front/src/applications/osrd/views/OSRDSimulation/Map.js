@@ -19,14 +19,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import Background from 'common/Map/Layers/Background';
 import BufferStops from 'common/Map/Layers/BufferStops.tsx';
 /* Settings & Buttons */
-import ButtonMapSearch from 'common/Map/ButtonMapSearch';
-import ButtonMapSettings from 'common/Map/ButtonMapSettings';
-import ButtonResetViewport from 'common/Map/ButtonResetViewport';
+import MapButtons from 'common/Map/Buttons/MapButtons';
 import Detectors from 'common/Map/Layers/Detectors.tsx';
 import Catenaries from 'common/Map/Layers/Catenaries';
 import Hillshade from 'common/Map/Layers/Hillshade';
-import MapSearch from 'common/Map/Search/MapSearch';
-import MapSettings from 'common/Map/Settings/MapSettings';
 import OSM from 'common/Map/Layers/OSM';
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
 import Platform from 'common/Map/Layers/Platform';
@@ -350,13 +346,7 @@ const Map = (props) => {
 
   return (
     <>
-      <div className="btn-map-container">
-        <ButtonMapSearch toggleMapSearch={toggleMapSearch} />
-        <ButtonMapSettings toggleMapSettings={toggleMapSettings} />
-        <ButtonResetViewport updateLocalViewport={resetPitchBearing} />
-      </div>
-      <MapSearch active={showSearch} toggleMapSearch={toggleMapSearch} />
-      <MapSettings active={showSettings} toggleMapSettings={toggleMapSettings} />
+      <MapButtons resetPitchBearing={resetPitchBearing} />
       <ReactMapGL
         {...viewport}
         style={{ cursor: 'pointer' }}
