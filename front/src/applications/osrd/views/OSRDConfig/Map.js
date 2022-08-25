@@ -17,13 +17,9 @@ import { useDispatch, useSelector } from 'react-redux';
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
 /* Settings & Buttons */
-import ButtonMapSearch from 'common/Map/ButtonMapSearch';
-import ButtonMapSettings from 'common/Map/ButtonMapSettings';
-import ButtonResetViewport from 'common/Map/ButtonResetViewport';
+import MapButtons from 'common/Map/Buttons/MapButtons';
 import Catenaries from 'common/Map/Layers/Catenaries';
 import Hillshade from 'common/Map/Layers/Hillshade';
-import MapSearch from 'common/Map/Search/MapSearch';
-import MapSettings from 'common/Map/Settings/MapSettings';
 import OSM from 'common/Map/Layers/OSM';
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
 import Platform from 'common/Map/Layers/Platform';
@@ -56,8 +52,6 @@ const Map = () => {
   const {
     viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings,
   } = useSelector((state) => state.map);
-  const [showSearch, setShowSearch] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const [idHover, setIdHover] = useState(undefined);
   const [trackSectionHover, setTrackSectionHover] = useState(undefined);
   const [lngLatHover, setLngLatHover] = useState(undefined);
@@ -85,13 +79,6 @@ const Map = () => {
       transitionDuration: 1000,
       transitionInterpolator: new FlyToInterpolator(),
     });
-  };
-
-  const toggleMapSearch = () => {
-    setShowSearch(!showSearch);
-  };
-  const toggleMapSettings = () => {
-    setShowSettings(!showSettings);
   };
 
   const onFeatureClick = (e) => {
@@ -187,13 +174,7 @@ const Map = () => {
 
   return (
     <>
-      <div className="btn-map-container">
-        <ButtonMapSearch toggleMapSearch={toggleMapSearch} />
-        <ButtonMapSettings toggleMapSettings={toggleMapSettings} />
-        <ButtonResetViewport updateLocalViewport={resetPitchBearing} />
-      </div>
-      <MapSearch active={showSearch} toggleMapSearch={toggleMapSearch} />
-      <MapSettings active={showSettings} toggleMapSettings={toggleMapSettings} />
+      <MapButtons resetPitchBearing={resetPitchBearing} />
       <ReactMapGL
         ref={mapRef}
         {...viewport}

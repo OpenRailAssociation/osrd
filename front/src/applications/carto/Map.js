@@ -7,16 +7,11 @@ import { useDispatch, useSelector } from 'react-redux';
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
 import BufferStops from 'common/Map/Layers/BufferStops.tsx';
-import ButtonFullscreen from 'common/ButtonFullscreen';
 /* Settings & Buttons */
-import ButtonMapSearch from 'common/Map/ButtonMapSearch';
-import ButtonMapSettings from 'common/Map/ButtonMapSettings';
-import ButtonResetViewport from 'common/Map/ButtonResetViewport';
+import MapButtons from 'common/Map/Buttons/MapButtons';
 import Detectors from 'common/Map/Layers/Detectors.tsx';
 import Catenaries from 'common/Map/Layers/Catenaries';
 import Hillshade from 'common/Map/Layers/Hillshade';
-import MapSearch from 'common/Map/Search/MapSearch';
-import MapSettings from 'common/Map/Settings/MapSettings';
 import OSM from 'common/Map/Layers/OSM';
 /* Objects & various */
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
@@ -35,15 +30,11 @@ import colors from 'common/Map/Consts/colors.ts';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import { updateViewport } from 'reducers/map';
 import { useParams } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 
 const Map = () => {
   const {
     viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings,
   } = useSelector((state) => state.map);
-  const { t } = useTranslation(['map-settings']);
-  const [showSettings, setShowSettings] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
   const [idHover, setIdHover] = useState(undefined);
   const {
     urlLat, urlLon, urlZoom, urlBearing, urlPitch,
@@ -67,15 +58,8 @@ const Map = () => {
     });
   };
 
-  const toggleMapSearch = () => {
-    setShowSearch(!showSearch);
-  };
-  const toggleMapSettings = () => {
-    setShowSettings(!showSettings);
-  };
-
   const onFeatureClick = (e) => {
-
+    console.log(e);
   };
 
   const onFeatureHover = (e) => {
@@ -109,14 +93,7 @@ const Map = () => {
 
   return (
     <main className={`mastcontainer mastcontainer-map${fullscreen ? ' fullscreen' : ''}`}>
-      <div className="btn-map-container">
-        <ButtonMapSearch toggleMapSearch={toggleMapSearch} />
-        <ButtonMapSettings toggleMapSettings={toggleMapSettings} />
-        <ButtonResetViewport updateLocalViewport={resetPitchBearing} />
-        <ButtonFullscreen />
-      </div>
-      <MapSearch active={showSearch} toggleMapSearch={toggleMapSearch} />
-      <MapSettings active={showSettings} toggleMapSettings={toggleMapSettings} />
+      <MapButtons resetPitchBearing={resetPitchBearing} />
       <ReactMapGL
         {...viewport}
         style={{ cursor: 'normal' }}
