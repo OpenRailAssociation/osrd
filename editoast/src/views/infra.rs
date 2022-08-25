@@ -210,8 +210,10 @@ fn get_switch_types(
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
     use crate::create_server;
-    use crate::infra_cache::tests::create_switch_type_point;
+    use crate::infra_cache::tests::{create_switch_connection, create_switch_type_cache};
     use crate::models::Infra;
     use crate::railjson::operation::{Operation, RailjsonObject};
     use crate::railjson::SwitchType;
@@ -403,7 +405,20 @@ mod tests {
         assert!(body_infra.is_some());
         let infra: Infra = serde_json::from_str(body_infra.unwrap().as_str()).unwrap();
 
-        let switch_type = create_switch_type_point();
+        let switch_type = create_switch_type_cache(
+            "point",
+            vec!["BASE".into(), "LEFT".into(), "RIGHT".into()],
+            HashMap::from([
+                (
+                    "LEFT".into(),
+                    vec![create_switch_connection("BASE".into(), "LEFT".into())],
+                ),
+                (
+                    "RIGHT".into(),
+                    vec![create_switch_connection("BASE".into(), "RIGHT".into())],
+                ),
+            ]),
+        );
         let operation = Operation::Create(Box::new(RailjsonObject::SwitchType {
             railjson: switch_type.clone(),
         }));

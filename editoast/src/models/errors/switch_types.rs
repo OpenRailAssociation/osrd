@@ -13,7 +13,15 @@ pub fn insert_errors(
     infra_id: i32,
     infra_cache: &InfraCache,
 ) -> Result<(), DieselError> {
-    let (errors, switch_type_ids) = generate_errors(infra_cache);
+    let infra_errors = generate_errors(infra_cache);
+
+    let mut switch_type_ids = vec![];
+    let mut errors = vec![];
+
+    for error in infra_errors {
+        switch_type_ids.push(error.obj_id.clone());
+        errors.push(to_value(error).unwrap());
+    }
 
     let count = sql_query(include_str!("sql/switch_types_insert_errors.sql"))
         .bind::<Integer, _>(infra_id)
@@ -25,9 +33,8 @@ pub fn insert_errors(
     Ok(())
 }
 
-pub fn generate_errors(infra_cache: &InfraCache) -> (Vec<serde_json::Value>, Vec<String>) {
+pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
     let mut errors = vec![];
-    let mut switch_type_ids = vec![];
 
     for (switch_type_id, switch_type) in infra_cache.switch_types.iter() {
         let mut used_port = HashSet::new();
@@ -38,11 +45,11 @@ pub fn generate_errors(infra_cache: &InfraCache) -> (Vec<serde_json::Value>, Vec
                 for dir in [&connection.src, &connection.dst] {
                     if !switch_type.ports.contains(dir) {
                         let infra_error = InfraError::new_unknown_port_name(
+                            switch_type_id.clone(),
                             format!("groups.{}.{}", group_name, pos),
                             dir.clone(),
                         );
-                        errors.push(to_value(infra_error).unwrap());
-                        switch_type_ids.push(switch_type_id.clone());
+                        errors.push(infra_error);
                     }
                     used_port.insert(dir);
                 }
@@ -50,11 +57,11 @@ pub fn generate_errors(infra_cache: &InfraCache) -> (Vec<serde_json::Value>, Vec
 
             if let Some(duplicate_group) = duplicate_port_connection.get(group) {
                 let infra_error = InfraError::new_duplicated_group(
+                    switch_type_id.clone(),
                     format!("groups.{}", group_name),
                     format!("groups.{}", duplicate_group),
                 );
-                errors.push(to_value(infra_error).unwrap());
-                switch_type_ids.push(switch_type_id.clone());
+                errors.push(infra_error);
             } else {
                 duplicate_port_connection.insert(group, group_name);
             }
@@ -66,13 +73,16 @@ pub fn generate_errors(infra_cache: &InfraCache) -> (Vec<serde_json::Value>, Vec
             .enumerate()
             .filter(|(_, ports)| !used_port.contains(ports))
         {
-            let infra_error = InfraError::new_unused_port(format!("ports.{}", pos), port.into());
-            errors.push(to_value(infra_error).unwrap());
-            switch_type_ids.push(switch_type_id.clone());
+            let infra_error = InfraError::new_unused_port(
+                switch_type_id.clone(),
+                format!("ports.{}", pos),
+                port.into(),
+            );
+            errors.push(infra_error);
         }
     }
 
-    (errors, switch_type_ids)
+    errors
 }
 
 #[cfg(test)]
@@ -80,9 +90,8 @@ mod tests {
     use std::collections::HashMap;
 
     use crate::infra_cache::tests::{
-        create_small_infra_cache, create_switch_connection, create_switch_type_point,
+        create_small_infra_cache, create_switch_connection, create_switch_type_cache,
     };
-    use serde_json::to_value;
 
     use super::generate_errors;
     use super::InfraError;
@@ -90,8 +99,9 @@ mod tests {
     #[test]
     fn unknown_port_name() {
         let mut infra_cache = create_small_infra_cache();
-        infra_cache.load_switch_type(create_switch_type_point(
+        infra_cache.load_switch_type(create_switch_type_cache(
             "ST_error",
+            vec!["BASE".into(), "LEFT".into(), "RIGHT".into()],
             HashMap::from([
                 (
                     "LEFT".into(),
@@ -103,19 +113,19 @@ mod tests {
                 ),
             ]),
         ));
-        let (errors, ids) = generate_errors(&infra_cache);
+        let errors = generate_errors(&infra_cache);
         assert_eq!(1, errors.len());
-        assert_eq!(1, ids.len());
-        let infra_error = InfraError::new_unknown_port_name("groups.LEFT.0", "WRONG".into());
-        assert_eq!(to_value(infra_error).unwrap(), errors[0]);
-        assert_eq!("ST_error", ids[0]);
+        let infra_error =
+            InfraError::new_unknown_port_name("ST_error", "groups.LEFT.0", "WRONG".into());
+        assert_eq!(infra_error, errors[0]);
     }
 
     #[test]
     fn duplicated_group() {
         let mut infra_cache = create_small_infra_cache();
-        infra_cache.load_switch_type(create_switch_type_point(
+        infra_cache.load_switch_type(create_switch_type_cache(
             "ST_error",
+            vec!["BASE".into(), "LEFT".into(), "RIGHT".into()],
             HashMap::from([
                 (
                     "LEFT".into(),
@@ -131,27 +141,24 @@ mod tests {
                 ),
             ]),
         ));
-        let (errors, ids) = generate_errors(&infra_cache);
+        let errors = generate_errors(&infra_cache);
         assert_eq!(1, errors.len());
-        assert_eq!(1, ids.len());
-        assert_eq!("ST_error", ids[0]);
     }
 
     #[test]
     fn unused_port() {
         let mut infra_cache = create_small_infra_cache();
-        infra_cache.load_switch_type(create_switch_type_point(
+        infra_cache.load_switch_type(create_switch_type_cache(
             "ST_error",
+            vec!["BASE".into(), "LEFT".into(), "RIGHT".into()],
             HashMap::from([(
                 "LEFT".into(),
                 vec![create_switch_connection("BASE".into(), "LEFT".into())],
             )]),
         ));
-        let (errors, ids) = generate_errors(&infra_cache);
+        let errors = generate_errors(&infra_cache);
         assert_eq!(1, errors.len());
-        assert_eq!(1, ids.len());
-        let infra_error = InfraError::new_unused_port("ports.2", "RIGHT".into());
-        assert_eq!(to_value(infra_error).unwrap(), errors[0]);
-        assert_eq!("ST_error", ids[0]);
+        let infra_error = InfraError::new_unused_port("ST_error", "ports.2", "RIGHT".into());
+        assert_eq!(infra_error, errors[0]);
     }
 }
