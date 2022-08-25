@@ -28,6 +28,13 @@ export default function formatConf(dispatch, setFailure, t, osrdconf, originTime
       message: t('osrdconf:errorMessages.noRollingStock'),
     }));
   }
+  if (!osrdconf.speedLimitByTag) {
+    error = true;
+    dispatch(setFailure({
+      name: t('osrdconf:errorMessages.trainScheduleTitle'),
+      message: t('osrdconf:errorMessages.noSpeedLimitByTag'),
+    }));
+  }
   if (!osrdconf.name) {
     error = true;
     dispatch(setFailure({

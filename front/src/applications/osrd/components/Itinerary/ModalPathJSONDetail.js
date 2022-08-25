@@ -29,7 +29,6 @@ export default function ModalPathJSONDetail(props) {
     try {
       const pathJSON = await get(`/pathfinding/${pathfindingID}/`, params, {}, true);
       setPathJSONDetail(pathJSON);
-      console.log('coucou', pathJSON);
     } catch (e) {
       dispatch(setFailure({
         name: t('errorMessages.unableToRetrievePath'),
