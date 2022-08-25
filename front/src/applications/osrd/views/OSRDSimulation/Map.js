@@ -19,14 +19,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import Background from 'common/Map/Layers/Background';
 import BufferStops from 'common/Map/Layers/BufferStops.tsx';
 /* Settings & Buttons */
-import ButtonMapSearch from 'common/Map/ButtonMapSearch';
-import ButtonMapSettings from 'common/Map/ButtonMapSettings';
-import ButtonResetViewport from 'common/Map/ButtonResetViewport';
+import MapButtons from 'common/Map/Buttons/MapButtons';
 import Detectors from 'common/Map/Layers/Detectors.tsx';
 import Catenaries from 'common/Map/Layers/Catenaries';
 import Hillshade from 'common/Map/Layers/Hillshade';
-import MapSearch from 'common/Map/Search/MapSearch';
-import MapSettings from 'common/Map/Settings/MapSettings';
 import OSM from 'common/Map/Layers/OSM';
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
 import Platform from 'common/Map/Layers/Platform';
@@ -59,7 +55,6 @@ import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import { updateTimePositionValues } from 'reducers/osrdsimulation';
 import { updateViewport } from 'reducers/map';
 import { useParams } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 
 const PATHFINDING_URI = '/pathfinding/';
 const INTERMEDIATE_MARKERS_QTY = 8;
@@ -73,9 +68,6 @@ const Map = (props) => {
     isPlaying, selectedTrain, positionValues, timePosition, allowancesSettings,
   } = useSelector((state) => state.osrdsimulation);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
-  const { t } = useTranslation(['map-settings']);
-  const [showSearch, setShowSearch] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const [geojsonPath, setGeojsonPath] = useState(undefined);
   const [trainHoverPositionOthers, setTrainHoverPositionOthers] = useState(undefined);
   const [trainHoverPosition, setTrainHoverPosition] = useState(undefined);
@@ -254,13 +246,6 @@ const Map = (props) => {
     });
   };
 
-  const toggleMapSearch = () => {
-    setShowSearch(!showSearch);
-  };
-  const toggleMapSettings = () => {
-    setShowSettings(!showSettings);
-  };
-
   const onFeatureHover = (e) => {
     if (!isPlaying && e) {
       const line = lineString(geojsonPath.geometry.coordinates);
@@ -350,13 +335,7 @@ const Map = (props) => {
 
   return (
     <>
-      <div className="btn-map-container">
-        <ButtonMapSearch toggleMapSearch={toggleMapSearch} />
-        <ButtonMapSettings toggleMapSettings={toggleMapSettings} />
-        <ButtonResetViewport updateLocalViewport={resetPitchBearing} />
-      </div>
-      <MapSearch active={showSearch} toggleMapSearch={toggleMapSearch} />
-      <MapSettings active={showSettings} toggleMapSettings={toggleMapSettings} />
+      <MapButtons resetPitchBearing={resetPitchBearing} />
       <ReactMapGL
         {...viewport}
         style={{ cursor: 'pointer' }}

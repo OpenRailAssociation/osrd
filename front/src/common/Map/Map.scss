@@ -119,6 +119,12 @@
       }
     }
   }
+
+  &.map-modal-dark {
+    background-color: var(--coolgray13);
+    color: var(--coolgray1);
+    border-color: var(--coolgray13);
+  }
 }
 .map-search-marker {
   /* Circle center */
