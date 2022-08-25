@@ -13,7 +13,15 @@ pub fn insert_errors(
     infra_cache: &InfraCache,
     graph: &Graph,
 ) -> Result<(), DieselError> {
-    let (errors, track_ids) = generate_errors(infra_cache, graph);
+    let infra_errors = generate_errors(infra_cache, graph);
+
+    let mut track_ids = vec![];
+    let mut errors = vec![];
+
+    for error in infra_errors {
+        track_ids.push(error.obj_id.clone());
+        errors.push(to_value(error).unwrap());
+    }
 
     let count = sql_query(include_str!("sql/track_sections_insert_errors.sql"))
         .bind::<Integer, _>(infra_id)
@@ -25,12 +33,8 @@ pub fn insert_errors(
     Ok(())
 }
 
-pub fn generate_errors(
-    infra_cache: &InfraCache,
-    graph: &Graph,
-) -> (Vec<serde_json::Value>, Vec<String>) {
+pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraError> {
     let mut errors = vec![];
-    let mut track_ids = vec![];
 
     for track_id in infra_cache.track_sections.keys() {
         if let Some(e) = infra_cache.track_sections_refs.get(track_id) {
@@ -38,8 +42,7 @@ pub fn generate_errors(
                 .iter()
                 .any(|obj_ref| obj_ref.obj_type == ObjectType::Route)
             {
-                errors.push(to_value(InfraError::new_missing_route()).unwrap());
-                track_ids.push((*track_id).clone());
+                errors.push(InfraError::new_missing_route(track_id.clone()));
             }
         }
     }
@@ -57,13 +60,13 @@ pub fn generate_errors(
                     .iter()
                     .any(|x| x.obj_type == ObjectType::BufferStop)
             {
-                let infra_error = InfraError::new_no_buffer_stop("buffer_stop");
-                errors.push(to_value(infra_error).unwrap());
-                track_ids.push(track_id.clone());
+                let infra_error = InfraError::new_no_buffer_stop(track_id.clone(), "buffer_stop");
+                errors.push(infra_error);
             }
         }
     }
-    (errors, track_ids)
+
+    errors
 }
 
 #[cfg(test)]
@@ -73,7 +76,6 @@ mod tests {
         models::errors::graph::Graph,
         railjson::{ObjectRef, ObjectType},
     };
-    use serde_json::to_value;
 
     use super::generate_errors;
     use super::InfraError;
@@ -84,12 +86,10 @@ mod tests {
         let obj_ref = ObjectRef::new(ObjectType::Route, "R1".into());
         infra_cache.apply_delete(&obj_ref);
         let graph = Graph::load(&infra_cache);
-        let (errors, ids) = generate_errors(&infra_cache, &graph);
+        let errors = generate_errors(&infra_cache, &graph);
         assert_eq!(1, errors.len());
-        assert_eq!(1, ids.len());
-        let infra_error = InfraError::new_missing_route();
-        assert_eq!(to_value(infra_error).unwrap(), errors[0]);
-        assert_eq!("A", ids[0]);
+        let infra_error = InfraError::new_missing_route("A");
+        assert_eq!(infra_error, errors[0]);
     }
 
     #[test]
@@ -98,11 +98,9 @@ mod tests {
         let obj_ref = ObjectRef::new(ObjectType::BufferStop, "BF1".into());
         infra_cache.apply_delete(&obj_ref);
         let graph = Graph::load(&infra_cache);
-        let (errors, ids) = generate_errors(&infra_cache, &graph);
+        let errors = generate_errors(&infra_cache, &graph);
         assert_eq!(1, errors.len());
-        assert_eq!(1, ids.len());
-        let infra_error = InfraError::new_no_buffer_stop("buffer_stop");
-        assert_eq!(to_value(infra_error).unwrap(), errors[0]);
-        assert_eq!("A", ids[0]);
+        let infra_error = InfraError::new_no_buffer_stop("A", "buffer_stop");
+        assert_eq!(infra_error, errors[0]);
     }
 }
