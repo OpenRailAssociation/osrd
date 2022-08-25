@@ -31,11 +31,6 @@ def run(*args, **kwargs):
     }
     r = requests.post(base_url + f"stdcm/", json=payload)
     delete_timetable(base_url, timetable)
-    if r.status_code // 100 != 2:
-        raise RuntimeError(f"STDCM error {r.status_code}: {r.content}")
-    response = r.json()
-    stdcm_arrival_time = response["simulation"]["base"]["head_positions"][-1]["time"]
-    train2_arrival_time = get_schedule_arrival_time(base_url, train2)
-    minimum_expected_arrival = train2_arrival_time + min_interval
-    assert stdcm_arrival_time >= minimum_expected_arrival
+    if r.status_code // 100 == 2:
+        return False, "Expected no path to be found"
     return True, ""

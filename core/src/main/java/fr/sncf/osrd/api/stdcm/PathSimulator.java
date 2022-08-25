@@ -125,7 +125,7 @@ public class PathSimulator {
         double V = 0;
 
         if (next != null && next.reservationStartTime > Ts) {
-            V = (current.getLength() - config.safetyDistance) / (next.reservationStartTime - Ts);
+            V = Double.max(0, (current.getLength() - config.safetyDistance)) / (next.reservationStartTime - Ts);
         } else {
             return max_speed(current, Vmat);
         }
