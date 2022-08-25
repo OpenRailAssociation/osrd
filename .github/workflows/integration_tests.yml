@@ -24,12 +24,13 @@ jobs:
         with:
           load: true
           files: "docker-compose.yml"
+          targets: "api,editoast,core,chartos"
           set: |
             *.cache-from=type=gha
             *.cache-to=type=gha,mode=max
 
       - name: Startup the test infrastructure
-        run: "docker-compose up --no-build -d"
+        run: "docker-compose up --no-build -d api editoast core chartos"
         env:
           DOCKER_BUILDKIT: 1
           COMPOSE_DOCKER_CLI_BUILD: 1
