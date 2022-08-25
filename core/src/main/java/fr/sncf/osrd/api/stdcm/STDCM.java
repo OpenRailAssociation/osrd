@@ -22,7 +22,7 @@ public class STDCM {
     private static Block makeBlock(SignalingInfra infra, RollingStock rollingStock, String id) {
         var route = infra.findSignalingRoute(id, "BAL3");
         var entrySignal = route.getEntrySignal();
-        var exitSignal = route.getEntrySignal();
+        var exitSignal = route.getExitSignal();
         var length = route.getInfraRoute().getLength();
         var maxSpeed = route.getInfraRoute().getTrackRanges()
                 .stream()
@@ -121,17 +121,25 @@ public class STDCM {
             List<EdgeLocation<SignalingRoute>> endLocations,
             Collection<RouteOccupancy> occupancy
     ) {
-        var usableCapacity = getUsableCapacity(infra, rollingStock, occupancy);
-
-        var flatUsableCapacity = new ArrayList<BlockUse>();
-        for (var blockUses : usableCapacity.values())
-            flatUsableCapacity.addAll(blockUses);
-
         var startLocationEdges = startLocations.stream().map(EdgeLocation::edge).collect(Collectors.toSet());
         var endLocationEdges = endLocations.stream().map(EdgeLocation::edge).collect(Collectors.toSet());
 
         var config = new STDCMConfig(rollingStock, startTime, endTime, 400.,
                 startLocationEdges, endLocationEdges);
+        return run(infra, occupancy, config);
+    }
+
+    /** Runs the main STDCM algorithm with a given config */
+    public static List<BlockUse> run(
+            SignalingInfra infra,
+            Collection<RouteOccupancy> occupancy,
+            STDCMConfig config
+    ) {
+        var usableCapacity = getUsableCapacity(infra, config.rollingStock, occupancy);
+
+        var flatUsableCapacity = new ArrayList<BlockUse>();
+        for (var blockUses : usableCapacity.values())
+            flatUsableCapacity.addAll(blockUses);
 
         // This step generates all the possible paths that links the start and end location.
         // If going from a block to the next at the train's max speed is impossible, the path is discarded
