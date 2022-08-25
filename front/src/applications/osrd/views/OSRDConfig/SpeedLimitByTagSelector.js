@@ -17,7 +17,7 @@ export default function SpeedLimitByTagSelector() {
   const getTagsList = async (zoom, params) => {
     try {
       const tagsList = await get(`/infra/${infraID}/speed_limit_tags/`, params, {}, true);
-      setSpeedLimitsTags(['undefined'].concat(tagsList));
+      setSpeedLimitsTags(tagsList);
     } catch (e) {
       dispatch(setFailure({
         name: t('errorMessages.unableToRetrieveTags'),
@@ -42,11 +42,11 @@ export default function SpeedLimitByTagSelector() {
             <span className="text-muted">{t('speedLimitByTag')}</span>
             {speedLimitsTags !== undefined ? (
               <SelectImprovedSNCF
-                id=""
                 options={speedLimitsTags}
                 onChange={(e) => dispatch(updateSpeedLimitByTag(e))}
                 selectedValue={speedLimitByTag}
                 sm
+                withSearch
               />
             ) : <span className="ml-3"><DotsLoader /></span> }
           </div>
