@@ -79,11 +79,13 @@ fn get_matching_endpoint_error(
     expected_track: String,
     expected_position: f64,
     endpoint_field: PathEndpointField,
+    route_id: String,
 ) -> Option<InfraError> {
     let (track, pos) = endpoint_field.get_path_location(path);
 
     if track != expected_track || pos != expected_position {
         Some(InfraError::new_path_does_not_match_endpoints(
+            route_id,
             "path",
             expected_track,
             expected_position,
@@ -99,7 +101,15 @@ pub fn insert_errors(
     infra_id: i32,
     infra_cache: &InfraCache,
 ) -> Result<(), DieselError> {
-    let (errors, route_ids) = generate_errors(infra_cache);
+    let infra_errors = generate_errors(infra_cache);
+
+    let mut route_ids = vec![];
+    let mut errors = vec![];
+
+    for error in infra_errors {
+        route_ids.push(error.obj_id.clone());
+        errors.push(to_value(error).unwrap());
+    }
 
     let count = sql_query(include_str!("sql/routes_insert_errors.sql"))
         .bind::<Integer, _>(infra_id)
@@ -111,14 +121,13 @@ pub fn insert_errors(
     Ok(())
 }
 
-pub fn generate_errors(infra_cache: &InfraCache) -> (Vec<serde_json::Value>, Vec<String>) {
+pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
     let mut errors = vec![];
-    let mut route_ids = vec![];
+
     for (route_id, route) in infra_cache.routes.iter() {
         if route.path.is_empty() {
-            let infra_error = InfraError::new_empty_path("path");
-            errors.push(to_value(infra_error).unwrap());
-            route_ids.push(route_id.clone());
+            let infra_error = InfraError::new_empty_path(route_id.clone(), "path");
+            errors.push(infra_error);
             continue;
         }
 
@@ -127,10 +136,12 @@ pub fn generate_errors(infra_cache: &InfraCache) -> (Vec<serde_json::Value>, Vec
             let track_id = &path.track.obj_id;
             if !infra_cache.track_sections.contains_key(track_id) {
                 let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_id.clone());
-                let infra_error =
-                    InfraError::new_invalid_reference(format!("path.{}", index), obj_ref);
-                errors.push(to_value(infra_error).unwrap());
-                route_ids.push(route_id.clone());
+                let infra_error = InfraError::new_invalid_reference(
+                    route_id.clone(),
+                    format!("path.{}", index),
+                    obj_ref,
+                );
+                errors.push(infra_error);
                 continue;
             }
 
@@ -139,12 +150,12 @@ pub fn generate_errors(infra_cache: &InfraCache) -> (Vec<serde_json::Value>, Vec
             for (pos, field) in [(path.begin, "begin"), (path.end, "end")] {
                 if !(0.0..=track_cache.length).contains(&pos) {
                     let infra_error = InfraError::new_out_of_range(
+                        route_id.clone(),
                         format!("path.{}.{}", index, field),
                         pos,
                         [0.0, track_cache.length],
                     );
-                    errors.push(to_value(infra_error).unwrap());
-                    route_ids.push(route_id.clone());
+                    errors.push(infra_error);
                 }
             }
         }
@@ -155,11 +166,11 @@ pub fn generate_errors(infra_cache: &InfraCache) -> (Vec<serde_json::Value>, Vec
                 match get_object(path_endpoint.get_route_endpoint(route), infra_cache) {
                     None => {
                         let error = InfraError::new_invalid_reference(
+                            route_id.clone(),
                             path_endpoint.to_string(),
                             route.entry_point.clone(),
                         );
-                        errors.push(to_value(error).unwrap());
-                        route_ids.push(route_id.clone());
+                        errors.push(error);
                         continue;
                     }
                     Some(e) => e,
@@ -170,9 +181,9 @@ pub fn generate_errors(infra_cache: &InfraCache) -> (Vec<serde_json::Value>, Vec
                 expected_track,
                 expected_position,
                 path_endpoint,
+                route_id.clone(),
             ) {
-                errors.push(to_value(error).unwrap());
-                route_ids.push(route_id.clone());
+                errors.push(error);
             }
         }
 
@@ -182,11 +193,11 @@ pub fn generate_errors(infra_cache: &InfraCache) -> (Vec<serde_json::Value>, Vec
             let (track, position) = match get_object(release_detector, infra_cache) {
                 None => {
                     let error = InfraError::new_invalid_reference(
+                        route_id.clone(),
                         format!("release_detector.{}", index),
                         release_detector.clone(),
                     );
-                    errors.push(to_value(error).unwrap());
-                    route_ids.push(route_id.clone());
+                    errors.push(error);
                     continue;
                 }
                 Some(e) => e,
@@ -199,17 +210,17 @@ pub fn generate_errors(infra_cache: &InfraCache) -> (Vec<serde_json::Value>, Vec
             });
             if track_range.is_none() {
                 let error = InfraError::new_object_out_of_path(
+                    route_id.clone(),
                     format!("release_detector.{}", index),
                     position,
                     track,
                 );
-                errors.push(to_value(error).unwrap());
-                route_ids.push(route_id.clone());
+                errors.push(error);
             }
         }
     }
 
-    (errors, route_ids)
+    errors
 }
 
 #[cfg(test)]
@@ -219,7 +230,6 @@ mod tests {
         models::errors::routes::PathEndpointField,
         railjson::{Direction, ObjectRef, ObjectType},
     };
-    use serde_json::to_value;
 
     use super::generate_errors;
     use super::InfraError;
@@ -227,7 +237,7 @@ mod tests {
     #[test]
     fn invalid_ref() {
         let mut infra_cache = create_small_infra_cache();
-        let r_error_path = vec![
+        let error_path = vec![
             ("A", 20., 500., Direction::StartToStop),
             ("E", 0., 500., Direction::StartToStop),
             ("B", 0., 250., Direction::StartToStop),
@@ -243,21 +253,19 @@ mod tests {
                 obj_id: "D1".into(),
             },
             vec![],
-            r_error_path,
+            error_path,
         ));
-        let (errors, ids) = generate_errors(&infra_cache);
+        let errors = generate_errors(&infra_cache);
         assert_eq!(1, errors.len());
-        assert_eq!(1, ids.len());
         let obj_ref = ObjectRef::new(ObjectType::TrackSection, "E".into());
-        let infra_error = InfraError::new_invalid_reference("path.1", obj_ref);
-        assert_eq!(to_value(infra_error).unwrap(), errors[0]);
-        assert_eq!("R_error", ids[0]);
+        let infra_error = InfraError::new_invalid_reference("R_error", "path.1", obj_ref);
+        assert_eq!(infra_error, errors[0]);
     }
 
     #[test]
     fn out_of_range() {
         let mut infra_cache = create_small_infra_cache();
-        let r_error_path = vec![
+        let error_path = vec![
             ("A", 20., 600., Direction::StartToStop),
             ("B", 0., 250., Direction::StartToStop),
         ];
@@ -272,20 +280,18 @@ mod tests {
                 obj_id: "D1".into(),
             },
             vec![],
-            r_error_path,
+            error_path,
         ));
-        let (errors, ids) = generate_errors(&infra_cache);
+        let errors = generate_errors(&infra_cache);
         assert_eq!(1, errors.len());
-        assert_eq!(1, ids.len());
-        let infra_error = InfraError::new_out_of_range("path.0.end", 600., [0.0, 500.]);
-        assert_eq!(to_value(infra_error).unwrap(), errors[0]);
-        assert_eq!("R_error", ids[0]);
+        let infra_error = InfraError::new_out_of_range("R_error", "path.0.end", 600., [0.0, 500.]);
+        assert_eq!(infra_error, errors[0]);
     }
 
     #[test]
     fn invalid_ref_entry_point() {
         let mut infra_cache = create_small_infra_cache();
-        let r_error_path = vec![
+        let error_path = vec![
             ("A", 20., 500., Direction::StartToStop),
             ("B", 0., 250., Direction::StartToStop),
         ];
@@ -300,21 +306,19 @@ mod tests {
                 obj_id: "D1".into(),
             },
             vec![],
-            r_error_path,
+            error_path,
         ));
-        let (errors, ids) = generate_errors(&infra_cache);
+        let errors = generate_errors(&infra_cache);
         assert_eq!(1, errors.len());
-        assert_eq!(1, ids.len());
         let obj_ref = ObjectRef::new(ObjectType::BufferStop, "BF_non_existing".into());
-        let infra_error = InfraError::new_invalid_reference("\"entry_point\"", obj_ref);
-        assert_eq!(to_value(infra_error).unwrap(), errors[0]);
-        assert_eq!("R_error", ids[0]);
+        let infra_error = InfraError::new_invalid_reference("R_error", "\"entry_point\"", obj_ref);
+        assert_eq!(infra_error, errors[0]);
     }
 
     #[test]
     fn path_match_endpoint() {
         let mut infra_cache = create_small_infra_cache();
-        let r_error_path = vec![
+        let error_path = vec![
             ("A", 40., 500., Direction::StartToStop),
             ("B", 0., 250., Direction::StartToStop),
         ];
@@ -329,25 +333,24 @@ mod tests {
                 obj_id: "D1".into(),
             },
             vec![],
-            r_error_path,
+            error_path,
         ));
-        let (errors, ids) = generate_errors(&infra_cache);
+        let errors = generate_errors(&infra_cache);
         assert_eq!(1, errors.len());
-        assert_eq!(1, ids.len());
         let infra_error = InfraError::new_path_does_not_match_endpoints(
+            "R_error",
             "path",
             "A".into(),
             20.,
             PathEndpointField::EntryPoint,
         );
-        assert_eq!(to_value(infra_error).unwrap(), errors[0]);
-        assert_eq!("R_error", ids[0]);
+        assert_eq!(infra_error, errors[0]);
     }
 
     #[test]
     fn invalid_ref_release_detector() {
         let mut infra_cache = create_small_infra_cache();
-        let r_error_path = vec![
+        let error_path = vec![
             ("A", 20., 500., Direction::StartToStop),
             ("B", 0., 250., Direction::StartToStop),
         ];
@@ -365,26 +368,25 @@ mod tests {
                 obj_type: ObjectType::Detector,
                 obj_id: "non_existing_D".into(),
             }],
-            r_error_path,
+            error_path,
         ));
-        let (errors, ids) = generate_errors(&infra_cache);
+        let errors = generate_errors(&infra_cache);
         assert_eq!(1, errors.len());
-        assert_eq!(1, ids.len());
         let infra_error = InfraError::new_invalid_reference(
+            "R_error",
             "release_detector.0",
             ObjectRef {
                 obj_type: ObjectType::Detector,
                 obj_id: "non_existing_D".into(),
             },
         );
-        assert_eq!(to_value(infra_error).unwrap(), errors[0]);
-        assert_eq!("R_error", ids[0]);
+        assert_eq!(infra_error, errors[0]);
     }
 
     #[test]
     fn out_of_path() {
         let mut infra_cache = create_small_infra_cache();
-        let r_error_path = vec![
+        let error_path = vec![
             ("A", 20., 500., Direction::StartToStop),
             ("B", 0., 250., Direction::StartToStop),
         ];
@@ -403,14 +405,12 @@ mod tests {
                 obj_type: ObjectType::Detector,
                 obj_id: "D2".into(),
             }],
-            r_error_path,
+            error_path,
         ));
-        let (errors, ids) = generate_errors(&infra_cache);
+        let errors = generate_errors(&infra_cache);
         assert_eq!(1, errors.len());
-        assert_eq!(1, ids.len());
         let infra_error =
-            InfraError::new_object_out_of_path("release_detector.0", 250., "C".into());
-        assert_eq!(to_value(infra_error).unwrap(), errors[0]);
-        assert_eq!("R_error", ids[0]);
+            InfraError::new_object_out_of_path("R_error", "release_detector.0", 250., "C".into());
+        assert_eq!(infra_error, errors[0]);
     }
 }

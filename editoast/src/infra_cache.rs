@@ -1135,13 +1135,14 @@ pub mod tests {
         }
     }
 
-    pub fn create_switch_type_point<T: AsRef<str>>(
+    pub fn create_switch_type_cache<T: AsRef<str>>(
         id: T,
+        ports: Vec<String>,
         groups: HashMap<String, Vec<SwitchPortConnection>>,
     ) -> SwitchType {
         SwitchType {
             id: id.as_ref().into(),
-            ports: vec!["BASE".into(), "LEFT".into(), "RIGHT".into()],
+            ports,
             groups,
         }
     }
@@ -1245,8 +1246,9 @@ pub mod tests {
         );
         infra_cache.load_track_section_link(link);
 
-        infra_cache.load_switch_type(create_switch_type_point(
+        infra_cache.load_switch_type(create_switch_type_cache(
             "point",
+            vec!["BASE".into(), "LEFT".into(), "RIGHT".into()],
             HashMap::from([
                 (
                     "LEFT".into(),
@@ -1278,27 +1280,15 @@ pub mod tests {
         let graph = Graph::load(&small_infra_cache);
 
         // Generate the errors
-        assert!(track_sections::generate_errors(&small_infra_cache, &graph)
-            .0
-            .is_empty());
-        assert!(signals::generate_errors(&small_infra_cache).0.is_empty());
-        assert!(speed_sections::generate_errors(&small_infra_cache)
-            .0
-            .is_empty());
-        assert!(track_section_links::generate_errors(&small_infra_cache)
-            .0
-            .is_empty());
-        assert!(switch_types::generate_errors(&small_infra_cache)
-            .0
-            .is_empty());
-        assert!(switches::generate_errors(&small_infra_cache).0.is_empty());
-        assert!(detectors::generate_errors(&small_infra_cache).0.is_empty());
-        assert!(buffer_stops::generate_errors(&small_infra_cache)
-            .0
-            .is_empty());
-        assert!(routes::generate_errors(&small_infra_cache).0.is_empty());
-        assert!(operational_points::generate_errors(&small_infra_cache)
-            .0
-            .is_empty());
+        assert!(track_sections::generate_errors(&small_infra_cache, &graph).is_empty());
+        assert!(signals::generate_errors(&small_infra_cache).is_empty());
+        assert!(speed_sections::generate_errors(&small_infra_cache).is_empty());
+        assert!(track_section_links::generate_errors(&small_infra_cache).is_empty());
+        assert!(switch_types::generate_errors(&small_infra_cache).is_empty());
+        assert!(switches::generate_errors(&small_infra_cache).is_empty());
+        assert!(detectors::generate_errors(&small_infra_cache).is_empty());
+        assert!(buffer_stops::generate_errors(&small_infra_cache).is_empty());
+        assert!(routes::generate_errors(&small_infra_cache).is_empty());
+        assert!(operational_points::generate_errors(&small_infra_cache).is_empty());
     }
 }

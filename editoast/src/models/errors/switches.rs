@@ -14,7 +14,15 @@ pub fn insert_errors(
     infra_id: i32,
     infra_cache: &InfraCache,
 ) -> Result<(), DieselError> {
-    let (errors, switch_ids) = generate_errors(infra_cache);
+    let infra_errors = generate_errors(infra_cache);
+
+    let mut switch_ids = vec![];
+    let mut errors = vec![];
+
+    for error in infra_errors {
+        switch_ids.push(error.obj_id.clone());
+        errors.push(to_value(error).unwrap());
+    }
 
     let count = sql_query(include_str!("sql/switches_insert_errors.sql"))
         .bind::<Integer, _>(infra_id)
@@ -26,9 +34,8 @@ pub fn insert_errors(
     Ok(())
 }
 
-pub fn generate_errors(infra_cache: &InfraCache) -> (Vec<serde_json::Value>, Vec<String>) {
+pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
     let mut errors = vec![];
-    let mut switch_ids = vec![];
 
     for (switch_id, switch) in infra_cache.switches.iter() {
         // Retrieve invalid refs for track sections (ports)
@@ -36,20 +43,20 @@ pub fn generate_errors(infra_cache: &InfraCache) -> (Vec<serde_json::Value>, Vec
             if !infra_cache.track_sections.contains_key(&port.track.obj_id) {
                 let obj_ref = ObjectRef::new(ObjectType::TrackSection, port.track.obj_id.clone());
                 let infra_error = InfraError::new_invalid_reference(
+                    switch_id.clone(),
                     format!("ports.{}.track", port_name),
                     obj_ref,
                 );
-                errors.push(to_value(infra_error).unwrap());
-                switch_ids.push(switch_id.clone());
+                errors.push(infra_error);
             }
         }
 
         // retrieve invalid refs for switch type
         if !infra_cache.switch_types.contains_key(&switch.switch_type) {
             let obj_ref = ObjectRef::new(ObjectType::SwitchType, switch.switch_type.clone());
-            let infra_error = InfraError::new_invalid_reference("switch_type", obj_ref);
-            errors.push(to_value(infra_error).unwrap());
-            switch_ids.push(switch_id.clone());
+            let infra_error =
+                InfraError::new_invalid_reference(switch_id.clone(), "switch_type", obj_ref);
+            errors.push(infra_error);
             continue;
         }
 
@@ -60,13 +67,12 @@ pub fn generate_errors(infra_cache: &InfraCache) -> (Vec<serde_json::Value>, Vec
         let original_ports: HashSet<&String> = switch_type.ports.iter().collect();
         // check if switch ports match switch type ports
         if match_ports != original_ports {
-            let infra_error = InfraError::new_invalid_switch_ports("ports");
-            errors.push(to_value(infra_error).unwrap());
-            switch_ids.push(switch_id.clone());
+            let infra_error = InfraError::new_invalid_switch_ports(switch_id.clone(), "ports");
+            errors.push(infra_error);
         }
     }
 
-    (errors, switch_ids)
+    errors
 }
 
 #[cfg(test)]
@@ -77,7 +83,6 @@ mod tests {
         },
         railjson::{Endpoint, ObjectRef, ObjectType},
     };
-    use serde_json::to_value;
 
     use super::generate_errors;
     use super::InfraError;
@@ -92,13 +97,12 @@ mod tests {
             ("RIGHT", create_track_endpoint(Endpoint::Begin, "D")),
             "point".into(),
         ));
-        let (errors, ids) = generate_errors(&infra_cache);
+        let errors = generate_errors(&infra_cache);
         assert_eq!(1, errors.len());
-        assert_eq!(1, ids.len());
         let obj_ref = ObjectRef::new(ObjectType::TrackSection, "E".into());
-        let infra_error = InfraError::new_invalid_reference("ports.BASE.track", obj_ref);
-        assert_eq!(to_value(infra_error).unwrap(), errors[0]);
-        assert_eq!("SW_error", ids[0]);
+        let infra_error =
+            InfraError::new_invalid_reference("SW_error", "ports.BASE.track", obj_ref);
+        assert_eq!(infra_error, errors[0]);
     }
 
     #[test]
@@ -111,13 +115,11 @@ mod tests {
             ("RIGHT", create_track_endpoint(Endpoint::Begin, "D")),
             "non_existing_switch_type".into(),
         ));
-        let (errors, ids) = generate_errors(&infra_cache);
+        let errors = generate_errors(&infra_cache);
         assert_eq!(1, errors.len());
-        assert_eq!(1, ids.len());
         let obj_ref = ObjectRef::new(ObjectType::SwitchType, "non_existing_switch_type".into());
-        let infra_error = InfraError::new_invalid_reference("switch_type", obj_ref);
-        assert_eq!(to_value(infra_error).unwrap(), errors[0]);
-        assert_eq!("SW_error", ids[0]);
+        let infra_error = InfraError::new_invalid_reference("SW_error", "switch_type", obj_ref);
+        assert_eq!(infra_error, errors[0]);
     }
 
     #[test]
@@ -130,11 +132,9 @@ mod tests {
             ("RIGHT", create_track_endpoint(Endpoint::Begin, "D")),
             "point".into(),
         ));
-        let (errors, ids) = generate_errors(&infra_cache);
+        let errors = generate_errors(&infra_cache);
         assert_eq!(1, errors.len());
-        assert_eq!(1, ids.len());
-        let infra_error = InfraError::new_invalid_switch_ports("ports");
-        assert_eq!(to_value(infra_error).unwrap(), errors[0]);
-        assert_eq!("SW_error", ids[0]);
+        let infra_error = InfraError::new_invalid_switch_ports("SW_error", "ports");
+        assert_eq!(infra_error, errors[0]);
     }
 }

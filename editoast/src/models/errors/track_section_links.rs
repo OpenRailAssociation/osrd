@@ -12,7 +12,15 @@ pub fn insert_errors(
     infra_id: i32,
     infra_cache: &InfraCache,
 ) -> Result<(), DieselError> {
-    let (errors, link_ids) = generate_errors(infra_cache);
+    let infra_errors = generate_errors(infra_cache);
+
+    let mut link_ids = vec![];
+    let mut errors = vec![];
+
+    for error in infra_errors {
+        link_ids.push(error.obj_id.clone());
+        errors.push(to_value(error).unwrap());
+    }
 
     let count = sql_query(include_str!("sql/track_section_links_insert_errors.sql"))
         .bind::<Integer, _>(infra_id)
@@ -24,9 +32,8 @@ pub fn insert_errors(
     Ok(())
 }
 
-pub fn generate_errors(infra_cache: &InfraCache) -> (Vec<serde_json::Value>, Vec<String>) {
+pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
     let mut errors = vec![];
-    let mut link_ids = vec![];
 
     for (link_id, link) in infra_cache.track_section_links.iter() {
         // Retrieve invalid refs
@@ -37,15 +44,17 @@ pub fn generate_errors(infra_cache: &InfraCache) -> (Vec<serde_json::Value>, Vec
         ] {
             if !infra_cache.track_sections.contains_key(&track_ref) {
                 let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_ref);
-                let infra_error =
-                    InfraError::new_invalid_reference(format!("{}.track", pos), obj_ref);
-                errors.push(to_value(infra_error).unwrap());
-                link_ids.push(link_id.clone());
+                let infra_error = InfraError::new_invalid_reference(
+                    link_id.clone(),
+                    format!("{}.track", pos),
+                    obj_ref,
+                );
+                errors.push(infra_error);
             }
         }
     }
 
-    (errors, link_ids)
+    errors
 }
 
 #[cfg(test)]
@@ -56,7 +65,6 @@ mod tests {
         },
         railjson::{Endpoint, ObjectRef, ObjectType},
     };
-    use serde_json::to_value;
 
     use super::generate_errors;
     use super::InfraError;
@@ -69,13 +77,11 @@ mod tests {
             create_track_endpoint(Endpoint::End, "C"),
             create_track_endpoint(Endpoint::Begin, "E"),
         ));
-        let (errors, ids) = generate_errors(&infra_cache);
+        let errors = generate_errors(&infra_cache);
         assert_eq!(1, errors.len());
-        assert_eq!(1, ids.len());
         let obj_ref = ObjectRef::new(ObjectType::TrackSection, "E".into());
-        let infra_error = InfraError::new_invalid_reference("dst.track", obj_ref);
-        assert_eq!(to_value(infra_error).unwrap(), errors[0]);
-        assert_eq!("link_error", ids[0]);
+        let infra_error = InfraError::new_invalid_reference("link_error", "dst.track", obj_ref);
+        assert_eq!(infra_error, errors[0]);
     }
 
     #[test]
@@ -86,16 +92,13 @@ mod tests {
             create_track_endpoint(Endpoint::End, "E"),
             create_track_endpoint(Endpoint::Begin, "F"),
         ));
-        let (errors, ids) = generate_errors(&infra_cache);
+        let errors = generate_errors(&infra_cache);
         assert_eq!(2, errors.len());
-        assert_eq!(2, ids.len());
         let obj_ref = ObjectRef::new(ObjectType::TrackSection, "E".into());
-        let infra_error = InfraError::new_invalid_reference("src.track", obj_ref);
-        assert_eq!(to_value(infra_error).unwrap(), errors[0]);
-        assert_eq!("link_error", ids[0]);
+        let infra_error = InfraError::new_invalid_reference("link_error", "src.track", obj_ref);
+        assert_eq!(infra_error, errors[0]);
         let obj_ref = ObjectRef::new(ObjectType::TrackSection, "F".into());
-        let infra_error = InfraError::new_invalid_reference("dst.track", obj_ref);
-        assert_eq!(to_value(infra_error).unwrap(), errors[1]);
-        assert_eq!("link_error", ids[1]);
+        let infra_error = InfraError::new_invalid_reference("link_error", "dst.track", obj_ref);
+        assert_eq!(infra_error, errors[1]);
     }
 }
