@@ -2,7 +2,7 @@
 
 set -e
 
-cd $(dirname $0)
+cd $(dirname $0)/..
 infra_name=${1:-tiny_infra}
 echo Loading $infra_name
 python3 core/examples/generated/generate.py /tmp/generated_infras/ > /dev/null
