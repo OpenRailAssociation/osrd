@@ -48,8 +48,9 @@ const FormatSwitch = (props) => {
   };
 
   useEffect(() => {
+    setSpeedLimitsTags(undefined);
     getTagsList();
-  }, []);
+  }, [infraID]);
 
   return (
     <>
