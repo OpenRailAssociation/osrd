@@ -40,7 +40,7 @@ public class ETCSBrakingCurvesTest {
         var brakingCurves = BrakingCurves.from(path, testRollingStock, TIME_STEP, mrsp);
         var plotBuilder = new EnvelopeDebug.PlotBuilder();
         for (var curve : brakingCurves) {
-            plotBuilder.add(Envelope.make(curve), "A");
+            plotBuilder.add(curve, "A");
         }
         plotBuilder.add(mrsp, "mrsp");
         plotBuilder.plot();

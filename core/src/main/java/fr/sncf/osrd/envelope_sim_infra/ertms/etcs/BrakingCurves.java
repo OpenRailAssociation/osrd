@@ -2,14 +2,16 @@ package fr.sncf.osrd.envelope_sim_infra.ertms.etcs;
 
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
+import static fr.sncf.osrd.envelope_sim.EnvelopeProfile.CONSTANT_SPEED;
 import static fr.sncf.osrd.envelope_sim.EnvelopeSimContext.UseCase.*;
 import static fr.sncf.osrd.envelope_sim_infra.ertms.etcs.BrakingCurves.BrakingCurveType.*;
+import static fr.sncf.osrd.envelope_sim_infra.ertms.etcs.BrakingCurves.TargetType.*;
 import static fr.sncf.osrd.envelope_sim_infra.ertms.etcs.FixedValueData.*;
 import static fr.sncf.osrd.envelope_sim_infra.ertms.etcs.NationalDefaultData.qNvinhsmicperm;
 
 import fr.sncf.osrd.envelope.Envelope;
-import fr.sncf.osrd.envelope.EnvelopeAttr;
 import fr.sncf.osrd.envelope.EnvelopeCursor;
+import fr.sncf.osrd.envelope.OverlayEnvelopeBuilder;
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
@@ -44,24 +46,31 @@ public class BrakingCurves {
         IND
     }
 
-    /** Computes the ETCS braking curves from a path, a schedule, a time step, and a MRSP envelope */
-    public static List<EnvelopePart> from(
+    public enum TargetType {
+        SLOWDOWN,
+        MARKER_BOARD
+        // TODO : differentiate Nf and f
+    }
+
+    /** Computes the ETCS Envelopes for running-time calculation (slowdowns only)
+     * from a path, a schedule, a time step, and a MRSP envelope */
+    public static List<Envelope> from(
             TrainPath trainPath,
             RollingStock rollingStock,
             double timeStep,
             Envelope mrsp
     ) {
-        var totalEBDCurves = computeETCSBrakingCurves(EBD, trainPath, rollingStock, timeStep, mrsp);
-        var totalSBDCurves = computeETCSBrakingCurves(SBD, trainPath, rollingStock, timeStep, mrsp);
-        var totalGUICurves = computeETCSBrakingCurves(GUI, trainPath, rollingStock, timeStep, mrsp);
-        var totalEBICurves =
-                computeETCSBrakingCurvesFromRef(EBI, trainPath, rollingStock, mrsp, totalEBDCurves);
-        var totalCurves = new ArrayList<EnvelopePart>();
-        totalCurves.addAll(totalEBDCurves);
-        totalCurves.addAll(totalSBDCurves);
-        totalCurves.addAll(totalGUICurves);
-        totalCurves.addAll(totalEBICurves);
-        return totalCurves;
+        var envelopeEBD = computeETCSBrakingCurves(EBD, SLOWDOWN, trainPath, rollingStock, timeStep, mrsp);
+        var envelopeSBD = computeETCSBrakingCurves(SBD, SLOWDOWN, trainPath, rollingStock, timeStep, mrsp);
+        var envelopeGUI = computeETCSBrakingCurves(GUI, SLOWDOWN, trainPath, rollingStock, timeStep, mrsp);
+        var envelopeEBI =
+                computeETCSBrakingCurvesFromRef(EBI, trainPath, rollingStock, mrsp, envelopeEBD);
+        var totalEnvelopes = new ArrayList<Envelope>();
+        totalEnvelopes.add(envelopeEBD);
+        totalEnvelopes.add(envelopeSBD);
+        totalEnvelopes.add(envelopeGUI);
+        totalEnvelopes.add(envelopeEBI);
+        return totalEnvelopes;
     }
 
     private static Envelope computeCeilingEnvelope(BrakingCurveType type, Envelope mrsp) {
@@ -71,7 +80,7 @@ public class BrakingCurves {
             var speed = part.getMinSpeed();
             var newSpeed = speed + computedV(type, speed);
             parts[i] = EnvelopePart.generateTimes(
-                    Collections.singleton(EnvelopeProfile.CONSTANT_SPEED),
+                    Collections.singleton(CONSTANT_SPEED),
                     new double[]{part.getBeginPos(), part.getEndPos()},
                     new double[]{newSpeed, newSpeed}
             );
@@ -79,56 +88,64 @@ public class BrakingCurves {
         return Envelope.make(parts);
     }
 
-    private static List<EnvelopePart> computeETCSBrakingCurves(
-            BrakingCurveType type,
+    private static Envelope computeETCSBrakingCurves(
+            BrakingCurveType curveType,
+            TargetType targetType,
             TrainPath trainPath,
             RollingStock rollingStock,
             double timeStep,
             Envelope mrsp
     ) {
-        var ceilingEnvelope = computeCeilingEnvelope(type, mrsp);
+        var ceilingEnvelope = computeCeilingEnvelope(curveType, mrsp);
 
         var envelopePath = EnvelopeTrainPath.from(trainPath);
         EnvelopeSimContext context;
 
-        switch (type) {
+        switch (curveType) {
             case EBD -> context = new EnvelopeSimContext(rollingStock, envelopePath, timeStep, ETCS_EBD);
             case SBD -> context = new EnvelopeSimContext(rollingStock, envelopePath, timeStep, ETCS_SBD);
             case GUI -> context = new EnvelopeSimContext(rollingStock, envelopePath, timeStep, ETCS_GUI);
             default -> context = new EnvelopeSimContext(rollingStock, envelopePath, timeStep, RUNNING_TIME);
         }
 
-        var markerBoardsCurves =
-                computeBrakingCurvesAtMarkerBoards(type, trainPath, context, ceilingEnvelope);
-        var slowdownsCurves = computeBrakingCurvesAtSlowdowns(type, context, ceilingEnvelope);
-        var totalCurves = new ArrayList<EnvelopePart>();
-        totalCurves.addAll(markerBoardsCurves);
-        totalCurves.addAll(slowdownsCurves);
-        return totalCurves;
+        switch (targetType) {
+            case SLOWDOWN -> {
+                return computeBrakingCurvesAtSlowdowns(curveType, context, ceilingEnvelope);
+            }
+            case MARKER_BOARD -> {
+                return computeBrakingCurvesAtMarkerBoards(curveType, trainPath, context, ceilingEnvelope);
+            }
+            default -> {
+                return null;
+                // TODO : throw a proper exception of invalid TargetType
+            }
+        }
     }
 
     /**
      * Compute braking curves at every slowdown, with a given reference curve
      * This is needed to comput EBI, SBI, and Warning
      */
-    private static List<EnvelopePart> computeETCSBrakingCurvesFromRef(
+    private static Envelope computeETCSBrakingCurvesFromRef(
             BrakingCurveType type,
             TrainPath path,
             RollingStock rollingStock,
             Envelope ceiling,
-            List<EnvelopePart> references
+            Envelope reference
     ) {
         assert type != EBD && type != SBD && type != GUI;
 
         var envelopePath = EnvelopeTrainPath.from(path);
-        var slowdownBrakingCurves = new ArrayList<EnvelopePart>();
-
-        for (var part : references) {
+        var builder = OverlayEnvelopeBuilder.backward(ceiling);
+        for (var part : reference) {
+            if (part.hasAttr(CONSTANT_SPEED))
+                continue;
             var pos = part.clonePositions();
             var speeds = part.cloneSpeeds();
             var newPos = new ArrayList<Double>();
             var newSpeeds = new ArrayList<Double>();
             for (int i = 0; i < part.pointCount(); i++) {
+                // TODO : give a proper target speed, depending on the case (slowdown vs marker board), using ceiling
                 var bec =
                         computedBecvBec(rollingStock, envelopePath, part, speeds[i], part.getEndSpeed());
                 var dBec = bec.component1();
@@ -140,6 +157,7 @@ public class BrakingCurves {
                     newSpeeds.add(speeds[i] - delta);
                 }
             }
+
             assert newPos.size() == newSpeeds.size();
             if (newPos.size() <= 1)
                 continue;
@@ -151,10 +169,10 @@ public class BrakingCurves {
                 newSpeedsArray[i] = newSpeeds.get(i);
             }
             var newPart = EnvelopePart.generateTimes(newPosArray, newSpeedsArray);
-            slowdownBrakingCurves.add(newPart);
+            builder.addPart(newPart);
         }
 
-        return slowdownBrakingCurves;
+        return builder.build();
     }
 
 
@@ -163,36 +181,45 @@ public class BrakingCurves {
      * This method should only be called for EBD, SBD, and GUI, as they don't need a reference EnvelopePart.
      * Otherwise, call the method below with a reference EnvelopePart.
      */
-    private static List<EnvelopePart> computeBrakingCurvesAtSlowdowns(
+    private static Envelope computeBrakingCurvesAtSlowdowns(
             BrakingCurveType type,
             EnvelopeSimContext context,
             Envelope ceiling
     ) {
         assert type == EBD || type == SBD || type == GUI;
+        var builder = OverlayEnvelopeBuilder.backward(ceiling);
         var cursor = EnvelopeCursor.backward(ceiling);
-        var slowdownBrakingCurves = new ArrayList<EnvelopePart>();
+        var lastPosition = ceiling.getEndPos();
 
         while (cursor.findPartTransition(MaxSpeedEnvelope::increase)) {
+            if (cursor.getPosition() > lastPosition) {
+                // The next braking curve already covers this point, this braking curve is hidden
+                cursor.nextPart();
+                continue;
+            }
             var brakingCurve =
                     computeBrakingCurve(context, ceiling, cursor.getPosition(), cursor.getSpeed());
-            slowdownBrakingCurves.add(brakingCurve);
+            builder.addPart(brakingCurve);
             cursor.nextPart();
         }
-        return slowdownBrakingCurves;
+        return builder.build();
     }
 
     /**
      * Compute braking curves at every marker board
      */
-    private static List<EnvelopePart> computeBrakingCurvesAtMarkerBoards(
+    private static Envelope computeBrakingCurvesAtMarkerBoards(
             BrakingCurveType type,
             TrainPath trainPath,
             EnvelopeSimContext context,
-            Envelope mrsp
+            Envelope ceiling
     ) {
         var ranges = TrainPath.removeLocation(trainPath.trackRangePath());
 
-        var detectorsEBDCurves = new ArrayList<EnvelopePart>();
+        var builder = OverlayEnvelopeBuilder.backward(ceiling);
+
+        // TODO : compute a proper release speed
+        var releaseSpeed = 30 / 3.6;
 
         for (var range : ranges) {
             if (range.getLength() == 0)
@@ -202,12 +229,14 @@ public class BrakingCurves {
                 var detectorPosition = range.begin + detector.offset();
                 if (detectorPosition > 0 && detectorPosition <= trainPath.length()) {
                     var brakingCurve =
-                            computeBrakingCurve(context, mrsp, detectorPosition, 0);
-                    detectorsEBDCurves.add(brakingCurve);
+                            computeBrakingCurve(context, ceiling, detectorPosition, 0);
+                    if (type != EBD && type != SBD)
+                        brakingCurve.slice(brakingCurve.getBeginPos(), brakingCurve.interpolatePosition(releaseSpeed));
+                    builder.addPart(brakingCurve);
                 }
             }
         }
-        return detectorsEBDCurves;
+        return builder.build();
     }
 
     /**
