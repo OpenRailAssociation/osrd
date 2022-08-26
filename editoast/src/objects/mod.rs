@@ -161,7 +161,7 @@ pub enum Direction {
     StopToStart,
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[derivative(Default)]
 pub enum ApplicableDirections {
     #[serde(rename = "START_TO_STOP")]
