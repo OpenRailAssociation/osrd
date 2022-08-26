@@ -77,6 +77,10 @@ class NoBufferStop(InfraWarningTrait):
     error_type: Literal["no_buffer_stop"] = Field(default="no_buffer_stop")
 
 
+class UselessTrackLink(InfraWarningTrait):
+    error_type: Literal["useless_track_link"] = Field(default="useless_track_link")
+
+
 # Generic error
 class InfraError(BaseModel):
     __root__: Union[
@@ -92,4 +96,5 @@ class InfraError(BaseModel):
         UnusedPort,
         DuplicatedGroup,
         NoBufferStop,
+        UselessTrackLink,
     ] = Field(discriminator="error_type")

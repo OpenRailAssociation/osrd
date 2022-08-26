@@ -69,6 +69,8 @@ enum InfraErrorType {
     NoBufferStop,
     #[serde(rename = "path_is_not_continuous")]
     PathIsNotContinuous,
+    #[serde(rename = "useless_track_link")]
+    UselessTrackLink,
 }
 
 impl InfraError {
@@ -226,6 +228,15 @@ impl InfraError {
             field: field.as_ref().into(),
             is_warning: false,
             sub_type: InfraErrorType::PathIsNotContinuous,
+            obj_id: obj_id.as_ref().into(),
+        }
+    }
+
+    fn new_useless_track_link<U: AsRef<str>>(obj_id: U) -> Self {
+        Self {
+            field: Default::default(),
+            is_warning: true,
+            sub_type: InfraErrorType::UselessTrackLink,
             obj_id: obj_id.as_ref().into(),
         }
     }
