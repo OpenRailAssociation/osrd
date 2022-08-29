@@ -14,6 +14,7 @@ from osrd_infra.views.railjson import import_infra, serialize_infra
 
 CURRENT_DIR = Path(__file__).parent
 GET_SPEED_LIMIT_TAGS = open(CURRENT_DIR / "sql/get_speed_limit_tags.sql").read()
+GET_VOLTAGES = open(CURRENT_DIR / "sql/get_voltages.sql").read()
 
 
 class InfraView(
@@ -51,5 +52,16 @@ class InfraView(
 
         with connection.cursor() as cursor:
             cursor.execute(GET_SPEED_LIMIT_TAGS, [pk])
+            res = [row[0] for row in cursor]
+        return Response(res)
+
+    @action(detail=True, methods=["get"])
+    def voltages(self, request, pk=None):
+        """Returns the set of voltages for a given infra"""
+        # Check if infra exists
+        self.get_object()
+
+        with connection.cursor() as cursor:
+            cursor.execute(GET_VOLTAGES, [pk])
             res = [row[0] for row in cursor]
         return Response(res)
