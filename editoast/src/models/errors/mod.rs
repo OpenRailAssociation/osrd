@@ -68,6 +68,8 @@ enum InfraErrorType {
     DuplicatedGroup { original_group_path: String },
     #[serde(rename = "no_buffer_stop")]
     NoBufferStop,
+    #[serde(rename = "path_is_not_continuous")]
+    PathIsNotContinuous,
 }
 
 impl InfraError {
@@ -216,6 +218,15 @@ impl InfraError {
             field: field.as_ref().into(),
             is_warning: true,
             sub_type: InfraErrorType::NoBufferStop,
+            obj_id: obj_id.as_ref().into(),
+        }
+    }
+
+    fn new_path_is_not_continuous<T: AsRef<str>, U: AsRef<str>>(obj_id: U, field: T) -> Self {
+        Self {
+            field: field.as_ref().into(),
+            is_warning: true,
+            sub_type: InfraErrorType::PathIsNotContinuous,
             obj_id: obj_id.as_ref().into(),
         }
     }
