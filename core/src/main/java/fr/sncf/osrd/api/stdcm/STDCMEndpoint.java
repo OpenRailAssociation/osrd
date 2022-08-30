@@ -6,6 +6,7 @@ import com.squareup.moshi.Moshi;
 import fr.sncf.osrd.api.ExceptionHandler;
 import fr.sncf.osrd.api.InfraManager;
 import fr.sncf.osrd.api.pathfinding.PathfindingResultConverter;
+import fr.sncf.osrd.api.pathfinding.PathfindingRoutesEndpoint;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.api.pathfinding.response.NoPathFoundError;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
@@ -72,31 +73,13 @@ public class STDCMEndpoint implements Take {
         this.infraManager = infraManager;
     }
 
-    private static List<EdgeLocation<SignalingRoute>> findRoutes(SignalingInfra infra, PathfindingWaypoint waypoint) {
-        var res = new ArrayList<EdgeLocation<SignalingRoute>>();
-        var edge = infra.getEdge(waypoint.trackSection, Direction.fromEdgeDir(waypoint.direction));
-        assert (edge != null);
-        for (var entry : infra.getRoutesOnEdges().get(edge)) {
-            var signalingRoutes = infra.getRouteMap().get(entry.route());
-            for (var signalingRoute : signalingRoutes) {
-                var waypointOffsetFromStart = waypoint.offset;
-                if (waypoint.direction.equals(EdgeDirection.STOP_TO_START))
-                    waypointOffsetFromStart = edge.getEdge().getLength() - waypoint.offset;
-                var offset = waypointOffsetFromStart - entry.startOffset();
-                if (offset >= 0 && offset <= signalingRoute.getInfraRoute().getLength())
-                    res.add(new EdgeLocation<>(signalingRoute, offset));
-            }
-        }
-        return res;
-    }
-
     private static List<EdgeLocation<SignalingRoute>> findRoutes(
             SignalingInfra infra,
             Collection<PathfindingWaypoint> waypoints
     ) {
         var res = new ArrayList<EdgeLocation<SignalingRoute>>();
         for (var waypoint : waypoints)
-            res.addAll(findRoutes(infra, waypoint));
+            res.addAll(PathfindingRoutesEndpoint.findRoutes(infra, waypoint));
         return res;
     }
 
