@@ -74,7 +74,6 @@ export default function StandardAllowanceDefault(props) {
     });
     newAllowances.push({ ...marecoConf, ranges });
 
-
     try {
       setIsUpdating(true);
       await patch(`${trainscheduleURI}${trainDetail.id}/`, {
