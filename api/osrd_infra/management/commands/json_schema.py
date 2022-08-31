@@ -1,3 +1,5 @@
+import json
+
 from django.core.management.base import BaseCommand, CommandError
 
 from osrd_infra.schemas.infra import RailJsonInfra
@@ -21,4 +23,4 @@ class Command(BaseCommand):
         if schema not in AVAILABLE_SCHEMAS:
             raise CommandError(f"Invalid schema '{schema}', expected one of [{', '.join(AVAILABLE_SCHEMAS.keys())}]")
 
-        print(AVAILABLE_SCHEMAS[schema].schema())
+        print(json.dumps(AVAILABLE_SCHEMAS[schema].schema()))
