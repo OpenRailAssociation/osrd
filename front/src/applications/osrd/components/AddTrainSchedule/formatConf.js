@@ -28,13 +28,6 @@ export default function formatConf(dispatch, setFailure, t, osrdconf, originTime
       message: t('osrdconf:errorMessages.noRollingStock'),
     }));
   }
-  if (!osrdconf.speedLimitByTag) {
-    error = true;
-    dispatch(setFailure({
-      name: t('osrdconf:errorMessages.trainScheduleTitle'),
-      message: t('osrdconf:errorMessages.noSpeedLimitByTag'),
-    }));
-  }
   if (!osrdconf.name) {
     error = true;
     dispatch(setFailure({
@@ -57,7 +50,7 @@ export default function formatConf(dispatch, setFailure, t, osrdconf, originTime
       departure_time: originTime,
       initial_speed: Math.abs(osrdconf.originSpeed / 3.6),
       rolling_stock: osrdconf.rollingStockID,
-      speed_limit_category: osrdconf.speedLimitByTag,
+      speed_limit_category: osrdconf.speedLimitByTag ? osrdconf.speedLimitByTag : '',
     };
     return osrdConfSchedule;
   }
