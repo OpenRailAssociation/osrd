@@ -60,14 +60,14 @@ export default function SelectSNCF(props) {
           >
             <p
               className="form-control is-placeholder d-flex align-items-center"
-              style={sm ? { 'min-height': '1.813rem' } : ''}
+              style={sm ? { minHeight: '1.813rem' } : ''}
             >
               {renderSelectedItem()}
             </p>
             <div className="input-group-append input-group-last">
               <button
                 className="btn btn-primary btn-only-icon"
-                style={sm ? { 'min-height': '1.813rem' } : ''}
+                style={sm ? { minHeight: '1.813rem' } : ''}
                 type="button"
                 aria-expanded="false"
                 aria-controls="selecttoggle"

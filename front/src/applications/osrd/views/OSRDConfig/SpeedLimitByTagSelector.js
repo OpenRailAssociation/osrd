@@ -29,6 +29,7 @@ export default function SpeedLimitByTagSelector() {
 
   useEffect(() => {
     setSpeedLimitsTags(undefined);
+    dispatch(updateSpeedLimitByTag(undefined));
     getTagsList();
   }, [infraID]);
 
