@@ -155,7 +155,7 @@
     "marked": ">=4.0.10",
     "ansi-regex": "^5.0.1",
     "strip-ansi": "^6.0.0",
-    "postcss-safe-parser": "5.0.2"
+    "postcss-safe-parser": "4.0.2"
   },
   "peerDependencies": {
     "dns-packet": "^5.3.1",
