@@ -77,8 +77,9 @@ class NoBufferStop(InfraWarningTrait):
     error_type: Literal["no_buffer_stop"] = Field(default="no_buffer_stop")
 
 
-class UselessTrackLink(InfraWarningTrait):
-    error_type: Literal["useless_track_link"] = Field(default="useless_track_link")
+class OverlappingObjects(InfraWarningTrait):
+    error_type: Literal["overlapping_objects"] = Field(default="overlapping_objects")
+    reference: infra.ObjectReference
 
 
 # Generic error
@@ -96,5 +97,5 @@ class InfraError(BaseModel):
         UnusedPort,
         DuplicatedGroup,
         NoBufferStop,
-        UselessTrackLink,
+        OverlappingObjects,
     ] = Field(discriminator="error_type")
