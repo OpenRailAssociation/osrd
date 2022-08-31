@@ -7,7 +7,7 @@ import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.reservation.ReservationInfra;
 import fr.sncf.osrd.infra.implementation.reservation.ReservationInfraBuilder;
-import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
+import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import org.junit.jupiter.api.Test;
 
 public class ReservationInfraTests {
@@ -15,7 +15,7 @@ public class ReservationInfraTests {
     @Test
     public void testTinyInfra() throws Exception {
         var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
-        var reservationInfra = ReservationInfraBuilder.fromRJS(rjsInfra, new WarningRecorderImpl(true));
+        var reservationInfra = ReservationInfraBuilder.fromRJS(rjsInfra, new DiagnosticRecorderImpl(true));
         var graph = reservationInfra.getInfraRouteGraph();
         assertEquals(rjsInfra.routes.size(), graph.edges().size());
         testTinyInfraDiDetectorGraph(reservationInfra.getInfraRouteGraph(), reservationInfra.getDetectorMap());
@@ -24,7 +24,7 @@ public class ReservationInfraTests {
     @Test
     public void testTrackToRouteMap() throws Exception {
         var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
-        var reservationInfra = ReservationInfraBuilder.fromRJS(rjsInfra, new WarningRecorderImpl(true));
+        var reservationInfra = ReservationInfraBuilder.fromRJS(rjsInfra, new DiagnosticRecorderImpl(true));
         var map = reservationInfra.getRoutesOnEdges();
 
         for (var route : reservationInfra.getInfraRouteGraph().edges()) {
@@ -52,7 +52,7 @@ public class ReservationInfraTests {
         for (var route : rjsInfra.routes)
             if (route.getID().equals("rt.tde.foo_b-switch_foo->buffer_stop_c"))
                 route.path.get(0).begin += 1;
-        var wr = new WarningRecorderImpl(false);
+        var wr = new DiagnosticRecorderImpl(false);
         ReservationInfraBuilder.fromRJS(rjsInfra, wr);
         assertFalse(wr.warnings.isEmpty());
     }
@@ -63,7 +63,7 @@ public class ReservationInfraTests {
         for (var route : rjsInfra.routes)
             if (route.getID().equals("rt.buffer_stop_a->tde.foo_a-switch_foo"))
                 route.path.get(route.path.size() - 1).end += 1;
-        var wr = new WarningRecorderImpl(false);
+        var wr = new DiagnosticRecorderImpl(false);
         ReservationInfraBuilder.fromRJS(rjsInfra, wr);
         assertFalse(wr.warnings.isEmpty());
     }

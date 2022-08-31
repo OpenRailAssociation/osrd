@@ -7,7 +7,7 @@ import static org.mockito.Mockito.lenient;
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
 import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
-import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
+import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -26,7 +26,7 @@ public class ApiTest {
     @BeforeEach
     public void setUp() throws InterruptedException {
         ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
-        var wr = new WarningRecorderImpl(true);
+        var wr = new DiagnosticRecorderImpl(true);
         lenient().when(infraHandlerMock.load(argument.capture(), any(), any())).thenAnswer(
                 invocation ->
                         SignalingInfraBuilder.fromRJSInfra(

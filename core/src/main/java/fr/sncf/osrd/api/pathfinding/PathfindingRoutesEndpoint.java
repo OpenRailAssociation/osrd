@@ -13,7 +13,7 @@ import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
-import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
+import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.takes.Request;
@@ -36,7 +36,7 @@ public class PathfindingRoutesEndpoint implements Take {
 
     @Override
     public Response act(Request req) {
-        var warningRecorder = new WarningRecorderImpl(false);
+        var recorder = new DiagnosticRecorderImpl(false);
         try {
             var body = new RqPrint(req).printBody();
             var request = PathfindingRequest.adapter.fromJson(body);
@@ -46,7 +46,7 @@ public class PathfindingRoutesEndpoint implements Take {
             var reqWaypoints = request.waypoints;
 
             // load infra
-            var infra = infraManager.load(request.infra, request.expectedVersion, warningRecorder);
+            var infra = infraManager.load(request.infra, request.expectedVersion, recorder);
 
             // load rolling stocks
             var rollingStocks = List.<RollingStock>of();
@@ -60,7 +60,7 @@ public class PathfindingRoutesEndpoint implements Take {
             if (path == null)
                 return new RsWithStatus(new RsText("No path could be found"), 400);
 
-            var res = PathfindingResultConverter.convert(path, infra, warningRecorder);
+            var res = PathfindingResultConverter.convert(path, infra, recorder);
 
             validate(infra, res, reqWaypoints);
 

@@ -20,7 +20,7 @@ import fr.sncf.osrd.railjson.schema.RJSSimulation;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSLoadingGaugeLimit;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
-import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
+import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.train.TestTrains;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
@@ -197,7 +197,7 @@ public class PathfindingTest extends ApiTest {
                 track.loadingGaugeLimits = List.of(
                         new RJSLoadingGaugeLimit(1000, 2000, RJSLoadingGaugeType.G1)
                 );
-        var wr = new WarningRecorderImpl(true);
+        var wr = new DiagnosticRecorderImpl(true);
         var infra = SignalingInfraBuilder.fromRJSInfra(
                 rjsInfra,
                 Set.of(new BAL3(wr)),

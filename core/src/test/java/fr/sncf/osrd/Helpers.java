@@ -8,7 +8,7 @@ import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
-import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
+import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
 import java.io.File;
 import java.io.IOException;
@@ -69,7 +69,7 @@ public class Helpers {
 
     /** Generates a signaling infra from rjs data */
     public static SignalingInfra infraFromRJS(RJSInfra rjs) {
-        var wr = new WarningRecorderImpl(true);
+        var wr = new DiagnosticRecorderImpl(true);
         return SignalingInfraBuilder.fromRJSInfra(rjs, Set.of(new BAL3(wr)), wr);
     }
 }
