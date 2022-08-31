@@ -1,9 +1,9 @@
 use diesel::sql_types::{Array, Integer, Json, Text};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use super::InfraError;
-use crate::objects::{ApplicableDirections, ObjectType, TrackEndpoint};
+use crate::objects::{ObjectType, TrackEndpoint};
 use crate::{infra_cache::InfraCache, objects::ObjectRef};
 use diesel::result::Error as DieselError;
 use serde_json::to_value;
@@ -36,18 +36,20 @@ pub fn insert_errors(
 pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
     let mut errors = vec![];
 
-    let mut switch_graph: HashMap<&TrackEndpoint, HashSet<&TrackEndpoint>> = HashMap::default();
+    let mut switch_graph: HashMap<&TrackEndpoint, ObjectRef> = HashMap::default();
 
     for switch in infra_cache.switches.values() {
         let switch_type = infra_cache.switch_types.get(&switch.switch_type).unwrap();
+        let switch_ref = ObjectRef {
+            obj_type: ObjectType::Switch,
+            obj_id: switch.obj_id.clone(),
+        };
         for group in switch_type.groups.values() {
             for connection in group {
                 let src = switch.ports.get(&connection.src).unwrap();
                 let dst = switch.ports.get(&connection.dst).unwrap();
-                switch_graph.entry(src).or_default().insert(dst);
-                if connection.bidirectional {
-                    switch_graph.entry(dst).or_default().insert(src);
-                }
+                switch_graph.insert(src, switch_ref.clone());
+                switch_graph.insert(dst, switch_ref.clone());
             }
         }
     }
@@ -70,21 +72,20 @@ pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
             }
         }
 
-        if link.navigability == ApplicableDirections::StartToStop
-            || link.navigability == ApplicableDirections::Both
-                && switch_graph.contains_key(&link.src)
-        {
-            let infra_error = InfraError::new_useless_track_link(link_id.clone());
+        // TODO: check if 2 switch overlapping trigger an error or a warning
+        if switch_graph.contains_key(&link.src) {
+            let infra_error = InfraError::new_overlapping_objects(
+                link_id.clone(),
+                switch_graph.get(&link.src).unwrap().clone().to_owned(),
+            );
             errors.push(infra_error);
-            continue;
-        }
-
-        if link.navigability == ApplicableDirections::StopToStart
-            || link.navigability == ApplicableDirections::Both
-                && switch_graph.contains_key(&link.dst)
-        {
-            let infra_error = InfraError::new_useless_track_link(link_id.clone());
-            errors.push(infra_error);
+        } else {
+            let link_ref = ObjectRef {
+                obj_type: ObjectType::TrackSectionLink,
+                obj_id: link.id.clone(),
+            };
+            switch_graph.insert(&link.src, link_ref.clone());
+            switch_graph.insert(&link.dst, link_ref.clone());
         }
     }
 
@@ -137,7 +138,7 @@ mod tests {
     }
 
     #[test]
-    fn useless_track_link() {
+    fn link_over_switch() {
         let mut infra_cache = create_small_infra_cache();
         infra_cache.load_track_section_link(create_track_link_cache(
             "link_error",
@@ -146,7 +147,23 @@ mod tests {
         ));
         let errors = generate_errors(&infra_cache);
         assert_eq!(1, errors.len());
-        let infra_error = InfraError::new_useless_track_link("link_error");
+        let obj_ref = ObjectRef {
+            obj_type: ObjectType::Switch,
+            obj_id: "switch".into(),
+        };
+        let infra_error = InfraError::new_overlapping_objects("link_error", obj_ref);
         assert_eq!(infra_error, errors[0]);
+    }
+
+    #[test]
+    fn link_over_link() {
+        let mut infra_cache = create_small_infra_cache();
+        infra_cache.load_track_section_link(create_track_link_cache(
+            "link_error",
+            create_track_endpoint(Endpoint::End, "A"),
+            create_track_endpoint(Endpoint::Begin, "B"),
+        ));
+        let errors = generate_errors(&infra_cache);
+        assert_eq!(1, errors.len());
     }
 }
