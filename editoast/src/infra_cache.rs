@@ -1288,7 +1288,7 @@ pub mod tests {
         assert!(switches::generate_errors(&small_infra_cache).is_empty());
         assert!(detectors::generate_errors(&small_infra_cache).is_empty());
         assert!(buffer_stops::generate_errors(&small_infra_cache).is_empty());
-        assert!(routes::generate_errors(&small_infra_cache).is_empty());
+        assert!(routes::generate_errors(&small_infra_cache, &graph).is_empty());
         assert!(operational_points::generate_errors(&small_infra_cache).is_empty());
     }
 }
