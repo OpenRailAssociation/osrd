@@ -294,7 +294,7 @@ impl LineString {
     }
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub enum Direction {
     #[serde(rename = "START_TO_STOP")]
