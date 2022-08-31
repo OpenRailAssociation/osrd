@@ -16,7 +16,7 @@ djangorestframework-gis = "1.0"
 django-redis = "5.2.0"
 requests = "2.28.1"
 pillow = "^9"
-pydantic = "1.9.2"
+pydantic = "1.10.1"
 geojson-pydantic = "0.4.3"
 
 # production
