@@ -256,7 +256,7 @@ pub fn generate_errors(
     switches::insert_errors(conn, infra, infra_cache)?;
     detectors::insert_errors(conn, infra, infra_cache)?;
     buffer_stops::insert_errors(conn, infra, infra_cache)?;
-    routes::insert_errors(conn, infra, infra_cache)?;
+    routes::insert_errors(conn, infra, infra_cache, &graph)?;
     operational_points::insert_errors(conn, infra, infra_cache)?;
 
     // Invalidate chartos cache
