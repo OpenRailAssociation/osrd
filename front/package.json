@@ -10,7 +10,7 @@
     "@nivo/tooltip": "^0.79.0",
     "@rjsf/core": "^4.2.3",
     "@sentry/browser": "^7.11.1",
-    "@sentry/tracing": "^7.11.1",
+    "@sentry/tracing": "^7.12.0",
     "@sncf/bootstrap-sncf.metier.reseau": "^4.3.1-r6-beta2",
     "@turf/along": "^6.5.0",
     "@turf/bbox": "^6.0.1",
