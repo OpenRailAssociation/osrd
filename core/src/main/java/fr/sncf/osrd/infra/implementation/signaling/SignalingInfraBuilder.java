@@ -12,7 +12,7 @@ import fr.sncf.osrd.infra.implementation.reservation.ReservationInfraBuilder;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
 import fr.sncf.osrd.reporting.warnings.Warning;
-import fr.sncf.osrd.reporting.warnings.WarningRecorder;
+import fr.sncf.osrd.reporting.warnings.DiagnosticRecorder;
 import java.util.Collection;
 import java.util.Set;
 import java.util.function.Function;
@@ -22,7 +22,7 @@ public class SignalingInfraBuilder {
     private final RJSInfra rjsInfra;
     private final ReservationInfra reservationInfra;
     private final Set<SignalingModule> signalingModules;
-    private final WarningRecorder warningRecorder;
+    private final DiagnosticRecorder diagnosticRecorder;
     private ImmutableMultimap<RJSSignal, Signal<? extends SignalState>> signalMap;
     private ImmutableMultimap<ReservationRoute, SignalingRoute> routeMap;
 
@@ -31,12 +31,12 @@ public class SignalingInfraBuilder {
             RJSInfra rjsInfra,
             ReservationInfra reservationInfra,
             Set<SignalingModule> signalingModules,
-            WarningRecorder warningRecorder
+            DiagnosticRecorder diagnosticRecorder
     ) {
         this.rjsInfra = rjsInfra;
         this.reservationInfra = reservationInfra;
         this.signalingModules = signalingModules;
-        this.warningRecorder = warningRecorder;
+        this.diagnosticRecorder = diagnosticRecorder;
     }
 
     /** Creates a signaling infra from railjson data and a reservation infra */
@@ -44,22 +44,22 @@ public class SignalingInfraBuilder {
             RJSInfra rjsInfra,
             ReservationInfra reservationInfra,
             Set<SignalingModule> signalingModules,
-            WarningRecorder warningRecorder
+            DiagnosticRecorder diagnosticRecorder
     ) {
-        return new SignalingInfraBuilder(rjsInfra, reservationInfra, signalingModules, warningRecorder).build();
+        return new SignalingInfraBuilder(rjsInfra, reservationInfra, signalingModules, diagnosticRecorder).build();
     }
 
     /** Creates a signaling infra from a railjson infra */
     public static SignalingInfra fromRJSInfra(
             RJSInfra rjsInfra,
             Set<SignalingModule> signalingModules,
-            WarningRecorder warningRecorder
+            DiagnosticRecorder diagnosticRecorder
     ) {
         return fromReservationInfra(
                 rjsInfra,
-                ReservationInfraBuilder.fromRJS(rjsInfra, warningRecorder),
+                ReservationInfraBuilder.fromRJS(rjsInfra, diagnosticRecorder),
                 signalingModules,
-                warningRecorder
+                diagnosticRecorder
         );
     }
 
@@ -106,7 +106,7 @@ public class SignalingInfraBuilder {
         for (var k : keys) {
             if (map.get(k).isEmpty()) {
                 var message = String.format("%s {%s} has no linked signaling object", typeName, k);
-                warningRecorder.register(new Warning(message));
+                diagnosticRecorder.register(new Warning(message));
             }
         }
     }

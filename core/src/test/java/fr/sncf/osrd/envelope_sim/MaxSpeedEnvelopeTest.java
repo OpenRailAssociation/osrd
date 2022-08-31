@@ -21,7 +21,7 @@ import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
 import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSApplicableDirectionsTrackRange;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
-import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
+import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.train.TestTrains;
 import org.junit.jupiter.api.Test;
 import java.util.HashMap;
@@ -189,7 +189,7 @@ public class MaxSpeedEnvelopeTest {
                         )
                 ))
         );
-        var infra = DirectedInfraBuilder.fromRJS(rjsInfra, new WarningRecorderImpl(true));
+        var infra = DirectedInfraBuilder.fromRJS(rjsInfra, new DiagnosticRecorderImpl(true));
         var path = List.of(
                 new TrackRangeView(0, 15, infra.getEdge("track", Direction.FORWARD)),
                 new TrackRangeView(15, 15, infra.getEdge("track", Direction.FORWARD)),

@@ -16,7 +16,7 @@ import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
 import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
 import fr.sncf.osrd.reporting.warnings.StrictWarningError;
-import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
+import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
 import org.junit.jupiter.api.Test;
@@ -61,14 +61,14 @@ public class SignalingInfraTests {
         var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
         assertThrows(
                 StrictWarningError.class,
-                () -> SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(), new WarningRecorderImpl(true))
+                () -> SignalingInfraBuilder.fromRJSInfra(rjsInfra, Set.of(), new DiagnosticRecorderImpl(true))
         );
     }
 
     @Test
     public void findRoutesTests() throws Exception {
         var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
-        var wr = new WarningRecorderImpl(true);
+        var wr = new DiagnosticRecorderImpl(true);
         var infra = SignalingInfraBuilder.fromRJSInfra(
                 rjsInfra,
                 Set.of(new BAL3(wr), new DummySignalingModule()),

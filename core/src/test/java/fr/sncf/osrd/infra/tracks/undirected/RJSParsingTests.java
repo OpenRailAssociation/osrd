@@ -21,7 +21,7 @@ import fr.sncf.osrd.railjson.schema.infra.RJSTrackSectionLink;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSApplicableDirectionsTrackRange;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
 import fr.sncf.osrd.reporting.warnings.StrictWarningError;
-import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
+import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +32,7 @@ public class RJSParsingTests {
     @Test
     public void testTinyInfra() throws Exception {
         var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
-        var infra = UndirectedInfraBuilder.parseInfra(rjsInfra, new WarningRecorderImpl(true));
+        var infra = UndirectedInfraBuilder.parseInfra(rjsInfra, new DiagnosticRecorderImpl(true));
         var graph = toUndirected(infra.getTrackGraph());
         var traverser = Traverser.forGraph(graph);
         var fooAEndpoint = graph.incidentNodes(getTrack(infra, "ne.micro.foo_a")).nodeU();
@@ -51,7 +51,7 @@ public class RJSParsingTests {
         rjsInfra.switches.add(rjsInfra.switches.iterator().next());
         assertThrows(
                 StrictWarningError.class,
-                () -> UndirectedInfraBuilder.parseInfra(rjsInfra, new WarningRecorderImpl(true))
+                () -> UndirectedInfraBuilder.parseInfra(rjsInfra, new DiagnosticRecorderImpl(true))
         );
     }
 
@@ -68,7 +68,7 @@ public class RJSParsingTests {
         ));
         assertThrows(
                 InvalidInfraError.class,
-                () -> UndirectedInfraBuilder.parseInfra(rjsInfra, new WarningRecorderImpl(true))
+                () -> UndirectedInfraBuilder.parseInfra(rjsInfra, new DiagnosticRecorderImpl(true))
         );
     }
 
@@ -78,7 +78,7 @@ public class RJSParsingTests {
         rjsInfra.detectors.add(rjsInfra.detectors.get(0));
         assertThrows(
                 StrictWarningError.class,
-                () -> UndirectedInfraBuilder.parseInfra(rjsInfra, new WarningRecorderImpl(true))
+                () -> UndirectedInfraBuilder.parseInfra(rjsInfra, new DiagnosticRecorderImpl(true))
         );
     }
 
@@ -88,7 +88,7 @@ public class RJSParsingTests {
         for (var link : rjsInfra.trackSectionLinks)
             link.id = null;
         // We check that no warning or assertion is raised when importing the infra
-        UndirectedInfraBuilder.parseInfra(rjsInfra, new WarningRecorderImpl(true));
+        UndirectedInfraBuilder.parseInfra(rjsInfra, new DiagnosticRecorderImpl(true));
     }
 
     @Test
@@ -115,7 +115,7 @@ public class RJSParsingTests {
                     15
             )))
         );
-        var parsedInfra = UndirectedInfraBuilder.parseInfra(rjsInfra, new WarningRecorderImpl(true));
+        var parsedInfra = UndirectedInfraBuilder.parseInfra(rjsInfra, new DiagnosticRecorderImpl(true));
         var expected = TreeRangeMap.<Double, SpeedLimits>create();
         expected.put(Range.closed(0., 5.), new SpeedLimits(42, ImmutableMap.of(
                 "category1", 10.,

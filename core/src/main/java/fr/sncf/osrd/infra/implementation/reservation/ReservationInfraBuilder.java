@@ -20,6 +20,7 @@ import fr.sncf.osrd.infra.api.tracks.undirected.Detector;
 import fr.sncf.osrd.infra.api.tracks.undirected.SwitchBranch;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
 import fr.sncf.osrd.infra.errors.DiscontinuousRoute;
+import fr.sncf.osrd.infra.errors.MissingDetectorsRoute;
 import fr.sncf.osrd.infra.implementation.RJSObjectParsing;
 import fr.sncf.osrd.infra.implementation.tracks.directed.DirectedInfraBuilder;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
@@ -27,7 +28,7 @@ import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
 import fr.sncf.osrd.reporting.warnings.Warning;
-import fr.sncf.osrd.reporting.warnings.WarningRecorder;
+import fr.sncf.osrd.reporting.warnings.DiagnosticRecorder;
 import fr.sncf.osrd.utils.graph.GraphHelpers;
 import java.util.*;
 
@@ -35,28 +36,28 @@ public class ReservationInfraBuilder {
 
     private final DiTrackInfra diTrackInfra;
     private final RJSInfra rjsInfra;
-    private final WarningRecorder warningRecorder;
+    private final DiagnosticRecorder diagnosticRecorder;
 
     /** Constructor */
-    private ReservationInfraBuilder(RJSInfra rjsInfra, DiTrackInfra infra, WarningRecorder warningRecorder) {
+    private ReservationInfraBuilder(RJSInfra rjsInfra, DiTrackInfra infra, DiagnosticRecorder diagnosticRecorder) {
         this.rjsInfra = rjsInfra;
         this.diTrackInfra = infra;
-        this.warningRecorder = warningRecorder;
+        this.diagnosticRecorder = diagnosticRecorder;
     }
 
     /** Builds a ReservationInfra from railjson data and a DiTrackInfra */
     public static ReservationInfra fromDiTrackInfra(
             RJSInfra rjsInfra,
             DiTrackInfra diTrackInfra,
-            WarningRecorder warningRecorder
+            DiagnosticRecorder diagnosticRecorder
     ) {
-        return new ReservationInfraBuilder(rjsInfra, diTrackInfra, warningRecorder).build();
+        return new ReservationInfraBuilder(rjsInfra, diTrackInfra, diagnosticRecorder).build();
     }
 
     /** Builds a ReservationInfra from a railjson infra */
-    public static ReservationInfra fromRJS(RJSInfra rjsInfra, WarningRecorder warningRecorder) {
-        var diInfra = DirectedInfraBuilder.fromRJS(rjsInfra, warningRecorder);
-        return fromDiTrackInfra(rjsInfra, diInfra, warningRecorder);
+    public static ReservationInfra fromRJS(RJSInfra rjsInfra, DiagnosticRecorder diagnosticRecorder) {
+        var diInfra = DirectedInfraBuilder.fromRJS(rjsInfra, diagnosticRecorder);
+        return fromDiTrackInfra(rjsInfra, diInfra, diagnosticRecorder);
     }
 
     /** Builds everything */
@@ -136,6 +137,8 @@ public class ReservationInfraBuilder {
             if (entry.getKey() instanceof DetectionSectionImpl section)
                 section.setRoutes(entry.getValue().build());
 
+        diagnosticRecorder.verify();
+
         for (var route : routes) {
             networkBuilder.addEdge(
                     route.getDetectorPath().get(0),
@@ -148,12 +151,9 @@ public class ReservationInfraBuilder {
 
     /** Checks that the route makes sense, reports any relevant warning or error otherwise */
     private void validateRoute(ReservationRouteImpl route, RJSRoute rjsRoute) {
-        if (route.getDetectorPath().isEmpty()) {
-            warningRecorder.register(new Warning(String.format(
-                    "Route %s has no detector on its track ranges", rjsRoute.id
-            )));
-            return;
-        }
+        if (route.getDetectorPath().size() < 2)
+            diagnosticRecorder.register(new MissingDetectorsRoute(rjsRoute.id, route.getDetectorPath().size()));
+
         var detectorIDs = route.getDetectorPath().stream()
                         .map(x -> x.detector().getID())
                 .toList();
@@ -161,7 +161,7 @@ public class ReservationInfraBuilder {
         if (rjsRoute.entryPoint != null) {
             var entryDetector = route.getDetectorPath().get(0).detector();
             if (!entryDetector.getID().equals(rjsRoute.entryPoint.id.id))
-                warningRecorder.register(new Warning(String.format(
+                diagnosticRecorder.register(new Warning(String.format(
                         "Entry point for route %s don't match the first detector on the route "
                                 + "(expected = %s, detector list = %s)",
                         rjsRoute.id,
@@ -171,7 +171,7 @@ public class ReservationInfraBuilder {
             var entryPointLocation = new TrackLocation(entryDetector.getTrackSection(), entryDetector.getOffset());
             var routeStartLocation = route.getTrackRanges().get(0).offsetLocation(0);
             if (!entryPointLocation.equalsWithTolerance(routeStartLocation, 1e-8)) {
-                warningRecorder.register(new Warning(String.format(
+                diagnosticRecorder.register(new Warning(String.format(
                         "Entry point for route %s isn't located on the route start "
                                 + "(detector location = %s, route start = %s)",
                         rjsRoute.id,
@@ -183,7 +183,7 @@ public class ReservationInfraBuilder {
         if (rjsRoute.exitPoint != null) {
             var exitDetector = lastDetector.detector();
             if (!lastDetector.detector().getID().equals(rjsRoute.exitPoint.id.id))
-                warningRecorder.register(new Warning(String.format(
+                diagnosticRecorder.register(new Warning(String.format(
                         "Exit point for route %s don't match the last detector on the route "
                                 + "(expected = %s, detector list = %s)",
                         rjsRoute.id,
@@ -194,7 +194,7 @@ public class ReservationInfraBuilder {
             var lastRouteRange = route.getTrackRanges().get(route.getTrackRanges().size() - 1);
             var routeEndLocation = lastRouteRange.offsetLocation(lastRouteRange.getLength());
             if (!exitPointLocation.equalsWithTolerance(routeEndLocation, 1e-8)) {
-                warningRecorder.register(new Warning(String.format(
+                diagnosticRecorder.register(new Warning(String.format(
                         "Exit point for route %s isn't located on the route start "
                                 + "(detector location = %s, route end = %s)",
                         rjsRoute.id,

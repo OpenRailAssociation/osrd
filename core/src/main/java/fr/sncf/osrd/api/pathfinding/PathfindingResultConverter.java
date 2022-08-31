@@ -13,7 +13,7 @@ import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackSection;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
-import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
+import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -30,7 +30,7 @@ public class PathfindingResultConverter {
     public static PathfindingResult convert(
             Pathfinding.Result<SignalingRoute> path,
             SignalingInfra infra,
-            WarningRecorderImpl warningRecorder
+            DiagnosticRecorderImpl warningRecorder
     ) {
         var res = new PathfindingResult();
 

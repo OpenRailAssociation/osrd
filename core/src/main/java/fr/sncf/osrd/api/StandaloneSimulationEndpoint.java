@@ -17,7 +17,7 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceValue;
 import fr.sncf.osrd.railjson.schema.schedule.RJSStandaloneTrainSchedule;
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
-import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
+import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.standalone_sim.StandaloneSim;
 import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult;
 import fr.sncf.osrd.train.RollingStock;
@@ -55,7 +55,7 @@ public class StandaloneSimulationEndpoint implements Take {
     public Response act(Request req) throws
             InvalidRollingStock,
             InvalidSchedule {
-        var warningRecorder = new WarningRecorderImpl(false);
+        var recorder = new DiagnosticRecorderImpl(false);
         try {
             // Parse request input
             var body = new RqPrint(req).printBody();
@@ -64,7 +64,7 @@ public class StandaloneSimulationEndpoint implements Take {
                 return new RsWithStatus(new RsText("missing request body"), 400);
 
             // load infra
-            var infra = infraManager.load(request.infra, request.expectedVersion, warningRecorder);
+            var infra = infraManager.load(request.infra, request.expectedVersion, recorder);
 
             // Parse rolling stocks
             var rollingStocks = new HashMap<String, RollingStock>();
@@ -88,7 +88,7 @@ public class StandaloneSimulationEndpoint implements Take {
                     trainSchedules,
                     request.timeStep
             );
-            result.warnings = warningRecorder.warnings;
+            result.warnings = recorder.warnings;
 
             return new RsJson(new RsWithBody(StandaloneSimResult.adapter.toJson(result)));
         } catch (Throwable ex) {

@@ -16,7 +16,7 @@ import fr.sncf.osrd.railjson.parser.RJSStandaloneTrainScheduleParser;
 import fr.sncf.osrd.railjson.schema.RJSSimulation;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 import fr.sncf.osrd.railjson.schema.schedule.*;
-import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
+import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.standalone_sim.StandaloneSim;
 import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult;
 import fr.sncf.osrd.train.RollingStock;
@@ -65,12 +65,12 @@ public class StandaloneSimulationCommand implements CliCommand {
                 new OutputStreamWriter(new FileOutputStream(resultFilePath), StandardCharsets.UTF_8))) {
             // Parse the entry files from json
             var rjsInfra = RJSParser.parseRailJSONFromFile(infraFilePath);
-            var warningRecorder = new WarningRecorderImpl(true);
+            var recorder = new DiagnosticRecorderImpl(true);
             final var signalingInfra = SignalingInfraBuilder.fromRJSInfra(
                     rjsInfra,
-                    Set.of(new BAL3(warningRecorder)),
-                    warningRecorder);
-            warningRecorder.report();
+                    Set.of(new BAL3(recorder)),
+                    recorder);
+            recorder.report();
 
             var simFile = Files.readString(Path.of(simFilePath));
             var rjsSimulation = Objects.requireNonNull(RJSSimulation.adapter.fromJson(simFile));
@@ -117,7 +117,7 @@ public class StandaloneSimulationCommand implements CliCommand {
 
                 // Calculate the result for the given train path and schedules
                 var result = StandaloneSim.run(signalingInfra, trainsPath, trainSchedules, 2.0);
-                result.warnings = warningRecorder.warnings;
+                result.warnings = recorder.warnings;
 
                 simulations.add(result);
             }
