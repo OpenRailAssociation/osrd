@@ -42,7 +42,6 @@ const EmptyLine = (props) => {
   const allowanceNewDatas = allowanceType === 'engineering'
     ? {
       allowance_type: 'engineering',
-      capacity_speed_limit: 0,
       distribution: defaultDistributionId,
       begin_position: 0,
       end_position: simulation.trains[selectedTrain].base.stops[
@@ -53,7 +52,6 @@ const EmptyLine = (props) => {
       },
     } : {
       allowance_type: 'standard',
-      capacity_speed_limit: 0,
       distribution: defaultDistributionId,
       begin_position: marecoBeginPosition ?? 0,
       end_position: marecoEndPosition ?? simulation.trains[selectedTrain].base.stops[
