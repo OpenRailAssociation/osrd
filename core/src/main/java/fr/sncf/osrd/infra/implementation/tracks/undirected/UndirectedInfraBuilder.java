@@ -20,7 +20,7 @@ import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSLoadingGaugeLimit;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
 import fr.sncf.osrd.reporting.warnings.Warning;
-import fr.sncf.osrd.reporting.warnings.WarningRecorder;
+import fr.sncf.osrd.reporting.warnings.DiagnosticRecorder;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 import java.util.*;
 
@@ -32,19 +32,19 @@ public class UndirectedInfraBuilder {
     private final IdentityHashMap<TrackSectionImpl, ArrayList<Detector>> detectorLists = new IdentityHashMap<>();
     private final ImmutableNetwork.Builder<TrackNode, TrackEdge> builder;
     private final Multimap<String, OperationalPoint> operationalPointsPerTrack = ArrayListMultimap.create();
-    private final WarningRecorder warningRecorder;
+    private final DiagnosticRecorder diagnosticRecorder;
 
     /** Constructor */
-    private UndirectedInfraBuilder(WarningRecorder warningRecorder) {
-        this.warningRecorder = warningRecorder;
+    private UndirectedInfraBuilder(DiagnosticRecorder diagnosticRecorder) {
+        this.diagnosticRecorder = diagnosticRecorder;
         builder = NetworkBuilder
                 .directed()
                 .immutable();
     }
 
     /** Creates a TrackInfra from a railjson infra */
-    public static TrackInfra parseInfra(RJSInfra infra, WarningRecorder warningRecorder) {
-        return new UndirectedInfraBuilder(warningRecorder).parse(infra);
+    public static TrackInfra parseInfra(RJSInfra infra, DiagnosticRecorder diagnosticRecorder) {
+        return new UndirectedInfraBuilder(diagnosticRecorder).parse(infra);
     }
 
     /** Parse the railjson to build an infra */
@@ -176,7 +176,7 @@ public class UndirectedInfraBuilder {
         var detectors = detectorLists.get(track);
         for (var detector : detectors)
             if (detector.getOffset() == newWaypoint.offset) {
-                warningRecorder.register(new Warning(String.format(
+                diagnosticRecorder.register(new Warning(String.format(
                         "Duplicate waypoint (dropping new) : old = %s, new = %s",
                         detector, newWaypoint
                 )));
@@ -249,7 +249,7 @@ public class UndirectedInfraBuilder {
             case G2 -> Set.of(G1, G2, FR3_3_GB_G2);
             case FR3_3 -> Set.of(FR3_3, FR3_3_GB_G2);
             default -> {
-                warningRecorder.register(new Warning("Invalid gauge type for track: " + trackType));
+                diagnosticRecorder.register(new Warning("Invalid gauge type for track: " + trackType));
                 yield Sets.newHashSet(RJSLoadingGaugeType.values());
             }
         };
@@ -311,7 +311,7 @@ public class UndirectedInfraBuilder {
         if (endpoint == EdgeEndpoint.END)
             map = endEndpoints;
         if (map.containsKey(trackId))
-            warningRecorder.register(new Warning(String.format(
+            diagnosticRecorder.register(new Warning(String.format(
                     "Duplicated track link on endpoint (%s - %s) : (old=%s, new=%s). This may cause issues later on",
                     trackId, endpoint, map.get(trackId), node
             )));

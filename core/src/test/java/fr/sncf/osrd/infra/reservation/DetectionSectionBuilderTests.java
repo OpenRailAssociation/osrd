@@ -13,7 +13,7 @@ import fr.sncf.osrd.infra.api.tracks.undirected.TrackInfra;
 import fr.sncf.osrd.infra.implementation.reservation.DetectionSectionBuilder;
 import fr.sncf.osrd.infra.implementation.tracks.directed.DirectedInfraBuilder;
 import fr.sncf.osrd.infra.implementation.tracks.undirected.DetectorImpl;
-import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
+import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -30,7 +30,7 @@ public class DetectionSectionBuilderTests {
     @Test
     public void testTinyInfra() throws Exception {
         var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
-        var diInfra = DirectedInfraBuilder.fromRJS(rjsInfra, new WarningRecorderImpl(true));
+        var diInfra = DirectedInfraBuilder.fromRJS(rjsInfra, new DiagnosticRecorderImpl(true));
         var res = DetectionSectionBuilder.build(diInfra);
         assertEquals(
                 Set.of(

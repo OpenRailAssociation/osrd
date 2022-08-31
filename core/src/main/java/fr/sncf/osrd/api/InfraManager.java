@@ -7,7 +7,7 @@ import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
 import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
-import fr.sncf.osrd.reporting.warnings.WarningRecorder;
+import fr.sncf.osrd.reporting.warnings.DiagnosticRecorder;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -152,7 +152,7 @@ public class InfraManager {
             InfraCacheEntry cacheEntry,
             String infraId,
             String expectedVersion,
-            WarningRecorder warningRecorder
+            DiagnosticRecorder diagnosticRecorder
     ) throws InfraLoadException {
         // create a request
         var endpointUrl = String.format("%sinfra/%s/railjson/", baseUrl, infraId);
@@ -184,8 +184,8 @@ public class InfraManager {
             cacheEntry.transitionTo(InfraStatus.PARSING_INFRA);
             var infra = SignalingInfraBuilder.fromRJSInfra(
                     rjsInfra,
-                    Set.of(new BAL3(warningRecorder)),
-                    warningRecorder
+                    Set.of(new BAL3(diagnosticRecorder)),
+                    diagnosticRecorder
             );
 
             // Cache the infra
@@ -206,7 +206,7 @@ public class InfraManager {
     /** Load an infra given an id. Cache infra for optimized future call */
     @ExcludeFromGeneratedCodeCoverage
     @SuppressFBWarnings({"REC_CATCH_EXCEPTION"})
-    public SignalingInfra load(String infraId, String expectedVersion, WarningRecorder warningRecorder)
+    public SignalingInfra load(String infraId, String expectedVersion, DiagnosticRecorder diagnosticRecorder)
             throws InfraLoadException, InterruptedException {
         try {
             var prevCacheEntry = infraCache.putIfAbsent(infraId, new InfraCacheEntry());
@@ -216,7 +216,7 @@ public class InfraManager {
                 // if there was no cache entry, download the infra again
                 if (prevCacheEntry == null || cacheEntry.status == InfraStatus.ERROR
                         || expectedVersion != null && !expectedVersion.equals(cacheEntry.expectedVersion))
-                    return downloadInfra(cacheEntry, infraId, expectedVersion, warningRecorder);
+                    return downloadInfra(cacheEntry, infraId, expectedVersion, diagnosticRecorder);
 
                 // otherwise, wait for the infra to reach a stable state
                 cacheEntry.waitUntilStable();

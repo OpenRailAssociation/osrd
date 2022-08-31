@@ -18,7 +18,7 @@ import fr.sncf.osrd.infra.api.tracks.undirected.TrackNode;
 import fr.sncf.osrd.infra.implementation.tracks.undirected.UndirectedInfraBuilder;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
-import fr.sncf.osrd.reporting.warnings.WarningRecorder;
+import fr.sncf.osrd.reporting.warnings.DiagnosticRecorder;
 import fr.sncf.osrd.utils.UnionFind;
 import java.util.HashMap;
 
@@ -50,8 +50,8 @@ public class DirectedInfraBuilder {
     }
 
     /** Builds a directed infra from a RJS infra */
-    public static DiTrackInfra fromRJS(RJSInfra infra, WarningRecorder warningRecorder) {
-        var undirected = UndirectedInfraBuilder.parseInfra(infra, warningRecorder);
+    public static DiTrackInfra fromRJS(RJSInfra infra, DiagnosticRecorder diagnosticRecorder) {
+        var undirected = UndirectedInfraBuilder.parseInfra(infra, diagnosticRecorder);
         return fromUndirected(undirected);
     }
 

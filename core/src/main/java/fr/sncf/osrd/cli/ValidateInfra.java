@@ -5,7 +5,7 @@ import com.beust.jcommander.Parameters;
 import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
 import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
 import fr.sncf.osrd.railjson.parser.RJSParser;
-import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
+import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.Set;
 
@@ -21,20 +21,20 @@ public class ValidateInfra implements CliCommand {
     @Override
     @ExcludeFromGeneratedCodeCoverage
     public int run() {
-        var warningRecorder = new WarningRecorderImpl(false);
+        var recorder = new DiagnosticRecorderImpl(false);
         try {
             var rjs = RJSParser.parseRailJSONFromFile(infraPath);
             SignalingInfraBuilder.fromRJSInfra(
                     rjs,
-                    Set.of(new BAL3(warningRecorder)),
-                    warningRecorder
+                    Set.of(new BAL3(recorder)),
+                    recorder
             );
             return 0;
         } catch (Exception e) {
             e.printStackTrace();
             return 1;
         } finally {
-            warningRecorder.report();
+            recorder.report();
         }
     }
 }
