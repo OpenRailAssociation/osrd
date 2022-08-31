@@ -63,13 +63,13 @@ dependencies {
     implementation 'com.github.yannrichet:JMathPlot:1.0.1' // BSD
 
     // the logging API stub
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.+'  // MIT
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.+'  // MIT
     // the logging API implementation
-    implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.11'  // EPL 1.0 (incompatible) and LGPL 2.1 (compatible)
-    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.11'
+    implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.4.+'  // EPL 1.0 (incompatible) and LGPL 2.1 (compatible)
+    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.4.+'
 
     // Sentry
-    implementation group: 'io.sentry', name: 'sentry', version: '6.3.+'  // MIT
+    implementation group: 'io.sentry', name: 'sentry', version: '6.4.+'  // MIT
 
     // Use JUnit Jupiter API for testing.
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'  // EPL 2.0
@@ -79,17 +79,17 @@ dependencies {
     // jqwik for property based testing
     testImplementation 'net.jqwik:jqwik:1.6.5'  // EPL 2.0
     // mockito for mocking
-    testImplementation 'org.mockito:mockito-inline:4.6.1'  // MIT
-    testImplementation 'org.mockito:mockito-junit-jupiter:4.6.1'  // MIT
+    testImplementation group: 'org.mockito', name: 'mockito-inline', version: '4.7.+'  // MIT
+    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '4.7.+'  // MIT
 
     // Only needed to run tests in a version of IntelliJ IDEA that bundles older versions
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.9.0'  // EPL 2.0
 
     // for linter annotations
     compileOnly 'net.jcip:jcip-annotations:1.0'  // CC Attribution
-    compileOnly 'com.github.spotbugs:spotbugs-annotations:4.7.+'  // LGPLv2.1
+    compileOnly group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: '4.7.+'  // LGPLv2.1
     testCompileOnly 'net.jcip:jcip-annotations:1.0'  // CC Attribution
-    testCompileOnly 'com.github.spotbugs:spotbugs-annotations:4.7.0'  // LGPLv2.1
+    testCompileOnly group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: '4.7.0'  // LGPLv2.1
 }
 
 // endregion
