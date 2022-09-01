@@ -4,8 +4,17 @@ import { MapEvent, ViewportProps } from 'react-map-gl';
 import { IconType } from 'react-icons/lib/esm/iconBase';
 import { TFunction } from 'i18next';
 
-import { Item, PositionnedItem } from '../../../types';
+import { Item, PositionnedItem, SwitchType } from '../../../types';
 import { EditorState } from '../../../reducers/editor';
+
+export interface MapState {
+  mapStyle: string;
+  viewport: ViewportProps;
+}
+export interface OSRDConf {
+  infraID: string | number | undefined;
+  switchTypes: SwitchType[] | null;
+}
 
 export interface ModalProps<ArgumentsType, SubmitArgumentsType = Record<string, unknown>> {
   arguments: ArgumentsType;
@@ -49,10 +58,7 @@ export interface ExtendedEditorContextType<S> extends EditorContextType<S> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dispatch: Dispatch<any>;
   editorState: EditorState;
-  mapState: {
-    mapStyle: string;
-    viewport: ViewportProps;
-  };
+  mapState: MapState;
 }
 
 export type ReadOnlyEditorContextType<S> = Omit<
@@ -92,7 +98,7 @@ export interface Tool<S> {
   icon: IconType;
   labelTranslationKey: string;
   actions: ToolAction<S>[][];
-  getInitialState: () => S;
+  getInitialState: (context: { osrdConf: OSRDConf }) => S;
   isDisabled?: (context: ReadOnlyEditorContextType<S>) => boolean;
   getRadius?: (context: ReadOnlyEditorContextType<S>) => number;
 

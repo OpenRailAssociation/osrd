@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import Form from '@rjsf/core';
+import React, { useState, useEffect, useMemo } from 'react';
+import Form, { UiSchema } from '@rjsf/core';
 import { useSelector } from 'react-redux';
 import { GeoJsonProperties } from 'geojson';
+import { JSONSchema7 } from 'json-schema';
 
 import './EditorForm.scss';
 import { EditorEntity } from '../../../types';
 import { EditorState } from '../../../reducers/editor';
-import { getJsonSchemaForLayer, getLayerForObjectType } from '../data/utils';
 import { FormComponent, FormLineStringLength } from './LinearMetadata';
+import { getJsonSchemaForLayer, getLayerForObjectType } from '../data/utils';
 
 const fields = {
   ArrayField: FormComponent,
@@ -17,18 +18,35 @@ interface EditorFormProps {
   data: EditorEntity;
   onSubmit: (data: EditorEntity) => Promise<void>;
   onChange?: (data: EditorEntity) => void;
+
+  // Overrides:
+  overrideSchema?: JSONSchema7;
+  overrideUiSchema?: UiSchema;
 }
 
 /**
  * Display a form to create/update a new entity.
  */
-const EditorForm: React.FC<EditorFormProps> = ({ data, onSubmit, onChange, children }) => {
+const EditorForm: React.FC<EditorFormProps> = ({
+  data,
+  onSubmit,
+  onChange,
+  overrideSchema,
+  overrideUiSchema,
+  children,
+}) => {
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<GeoJsonProperties>(data.properties);
 
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
-  const layer = getLayerForObjectType(editorState.editorSchema, data.objType);
-  const schema = getJsonSchemaForLayer(editorState.editorSchema, layer || '');
+  const layer = useMemo(
+    () => getLayerForObjectType(editorState.editorSchema, data.objType),
+    [data.objType, editorState.editorSchema]
+  );
+  const schema = useMemo(
+    () => overrideSchema || getJsonSchemaForLayer(editorState.editorSchema, layer || ''),
+    [editorState.editorSchema, layer, overrideSchema]
+  );
   if (!schema) throw new Error(`Missing data type for ${layer}`);
 
   /**
@@ -65,6 +83,7 @@ const EditorForm: React.FC<EditorFormProps> = ({ data, onSubmit, onChange, child
           length: {
             'ui:widget': FormLineStringLength,
           },
+          ...(overrideUiSchema || {}),
         }}
         formData={formData}
         formContext={{ geometry: data.geometry }}
@@ -79,10 +98,8 @@ const EditorForm: React.FC<EditorFormProps> = ({ data, onSubmit, onChange, child
           }
         }}
         onChange={(event) => {
-          if (onChange) {
-            console.log(event.formData);
+          if (onChange)
             onChange({ ...data, properties: { ...data.properties, ...event.formData } });
-          }
         }}
       >
         {children}

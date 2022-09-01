@@ -2,6 +2,7 @@ import { DEFAULT_MODE, DEFAULT_STDCM_MODE } from 'applications/osrd/consts';
 
 /* eslint-disable default-case */
 import produce from 'immer';
+import { getSwitchTypes } from '../applications/editor/data/api';
 
 // Action Types
 export const UPDATE_MODE = 'osrdconf/UPDATE_MODE';
@@ -9,6 +10,7 @@ export const UPDATE_STDCM_MODE = 'osrdconf/UPDATE_STDCM_MODE';
 export const UPDATE_NAME = 'osrdconf/UPDATE_NAME';
 export const UPDATE_LABELS = 'osrdconf/UPDATE_LABELS';
 export const UPDATE_INFRA_ID = 'osrdconf/UPDATE_INFRA_ID';
+export const UPDATE_SWITCH_TYPES = 'osrdconf/UPDATE_SWITCH_TYPES';
 export const UPDATE_PATHFINDING_ID = 'osrdconf/UPDATE_PATHFINDING_ID';
 export const UPDATE_TIMETABLE_ID = 'osrdconf/UPDATE_TIMETABLE_ID';
 export const UPDATE_ROLLINGSTOCK_ID = 'osrdconf/UPDATE_ROLLINGSTOCK_ID';
@@ -38,6 +40,7 @@ export const initialState = {
   stdcmMode: DEFAULT_STDCM_MODE,
   labels: [],
   infraID: undefined,
+  switchTypes: null,
   pathfindingID: undefined,
   timetableID: undefined,
   rollingStockID: undefined,
@@ -71,6 +74,9 @@ export default function reducer(inputState, action) {
         break;
       case UPDATE_INFRA_ID:
         draft.infraID = action.infraID;
+        break;
+      case UPDATE_SWITCH_TYPES:
+        draft.switchTypes = action.switchTypes;
         break;
       case UPDATE_PATHFINDING_ID:
         draft.pathfindingID = action.pathfindingID;
@@ -177,12 +183,24 @@ export function updateLabels(labels) {
     });
   };
 }
-export function updateInfraID(infraID) {
+export function updateSwitchTypes(switchTypes) {
   return (dispatch) => {
+    dispatch({
+      type: UPDATE_SWITCH_TYPES,
+      switchTypes,
+    });
+  };
+}
+export function updateInfraID(infraID) {
+  return async (dispatch) => {
     dispatch({
       type: UPDATE_INFRA_ID,
       infraID,
     });
+    dispatch(updateSwitchTypes({}));
+
+    const newSwitchTypes = await getSwitchTypes(infraID);
+    dispatch(updateSwitchTypes(newSwitchTypes));
   };
 }
 export function updatePathfindingID(pathfindingID) {
@@ -357,5 +375,12 @@ export function deleteItinerary() {
     dispatch({
       type: DELETE_ITINERARY,
     });
+  };
+}
+
+// Give this function a whole OSRDConf state:
+export function bootstrapOSRDConf(conf) {
+  return (dispatch) => {
+    dispatch(updateInfraID(conf.infraID));
   };
 }

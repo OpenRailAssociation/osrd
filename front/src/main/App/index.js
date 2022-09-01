@@ -11,9 +11,11 @@ import HomeOSRD from 'applications/osrd/Home';
 import HomeStdcm from 'applications/stdcm/Home';
 import Loader from 'common/Loader';
 import { attemptLoginOnLaunch } from 'reducers/user';
+import { bootstrapOSRDConf } from 'reducers/osrdconf';
 
 export default function App() {
   const user = useSelector((state) => state.user);
+  const osrdConf = useSelector((state) => state.osrdconf);
   const { darkmode } = useSelector((state) => state.main);
   const dispatch = useDispatch();
 
@@ -33,6 +35,11 @@ export default function App() {
       import('@sncf/bootstrap-sncf.metier.reseau/dist/css/bootstrap-sncf.min.css');
     }
   }, [darkmode]);
+
+  // Loading initial data
+  useEffect(() => {
+    dispatch(bootstrapOSRDConf(osrdConf));
+  }, []);
 
   return (
     <Suspense fallback={<Loader />}>

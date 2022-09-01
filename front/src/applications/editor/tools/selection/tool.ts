@@ -12,6 +12,7 @@ import {
   BufferStopEntity,
   DetectorEntity,
   SignalEntity,
+  SwitchEntity,
   TrackSectionEntity,
 } from '../../../../types';
 import { getSymbolTypes } from '../../data/utils';
@@ -20,6 +21,7 @@ import {
   DetectorEditionTool,
   SignalEditionTool,
 } from '../pointEdition/tools';
+import SwitchEditionTool from '../switchEdition/tool';
 
 const SelectionTool: Tool<SelectionState> = {
   id: 'select-items',
@@ -96,35 +98,39 @@ const SelectionTool: Tool<SelectionState> = {
         onClick({ setState, state, switchTool }) {
           if (state.selection.length === 1) {
             const selectedElement = state.selection[0];
-            if (selectedElement.objType === 'TrackSection') {
-              switchTool(TrackEditionTool, {
-                track: selectedElement as TrackSectionEntity,
-                editionState: {
-                  type: 'movePoint',
-                },
-              });
-              return;
-            }
-            if (selectedElement.objType === 'Signal') {
-              switchTool(SignalEditionTool, {
-                initialEntity: selectedElement as SignalEntity,
-                entity: selectedElement as SignalEntity,
-              });
-              return;
-            }
-            if (selectedElement.objType === 'BufferStop') {
-              switchTool(BufferStopEditionTool, {
-                initialEntity: selectedElement as BufferStopEntity,
-                entity: selectedElement as BufferStopEntity,
-              });
-              return;
-            }
-            if (selectedElement.objType === 'Detector') {
-              switchTool(DetectorEditionTool, {
-                initialEntity: selectedElement as DetectorEntity,
-                entity: selectedElement as DetectorEntity,
-              });
-              return;
+            switch (selectedElement.objType) {
+              case 'TrackSection':
+                switchTool(TrackEditionTool, {
+                  track: selectedElement as TrackSectionEntity,
+                  editionState: {
+                    type: 'movePoint',
+                  },
+                });
+                return;
+              case 'Signal':
+                switchTool(SignalEditionTool, {
+                  initialEntity: selectedElement as SignalEntity,
+                  entity: selectedElement as SignalEntity,
+                });
+                return;
+              case 'BufferStop':
+                switchTool(BufferStopEditionTool, {
+                  initialEntity: selectedElement as BufferStopEntity,
+                  entity: selectedElement as BufferStopEntity,
+                });
+                return;
+              case 'Detector':
+                switchTool(DetectorEditionTool, {
+                  initialEntity: selectedElement as DetectorEntity,
+                  entity: selectedElement as DetectorEntity,
+                });
+                return;
+              case 'Switch':
+                switchTool(SwitchEditionTool, {
+                  initialEntity: selectedElement as SwitchEntity,
+                  entity: selectedElement as SwitchEntity,
+                });
+                return;
             }
           }
 
@@ -271,7 +277,12 @@ const SelectionTool: Tool<SelectionState> = {
     const symbolTypes = getSymbolTypes(editorData);
     return symbolTypes
       .map((type) => `editor/geo/signal-${type}`)
-      .concat(['editor/geo/track-main', 'editor/geo/buffer-stop-main', 'editor/geo/detector-main']);
+      .concat([
+        'editor/geo/track-main',
+        'editor/geo/buffer-stop-main',
+        'editor/geo/detector-main',
+        'editor/geo/switch-main',
+      ]);
   },
   getCursor({ state }, { isDragging }) {
     if (isDragging) return 'move';
