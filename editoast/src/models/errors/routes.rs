@@ -10,7 +10,7 @@ use super::graph::Graph;
 use super::InfraError;
 use crate::infra_cache::TrackCache;
 use crate::models::BoundingBox;
-use crate::railjson::{Direction, DirectionalTrackRange, ObjectType, Route, TrackEndpoint};
+use crate::railjson::{Direction, DirectionalTrackRange, ObjectType, Route};
 use crate::{infra_cache::InfraCache, railjson::ObjectRef};
 use diesel::result::Error as DieselError;
 use serde_json::to_value;
@@ -142,7 +142,7 @@ pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraErro
             bbox_geo: BoundingBox::default(),
             bbox_sch: BoundingBox::default(),
         };
-        let mut previous_value = -0.;
+        let mut previous_value = 0.;
         let mut previous_direction = Direction::StartToStop;
 
         for (index, path) in route.path.iter().enumerate() {
@@ -173,7 +173,23 @@ pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraErro
                 }
             }
 
-            if previous_track == track_cache && !init {
+            if init {
+                previous_track = track_cache;
+                match path.direction {
+                    Direction::StartToStop => {
+                        previous_value = path.end;
+                        previous_direction = Direction::StartToStop;
+                    }
+                    Direction::StopToStart => {
+                        previous_value = path.begin;
+                        previous_direction = Direction::StopToStart;
+                    }
+                }
+                init = false;
+                continue;
+            }
+
+            if previous_track == track_cache {
                 if path.direction == Direction::StartToStop {
                     if previous_value != path.begin {
                         let infra_error = InfraError::new_path_is_not_continuous(
@@ -194,37 +210,32 @@ pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraErro
                     previous_value = path.begin;
                 }
             } else {
-                if !init {
-                    let previous_endpoint = match previous_direction {
-                        Direction::StartToStop => previous_track.get_begin(),
-                        Direction::StopToStart => previous_track.get_end(),
+                let previous_endpoint = match previous_direction {
+                    Direction::StartToStop => previous_track.get_end(),
+                    Direction::StopToStart => previous_track.get_begin(),
+                };
+
+                if let Some(neighbours) = graph.get_neighbours(&previous_endpoint) {
+                    let new_endpoint = match path.direction {
+                        Direction::StartToStop => track_cache.get_begin(),
+                        Direction::StopToStart => track_cache.get_end(),
                     };
 
-                    if let Some(neighbours) = graph.get_neighbours(&previous_endpoint) {
-                        let new_endpoint = match path.direction {
-                            Direction::StartToStop => track_cache.get_begin(),
-                            Direction::StopToStart => track_cache.get_end(),
-                        };
-
-                        if !neighbours.contains(&new_endpoint) {
-                            let infra_error = InfraError::new_path_is_not_continuous(
-                                route_id.clone(),
-                                format!("path.{}.track", index),
-                            );
-                            errors.push(infra_error);
-                        }
-                    } else {
+                    if !neighbours.contains(&new_endpoint) {
                         let infra_error = InfraError::new_path_is_not_continuous(
                             route_id.clone(),
                             format!("path.{}.track", index),
                         );
                         errors.push(infra_error);
                     }
+                } else {
+                    let infra_error = InfraError::new_path_is_not_continuous(
+                        route_id.clone(),
+                        format!("path.{}.track", index),
+                    );
+                    errors.push(infra_error);
                 }
 
-                init = false;
-
-                previous_track = track_cache;
                 match path.direction {
                     Direction::StartToStop => {
                         if path.begin != 0.0 {
@@ -535,7 +546,63 @@ mod tests {
         let graph = Graph::load(&infra_cache);
         let errors = generate_errors(&infra_cache, &graph);
         assert_eq!(1, errors.len());
-        let infra_error = InfraError::new_path_is_not_continuous("R_error", "path.0.range");
+        let infra_error = InfraError::new_path_is_not_continuous("R_error", "path.1.range");
+        assert_eq!(infra_error, errors[0]);
+    }
+
+    #[test]
+    fn path_not_continuous_2() {
+        let mut infra_cache = create_small_infra_cache();
+        let error_path = vec![
+            ("A", 20., 250., Direction::StartToStop),
+            ("A", 300., 500., Direction::StartToStop),
+            ("B", 0., 250., Direction::StartToStop),
+        ];
+        infra_cache.load_route(create_route_cache(
+            "R_error",
+            ObjectRef {
+                obj_type: ObjectType::BufferStop,
+                obj_id: "BF1".into(),
+            },
+            ObjectRef {
+                obj_type: ObjectType::Detector,
+                obj_id: "D1".into(),
+            },
+            vec![],
+            error_path,
+        ));
+        let graph = Graph::load(&infra_cache);
+        let errors = generate_errors(&infra_cache, &graph);
+        assert_eq!(1, errors.len());
+        let infra_error = InfraError::new_path_is_not_continuous("R_error", "path.1.range");
+        assert_eq!(infra_error, errors[0]);
+    }
+
+    #[test]
+    fn path_not_continuous_3() {
+        let mut infra_cache = create_small_infra_cache();
+        let error_path = vec![
+            ("A", 20., 500., Direction::StartToStop),
+            ("C", 0., 250., Direction::StartToStop),
+            ("B", 0., 250., Direction::StartToStop),
+        ];
+        infra_cache.load_route(create_route_cache(
+            "R_error",
+            ObjectRef {
+                obj_type: ObjectType::BufferStop,
+                obj_id: "BF1".into(),
+            },
+            ObjectRef {
+                obj_type: ObjectType::Detector,
+                obj_id: "D1".into(),
+            },
+            vec![],
+            error_path,
+        ));
+        let graph = Graph::load(&infra_cache);
+        let errors = generate_errors(&infra_cache, &graph);
+        assert_eq!(1, errors.len());
+        let infra_error = InfraError::new_path_is_not_continuous("R_error", "path.1.track");
         assert_eq!(infra_error, errors[0]);
     }
 }
