@@ -41,7 +41,7 @@ export default function ContextMenu(props) {
 
   const choosePath = async () => {
     const train = await get(`${TRAINSCHEDULE_URI}${simulation.trains[selectedTrain]?.id}/`);
-    if(simulation.trains[selectedTrain]) {
+    if (simulation.trains[selectedTrain]) {
       dispatch(updateSelectedProjection({
         id: simulation.trains[selectedTrain].id,
         path: train.path,
@@ -99,6 +99,7 @@ export default function ContextMenu(props) {
         rolling_stock: trainDetail.rolling_stock,
         train_name: newTrainName,
         allowances: trainDetail.allowances,
+        speed_limit_category: trainDetail.speed_limit_category,
       });
       actualTrainCount += trainStep;
     }
