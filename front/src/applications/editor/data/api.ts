@@ -10,6 +10,7 @@ import {
   EditorEntity,
   EditorSchema,
   EntityOperation,
+  SwitchType,
   UpdateEntityOperation,
   Zone,
 } from '../../../types';
@@ -56,6 +57,13 @@ export async function getEditorSchema(): Promise<EditorSchema> {
         },
       } as EditorSchema[0];
     });
+}
+
+/**
+ * Call the API for the list of switch types in a given infra.
+ */
+export async function getSwitchTypes(infra: number): Promise<SwitchType[]> {
+  return get(`/editoast/infra/${infra}/switch_types`);
 }
 
 /**

@@ -44,7 +44,7 @@ const saveSimulationFilter = createFilter('osrdsimulation', simulationWhiteList)
 const osrdconfPersistConfig = {
   key: 'osrdconf',
   storage,
-  blacklist: ['featureInfoClick'],
+  blacklist: ['featureInfoClick', 'switchTypes'],
 };
 
 const persistConfig = {

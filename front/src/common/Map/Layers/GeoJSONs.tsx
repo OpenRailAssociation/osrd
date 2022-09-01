@@ -19,6 +19,7 @@ import { lineNameLayer, lineNumberLayer, trackNameLayer } from './commonLayers';
 import { getSymbolTypes } from '../../../applications/editor/data/utils';
 import { getBufferStopsLayerProps } from './BufferStops';
 import { getDetectorsLayerProps, getDetectorsNameLayerProps } from './Detectors';
+import { getSwitchesLayerProps, getSwitchesNameLayerProps } from './Switches';
 
 const HOVERED_COLOR = '#009EED';
 const UNSELECTED_OPACITY = 0.2;
@@ -294,6 +295,17 @@ const GeoJSONs: FC<{
         <Layer
           {...adaptProps(getDetectorsNameLayerProps(signalsContext), layerContext, adaptTextPaint)}
           id={`${prefix}geo/detector-name`}
+        />
+      </Source>
+
+      <Source id={`${prefix}geo/switches`} type="geojson" data={geoJSONs.Switch}>
+        <Layer
+          {...adaptProps(getSwitchesLayerProps(signalsContext), layerContext, adaptCirclePaint)}
+          id={`${prefix}geo/switch-main`}
+        />
+        <Layer
+          {...adaptProps(getSwitchesNameLayerProps(signalsContext), layerContext, adaptTextPaint)}
+          id={`${prefix}geo/switch-name`}
         />
       </Source>
     </>
