@@ -10,11 +10,11 @@ import {
   timeShiftTrain,
 } from 'applications/osrd/components/Helpers/ChartHelpers';
 import {
-updateChart,
-updateContextMenu,
-updateMustRedraw,
-updatePositionValues,
-updateSimulation
+  updateChart,
+  updateContextMenu,
+  updateMustRedraw,
+  updatePositionValues,
+  updateSimulation,
 } from 'reducers/osrdsimulation';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -55,7 +55,7 @@ export default function SpaceTimeChart(props) {
     selectedProjection,
     selectedTrain,
     timePosition,
-    consolidatedSimulation
+    consolidatedSimulation,
   } = useSelector((state) => state.osrdsimulation);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const keyValues = ['time', 'position'];
@@ -117,8 +117,7 @@ export default function SpaceTimeChart(props) {
   };
 
   const drawAllTrains = (reset, forceRedraw = false, newDataSimulation) => {
-
-    const currentDataSimulation = newDataSimulation || dataSimulation
+    const currentDataSimulation = newDataSimulation || dataSimulation;
 
     if (mustRedraw || forceRedraw) {
       const chartLocal = createChart(
@@ -129,7 +128,7 @@ export default function SpaceTimeChart(props) {
         keyValues,
         ref,
         reset,
-        rotate
+        rotate,
       );
 
       chartLocal.svg.on('click', () => {
@@ -152,7 +151,7 @@ export default function SpaceTimeChart(props) {
           rotate,
           setDragEnding,
           setDragOffset,
-          simulation
+          simulation,
         );
       });
       enableInteractivity(
@@ -167,7 +166,7 @@ export default function SpaceTimeChart(props) {
         setYPosition,
         setZoomLevel,
         yPosition,
-        zoomLevel
+        zoomLevel,
       );
       // findConflicts(chartLocal, dataSimulation, rotate);
       setChart(chartLocal);
@@ -195,7 +194,7 @@ export default function SpaceTimeChart(props) {
         {
           departure_time: simulation.trains[selectedTrain].base.stops[0].time,
         },
-        simulation.trains[selectedTrain].id
+        simulation.trains[selectedTrain].id,
       );
       setDragEnding(false);
     }
