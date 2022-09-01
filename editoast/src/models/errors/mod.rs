@@ -225,7 +225,7 @@ impl InfraError {
     fn new_path_is_not_continuous<T: AsRef<str>, U: AsRef<str>>(obj_id: U, field: T) -> Self {
         Self {
             field: field.as_ref().into(),
-            is_warning: true,
+            is_warning: false,
             sub_type: InfraErrorType::PathIsNotContinuous,
             obj_id: obj_id.as_ref().into(),
         }
