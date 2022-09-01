@@ -3,6 +3,7 @@ import { Tool } from './types';
 import SelectionTool from './selection/tool';
 import ZoneSelectionTool from './zoneSelection/tool';
 import TrackEditionTool from './trackEdition/tool';
+import SwitchEditionTool from './switchEdition/tool';
 import {
   BufferStopEditionTool,
   DetectorEditionTool,
@@ -14,6 +15,7 @@ const TOOLS: Tool<any>[] = [
   ZoneSelectionTool,
   SelectionTool,
   TrackEditionTool,
+  SwitchEditionTool,
   SignalEditionTool,
   DetectorEditionTool,
   BufferStopEditionTool,

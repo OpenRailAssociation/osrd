@@ -27,7 +27,6 @@ import { getNewLine } from './utils';
 import { entityDoUpdate } from '../../components/LinearMetadata';
 
 const TrackEditionTool: Tool<TrackEditionState> = {
-  // Zone selection:
   id: 'track-edition',
   icon: MdShowChart,
   labelTranslationKey: 'Editor.tools.track-edition.label',

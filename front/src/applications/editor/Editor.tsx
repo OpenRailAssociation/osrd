@@ -25,18 +25,19 @@ import {
   EditorContextType,
   ExtendedEditorContextType,
   ModalRequest,
+  OSRDConf,
   Tool,
 } from './tools/types';
 import TOOLS from './tools/list';
 
 const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   const dispatch = useDispatch();
-  const { infraID } = useSelector((state: { osrdconf: { infraID: string } }) => state.osrdconf);
+  const osrdConf = useSelector((state: { osrdconf: OSRDConf }) => state.osrdconf);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
   const { fullscreen } = useSelector((state: { main: MainState }) => state.main);
   /* eslint-disable @typescript-eslint/no-explicit-any */
   const [activeTool, activateTool] = useState<Tool<any>>(TOOLS[0]);
-  const [toolState, setToolState] = useState<any>(activeTool.getInitialState());
+  const [toolState, setToolState] = useState<any>(activeTool.getInitialState({ osrdConf }));
   const [modal, setModal] = useState<ModalRequest<any, any> | null>(null);
   /* eslint-enable @typescript-eslint/no-explicit-any */
 
@@ -47,9 +48,9 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   );
   const setViewport = useCallback(
     (value) => {
-      dispatch(updateViewport(value, `/editor/${infraID || '-1'}`));
+      dispatch(updateViewport(value, `/editor/${osrdConf.infraID || '-1'}`));
     },
-    [dispatch, infraID]
+    [dispatch, osrdConf.infraID]
   );
 
   const context = useMemo<EditorContextType<CommonToolState>>(
@@ -68,7 +69,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
       state: toolState,
       setState: setToolState,
       switchTool<S extends CommonToolState>(tool: Tool<S>, state?: Partial<S>) {
-        const fullState = { ...tool.getInitialState(), ...(state || {}) };
+        const fullState = { ...tool.getInitialState({ osrdConf }), ...(state || {}) };
         activateTool(tool);
         setToolState(fullState);
       },
@@ -120,8 +121,8 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
           dispatch(setFailure(new Error(t('Editor.errors.infra-not-found', { id: infra }))));
           dispatch(updateViewport({}, `/editor/`));
         });
-    } else if (infraID) {
-      dispatch(updateViewport({}, `/editor/${infraID}`));
+    } else if (osrdConf.infraID) {
+      dispatch(updateViewport({}, `/editor/${osrdConf.infraID}`));
     } else {
       getInfrastructures()
         .then((infras) => {
@@ -137,7 +138,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
           dispatch(setFailure(new Error(t('Editor.errors.technical', { msg: e.message }))));
         });
     }
-  }, [dispatch, infra, infraID, t]);
+  }, [dispatch, infra, osrdConf.infraID, t]);
 
   // Lifecycle events on tools:
   useEffect(() => {
@@ -167,7 +168,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
                     className={cx('btn-rounded', id === activeTool.id && 'active', 'editor-btn')}
                     onClick={() => {
                       activateTool(tool);
-                      setToolState(tool.getInitialState());
+                      setToolState(tool.getInitialState({ osrdConf }));
                     }}
                     disabled={isDisabled && isDisabled(extendedContext)}
                   >
