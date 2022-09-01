@@ -265,6 +265,28 @@ pub struct DirectionalTrackRange {
     pub direction: Direction,
 }
 
+impl DirectionalTrackRange {
+    pub fn get_begin(&self) -> TrackEndpoint {
+        TrackEndpoint {
+            endpoint: match self.direction {
+                Direction::StartToStop => Endpoint::Begin,
+                Direction::StopToStart => Endpoint::End,
+            },
+            track: self.track.clone(),
+        }
+    }
+
+    pub fn get_end(&self) -> TrackEndpoint {
+        TrackEndpoint {
+            endpoint: match self.direction {
+                Direction::StartToStop => Endpoint::End,
+                Direction::StopToStart => Endpoint::Begin,
+            },
+            track: self.track.clone(),
+        }
+    }
+}
+
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
 #[serde(tag = "type", deny_unknown_fields)]
 #[derivative(Default)]
