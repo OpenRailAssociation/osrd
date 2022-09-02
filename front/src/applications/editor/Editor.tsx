@@ -74,19 +74,20 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
         setToolState(fullState);
       },
     }),
-    [activeTool, modal, t, toolState]
+    [activeTool, modal, osrdConf, t, toolState]
   );
   const extendedContext = useMemo<ExtendedEditorContextType<CommonToolState>>(
     () => ({
       ...context,
       dispatch,
       editorState,
+      osrdConf,
       mapState: {
         viewport,
         mapStyle,
       },
     }),
-    [context, dispatch, editorState, mapStyle, viewport]
+    [context, dispatch, editorState, mapStyle, osrdConf, viewport]
   );
 
   const actionsGroups = activeTool.actions

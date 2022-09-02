@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import Form, { UiSchema } from '@rjsf/core';
+import Form, { Field, UiSchema } from '@rjsf/core';
 import { useSelector } from 'react-redux';
 import { GeoJsonProperties } from 'geojson';
 import { JSONSchema7 } from 'json-schema';
@@ -22,6 +22,7 @@ interface EditorFormProps {
   // Overrides:
   overrideSchema?: JSONSchema7;
   overrideUiSchema?: UiSchema;
+  overrideFields?: Record<string, Field>;
 }
 
 /**
@@ -33,6 +34,7 @@ const EditorForm: React.FC<EditorFormProps> = ({
   onChange,
   overrideSchema,
   overrideUiSchema,
+  overrideFields,
   children,
 }) => {
   const [error, setError] = useState<string | null>(null);
@@ -75,7 +77,7 @@ const EditorForm: React.FC<EditorFormProps> = ({
         </div>
       )}
       <Form
-        fields={fields}
+        fields={{ ...fields, ...(overrideFields || {}) }}
         action={undefined}
         method={undefined}
         schema={schema}

@@ -100,13 +100,17 @@ export interface DetectorEntity
   objType: 'Detector';
 }
 
+export const ENDPOINTS = ['BEGIN', 'END'] as const;
+export const ENDPOINTS_SET = new Set(ENDPOINTS);
+export const DEFAULT_ENDPOINT = ENDPOINTS[0];
+export type EndPoint = typeof ENDPOINTS[number];
 export interface SwitchPortConnection {
   src: string;
   dst: string;
   bidirectionnal: boolean;
 }
 export interface TrackEndpoint {
-  endpoint: 'BEGIN' | 'END';
+  endpoint: EndPoint;
   track: TrackReference;
 }
 export interface SwitchType {
@@ -136,7 +140,7 @@ export interface UpdateEntityOperation {
 export interface CreateEntityOperation {
   operation_type: 'CREATE';
   obj_type: ObjectType;
-  railjson: GeoJsonProperties & { id?: EntityId; sch: Geometry; geo: Geometry };
+  railjson: GeoJsonProperties & { id?: EntityId; };
 }
 export type EntityOperation = DeleteEntityOperation | UpdateEntityOperation | CreateEntityOperation;
 
