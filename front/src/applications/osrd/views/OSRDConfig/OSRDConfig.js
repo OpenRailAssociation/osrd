@@ -8,14 +8,14 @@ import AddTrainSchedule from 'applications/osrd/views/OSRDConfig/AddTrainSchedul
 import { FlyToInterpolator } from 'react-map-gl';
 import InfraSelector from 'applications/osrd/views/OSRDConfig/InfraSelector';
 import Itinerary from 'applications/osrd/views/OSRDConfig/Itinerary';
+import { MODES } from '../../consts';
 import Map from 'applications/osrd/views/OSRDConfig/Map';
 import RollingStockSelector from 'applications/osrd/views/OSRDConfig/RollingStockSelector';
-import TimetableSelector from 'applications/osrd/views/OSRDConfig/TimetableSelector';
 import SpeedLimitByTagSelector from 'applications/osrd/views/OSRDConfig/SpeedLimitByTagSelector';
+import TimetableSelector from 'applications/osrd/views/OSRDConfig/TimetableSelector';
 import { stdcmRequestStatus } from 'applications/stdcm/views/OSRDSTDCM';
 import { updateViewport } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
-import { MODES } from '../../consts';
 
 export default function OSRDConfig(props) {
   const { fullscreen, darkmode } = useSelector((state) => state.main);
@@ -48,7 +48,7 @@ export default function OSRDConfig(props) {
             <div className="col-xl-6">
               <InfraSelector />
               <RollingStockSelector />
-              <SpeedLimitByTagSelector />
+              {mode === MODES.simulation && <SpeedLimitByTagSelector />}
             </div>
             <div className="col-xl-6">
               <TimetableSelector
@@ -57,20 +57,15 @@ export default function OSRDConfig(props) {
               />
             </div>
           </div>
-          <Itinerary
-            title={t('translation:common.itinerary')}
-            updateExtViewport={setExtViewport}
-          />
+          <Itinerary title={t('translation:common.itinerary')} updateExtViewport={setExtViewport} />
           <AddTrainLabels />
-          { mode === MODES.simulation
-            && (
+          {mode === MODES.simulation && (
               <AddTrainSchedule
                 mustUpdateTimetable={mustUpdateTimetable}
                 setMustUpdateTimetable={setMustUpdateTimetable}
               />
             )}
-          { mode === MODES.stdcm
-            && (
+          {mode === MODES.stdcm && (
             <div className="osrd-config-stdcm-apply">
               <button
                 className="btn btn-sm  btn-primary "
