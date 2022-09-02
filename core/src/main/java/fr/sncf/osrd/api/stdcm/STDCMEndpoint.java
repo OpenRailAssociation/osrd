@@ -15,7 +15,6 @@ import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.envelope_sim_infra.MRSP;
-import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
@@ -24,12 +23,10 @@ import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.common.ID;
-import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceValue;
-import fr.sncf.osrd.reporting.exceptions.OSRDError;
-import fr.sncf.osrd.reporting.warnings.WarningRecorderImpl;
+import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.standalone_sim.ScheduleMetadataExtractor;
 import fr.sncf.osrd.standalone_sim.StandaloneSim;
 import fr.sncf.osrd.standalone_sim.result.ResultEnvelopePoint;
@@ -52,7 +49,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 public class STDCMEndpoint implements Take {
@@ -123,7 +119,7 @@ public class STDCMEndpoint implements Take {
     public Response act(Request req) throws
             InvalidRollingStock,
             InvalidSchedule {
-        var warningRecorder = new WarningRecorderImpl(false);
+        var recorder = new DiagnosticRecorderImpl(false);
         try {
             // Parse request input
             var body = new RqPrint(req).printBody();
@@ -132,7 +128,7 @@ public class STDCMEndpoint implements Take {
                 return new RsWithStatus(new RsText("missing request body"), 400);
 
             // parse input data
-            var infra = infraManager.load(request.infra, request.expectedVersion, warningRecorder);
+            var infra = infraManager.load(request.infra, request.expectedVersion, recorder);
             var rollingStock = RJSRollingStockParser.parse(request.rollingStock);
             var startTime = request.startTime;
             var endTime = request.endTime;
@@ -229,7 +225,7 @@ public class STDCMEndpoint implements Take {
                     convertResultPath(stdcmPath, startLocation, endLocation),
                     List.of()
             );
-            var pathfindingRes = PathfindingResultConverter.convert(osrdPath, infra, new WarningRecorderImpl(false));
+            var pathfindingRes = PathfindingResultConverter.convert(osrdPath, infra, new DiagnosticRecorderImpl(false));
             var response = new STDCMResponse(simResult, pathfindingRes);
             return new RsJson(new RsWithBody(STDCMResponse.adapter.toJson(response)));
         } catch (Throwable ex) {
