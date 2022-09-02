@@ -19,6 +19,7 @@ export function injectGeometry(track: EditorEntity): EditorEntity {
     properties: {
       ...(track.properties || {}),
       geo: track.geometry,
+      sch: track.geometry,
     },
   };
 }

@@ -51,6 +51,17 @@
           "cancel-line": "Annuler la saisie en cours"
         }
       },
+      "switch-edition": {
+        "label": "Outil \"Aiguillage\",",
+        "actions": {
+          "delete-switch": "Supprimer l'aiguillage",
+          "new-switch": "Créer un nouvel aiguillage"
+        },
+        "endpoint": "Extrémité :",
+        "no-track-picked-yet": "Aucune ligne n'a encore été sélectionnée",
+        "untitled-track": "Ligne sans nom",
+        "select-track": "Sélectionnez une ligne sur la carte"
+      },
       "select-items": {
         "label": "Outil \"Sélection\"",
         "title": "Sélection",

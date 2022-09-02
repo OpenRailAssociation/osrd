@@ -16,7 +16,13 @@ import osmBlankStyle from '../../common/Map/Layers/osmBlankStyle';
 
 import { EditorState } from '../../reducers/editor';
 import { EditorContext } from './context';
-import { CommonToolState, EditorContextType, ExtendedEditorContextType, Tool } from './tools/types';
+import {
+  CommonToolState,
+  EditorContextType,
+  ExtendedEditorContextType,
+  OSRDConf,
+  Tool,
+} from './tools/types';
 
 const DEFAULT_RADIUS = 6;
 
@@ -40,18 +46,20 @@ const MapUnplugged: FC<MapProps> = ({
 }) => {
   const dispatch = useDispatch();
   const context = useContext(EditorContext) as EditorContextType<CommonToolState>;
+  const osrdConf = useSelector((state: { osrdconf: OSRDConf }) => state.osrdconf);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
   const extendedContext = useMemo<ExtendedEditorContextType<CommonToolState>>(
     () => ({
       ...context,
       dispatch,
       editorState,
+      osrdConf,
       mapState: {
         viewport,
         mapStyle,
       },
     }),
-    [context, dispatch, editorState, mapStyle, viewport]
+    [context, dispatch, editorState, mapStyle, osrdConf, viewport]
   );
 
   return (
