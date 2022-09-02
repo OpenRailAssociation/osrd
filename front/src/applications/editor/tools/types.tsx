@@ -59,6 +59,7 @@ export interface ExtendedEditorContextType<S> extends EditorContextType<S> {
   dispatch: Dispatch<any>;
   editorState: EditorState;
   mapState: MapState;
+  osrdConf: OSRDConf;
 }
 
 export type ReadOnlyEditorContextType<S> = Omit<

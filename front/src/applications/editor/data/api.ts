@@ -107,8 +107,6 @@ export async function editorSave(
         obj_type: feature.objType,
         railjson: {
           id: uuid(),
-          geo: feature.geometry,
-          sch: feature.geometry,
           ...feature.properties,
         },
       })

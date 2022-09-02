@@ -5,10 +5,12 @@ export type SwitchEditionState = CommonToolState & {
   initialEntity: Partial<SwitchEntity>;
   entity: Partial<SwitchEntity>;
 
-  portState:
+  portEditionState:
     | { type: 'idle' }
     | {
         type: 'selection';
+        portId: string;
+        onSelect: (trackId: string, position: [number, number]) => void;
         hoveredPoint: TrackEndpoint | null;
       };
 };
