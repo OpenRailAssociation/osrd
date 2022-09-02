@@ -2,6 +2,21 @@
 
 [![Front](https://github.com/DGEXSolutions/osrd/actions/workflows/front.yml/badge.svg)](https://github.com/DGEXSolutions/osrd/actions/workflows/front.yml)
 
+## Coding style Policy
+
+### Javascript / Javascript-React
+
+* ESLint is used as linter and prettier as formatter. Both are configured as devDependencies to enforce default eslint configuration eventually overidden by [airbnb rules](https://https://airbnb.io/javascript/) translation. Few rules (see eslintrc) has been disabled and will be re-enabled in the near future):
+   * 'no-named-as-default': 'off',
+   * 'react/jsx-props-no-spreading': 0,
+   * 'react/static-property-placement': 0,
+   * 'import/no-extraneous-dependencies': 0,
+* eslint rules eventualy uncompatible with prettier usage are disabled, yet these styling erros will be shown as prettier issues.
+* Do not set your IDE to auto format with current prettier rules for now, as some old files will be widely updated and less readable for reviewers.
+* Please push commits exclusively dedicated to styling issues
+* _For VSCode Users_: Install [Prettier - Code Formatter Extension](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) and follow instructions.
+
+
 ## Dependencies
 
 ### Cross project

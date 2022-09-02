@@ -4,7 +4,7 @@ module.exports = {
     es6: true,
     jest: true,
   },
-  extends: ['airbnb', 'plugin:react/recommended'],
+  extends: ['airbnb', 'plugin:react/recommended', 'prettier'],
   globals: {
     Atomics: 'readonly',
     SharedArrayBuffer: 'readonly',
@@ -16,7 +16,7 @@ module.exports = {
     ecmaVersion: 2018,
     sourceType: 'module',
   },
-  plugins: ['react', 'babel', 'react-hooks', 'only-warn'],
+  plugins: ['prettier', 'react', 'babel', 'react-hooks', 'only-warn'],
   parser: 'babel-eslint',
   rules: {
     'react/prefer-stateless-function': 'off',
@@ -31,6 +31,7 @@ module.exports = {
     'import/no-extraneous-dependencies': 0,
     'linebreak-style': ['error', 'unix'],
     'jsx-a11y/click-events-have-key-events': 'off',
+    'prettier/prettier': ['warn']
   },
   settings: {
     'import/resolver': {
@@ -44,7 +45,6 @@ module.exports = {
       files: ['**/*.ts', '**/*.tsx'],
       env: { browser: true, es6: true, node: true },
       extends: [
-        'airbnb-typescript-prettier',
         'plugin:react/recommended',
         'plugin:@typescript-eslint/eslint-recommended',
         'plugin:@typescript-eslint/recommended',
