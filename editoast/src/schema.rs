@@ -4,6 +4,7 @@ table! {
         name -> Text,
         version -> Text,
         generated_version -> Nullable<Text>,
+        locked -> Bool,
     }
 }
 
