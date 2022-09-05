@@ -89,7 +89,7 @@ dependencies {
     compileOnly 'net.jcip:jcip-annotations:1.0'  // CC Attribution
     compileOnly group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: '4.7.+'  // LGPLv2.1
     testCompileOnly 'net.jcip:jcip-annotations:1.0'  // CC Attribution
-    testCompileOnly group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: '4.7.0'  // LGPLv2.1
+    testCompileOnly group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: '4.7.2'  // LGPLv2.1
 }
 
 // endregion
