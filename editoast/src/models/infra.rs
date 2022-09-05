@@ -19,6 +19,7 @@ pub struct Infra {
     pub name: String,
     pub version: String,
     pub generated_version: Option<String>,
+    pub locked: bool,
 }
 
 #[derive(Debug, Deserialize)]
@@ -126,8 +127,8 @@ impl Infra {
 
     pub fn create(infra_name: &String, conn: &PgConnection) -> Result<Infra, Box<dyn ApiError>> {
         match sql_query(
-            "INSERT INTO osrd_infra_infra (name, railjson_version, owner, version, generated_version)
-             VALUES ($1, $2, '00000000-0000-0000-0000-000000000000', '0', '0')
+            "INSERT INTO osrd_infra_infra (name, railjson_version, owner, version, generated_version, locked)
+             VALUES ($1, $2, '00000000-0000-0000-0000-000000000000', '0', '0', false)
              RETURNING *",
         )
         .bind::<Text, _>(infra_name)
@@ -143,6 +144,18 @@ impl Infra {
         match delete(osrd_infra_infra.filter(id.eq(infra_id))).execute(conn) {
             Ok(1) => Ok(()),
             Ok(_) => Err(Box::new(InfraError::NotFound(infra_id))),
+            Err(err) => Err(Box::new(InfraError::DieselError(err))),
+        }
+    }
+
+    /// Lock or unlock the infra whether `lock` is true or false
+    pub fn set_locked(&self, lock: bool, conn: &PgConnection) -> Result<Self, Box<dyn ApiError>> {
+        match update(osrd_infra_infra.filter(id.eq(self.id)))
+            .set(locked.eq(lock))
+            .get_result::<Infra>(conn)
+        {
+            Ok(infra) => Ok(infra),
+            Err(DieselError::NotFound) => Err(Box::new(InfraError::NotFound(self.id))),
             Err(err) => Err(Box::new(InfraError::DieselError(err))),
         }
     }

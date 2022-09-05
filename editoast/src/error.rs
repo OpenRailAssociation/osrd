@@ -97,3 +97,22 @@ impl<'f> From<JsonError<'f>> for EditoastError {
         )
     }
 }
+
+pub struct InfraLockedError {
+    pub infra_id: i32,
+}
+
+impl From<InfraLockedError> for EditoastError {
+    fn from(err: InfraLockedError) -> Self {
+        Self::create(
+            "editoast:operation:InfraLocked",
+            "The infra is locked and cannot be edited".to_string(),
+            Status::BadRequest,
+            json!({
+                "infra_id": err.infra_id,
+            })
+            .as_object()
+            .cloned(),
+        )
+    }
+}

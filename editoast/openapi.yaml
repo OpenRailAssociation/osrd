@@ -229,6 +229,39 @@ paths:
                 type: array
                 items:
                   type: integer
+
+  /infra/{id}/lock/:
+    post:
+      tags:
+        - infra
+      summary: Lock an infra from edition
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: infra id
+          required: true
+      responses:
+        204:
+          description: No content
+
+  /infra/{id}/unlock/:
+    post:
+      tags:
+        - infra
+      summary: Unlock an infra from edition
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: infra id
+          required: true
+      responses:
+        204:
+          description: No content
+
 components:
   schemas:
     Infra:

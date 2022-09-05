@@ -1,6 +1,6 @@
 use super::params::List;
 use crate::client::ChartosConfig;
-use crate::error::{ApiResult, EditoastError};
+use crate::error::{ApiResult, EditoastError, InfraLockedError};
 use crate::generate;
 use crate::infra_cache::InfraCache;
 use crate::models::errors::generate_errors;
@@ -23,7 +23,9 @@ pub fn routes() -> Vec<Route> {
         delete,
         refresh,
         list_errors,
-        get_switch_types
+        get_switch_types,
+        lock,
+        unlock
     ]
 }
 
@@ -120,6 +122,11 @@ fn edit(
         // Retrieve and lock infra
         let infra = Infra::retrieve_for_update(&conn, infra as i32)?;
 
+        // Check if the infra is locked
+        if infra.locked {
+            return Err(InfraLockedError { infra_id: infra.id }.into());
+        }
+
         // Apply modifications
         let mut operation_results = vec![];
         for operation in operations.iter() {
@@ -206,6 +213,22 @@ fn get_switch_types(
         Status::Ok,
         Json(infra.switch_types.values().cloned().collect()),
     ))
+}
+
+/// Lock an infra
+#[post("/<infra>/lock")]
+fn lock(infra: i32, conn: DBConnection) -> ApiResult<Custom<JsonValue>> {
+    let infra = Infra::retrieve_for_update(&conn, infra)?;
+    infra.set_locked(true, &conn)?;
+    Ok(Custom(Status::NoContent, json!(null)))
+}
+
+/// Unlock an infra
+#[post("/<infra>/unlock")]
+fn unlock(infra: i32, conn: DBConnection) -> ApiResult<Custom<JsonValue>> {
+    let infra = Infra::retrieve_for_update(&conn, infra)?;
+    infra.set_locked(false, &conn)?;
+    Ok(Custom(Status::NoContent, json!(null)))
 }
 
 #[cfg(test)]
@@ -441,6 +464,54 @@ mod tests {
             serde_json::from_str(body_switch_types.unwrap().as_str()).unwrap();
         assert!(switch_types.len() == 1);
         assert_eq!(switch_types[0].id, switch_type.id);
+
+        let delete_infra = client.delete(format!("/infra/{}", infra.id)).dispatch();
+        assert_eq!(delete_infra.status(), Status::NoContent);
+    }
+
+    #[test]
+    fn infra_lock() {
+        let rocket = create_server(
+            Default::default(),
+            6000,
+            &Default::default(),
+            Default::default(),
+        );
+
+        let client = Client::new(rocket).expect("valid rocket instance");
+
+        let mut create_infra = client
+            .post("/infra")
+            .header(ContentType::JSON)
+            .body(r#"{"name":"lock test"}"#)
+            .dispatch();
+        assert_eq!(create_infra.status(), Status::Created);
+
+        let body_infra = create_infra.body_string();
+        let infra: Infra = serde_json::from_str(body_infra.unwrap().as_str()).unwrap();
+        assert!(!infra.locked);
+
+        let lock_query = client.post(format!("/infra/{}/lock/", infra.id)).dispatch();
+        assert_eq!(lock_query.status(), Status::NoContent);
+
+        let body_infra = client
+            .get(format!("/infra/{}", infra.id))
+            .dispatch()
+            .body_string();
+        let infra: Infra = serde_json::from_str(body_infra.unwrap().as_str()).unwrap();
+        assert!(infra.locked);
+
+        let unlock_query = client
+            .post(format!("/infra/{}/unlock/", infra.id))
+            .dispatch();
+        assert_eq!(unlock_query.status(), Status::NoContent);
+
+        let body_infra = client
+            .get(format!("/infra/{}", infra.id))
+            .dispatch()
+            .body_string();
+        let infra: Infra = serde_json::from_str(body_infra.unwrap().as_str()).unwrap();
+        assert!(!infra.locked);
 
         let delete_infra = client.delete(format!("/infra/{}", infra.id)).dispatch();
         assert_eq!(delete_infra.status(), Status::NoContent);
