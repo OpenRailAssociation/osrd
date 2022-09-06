@@ -69,8 +69,10 @@ enum InfraErrorType {
     NoBufferStop,
     #[serde(rename = "path_is_not_continuous")]
     PathIsNotContinuous,
-    #[serde(rename = "overlapping_objects")]
-    OverlappingObjects { reference: ObjectRef },
+    #[serde(rename = "overlapping_switches")]
+    OverlappingSwitches { reference: ObjectRef },
+    #[serde(rename = "overlapping_track_links")]
+    OverlappingTrackLinks { reference: ObjectRef },
 }
 
 impl InfraError {
@@ -232,11 +234,20 @@ impl InfraError {
         }
     }
 
-    fn new_overlapping_objects<U: AsRef<str>>(obj_id: U, reference: ObjectRef) -> Self {
+    fn new_overlapping_switches<U: AsRef<str>>(obj_id: U, reference: ObjectRef) -> Self {
+        Self {
+            field: Default::default(),
+            is_warning: false,
+            sub_type: InfraErrorType::OverlappingSwitches { reference },
+            obj_id: obj_id.as_ref().into(),
+        }
+    }
+
+    fn new_overlapping_track_links<U: AsRef<str>>(obj_id: U, reference: ObjectRef) -> Self {
         Self {
             field: Default::default(),
             is_warning: true,
-            sub_type: InfraErrorType::OverlappingObjects { reference },
+            sub_type: InfraErrorType::OverlappingTrackLinks { reference },
             obj_id: obj_id.as_ref().into(),
         }
     }
