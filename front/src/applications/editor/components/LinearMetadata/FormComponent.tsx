@@ -58,7 +58,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
   // Compute the JSON schema of the linear metadata item
   const distance = useMemo(
     () =>
-      formContext.geometry.type === 'LineString' ? getLineStringDistance(formContext.geometry) : 0,
+      formContext.geometry?.type === 'LineString' ? getLineStringDistance(formContext.geometry) : 0,
     [formContext.geometry]
   );
 
