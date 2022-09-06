@@ -174,7 +174,6 @@ export default function StdcmRequestModal(props) {
                   </span>
                 </button>
               </div>
-
             </div>
           </ModalBodySNCF>
         </div>
