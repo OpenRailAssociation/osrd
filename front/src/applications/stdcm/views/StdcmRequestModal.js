@@ -6,11 +6,12 @@ import { KEY_VALUES_FOR_CONSOLIDATED_SIMULATION } from 'applications/osrd/views/
 // Generic components
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
+import PropTypes from 'prop-types';
 import ReactModal from 'react-modal';
 // OSRD helpers
 import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/createTrain';
+import fakeSimulation from 'applications/stdcm/fakeSimulation';
 // Static Data and Assets
-import fakeSimulation from '../fakeSimulation';
 import rabbit from 'assets/pictures/KLCW_nc_standard.png';
 import { stdcmRequestStatus } from 'applications/stdcm/views/OSRDSTDCM';
 import { useDispatch } from 'react-redux';
@@ -29,7 +30,6 @@ export default function StdcmRequestModal(props) {
   3 / Manage rejected (400, 501 ?) stdcmRequestStatus.rejected
   4/ manage cancelation from axios inide the 49-50 abort event listener or the l99+ cancelStdcmRequest method
   */
-
 
   // Theses are prop-drilled from OSRDSTDCM Component, which is conductor.
   // Remains fit with one-level limit
@@ -63,31 +63,38 @@ export default function StdcmRequestModal(props) {
     } catch (error) {
       console.log(error);
     }
+    return null;
   };
 
   useEffect(() => {
     if (currentStdcmRequestStatus === stdcmRequestStatus.pending) {
-      stdcmRequest().then((result) => {
-        // Update simu in redux with data;
-        setCurrentStdcmRequestStatus(stdcmRequestStatus.success);
+      stdcmRequest()
+        .then((result) => {
+          // Update simu in redux with data;
+          setCurrentStdcmRequestStatus(stdcmRequestStatus.success);
 
-        // Attention: we need these two object in store to be update. the simulation->consolidated simulaion is usually done by OSRDSimulation, which is bad.
-        const consolidatedSimulation = (
-          createTrain(dispatch, KEY_VALUES_FOR_CONSOLIDATED_SIMULATION, result.trains, t));
-        dispatch(updateConsolidatedSimulation(consolidatedSimulation));
-        dispatch(updateSimulation(result));
+          // Attention: we need these two object in store to be update. the simulation->consolidated simulaion is usually done by OSRDSimulation, which is bad.
+          const consolidatedSimulation = createTrain(
+            dispatch,
+            KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
+            result.trains,
+            t
+          );
+          dispatch(updateConsolidatedSimulation(consolidatedSimulation));
+          dispatch(updateSimulation(result));
 
-        console.log('Accomplished Promise');
-      }).catch((e) => {
-        // Update simu in redux with data;
+          console.log('Accomplished Promise');
+        })
+        .catch((e) => {
+          // Update simu in redux with data;
 
-        setCurrentStdcmRequestStatus(stdcmRequestStatus.rejected);
-        console.log('rejected Promise', e);
-      });
+          setCurrentStdcmRequestStatus(stdcmRequestStatus.rejected);
+          console.log('rejected Promise', e);
+        });
     }
   }, [currentStdcmRequestStatus]);
 
-  const cancelStdcmRequest = (e) => {
+  const cancelStdcmRequest = () => {
     console.log('cancel request');
     // when http ready https://axios-http.com/docs/cancellation
 
@@ -95,20 +102,28 @@ export default function StdcmRequestModal(props) {
     setCurrentStdcmRequestStatus(stdcmRequestStatus.canceled);
 
     const emptySimulation = { trains: [] };
-    const consolidatedSimulation = (
-      createTrain(dispatch, KEY_VALUES_FOR_CONSOLIDATED_SIMULATION, emptySimulation.trains, t));
+    const consolidatedSimulation = createTrain(
+      dispatch,
+      KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
+      emptySimulation.trains,
+      t
+    );
     dispatch(updateConsolidatedSimulation(consolidatedSimulation));
     dispatch(updateSimulation(emptySimulation));
   };
 
-  const simulateNoResults = (e) => {
+  const simulateNoResults = () => {
     console.log('no results');
 
     controller.abort();
 
     const emptySimulation = { trains: [] };
-    const consolidatedSimulation = (
-      createTrain(dispatch, KEY_VALUES_FOR_CONSOLIDATED_SIMULATION, emptySimulation.trains, t));
+    const consolidatedSimulation = createTrain(
+      dispatch,
+      KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
+      emptySimulation.trains,
+      t
+    );
     dispatch(updateConsolidatedSimulation(consolidatedSimulation));
     dispatch(updateSimulation(emptySimulation));
 
@@ -116,7 +131,12 @@ export default function StdcmRequestModal(props) {
   };
 
   return (
-    <ReactModal isOpen={currentStdcmRequestStatus === stdcmRequestStatus.pending} htmlID="stdcmRequestModal" className="modal-dialog-centered" style={{ overlay: { zIndex: 3 } }}>
+    <ReactModal
+      isOpen={currentStdcmRequestStatus === stdcmRequestStatus.pending}
+      htmlID="stdcmRequestModal"
+      className="modal-dialog-centered"
+      style={{ overlay: { zIndex: 3 } }}
+    >
       <div className="modal-dialog" role="document">
         <div className="modal-content">
           <ModalHeaderSNCF>
@@ -127,46 +147,54 @@ export default function StdcmRequestModal(props) {
           </ModalHeaderSNCF>
           <ModalBodySNCF>
             <div className="d-flex flex-column text-center">
-
-              { currentStdcmRequestStatus === stdcmRequestStatus.pending
-          && (
-            <>
-              <div className="">
-                <img src={rabbit} width="50%" />
-              </div>
-              <div className="p-1 text-info">
-                {t('osrdconf:searchingItinerary')}
-              </div>
-              <div className="p-1 text-info">
-                {t('osrdconf:pleaseWait')}
-              </div>
-              <div className="p-1">
-                <div className="spinner-border" role="status">
-                  <span className="sr-only">Loading...</span>
-                </div>
-              </div>
-            </>
-          ) }
+              {currentStdcmRequestStatus === stdcmRequestStatus.pending && (
+                <>
+                  <div className="">
+                    <img src={rabbit} alt="runnning stdcm" width="50%" />
+                  </div>
+                  <div className="p-1 text-info">{t('osrdconf:searchingItinerary')}</div>
+                  <div className="p-1 text-info">{t('osrdconf:pleaseWait')}</div>
+                  <div className="p-1">
+                    <div className="spinner-border" role="status">
+                      <span className="sr-only">Loading...</span>
+                    </div>
+                  </div>
+                </>
+              )}
 
               <div className="text-center p-1">
-                <button className="btn btn-sm btn-primary " type="button" onClick={cancelStdcmRequest}>
+                <button
+                  className="btn btn-sm btn-primary "
+                  type="button"
+                  onClick={cancelStdcmRequest}
+                >
                   {t('osrdconf:cancelRequest')}
-                  <span className="sr-only" aria-hidden="true">{t('osrdconf:cancelRequest')}</span>
+                  <span className="sr-only" aria-hidden="true">
+                    {t('osrdconf:cancelRequest')}
+                  </span>
                 </button>
               </div>
               <div className="text-center p-1">
-                <button className="btn btn-sm btn-primary " type="button" onClick={simulateNoResults}>
+                <button
+                  className="btn btn-sm btn-primary "
+                  type="button"
+                  onClick={simulateNoResults}
+                >
                   SimulateNoResults
-                  <span className="sr-only" aria-hidden="true">SimulateNoResults</span>
+                  <span className="sr-only" aria-hidden="true">
+                    SimulateNoResults
+                  </span>
                 </button>
               </div>
-
             </div>
           </ModalBodySNCF>
         </div>
-
       </div>
-
     </ReactModal>
   );
 }
+
+StdcmRequestModal.propTypes = {
+  setCurrentStdcmRequestStatus: PropTypes.func.isRequired,
+  currentStdcmRequestStatus: PropTypes.string.isRequired,
+};
