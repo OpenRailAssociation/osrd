@@ -136,7 +136,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "jsdoc": "^3.6.11",
     "prettier": "^2.7.1",
-    "react-error-overlay": "6.0.11",
+    "react-error-overlay": "6.0.9",
     "typescript": "~4.8.2"
   },
   "resolutions": {
@@ -149,7 +149,7 @@
     "nth-check": ">=2.0.1",
     "node-forge": ">=1.0.0",
     "semver-regex": ">=4.0.5",
-    "react-error-overlay": "6.0.11",
+    "react-error-overlay": "6.0.9",
     "postcss": "^7.0.0",
     "browserslist": "^4.20.0",
     "marked": ">=4.0.10",
