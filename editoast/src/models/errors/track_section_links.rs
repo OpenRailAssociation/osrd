@@ -36,21 +36,15 @@ pub fn insert_errors(
 pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
     let mut errors = vec![];
 
-    let mut switch_graph: HashMap<&TrackEndpoint, ObjectRef> = HashMap::default();
+    let mut switch_cache = HashMap::<&TrackEndpoint, ObjectRef>::new();
 
     for switch in infra_cache.switches.values() {
-        let switch_type = infra_cache.switch_types.get(&switch.switch_type).unwrap();
         let switch_ref = ObjectRef {
             obj_type: ObjectType::Switch,
             obj_id: switch.obj_id.clone(),
         };
-        for group in switch_type.groups.values() {
-            for connection in group {
-                let src = switch.ports.get(&connection.src).unwrap();
-                let dst = switch.ports.get(&connection.dst).unwrap();
-                switch_graph.insert(src, switch_ref.clone());
-                switch_graph.insert(dst, switch_ref.clone());
-            }
+        for port in switch.ports.values() {
+            switch_cache.insert(port, switch_ref.clone());
         }
     }
 
@@ -72,20 +66,18 @@ pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
             }
         }
 
-        // TODO: check if 2 switch overlapping trigger an error or a warning
-        if switch_graph.contains_key(&link.src) {
-            let infra_error = InfraError::new_overlapping_objects(
+        if switch_cache.contains_key(&link.src) {
+            errors.push(InfraError::new_overlapping_track_links(
                 link_id.clone(),
-                switch_graph.get(&link.src).unwrap().clone().to_owned(),
-            );
-            errors.push(infra_error);
+                switch_cache.get(&link.src).unwrap().clone().to_owned(),
+            ));
         } else {
             let link_ref = ObjectRef {
                 obj_type: ObjectType::TrackSectionLink,
                 obj_id: link.id.clone(),
             };
-            switch_graph.insert(&link.src, link_ref.clone());
-            switch_graph.insert(&link.dst, link_ref.clone());
+            switch_cache.insert(&link.src, link_ref.clone());
+            switch_cache.insert(&link.dst, link_ref.clone());
         }
     }
 
@@ -151,7 +143,7 @@ mod tests {
             obj_type: ObjectType::Switch,
             obj_id: "switch".into(),
         };
-        let infra_error = InfraError::new_overlapping_objects("link_error", obj_ref);
+        let infra_error = InfraError::new_overlapping_track_links("link_error", obj_ref);
         assert_eq!(infra_error, errors[0]);
     }
 
