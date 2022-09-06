@@ -54,6 +54,11 @@ class InvalidSwitchPorts(InfraErrorTrait):
     error_type: Literal["invalid_switch_ports"] = Field(default="invalid_switch_ports")
 
 
+class OverlappingSwitches(InfraErrorTrait):
+    error_type: Literal["overlapping_switches"] = Field(default="overlapping_switches")
+    reference: infra.ObjectReference
+
+
 # Warnings
 class EmptyObject(InfraWarningTrait):
     error_type: Literal["empty_object"] = Field(default="empty_object")
@@ -77,8 +82,8 @@ class NoBufferStop(InfraWarningTrait):
     error_type: Literal["no_buffer_stop"] = Field(default="no_buffer_stop")
 
 
-class OverlappingObjects(InfraWarningTrait):
-    error_type: Literal["overlapping_objects"] = Field(default="overlapping_objects")
+class OverlappingTrackLinks(InfraWarningTrait):
+    error_type: Literal["overlapping_track_links"] = Field(default="overlapping_track_links")
     reference: infra.ObjectReference
 
 
@@ -97,5 +102,6 @@ class InfraError(BaseModel):
         UnusedPort,
         DuplicatedGroup,
         NoBufferStop,
-        OverlappingObjects,
+        OverlappingSwitches,
+        OverlappingTrackLinks,
     ] = Field(discriminator="error_type")
