@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use crate::layer::Layer;
+
 use super::generate_id;
 use super::ApplicableDirectionsTrackRange;
 use super::OSRDObject;
@@ -20,10 +22,32 @@ pub struct SpeedSection {
 }
 
 impl OSRDObject for SpeedSection {
-    fn get_id(&self) -> String {
-        self.id.clone()
+    fn get_id(&self) -> &String {
+        &self.id
     }
     fn get_type(&self) -> ObjectType {
+        ObjectType::SpeedSection
+    }
+}
+
+impl Layer for SpeedSection {
+    fn get_table_name() -> &'static str {
+        "osrd_infra_speedsectionlayer"
+    }
+
+    fn generate_layer_query() -> &'static str {
+        include_str!("../layer/sql/generate_speed_section_layer.sql")
+    }
+
+    fn insert_update_layer_query() -> &'static str {
+        include_str!("../layer/sql/insert_speed_section_layer.sql")
+    }
+
+    fn layer_name() -> &'static str {
+        "speed_sections"
+    }
+
+    fn get_obj_type() -> ObjectType {
         ObjectType::SpeedSection
     }
 }

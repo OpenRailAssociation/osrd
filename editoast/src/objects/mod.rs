@@ -30,7 +30,7 @@ pub use track_section::{LineString, TrackSection};
 pub use track_section_link::TrackSectionLink;
 
 pub trait OSRDObject {
-    fn get_id(&self) -> String;
+    fn get_id(&self) -> &String;
     fn get_type(&self) -> ObjectType;
 }
 

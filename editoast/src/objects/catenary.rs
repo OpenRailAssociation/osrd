@@ -1,3 +1,5 @@
+use crate::layer::Layer;
+
 use super::generate_id;
 use super::ApplicableDirectionsTrackRange;
 use super::OSRDObject;
@@ -20,7 +22,29 @@ impl OSRDObject for Catenary {
         ObjectType::Catenary
     }
 
-    fn get_id(&self) -> String {
-        self.id.clone()
+    fn get_id(&self) -> &String {
+        &self.id
+    }
+}
+
+impl Layer for Catenary {
+    fn get_table_name() -> &'static str {
+        "osrd_infra_catenarylayer"
+    }
+
+    fn generate_layer_query() -> &'static str {
+        include_str!("../layer/sql/generate_catenary_layer.sql")
+    }
+
+    fn insert_update_layer_query() -> &'static str {
+        include_str!("../layer/sql/insert_catenary_layer.sql")
+    }
+
+    fn layer_name() -> &'static str {
+        "catenaries"
+    }
+
+    fn get_obj_type() -> ObjectType {
+        ObjectType::Catenary
     }
 }

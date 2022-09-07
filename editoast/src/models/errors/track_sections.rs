@@ -1,7 +1,7 @@
 use super::graph::Graph;
 use super::InfraError;
 use crate::infra_cache::InfraCache;
-use crate::railjson::ObjectType;
+use crate::objects::ObjectType;
 use diesel::result::Error as DieselError;
 use diesel::sql_types::{Array, Integer, Json, Text};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
@@ -74,7 +74,7 @@ mod tests {
     use crate::{
         infra_cache::tests::create_small_infra_cache,
         models::errors::graph::Graph,
-        railjson::{ObjectRef, ObjectType},
+        objects::{ObjectRef, ObjectType},
     };
 
     use super::generate_errors;

@@ -1,8 +1,14 @@
-use crate::models::BoundingBox;
+use std::collections::HashSet;
+
+use crate::layer::BoundingBox;
+use crate::layer::Layer;
 
 use super::generate_id;
+use super::operation::OperationResult;
+use super::operation::RailjsonObject;
 use super::ApplicableDirections;
 use super::OSRDObject;
+use super::ObjectRef;
 use super::ObjectType;
 use derivative::Derivative;
 use serde::{Deserialize, Serialize};
@@ -30,8 +36,8 @@ pub struct TrackSection {
 }
 
 impl OSRDObject for TrackSection {
-    fn get_id(&self) -> String {
-        self.id.clone()
+    fn get_id(&self) -> &String {
+        &self.id
     }
 
     fn get_type(&self) -> ObjectType {
@@ -117,9 +123,74 @@ impl LineString {
     }
 }
 
+impl Layer for TrackSection {
+    fn get_table_name() -> &'static str {
+        "osrd_infra_tracksectionlayer"
+    }
+
+    fn generate_layer_query() -> &'static str {
+        include_str!("../layer/sql/generate_track_section_layer.sql")
+    }
+
+    fn insert_update_layer_query() -> &'static str {
+        include_str!("../layer/sql/insert_update_track_section_layer.sql")
+    }
+
+    fn layer_name() -> &'static str {
+        "track_sections"
+    }
+
+    fn get_obj_type() -> ObjectType {
+        ObjectType::TrackSection
+    }
+
+    fn update(
+        conn: &diesel::PgConnection,
+        infra: i32,
+        operations: &Vec<super::operation::OperationResult>,
+        _: &crate::infra_cache::InfraCache,
+        invalid_zone: &crate::layer::InvalidationZone,
+        chartos_config: &crate::client::ChartosConfig,
+    ) -> Result<(), diesel::result::Error> {
+        let mut update_obj_ids = HashSet::new();
+        let mut delete_obj_ids = HashSet::new();
+        for op in operations {
+            match op {
+                OperationResult::Create(RailjsonObject::TrackSection { railjson })
+                | OperationResult::Update(RailjsonObject::TrackSection { railjson }) => {
+                    update_obj_ids.insert(&railjson.id);
+                }
+                OperationResult::Delete(ObjectRef {
+                    obj_type: ObjectType::TrackSection,
+                    obj_id: track_id,
+                }) => {
+                    delete_obj_ids.insert(track_id);
+                }
+                _ => (),
+            }
+        }
+        if update_obj_ids.is_empty() && delete_obj_ids.is_empty() {
+            // No update needed
+            return Ok(());
+        }
+
+        Self::delete_list(conn, infra, delete_obj_ids)?;
+        Self::insert_update_list(conn, infra, update_obj_ids)?;
+
+        crate::layer::invalidate_bbox_chartos_layer(
+            infra,
+            Self::layer_name(),
+            invalid_zone,
+            chartos_config,
+        );
+
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::models::BoundingBox;
+    use crate::layer::BoundingBox;
 
     use super::LineString::LineString;
 

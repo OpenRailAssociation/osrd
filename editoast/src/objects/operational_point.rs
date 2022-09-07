@@ -1,3 +1,5 @@
+use crate::layer::Layer;
+
 use super::generate_id;
 use super::OSRDObject;
 use super::ObjectRef;
@@ -26,8 +28,8 @@ impl OSRDObject for OperationalPoint {
         ObjectType::OperationalPoint
     }
 
-    fn get_id(&self) -> String {
-        self.id.clone()
+    fn get_id(&self) -> &String {
+        &self.id
     }
 }
 
@@ -37,4 +39,26 @@ impl OSRDObject for OperationalPoint {
 pub struct OperationalPointPart {
     pub track: ObjectRef,
     pub position: f64,
+}
+
+impl Layer for OperationalPoint {
+    fn get_table_name() -> &'static str {
+        "osrd_infra_operationalpointlayer"
+    }
+
+    fn generate_layer_query() -> &'static str {
+        include_str!("../layer/sql/generate_operational_point_layer.sql")
+    }
+
+    fn insert_update_layer_query() -> &'static str {
+        include_str!("../layer/sql/insert_operational_point_layer.sql")
+    }
+
+    fn layer_name() -> &'static str {
+        "operational_points"
+    }
+
+    fn get_obj_type() -> ObjectType {
+        ObjectType::OperationalPoint
+    }
 }

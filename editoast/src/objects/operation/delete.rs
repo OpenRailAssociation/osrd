@@ -1,7 +1,7 @@
 use super::OperationError;
 use crate::error::ApiError;
-use crate::railjson::ObjectRef;
-use crate::railjson::ObjectType;
+use crate::objects::ObjectRef;
+use crate::objects::ObjectType;
 use diesel::sql_types::{Integer, Text};
 use diesel::RunQueryDsl;
 use diesel::{sql_query, PgConnection};
@@ -55,12 +55,12 @@ impl From<ObjectRef> for DeleteOperation {
 #[cfg(test)]
 mod tests {
     use crate::models::infra::tests::test_transaction;
-    use crate::railjson::operation::create::tests::{
+    use crate::objects::operation::create::tests::{
         create_buffer_stop, create_catenary, create_detector, create_link, create_op, create_route,
         create_signal, create_speed, create_switch, create_track,
     };
-    use crate::railjson::operation::delete::DeleteOperation;
-    use crate::railjson::{OSRDObject, Referable};
+    use crate::objects::operation::delete::DeleteOperation;
+    use crate::objects::{OSRDObject, Referable};
     use diesel::sql_types::BigInt;
     use diesel::{sql_query, RunQueryDsl};
 
