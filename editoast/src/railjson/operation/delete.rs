@@ -60,6 +60,7 @@ mod tests {
         create_signal, create_speed, create_switch, create_track,
     };
     use crate::railjson::operation::delete::DeleteOperation;
+    use crate::railjson::{OSRDObject, Referable};
     use diesel::sql_types::BigInt;
     use diesel::{sql_query, RunQueryDsl};
 
@@ -80,7 +81,7 @@ mod tests {
 
             let res_del = sql_query(format!(
                 "SELECT COUNT (*) AS nb FROM osrd_infra_tracksectionmodel WHERE obj_id = '{}' AND infra_id = {}",
-                track.get_obj_id(),
+                track.get_id(),
                 infra.id
             ))
             .get_result::<Count>(conn).unwrap();
@@ -100,7 +101,7 @@ mod tests {
 
             let res_del = sql_query(format!(
                 "SELECT COUNT (*) AS nb FROM osrd_infra_signalmodel WHERE obj_id = '{}' AND infra_id = {}",
-                signal.get_obj_id(),
+                signal.get_id(),
                 infra.id
             ))
             .get_result::<Count>(conn).unwrap();
@@ -120,7 +121,7 @@ mod tests {
 
             let res_del = sql_query(format!(
                 "SELECT COUNT (*) AS nb FROM osrd_infra_speedsectionmodel WHERE obj_id = '{}' AND infra_id = {}",
-                speed.get_obj_id(),
+                speed.get_id(),
                 infra.id
             ))
             .get_result::<Count>(conn).unwrap();
@@ -140,7 +141,7 @@ mod tests {
 
             let res_del = sql_query(format!(
                 "SELECT COUNT (*) AS nb FROM osrd_infra_tracksectionlinkmodel WHERE obj_id = '{}' AND infra_id = {}",
-                link.get_obj_id(),
+                link.get_id(),
                 infra.id
             ))
             .get_result::<Count>(conn).unwrap();
@@ -160,7 +161,7 @@ mod tests {
 
             let res_del = sql_query(format!(
                 "SELECT COUNT (*) AS nb FROM osrd_infra_switchmodel WHERE obj_id = '{}' AND infra_id = {}",
-                switch.get_obj_id(),
+                switch.get_id(),
                 infra.id
             ))
             .get_result::<Count>(conn).unwrap();
@@ -180,7 +181,7 @@ mod tests {
 
             let res_del = sql_query(format!(
                 "SELECT COUNT (*) AS nb FROM osrd_infra_detectormodel WHERE obj_id = '{}' AND infra_id = {}",
-                detector.get_obj_id(),
+                detector.get_id(),
                 infra.id
             ))
             .get_result::<Count>(conn).unwrap();
@@ -200,7 +201,7 @@ mod tests {
 
             let res_del = sql_query(format!(
                 "SELECT COUNT (*) AS nb FROM osrd_infra_bufferstopmodel WHERE obj_id = '{}' AND infra_id = {}",
-                buffer_stop.get_obj_id(),
+                buffer_stop.get_id(),
                 infra.id
             ))
             .get_result::<Count>(conn).unwrap();
@@ -220,7 +221,7 @@ mod tests {
 
             let res_del = sql_query(format!(
                 "SELECT COUNT (*) AS nb FROM osrd_infra_routemodel WHERE obj_id = '{}' AND infra_id = {}",
-                route.get_obj_id(),
+                route.get_id(),
                 infra.id
             ))
             .get_result::<Count>(conn).unwrap();
@@ -240,7 +241,7 @@ mod tests {
 
             let res_del = sql_query(format!(
                 "SELECT COUNT (*) AS nb FROM osrd_infra_operationalpointmodel WHERE obj_id = '{}' AND infra_id = {}",
-                op.get_obj_id(),
+                op.get_id(),
                 infra.id
             ))
             .get_result::<Count>(conn).unwrap();
@@ -260,7 +261,7 @@ mod tests {
 
             let res_del = sql_query(format!(
                 "SELECT COUNT (*) AS nb FROM osrd_infra_catenarymodel WHERE obj_id = '{}' AND infra_id = {}",
-                catenary.get_obj_id(),
+                catenary.get_id(),
                 infra.id
             ))
             .get_result::<Count>(conn).unwrap();

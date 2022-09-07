@@ -99,7 +99,7 @@ mod tests {
         ));
         let errors = generate_errors(&infra_cache);
         assert_eq!(1, errors.len());
-        let obj_ref = ObjectRef::new(ObjectType::TrackSection, "E".into());
+        let obj_ref = ObjectRef::new(ObjectType::TrackSection, "E");
         let infra_error =
             InfraError::new_invalid_reference("SW_error", "ports.BASE.track", obj_ref);
         assert_eq!(infra_error, errors[0]);
@@ -117,7 +117,7 @@ mod tests {
         ));
         let errors = generate_errors(&infra_cache);
         assert_eq!(1, errors.len());
-        let obj_ref = ObjectRef::new(ObjectType::SwitchType, "non_existing_switch_type".into());
+        let obj_ref = ObjectRef::new(ObjectType::SwitchType, "non_existing_switch_type");
         let infra_error = InfraError::new_invalid_reference("SW_error", "switch_type", obj_ref);
         assert_eq!(infra_error, errors[0]);
     }
