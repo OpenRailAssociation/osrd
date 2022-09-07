@@ -14,7 +14,7 @@ use diesel::sql_query;
 use diesel::sql_types::{Array, Integer, Text};
 use std::collections::HashSet;
 
-pub trait Layer: OSRDObject {
+pub trait Layer {
     fn get_table_name() -> &'static str;
     fn generate_layer_query() -> &'static str;
     fn insert_update_layer_query() -> &'static str;
