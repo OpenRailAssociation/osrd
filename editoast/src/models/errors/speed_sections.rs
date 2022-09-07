@@ -90,7 +90,7 @@ mod tests {
         infra_cache.load_speed_section(create_speed_section_cache("SP_error", track_ranges_error));
         let errors = generate_errors(&infra_cache);
         assert_eq!(1, errors.len());
-        let obj_ref = ObjectRef::new(ObjectType::TrackSection, "E".into());
+        let obj_ref = ObjectRef::new(ObjectType::TrackSection, "E");
         let infra_error = InfraError::new_invalid_reference("SP_error", "track_ranges.1", obj_ref);
         assert_eq!(infra_error, errors[0]);
     }

@@ -83,7 +83,7 @@ mod tests {
     #[test]
     fn missing_route() {
         let mut infra_cache = create_small_infra_cache();
-        let obj_ref = ObjectRef::new(ObjectType::Route, "R1".into());
+        let obj_ref = ObjectRef::new(ObjectType::Route, "R1");
         infra_cache.apply_delete(&obj_ref);
         let graph = Graph::load(&infra_cache);
         let errors = generate_errors(&infra_cache, &graph);
@@ -95,7 +95,7 @@ mod tests {
     #[test]
     fn missing_buffer_stop() {
         let mut infra_cache = create_small_infra_cache();
-        let obj_ref = ObjectRef::new(ObjectType::BufferStop, "BF1".into());
+        let obj_ref = ObjectRef::new(ObjectType::BufferStop, "BF1");
         infra_cache.apply_delete(&obj_ref);
         let graph = Graph::load(&infra_cache);
         let errors = generate_errors(&infra_cache, &graph);

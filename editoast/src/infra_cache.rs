@@ -815,7 +815,7 @@ pub mod tests {
     };
     use crate::railjson::{
         ApplicableDirections, ApplicableDirectionsTrackRange, Catenary, Direction,
-        DirectionalTrackRange, Endpoint, ObjectRef, ObjectType, OperationalPoint,
+        DirectionalTrackRange, Endpoint, OSRDObject, ObjectRef, ObjectType, OperationalPoint,
         OperationalPointPart, Route, SpeedSection, Switch, SwitchPortConnection, SwitchType,
         TrackEndpoint, TrackSectionLink,
     };
@@ -833,7 +833,7 @@ pub mod tests {
             let track = create_track(conn, infra.id, Default::default());
             let infra_cache = InfraCache::load(conn, infra.id);
             assert_eq!(infra_cache.track_sections.len(), 1);
-            assert!(infra_cache.track_sections.contains_key(&track.get_obj_id()));
+            assert!(infra_cache.track_sections.contains_key(&track.get_id()));
         });
     }
 
@@ -844,7 +844,7 @@ pub mod tests {
 
             let infra_cache = InfraCache::load(conn, infra.id);
 
-            assert!(infra_cache.signals.contains_key(&signal.get_obj_id()));
+            assert!(infra_cache.signals.contains_key(&signal.get_id()));
             let refs = infra_cache.track_sections_refs;
             assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
         })
@@ -864,7 +864,7 @@ pub mod tests {
 
             let infra_cache = InfraCache::load(conn, infra.id);
 
-            assert!(infra_cache.speed_sections.contains_key(&speed.get_obj_id()));
+            assert!(infra_cache.speed_sections.contains_key(&speed.get_id()));
             let refs = infra_cache.track_sections_refs;
             assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
         })
@@ -884,7 +884,7 @@ pub mod tests {
 
             let infra_cache = InfraCache::load(conn, infra.id);
 
-            assert!(infra_cache.routes.contains_key(&route.get_obj_id()));
+            assert!(infra_cache.routes.contains_key(&route.get_id()));
             let refs = infra_cache.track_sections_refs;
             assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
         })
@@ -904,9 +904,7 @@ pub mod tests {
 
             let infra_cache = InfraCache::load(conn, infra.id);
 
-            assert!(infra_cache
-                .operational_points
-                .contains_key(&op.get_obj_id()));
+            assert!(infra_cache.operational_points.contains_key(&op.get_id()));
             let refs = infra_cache.track_sections_refs;
             assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
         })
@@ -917,9 +915,7 @@ pub mod tests {
         test_transaction(|conn, infra| {
             let link = create_link(conn, infra.id, Default::default());
             let infra_cache = InfraCache::load(conn, infra.id);
-            assert!(infra_cache
-                .track_section_links
-                .contains_key(&link.get_obj_id()));
+            assert!(infra_cache.track_section_links.contains_key(&link.get_id()));
         })
     }
 
@@ -935,7 +931,7 @@ pub mod tests {
                 },
             );
             let infra_cache = InfraCache::load(conn, infra.id);
-            assert!(infra_cache.switches.contains_key(&switch.get_obj_id()));
+            assert!(infra_cache.switches.contains_key(&switch.get_id()));
         })
     }
 
@@ -944,7 +940,7 @@ pub mod tests {
         test_transaction(|conn, infra| {
             let s_type = create_switch_type(conn, infra.id, Default::default());
             let infra_cache = InfraCache::load(conn, infra.id);
-            assert!(infra_cache.switch_types.contains_key(&s_type.get_obj_id()));
+            assert!(infra_cache.switch_types.contains_key(&s_type.get_id()));
         })
     }
 
@@ -955,7 +951,7 @@ pub mod tests {
 
             let infra_cache = InfraCache::load(conn, infra.id);
 
-            assert!(infra_cache.detectors.contains_key(&detector.get_obj_id()));
+            assert!(infra_cache.detectors.contains_key(&detector.get_id()));
             let refs = infra_cache.track_sections_refs;
             assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
         })
@@ -968,7 +964,7 @@ pub mod tests {
 
             let infra_cache = InfraCache::load(conn, infra.id);
 
-            assert!(infra_cache.buffer_stops.contains_key(&bs.get_obj_id()));
+            assert!(infra_cache.buffer_stops.contains_key(&bs.get_id()));
             let refs = infra_cache.track_sections_refs;
             assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
         })
@@ -988,7 +984,7 @@ pub mod tests {
 
             let infra_cache = InfraCache::load(conn, infra.id);
 
-            assert!(infra_cache.catenaries.contains_key(&catenary.get_obj_id()));
+            assert!(infra_cache.catenaries.contains_key(&catenary.get_id()));
             let refs = infra_cache.track_sections_refs;
             assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
         })
@@ -1053,10 +1049,7 @@ pub mod tests {
         OperationalPointCache {
             obj_id: obj_id.as_ref().into(),
             parts: vec![OperationalPointPart {
-                track: ObjectRef {
-                    obj_type: ObjectType::TrackSection,
-                    obj_id: track.as_ref().into(),
-                },
+                track: ObjectRef::new(ObjectType::TrackSection, track.as_ref()),
                 position,
             }],
         }

@@ -88,7 +88,7 @@ mod tests {
         infra_cache.load_operational_point(create_operational_point_cache("OP_error", "E", 250.));
         let errors = generate_errors(&infra_cache);
         assert_eq!(1, errors.len());
-        let obj_ref = ObjectRef::new(ObjectType::TrackSection, "E".into());
+        let obj_ref = ObjectRef::new(ObjectType::TrackSection, "E");
         let infra_error = InfraError::new_invalid_reference("OP_error", "parts.0.track", obj_ref);
         assert_eq!(infra_error, errors[0]);
     }
