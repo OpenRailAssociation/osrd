@@ -2,8 +2,8 @@ use diesel::sql_types::{Array, Integer, Json, Text};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
 
 use super::InfraError;
-use crate::railjson::ObjectType;
-use crate::{infra_cache::InfraCache, railjson::ObjectRef};
+use crate::objects::ObjectType;
+use crate::{infra_cache::InfraCache, objects::ObjectRef};
 use diesel::result::Error as DieselError;
 use serde_json::to_value;
 
@@ -67,7 +67,7 @@ mod tests {
     use super::InfraError;
     use crate::{
         infra_cache::tests::{create_buffer_stop_cache, create_small_infra_cache},
-        railjson::{ObjectRef, ObjectType},
+        objects::{ObjectRef, ObjectType},
     };
 
     #[test]

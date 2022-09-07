@@ -1,7 +1,7 @@
 use super::OperationError;
 use crate::error::ApiError;
-use crate::railjson::operation::RailjsonObject;
-use crate::railjson::{OSRDObject, ObjectType};
+use crate::objects::operation::RailjsonObject;
+use crate::objects::{OSRDObject, ObjectType};
 use diesel::sql_types::{Integer, Json, Jsonb, Text};
 use diesel::{sql_query, PgConnection, QueryableByName, RunQueryDsl};
 use json_patch::Patch;
@@ -104,7 +104,7 @@ impl DataObject {
             },
         };
 
-        if obj_railjson.get_id() != update.obj_id {
+        if obj_railjson.get_id() != &update.obj_id {
             return Err(Box::new(OperationError::ModifyId));
         }
         Ok(obj_railjson)
@@ -116,9 +116,9 @@ mod tests {
     use super::UpdateOperation;
     use crate::error::ApiError;
     use crate::models::infra::tests::test_transaction;
-    use crate::railjson::operation::create::tests::{create_signal, create_speed, create_track};
-    use crate::railjson::operation::OperationError;
-    use crate::railjson::{OSRDObject, ObjectType};
+    use crate::objects::operation::create::tests::{create_signal, create_speed, create_track};
+    use crate::objects::operation::OperationError;
+    use crate::objects::{OSRDObject, ObjectType};
     use diesel::sql_query;
     use diesel::sql_types::{Double, Text};
     use diesel::RunQueryDsl;
@@ -142,7 +142,7 @@ mod tests {
             let track = create_track(conn, infra.id, Default::default());
 
             let update_track = UpdateOperation {
-                obj_id: track.get_id(),
+                obj_id: track.get_id().clone(),
                 obj_type: ObjectType::TrackSection,
                 railjson_patch: from_str(
                     r#"[
@@ -171,7 +171,7 @@ mod tests {
             let track = create_track(conn, infra.id, Default::default());
 
             let update_track = UpdateOperation {
-                obj_id: track.get_id(),
+                obj_id: track.get_id().clone(),
                 obj_type: ObjectType::TrackSection,
                 railjson_patch: from_str(
                     r#"[
@@ -197,7 +197,7 @@ mod tests {
             let signal = create_signal(conn, infra.id, Default::default());
 
             let update_signal = UpdateOperation {
-                obj_id: signal.get_id(),
+                obj_id: signal.get_id().clone(),
                 obj_type: ObjectType::Signal,
                 railjson_patch: from_str(
                     r#"[
@@ -226,7 +226,7 @@ mod tests {
             let signal = create_signal(conn, infra.id, Default::default());
 
             let update_signal = UpdateOperation {
-                obj_id: signal.get_id(),
+                obj_id: signal.get_id().clone(),
                 obj_type: ObjectType::Signal,
                 railjson_patch: from_str(
                     r#"[
@@ -255,7 +255,7 @@ mod tests {
             let speed = create_speed(conn, infra.id, Default::default());
 
             let update_speed = UpdateOperation {
-                obj_id: speed.get_id(),
+                obj_id: speed.get_id().clone(),
                 obj_type: ObjectType::SpeedSection,
                 railjson_patch: from_str(
                     r#"[

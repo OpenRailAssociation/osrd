@@ -1,3 +1,5 @@
+use crate::layer::Layer;
+
 use super::generate_id;
 use super::Direction;
 use super::OSRDObject;
@@ -43,8 +45,8 @@ impl OSRDObject for Signal {
         ObjectType::Signal
     }
 
-    fn get_id(&self) -> String {
-        self.id.clone()
+    fn get_id(&self) -> &String {
+        &self.id
     }
 }
 
@@ -58,4 +60,26 @@ pub enum Side {
     #[serde(rename = "CENTER")]
     #[derivative(Default)]
     Center,
+}
+
+impl Layer for Signal {
+    fn get_table_name() -> &'static str {
+        "osrd_infra_signallayer"
+    }
+
+    fn generate_layer_query() -> &'static str {
+        include_str!("../layer/sql/generate_signal_layer.sql")
+    }
+
+    fn insert_update_layer_query() -> &'static str {
+        include_str!("../layer/sql/insert_update_signal_layer.sql")
+    }
+
+    fn layer_name() -> &'static str {
+        "signals"
+    }
+
+    fn get_obj_type() -> ObjectType {
+        ObjectType::Signal
+    }
 }

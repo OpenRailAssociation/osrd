@@ -15,11 +15,10 @@ use diesel::{sql_query, sql_types::Integer, PgConnection, RunQueryDsl};
 use serde::{Deserialize, Serialize};
 
 use crate::client::ChartosConfig;
-use crate::{infra_cache::InfraCache, railjson::ObjectRef};
+use crate::layer::invalidate_chartos_layer;
+use crate::{infra_cache::InfraCache, objects::ObjectRef};
 
 use self::routes::PathEndpointField;
-
-use super::invalidate_chartos_layer;
 
 use graph::Graph;
 
