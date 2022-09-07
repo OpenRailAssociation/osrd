@@ -8,8 +8,8 @@ use strum_macros::EnumIter;
 
 use super::graph::Graph;
 use super::InfraError;
-use crate::railjson::{Direction, DirectionalTrackRange, ObjectType, Route};
-use crate::{infra_cache::InfraCache, railjson::ObjectRef};
+use crate::objects::{Direction, DirectionalTrackRange, ObjectType, Route};
+use crate::{infra_cache::InfraCache, objects::ObjectRef};
 use diesel::result::Error as DieselError;
 use serde_json::to_value;
 
@@ -290,7 +290,7 @@ mod tests {
     use crate::{
         infra_cache::tests::{create_detector_cache, create_route_cache, create_small_infra_cache},
         models::errors::{graph::Graph, routes::PathEndpointField},
-        railjson::{Direction, ObjectRef, ObjectType},
+        objects::{Direction, ObjectRef, ObjectType},
     };
 
     use super::generate_errors;

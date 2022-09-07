@@ -1,21 +1,16 @@
 use crate::client::ChartosConfig;
 use crate::error::ApiError;
 use crate::infra_cache::InfraCache;
+use crate::layer::InvalidationZone;
+use crate::layer::Layer;
 use crate::models::errors::generate_errors;
-use crate::models::BufferStopLayer;
-use crate::models::CatenaryLayer;
 use crate::models::DBConnection;
-use crate::models::DetectorLayer;
 use crate::models::Infra;
-use crate::models::InvalidationZone;
-use crate::models::OperationalPointLayer;
-use crate::models::RouteLayer;
-use crate::models::SignalLayer;
-use crate::models::SpeedSectionLayer;
-use crate::models::SwitchLayer;
-use crate::models::TrackSectionLayer;
-use crate::models::TrackSectionLinkLayer;
-use crate::railjson::operation::OperationResult;
+use crate::objects::operation::OperationResult;
+use crate::objects::{
+    BufferStop, Catenary, Detector, OperationalPoint, Route, Signal, SpeedSection, Switch,
+    TrackSection, TrackSectionLink,
+};
 use diesel::PgConnection;
 
 /// Refreshes layers if not up to date and returns whether they were refreshed.
@@ -36,16 +31,16 @@ pub fn refresh(
     }
 
     // Generate layers
-    TrackSectionLayer::refresh(conn, infra.id, chartos_config)?;
-    SignalLayer::refresh(conn, infra.id, chartos_config)?;
-    SpeedSectionLayer::refresh(conn, infra.id, chartos_config)?;
-    TrackSectionLinkLayer::refresh(conn, infra.id, chartos_config)?;
-    SwitchLayer::refresh(conn, infra.id, chartos_config)?;
-    DetectorLayer::refresh(conn, infra.id, chartos_config)?;
-    BufferStopLayer::refresh(conn, infra.id, chartos_config)?;
-    RouteLayer::refresh(conn, infra.id, chartos_config)?;
-    OperationalPointLayer::refresh(conn, infra.id, chartos_config)?;
-    CatenaryLayer::refresh(conn, infra.id, chartos_config)?;
+    TrackSection::refresh(conn, infra.id, chartos_config)?;
+    Signal::refresh(conn, infra.id, chartos_config)?;
+    SpeedSection::refresh(conn, infra.id, chartos_config)?;
+    TrackSectionLink::refresh(conn, infra.id, chartos_config)?;
+    Switch::refresh(conn, infra.id, chartos_config)?;
+    Detector::refresh(conn, infra.id, chartos_config)?;
+    BufferStop::refresh(conn, infra.id, chartos_config)?;
+    Route::refresh(conn, infra.id, chartos_config)?;
+    OperationalPoint::refresh(conn, infra.id, chartos_config)?;
+    Catenary::refresh(conn, infra.id, chartos_config)?;
 
     // Generate errors
     generate_errors(conn, infra.id, infra_cache, chartos_config)?;
@@ -64,16 +59,16 @@ pub fn update(
     zone: &InvalidationZone,
     chartos_config: &ChartosConfig,
 ) -> Result<(), Box<dyn ApiError>> {
-    TrackSectionLayer::update(conn, infra_id, operations, zone, chartos_config)?;
-    SignalLayer::update(conn, infra_id, operations, cache, zone, chartos_config)?;
-    SpeedSectionLayer::update(conn, infra_id, operations, cache, zone, chartos_config)?;
-    TrackSectionLinkLayer::update(conn, infra_id, operations, cache, zone, chartos_config)?;
-    SwitchLayer::update(conn, infra_id, operations, cache, zone, chartos_config)?;
-    DetectorLayer::update(conn, infra_id, operations, cache, zone, chartos_config)?;
-    BufferStopLayer::update(conn, infra_id, operations, cache, zone, chartos_config)?;
-    RouteLayer::update(conn, infra_id, operations, cache, zone, chartos_config)?;
-    OperationalPointLayer::update(conn, infra_id, operations, cache, zone, chartos_config)?;
-    CatenaryLayer::update(conn, infra_id, operations, cache, zone, chartos_config)?;
+    TrackSection::update(conn, infra_id, operations, cache, zone, chartos_config)?;
+    Signal::update(conn, infra_id, operations, cache, zone, chartos_config)?;
+    SpeedSection::update(conn, infra_id, operations, cache, zone, chartos_config)?;
+    TrackSectionLink::update(conn, infra_id, operations, cache, zone, chartos_config)?;
+    Switch::update(conn, infra_id, operations, cache, zone, chartos_config)?;
+    Detector::update(conn, infra_id, operations, cache, zone, chartos_config)?;
+    BufferStop::update(conn, infra_id, operations, cache, zone, chartos_config)?;
+    Route::update(conn, infra_id, operations, cache, zone, chartos_config)?;
+    OperationalPoint::update(conn, infra_id, operations, cache, zone, chartos_config)?;
+    Catenary::update(conn, infra_id, operations, cache, zone, chartos_config)?;
 
     Ok(())
 }

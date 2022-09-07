@@ -1,5 +1,5 @@
 use crate::error::ApiError;
-use crate::railjson::{
+use crate::objects::{
     BufferStop, Catenary, Detector, OSRDObject, ObjectType, OperationalPoint, Route, Signal,
     SpeedSection, Switch, SwitchType, TrackSection, TrackSectionLink,
 };
@@ -48,7 +48,7 @@ pub fn apply_create_operation(
 }
 
 impl OSRDObject for RailjsonObject {
-    fn get_id(&self) -> String {
+    fn get_id(&self) -> &String {
         self.get_obj().get_id()
     }
 
@@ -95,8 +95,8 @@ impl RailjsonObject {
 #[cfg(test)]
 pub mod tests {
     use crate::models::infra::tests::test_transaction;
-    use crate::railjson::operation::create::{apply_create_operation, RailjsonObject};
-    use crate::railjson::{
+    use crate::objects::operation::create::{apply_create_operation, RailjsonObject};
+    use crate::objects::{
         BufferStop, Catenary, Detector, OperationalPoint, Route, Signal, SpeedSection, Switch,
         SwitchType, TrackSection, TrackSectionLink,
     };

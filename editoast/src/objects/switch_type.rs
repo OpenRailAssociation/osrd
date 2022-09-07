@@ -17,9 +17,10 @@ pub struct SwitchType {
 }
 
 impl OSRDObject for SwitchType {
-    fn get_id(&self) -> String {
-        self.id.clone()
+    fn get_id(&self) -> &String {
+        &self.id
     }
+
     fn get_type(&self) -> ObjectType {
         ObjectType::SwitchType
     }

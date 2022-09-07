@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::infra_cache::InfraCache;
-use crate::railjson::{ApplicableDirections, TrackEndpoint};
+use crate::objects::{ApplicableDirections, TrackEndpoint};
 
 #[derive(Default, Clone, Debug)]
 pub struct Graph<'a> {
@@ -69,7 +69,7 @@ mod tests {
     use crate::{
         infra_cache::tests::{create_small_infra_cache, create_track_endpoint},
         infra_cache::InfraCache,
-        railjson::Endpoint,
+        objects::Endpoint,
     };
 
     use super::Graph;

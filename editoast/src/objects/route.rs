@@ -1,3 +1,5 @@
+use crate::layer::Layer;
+
 use super::generate_id;
 use super::DirectionalTrackRange;
 use super::OSRDObject;
@@ -19,10 +21,32 @@ pub struct Route {
 }
 
 impl OSRDObject for Route {
-    fn get_id(&self) -> String {
-        self.id.clone()
+    fn get_id(&self) -> &String {
+        &self.id
     }
     fn get_type(&self) -> ObjectType {
+        ObjectType::Route
+    }
+}
+
+impl Layer for Route {
+    fn get_table_name() -> &'static str {
+        "osrd_infra_routelayer"
+    }
+
+    fn generate_layer_query() -> &'static str {
+        include_str!("../layer/sql/generate_route_layer.sql")
+    }
+
+    fn insert_update_layer_query() -> &'static str {
+        include_str!("../layer/sql/insert_route_layer.sql")
+    }
+
+    fn layer_name() -> &'static str {
+        "routes"
+    }
+
+    fn get_obj_type() -> ObjectType {
         ObjectType::Route
     }
 }
