@@ -46,7 +46,7 @@ dependencies {
     implementation group: 'com.carrotsearch', name: 'hppc', version: '0.9.1'  // Apache 2.0
 
     // JSON parsing
-    implementation 'com.squareup.moshi:moshi:1.13.0' // Apache 2.0
+    implementation 'com.squareup.moshi:moshi:1.14.0' // Apache 2.0
     implementation 'com.squareup.moshi:moshi-adapters:1.13.0'  // Apache 2.0
 
     // HTTP server framework
