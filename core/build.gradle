@@ -79,7 +79,7 @@ dependencies {
     // jqwik for property based testing
     testImplementation 'net.jqwik:jqwik:1.6.5'  // EPL 2.0
     // mockito for mocking
-    testImplementation group: 'org.mockito', name: 'mockito-inline', version: '4.7.+'  // MIT
+    testImplementation group: 'org.mockito', name: 'mockito-inline', version: '4.8.+'  // MIT
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '4.7.+'  // MIT
 
     // Only needed to run tests in a version of IntelliJ IDEA that bundles older versions
