@@ -320,7 +320,7 @@ mod tests {
         let graph = Graph::load(&infra_cache);
         let errors = generate_errors(&infra_cache, &graph);
         assert_eq!(1, errors.len());
-        let obj_ref = ObjectRef::new(ObjectType::TrackSection, "E".into());
+        let obj_ref = ObjectRef::new(ObjectType::TrackSection, "E");
         let infra_error = InfraError::new_invalid_reference("R_error", "path.1", obj_ref);
         assert_eq!(infra_error, errors[0]);
     }
@@ -361,21 +361,15 @@ mod tests {
         ];
         infra_cache.load_route(create_route_cache(
             "R_error",
-            ObjectRef {
-                obj_type: ObjectType::BufferStop,
-                obj_id: "BF_non_existing".into(),
-            },
-            ObjectRef {
-                obj_type: ObjectType::Detector,
-                obj_id: "D1".into(),
-            },
+            ObjectRef::new(ObjectType::BufferStop, "BF_non_existing"),
+            ObjectRef::new(ObjectType::Detector, "D1"),
             vec![],
             error_path,
         ));
         let graph = Graph::load(&infra_cache);
         let errors = generate_errors(&infra_cache, &graph);
         assert_eq!(1, errors.len());
-        let obj_ref = ObjectRef::new(ObjectType::BufferStop, "BF_non_existing".into());
+        let obj_ref = ObjectRef::new(ObjectType::BufferStop, "BF_non_existing");
         let infra_error = InfraError::new_invalid_reference("R_error", "\"entry_point\"", obj_ref);
         assert_eq!(infra_error, errors[0]);
     }

@@ -1,6 +1,6 @@
 use crate::error::ApiError;
 use crate::railjson::{
-    BufferStop, Catenary, Detector, ObjectRef, ObjectType, OperationalPoint, Route, Signal,
+    BufferStop, Catenary, Detector, OSRDObject, ObjectType, OperationalPoint, Route, Signal,
     SpeedSection, Switch, SwitchType, TrackSection, TrackSectionLink,
 };
 use diesel::sql_types::{Integer, Json, Text};
@@ -31,77 +31,64 @@ pub fn apply_create_operation(
     infra_id: i32,
     conn: &PgConnection,
 ) -> Result<(), Box<dyn ApiError>> {
-    let obj_id = railjson_object.get_obj_id();
+    let obj_id = railjson_object.get_id();
     if obj_id.is_empty() {
         return Err(Box::new(OperationError::EmptyId));
     }
     sql_query(format!(
         "INSERT INTO {} (infra_id, obj_id, data) VALUES ($1, $2, $3)",
-        railjson_object.get_obj_type().get_table()
+        railjson_object.get_type().get_table()
     ))
     .bind::<Integer, _>(infra_id)
-    .bind::<Text, _>(railjson_object.get_obj_id())
+    .bind::<Text, _>(railjson_object.get_id())
     .bind::<Json, _>(railjson_object.get_data())
     .execute(conn)
     .unwrap();
     Ok(())
 }
 
-impl RailjsonObject {
-    pub fn get_obj_type(&self) -> ObjectType {
-        match self {
-            RailjsonObject::TrackSection { railjson: _ } => ObjectType::TrackSection,
-            RailjsonObject::Signal { railjson: _ } => ObjectType::Signal,
-            RailjsonObject::SpeedSection { railjson: _ } => ObjectType::SpeedSection,
-            RailjsonObject::TrackSectionLink { railjson: _ } => ObjectType::TrackSectionLink,
-            RailjsonObject::Switch { railjson: _ } => ObjectType::Switch,
-            RailjsonObject::SwitchType { railjson: _ } => ObjectType::SwitchType,
-            RailjsonObject::Detector { railjson: _ } => ObjectType::Detector,
-            RailjsonObject::BufferStop { railjson: _ } => ObjectType::BufferStop,
-            RailjsonObject::Route { railjson: _ } => ObjectType::Route,
-            RailjsonObject::OperationalPoint { railjson: _ } => ObjectType::OperationalPoint,
-            RailjsonObject::Catenary { railjson: _ } => ObjectType::Catenary,
-        }
+impl OSRDObject for RailjsonObject {
+    fn get_id(&self) -> String {
+        self.get_obj().get_id()
     }
 
-    pub fn get_obj_id(&self) -> String {
+    fn get_type(&self) -> ObjectType {
+        self.get_obj().get_type()
+    }
+}
+
+impl RailjsonObject {
+    pub fn get_obj(&self) -> &dyn OSRDObject {
         match self {
-            RailjsonObject::TrackSection { railjson } => railjson.id.clone(),
-            RailjsonObject::Signal { railjson } => railjson.id.clone(),
-            RailjsonObject::SpeedSection { railjson } => railjson.id.clone(),
-            RailjsonObject::TrackSectionLink { railjson } => railjson.id.clone(),
-            RailjsonObject::Switch { railjson } => railjson.id.clone(),
-            RailjsonObject::SwitchType { railjson } => railjson.id.clone(),
-            RailjsonObject::Detector { railjson } => railjson.id.clone(),
-            RailjsonObject::BufferStop { railjson } => railjson.id.clone(),
-            RailjsonObject::Route { railjson } => railjson.id.clone(),
-            RailjsonObject::OperationalPoint { railjson } => railjson.id.clone(),
-            RailjsonObject::Catenary { railjson } => railjson.id.clone(),
+            RailjsonObject::TrackSection { railjson: obj } => obj,
+            RailjsonObject::Signal { railjson: obj } => obj,
+            RailjsonObject::SpeedSection { railjson: obj } => obj,
+            RailjsonObject::TrackSectionLink { railjson: obj } => obj,
+            RailjsonObject::Switch { railjson: obj } => obj,
+            RailjsonObject::SwitchType { railjson: obj } => obj,
+            RailjsonObject::Detector { railjson: obj } => obj,
+            RailjsonObject::BufferStop { railjson: obj } => obj,
+            RailjsonObject::Route { railjson: obj } => obj,
+            RailjsonObject::OperationalPoint { railjson: obj } => obj,
+            RailjsonObject::Catenary { railjson: obj } => obj,
         }
     }
 
     pub fn get_data(&self) -> Value {
         match self {
-            RailjsonObject::TrackSection { railjson } => serde_json::to_value(railjson).unwrap(),
-            RailjsonObject::Signal { railjson } => serde_json::to_value(railjson).unwrap(),
-            RailjsonObject::SpeedSection { railjson } => serde_json::to_value(railjson).unwrap(),
-            RailjsonObject::TrackSectionLink { railjson } => {
-                serde_json::to_value(railjson).unwrap()
-            }
-            RailjsonObject::Switch { railjson } => serde_json::to_value(railjson).unwrap(),
-            RailjsonObject::SwitchType { railjson } => serde_json::to_value(railjson).unwrap(),
-            RailjsonObject::Detector { railjson } => serde_json::to_value(railjson).unwrap(),
-            RailjsonObject::BufferStop { railjson } => serde_json::to_value(railjson).unwrap(),
-            RailjsonObject::Route { railjson } => serde_json::to_value(railjson).unwrap(),
-            RailjsonObject::OperationalPoint { railjson } => {
-                serde_json::to_value(railjson).unwrap()
-            }
-            RailjsonObject::Catenary { railjson } => serde_json::to_value(railjson).unwrap(),
+            RailjsonObject::TrackSection { railjson: obj } => serde_json::to_value(obj),
+            RailjsonObject::Signal { railjson: obj } => serde_json::to_value(obj),
+            RailjsonObject::SpeedSection { railjson: obj } => serde_json::to_value(obj),
+            RailjsonObject::TrackSectionLink { railjson: obj } => serde_json::to_value(obj),
+            RailjsonObject::Switch { railjson: obj } => serde_json::to_value(obj),
+            RailjsonObject::SwitchType { railjson: obj } => serde_json::to_value(obj),
+            RailjsonObject::Detector { railjson: obj } => serde_json::to_value(obj),
+            RailjsonObject::BufferStop { railjson: obj } => serde_json::to_value(obj),
+            RailjsonObject::Route { railjson: obj } => serde_json::to_value(obj),
+            RailjsonObject::OperationalPoint { railjson: obj } => serde_json::to_value(obj),
+            RailjsonObject::Catenary { railjson: obj } => serde_json::to_value(obj),
         }
-    }
-
-    pub fn get_ref(&self) -> ObjectRef {
-        ObjectRef::new(self.get_obj_type(), self.get_obj_id())
+        .unwrap()
     }
 }
 

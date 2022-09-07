@@ -1,7 +1,7 @@
 use super::OperationError;
 use crate::error::ApiError;
 use crate::railjson::operation::RailjsonObject;
-use crate::railjson::ObjectType;
+use crate::railjson::{OSRDObject, ObjectType};
 use diesel::sql_types::{Integer, Json, Jsonb, Text};
 use diesel::{sql_query, PgConnection, QueryableByName, RunQueryDsl};
 use json_patch::Patch;
@@ -104,7 +104,7 @@ impl DataObject {
             },
         };
 
-        if obj_railjson.get_obj_id() != update.obj_id {
+        if obj_railjson.get_id() != update.obj_id {
             return Err(Box::new(OperationError::ModifyId));
         }
         Ok(obj_railjson)
@@ -118,7 +118,7 @@ mod tests {
     use crate::models::infra::tests::test_transaction;
     use crate::railjson::operation::create::tests::{create_signal, create_speed, create_track};
     use crate::railjson::operation::OperationError;
-    use crate::railjson::ObjectType;
+    use crate::railjson::{OSRDObject, ObjectType};
     use diesel::sql_query;
     use diesel::sql_types::{Double, Text};
     use diesel::RunQueryDsl;
@@ -142,7 +142,7 @@ mod tests {
             let track = create_track(conn, infra.id, Default::default());
 
             let update_track = UpdateOperation {
-                obj_id: track.get_obj_id(),
+                obj_id: track.get_id(),
                 obj_type: ObjectType::TrackSection,
                 railjson_patch: from_str(
                     r#"[
@@ -156,7 +156,7 @@ mod tests {
 
             let updated_length = sql_query(format!(
                 "SELECT (data->>'length')::float as val FROM osrd_infra_tracksectionmodel WHERE obj_id = '{}' AND infra_id = {}",
-                track.get_obj_id(),
+                track.get_id(),
                 infra.id
             ))
             .get_result::<Value>(conn).unwrap();
@@ -171,7 +171,7 @@ mod tests {
             let track = create_track(conn, infra.id, Default::default());
 
             let update_track = UpdateOperation {
-                obj_id: track.get_obj_id(),
+                obj_id: track.get_id(),
                 obj_type: ObjectType::TrackSection,
                 railjson_patch: from_str(
                     r#"[
@@ -197,7 +197,7 @@ mod tests {
             let signal = create_signal(conn, infra.id, Default::default());
 
             let update_signal = UpdateOperation {
-                obj_id: signal.get_obj_id(),
+                obj_id: signal.get_id(),
                 obj_type: ObjectType::Signal,
                 railjson_patch: from_str(
                     r#"[
@@ -211,7 +211,7 @@ mod tests {
 
             let updated_length = sql_query(format!(
                 "SELECT (data->>'sight_distance')::float as val FROM osrd_infra_signalmodel WHERE obj_id = '{}' AND infra_id = {}",
-                signal.get_obj_id(),
+                signal.get_id(),
                 infra.id
             ))
             .get_result::<Value>(conn).unwrap();
@@ -226,7 +226,7 @@ mod tests {
             let signal = create_signal(conn, infra.id, Default::default());
 
             let update_signal = UpdateOperation {
-                obj_id: signal.get_obj_id(),
+                obj_id: signal.get_id(),
                 obj_type: ObjectType::Signal,
                 railjson_patch: from_str(
                     r#"[
@@ -240,7 +240,7 @@ mod tests {
 
             let updated_comment = sql_query(format!(
                 "SELECT (data->>'comment') as comment FROM osrd_infra_signalmodel WHERE obj_id = '{}' AND infra_id = {}",
-                signal.get_obj_id(),
+                signal.get_id(),
                 infra.id
             ))
             .get_result::<Comment>(conn).unwrap();
@@ -255,7 +255,7 @@ mod tests {
             let speed = create_speed(conn, infra.id, Default::default());
 
             let update_speed = UpdateOperation {
-                obj_id: speed.get_obj_id(),
+                obj_id: speed.get_id(),
                 obj_type: ObjectType::SpeedSection,
                 railjson_patch: from_str(
                     r#"[
@@ -269,7 +269,7 @@ mod tests {
 
             let updated_speed = sql_query(format!(
                 "SELECT (data->>'speed_limit')::float as val FROM osrd_infra_speedsectionmodel WHERE obj_id = '{}' AND infra_id = {}",
-                speed.get_obj_id(),
+                speed.get_id(),
                 infra.id
             ))
             .get_result::<Value>(conn).unwrap();

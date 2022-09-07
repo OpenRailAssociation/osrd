@@ -76,7 +76,7 @@ mod tests {
         infra_cache.load_buffer_stop(create_buffer_stop_cache("BF_error", "E", 250.));
         let errors = generate_errors(&infra_cache);
         assert_eq!(1, errors.len());
-        let obj_ref = ObjectRef::new(ObjectType::TrackSection, "E".into());
+        let obj_ref = ObjectRef::new(ObjectType::TrackSection, "E");
         let infra_error = InfraError::new_invalid_reference("BF_error", "track", obj_ref);
         assert_eq!(infra_error, errors[0]);
     }
