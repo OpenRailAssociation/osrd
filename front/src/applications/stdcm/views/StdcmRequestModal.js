@@ -50,61 +50,17 @@ export default function StdcmRequestModal(props) {
     const params = formatStdcmConf(dispatch, setFailure, t, osrdconf);
 
     return axios.post(stdcmURL, params, {});
-
-    /*
-
-     .then(function (response) {
-      console.log(response);
-      setCurrentStdcmRequestStatus(stdcmRequestStatus.success)
-    })
-    .catch(function (error) {
-      console.log(error);
-      setCurrentStdcmRequestStatus(stdcmRequestStatus.error);
-    });
-    try {
-      const params = formatStdcmConf(dispatch, setFailure, t, osrdconf);
-
-      const fakeRequest = new Promise((resolve, reject) => {
-        const fakeTener = setTimeout(() => {
-          resolve(fakeSimulation);
-        }, 5000);
-
-        controller.signal.addEventListener('abort', () => {
-          console.log('abort mess');
-          clearTimeout(fakeTener);
-          setCurrentStdcmRequestStatus(stdcmRequestStatus.canceled);
-        });
-      });
-
-      return fakeRequest;
-      // When http ready, do:
-
-      // build the request and update on await result
-
-      // manage rejected (400) status
-    } catch (error) {
-      console.log(error);
-    }
-    return null;
-    */
   };
 
   useEffect(() => {
     if (currentStdcmRequestStatus === stdcmRequestStatus.pending) {
       stdcmRequest()
         .then((result) => {
-          // Update simu in redux with data;
           setCurrentStdcmRequestStatus(stdcmRequestStatus.success);
 
           // Attention: we need these two object in store to be update. the simulation->consolidated simulaion is usually done by OSRDSimulation, which is bad.
-          /**
-           * a stop
-           * id(pin):null
-name(pin):null
-time(pin):36610
-duration(pin):0
-position(pin):0
-           */
+
+          // We need to adapt the result simulation data to the format needed for the timetable and the speedspace diagram
 
           const fakedSimulationByTrain = {
             trains: [result.data.simulation],
@@ -117,8 +73,8 @@ position(pin):0
               position: headPosition.position,
               duration: 0,
             }));
-          console.log(result);
-          const consolidatedSimulation = createTrain(
+
+            const consolidatedSimulation = createTrain(
             dispatch,
             KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
             fakedSimulationByTrain.trains,
@@ -218,18 +174,7 @@ position(pin):0
                   </span>
                 </button>
               </div>
-              <div className="text-center p-1">
-                <button
-                  className="btn btn-sm btn-primary "
-                  type="button"
-                  onClick={simulateNoResults}
-                >
-                  SimulateNoResults
-                  <span className="sr-only" aria-hidden="true">
-                    SimulateNoResults
-                  </span>
-                </button>
-              </div>
+
             </div>
           </ModalBodySNCF>
         </div>
