@@ -89,6 +89,14 @@ export default function StdcmRequestModal(props) {
           // Update simu in redux with data;
 
           setCurrentStdcmRequestStatus(stdcmRequestStatus.rejected);
+
+          dispatch(
+            setFailure({
+              name: t('osrdconf:errorMessages.stdcmError'),
+              message: t('osrdconf:errorMessages.noDestination'),
+            })
+          );
+
           console.log('rejected Promise', e);
         });
     }
