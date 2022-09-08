@@ -57,7 +57,7 @@ export default function OSRDStcdmResults(props) {
         </div>
       </main>
     );
-  } else stdcmResultsSection = <></>;
+  } else stdcmResultsSection = <>Bonjour</>;
 
-  return { stdcmResultsSection };
+  return stdcmResultsSection;
 }

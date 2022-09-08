@@ -1,8 +1,12 @@
 import React, { useEffect } from 'react';
+import axios, { AxiosError, AxiosRequestConfig } from 'axios';
+import { setFailure, setSuccess } from 'reducers/main.ts';
 // osrd Redux reducers
 import { updateConsolidatedSimulation, updateSimulation } from 'reducers/osrdsimulation';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { KEY_VALUES_FOR_CONSOLIDATED_SIMULATION } from 'applications/osrd/views/OSRDSimulation/OSRDSimulation';
+import { MAIN_API } from 'config/config';
 // Generic components
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
@@ -11,14 +15,15 @@ import ReactModal from 'react-modal';
 // OSRD helpers
 import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/createTrain';
 import fakeSimulation from 'applications/stdcm/fakeSimulation';
+import formatStdcmConf from 'applications/stdcm/formatStcmConf';
 // Static Data and Assets
 import rabbit from 'assets/pictures/KLCW_nc_standard.png';
 import { stdcmRequestStatus } from 'applications/stdcm/views/OSRDSTDCM';
-import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
 export default function StdcmRequestModal(props) {
   const { t } = useTranslation(['translation', 'osrdconf']);
+  const osrdconf = useSelector((state) => state.osrdconf);
   const dispatch = useDispatch();
 
   /*
@@ -38,9 +43,27 @@ export default function StdcmRequestModal(props) {
   // https://developer.mozilla.org/en-US/docs/Web/API/AbortController
   const controller = new AbortController();
 
+  const stdcmURL = `${MAIN_API.proxy}/stdcm/`;
+
   // Returns a promise that will be a fetch or an axios (through react-query)
   const stdcmRequest = async () => {
+    const params = formatStdcmConf(dispatch, setFailure, t, osrdconf);
+
+    return axios.post(stdcmURL, params, {});
+
+    /*
+
+     .then(function (response) {
+      console.log(response);
+      setCurrentStdcmRequestStatus(stdcmRequestStatus.success)
+    })
+    .catch(function (error) {
+      console.log(error);
+      setCurrentStdcmRequestStatus(stdcmRequestStatus.error);
+    });
     try {
+      const params = formatStdcmConf(dispatch, setFailure, t, osrdconf);
+
       const fakeRequest = new Promise((resolve, reject) => {
         const fakeTener = setTimeout(() => {
           resolve(fakeSimulation);
@@ -55,15 +78,15 @@ export default function StdcmRequestModal(props) {
 
       return fakeRequest;
       // When http ready, do:
-      /*
+
       // build the request and update on await result
 
       // manage rejected (400) status
-      */
     } catch (error) {
       console.log(error);
     }
     return null;
+    */
   };
 
   useEffect(() => {
@@ -74,16 +97,37 @@ export default function StdcmRequestModal(props) {
           setCurrentStdcmRequestStatus(stdcmRequestStatus.success);
 
           // Attention: we need these two object in store to be update. the simulation->consolidated simulaion is usually done by OSRDSimulation, which is bad.
+          /**
+           * a stop
+           * id(pin):null
+name(pin):null
+time(pin):36610
+duration(pin):0
+position(pin):0
+           */
+
+          const fakedSimulationByTrain = {
+            trains: [result.data.simulation],
+          };
+          fakedSimulationByTrain.trains[0].base.stops =
+            fakedSimulationByTrain.trains[0].base.head_positions[0].map((headPosition, index) => ({
+              id: null,
+              name: `stop ${index}`,
+              time: headPosition.time,
+              position: headPosition.position,
+              duration: 0,
+            }));
+          console.log(result);
           const consolidatedSimulation = createTrain(
             dispatch,
             KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
-            result.trains,
+            fakedSimulationByTrain.trains,
             t
           );
           dispatch(updateConsolidatedSimulation(consolidatedSimulation));
-          dispatch(updateSimulation(result));
+          dispatch(updateSimulation(fakedSimulationByTrain));
 
-          console.log('Accomplished Promise');
+          console.log('Accomplished Promise', result);
         })
         .catch((e) => {
           // Update simu in redux with data;
