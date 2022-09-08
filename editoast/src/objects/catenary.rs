@@ -1,3 +1,5 @@
+use crate::infra_cache::Cache;
+use crate::infra_cache::ObjectCache;
 use crate::layer::Layer;
 
 use super::generate_id;
@@ -46,5 +48,18 @@ impl Layer for Catenary {
 
     fn get_obj_type() -> ObjectType {
         ObjectType::Catenary
+    }
+}
+
+impl Cache for Catenary {
+    fn get_track_referenced_id(&self) -> Vec<&String> {
+        self.track_ranges
+            .iter()
+            .map(|tr| &tr.track.obj_id)
+            .collect()
+    }
+
+    fn get_object_cache(&self) -> ObjectCache {
+        ObjectCache::Catenary(self.clone())
     }
 }

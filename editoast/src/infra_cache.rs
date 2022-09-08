@@ -1,10 +1,9 @@
-use crate::layer::BoundingBox;
 use crate::objects::operation::{OperationResult, RailjsonObject};
 use crate::objects::*;
-use derivative::Derivative;
 use diesel::sql_types::{Double, Integer, Nullable, Text};
 use diesel::PgConnection;
 use diesel::{sql_query, QueryableByName, RunQueryDsl};
+use enum_map::EnumMap;
 use std::collections::{HashMap, HashSet};
 
 /// Contains infra cached data used to generate layers and errors
@@ -14,94 +13,175 @@ pub struct InfraCache {
     /// Contains all referenced track sections (not only existing ones)
     pub track_sections_refs: HashMap<String, HashSet<ObjectRef>>,
 
-    /// List existing track sections
-    pub track_sections: HashMap<String, TrackCache>,
-
-    /// List existing signals
-    pub signals: HashMap<String, SignalCache>,
-
-    /// List existing speed sections
-    pub speed_sections: HashMap<String, SpeedSection>,
-
-    /// List existing track section links
-    pub track_section_links: HashMap<String, TrackSectionLink>,
-
-    /// List existing switches
-    pub switches: HashMap<String, SwitchCache>,
-
-    /// List existing detectors
-    pub detectors: HashMap<String, DetectorCache>,
-
-    /// List existing buffer stops
-    pub buffer_stops: HashMap<String, BufferStopCache>,
-
-    /// List existing routes
-    pub routes: HashMap<String, Route>,
-
-    /// List existing operational points
-    pub operational_points: HashMap<String, OperationalPointCache>,
-
-    /// List existing switch types
-    pub switch_types: HashMap<String, SwitchType>,
-
-    /// List existing catenaries
-    pub catenaries: HashMap<String, Catenary>,
+    /// Map reference to their cache object
+    objects: EnumMap<ObjectType, HashMap<String, ObjectCache>>,
 }
 
-#[derive(Debug, Clone, Derivative)]
-#[derivative(Hash, PartialEq)]
-pub struct TrackCache {
-    pub obj_id: String,
-    #[derivative(Hash = "ignore", PartialEq = "ignore")]
-    pub length: f64,
-    #[derivative(Hash = "ignore", PartialEq = "ignore")]
-    pub bbox_geo: BoundingBox,
-    #[derivative(Hash = "ignore", PartialEq = "ignore")]
-    pub bbox_sch: BoundingBox,
+pub trait Cache: OSRDObject {
+    /// Return the list of track section ids referenced by the object
+    fn get_track_referenced_id(&self) -> Vec<&String>;
+
+    /// Build and return the cache object
+    fn get_object_cache(&self) -> ObjectCache;
 }
 
-impl TrackCache {
-    pub fn get_begin(&self) -> TrackEndpoint {
-        TrackEndpoint {
-            endpoint: Endpoint::Begin,
-            track: ObjectRef {
-                obj_type: ObjectType::TrackSection,
-                obj_id: self.obj_id.clone(),
-            },
+#[derive(Debug, Clone)]
+pub enum ObjectCache {
+    TrackSection(TrackSectionCache),
+    Signal(SignalCache),
+    SpeedSection(SpeedSection),
+    TrackSectionLink(TrackSectionLink),
+    Switch(SwitchCache),
+    Detector(DetectorCache),
+    BufferStop(BufferStopCache),
+    Route(Route),
+    OperationalPoint(OperationalPointCache),
+    SwitchType(SwitchType),
+    Catenary(Catenary),
+}
+
+impl OSRDObject for ObjectCache {
+    fn get_id(&self) -> &String {
+        match self {
+            ObjectCache::TrackSection(obj) => obj.get_id(),
+            ObjectCache::Signal(obj) => obj.get_id(),
+            ObjectCache::SpeedSection(obj) => obj.get_id(),
+            ObjectCache::TrackSectionLink(obj) => obj.get_id(),
+            ObjectCache::Switch(obj) => obj.get_id(),
+            ObjectCache::Detector(obj) => obj.get_id(),
+            ObjectCache::BufferStop(obj) => obj.get_id(),
+            ObjectCache::Route(obj) => obj.get_id(),
+            ObjectCache::OperationalPoint(obj) => obj.get_id(),
+            ObjectCache::SwitchType(obj) => obj.get_id(),
+            ObjectCache::Catenary(obj) => obj.get_id(),
         }
     }
 
-    pub fn get_end(&self) -> TrackEndpoint {
-        TrackEndpoint {
-            endpoint: Endpoint::End,
-            track: ObjectRef {
-                obj_type: ObjectType::TrackSection,
-                obj_id: self.obj_id.clone(),
-            },
+    fn get_type(&self) -> ObjectType {
+        match self {
+            ObjectCache::TrackSection(_) => ObjectType::TrackSection,
+            ObjectCache::Signal(_) => ObjectType::Signal,
+            ObjectCache::SpeedSection(_) => ObjectType::SpeedSection,
+            ObjectCache::TrackSectionLink(_) => ObjectType::TrackSectionLink,
+            ObjectCache::Switch(_) => ObjectType::Switch,
+            ObjectCache::Detector(_) => ObjectType::Detector,
+            ObjectCache::BufferStop(_) => ObjectType::BufferStop,
+            ObjectCache::Route(_) => ObjectType::Route,
+            ObjectCache::OperationalPoint(_) => ObjectType::OperationalPoint,
+            ObjectCache::SwitchType(_) => ObjectType::SwitchType,
+            ObjectCache::Catenary(_) => ObjectType::Catenary,
         }
     }
 }
 
-impl From<&TrackSection> for TrackCache {
-    fn from(track: &TrackSection) -> Self {
-        TrackCache {
-            obj_id: track.id.clone(),
-            length: track.length,
-            bbox_geo: track.geo.get_bbox(),
-            bbox_sch: track.sch.get_bbox(),
+impl Cache for ObjectCache {
+    fn get_track_referenced_id(&self) -> Vec<&String> {
+        match self {
+            ObjectCache::TrackSection(track) => track.get_track_referenced_id(),
+            ObjectCache::Signal(signal) => signal.get_track_referenced_id(),
+            ObjectCache::SpeedSection(speed) => speed.get_track_referenced_id(),
+            ObjectCache::TrackSectionLink(link) => link.get_track_referenced_id(),
+            ObjectCache::Switch(switch) => switch.get_track_referenced_id(),
+            ObjectCache::Detector(detector) => detector.get_track_referenced_id(),
+            ObjectCache::BufferStop(buffer_stop) => buffer_stop.get_track_referenced_id(),
+            ObjectCache::Route(route) => route.get_track_referenced_id(),
+            ObjectCache::OperationalPoint(op) => op.get_track_referenced_id(),
+            ObjectCache::SwitchType(switch_type) => switch_type.get_track_referenced_id(),
+            ObjectCache::Catenary(catenary) => catenary.get_track_referenced_id(),
         }
+    }
+
+    fn get_object_cache(&self) -> ObjectCache {
+        self.clone()
     }
 }
 
-impl From<TrackQueryable> for TrackCache {
-    fn from(track: TrackQueryable) -> Self {
-        let geo: LineString = serde_json::from_str(&track.geo).unwrap();
-        let sch: LineString = serde_json::from_str(&track.sch).unwrap();
-        Self {
-            obj_id: track.obj_id,
-            length: track.length,
-            bbox_geo: geo.get_bbox(),
-            bbox_sch: sch.get_bbox(),
+impl ObjectCache {
+    /// Unwrap a track section from the object cache
+    pub fn unwrap_track_section(&self) -> &TrackSectionCache {
+        match self {
+            ObjectCache::TrackSection(track) => track,
+            _ => panic!("ObjectCache is not a TrackSection"),
+        }
+    }
+
+    /// Unwrap a signal from the object cache
+    pub fn unwrap_signal(&self) -> &SignalCache {
+        match self {
+            ObjectCache::Signal(signal) => signal,
+            _ => panic!("ObjectCache is not a Signal"),
+        }
+    }
+
+    /// Unwrap a speed section from the object cache
+    pub fn unwrap_speed_section(&self) -> &SpeedSection {
+        match self {
+            ObjectCache::SpeedSection(speed) => speed,
+            _ => panic!("ObjectCache is not a SpeedSection"),
+        }
+    }
+
+    /// Unwrap a track section link from the object cache
+    pub fn unwrap_track_section_link(&self) -> &TrackSectionLink {
+        match self {
+            ObjectCache::TrackSectionLink(link) => link,
+            _ => panic!("ObjectCache is not a TrackSectionLink"),
+        }
+    }
+
+    /// Unwrap a switch from the object cache
+    pub fn unwrap_switch(&self) -> &SwitchCache {
+        match self {
+            ObjectCache::Switch(switch) => switch,
+            _ => panic!("ObjectCache is not a Switch"),
+        }
+    }
+
+    /// Unwrap a detector from the object cache
+    pub fn unwrap_detector(&self) -> &DetectorCache {
+        match self {
+            ObjectCache::Detector(detector) => detector,
+            _ => panic!("ObjectCache is not a Detector"),
+        }
+    }
+
+    /// Unwrap a buffer stop from the object cache
+    pub fn unwrap_buffer_stop(&self) -> &BufferStopCache {
+        match self {
+            ObjectCache::BufferStop(buffer_stop) => buffer_stop,
+            _ => panic!("ObjectCache is not a BufferStop"),
+        }
+    }
+
+    /// Unwrap a route from the object cache
+    pub fn unwrap_route(&self) -> &Route {
+        match self {
+            ObjectCache::Route(route) => route,
+            _ => panic!("ObjectCache is not a Route"),
+        }
+    }
+
+    /// Unwrap an operational point from the object cache
+    pub fn unwrap_operational_point(&self) -> &OperationalPointCache {
+        match self {
+            ObjectCache::OperationalPoint(op) => op,
+            _ => panic!("ObjectCache is not a OperationalPoint"),
+        }
+    }
+
+    /// Unwrap a switch type from the object cache
+    pub fn unwrap_switch_type(&self) -> &SwitchType {
+        match self {
+            ObjectCache::SwitchType(switch_type) => switch_type,
+            _ => panic!("ObjectCache is not a SwitchType"),
+        }
+    }
+
+    /// Unwrap a catenary from the object cache
+    pub fn unwrap_catenary(&self) -> &Catenary {
+        match self {
+            ObjectCache::Catenary(catenary) => catenary,
+            _ => panic!("ObjectCache is not a Catenary"),
         }
     }
 }
@@ -118,32 +198,16 @@ pub struct TrackQueryable {
     pub sch: String,
 }
 
-#[derive(QueryableByName, Debug, Clone, Derivative)]
-#[derivative(Hash, PartialEq)]
-pub struct SignalCache {
-    #[sql_type = "Text"]
-    pub obj_id: String,
-    #[derivative(Hash = "ignore", PartialEq = "ignore")]
-    #[sql_type = "Text"]
-    pub track: String,
-    #[derivative(Hash = "ignore", PartialEq = "ignore")]
-    #[sql_type = "Double"]
-    pub position: f64,
-}
-
-impl SignalCache {
-    pub fn new(obj_id: String, track: String, position: f64) -> Self {
+impl From<TrackQueryable> for TrackSectionCache {
+    fn from(track: TrackQueryable) -> Self {
+        let geo: LineString = serde_json::from_str(&track.geo).unwrap();
+        let sch: LineString = serde_json::from_str(&track.sch).unwrap();
         Self {
-            obj_id,
-            track,
-            position,
+            obj_id: track.obj_id,
+            length: track.length,
+            bbox_geo: geo.get_bbox(),
+            bbox_sch: sch.get_bbox(),
         }
-    }
-}
-
-impl From<&Signal> for SignalCache {
-    fn from(sig: &Signal) -> Self {
-        Self::new(sig.id.clone(), sig.track.obj_id.clone(), sig.position)
     }
 }
 
@@ -226,15 +290,6 @@ impl From<TrackSectionLinkQueryable> for TrackSectionLink {
     }
 }
 
-#[derive(Debug, Clone, Derivative)]
-#[derivative(Hash, PartialEq)]
-pub struct SwitchCache {
-    pub obj_id: String,
-    pub switch_type: String,
-    #[derivative(Hash = "ignore", PartialEq = "ignore")]
-    pub ports: HashMap<String, TrackEndpoint>,
-}
-
 #[derive(QueryableByName, Debug, Clone)]
 pub struct SwitchQueryable {
     #[sql_type = "Text"]
@@ -252,26 +307,6 @@ impl From<SwitchQueryable> for SwitchCache {
             switch_type: switch.switch_type,
             ports: serde_json::from_str(&switch.ports).unwrap(),
         }
-    }
-}
-
-impl SwitchCache {
-    pub fn new(obj_id: String, switch_type: String, ports: HashMap<String, TrackEndpoint>) -> Self {
-        Self {
-            obj_id,
-            switch_type,
-            ports,
-        }
-    }
-}
-
-impl From<&Switch> for SwitchCache {
-    fn from(switch: &Switch) -> Self {
-        Self::new(
-            switch.id.clone(),
-            switch.switch_type.obj_id.clone(),
-            switch.ports.clone(),
-        )
     }
 }
 
@@ -295,14 +330,6 @@ impl From<SwitchTypeQueryable> for SwitchType {
     }
 }
 
-#[derive(Debug, Clone, Derivative)]
-#[derivative(Hash, PartialEq)]
-pub struct OperationalPointCache {
-    pub obj_id: String,
-    #[derivative(Hash = "ignore", PartialEq = "ignore")]
-    pub parts: Vec<OperationalPointPart>,
-}
-
 #[derive(QueryableByName, Debug, Clone)]
 pub struct OperationalPointQueryable {
     #[sql_type = "Text"]
@@ -317,76 +344,6 @@ impl From<OperationalPointQueryable> for OperationalPointCache {
             obj_id: op.obj_id,
             parts: serde_json::from_str(&op.parts).unwrap(),
         }
-    }
-}
-
-impl OperationalPointCache {
-    pub fn new(obj_id: String, parts: Vec<OperationalPointPart>) -> Self {
-        Self { obj_id, parts }
-    }
-}
-
-impl From<&OperationalPoint> for OperationalPointCache {
-    fn from(op: &OperationalPoint) -> Self {
-        Self::new(op.id.clone(), op.parts.clone())
-    }
-}
-
-#[derive(QueryableByName, Debug, Clone, Derivative)]
-#[derivative(Hash, PartialEq)]
-pub struct DetectorCache {
-    #[sql_type = "Text"]
-    pub obj_id: String,
-    #[derivative(Hash = "ignore", PartialEq = "ignore")]
-    #[sql_type = "Text"]
-    pub track: String,
-    #[derivative(Hash = "ignore", PartialEq = "ignore")]
-    #[sql_type = "Double"]
-    pub position: f64,
-}
-
-impl DetectorCache {
-    pub fn new(obj_id: String, track: String, position: f64) -> Self {
-        Self {
-            obj_id,
-            track,
-            position,
-        }
-    }
-}
-
-impl From<&Detector> for DetectorCache {
-    fn from(det: &Detector) -> Self {
-        Self::new(det.id.clone(), det.track.obj_id.clone(), det.position)
-    }
-}
-
-#[derive(QueryableByName, Debug, Clone, Derivative)]
-#[derivative(Hash, PartialEq)]
-pub struct BufferStopCache {
-    #[sql_type = "Text"]
-    pub obj_id: String,
-    #[derivative(Hash = "ignore", PartialEq = "ignore")]
-    #[sql_type = "Text"]
-    pub track: String,
-    #[derivative(Hash = "ignore", PartialEq = "ignore")]
-    #[sql_type = "Double"]
-    pub position: f64,
-}
-
-impl BufferStopCache {
-    pub fn new(obj_id: String, track: String, position: f64) -> Self {
-        Self {
-            obj_id,
-            track,
-            position,
-        }
-    }
-}
-
-impl From<&BufferStop> for BufferStopCache {
-    fn from(stop: &BufferStop) -> Self {
-        Self::new(stop.id.clone(), stop.track.obj_id.clone(), stop.position)
     }
 }
 
@@ -411,127 +368,74 @@ impl From<CatenaryQueryable> for Catenary {
 }
 
 impl InfraCache {
-    fn add_track_ref(&mut self, track_id: String, obj_ref: ObjectRef) {
-        self.track_sections_refs
-            .entry(track_id)
-            .or_default()
-            .insert(obj_ref);
-    }
-
-    pub fn load_track_section(&mut self, track: TrackCache) {
-        self.track_sections.insert(track.obj_id.clone(), track);
-    }
-
-    pub fn load_signal(&mut self, signal: SignalCache) {
-        self.add_track_ref(
-            signal.track.clone(),
-            ObjectRef::new(ObjectType::Signal, signal.obj_id.clone()),
-        );
-        assert!(self.signals.insert(signal.obj_id.clone(), signal).is_none());
-    }
-
-    pub fn load_speed_section(&mut self, speed: SpeedSection) {
-        for track_range in speed.track_ranges.iter() {
-            self.add_track_ref(
-                track_range.track.obj_id.clone(),
-                ObjectRef::new(ObjectType::SpeedSection, speed.id.clone()),
-            );
+    /// Add an object to the cache.
+    /// If the object already exists, it will fails.
+    pub fn add<T: Cache>(&mut self, obj: T) {
+        for track_id in obj.get_track_referenced_id() {
+            self.track_sections_refs
+                .entry(track_id.clone())
+                .or_default()
+                .insert(obj.get_ref());
         }
-        assert!(self
-            .speed_sections
-            .insert(speed.id.clone(), speed)
+
+        assert!(self.objects[obj.get_type()]
+            .insert(obj.get_id().clone(), obj.get_object_cache())
             .is_none());
     }
 
-    pub fn load_route(&mut self, route: Route) {
-        for path in route.path.iter() {
-            self.add_track_ref(
-                path.track.obj_id.clone(),
-                ObjectRef::new(ObjectType::Route, route.id.clone()),
-            );
-        }
-        assert!(self.routes.insert(route.id.clone(), route).is_none());
+    /// Retrieve the cache of track sections
+    pub fn track_sections(&self) -> &HashMap<String, ObjectCache> {
+        &self.objects[ObjectType::TrackSection]
     }
 
-    pub fn load_operational_point(&mut self, op: OperationalPointCache) {
-        for part in op.parts.iter() {
-            self.add_track_ref(
-                part.track.obj_id.clone(),
-                ObjectRef::new(ObjectType::OperationalPoint, op.obj_id.clone()),
-            );
-        }
-        assert!(self
-            .operational_points
-            .insert(op.obj_id.clone(), op)
-            .is_none());
+    /// Retrieve the cache of detectors
+    pub fn detectors(&self) -> &HashMap<String, ObjectCache> {
+        &self.objects[ObjectType::Detector]
     }
 
-    pub fn load_track_section_link(&mut self, link: TrackSectionLink) {
-        for endpoint in [&link.src, &link.dst] {
-            self.add_track_ref(
-                endpoint.track.obj_id.clone(),
-                ObjectRef::new(ObjectType::TrackSectionLink, link.id.clone()),
-            );
-        }
-        assert!(self
-            .track_section_links
-            .insert(link.id.clone(), link)
-            .is_none());
+    /// Retrieve the cache of buffer stops
+    pub fn buffer_stops(&self) -> &HashMap<String, ObjectCache> {
+        &self.objects[ObjectType::BufferStop]
     }
 
-    pub fn load_switch(&mut self, switch: SwitchCache) {
-        for port in switch.ports.iter() {
-            self.add_track_ref(
-                port.1.track.obj_id.clone(),
-                ObjectRef::new(ObjectType::Switch, switch.obj_id.clone()),
-            );
-        }
-        assert!(self
-            .switches
-            .insert(switch.obj_id.clone(), switch)
-            .is_none());
+    /// Retrieve the cache of signals
+    pub fn signals(&self) -> &HashMap<String, ObjectCache> {
+        &self.objects[ObjectType::Signal]
     }
 
-    pub fn load_switch_type(&mut self, switch_type: SwitchType) {
-        assert!(self
-            .switch_types
-            .insert(switch_type.id.clone(), switch_type)
-            .is_none());
+    /// Retrieve the cache of speed sections
+    pub fn speed_sections(&self) -> &HashMap<String, ObjectCache> {
+        &self.objects[ObjectType::SpeedSection]
     }
 
-    pub fn load_detector(&mut self, detector: DetectorCache) {
-        self.add_track_ref(
-            detector.track.clone(),
-            ObjectRef::new(ObjectType::Detector, detector.obj_id.clone()),
-        );
-        assert!(self
-            .detectors
-            .insert(detector.obj_id.clone(), detector)
-            .is_none());
+    /// Retrieve the cache of routes
+    pub fn routes(&self) -> &HashMap<String, ObjectCache> {
+        &self.objects[ObjectType::Route]
     }
 
-    pub fn load_buffer_stop(&mut self, buffer_stop: BufferStopCache) {
-        self.add_track_ref(
-            buffer_stop.track.clone(),
-            ObjectRef::new(ObjectType::BufferStop, buffer_stop.obj_id.clone()),
-        );
-        assert!(self
-            .buffer_stops
-            .insert(buffer_stop.obj_id.clone(), buffer_stop)
-            .is_none());
+    /// Retrieve the cache of track section links
+    pub fn track_section_links(&self) -> &HashMap<String, ObjectCache> {
+        &self.objects[ObjectType::TrackSectionLink]
     }
 
-    fn load_catenary(&mut self, catenary: Catenary) {
-        for track_range in catenary.track_ranges.iter() {
-            self.add_track_ref(
-                track_range.track.obj_id.clone(),
-                ObjectRef::new(ObjectType::Catenary, catenary.id.clone()),
-            );
-        }
-        assert!(self
-            .catenaries
-            .insert(catenary.id.clone(), catenary)
-            .is_none());
+    /// Retrieve the cache of switches
+    pub fn switches(&self) -> &HashMap<String, ObjectCache> {
+        &self.objects[ObjectType::Switch]
+    }
+
+    /// Retrieve the cache of switch types
+    pub fn switch_types(&self) -> &HashMap<String, ObjectCache> {
+        &self.objects[ObjectType::SwitchType]
+    }
+
+    /// Retrieve the cache of operational points
+    pub fn operational_points(&self) -> &HashMap<String, ObjectCache> {
+        &self.objects[ObjectType::OperationalPoint]
+    }
+
+    /// Retrieve the cache of catenaries
+    pub fn catenaries(&self) -> &HashMap<String, ObjectCache> {
+        &self.objects[ObjectType::Catenary]
     }
 
     /// Given an infra id load infra cache from database
@@ -544,14 +448,14 @@ impl InfraCache {
         )
         .bind::<Integer, _>(infra_id)
         .load::<TrackQueryable>(conn)
-        .expect("Error loading track sections").into_iter().for_each(|track| infra_cache.load_track_section(track.into()));
+        .expect("Error loading track sections").into_iter().for_each(|track| infra_cache.add::<TrackSectionCache>(track.into()));
 
         // Load signal tracks references
         sql_query(
             "SELECT obj_id, data->'track'->>'id' AS track, (data->>'position')::float AS position FROM osrd_infra_signalmodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
         .load::<SignalCache>(conn).expect("Error loading signal refs").into_iter().for_each(|signal| 
-            infra_cache.load_signal(signal)
+            infra_cache.add(signal)
         );
 
         // Load speed sections tracks references
@@ -559,7 +463,7 @@ impl InfraCache {
             "SELECT obj_id, data->>'track_ranges' AS track_ranges, (data->>'speed_limit')::float AS speed_limit, data->>'speed_limit_by_tag' AS speed_limit_by_tag FROM osrd_infra_speedsectionmodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
         .load::<SpeedSectionQueryable>(conn).expect("Error loading speed section refs").into_iter().for_each(|speed| 
-            infra_cache.load_speed_section(speed.into())
+            infra_cache.add::<SpeedSection>(speed.into())
         );
 
         // Load routes tracks references
@@ -567,7 +471,7 @@ impl InfraCache {
             "SELECT obj_id, data->>'entry_point' AS entry_point, data->>'exit_point' AS exit_point, data->>'release_detectors' AS release_detectors, data->>'path' AS path FROM osrd_infra_routemodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
         .load::<RouteQueryable>(conn).expect("Error loading route refs").into_iter().for_each(|route| 
-            infra_cache.load_route(route.into())
+            infra_cache.add::<Route>(route.into())
         );
 
         // Load operational points tracks references
@@ -575,7 +479,7 @@ impl InfraCache {
             "SELECT obj_id, data->>'parts' AS parts FROM osrd_infra_operationalpointmodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
         .load::<OperationalPointQueryable>(conn).expect("Error loading operational point refs").into_iter().for_each(|op| 
-            infra_cache.load_operational_point(op.into())
+            infra_cache.add::<OperationalPointCache>(op.into())
         );
 
         // Load track section links tracks references
@@ -583,7 +487,7 @@ impl InfraCache {
             "SELECT obj_id, data->>'src' AS src, data->>'dst' AS dst, (data->'navigability')::text as navigability FROM osrd_infra_tracksectionlinkmodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
         .load::<TrackSectionLinkQueryable>(conn).expect("Error loading track section link refs").into_iter().for_each(|link| 
-            infra_cache.load_track_section_link(link.into())
+            infra_cache.add::<TrackSectionLink>(link.into())
         );
 
         // Load switch tracks references
@@ -591,7 +495,7 @@ impl InfraCache {
             "SELECT obj_id, data->'switch_type'->>'id' AS switch_type, data->>'ports' AS ports FROM osrd_infra_switchmodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
         .load::<SwitchQueryable>(conn).expect("Error loading switch refs").into_iter().for_each(|switch| {
-            infra_cache.load_switch(switch.into());
+            infra_cache.add::<SwitchCache>(switch.into());
         });
 
         // Load switch types references
@@ -599,7 +503,7 @@ impl InfraCache {
             "SELECT obj_id, data->>'ports' AS ports, data->>'groups' AS groups FROM osrd_infra_switchtypemodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
         .load::<SwitchTypeQueryable>(conn).expect("Error loading switch types refs").into_iter().for_each(|switch_type| 
-            infra_cache.load_switch_type(switch_type.into())
+            infra_cache.add::<SwitchType>(switch_type.into())
         );
 
         // Load detector tracks references
@@ -607,7 +511,7 @@ impl InfraCache {
             "SELECT obj_id, data->'track'->>'id' AS track, (data->>'position')::float AS position FROM osrd_infra_detectormodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
         .load::<DetectorCache>(conn).expect("Error loading detector refs").into_iter().for_each(|detector| 
-            infra_cache.load_detector(detector)
+            infra_cache.add(detector)
         );
 
         // Load buffer stop tracks references
@@ -615,7 +519,7 @@ impl InfraCache {
             "SELECT obj_id, data->'track'->>'id' AS track, (data->>'position')::float AS position FROM osrd_infra_bufferstopmodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
         .load::<BufferStopCache>(conn).expect("Error loading buffer stop refs").into_iter().for_each(|buffer_stop| 
-            infra_cache.load_buffer_stop(buffer_stop)
+            infra_cache.add(buffer_stop)
         );
 
         // Load catenary tracks references
@@ -623,7 +527,7 @@ impl InfraCache {
             "SELECT obj_id, (data->>'voltage')::float AS voltage, data->>'track_ranges' AS track_ranges FROM osrd_infra_catenarymodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
         .load::<CatenaryQueryable>(conn).expect("Error loading catenary refs").into_iter().for_each(|catenary| 
-            infra_cache.load_catenary(catenary.into())
+            infra_cache.add::<Catenary>(catenary.into())
         );
 
         infra_cache
@@ -631,134 +535,27 @@ impl InfraCache {
 
     /// Get all track sections references of a given track and type
     pub fn get_track_refs_type(&self, track_id: &String, obj_type: ObjectType) -> Vec<&ObjectRef> {
-        if let Some(refs) = self.track_sections_refs.get(track_id) {
-            refs.iter()
-                .filter(|obj_ref| obj_ref.obj_type == obj_type)
-                .collect()
-        } else {
-            vec![]
-        }
+        self.track_sections_refs
+            .get(track_id)
+            .map(|set| {
+                set.iter()
+                    .filter(|obj_ref| obj_ref.obj_type == obj_type)
+                    .collect()
+            })
+            .unwrap_or_default()
     }
 
     /// Apply delete operation to the infra cache
     pub fn apply_delete(&mut self, object_ref: &ObjectRef) {
-        match object_ref {
-            ObjectRef {
-                obj_type: ObjectType::Signal,
-                obj_id,
-            } => {
-                let signal = self.signals.remove(obj_id).unwrap();
-                self.track_sections_refs
-                    .get_mut(&signal.track)
-                    .unwrap()
-                    .remove(object_ref);
-            }
-            ObjectRef {
-                obj_type: ObjectType::SpeedSection,
-                obj_id,
-            } => {
-                let speed = self.speed_sections.remove(obj_id).unwrap();
-                for track_range in speed.track_ranges {
-                    self.track_sections_refs
-                        .get_mut(&track_range.track.obj_id)
-                        .unwrap()
-                        .remove(object_ref);
-                }
-            }
-            ObjectRef {
-                obj_type: ObjectType::Route,
-                obj_id,
-            } => {
-                let route = self.routes.remove(obj_id).unwrap();
-                for path in route.path {
-                    self.track_sections_refs
-                        .get_mut(&path.track.obj_id)
-                        .unwrap()
-                        .remove(object_ref);
-                }
-            }
-            ObjectRef {
-                obj_type: ObjectType::OperationalPoint,
-                obj_id,
-            } => {
-                let op = self.operational_points.remove(obj_id).unwrap();
-                for part in op.parts {
-                    self.track_sections_refs
-                        .get_mut(&part.track.obj_id)
-                        .unwrap()
-                        .remove(object_ref);
-                }
-            }
-            ObjectRef {
-                obj_type: ObjectType::TrackSectionLink,
-                obj_id,
-            } => {
-                let link = self.track_section_links.remove(obj_id).unwrap();
-                self.track_sections_refs
-                    .get_mut(&link.src.track.obj_id)
-                    .unwrap()
-                    .remove(object_ref);
-                self.track_sections_refs
-                    .get_mut(&link.dst.track.obj_id)
-                    .unwrap()
-                    .remove(object_ref);
-            }
-            ObjectRef {
-                obj_type: ObjectType::Switch,
-                obj_id,
-            } => {
-                let switch = self.switches.remove(obj_id).unwrap();
-                for endpoint in switch.ports.values() {
-                    self.track_sections_refs
-                        .get_mut(&endpoint.track.obj_id)
-                        .unwrap()
-                        .remove(object_ref);
-                }
-            }
-            ObjectRef {
-                obj_type: ObjectType::SwitchType,
-                obj_id,
-            } => {
-                self.switch_types.remove(obj_id).unwrap();
-            }
-            ObjectRef {
-                obj_type: ObjectType::Detector,
-                obj_id,
-            } => {
-                let detector = self.detectors.remove(obj_id).unwrap();
-                self.track_sections_refs
-                    .get_mut(&detector.track)
-                    .unwrap()
-                    .remove(object_ref);
-            }
-            ObjectRef {
-                obj_type: ObjectType::BufferStop,
-                obj_id,
-            } => {
-                let buffer_stop = self.buffer_stops.remove(obj_id).unwrap();
-                self.track_sections_refs
-                    .get_mut(&buffer_stop.track)
-                    .unwrap()
-                    .remove(object_ref);
-            }
-            ObjectRef {
-                obj_type: ObjectType::TrackSection,
-                obj_id,
-            } => {
-                self.track_sections.remove(obj_id);
-            }
-            ObjectRef {
-                obj_type: ObjectType::Catenary,
-                obj_id,
-            } => {
-                let catenary = self.catenaries.remove(obj_id).unwrap();
-                for track_range in catenary.track_ranges {
-                    self.track_sections_refs
-                        .get_mut(&track_range.track.obj_id)
-                        .unwrap()
-                        .remove(object_ref);
-                }
-            }
+        let obj_cache = self.objects[object_ref.obj_type]
+            .remove(&object_ref.obj_id)
+            .unwrap();
+
+        for track_id in obj_cache.get_track_referenced_id() {
+            self.track_sections_refs
+                .get_mut(track_id)
+                .unwrap()
+                .remove(object_ref);
         }
     }
 
@@ -771,21 +568,27 @@ impl InfraCache {
     /// Apply create operation to the infra cache
     fn apply_create(&mut self, railjson_obj: &RailjsonObject) {
         match railjson_obj {
-            RailjsonObject::TrackSection { railjson } => self.load_track_section(railjson.into()),
-            RailjsonObject::Signal { railjson } => self.load_signal(railjson.into()),
-            RailjsonObject::SpeedSection { railjson } => self.load_speed_section(railjson.clone()),
-            RailjsonObject::Route { railjson } => self.load_route(railjson.clone()),
+            RailjsonObject::TrackSection { railjson } => {
+                self.add::<TrackSectionCache>(railjson.clone().into())
+            }
+            RailjsonObject::Signal { railjson } => self.add::<SignalCache>(railjson.clone().into()),
+            RailjsonObject::SpeedSection { railjson } => self.add(railjson.clone()),
             RailjsonObject::TrackSectionLink { railjson } => {
-                self.load_track_section_link(railjson.clone())
+                self.add::<TrackSectionLink>(railjson.clone())
             }
-            RailjsonObject::Switch { railjson } => self.load_switch(railjson.into()),
-            RailjsonObject::SwitchType { railjson } => self.load_switch_type(railjson.clone()),
-            RailjsonObject::Detector { railjson } => self.load_detector(railjson.into()),
-            RailjsonObject::BufferStop { railjson } => self.load_buffer_stop(railjson.into()),
+            RailjsonObject::Switch { railjson } => self.add::<SwitchCache>(railjson.clone().into()),
+            RailjsonObject::SwitchType { railjson } => self.add::<SwitchType>(railjson.clone()),
+            RailjsonObject::Detector { railjson } => {
+                self.add::<DetectorCache>(railjson.clone().into())
+            }
+            RailjsonObject::BufferStop { railjson } => {
+                self.add::<BufferStopCache>(railjson.clone().into())
+            }
+            RailjsonObject::Route { railjson } => self.add::<Route>(railjson.clone()),
             RailjsonObject::OperationalPoint { railjson } => {
-                self.load_operational_point(railjson.into())
+                self.add::<OperationalPointCache>(railjson.clone().into())
             }
-            RailjsonObject::Catenary { railjson } => self.load_catenary(railjson.clone()),
+            RailjsonObject::Catenary { railjson } => self.add::<Catenary>(railjson.clone()),
         }
     }
 
@@ -825,15 +628,17 @@ pub mod tests {
         switches, track_section_links, track_sections,
     };
 
-    use super::{BufferStopCache, DetectorCache, OperationalPointCache, SignalCache, TrackCache};
+    use super::{
+        BufferStopCache, DetectorCache, OperationalPointCache, SignalCache, TrackSectionCache,
+    };
 
     #[test]
     fn load_track_section() {
         test_transaction(|conn, infra| {
             let track = create_track(conn, infra.id, Default::default());
             let infra_cache = InfraCache::load(conn, infra.id);
-            assert_eq!(infra_cache.track_sections.len(), 1);
-            assert!(infra_cache.track_sections.contains_key(track.get_id()));
+            assert_eq!(infra_cache.track_sections().len(), 1);
+            assert!(infra_cache.track_sections().contains_key(track.get_id()));
         });
     }
 
@@ -844,7 +649,7 @@ pub mod tests {
 
             let infra_cache = InfraCache::load(conn, infra.id);
 
-            assert!(infra_cache.signals.contains_key(signal.get_id()));
+            assert!(infra_cache.signals().contains_key(signal.get_id()));
             let refs = infra_cache.track_sections_refs;
             assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
         })
@@ -864,7 +669,7 @@ pub mod tests {
 
             let infra_cache = InfraCache::load(conn, infra.id);
 
-            assert!(infra_cache.speed_sections.contains_key(speed.get_id()));
+            assert!(infra_cache.speed_sections().contains_key(speed.get_id()));
             let refs = infra_cache.track_sections_refs;
             assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
         })
@@ -884,7 +689,7 @@ pub mod tests {
 
             let infra_cache = InfraCache::load(conn, infra.id);
 
-            assert!(infra_cache.routes.contains_key(route.get_id()));
+            assert!(infra_cache.routes().contains_key(route.get_id()));
             let refs = infra_cache.track_sections_refs;
             assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
         })
@@ -904,7 +709,7 @@ pub mod tests {
 
             let infra_cache = InfraCache::load(conn, infra.id);
 
-            assert!(infra_cache.operational_points.contains_key(op.get_id()));
+            assert!(infra_cache.operational_points().contains_key(op.get_id()));
             let refs = infra_cache.track_sections_refs;
             assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
         })
@@ -915,7 +720,9 @@ pub mod tests {
         test_transaction(|conn, infra| {
             let link = create_link(conn, infra.id, Default::default());
             let infra_cache = InfraCache::load(conn, infra.id);
-            assert!(infra_cache.track_section_links.contains_key(link.get_id()));
+            assert!(infra_cache
+                .track_section_links()
+                .contains_key(link.get_id()));
         })
     }
 
@@ -931,7 +738,7 @@ pub mod tests {
                 },
             );
             let infra_cache = InfraCache::load(conn, infra.id);
-            assert!(infra_cache.switches.contains_key(switch.get_id()));
+            assert!(infra_cache.switches().contains_key(switch.get_id()));
         })
     }
 
@@ -940,7 +747,7 @@ pub mod tests {
         test_transaction(|conn, infra| {
             let s_type = create_switch_type(conn, infra.id, Default::default());
             let infra_cache = InfraCache::load(conn, infra.id);
-            assert!(infra_cache.switch_types.contains_key(s_type.get_id()));
+            assert!(infra_cache.switch_types().contains_key(s_type.get_id()));
         })
     }
 
@@ -951,7 +758,7 @@ pub mod tests {
 
             let infra_cache = InfraCache::load(conn, infra.id);
 
-            assert!(infra_cache.detectors.contains_key(detector.get_id()));
+            assert!(infra_cache.detectors().contains_key(detector.get_id()));
             let refs = infra_cache.track_sections_refs;
             assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
         })
@@ -964,7 +771,7 @@ pub mod tests {
 
             let infra_cache = InfraCache::load(conn, infra.id);
 
-            assert!(infra_cache.buffer_stops.contains_key(bs.get_id()));
+            assert!(infra_cache.buffer_stops().contains_key(bs.get_id()));
             let refs = infra_cache.track_sections_refs;
             assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
         })
@@ -984,14 +791,14 @@ pub mod tests {
 
             let infra_cache = InfraCache::load(conn, infra.id);
 
-            assert!(infra_cache.catenaries.contains_key(catenary.get_id()));
+            assert!(infra_cache.catenaries().contains_key(catenary.get_id()));
             let refs = infra_cache.track_sections_refs;
             assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
         })
     }
 
-    pub fn create_track_section_cache(obj_id: String, length: f64) -> TrackCache {
-        TrackCache {
+    pub fn create_track_section_cache(obj_id: String, length: f64) -> TrackSectionCache {
+        TrackSectionCache {
             obj_id,
             length,
             bbox_geo: BoundingBox::default(),
@@ -1171,20 +978,20 @@ pub mod tests {
         let mut infra_cache = InfraCache::default();
 
         for id in 'A'..='D' {
-            infra_cache.load_track_section(create_track_section_cache(id.into(), 500.))
+            infra_cache.add(create_track_section_cache(id.into(), 500.))
         }
 
-        infra_cache.load_detector(create_detector_cache("D1", "B", 250.));
+        infra_cache.add(create_detector_cache("D1", "B", 250.));
 
-        infra_cache.load_buffer_stop(create_buffer_stop_cache("BF1", "A", 20.));
-        infra_cache.load_buffer_stop(create_buffer_stop_cache("BF2", "C", 480.));
-        infra_cache.load_buffer_stop(create_buffer_stop_cache("BF3", "D", 480.));
+        infra_cache.add(create_buffer_stop_cache("BF1", "A", 20.));
+        infra_cache.add(create_buffer_stop_cache("BF2", "C", 480.));
+        infra_cache.add(create_buffer_stop_cache("BF3", "D", 480.));
 
         let r1_path = vec![
             ("A", 20., 500., Direction::StartToStop),
             ("B", 0., 250., Direction::StartToStop),
         ];
-        infra_cache.load_route(create_route_cache(
+        infra_cache.add(create_route_cache(
             "R1",
             ObjectRef {
                 obj_type: ObjectType::BufferStop,
@@ -1201,7 +1008,7 @@ pub mod tests {
             ("B", 250., 500., Direction::StartToStop),
             ("C", 0., 480., Direction::StartToStop),
         ];
-        infra_cache.load_route(create_route_cache(
+        infra_cache.add(create_route_cache(
             "R2",
             ObjectRef {
                 obj_type: ObjectType::Detector,
@@ -1218,7 +1025,7 @@ pub mod tests {
             ("B", 250., 500., Direction::StartToStop),
             ("D", 0., 480., Direction::StartToStop),
         ];
-        infra_cache.load_route(create_route_cache(
+        infra_cache.add(create_route_cache(
             "R3",
             ObjectRef {
                 obj_type: ObjectType::Detector,
@@ -1237,9 +1044,9 @@ pub mod tests {
             create_track_endpoint(Endpoint::End, "A"),
             create_track_endpoint(Endpoint::Begin, "B"),
         );
-        infra_cache.load_track_section_link(link);
+        infra_cache.add(link);
 
-        infra_cache.load_switch_type(create_switch_type_cache(
+        infra_cache.add(create_switch_type_cache(
             "point",
             vec!["BASE".into(), "LEFT".into(), "RIGHT".into()],
             HashMap::from([
@@ -1261,7 +1068,7 @@ pub mod tests {
             ("RIGHT", create_track_endpoint(Endpoint::Begin, "D")),
             "point".into(),
         );
-        infra_cache.load_switch(switch);
+        infra_cache.add(switch);
 
         infra_cache
     }

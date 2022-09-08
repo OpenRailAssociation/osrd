@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use crate::infra_cache::Cache;
+use crate::infra_cache::ObjectCache;
 use crate::layer::Layer;
 
 use super::generate_id;
@@ -49,5 +51,18 @@ impl Layer for SpeedSection {
 
     fn get_obj_type() -> ObjectType {
         ObjectType::SpeedSection
+    }
+}
+
+impl Cache for SpeedSection {
+    fn get_track_referenced_id(&self) -> Vec<&String> {
+        self.track_ranges
+            .iter()
+            .map(|tr| &tr.track.obj_id)
+            .collect()
+    }
+
+    fn get_object_cache(&self) -> ObjectCache {
+        ObjectCache::SpeedSection(self.clone())
     }
 }

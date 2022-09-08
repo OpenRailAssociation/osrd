@@ -1,5 +1,7 @@
 use std::collections::HashSet;
 
+use crate::infra_cache::Cache;
+use crate::infra_cache::ObjectCache;
 use crate::layer::BoundingBox;
 use crate::layer::Layer;
 
@@ -7,9 +9,11 @@ use super::generate_id;
 use super::operation::OperationResult;
 use super::operation::RailjsonObject;
 use super::ApplicableDirections;
+use super::Endpoint;
 use super::OSRDObject;
 use super::ObjectRef;
 use super::ObjectType;
+use super::TrackEndpoint;
 use derivative::Derivative;
 use serde::{Deserialize, Serialize};
 
@@ -185,6 +189,65 @@ impl Layer for TrackSection {
         );
 
         Ok(())
+    }
+}
+
+#[derive(Debug, Clone, Derivative)]
+#[derivative(Hash, PartialEq)]
+pub struct TrackSectionCache {
+    pub obj_id: String,
+    #[derivative(Hash = "ignore", PartialEq = "ignore")]
+    pub length: f64,
+    #[derivative(Hash = "ignore", PartialEq = "ignore")]
+    pub bbox_geo: BoundingBox,
+    #[derivative(Hash = "ignore", PartialEq = "ignore")]
+    pub bbox_sch: BoundingBox,
+}
+
+impl OSRDObject for TrackSectionCache {
+    fn get_id(&self) -> &String {
+        &self.obj_id
+    }
+
+    fn get_type(&self) -> ObjectType {
+        ObjectType::TrackSection
+    }
+}
+
+impl TrackSectionCache {
+    pub fn get_begin(&self) -> TrackEndpoint {
+        TrackEndpoint {
+            endpoint: Endpoint::Begin,
+            track: self.get_ref(),
+        }
+    }
+
+    pub fn get_end(&self) -> TrackEndpoint {
+        TrackEndpoint {
+            endpoint: Endpoint::End,
+            track: self.get_ref(),
+        }
+    }
+}
+
+impl From<TrackSection> for TrackSectionCache {
+    fn from(track: TrackSection) -> Self {
+        TrackSectionCache {
+            obj_id: track.id,
+            length: track.length,
+            bbox_geo: track.geo.get_bbox(),
+            bbox_sch: track.sch.get_bbox(),
+        }
+    }
+}
+
+impl Cache for TrackSectionCache {
+    fn get_track_referenced_id(&self) -> Vec<&String> {
+        vec![]
+    }
+
+    fn get_object_cache(&self) -> ObjectCache {
+        ObjectCache::TrackSection(self.clone())
     }
 }
 

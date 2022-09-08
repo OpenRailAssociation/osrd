@@ -1,3 +1,5 @@
+use crate::infra_cache::Cache;
+use crate::infra_cache::ObjectCache;
 use crate::layer::Layer;
 
 use super::generate_id;
@@ -47,5 +49,15 @@ impl Layer for TrackSectionLink {
 
     fn get_obj_type() -> ObjectType {
         ObjectType::TrackSectionLink
+    }
+}
+
+impl Cache for TrackSectionLink {
+    fn get_track_referenced_id(&self) -> Vec<&String> {
+        vec![&self.src.track.obj_id, &self.dst.track.obj_id]
+    }
+
+    fn get_object_cache(&self) -> ObjectCache {
+        ObjectCache::TrackSectionLink(self.clone())
     }
 }

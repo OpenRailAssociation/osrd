@@ -35,7 +35,8 @@ pub fn insert_errors(
 pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
     let mut errors = vec![];
 
-    for (op_id, op) in infra_cache.operational_points.iter() {
+    for (op_id, op) in infra_cache.operational_points().iter() {
+        let op = op.unwrap_operational_point();
         if op.parts.is_empty() {
             let infra_error = InfraError::new_empty_object(op_id.clone(), "parts");
             errors.push(infra_error);
@@ -44,7 +45,7 @@ pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
         for (index, part) in op.parts.iter().enumerate() {
             // Retrieve invalid refs
             let track_id = &part.track.obj_id;
-            if !infra_cache.track_sections.contains_key(track_id) {
+            if !infra_cache.track_sections().contains_key(track_id) {
                 let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_id.clone());
                 let infra_error = InfraError::new_invalid_reference(
                     op_id.clone(),
@@ -55,7 +56,11 @@ pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
                 continue;
             }
 
-            let track_cache = infra_cache.track_sections.get(track_id).unwrap();
+            let track_cache = infra_cache
+                .track_sections()
+                .get(track_id)
+                .unwrap()
+                .unwrap_track_section();
             // Retrieve out of range
             if !(0.0..=track_cache.length).contains(&part.position) {
                 let infra_error = InfraError::new_out_of_range(
@@ -85,7 +90,7 @@ mod tests {
     #[test]
     fn invalid_ref() {
         let mut infra_cache = create_small_infra_cache();
-        infra_cache.load_operational_point(create_operational_point_cache("OP_error", "E", 250.));
+        infra_cache.add(create_operational_point_cache("OP_error", "E", 250.));
         let errors = generate_errors(&infra_cache);
         assert_eq!(1, errors.len());
         let obj_ref = ObjectRef::new(ObjectType::TrackSection, "E");
@@ -96,7 +101,7 @@ mod tests {
     #[test]
     fn out_of_range() {
         let mut infra_cache = create_small_infra_cache();
-        infra_cache.load_operational_point(create_operational_point_cache("OP_error", "A", 530.));
+        infra_cache.add(create_operational_point_cache("OP_error", "A", 530.));
         let errors = generate_errors(&infra_cache);
         assert_eq!(1, errors.len());
         let infra_error =
