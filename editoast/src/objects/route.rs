@@ -1,3 +1,5 @@
+use crate::infra_cache::Cache;
+use crate::infra_cache::ObjectCache;
 use crate::layer::Layer;
 
 use super::generate_id;
@@ -48,5 +50,15 @@ impl Layer for Route {
 
     fn get_obj_type() -> ObjectType {
         ObjectType::Route
+    }
+}
+
+impl Cache for Route {
+    fn get_track_referenced_id(&self) -> Vec<&String> {
+        self.path.iter().map(|tr| &tr.track.obj_id).collect()
+    }
+
+    fn get_object_cache(&self) -> ObjectCache {
+        ObjectCache::Route(self.clone())
     }
 }

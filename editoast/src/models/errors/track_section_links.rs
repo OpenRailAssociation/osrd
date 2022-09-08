@@ -3,7 +3,7 @@ use diesel::{sql_query, PgConnection, RunQueryDsl};
 use std::collections::HashMap;
 
 use super::InfraError;
-use crate::objects::{ObjectType, TrackEndpoint};
+use crate::objects::{OSRDObject, ObjectType, TrackEndpoint};
 use crate::{infra_cache::InfraCache, objects::ObjectRef};
 use diesel::result::Error as DieselError;
 use serde_json::to_value;
@@ -38,24 +38,22 @@ pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
 
     let mut switch_cache = HashMap::<&TrackEndpoint, ObjectRef>::new();
 
-    for switch in infra_cache.switches.values() {
-        let switch_ref = ObjectRef {
-            obj_type: ObjectType::Switch,
-            obj_id: switch.obj_id.clone(),
-        };
+    for switch in infra_cache.switches().values() {
+        let switch = switch.unwrap_switch();
         for port in switch.ports.values() {
-            switch_cache.insert(port, switch_ref.clone());
+            switch_cache.insert(port, switch.get_ref());
         }
     }
 
-    for (link_id, link) in infra_cache.track_section_links.iter() {
-        // Retrieve invalid refs
+    for (link_id, link) in infra_cache.track_section_links().iter() {
+        let link = link.unwrap_track_section_link();
 
+        // Retrieve invalid refs
         for (track_ref, pos) in [
             (link.src.track.obj_id.clone(), "src"),
             (link.dst.track.obj_id.clone(), "dst"),
         ] {
-            if !infra_cache.track_sections.contains_key(&track_ref) {
+            if !infra_cache.track_sections().contains_key(&track_ref) {
                 let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_ref);
                 let infra_error = InfraError::new_invalid_reference(
                     link_id.clone(),
@@ -72,12 +70,8 @@ pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
                 switch_cache.get(&link.src).unwrap().clone().to_owned(),
             ));
         } else {
-            let link_ref = ObjectRef {
-                obj_type: ObjectType::TrackSectionLink,
-                obj_id: link.id.clone(),
-            };
-            switch_cache.insert(&link.src, link_ref.clone());
-            switch_cache.insert(&link.dst, link_ref.clone());
+            switch_cache.insert(&link.src, link.get_ref());
+            switch_cache.insert(&link.dst, link.get_ref());
         }
     }
 
@@ -99,7 +93,7 @@ mod tests {
     #[test]
     fn single_invalid_ref_dst() {
         let mut infra_cache = create_small_infra_cache();
-        infra_cache.load_track_section_link(create_track_link_cache(
+        infra_cache.add(create_track_link_cache(
             "link_error",
             create_track_endpoint(Endpoint::End, "C"),
             create_track_endpoint(Endpoint::Begin, "E"),
@@ -114,7 +108,7 @@ mod tests {
     #[test]
     fn double_invalid_ref() {
         let mut infra_cache = create_small_infra_cache();
-        infra_cache.load_track_section_link(create_track_link_cache(
+        infra_cache.add(create_track_link_cache(
             "link_error",
             create_track_endpoint(Endpoint::End, "E"),
             create_track_endpoint(Endpoint::Begin, "F"),
@@ -132,7 +126,7 @@ mod tests {
     #[test]
     fn link_over_switch() {
         let mut infra_cache = create_small_infra_cache();
-        infra_cache.load_track_section_link(create_track_link_cache(
+        infra_cache.add(create_track_link_cache(
             "link_error",
             create_track_endpoint(Endpoint::End, "B"),
             create_track_endpoint(Endpoint::Begin, "C"),
@@ -150,7 +144,7 @@ mod tests {
     #[test]
     fn link_over_link() {
         let mut infra_cache = create_small_infra_cache();
-        infra_cache.load_track_section_link(create_track_link_cache(
+        infra_cache.add(create_track_link_cache(
             "link_error",
             create_track_endpoint(Endpoint::End, "A"),
             create_track_endpoint(Endpoint::Begin, "B"),

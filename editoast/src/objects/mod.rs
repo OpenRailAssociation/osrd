@@ -13,32 +13,26 @@ mod track_section;
 mod track_section_link;
 
 use derivative::Derivative;
+use enum_map::Enum;
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
 
-pub use buffer_stop::BufferStop;
+pub use buffer_stop::{BufferStop, BufferStopCache};
 pub use catenary::Catenary;
-pub use detector::Detector;
-pub use operational_point::{OperationalPoint, OperationalPointPart};
+pub use detector::{Detector, DetectorCache};
+pub use operational_point::{OperationalPoint, OperationalPointCache, OperationalPointPart};
 pub use route::Route;
-pub use signal::Signal;
+pub use signal::{Signal, SignalCache};
 pub use speed_section::SpeedSection;
-pub use switch::Switch;
+pub use switch::{Switch, SwitchCache};
 pub use switch_type::{SwitchPortConnection, SwitchType};
-pub use track_section::{LineString, TrackSection};
+pub use track_section::{LineString, TrackSection, TrackSectionCache};
 pub use track_section_link::TrackSectionLink;
 
 pub trait OSRDObject {
     fn get_id(&self) -> &String;
     fn get_type(&self) -> ObjectType;
-}
-
-pub trait Referable {
-    fn get_ref(&self) -> ObjectRef;
-}
-
-impl<T: OSRDObject> Referable for T {
     fn get_ref(&self) -> ObjectRef {
         ObjectRef::new(self.get_type(), self.get_id())
     }
@@ -54,7 +48,7 @@ fn generate_id(prefix: &str) -> String {
     )
 }
 
-#[derive(Debug, Clone, Copy, Deserialize, Hash, Eq, PartialEq, Serialize)]
+#[derive(Debug, Clone, Copy, Deserialize, Hash, Eq, PartialEq, Serialize, Enum)]
 #[serde(deny_unknown_fields)]
 pub enum ObjectType {
     TrackSection,

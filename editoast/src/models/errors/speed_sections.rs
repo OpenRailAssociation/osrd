@@ -34,7 +34,8 @@ pub fn insert_errors(
 
 pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
     let mut errors = vec![];
-    for (speed_id, speed_section) in infra_cache.speed_sections.iter() {
+    for (speed_id, speed_section) in infra_cache.speed_sections().iter() {
+        let speed_section = speed_section.unwrap_speed_section();
         if speed_section.track_ranges.is_empty() {
             let infra_error = InfraError::new_empty_object(speed_id.clone(), "track_ranges");
             errors.push(infra_error);
@@ -43,7 +44,7 @@ pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
         for (index, track_range) in speed_section.track_ranges.iter().enumerate() {
             // Retrieve invalid refs
             let track_id = &track_range.track.obj_id;
-            if !infra_cache.track_sections.contains_key(track_id) {
+            if !infra_cache.track_sections().contains_key(track_id) {
                 let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_id.clone());
                 let infra_error = InfraError::new_invalid_reference(
                     speed_id.clone(),
@@ -54,7 +55,11 @@ pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
                 continue;
             }
 
-            let track_cache = infra_cache.track_sections.get(track_id).unwrap();
+            let track_cache = infra_cache
+                .track_sections()
+                .get(track_id)
+                .unwrap()
+                .unwrap_track_section();
             // Retrieve out of range
             for (pos, field) in [(track_range.begin, "begin"), (track_range.end, "end")] {
                 if !(0.0..=track_cache.length).contains(&pos) {
@@ -87,7 +92,7 @@ mod tests {
     fn invalid_ref() {
         let mut infra_cache = create_small_infra_cache();
         let track_ranges_error = vec![("A", 20., 500.), ("E", 0., 500.), ("B", 0., 250.)];
-        infra_cache.load_speed_section(create_speed_section_cache("SP_error", track_ranges_error));
+        infra_cache.add(create_speed_section_cache("SP_error", track_ranges_error));
         let errors = generate_errors(&infra_cache);
         assert_eq!(1, errors.len());
         let obj_ref = ObjectRef::new(ObjectType::TrackSection, "E");
@@ -99,7 +104,7 @@ mod tests {
     fn out_of_range() {
         let mut infra_cache = create_small_infra_cache();
         let track_ranges_error = vec![("A", 20., 530.), ("B", 0., 250.)];
-        infra_cache.load_speed_section(create_speed_section_cache("SP_error", track_ranges_error));
+        infra_cache.add(create_speed_section_cache("SP_error", track_ranges_error));
         let errors = generate_errors(&infra_cache);
         assert_eq!(1, errors.len());
         let infra_error =

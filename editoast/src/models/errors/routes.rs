@@ -62,12 +62,14 @@ fn get_object(object: &ObjectRef, infra_cache: &InfraCache) -> Option<(String, f
     let obj_id = &object.obj_id;
     match object.obj_type {
         ObjectType::Detector => infra_cache
-            .detectors
+            .detectors()
             .get(obj_id)
+            .map(|d| d.unwrap_detector())
             .map(|d| (d.track.clone(), d.position)),
         ObjectType::BufferStop => infra_cache
-            .buffer_stops
+            .buffer_stops()
             .get(obj_id)
+            .map(|d| d.unwrap_buffer_stop())
             .map(|bs| (bs.track.clone(), bs.position)),
         _ => None,
     }
@@ -126,7 +128,8 @@ pub fn insert_errors(
 pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraError> {
     let mut errors = vec![];
 
-    for (route_id, route) in infra_cache.routes.iter() {
+    for (route_id, route) in infra_cache.routes().iter() {
+        let route = route.unwrap_route();
         if route.path.is_empty() {
             let infra_error = InfraError::new_empty_path(route_id.clone(), "path");
             errors.push(infra_error);
@@ -138,7 +141,7 @@ pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraErro
         for (index, path) in route.path.iter().enumerate() {
             // Retrieve invalid refs
             let track_id = &path.track.obj_id;
-            if !infra_cache.track_sections.contains_key(track_id) {
+            if !infra_cache.track_sections().contains_key(track_id) {
                 let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_id.clone());
                 let infra_error = InfraError::new_invalid_reference(
                     route_id.clone(),
@@ -150,7 +153,11 @@ pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraErro
                 continue;
             }
 
-            let track_cache = infra_cache.track_sections.get(track_id).unwrap();
+            let track_cache = infra_cache
+                .track_sections()
+                .get(track_id)
+                .unwrap()
+                .unwrap_track_section();
             // Retrieve out of range
             for (pos, field) in [(path.begin, "begin"), (path.end, "end")] {
                 if !(0.0..=track_cache.length).contains(&pos) {
@@ -206,7 +213,11 @@ pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraErro
             }
 
             // check for the ranges
-            let track_cache = infra_cache.track_sections.get(&prev.track.obj_id).unwrap();
+            let track_cache = infra_cache
+                .track_sections()
+                .get(&prev.track.obj_id)
+                .unwrap()
+                .unwrap_track_section();
             if (prev.direction == Direction::StartToStop && prev.end != track_cache.length)
                 || (prev.direction == Direction::StopToStart && prev.begin != 0.0)
             {
@@ -214,7 +225,11 @@ pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraErro
                 continue;
             }
 
-            let track_cache = infra_cache.track_sections.get(&next.track.obj_id).unwrap();
+            let track_cache = infra_cache
+                .track_sections()
+                .get(&next.track.obj_id)
+                .unwrap()
+                .unwrap_track_section();
             if (prev.direction == Direction::StartToStop && next.begin != 0.0)
                 || (prev.direction == Direction::StopToStart && next.end != track_cache.length)
             {
@@ -304,7 +319,7 @@ mod tests {
             ("E", 0., 500., Direction::StartToStop),
             ("B", 0., 250., Direction::StartToStop),
         ];
-        infra_cache.load_route(create_route_cache(
+        infra_cache.add(create_route_cache(
             "R_error",
             ObjectRef {
                 obj_type: ObjectType::BufferStop,
@@ -332,7 +347,7 @@ mod tests {
             ("A", 20., 600., Direction::StartToStop),
             ("B", 0., 250., Direction::StartToStop),
         ];
-        infra_cache.load_route(create_route_cache(
+        infra_cache.add(create_route_cache(
             "R_error",
             ObjectRef {
                 obj_type: ObjectType::BufferStop,
@@ -359,7 +374,7 @@ mod tests {
             ("A", 20., 500., Direction::StartToStop),
             ("B", 0., 250., Direction::StartToStop),
         ];
-        infra_cache.load_route(create_route_cache(
+        infra_cache.add(create_route_cache(
             "R_error",
             ObjectRef::new(ObjectType::BufferStop, "BF_non_existing"),
             ObjectRef::new(ObjectType::Detector, "D1"),
@@ -381,7 +396,7 @@ mod tests {
             ("A", 40., 500., Direction::StartToStop),
             ("B", 0., 250., Direction::StartToStop),
         ];
-        infra_cache.load_route(create_route_cache(
+        infra_cache.add(create_route_cache(
             "R_error",
             ObjectRef {
                 obj_type: ObjectType::BufferStop,
@@ -414,7 +429,7 @@ mod tests {
             ("A", 20., 500., Direction::StartToStop),
             ("B", 0., 250., Direction::StartToStop),
         ];
-        infra_cache.load_route(create_route_cache(
+        infra_cache.add(create_route_cache(
             "R_error",
             ObjectRef {
                 obj_type: ObjectType::BufferStop,
@@ -451,8 +466,8 @@ mod tests {
             ("A", 20., 500., Direction::StartToStop),
             ("B", 0., 250., Direction::StartToStop),
         ];
-        infra_cache.load_detector(create_detector_cache("D2", "C", 250.));
-        infra_cache.load_route(create_route_cache(
+        infra_cache.add(create_detector_cache("D2", "C", 250.));
+        infra_cache.add(create_route_cache(
             "R_error",
             ObjectRef {
                 obj_type: ObjectType::BufferStop,
@@ -483,7 +498,7 @@ mod tests {
             ("A", 20., 500., Direction::StartToStop),
             ("B", 100., 250., Direction::StartToStop),
         ];
-        infra_cache.load_route(create_route_cache(
+        infra_cache.add(create_route_cache(
             "R_error",
             ObjectRef {
                 obj_type: ObjectType::BufferStop,
@@ -511,7 +526,7 @@ mod tests {
             ("A", 300., 500., Direction::StartToStop),
             ("B", 0., 250., Direction::StartToStop),
         ];
-        infra_cache.load_route(create_route_cache(
+        infra_cache.add(create_route_cache(
             "R_error",
             ObjectRef {
                 obj_type: ObjectType::BufferStop,
@@ -538,8 +553,8 @@ mod tests {
             ("A", 20., 500., Direction::StartToStop),
             ("C", 0., 250., Direction::StartToStop),
         ];
-        infra_cache.load_detector(create_detector_cache("D2", "C", 250.));
-        infra_cache.load_route(create_route_cache(
+        infra_cache.add(create_detector_cache("D2", "C", 250.));
+        infra_cache.add(create_route_cache(
             "R_error",
             ObjectRef {
                 obj_type: ObjectType::BufferStop,
