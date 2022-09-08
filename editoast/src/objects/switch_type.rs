@@ -1,5 +1,8 @@
 use std::collections::HashMap;
 
+use crate::infra_cache::Cache;
+use crate::infra_cache::ObjectCache;
+
 use super::generate_id;
 use super::OSRDObject;
 use super::ObjectType;
@@ -33,4 +36,14 @@ pub struct SwitchPortConnection {
     pub src: String,
     pub dst: String,
     pub bidirectional: bool,
+}
+
+impl Cache for SwitchType {
+    fn get_track_referenced_id(&self) -> Vec<&String> {
+        vec![]
+    }
+
+    fn get_object_cache(&self) -> ObjectCache {
+        ObjectCache::SwitchType(self.clone())
+    }
 }

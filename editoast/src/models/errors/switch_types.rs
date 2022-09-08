@@ -36,7 +36,8 @@ pub fn insert_errors(
 pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
     let mut errors = vec![];
 
-    for (switch_type_id, switch_type) in infra_cache.switch_types.iter() {
+    for (switch_type_id, switch_type) in infra_cache.switch_types().iter() {
+        let switch_type = switch_type.unwrap_switch_type();
         let mut used_port = HashSet::new();
         let mut duplicate_port_connection = HashMap::new();
 
@@ -99,7 +100,7 @@ mod tests {
     #[test]
     fn unknown_port_name() {
         let mut infra_cache = create_small_infra_cache();
-        infra_cache.load_switch_type(create_switch_type_cache(
+        infra_cache.add(create_switch_type_cache(
             "ST_error",
             vec!["BASE".into(), "LEFT".into(), "RIGHT".into()],
             HashMap::from([
@@ -123,7 +124,7 @@ mod tests {
     #[test]
     fn duplicated_group() {
         let mut infra_cache = create_small_infra_cache();
-        infra_cache.load_switch_type(create_switch_type_cache(
+        infra_cache.add(create_switch_type_cache(
             "ST_error",
             vec!["BASE".into(), "LEFT".into(), "RIGHT".into()],
             HashMap::from([
@@ -148,7 +149,7 @@ mod tests {
     #[test]
     fn unused_port() {
         let mut infra_cache = create_small_infra_cache();
-        infra_cache.load_switch_type(create_switch_type_cache(
+        infra_cache.add(create_switch_type_cache(
             "ST_error",
             vec!["BASE".into(), "LEFT".into(), "RIGHT".into()],
             HashMap::from([(

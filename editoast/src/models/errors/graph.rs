@@ -18,7 +18,8 @@ impl<'a> Graph<'a> {
     pub fn load(infra_cache: &'a InfraCache) -> Self {
         let mut graph = Self::default();
 
-        for link in infra_cache.track_section_links.values() {
+        for link in infra_cache.track_section_links().values() {
+            let link = link.unwrap_track_section_link();
             match link.navigability {
                 ApplicableDirections::StartToStop => {
                     graph.link(&link.src, &link.dst);
@@ -33,8 +34,13 @@ impl<'a> Graph<'a> {
             }
         }
 
-        for switch in infra_cache.switches.values() {
-            let switch_type = infra_cache.switch_types.get(&switch.switch_type).unwrap();
+        for switch in infra_cache.switches().values() {
+            let switch = switch.unwrap_switch();
+            let switch_type = infra_cache
+                .switch_types()
+                .get(&switch.switch_type)
+                .unwrap()
+                .unwrap_switch_type();
             for group in switch_type.groups.values() {
                 for connection in group {
                     let src = switch.ports.get(&connection.src).unwrap();

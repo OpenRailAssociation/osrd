@@ -35,9 +35,10 @@ pub fn insert_errors(
 pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
     let mut errors = vec![];
 
-    for (detector_id, detector) in infra_cache.detectors.iter() {
+    for (detector_id, detector) in infra_cache.detectors().iter() {
+        let detector = detector.unwrap_detector();
         // Retrieve invalid refs
-        if !infra_cache.track_sections.contains_key(&detector.track) {
+        if !infra_cache.track_sections().contains_key(&detector.track) {
             let obj_ref = ObjectRef::new(ObjectType::TrackSection, detector.track.clone());
             let infra_error =
                 InfraError::new_invalid_reference(detector_id.clone(), "track", obj_ref);
@@ -45,7 +46,11 @@ pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
             continue;
         }
 
-        let track_cache = infra_cache.track_sections.get(&detector.track).unwrap();
+        let track_cache = infra_cache
+            .track_sections()
+            .get(&detector.track)
+            .unwrap()
+            .unwrap_track_section();
         // Retrieve out of range
         if !(0.0..=track_cache.length).contains(&detector.position) {
             let infra_error = InfraError::new_out_of_range(
@@ -74,7 +79,7 @@ mod tests {
     #[test]
     fn invalid_ref() {
         let mut infra_cache = create_small_infra_cache();
-        infra_cache.load_detector(create_detector_cache("D_error", "E", 250.));
+        infra_cache.add(create_detector_cache("D_error", "E", 250.));
         let errors = generate_errors(&infra_cache);
         assert_eq!(1, errors.len());
         let obj_ref = ObjectRef::new(ObjectType::TrackSection, "E");
@@ -85,7 +90,7 @@ mod tests {
     #[test]
     fn out_of_range() {
         let mut infra_cache = create_small_infra_cache();
-        infra_cache.load_detector(create_detector_cache("D_error", "A", 530.));
+        infra_cache.add(create_detector_cache("D_error", "A", 530.));
         let errors = generate_errors(&infra_cache);
         assert_eq!(1, errors.len());
         let infra_error = InfraError::new_out_of_range("D_error", "position", 530., [0.0, 500.]);

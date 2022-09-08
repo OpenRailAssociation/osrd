@@ -36,7 +36,7 @@ pub fn insert_errors(
 pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraError> {
     let mut errors = vec![];
 
-    for track_id in infra_cache.track_sections.keys() {
+    for track_id in infra_cache.track_sections().keys() {
         if let Some(e) = infra_cache.track_sections_refs.get(track_id) {
             if !e
                 .iter()
@@ -48,7 +48,8 @@ pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraErro
     }
 
     // topological error : no buffer stop on graph leaves
-    for (track_id, track_cache) in infra_cache.track_sections.iter() {
+    for (track_id, track_cache) in infra_cache.track_sections().iter() {
+        let track_cache = track_cache.unwrap_track_section();
         if graph.get_neighbours(&track_cache.get_begin()).is_none()
             || graph.get_neighbours(&track_cache.get_end()).is_none()
         {

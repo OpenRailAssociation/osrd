@@ -2,7 +2,7 @@ use super::params::List;
 use crate::client::ChartosConfig;
 use crate::error::{ApiResult, EditoastError, InfraLockedError};
 use crate::generate;
-use crate::infra_cache::InfraCache;
+use crate::infra_cache::{InfraCache, ObjectCache};
 use crate::layer::InvalidationZone;
 use crate::models::errors::generate_errors;
 use crate::models::infra_errors::get_paginated_infra_errors;
@@ -212,7 +212,14 @@ fn get_switch_types(
 
     Ok(Custom(
         Status::Ok,
-        Json(infra.switch_types.values().cloned().collect()),
+        Json(
+            infra
+                .switch_types()
+                .values()
+                .map(ObjectCache::unwrap_switch_type)
+                .cloned()
+                .collect(),
+        ),
     ))
 }
 
