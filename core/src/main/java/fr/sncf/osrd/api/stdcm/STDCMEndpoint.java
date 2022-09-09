@@ -32,6 +32,7 @@ import fr.sncf.osrd.standalone_sim.StandaloneSim;
 import fr.sncf.osrd.standalone_sim.result.ResultEnvelopePoint;
 import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
+import fr.sncf.osrd.train.TrainStop;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.graph.Pathfinding.EdgeLocation;
 import fr.sncf.osrd.utils.graph.Pathfinding.EdgeRange;
@@ -157,7 +158,9 @@ public class STDCMEndpoint implements Take {
             var endLocation = endLocMap.get(stdcmPath.get(stdcmPath.size() - 1).block.route);
 
             // Run a regular OSRD simulation
-            var trainSchedule = new StandaloneTrainSchedule(rollingStock, 0., List.of(), List.of(), List.of());
+            List<TrainStop> trainStops = new ArrayList<>();
+            trainStops.add(new TrainStop(endLocation.offset(), 0));
+            var trainSchedule = new StandaloneTrainSchedule(rollingStock, 0., trainStops, List.of(), List.of());
             var signalingRoutePath = stdcmPath.stream().map(blockUse -> blockUse.block.route).toList();
             var trainPath = TrainPathBuilder.from(
                     signalingRoutePath,
