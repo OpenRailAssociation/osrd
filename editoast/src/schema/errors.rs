@@ -1,26 +1,11 @@
-pub mod buffer_stops;
-pub mod detectors;
-pub mod graph;
-pub mod operational_points;
-pub mod routes;
-pub mod signals;
-pub mod speed_sections;
-pub mod switch_types;
-pub mod switches;
-pub mod track_section_links;
-pub mod track_sections;
+use std::fmt;
 
-use diesel::result::Error as DieselError;
-use diesel::{sql_query, sql_types::Integer, PgConnection, RunQueryDsl};
 use serde::{Deserialize, Serialize};
+use strum_macros::EnumIter;
 
-use crate::client::ChartosConfig;
-use crate::layer::invalidate_chartos_layer;
-use crate::{infra_cache::InfraCache, objects::ObjectRef};
+use crate::schema::ObjectRef;
 
-use self::routes::PathEndpointField;
-
-use graph::Graph;
+use super::{Direction, DirectionalTrackRange, Route};
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(deny_unknown_fields)]
@@ -75,8 +60,22 @@ enum InfraErrorType {
     OverlappingTrackLinks { reference: ObjectRef },
 }
 
+/// Represent the entry or exit point of a path
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, EnumIter, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub enum PathEndpointField {
+    #[serde(rename = "entry_point")]
+    EntryPoint,
+    #[serde(rename = "exit_point")]
+    ExitPoint,
+}
+
 impl InfraError {
-    fn new_invalid_reference<T: AsRef<str>, U: AsRef<str>>(
+    pub fn get_id(&self) -> &String {
+        &self.obj_id
+    }
+
+    pub fn new_invalid_reference<T: AsRef<str>, U: AsRef<str>>(
         obj_id: U,
         field: T,
         reference: ObjectRef,
@@ -89,7 +88,7 @@ impl InfraError {
         }
     }
 
-    fn new_out_of_range<T: AsRef<str>, U: AsRef<str>>(
+    pub fn new_out_of_range<T: AsRef<str>, U: AsRef<str>>(
         obj_id: U,
         field: T,
         position: f64,
@@ -106,7 +105,7 @@ impl InfraError {
         }
     }
 
-    fn new_empty_path<T: AsRef<str>, U: AsRef<str>>(obj_id: U, field: T) -> Self {
+    pub fn new_empty_path<T: AsRef<str>, U: AsRef<str>>(obj_id: U, field: T) -> Self {
         Self {
             field: field.as_ref().into(),
             is_warning: false,
@@ -115,7 +114,7 @@ impl InfraError {
         }
     }
 
-    fn new_path_does_not_match_endpoints<T: AsRef<str>, U: AsRef<str>>(
+    pub fn new_path_does_not_match_endpoints<T: AsRef<str>, U: AsRef<str>>(
         obj_id: U,
         field: T,
         expected_track: String,
@@ -134,7 +133,7 @@ impl InfraError {
         }
     }
 
-    fn new_empty_object<T: AsRef<str>, U: AsRef<str>>(obj_id: U, field: T) -> Self {
+    pub fn new_empty_object<T: AsRef<str>, U: AsRef<str>>(obj_id: U, field: T) -> Self {
         Self {
             field: field.as_ref().into(),
             is_warning: true,
@@ -143,7 +142,7 @@ impl InfraError {
         }
     }
 
-    fn new_object_out_of_path<T: AsRef<str>, U: AsRef<str>>(
+    pub fn new_object_out_of_path<T: AsRef<str>, U: AsRef<str>>(
         obj_id: U,
         field: T,
         position: f64,
@@ -157,7 +156,7 @@ impl InfraError {
         }
     }
 
-    fn new_missing_route<U: AsRef<str>>(obj_id: U) -> Self {
+    pub fn new_missing_route<U: AsRef<str>>(obj_id: U) -> Self {
         Self {
             field: Default::default(),
             is_warning: true,
@@ -166,7 +165,7 @@ impl InfraError {
         }
     }
 
-    fn new_unknown_port_name<T: AsRef<str>, U: AsRef<str>>(
+    pub fn new_unknown_port_name<T: AsRef<str>, U: AsRef<str>>(
         obj_id: U,
         field: T,
         port_name: String,
@@ -179,7 +178,7 @@ impl InfraError {
         }
     }
 
-    fn new_invalid_switch_ports<T: AsRef<str>, U: AsRef<str>>(obj_id: U, field: T) -> Self {
+    pub fn new_invalid_switch_ports<T: AsRef<str>, U: AsRef<str>>(obj_id: U, field: T) -> Self {
         Self {
             field: field.as_ref().into(),
             is_warning: false,
@@ -188,7 +187,7 @@ impl InfraError {
         }
     }
 
-    fn new_unused_port<T: AsRef<str>, U: AsRef<str>>(
+    pub fn new_unused_port<T: AsRef<str>, U: AsRef<str>>(
         obj_id: U,
         field: T,
         port_name: String,
@@ -201,7 +200,7 @@ impl InfraError {
         }
     }
 
-    fn new_duplicated_group<T: AsRef<str>, U: AsRef<str>>(
+    pub fn new_duplicated_group<T: AsRef<str>, U: AsRef<str>>(
         obj_id: U,
         field: T,
         original_group_path: String,
@@ -216,7 +215,7 @@ impl InfraError {
         }
     }
 
-    fn new_no_buffer_stop<T: AsRef<str>, U: AsRef<str>>(obj_id: U, field: T) -> Self {
+    pub fn new_no_buffer_stop<T: AsRef<str>, U: AsRef<str>>(obj_id: U, field: T) -> Self {
         Self {
             field: field.as_ref().into(),
             is_warning: true,
@@ -225,7 +224,7 @@ impl InfraError {
         }
     }
 
-    fn new_path_is_not_continuous<T: AsRef<str>, U: AsRef<str>>(obj_id: U, field: T) -> Self {
+    pub fn new_path_is_not_continuous<T: AsRef<str>, U: AsRef<str>>(obj_id: U, field: T) -> Self {
         Self {
             field: field.as_ref().into(),
             is_warning: false,
@@ -234,7 +233,7 @@ impl InfraError {
         }
     }
 
-    fn new_overlapping_switches<U: AsRef<str>>(obj_id: U, reference: ObjectRef) -> Self {
+    pub fn new_overlapping_switches<U: AsRef<str>>(obj_id: U, reference: ObjectRef) -> Self {
         Self {
             field: Default::default(),
             is_warning: false,
@@ -243,7 +242,7 @@ impl InfraError {
         }
     }
 
-    fn new_overlapping_track_links<U: AsRef<str>>(obj_id: U, reference: ObjectRef) -> Self {
+    pub fn new_overlapping_track_links<U: AsRef<str>>(obj_id: U, reference: ObjectRef) -> Self {
         Self {
             field: Default::default(),
             is_warning: true,
@@ -253,34 +252,34 @@ impl InfraError {
     }
 }
 
-/// This function regenerate the errors and warnings of the infra
-pub fn generate_errors(
-    conn: &PgConnection,
-    infra: i32,
-    infra_cache: &InfraCache,
-    chartos_config: &ChartosConfig,
-) -> Result<(), DieselError> {
-    // Clear the whole layer
-    sql_query("DELETE FROM osrd_infra_errorlayer WHERE infra_id = $1")
-        .bind::<Integer, _>(infra)
-        .execute(conn)?;
+impl PathEndpointField {
+    /// Given a path, retrieve track id and position offset of the path endpoint location
+    pub fn get_path_location(&self, path: &[DirectionalTrackRange]) -> (String, f64) {
+        let track_range = match self {
+            PathEndpointField::EntryPoint => path.first().unwrap(),
+            PathEndpointField::ExitPoint => path.last().unwrap(),
+        };
 
-    // Create a graph for topological errors
-    let graph = Graph::load(infra_cache);
+        let pos = match (self, &track_range.direction) {
+            (PathEndpointField::EntryPoint, Direction::StartToStop) => track_range.begin,
+            (PathEndpointField::EntryPoint, Direction::StopToStart) => track_range.end,
+            (PathEndpointField::ExitPoint, Direction::StartToStop) => track_range.end,
+            (PathEndpointField::ExitPoint, Direction::StopToStart) => track_range.begin,
+        };
 
-    // Generate the errors
-    track_sections::insert_errors(conn, infra, infra_cache, &graph)?;
-    signals::insert_errors(conn, infra, infra_cache)?;
-    speed_sections::insert_errors(conn, infra, infra_cache)?;
-    track_section_links::insert_errors(conn, infra, infra_cache)?;
-    switch_types::insert_errors(conn, infra, infra_cache)?;
-    switches::insert_errors(conn, infra, infra_cache)?;
-    detectors::insert_errors(conn, infra, infra_cache)?;
-    buffer_stops::insert_errors(conn, infra, infra_cache)?;
-    routes::insert_errors(conn, infra, infra_cache, &graph)?;
-    operational_points::insert_errors(conn, infra, infra_cache)?;
+        (track_range.track.obj_id.clone(), pos)
+    }
 
-    // Invalidate chartos cache
-    invalidate_chartos_layer(infra, "errors", chartos_config);
-    Ok(())
+    pub fn get_route_endpoint<'a>(&self, route: &'a Route) -> &'a ObjectRef {
+        match self {
+            PathEndpointField::EntryPoint => &route.entry_point,
+            PathEndpointField::ExitPoint => &route.exit_point,
+        }
+    }
+}
+
+impl fmt::Display for PathEndpointField {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", serde_json::to_string(self).unwrap())
+    }
 }

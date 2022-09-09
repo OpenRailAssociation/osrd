@@ -1,7 +1,6 @@
 use super::graph::Graph;
-use super::InfraError;
 use crate::infra_cache::InfraCache;
-use crate::objects::ObjectType;
+use crate::schema::{InfraError, ObjectType};
 use diesel::result::Error as DieselError;
 use diesel::sql_types::{Array, Integer, Json, Text};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
@@ -19,7 +18,7 @@ pub fn insert_errors(
     let mut errors = vec![];
 
     for error in infra_errors {
-        track_ids.push(error.obj_id.clone());
+        track_ids.push(error.get_id().clone());
         errors.push(to_value(error).unwrap());
     }
 
@@ -72,11 +71,9 @@ pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraErro
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        infra_cache::tests::create_small_infra_cache,
-        models::errors::graph::Graph,
-        objects::{ObjectRef, ObjectType},
-    };
+    use crate::errors::graph::Graph;
+    use crate::infra_cache::tests::create_small_infra_cache;
+    use crate::schema::{ObjectRef, ObjectType};
 
     use super::generate_errors;
     use super::InfraError;

@@ -1,7 +1,7 @@
 use super::OperationError;
-use crate::error::ApiError;
-use crate::objects::operation::RailjsonObject;
-use crate::objects::{OSRDObject, ObjectType};
+use crate::api_error::ApiError;
+use crate::schema::operation::RailjsonObject;
+use crate::schema::{OSRDObject, ObjectType};
 use diesel::sql_types::{Integer, Json, Jsonb, Text};
 use diesel::{sql_query, PgConnection, QueryableByName, RunQueryDsl};
 use json_patch::Patch;
@@ -114,11 +114,11 @@ impl DataObject {
 #[cfg(test)]
 mod tests {
     use super::UpdateOperation;
-    use crate::error::ApiError;
-    use crate::models::infra::tests::test_transaction;
-    use crate::objects::operation::create::tests::{create_signal, create_speed, create_track};
-    use crate::objects::operation::OperationError;
-    use crate::objects::{OSRDObject, ObjectType};
+    use crate::api_error::ApiError;
+    use crate::infra::tests::test_transaction;
+    use crate::schema::operation::create::tests::{create_signal, create_speed, create_track};
+    use crate::schema::operation::OperationError;
+    use crate::schema::{OSRDObject, ObjectType};
     use diesel::sql_query;
     use diesel::sql_types::{Double, Text};
     use diesel::RunQueryDsl;

@@ -6,8 +6,8 @@ pub use invalidate_chartos::{invalidate_bbox_chartos_layer, invalidate_chartos_l
 
 use crate::client::ChartosConfig;
 use crate::infra_cache::InfraCache;
-use crate::objects::operation::{OperationResult, RailjsonObject};
-use crate::objects::{OSRDObject, ObjectType};
+use crate::schema::operation::{OperationResult, RailjsonObject};
+use crate::schema::{OSRDObject, ObjectType};
 use diesel::prelude::*;
 use diesel::result::Error;
 use diesel::sql_query;

@@ -1,7 +1,7 @@
 use super::OperationError;
-use crate::error::ApiError;
-use crate::objects::ObjectRef;
-use crate::objects::ObjectType;
+use crate::api_error::ApiError;
+use crate::schema::ObjectRef;
+use crate::schema::ObjectType;
 use diesel::sql_types::{Integer, Text};
 use diesel::RunQueryDsl;
 use diesel::{sql_query, PgConnection};
@@ -54,13 +54,13 @@ impl From<ObjectRef> for DeleteOperation {
 
 #[cfg(test)]
 mod tests {
-    use crate::models::infra::tests::test_transaction;
-    use crate::objects::operation::create::tests::{
+    use crate::infra::tests::test_transaction;
+    use crate::schema::operation::create::tests::{
         create_buffer_stop, create_catenary, create_detector, create_link, create_op, create_route,
         create_signal, create_speed, create_switch, create_track,
     };
-    use crate::objects::operation::delete::DeleteOperation;
-    use crate::objects::OSRDObject;
+    use crate::schema::operation::delete::DeleteOperation;
+    use crate::schema::OSRDObject;
     use diesel::sql_types::BigInt;
     use diesel::{sql_query, RunQueryDsl};
 
