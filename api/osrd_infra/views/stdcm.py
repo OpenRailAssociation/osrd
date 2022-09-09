@@ -56,8 +56,8 @@ def make_route_occupancies(timetable):
             res.append(
                 {
                     "id": route_id,
-                    "start_occupancy_time": occupancy["time_head_occupy"],
-                    "end_occupancy_time": occupancy["time_tail_free"],
+                    "start_occupancy_time": occupancy["time_head_occupy"] + schedule.departure_time,
+                    "end_occupancy_time": occupancy["time_tail_free"] + schedule.departure_time,
                 }
             )
     return res
