@@ -151,7 +151,7 @@ impl Layer for TrackSection {
     fn update(
         conn: &diesel::PgConnection,
         infra: i32,
-        operations: &Vec<super::operation::OperationResult>,
+        operations: &Vec<OperationResult>,
         _: &crate::infra_cache::InfraCache,
         invalid_zone: &crate::layer::InvalidationZone,
         chartos_config: &crate::client::ChartosConfig,
