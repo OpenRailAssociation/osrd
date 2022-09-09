@@ -1,8 +1,8 @@
 import { DEFAULT_MODE, DEFAULT_STDCM_MODE } from 'applications/osrd/consts';
 
+import { getSwitchTypes } from '../applications/editor/data/api';
 /* eslint-disable default-case */
 import produce from 'immer';
-import { getSwitchTypes } from '../applications/editor/data/api';
 
 // Action Types
 export const UPDATE_MODE = 'osrdconf/UPDATE_MODE';
@@ -199,8 +199,13 @@ export function updateInfraID(infraID) {
     });
     dispatch(updateSwitchTypes({}));
 
-    const newSwitchTypes = await getSwitchTypes(infraID);
-    dispatch(updateSwitchTypes(newSwitchTypes));
+    try {
+      const newSwitchTypes = await getSwitchTypes(infraID);
+      dispatch(updateSwitchTypes(newSwitchTypes));
+    }
+    catch (e) {
+      console.log("error on switch type retrieval", e);
+    }
   };
 }
 export function updatePathfindingID(pathfindingID) {
