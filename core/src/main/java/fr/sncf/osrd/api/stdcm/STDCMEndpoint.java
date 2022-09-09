@@ -9,8 +9,10 @@ import fr.sncf.osrd.api.pathfinding.PathfindingResultConverter;
 import fr.sncf.osrd.api.pathfinding.PathfindingRoutesEndpoint;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.api.pathfinding.response.NoPathFoundError;
+import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
+import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceConvergenceException;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
@@ -196,23 +198,31 @@ public class STDCMEndpoint implements Take {
             // Step 3: add margins so the train reaches its block in the allotted time range
             var allowanceRanges = new ArrayList<AllowanceRange>();
             var totalDelay = 0.;
+            var endLastRange = 0.;
             for (int i = 0; i < stdcmPath.size(); i++) {
                 var simulatedEntryTime = startTime + blockEntryTimes[i] + totalDelay;
                 var allowedEntryTime = stdcmPath.get(i).reservationStartTime;
                 logger.info("block {}: sim entry time {}, allowed time {}", i, simulatedEntryTime, allowedEntryTime);
-                var blockDelay = 0.;
-                if (simulatedEntryTime < allowedEntryTime)
-                    blockDelay = allowedEntryTime - simulatedEntryTime + 1.;
-                totalDelay += blockDelay;
-                var allowanceValue = new AllowanceValue.FixedTime(blockDelay);
-                allowanceRanges.add(new AllowanceRange(blockBounds[i], blockBounds[i + 1], allowanceValue));
+                if (simulatedEntryTime < allowedEntryTime) {
+                    var blockDelay = allowedEntryTime - simulatedEntryTime + 1.;
+                    totalDelay += blockDelay;
+                    var allowanceValue = new AllowanceValue.FixedTime(blockDelay);
+                    var newRange = new AllowanceRange(endLastRange, blockBounds[i], allowanceValue);
+                    allowanceRanges.add(newRange);
+                    endLastRange = blockBounds[i];
+                    logger.info("\t\tadding {}s of delay from position {} to {}",
+                            blockDelay, newRange.beginPos, newRange.endPos);
+                }
             }
+            allowanceRanges.add(
+                    new AllowanceRange(endLastRange, baseEnvelope.getEndPos(), new AllowanceValue.FixedTime(0))
+            );
 
             var allowance = new MarecoAllowance(
                     new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
                     0,
                     envelopePath.length,
-                    5 / 3.6,
+                    0,
                     allowanceRanges
             );
             var stdcmEnvelope = StandaloneSim.applyAllowances(baseEnvelope, List.of(allowance));
