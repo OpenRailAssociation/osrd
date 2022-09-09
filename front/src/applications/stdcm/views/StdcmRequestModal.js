@@ -1,11 +1,22 @@
-import React, { useEffect } from 'react';
+import {
+  KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
+  timetableURI,
+  trainscheduleURI,
+} from 'applications/osrd/views/OSRDSimulation/OSRDSimulation';
+import React, { useEffect, useState } from 'react';
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import { setFailure, setSuccess } from 'reducers/main.ts';
 // osrd Redux reducers
-import { updateConsolidatedSimulation, updateSimulation } from 'reducers/osrdsimulation';
+import {
+  updateAllowancesSettings,
+  updateConsolidatedSimulation,
+  updateMustRedraw,
+  updateSelectedProjection,
+  updateSelectedTrain,
+  updateSimulation,
+} from 'reducers/osrdsimulation';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { KEY_VALUES_FOR_CONSOLIDATED_SIMULATION } from 'applications/osrd/views/OSRDSimulation/OSRDSimulation';
 import { MAIN_API } from 'config/config';
 // Generic components
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
@@ -24,17 +35,11 @@ import { useTranslation } from 'react-i18next';
 export default function StdcmRequestModal(props) {
   const { t } = useTranslation(['translation', 'osrdconf']);
   const osrdconf = useSelector((state) => state.osrdconf);
+  const { timetableID } = useSelector((state) => state.osrdconf);
+  const { allowancesSettings, selectedProjection } = useSelector((state) => state.osrdsimulation);
+  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
 
-  /*
-  NICOLAS WURTZ REMINDER:
-  THE MODAL (react) is now open when currentStdcmRequestStatus == pending.
-  To adapt these to real data behavior
-  1 / stdcmRequest method: retun an axios query which can be canceled. l46-46 resolve with results (simulation data)
-  2 / Maange empty results (setCurrentStdcmRequestStatus with stdcmRequestStatus.noResults )
-  3 / Manage rejected (400, 501 ?) stdcmRequestStatus.rejected
-  4/ manage cancelation from axios inide the 49-50 abort event listener or the l99+ cancelStdcmRequest method
-  */
 
   // Theses are prop-drilled from OSRDSTDCM Component, which is conductor.
   // Remains fit with one-level limit
@@ -62,26 +67,53 @@ export default function StdcmRequestModal(props) {
 
           // We need to adapt the result simulation data to the format needed for the timetable and the speedspace diagram
 
-          const fakedSimulationByTrain = {
-            trains: [result.data.simulation],
-          };
-          fakedSimulationByTrain.trains[0].base.stops =
-            fakedSimulationByTrain.trains[0].base.head_positions[0].map((headPosition, index) => ({
-              id: null,
+          const fakedNewTrain = result.data.simulation;
+          fakedNewTrain.id = 1500;
+
+          fakedNewTrain.base.stops = fakedNewTrain.base.head_positions[0].map(
+            (headPosition, index) => ({
+              id: 1500,
               name: `stop ${index}`,
               time: headPosition.time,
               position: headPosition.position,
               duration: 0,
-            }));
+            })
+          );
 
-            const consolidatedSimulation = createTrain(
+          const newSimulation = { ...simulation };
+
+          console.log('simulation clone', newSimulation);
+
+          newSimulation.trains = [...newSimulation.trains, fakedNewTrain];
+
+          //const newSimulationsTrains = [...simulation.trains, fakedNewTrain]
+
+          const newAllowancesSettings = { ...allowancesSettings };
+
+          if (!newAllowancesSettings[1500]) {
+            newAllowancesSettings[1500] = {
+              base: true,
+              baseBlocks: true,
+              eco: true,
+              ecoBlocks: false,
+            };
+          }
+
+          dispatch(updateAllowancesSettings(newAllowancesSettings));
+
+          dispatch(updateMustRedraw(true));
+
+          console.log(newSimulation);
+
+          const consolidatedSimulation = createTrain(
             dispatch,
             KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
-            fakedSimulationByTrain.trains,
+            newSimulation.trains,
             t
           );
           dispatch(updateConsolidatedSimulation(consolidatedSimulation));
-          dispatch(updateSimulation(fakedSimulationByTrain));
+          dispatch(updateSimulation(newSimulation));
+          dispatch(updateSelectedTrain(newSimulation.trains.length - 1));
 
           console.log('Accomplished Promise', result);
         })
@@ -93,7 +125,7 @@ export default function StdcmRequestModal(props) {
           dispatch(
             setFailure({
               name: t('osrdconf:errorMessages.stdcmError'),
-              message: t('osrdconf:errorMessages.noDestination'),
+              message: e?.response?.data?.message, // axios error, def is ok
             })
           );
 
@@ -118,24 +150,6 @@ export default function StdcmRequestModal(props) {
     );
     dispatch(updateConsolidatedSimulation(consolidatedSimulation));
     dispatch(updateSimulation(emptySimulation));
-  };
-
-  const simulateNoResults = () => {
-    console.log('no results');
-
-    controller.abort();
-
-    const emptySimulation = { trains: [] };
-    const consolidatedSimulation = createTrain(
-      dispatch,
-      KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
-      emptySimulation.trains,
-      t
-    );
-    dispatch(updateConsolidatedSimulation(consolidatedSimulation));
-    dispatch(updateSimulation(emptySimulation));
-
-    setCurrentStdcmRequestStatus(stdcmRequestStatus.noresults);
   };
 
   return (
@@ -182,7 +196,6 @@ export default function StdcmRequestModal(props) {
                   </span>
                 </button>
               </div>
-
             </div>
           </ModalBodySNCF>
         </div>
