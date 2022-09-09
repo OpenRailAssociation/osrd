@@ -160,9 +160,6 @@ public class STDCMEndpoint implements Take {
             var endLocation = endLocMap.get(stdcmPath.get(stdcmPath.size() - 1).block.route);
 
             // Run a regular OSRD simulation
-            List<TrainStop> trainStops = new ArrayList<>();
-            trainStops.add(new TrainStop(endLocation.offset(), 0));
-            var trainSchedule = new StandaloneTrainSchedule(rollingStock, 0., trainStops, List.of(), List.of());
             var signalingRoutePath = stdcmPath.stream().map(blockUse -> blockUse.block.route).toList();
             var trainPath = TrainPathBuilder.from(
                     signalingRoutePath,
@@ -172,6 +169,9 @@ public class STDCMEndpoint implements Take {
 
             var envelopePath = EnvelopeTrainPath.from(trainPath);
             var timeStep = 2.;
+            List<TrainStop> trainStops = new ArrayList<>();
+            trainStops.add(new TrainStop(envelopePath.length, 0.1));
+            var trainSchedule = new StandaloneTrainSchedule(rollingStock, 0., trainStops, List.of(), List.of());
 
             // Compute the most restricted speed profile
             var mrsp = MRSP.from(trainPath, trainSchedule.rollingStock, true, trainSchedule.tags);
