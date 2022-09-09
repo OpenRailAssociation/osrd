@@ -1,9 +1,8 @@
 use diesel::sql_types::{Array, Integer, Json, Text};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
 
-use super::InfraError;
-use crate::objects::ObjectType;
-use crate::{infra_cache::InfraCache, objects::ObjectRef};
+use crate::infra_cache::InfraCache;
+use crate::schema::{InfraError, ObjectRef, ObjectType};
 use diesel::result::Error as DieselError;
 use serde_json::to_value;
 
@@ -18,7 +17,7 @@ pub fn insert_errors(
     let mut errors = vec![];
 
     for error in infra_errors {
-        op_ids.push(error.obj_id.clone());
+        op_ids.push(error.get_id().clone());
         errors.push(to_value(error).unwrap());
     }
 
@@ -79,10 +78,8 @@ pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        infra_cache::tests::{create_operational_point_cache, create_small_infra_cache},
-        objects::{ObjectRef, ObjectType},
-    };
+    use crate::infra_cache::tests::{create_operational_point_cache, create_small_infra_cache};
+    use crate::schema::{ObjectRef, ObjectType};
 
     use super::generate_errors;
     use super::InfraError;

@@ -1,12 +1,10 @@
+use crate::infra_cache::InfraCache;
+use crate::schema::{InfraError, OSRDObject, ObjectRef, ObjectType, TrackEndpoint};
+use diesel::result::Error as DieselError;
 use diesel::sql_types::{Array, Integer, Json, Text};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
-use std::collections::HashMap;
-
-use super::InfraError;
-use crate::objects::{OSRDObject, ObjectType, TrackEndpoint};
-use crate::{infra_cache::InfraCache, objects::ObjectRef};
-use diesel::result::Error as DieselError;
 use serde_json::to_value;
+use std::collections::HashMap;
 
 pub fn insert_errors(
     conn: &PgConnection,
@@ -19,7 +17,7 @@ pub fn insert_errors(
     let mut errors = vec![];
 
     for error in infra_errors {
-        link_ids.push(error.obj_id.clone());
+        link_ids.push(error.get_id().clone());
         errors.push(to_value(error).unwrap());
     }
 
@@ -84,7 +82,7 @@ mod tests {
         infra_cache::tests::{
             create_small_infra_cache, create_track_endpoint, create_track_link_cache,
         },
-        objects::{Endpoint, ObjectRef, ObjectType},
+        schema::{Endpoint, ObjectRef, ObjectType},
     };
 
     use super::generate_errors;

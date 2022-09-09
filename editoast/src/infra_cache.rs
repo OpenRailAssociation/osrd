@@ -1,5 +1,5 @@
-use crate::objects::operation::{OperationResult, RailjsonObject};
-use crate::objects::*;
+use crate::schema::operation::{OperationResult, RailjsonObject};
+use crate::schema::*;
 use diesel::sql_types::{Double, Integer, Nullable, Text};
 use diesel::PgConnection;
 use diesel::{sql_query, QueryableByName, RunQueryDsl};
@@ -608,22 +608,22 @@ impl InfraCache {
 pub mod tests {
     use std::collections::HashMap;
 
+    use crate::errors::graph::Graph;
+    use crate::infra::tests::test_transaction;
     use crate::infra_cache::{InfraCache, SwitchCache};
     use crate::layer::BoundingBox;
-    use crate::models::errors::graph::Graph;
-    use crate::models::infra::tests::test_transaction;
-    use crate::objects::operation::create::tests::{
+    use crate::schema::operation::create::tests::{
         create_buffer_stop, create_catenary, create_detector, create_link, create_op, create_route,
         create_signal, create_speed, create_switch, create_switch_type, create_track,
     };
-    use crate::objects::{
+    use crate::schema::{
         ApplicableDirections, ApplicableDirectionsTrackRange, Catenary, Direction,
         DirectionalTrackRange, Endpoint, OSRDObject, ObjectRef, ObjectType, OperationalPoint,
         OperationalPointPart, Route, SpeedSection, Switch, SwitchPortConnection, SwitchType,
         TrackEndpoint, TrackSectionLink,
     };
 
-    use crate::models::errors::{
+    use crate::errors::{
         buffer_stops, detectors, operational_points, routes, signals, speed_sections, switch_types,
         switches, track_section_links, track_sections,
     };
