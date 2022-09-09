@@ -139,11 +139,12 @@ export default function SpaceTimeChart(props) {
 
       drawAxisTitle(chartLocal, rotate);
       currentDataSimulation.forEach((train, idx) => {
+
         drawTrain(
           chartLocal,
           dispatch,
           train,
-          train.id === selectedProjection.id,
+          train.id === selectedProjection?.id,
           idx === selectedTrain,
           keyValues,
           allowancesSettings,
@@ -218,6 +219,7 @@ export default function SpaceTimeChart(props) {
     const newDataSimulation = createTrain(dispatch, keyValues, simulation.trains, t)
     if (dataSimulation) {
       // ADN drawAllTrain already traceVerticalLines
+
       drawAllTrains(resetChart, true, newDataSimulation);
       handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
     }
