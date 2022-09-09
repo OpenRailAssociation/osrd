@@ -1,35 +1,34 @@
-import {
-  KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
-  timetableURI,
-  trainscheduleURI,
-} from 'applications/osrd/views/OSRDSimulation/OSRDSimulation';
-import React, { useEffect, useState } from 'react';
-import axios, { AxiosError, AxiosRequestConfig } from 'axios';
-import { setFailure, setSuccess } from 'reducers/main.ts';
+import React, { useEffect } from 'react';
 // osrd Redux reducers
 import {
   updateAllowancesSettings,
   updateConsolidatedSimulation,
   updateMustRedraw,
-  updateSelectedProjection,
   updateSelectedTrain,
   updateSimulation,
 } from 'reducers/osrdsimulation';
 import { useDispatch, useSelector } from 'react-redux';
 
+import {
+  KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
+} from 'applications/osrd/views/OSRDSimulation/OSRDSimulation';
 import { MAIN_API } from 'config/config';
 // Generic components
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import PropTypes from 'prop-types';
 import ReactModal from 'react-modal';
+import axios from 'axios';
 // OSRD helpers
 import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/createTrain';
-import fakeSimulation from 'applications/stdcm/fakeSimulation';
 import formatStdcmConf from 'applications/stdcm/formatStcmConf';
 // Static Data and Assets
 import rabbit from 'assets/pictures/KLCW_nc_standard.png';
+import { setFailure } from 'reducers/main.ts';
 import { stdcmRequestStatus } from 'applications/stdcm/views/OSRDSTDCM';
+import {
+  updateItinerary
+} from 'reducers/osrdconf';
 import { useTranslation } from 'react-i18next';
 
 export default function StdcmRequestModal(props) {
@@ -63,9 +62,7 @@ export default function StdcmRequestModal(props) {
         .then((result) => {
           setCurrentStdcmRequestStatus(stdcmRequestStatus.success);
 
-          // Attention: we need these two object in store to be update. the simulation->consolidated simulaion is usually done by OSRDSimulation, which is bad.
-
-          // We need to adapt the result simulation data to the format needed for the timetable and the speedspace diagram
+          dispatch(updateItinerary(result.data.path));
 
           const fakedNewTrain = result.data.simulation;
           fakedNewTrain.id = 1500;
@@ -82,11 +79,9 @@ export default function StdcmRequestModal(props) {
 
           const newSimulation = { ...simulation };
 
-          console.log('simulation clone', newSimulation);
+
 
           newSimulation.trains = [...newSimulation.trains, fakedNewTrain];
-
-          //const newSimulationsTrains = [...simulation.trains, fakedNewTrain]
 
           const newAllowancesSettings = { ...allowancesSettings };
 
@@ -115,7 +110,7 @@ export default function StdcmRequestModal(props) {
           dispatch(updateSimulation(newSimulation));
           dispatch(updateSelectedTrain(newSimulation.trains.length - 1));
 
-          console.log('Accomplished Promise', result);
+
         })
         .catch((e) => {
           // Update simu in redux with data;
