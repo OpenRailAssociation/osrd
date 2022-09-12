@@ -9,17 +9,13 @@ import fr.sncf.osrd.api.pathfinding.PathfindingResultConverter;
 import fr.sncf.osrd.api.pathfinding.PathfindingRoutesEndpoint;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.api.pathfinding.response.NoPathFoundError;
-import fr.sncf.osrd.envelope.Envelope;
-import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
-import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceConvergenceException;
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
+import fr.sncf.osrd.envelope_sim.EnvelopePath;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.envelope_sim_infra.MRSP;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
+import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
@@ -30,9 +26,9 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceValue;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.standalone_sim.ScheduleMetadataExtractor;
-import fr.sncf.osrd.standalone_sim.StandaloneSim;
 import fr.sncf.osrd.standalone_sim.result.ResultEnvelopePoint;
 import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult;
+import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.train.TrainStop;
 import fr.sncf.osrd.utils.graph.Pathfinding;
@@ -150,82 +146,29 @@ public class STDCMEndpoint implements Take {
 
             // Convert the STDCM path (which sort of works with signaling routes) to a pathfinding result, which works
             // with route ranges. This involves deducing start and end location offsets.
-            var startLocMap = new HashMap<SignalingRoute, EdgeLocation<SignalingRoute>>();
-            for (var loc : startLocations)
-                startLocMap.put(loc.edge(), loc);
-            var endLocMap = new HashMap<SignalingRoute, EdgeLocation<SignalingRoute>>();
-            for (var loc : endLocations)
-                endLocMap.put(loc.edge(), loc);
-            var startLocation = startLocMap.get(stdcmPath.get(0).block.route);
-            var endLocation = endLocMap.get(stdcmPath.get(stdcmPath.size() - 1).block.route);
-
-            // Run a regular OSRD simulation
-            var signalingRoutePath = stdcmPath.stream().map(blockUse -> blockUse.block.route).toList();
-            var trainPath = TrainPathBuilder.from(
-                    signalingRoutePath,
-                    routeToTrackLocation(startLocation),
-                    routeToTrackLocation(endLocation)
-            );
+            var startLocation = getStartLocation(startLocations, stdcmPath);
+            var endLocation = getEndLocation(endLocations, stdcmPath);
+            var trainPath = makeTrainPath(startLocation, endLocation, stdcmPath);
 
             var envelopePath = EnvelopeTrainPath.from(trainPath);
+            var trainSchedule = makeTrainSchedule(envelopePath, rollingStock);
             var timeStep = 2.;
-            List<TrainStop> trainStops = new ArrayList<>();
-            trainStops.add(new TrainStop(envelopePath.length, 0.1));
-            var trainSchedule = new StandaloneTrainSchedule(rollingStock, 0., trainStops, List.of(), List.of());
 
             // Compute the most restricted speed profile
             var mrsp = MRSP.from(trainPath, trainSchedule.rollingStock, true, trainSchedule.tags);
             final var speedLimits = MRSP.from(trainPath, trainSchedule.rollingStock, false, trainSchedule.tags);
 
-            // Compute an unrestricted, max effort trip
-            var baseEnvelope = StandaloneSim.computeMaxEffortEnvelope(mrsp, timeStep, envelopePath, trainSchedule);
-
             // Modify this trip so it complies with STDCM block occupation restrictions
-            // Step 1: find the position of block starts in the envelope path
-            double[] blockBounds = new double[stdcmPath.size() + 1];
-            assert trainPath.routePath().size() == stdcmPath.size();
-            var routePath = trainPath.routePath();
-            for (int i = 0; i < routePath.size(); i++)
-                blockBounds[i] = routePath.get(i).pathOffset();
-            blockBounds[0] = 0.;
-            blockBounds[stdcmPath.size()] = envelopePath.length;
-
-            // Step 2: compile the times at which the train would reach each block start without margins
-            double[] blockEntryTimes = new double[stdcmPath.size()];
-            for (int i = 0; i < stdcmPath.size(); i++)
-                blockEntryTimes[i] = baseEnvelope.interpolateTotalTime(blockBounds[i]);
-
-            // Step 3: add margins so the train reaches its block in the allotted time range
-            var allowanceRanges = new ArrayList<AllowanceRange>();
-            var totalDelay = 0.;
-            var endLastRange = 0.;
-            for (int i = 0; i < stdcmPath.size(); i++) {
-                var simulatedEntryTime = startTime + blockEntryTimes[i] + totalDelay;
-                var allowedEntryTime = stdcmPath.get(i).reservationStartTime;
-                logger.info("block {}: sim entry time {}, allowed time {}", i, simulatedEntryTime, allowedEntryTime);
-                if (simulatedEntryTime < allowedEntryTime) {
-                    var blockDelay = allowedEntryTime - simulatedEntryTime + 1.;
-                    totalDelay += blockDelay;
-                    var allowanceValue = new AllowanceValue.FixedTime(blockDelay);
-                    var newRange = new AllowanceRange(endLastRange, blockBounds[i], allowanceValue);
-                    allowanceRanges.add(newRange);
-                    endLastRange = blockBounds[i];
-                    logger.info("\t\tadding {}s of delay from position {} to {}",
-                            blockDelay, newRange.beginPos, newRange.endPos);
-                }
-            }
-            allowanceRanges.add(
-                    new AllowanceRange(endLastRange, baseEnvelope.getEndPos(), new AllowanceValue.FixedTime(0))
+            var stdcmEnvelope = STDCMSimulation.makeSTDCMEnvelope(
+                    rollingStock,
+                    envelopePath,
+                    stdcmPath,
+                    trainPath,
+                    startTime,
+                    timeStep,
+                    mrsp,
+                    trainSchedule
             );
-
-            var allowance = new MarecoAllowance(
-                    new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
-                    0,
-                    envelopePath.length,
-                    0,
-                    allowanceRanges
-            );
-            var stdcmEnvelope = StandaloneSim.applyAllowances(baseEnvelope, List.of(allowance));
 
             var simResult = new StandaloneSimResult();
             simResult.speedLimits.add(ResultEnvelopePoint.from(speedLimits));
@@ -244,6 +187,49 @@ public class STDCMEndpoint implements Take {
         } catch (Throwable ex) {
             return ExceptionHandler.handle(ex);
         }
+    }
+
+    /** Generate a train schedule matching the envelope path and rolling stock, with one stop at the end */
+    private static StandaloneTrainSchedule makeTrainSchedule(EnvelopePath envelopePath, RollingStock rollingStock) {
+        List<TrainStop> trainStops = new ArrayList<>();
+        trainStops.add(new TrainStop(envelopePath.length, 0.1));
+        return new StandaloneTrainSchedule(rollingStock, 0., trainStops, List.of(), List.of());
+    }
+
+    /** Build the train path */
+    private static TrainPath makeTrainPath(
+            EdgeLocation<SignalingRoute> startLocation,
+            EdgeLocation<SignalingRoute> endLocation,
+            List<BlockUse> stdcmPath
+    ) {
+        var signalingRoutePath = stdcmPath.stream().map(blockUse -> blockUse.block.route).toList();
+        return TrainPathBuilder.from(
+                signalingRoutePath,
+                routeToTrackLocation(startLocation),
+                routeToTrackLocation(endLocation)
+        );
+    }
+
+    /** Find which start location was used for the final path */
+    private static EdgeLocation<SignalingRoute> getStartLocation(
+            List<EdgeLocation<SignalingRoute>> startLocations,
+            List<BlockUse> stdcmPath
+    ) {
+        var startLocMap = new HashMap<SignalingRoute, EdgeLocation<SignalingRoute>>();
+        for (var loc : startLocations)
+            startLocMap.put(loc.edge(), loc);
+        return startLocMap.get(stdcmPath.get(0).block.route);
+    }
+
+    /** Find which end location was used for the final path */
+    private static EdgeLocation<SignalingRoute> getEndLocation(
+            List<EdgeLocation<SignalingRoute>> endLocations,
+            List<BlockUse> stdcmPath
+    ) {
+        var endLocMap = new HashMap<SignalingRoute, EdgeLocation<SignalingRoute>>();
+        for (var loc : endLocations)
+            endLocMap.put(loc.edge(), loc);
+        return endLocMap.get(stdcmPath.get(stdcmPath.size() - 1).block.route);
     }
 
     public static class RouteOccupancy {
