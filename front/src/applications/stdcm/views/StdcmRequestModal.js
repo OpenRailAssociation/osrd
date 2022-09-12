@@ -62,7 +62,6 @@ export default function StdcmRequestModal(props) {
       stdcmRequest()
         .then((result) => {
           setCurrentStdcmRequestStatus(stdcmRequestStatus.success);
-          console.log("result", result)
           dispatch(updateItinerary(result.path));
 
           const fakedNewTrain = result.simulation;
