@@ -22,6 +22,7 @@ import axios from 'axios';
 // OSRD helpers
 import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/createTrain';
 import formatStdcmConf from 'applications/stdcm/formatStcmConf';
+import { post } from 'common/requests';
 // Static Data and Assets
 import rabbit from 'assets/pictures/KLCW_nc_standard.png';
 import { setFailure } from 'reducers/main.ts';
@@ -47,13 +48,13 @@ export default function StdcmRequestModal(props) {
   // https://developer.mozilla.org/en-US/docs/Web/API/AbortController
   const controller = new AbortController();
 
-  const stdcmURL = `${MAIN_API.proxy}/stdcm/`;
+  const stdcmURL = `/stdcm/`;
 
   // Returns a promise that will be a fetch or an axios (through react-query)
   const stdcmRequest = async () => {
     const params = formatStdcmConf(dispatch, setFailure, t, osrdconf);
 
-    return axios.post(stdcmURL, params, {});
+    return post(stdcmURL, params, {});
   };
 
   useEffect(() => {
@@ -61,10 +62,10 @@ export default function StdcmRequestModal(props) {
       stdcmRequest()
         .then((result) => {
           setCurrentStdcmRequestStatus(stdcmRequestStatus.success);
+          console.log("result", result)
+          dispatch(updateItinerary(result.path));
 
-          dispatch(updateItinerary(result.data.path));
-
-          const fakedNewTrain = result.data.simulation;
+          const fakedNewTrain = result.simulation;
           fakedNewTrain.id = 1500;
 
           fakedNewTrain.base.stops = fakedNewTrain.base.head_positions[0].map(
@@ -98,7 +99,7 @@ export default function StdcmRequestModal(props) {
 
           dispatch(updateMustRedraw(true));
 
-          console.log(newSimulation);
+
 
           const consolidatedSimulation = createTrain(
             dispatch,
