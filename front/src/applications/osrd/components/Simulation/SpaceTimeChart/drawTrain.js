@@ -294,7 +294,7 @@ export default function drawTrain(
     groupID,
     isSelected,
     `${isPathSelected ? '🎢' : ''} ${dataSimulation.name}`, // text
-    dataSimulation.headPosition[0][0].time, // x
-    dataSimulation.headPosition[0][0].position // y
+    dataSimulation.headPosition[0] && dataSimulation.headPosition[0][0] && dataSimulation.headPosition[0][0].time, // x
+    dataSimulation.headPosition[0] && dataSimulation.headPosition[0][0] && dataSimulation.headPosition[0][0].position // y
   );
 }
