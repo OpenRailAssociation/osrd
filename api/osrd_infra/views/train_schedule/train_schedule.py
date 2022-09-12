@@ -102,7 +102,10 @@ class TrainScheduleView(
         for train_id in train_ids:
             train_schedule = schedules_map[train_id]
             # create the simulation report to something frontend-friendly
-            res.append(create_simulation_report(train_schedule, path))
+            sim_report = create_simulation_report(train_schedule, path)
+            if not sim_report["base"]["head_positions"]:
+                continue
+            res.append(sim_report)
 
         return Response(res)
 
