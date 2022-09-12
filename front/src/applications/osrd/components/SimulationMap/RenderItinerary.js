@@ -19,7 +19,7 @@ export default function RenderItinerary(props) {
           type="line"
           paint={{
             'line-width': 3,
-            'line-color': allowancesSettings[trainID].ecoBlocks ? '#82be00' : '#303383',
+            'line-color': allowancesSettings[trainID] && allowancesSettings[trainID].ecoBlocks ? '#82be00' : '#303383',
           }}
         />
       </Source>
