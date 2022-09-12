@@ -31,7 +31,7 @@ const TrainHoverPosition = (props) => {
           />
         </svg>
         <span
-          className={`small font-weight-bold ${allowancesSettings[trainID].ecoBlocks ? 'text-secondary' : 'text-primary'}`}
+          className={`small font-weight-bold ${allowancesSettings[trainID] && allowancesSettings[trainID].ecoBlocks ? 'text-secondary' : 'text-primary'}`}
         >
           {point.properties && Math.round(point.properties.speedTime?.speed ?? 0)}
           km/h
