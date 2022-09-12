@@ -42,7 +42,7 @@ production = [
 django-debug-toolbar = "3.6.0"
 black = "22.8.0"
 isort = "5.10.1"
-pyproject-flake8 = "0.0.1a5"
+pyproject-flake8 = "5.0.4.post1"
 django-cors-headers = "3.13.0"
 
 [tool.flake8]
