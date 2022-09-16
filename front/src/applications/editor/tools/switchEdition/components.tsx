@@ -344,9 +344,9 @@ export const SwitchEditionLayers: FC = () => {
             latitude={mousePosition[1]}
             closeButton={false}
           >
-            {(hoveredTrack.properties?.line_name ||
-              t('Editor.tools.switch-edition.untitled-track')) +
-              ` (${closestPoint.properties.name})`}
+            {`${
+              hoveredTrack.properties?.line_name || t('Editor.tools.switch-edition.untitled-track')
+            } (${closestPoint.properties.name})`}
             <div className="text-muted small">{hoveredTrack.id}</div>
           </Popup>
 
