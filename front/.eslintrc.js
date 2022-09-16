@@ -39,6 +39,18 @@ module.exports = {
     'jsx-a11y/click-events-have-key-events': 'off',
     'prettier/prettier': ['warn'],
     'import/no-unresolved': [2, { commonjs: true, amd: true }],
+    'import/extensions': [
+      'error',
+      'ignorePackages',
+      {
+        js: 'never',
+        jsx: 'never',
+        ts: 'never',
+        tsx: 'never',
+      },
+    ],
+    'no-use-before-define': 'off',
+    '@typescript-eslint/no-use-before-define': ['error'],
   },
   settings: {
     'import/resolver': {
@@ -78,18 +90,6 @@ module.exports = {
         'react/jsx-props-no-spreading': 0,
         'react/no-array-index-key': 0,
         'react/require-default-props': 0,
-        'import/extensions': [
-          'error',
-          'ignorePackages',
-          {
-            js: 'never',
-            jsx: 'never',
-            ts: 'never',
-            tsx: 'never',
-          },
-        ],
-        'no-use-before-define': 'off',
-        '@typescript-eslint/no-use-before-define': ['error'],
       },
       plugins: ['@typescript-eslint'],
     },
