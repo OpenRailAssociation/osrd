@@ -45,8 +45,8 @@ public class PathfindingTests {
             makeEdge(n1, n2, length, Set.of());
         }
 
-        public ImmutableNetwork<Node, Edge> build() {
-            return builder.build();
+        public Graph<Node, Edge> build() {
+            return new GraphAdapter<>(builder.build());
         }
 
         public Pathfinding.EdgeLocation<Edge> getEdgeLocation(String id, double offset) {

@@ -1,6 +1,5 @@
 package fr.sncf.osrd.utils.graph;
 
-import com.google.common.graph.ImmutableNetwork;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.jetbrains.annotations.NotNull;
 import java.util.*;
@@ -60,13 +59,13 @@ public class Pathfinding<NodeT, EdgeT> {
     /** Function to call to get the blocked ranges on an edge */
     private final Function<EdgeT, Collection<Range>> blockedRangesOnEdge;
     /** Input graph */
-    private final ImmutableNetwork<NodeT, EdgeT> graph;
+    private final Graph<NodeT, EdgeT> graph;
     /** Keeps track of visited location. For each visited range, keeps the max number of passed targets at that point */
     private final HashMap<EdgeRange<EdgeT>, Integer> seen = new HashMap<>();
 
     /** Returns the shortest path from any start edge to any end edge, as a list of edge (containing start and stop) */
     public static <NodeT, EdgeT> List<EdgeT> findEdgePath(
-            ImmutableNetwork<NodeT, EdgeT> graph,
+            Graph<NodeT, EdgeT> graph,
             List<Collection<EdgeLocation<EdgeT>>> locations,
             Function<EdgeT, Double> edgeToLength,
             Function<EdgeT, Collection<Range>> blockedRangesOnEdge
@@ -76,7 +75,7 @@ public class Pathfinding<NodeT, EdgeT> {
 
     /** Returns the shortest path from any start edge to any end edge, as a list of (edge, start, end) */
     public static <NodeT, EdgeT> Result<EdgeT> findPath(
-            ImmutableNetwork<NodeT, EdgeT> graph,
+            Graph<NodeT, EdgeT> graph,
             List<Collection<EdgeLocation<EdgeT>>> locations,
             Function<EdgeT, Double> edgeToLength,
             Function<EdgeT, Collection<Range>> blockedRangesOnEdge
@@ -86,7 +85,7 @@ public class Pathfinding<NodeT, EdgeT> {
 
     /** Constructor */
     private Pathfinding(
-            ImmutableNetwork<NodeT, EdgeT> graph,
+            Graph<NodeT, EdgeT> graph,
             Function<EdgeT, Double> edgeToLength,
             Function<EdgeT, Collection<Range>> blockedRangesOnEdge
     ) {
@@ -141,8 +140,8 @@ public class Pathfinding<NodeT, EdgeT> {
             var edgeLength = edgeToLength.apply(step.range.edge);
             if (step.range.end == edgeLength) {
                 // We reach the end of the edge: we visit neighbors
-                var lastNode = graph.incidentNodes(step.range.edge).nodeV();
-                var neighbors = graph.outEdges(lastNode);
+                var lastNode = graph.getEdgeEnd(step.range.edge);
+                var neighbors = graph.getAdjacentEdges(lastNode);
                 for (var edge : neighbors) {
                     registerStep(
                             new EdgeRange<>(edge, 0, edgeToLength.apply(edge)),
