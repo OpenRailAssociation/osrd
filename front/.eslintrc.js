@@ -4,7 +4,7 @@ module.exports = {
     es6: true,
     jest: true,
   },
-  extends: ['airbnb', 'plugin:react/recommended', 'prettier'],
+  extends: ['airbnb', 'plugin:react/recommended', 'prettier', 'plugin:import/recommended'],
   globals: {
     Atomics: 'readonly',
     SharedArrayBuffer: 'readonly',
@@ -16,7 +16,7 @@ module.exports = {
     ecmaVersion: 2018,
     sourceType: 'module',
   },
-  plugins: ['prettier', 'react', 'babel', 'react-hooks', 'only-warn'],
+  plugins: ['prettier', 'react', 'babel', 'react-hooks', 'only-warn', 'import'],
   parser: 'babel-eslint',
   rules: {
     'react/prefer-stateless-function': 'off',
@@ -31,7 +31,8 @@ module.exports = {
     'import/no-extraneous-dependencies': 0,
     'linebreak-style': ['error', 'unix'],
     'jsx-a11y/click-events-have-key-events': 'off',
-    'prettier/prettier': ['warn']
+    'prettier/prettier': ['warn'],
+    'import/no-unresolved': [2, { commonjs: true, amd: true }],
   },
   settings: {
     'import/resolver': {
@@ -48,6 +49,8 @@ module.exports = {
         'plugin:react/recommended',
         'plugin:@typescript-eslint/eslint-recommended',
         'plugin:@typescript-eslint/recommended',
+        'plugin:import/recommended',
+        'plugin:import/typescript',
       ],
       globals: { Atomics: 'readonly', SharedArrayBuffer: 'readonly' },
       parser: '@typescript-eslint/parser',
@@ -69,6 +72,18 @@ module.exports = {
         'react/jsx-props-no-spreading': 0,
         'react/no-array-index-key': 0,
         'react/require-default-props': 0,
+        'import/extensions': [
+          'error',
+          'ignorePackages',
+          {
+            js: 'never',
+            jsx: 'never',
+            ts: 'never',
+            tsx: 'never',
+          },
+        ],
+        'no-use-before-define': 'off',
+        '@typescript-eslint/no-use-before-define': ['error'],
       },
       plugins: ['@typescript-eslint'],
     },
