@@ -19,6 +19,7 @@ import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.train.RollingStock;
+import fr.sncf.osrd.utils.graph.GraphAdapter;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.takes.Request;
 import org.takes.Response;
@@ -98,7 +99,7 @@ public class PathfindingRoutesEndpoint implements Take {
 
         // Compute the paths from the entry waypoint to the exit waypoint
         return Pathfinding.findPath(
-                infra.getSignalingRouteGraph(),
+                new GraphAdapter<>(infra.getSignalingRouteGraph()),
                 waypoints,
                 route -> route.getInfraRoute().getLength(),
                 new ConstraintCombiner(List.of(loadingGaugeConstraints, electrificationConstraints))
