@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import { useSelector } from 'react-redux';
 
-const TracksGeographic = (props) => {
+function TracksGeographic(props) {
   const { colors } = props;
   const { infraID } = useSelector((state) => state.osrdconf);
   const infraVersion = infraID !== undefined ? `?infra=${infraID}` : null;
@@ -66,17 +66,13 @@ const TracksGeographic = (props) => {
         id="chartis/tracks-geo/number"
         source-layer={MAP_TRACK_SOURCES.geographic}
       />
-      <Layer
-        {...lineNameLayer(colors)}
-        source-layer={MAP_TRACK_SOURCES.geographic}
-      />
+      <Layer {...lineNameLayer(colors)} source-layer={MAP_TRACK_SOURCES.geographic} />
     </Source>
   );
-};
+}
 
 TracksGeographic.propTypes = {
   colors: PropTypes.object.isRequired,
 };
-
 
 export default TracksGeographic;

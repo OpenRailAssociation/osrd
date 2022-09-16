@@ -7,22 +7,17 @@ class MastNavSNCF extends React.Component {
     items: PropTypes.object.isRequired,
     itemsBottom: PropTypes.object,
     main: PropTypes.object.isRequired,
-  }
+  };
 
   static defaultProps = {
-    itemsBottom: (
-      <>
-      </>
-    ),
-  }
+    itemsBottom: <></>,
+  };
 
   render() {
     const { items, itemsBottom, main } = this.props;
     return (
       <nav role="navigation" className={`mastnav${main.fullscreen ? ' fullscreen' : ''}`}>
-        <ul className="mastnav-top">
-          {items}
-        </ul>
+        <ul className="mastnav-top">{items}</ul>
         {itemsBottom}
       </nav>
     );

@@ -6,12 +6,12 @@ import { deleteVias, permuteVias, updateViaStopTime } from 'reducers/osrdconf';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useDebounce } from 'utils/helpers';
 
-const InputStopTime = (props) => {
+function InputStopTime(props) {
   const { index } = props;
   const osrdconf = useSelector((state) => state.osrdconf);
   const dispatch = useDispatch();
   const [stopTime, setStopTime] = useState(
-    osrdconf.vias[index].duration ? osrdconf.vias[index].duration : 0,
+    osrdconf.vias[index].duration ? osrdconf.vias[index].duration : 0
   );
   const [firstStart, setFirstStart] = useState(true);
   const debouncedStopTime = useDebounce(stopTime, 1000);
@@ -28,16 +28,14 @@ const InputStopTime = (props) => {
     <InputSNCF
       type="number"
       id={`osrd-config-stoptime-via-${index}`}
-      onChange={
-        (e) => setStopTime(e.target.value)
-      }
+      onChange={(e) => setStopTime(e.target.value)}
       value={stopTime}
       unit="s"
       sm
       noMargin
     />
   );
-};
+}
 
 export default function DisplayVias(props) {
   const osrdconf = useSelector((state) => state.osrdconf);
@@ -51,10 +49,7 @@ export default function DisplayVias(props) {
     >
       <Droppable droppableId="droppableVias">
         {(provided) => (
-          <div
-            {...provided.droppableProps}
-            ref={provided.innerRef}
-          >
+          <div {...provided.droppableProps} ref={provided.innerRef}>
             {osrdconf.vias.map((place, index) => (
               <Draggable key={`drag-key-${index}`} draggableId={`drag-vias-${index}`} index={index}>
                 {(providedDraggable) => (
@@ -68,11 +63,9 @@ export default function DisplayVias(props) {
                     <div className="pl-1 hover w-100 d-flex align-items-center">
                       <div
                         className="flex-grow-1"
-                        onClick={() => zoomToFeaturePoint(
-                          place.clickLngLat,
-                          place.id,
-                          place.source,
-                        )}
+                        onClick={() =>
+                          zoomToFeaturePoint(place.clickLngLat, place.id, place.source)
+                        }
                         role="button"
                         tabIndex={0}
                       >
@@ -81,18 +74,20 @@ export default function DisplayVias(props) {
                           {`${place.name || `KM ${Math.round(place.position) / 1000}`}`}
                         </small>
                       </div>
-                      <div className="osrd-config-stoptime" role="button" tabIndex="-1" onClick={() => setIndexSelected(index)}>
-                        {index === indexSelected
-                          ? (
-                            <InputStopTime
-                              index={index}
-                            />
-                          ) : (
-                            <>
-                              {osrdconf.vias[index].duration ? osrdconf.vias[index].duration : 0}
-                              <i className="ml-2 icons-pencil" />
-                            </>
-                          )}
+                      <div
+                        className="osrd-config-stoptime"
+                        role="button"
+                        tabIndex="-1"
+                        onClick={() => setIndexSelected(index)}
+                      >
+                        {index === indexSelected ? (
+                          <InputStopTime index={index} />
+                        ) : (
+                          <>
+                            {osrdconf.vias[index].duration ? osrdconf.vias[index].duration : 0}
+                            <i className="ml-2 icons-pencil" />
+                          </>
+                        )}
                       </div>
                       <button
                         className="btn btn-sm btn-only-icon btn-white ml-auto"
@@ -100,7 +95,9 @@ export default function DisplayVias(props) {
                         onClick={() => dispatch(deleteVias(index))}
                       >
                         <i className="icons-circle-delete" />
-                        <span className="sr-only" aria-hidden="true">Delete</span>
+                        <span className="sr-only" aria-hidden="true">
+                          Delete
+                        </span>
                       </button>
                     </div>
                   </div>

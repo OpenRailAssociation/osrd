@@ -2,33 +2,28 @@ import React from 'react';
 
 import PropTypes from 'prop-types';
 
-const renderOptions = (options, labelKey, selectedValue) => options.map((option) => {
-  if (typeof option === 'string') {
+const renderOptions = (options, labelKey, selectedValue) =>
+  options.map((option) => {
+    if (typeof option === 'string') {
+      return (
+        <option key={option} value={option} selected={option === selectedValue}>
+          {option}
+        </option>
+      );
+    }
     return (
       <option
-        key={option}
-        value={option}
-        selected={option === selectedValue}
+        key={option.id || option.key}
+        value={JSON.stringify(option)}
+        selected={JSON.stringify(option) === JSON.stringify(selectedValue)}
       >
-        {option}
+        {option[labelKey] || `${option.lastName} ${option.firstName}`}
       </option>
     );
-  }
-  return (
-    <option
-      key={option.id || option.key}
-      value={JSON.stringify(option)}
-      selected={JSON.stringify(option) === JSON.stringify(selectedValue)}
-    >
-      {option[labelKey] || `${option.lastName} ${option.firstName}`}
-    </option>
-  );
-});
+  });
 
 export default function SelectSNCF(props) {
-  const {
-    id, title, name, options, selectedValue, onChange, labelKey, selectStyle, sm,
-  } = props;
+  const { id, title, name, options, selectedValue, onChange, labelKey, selectStyle, sm } = props;
 
   return (
     <>
@@ -36,7 +31,9 @@ export default function SelectSNCF(props) {
       <select
         id={id}
         name={name}
-        defaultValue={typeof selectedValue === 'string' ? selectedValue : JSON.stringify(selectedValue)}
+        defaultValue={
+          typeof selectedValue === 'string' ? selectedValue : JSON.stringify(selectedValue)
+        }
         onChange={onChange}
         className={`${selectStyle} ${sm && 'sm'}`}
       >
@@ -51,10 +48,7 @@ SelectSNCF.propTypes = {
   title: PropTypes.string,
   name: PropTypes.string,
   options: PropTypes.array.isRequired,
-  selectedValue: PropTypes.oneOfType([
-    PropTypes.object,
-    PropTypes.string,
-  ]).isRequired,
+  selectedValue: PropTypes.oneOfType([PropTypes.object, PropTypes.string]).isRequired,
   onChange: PropTypes.func.isRequired,
   labelKey: PropTypes.string,
   selectStyle: PropTypes.string,

@@ -39,8 +39,8 @@ export default function RollingStock() {
 
   const updateSearch = () => {
     // Text filter
-    let resultContentNew = rollingStock.filter(
-      (el) => el.name.toLowerCase().includes(filters.text),
+    let resultContentNew = rollingStock.filter((el) =>
+      el.name.toLowerCase().includes(filters.text)
     );
 
     // checkbox filters
@@ -60,12 +60,7 @@ export default function RollingStock() {
     }, 0);
   };
 
-  const displayMateriel = (result) => (
-    <RollingStockCard
-      data={result}
-      key={result.id}
-    />
-  );
+  const displayMateriel = (result) => <RollingStockCard data={result} key={result.id} />;
 
   const toggleFilter = (e) => {
     setFilters({ ...filters, [e.target.name]: !filters[e.target.name] });
@@ -84,10 +79,12 @@ export default function RollingStock() {
         setRollingStock(data.results);
         setResultContent(data.results);
       } catch (e) {
-        dispatch(setFailure({
-          name: t('osrdconf:errorMessages.unableToRetrieveRollingStock'),
-          message: e.message,
-        }));
+        dispatch(
+          setFailure({
+            name: t('osrdconf:errorMessages.unableToRetrieveRollingStock'),
+            message: e.message,
+          })
+        );
         console.log(e);
       }
     }
@@ -104,66 +101,71 @@ export default function RollingStock() {
   }, [filters]);
 
   return (
-    <>
-      <div className="rollingstock-search p-2">
-        <div className="rollingstock-search-filters">
-          <div className="row">
-            <div className="col-md-6 mb-3">
-              <InputSNCF
-                id="searchfilter"
-                label={t('translation:common.filter')}
-                type="text"
-                onChange={searchMateriel}
-                placeholder={t('translation:common.search')}
-                noMargin
-                clearButton
-                sm
+    <div className="rollingstock-search p-2">
+      <div className="rollingstock-search-filters">
+        <div className="row">
+          <div className="col-md-6 mb-3">
+            <InputSNCF
+              id="searchfilter"
+              label={t('translation:common.filter')}
+              type="text"
+              onChange={searchMateriel}
+              placeholder={t('translation:common.search')}
+              noMargin
+              clearButton
+              sm
+            />
+          </div>
+          <div className="col-md-6 mb-3 d-flex align-items-end">
+            <div className="mr-5">
+              <CheckboxRadioSNCF
+                onChange={toggleFilter}
+                name="elec"
+                id="elec"
+                label={
+                  <>
+                    <span className="text-primary mr-1">
+                      <BsLightningFill />
+                    </span>
+                    Électrique
+                  </>
+                }
+                type="checkbox"
+                checked
               />
             </div>
-            <div className="col-md-6 mb-3 d-flex align-items-end">
-              <div className="mr-5">
-                <CheckboxRadioSNCF
-                  onChange={toggleFilter}
-                  name="elec"
-                  id="elec"
-                  label={(
-                    <>
-                      <span className="text-primary mr-1"><BsLightningFill /></span>
-                      Électrique
-                    </>
-                  )}
-                  type="checkbox"
-                  checked
-                />
-              </div>
-              <div>
-                <CheckboxRadioSNCF
-                  onChange={toggleFilter}
-                  name="diesel"
-                  id="diesel"
-                  label={(
-                    <>
-                      <span className="text-pink mr-1"><MdLocalGasStation /></span>
-                      Diesel
-                    </>
-                  )}
-                  type="checkbox"
-                  checked
-                />
-              </div>
+            <div>
+              <CheckboxRadioSNCF
+                onChange={toggleFilter}
+                name="diesel"
+                id="diesel"
+                label={
+                  <>
+                    <span className="text-pink mr-1">
+                      <MdLocalGasStation />
+                    </span>
+                    Diesel
+                  </>
+                }
+                type="checkbox"
+                checked
+              />
             </div>
           </div>
-          <div className="pt-3 text-center">
-            {resultContent !== undefined && resultContent.length > 0
-              ? `${resultContent.length} ${t('rollingstock:resultsFound')}` : t('rollingstock:noResultFound')}
-          </div>
         </div>
-        <div className="rollingstock-search-list">
-          {resultContent !== undefined && !isFiltering
-            ? resultContent.map((result) => displayMateriel(result))
-            : <Loader msg={t('rollingstock:waitingLoader')} /> }
+        <div className="pt-3 text-center">
+          {resultContent !== undefined && resultContent.length > 0
+            ? `${resultContent.length} ${t('rollingstock:resultsFound')}`
+            : t('rollingstock:noResultFound')}
         </div>
       </div>
-    </>
+      <div className="rollingstock-search-list">
+        {resultContent !== undefined && !isFiltering ? (
+          resultContent.map((result) => displayMateriel(result))
+        ) : (
+          <Loader msg={t('rollingstock:waitingLoader')} />
+        )}
+      </div>
+    </div>
   );
 }

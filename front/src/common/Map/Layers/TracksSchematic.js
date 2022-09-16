@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import { useSelector } from 'react-redux';
 
-const TracksSchematic = (props) => {
+function TracksSchematic(props) {
   const { colors, idHover } = props;
   const { infraID } = useSelector((state) => state.osrdconf);
   const infraVersion = infraID !== undefined ? `?infra=${infraID}` : null;
@@ -49,10 +49,7 @@ const TracksSchematic = (props) => {
         }}
         source-layer={MAP_TRACK_SOURCES.schematic}
       />
-      <Layer
-        {...lineNameLayer(colors)}
-        source-layer={MAP_TRACK_SOURCES.schematic}
-      />
+      <Layer {...lineNameLayer(colors)} source-layer={MAP_TRACK_SOURCES.schematic} />
 
       {idHover !== undefined ? (
         <Layer
@@ -64,7 +61,7 @@ const TracksSchematic = (props) => {
       ) : null}
     </Source>
   );
-};
+}
 
 TracksSchematic.propTypes = {
   idHover: PropTypes.string,

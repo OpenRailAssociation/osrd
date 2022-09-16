@@ -28,10 +28,12 @@ export default function TimetableSelector(props) {
       setselectedTimetable(timetableQuery);
       setTrainList(timetableQuery.train_schedules);
     } catch (e) {
-      dispatch(setFailure({
-        name: t('osrdconf:errorMessages.unableToRetrieveTimetable'),
-        message: e.message,
-      }));
+      dispatch(
+        setFailure({
+          name: t('osrdconf:errorMessages.unableToRetrieveTimetable'),
+          message: e.message,
+        })
+      );
       console.log('ERROR', e);
     }
   };
@@ -41,24 +43,25 @@ export default function TimetableSelector(props) {
     getTimetable(timetableID);
   };
 
-  const formatTrainList = () => trainList.map((train, idx) => (
-    <div key={nextId()} className="row align-items-center timetable-trainlist-train">
-      <div className="col-7">
-        <span className="small text-primary mr-1">{idx + 1}</span>
-        {train.train_name}
+  const formatTrainList = () =>
+    trainList.map((train, idx) => (
+      <div key={nextId()} className="row align-items-center timetable-trainlist-train">
+        <div className="col-7">
+          <span className="small text-primary mr-1">{idx + 1}</span>
+          {train.train_name}
+        </div>
+        <div className="col-3">{sec2time(train.departure_time)}</div>
+        <div className="col-2">
+          <button
+            type="button"
+            className="btn btn-sm btn-only-icon btn-white"
+            onClick={() => deleteTrainSchedule(train.id)}
+          >
+            <i className="icons-close" />
+          </button>
+        </div>
       </div>
-      <div className="col-3">{sec2time(train.departure_time)}</div>
-      <div className="col-2">
-        <button
-          type="button"
-          className="btn btn-sm btn-only-icon btn-white"
-          onClick={() => deleteTrainSchedule(train.id)}
-        >
-          <i className="icons-close" />
-        </button>
-      </div>
-    </div>
-  ));
+    ));
 
   useEffect(() => {
     if (timetableID !== undefined) {
@@ -81,30 +84,34 @@ export default function TimetableSelector(props) {
           <div className="h2 mb-0 d-flex align-items-center">
             <img width="32px" className="mr-2" src={icon} alt="timetableIcon" />
             <span className="text-muted">{t('osrdconf:timetable')}</span>
-            {timetableID !== undefined && selectedTimetable === undefined
-              ? <span className="ml-3"><DotsLoader /></span>
-              : (
-                <>
-                  {selectedTimetable !== undefined ? (
-                    <>
-                      <span className="ml-1">{selectedTimetable.name}</span>
-                      <small className="ml-1 text-primary flex-grow-1">{selectedTimetable.id}</small>
-                      <span className="ml-2 badge badge-secondary">
-                        {`${selectedTimetable.train_schedules.length} ${t('translation:common.train(s)')}`}
-                      </span>
-                    </>
-                  ) : <span className="ml-1">{t('osrdconf:noTimetable')}</span> }
-                </>
-              )}
+            {timetableID !== undefined && selectedTimetable === undefined ? (
+              <span className="ml-3">
+                <DotsLoader />
+              </span>
+            ) : (
+              <>
+                {selectedTimetable !== undefined ? (
+                  <>
+                    <span className="ml-1">{selectedTimetable.name}</span>
+                    <small className="ml-1 text-primary flex-grow-1">{selectedTimetable.id}</small>
+                    <span className="ml-2 badge badge-secondary">
+                      {`${selectedTimetable.train_schedules.length} ${t(
+                        'translation:common.train(s)'
+                      )}`}
+                    </span>
+                  </>
+                ) : (
+                  <span className="ml-1">{t('osrdconf:noTimetable')}</span>
+                )}
+              </>
+            )}
           </div>
         </div>
         {timetableID !== undefined && trainList !== undefined && trainList.length > 0 ? (
           <div className="osrd-config-item-container">
-            <div className="timetable-trainlist">
-              {formatTrainList(trainList)}
-            </div>
+            <div className="timetable-trainlist">{formatTrainList(trainList)}</div>
           </div>
-        ) : null }
+        ) : null}
       </div>
       <TimetableSelectorModal />
     </>

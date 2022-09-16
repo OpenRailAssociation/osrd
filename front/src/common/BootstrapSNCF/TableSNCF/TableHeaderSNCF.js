@@ -6,21 +6,19 @@ export default class TableHeaderSNCF extends React.Component {
   static propTypes = {
     headerContent: PropTypes.array.isRequired,
     headerSort: PropTypes.func,
-  }
+  };
 
   static defaultProps = {
     headerSort: undefined,
-  }
+  };
 
   sortOnClick = (id) => {
     const { headerSort } = this.props;
     headerSort(id);
-  }
+  };
 
   render() {
-    const {
-      headerContent,
-    } = this.props;
+    const { headerContent } = this.props;
 
     const listItems = headerContent.map((item, id) => (
       <th scope="col" key={nextId()} data-id={id} onClick={() => this.sortOnClick(id)}>
@@ -30,9 +28,7 @@ export default class TableHeaderSNCF extends React.Component {
 
     return (
       <thead className="thead thead-light">
-        <tr>
-          {listItems}
-        </tr>
+        <tr>{listItems}</tr>
       </thead>
     );
   }

@@ -1,4 +1,3 @@
-import DropdownSNCF, { DROPDOWN_STYLE_TYPES } from './DropdownSNCF';
 import { FaMoon, FaPowerOff, FaSun } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -12,13 +11,12 @@ import i18n from 'i18next';
 import { logout } from 'reducers/user';
 import { toggleDarkmode } from 'reducers/main.ts';
 import { useTranslation } from 'react-i18next';
+import DropdownSNCF, { DROPDOWN_STYLE_TYPES } from './DropdownSNCF';
 
 export default function LegacyNavBarSNCF(props) {
   const user = useSelector((state) => state.user);
   const { fullscreen, darkmode } = useSelector((state) => state.main);
-  const {
-    appName, logo,
-  } = props;
+  const { appName, logo } = props;
   const dispatch = useDispatch();
   const { t } = useTranslation();
 
@@ -48,7 +46,9 @@ export default function LegacyNavBarSNCF(props) {
       <ul className="mastheader-toolbar toolbar mb-0">
         <li className="toolbar-item toolbar-item-spacing">
           <div className="d-flex align-items-center h-100 text-white">
-            <span className="mr-2 text-yellow"><FaSun /></span>
+            <span className="mr-2 text-yellow">
+              <FaSun />
+            </span>
             <SwitchSNCF
               type="switch"
               onChange={changeDarkmode}
@@ -56,7 +56,9 @@ export default function LegacyNavBarSNCF(props) {
               id="darkmode-switch"
               checked={darkmode}
             />
-            <span className="ml-2 text-black"><FaMoon /></span>
+            <span className="ml-2 text-black">
+              <FaMoon />
+            </span>
           </div>
         </li>
         {/* <li className="toolbar-item toolbar-item-spacing separator-gray-500">
@@ -78,25 +80,23 @@ export default function LegacyNavBarSNCF(props) {
 
         <li className="toolbar-item separator-gray-500">
           <DropdownSNCF
-            titleContent={(
+            titleContent={
               <>
-                <i className="icons-menu-account icons-size-1x25 icons-md-size-1x5 mr-xl-2" aria-hidden="true" />
+                <i
+                  className="icons-menu-account icons-size-1x25 icons-md-size-1x5 mr-xl-2"
+                  aria-hidden="true"
+                />
                 <span className="d-none d-xl-block">
-                  {user.account.firstName}
-                  {' '}
-                  {user.account.lastName}
+                  {user.account.firstName} {user.account.lastName}
                 </span>
               </>
-            )}
+            }
             type={DROPDOWN_STYLE_TYPES.transparent}
             items={[
-              <button
-                type="button"
-                className="btn-link text-reset"
-                onClick={toLogout}
-                key="logout"
-              >
-                <span className="mr-2"><FaPowerOff /></span>
+              <button type="button" className="btn-link text-reset" onClick={toLogout} key="logout">
+                <span className="mr-2">
+                  <FaPowerOff />
+                </span>
                 {t('NavBar.disconnect')}
               </button>,
             ]}

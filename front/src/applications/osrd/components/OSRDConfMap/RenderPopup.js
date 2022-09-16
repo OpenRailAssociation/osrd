@@ -11,7 +11,8 @@ export default function RenderPopup() {
     let backgroundColor;
     switch (featureInfoClick.feature.properties.typeVoie) {
       case 'VP':
-        backgroundColor = featureInfoClick.feature.properties.categVoie === 'VS' ? 'bg-danger' : 'bg-primary';
+        backgroundColor =
+          featureInfoClick.feature.properties.categVoie === 'VS' ? 'bg-danger' : 'bg-primary';
         break;
       default:
         backgroundColor = 'bg-secondary';

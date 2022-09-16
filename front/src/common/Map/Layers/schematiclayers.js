@@ -3,10 +3,7 @@ export const schematicMainLayer = (colors) => ({
   type: 'line',
   paint: {
     'line-color': colors.track.major,
-    'line-width': ['match', ['get', 'TDV_mnemonique'],
-      'VPL', 2,
-      1,
-    ],
+    'line-width': ['match', ['get', 'TDV_mnemonique'], 'VPL', 2, 1],
   },
 });
 

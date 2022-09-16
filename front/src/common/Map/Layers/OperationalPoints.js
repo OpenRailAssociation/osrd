@@ -24,26 +24,26 @@ export default function OperationalPoints(props) {
     'source-layer': 'operational_points',
     minzoom: 9,
     layout: {
-      'text-field': ['concat',
+      'text-field': [
+        'concat',
         ['get', 'name'],
         ' / ',
         ['get', 'trigram'],
-        ['case',
+        [
+          'case',
           ['in', ['get', 'ch'], ['literal', ['BV', '00']]],
           '',
           ['concat', '\n', ['get', 'ch_long_label']],
         ],
         // ['concat', '\n', ['get', 'uic']],
       ],
-      'text-font': [
-        'Roboto Condensed',
-      ],
+      'text-font': ['Roboto Condensed'],
       'text-size': 12,
       'text-anchor': 'left',
       'text-justify': 'left',
       'text-allow-overlap': false,
       'text-ignore-placement': false,
-      'text-offset': [0.75, 0.10],
+      'text-offset': [0.75, 0.1],
       visibility: 'visible',
     },
     paint: {
@@ -60,23 +60,18 @@ export default function OperationalPoints(props) {
     maxzoom: 9,
     minzoom: 7,
     layout: {
-      'text-field': ['concat',
+      'text-field': [
+        'concat',
         ['get', 'trigram'],
         ' ',
-        ['case',
-          ['in', ['get', 'ch'], ['literal', ['BV', '00']]],
-          '',
-          ['get', 'ch'],
-        ],
+        ['case', ['in', ['get', 'ch'], ['literal', ['BV', '00']]], '', ['get', 'ch']],
       ],
-      'text-font': [
-        'Roboto Condensed',
-      ],
+      'text-font': ['Roboto Condensed'],
       'text-size': 10,
       'text-anchor': 'left',
       'text-allow-overlap': true,
       'text-ignore-placement': false,
-      'text-offset': [0.75, 0.10],
+      'text-offset': [0.75, 0.1],
       visibility: 'visible',
     },
     paint: {
@@ -87,16 +82,18 @@ export default function OperationalPoints(props) {
     },
   };
 
-  return layersSettings.operationalpoints && (
-    <Source
-      id={`osrd_operational_point_${geomType}`}
-      type="vector"
-      url={`${MAP_URL}/layer/operational_points/mvt/${geomType}/?infra=${infraID}`}
-    >
-      <Layer {...layerPoint} id={`chartis/osrd_operational_point/${geomType}`} />
-      <Layer {...layerNameShort} id={`chartis/osrd_operational_point_name_short/${geomType}`} />
-      <Layer {...layerName} id={`chartis/osrd_operational_point_name/${geomType}`} />
-    </Source>
+  return (
+    layersSettings.operationalpoints && (
+      <Source
+        id={`osrd_operational_point_${geomType}`}
+        type="vector"
+        url={`${MAP_URL}/layer/operational_points/mvt/${geomType}/?infra=${infraID}`}
+      >
+        <Layer {...layerPoint} id={`chartis/osrd_operational_point/${geomType}`} />
+        <Layer {...layerNameShort} id={`chartis/osrd_operational_point_name_short/${geomType}`} />
+        <Layer {...layerName} id={`chartis/osrd_operational_point_name/${geomType}`} />
+      </Source>
+    )
   );
 }
 

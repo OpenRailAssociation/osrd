@@ -8,19 +8,19 @@ import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import { FaLongArrowAltUp, FaLongArrowAltDown, FaTrash } from 'react-icons/fa';
 
-const LoaderPathfindingInProgress = () => (
-  <div className="loaderPathfindingInProgress">
-    <div className="spinner-border" role="status">
-      <span className="sr-only">Loading...</span>
+function LoaderPathfindingInProgress() {
+  return (
+    <div className="loaderPathfindingInProgress">
+      <div className="spinner-border" role="status">
+        <span className="sr-only">Loading...</span>
+      </div>
     </div>
-  </div>
-);
+  );
+}
 
 export default function ModalSugerredVias(props) {
   const { suggeredVias } = useSelector((state) => state.osrdconf);
-  const {
-    convertPathfindingVias, inverseOD, removeAllVias, pathfindingInProgress,
-  } = props;
+  const { convertPathfindingVias, inverseOD, removeAllVias, pathfindingInProgress } = props;
   const { t } = useTranslation('osrdconf');
   const nbVias = suggeredVias.length - 1;
 
@@ -65,7 +65,11 @@ export default function ModalSugerredVias(props) {
       <ModalFooterSNCF>
         <div className="row">
           <div className="col-12">
-            <button className="btn btn-danger btn-sm btn-block mb-1" type="button" onClick={removeAllVias}>
+            <button
+              className="btn btn-danger btn-sm btn-block mb-1"
+              type="button"
+              onClick={removeAllVias}
+            >
               <FaTrash />
               <span className="ml-2">{t('deleteVias')}</span>
             </button>

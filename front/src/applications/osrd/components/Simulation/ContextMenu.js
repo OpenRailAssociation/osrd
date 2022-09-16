@@ -3,7 +3,10 @@ import * as d3 from 'd3';
 import { MdContentCopy, MdDelete } from 'react-icons/md';
 import React, { useEffect, useState } from 'react';
 import { deleteRequest, get, post } from 'common/requests';
-import { persistentUndoSimulation, persistentUpdateSimulation } from 'reducers/osrdsimulation/simulation';
+import {
+  persistentUndoSimulation,
+  persistentUpdateSimulation,
+} from 'reducers/osrdsimulation/simulation';
 import { setFailure, setSuccess } from 'reducers/main.ts';
 import {
   updateAllowancesSettings,
@@ -27,9 +30,9 @@ const TRAINSCHEDULE_URI = '/train_schedule/';
 
 export default function ContextMenu(props) {
   const { getTimetable } = props;
-  const {
-    contextMenu, allowancesSettings, selectedTrain,
-  } = useSelector((state) => state.osrdsimulation);
+  const { contextMenu, allowancesSettings, selectedTrain } = useSelector(
+    (state) => state.osrdsimulation
+  );
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const { t } = useTranslation(['translation', 'simulation', 'osrdconf', 'allowances']);
   const dispatch = useDispatch();
@@ -42,10 +45,12 @@ export default function ContextMenu(props) {
   const choosePath = async () => {
     const train = await get(`${TRAINSCHEDULE_URI}${simulation.trains[selectedTrain]?.id}/`);
     if (simulation.trains[selectedTrain]) {
-      dispatch(updateSelectedProjection({
-        id: simulation.trains[selectedTrain].id,
-        path: train.path,
-      }));
+      dispatch(
+        updateSelectedProjection({
+          id: simulation.trains[selectedTrain].id,
+          path: train.path,
+        })
+      );
     }
 
     dispatch(updateContextMenu(undefined));
@@ -61,11 +66,13 @@ export default function ContextMenu(props) {
     }
     dispatch(persistentUpdateSimulation({ ...simulation, trains }));
     dispatch(updateContextMenu(undefined));
-    dispatch(setSuccess({
-      title: t('simulation:trainDeleted'),
-      text: `Train ID ${contextMenu.id}`,
-    }));
-/*
+    dispatch(
+      setSuccess({
+        title: t('simulation:trainDeleted'),
+        text: `Train ID ${contextMenu.id}`,
+      })
+    );
+    /*
     try {
       deleteRequest(`${TRAINSCHEDULE_URI}${contextMenu.id}/`);
     } catch (e) {
@@ -89,7 +96,7 @@ export default function ContextMenu(props) {
     };
     let actualTrainCount = 1;
     for (let nb = 1; nb <= trainCount; nb += 1) {
-      const newTrainDelta = (60 * trainDelta * nb);
+      const newTrainDelta = 60 * trainDelta * nb;
       const newOriginTime = simulation.trains[selectedTrain].base.stops[0].time + newTrainDelta;
       const newTrainName = trainNameWithNum(trainName, actualTrainCount, trainCount);
       params.schedules.push({
@@ -107,16 +114,20 @@ export default function ContextMenu(props) {
       await post(`${TRAINSCHEDULE_URI}standalone_simulation/`, params);
       getTimetable();
       dispatch(updateContextMenu(undefined));
-      dispatch(setSuccess({
-        title: t('osrdconf:trainAdded'),
-        text: `${trainName}`,
-      }));
+      dispatch(
+        setSuccess({
+          title: t('osrdconf:trainAdded'),
+          text: `${trainName}`,
+        })
+      );
     } catch (e) {
       console.log('ERROR', e);
-      dispatch(setFailure({
-        name: e.name,
-        message: e.message,
-      }));
+      dispatch(
+        setFailure({
+          name: e.name,
+          message: e.message,
+        })
+      );
     }
   };
 
@@ -125,32 +136,38 @@ export default function ContextMenu(props) {
   };
 
   const changeAllowancesSettings = (type) => {
-    dispatch(updateAllowancesSettings({
-      ...allowancesSettings,
-      [simulation.trains[selectedTrain].id]: {
-        ...allowancesSettings[simulation.trains[selectedTrain].id],
-        [type]: !allowancesSettings[simulation.trains[selectedTrain].id][type],
-      },
-    }));
+    dispatch(
+      updateAllowancesSettings({
+        ...allowancesSettings,
+        [simulation.trains[selectedTrain].id]: {
+          ...allowancesSettings[simulation.trains[selectedTrain].id],
+          [type]: !allowancesSettings[simulation.trains[selectedTrain].id][type],
+        },
+      })
+    );
     dispatch(updateMustRedraw(true));
   };
 
   const changeAllowancesSettingsRadio = (type) => {
-    dispatch(updateAllowancesSettings({
-      ...allowancesSettings,
-      [simulation.trains[selectedTrain].id]: {
-        ...allowancesSettings[simulation.trains[selectedTrain].id],
-        baseBlocks: (type === 'baseBlocks'),
-        allowancesBlocks: (type === 'allowancesBlocks'),
-        ecoBlocks: (type === 'ecoBlocks'),
-      },
-    }));
+    dispatch(
+      updateAllowancesSettings({
+        ...allowancesSettings,
+        [simulation.trains[selectedTrain].id]: {
+          ...allowancesSettings[simulation.trains[selectedTrain].id],
+          baseBlocks: type === 'baseBlocks',
+          allowancesBlocks: type === 'allowancesBlocks',
+          ecoBlocks: type === 'ecoBlocks',
+        },
+      })
+    );
     dispatch(updateMustRedraw(true));
   };
 
   useEffect(() => {
     if (goUpdate) {
-      setTimeout(() => { dispatch(updateMustRedraw(true)); }, 0);
+      setTimeout(() => {
+        dispatch(updateMustRedraw(true));
+      }, 0);
       setGoUpdate(false);
     }
   }, [simulation.trains]);
@@ -169,97 +186,82 @@ export default function ContextMenu(props) {
       }}
     >
       <div className="dropdown-menu show">
-        {simulation.trains[selectedTrain].allowances
-          || simulation.trains[selectedTrain].eco ? (
-            <div className="row">
-              <div className="col-3 font-weight-medium mb-1">
-                {t('allowances:blocks')}
-              </div>
-              <div className="col-9 font-weight-medium mb-1">
-                {t('allowances:trainSchedules')}
-              </div>
-              <div className="col-3">
-                <CheckboxRadioSNCF
-                  id="occupation-base-blocks"
-                  name="occupation-blocks"
-                  type="radio"
-                  label="&nbsp;"
-                  onChange={() => changeAllowancesSettingsRadio('baseBlocks')}
-                  checked={
-                    allowancesSettings[simulation.trains[selectedTrain].id].baseBlocks
-                  }
-                />
-              </div>
-              <div className="col-9">
-                <CheckboxRadioSNCF
-                  id="occupation-base"
-                  name="occupation-base"
-                  type="checkbox"
-                  onChange={() => changeAllowancesSettings('base')}
-                  label={t('allowances:baseTrainSchedule')}
-                  checked={
-                    allowancesSettings[simulation.trains[selectedTrain].id].base
-                  }
-                />
-              </div>
-              {simulation.trains[selectedTrain].allowances && (
-                <>
-                  <div className="col-3">
-                    <CheckboxRadioSNCF
-                      id="occupation-allowances-blocks"
-                      name="occupation-blocks"
-                      type="radio"
-                      label="&nbsp;"
-                      onChange={() => changeAllowancesSettingsRadio('allowancesBlocks')}
-                      checked={
-                        allowancesSettings[simulation.trains[selectedTrain].id].allowancesBlocks
-                      }
-                    />
-                  </div>
-                  <div className="col-9">
-                    <CheckboxRadioSNCF
-                      id="occupation-allowances"
-                      name="occupation-allowances"
-                      type="checkbox"
-                      onChange={() => changeAllowancesSettings('allowances')}
-                      label={t('allowances:margedTrainSchedule')}
-                      checked={
-                        allowancesSettings[simulation.trains[selectedTrain].id].allowances
-                      }
-                    />
-                  </div>
-                </>
-              )}
-              {simulation.trains[selectedTrain].eco && (
-                <>
-                  <div className="col-3">
-                    <CheckboxRadioSNCF
-                      id="occupation-eco-blocks"
-                      name="occupation-blocks"
-                      type="radio"
-                      label="&nbsp;"
-                      onChange={() => changeAllowancesSettingsRadio('ecoBlocks')}
-                      checked={
-                        allowancesSettings[simulation.trains[selectedTrain].id].ecoBlocks
-                      }
-                    />
-                  </div>
-                  <div className="col-9">
-                    <CheckboxRadioSNCF
-                      id="occupation-eco"
-                      name="occupation-eco"
-                      type="checkbox"
-                      onChange={() => changeAllowancesSettings('eco')}
-                      label={t('allowances:ecoTrainSchedule')}
-                      checked={
-                        allowancesSettings[simulation.trains[selectedTrain].id].eco
-                      }
-                    />
-                  </div>
-                </>
-              )}
+        {simulation.trains[selectedTrain].allowances || simulation.trains[selectedTrain].eco ? (
+          <div className="row">
+            <div className="col-3 font-weight-medium mb-1">{t('allowances:blocks')}</div>
+            <div className="col-9 font-weight-medium mb-1">{t('allowances:trainSchedules')}</div>
+            <div className="col-3">
+              <CheckboxRadioSNCF
+                id="occupation-base-blocks"
+                name="occupation-blocks"
+                type="radio"
+                label="&nbsp;"
+                onChange={() => changeAllowancesSettingsRadio('baseBlocks')}
+                checked={allowancesSettings[simulation.trains[selectedTrain].id].baseBlocks}
+              />
             </div>
-          ) : null}
+            <div className="col-9">
+              <CheckboxRadioSNCF
+                id="occupation-base"
+                name="occupation-base"
+                type="checkbox"
+                onChange={() => changeAllowancesSettings('base')}
+                label={t('allowances:baseTrainSchedule')}
+                checked={allowancesSettings[simulation.trains[selectedTrain].id].base}
+              />
+            </div>
+            {simulation.trains[selectedTrain].allowances && (
+              <>
+                <div className="col-3">
+                  <CheckboxRadioSNCF
+                    id="occupation-allowances-blocks"
+                    name="occupation-blocks"
+                    type="radio"
+                    label="&nbsp;"
+                    onChange={() => changeAllowancesSettingsRadio('allowancesBlocks')}
+                    checked={
+                      allowancesSettings[simulation.trains[selectedTrain].id].allowancesBlocks
+                    }
+                  />
+                </div>
+                <div className="col-9">
+                  <CheckboxRadioSNCF
+                    id="occupation-allowances"
+                    name="occupation-allowances"
+                    type="checkbox"
+                    onChange={() => changeAllowancesSettings('allowances')}
+                    label={t('allowances:margedTrainSchedule')}
+                    checked={allowancesSettings[simulation.trains[selectedTrain].id].allowances}
+                  />
+                </div>
+              </>
+            )}
+            {simulation.trains[selectedTrain].eco && (
+              <>
+                <div className="col-3">
+                  <CheckboxRadioSNCF
+                    id="occupation-eco-blocks"
+                    name="occupation-blocks"
+                    type="radio"
+                    label="&nbsp;"
+                    onChange={() => changeAllowancesSettingsRadio('ecoBlocks')}
+                    checked={allowancesSettings[simulation.trains[selectedTrain].id].ecoBlocks}
+                  />
+                </div>
+                <div className="col-9">
+                  <CheckboxRadioSNCF
+                    id="occupation-eco"
+                    name="occupation-eco"
+                    type="checkbox"
+                    onChange={() => changeAllowancesSettings('eco')}
+                    label={t('allowances:ecoTrainSchedule')}
+                    checked={allowancesSettings[simulation.trains[selectedTrain].id].eco}
+                  />
+                </div>
+              </>
+            )}
+          </div>
+        ) : null}
         <div className="d-flex mb-3">
           <span className="mr-2 flex-grow-1">
             <InputSNCF
@@ -314,7 +316,11 @@ export default function ContextMenu(props) {
             <DotsLoader />
           </button>
         ) : (
-          <button type="button" className="btn btn-primary btn-block btn-sm" onClick={duplicateTrain}>
+          <button
+            type="button"
+            className="btn btn-primary btn-block btn-sm"
+            onClick={duplicateTrain}
+          >
             <MdContentCopy />
             <span className="ml-1">{t('simulation:duplicate')}</span>
           </button>
@@ -327,7 +333,11 @@ export default function ContextMenu(props) {
           <MdDelete />
           <span className="ml-1">{t('simulation:delete')}</span>
         </button>
-        <button type="button" className="btn btn-secondary btn-block btn-sm" onClick={closeContextMenu}>
+        <button
+          type="button"
+          className="btn btn-secondary btn-block btn-sm"
+          onClick={closeContextMenu}
+        >
           {t('translation:common.cancel')}
         </button>
       </div>

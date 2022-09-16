@@ -3,7 +3,19 @@ import { ResponsiveLine } from '@nivo/line';
 import { BasicTooltip } from '@nivo/tooltip';
 import PropTypes from 'prop-types';
 
-const COLORS = ['#e05206', '#303383', '#6e1e78', '#a1006b', '#cd0037', '#e05206', '#ffb612', '#82be00', '#d2e100', '#009aa6', '#333'];
+const COLORS = [
+  '#e05206',
+  '#303383',
+  '#6e1e78',
+  '#a1006b',
+  '#cd0037',
+  '#e05206',
+  '#ffb612',
+  '#82be00',
+  '#d2e100',
+  '#009aa6',
+  '#333',
+];
 
 // Format GOC Curves to NIVO format
 const parseData = (label, color, curve) => {
@@ -11,13 +23,12 @@ const parseData = (label, color, curve) => {
   // so initial transformation is commented :
   // const curveFormatted = curve.map((item)
   // => ({ x: item.speed * 3.6, y: item.max_effort / 1000 }));
-  const curveFormatted = curve.speeds.map(
-    (speed, index) => ({ x: speed * 3.6, y: curve.max_efforts[index] / 1000 }),
-  );
+  const curveFormatted = curve.speeds.map((speed, index) => ({
+    x: speed * 3.6,
+    y: curve.max_efforts[index] / 1000,
+  }));
 
-  const curveFormattedSorted = curveFormatted.sort(
-    (a, b) => (a.x > b.x ? 1 : -1),
-  );
+  const curveFormattedSorted = curveFormatted.sort((a, b) => (a.x > b.x ? 1 : -1));
 
   return {
     id: label,
@@ -46,9 +57,9 @@ export default function RollingStockCurve(props) {
   // Have to put data into an array when it will be more than one curve
   const transformedData = { first: data };
 
-  const curves = Object.keys(transformedData).map((name, index) => parseData(
-    name, curveColor(index), transformedData[name],
-  ));
+  const curves = Object.keys(transformedData).map((name, index) =>
+    parseData(name, curveColor(index), transformedData[name])
+  );
 
   return (
     <ResponsiveLine

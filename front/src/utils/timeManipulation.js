@@ -25,7 +25,7 @@ export function sec2datetime(sec) {
 export function time2sec(time) {
   const timeArray = time.split(':');
   const seconds = timeArray[2] ? Number(timeArray[2]) : 0;
-  return (Number(timeArray[0]) * 3600) + (Number(timeArray[1]) * 60) + seconds;
+  return Number(timeArray[0]) * 3600 + Number(timeArray[1]) * 60 + seconds;
 }
 
 export function datetime2sec(time) {

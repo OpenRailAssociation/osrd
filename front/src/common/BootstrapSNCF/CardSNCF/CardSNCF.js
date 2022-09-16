@@ -10,26 +10,27 @@ class Card extends React.Component {
     title: PropTypes.string.isRequired,
     disabledLink: PropTypes.bool,
     user: PropTypes.object.isRequired,
-  }
+  };
 
   static defaultProps = {
     disabledLink: false,
-  }
+  };
 
   render() {
-    const {
-      img, link, title, disabledLink,
-    } = this.props;
+    const { img, link, title, disabledLink } = this.props;
     return (
-    // disabledLink
-    // ? (
-      <Link to={link} className={`card overflow-hidden mb-2 ${disabledLink ? 'disabled-link' : ''}`}>
+      // disabledLink
+      // ? (
+      <Link
+        to={link}
+        className={`card overflow-hidden mb-2 ${disabledLink ? 'disabled-link' : ''}`}
+      >
         <img className="card-img-top" alt={title} src={img} />
         <div className="card-body text-center">
           <h5 className="card-title mb-0 text-base font-weight-normal">{title}</h5>
         </div>
       </Link>
-    // ) : <Link to="/" />
+      // ) : <Link to="/" />
     );
   }
 }

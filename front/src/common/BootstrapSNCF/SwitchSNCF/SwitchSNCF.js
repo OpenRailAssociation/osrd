@@ -21,7 +21,7 @@ export default class SwitchSNCF extends Component {
     checked: PropTypes.bool,
     warning: PropTypes.bool,
     disabled: PropTypes.bool,
-  }
+  };
 
   static defaultProps = {
     options: [],
@@ -29,12 +29,11 @@ export default class SwitchSNCF extends Component {
     checked: true,
     warning: false,
     disabled: false,
-  }
+  };
 
   render() {
-    const {
-      type, options, onChange, checkedName, name, id, checked, warning, disabled,
-    } = this.props;
+    const { type, options, onChange, checkedName, name, id, checked, warning, disabled } =
+      this.props;
 
     const warningClass = warning ? 'warning' : '';
 
@@ -42,27 +41,25 @@ export default class SwitchSNCF extends Component {
       case SWITCH_TYPES.radio:
         return (
           <>
-            {
-              options.map((option) => {
-                const optionId = `${id}-${nextId()}`;
-                return (
-                  <div className="custom-control custom-radio" key={`option${nextId()}`}>
-                    <input
-                      type="radio"
-                      id={optionId}
-                      name={name}
-                      className="custom-control-input"
-                      checked={option.value === checkedName}
-                      onChange={onChange}
-                      value={option.value}
-                    />
-                    <label className="custom-control-label font-weight-medium" htmlFor={optionId}>
-                      {option.label}
-                    </label>
-                  </div>
-                );
-              })
-            }
+            {options.map((option) => {
+              const optionId = `${id}-${nextId()}`;
+              return (
+                <div className="custom-control custom-radio" key={`option${nextId()}`}>
+                  <input
+                    type="radio"
+                    id={optionId}
+                    name={name}
+                    className="custom-control-input"
+                    checked={option.value === checkedName}
+                    onChange={onChange}
+                    value={option.value}
+                  />
+                  <label className="custom-control-label font-weight-medium" htmlFor={optionId}>
+                    {option.label}
+                  </label>
+                </div>
+              );
+            })}
           </>
         );
       case SWITCH_TYPES.switch:
@@ -83,52 +80,51 @@ export default class SwitchSNCF extends Component {
       case SWITCH_TYPES.options:
         return (
           <div className={`options-control ${warningClass}`}>
-            {
-              options.map((option) => {
-                const optionId = `${id}-${nextId()}`;
-                return (
-                  <div className="options-item" key={`option${nextId()}`}>
-                    <input
-                      type="radio"
-                      name={name}
-                      id={optionId}
-                      className="sr-only"
-                      checked={option.value === checkedName}
-                      onChange={onChange}
-                      value={option.value}
-                      disabled={disabled}
-                    />
-                    <label className="options-btn font-weight-medium" htmlFor={optionId}>
-                      {option.label}
-                    </label>
-                  </div>
-                );
-              })
-            }
+            {options.map((option) => {
+              const optionId = `${id}-${nextId()}`;
+              return (
+                <div className="options-item" key={`option${nextId()}`}>
+                  <input
+                    type="radio"
+                    name={name}
+                    id={optionId}
+                    className="sr-only"
+                    checked={option.value === checkedName}
+                    onChange={onChange}
+                    value={option.value}
+                    disabled={disabled}
+                  />
+                  <label className="options-btn font-weight-medium" htmlFor={optionId}>
+                    {option.label}
+                  </label>
+                </div>
+              );
+            })}
           </div>
         );
       case SWITCH_TYPES.inline:
-        return (
-          options.map((option) => {
-            const optionId = `${id}-${nextId()}`;
-            return (
-              <div className="custom-control custom-radio custom-control-inline" key={`option${nextId()}`}>
-                <input
-                  type="radio"
-                  name={name}
-                  id={optionId}
-                  className="custom-control-input"
-                  checked={option.value === checkedName}
-                  onChange={onChange}
-                  value={option.value}
-                />
-                <label className="custom-control-label font-weight-medium" htmlFor={optionId}>
-                  {option.label}
-                </label>
-              </div>
-            );
-          })
-        );
+        return options.map((option) => {
+          const optionId = `${id}-${nextId()}`;
+          return (
+            <div
+              className="custom-control custom-radio custom-control-inline"
+              key={`option${nextId()}`}
+            >
+              <input
+                type="radio"
+                name={name}
+                id={optionId}
+                className="custom-control-input"
+                checked={option.value === checkedName}
+                onChange={onChange}
+                value={option.value}
+              />
+              <label className="custom-control-label font-weight-medium" htmlFor={optionId}>
+                {option.label}
+              </label>
+            </div>
+          );
+        });
       default:
         return null;
     }

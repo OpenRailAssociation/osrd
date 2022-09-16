@@ -13,15 +13,27 @@ export default function PopupInfosCustomContent(props) {
         {data.line_name && data.line_name}
         {data.ch_long_label && data.ch_long_label}
       </div>
-      <button className="btn btn-sm btn-block btn-success" type="button" onClick={() => setPointIti('start', data)}>
+      <button
+        className="btn btn-sm btn-block btn-success"
+        type="button"
+        onClick={() => setPointIti('start', data)}
+      >
         <RiMapPin2Fill />
         <span className="ml-1">{t('origin')}</span>
       </button>
-      <button className="btn btn-sm btn-block btn-info" type="button" onClick={() => setPointIti('via', data)}>
+      <button
+        className="btn btn-sm btn-block btn-info"
+        type="button"
+        onClick={() => setPointIti('via', data)}
+      >
         <RiMapPin3Fill />
         <span className="ml-1">{t('via')}</span>
       </button>
-      <button className="btn btn-sm btn-block btn-warning" type="button" onClick={() => setPointIti('end', data)}>
+      <button
+        className="btn btn-sm btn-block btn-warning"
+        type="button"
+        onClick={() => setPointIti('end', data)}
+      >
         <RiMapPin5Fill />
         <span className="ml-1">{t('destination')}</span>
       </button>

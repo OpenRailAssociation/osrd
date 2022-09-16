@@ -8,16 +8,20 @@ import { bindActionCreators } from 'redux';
 class ButtonFullscreen extends React.Component {
   static propTypes = {
     mainActions: PropTypes.object.isRequired,
-  }
+  };
 
   toggleFullscreen = () => {
     const { mainActions } = this.props;
     mainActions.toggleFullscreen();
-  }
+  };
 
   render() {
     return (
-      <button type="button" className="btn-rounded btn-rounded-white btn-fullscreen" onClick={this.toggleFullscreen}>
+      <button
+        type="button"
+        className="btn-rounded btn-rounded-white btn-fullscreen"
+        onClick={this.toggleFullscreen}
+      >
         <span className="sr-only">Fullscreen</span>
         <MdFullscreen />
       </button>

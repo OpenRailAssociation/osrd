@@ -12,19 +12,19 @@ import SwitchesSVGFile from 'assets/pictures/layersicons/switches.svg';
 import DetectorsSVGFile from 'assets/pictures/layersicons/detectors.svg';
 import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 
-const FormatSwitch = (props) => {
+function FormatSwitch(props) {
   const dispatch = useDispatch();
   const { t } = useTranslation(['map-settings']);
   const { layersSettings } = useSelector((state) => state.map);
-  const {
-    name, icon, color, disabled = false,
-  } = props;
+  const { name, icon, color, disabled = false } = props;
 
   const setLayerSettings = (setting) => {
-    dispatch(updateLayersSettings({
-      ...layersSettings,
-      [setting]: !layersSettings[setting],
-    }));
+    dispatch(
+      updateLayersSettings({
+        ...layersSettings,
+        [setting]: !layersSettings[setting],
+      })
+    );
   };
 
   return (
@@ -38,74 +38,37 @@ const FormatSwitch = (props) => {
           checked={layersSettings[name]}
           disabled={disabled}
         />
-        <span className={`px-1 d-flex align-items-center ${color}`}>
-          {icon}
-        </span>
+        <span className={`px-1 d-flex align-items-center ${color}`}>{icon}</span>
         <small>{t(name)}</small>
       </div>
     </div>
   );
-};
+}
 
-const BufferStopSVG = () => (
-  <>
-    <img src={BufferStopSVGFile} alt="Buffer stop icon" height="16" />
-  </>
-);
-const DetectorsSVG = () => (
-  <>
-    <img src={DetectorsSVGFile} alt="Buffer stop icon" height="16" />
-  </>
-);
-const OPsSVG = () => (
-  <>
-    <img src={OPsSVGFile} alt="Buffer stop icon" height="16" />
-  </>
-);
-const SwitchesSVG = () => (
-  <>
-    <img src={SwitchesSVGFile} alt="Buffer stop icon" height="16" />
-  </>
-);
+function BufferStopSVG() {
+  return <img src={BufferStopSVGFile} alt="Buffer stop icon" height="16" />;
+}
+function DetectorsSVG() {
+  return <img src={DetectorsSVGFile} alt="Buffer stop icon" height="16" />;
+}
+function OPsSVG() {
+  return <img src={OPsSVGFile} alt="Buffer stop icon" height="16" />;
+}
+function SwitchesSVG() {
+  return <img src={SwitchesSVGFile} alt="Buffer stop icon" height="16" />;
+}
 
 export default function MapSettingsLayers() {
   return (
     <div className="row">
-      <FormatSwitch
-        name="catenaries"
-        icon={<GiElectric />}
-      />
-      <FormatSwitch
-        name="signalingtype"
-        icon={<AiOutlineBlock />}
-        disabled
-      />
-      <FormatSwitch
-        name="tvds"
-        icon={<MdSpaceBar />}
-        disabled
-      />
-      <FormatSwitch
-        name="routes"
-        icon={<MdLinearScale />}
-        color="text-orange"
-      />
-      <FormatSwitch
-        name="operationalpoints"
-        icon={<OPsSVG />}
-      />
-      <FormatSwitch
-        name="switches"
-        icon={<SwitchesSVG />}
-      />
-      <FormatSwitch
-        name="bufferstops"
-        icon={<BufferStopSVG />}
-      />
-      <FormatSwitch
-        name="detectors"
-        icon={<DetectorsSVG />}
-      />
+      <FormatSwitch name="catenaries" icon={<GiElectric />} />
+      <FormatSwitch name="signalingtype" icon={<AiOutlineBlock />} disabled />
+      <FormatSwitch name="tvds" icon={<MdSpaceBar />} disabled />
+      <FormatSwitch name="routes" icon={<MdLinearScale />} color="text-orange" />
+      <FormatSwitch name="operationalpoints" icon={<OPsSVG />} />
+      <FormatSwitch name="switches" icon={<SwitchesSVG />} />
+      <FormatSwitch name="bufferstops" icon={<BufferStopSVG />} />
+      <FormatSwitch name="detectors" icon={<DetectorsSVG />} />
     </div>
   );
 }

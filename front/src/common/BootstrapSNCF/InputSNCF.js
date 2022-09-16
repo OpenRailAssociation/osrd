@@ -31,9 +31,7 @@ class InputSNCF extends React.Component {
     label: PropTypes.string,
     placeholder: PropTypes.string,
     onChange: PropTypes.func,
-    value: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.number]),
+    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     readonly: PropTypes.bool,
     inputProps: PropTypes.object,
     min: PropTypes.number,
@@ -58,7 +56,7 @@ class InputSNCF extends React.Component {
     whiteBG: PropTypes.bool,
     noMargin: PropTypes.bool,
     focus: PropTypes.bool,
-  }
+  };
 
   static defaultProps = {
     // Basic input props
@@ -84,7 +82,7 @@ class InputSNCF extends React.Component {
     whiteBG: false,
     noMargin: false,
     focus: false,
-  }
+  };
 
   // Appends a icon button right next to the input field
   renderAppendButton = (sm = false) => {
@@ -106,7 +104,7 @@ class InputSNCF extends React.Component {
     }
 
     return null;
-  }
+  };
 
   // Displays a button at the end of the input field to clear the input
   renderClearButton = () => {
@@ -124,14 +122,28 @@ class InputSNCF extends React.Component {
         <i className="icons-close" aria-hidden="true" />
       </button>
     );
-  }
+  };
 
   // Renders a basic input field without any underlying list
   renderBasicInput = () => {
     const {
-      isInvalid, errorMsg, focus, label, id, type, onChange, unit, sm,
-      readonly, whiteBG, clearButton, value, placeholder, inputProps,
-      min, max,
+      isInvalid,
+      errorMsg,
+      focus,
+      label,
+      id,
+      type,
+      onChange,
+      unit,
+      sm,
+      readonly,
+      whiteBG,
+      clearButton,
+      value,
+      placeholder,
+      inputProps,
+      min,
+      max,
     } = this.props;
 
     // Build custom classes
@@ -155,10 +167,14 @@ class InputSNCF extends React.Component {
     return (
       <>
         {label && (
-        <label className="font-weight-medium mb-2" htmlFor={id}>{label}</label>
+          <label className="font-weight-medium mb-2" htmlFor={id}>
+            {label}
+          </label>
         )}
         <div className="input-group">
-          <div className={`form-control-container ${invalidClass} ${unit ? 'has-right-icon' : null}`}>
+          <div
+            className={`form-control-container ${invalidClass} ${unit ? 'has-right-icon' : null}`}
+          >
             <input
               type={type}
               onChange={onChange}
@@ -166,7 +182,7 @@ class InputSNCF extends React.Component {
               id={id}
               value={value}
               placeholder={placeholder}
-              ref={(input) => ((focus) ? input && input.focus() : null)}
+              ref={(input) => (focus ? input && input.focus() : null)}
               min={min || null}
               max={max || null}
               {...inputProps}
@@ -181,7 +197,7 @@ class InputSNCF extends React.Component {
         </div>
       </>
     );
-  }
+  };
 
   render() {
     const { noMargin } = this.props;
@@ -189,11 +205,7 @@ class InputSNCF extends React.Component {
     // Build conditional classes
     const containerMargin = noMargin ? '' : 'mb-4';
 
-    return (
-      <div className={containerMargin}>
-        {this.renderBasicInput()}
-      </div>
-    );
+    return <div className={containerMargin}>{this.renderBasicInput()}</div>;
   }
 }
 

@@ -1,15 +1,22 @@
 import * as d3 from 'd3';
 
 import { getDirection, timeShiftTrain } from 'applications/osrd/components/Helpers/ChartHelpers';
-import { updateContextMenu, updateMustRedraw, updateSelectedTrain, updateSimulation, } from 'reducers/osrdsimulation';
+import {
+  updateContextMenu,
+  updateMustRedraw,
+  updateSelectedTrain,
+  updateSimulation,
+} from 'reducers/osrdsimulation';
 
 import React from 'react';
-import { departureArrivalTimes } from '../../../../../reducers/osrdsimulation';
 import drawArea from 'applications/osrd/components/Simulation/drawArea';
 import drawCurve from 'applications/osrd/components/Simulation/drawCurve';
 import drawRect from 'applications/osrd/components/Simulation/drawRect';
 import drawText from 'applications/osrd/components/Simulation/drawText';
-import { updateDepartureArrivalTimes } from '../../../../../reducers/osrdsimulation';
+import {
+  departureArrivalTimes,
+  updateDepartureArrivalTimes,
+} from '../../../../../reducers/osrdsimulation';
 
 export default function drawTrain(
   chart,
@@ -25,23 +32,23 @@ export default function drawTrain(
   setDragOffset,
   simulation
 ) {
-
   const groupID = `spaceTime-${dataSimulation.trainNumber}`;
 
   const initialDrag = rotate ? chart.y.invert(0) : chart.x.invert(0);
 
   let dragFullOffset = 0;
 
-  const getDragOffsetValue = (offset) => (rotate
-    ? Math.floor((chart.y.invert(offset) - initialDrag) / 1000)
-    : Math.floor((chart.x.invert(offset) - initialDrag) / 1000));
+  const getDragOffsetValue = (offset) =>
+    rotate
+      ? Math.floor((chart.y.invert(offset) - initialDrag) / 1000)
+      : Math.floor((chart.x.invert(offset) - initialDrag) / 1000);
 
   /**
    * Compute, in sceonds, the offset to drill down to the parent through setDragOffset passed hook
    *
    */
   const dragTimeOffset = (offset) => {
-    const value = getDragOffsetValue(offset)
+    const value = getDragOffsetValue(offset);
     setDragOffset(value);
   };
 
@@ -71,13 +78,13 @@ export default function drawTrain(
       dispatch(updateMustRedraw(true));
     })
     .on('start', () => {
-      dragFullOffset = 0
+      dragFullOffset = 0;
       dispatch(updateSelectedTrain(dataSimulation.trainNumber));
     })
     .on('drag', () => {
       dragFullOffset += rotate ? d3.event.dy : d3.event.dx;
-      const value = getDragOffsetValue(dragFullOffset)
-      const newDepartureArrivalTimes = departureArrivalTimes(simulation, value)
+      const value = getDragOffsetValue(dragFullOffset);
+      const newDepartureArrivalTimes = departureArrivalTimes(simulation, value);
       debounceUpdateDepartureArrivalTimes(newDepartureArrivalTimes, 15);
       applyTrainCurveTranslation(dragFullOffset);
     });
@@ -102,14 +109,12 @@ export default function drawTrain(
 
   // Test direction to avoid displaying block
   const direction = getDirection(dataSimulation.headPosition);
-  const currentAllowanceSettings = allowancesSettings ? allowancesSettings[dataSimulation.id] : undefined
-
+  const currentAllowanceSettings = allowancesSettings
+    ? allowancesSettings[dataSimulation.id]
+    : undefined;
 
   if (direction && currentAllowanceSettings) {
-    if (
-      currentAllowanceSettings?.baseBlocks ||
-      !dataSimulation.eco_routeBeginOccupancy
-    ) {
+    if (currentAllowanceSettings?.baseBlocks || !dataSimulation.eco_routeBeginOccupancy) {
       dataSimulation.areaBlock.forEach((dataSimulationAreaBlockSection) =>
         drawArea(
           chart,
@@ -163,12 +168,10 @@ export default function drawTrain(
           'eco_routeEndOccupancy',
           rotate,
           isSelected
-        )
-      })
-
+        );
+      });
     }
     if (dataSimulation.eco_routeEndOccupancy && currentAllowanceSettings?.ecoBlocks) {
-
       dataSimulation.eco_areaBlock.forEach((dataSimulationEcoAreaBlockSection) =>
         drawArea(
           chart,
@@ -180,7 +183,6 @@ export default function drawTrain(
           rotate
         )
       );
-
 
       // Let's draw route_aspects
       dataSimulation.eco_routeAspects.forEach((ecoRouteAspect) => {
@@ -194,9 +196,9 @@ export default function drawTrain(
           'eco_routeEndOccupancy',
           rotate,
           isSelected
-        )
-      })
-/*
+        );
+      });
+      /*
       dataSimulation.eco_routeEndOccupancy.forEach((ecoRouteEndOccupancySection) =>
         drawCurve(
           chart,
@@ -225,8 +227,6 @@ export default function drawTrain(
       );
       */
     }
-
-
   }
 
   if (currentAllowanceSettings?.base) {
@@ -273,7 +273,7 @@ export default function drawTrain(
       )
     );
   }
-  if (currentAllowanceSettings?.eco && dataSimulation.eco_headPosition ) {
+  if (currentAllowanceSettings?.eco && dataSimulation.eco_headPosition) {
     dataSimulation.eco_headPosition.forEach((tailPositionSection) =>
       drawCurve(
         chart,
@@ -294,7 +294,11 @@ export default function drawTrain(
     groupID,
     isSelected,
     `${isPathSelected ? '🎢' : ''} ${dataSimulation.name}`, // text
-    dataSimulation.headPosition[0] && dataSimulation.headPosition[0][0] && dataSimulation.headPosition[0][0].time, // x
-    dataSimulation.headPosition[0] && dataSimulation.headPosition[0][0] && dataSimulation.headPosition[0][0].position // y
+    dataSimulation.headPosition[0] &&
+      dataSimulation.headPosition[0][0] &&
+      dataSimulation.headPosition[0][0].time, // x
+    dataSimulation.headPosition[0] &&
+      dataSimulation.headPosition[0][0] &&
+      dataSimulation.headPosition[0][0].position // y
   );
 }

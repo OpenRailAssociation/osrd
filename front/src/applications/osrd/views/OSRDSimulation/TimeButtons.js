@@ -1,9 +1,4 @@
-import {
-  FaBackward,
-  FaPause,
-  FaPlay,
-  FaStop,
-} from 'react-icons/fa';
+import { FaBackward, FaPause, FaPlay, FaStop } from 'react-icons/fa';
 import React, { useState } from 'react';
 import { datetime2time, sec2datetime, time2datetime } from 'utils/timeManipulation';
 import { updateIsPlaying, updateTimePositionValues } from 'reducers/osrdsimulation';
@@ -14,7 +9,7 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 // transform a speed ratio (X2 X10 X20, etc.) to interval time & step to bypass
 const factor2ms = (factor) => {
   const ms = Math.round(1000 / factor);
-  const steps = (ms < 100) ? Math.round((1 / ms) * 100) : 1;
+  const steps = ms < 100 ? Math.round((1 / ms) * 100) : 1;
   return { ms, steps };
 };
 
@@ -29,7 +24,9 @@ export default function TimeButtons() {
   const stop = () => {
     clearInterval(playInterval);
     setPlayInterval(undefined);
-    dispatch(updateTimePositionValues(sec2datetime(simulation.trains[selectedTrain].base.stops[0].time)));
+    dispatch(
+      updateTimePositionValues(sec2datetime(simulation.trains[selectedTrain].base.stops[0].time))
+    );
     dispatch(updateIsPlaying(false));
   };
   const pause = () => {
@@ -86,11 +83,7 @@ export default function TimeButtons() {
       </span>
       {stickyBar && (
         <>
-          <button
-            type="button"
-            className="btn btn-sm btn-only-icon mr-1 btn-danger"
-            onClick={stop}
-          >
+          <button type="button" className="btn btn-sm btn-only-icon mr-1 btn-danger" onClick={stop}>
             <FaStop />
           </button>
           <button

@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Source, Layer } from 'react-map-gl';
 
-const Background = (props) => {
+function Background(props) {
   const { colors } = props;
 
   const backgroundParams = {
@@ -26,7 +26,7 @@ const Background = (props) => {
       <Layer {...backgroundParams} />
     </Source>
   );
-};
+}
 
 Background.propTypes = {
   colors: PropTypes.object.isRequired,

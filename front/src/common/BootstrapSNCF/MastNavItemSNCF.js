@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useLocation } from 'react-router';
 import { Link, matchPath } from 'react-router-dom';
 
-const MastNavItemSNCF = (props) => {
+function MastNavItemSNCF(props) {
   const { link, linkname, icon, bottom, customAction } = props;
   const location = useLocation();
 
@@ -48,7 +48,7 @@ const MastNavItemSNCF = (props) => {
       </Link>
     </li>
   );
-};
+}
 
 MastNavItemSNCF.propTypes = {
   link: PropTypes.string.isRequired,

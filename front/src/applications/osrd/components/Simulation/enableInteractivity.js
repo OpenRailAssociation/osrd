@@ -15,9 +15,9 @@ import {
 } from 'reducers/osrdsimulation';
 
 import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/osrd/components/Simulation/consts';
-import createTrain from './SpaceTimeChart/createTrain';
 import drawGuideLines from 'applications/osrd/components/Simulation/drawGuideLines';
 import { store } from 'Store';
+import createTrain from './SpaceTimeChart/createTrain';
 
 export const displayGuide = (chart, opacity) => {
   chart.svg.selectAll('#vertical-line').style('opacity', opacity);
@@ -86,17 +86,33 @@ const updateChart = (chart, keyValues, rotate) => {
       .y((d) => newY(rotate ? d[keyValues[0]] : d[keyValues[1]]))
   );
 
+  chart.drawZone
+    .selectAll('rect.route-aspect')
+    .attr('x', (d) => newX(rotate ? d[`${keyValues[1]}_start`] : d[`${keyValues[0]}_start`]))
+    .attr(
+      'y',
+      (d) =>
+        newY(rotate ? d[`${keyValues[0]}_start`] : d[`${keyValues[1]}_start`]) -
+        (rotate
+          ? newY(d[`${keyValues[0]}_end`] - d[`${keyValues[0]}_start`])
+          : newY(d[`${keyValues[1]}_end`]) - newY(d[`${keyValues[1]}_start`])) *
+          -1
+    )
+    .attr('width', (d) =>
+      rotate
+        ? newX(d[`${keyValues[1]}_end`]) - newX(d[`${keyValues[1]}_start`])
+        : newX(d[`${keyValues[0]}_end`]) - newX(d[`${keyValues[0]}_start`])
+    )
+    .attr(
+      'height',
+      (d) =>
+        (rotate
+          ? newY(d[`${keyValues[0]}_end`]) - newY(d[`${keyValues[0]}_start`])
+          : newY(d[`${keyValues[1]}_end`]) - newY(d[`${keyValues[1]}_start`])) * -1
+    );
 
-  chart.drawZone.selectAll('rect.route-aspect')
-    .attr('x', d => newX(rotate ? d[`${keyValues[1]}_start`] : d[`${keyValues[0]}_start`]))
-    .attr('y', d => newY(rotate ? d[`${keyValues[0]}_start`] : d[`${keyValues[1]}_start`]) - (rotate ? newY(d[`${keyValues[0]}_end`] - d[`${keyValues[0]}_start`]) : newY(d[`${keyValues[1]}_end`]) - newY(d[`${keyValues[1]}_start`])) * -1)
-    .attr('width', d => (rotate ? newX(d[`${keyValues[1]}_end`]) - newX(d[`${keyValues[1]}_start`]) : newX(d[`${keyValues[0]}_end`]) - newX(d[`${keyValues[0]}_start`])))
-    .attr('height', d => (rotate ? newY(d[`${keyValues[0]}_end`]) - newY(d[`${keyValues[0]}_start`]) : newY(d[`${keyValues[1]}_end`]) - newY(d[`${keyValues[1]}_start`])) * -1)
-
-
-    //chart.drawZone.selectAll('rect.route-aspect')
-   // .attr('x', d => {console.log(d)})
-
+  // chart.drawZone.selectAll('rect.route-aspect')
+  // .attr('x', d => {console.log(d)})
 
   chart.drawZone.selectAll('.area').attr(
     'd',
@@ -259,7 +275,6 @@ const enableInteractivity = (
     clearTimeout(debounceTimeoutId);
     debounceTimeoutId = setTimeout(() => {
       dispatch(updateTimePositionValues(timePositionLocal, null));
-
     }, interval);
   }
 
@@ -273,8 +288,6 @@ const enableInteractivity = (
           ? chart.y.invert(d3.mouse(d3.event.currentTarget)[1])
           : chart.x.invert(d3.mouse(d3.event.currentTarget)[0]);
 
-
-
         debounceUpdateTimePositionValues(timePositionLocal, null, 15);
         const immediatePositionsValuesForPointer = interpolateOnTime(
           dataSimulation,
@@ -284,7 +297,7 @@ const enableInteractivity = (
         );
         updatePointers(chart, keyValues, listValues, immediatePositionsValuesForPointer, rotate);
         // useless: will be called by traceVerticalLine on positionValue useEffect
-       //
+        //
       } else {
         // If GEV
         const positionLocal = rotate
@@ -292,15 +305,14 @@ const enableInteractivity = (
           : chart.x.invert(d3.mouse(d3.event.currentTarget)[0]);
         const timePositionLocal = interpolateOnPosition(dataSimulation, keyValues, positionLocal);
         if (timePositionLocal) {
-
-         const immediatePositionsValues = interpolateOnTime(
+          const immediatePositionsValues = interpolateOnTime(
             dataSimulation,
             ['time'],
             LIST_VALUES_NAME_SPACE_TIME,
-            timePositionLocal);
+            timePositionLocal
+          );
 
           debounceUpdateTimePositionValues(timePositionLocal, null, 15);
-
         }
       }
 

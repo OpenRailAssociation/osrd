@@ -8,10 +8,8 @@ import { changeTrain } from 'applications/osrd/components/TrainList/TrainListHel
 import { updateMustRedraw } from 'reducers/osrdsimulation';
 import { useTranslation } from 'react-i18next';
 
-const ChartModal = (props) => {
-  const {
-    type, setShowModal, trainName, offsetTimeByDragging,
-  } = props;
+function ChartModal(props) {
+  const { type, setShowModal, trainName, offsetTimeByDragging } = props;
   const { selectedTrain } = useSelector((state) => state.osrdsimulation);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
@@ -24,9 +22,12 @@ const ChartModal = (props) => {
       setShowModal('');
       const seconds = parseInt(type === '-' ? offset * -1 : offset, 10);
       offsetTimeByDragging(seconds);
-      changeTrain({
-        departure_time: simulation.trains[selectedTrain].base.stops[0].time + seconds,
-      }, simulation.trains[selectedTrain].id);
+      changeTrain(
+        {
+          departure_time: simulation.trains[selectedTrain].base.stops[0].time + seconds,
+        },
+        simulation.trains[selectedTrain].id
+      );
       dispatch(updateMustRedraw(true));
     }
   };
@@ -46,9 +47,7 @@ const ChartModal = (props) => {
           {trainName}
         </div>
         <div className="chart-modal-input">
-          <div className="chart-modal-type-label">
-            {type}
-          </div>
+          <div className="chart-modal-type-label">{type}</div>
           <input
             type="string"
             autoFocus // eslint-disable-line jsx-a11y/no-autofocus
@@ -61,7 +60,7 @@ const ChartModal = (props) => {
       </div>
     </div>
   );
-};
+}
 
 ChartModal.propTypes = {
   type: PropTypes.string.isRequired,

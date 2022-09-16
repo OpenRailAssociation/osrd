@@ -1,17 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {
-  Source, Layer,
-} from 'react-map-gl';
+import { Source, Layer } from 'react-map-gl';
 
 const layoutStation = {
   type: 'symbol',
   minZoom: 7,
   layout: {
     'text-field': '{libelle}',
-    'text-font': [
-      'Roboto Condensed',
-    ],
+    'text-font': ['Roboto Condensed'],
     'text-size': 12,
     'text-offset': [0, 2],
     'text-anchor': 'center',
@@ -29,12 +25,8 @@ const layoutStation = {
 const layoutStationNumber = {
   type: 'symbol',
   layout: {
-    'text-field': ['concat',
-      ['/', ['get', 'frequentationPCTm2'], 100],
-      'p/m²'],
-    'text-font': [
-      'Roboto Bold',
-    ],
+    'text-field': ['concat', ['/', ['get', 'frequentationPCTm2'], 100], 'p/m²'],
+    'text-font': ['Roboto Bold'],
     'text-size': 12,
     'text-anchor': 'center',
     'text-allow-overlap': true,
@@ -47,8 +39,10 @@ const layoutStationNumber = {
     'text-halo-blur': 1,
     'text-opacity': [
       'case',
-      ['==', ['get', 'active'], 0], 0,
-      ['==', ['+', ['get', 'frequentationPCT'], ['get', 'frequentationPCTm2'], 0], 0], 0,
+      ['==', ['get', 'active'], 0],
+      0,
+      ['==', ['+', ['get', 'frequentationPCT'], ['get', 'frequentationPCTm2'], 0], 0],
+      0,
       1,
     ],
   },
@@ -58,21 +52,21 @@ const circleClusters = {
   type: 'circle',
   filter: ['==', ['get', 'active'], 1],
   paint: {
-    'circle-color':
-      ['step',
-        ['get', 'frequentationPCTm2'],
-        '#82be00',
-        60,
-        '#d2e100',
-        70,
-        '#ffb612',
-        80,
-        '#e05206',
-        90,
-        '#cd0037',
-        100,
-        '#a1006b',
-      ],
+    'circle-color': [
+      'step',
+      ['get', 'frequentationPCTm2'],
+      '#82be00',
+      60,
+      '#d2e100',
+      70,
+      '#ffb612',
+      80,
+      '#e05206',
+      90,
+      '#cd0037',
+      100,
+      '#a1006b',
+    ],
     'circle-opacity': 0.6,
     'circle-radius': 15,
   },
@@ -91,7 +85,7 @@ const circleClustersOff = {
 export default class SmartFlow extends React.Component {
   static propTypes = {
     geoJson: PropTypes.object.isRequired,
-  }
+  };
 
   render() {
     const { geoJson } = this.props;

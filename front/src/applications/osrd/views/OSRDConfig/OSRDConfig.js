@@ -8,7 +8,6 @@ import AddTrainSchedule from 'applications/osrd/views/OSRDConfig/AddTrainSchedul
 import { FlyToInterpolator } from 'react-map-gl';
 import InfraSelector from 'applications/osrd/views/OSRDConfig/InfraSelector';
 import Itinerary from 'applications/osrd/views/OSRDConfig/Itinerary';
-import { MODES } from '../../consts';
 import Map from 'applications/osrd/views/OSRDConfig/Map';
 import RollingStockSelector from 'applications/osrd/views/OSRDConfig/RollingStockSelector';
 import SpeedLimitByTagSelector from 'applications/osrd/views/OSRDConfig/SpeedLimitByTagSelector';
@@ -16,6 +15,7 @@ import TimetableSelector from 'applications/osrd/views/OSRDConfig/TimetableSelec
 import { stdcmRequestStatus } from 'applications/stdcm/views/OSRDSTDCM';
 import { updateViewport } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
+import { MODES } from '../../consts';
 
 export default function OSRDConfig(props) {
   const { fullscreen, darkmode } = useSelector((state) => state.main);
@@ -32,11 +32,13 @@ export default function OSRDConfig(props) {
 
   useEffect(() => {
     if (extViewport !== undefined) {
-      dispatch(updateViewport({
-        ...extViewport,
-        transitionDuration: 1000,
-        transitionInterpolator: new FlyToInterpolator(),
-      }));
+      dispatch(
+        updateViewport({
+          ...extViewport,
+          transitionDuration: 1000,
+          transitionInterpolator: new FlyToInterpolator(),
+        })
+      );
     }
   }, [extViewport]);
 
@@ -60,11 +62,11 @@ export default function OSRDConfig(props) {
           <Itinerary title={t('translation:common.itinerary')} updateExtViewport={setExtViewport} />
           <AddTrainLabels />
           {mode === MODES.simulation && (
-              <AddTrainSchedule
-                mustUpdateTimetable={mustUpdateTimetable}
-                setMustUpdateTimetable={setMustUpdateTimetable}
-              />
-            )}
+            <AddTrainSchedule
+              mustUpdateTimetable={mustUpdateTimetable}
+              setMustUpdateTimetable={setMustUpdateTimetable}
+            />
+          )}
           {mode === MODES.stdcm && (
             <div className="osrd-config-stdcm-apply">
               <button
@@ -73,11 +75,12 @@ export default function OSRDConfig(props) {
                 onClick={() => setCurrentStdcmRequestStatus(stdcmRequestStatus.pending)}
               >
                 {t('osrdconf:apply')}
-                <span className="sr-only" aria-hidden="true">{t('osrdconf:apply')}</span>
+                <span className="sr-only" aria-hidden="true">
+                  {t('osrdconf:apply')}
+                </span>
               </button>
             </div>
-            )}
-
+          )}
         </div>
         <div className="col-sm-6">
           <div className="osrd-config-item osrd-config-item-map mb-2">

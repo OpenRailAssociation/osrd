@@ -13,9 +13,7 @@ export default function SignalingType(props) {
     type: 'symbol',
     'source-layer': 'signaling_sections',
     layout: {
-      'text-font': [
-        'Roboto Condensed',
-      ],
+      'text-font': ['Roboto Condensed'],
       'symbol-placement': 'line',
       'text-field': '{signaling_type}',
       'text-size': 10,
@@ -29,14 +27,16 @@ export default function SignalingType(props) {
     },
   };
 
-  return layersSettings.signalingtype && (
-    <Source
-      id={`osrd_signaling_type_${geomType}`}
-      type="vector"
-      url={`${MAP_URL}/layer/signaling_sections/mvt/${geomType}/?infra=${infraID}`}
-    >
-      <Layer {...layerdef} id={`chartis/osrd_signaling_type/${geomType}`} />
-    </Source>
+  return (
+    layersSettings.signalingtype && (
+      <Source
+        id={`osrd_signaling_type_${geomType}`}
+        type="vector"
+        url={`${MAP_URL}/layer/signaling_sections/mvt/${geomType}/?infra=${infraID}`}
+      >
+        <Layer {...layerdef} id={`chartis/osrd_signaling_type/${geomType}`} />
+      </Source>
+    )
   );
 }
 

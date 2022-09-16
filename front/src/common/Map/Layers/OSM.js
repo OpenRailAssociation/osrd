@@ -6,7 +6,7 @@ import mapStyleDarkJson from 'assets/mapstyles/OSMDarkStyle.json';
 import mapStyleBluePrintJson from 'assets/mapstyles/OSMBluePrintStyle.json';
 import { OSM_URL } from 'common/Map/const';
 
-const OSM = (props) => {
+function OSM(props) {
   const { mapStyle } = props;
 
   const getMapStyle = () => {
@@ -28,15 +28,11 @@ const OSM = (props) => {
   };
 
   return (
-    <Source
-      id="osm"
-      type="vector"
-      url={OSM_URL}
-    >
+    <Source id="osm" type="vector" url={OSM_URL}>
       {genLayers()}
     </Source>
   );
-};
+}
 
 OSM.propTypes = {
   mapStyle: PropTypes.string.isRequired,

@@ -6,27 +6,25 @@ import {
 } from 'common/Map/Consts/SignalsNames';
 import { Layer, Source } from 'react-map-gl';
 import React, { useEffect, useState } from 'react';
+
+import { MAP_URL } from 'common/Map/const';
+import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
 import {
   getPointLayerProps,
   getSignalLayerProps,
   getSignalMatLayerProps,
 } from './geoSignalsLayers';
 
-import { MAP_URL } from 'common/Map/const';
-import PropTypes from 'prop-types';
-import { useSelector } from 'react-redux';
-
-const Signals = (props) => {
+function Signals(props) {
   const { mapStyle, signalsSettings, viewPort } = useSelector((state) => state.map);
   const timePosition = useSelector((state) => state.osrdsimulation.timePosition);
   const selectedTrain = useSelector((state) => state.osrdsimulation.selectedTrain);
   const consolidatedSimulation = useSelector(
-    (state) => state.osrdsimulation.consolidatedSimulation,
+    (state) => state.osrdsimulation.consolidatedSimulation
   );
   const { infraID } = useSelector((state) => state.osrdconf);
-  const {
-    colors, sourceTable, sourceLayer, hovered, mapRef,
-  } = props;
+  const { colors, sourceTable, sourceLayer, hovered, mapRef } = props;
 
   let prefix;
   if (mapStyle === 'blueprint') {
@@ -41,7 +39,9 @@ const Signals = (props) => {
 
   const map = mapRef?.current?.getMap(); // We need the mapBox map object
 
-  const dynamicLayersIds = LIGHT_SIGNALS.map((panel) => `chartis/signal/${sourceLayer}/${panel}`).filter((dynamicLayerId) => map?.getLayer(dynamicLayerId)); // We need the layers concerned by eventual changes of signals
+  const dynamicLayersIds = LIGHT_SIGNALS.map(
+    (panel) => `chartis/signal/${sourceLayer}/${panel}`
+  ).filter((dynamicLayerId) => map?.getLayer(dynamicLayerId)); // We need the layers concerned by eventual changes of signals
 
   /* EveryTime the viewPort change or the timePosition or the simulation change,
   visible signals are used to fill a list of special aspects (red, yellow).
@@ -61,9 +61,10 @@ const Signals = (props) => {
       renderedDynamicStopsFeatures.forEach((renderedDynamicStopsFeature) => {
         // find the info in simulation aspects
         const matchingSignalAspect = selectedTrainConsolidatedSimulation.signalAspects.find(
-          (signalAspect) => signalAspect.signal_id === renderedDynamicStopsFeature.id
-          && signalAspect.time_start <= timePosition
-          && signalAspect.time_end >= timePosition,
+          (signalAspect) =>
+            signalAspect.signal_id === renderedDynamicStopsFeature.id &&
+            signalAspect.time_start <= timePosition &&
+            signalAspect.time_end >= timePosition
         );
 
         if (matchingSignalAspect) {
@@ -119,7 +120,6 @@ const Signals = (props) => {
     signalsList,
     sourceLayer,
     sourceTable,
-
   };
 
   const changeSignalsContext = {
@@ -159,7 +159,7 @@ const Signals = (props) => {
       })}
     </Source>
   );
-};
+}
 
 Signals.propTypes = {
   hovered: PropTypes.object,

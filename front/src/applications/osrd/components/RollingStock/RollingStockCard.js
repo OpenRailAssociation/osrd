@@ -32,20 +32,30 @@ export default function RollingStockCard(props) {
     case 'Quadricourant':
       modetraction = (
         <>
-          <span className="text-primary"><BsLightningFill /></span>
+          <span className="text-primary">
+            <BsLightningFill />
+          </span>
           {data.tensionutilisation}
         </>
       );
       break;
     case 'D':
-      modetraction = <span className="text-pink"><MdLocalGasStation /></span>;
+      modetraction = (
+        <span className="text-pink">
+          <MdLocalGasStation />
+        </span>
+      );
       break;
     case 'BiBi':
     case 'Bimode':
       modetraction = (
         <>
-          <span className="text-pink"><MdLocalGasStation /></span>
-          <span className="text-primary"><BsLightningFill /></span>
+          <span className="text-pink">
+            <MdLocalGasStation />
+          </span>
+          <span className="text-primary">
+            <BsLightningFill />
+          </span>
           {dummyTractionValues.includes(data.tensionutilisation) ? '' : data.tensionutilisation}
         </>
       );
@@ -100,9 +110,7 @@ export default function RollingStockCard(props) {
                   </tr>
                   <tr>
                     <td className="text-primary">{t('intertiaCoefficient')}</td>
-                    <td>
-                      {data.inertia_coefficient}
-                    </td>
+                    <td>{data.inertia_coefficient}</td>
                   </tr>
                   <tr>
                     <td className="text-primary">{t('timetableGamma')}</td>
@@ -118,9 +126,7 @@ export default function RollingStockCard(props) {
               {data.power_class && data.power_class < 7 ? (
                 <>
                   <div>
-                    <small className="mr-1 text-primary">
-                      {t('powerClass')}
-                    </small>
+                    <small className="mr-1 text-primary">{t('powerClass')}</small>
                     {data.power_class}
                     <span>: </span>
                     {powerClasses[data.power_class].a}
@@ -128,18 +134,13 @@ export default function RollingStockCard(props) {
                     {powerClasses[data.power_class].kw}
                     <small>kW</small>
                   </div>
-                  <ProgressSNCF
-                    value={Math.floor(data.power_class * 16.67)}
-                    small
-                  />
+                  <ProgressSNCF value={Math.floor(data.power_class * 16.67)} small />
                 </>
               ) : null}
               {data.features && data.features.length > 0 ? (
                 <div>
                   {t('features')}
-                  <span className="ml-1">
-                    {data.features.join(', ')}
-                  </span>
+                  <span className="ml-1">{data.features.join(', ')}</span>
                 </div>
               ) : null}
               <div className="pt-1">
@@ -184,7 +185,7 @@ export default function RollingStockCard(props) {
             </div>
           </div>
         </div>
-      ) : null }
+      ) : null}
       <div className="rollingstock-footer py-2">
         <div className="rollingstock-tractionmode" style={{ display: 'none' }}>
           {modetraction}
@@ -213,7 +214,7 @@ export default function RollingStockCard(props) {
           >
             {t('selectRollingStock')}
           </button>
-        ) : null }
+        ) : null}
       </div>
     </div>
   );
