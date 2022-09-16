@@ -100,8 +100,8 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
   }, [jsonSchema]);
 
   const customOnChange = useCallback(
-    (data: Array<LinearMetadataItem>) => {
-      onChange(data.filter((e) => (valueField ? !isNil(e[valueField]) : true)));
+    (newData: Array<LinearMetadataItem>) => {
+      onChange(newData.filter((e) => (valueField ? !isNil(e[valueField]) : true)));
     },
     [onChange, valueField]
   );
