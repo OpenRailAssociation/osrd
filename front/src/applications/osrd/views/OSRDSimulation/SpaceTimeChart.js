@@ -128,7 +128,7 @@ export default function SpaceTimeChart(props) {
         keyValues,
         ref,
         reset,
-        rotate,
+        rotate
       );
 
       chartLocal.svg.on('click', () => {
@@ -139,7 +139,6 @@ export default function SpaceTimeChart(props) {
 
       drawAxisTitle(chartLocal, rotate);
       currentDataSimulation.forEach((train, idx) => {
-
         drawTrain(
           chartLocal,
           dispatch,
@@ -152,7 +151,7 @@ export default function SpaceTimeChart(props) {
           rotate,
           setDragEnding,
           setDragOffset,
-          simulation,
+          simulation
         );
       });
       enableInteractivity(
@@ -167,7 +166,7 @@ export default function SpaceTimeChart(props) {
         setYPosition,
         setZoomLevel,
         yPosition,
-        zoomLevel,
+        zoomLevel
       );
       // findConflicts(chartLocal, dataSimulation, rotate);
       setChart(chartLocal);
@@ -195,7 +194,7 @@ export default function SpaceTimeChart(props) {
         {
           departure_time: simulation.trains[selectedTrain].base.stops[0].time,
         },
-        simulation.trains[selectedTrain].id,
+        simulation.trains[selectedTrain].id
       );
       setDragEnding(false);
     }
@@ -216,7 +215,7 @@ export default function SpaceTimeChart(props) {
   // ADN: trigger a redraw on every simulation change. This is the right pattern.
   useEffect(() => {
     setDataSimulation(createTrain(dispatch, keyValues, simulation.trains, t));
-    const newDataSimulation = createTrain(dispatch, keyValues, simulation.trains, t)
+    const newDataSimulation = createTrain(dispatch, keyValues, simulation.trains, t);
     if (dataSimulation) {
       // ADN drawAllTrain already traceVerticalLines
 
@@ -251,7 +250,6 @@ export default function SpaceTimeChart(props) {
         timePosition
       );
     }
-
   }, [positionValues]);
 
   useEffect(() => {
@@ -302,4 +300,4 @@ export default function SpaceTimeChart(props) {
 
 SpaceTimeChart.propTypes = {
   heightOfSpaceTimeChart: PropTypes.number.isRequired,
-}
+};

@@ -14,12 +14,8 @@ export default function TrainListModal(props) {
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const { trainIDX } = props;
   return simulation.trains[trainIDX] ? (
-    <ModalSNCF
-      htmlID="trainlist-modal"
-    >
-      <ModalHeaderSNCF>
-        {t('ModalEdit')}
-      </ModalHeaderSNCF>
+    <ModalSNCF htmlID="trainlist-modal">
+      <ModalHeaderSNCF>{t('ModalEdit')}</ModalHeaderSNCF>
       <ModalBodySNCF>
         <InputSNCF
           type="text"

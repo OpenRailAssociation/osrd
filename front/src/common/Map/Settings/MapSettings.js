@@ -10,15 +10,11 @@ import MapSettingsTrackSources from 'common/Map/Settings/MapSettingsTrackSources
 import { useTranslation } from 'react-i18next';
 
 export default function MapSettings(props) {
-  const {
-    active, toggleMapSettings,
-  } = props;
+  const { active, toggleMapSettings } = props;
   const { t } = useTranslation(['translation', 'map-settings']);
   return (
     <div className={`map-modal${active ? ' active' : ''}`}>
-      <div className="h2">
-        {t('map-settings:mapSettings')}
-      </div>
+      <div className="h2">{t('map-settings:mapSettings')}</div>
       <MapSettingsMapStyle />
       <div className="my-2" />
       <MapSettingsTrackSources />

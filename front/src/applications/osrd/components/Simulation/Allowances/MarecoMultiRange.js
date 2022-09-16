@@ -23,21 +23,21 @@ function getSurroundingEdges(brushes, selection, brush, flattenStops) {
     if (otherBrush.currentSelection && otherBrush !== brush) {
       const currentEdgeUpCandidate = otherBrush.currentSelection[0];
       const currentEdgeDownCandidate = otherBrush.currentSelection[1];
-      if (
-        currentEdgeUpCandidate < edgeUp
-        && currentEdgeDownCandidate > selection[1]
-      ) { edgeUp = currentEdgeUpCandidate; }
-      if (
-        currentEdgeDownCandidate > edgeDown
-        && currentEdgeUpCandidate < selection[0]
-      ) { edgeDown = currentEdgeDownCandidate; }
+      if (currentEdgeUpCandidate < edgeUp && currentEdgeDownCandidate > selection[1]) {
+        edgeUp = currentEdgeUpCandidate;
+      }
+      if (currentEdgeDownCandidate > edgeDown && currentEdgeUpCandidate < selection[0]) {
+        edgeDown = currentEdgeDownCandidate;
+      }
     }
   });
   return [edgeDown, edgeUp];
 }
 
 function getClosestStop(stops, value) {
-  const closest = stops.reduce((prev, curr) => (Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev));
+  const closest = stops.reduce((prev, curr) =>
+    Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev
+  );
   return closest;
 }
 
@@ -46,15 +46,22 @@ const viewBoxWidth = 1000; // Can be const
 const baseExtension = {
   id: 0,
   start: 0,
-  end: 0
+  end: 0,
 }; // Pass trough props
 
-export default function MarecoMultiRange({ stops = [{}], extensions= [baseExtension], setExtensions=() =>{} }) {
+export default function MarecoMultiRange({
+  stops = [{}],
+  extensions = [baseExtension],
+  setExtensions = () => {},
+}) {
   const brushesRef = useRef([]);
   const brushesContainer = useRef(null);
   const [brushes, setBrushes] = useState([]);
   const margin = {
-    top: 25, right: 30, bottom: 25, left: 40,
+    top: 25,
+    right: 30,
+    bottom: 25,
+    left: 40,
   };
 
   const qu = d3
@@ -64,30 +71,27 @@ export default function MarecoMultiRange({ stops = [{}], extensions= [baseExtens
 
   const x = d3
     .scaleLinear()
-    .domain([
-      Math.min(...stops.map((d) => d.position)),
-      Math.max(...stops.map((d) => d.position)),
-    ])
+    .domain([Math.min(...stops.map((d) => d.position)), Math.max(...stops.map((d) => d.position))])
     .range([margin.left, viewBoxWidth - margin.right]);
 
   const ref = useD3(
     (svg) => {
+      console.log('Begin useD3');
 
-      console.log('Begin useD3')
+      // svg.select('g.brush-area').selectAll('g').remove()
 
-      //svg.select('g.brush-area').selectAll('g').remove()
+      const xAxisStops = (node) =>
+        node
+          .attr('transform', `translate(0,${viewBoxHeight - margin.top - 6})`)
+          .call(
+            d3
+              .axisTop(x)
+              .tickValues(stops.map((d) => d.position))
+              .tickSize(viewBoxHeight - margin.bottom - margin.top)
+          )
+          .call((g) => g.selectAll('g.tick').style('stroke-dasharray', 0.8));
 
-      const xAxisStops = (node) => node
-        .attr('transform', `translate(0,${viewBoxHeight - margin.top - 6})`)
-        .call(
-          d3
-            .axisTop(x)
-            .tickValues(stops.map((d) => d.position))
-            .tickSize(viewBoxHeight - margin.bottom - margin.top),
-        )
-        .call((g) => g.selectAll('g.tick').style('stroke-dasharray', 0.8));
-
-      const axisStopsLabels = svg.select('.x-axis-stops-labels').selectAll('text').data(stops)
+      const axisStopsLabels = svg.select('.x-axis-stops-labels').selectAll('text').data(stops);
 
       axisStopsLabels
         .enter()
@@ -96,17 +100,16 @@ export default function MarecoMultiRange({ stops = [{}], extensions= [baseExtens
         .attr('y', margin.top + 6)
         .attr('class', 'op-text')
         .attr('text-anchor', 'middle')
-        .text((d) => d.name)
+        .text((d) => d.name);
 
-
-      const xAxisContinuous = (node) => node
-        .attr('transform', `translate(0,${viewBoxHeight - margin.bottom})`)
-        .call(d3.axisBottom(x))
-        .call((g) => g.select('.domain').remove());
+      const xAxisContinuous = (node) =>
+        node
+          .attr('transform', `translate(0,${viewBoxHeight - margin.bottom})`)
+          .call(d3.axisBottom(x))
+          .call((g) => g.select('.domain').remove());
 
       svg.select('.x-axis').call(xAxisContinuous);
       svg.select('.x-axis-stops').call(xAxisStops);
-
 
       const gBrushes = select(brushesContainer.current);
 
@@ -123,22 +126,17 @@ export default function MarecoMultiRange({ stops = [{}], extensions= [baseExtens
             .style('pointer-events', () => {
               const { brush } = brushWrapper;
 
-              return i === gBrush.size() && brush !== undefined
-                ? 'all'
-                : 'none';
+              return i === gBrush.size() && brush !== undefined ? 'all' : 'none';
             });
           if (brushWrapper.originalExtension) {
             select(this).call(
               brushWrapper.brush.move,
-              [
-                brushWrapper.originalExtension[0],
-                brushWrapper.originalExtension[1],
-              ].map(x),
+              [brushWrapper.originalExtension[0], brushWrapper.originalExtension[1]].map(x)
             );
           }
         });
 
-      gBrush.exit().remove()
+      gBrush.exit().remove();
 
       // Move this up to avoid a BUG if further extension
       gBrush.each(function (brushWrapper, i) {
@@ -148,26 +146,21 @@ export default function MarecoMultiRange({ stops = [{}], extensions= [baseExtens
           .style('pointer-events', () => {
             const { brush } = brushWrapper;
 
-            return i === gBrush.size() - 1 && brush !== undefined
-              ? 'none'
-              : 'none';
+            return i === gBrush.size() - 1 && brush !== undefined ? 'none' : 'none';
           });
       });
 
-      console.log("end update useD3", brushes)
+      console.log('end update useD3', brushes);
 
       // better FILTERING BEFORE SENDING BACK
-       // only if different fro extensions sent
+      // only if different fro extensions sent
 
-      const filteredExtensions =  brushes.filter(d => d.currentSelection && d.currentSelection[0] !== undefined)
-      .reduce(
-        (unique, item) => (unique.includes(item) ? unique : [...unique, item]),
-        [],
-      );
-    setExtensions(filteredExtensions)
-
+      const filteredExtensions = brushes
+        .filter((d) => d.currentSelection && d.currentSelection[0] !== undefined)
+        .reduce((unique, item) => (unique.includes(item) ? unique : [...unique, item]), []);
+      setExtensions(filteredExtensions);
     },
-    [stops, brushes],
+    [stops, brushes]
   );
 
   useEffect(() => {
@@ -218,10 +211,7 @@ export default function MarecoMultiRange({ stops = [{}], extensions= [baseExtens
     // empty for now
   }
 
-  const brushed = ({
-    mode, sourceEvent, selection, target,
-  }) => {
-
+  const brushed = ({ mode, sourceEvent, selection, target }) => {
     if (!sourceEvent) return;
 
     // keep a ref to the selection
@@ -233,44 +223,31 @@ export default function MarecoMultiRange({ stops = [{}], extensions= [baseExtens
       brushesRef.current.map((d) => d.brush),
       normalizedSelection,
       target,
-      stops.map((d) => d.position),
+      stops.map((d) => d.position)
     );
 
-    if (
-      normalizedSelection[0] <= edges[0]
-      || normalizedSelection[1] >= edges[1]
-    ) {
+    if (normalizedSelection[0] <= edges[0] || normalizedSelection[1] >= edges[1]) {
       const currentBrush = brushesRef.current.find((d) => d.brush == target);
-      const currentSel = d3
-        .selectAll('g.brush')
-        .filter((d) => d.brush == target);
+      const currentSel = d3.selectAll('g.brush').filter((d) => d.brush == target);
       if (normalizedSelection[0] <= edges[0]) {
-        currentSel.call(
-          currentBrush.brush.move,
-          [edges[0], normalizedSelection[1]].map(x),
-        );
+        currentSel.call(currentBrush.brush.move, [edges[0], normalizedSelection[1]].map(x));
       }
       if (normalizedSelection[1] >= edges[1]) {
-        currentSel.call(
-          currentBrush.brush.move,
-          [normalizedSelection[0], edges[1]].map(x),
-        );
+        currentSel.call(currentBrush.brush.move, [normalizedSelection[0], edges[1]].map(x));
       }
     }
   };
 
-  function brushend({
-    selection, sourceEvent, mode, target,
-  }) {
-
-
+  function brushend({ selection, sourceEvent, mode, target }) {
     // add a new brush as needed
     if (!sourceEvent || !selection) return;
     // const newExtent = selection.map((s) => qu(x.invert(s)));
-    const newExtent = selection.map((s) => getClosestStop(
-      stops.map((d) => d.position),
-      x.invert(s),
-    ));
+    const newExtent = selection.map((s) =>
+      getClosestStop(
+        stops.map((d) => d.position),
+        x.invert(s)
+      )
+    );
     const currentBrush = brushesRef.current.find((d) => d.brush == target);
     currentBrush.currentSelection = newExtent;
 
@@ -280,11 +257,9 @@ export default function MarecoMultiRange({ stops = [{}], extensions= [baseExtens
     const roughMappedSelection = selection.map((s) => x.invert(s));
     const intersection = brushesRef.current
       .map((b) => b.currentSelection)
-      .filter((bS) => (
-        bS
-          && (roughMappedSelection.includes(bS[0])
-            || roughMappedSelection.includes(bS[1]))
-      ));
+      .filter(
+        (bS) => bS && (roughMappedSelection.includes(bS[0]) || roughMappedSelection.includes(bS[1]))
+      );
 
     // Filtrer et remettre les bruhses à zero !! (Set Brushes)
 
@@ -295,22 +270,19 @@ export default function MarecoMultiRange({ stops = [{}], extensions= [baseExtens
   }
 
   return (
-    <>
-      <svg
-        ref={ref}
-        viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}
-        style={{
-          height: '100%',
-          marginRight: '0px',
-          marginLeft: '0px',
-
-        }}
-      >
-        <g className="brush-area" ref={brushesContainer} />
-        <g className="x-axis-stops-labels" />
-        <g className="x-axis" />
-        <g className="x-axis-stops" />
-      </svg>
-    </>
+    <svg
+      ref={ref}
+      viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}
+      style={{
+        height: '100%',
+        marginRight: '0px',
+        marginLeft: '0px',
+      }}
+    >
+      <g className="brush-area" ref={brushesContainer} />
+      <g className="x-axis-stops-labels" />
+      <g className="x-axis" />
+      <g className="x-axis-stops" />
+    </svg>
   );
 }

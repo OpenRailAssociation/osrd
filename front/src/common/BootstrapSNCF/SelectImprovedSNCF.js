@@ -3,9 +3,7 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
 export default function SelectSNCF(props) {
-  const {
-    title, options, selectedValue, onChange, sm, withSearch,
-  } = props;
+  const { title, options, selectedValue, onChange, sm, withSearch } = props;
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(selectedValue);
   const [filteredOptions, setFilteredOptions] = useState(options);
@@ -17,17 +15,18 @@ export default function SelectSNCF(props) {
     setIsOpen(false);
   };
 
-  const renderOptions = () => filteredOptions.map((option) => {
-    const key = (typeof option === 'string') ? option : option.key;
-    const value = (typeof option === 'string') ? option : option.value;
-    return (
-      <span className="select-menu-item" role="listitem" key={key}>
-        <button type="button" onClick={() => selectItem(option)}>
-          {value}
-        </button>
-      </span>
-    );
-  });
+  const renderOptions = () =>
+    filteredOptions.map((option) => {
+      const key = typeof option === 'string' ? option : option.key;
+      const value = typeof option === 'string' ? option : option.value;
+      return (
+        <span className="select-menu-item" role="listitem" key={key}>
+          <button type="button" onClick={() => selectItem(option)}>
+            {value}
+          </button>
+        </span>
+      );
+    });
 
   const renderSelectedItem = () => {
     if (selectedItem) {
@@ -37,8 +36,8 @@ export default function SelectSNCF(props) {
   };
 
   const filterOptions = (text) => {
-    const localFilteredOptions = options.filter(
-      (el) => el.toLowerCase().includes(text.toLowerCase()),
+    const localFilteredOptions = options.filter((el) =>
+      el.toLowerCase().includes(text.toLowerCase())
     );
     setFilteredOptions(text ? localFilteredOptions : options);
   };
@@ -72,7 +71,10 @@ export default function SelectSNCF(props) {
                 aria-expanded="false"
                 aria-controls="selecttoggle"
               >
-                <i className={`${(isOpen ? 'icons-arrow-up' : 'icons-arrow-down')} icons-size-x75`} aria-hidden="true" />
+                <i
+                  className={`${isOpen ? 'icons-arrow-up' : 'icons-arrow-down'} icons-size-x75`}
+                  aria-hidden="true"
+                />
               </button>
             </div>
           </div>
@@ -90,7 +92,11 @@ export default function SelectSNCF(props) {
                     <i className="icons-search" aria-hidden="true" />
                   </span>
                   {filterText && (
-                    <button type="button" className="btn-clear btn-primary" onClick={() => setFilterText('')}>
+                    <button
+                      type="button"
+                      className="btn-clear btn-primary"
+                      onClick={() => setFilterText('')}
+                    >
                       <span className="sr-only">Clear text</span>
                       <i className="icons-close" aria-hidden="true" />
                     </button>
@@ -111,10 +117,7 @@ export default function SelectSNCF(props) {
 SelectSNCF.propTypes = {
   title: PropTypes.string,
   options: PropTypes.array.isRequired,
-  selectedValue: PropTypes.oneOfType([
-    PropTypes.object,
-    PropTypes.string,
-  ]),
+  selectedValue: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
   onChange: PropTypes.func.isRequired,
   sm: PropTypes.bool,
   withSearch: PropTypes.bool,

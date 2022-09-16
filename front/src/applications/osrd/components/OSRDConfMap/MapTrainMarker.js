@@ -3,18 +3,14 @@ import PropTypes from 'prop-types';
 import { Source, Layer } from 'react-map-gl';
 
 export default function MapTrainMarker(props) {
-  const {
-    text, codenbengin, lon, lat, angle,
-  } = props;
+  const { text, codenbengin, lon, lat, angle } = props;
 
   const mapTrainMarkerLayer = {
     id: 'mapTrainMarkerLayer',
     type: 'symbol',
     layout: {
       'text-field': text,
-      'text-font': [
-        'Roboto Condensed',
-      ],
+      'text-font': ['Roboto Condensed'],
       'text-size': 10,
       'icon-image': codenbengin,
       'icon-size': 0.3,

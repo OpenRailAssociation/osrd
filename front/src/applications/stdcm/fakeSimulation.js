@@ -1328,5 +1328,4 @@ const fakeSimulation = {
   ],
 };
 
-
-export default fakeSimulation
+export default fakeSimulation;

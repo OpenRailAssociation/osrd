@@ -89,10 +89,14 @@ export default function OSRDStcdmResults(props) {
   };
 
   // With this hook we update and store
-  //the consolidatedSimuation (simualtion stucture for the selected train)
+  // the consolidatedSimuation (simualtion stucture for the selected train)
   useEffect(() => {
-    const consolidatedSimulation = (
-      createTrain(dispatch, KEY_VALUES_FOR_CONSOLIDATED_SIMULATION, simulation.trains, t));
+    const consolidatedSimulation = createTrain(
+      dispatch,
+      KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
+      simulation.trains,
+      t
+    );
     // Store it to allow time->position logic to be hosted by redux
     dispatch(updateConsolidatedSimulation(consolidatedSimulation));
     dispatch(updateMustRedraw(true));
@@ -100,11 +104,11 @@ export default function OSRDStcdmResults(props) {
 
   useEffect(() => {
     // Setup the listener to undi /redo
-    //window.addEventListener('keydown', handleKey);
+    // window.addEventListener('keydown', handleKey);
 
     getTimetable();
     return function cleanup() {
-      //window.removeEventListener('keydown', handleKey);
+      // window.removeEventListener('keydown', handleKey);
       dispatch(updateSelectedProjection(undefined));
       dispatch(updateSimulation({ trains: [] }));
     };

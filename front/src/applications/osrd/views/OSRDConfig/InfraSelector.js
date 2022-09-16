@@ -22,10 +22,12 @@ export default function InfraSelector() {
       const infraQuery = await get(`${infraURL}${id}/`, {});
       setSelectedInfra(infraQuery);
     } catch (e) {
-      dispatch(setFailure({
-        name: t('errorMessages.unableToRetrieveInfra'),
-        message: e.message,
-      }));
+      dispatch(
+        setFailure({
+          name: t('errorMessages.unableToRetrieveInfra'),
+          message: e.message,
+        })
+      );
       console.log('ERROR', e);
     }
   };
@@ -35,10 +37,12 @@ export default function InfraSelector() {
       const infrasListQuery = await get(infraURL, {});
       setInfrasList(infrasListQuery);
     } catch (e) {
-      dispatch(setFailure({
-        name: t('errorMessages.unableToRetrieveInfraList'),
-        message: e.message,
-      }));
+      dispatch(
+        setFailure({
+          name: t('errorMessages.unableToRetrieveInfraList'),
+          message: e.message,
+        })
+      );
       console.log('ERROR', e);
     }
   };
@@ -51,10 +55,12 @@ export default function InfraSelector() {
         setSelectedInfra(infrasList.results[0]);
         dispatch(updateInfraID(infrasList.results[0].id));
       } else {
-        dispatch(setFailure({
-          name: t('errorMessages.noExistingInfra'),
-          message: '',
-        }));
+        dispatch(
+          setFailure({
+            name: t('errorMessages.noExistingInfra'),
+            message: '',
+          })
+        );
       }
     } else {
       getInfrasList();
@@ -84,13 +90,15 @@ export default function InfraSelector() {
                 <span className="ml-1">{selectedInfra.name}</span>
                 <small className="ml-1 text-primary">{selectedInfra.id}</small>
               </>
-            ) : <span className="ml-3"><DotsLoader /></span> }
+            ) : (
+              <span className="ml-3">
+                <DotsLoader />
+              </span>
+            )}
           </div>
         </div>
       </div>
-      <InfraSelectorModal
-        infrasList={infrasList}
-      />
+      <InfraSelectorModal infrasList={infrasList} />
     </>
   );
 }

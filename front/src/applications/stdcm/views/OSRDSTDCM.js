@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 
-import { MODES } from '../../osrd/consts';
-import OSRDConfig from '../../osrd/views/OSRDConfig/OSRDConfig';
-import OSRDStdcmResults from './OSRDStdcmResults'
-import StdcmRequestModal from './StdcmRequestModal';
-import { updateMode } from '../../../reducers/osrdconf';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { MODES } from '../../osrd/consts';
+import OSRDConfig from '../../osrd/views/OSRDConfig/OSRDConfig';
+import OSRDStdcmResults from './OSRDStdcmResults';
+import StdcmRequestModal from './StdcmRequestModal';
+import { updateMode } from '../../../reducers/osrdconf';
 
 export const stdcmRequestStatus = {
   idle: 'IDLE',
@@ -14,8 +14,8 @@ export const stdcmRequestStatus = {
   success: 'SUCCESS',
   rejected: 'REJECTED',
   canceled: 'CANCELED',
-  noresults: 'NORESULTS'
-}
+  noresults: 'NORESULTS',
+};
 
 export default function OSRDSTDCM() {
   const { t } = useTranslation(['translation', 'osrdconf']);
@@ -27,20 +27,18 @@ export default function OSRDSTDCM() {
   }, []);
 
   useEffect(() => {
-    console.log("new status", currentStdcmRequestStatus)
+    console.log('new status', currentStdcmRequestStatus);
   }, [currentStdcmRequestStatus]);
 
   return (
     <>
-      <OSRDConfig
-        setCurrentStdcmRequestStatus={setCurrentStdcmRequestStatus}
-      />
+      <OSRDConfig setCurrentStdcmRequestStatus={setCurrentStdcmRequestStatus} />
       <StdcmRequestModal
         setCurrentStdcmRequestResults={setCurrentStdcmRequestResults}
         setCurrentStdcmRequestStatus={setCurrentStdcmRequestStatus}
-        currentStdcmRequestStatus = {currentStdcmRequestStatus}
+        currentStdcmRequestStatus={currentStdcmRequestStatus}
       />
-      <OSRDStdcmResults currentStdcmRequestStatus = {currentStdcmRequestStatus} />
+      <OSRDStdcmResults currentStdcmRequestStatus={currentStdcmRequestStatus} />
     </>
   );
 }

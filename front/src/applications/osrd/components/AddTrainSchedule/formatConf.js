@@ -2,45 +2,57 @@ export default function formatConf(dispatch, setFailure, t, osrdconf, originTime
   let error = false;
   if (!osrdconf.origin) {
     error = true;
-    dispatch(setFailure({
-      name: t('osrdconf:errorMessages.trainScheduleTitle'),
-      message: t('osrdconf:errorMessages.noOrigin'),
-    }));
+    dispatch(
+      setFailure({
+        name: t('osrdconf:errorMessages.trainScheduleTitle'),
+        message: t('osrdconf:errorMessages.noOrigin'),
+      })
+    );
   }
   if (!osrdconf.originTime) {
     error = true;
-    dispatch(setFailure({
-      name: t('osrdconf:errorMessages.trainScheduleTitle'),
-      message: t('osrdconf:errorMessages.noOriginTime'),
-    }));
+    dispatch(
+      setFailure({
+        name: t('osrdconf:errorMessages.trainScheduleTitle'),
+        message: t('osrdconf:errorMessages.noOriginTime'),
+      })
+    );
   }
   if (!osrdconf.destination) {
     error = true;
-    dispatch(setFailure({
-      name: t('osrdconf:errorMessages.trainScheduleTitle'),
-      message: t('osrdconf:errorMessages.noDestination'),
-    }));
+    dispatch(
+      setFailure({
+        name: t('osrdconf:errorMessages.trainScheduleTitle'),
+        message: t('osrdconf:errorMessages.noDestination'),
+      })
+    );
   }
   if (!osrdconf.rollingStockID) {
     error = true;
-    dispatch(setFailure({
-      name: t('osrdconf:errorMessages.trainScheduleTitle'),
-      message: t('osrdconf:errorMessages.noRollingStock'),
-    }));
+    dispatch(
+      setFailure({
+        name: t('osrdconf:errorMessages.trainScheduleTitle'),
+        message: t('osrdconf:errorMessages.noRollingStock'),
+      })
+    );
   }
   if (!osrdconf.name) {
     error = true;
-    dispatch(setFailure({
-      name: t('osrdconf:errorMessages.trainScheduleTitle'),
-      message: t('osrdconf:errorMessages.noName'),
-    }));
+    dispatch(
+      setFailure({
+        name: t('osrdconf:errorMessages.trainScheduleTitle'),
+        message: t('osrdconf:errorMessages.noName'),
+      })
+    );
   }
   if (!osrdconf.timetableID) {
     error = true;
-    dispatch(setFailure({
-      name: t('osrdconf:errorMessages.trainScheduleTitle'),
-      message: t('osrdconf:errorMessages.noTimetable'),
-    }));
+    dispatch(
+      setFailure({
+        name: t('osrdconf:errorMessages.trainScheduleTitle'),
+        message: t('osrdconf:errorMessages.noTimetable'),
+      })
+    );
   }
 
   if (!error) {

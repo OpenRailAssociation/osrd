@@ -43,7 +43,8 @@ export default function MapSearchStation(props) {
   const onResultClick = (result) => {
     setSearch(result.name);
 
-    const lonlat = map.mapTrackSources === 'schematic' ? result.coordinates.sch : result.coordinates.geo;
+    const lonlat =
+      map.mapTrackSources === 'schematic' ? result.coordinates.sch : result.coordinates.geo;
 
     if (lonlat !== null) {
       const newViewport = {
@@ -61,11 +62,9 @@ export default function MapSearchStation(props) {
 
   const formatSearchResults = () => {
     // sort name, then by mainstation true then false
-    let searchResultsContent = searchResults.results.sort(
-      (a, b) => a.name.localeCompare(b.name),
-    );
+    let searchResultsContent = searchResults.results.sort((a, b) => a.name.localeCompare(b.name));
     searchResultsContent = searchResultsContent.sort(
-      (a, b) => Number(b.mainstation) - Number(a.mainstation),
+      (a, b) => Number(b.mainstation) - Number(a.mainstation)
     );
     return searchResultsContent.map((result) => (
       <button
@@ -107,16 +106,11 @@ export default function MapSearchStation(props) {
         </span>
       </div>
       <div>
-        {searchResults !== undefined && searchResults.results !== undefined
-          ? (
-            <div className="search-results">
-              {formatSearchResults()}
-            </div>
-          ) : (
-            <h2 className="text-center mt-3">
-              {t('map-search:noresult')}
-            </h2>
-          )}
+        {searchResults !== undefined && searchResults.results !== undefined ? (
+          <div className="search-results">{formatSearchResults()}</div>
+        ) : (
+          <h2 className="text-center mt-3">{t('map-search:noresult')}</h2>
+        )}
       </div>
     </>
   );

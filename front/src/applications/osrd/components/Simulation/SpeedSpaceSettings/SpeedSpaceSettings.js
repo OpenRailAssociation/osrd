@@ -13,10 +13,12 @@ export default function SpeedSpaceSettings(props) {
   const { speedSpaceSettings } = useSelector((state) => state.osrdsimulation);
 
   const toggleSetting = (settingName) => {
-    dispatch(updateSpeedSpaceSettings({
-      ...speedSpaceSettings,
-      [settingName]: !speedSpaceSettings[settingName],
-    }));
+    dispatch(
+      updateSpeedSpaceSettings({
+        ...speedSpaceSettings,
+        [settingName]: !speedSpaceSettings[settingName],
+      })
+    );
     dispatch(updateMustRedraw(true));
   };
 
@@ -25,9 +27,7 @@ export default function SpeedSpaceSettings(props) {
       className={`${showSettings ? 'ml-5' : ''} showSettings`}
       style={showSettings ? { width: 'auto' } : { width: 0 }}
     >
-      <div className="h2 d-flex align-items-center">
-        {t('speedSpaceSettings.display')}
-      </div>
+      <div className="h2 d-flex align-items-center">{t('speedSpaceSettings.display')}</div>
       <CheckboxRadioSNCF
         id="speedSpaceSettings-altitude"
         name="speedSpaceSettings-altitude"

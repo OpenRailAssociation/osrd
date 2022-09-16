@@ -9,7 +9,7 @@ export default class ListGroupItem extends Component {
     subtitles: PropTypes.object.isRequired,
     label: PropTypes.string.isRequired,
     actions: PropTypes.func.isRequired,
-  }
+  };
 
   constructor(props) {
     super(props);
@@ -21,12 +21,10 @@ export default class ListGroupItem extends Component {
 
   toggleActive = () => {
     this.setState((previousState) => ({ active: !previousState.active }));
-  }
+  };
 
   render() {
-    const {
-      items, id, subtitles, label, actions,
-    } = this.props;
+    const { items, id, subtitles, label, actions } = this.props;
     const { active } = this.state;
 
     const activeClass = active ? 'active' : '';
@@ -46,27 +44,16 @@ export default class ListGroupItem extends Component {
           <div className="management-item-caret" />
           <div className="management-item-main">
             <h2 className="mb-0 text-base font-weight-normal">
-              <button
-                type="button"
-                className="btn-unstyled"
-              >
+              <button type="button" className="btn-unstyled">
                 {label}
               </button>
             </h2>
           </div>
         </div>
         <ul id={`${id}-list`} className="management-item-grouplist">
-          {
-          items.map((item) => (
-            <ListItem
-              key={item.id}
-              item={item}
-              subtitles={subtitles}
-              actions={actions}
-              noBorder
-            />
-          ))
-        }
+          {items.map((item) => (
+            <ListItem key={item.id} item={item} subtitles={subtitles} actions={actions} noBorder />
+          ))}
         </ul>
       </li>
     );

@@ -14,12 +14,14 @@ const trainscheduleURI = '/train_schedule/';
 
 export default function StandardAllowanceDefault(props) {
   const {
-    distributionsTypes, allowanceTypes, getAllowances, setIsUpdating,
-    trainDetail, TYPES_UNITS,
+    distributionsTypes,
+    allowanceTypes,
+    getAllowances,
+    setIsUpdating,
+    trainDetail,
+    TYPES_UNITS,
   } = props;
-  const {
-    selectedProjection, selectedTrain,
-  } = useSelector((state) => state.osrdsimulation);
+  const { selectedProjection, selectedTrain } = useSelector((state) => state.osrdsimulation);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const { t } = useTranslation(['allowances']);
   const dispatch = useDispatch();
@@ -42,11 +44,13 @@ export default function StandardAllowanceDefault(props) {
 
   const updateTrain = async () => {
     const newSimulationTrains = Array.from(simulation.trains);
-    newSimulationTrains[selectedTrain] = await get(`${trainscheduleURI}${simulation.trains[selectedTrain].id}/result/`,
+    newSimulationTrains[selectedTrain] = await get(
+      `${trainscheduleURI}${simulation.trains[selectedTrain].id}/result/`,
       {
         id: simulation.trains[selectedTrain].id,
         path: selectedProjection.path,
-      });
+      }
+    );
     getAllowances();
     dispatch(updateSimulation({ ...simulation, trains: newSimulationTrains }));
     dispatch(updateMustRedraw(true));
@@ -79,17 +83,21 @@ export default function StandardAllowanceDefault(props) {
         ...trainDetail,
         allowances: newAllowances,
       });
-      dispatch(setSuccess({
-        title: t('allowanceModified.standardAllowanceAdd'),
-        text: '',
-      }));
+      dispatch(
+        setSuccess({
+          title: t('allowanceModified.standardAllowanceAdd'),
+          text: '',
+        })
+      );
       updateTrain();
     } catch (e) {
       console.log('ERROR', e);
-      dispatch(setFailure({
-        name: e.name,
-        message: e.message,
-      }));
+      dispatch(
+        setFailure({
+          name: e.name,
+          message: e.message,
+        })
+      );
     }
     setIsUpdating(false);
   };
@@ -111,17 +119,21 @@ export default function StandardAllowanceDefault(props) {
         type: 'time',
         value: 0,
       });
-      dispatch(setSuccess({
-        title: t('allowanceModified.standardAllowanceDel'),
-        text: '',
-      }));
+      dispatch(
+        setSuccess({
+          title: t('allowanceModified.standardAllowanceDel'),
+          text: '',
+        })
+      );
       updateTrain();
     } catch (e) {
       console.log('ERROR', e);
-      dispatch(setFailure({
-        name: e.name,
-        message: e.message,
-      }));
+      dispatch(
+        setFailure({
+          name: e.name,
+          message: e.message,
+        })
+      );
     }
     setIsUpdating(false);
   };
@@ -140,7 +152,6 @@ export default function StandardAllowanceDefault(props) {
           label: t(`distributions.${currentDistribution.toLowerCase()}`),
         }));
         thereIsStandard = true;
-
       }
     });
     if (!thereIsStandard) {
@@ -152,55 +163,45 @@ export default function StandardAllowanceDefault(props) {
   }, [trainDetail]);
 
   return (
-    <>
-      <div className="row w-100 mareco">
-        <div className="col-md-2 text-normal">
-          {t('sandardAllowancesWholePath')}
-        </div>
-        <div className="col-md-1 text-normal">
-          {t('Valeur par défault')}
-        </div>
-        <div className="col-md-3">
-          <SelectSNCF
-            id="distributionTypeSelector"
-            options={distributionsTypes}
-            selectedValue={distribution}
-            labelKey="label"
-            onChange={handleDistribution}
-            sm
-          />
-        </div>
-        <div className="col-md-3">
-          <InputGroupSNCF
-            id="allowanceTypeSelect"
-            options={allowanceTypes}
-            handleType={handleType}
-            value={value.value}
-            sm
-          />
-        </div>
-        <div className="col-md-3">
-          <button
-            type="button"
-            onClick={addStandard}
-            className={`btn btn-success btn-sm mr-1 ${(
-              value.value === 0 ? 'disabled' : null
-            )}`}
-          >
-            {t('apply')}
-          </button>
-          <button
-            type="button"
-            onClick={() => delStandard(value)}
-            className={`btn btn-danger btn-sm ${(
-              value.value === 0 ? 'disabled' : null
-            )}`}
-          >
-            <FaTrash />
-          </button>
-        </div>
+    <div className="row w-100 mareco">
+      <div className="col-md-2 text-normal">{t('sandardAllowancesWholePath')}</div>
+      <div className="col-md-1 text-normal">{t('Valeur par défault')}</div>
+      <div className="col-md-3">
+        <SelectSNCF
+          id="distributionTypeSelector"
+          options={distributionsTypes}
+          selectedValue={distribution}
+          labelKey="label"
+          onChange={handleDistribution}
+          sm
+        />
       </div>
-    </>
+      <div className="col-md-3">
+        <InputGroupSNCF
+          id="allowanceTypeSelect"
+          options={allowanceTypes}
+          handleType={handleType}
+          value={value.value}
+          sm
+        />
+      </div>
+      <div className="col-md-3">
+        <button
+          type="button"
+          onClick={addStandard}
+          className={`btn btn-success btn-sm mr-1 ${value.value === 0 ? 'disabled' : null}`}
+        >
+          {t('apply')}
+        </button>
+        <button
+          type="button"
+          onClick={() => delStandard(value)}
+          className={`btn btn-danger btn-sm ${value.value === 0 ? 'disabled' : null}`}
+        >
+          <FaTrash />
+        </button>
+      </div>
+    </div>
   );
 }
 

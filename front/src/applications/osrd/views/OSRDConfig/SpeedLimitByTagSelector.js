@@ -19,10 +19,12 @@ export default function SpeedLimitByTagSelector() {
       const tagsList = await get(`/infra/${infraID}/speed_limit_tags/`, params, {}, true);
       setSpeedLimitsTags(tagsList);
     } catch (e) {
-      dispatch(setFailure({
-        name: t('errorMessages.unableToRetrieveTags'),
-        message: `${e.message} : ${e.response && e.response.data.detail}`,
-      }));
+      dispatch(
+        setFailure({
+          name: t('errorMessages.unableToRetrieveTags'),
+          message: `${e.message} : ${e.response && e.response.data.detail}`,
+        })
+      );
       console.log('ERROR', e);
     }
   };
@@ -34,26 +36,26 @@ export default function SpeedLimitByTagSelector() {
   }, [infraID]);
 
   return (
-    <>
-      <div className="osrd-config-item mb-2">
-        <div
-          className="osrd-config-item-container"
-        >
-          <div className="h2 mb-0">
-            <img width="32px" className="mr-2" src={icon} alt="infraIcon" />
-            <span className="text-muted">{t('speedLimitByTag')}</span>
-            {speedLimitsTags !== undefined ? (
-              <SelectImprovedSNCF
-                options={speedLimitsTags}
-                onChange={(e) => dispatch(updateSpeedLimitByTag(e))}
-                selectedValue={speedLimitByTag}
-                sm
-                withSearch
-              />
-            ) : <span className="ml-3"><DotsLoader /></span> }
-          </div>
+    <div className="osrd-config-item mb-2">
+      <div className="osrd-config-item-container">
+        <div className="h2 mb-0">
+          <img width="32px" className="mr-2" src={icon} alt="infraIcon" />
+          <span className="text-muted">{t('speedLimitByTag')}</span>
+          {speedLimitsTags !== undefined ? (
+            <SelectImprovedSNCF
+              options={speedLimitsTags}
+              onChange={(e) => dispatch(updateSpeedLimitByTag(e))}
+              selectedValue={speedLimitByTag}
+              sm
+              withSearch
+            />
+          ) : (
+            <span className="ml-3">
+              <DotsLoader />
+            </span>
+          )}
         </div>
       </div>
-    </>
+    </div>
   );
 }

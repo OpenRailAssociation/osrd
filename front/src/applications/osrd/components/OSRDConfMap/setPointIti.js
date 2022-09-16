@@ -1,7 +1,10 @@
 import { store } from 'Store';
 import { updateFeatureInfoClick } from 'reducers/map';
 import {
-  updateOrigin, updateDestination, updateVias, updateFeatureInfoClickOSRD,
+  updateOrigin,
+  updateDestination,
+  updateVias,
+  updateFeatureInfoClickOSRD,
 } from 'reducers/osrdconf';
 
 export default function setPointIti(point, data) {

@@ -23,16 +23,14 @@ export default class ListItem extends Component {
     subtitles: PropTypes.array.isRequired,
     actions: PropTypes.func.isRequired,
     noBorder: PropTypes.bool,
-  }
+  };
 
   static defaultProps = {
     noBorder: false,
-  }
+  };
 
   render() {
-    const {
-      item, subtitles, actions, noBorder,
-    } = this.props;
+    const { item, subtitles, actions, noBorder } = this.props;
 
     return (
       <li className="list-group-item management-item" style={noBorder ? style.listItem : {}}>
@@ -43,19 +41,14 @@ export default class ListItem extends Component {
           <div className="management-item-main" style={style.itemMain}>
             <h2>{item.name}</h2>
             <ul className="meta-list font-weight-medium">
-              {
-                subtitles.map((subtitle, index) => {
-                  const separator = index !== 0 ? 'separator' : '';
-                  return (
-                    <li
-                      key={subtitle.value}
-                      className={`meta-list-item ${separator}`}
-                    >
-                      {`${subtitle.label} : ${getDeepObjectData(item, subtitle)}`}
-                    </li>
-                  );
-                })
-              }
+              {subtitles.map((subtitle, index) => {
+                const separator = index !== 0 ? 'separator' : '';
+                return (
+                  <li key={subtitle.value} className={`meta-list-item ${separator}`}>
+                    {`${subtitle.label} : ${getDeepObjectData(item, subtitle)}`}
+                  </li>
+                );
+              })}
             </ul>
           </div>
           {actions(item)}

@@ -10,28 +10,30 @@ import DotsLoader from 'common/DotsLoader/DotsLoader';
 import { get } from 'common/requests.ts';
 import { setFailure } from 'reducers/main.ts';
 
-const FormatSwitch = (props) => {
+function FormatSwitch(props) {
   const dispatch = useDispatch();
   const { t } = useTranslation(['map-settings']);
   const { layersSettings } = useSelector((state) => state.map);
   const { infraID } = useSelector((state) => state.osrdconf);
   const [speedLimitsTags, setSpeedLimitsTags] = useState(undefined);
-  const {
-    name, icon, color, disabled = false,
-  } = props;
+  const { name, icon, color, disabled = false } = props;
 
   const setLayerSettings = (setting) => {
-    dispatch(updateLayersSettings({
-      ...layersSettings,
-      [setting]: !layersSettings[setting],
-    }));
+    dispatch(
+      updateLayersSettings({
+        ...layersSettings,
+        [setting]: !layersSettings[setting],
+      })
+    );
   };
 
   const dispatchSetSpeedLimitsTags = (item) => {
-    dispatch(updateLayersSettings({
-      ...layersSettings,
-      speedlimittag: item,
-    }));
+    dispatch(
+      updateLayersSettings({
+        ...layersSettings,
+        speedlimittag: item,
+      })
+    );
   };
 
   const getTagsList = async (zoom, params) => {
@@ -39,10 +41,12 @@ const FormatSwitch = (props) => {
       const tagsList = await get(`/infra/${infraID}/speed_limit_tags/`, params, {}, true);
       setSpeedLimitsTags([t('noSpeedLimitByTag')].concat(tagsList));
     } catch (e) {
-      dispatch(setFailure({
-        name: t('errorMessages.unableToRetrieveTags'),
-        message: `${e.message} : ${e.response && e.response.data.detail}`,
-      }));
+      dispatch(
+        setFailure({
+          name: t('errorMessages.unableToRetrieveTags'),
+          message: `${e.message} : ${e.response && e.response.data.detail}`,
+        })
+      );
       console.log('ERROR', e);
     }
   };
@@ -64,9 +68,7 @@ const FormatSwitch = (props) => {
             checked={layersSettings[name]}
             disabled={disabled}
           />
-          <span className={`px-1 d-flex align-items-center ${color}`}>
-            {icon}
-          </span>
+          <span className={`px-1 d-flex align-items-center ${color}`}>{icon}</span>
           <small>{t(name)}</small>
         </div>
       </div>
@@ -79,19 +81,20 @@ const FormatSwitch = (props) => {
             sm
             withSearch
           />
-        ) : <span className="ml-3"><DotsLoader /></span> }
+        ) : (
+          <span className="ml-3">
+            <DotsLoader />
+          </span>
+        )}
       </div>
     </>
   );
-};
+}
 
 export default function MapSettingsLayers() {
   return (
     <div className="row">
-      <FormatSwitch
-        name="speedlimits"
-        icon={<IoMdSpeedometer />}
-      />
+      <FormatSwitch name="speedlimits" icon={<IoMdSpeedometer />} />
     </div>
   );
 }

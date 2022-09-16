@@ -6,16 +6,12 @@ class FloatingBar extends Component {
   static propTypes = {
     children: PropTypes.array.isRequired,
     main: PropTypes.object.isRequired,
-  }
+  };
 
   render() {
     const { children, main } = this.props;
-    const leftChildren = React.Children.toArray(children).filter((child) => (
-      child.props.left
-    ));
-    const rightChildren = React.Children.toArray(children).filter((child) => (
-      !child.props.left
-    ));
+    const leftChildren = React.Children.toArray(children).filter((child) => child.props.left);
+    const rightChildren = React.Children.toArray(children).filter((child) => !child.props.left);
     return (
       <div className={`actionbar${main.fullscreen ? ' fullscreen' : ''} pl-0`}>
         <div className="actionbar-head">

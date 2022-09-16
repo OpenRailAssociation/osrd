@@ -9,13 +9,15 @@ import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import { get } from 'common/requests.ts';
 import { setFailure } from 'reducers/main.ts';
 
-const LoaderPathfindingInProgress = () => (
-  <div className="loaderPathfindingInProgress">
-    <div className="spinner-border" role="status">
-      <span className="sr-only">Loading...</span>
+function LoaderPathfindingInProgress() {
+  return (
+    <div className="loaderPathfindingInProgress">
+      <div className="spinner-border" role="status">
+        <span className="sr-only">Loading...</span>
+      </div>
     </div>
-  </div>
-);
+  );
+}
 
 export default function ModalPathJSONDetail(props) {
   const dispatch = useDispatch();
@@ -30,10 +32,12 @@ export default function ModalPathJSONDetail(props) {
       const pathJSON = await get(`/pathfinding/${pathfindingID}/`, params, {}, true);
       setPathJSONDetail(pathJSON);
     } catch (e) {
-      dispatch(setFailure({
-        name: t('errorMessages.unableToRetrievePath'),
-        message: `${e.message} : ${e.response && e.response.data.detail}`,
-      }));
+      dispatch(
+        setFailure({
+          name: t('errorMessages.unableToRetrievePath'),
+          message: `${e.message} : ${e.response && e.response.data.detail}`,
+        })
+      );
       console.log('ERROR', e);
     }
   };
@@ -60,10 +64,7 @@ export default function ModalPathJSONDetail(props) {
       </ModalHeaderSNCF>
       <ModalBodySNCF>
         {pathfindingInProgress && <LoaderPathfindingInProgress />}
-        <div
-          className="form-control-container"
-          style={{ 'max-height': '50vh' }}
-        >
+        <div className="form-control-container" style={{ 'max-height': '50vh' }}>
           <textarea
             className="form-control stretchy"
             ref={textareaRef}

@@ -25,10 +25,12 @@ export default function TimetableSelectorModal() {
       const timetablesListQuery = await get(timetableURL, { infra: infraID });
       settimetablesList(timetablesListQuery);
     } catch (e) {
-      dispatch(setFailure({
-        name: t('osrdconf:errorMessages.unableToRetrieveTimetableList'),
-        message: e.message,
-      }));
+      dispatch(
+        setFailure({
+          name: t('osrdconf:errorMessages.unableToRetrieveTimetableList'),
+          message: e.message,
+        })
+      );
       console.log('ERROR', e);
     }
   };
@@ -41,10 +43,12 @@ export default function TimetableSelectorModal() {
     try {
       await deleteRequest(`${timetableURL}${timetable.id}/`);
       getTimetablesList();
-      dispatch(setSuccess({
-        title: t('osrdconf:timetabledelete'),
-        text: `${timetable.name} ID ${timetable.id}`,
-      }));
+      dispatch(
+        setSuccess({
+          title: t('osrdconf:timetabledelete'),
+          text: `${timetable.name} ID ${timetable.id}`,
+        })
+      );
       if (timetableID === timetable.id) {
         dispatch(updateTimetableID(undefined));
       }
@@ -89,32 +93,31 @@ export default function TimetableSelectorModal() {
             sm
           />
           <div className="mb-3 osrd-config-infraselector">
-            {(timetablesList !== undefined) ? (
-              timetablesList.results.map((timetable) => (
-                <div className="d-flex align-items-center" key={nextId()}>
-                  <div
-                    role="button"
-                    tabIndex="-1"
-                    onClick={() => dispatch(updateTimetableID(timetable.id))}
-                    data-dismiss="modal"
-                    className="flex-grow-1 osrd-config-infraselector-item"
-                  >
-                    <div className="d-flex align-items-center">
-                      <div className="text-primary small mr-2">
-                        {timetable.id}
+            {timetablesList !== undefined
+              ? timetablesList.results.map((timetable) => (
+                  <div className="d-flex align-items-center" key={nextId()}>
+                    <div
+                      role="button"
+                      tabIndex="-1"
+                      onClick={() => dispatch(updateTimetableID(timetable.id))}
+                      data-dismiss="modal"
+                      className="flex-grow-1 osrd-config-infraselector-item"
+                    >
+                      <div className="d-flex align-items-center">
+                        <div className="text-primary small mr-2">{timetable.id}</div>
+                        <div className="flex-grow-1">{timetable.name}</div>
                       </div>
-                      <div className="flex-grow-1">{timetable.name}</div>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => deleteTimetable(timetable)}
+                      className="ml-1 btn btn-sm btn-only-icon btn-white"
+                    >
+                      <i className="icons-close" />
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => deleteTimetable(timetable)}
-                    className="ml-1 btn btn-sm btn-only-icon btn-white"
-                  >
-                    <i className="icons-close" />
-                  </button>
-                </div>
-              ))) : null }
+                ))
+              : null}
           </div>
           <div className="d-flex">
             <button className="btn btn-secondary flex-fill mr-2" type="button" data-dismiss="modal">

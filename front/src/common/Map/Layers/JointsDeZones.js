@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Source, Layer } from 'react-map-gl';
 import { MAP_URL } from 'common/Map/const';
 
-const JointsDeZones = (props) => {
+function JointsDeZones(props) {
   const { geomType } = props;
   const angleName = geomType === 'sch' ? 'angleSch' : 'angleGeo';
   const layerdef = {
@@ -12,9 +12,7 @@ const JointsDeZones = (props) => {
     'source-layer': 'map_midi_jointdezone',
     layout: {
       'text-field': '{RA_libelle}',
-      'text-font': [
-        'Roboto Condensed',
-      ],
+      'text-font': ['Roboto Condensed'],
       'text-size': 10,
       'text-offset': [2, 0],
       'icon-image': 'JDZB',
@@ -45,7 +43,7 @@ const JointsDeZones = (props) => {
       <Layer {...layerdef} id={`chartis/joint-de-zone/${geomType}`} />
     </Source>
   );
-};
+}
 
 JointsDeZones.propTypes = {
   geomType: PropTypes.string.isRequired,

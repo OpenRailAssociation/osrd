@@ -31,17 +31,17 @@ import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import { updateViewport } from 'reducers/map';
 import { useParams } from 'react-router-dom';
 
-const Map = () => {
-  const {
-    viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings,
-  } = useSelector((state) => state.map);
+function Map() {
+  const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings } =
+    useSelector((state) => state.map);
   const [idHover, setIdHover] = useState(undefined);
-  const {
-    urlLat, urlLon, urlZoom, urlBearing, urlPitch,
-  } = useParams();
+  const { urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
   const { fullscreen } = useSelector((state) => state.main);
   const dispatch = useDispatch();
-  const updateViewportChange = useCallback((value) => dispatch(updateViewport(value, '/carto')), [dispatch]);
+  const updateViewportChange = useCallback(
+    (value) => dispatch(updateViewport(value, '/carto')),
+    [dispatch]
+  );
 
   const scaleControlStyle = {
     left: 20,
@@ -114,11 +114,7 @@ const Map = () => {
           className="attribution-control"
           customAttribution="©SNCF/DGEX Solutions"
         />
-        <ScaleControl
-          maxWidth={100}
-          unit="metric"
-          style={scaleControlStyle}
-        />
+        <ScaleControl maxWidth={100} unit="metric" style={scaleControlStyle} />
 
         <Background colors={colors[mapStyle]} />
 
@@ -165,6 +161,6 @@ const Map = () => {
       </ReactMapGL>
     </main>
   );
-};
+}
 
 export default Map;

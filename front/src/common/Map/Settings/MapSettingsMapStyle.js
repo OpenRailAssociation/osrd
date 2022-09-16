@@ -29,7 +29,9 @@ export default function MapSettingsMapStyle() {
         <span>{t('mapstyles.darkmode')}</span>
       </button>
       <button
-        className={`col-xs-4 mb-2 mapstyle-style-select ${mapStyle === 'blueprint' ? 'active' : null}`}
+        className={`col-xs-4 mb-2 mapstyle-style-select ${
+          mapStyle === 'blueprint' ? 'active' : null
+        }`}
         type="button"
         onClick={() => dispatch(updateMapStyle('blueprint'))}
       >

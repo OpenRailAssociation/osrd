@@ -4,9 +4,7 @@ import nextId from 'react-id-generator';
 import './ChipsSNCF.scss';
 
 export default function ChipsSNCF(props) {
-  const {
-    addLabel, labels, title, removeLabel,
-  } = props;
+  const { addLabel, labels, title, removeLabel } = props;
   const [chipInputValue, setChipInputValue] = useState('');
 
   const chip = (label, idx) => (

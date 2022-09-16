@@ -59,25 +59,22 @@ import { useParams } from 'react-router-dom';
 const PATHFINDING_URI = '/pathfinding/';
 const INTERMEDIATE_MARKERS_QTY = 8;
 
-const Map = (props) => {
+function Map(props) {
   const { setExtViewport } = props;
-  const {
-    viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings, zoom,
-  } = useSelector((state) => state.map);
-  const {
-    isPlaying, selectedTrain, positionValues, timePosition, allowancesSettings,
-  } = useSelector((state) => state.osrdsimulation);
+  const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings, zoom } =
+    useSelector((state) => state.map);
+  const { isPlaying, selectedTrain, positionValues, timePosition, allowancesSettings } =
+    useSelector((state) => state.osrdsimulation);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const [geojsonPath, setGeojsonPath] = useState(undefined);
   const [trainHoverPositionOthers, setTrainHoverPositionOthers] = useState(undefined);
   const [trainHoverPosition, setTrainHoverPosition] = useState(undefined);
   const [idHover, setIdHover] = useState(undefined);
-  const {
-    urlLat, urlLon, urlZoom, urlBearing, urlPitch,
-  } = useParams();
+  const { urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
   const dispatch = useDispatch();
   const updateViewportChange = useCallback(
-    (value) => dispatch(updateViewport(value, undefined)), [dispatch],
+    (value) => dispatch(updateViewport(value, undefined)),
+    [dispatch]
   );
   const mapRef = React.useRef();
 
@@ -86,7 +83,8 @@ const Map = (props) => {
    * @param {int} trainId
    * @returns correct key (eco or base) to get positions in a train simulation
    */
-  const getRegimeKey = (trainId) => (allowancesSettings && allowancesSettings[trainId]?.ecoBlocks ? 'eco' : 'base');
+  const getRegimeKey = (trainId) =>
+    allowancesSettings && allowancesSettings[trainId]?.ecoBlocks ? 'eco' : 'base';
 
   const createOtherPoints = () => {
     const actualTime = datetime2sec(timePosition);
@@ -94,12 +92,20 @@ const Map = (props) => {
     const concernedTrains = [];
     simulation.trains.forEach((train, idx) => {
       const key = getRegimeKey(train.id);
-      if (actualTime >= train[key].head_positions[0][0].time
-        && actualTime <= train[key].head_positions[
-          train[key].head_positions.length - 1][
-          train[key].head_positions[train[key].head_positions.length - 1].length - 1].time
-        && idx !== selectedTrain) {
-        const interpolation = interpolateOnTime(train[key], ['time', 'position'], ['head_positions', 'tail_positions', 'speeds'], actualTime);
+      if (
+        actualTime >= train[key].head_positions[0][0].time &&
+        actualTime <=
+          train[key].head_positions[train[key].head_positions.length - 1][
+            train[key].head_positions[train[key].head_positions.length - 1].length - 1
+          ].time &&
+        idx !== selectedTrain
+      ) {
+        const interpolation = interpolateOnTime(
+          train[key],
+          ['time', 'position'],
+          ['head_positions', 'tail_positions', 'speeds'],
+          actualTime
+        );
         if (interpolation.head_positions && interpolation.speeds) {
           concernedTrains.push({
             ...interpolation,
@@ -115,33 +121,34 @@ const Map = (props) => {
   const getSimulationPositions = () => {
     const line = lineString(geojsonPath.geometry.coordinates);
     const id = simulation.trains[selectedTrain]?.id;
-    const headKey = allowancesSettings && id && allowancesSettings[id]?.ecoBlocks ? 'eco_headPosition' : 'headPosition';
-    const tailKey = allowancesSettings && id && allowancesSettings[id]?.ecoBlocks ? 'eco_tailPosition' : 'tailPosition';
+    const headKey =
+      allowancesSettings && id && allowancesSettings[id]?.ecoBlocks
+        ? 'eco_headPosition'
+        : 'headPosition';
+    const tailKey =
+      allowancesSettings && id && allowancesSettings[id]?.ecoBlocks
+        ? 'eco_tailPosition'
+        : 'tailPosition';
     if (positionValues[headKey]) {
-      const position = along(
-        line,
-        positionValues[headKey].position / 1000,
-        { units: 'kilometers' },
-      );
-      const tailPosition = positionValues[tailKey] ? along(
-        line,
-        positionValues[tailKey].position / 1000,
-        { units: 'kilometers' },
-      ) : position;
+      const position = along(line, positionValues[headKey].position / 1000, {
+        units: 'kilometers',
+      });
+      const tailPosition = positionValues[tailKey]
+        ? along(line, positionValues[tailKey].position / 1000, { units: 'kilometers' })
+        : position;
 
       const intermediaterMarkersPoints = [];
 
       // Representing the wagons is useless at outer zooms
       if (viewport?.zoom > 13) {
         // To do: get this data from rollingstock, stored
-        const trainLength = positionValues[headKey].position
-        - positionValues[tailKey].position;
+        const trainLength = positionValues[headKey].position - positionValues[tailKey].position;
         for (let i = 0; i < INTERMEDIATE_MARKERS_QTY; i++) {
           const intermediatePosition = along(
             line,
-            (positionValues[headKey].position
-              - (trainLength / INTERMEDIATE_MARKERS_QTY) * i) / 1000,
-            { units: 'kilometers' },
+            (positionValues[headKey].position - (trainLength / INTERMEDIATE_MARKERS_QTY) * i) /
+              1000,
+            { units: 'kilometers' }
           );
           intermediaterMarkersPoints.push(intermediatePosition);
         }
@@ -158,52 +165,49 @@ const Map = (props) => {
     }
 
     // Found trains including timePosition, and organize them with geojson collection of points
-    setTrainHoverPositionOthers(createOtherPoints().map((train) => {
-      const position = along(
-        line,
-        train.head_positions.position / 1000,
-        { units: 'kilometers' },
-      );
-      const tailPosition = train.tail_position ? along(
-        line,
-        train.tail_position.position / 1000,
-        { units: 'kilometers' },
-      ) : position;
+    setTrainHoverPositionOthers(
+      createOtherPoints().map((train) => {
+        const position = along(line, train.head_positions.position / 1000, { units: 'kilometers' });
+        const tailPosition = train.tail_position
+          ? along(line, train.tail_position.position / 1000, { units: 'kilometers' })
+          : position;
 
-      const intermediaterMarkersPoints = [];
-      // Representing the wagons is useless at outer zooms
-      if (viewport?.zoom > 13) {
-        // To do: get this data from rollingstock, stored
-        const trainLength = train.head_positions.position
-        - train.tail_positions.position;
-        for (let i = 0; i < INTERMEDIATE_MARKERS_QTY; i++) {
-          const intermediatePosition = along(
-            line,
-            (train.head_positions.position
-              - (trainLength / INTERMEDIATE_MARKERS_QTY) * i) / 1000,
-            { units: 'kilometers' },
-          );
-          intermediaterMarkersPoints.push(intermediatePosition);
+        const intermediaterMarkersPoints = [];
+        // Representing the wagons is useless at outer zooms
+        if (viewport?.zoom > 13) {
+          // To do: get this data from rollingstock, stored
+          const trainLength = train.head_positions.position - train.tail_positions.position;
+          for (let i = 0; i < INTERMEDIATE_MARKERS_QTY; i++) {
+            const intermediatePosition = along(
+              line,
+              (train.head_positions.position - (trainLength / INTERMEDIATE_MARKERS_QTY) * i) / 1000,
+              { units: 'kilometers' }
+            );
+            intermediaterMarkersPoints.push(intermediatePosition);
+          }
+          intermediaterMarkersPoints.push(tailPosition);
         }
-        intermediaterMarkersPoints.push(tailPosition);
-      }
 
-      return {
-        ...position,
-        properties: {
-          speed: train.speeds.speed,
-          intermediaterMarkersPoints,
-        },
-      };
-    }));
+        return {
+          ...position,
+          properties: {
+            speed: train.speeds.speed,
+            intermediaterMarkersPoints,
+          },
+        };
+      })
+    );
   };
 
   const zoomToFeature = (boundingBox) => {
     const [minLng, minLat, maxLng, maxLat] = boundingBox;
     const viewportTemp = new WebMercatorViewport({ ...viewport, width: 600, height: 400 });
     const { longitude, latitude, zoom } = viewportTemp.fitBounds(
-      [[minLng, minLat], [maxLng, maxLat]],
-      { padding: 40 },
+      [
+        [minLng, minLat],
+        [maxLng, maxLat],
+      ],
+      { padding: 40 }
     );
     setExtViewport({
       ...viewport,
@@ -252,14 +256,11 @@ const Map = (props) => {
       const cursorPoint = point(e.lngLat);
       const key = getRegimeKey(simulation.trains[selectedTrain].id);
       const startCoordinates = getDirection(simulation.trains[selectedTrain][key].head_positions)
-        ? [
-          geojsonPath.geometry.coordinates[0][0],
-          geojsonPath.geometry.coordinates[0][1],
-        ]
+        ? [geojsonPath.geometry.coordinates[0][0], geojsonPath.geometry.coordinates[0][1]]
         : [
-          geojsonPath.geometry.coordinates[geojsonPath.geometry.coordinates.length - 1][0],
-          geojsonPath.geometry.coordinates[geojsonPath.geometry.coordinates.length - 1][1],
-        ];
+            geojsonPath.geometry.coordinates[geojsonPath.geometry.coordinates.length - 1][0],
+            geojsonPath.geometry.coordinates[geojsonPath.geometry.coordinates.length - 1][1],
+          ];
       const start = {
         type: 'Feature',
         properties: {},
@@ -273,7 +274,7 @@ const Map = (props) => {
       const timePositionLocal = interpolateOnPosition(
         { speed: simulation.trains[selectedTrain][key].speeds },
         ['position', 'speed'],
-        positionLocal,
+        positionLocal
       );
       dispatch(updateTimePositionValues(timePositionLocal));
     }
@@ -307,9 +308,7 @@ const Map = (props) => {
   };
 
   useEffect(() => {
-    mapRef.current.getMap().on('click', (e) => {
-
-    });
+    mapRef.current.getMap().on('click', (e) => {});
 
     if (urlLat) {
       updateViewportChange({
@@ -356,11 +355,7 @@ const Map = (props) => {
           className="attribution-control"
           customAttribution="©SNCF/DGEX Solutions"
         />
-        <ScaleControl
-          maxWidth={100}
-          unit="metric"
-          style={scaleControlStyle}
-        />
+        <ScaleControl maxWidth={100} unit="metric" style={scaleControlStyle} />
 
         <Background colors={colors[mapStyle]} />
 
@@ -383,7 +378,12 @@ const Map = (props) => {
             <SignalingType geomType="geo" />
             <Routes geomType="geo" colors={colors[mapStyle]} />
             <SpeedLimits geomType="geo" colors={colors[mapStyle]} />
-            <Signals mapRef={mapRef} sourceTable="signals" colors={colors[mapStyle]} sourceLayer="geo" />
+            <Signals
+              mapRef={mapRef}
+              sourceTable="signals"
+              colors={colors[mapStyle]}
+              sourceLayer="geo"
+            />
             <BufferStops geomType="geo" colors={colors[mapStyle]} />
             <Detectors geomType="geo" colors={colors[mapStyle]} />
             <Switches geomType="geo" colors={colors[mapStyle]} />
@@ -393,7 +393,12 @@ const Map = (props) => {
             <TracksSchematic colors={colors[mapStyle]} idHover={idHover} />
             <OperationalPoints geomType="sch" colors={colors[mapStyle]} />
             <Routes geomType="sch" colors={colors[mapStyle]} />
-            <Signals mapRef={mapRef} sourceTable="signals" colors={colors[mapStyle]} sourceLayer="sch" />
+            <Signals
+              mapRef={mapRef}
+              sourceTable="signals"
+              colors={colors[mapStyle]}
+              sourceLayer="sch"
+            />
             <SpeedLimits geomType="sch" colors={colors[mapStyle]} />
             <BufferStops geomType="sch" colors={colors[mapStyle]} />
             <Detectors geomType="sch" colors={colors[mapStyle]} />
@@ -405,21 +410,18 @@ const Map = (props) => {
           <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />
         ) : null}
 
-        {geojsonPath !== undefined ? (
-          <RenderItinerary
-            geojsonPath={geojsonPath}
-          />
+        {geojsonPath !== undefined ? <RenderItinerary geojsonPath={geojsonPath} /> : null}
+
+        {trainHoverPosition !== undefined ? (
+          <TrainHoverPosition point={trainHoverPosition} />
         ) : null}
-
-        {trainHoverPosition !== undefined
-          ? <TrainHoverPosition point={trainHoverPosition} /> : null}
-        {trainHoverPositionOthers !== undefined
-          ? <TrainHoverPositionOthers trainHoverPositionOthers={trainHoverPositionOthers} /> : null}
-
+        {trainHoverPositionOthers !== undefined ? (
+          <TrainHoverPositionOthers trainHoverPositionOthers={trainHoverPositionOthers} />
+        ) : null}
       </ReactMapGL>
     </>
   );
-};
+}
 
 Map.propTypes = {
   setExtViewport: PropTypes.func.isRequired,

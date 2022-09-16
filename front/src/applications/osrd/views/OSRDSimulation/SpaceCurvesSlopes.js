@@ -46,8 +46,9 @@ const drawAxisTitle = (chart, rotate) => {
 export default function SpaceCurvesSlopes(props) {
   const { heightOfSpaceCurvesSlopesChart } = props;
   const dispatch = useDispatch();
-  const { chartXGEV, mustRedraw, positionValues, selectedTrain, timePosition } =
-    useSelector((state) => state.osrdsimulation);
+  const { chartXGEV, mustRedraw, positionValues, selectedTrain, timePosition } = useSelector(
+    (state) => state.osrdsimulation
+  );
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const [rotate, setRotate] = useState(false);
   const [chart, setChart] = useState(undefined);

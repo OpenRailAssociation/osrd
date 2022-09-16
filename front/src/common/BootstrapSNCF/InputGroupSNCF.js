@@ -3,17 +3,23 @@ import PropTypes from 'prop-types';
 import './InputGroupSNCF.scss';
 
 export default function InputGroupSNCF(props) {
-  const {
-    id, handleType, options, placeholder, sm, title, value,
-  } = props;
-  const [selected, setSelected] = useState(title
-    ? { label: title } : { id: options[0].id, label: options[0].label, unit: options[0].unit });
+  const { id, handleType, options, placeholder, sm, title, value } = props;
+  const [selected, setSelected] = useState(
+    title ? { label: title } : { id: options[0].id, label: options[0].label, unit: options[0].unit }
+  );
 
   return (
     <div className={`input-group ${sm && 'input-group-sm'}`}>
       <div className="input-group-prepend">
         <div className="btn-group dropdown" data-component="select-radios">
-          <button type="button" className="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-controls={id}>
+          <button
+            type="button"
+            className="btn btn-secondary dropdown-toggle"
+            data-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false"
+            aria-controls={id}
+          >
             <span data-role="placeholder">{selected.label}</span>
             <i className="icons-arrow-down" aria-hidden="true" />
           </button>
@@ -30,7 +36,14 @@ export default function InputGroupSNCF(props) {
                 >
                   {option.label}
                 </label>
-                <input data-role="value" type="radio" name={id} value={option.id} id={option.id} className="sr-only" />
+                <input
+                  data-role="value"
+                  type="radio"
+                  name={id}
+                  value={option.id}
+                  id={option.id}
+                  className="sr-only"
+                />
               </>
             ))}
           </div>

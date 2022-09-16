@@ -26,51 +26,54 @@ class CheckboxRadioSNCF extends React.Component {
   static propTypes = {
     // Basic input props
     id: PropTypes.string.isRequired,
-    label: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.object,
-    ]).isRequired,
+    label: PropTypes.oneOfType([PropTypes.string, PropTypes.object]).isRequired,
     name: PropTypes.string.isRequired,
     onChange: PropTypes.func.isRequired,
     type: PropTypes.string.isRequired,
     checked: PropTypes.bool,
-  }
+  };
 
   static defaultProps = {
     checked: false,
-  }
+  };
 
   renderCheckbox = () => {
-    const {
-      id,
-      name,
-      label,
-      checked,
-      onChange,
-    } = this.props;
+    const { id, name, label, checked, onChange } = this.props;
     return (
       <div className="custom-control custom-checkbox">
-        <input type="checkbox" id={id} name={name} className="custom-control-input" checked={checked} onChange={onChange} />
-        <label className="custom-control-label" htmlFor={id}>{label}</label>
+        <input
+          type="checkbox"
+          id={id}
+          name={name}
+          className="custom-control-input"
+          checked={checked}
+          onChange={onChange}
+        />
+        <label className="custom-control-label" htmlFor={id}>
+          {label}
+        </label>
       </div>
     );
-  }
+  };
 
   renderRadio = () => {
-    const {
-      id,
-      name,
-      label,
-      checked,
-      onChange,
-    } = this.props;
+    const { id, name, label, checked, onChange } = this.props;
     return (
       <div className="custom-control custom-radio">
-        <input type="radio" id={id} name={name} className="custom-control-input" checked={checked} onChange={onChange} />
-        <label className="custom-control-label font-weight-medium" htmlFor={id}>{label}</label>
+        <input
+          type="radio"
+          id={id}
+          name={name}
+          className="custom-control-input"
+          checked={checked}
+          onChange={onChange}
+        />
+        <label className="custom-control-label font-weight-medium" htmlFor={id}>
+          {label}
+        </label>
       </div>
     );
-  }
+  };
 
   render() {
     const { type } = this.props;
