@@ -22,17 +22,15 @@ export default function AddTrainLabels() {
   };
 
   return (
-    <>
-      <div className="osrd-config-item">
-        <div className="osrd-config-item-container mb-2">
-          <ChipsSNCF
-            addLabel={addLabel}
-            labels={labels}
-            removeLabel={removeLabel}
-            title={t('trainLabels')}
-          />
-        </div>
+    <div className="osrd-config-item">
+      <div className="osrd-config-item-container mb-2">
+        <ChipsSNCF
+          addLabel={addLabel}
+          labels={labels}
+          removeLabel={removeLabel}
+          title={t('trainLabels')}
+        />
       </div>
-    </>
+    </div>
   );
 }

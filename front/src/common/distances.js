@@ -1,8 +1,8 @@
 /* Distances
-*
-* Functions for calcultating and/or displaying Distances
-*
-*/
+ *
+ * Functions for calcultating and/or displaying Distances
+ *
+ */
 
 // Return an array [adapted value,unit] eg: [123.32,'KM']
 export default function kmORm(value) {

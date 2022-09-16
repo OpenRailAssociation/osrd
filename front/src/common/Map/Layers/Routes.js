@@ -69,18 +69,9 @@ export default function Routes(props) {
       type="vector"
       url={`${MAP_URL}/layer/routes/mvt/${geomType}/?infra=${infraID}`}
     >
-      <Layer
-        {...line}
-        id={`chartis/osrd_routes_line/${geomType}`}
-      />
-      <Layer
-        {...point}
-        id={`chartis/osrd_routes_point/${geomType}`}
-      />
-      <Layer
-        {...text}
-        id={`chartis/osrd_routes_text/${geomType}`}
-      />
+      <Layer {...line} id={`chartis/osrd_routes_line/${geomType}`} />
+      <Layer {...point} id={`chartis/osrd_routes_point/${geomType}`} />
+      <Layer {...text} id={`chartis/osrd_routes_text/${geomType}`} />
     </Source>
   ) : null;
 }

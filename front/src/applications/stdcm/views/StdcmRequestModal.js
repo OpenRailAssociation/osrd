@@ -9,9 +9,7 @@ import {
 } from 'reducers/osrdsimulation';
 import { useDispatch, useSelector } from 'react-redux';
 
-import {
-  KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
-} from 'applications/osrd/views/OSRDSimulation/OSRDSimulation';
+import { KEY_VALUES_FOR_CONSOLIDATED_SIMULATION } from 'applications/osrd/views/OSRDSimulation/OSRDSimulation';
 import { MAIN_API } from 'config/config';
 // Generic components
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
@@ -27,9 +25,7 @@ import { post } from 'common/requests';
 import rabbit from 'assets/pictures/KLCW_nc_standard.png';
 import { setFailure } from 'reducers/main.ts';
 import { stdcmRequestStatus } from 'applications/stdcm/views/OSRDSTDCM';
-import {
-  updateItinerary
-} from 'reducers/osrdconf';
+import { updateItinerary } from 'reducers/osrdconf';
 import { useTranslation } from 'react-i18next';
 
 export default function StdcmRequestModal(props) {
@@ -39,7 +35,6 @@ export default function StdcmRequestModal(props) {
   const { allowancesSettings, selectedProjection } = useSelector((state) => state.osrdsimulation);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
-
 
   // Theses are prop-drilled from OSRDSTDCM Component, which is conductor.
   // Remains fit with one-level limit
@@ -79,8 +74,6 @@ export default function StdcmRequestModal(props) {
 
           const newSimulation = { ...simulation };
 
-
-
           newSimulation.trains = [...newSimulation.trains, fakedNewTrain];
 
           const newAllowancesSettings = { ...allowancesSettings };
@@ -98,8 +91,6 @@ export default function StdcmRequestModal(props) {
 
           dispatch(updateMustRedraw(true));
 
-
-
           const consolidatedSimulation = createTrain(
             dispatch,
             KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
@@ -109,8 +100,6 @@ export default function StdcmRequestModal(props) {
           dispatch(updateConsolidatedSimulation(consolidatedSimulation));
           dispatch(updateSimulation(newSimulation));
           dispatch(updateSelectedTrain(newSimulation.trains.length - 1));
-
-
         })
         .catch((e) => {
           // Update simu in redux with data;

@@ -7,7 +7,7 @@ export const DROPDOWN_STYLE_TYPES = {
   transparent: 'btn-transparent',
 };
 
-const DropdownSNCF = ({ titleContent, items, type }) => {
+function DropdownSNCF({ titleContent, items, type }) {
   const itemNode = items.map((item) => (
     <li className="dropdown-item" key={`item-${nextId()}`}>
       {item}
@@ -28,20 +28,19 @@ const DropdownSNCF = ({ titleContent, items, type }) => {
         {titleContent}
         <i className="icons-arrow-down d-none d-xl-block" aria-hidden="true" />
       </button>
-      <div className="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton" id="mycontrol">
-        <ul>
-          {itemNode}
-        </ul>
+      <div
+        className="dropdown-menu dropdown-menu-right"
+        aria-labelledby="dropdownMenuButton"
+        id="mycontrol"
+      >
+        <ul>{itemNode}</ul>
       </div>
     </div>
   );
-};
+}
 
 DropdownSNCF.propTypes = {
-  titleContent: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.object,
-  ]).isRequired,
+  titleContent: PropTypes.oneOfType([PropTypes.string, PropTypes.object]).isRequired,
   items: PropTypes.arrayOf(PropTypes.node).isRequired,
   type: PropTypes.oneOf(Object.values(DROPDOWN_STYLE_TYPES)).isRequired,
 };

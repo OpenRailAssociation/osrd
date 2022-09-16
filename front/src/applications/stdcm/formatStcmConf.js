@@ -80,14 +80,18 @@ export default function formatStdcmConf(dispatch, setFailure, t, osrdconf) {
       timetable: osrdconf.timetableID,
       start_time: originDate, // Build a date
       end_time: destinationDate, // Build a date
-      start_points: [{
-        track_section: osrdconf.origin.id,
-        geo_coordinate: osrdconf.origin.clickLngLat,
-      }],
-      end_points: [{
-        track_section: osrdconf.destination.id,
-        geo_coordinate: osrdconf.destination.clickLngLat,
-      }],
+      start_points: [
+        {
+          track_section: osrdconf.origin.id,
+          geo_coordinate: osrdconf.origin.clickLngLat,
+        },
+      ],
+      end_points: [
+        {
+          track_section: osrdconf.destination.id,
+          geo_coordinate: osrdconf.destination.clickLngLat,
+        },
+      ],
     };
     return osrdConfStdcm;
   }

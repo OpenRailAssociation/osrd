@@ -10,27 +10,40 @@ export default function SpeedLimits(props) {
   const { infraID } = useSelector((state) => state.osrdconf);
   const { geomType, colors } = props;
   const tag = `"${layersSettings.speedlimittag}"`;
-  const uglyJSONParsingOfSpeedLimitByTags = ['round', ['*', 3.6, ['case',
-    ['!=', ['index-of', ['literal', tag], ['get', 'speed_limit_by_tag']], -1],
-    ['to-number', ['slice', ['get', 'speed_limit_by_tag'],
-      ['+',
-        ['+',
-          ['index-of', ['literal', tag], ['get', 'speed_limit_by_tag']],
-          tag.length,
+  const uglyJSONParsingOfSpeedLimitByTags = [
+    'round',
+    [
+      '*',
+      3.6,
+      [
+        'case',
+        ['!=', ['index-of', ['literal', tag], ['get', 'speed_limit_by_tag']], -1],
+        [
+          'to-number',
+          [
+            'slice',
+            ['get', 'speed_limit_by_tag'],
+            [
+              '+',
+              ['+', ['index-of', ['literal', tag], ['get', 'speed_limit_by_tag']], tag.length],
+              2,
+            ],
+            [
+              '+',
+              ['+', ['index-of', ['literal', tag], ['get', 'speed_limit_by_tag']], tag.length],
+              8,
+            ],
+          ],
         ],
-        2,
+        ['to-number', ['get', 'speed_limit']],
       ],
-      ['+',
-        ['+',
-          ['index-of', ['literal', tag], ['get', 'speed_limit_by_tag']],
-          tag.length,
-        ],
-        8,
-      ],
-    ]],
-    ['to-number', ['get', 'speed_limit']],
-  ]]];
-  const speedSectionFilter = ['all', ['has', 'speed_limit'], ['>', uglyJSONParsingOfSpeedLimitByTags, 0]];
+    ],
+  ];
+  const speedSectionFilter = [
+    'all',
+    ['has', 'speed_limit'],
+    ['>', uglyJSONParsingOfSpeedLimitByTags, 0],
+  ];
 
   const speedValuePointParams = {
     type: 'symbol',
@@ -94,16 +107,26 @@ export default function SpeedLimits(props) {
       'line-join': 'miter',
     },
     paint: {
-      'line-color':
-      ['let', 'speed_limit', uglyJSONParsingOfSpeedLimitByTags,
-        ['case',
-          ['all', ['>', ['var', 'speed_limit'], 220]], 'rgba(145, 211, 255, 1)',
-          ['all', ['>', ['var', 'speed_limit'], 160], ['<=', ['var', 'speed_limit'], 220]], 'rgba(137, 247, 216, 1)',
-          ['all', ['>=', ['var', 'speed_limit'], 140], ['<=', ['var', 'speed_limit'], 160]], 'rgba(158, 255, 119, 1)',
-          ['all', ['>=', ['var', 'speed_limit'], 100], ['<', ['var', 'speed_limit'], 140]], 'rgba(224, 254, 100, 1)',
-          ['all', ['>', ['var', 'speed_limit'], 60], ['<', ['var', 'speed_limit'], 100]], 'rgba(253, 244, 121, 1)',
-          ['all', ['<=', ['var', 'speed_limit'], 60], ['>', ['var', 'speed_limit'], 30]], 'rgba(251, 178, 134, 1)',
-          ['all', ['<=', ['var', 'speed_limit'], 30]], 'rgba(239, 81, 81, 1)',
+      'line-color': [
+        'let',
+        'speed_limit',
+        uglyJSONParsingOfSpeedLimitByTags,
+        [
+          'case',
+          ['all', ['>', ['var', 'speed_limit'], 220]],
+          'rgba(145, 211, 255, 1)',
+          ['all', ['>', ['var', 'speed_limit'], 160], ['<=', ['var', 'speed_limit'], 220]],
+          'rgba(137, 247, 216, 1)',
+          ['all', ['>=', ['var', 'speed_limit'], 140], ['<=', ['var', 'speed_limit'], 160]],
+          'rgba(158, 255, 119, 1)',
+          ['all', ['>=', ['var', 'speed_limit'], 100], ['<', ['var', 'speed_limit'], 140]],
+          'rgba(224, 254, 100, 1)',
+          ['all', ['>', ['var', 'speed_limit'], 60], ['<', ['var', 'speed_limit'], 100]],
+          'rgba(253, 244, 121, 1)',
+          ['all', ['<=', ['var', 'speed_limit'], 60], ['>', ['var', 'speed_limit'], 30]],
+          'rgba(251, 178, 134, 1)',
+          ['all', ['<=', ['var', 'speed_limit'], 30]],
+          'rgba(239, 81, 81, 1)',
           'rgba(185, 185, 185, 1)',
         ],
       ],
@@ -113,20 +136,22 @@ export default function SpeedLimits(props) {
     },
   };
 
-  return layersSettings.speedlimits && (
-    <Source
-      id={`osrd_speed_limit_${geomType}`}
-      type="vector"
-      url={`${MAP_URL}/layer/speed_sections/mvt/${geomType}/?infra=${infraID}`}
-    >
-      <Layer {...speedValuePointParams} id={`chartis/osrd_speed_limit_points/${geomType}`} />
-      <Layer {...speedValueParams} id={`chartis/osrd_speed_limit_value/${geomType}`} />
-      <Layer
-        {...speedLineParams}
-        id={`chartis/osrd_speed_limit_colors/${geomType}`}
-        beforeId={`chartis/osrd_speed_limit_points/${geomType}`}
-      />
-    </Source>
+  return (
+    layersSettings.speedlimits && (
+      <Source
+        id={`osrd_speed_limit_${geomType}`}
+        type="vector"
+        url={`${MAP_URL}/layer/speed_sections/mvt/${geomType}/?infra=${infraID}`}
+      >
+        <Layer {...speedValuePointParams} id={`chartis/osrd_speed_limit_points/${geomType}`} />
+        <Layer {...speedValueParams} id={`chartis/osrd_speed_limit_value/${geomType}`} />
+        <Layer
+          {...speedLineParams}
+          id={`chartis/osrd_speed_limit_colors/${geomType}`}
+          beforeId={`chartis/osrd_speed_limit_points/${geomType}`}
+        />
+      </Source>
+    )
   );
 }
 

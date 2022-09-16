@@ -11,7 +11,7 @@ export default class FilterMenuItemSNCF extends React.Component {
     picture: PropTypes.string,
     value: PropTypes.string,
     onChange: PropTypes.func,
-  }
+  };
 
   static defaultProps = {
     onChange: null,
@@ -20,14 +20,17 @@ export default class FilterMenuItemSNCF extends React.Component {
     value: undefined,
     checked: false,
     picture: '',
-  }
+  };
 
   render() {
-    const {
-      title, htmlID, checked, onChange, name, radio, picture, value,
-    } = this.props;
+    const { title, htmlID, checked, onChange, name, radio, picture, value } = this.props;
 
-    const filterPicture = (picture !== '') ? (<img alt="OSM" width="50" height="32" className="ml-1 rounded" src={picture} />) : ('');
+    const filterPicture =
+      picture !== '' ? (
+        <img alt="OSM" width="50" height="32" className="ml-1 rounded" src={picture} />
+      ) : (
+        ''
+      );
 
     return (
       <div className="filters-menu-item has-hover">

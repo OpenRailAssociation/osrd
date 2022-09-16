@@ -27,10 +27,10 @@ export default function createTrain(dispatch, keyValues, simulationTrains, t) {
     dataSimulationTrain.headPosition = formatStepsWithTimeMulti(train.base.head_positions);
     dataSimulationTrain.tailPosition = formatStepsWithTimeMulti(train.base.tail_positions);
     dataSimulationTrain.routeEndOccupancy = formatStepsWithTimeMulti(
-      train.base.route_end_occupancy,
+      train.base.route_end_occupancy
     );
     dataSimulationTrain.routeBeginOccupancy = formatStepsWithTimeMulti(
-      train.base.route_begin_occupancy,
+      train.base.route_begin_occupancy
     );
 
     dataSimulationTrain.routeAspects = formatRouteAspects(train.base.route_aspects);
@@ -39,37 +39,36 @@ export default function createTrain(dispatch, keyValues, simulationTrains, t) {
     dataSimulationTrain.areaBlock = mergeDatasArea(
       dataSimulationTrain.routeEndOccupancy,
       dataSimulationTrain.routeBeginOccupancy,
-      keyValues,
+      keyValues
     );
     dataSimulationTrain.speed = formatStepsWithTime(train.base.speeds);
 
     /* MARECO */
     if (train.eco && !train.eco.error) {
-      dataSimulationTrain.eco_headPosition = formatStepsWithTimeMulti(
-        train.eco.head_positions,
-      );
-      dataSimulationTrain.eco_tailPosition = formatStepsWithTimeMulti(
-        train.eco.tail_positions,
-      );
+      dataSimulationTrain.eco_headPosition = formatStepsWithTimeMulti(train.eco.head_positions);
+      dataSimulationTrain.eco_tailPosition = formatStepsWithTimeMulti(train.eco.tail_positions);
       dataSimulationTrain.eco_routeEndOccupancy = formatStepsWithTimeMulti(
-        train.eco.route_end_occupancy,
+        train.eco.route_end_occupancy
       );
       dataSimulationTrain.eco_routeBeginOccupancy = formatStepsWithTimeMulti(
-        train.eco.route_begin_occupancy,
+        train.eco.route_begin_occupancy
       );
       dataSimulationTrain.eco_routeAspects = formatRouteAspects(train.eco.route_aspects);
       dataSimulationTrain.eco_signalAspects = formatSignalAspects(train.eco.signal_aspects);
       dataSimulationTrain.eco_areaBlock = mergeDatasArea(
         dataSimulationTrain.eco_routeEndOccupancy,
         dataSimulationTrain.eco_routeBeginOccupancy,
-        keyValues,
+        keyValues
       );
       dataSimulationTrain.eco_speed = formatStepsWithTime(train.eco.speeds);
-    } else if (train.eco && train.eco.error) { // Tbe removed, useless
-      dispatch(setFailure({
-        name: t('errors.eco'),
-        message: train.eco.error,
-      }));
+    } else if (train.eco && train.eco.error) {
+      // Tbe removed, useless
+      dispatch(
+        setFailure({
+          name: t('errors.eco'),
+          message: train.eco.error,
+        })
+      );
     }
     return dataSimulationTrain;
   });

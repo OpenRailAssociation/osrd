@@ -6,9 +6,11 @@ import { useSelector } from 'react-redux';
 export default function RenderMapTrainMarker(props) {
   const osrdconf = useSelector((state) => state.osrdconf);
   const { mapRef, mapTrainMarker } = props;
-  if (osrdconf.trainCompo !== undefined
-    && osrdconf.trainCompo.imagesCompo !== undefined
-    && mapRef.current !== null) {
+  if (
+    osrdconf.trainCompo !== undefined &&
+    osrdconf.trainCompo.imagesCompo !== undefined &&
+    mapRef.current !== null
+  ) {
     const map = mapRef.current.getMap();
     map.loadImage(osrdconf.trainCompo.imagesCompo[0], (error, image) => {
       if (error) throw error;
@@ -18,9 +20,7 @@ export default function RenderMapTrainMarker(props) {
     });
   }
   if (mapTrainMarker !== undefined) {
-    return (
-      <MapTrainMarker {...mapTrainMarker} />
-    );
+    return <MapTrainMarker {...mapTrainMarker} />;
   }
   return '';
 }

@@ -1,12 +1,16 @@
-import { LIST_VALUES_NAME_SPACE_TIME, LIST_VALUES_SIGNAL_BASE, SIGNAL_BASE_DEFAULT } from '../applications/osrd/components/Simulation/consts';
-import { REDO_SIMULATION, UNDO_SIMULATION } from './osrdsimulation/simulation';
-
 import { MdFreeBreakfast } from 'react-icons/md';
-import { interpolateOnTime } from '../applications/osrd/components/Helpers/ChartHelpers';
-import { offsetSeconds } from '../applications/osrd/components/Helpers/ChartHelpers';
 import produce from 'immer';
-/* eslint-disable default-case */
-import undoableSimulation from './osrdsimulation/simulation';
+import {
+  LIST_VALUES_NAME_SPACE_TIME,
+  LIST_VALUES_SIGNAL_BASE,
+  SIGNAL_BASE_DEFAULT,
+} from '../applications/osrd/components/Simulation/consts';
+import undoableSimulation, { REDO_SIMULATION, UNDO_SIMULATION } from './osrdsimulation/simulation';
+
+import {
+  interpolateOnTime,
+  offsetSeconds,
+} from '../applications/osrd/components/Helpers/ChartHelpers';
 
 // Action Types
 export const UPDATE_CHART = 'osrdsimu/UPDATE_CHART';

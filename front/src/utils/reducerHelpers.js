@@ -6,8 +6,12 @@ export const dummy = () => {
 };
 
 export const flyTo = (
-  longitude, latitude, zoom, updateLocalViewport,
-  transitionDuration = 1000, transitionInterpolator = new FlyToInterpolator(),
+  longitude,
+  latitude,
+  zoom,
+  updateLocalViewport,
+  transitionDuration = 1000,
+  transitionInterpolator = new FlyToInterpolator()
 ) => {
   const { map } = store.getState();
   const newViewport = {

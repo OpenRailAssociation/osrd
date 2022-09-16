@@ -20,7 +20,11 @@ export default function ButtonResetViewport(props) {
   };
 
   return (
-    <button type="button" className="btn-rounded btn-rounded-white btn-map-resetviewport" onClick={resetOrientation}>
+    <button
+      type="button"
+      className="btn-rounded btn-rounded-white btn-map-resetviewport"
+      onClick={resetOrientation}
+    >
       <span className="sr-only">Reset north</span>
       <FaCompass />
     </button>

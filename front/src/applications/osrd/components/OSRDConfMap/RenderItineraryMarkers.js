@@ -21,7 +21,7 @@ export default function RenderItineraryMarkers() {
         key={nextId()}
       >
         <img src={originSVG} alt="Origin" style={{ height: '1.5rem' }} />
-      </Marker>,
+      </Marker>
     );
   }
   if (osrdconf.destination !== undefined) {
@@ -34,7 +34,7 @@ export default function RenderItineraryMarkers() {
         key={nextId()}
       >
         <img src={destinationSVG} alt="Destination" style={{ height: '1.5rem' }} />
-      </Marker>,
+      </Marker>
     );
   }
   if (osrdconf.vias.length > 0) {
@@ -49,7 +49,7 @@ export default function RenderItineraryMarkers() {
         >
           <img src={viaSVG} alt="Destination" style={{ height: '1.5rem' }} />
           <span className="osrd-conf-map-via-number">{idx + 1}</span>
-        </Marker>,
+        </Marker>
       );
     });
   }

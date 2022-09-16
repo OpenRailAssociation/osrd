@@ -22,7 +22,7 @@ import { useTranslation } from 'react-i18next';
 
 const itineraryURI = '/pathfinding/';
 
-const Itinerary = (props) => {
+function Itinerary(props) {
   const [launchPathfinding, setLaunchPathfinding] = useState(false);
   const [pathfindingInProgress, setPathfindingInProgress] = useState(false);
   const { updateExtViewport, mode } = props;
@@ -36,9 +36,15 @@ const Itinerary = (props) => {
 
     const viewport = new WebMercatorViewport({ ...map.viewport, width: 600, height: 400 });
 
-    const { longitude, latitude, zoom } = viewport.fitBounds([[minLng, minLat], [maxLng, maxLat]], {
-      padding: 40,
-    });
+    const { longitude, latitude, zoom } = viewport.fitBounds(
+      [
+        [minLng, minLat],
+        [maxLng, maxLat],
+      ],
+      {
+        padding: 40,
+      }
+    );
     const newViewport = {
       ...map.viewport,
       longitude,
@@ -73,8 +79,10 @@ const Itinerary = (props) => {
         vias.push({
           ...step,
           id: step.track.id,
-          clickLngLat: [step[map.mapTrackSources.substr(0, 3)].coordinates[0],
-            step[map.mapTrackSources.substr(0, 3)].coordinates[1]],
+          clickLngLat: [
+            step[map.mapTrackSources.substr(0, 3)].coordinates[0],
+            step[map.mapTrackSources.substr(0, 3)].coordinates[1],
+          ],
         });
       }
     });
@@ -85,20 +93,25 @@ const Itinerary = (props) => {
   // Way to ensure marker position on track
   const correctWaypointsGPS = (pathfindingData) => {
     setLaunchPathfinding(false);
-    dispatch(updateOrigin({
-      ...osrdconf.origin,
-      clickLngLat: pathfindingData.steps[0][map.mapTrackSources.substr(0, 3)].coordinates,
-    }));
+    dispatch(
+      updateOrigin({
+        ...osrdconf.origin,
+        clickLngLat: pathfindingData.steps[0][map.mapTrackSources.substr(0, 3)].coordinates,
+      })
+    );
 
     if (osrdconf.vias.length > 0 || pathfindingData.steps.length > 2) {
       convertPathfindingVias(pathfindingData.steps);
     }
 
-    dispatch(updateDestination({
-      ...osrdconf.destination,
-      clickLngLat: pathfindingData
-        .steps[pathfindingData.steps.length - 1][map.mapTrackSources.substr(0, 3)].coordinates,
-    }));
+    dispatch(
+      updateDestination({
+        ...osrdconf.destination,
+        clickLngLat:
+          pathfindingData.steps[pathfindingData.steps.length - 1][map.mapTrackSources.substr(0, 3)]
+            .coordinates,
+      })
+    );
     setLaunchPathfinding(true);
   };
 
@@ -112,10 +125,12 @@ const Itinerary = (props) => {
       if (zoom) zoomToFeature(bbox(itineraryCreated[map.mapTrackSources]));
       setPathfindingInProgress(false);
     } catch (e) {
-      dispatch(setFailure({
-        name: t('errorMessages.unableToRetrievePathfinding'),
-        message: `${e.message} : ${e.response && e.response.data.detail}`,
-      }));
+      dispatch(
+        setFailure({
+          name: t('errorMessages.unableToRetrievePathfinding'),
+          message: `${e.message} : ${e.response && e.response.data.detail}`,
+        })
+      );
       console.log('ERROR', e);
     }
   };
@@ -123,9 +138,11 @@ const Itinerary = (props) => {
   const mapItinerary = (zoom = true) => {
     dispatch(updateItinerary(undefined));
 
-    if (osrdconf.origin !== undefined
-      && osrdconf.destination !== undefined
-      && osrdconf.rollingStockID !== undefined) {
+    if (
+      osrdconf.origin !== undefined &&
+      osrdconf.destination !== undefined &&
+      osrdconf.rollingStockID !== undefined
+    ) {
       const params = {
         infra: osrdconf.infraID,
         steps: [],
@@ -135,10 +152,12 @@ const Itinerary = (props) => {
       // Adding start point
       params.steps.push({
         duration: 0,
-        waypoints: [{
-          track_section: osrdconf.origin.id,
-          geo_coordinate: osrdconf.origin.clickLngLat,
-        }],
+        waypoints: [
+          {
+            track_section: osrdconf.origin.id,
+            geo_coordinate: osrdconf.origin.clickLngLat,
+          },
+        ],
       });
 
       // Adding via points if exist
@@ -146,10 +165,12 @@ const Itinerary = (props) => {
         osrdconf.vias.forEach((via) => {
           params.steps.push({
             duration: via.duration === undefined ? 0 : parseInt(via.duration, 10),
-            waypoints: [{
-              track_section: via.id,
-              geo_coordinate: via.clickLngLat,
-            }],
+            waypoints: [
+              {
+                track_section: via.id,
+                geo_coordinate: via.clickLngLat,
+              },
+            ],
           });
         });
       }
@@ -157,10 +178,12 @@ const Itinerary = (props) => {
       // Adding end point
       params.steps.push({
         duration: 1,
-        waypoints: [{
-          track_section: osrdconf.destination.id,
-          geo_coordinate: osrdconf.destination.clickLngLat,
-        }],
+        waypoints: [
+          {
+            track_section: osrdconf.destination.id,
+            geo_coordinate: osrdconf.destination.clickLngLat,
+          },
+        ],
       });
 
       postPathFinding(zoom, params);
@@ -186,8 +209,10 @@ const Itinerary = (props) => {
   };
 
   useEffect(() => {
-    if (osrdconf.pathfindingID === undefined
-      || osrdconf.geojson[map.mapTrackSources] === undefined) {
+    if (
+      osrdconf.pathfindingID === undefined ||
+      osrdconf.geojson[map.mapTrackSources] === undefined
+    ) {
       mapItinerary();
     } else {
       zoomToFeature(bbox(osrdconf.geojson[map.mapTrackSources]));
@@ -220,12 +245,10 @@ const Itinerary = (props) => {
         removeAllVias={removeAllVias}
         pathfindingInProgress={pathfindingInProgress}
       />
-      <ModalPathJSONDetail
-        pathfindingInProgress={pathfindingInProgress}
-      />
+      <ModalPathJSONDetail pathfindingInProgress={pathfindingInProgress} />
     </>
   );
-};
+}
 
 Itinerary.propTypes = {
   updateExtViewport: PropTypes.func.isRequired,

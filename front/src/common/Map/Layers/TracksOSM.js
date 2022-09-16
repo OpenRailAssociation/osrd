@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import { Source, Layer } from 'react-map-gl';
 import { OSM_URL } from 'common/Map/const';
 
-const TracksOSM = (props) => {
+function TracksOSM(props) {
   const { showOSMtracksections } = useSelector((state) => state.map);
   const { colors } = props;
 
@@ -34,23 +34,21 @@ const TracksOSM = (props) => {
     paint: {
       'line-color': colors.tracksosm.major,
       'line-width': {
-        stops: [[15, 1], [17, 3]],
+        stops: [
+          [15, 1],
+          [17, 3],
+        ],
       },
     },
   };
 
   return showOSMtracksections ? (
-    <Source
-      id="tracksOSM"
-      type="vector"
-      url={OSM_URL}
-      source-layer="transportation"
-    >
+    <Source id="tracksOSM" type="vector" url={OSM_URL} source-layer="transportation">
       <Layer {...railwayMinor} />
       <Layer {...railwayMajor} />
     </Source>
   ) : null;
-};
+}
 
 TracksOSM.propTypes = {
   colors: PropTypes.object.isRequired,

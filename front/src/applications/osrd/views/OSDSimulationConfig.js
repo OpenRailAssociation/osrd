@@ -1,18 +1,15 @@
-import React, {useEffect}  from 'react';
+import React, { useEffect } from 'react';
 
+import { useDispatch } from 'react-redux';
 import { MODES } from '../consts';
 import OSRDConfig from './OSRDConfig/OSRDConfig';
 import { updateMode } from '../../../reducers/osrdconf';
-import { useDispatch } from 'react-redux';
 
 export default function OSRDSimulationConfig() {
-
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   useEffect(() => {
-    dispatch(updateMode(MODES.simulation))
+    dispatch(updateMode(MODES.simulation));
   }, []);
 
-  return (
-    <OSRDConfig />
-  );
+  return <OSRDConfig />;
 }

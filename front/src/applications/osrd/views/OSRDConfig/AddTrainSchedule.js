@@ -33,15 +33,11 @@ export default function AddTrainSchedule(props) {
       const schedules = [];
       let actualTrainCount = 1;
       for (let nb = 1; nb <= trainCount; nb += 1) {
-        const newOriginTime = originTime + (60 * trainDelta * (nb - 1));
+        const newOriginTime = originTime + 60 * trainDelta * (nb - 1);
         const trainName = trainNameWithNum(osrdconf.name, actualTrainCount, trainCount);
         /* eslint no-await-in-loop: 0 */
         schedules.push(
-          formatConf(
-            dispatch, setFailure, t,
-            { ...osrdconf, name: trainName },
-            newOriginTime,
-          ),
+          formatConf(dispatch, setFailure, t, { ...osrdconf, name: trainName }, newOriginTime)
         );
         actualTrainCount += trainStep;
       }
@@ -53,85 +49,87 @@ export default function AddTrainSchedule(props) {
             path: osrdconf.pathfindingID,
             schedules,
           },
-          {},
+          {}
         );
-        dispatch(setSuccess({
-          title: t('osrdconf:trainAdded'),
-          text: `${osrdconf.name}: ${sec2time(originTime)}`,
-        }));
+        dispatch(
+          setSuccess({
+            title: t('osrdconf:trainAdded'),
+            text: `${osrdconf.name}: ${sec2time(originTime)}`,
+          })
+        );
         setIsWorking(false);
       } catch (e) {
         setIsWorking(false);
-        dispatch(setFailure({
-          name: e.name,
-          message: e.message,
-        }));
+        dispatch(
+          setFailure({
+            name: e.name,
+            message: e.message,
+          })
+        );
       }
       setMustUpdateTimetable(!mustUpdateTimetable);
     }
   };
 
   return (
-    <>
-      <div className="osrd-config-item">
-        <div className="osrd-config-item-container d-flex align-items-end mb-2">
-          <span className="mr-2 flex-grow-1">
-            <InputSNCF
-              type="text"
-              label={t('osrdconf:trainScheduleName')}
-              id="osrdconf-name"
-              onChange={(e) => dispatch(updateName(e.target.value))}
-              value={osrdconf.name}
-              noMargin
-              sm
-            />
-          </span>
-          <span className="mr-2">
-            <InputSNCF
-              type="number"
-              label={t('osrdconf:trainScheduleStep')}
-              id="osrdconf-traincount"
-              onChange={(e) => setTrainStep(parseInt(e.target.value, 10))}
-              value={trainStep}
-              noMargin
-              sm
-            />
-          </span>
-          <span className="mr-2">
-            <InputSNCF
-              type="number"
-              label={t('osrdconf:trainScheduleCount')}
-              id="osrdconf-traincount"
-              onChange={(e) => setTrainCount(e.target.value)}
-              value={trainCount}
-              noMargin
-              sm
-            />
-          </span>
-          <span className="mr-2">
-            <InputSNCF
-              type="number"
-              label={t('osrdconf:trainScheduleDelta')}
-              id="osrdconf-delta"
-              onChange={(e) => setTrainDelta(e.target.value)}
-              value={trainDelta}
-              unit="min"
-              noMargin
-              sm
-            />
-          </span>
-          {isWorking ? (
-            <button className="btn btn-sm btn-primary disabled" type="button">
-              <DotsLoader />
-            </button>
-          ) : (
-            <button className="btn btn-sm btn-primary" type="button" onClick={submitConf}>
-              {t('osrdconf:addTrainSchedule')}
-            </button>
-          )}
-        </div>
+    <div className="osrd-config-item">
+      <div className="osrd-config-item-container d-flex align-items-end mb-2">
+        <span className="mr-2 flex-grow-1">
+          <InputSNCF
+            type="text"
+            label={t('osrdconf:trainScheduleName')}
+            id="osrdconf-name"
+            onChange={(e) => dispatch(updateName(e.target.value))}
+            value={osrdconf.name}
+            noMargin
+            sm
+          />
+        </span>
+        <span className="mr-2">
+          <InputSNCF
+            type="number"
+            label={t('osrdconf:trainScheduleStep')}
+            id="osrdconf-traincount"
+            onChange={(e) => setTrainStep(parseInt(e.target.value, 10))}
+            value={trainStep}
+            noMargin
+            sm
+          />
+        </span>
+        <span className="mr-2">
+          <InputSNCF
+            type="number"
+            label={t('osrdconf:trainScheduleCount')}
+            id="osrdconf-traincount"
+            onChange={(e) => setTrainCount(e.target.value)}
+            value={trainCount}
+            noMargin
+            sm
+          />
+        </span>
+        <span className="mr-2">
+          <InputSNCF
+            type="number"
+            label={t('osrdconf:trainScheduleDelta')}
+            id="osrdconf-delta"
+            onChange={(e) => setTrainDelta(e.target.value)}
+            value={trainDelta}
+            unit="min"
+            noMargin
+            sm
+          />
+        </span>
+        {isWorking ? (
+          <button className="btn btn-sm btn-primary disabled" type="button">
+            <DotsLoader />
+          </button>
+        ) : (
+          <button className="btn btn-sm btn-primary" type="button" onClick={submitConf}>
+            {t('osrdconf:addTrainSchedule')}
+          </button>
+        )}
       </div>
-    </>
+    </div>
   );
 }
 

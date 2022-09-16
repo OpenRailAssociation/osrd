@@ -7,16 +7,14 @@ export default class FilterMenuCategorySNCF extends React.Component {
     children: PropTypes.array.isRequired,
     title: PropTypes.string.isRequired,
     expanded: PropTypes.bool,
-  }
+  };
 
   static defaultProps = {
     expanded: false,
-  }
+  };
 
   render() {
-    const {
-      htmlID, children, title, expanded,
-    } = this.props;
+    const { htmlID, children, title, expanded } = this.props;
 
     let childrenClass = 'filters-group-content collapse';
     if (expanded) {
@@ -24,7 +22,12 @@ export default class FilterMenuCategorySNCF extends React.Component {
     }
     return (
       <div className="filters-group">
-        <div className="filters-group-head" data-toggle="collapse" data-target={`#${htmlID}`} aria-expanded={expanded}>
+        <div
+          className="filters-group-head"
+          data-toggle="collapse"
+          data-target={`#${htmlID}`}
+          aria-expanded={expanded}
+        >
           <div className="filters-group-title text-uppercase">{title}</div>
           <div className="filters-group-toggle text-primary">
             <i className="icons-arrow-down icons-size-x75" aria-hidden="true" />

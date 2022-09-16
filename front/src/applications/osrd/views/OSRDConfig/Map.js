@@ -1,16 +1,7 @@
 import 'common/Map/Map.scss';
 
-import React, {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
-import ReactMapGL, {
-  AttributionControl,
-  FlyToInterpolator,
-  ScaleControl,
-} from 'react-map-gl';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import ReactMapGL, { AttributionControl, FlyToInterpolator, ScaleControl } from 'react-map-gl';
 import { lineString as turfLineString, point as turfPoint } from '@turf/helpers';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -48,21 +39,19 @@ import { updateFeatureInfoClickOSRD } from 'reducers/osrdconf';
 import { updateViewport } from 'reducers/map';
 import { useParams } from 'react-router-dom';
 
-const Map = () => {
-  const {
-    viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings,
-  } = useSelector((state) => state.map);
+function Map() {
+  const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings } =
+    useSelector((state) => state.map);
   const [idHover, setIdHover] = useState(undefined);
   const [trackSectionHover, setTrackSectionHover] = useState(undefined);
   const [lngLatHover, setLngLatHover] = useState(undefined);
   const [trackSectionGeoJSON, setTrackSectionGeoJSON] = useState(undefined);
   const [snappedPoint, setSnappedPoint] = useState(undefined);
-  const {
-    urlLat, urlLon, urlZoom, urlBearing, urlPitch,
-  } = useParams();
+  const { urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
   const dispatch = useDispatch();
   const updateViewportChange = useCallback(
-    (value) => dispatch(updateViewport(value, undefined)), [dispatch],
+    (value) => dispatch(updateViewport(value, undefined)),
+    [dispatch]
   );
   const mapRef = useRef(null);
 
@@ -82,39 +71,52 @@ const Map = () => {
   };
 
   const onFeatureClick = (e) => {
-    if (e.features
-      && e.features.length > 0
-      && e.features[0].properties.id !== undefined
+    if (
+      e.features &&
+      e.features.length > 0 &&
+      e.features[0].properties.id !== undefined
       // && e.features[0].properties.type_voie === 'VP') {
     ) {
-      dispatch(updateFeatureInfoClickOSRD({
-        displayPopup: true,
-        feature: e.features[0],
-        lngLat: e.lngLat,
-      }));
+      dispatch(
+        updateFeatureInfoClickOSRD({
+          displayPopup: true,
+          feature: e.features[0],
+          lngLat: e.lngLat,
+        })
+      );
     } else {
-      dispatch(updateFeatureInfoClickOSRD({
-        displayPopup: false,
-        feature: undefined,
-      }));
+      dispatch(
+        updateFeatureInfoClickOSRD({
+          displayPopup: false,
+          feature: undefined,
+        })
+      );
     }
   };
 
   const getGeoJSONFeature = (e) => {
-    if (trackSectionHover === undefined
-      || e.features[0].properties.id !== trackSectionHover.properties.id) {
+    if (
+      trackSectionHover === undefined ||
+      e.features[0].properties.id !== trackSectionHover.properties.id
+    ) {
       setTrackSectionHover(e.features[0]);
     }
 
     // Get GEOJSON of features hovered for snapping
     const width = 5;
     const height = 5;
-    const features = mapRef.current.queryRenderedFeatures([
-      [e.point[0] - width / 2, e.point[1] - height / 2],
-      [e.point[0] + width / 2, e.point[1] + height / 2],
-    ], {
-      layers: mapTrackSources === 'geographic' ? ['chartis/tracks-geo/main'] : ['chartis/tracks-sch/main'],
-    });
+    const features = mapRef.current.queryRenderedFeatures(
+      [
+        [e.point[0] - width / 2, e.point[1] - height / 2],
+        [e.point[0] + width / 2, e.point[1] + height / 2],
+      ],
+      {
+        layers:
+          mapTrackSources === 'geographic'
+            ? ['chartis/tracks-geo/main']
+            : ['chartis/tracks-sch/main'],
+      }
+    );
     if (features[0] !== undefined) {
       setTrackSectionGeoJSON(features[0].geometry);
     }
@@ -195,11 +197,7 @@ const Map = () => {
           className="attribution-control"
           customAttribution="©SNCF/DGEX Solutions"
         />
-        <ScaleControl
-          maxWidth={100}
-          unit="metric"
-          style={scaleControlStyle}
-        />
+        <ScaleControl maxWidth={100} unit="metric" style={scaleControlStyle} />
 
         <Background colors={colors[mapStyle]} />
 
@@ -248,10 +246,9 @@ const Map = () => {
           <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />
         ) : null}
         {snappedPoint !== undefined ? <SnappedMarker geojson={snappedPoint} /> : null}
-
       </ReactMapGL>
     </>
   );
-};
+}
 
 export default Map;

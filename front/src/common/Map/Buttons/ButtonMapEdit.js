@@ -5,12 +5,18 @@ import { toggleEditMode } from 'reducers/main';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 
-const ButtonEdit = ({ main, mainActions }) => (
-  <button type="button" className="btn-rounded btn-rounded-white btn-edit" onClick={mainActions.toggleEditMode}>
-    <span className="sr-only">Fullscreen</span>
-    {main.editMode ? <MdRemoveRedEye /> : <MdModeEdit />}
-  </button>
-);
+function ButtonEdit({ main, mainActions }) {
+  return (
+    <button
+      type="button"
+      className="btn-rounded btn-rounded-white btn-edit"
+      onClick={mainActions.toggleEditMode}
+    >
+      <span className="sr-only">Fullscreen</span>
+      {main.editMode ? <MdRemoveRedEye /> : <MdModeEdit />}
+    </button>
+  );
+}
 
 ButtonEdit.propTypes = {
   mainActions: PropTypes.object.isRequired,

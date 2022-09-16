@@ -3,7 +3,7 @@ import { Source, Layer } from 'react-map-gl';
 import { useSelector } from 'react-redux';
 import { MAP_URL } from 'common/Map/const';
 
-const SignalBox = () => {
+function SignalBox() {
   const { mapTrackSources } = useSelector((state) => state.map);
   const geomType = mapTrackSources === 'schematic' ? 'sch' : 'geo';
   const layerdef = {
@@ -13,9 +13,7 @@ const SignalBox = () => {
     'source-layer': 'map_midi_circuitdevoie',
     layout: {
       'text-field': '{RA_libelle_gare}',
-      'text-font': [
-        'Roboto Bold',
-      ],
+      'text-font': ['Roboto Bold'],
       'text-size': 14,
       'text-offset': [2, 0],
       'text-anchor': 'center',
@@ -39,6 +37,6 @@ const SignalBox = () => {
       <Layer {...layerdef} id="chartis/signal-box" />
     </Source>
   );
-};
+}
 
 export default SignalBox;

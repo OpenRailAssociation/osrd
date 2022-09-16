@@ -3,9 +3,7 @@ import PropTypes from 'prop-types';
 import kmORm from 'common/distances';
 
 export function PopupInfosCustomTitle(props) {
-  const {
-    nomVoie, codeLigne, longueur, pkSncfDe, pkSncfFi, libelle, pk,
-  } = props;
+  const { nomVoie, codeLigne, longueur, pkSncfDe, pkSncfFi, libelle, pk } = props;
   const distance = kmORm(longueur);
 
   let title = '';
@@ -25,15 +23,14 @@ export function PopupInfosCustomTitle(props) {
         </small>
       )}
       <small>
-        {pkSncfDe !== ''
-        && (
+        {pkSncfDe !== '' && (
           <>
             {pkSncfDe}
             <strong> / </strong>
             {pkSncfFi}
           </>
         )}
-        {pk !== '' && (pk)}
+        {pk !== '' && pk}
       </small>
     </>
   );
@@ -41,17 +38,11 @@ export function PopupInfosCustomTitle(props) {
 PopupInfosCustomTitle.propTypes = {
   nomVoie: PropTypes.string,
   codeLigne: PropTypes.string,
-  longueur: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.number,
-  ]),
+  longueur: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   pkSncfDe: PropTypes.string,
   pkSncfFi: PropTypes.string,
   libelle: PropTypes.string,
-  pk: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.number,
-  ]),
+  pk: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 };
 PopupInfosCustomTitle.defaultProps = {
   nomVoie: '',
@@ -65,7 +56,15 @@ PopupInfosCustomTitle.defaultProps = {
 
 export function PopupInfosCustomContent(props) {
   const {
-    codeTiv, idGaia, id, predCategory, predTime, hideId, eventType, failingResource, failureType,
+    codeTiv,
+    idGaia,
+    id,
+    predCategory,
+    predTime,
+    hideId,
+    eventType,
+    failingResource,
+    failureType,
   } = props;
   return (
     <>

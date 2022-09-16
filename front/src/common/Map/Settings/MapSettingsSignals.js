@@ -19,10 +19,12 @@ export default function MapSettingsSignals() {
   };
 
   const setSignalsList = (setting) => {
-    dispatch(updateSignalsSettings({
-      ...signalsSettings,
-      [setting]: !signalsSettings[setting],
-    }));
+    dispatch(
+      updateSignalsSettings({
+        ...signalsSettings,
+        [setting]: !signalsSettings[setting],
+      })
+    );
   };
 
   return (
@@ -41,7 +43,12 @@ export default function MapSettingsSignals() {
               <small className="ml-2 font-weight-bold">{t('all')}</small>
             ) : (
               <>
-                <img className="mx-2" src={CONSTS_SVG[setting]} alt={`${setting} Icon`} height="20" />
+                <img
+                  className="mx-2"
+                  src={CONSTS_SVG[setting]}
+                  alt={`${setting} Icon`}
+                  height="20"
+                />
                 <small>{t(setting)}</small>
               </>
             )}

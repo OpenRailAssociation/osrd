@@ -2,7 +2,8 @@ const drawGuideLines = (chart) => {
   chart.svg.selectAll('.guideLines').remove();
 
   // dashed lineguides
-  chart.svg.append('line')
+  chart.svg
+    .append('line')
     .attr('id', 'vertical-line')
     .attr('class', 'guideLines')
     .attr('x1', 0)
@@ -10,7 +11,8 @@ const drawGuideLines = (chart) => {
     .attr('x2', 0)
     .attr('y2', 0);
 
-  chart.svg.append('line')
+  chart.svg
+    .append('line')
     .attr('id', 'horizontal-line')
     .attr('class', 'guideLines')
     .attr('x1', 0)

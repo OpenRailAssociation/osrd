@@ -1,10 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  sec2datetime,
-  sec2time,
-  time2datetime,
-  time2sec,
-} from 'utils/timeManipulation';
+import { sec2datetime, sec2time, time2datetime, time2sec } from 'utils/timeManipulation';
 import { updateMustRedraw, updateSelectedTrain, updateSimulation } from 'reducers/osrdsimulation';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -18,10 +13,8 @@ import { timeShiftTrain } from 'applications/osrd/components/Helpers/ChartHelper
 import { useDebounce } from 'utils/helpers';
 import { useTranslation } from 'react-i18next';
 
-const InputName = (props) => {
-  const {
-    name, changeTrainName, idx, typeOfInputFocused,
-  } = props;
+function InputName(props) {
+  const { name, changeTrainName, idx, typeOfInputFocused } = props;
   const [localName, setLocalName] = useState(name);
   const handleChange = (value) => {
     setLocalName(value);
@@ -39,12 +32,10 @@ const InputName = (props) => {
       sm
     />
   );
-};
+}
 
-const InputTime = (props) => {
-  const {
-    time, changeTrainStartTime, idx, typeOfInputFocused,
-  } = props;
+function InputTime(props) {
+  const { time, changeTrainStartTime, idx, typeOfInputFocused } = props;
   const [localTime, setLocalTime] = useState(time);
   const handleChange = (value) => {
     setLocalTime(value);
@@ -62,13 +53,13 @@ const InputTime = (props) => {
       sm
     />
   );
-};
+}
 
 export default function TrainsList(props) {
   const { toggleTrainList } = props;
-  const {
-    selectedProjection, selectedTrain, departureArrivalTimes
-  } = useSelector((state) => state.osrdsimulation);
+  const { selectedProjection, selectedTrain, departureArrivalTimes } = useSelector(
+    (state) => state.osrdsimulation
+  );
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
   const [formattedList, setFormattedList] = useState(null);
@@ -92,20 +83,21 @@ export default function TrainsList(props) {
     setOnInput(true);
     setInputName(newName);
     const newTrain = { ...simulation.trains[idx], name: newName };
-    dispatch(updateSimulation({
-      ...simulation,
-      trains: simulation.trains.map((train, currentIdx) => (
-        (idx === currentIdx) ? newTrain : train)),
-    }));
+    dispatch(
+      updateSimulation({
+        ...simulation,
+        trains: simulation.trains.map((train, currentIdx) =>
+          idx === currentIdx ? newTrain : train
+        ),
+      })
+    );
   };
 
   const changeTrainStartTime = (newStartTime, idx) => {
     setOnInput(true);
     setInputTime(newStartTime);
     const offset = Math.floor(
-      (time2datetime(newStartTime) - sec2datetime(
-        simulation.trains[idx].base.stops[0].time,
-      )) / 1000,
+      (time2datetime(newStartTime) - sec2datetime(simulation.trains[idx].base.stops[0].time)) / 1000
     );
     const trains = Array.from(simulation.trains);
     trains[idx] = timeShiftTrain(trains[selectedTrain], offset);
@@ -117,30 +109,35 @@ export default function TrainsList(props) {
 
   const formatTrainsList = () => {
     const newFormattedList = departureArrivalTimes.map((train, idx) => {
-      if (filter === '' || (train.labels !== undefined && train.labels.join().toLowerCase().includes(filter.toLowerCase()))) {
+      if (
+        filter === '' ||
+        (train.labels !== undefined &&
+          train.labels.join().toLowerCase().includes(filter.toLowerCase()))
+      ) {
         return (
-          <tr
-            className={selectedTrain === idx ? 'table-cell-selected' : null}
-            key={nextId()}
-          >
+          <tr className={selectedTrain === idx ? 'table-cell-selected' : null} key={nextId()}>
             <td>
               <div className="cell-inner">
                 <div className="custom-control custom-checkbox custom-checkbox-alone">
-                  <input type="checkbox" className="custom-control-input" id={`timetable-train-${idx}`} />
+                  <input
+                    type="checkbox"
+                    className="custom-control-input"
+                    id={`timetable-train-${idx}`}
+                  />
                   <label className="custom-control-label" htmlFor={`timetable-train-${idx}`} />
                 </div>
               </div>
             </td>
             <td>
-              <div className="cell-inner">
-                {train.id === selectedProjection.id && '🎢'}
-              </div>
+              <div className="cell-inner">{train.id === selectedProjection.id && '🎢'}</div>
             </td>
             <td className="td-button">
               <div
                 className="cell-inner cell-inner-button"
                 role="button"
-                onClick={() => changeSelectedTrain(idx, 'name', train.name, sec2time(train.departure))}
+                onClick={() =>
+                  changeSelectedTrain(idx, 'name', train.name, sec2time(train.departure))
+                }
                 tabIndex={0}
               >
                 {trainNameClickedIDX === idx ? (
@@ -150,14 +147,18 @@ export default function TrainsList(props) {
                     name={train.name}
                     typeOfInputFocused={typeOfInputFocused}
                   />
-                ) : train.name}
+                ) : (
+                  train.name
+                )}
               </div>
             </td>
             <td>
               <div
                 className="cell-inner cell-inner-button"
                 role="button"
-                onClick={() => changeSelectedTrain(idx, 'time', train.name, sec2time(train.departure))}
+                onClick={() =>
+                  changeSelectedTrain(idx, 'time', train.name, sec2time(train.departure))
+                }
                 tabIndex={0}
               >
                 {trainNameClickedIDX === idx ? (
@@ -167,11 +168,17 @@ export default function TrainsList(props) {
                     time={sec2time(train.departure)}
                     typeOfInputFocused={typeOfInputFocused}
                   />
-                ) : sec2time(train.departure)}
+                ) : (
+                  sec2time(train.departure)
+                )}
               </div>
             </td>
-            <td><div className="cell-inner">{sec2time(train.arrival)}</div></td>
-            <td><div className="cell-inner">{train.labels && train.labels.join(' / ')}</div></td>
+            <td>
+              <div className="cell-inner">{sec2time(train.arrival)}</div>
+            </td>
+            <td>
+              <div className="cell-inner">{train.labels && train.labels.join(' / ')}</div>
+            </td>
             <td>
               <div className="cell-inner">
                 <button
@@ -201,10 +208,7 @@ export default function TrainsList(props) {
   useEffect(() => {
     if (debouncedInputName) {
       setOnInput(false);
-      changeTrain(
-        { train_name: debouncedInputName },
-        simulation.trains[trainNameClickedIDX].id,
-      );
+      changeTrain({ train_name: debouncedInputName }, simulation.trains[trainNameClickedIDX].id);
       dispatch(updateMustRedraw(true));
     }
   }, [debouncedInputName]);
@@ -214,7 +218,7 @@ export default function TrainsList(props) {
       setOnInput(false);
       changeTrain(
         { departure_time: time2sec(debouncedInputTime) },
-        simulation.trains[trainNameClickedIDX].id,
+        simulation.trains[trainNameClickedIDX].id
       );
       dispatch(updateMustRedraw(true));
     }
@@ -263,23 +267,35 @@ export default function TrainsList(props) {
                 <th>
                   <div className="cell-inner">
                     <div className="custom-control custom-checkbox custom-checkbox-alone">
-                      <input type="checkbox" className="custom-control-input" id="timetable-sel-all-trains" />
+                      <input
+                        type="checkbox"
+                        className="custom-control-input"
+                        id="timetable-sel-all-trains"
+                      />
                       <label className="custom-control-label" htmlFor="timetable-sel-all-trains">
                         <span className="sr-only">Select all</span>
                       </label>
                     </div>
                   </div>
                 </th>
-                <th scope="col" colSpan="2"><div className="cell-inner">{t('simulation:name')}</div></th>
-                <th scope="col"><div className="cell-inner">{t('simulation:start')}</div></th>
-                <th scope="col"><div className="cell-inner">{t('simulation:stop')}</div></th>
-                <th scope="col"><div className="cell-inner">{t('simulation:labels')}</div></th>
-                <th scope="col"><span className="sr-only">Actions</span></th>
+                <th scope="col" colSpan="2">
+                  <div className="cell-inner">{t('simulation:name')}</div>
+                </th>
+                <th scope="col">
+                  <div className="cell-inner">{t('simulation:start')}</div>
+                </th>
+                <th scope="col">
+                  <div className="cell-inner">{t('simulation:stop')}</div>
+                </th>
+                <th scope="col">
+                  <div className="cell-inner">{t('simulation:labels')}</div>
+                </th>
+                <th scope="col">
+                  <span className="sr-only">Actions</span>
+                </th>
               </tr>
             </thead>
-            <tbody>
-              {formattedList}
-            </tbody>
+            <tbody>{formattedList}</tbody>
           </table>
         </div>
       </div>

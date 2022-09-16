@@ -2,18 +2,18 @@ import 'applications/osrd/osrd.scss';
 
 import { Route, Routes } from 'react-router-dom';
 
-import AboutOSRD from '../osrd/About';
 import MastNavItemSNCF from 'common/BootstrapSNCF/MastNavItemSNCF';
 import MastNavSNCF from 'common/BootstrapSNCF/MastNavSNCF';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { Navigate } from 'react-router';
 import { NotificationsState } from 'common/Notifications.tsx';
-import OSRDSTDCM from './views/OSRDSTDCM';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { connect } from 'react-redux';
 import logo from 'assets/logo_osrd_seul_blanc.svg';
 import { withTranslation } from 'react-i18next';
+import OSRDSTDCM from './views/OSRDSTDCM';
+import AboutOSRD from '../osrd/About';
 
 class HomeStdcm extends React.Component {
   static propTypes = {
@@ -27,14 +27,11 @@ class HomeStdcm extends React.Component {
       <>
         <MastNavSNCF
           items={
-            <>
-              <MastNavItemSNCF
-                link="/stdcm"
-                linkname={t('osrd.nav.home')}
-                icon="icons-itinerary-train-station"
-              />
-
-            </>
+            <MastNavItemSNCF
+              link="/stdcm"
+              linkname={t('osrd.nav.home')}
+              icon="icons-itinerary-train-station"
+            />
           }
           itemsBottom={
             <MastNavItemSNCF
@@ -47,13 +44,9 @@ class HomeStdcm extends React.Component {
         />
         <NavBarSNCF appName="OSRD" logo={logo} />
         <Routes>
-
           <Route path="/about" element={<AboutOSRD />} />
 
           <Route path="" element={<OSRDSTDCM />} />
-
-
-
         </Routes>
         <NotificationsState />
       </>

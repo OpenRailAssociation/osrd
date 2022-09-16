@@ -36,15 +36,19 @@ export default function MapSearchSignalBox(props) {
   useEffect(() => {
     if (!dontSearch && (debouncedSearchTerm || debouncedSearchLine)) {
       const params = {};
-      if (searchState !== '') { params.q = searchState; }
-      if (searchLineState !== '') { params.linecode = searchLineState; }
+      if (searchState !== '') {
+        params.q = searchState;
+      }
+      if (searchLineState !== '') {
+        params.linecode = searchLineState;
+      }
       updateSearch(params);
     }
   }, [debouncedSearchTerm, debouncedSearchLine]);
 
   /*
    * Convert data from signalboxes in geojson format
-  */
+   */
   const cdv2geosjon = (data) => ({
     type: 'FeatureCollection',
     features: data.map((item) => ({
@@ -62,8 +66,10 @@ export default function MapSearchSignalBox(props) {
     setSearch(result.name);
     setSearchResults(undefined);
 
-    const geojson = map.mapTrackSources === 'schematic'
-      ? cdv2geosjon(result.coordinates.sch) : cdv2geosjon(result.coordinates.geo);
+    const geojson =
+      map.mapTrackSources === 'schematic'
+        ? cdv2geosjon(result.coordinates.sch)
+        : cdv2geosjon(result.coordinates.geo);
 
     console.log('geojson', geojson);
 
@@ -81,9 +87,7 @@ export default function MapSearchSignalBox(props) {
   };
 
   const formatSearchResults = () => {
-    const searchResultsContent = searchResults.results.sort(
-      (a, b) => a.name.localeCompare(b.name),
-    );
+    const searchResultsContent = searchResults.results.sort((a, b) => a.name.localeCompare(b.name));
     return searchResultsContent.map((result) => (
       <button
         type="button"
@@ -136,16 +140,11 @@ export default function MapSearchSignalBox(props) {
         </span>
       </div>
       <div>
-        {searchResults !== undefined && searchResults.results !== undefined
-          ? (
-            <div className="search-results">
-              {formatSearchResults()}
-            </div>
-          ) : (
-            <h2 className="text-center mt-3">
-              {t('map-search:noresult')}
-            </h2>
-          )}
+        {searchResults !== undefined && searchResults.results !== undefined ? (
+          <div className="search-results">{formatSearchResults()}</div>
+        ) : (
+          <h2 className="text-center mt-3">{t('map-search:noresult')}</h2>
+        )}
       </div>
     </>
   );

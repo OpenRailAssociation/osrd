@@ -6,12 +6,12 @@ function PopupInfos(props) {
   const { backgroundColor, title, content } = props;
   return (
     <>
-      <div className={`mapboxgl-popup-title d-flex align-items-center justify-content-between ${backgroundColor}`}>
+      <div
+        className={`mapboxgl-popup-title d-flex align-items-center justify-content-between ${backgroundColor}`}
+      >
         {title}
       </div>
-      <div className="mapboxgl-popup-container">
-        {content}
-      </div>
+      <div className="mapboxgl-popup-container">{content}</div>
     </>
   );
 }

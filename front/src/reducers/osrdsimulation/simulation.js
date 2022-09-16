@@ -1,18 +1,20 @@
+import {
+  changeTrain,
+  getTrainDetailsForAPI,
+} from 'applications/osrd/components/TrainList/TrainListHelpers';
+import { deleteRequest, get, post } from 'common/requests';
+import { setFailure, setSuccess } from 'reducers/main.ts';
+
+import trainNameWithNum from 'applications/osrd/components/AddTrainSchedule/trainNameHelper';
+import { trainscheduleURI } from 'applications/osrd/views/OSRDSimulation/OSRDSimulation';
+
 export const UPDATE_SIMULATION = 'osrdsimu/UPDATE_SIMULATION';
 export const UNDO_SIMULATION = 'osrdsimu/UNDO_SIMULATION';
 export const REDO_SIMULATION = 'osrdsimu/REDO_SIMULATION';
 
-import { changeTrain, getTrainDetailsForAPI } from "applications/osrd/components/TrainList/TrainListHelpers";
-import { deleteRequest, get, post } from 'common/requests';
-import { setFailure, setSuccess } from 'reducers/main.ts';
-
-import trainNameWithNum from "applications/osrd/components/AddTrainSchedule/trainNameHelper";
-import { trainscheduleURI } from 'applications/osrd/views/OSRDSimulation/OSRDSimulation'
-
 const timetableURI = '/timetable/';
 
 export function updateSimulation(simulation) {
-
   return (dispatch) => {
     dispatch({
       type: UPDATE_SIMULATION,
@@ -21,12 +23,16 @@ export function updateSimulation(simulation) {
   };
 }
 
-
 /**
-   * This version of getTimeTable does not erase the simulations trains
-   */
- export async function progressiveDuplicateTrain(timetableID, selectedProjection, simulationTrains, selectedTrain, dispatch) {
-
+ * This version of getTimeTable does not erase the simulations trains
+ */
+export async function progressiveDuplicateTrain(
+  timetableID,
+  selectedProjection,
+  simulationTrains,
+  selectedTrain,
+  dispatch
+) {
   const trainDetail = await get(`${trainscheduleURI}${simulationTrains[selectedTrain].id}/`);
   const params = {
     timetable: trainDetail.timetable,
@@ -38,7 +44,7 @@ export function updateSimulation(simulation) {
   const trainCount = simulationTrains.length;
   const trainStep = 10;
   for (let nb = 1; nb <= trainCount; nb += 1) {
-    const newTrainDelta = (60 * trainDelta * nb);
+    const newTrainDelta = 60 * trainDelta * nb;
     const newOriginTime = simulationTrains[selectedTrain].base.stops[0].time + newTrainDelta;
     const newTrainName = trainNameWithNum(trainName, actualTrainCount, trainCount);
     params.schedules.push({
@@ -75,7 +81,7 @@ export function updateSimulation(simulation) {
 // CONTEXT HELPERS
 
 function simulationEquals(present, newPresent) {
-  return JSON.stringify(present) === JSON.stringify(newPresent)
+  return JSON.stringify(present) === JSON.stringify(newPresent);
 }
 
 function apiSyncOnDiff(present, nextPresent, dispatch = () => {}, getState = () => {}) {
@@ -90,25 +96,28 @@ function apiSyncOnDiff(present, nextPresent, dispatch = () => {}, getState = () 
 
     const nextTrain = nextPresent.trains.find((train) => train.id === id);
     const apiDetailsForNextTrain = nextTrain
-      ? JSON.stringify(getTrainDetailsForAPI(nextTrain)) : undefined;
+      ? JSON.stringify(getTrainDetailsForAPI(nextTrain))
+      : undefined;
 
     // This trains is absent from the future simulation state.
     if (!nextTrain) {
-    // Call delete API (await)
+      // Call delete API (await)
       try {
         deleteRequest(`${trainscheduleURI}${id}/`);
       } catch (e) {
         console.log('ERROR', e);
-        dispatch(setFailure({
-          name: e.name,
-          message: e.message,
-        }));
+        dispatch(
+          setFailure({
+            name: e.name,
+            message: e.message,
+          })
+        );
       }
     } else if (
       JSON.stringify(apiDetailsForNextTrain) !== JSON.stringify(apiDetailsForPresentTrain)
     ) {
       // train exists, but is different. Patch this train
-     changeTrain(getTrainDetailsForAPI(nextTrain), nextTrain.id);
+      changeTrain(getTrainDetailsForAPI(nextTrain), nextTrain.id);
     }
   }
 
@@ -131,7 +140,6 @@ function apiSyncOnDiff(present, nextPresent, dispatch = () => {}, getState = () 
   }
 }
 
-
 // THUNKS
 export function persistentUndoSimulation() {
   return async function persistentUndoSimulationParts(dispatch, getState) {
@@ -145,7 +153,7 @@ export function persistentUndoSimulation() {
     dispatch({
       type: UNDO_SIMULATION,
     });
-  }
+  };
 }
 
 export function persistentRedoSimulation() {
@@ -160,7 +168,7 @@ export function persistentRedoSimulation() {
     dispatch({
       type: REDO_SIMULATION,
     });
-  }
+  };
 }
 
 export function persistentUpdateSimulation(simulation) {
@@ -169,53 +177,51 @@ export function persistentUpdateSimulation(simulation) {
     const present = getState()?.osrdsimulation.simulation.present;
     const nextPresent = simulation; // To be the next present
 
-    apiSyncOnDiff(present, nextPresent, dispatch, getState)
+    apiSyncOnDiff(present, nextPresent, dispatch, getState);
 
     // do the undo:
     dispatch({
       type: UPDATE_SIMULATION,
       simulation,
     });
-  }
+  };
 }
-
 
 function undoable(simulationReducer) {
   // Call the reducer with empty action to populate the initial state
   const initialStateU = {
     past: [],
     present: simulationReducer(undefined, {}),
-    future: []
-  }
+    future: [],
+  };
 
   // Return a reducer that handles undo and redo
   return function (state = initialStateU, action) {
-    const { past, present, future } = state
+    const { past, present, future } = state;
 
     switch (action.type) {
       case UNDO_SIMULATION:
-        const previous = past[past.length - 1]
+        const previous = past[past.length - 1];
         // security: do not return manually to an empty simulation, it should not happen
-        if(previous.trains?.length === 0) return state
-        const newPast = past.slice(0, past.length - 1)
+        if (previous.trains?.length === 0) return state;
+        const newPast = past.slice(0, past.length - 1);
         return {
           past: newPast,
           present: previous,
-          future: [present, ...future]
-        }
+          future: [present, ...future],
+        };
       case REDO_SIMULATION:
-        const next = future[0]
-        if(next.trains?.length === 0) return state
-        const newFuture = future.slice(1)
+        const next = future[0];
+        if (next.trains?.length === 0) return state;
+        const newFuture = future.slice(1);
         return {
           past: [...past, present],
           present: next,
-          future: newFuture
-        }
+          future: newFuture,
+        };
       default:
-
         // Delegate handling the action to the passed reducer
-        const newPresent = simulationReducer(present, action)
+        const newPresent = simulationReducer(present, action);
 
         // test equality on train
         if (present === newPresent || simulationEquals(present, newPresent)) {
@@ -224,10 +230,10 @@ function undoable(simulationReducer) {
         return {
           past: [...past, present],
           present: newPresent,
-          future: []
-        }
+          future: [],
+        };
     }
-  }
+  };
 }
 
 // Reducer
@@ -235,7 +241,7 @@ const initialState = {
   trains: [],
 };
 
-function reducer(state = { trains: []}, action) {
+function reducer(state = { trains: [] }, action) {
   // eslint-disable-next-line default-case
 
   switch (action.type) {
@@ -246,11 +252,9 @@ function reducer(state = { trains: []}, action) {
   }
 }
 
-const undoableSimulation = undoable(reducer)
+const undoableSimulation = undoable(reducer);
 
 export default undoableSimulation;
-
-
 
 export function undoSimulation() {
   return (dispatch) => {

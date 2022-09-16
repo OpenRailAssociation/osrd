@@ -11,7 +11,7 @@ export default class TableSNCF extends React.Component {
     headerSort: PropTypes.func,
     hovered: PropTypes.bool,
     selected: PropTypes.string,
-  }
+  };
 
   static defaultProps = {
     headerSort: false,
@@ -19,12 +19,10 @@ export default class TableSNCF extends React.Component {
     onClick: undefined,
     selected: '',
     content: [],
-  }
+  };
 
   render() {
-    const {
-      headerContent, headerSort, content, hovered, onClick, selected,
-    } = this.props;
+    const { headerContent, headerSort, content, hovered, onClick, selected } = this.props;
 
     return (
       <div className="table-wrapper">

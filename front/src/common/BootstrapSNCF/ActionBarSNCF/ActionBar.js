@@ -9,21 +9,19 @@ class ActionBarSNCF extends React.Component {
     children: PropTypes.array,
     main: PropTypes.object.isRequired,
     classes: PropTypes.string,
-  }
+  };
 
   static defaultProps = {
     title: undefined,
     titlelogo: undefined,
     children: [],
     classes: '',
-  }
+  };
 
   render() {
-    const {
-      title, titlelogo, children, main, classes,
-    } = this.props;
+    const { title, titlelogo, children, main, classes } = this.props;
 
-    const titlelogopicture = (titlelogo !== undefined) ? <img src={titlelogo} alt="logo" /> : '';
+    const titlelogopicture = titlelogo !== undefined ? <img src={titlelogo} alt="logo" /> : '';
 
     return (
       <div className={`actionbar ${classes} ${main.fullscreen ? ' fullscreen' : ''}`}>
@@ -32,9 +30,7 @@ class ActionBarSNCF extends React.Component {
             {titlelogopicture}
             {title}
           </h1>
-          <ul className="toolbar mb-0 align-items-center">
-            {children}
-          </ul>
+          <ul className="toolbar mb-0 align-items-center">{children}</ul>
         </div>
       </div>
     );

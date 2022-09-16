@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Source, Layer } from 'react-map-gl';
 import { OSM_URL } from 'common/Map/const';
 
-const Platform = (props) => {
+function Platform(props) {
   const { colors } = props;
 
   const platformParams = {
@@ -26,16 +26,11 @@ const Platform = (props) => {
   };
 
   return (
-    <Source
-      id="platform"
-      type="vector"
-      url={OSM_URL}
-      source-layer="transportation"
-    >
+    <Source id="platform" type="vector" url={OSM_URL} source-layer="transportation">
       <Layer {...platformParams} />
     </Source>
   );
-};
+}
 
 Platform.propTypes = {
   colors: PropTypes.object.isRequired,

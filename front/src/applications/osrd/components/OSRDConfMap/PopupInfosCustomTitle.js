@@ -4,9 +4,7 @@ import kmORm from 'common/distances';
 
 export default function PopupInfosCustomTitle(props) {
   const { properties } = props;
-  const {
-    name, track_name, line_code, length, line_name, libelleLigne,
-  } = properties;
+  const { name, track_name, line_code, length, line_name, libelleLigne } = properties;
   const distance = kmORm(length);
   let title = '';
   if (line_code !== undefined && line_code.length !== 0) {

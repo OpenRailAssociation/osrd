@@ -10,43 +10,33 @@ class Selected extends Component {
     source: PropTypes.string.isRequired,
     sourceLayer: PropTypes.string.isRequired,
     filterField: PropTypes.string,
-    type: PropTypes.oneOf([
-      'line',
-      'circle',
-    ]),
-  }
+    type: PropTypes.oneOf(['line', 'circle']),
+  };
 
   static defaultProps = {
     filterField: 'id',
     type: 'line',
-  }
+  };
 
   render() {
-    const {
-      map, source, sourceLayer, filterField, type,
-    } = this.props;
+    const { map, source, sourceLayer, filterField, type } = this.props;
 
     if (map.featureInfoClickID) {
       const id = map.featureInfoClickID;
-      const selectedLayerRender = type === 'line'
-        ? {
-          ...selectedLayer,
-          id: `${sourceLayer}SelectedLayer`,
-          filter: ['==', filterField, id],
-        }
-        : {
-          ...selectedCircleLayer,
-          id: `${sourceLayer}SelectedLayer`,
-          filter: ['==', filterField, id],
-        };
+      const selectedLayerRender =
+        type === 'line'
+          ? {
+              ...selectedLayer,
+              id: `${sourceLayer}SelectedLayer`,
+              filter: ['==', filterField, id],
+            }
+          : {
+              ...selectedCircleLayer,
+              id: `${sourceLayer}SelectedLayer`,
+              filter: ['==', filterField, id],
+            };
 
-      return (
-        <Layer
-          {...selectedLayerRender}
-          source={source}
-          source-layer={sourceLayer}
-        />
-      );
+      return <Layer {...selectedLayerRender} source={source} source-layer={sourceLayer} />;
     }
     return null;
   }
@@ -56,8 +46,6 @@ const mapStateToProps = (state) => ({
   map: state.map,
 });
 
-const mapDispatchToProps = {
-
-};
+const mapDispatchToProps = {};
 
 export default connect(mapStateToProps, mapDispatchToProps)(Selected);
