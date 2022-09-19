@@ -8,11 +8,9 @@ import {
 import {
   updateAllowancesSettings,
   updateConsolidatedSimulation,
-  updateMarginsSettings,
   updateMustRedraw,
   updateSelectedProjection,
   updateSelectedTrain,
-  updateSignalBase,
   updateSimulation,
   updateStickyBar,
 } from 'reducers/osrdsimulation';
@@ -38,10 +36,8 @@ import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/
 import { get } from 'common/requests';
 import { sec2time } from 'utils/timeManipulation';
 import { setFailure } from 'reducers/main';
-import { updateMode } from 'reducers/osrdconf';
 import { updateViewport } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
-import { MODES } from '../../consts';
 
 export const KEY_VALUES_FOR_CONSOLIDATED_SIMULATION = ['time', 'position'];
 export const timetableURI = '/timetable/';
