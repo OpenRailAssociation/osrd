@@ -3,7 +3,7 @@ import {
   getTrainDetailsForAPI,
 } from 'applications/osrd/components/TrainList/TrainListHelpers';
 import { deleteRequest, get, post } from 'common/requests';
-import { setFailure, setSuccess } from 'reducers/main.ts';
+import { setFailure } from 'reducers/main';
 
 import trainNameWithNum from 'applications/osrd/components/AddTrainSchedule/trainNameHelper';
 import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
