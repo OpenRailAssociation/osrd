@@ -64,6 +64,16 @@ class RollingStock(models.Model):
     loading_gauge = models.CharField(max_length=16, choices=[(x.value, x.name) for x in LoadingGaugeType])
     image = models.ImageField(null=True, blank=True)
 
+    # Catenary related
+    electric_only = models.BooleanField(
+        help_text=_("If true, the train can only use tracks with compatible catenaries")
+    )
+    compatible_voltages = ArrayField(
+        models.PositiveIntegerField(),
+        blank=True,
+        help_text=_("A list of compatible voltage (in V)"),
+    )
+
     def __str__(self):
         return self.name
 
