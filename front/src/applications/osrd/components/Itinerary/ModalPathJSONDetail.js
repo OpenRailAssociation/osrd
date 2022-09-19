@@ -64,12 +64,12 @@ export default function ModalPathJSONDetail(props) {
       </ModalHeaderSNCF>
       <ModalBodySNCF>
         {pathfindingInProgress && <LoaderPathfindingInProgress />}
-        <div className="form-control-container" style={{ 'max-height': '50vh' }}>
+        <div className="form-control-container" style={{ maxHeight: '50vh' }}>
           <textarea
             className="form-control stretchy"
             ref={textareaRef}
             value={JSON.stringify(pathJSONDetail, null, 2)}
-            style={{ 'max-height': '50vh' }}
+            style={{ maxHeight: '50vh' }}
           />
         </div>
       </ModalBodySNCF>
