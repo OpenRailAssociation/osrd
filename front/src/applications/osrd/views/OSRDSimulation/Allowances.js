@@ -369,11 +369,11 @@ export default function Allowances(props) {
     }
   };
 
-  const delAllowance = (idx, allowance_type) => {
+  const delAllowance = (idx, allowanceType) => {
     // change to take into considerations Mareco Ones
     const newAllowances = Array.from(allowances);
     // First check if i is a construction allowance
-    if (allowance_type === 'engineering') {
+    if (allowanceType === 'engineering') {
       newAllowances.splice(idx, 1);
     } else {
       newAllowances.find((a) => a.allowance_type === 'standard')?.ranges.splice(idx, 1);
@@ -534,10 +534,6 @@ EmptyLine.propTypes = {
   distributionsTypes: PropTypes.array.isRequired,
   setAllowances: PropTypes.func.isRequired,
   setUpdateAllowances: PropTypes.func.isRequired,
-  defaultDistributionId: PropTypes.string,
-  allowanceType: PropTypes.string,
-  marecoBeginPosition: PropTypes.number,
-  marecoEndPosition: PropTypes.number,
 };
 EmptyLine.defaultProps = {
   allowances: [],
