@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use crate::error::{ApiResult, EditoastError};
+use crate::api_error::{ApiResult, EditoastError};
 use rocket::http::{RawStr, Status};
 use rocket::request::FromFormValue;
 

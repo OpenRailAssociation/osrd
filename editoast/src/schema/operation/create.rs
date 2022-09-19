@@ -1,5 +1,5 @@
-use crate::error::ApiError;
-use crate::objects::{
+use crate::api_error::ApiError;
+use crate::schema::{
     BufferStop, Catenary, Detector, OSRDObject, ObjectType, OperationalPoint, Route, Signal,
     SpeedSection, Switch, SwitchType, TrackSection, TrackSectionLink,
 };
@@ -94,9 +94,9 @@ impl RailjsonObject {
 
 #[cfg(test)]
 pub mod tests {
-    use crate::models::infra::tests::test_transaction;
-    use crate::objects::operation::create::{apply_create_operation, RailjsonObject};
-    use crate::objects::{
+    use crate::infra::tests::test_transaction;
+    use crate::schema::operation::create::{apply_create_operation, RailjsonObject};
+    use crate::schema::{
         BufferStop, Catenary, Detector, OperationalPoint, Route, Signal, SpeedSection, Switch,
         SwitchType, TrackSection, TrackSectionLink,
     };
