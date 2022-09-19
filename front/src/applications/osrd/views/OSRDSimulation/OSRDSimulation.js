@@ -37,7 +37,7 @@ import TrainList from 'applications/osrd/views/OSRDSimulation/TrainList';
 import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/createTrain';
 import { get } from 'common/requests';
 import { sec2time } from 'utils/timeManipulation';
-import { setFailure } from 'reducers/main.ts';
+import { setFailure } from 'reducers/main';
 import { updateMode } from 'reducers/osrdconf';
 import { updateViewport } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
