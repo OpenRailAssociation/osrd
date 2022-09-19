@@ -33,7 +33,7 @@ public class MaxEffortEnvelopeTest {
     }
 
     /** Builds max effort envelope with one stop in the middle, one at the end, on a funky MRSP */
-    static Envelope makeComplexMaxEffortEnvelope(
+    public static Envelope makeComplexMaxEffortEnvelope(
             EnvelopeSimContext context,
             double[] stops
     ) {
