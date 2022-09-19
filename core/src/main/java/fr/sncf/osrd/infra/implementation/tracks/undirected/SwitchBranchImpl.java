@@ -9,6 +9,7 @@ import fr.sncf.osrd.infra.api.tracks.undirected.*;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Set;
 
 public class SwitchBranchImpl implements SwitchBranch {
 
@@ -64,6 +65,11 @@ public class SwitchBranchImpl implements SwitchBranch {
 
     @Override
     public ImmutableRangeMap<Double, LoadingGaugeConstraint> getLoadingGaugeConstraints() {
+        return ImmutableRangeMap.of();
+    }
+
+    @Override
+    public ImmutableRangeMap<Double, Set<Integer>> getVoltages() {
         return ImmutableRangeMap.of();
     }
 

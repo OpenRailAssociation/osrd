@@ -1,10 +1,9 @@
 package fr.sncf.osrd.train;
 
-import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
-import java.util.Collection;
+import java.util.Set;
 
 
 /**
@@ -66,6 +65,10 @@ public class RollingStock implements PhysicsRollingStock {
     public final TractiveEffortPoint[] tractiveEffortCurve;
 
     public final RJSLoadingGaugeType loadingGaugeType;
+
+    public final Set<Integer> compatibleVoltages;
+
+    public final boolean isElectricOnly;
 
     @Override
     public double getMass() {
@@ -177,7 +180,9 @@ public class RollingStock implements PhysicsRollingStock {
             double gamma,
             GammaType gammaType,
             TractiveEffortPoint[] tractiveEffortCurve,
-            RJSLoadingGaugeType loadingGaugeType
+            RJSLoadingGaugeType loadingGaugeType,
+            Set<Integer> compatibleVoltages,
+            boolean isElectricOnly
     ) {
         this.id = id;
         this.A = a;
@@ -193,6 +198,8 @@ public class RollingStock implements PhysicsRollingStock {
         this.mass = mass;
         this.inertiaCoefficient = inertiaCoefficient;
         this.tractiveEffortCurve = tractiveEffortCurve;
+        this.compatibleVoltages = compatibleVoltages;
+        this.isElectricOnly = isElectricOnly;
         this.inertia = mass * inertiaCoefficient;
         this.loadingGaugeType = loadingGaugeType;
     }

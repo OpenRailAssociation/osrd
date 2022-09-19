@@ -5,8 +5,10 @@ import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.RangeMap;
 import fr.sncf.osrd.infra.api.Direction;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSCatenary;
 import fr.sncf.osrd.utils.geom.LineString;
 import java.util.EnumMap;
+import java.util.Set;
 
 /** An undirected track edge, which can either be a branch of a switch, or a track section */
 public sealed interface TrackEdge permits SwitchBranch, TrackSection {
@@ -40,4 +42,6 @@ public sealed interface TrackEdge permits SwitchBranch, TrackSection {
     /** Returns a list of ranges, each having a set of blocked loading gauge type */
     ImmutableRangeMap<Double, LoadingGaugeConstraint> getLoadingGaugeConstraints();
 
+    /** Returns a set of voltages usable at any position */
+    RangeMap<Double, Set<Integer>> getVoltages();
 }

@@ -7,6 +7,7 @@ import fr.sncf.osrd.infra.api.tracks.undirected.*;
 import fr.sncf.osrd.utils.geom.LineString;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.EnumMap;
+import java.util.Set;
 
 public class TrackSectionImpl implements TrackSection {
 
@@ -14,6 +15,7 @@ public class TrackSectionImpl implements TrackSection {
     private final String id;
     private final ImmutableSet<OperationalPoint> operationalPoints;
     EnumMap<Direction, RangeMap<Double, SpeedLimits>> speedSections;
+    RangeMap<Double, Set<Integer>> catenaryVoltages = TreeRangeMap.create();
     EnumMap<Direction, RangeMap<Double, Double>> gradients;
     ImmutableList<Detector> detectors = ImmutableList.of();
     int index;
@@ -51,6 +53,7 @@ public class TrackSectionImpl implements TrackSection {
         this.loadingGaugeConstraints = loadingGaugeConstraints;
         this.trackNumber = trackNumber;
         this.lineCode = lineCode;
+        this.catenaryVoltages.put(Range.closed(0., length), Set.of());
     }
 
     /** Constructor with empty operational points, geometry, line code and track number */
@@ -58,14 +61,7 @@ public class TrackSectionImpl implements TrackSection {
             double length,
             String id
     ) {
-        this.length = length;
-        this.id = id;
-        this.loadingGaugeConstraints = ImmutableRangeMap.of();
-        this.geo = null;
-        this.sch = null;
-        this.operationalPoints = ImmutableSet.of();
-        this.trackNumber = 0;
-        this.lineCode = 0;
+        this(length, id, ImmutableSet.of(), null, null, ImmutableRangeMap.of(), 0, 0);
         speedSections = new EnumMap<>(Direction.class);
         for (var dir : Direction.values())
             speedSections.put(dir, ImmutableRangeMap.of());
@@ -119,6 +115,10 @@ public class TrackSectionImpl implements TrackSection {
     @Override
     public int getTrackNumber() {
         return trackNumber;
+    }
+
+    public RangeMap<Double, Set<Integer>> getVoltages() {
+        return catenaryVoltages;
     }
 
     @Override
