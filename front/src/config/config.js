@@ -18,4 +18,8 @@ export const KEYCLOAK_CONFIG = {
   clientId: 'gateway',
 };
 
+export const SENTRY_CONFIG = {
+  react_sentry_dsn: process.env.REACT_SENTRY_DSN,
+};
+
 export default MAIN_API;
