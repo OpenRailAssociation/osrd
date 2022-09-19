@@ -20,6 +20,8 @@ public class TrackSectionImpl implements TrackSection {
     private final LineString geo;
     private final LineString sch;
     private final ImmutableRangeMap<Double, LoadingGaugeConstraint> loadingGaugeConstraints;
+    private final int trackNumber;
+    private final int lineCode;
 
     @Override
     @ExcludeFromGeneratedCodeCoverage
@@ -37,7 +39,9 @@ public class TrackSectionImpl implements TrackSection {
             ImmutableSet<OperationalPoint> operationalPoints,
             LineString geo,
             LineString sch,
-            ImmutableRangeMap<Double, LoadingGaugeConstraint> loadingGaugeConstraints
+            ImmutableRangeMap<Double, LoadingGaugeConstraint> loadingGaugeConstraints,
+            int trackNumber,
+            int lineCode
     ) {
         this.length = length;
         this.id = id;
@@ -45,9 +49,11 @@ public class TrackSectionImpl implements TrackSection {
         this.geo = geo;
         this.sch = sch;
         this.loadingGaugeConstraints = loadingGaugeConstraints;
+        this.trackNumber = trackNumber;
+        this.lineCode = lineCode;
     }
 
-    /** Constructor with empty operational points and geometry */
+    /** Constructor with empty operational points, geometry, line code and track number */
     public TrackSectionImpl(
             double length,
             String id
@@ -58,6 +64,8 @@ public class TrackSectionImpl implements TrackSection {
         this.geo = null;
         this.sch = null;
         this.operationalPoints = ImmutableSet.of();
+        this.trackNumber = 0;
+        this.lineCode = 0;
         speedSections = new EnumMap<>(Direction.class);
         for (var dir : Direction.values())
             speedSections.put(dir, ImmutableRangeMap.of());
@@ -101,6 +109,16 @@ public class TrackSectionImpl implements TrackSection {
     @Override
     public ImmutableRangeMap<Double, LoadingGaugeConstraint> getLoadingGaugeConstraints() {
         return loadingGaugeConstraints;
+    }
+
+    @Override
+    public int getLineCode() {
+        return lineCode;
+    }
+
+    @Override
+    public int getTrackNumber() {
+        return trackNumber;
     }
 
     @Override

@@ -50,7 +50,9 @@ public class ScheduleMetadataExtractor {
         var stops = new ArrayList<ResultStops>();
         for (var stop : schedule.stops) {
             var stopTime = ResultPosition.interpolateTime(stop.position, headPositions);
-            stops.add(new ResultStops(stopTime, stop.position, stop.duration));
+            var location = trainPath.findLocation(stop.position);
+            stops.add(new ResultStops(stopTime, stop.position, stop.duration,
+                    location.track().getLineCode(), location.track().getTrackNumber()));
         }
 
         // Compute events
