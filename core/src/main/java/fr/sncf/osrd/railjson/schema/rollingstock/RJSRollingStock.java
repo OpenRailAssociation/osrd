@@ -14,7 +14,7 @@ public class RJSRollingStock implements Identified {
             .build()
             .adapter(RJSRollingStock.class);
 
-    public static final transient String CURRENT_VERSION = "2.1";
+    public static final transient String CURRENT_VERSION = "2.2";
 
     /**
      * The version of the rolling stock format used

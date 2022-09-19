@@ -1,5 +1,5 @@
 {
-    "version": "2.1",
+    "version": "2.2",
     "length": 400,
     "max_speed": 80,
     "startup_time": 10,
@@ -66,5 +66,7 @@
         "A": 5400.0,
         "B": 200.0,
         "C": 12.0
-    }
+    },
+    "electric_only": false,
+    "compatible_voltages": []
 }

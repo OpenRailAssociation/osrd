@@ -1146,6 +1146,12 @@ components:
             - "FR3.3"
             - "FR3.3/GB/G2"
             - "GLOTT"
+        electric_only:
+          type: boolean
+        compatible_voltages:
+          type: array
+          items:
+            type: integer
     TrainSchedule:
       allOf:
         - type: object
