@@ -43,15 +43,12 @@ module.exports = {
       'error',
       'ignorePackages',
       {
-        js: 'never',
-        jsx: 'never',
         ts: 'never',
         tsx: 'never',
       },
     ],
     'no-use-before-define': 'off',
     '@typescript-eslint/no-use-before-define': ['error'],
-    'default-param-last': 'off',
   },
   settings: {
     'import/resolver': {
