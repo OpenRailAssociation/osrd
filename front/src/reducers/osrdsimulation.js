@@ -149,6 +149,7 @@ export default function reducer(inputState, action) {
         draft.positionValues = positionsValues;
         break;
       }
+      default:
     }
   });
 }
