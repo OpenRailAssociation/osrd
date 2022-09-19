@@ -195,7 +195,9 @@ public class UndirectedInfraBuilder {
                 ImmutableSet.copyOf(operationalPointsPerTrack.get(track.id)),
                 track.geo,
                 track.sch,
-                buildLoadingGaugeLimits(track.loadingGaugeLimits)
+                buildLoadingGaugeLimits(track.loadingGaugeLimits),
+                track.trackNumber,
+                track.lineCode
         );
         builder.addEdge(begin, end, edge);
         edge.gradients = makeGradients(track);

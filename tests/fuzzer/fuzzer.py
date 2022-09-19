@@ -1,13 +1,13 @@
-from dataclasses import dataclass
-from enum import Enum
-from typing import Dict, Tuple, Iterable, List, Set
 import json
 import random
 import time
 from collections import defaultdict
+from dataclasses import dataclass
+from enum import Enum
+from pathlib import Path
+from typing import Dict, Iterable, List, Set, Tuple
 
 import requests
-from pathlib import Path
 
 URL = "http://127.0.0.1:8000/"
 TIMEOUT = 15
@@ -25,7 +25,7 @@ class FailedTest(Exception):
 
 
 class ErrorType(str, Enum):
-    PATHFINDING = "PATHFINDING",
+    PATHFINDING = "PATHFINDING"
     SCHEDULE = "SCHEDULE"
     RESULT = "RESULT"
 
@@ -38,14 +38,16 @@ class InfraGraph:
 
 
 def make_error(error_type: ErrorType, code: int, error: str, infra_name: str, path_payload: Dict, **kwargs):
-    raise FailedTest({
-        "error_type": error_type.value,
-        "code": code,
-        "error": error,
-        "infra_name": infra_name,
-        "path_payload": path_payload,
-        **kwargs,
-    })
+    raise FailedTest(
+        {
+            "error_type": error_type.value,
+            "code": code,
+            "error": error,
+            "infra_name": infra_name,
+            "path_payload": path_payload,
+            **kwargs,
+        }
+    )
 
 
 def run_test(infra: InfraGraph, base_url: str, infra_id: int, infra_name: str):
@@ -70,25 +72,37 @@ def run_test(infra: InfraGraph, base_url: str, infra_id: int, infra_name: str):
         if r.status_code // 100 == 4:
             print("ignore: invalid user input")
             return
-        make_error(ErrorType.SCHEDULE, r.status_code, r.content.decode("utf-8"), infra_name, path_payload,
-                   schedule_payload=schedule_payload)
+        make_error(
+            ErrorType.SCHEDULE,
+            r.status_code,
+            r.content.decode("utf-8"),
+            infra_name,
+            path_payload,
+            schedule_payload=schedule_payload,
+        )
 
     schedule_id = r.json()["ids"][0]
     r = requests.get(f"{base_url}train_schedule/{schedule_id}/result/", timeout=TIMEOUT)
     if r.status_code // 100 != 2:
-        make_error(ErrorType.RESULT, r.status_code, r.content.decode("utf-8"), infra_name, path_payload,
-                   schedule_payload=schedule_payload, schedule_id=schedule_id)
+        make_error(
+            ErrorType.RESULT,
+            r.status_code,
+            r.content.decode("utf-8"),
+            infra_name,
+            path_payload,
+            schedule_payload=schedule_payload,
+            schedule_id=schedule_id,
+        )
+
+    payload = r.json()
+    assert "line_code" in payload["base"]["stops"][0]
+    assert "track_number" in payload["base"]["stops"][0]
 
     print("test PASSED")
 
 
 def run(
-        base_url: str,
-        infra_id: int,
-        n_test: int = 1000,
-        log_folder: Path = None,
-        infra_name: str = None,
-        seed: int = 0
+    base_url: str, infra_id: int, n_test: int = 1000, log_folder: Path = None, infra_name: str = None, seed: int = 0
 ):
     """
     Runs every test
@@ -317,10 +331,10 @@ def make_random_ranges(path_length: float) -> List[Dict]:
     transitions.sort()
     for begin, end in zip(transitions[:1], transitions[1:]):
         yield {
-                "begin_position": begin,
-                "end_position": end,
-                "value": make_random_allowance_value(end - begin),
-                }
+            "begin_position": begin,
+            "end_position": end,
+            "value": make_random_allowance_value(end - begin),
+        }
 
 
 def make_random_allowances(path_length: float) -> List[Dict]:

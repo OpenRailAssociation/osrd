@@ -1,3 +1,10 @@
 package fr.sncf.osrd.infra.api.tracks.undirected;
 
-public non-sealed interface TrackSection extends TrackEdge {}
+public non-sealed interface TrackSection extends TrackEdge {
+
+    /** Returns line code */
+    int getLineCode();
+
+    /** Returns track number */
+    int getTrackNumber();
+}

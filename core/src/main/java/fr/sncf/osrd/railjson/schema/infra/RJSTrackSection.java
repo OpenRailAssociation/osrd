@@ -1,5 +1,6 @@
 package fr.sncf.osrd.railjson.schema.infra;
 
+import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.common.Identified;
@@ -22,6 +23,12 @@ public class RJSTrackSection implements Identified {
 
     public LineString geo;
     public LineString sch;
+
+    @Json(name = "line_code")
+    public int lineCode;
+
+    @Json(name = "track_number")
+    public int trackNumber;
 
     public RJSTrackSection(String id, double length) {
         this.id = id;
