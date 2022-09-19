@@ -6,7 +6,7 @@ import { deleteRequest, get, post } from 'common/requests';
 import { setFailure, setSuccess } from 'reducers/main.ts';
 
 import trainNameWithNum from 'applications/osrd/components/AddTrainSchedule/trainNameHelper';
-import { trainscheduleURI } from 'applications/osrd/views/OSRDSimulation/OSRDSimulation';
+import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
 
 export const UPDATE_SIMULATION = 'osrdsimu/UPDATE_SIMULATION';
 export const UNDO_SIMULATION = 'osrdsimu/UNDO_SIMULATION';

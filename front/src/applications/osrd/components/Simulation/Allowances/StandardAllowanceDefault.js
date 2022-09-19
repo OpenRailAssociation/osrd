@@ -9,8 +9,7 @@ import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
 import PropTypes from 'prop-types';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import { useTranslation } from 'react-i18next';
-
-const trainscheduleURI = '/train_schedule/';
+import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
 
 export default function StandardAllowanceDefault(props) {
   const {

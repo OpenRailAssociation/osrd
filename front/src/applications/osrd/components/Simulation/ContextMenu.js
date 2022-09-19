@@ -2,19 +2,15 @@ import * as d3 from 'd3';
 
 import { MdContentCopy, MdDelete } from 'react-icons/md';
 import React, { useEffect, useState } from 'react';
-import { deleteRequest, get, post } from 'common/requests';
-import {
-  persistentUndoSimulation,
-  persistentUpdateSimulation,
-} from 'reducers/osrdsimulation/simulation';
-import { setFailure, setSuccess } from 'reducers/main.ts';
+import { get, post } from 'common/requests';
+import { persistentUpdateSimulation } from 'reducers/osrdsimulation/simulation';
+import { setFailure, setSuccess } from 'reducers/main';
 import {
   updateAllowancesSettings,
   updateContextMenu,
   updateMustRedraw,
   updateSelectedProjection,
   updateSelectedTrain,
-  updateSimulation,
 } from 'reducers/osrdsimulation';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -25,8 +21,7 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import PropTypes from 'prop-types';
 import trainNameWithNum from 'applications/osrd/components/AddTrainSchedule/trainNameHelper';
 import { useTranslation } from 'react-i18next';
-
-const TRAINSCHEDULE_URI = '/train_schedule/';
+import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
 
 export default function ContextMenu(props) {
   const { getTimetable } = props;
@@ -43,7 +38,7 @@ export default function ContextMenu(props) {
   const [trainDelta, setTrainDelta] = useState(20);
 
   const choosePath = async () => {
-    const train = await get(`${TRAINSCHEDULE_URI}${simulation.trains[selectedTrain]?.id}/`);
+    const train = await get(`${trainscheduleURI}${simulation.trains[selectedTrain]?.id}/`);
     if (simulation.trains[selectedTrain]) {
       dispatch(
         updateSelectedProjection({
@@ -74,7 +69,7 @@ export default function ContextMenu(props) {
     );
     /*
     try {
-      deleteRequest(`${TRAINSCHEDULE_URI}${contextMenu.id}/`);
+      deleteRequest(`${trainscheduleURI}${contextMenu.id}/`);
     } catch (e) {
       console.log('ERROR', e);
       dispatch(setFailure({
@@ -88,7 +83,7 @@ export default function ContextMenu(props) {
   const duplicateTrain = async () => {
     setGoUpdate(true);
     const trains = Array.from(simulation.trains);
-    const trainDetail = await get(`${TRAINSCHEDULE_URI}${simulation.trains[selectedTrain].id}/`);
+    const trainDetail = await get(`${trainscheduleURI}${simulation.trains[selectedTrain].id}/`);
     const params = {
       timetable: trainDetail.timetable,
       path: trainDetail.path,
@@ -111,7 +106,7 @@ export default function ContextMenu(props) {
       actualTrainCount += trainStep;
     }
     try {
-      await post(`${TRAINSCHEDULE_URI}standalone_simulation/`, params);
+      await post(`${trainscheduleURI}standalone_simulation/`, params);
       getTimetable();
       dispatch(updateContextMenu(undefined));
       dispatch(

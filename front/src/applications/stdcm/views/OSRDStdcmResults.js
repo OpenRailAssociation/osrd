@@ -4,8 +4,9 @@ import 'applications/osrd/views/OSRDConfig/OSRDConfig.scss';
 import {
   KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
   timetableURI,
-  trainscheduleURI,
 } from 'applications/osrd/views/OSRDSimulation/OSRDSimulation';
+import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
+
 import React, { useEffect, useState } from 'react';
 import {
   updateAllowancesSettings,

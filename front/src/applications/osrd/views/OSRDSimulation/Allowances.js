@@ -1,7 +1,7 @@
-import PropTypes, { string } from 'prop-types';
-import React, { useCallback, useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
+import React, { useEffect, useState } from 'react';
 import { get, patch } from 'common/requests';
-import { setFailure, setSuccess } from 'reducers/main.ts';
+import { setFailure, setSuccess } from 'reducers/main';
 import {
   updateAllowancesSettings,
   updateMustRedraw,
@@ -13,7 +13,6 @@ import DotsLoader from 'common/DotsLoader/DotsLoader';
 import { FaTrash } from 'react-icons/fa';
 import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import MarecoMultiRange from 'applications/osrd/components/Simulation/Allowances/MarecoMultiRange';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import OPModal from 'applications/osrd/components/Simulation/Allowances/OPModal';
@@ -21,8 +20,7 @@ import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import StandardAllowanceDefault from 'applications/osrd/components/Simulation/Allowances/StandardAllowanceDefault';
 import nextId from 'react-id-generator';
 import { useTranslation } from 'react-i18next';
-
-const trainscheduleURI = '/train_schedule/';
+import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
 
 const TYPEUNITS = {
   time: 's',

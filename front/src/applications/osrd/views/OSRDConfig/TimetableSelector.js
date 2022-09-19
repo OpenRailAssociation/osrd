@@ -2,16 +2,16 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import nextId from 'react-id-generator';
 import { useSelector, useDispatch } from 'react-redux';
-import { setFailure } from 'reducers/main.ts';
+import { setFailure } from 'reducers/main';
 import { useTranslation } from 'react-i18next';
 import { get, deleteRequest } from 'common/requests';
 import TimetableSelectorModal from 'applications/osrd/components/TimetableSelector/TimetableSelectorModal';
 import icon from 'assets/pictures/timetable.svg';
 import { sec2time } from 'utils/timeManipulation';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
+import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
 
 const timetableURL = '/timetable/';
-const scheduleURL = '/train_schedule/';
 
 export default function TimetableSelector(props) {
   const { mustUpdateTimetable } = props;
@@ -39,7 +39,7 @@ export default function TimetableSelector(props) {
   };
 
   const deleteTrainSchedule = async (id) => {
-    await deleteRequest(`${scheduleURL}${id}/`);
+    await deleteRequest(`${trainscheduleURI}${id}/`);
     getTimetable(timetableID);
   };
 
