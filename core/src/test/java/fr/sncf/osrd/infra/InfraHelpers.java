@@ -226,6 +226,7 @@ public class InfraHelpers {
                         new RJSTrainDetector("d1", 50, makeTrackRef("track")),
                         new RJSTrainDetector("d2", 75, makeTrackRef("track"))
                 ),
+                new ArrayList<>(),
                 new ArrayList<>()
         );
     }

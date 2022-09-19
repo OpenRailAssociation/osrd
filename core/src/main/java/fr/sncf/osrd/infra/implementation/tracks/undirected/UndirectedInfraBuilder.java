@@ -17,6 +17,7 @@ import fr.sncf.osrd.railjson.schema.infra.RJSSwitch;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitchType;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSCatenary;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSLoadingGaugeLimit;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
 import fr.sncf.osrd.reporting.warnings.Warning;
@@ -91,7 +92,23 @@ public class UndirectedInfraBuilder {
 
         addSpeedSections(infra.speedSections, trackSectionsByID);
 
+        loadCatenaries(infra.catenaries, trackSectionsByID);
+
         return TrackInfraImpl.from(switches.build(), builder.build());
+    }
+
+    private void loadCatenaries(List<RJSCatenary> catenaries, HashMap<String, TrackSectionImpl> trackSectionsByID) {
+        for (var catenary : catenaries) {
+            for (var trackRange : catenary.trackRanges) {
+                var track = trackSectionsByID.get(trackRange.track.id.id);
+                assert track != null;
+                track.getVoltages().merge(
+                        Range.open(trackRange.begin, trackRange.end),
+                        Set.of(catenary.voltage),
+                        Sets::union
+                );
+            }
+        }
     }
 
     /** Creates all the track section links that haven't already been created by switches */

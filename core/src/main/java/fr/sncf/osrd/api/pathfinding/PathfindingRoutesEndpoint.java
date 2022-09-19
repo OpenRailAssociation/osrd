@@ -2,6 +2,9 @@ package fr.sncf.osrd.api.pathfinding;
 
 import fr.sncf.osrd.api.ExceptionHandler;
 import fr.sncf.osrd.api.InfraManager;
+import fr.sncf.osrd.api.pathfinding.constraints.ConstraintCombiner;
+import fr.sncf.osrd.api.pathfinding.constraints.ElectrificationConstraints;
+import fr.sncf.osrd.api.pathfinding.constraints.LoadingGaugeConstraints;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingRequest;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.api.pathfinding.response.NoPathFoundError;
@@ -91,13 +94,14 @@ public class PathfindingRoutesEndpoint implements Take {
 
         // Initializes the constraints
         var loadingGaugeConstraints = new LoadingGaugeConstraints(rollingStocks);
+        var electrificationConstraints = new ElectrificationConstraints(rollingStocks);
 
         // Compute the paths from the entry waypoint to the exit waypoint
         return Pathfinding.findPath(
                 infra.getSignalingRouteGraph(),
                 waypoints,
                 route -> route.getInfraRoute().getLength(),
-                loadingGaugeConstraints
+                new ConstraintCombiner(List.of(loadingGaugeConstraints, electrificationConstraints))
         );
     }
 

@@ -76,7 +76,9 @@ public class RJSRollingStockParser {
                 rjsRollingStock.gamma.value,
                 rjsRollingStock.gamma.type,
                 tractiveEffortCurve,
-                rjsRollingStock.loadingGauge
+                rjsRollingStock.loadingGauge,
+                rjsRollingStock.compatibleVoltages,
+                rjsRollingStock.electricOnly
         );
     }
 
