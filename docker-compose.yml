@@ -112,6 +112,7 @@ services:
         REACT_APP_API_URL: "http://localhost:8000"
         REACT_APP_CHARTIS_URL: "http://localhost:7000"
         REACT_APP_EDITOAST_URL: "http://localhost:8090"
+        REACT_APP_SENTRY_DSN: "https://fd0b50aa200d4d2cb58decfeabcbdef2@sentry.shared.dgexsol.fr/38"
     restart: unless-stopped
     ports: ["3000:80"]
     healthcheck:

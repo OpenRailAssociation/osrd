@@ -19,7 +19,8 @@ export const KEYCLOAK_CONFIG = {
 };
 
 export const SENTRY_CONFIG = {
-  react_sentry_dsn: process.env.REACT_SENTRY_DSN,
+  react_sentry_dsn: process.env.REACT_APP_SENTRY_DSN,
+  environment: process.env.REACT_APP_SENTRY_ENVIRONMENT
 };
 
 export default MAIN_API;
