@@ -1,0 +1,37 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+    id 'com.google.devtools.ksp'
+}
+
+repositories {
+    mavenCentral()
+}
+
+def kotlin_version = '1.7.10'
+
+dependencies {
+    api project(':kt-fast-collections-annotations')
+    ksp project(':kt-fast-collections-generator')
+
+    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: kotlin_version  // Apache 2.0
+    api group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: '1.6.+'  // Apache 2.0
+    testImplementation group: 'org.jetbrains.kotlin', name: 'kotlin-test', version: kotlin_version  // Apache 2.0
+}
+
+// to get KSP generated-stuff to be recognised
+kotlin {
+    sourceSets {
+        main.kotlin.srcDirs += 'build/generated/ksp/main/kotlin'
+        test.kotlin.srcDirs += 'build/generated/ksp/test/kotlin'
+    }
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        jvmTarget = "17"
+        freeCompilerArgs += [
+                "-opt-in=kotlin.RequiresOptIn",
+                "-opt-in=kotlin.ExperimentalUnsignedTypes",
+       ]
+    }
+}
