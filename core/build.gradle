@@ -17,13 +17,19 @@ import static org.apache.tools.ant.taskdefs.condition.Os.*
 
 plugins {
     id 'java'
-    id 'org.jetbrains.kotlin.jvm' version '1.7.+'
+    // must be kept in sync with kotlin_version below
+    id 'org.jetbrains.kotlin.jvm' version '1.7.10'
+    id 'com.google.devtools.ksp' version '1.7.10-1.0.6' apply false
     id 'application'
     id 'checkstyle'
     id 'com.github.spotbugs' version '5.0.+'
     id 'com.github.johnrengelman.shadow' version '7.1.2'
     id 'jacoco'
 }
+
+// must be kept in sync across all modules
+def kotlin_version = '1.7.10'
+
 
 // region DEPENDENCIES
 
@@ -33,8 +39,12 @@ repositories {
 
 dependencies {
     // kotlin
-    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib'  // Apache 2.0
+    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: kotlin_version  // Apache 2.0
     implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: '1.6.+'  // Apache 2.0
+    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-test', version: '1.6.+'  // Apache 2.0
+    testImplementation group: 'org.jetbrains.kotlin', name: 'kotlin-test', version: kotlin_version  // Apache 2.0
+
+    implementation project(":kt-osrd-sim")
 
     // base primitives
     implementation group: 'com.google.guava', name: 'guava', version: '31.1-jre'  // Apache 2.0
@@ -64,6 +74,7 @@ dependencies {
 
     // the logging API stub
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.+'  // MIT
+
     // the logging API implementation
     implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.4.+'  // EPL 1.0 (incompatible) and LGPL 2.1 (compatible)
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.4.+'
@@ -207,7 +218,6 @@ jacocoTestReport {
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
     kotlinOptions {
-        freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
         jvmTarget = "17"
     }
 }
@@ -219,4 +229,3 @@ tasks.register("printSettings", DefaultTask) {
         println "java.home " + System.getProperty('java.home')
     }
 }
-
