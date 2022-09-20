@@ -22,8 +22,6 @@ import { version } from '../package.json';
 // Must be required and not imported to be included in production build (strange bug ?)
 require('@sncf/bootstrap-sncf.metier.reseau');
 
-console.log(SENTRY_CONFIG.environment);
-
 if (SENTRY_CONFIG.react_sentry_dsn) {
   Sentry.init({
     dsn: SENTRY_CONFIG.react_sentry_dsn,

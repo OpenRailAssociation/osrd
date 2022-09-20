@@ -17,6 +17,24 @@ export const stdcmRequestStatus = {
   noresults: 'NORESULTS',
 };
 
+const keylog = [];
+document.onkeydown = function (e) {
+  const keypressed = e.key;
+  keylog.push(keypressed);
+  if (keylog.join('') === 'boum') {
+    const ascii = [
+      '',
+      ' ___________________    . , ',
+      '(___________________|~~~~~X.;',
+      '                     ` `"  ;',
+      '            TNT',
+    ].join('\n');
+    throw ascii;
+  }
+};
+
+
+
 export default function OSRDSTDCM() {
   const { t } = useTranslation(['translation', 'osrdconf']);
   const dispatch = useDispatch();
