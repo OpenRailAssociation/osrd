@@ -6,7 +6,7 @@ import { Route, Routes } from 'react-router-dom';
 import config from '../../config/config';
 import logo from '../../assets/logo_osrd_seul_blanc.svg';
 import NavBarSNCF from '../../common/BootstrapSNCF/NavBarSNCF';
-import Editor from './Editor.tsx';
+import Editor from './Editor';
 
 class HomeEditorUnplugged extends React.Component {
   static propTypes = {
