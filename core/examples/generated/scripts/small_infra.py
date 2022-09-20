@@ -4,6 +4,7 @@ from railjson_generator import (
     ApplicableDirection,
     Location,
 )
+from railjson_generator.schema.infra.catenary import Catenary
 from railjson_generator.schema.infra.direction import Direction
 from railjson_generator import get_output_dir
 
@@ -545,6 +546,16 @@ speed_1.add_track_range(th1, 0, 4000, ApplicableDirection.BOTH)
 
 speed_2 = builder.add_speed_section(112 / 3.6)
 speed_2.add_track_range(th1, 3500, 4400, ApplicableDirection.BOTH)
+
+# ================================
+#  Catenaries
+# ================================
+electrified_tracks = builder.infra.track_sections.copy()
+for track in electrified_tracks:
+    if track.label == "TD1":
+        electrified_tracks.remove(track)
+builder.infra.catenaries.append(Catenary("catenary_25k", 25000, electrified_tracks))
+builder.infra.catenaries.append(Catenary("catenary_1500", 1500, electrified_tracks))
 
 # ================================
 # Produce the railjson
