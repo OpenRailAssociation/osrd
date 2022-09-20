@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from typing import List
 
 from railjson_generator.rjs_static import SWITCH_TYPES
+from railjson_generator.schema.infra.catenary import Catenary
 from railjson_generator.schema.infra.link import Link
 from railjson_generator.schema.infra.operational_point import OperationalPoint
 from railjson_generator.schema.infra.route import Route
@@ -21,6 +22,7 @@ class Infra:
     operational_points: List[OperationalPoint] = field(default_factory=list)
     routes: List[Route] = field(default_factory=list)
     speed_sections: List[SpeedSection] = field(default_factory=list)
+    catenaries: List[Catenary] = field(default_factory=list)
 
     VERSION = "2.3.1"
 
@@ -41,7 +43,7 @@ class Infra:
             operational_points=self.make_rjs_operational_points(),
             switch_types=SWITCH_TYPES,
             speed_sections=[speed_section.to_rjs() for speed_section in self.speed_sections],
-            catenaries=[],
+            catenaries=[catenary.to_rjs() for catenary in self.catenaries],
         )
 
     def save(self, path):
