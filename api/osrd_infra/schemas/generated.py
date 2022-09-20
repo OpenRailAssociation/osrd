@@ -1,6 +1,6 @@
 from typing import Literal, Tuple, Union
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, constr
 
 from osrd_infra.schemas import infra
 
@@ -8,12 +8,16 @@ from osrd_infra.schemas import infra
 # TRAITS
 class InfraErrorTrait(BaseModel):
     is_warning: Literal[False] = Field(default=False)
-    field: str
+    obj_id: constr(max_length=255) = Field(description="Identifier of the object that caused the error")
+    obj_type: constr(max_length=32) = Field(description="Type of the object that caused the error")
+    field: constr(max_length=255) = Field(description="Field of the object that caused the error")
 
 
 class InfraWarningTrait(BaseModel):
     is_warning: Literal[True] = Field(default=True)
-    field: str
+    obj_id: constr(max_length=255) = Field(description="Identifier of the object that caused the warning")
+    obj_type: constr(max_length=32) = Field(description="Type of the object that caused the warning")
+    field: constr(max_length=255) = Field(description="Field of the object that caused the warning")
 
 
 # Errors
