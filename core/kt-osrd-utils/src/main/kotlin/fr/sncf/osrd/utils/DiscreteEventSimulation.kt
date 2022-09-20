@@ -1,4 +1,4 @@
-package fr.sncf.osrd.sim
+package fr.sncf.osrd.utils
 
 import kotlinx.coroutines.*
 import java.util.*
@@ -7,7 +7,6 @@ import kotlin.coroutines.ContinuationInterceptor
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
-@OptIn(ExperimentalCoroutinesApi::class)
 private class TimedRunnable(
     @JvmField val time: Long,
     private val continuation: CancellableContinuation<Unit>
@@ -68,7 +67,6 @@ private class DiscreteEventSimulation(initialTime: Long): CoroutineDispatcher(),
 class BlockedSimulationException(message: String) : Exception(message)
 
 
-@OptIn(ExperimentalCoroutinesApi::class)
 fun <T> runSimulation(
     initialTime: Long = 0,
     parentContext: CoroutineContext = EmptyCoroutineContext,
