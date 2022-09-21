@@ -46,10 +46,12 @@ def compute_path_payload(infra, back_payload, step_durations, track_map) -> Path
         op_id = path_waypoint.get("id", None)
         if op_id is not None:
             op = OperationalPointModel.objects.get(infra=infra, obj_id=op_id).into_obj()
-            path_waypoint["name"] = op.name
+            identifier = op.extensions.identifier
+            if identifier is not None:
+                path_waypoint["name"] = identifier.name
 
         # Add geometry
-        track = track_map[path_waypoint["track"]["id"]]
+        track = track_map[path_waypoint["track"]]
         norm_offset = path_waypoint["position"] / track["length"]
 
         path_waypoint["geo"] = json.loads(track["geo"].interpolate_normalized(norm_offset).json)
@@ -84,7 +86,7 @@ def fetch_track_sections_from_payload(infra, payload):
     ids = []
     for route in payload["route_paths"]:
         for track in route["track_sections"]:
-            ids.append(track["track"]["id"])
+            ids.append(track["track"])
     return fetch_track_sections(infra, ids)
 
 
@@ -141,7 +143,7 @@ def create_chart(path_steps, track_to_tree, field_name, direction_sensitive=Fals
     offset = 0
     for route in path_steps:
         for track_range in route.track_sections:
-            tree = track_to_tree[track_range.track.id]
+            tree = track_to_tree[track_range.track]
             if track_range.direction == Direction.START_TO_STOP:
                 for interval in sorted(tree.overlap(track_range.begin, track_range.end)):
                     add_chart_point(result, offset, interval.data, field_name)

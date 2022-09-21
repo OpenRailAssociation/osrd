@@ -182,7 +182,7 @@ def project_signal_updates(signal_updates, projection_path_payload: PathPayload,
 
     start_pos = 0
     for route_path in projection_path_payload.route_paths:
-        route_id = route_path.route.id
+        route_id = route_path.route
 
         end_pos = start_pos
         for track_range in route_path.track_sections:
@@ -212,7 +212,7 @@ def convert_route_occupancies(route_occupancies, projection_path_payload: PathPa
     current_end_curve = []
     start_pos = 0
     for route_path in projection_path_payload.route_paths:
-        route_id = route_path.route.id
+        route_id = route_path.route
 
         end_pos = start_pos
         for track_range in route_path.track_sections:
