@@ -131,6 +131,8 @@ const SelectionTool: Tool<SelectionState> = {
                   entity: selectedElement as SwitchEntity,
                 });
                 return;
+              default:
+                return;
             }
           }
 

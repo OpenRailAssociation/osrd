@@ -275,11 +275,11 @@ export function updateTimePosition(timePosition) {
     });
   };
 }
-export function updateDepartureArrivalTimes(departureArrivalTimes) {
+export function updateDepartureArrivalTimes(newDepartureArrivalTimes) {
   return (dispatch) => {
     dispatch({
       type: UPDATE_DEPARTURE_ARRIVAL_TIMES,
-      departureArrivalTimes,
+      departureArrivalTimes: newDepartureArrivalTimes,
     });
   };
 }
