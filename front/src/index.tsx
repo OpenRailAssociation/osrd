@@ -8,11 +8,11 @@ import 'config/variables.css';
 import 'main/App/App.scss';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
-import * as serviceWorker from './serviceWorker';
-import { persistor, store } from './Store';
+import * as serviceWorker from 'serviceWorker';
+import { persistor, store } from 'Store';
 
 // Components
-import App from './main/App';
+import App from 'main/App';
 import Loader from './common/Loader';
 import { version } from '../package.json';
 
