@@ -39,7 +39,7 @@ class Projection:
             begin = dir_track_range.get_begin()
             end = dir_track_range.get_end()
             self.length += abs(end - begin)
-            track_id = dir_track_range.track.id
+            track_id = dir_track_range.track
             if track_id in self.tracks:
                 (p_begin, _, p_offset) = self.tracks[track_id]
                 self.tracks[track_id] = (p_begin, end, p_offset)
@@ -76,7 +76,7 @@ class Projection:
         next_path_offset = 0
         dir_track_ranges = self._path_to_tracks(path_payload)
         for index, dir_track_range in enumerate(dir_track_ranges):
-            track_id = dir_track_range.track.id
+            track_id = dir_track_range.track
             a_begin = dir_track_range.begin
             a_end = dir_track_range.end
             a_length = abs(a_begin - a_end)
@@ -104,7 +104,7 @@ class Projection:
                     range_begin.path_offset += a_begin - b_end
 
             # Check end of intersection, if so we add it to the list
-            if index + 1 >= len(dir_track_ranges) or dir_track_ranges[index + 1].track.id not in self.tracks:
+            if index + 1 >= len(dir_track_ranges) or dir_track_ranges[index + 1].track not in self.tracks:
                 range_end = PathLocation(track_id, a_end, next_path_offset)
                 if a_end < b_begin:
                     range_end.offset = b_begin

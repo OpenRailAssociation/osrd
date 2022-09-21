@@ -35,7 +35,7 @@ def create_backend_request_payload(train_schedules: List[TrainScheduleModel]):
         stops.append(
             {
                 "duration": waypoint["duration"],
-                "location": {"track_section": waypoint["track"]["id"], "offset": waypoint["position"]},
+                "location": {"track_section": waypoint["track"], "offset": waypoint["position"]},
             }
         )
 

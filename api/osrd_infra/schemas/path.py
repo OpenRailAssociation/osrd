@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 
 from osrd_infra.schemas.infra import (
     DirectionalTrackRange,
-    ObjectReference,
+    Identifier,
     TrackLocationTrait,
 )
 
@@ -20,7 +20,7 @@ class GeometryPointTrait(BaseModel):
 class RoutePath(BaseModel):
     """This class defines the path by dividing it according to the routes it takes."""
 
-    route: ObjectReference = Field(description="Identifier and type of the corresponding route")
+    route: Identifier = Field(description="Reference to the corresponding route")
     track_sections: List[DirectionalTrackRange] = Field(
         description="Identifier, direction, begin and end offset of the corresponding track section"
     )
