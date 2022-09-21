@@ -148,6 +148,7 @@
     }
   },
   "Home": {
+    "customget": "Visualisation JSON GET",
     "map": "Cartographie",
     "editor": "Éditeur d'infrastructure",
     "timetable": "Grilles horaires",
