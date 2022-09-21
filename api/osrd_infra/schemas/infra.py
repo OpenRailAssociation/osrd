@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Literal, Mapping, Optional
+from typing import Annotated, List, Literal, Mapping, NewType, Optional, Union
 
 from geojson_pydantic import LineString
 from pydantic import BaseConfig, BaseModel, Field, constr, create_model, root_validator
@@ -12,10 +12,20 @@ RAILJSON_INFRA_VERSION = "3.0.0"
 # Traits
 # Used as an input model in the definition of the following classes.
 
+Identifier = NewType("Identifier", constr(max_length=255))
 
-class ObjectReference(BaseModel):
-    id: constr(max_length=255) = Field(description="Identifier of the referenced object")
-    type: str = Field(description="Type of the attribute of the referenced object")
+
+class DetectorReference(BaseModel):
+    type: Literal["Detector"]
+    id: Identifier = Field(description="Identifier of the detector")
+
+
+class BufferStopReference(BaseModel):
+    type: Literal["BufferStop"]
+    id: Identifier = Field(description="Identifier of the buffer stop")
+
+
+Waypoint = Annotated[Union[DetectorReference, BufferStopReference], Field(discriminator="type")]
 
 
 class TrackLocationTrait(BaseModel):
@@ -23,7 +33,7 @@ class TrackLocationTrait(BaseModel):
     This class is used to define objects that associated as point on the infrastructure.
     """
 
-    track: ObjectReference = Field(description="Reference to the track section on which the object is located")
+    track: Identifier = Field(description="Reference to the track section on which the object is located")
     position: float = Field(description="Offset of the point in meters to the beginning of the track section", ge=0)
 
 
@@ -32,10 +42,7 @@ class BaseObjectTrait(BaseModel):
     This class is used to define and identify objects that associated on the infrastructure.
     """
 
-    id: constr(max_length=255) = Field(description="Unique identifier of the object")
-
-    def ref(self):
-        return ObjectReference(id=self.id, type=type(self).__name__)
+    id: Identifier = Field(description="Unique identifier of the object")
 
 
 class GeometryLineTrait(BaseModel):
@@ -106,7 +113,7 @@ class DirectionalTrackRange(BaseModel):
     This class is used to define the path of the route used by the train.
     """
 
-    track: ObjectReference = Field(description="Identifier of the track")
+    track: Identifier = Field(description="Identifier of the track")
     begin: float = Field(
         description="Begin offset of the path in meters, its reading and understanding depend on the direction", ge=0
     )
@@ -155,7 +162,7 @@ class ApplicableDirectionsTrackRange(BaseModel):
     This class is used to define track ranges that are associated with certain classes in the infrastructure.
     """
 
-    track: ObjectReference = Field(description="Identifier and type of the track")
+    track: Identifier = Field(description="Identifier and type of the track")
     begin: float = Field(description="Begin offset in meters of the corresponding track section", ge=0)
     end: float = Field(description="End offset in meters of the corresponding track section", ge=0)
     applicable_directions: ApplicableDirections = Field(
@@ -190,7 +197,7 @@ class TrackEndpoint(BaseModel):
     """
 
     endpoint: Endpoint = Field(description="Relative position of the considered end point")
-    track: ObjectReference = Field(description="Identifier and type of the track")
+    track: Identifier = Field(description="Identifier and type of the track")
 
 
 class Route(BaseObjectTrait):
@@ -198,9 +205,9 @@ class Route(BaseObjectTrait):
     This class is used to describe routes on the infrastructure.
     """
 
-    entry_point: ObjectReference = Field(description="Identifier and type used to define an entry point for the route")
-    exit_point: ObjectReference = Field(description="Identifier and type used to define an exit point for the route")
-    release_detectors: List[ObjectReference] = Field(
+    entry_point: Waypoint
+    exit_point: Waypoint
+    release_detectors: List[Identifier] = Field(
         description="Detector allowing the release of resources reserved from the beginning of the route until this one"
     )
     path: List[DirectionalTrackRange] = Field(description="List of the path corresponding to the routes")
@@ -229,7 +236,7 @@ class Switch(BaseObjectTrait):
     """This class is used to define switches.
     Switches are devices used for track changes."""
 
-    switch_type: ObjectReference = Field(description="Identifier and type of the switch type")
+    switch_type: Identifier = Field(description="Identifier and type of the switch type")
     group_change_delay: float = Field(
         description="Time it takes to change which group of the switch is activated", ge=0
     )
@@ -355,7 +362,7 @@ class Signal(BaseObjectTrait, TrackLocationTrait):
 
     direction: Direction = Field(description="Direction of use of the signal")
     sight_distance: float = Field(description="Visibility distance of the signal in meters", gt=0)
-    linked_detector: Optional[ObjectReference] = Field(description="Identifier of the detector linked to the signal")
+    linked_detector: Optional[Identifier] = Field(description="Identifier of the detector linked to the signal")
 
 
 class BufferStop(BaseObjectTrait, TrackLocationTrait):
