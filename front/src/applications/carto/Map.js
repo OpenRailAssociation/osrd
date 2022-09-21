@@ -6,10 +6,10 @@ import { useDispatch, useSelector } from 'react-redux';
 
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
-import BufferStops from 'common/Map/Layers/BufferStops.tsx';
+import BufferStops from 'common/Map/Layers/BufferStops';
 /* Settings & Buttons */
 import MapButtons from 'common/Map/Buttons/MapButtons';
-import Detectors from 'common/Map/Layers/Detectors.tsx';
+import Detectors from 'common/Map/Layers/Detectors';
 import Catenaries from 'common/Map/Layers/Catenaries';
 import Hillshade from 'common/Map/Layers/Hillshade';
 import OSM from 'common/Map/Layers/OSM';
@@ -26,7 +26,7 @@ import TVDs from 'common/Map/Layers/TVDs';
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 import TracksOSM from 'common/Map/Layers/TracksOSM';
 import TracksSchematic from 'common/Map/Layers/TracksSchematic';
-import colors from 'common/Map/Consts/colors.ts';
+import colors from 'common/Map/Consts/colors';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import { updateViewport } from 'reducers/map';
 import { useParams } from 'react-router-dom';
