@@ -83,7 +83,7 @@ dependencies {
     testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '4.7.+'  // MIT
 
     // Only needed to run tests in a version of IntelliJ IDEA that bundles older versions
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.9.0'  // EPL 2.0
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.9.1'  // EPL 2.0
 
     // for linter annotations
     compileOnly 'net.jcip:jcip-annotations:1.0'  // CC Attribution
