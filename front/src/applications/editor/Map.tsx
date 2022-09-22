@@ -90,9 +90,9 @@ const MapUnplugged: FC<MapProps> = ({
           isLoaded: boolean;
           isDragging: boolean;
           isHovering: boolean;
-        }): string => {
-          return activeTool.getCursor ? activeTool.getCursor(extendedContext, mapState) : 'default';
-        }}
+        }): string =>
+          activeTool.getCursor ? activeTool.getCursor(extendedContext, mapState) : 'default'
+        }
         onClick={(e) => {
           if (toolState.hovered && activeTool.onClickFeature) {
             activeTool.onClickFeature(toolState.hovered, e, extendedContext);

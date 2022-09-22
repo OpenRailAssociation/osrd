@@ -152,7 +152,7 @@ export const TrackSectionEndpointSelector: FC<FieldProps> = ({
 };
 
 export const CustomSchemaField: FC<FieldProps> = (props) => {
-  const name = props.name || '';
+  const { name = '' } = props;
   if (name.indexOf(FLAT_SWITCH_PORTS_PREFIX) !== 0) return <SchemaField {...props} />;
 
   return <TrackSectionEndpointSelector {...props} />;
@@ -344,9 +344,9 @@ export const SwitchEditionLayers: FC = () => {
             latitude={mousePosition[1]}
             closeButton={false}
           >
-            {(hoveredTrack.properties?.line_name ||
-              t('Editor.tools.switch-edition.untitled-track')) +
-              ` (${closestPoint.properties.name})`}
+            {`${
+              hoveredTrack.properties?.line_name || t('Editor.tools.switch-edition.untitled-track')
+            } (${closestPoint.properties.name})`}
             <div className="text-muted small">{hoveredTrack.id}</div>
           </Popup>
 

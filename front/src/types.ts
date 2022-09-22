@@ -140,7 +140,7 @@ export interface UpdateEntityOperation {
 export interface CreateEntityOperation {
   operation_type: 'CREATE';
   obj_type: ObjectType;
-  railjson: GeoJsonProperties & { id?: EntityId; };
+  railjson: GeoJsonProperties & { id?: EntityId };
 }
 export type EntityOperation = DeleteEntityOperation | UpdateEntityOperation | CreateEntityOperation;
 

@@ -1,11 +1,11 @@
 import { TbSwitch2 } from 'react-icons/tb';
 import { TiDeleteOutline } from 'react-icons/ti';
 
+import { IoMdAddCircleOutline } from 'react-icons/io';
 import { DEFAULT_COMMON_TOOL_STATE, Tool } from '../types';
 import { SwitchEditionState } from './types';
 import { getNewSwitch } from './utils';
 import { SwitchEditionLayers, SwitchEditionLeftPanel, SwitchMessages } from './components';
-import { IoMdAddCircleOutline } from 'react-icons/io';
 
 const SwitchEditionTool: Tool<SwitchEditionState> = {
   id: 'switch-edition',

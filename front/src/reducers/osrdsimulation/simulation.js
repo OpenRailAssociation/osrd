@@ -3,10 +3,10 @@ import {
   getTrainDetailsForAPI,
 } from 'applications/osrd/components/TrainList/TrainListHelpers';
 import { deleteRequest, get, post } from 'common/requests';
-import { setFailure, setSuccess } from 'reducers/main.ts';
+import { setFailure } from 'reducers/main';
 
 import trainNameWithNum from 'applications/osrd/components/AddTrainSchedule/trainNameHelper';
-import { trainscheduleURI } from 'applications/osrd/views/OSRDSimulation/OSRDSimulation';
+import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
 
 export const UPDATE_SIMULATION = 'osrdsimu/UPDATE_SIMULATION';
 export const UNDO_SIMULATION = 'osrdsimu/UNDO_SIMULATION';
@@ -196,11 +196,11 @@ function undoable(simulationReducer) {
   };
 
   // Return a reducer that handles undo and redo
-  return function (state = initialStateU, action) {
+  return function undoableReducer(state = initialStateU, action) {
     const { past, present, future } = state;
 
     switch (action.type) {
-      case UNDO_SIMULATION:
+      case UNDO_SIMULATION: {
         const previous = past[past.length - 1];
         // security: do not return manually to an empty simulation, it should not happen
         if (previous.trains?.length === 0) return state;
@@ -210,7 +210,8 @@ function undoable(simulationReducer) {
           present: previous,
           future: [present, ...future],
         };
-      case REDO_SIMULATION:
+      }
+      case REDO_SIMULATION: {
         const next = future[0];
         if (next.trains?.length === 0) return state;
         const newFuture = future.slice(1);
@@ -219,7 +220,8 @@ function undoable(simulationReducer) {
           present: next,
           future: newFuture,
         };
-      default:
+      }
+      default: {
         // Delegate handling the action to the passed reducer
         const newPresent = simulationReducer(present, action);
 
@@ -232,6 +234,7 @@ function undoable(simulationReducer) {
           present: newPresent,
           future: [],
         };
+      }
     }
   };
 }
@@ -241,7 +244,7 @@ const initialState = {
   trains: [],
 };
 
-function reducer(state = { trains: [] }, action) {
+function reducer(state = initialState, action) {
   // eslint-disable-next-line default-case
 
   switch (action.type) {

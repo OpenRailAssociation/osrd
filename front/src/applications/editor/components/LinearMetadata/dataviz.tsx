@@ -384,6 +384,9 @@ export const LinearMetadataDataviz = <T extends any>({
                 onMouseOver(e, item, segment.index, point);
               }
             }}
+            onFocus={() => undefined}
+            role="button"
+            tabIndex={0}
             onMouseMove={(e) => {
               if (!draginStartAt && onMouseMove && data[segment.index]) {
                 const item = data[segment.index];
@@ -433,6 +436,7 @@ export const LinearMetadataDataviz = <T extends any>({
             {segment.index < data.length - 1 && segment.end === data[segment.index].end && (
               <div
                 title="Resize"
+                aria-label="Resize"
                 className={cx('resize', resizing && resizing.index === segment.index && 'selected')}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -443,6 +447,8 @@ export const LinearMetadataDataviz = <T extends any>({
                   e.stopPropagation();
                   e.preventDefault();
                 }}
+                role="button"
+                tabIndex={-1}
               />
             )}
           </div>

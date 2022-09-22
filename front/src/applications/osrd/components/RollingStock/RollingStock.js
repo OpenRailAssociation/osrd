@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Loader from 'common/Loader';
 import { useSelector, useDispatch } from 'react-redux';
-import { setFailure } from 'reducers/main.ts';
+import { setFailure } from 'reducers/main';
 import { get } from 'common/requests';
 import { useTranslation } from 'react-i18next';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
-import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import RollingStockCard from 'applications/osrd/components/RollingStock/RollingStockCard';
 import { BsLightningFill } from 'react-icons/bs';
 import { MdLocalGasStation } from 'react-icons/md';
@@ -66,11 +65,6 @@ export default function RollingStock() {
     setFilters({ ...filters, [e.target.name]: !filters[e.target.name] });
     setIsFiltering(true);
   };
-
-  const optionsSort = [
-    { id: 'asc', name: t('translation:common.asc') },
-    { id: 'dsc', name: t('translation:common.dsc') },
-  ];
 
   const getAllMateriel = async () => {
     if (rollingStock === undefined) {
