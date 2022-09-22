@@ -5,11 +5,11 @@ import {
   PANELS_STOPS,
   PANELS_TIVS,
 } from 'common/Map/Consts/SignalsNames';
-import { SourceLayer, Theme } from '../../../types';
 
 import { LayerProps } from 'react-map-gl';
 import { SIGNALS_PANELS } from 'common/Map/const';
 import { SymbolLayout } from 'mapbox-gl';
+import { SourceLayer, Theme } from '../../../types';
 
 export interface SignalsSettings {
   all?: boolean;
@@ -24,20 +24,19 @@ export interface SignalContext {
   sourceTable?: string;
   colors: Theme;
   signalsList: string[];
-
 }
 
 interface ChangeSignalContext {
-  yellowSignalIds?:string[],
-  greenSignalsIds?:string[],
-  redSignalIds?:string[]
+  yellowSignalIds?: string[];
+  greenSignalsIds?: string[];
+  redSignalIds?: string[];
 }
 
 const defaultChangeSignalsIds = {
-  yellowSignalIds : [],
+  yellowSignalIds: [],
   greenSignalsIds: [],
-  redSignalIds: []
-}
+  redSignalIds: [],
+};
 
 export function getSignalsList(signalsSettings: SignalsSettings) {
   let signalsList: string[] = [];
@@ -121,13 +120,13 @@ export function signalsToSprites(
         ' ',
         ['case', ['==', ['get', 'side'], 'RIGHT'], 'D', ['==', ['get', 'side'], 'LEFT'], 'G', ''],
       ];
-      case 'CARRE':
-      case 'S':
-      case 'CARRE A':
-      case 'S A':
-      case 'CARRE VL':
-      case 'S VL':
-        return ['concat', prefix, type];
+    case 'CARRE':
+    case 'S':
+    case 'CARRE A':
+    case 'S A':
+    case 'CARRE VL':
+    case 'S VL':
+      return ['concat', prefix, type];
     default:
       return ALL_SIGNAL_LAYERS_SET.has(type) ? `${prefix}${type}` : `${prefix}UNKNOWN`;
   }
@@ -283,27 +282,24 @@ export function getSignalPNLayerProps(
   return props;
 }
 
-const signalTextOffsetX = 5
-const signalTextOffsetY = -1
+const signalTextOffsetX = 5;
+const signalTextOffsetY = -1;
 
 export function getSignalALayerProps(
-  context : SignalContext,
+  context: SignalContext,
   _type: string,
   iconOffset: SymbolLayout['icon-offset'],
   changeSignalContext: ChangeSignalContext
 ): LayerProps {
-  const { sourceTable, sourceLayer } = context
-  const { yellowSignalIds = [] } = changeSignalContext
+  const { sourceTable, sourceLayer } = context;
+  const { yellowSignalIds = [] } = changeSignalContext;
   const angleName = getAngleName(sourceLayer);
-  const typeFilter = (_type.split(' ')[0]);
-  const filterA = ['in', 'id'].concat(yellowSignalIds)
+  const typeFilter = _type.split(' ')[0];
+  const filterA = ['in', 'id'].concat(yellowSignalIds);
   const props: LayerProps = {
     type: 'symbol',
     minzoom: 12,
-    filter: ['all',
-        ['==', 'installation_type', typeFilter],
-        filterA,
-      ],
+    filter: ['all', ['==', 'installation_type', typeFilter], filterA],
     layout: {
       'text-field': '{label}',
       'text-font': ['SNCF'],
@@ -345,16 +341,14 @@ export function getSignalVLLayerProps(
   iconOffset: SymbolLayout['icon-offset'],
   changeSignalContext: ChangeSignalContext
 ): LayerProps {
-  const { sourceTable, sourceLayer } = context
-  const {greenSignalsIds = [] } = changeSignalContext
+  const { sourceTable, sourceLayer } = context;
+  const { greenSignalsIds = [] } = changeSignalContext;
   const angleName = getAngleName(sourceLayer);
-  const typeFilter = (_type.split(' ')[0]);
+  const typeFilter = _type.split(' ')[0];
   const props: LayerProps = {
     type: 'symbol',
     minzoom: 12,
-    filter: ['all',
-        ['==', 'installation_type', typeFilter]
-      ],
+    filter: ['all', ['==', 'installation_type', typeFilter]],
     layout: {
       'text-field': '{label}',
       'text-font': ['SNCF'],
@@ -396,19 +390,16 @@ export function getSignalStopLayerProps(
   iconOffset: SymbolLayout['icon-offset'],
   changeSignalContext: ChangeSignalContext
 ): LayerProps {
-  const { sourceTable, sourceLayer } = context
-  const { redSignalIds = [] } = changeSignalContext
+  const { sourceTable, sourceLayer } = context;
+  const { redSignalIds = [] } = changeSignalContext;
   const angleName = getAngleName(sourceLayer);
-  const typeFilter = (_type.split(' ')[0]);
-  const filterA = ['in', 'id'].concat(redSignalIds)
+  const typeFilter = _type.split(' ')[0];
+  const filterA = ['in', 'id'].concat(redSignalIds);
 
   const props: LayerProps = {
     type: 'symbol',
     minzoom: 12,
-    filter: ['all',
-        ['==', 'installation_type', typeFilter],
-        filterA,
-      ],
+    filter: ['all', ['==', 'installation_type', typeFilter], filterA],
     layout: {
       'text-field': '{label}',
       'text-font': ['SNCF'],
@@ -444,16 +435,18 @@ export function getSignalStopLayerProps(
   return props;
 }
 
-
-
-export function getSignalLayerProps(context: SignalContext, type: string, changeSignalContext: ChangeSignalContext = defaultChangeSignalsIds): LayerProps {
+export function getSignalLayerProps(
+  context: SignalContext,
+  type: string,
+  changeSignalContext: ChangeSignalContext = defaultChangeSignalsIds
+): LayerProps {
   const { sourceTable, sourceLayer, prefix, colors } = context;
   const angleName = sourceLayer === 'sch' ? 'angle_sch' : 'angle_geo';
   let size = 0.4;
   let offsetY = -105;
   let iconOffsetX = 45;
   let textOffsetX = 30;
-  let textOffsetY = 5;
+  const textOffsetY = 5;
   let isSignal = true;
   if (SIGNALS_PANELS.indexOf(type) !== -1 && SIGNALS_PANELS.indexOf(type) === -1) {
     size = 0.4;
@@ -504,8 +497,8 @@ export function getSignalLayerProps(context: SignalContext, type: string, change
     case 'S A':
       return getSignalALayerProps(context, type, iconOffset, changeSignalContext);
     case 'CARRE VL':
-      case 'S VL':
-        return getSignalVLLayerProps(context, type, iconOffset, changeSignalContext);
+    case 'S VL':
+      return getSignalVLLayerProps(context, type, iconOffset, changeSignalContext);
     case 'CARRE':
     case 'S':
       return getSignalStopLayerProps(context, type, iconOffset, changeSignalContext);

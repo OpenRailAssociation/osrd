@@ -1,13 +1,13 @@
 import 'applications/osrd/osrd.scss';
 
 import { Route, Routes } from 'react-router-dom';
-import { connect, useDispatch } from 'react-redux';
+import { connect } from 'react-redux';
 
 import MastNavItemSNCF from 'common/BootstrapSNCF/MastNavItemSNCF';
 import MastNavSNCF from 'common/BootstrapSNCF/MastNavSNCF';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { Navigate } from 'react-router';
-import { NotificationsState } from 'common/Notifications.tsx';
+import { NotificationsState } from 'common/Notifications';
 import PropTypes from 'prop-types';
 import React from 'react';
 import logo from 'assets/logo_osrd_seul_blanc.svg';
