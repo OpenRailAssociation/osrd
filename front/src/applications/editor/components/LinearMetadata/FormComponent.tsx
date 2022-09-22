@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import Form, { FieldProps, utils } from '@rjsf/core';
+import Form, { FieldProps } from '@rjsf/core';
 import Fields from '@rjsf/core/lib/components/fields';
-import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
+import { JSONSchema7 } from 'json-schema';
 import { omit, head, max as fnMax, min as fnMin, isNil } from 'lodash';
 import { TbZoomIn, TbZoomOut, TbZoomCancel } from 'react-icons/tb';
 import { BsBoxArrowInLeft, BsBoxArrowInRight, BsChevronLeft, BsChevronRight } from 'react-icons/bs';
@@ -19,16 +19,14 @@ import {
   mergeIn,
   resizeSegment,
   SEGMENT_MIN_SIZE,
-} from './data';
-import { LinearMetadataDataviz } from './dataviz';
-import { LinearMetadataTooltip } from './tooltip';
-import {
   LINEAR_METADATA_FIELDS,
   getFieldJsonSchema,
   viewboxForSelection,
   getLineStringDistance,
   fixLinearMetadataItems,
 } from './data';
+import { LinearMetadataDataviz } from './dataviz';
+import { LinearMetadataTooltip } from './tooltip';
 import { FormBeginEndWidget } from './FormBeginEndWidget';
 import './style.scss';
 
@@ -62,24 +60,26 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
     [formContext.geometry]
   );
 
-  const jsonSchema = useMemo(() => {
-    return getFieldJsonSchema(
-      schema,
-      registry.rootSchema,
-      distance
-        ? {
-            begin: {
-              minimum: 0,
-              maximum: distance,
-            },
-            end: {
-              minimum: 0,
-              maximum: distance,
-            },
-          }
-        : {}
-    );
-  }, [schema, registry.rootSchema, distance]);
+  const jsonSchema = useMemo(
+    () =>
+      getFieldJsonSchema(
+        schema,
+        registry.rootSchema,
+        distance
+          ? {
+              begin: {
+                minimum: 0,
+                maximum: distance,
+              },
+              end: {
+                minimum: 0,
+                maximum: distance,
+              },
+            }
+          : {}
+      ),
+    [schema, registry.rootSchema, distance]
+  );
 
   // Guess the value field of the linear metadata item
   const valueField = useMemo(() => {
@@ -100,8 +100,8 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
   }, [jsonSchema]);
 
   const customOnChange = useCallback(
-    (data: Array<LinearMetadataItem>) => {
-      onChange(data.filter((e) => (valueField ? !isNil(e[valueField]) : true)));
+    (newData: Array<LinearMetadataItem>) => {
+      onChange(newData.filter((e) => (valueField ? !isNil(e[valueField]) : true)));
     },
     [onChange, valueField]
   );

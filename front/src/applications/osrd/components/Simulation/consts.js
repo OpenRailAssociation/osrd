@@ -18,3 +18,6 @@ export const LIST_VALUES_NAME_SPACE_CURVES_SLOPES = ['slopesCurve'];
 export const SIGNAL_BASE_DEFAULT = 'BAL3';
 
 export const LIST_VALUES_SIGNAL_BASE = ['BAL3'];
+
+export const trainscheduleURI = '/train_schedule/';
+export const scheduleURL = '/train_schedule/standalone_simulation/';

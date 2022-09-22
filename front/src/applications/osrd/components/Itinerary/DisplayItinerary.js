@@ -11,7 +11,6 @@ import {
 } from 'reducers/osrdconf';
 import { useDispatch, useSelector } from 'react-redux';
 
-import DatePickerSNCF from 'common/BootstrapSNCF/DatePickerSNCF/DatePickerSNCF';
 import DisplayVias from 'applications/osrd/components/Itinerary/DisplayVias';
 import { GiPathDistance } from 'react-icons/gi';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';

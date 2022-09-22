@@ -187,7 +187,7 @@ export const clippedDataSelector = createSelector(
   (
     data
     // zone
-  ) => {
+  ) =>
     // [jacomyal]
     // The following code is commented at least for now, because we need the full
     // track sections to properly compute point item coordinates from their
@@ -198,6 +198,5 @@ export const clippedDataSelector = createSelector(
     //     const clippedFeature = clip(f, zone);
     //     return clippedFeature ? { ...f, geometry: clippedFeature.geometry } : f;
     //   });
-    return data;
-  }
+    data
 );

@@ -16,7 +16,7 @@ export default function OPModal(props) {
         </tr>
       </thead>
       <tbody>
-        {simulation.trains[selectedTrain].base.stops.map((stop, idx) => (
+        {simulation.trains[selectedTrain].base.stops.map((stop) => (
           <tr
             role="button"
             data-dismiss="modal"

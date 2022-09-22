@@ -11,8 +11,7 @@ import { time2sec, sec2time } from 'utils/timeManipulation';
 
 import formatConf from 'applications/osrd/components/AddTrainSchedule/formatConf';
 import trainNameWithNum from 'applications/osrd/components/AddTrainSchedule/trainNameHelper';
-
-const scheduleURL = '/train_schedule/standalone_simulation/';
+import { scheduleURL } from 'applications/osrd/components/Simulation/consts';
 
 export default function AddTrainSchedule(props) {
   const { mustUpdateTimetable, setMustUpdateTimetable } = props;
