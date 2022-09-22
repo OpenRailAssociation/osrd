@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { get, patch } from 'common/requests';
-import { setFailure, setSuccess } from 'reducers/main.ts';
+import { setFailure, setSuccess } from 'reducers/main';
 import { updateMustRedraw, updateSimulation } from 'reducers/osrdsimulation';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -146,7 +146,7 @@ export default function StandardAllowanceDefault(props) {
           type: allowance.default_value.value_type,
           value: allowance.default_value[TYPES_UNITS[allowance.default_value.value_type]],
         });
-        setDistribution((distribution) => ({
+        setDistribution(() => ({
           id: currentDistribution,
           label: t(`distributions.${currentDistribution.toLowerCase()}`),
         }));

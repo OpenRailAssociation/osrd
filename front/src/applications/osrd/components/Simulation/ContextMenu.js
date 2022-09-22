@@ -82,7 +82,6 @@ export default function ContextMenu(props) {
 
   const duplicateTrain = async () => {
     setGoUpdate(true);
-    const trains = Array.from(simulation.trains);
     const trainDetail = await get(`${trainscheduleURI}${simulation.trains[selectedTrain].id}/`);
     const params = {
       timetable: trainDetail.timetable,
