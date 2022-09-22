@@ -5,73 +5,15 @@
     - name: geo
       on_field: geographic
       cache_duration: 3600
-      fields:
-        - field_expr: layer.obj_id
-          field_name: id
-          field_type: text
-        - field_expr: track_section.data->'length'
-          field_name: length
-          field_type: float
-        - field_expr: track_section.data->'line_code'
-          field_name: line_code
-          field_type: int
-        - field_expr: track_section.data->>'line_name'
-          field_name: line_name
-          field_type: text
-        - field_expr: track_section.data->'track_number'
-          field_name: track_number
-          field_type: int
-        - field_expr: track_section.data->>'track_name'
-          field_name: track_name
-          field_type: text
-        - field_expr: track_section.data->>'navigability'
-          field_name: navigability
-          field_type: text
-        - field_expr: track_section.data->'slopes'
-          field_name: slopes
-          field_type: jsonb
-        - field_expr: track_section.data->'curves'
-          field_name: curves
-          field_type: jsonb
-        - field_expr: track_section.data->'loading_gauge_limits'
-          field_name: loading_gauge_limits
-          field_type: jsonb
+      data_expr: track_section.data
+      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_tracksectionmodel track_section on track_section.obj_id = layer.obj_id and track_section.infra_id = layer.infra_id
     - name: sch
       on_field: schematic
       cache_duration: 3600
-      fields:
-        - field_expr: layer.obj_id
-          field_name: id
-          field_type: text
-        - field_expr: track_section.data->'length'
-          field_name: length
-          field_type: float
-        - field_expr: track_section.data->'line_code'
-          field_name: line_code
-          field_type: int
-        - field_expr: track_section.data->>'line_name'
-          field_name: line_name
-          field_type: text
-        - field_expr: track_section.data->'track_number'
-          field_name: track_number
-          field_type: int
-        - field_expr: track_section.data->>'track_name'
-          field_name: track_name
-          field_type: text
-        - field_expr: track_section.data->>'navigability'
-          field_name: navigability
-          field_type: text
-        - field_expr: track_section.data->'slopes'
-          field_name: slopes
-          field_type: jsonb
-        - field_expr: track_section.data->'curves'
-          field_name: curves
-          field_type: jsonb
-        - field_expr: track_section.data->'loading_gauge_limits'
-          field_name: loading_gauge_limits
-          field_type: jsonb
+      data_expr: track_section.data
+      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_tracksectionmodel track_section on track_section.obj_id = layer.obj_id and track_section.infra_id = layer.infra_id
 
@@ -82,142 +24,15 @@
     - name: geo
       on_field: geographic
       cache_duration: 3600
-      fields:
-        - field_expr: layer.obj_id
-          field_name: id
-          field_type: text
-        - field_expr: signal.data->'track'
-          field_name: track
-          field_type: jsonb
-        - field_expr: signal.data->'position'
-          field_name: position
-          field_type: float
-        - field_expr: signal.data->>'direction'
-          field_name: direction
-          field_type: text
-        - field_expr: signal.data->'sight_distance'
-          field_name: sight_distance
-          field_type: float
-        - field_expr: signal.data->'linked_detector'
-          field_name: linked_detector
-          field_type: jsonb
-        - field_expr: signal.data->'aspects'
-          field_name: aspects
-          field_type: jsonb
-        - field_expr: signal.data->'angle_sch'
-          field_name: angle_sch
-          field_type: float
-        - field_expr: signal.data->'angle_geo'
-          field_name: angle_geo
-          field_type: float
-        - field_expr: signal.data->>'type_code'
-          field_name: type_code
-          field_type: text
-        - field_expr: signal.data->>'support_type'
-          field_name: support_type
-          field_type: text
-        - field_expr: signal.data->>'is_in_service'
-          field_name: is_in_service
-          field_type: boolean
-        - field_expr: signal.data->>'is_lightable'
-          field_name: is_lightable
-          field_type: boolean
-        - field_expr: signal.data->>'is_operational'
-          field_name: is_operational
-          field_type: boolean
-        - field_expr: signal.data->>'comment'
-          field_name: comment
-          field_type: text
-        - field_expr: signal.data->>'physical_organization_group'
-          field_name: physical_organization_group
-          field_type: text
-        - field_expr: signal.data->>'responsible_group'
-          field_name: responsible_group
-          field_type: text
-        - field_expr: signal.data->>'label'
-          field_name: label
-          field_type: text
-        - field_expr: signal.data->>'installation_type'
-          field_name: installation_type
-          field_type: text
-        - field_expr: signal.data->>'value'
-          field_name: value
-          field_type: text
-        - field_expr: signal.data->>'side'
-          field_name: side
-          field_type: text
-        - field_expr: signal.data->>'default_aspect'
-          field_name: default_aspect
-          field_type: text
+      data_expr: signal.data
+      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_signalmodel signal on signal.obj_id = layer.obj_id and signal.infra_id = layer.infra_id
     - name: sch
       on_field: schematic
       cache_duration: 3600
-      fields:
-        - field_expr: layer.obj_id
-          field_name: id
-          field_type: text
-        - field_expr: signal.data->'track'
-          field_name: track
-          field_type: jsonb
-        - field_expr: signal.data->'position'
-          field_name: position
-          field_type: float
-        - field_expr: signal.data->>'direction'
-          field_name: direction
-          field_type: text
-        - field_expr: signal.data->'sight_distance'
-          field_name: sight_distance
-          field_type: float
-        - field_expr: signal.data->'linked_detector'
-          field_name: linked_detector
-          field_type: jsonb
-        - field_expr: signal.data->'aspects'
-          field_name: aspects
-          field_type: jsonb
-        - field_expr: signal.data->'angle_sch'
-          field_name: angle_sch
-          field_type: float
-        - field_expr: signal.data->'angle_geo'
-          field_name: angle_geo
-          field_type: float
-        - field_expr: signal.data->>'type_code'
-          field_name: type_code
-          field_type: text
-        - field_expr: signal.data->>'support_type'
-          field_name: support_type
-          field_type: text
-        - field_expr: signal.data->>'is_in_service'
-          field_name: is_in_service
-          field_type: boolean
-        - field_expr: signal.data->>'is_lightable'
-          field_name: is_lightable
-          field_type: boolean
-        - field_expr: signal.data->>'is_operational'
-          field_name: is_operational
-          field_type: boolean
-        - field_expr: signal.data->>'comment'
-          field_name: comment
-          field_type: text
-        - field_expr: signal.data->>'physical_organization_group'
-          field_name: physical_organization_group
-          field_type: text
-        - field_expr: signal.data->>'responsible_group'
-          field_name: responsible_group
-          field_type: text
-        - field_expr: signal.data->>'label'
-          field_name: label
-          field_type: text
-        - field_expr: signal.data->>'installation_type'
-          field_name: installation_type
-          field_type: text
-        - field_expr: signal.data->>'value'
-          field_name: value
-          field_type: text
-        - field_expr: signal.data->>'side'
-          field_name: side
-          field_type: text
+      data_expr: signal.data
+      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_signalmodel signal on signal.obj_id = layer.obj_id and signal.infra_id = layer.infra_id
 
@@ -228,37 +43,15 @@
     - name: geo
       on_field: geographic
       cache_duration: 3600
-      fields:
-        - field_expr: layer.obj_id
-          field_name: id
-          field_type: text
-        - field_expr: speed_section.data->'speed_limit'
-          field_name: speed_limit
-          field_type: jsonb
-        - field_expr: speed_section.data->'speed_limit_by_tag'
-          field_name: speed_limit_by_tag
-          field_type: jsonb
-        - field_expr: speed_section.data->'track_ranges'
-          field_name: track_ranges
-          field_type: jsonb
+      data_expr: speed_section.data
+      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_speedsectionmodel speed_section on speed_section.obj_id = layer.obj_id and speed_section.infra_id = layer.infra_id
     - name: sch
       on_field: schematic
       cache_duration: 3600
-      fields:
-        - field_expr: layer.obj_id
-          field_name: id
-          field_type: text
-        - field_expr: speed_section.data->'speed_limit'
-          field_name: speed_limit
-          field_type: jsonb
-        - field_expr: speed_section.data->'speed_limit_by_tag'
-          field_name: speed_limit_by_tag
-          field_type: jsonb
-        - field_expr: speed_section.data->'track_ranges'
-          field_name: track_ranges
-          field_type: jsonb
+      data_expr: speed_section.data
+      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_speedsectionmodel speed_section on speed_section.obj_id = layer.obj_id and speed_section.infra_id = layer.infra_id
 
@@ -269,37 +62,15 @@
     - name: geo
       on_field: geographic
       cache_duration: 3600
-      fields:
-        - field_expr: layer.obj_id
-          field_name: id
-          field_type: text
-        - field_expr: track_section_link.data->'src'
-          field_name: src
-          field_type: jsonb
-        - field_expr: track_section_link.data->'dst'
-          field_name: dst
-          field_type: jsonb
-        - field_expr: track_section_link.data->>'navigability'
-          field_name: navigability
-          field_type: text
+      data_expr: track_section_link.data
+      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_tracksectionlinkmodel track_section_link on track_section_link.obj_id = layer.obj_id and track_section_link.infra_id = layer.infra_id
     - name: sch
       on_field: schematic
       cache_duration: 3600
-      fields:
-        - field_expr: layer.obj_id
-          field_name: id
-          field_type: text
-        - field_expr: track_section_link.data->'src'
-          field_name: src
-          field_type: jsonb
-        - field_expr: track_section_link.data->'dst'
-          field_name: dst
-          field_type: jsonb
-        - field_expr: track_section_link.data->>'navigability'
-          field_name: navigability
-          field_type: text
+      data_expr: track_section_link.data
+      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_tracksectionlinkmodel track_section_link on track_section_link.obj_id = layer.obj_id and track_section_link.infra_id = layer.infra_id
 
@@ -310,43 +81,15 @@
     - name: geo
       on_field: geographic
       cache_duration: 3600
-      fields:
-        - field_expr: layer.obj_id
-          field_name: id
-          field_type: text
-        - field_expr: switch.data->'switch_type'
-          field_name: switch_type
-          field_type: jsonb
-        - field_expr: switch.data->'group_change_delay'
-          field_name: group_change_delay
-          field_type: float
-        - field_expr: switch.data->'ports'
-          field_name: ports
-          field_type: jsonb
-        - field_expr: switch.data->>'label'
-          field_name: label
-          field_type: text
+      data_expr: switch.data
+      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_switchmodel switch on switch.obj_id = layer.obj_id and switch.infra_id = layer.infra_id
     - name: sch
       on_field: schematic
       cache_duration: 3600
-      fields:
-        - field_expr: layer.obj_id
-          field_name: id
-          field_type: text
-        - field_expr: switch.data->'switch_type'
-          field_name: switch_type
-          field_type: jsonb
-        - field_expr: switch.data->'group_change_delay'
-          field_name: group_change_delay
-          field_type: float
-        - field_expr: switch.data->'ports'
-          field_name: ports
-          field_type: jsonb
-        - field_expr: switch.data->>'label'
-          field_name: label
-          field_type: text
+      data_expr: switch.data
+      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_switchmodel switch on switch.obj_id = layer.obj_id and switch.infra_id = layer.infra_id
 
@@ -357,37 +100,15 @@
     - name: geo
       on_field: geographic
       cache_duration: 3600
-      fields:
-        - field_expr: layer.obj_id
-          field_name: id
-          field_type: text
-        - field_expr: detector.data->'track'
-          field_name: track
-          field_type: jsonb
-        - field_expr: detector.data->'position'
-          field_name: position
-          field_type: float
-        - field_expr: detector.data->>'applicable_directions'
-          field_name: applicable_directions
-          field_type: text
+      data_expr: detector.data
+      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_detectormodel detector on detector.obj_id = layer.obj_id and detector.infra_id = layer.infra_id
     - name: sch
       on_field: schematic
       cache_duration: 3600
-      fields:
-        - field_expr: layer.obj_id
-          field_name: id
-          field_type: text
-        - field_expr: detector.data->'track'
-          field_name: track
-          field_type: jsonb
-        - field_expr: detector.data->'position'
-          field_name: position
-          field_type: float
-        - field_expr: detector.data->>'applicable_directions'
-          field_name: applicable_directions
-          field_type: text
+      data_expr: detector.data
+      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_detectormodel detector on detector.obj_id = layer.obj_id and detector.infra_id = layer.infra_id
 
@@ -398,37 +119,15 @@
     - name: geo
       on_field: geographic
       cache_duration: 3600
-      fields:
-        - field_expr: layer.obj_id
-          field_name: id
-          field_type: text
-        - field_expr: buffer_stop.data->'track'
-          field_name: track
-          field_type: jsonb
-        - field_expr: buffer_stop.data->'position'
-          field_name: position
-          field_type: float
-        - field_expr: buffer_stop.data->>'applicable_directions'
-          field_name: applicable_directions
-          field_type: text
+      data_expr: buffer_stop.data
+      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_bufferstopmodel buffer_stop on buffer_stop.obj_id = layer.obj_id and buffer_stop.infra_id = layer.infra_id
     - name: sch
       on_field: schematic
       cache_duration: 3600
-      fields:
-        - field_expr: layer.obj_id
-          field_name: id
-          field_type: text
-        - field_expr: buffer_stop.data->'track'
-          field_name: track
-          field_type: jsonb
-        - field_expr: buffer_stop.data->'position'
-          field_name: position
-          field_type: float
-        - field_expr: buffer_stop.data->>'applicable_directions'
-          field_name: applicable_directions
-          field_type: text
+      data_expr: buffer_stop.data
+      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_bufferstopmodel buffer_stop on buffer_stop.obj_id = layer.obj_id and buffer_stop.infra_id = layer.infra_id
 
@@ -439,43 +138,15 @@
     - name: geo
       on_field: geographic
       cache_duration: 3600
-      fields:
-        - field_expr: layer.obj_id
-          field_name: id
-          field_type: text
-        - field_expr: route.data->'entry_point'
-          field_name: entry_point
-          field_type: jsonb
-        - field_expr: route.data->'exit_point'
-          field_name: exit_point
-          field_type: jsonb
-        - field_expr: route.data->'release_detectors'
-          field_name: release_detectors
-          field_type: jsonb
-        - field_expr: route.data->'path'
-          field_name: path
-          field_type: jsonb
+      data_expr: route.data
+      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_routemodel route on route.obj_id = layer.obj_id and route.infra_id = layer.infra_id
     - name: sch
       on_field: schematic
       cache_duration: 3600
-      fields:
-        - field_expr: layer.obj_id
-          field_name: id
-          field_type: text
-        - field_expr: route.data->'entry_point'
-          field_name: entry_point
-          field_type: jsonb
-        - field_expr: route.data->'exit_point'
-          field_name: exit_point
-          field_type: jsonb
-        - field_expr: route.data->'release_detectors'
-          field_name: release_detectors
-          field_type: jsonb
-        - field_expr: route.data->'path'
-          field_name: path
-          field_type: jsonb
+      data_expr: route.data
+      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_routemodel route on route.obj_id = layer.obj_id and route.infra_id = layer.infra_id
 
@@ -486,100 +157,17 @@
     - name: geo
       on_field: geographic
       cache_duration: 3600
-      fields:
-        - field_expr: layer.obj_id
-          field_name: id
-          field_type: text
-        - field_expr: operational_point.data->'parts'
-          field_name: parts
-          field_type: jsonb
-        - field_expr: operational_point.data->'ci'
-          field_name: ci
-          field_type: int
-        - field_expr: operational_point.data->'uic'
-          field_name: uic
-          field_type: int
-        - field_expr: operational_point.data->>'ch'
-          field_name: ch
-          field_type: text
-        - field_expr: operational_point.data->>'ch_short_label'
-          field_name: ch_short_label
-          field_type: text
-        - field_expr: operational_point.data->>'ch_long_label'
-          field_name: ch_long_label
-          field_type: text
-        - field_expr: operational_point.data->>'name'
-          field_name: name
-          field_type: text
-        - field_expr: operational_point.data->>'trigram'
-          field_name: trigram
-          field_type: text
+      data_expr: operational_point.data
+      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_operationalpointmodel operational_point on operational_point.obj_id = layer.obj_id and operational_point.infra_id = layer.infra_id
     - name: sch
       on_field: schematic
       cache_duration: 3600
-      fields:
-        - field_expr: layer.obj_id
-          field_name: id
-          field_type: text
-        - field_expr: operational_point.data->'parts'
-          field_name: parts
-          field_type: jsonb
-        - field_expr: operational_point.data->'ci'
-          field_name: ci
-          field_type: int
-        - field_expr: operational_point.data->'uic'
-          field_name: uic
-          field_type: int
-        - field_expr: operational_point.data->>'ch'
-          field_name: ch
-          field_type: text
-        - field_expr: operational_point.data->>'ch_short_label'
-          field_name: ch_short_label
-          field_type: text
-        - field_expr: operational_point.data->>'ch_long_label'
-          field_name: ch_long_label
-          field_type: text
-        - field_expr: operational_point.data->>'name'
-          field_name: name
-          field_type: text
-        - field_expr: operational_point.data->>'trigram'
-          field_name: trigram
-          field_type: text
+      data_expr: operational_point.data
+      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_operationalpointmodel operational_point on operational_point.obj_id = layer.obj_id and operational_point.infra_id = layer.infra_id
-
-- name: errors
-  table_name: osrd_infra_errorlayer
-  id_field: id
-  views:
-    - name: geo
-      on_field: geographic
-      cache_duration: 3600
-      fields:
-        - field_expr: layer.obj_id
-          field_name: id
-          field_type: text
-        - field_expr: layer.obj_type
-          field_name: type
-          field_type: text
-        - field_expr: layer.information
-          field_name: information
-          field_type: jsonb
-    - name: sch
-      on_field: schematic
-      cache_duration: 3600
-      fields:
-        - field_expr: layer.obj_id
-          field_name: id
-          field_type: text
-        - field_expr: layer.obj_type
-          field_name: type
-          field_type: text
-        - field_expr: layer.information
-          field_name: information
-          field_type: jsonb
 
 - name: catenaries
   table_name: osrd_infra_catenarylayer
@@ -588,30 +176,29 @@
     - name: geo
       on_field: geographic
       cache_duration: 3600
-      fields:
-        - field_expr: layer.obj_id
-          field_name: id
-          field_type: text
-        - field_expr: catenary.data->'track_ranges'
-          field_name: track_ranges
-          field_type: jsonb
-        - field_expr: catenary.data->'voltage'
-          field_name: voltage
-          field_type: float
+      data_expr: catenary.data
+      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_catenarymodel catenary on catenary.obj_id = layer.obj_id and catenary.infra_id = layer.infra_id
     - name: sch
       on_field: schematic
       cache_duration: 3600
-      fields:
-        - field_expr: layer.obj_id
-          field_name: id
-          field_type: text
-        - field_expr: catenary.data->'track_ranges'
-          field_name: track_ranges
-          field_type: jsonb
-        - field_expr: catenary.data->'voltage'
-          field_name: voltage
-          field_type: float
+      data_expr: catenary.data
+      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_catenarymodel catenary on catenary.obj_id = layer.obj_id and catenary.infra_id = layer.infra_id
+
+- name: errors
+  table_name: osrd_infra_errorlayer
+  id_field: id
+  views:
+    - name: geo
+      on_field: geographic
+      cache_duration: 3600
+      data_expr: layer.information
+      exclude_fields: [geo, sch]
+    - name: sch
+      on_field: schematic
+      cache_duration: 3600
+      data_expr: layer.information
+      exclude_fields: [geo, sch]
