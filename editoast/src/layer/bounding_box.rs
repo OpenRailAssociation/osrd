@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 
 use crate::infra_cache::{InfraCache, ObjectCache};
-use crate::schema::operation::{OperationResult, RailjsonObject};
-use crate::schema::{ObjectRef, ObjectType};
+use crate::objects::operation::{OperationResult, RailjsonObject};
+use crate::objects::{ObjectRef, ObjectType};
 
 // impl Iter trait
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]

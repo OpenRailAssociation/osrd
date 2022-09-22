@@ -6,7 +6,7 @@ use diesel::{sql_query, RunQueryDsl};
 use rocket::{routes, Route};
 use std::collections::HashMap;
 
-use crate::db_connection::DBConnection;
+use crate::models::DBConnection;
 
 pub fn routes() -> HashMap<&'static str, Vec<Route>> {
     HashMap::from([("/", routes![health]), ("/infra", infra::routes())])

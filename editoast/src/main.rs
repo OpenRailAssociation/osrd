@@ -6,26 +6,23 @@ extern crate diesel;
 #[macro_use]
 extern crate rocket_contrib;
 
-mod api_error;
 mod client;
-mod db_connection;
-mod errors;
+mod error;
 mod generate;
-mod infra;
 mod infra_cache;
 mod layer;
+mod models;
+mod objects;
 mod schema;
-mod tables;
 mod views;
 
 use chashmap::CHashMap;
 use clap::Parser;
 use client::{ChartosConfig, Client, Commands, GenerateArgs, PostgresConfig, RunserverArgs};
 use colored::*;
-use db_connection::DBConnection;
 use diesel::{Connection, PgConnection};
-use infra::Infra;
 use infra_cache::InfraCache;
+use models::{DBConnection, Infra};
 use rocket::config::{Limits, Value};
 use rocket::Rocket;
 use rocket_cors::CorsOptions;
@@ -106,7 +103,7 @@ fn runserver(
     pg_config: PostgresConfig,
     chartos_config: ChartosConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let conn = pg_config.make_connection();
+    let conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
     let infras = Infra::list(&conn);
 
     // Initialize infra caches

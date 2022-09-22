@@ -1,9 +1,10 @@
-use crate::api_error::ApiError;
-use crate::tables::osrd_infra_infra;
-use crate::tables::osrd_infra_infra::dsl::*;
+use crate::error::ApiError;
+use crate::schema::osrd_infra_infra;
+use crate::schema::osrd_infra_infra::dsl::*;
 use diesel::result::Error as DieselError;
 use diesel::sql_types::Text;
-use diesel::{delete, sql_query, update, ExpressionMethods, PgConnection, QueryDsl, RunQueryDsl};
+use diesel::ExpressionMethods;
+use diesel::{delete, sql_query, update, PgConnection, QueryDsl, RunQueryDsl};
 use rocket::http::Status;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
@@ -28,7 +29,7 @@ pub struct CreateInfra {
 }
 
 #[derive(Debug, Error)]
-pub enum InfraApiError {
+pub enum InfraError {
     /// Couldn't found the infra with the given id
     #[error("Infra '{0}', could not be found")]
     NotFound(i32),
@@ -36,24 +37,24 @@ pub enum InfraApiError {
     DieselError(DieselError),
 }
 
-impl ApiError for InfraApiError {
+impl ApiError for InfraError {
     fn get_status(&self) -> Status {
         match self {
-            InfraApiError::NotFound(_) => Status::NotFound,
-            InfraApiError::DieselError(_) => Status::InternalServerError,
+            InfraError::NotFound(_) => Status::NotFound,
+            InfraError::DieselError(_) => Status::InternalServerError,
         }
     }
 
     fn get_type(&self) -> &'static str {
         match self {
-            InfraApiError::NotFound(_) => "editoast:infra:NotFound",
-            InfraApiError::DieselError(_) => "editoast:infra:DieselError",
+            InfraError::NotFound(_) => "editoast:infra:NotFound",
+            InfraError::DieselError(_) => "editoast:infra:DieselError",
         }
     }
 
     fn extra(&self) -> Option<Map<String, Value>> {
         match self {
-            InfraApiError::NotFound(infra_id) => json!({
+            InfraError::NotFound(infra_id) => json!({
                 "infra_id": infra_id,
             })
             .as_object()
@@ -67,8 +68,8 @@ impl Infra {
     pub fn retrieve(conn: &PgConnection, infra_id: i32) -> Result<Infra, Box<dyn ApiError>> {
         match osrd_infra_infra.find(infra_id).first(conn) {
             Ok(infra) => Ok(infra),
-            Err(DieselError::NotFound) => Err(Box::new(InfraApiError::NotFound(infra_id))),
-            Err(e) => Err(Box::new(InfraApiError::DieselError(e))),
+            Err(DieselError::NotFound) => Err(Box::new(InfraError::NotFound(infra_id))),
+            Err(e) => Err(Box::new(InfraError::DieselError(e))),
         }
     }
 
@@ -78,8 +79,8 @@ impl Infra {
     ) -> Result<Infra, Box<dyn ApiError>> {
         match osrd_infra_infra.for_update().find(infra_id).first(conn) {
             Ok(infra) => Ok(infra),
-            Err(DieselError::NotFound) => Err(Box::new(InfraApiError::NotFound(infra_id))),
-            Err(e) => Err(Box::new(InfraApiError::DieselError(e))),
+            Err(DieselError::NotFound) => Err(Box::new(InfraError::NotFound(infra_id))),
+            Err(e) => Err(Box::new(InfraError::DieselError(e))),
         }
     }
 
@@ -108,8 +109,8 @@ impl Infra {
             .get_result::<Infra>(conn)
         {
             Ok(infra) => Ok(infra),
-            Err(DieselError::NotFound) => Err(Box::new(InfraApiError::NotFound(self.id))),
-            Err(err) => Err(Box::new(InfraApiError::DieselError(err))),
+            Err(DieselError::NotFound) => Err(Box::new(InfraError::NotFound(self.id))),
+            Err(err) => Err(Box::new(InfraError::DieselError(err))),
         }
     }
 
@@ -119,8 +120,8 @@ impl Infra {
             .get_result::<Infra>(conn)
         {
             Ok(infra) => Ok(infra),
-            Err(DieselError::NotFound) => Err(Box::new(InfraApiError::NotFound(self.id))),
-            Err(err) => Err(Box::new(InfraApiError::DieselError(err))),
+            Err(DieselError::NotFound) => Err(Box::new(InfraError::NotFound(self.id))),
+            Err(err) => Err(Box::new(InfraError::DieselError(err))),
         }
     }
 
@@ -135,15 +136,15 @@ impl Infra {
         .get_result::<Infra>(conn)
         {
             Ok(infra) => Ok(infra),
-            Err(err) => Err(Box::new(InfraApiError::DieselError(err))),
+            Err(err) => Err(Box::new(InfraError::DieselError(err))),
         }
     }
 
     pub fn delete(infra_id: i32, conn: &PgConnection) -> Result<(), Box<dyn ApiError>> {
         match delete(osrd_infra_infra.filter(id.eq(infra_id))).execute(conn) {
             Ok(1) => Ok(()),
-            Ok(_) => Err(Box::new(InfraApiError::NotFound(infra_id))),
-            Err(err) => Err(Box::new(InfraApiError::DieselError(err))),
+            Ok(_) => Err(Box::new(InfraError::NotFound(infra_id))),
+            Err(err) => Err(Box::new(InfraError::DieselError(err))),
         }
     }
 
@@ -154,8 +155,8 @@ impl Infra {
             .get_result::<Infra>(conn)
         {
             Ok(infra) => Ok(infra),
-            Err(DieselError::NotFound) => Err(Box::new(InfraApiError::NotFound(self.id))),
-            Err(err) => Err(Box::new(InfraApiError::DieselError(err))),
+            Err(DieselError::NotFound) => Err(Box::new(InfraError::NotFound(self.id))),
+            Err(err) => Err(Box::new(InfraError::DieselError(err))),
         }
     }
 }

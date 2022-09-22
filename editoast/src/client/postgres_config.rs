@@ -1,6 +1,5 @@
 use clap::Args;
 use derivative::Derivative;
-use diesel::{Connection, PgConnection};
 
 #[derive(Args, Debug, Derivative)]
 #[derivative(Default)]
@@ -32,9 +31,5 @@ impl PostgresConfig {
             self.psql_port,
             self.psql_database
         )
-    }
-
-    pub fn make_connection(&self) -> PgConnection {
-        PgConnection::establish(&self.url()).expect("Can't connect to database")
     }
 }

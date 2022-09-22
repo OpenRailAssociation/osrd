@@ -4,7 +4,7 @@ use rocket::http::Status;
 use std::error::Error;
 use std::fmt::Display;
 
-use crate::api_error::ApiError;
+use crate::error::ApiError;
 
 /// Simple pagination error
 #[derive(Debug)]

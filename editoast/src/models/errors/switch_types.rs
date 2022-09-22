@@ -3,8 +3,8 @@ use std::collections::{HashMap, HashSet};
 use diesel::sql_types::{Array, Integer, Json, Text};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
 
+use super::InfraError;
 use crate::infra_cache::InfraCache;
-use crate::schema::InfraError;
 use diesel::result::Error as DieselError;
 use serde_json::to_value;
 
@@ -19,7 +19,7 @@ pub fn insert_errors(
     let mut errors = vec![];
 
     for error in infra_errors {
-        switch_type_ids.push(error.get_id().clone());
+        switch_type_ids.push(error.obj_id.clone());
         errors.push(to_value(error).unwrap());
     }
 

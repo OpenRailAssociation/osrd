@@ -1,13 +1,13 @@
-use crate::api_error::ApiError;
 use crate::client::ChartosConfig;
-use crate::db_connection::DBConnection;
-use crate::errors::generate_errors;
-use crate::infra::Infra;
+use crate::error::ApiError;
 use crate::infra_cache::InfraCache;
 use crate::layer::InvalidationZone;
 use crate::layer::Layer;
-use crate::schema::operation::OperationResult;
-use crate::schema::{
+use crate::models::errors::generate_errors;
+use crate::models::DBConnection;
+use crate::models::Infra;
+use crate::objects::operation::OperationResult;
+use crate::objects::{
     BufferStop, Catenary, Detector, OperationalPoint, Route, Signal, SpeedSection, Switch,
     TrackSection, TrackSectionLink,
 };

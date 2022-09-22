@@ -1,13 +1,59 @@
-use super::graph::Graph;
-use crate::infra_cache::InfraCache;
-use crate::schema::{
-    Direction, DirectionalTrackRange, InfraError, ObjectRef, ObjectType, PathEndpointField,
-};
-use diesel::result::Error as DieselError;
+use std::fmt;
+
 use diesel::sql_types::{Array, Integer, Json, Text};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
-use serde_json::to_value;
+use serde::{Deserialize, Serialize};
 use strum::IntoEnumIterator;
+use strum_macros::EnumIter;
+
+use super::graph::Graph;
+use super::InfraError;
+use crate::objects::{Direction, DirectionalTrackRange, ObjectType, Route};
+use crate::{infra_cache::InfraCache, objects::ObjectRef};
+use diesel::result::Error as DieselError;
+use serde_json::to_value;
+
+/// Represent the entry or exit point of a path
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, EnumIter, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub enum PathEndpointField {
+    #[serde(rename = "entry_point")]
+    EntryPoint,
+    #[serde(rename = "exit_point")]
+    ExitPoint,
+}
+
+impl PathEndpointField {
+    /// Given a path, retrieve track id and position offset of the path endpoint location
+    pub fn get_path_location(&self, path: &[DirectionalTrackRange]) -> (String, f64) {
+        let track_range = match self {
+            PathEndpointField::EntryPoint => path.first().unwrap(),
+            PathEndpointField::ExitPoint => path.last().unwrap(),
+        };
+
+        let pos = match (self, &track_range.direction) {
+            (PathEndpointField::EntryPoint, Direction::StartToStop) => track_range.begin,
+            (PathEndpointField::EntryPoint, Direction::StopToStart) => track_range.end,
+            (PathEndpointField::ExitPoint, Direction::StartToStop) => track_range.end,
+            (PathEndpointField::ExitPoint, Direction::StopToStart) => track_range.begin,
+        };
+
+        (track_range.track.obj_id.clone(), pos)
+    }
+
+    pub fn get_route_endpoint<'a>(&self, route: &'a Route) -> &'a ObjectRef {
+        match self {
+            PathEndpointField::EntryPoint => &route.entry_point,
+            PathEndpointField::ExitPoint => &route.exit_point,
+        }
+    }
+}
+
+impl fmt::Display for PathEndpointField {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", serde_json::to_string(self).unwrap())
+    }
+}
 
 /// Given an ObjectRef, retrieve the id and position of its track section
 /// If the object type is not a detector or a buffer stop, return `None`
@@ -65,7 +111,7 @@ pub fn insert_errors(
     let mut errors = vec![];
 
     for error in infra_errors {
-        route_ids.push(error.get_id().clone());
+        route_ids.push(error.obj_id.clone());
         errors.push(to_value(error).unwrap());
     }
 
@@ -256,11 +302,11 @@ pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraErro
 
 #[cfg(test)]
 mod tests {
-    use crate::errors::graph::Graph;
-    use crate::infra_cache::tests::{
-        create_detector_cache, create_route_cache, create_small_infra_cache,
+    use crate::{
+        infra_cache::tests::{create_detector_cache, create_route_cache, create_small_infra_cache},
+        models::errors::{graph::Graph, routes::PathEndpointField},
+        objects::{Direction, ObjectRef, ObjectType},
     };
-    use crate::schema::{Direction, ObjectRef, ObjectType, PathEndpointField};
 
     use super::generate_errors;
     use super::InfraError;
