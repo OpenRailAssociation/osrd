@@ -6,8 +6,8 @@ import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
-import { get } from 'common/requests.ts';
-import { setFailure } from 'reducers/main.ts';
+import { get } from 'common/requests';
+import { setFailure } from 'reducers/main';
 
 function LoaderPathfindingInProgress() {
   return (
