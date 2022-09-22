@@ -19,44 +19,12 @@ SelectExpr = NewType("SelectExpr", str)
 JoinExpr = NewType("JoinExpr", str)
 
 
-@dataclass
-class Field:
-    """
-    Represents a part of query that select a field.
-    For example:
-    ```python
-    field = Field("table.data->'name'", "name", "text")
-    field.get_query_part() # returns "(table.data->'name')::text as name"
-    ```
-    """
-
-    field_expr: SelectExpr
-    field_name: str
-    field_type: str
-
-    @staticmethod
-    def parse(data):
-        return Field(data["field_expr"], data["field_name"], data["field_type"])
-
-    def get_query_part(self, allow_json_type=True):
-        """
-        Return the query part that casts the field to the correct type.
-        If allow_json_type is False, then json fields will be cast to text.
-        """
-
-        if self.field_type.lower() in ["json", "jsonb"]:
-            if allow_json_type:
-                return f"({self.field_expr}) as {self.field_name}"
-            return f"({self.field_expr})::text as {self.field_name}"
-
-        return f"({self.field_expr})::{self.field_type} as {self.field_name}"
-
-
 @dataclass(eq=True, frozen=True)
 class View:
     name: str
     on_field: str = field(compare=False)
-    fields: List[Field] = field(compare=False)
+    data_expr: str = field(compare=False)
+    exclude_fields: List[str] = field(compare=False)
     joins: List[JoinExpr] = field(compare=False)
     cache_duration: int = field(compare=False)
 
@@ -65,14 +33,11 @@ class View:
         return View(
             data["name"],
             data["on_field"],
-            [Field.parse(field) for field in data["fields"]],
+            data["data_expr"],
+            data.get("exclude_fields", []),
             data.get("joins", []),
             data["cache_duration"],
         )
-
-    def get_fields(self, allow_json_type=True):
-        for f in self.fields:
-            yield f.get_query_part(allow_json_type)
 
     def todict(self):
         return asdict(self)
