@@ -139,6 +139,7 @@ export default function SpaceTimeChart(props) {
 
       drawAxisTitle(chartLocal, rotate);
       currentDataSimulation.forEach((train, idx) => {
+        console.log('train', train)
         drawTrain(
           chartLocal,
           dispatch,
@@ -151,7 +152,8 @@ export default function SpaceTimeChart(props) {
           rotate,
           setDragEnding,
           setDragOffset,
-          simulation
+          simulation,
+          train.isStdcm
         );
       });
       enableInteractivity(

@@ -30,7 +30,8 @@ export default function drawTrain(
   rotate,
   setDragEnding,
   setDragOffset,
-  simulation
+  simulation,
+  isStdcm
 ) {
   const groupID = `spaceTime-${dataSimulation.trainNumber}`;
 
@@ -114,7 +115,8 @@ export default function drawTrain(
     : undefined;
 
   if (direction && currentAllowanceSettings) {
-    if (currentAllowanceSettings?.baseBlocks || !dataSimulation.eco_routeBeginOccupancy) {
+    if (currentAllowanceSettings?.baseBlocks || !dataSimulation.routeAspects) {
+      /*
       dataSimulation.areaBlock.forEach((dataSimulationAreaBlockSection) =>
         drawArea(
           chart,
@@ -126,6 +128,7 @@ export default function drawTrain(
           rotate
         )
       );
+      */
       /*
       dataSimulation.routeEndOccupancy.forEach((routeEndOccupancySection) =>
         drawCurve(
@@ -157,21 +160,46 @@ export default function drawTrain(
       */
 
       // Let's draw route_aspects
-      dataSimulation.routeAspects.forEach((ecoRouteAspect) => {
+      dataSimulation.routeAspects.forEach((routeAspect) => {
+
         drawRect(
           chart,
           `${isSelected && 'selected'} route-aspect`,
-          ecoRouteAspect,
+          routeAspect,
           groupID,
           'curveLinear',
           keyValues,
           'eco_routeEndOccupancy',
           rotate,
-          isSelected
+          isSelected,
+          `${groupID}${routeAspect.route_id}${routeAspect.color}`
         );
       });
+
+      const routeAspectsClipPath = chart.drawZone
+        .select(`#${groupID}`)
+        .append('clipPath')
+        .attr('id', `${groupID}routeAspectsClipPath`);
+
+      dataSimulation.routeAspects.forEach((routeAspect) => {
+        routeAspectsClipPath
+          .append('use')
+          .attr('href', `#${groupID}${routeAspect.route_id}${routeAspect.color}`);
+      });
+
+      chart.drawZone
+        .select(`#${groupID}`)
+        .append('rect')
+        .attr('class', `${isStdcm && 'stdcm'} routeAspectsClamp`)
+        .attr('width', '100%')
+        .attr('height', '100%')
+        .attr('fill', 'none')
+        .attr('clip-path', `url(#${groupID}routeAspectsClipPath)`);
     }
-    if (dataSimulation.eco_routeEndOccupancy && currentAllowanceSettings?.ecoBlocks) {
+
+
+    if (dataSimulation.eco_routeAspects && currentAllowanceSettings?.ecoBlocks) {
+      /*
       dataSimulation.eco_areaBlock.forEach((dataSimulationEcoAreaBlockSection) =>
         drawArea(
           chart,
@@ -183,6 +211,7 @@ export default function drawTrain(
           rotate
         )
       );
+      */
 
       // Let's draw route_aspects
       dataSimulation.eco_routeAspects.forEach((ecoRouteAspect) => {

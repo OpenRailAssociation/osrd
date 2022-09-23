@@ -153,6 +153,11 @@ select.sm {
       }
     }
   }
+  .routeAspectsClamp {
+    &.stdcm {
+      fill: url(#plusPattern)
+    }
+  }
   .start-block {
     stroke: var(--coolgray5);
     stroke-width: 2;
