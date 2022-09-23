@@ -20,7 +20,7 @@ import ReactModal from 'react-modal';
 // OSRD helpers
 import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/createTrain';
 import formatStdcmConf from 'applications/stdcm/formatStcmConf';
-import { post } from 'common/requests.ts';
+import { post } from 'common/requests';
 // Static Data and Assets
 import rabbit from 'assets/pictures/KLCW_nc_standard.png';
 import { setFailure } from 'reducers/main.ts';
