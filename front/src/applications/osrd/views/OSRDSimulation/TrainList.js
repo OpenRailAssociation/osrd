@@ -118,12 +118,13 @@ export default function TrainsList(props) {
             <td>
               <div className="cell-inner">
                 <div className="custom-control custom-checkbox custom-checkbox-alone">
-                  <label htmlFor={`timetable-train-${idx}`} className="custom-control-label" />
                   <input
                     type="checkbox"
                     className="custom-control-input"
                     id={`timetable-train-${idx}`}
                   />
+                  {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
+                  <label className="custom-control-label" htmlFor={`timetable-train-${idx}`} />
                 </div>
               </div>
             </td>
@@ -271,6 +272,7 @@ export default function TrainsList(props) {
                         className="custom-control-input"
                         id="timetable-sel-all-trains"
                       />
+                      {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
                       <label className="custom-control-label" htmlFor="timetable-sel-all-trains">
                         <span className="sr-only">Select all</span>
                       </label>
