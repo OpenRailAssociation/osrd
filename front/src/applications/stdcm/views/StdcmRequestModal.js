@@ -104,14 +104,14 @@ export default function StdcmRequestModal(props) {
           dispatch(updateConsolidatedSimulation(consolidatedSimulation));
           dispatch(updateSimulation(newSimulation));
           dispatch(updateSelectedTrain(newSimulation.trains.length - 1));
-          /*
+
           dispatch(
             updateSelectedProjection({
               id: fakedNewTrain.id,
               path: result.path,
             })
           );
-          */
+
         })
         .catch((e) => {
           // Update simu in redux with data;

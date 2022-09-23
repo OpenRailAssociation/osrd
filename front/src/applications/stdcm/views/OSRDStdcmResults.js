@@ -114,13 +114,6 @@ export default function OSRDStcdmResults(props) {
     };
   }, []);
 
-  useEffect(() => {
-    getTimetable();
-    return function cleanup() {
-      dispatch(updateSimulation({ trains: [] }));
-    };
-  }, [selectedProjection]);
-
   let stdcmResultsSection;
   if (
     currentStdcmRequestStatus === stdcmRequestStatus.success &&
