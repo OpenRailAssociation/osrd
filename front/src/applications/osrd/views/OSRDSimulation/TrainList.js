@@ -6,7 +6,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { IoMdEye } from 'react-icons/io';
 import PropTypes from 'prop-types';
-import TrainListModal from 'applications/osrd/components/TrainList/TrainListModal';
 import { changeTrain } from 'applications/osrd/components/TrainList/TrainListHelpers';
 import nextId from 'react-id-generator';
 import { timeShiftTrain } from 'applications/osrd/components/Helpers/ChartHelpers';
@@ -119,12 +118,12 @@ export default function TrainsList(props) {
             <td>
               <div className="cell-inner">
                 <div className="custom-control custom-checkbox custom-checkbox-alone">
+                  <label htmlFor={`timetable-train-${idx}`} className="custom-control-label" />
                   <input
                     type="checkbox"
                     className="custom-control-input"
                     id={`timetable-train-${idx}`}
                   />
-                  <label className="custom-control-label" htmlFor={`timetable-train-${idx}`} />
                 </div>
               </div>
             </td>
