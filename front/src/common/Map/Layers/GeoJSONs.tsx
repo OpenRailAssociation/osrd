@@ -136,7 +136,7 @@ function adaptFilter(filter: LayerProps['filter'], { hiddenIDs }: Context): Laye
 function adaptProps<T extends AnyPaint>(
   props: LayerProps,
   context: Context,
-  fn?: (paint: T, context: Context) => T
+  fn?: (paint: T, _context: Context) => T
 ): LayerProps {
   const res: LayerProps = {
     ...props,
