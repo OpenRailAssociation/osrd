@@ -1,15 +1,10 @@
 ---
 name: Enabler story
+title: My enabler
 about: Create a new enabler story for this project
-title: ""
-labels: 'kind:enabler-story'
-assignees: ''
-
 ---
 
-## Associated Feature / User Story
-
-<!-- Which feature or user story will this enabler story help accomplish ? -->
+<!-- This issue should be part of a PI board project -->
 
 ## Description
 
@@ -28,12 +23,6 @@ assignees: ''
 - [ ] Criteria 1
 - [ ] Criteria 2
 - [ ] Criteria 3
-
-## Story points
-
-<!-- If greater than 8, split the story. -->
-
-1 / 2 / 3 / 5 / 8
 
 ## Definition of ready
 

@@ -1,8 +1,10 @@
 ---
 name: User story
+title: My user story
 about: An user story is a feature from the point of view of the end user
-labels: 'kind:user-story'
 ---
+
+<!-- This issue should be part of a PI board project -->
 
 ## User
 
@@ -27,13 +29,6 @@ Study officer / Manager / Other
 - [ ] Criteria 1
 - [ ] Criteria 2
 - [ ] Criteria 3
-
-
-## Story points
-
-<!-- If greater than 8, split the story. -->
-
-1 / 2 / 3 / 5 / 8
 
 ## Definition of ready
 
