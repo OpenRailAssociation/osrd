@@ -1,18 +1,13 @@
 package fr.sncf.osrd.stdcm;
 
-import static fr.sncf.osrd.Helpers.infraFromRJS;
-import static fr.sncf.osrd.infra.InfraHelpers.makeSingleTrackRJSInfra;
 import static fr.sncf.osrd.train.TestTrains.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.api.stdcm.STDCM;
 import fr.sncf.osrd.api.stdcm.STDCMConfig;
 import fr.sncf.osrd.api.stdcm.STDCMEndpoint;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.junit.jupiter.api.Test;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Set;
 
