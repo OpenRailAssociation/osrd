@@ -16,13 +16,31 @@ pub struct OperationalPoint {
     #[derivative(Default(value = r#"generate_id("operational_point")"#))]
     pub id: String,
     pub parts: Vec<OperationalPointPart>,
-    pub uic: i64,
+    pub extensions: OperationalPointExtensions,
+}
+
+#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct OperationalPointExtensions {
+    pub sncf: Option<OperationalPointSncfExtension>,
+    pub identifier: Option<OperationalPointIdentifierExtension>,
+}
+
+#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct OperationalPointSncfExtension {
     pub ci: i64,
     pub ch: String,
-    pub ch_short_label: Option<String>,
-    pub ch_long_label: Option<String>,
-    pub name: String,
+    pub ch_short_label: String,
+    pub ch_long_label: String,
     pub trigram: String,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct OperationalPointIdentifierExtension {
+    name: String,
+    uic: i64,
 }
 
 impl OSRDObject for OperationalPoint {
@@ -102,5 +120,16 @@ impl Cache for OperationalPointCache {
 
     fn get_object_cache(&self) -> ObjectCache {
         ObjectCache::OperationalPoint(self.clone())
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use serde_json::from_str;
+    use super::OperationalPointExtensions;
+
+    #[test]
+    fn test_op_extensions_deserialization() {
+        from_str::<OperationalPointExtensions >(r#"{}"#).unwrap();
     }
 }

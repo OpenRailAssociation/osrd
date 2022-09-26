@@ -116,7 +116,9 @@ mod tests {
     use super::UpdateOperation;
     use crate::api_error::ApiError;
     use crate::infra::tests::test_transaction;
-    use crate::schema::operation::create::tests::{create_signal, create_speed, create_track};
+    use crate::schema::operation::create::tests::{
+        create_signal, create_speed, create_switch, create_track,
+    };
     use crate::schema::operation::OperationError;
     use crate::schema::{OSRDObject, ObjectType};
     use diesel::sql_query;
@@ -131,9 +133,9 @@ mod tests {
     }
 
     #[derive(QueryableByName)]
-    struct Comment {
+    struct Label {
         #[sql_type = "Text"]
-        comment: String,
+        label: String,
     }
 
     #[test]
@@ -221,31 +223,31 @@ mod tests {
     }
 
     #[test]
-    fn valid_update_signal_optionnal() {
+    fn valid_update_switch_extension() {
         test_transaction(|conn, infra| {
-            let signal = create_signal(conn, infra.id, Default::default());
+            let switch = create_switch(conn, infra.id, Default::default());
 
-            let update_signal = UpdateOperation {
-                obj_id: signal.get_id().clone(),
-                obj_type: ObjectType::Signal,
+            let update_switch = UpdateOperation {
+                obj_id: switch.get_id().clone(),
+                obj_type: ObjectType::Switch,
                 railjson_patch: from_str(
                     r#"[
-                        { "op": "replace", "path": "/comment", "value": "Test Passed" }
+                        { "op": "add", "path": "/extensions/sncf", "value": {"label": "Switch Label"} }
                   ]"#,
                 )
                 .unwrap(),
             };
 
-            assert!(update_signal.apply(infra.id, conn).is_ok());
+            assert!(update_switch.apply(infra.id, conn).is_ok());
 
             let updated_comment = sql_query(format!(
-                "SELECT (data->>'comment') as comment FROM osrd_infra_signalmodel WHERE obj_id = '{}' AND infra_id = {}",
-                signal.get_id(),
+                "SELECT (data->'extensions'->'sncf'->>'label') as label FROM osrd_infra_switchmodel WHERE obj_id = '{}' AND infra_id = {}",
+                switch.get_id(),
                 infra.id
             ))
-            .get_result::<Comment>(conn).unwrap();
+            .get_result::<Label>(conn).unwrap();
 
-            assert_eq!(updated_comment.comment, "Test Passed");
+            assert_eq!(updated_comment.label, "Switch Label");
         });
     }
 

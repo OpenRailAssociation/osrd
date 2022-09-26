@@ -25,22 +25,32 @@ pub struct Signal {
     #[derivative(Default(value = "400."))]
     pub sight_distance: f64,
     pub linked_detector: Option<ObjectRef>,
-    pub aspects: Option<Vec<String>>,
-    pub angle_sch: f64,
+    pub extensions: SignalExtensions,
+}
+
+#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct SignalExtensions {
+    pub sncf: Option<SignalSncfExtension>,
+}
+
+#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct SignalSncfExtension {
     pub angle_geo: f64,
-    pub type_code: Option<String>,
-    pub support_type: Option<String>,
-    pub is_in_service: Option<bool>,
-    pub is_lightable: Option<bool>,
-    pub is_operational: Option<bool>,
-    pub comment: Option<String>,
-    pub physical_organization_group: Option<String>,
-    pub responsible_group: Option<String>,
-    pub label: Option<String>,
-    pub installation_type: Option<String>,
-    pub value: Option<String>,
-    pub side: Side,
+    pub angle_sch: f64,
+    pub aspects: Vec<String>,
+    pub comment: String,
     pub default_aspect: String,
+    pub installation_type: String,
+    pub is_in_service: bool,
+    pub is_lightable: bool,
+    pub is_operational: bool,
+    pub label: String,
+    pub side: Side,
+    pub support_type: String,
+    pub type_code: String,
+    pub value: String,
 }
 
 impl OSRDObject for Signal {
@@ -133,5 +143,17 @@ impl SignalCache {
 impl From<Signal> for SignalCache {
     fn from(sig: Signal) -> Self {
         Self::new(sig.id, sig.track.obj_id, sig.position)
+    }
+}
+
+
+#[cfg(test)]
+mod test {
+    use serde_json::from_str;
+    use super::SignalExtensions;
+
+    #[test]
+    fn test_signal_extensions_deserialization() {
+        from_str::<SignalExtensions >(r#"{}"#).unwrap();
     }
 }

@@ -275,8 +275,6 @@ pub struct TrackSectionLinkQueryable {
     pub src: String,
     #[sql_type = "Text"]
     pub dst: String,
-    #[sql_type = "Text"]
-    pub navigability: String,
 }
 
 impl From<TrackSectionLinkQueryable> for TrackSectionLink {
@@ -285,7 +283,6 @@ impl From<TrackSectionLinkQueryable> for TrackSectionLink {
             id: link.obj_id.clone(),
             src: serde_json::from_str(&link.src).unwrap(),
             dst: serde_json::from_str(&link.dst).unwrap(),
-            navigability: serde_json::from_str(&link.navigability).unwrap(),
         }
     }
 }
@@ -484,7 +481,7 @@ impl InfraCache {
 
         // Load track section links tracks references
         sql_query(
-            "SELECT obj_id, data->>'src' AS src, data->>'dst' AS dst, (data->'navigability')::text as navigability FROM osrd_infra_tracksectionlinkmodel WHERE infra_id = $1")
+            "SELECT obj_id, data->>'src' AS src, data->>'dst' AS dst FROM osrd_infra_tracksectionlinkmodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
         .load::<TrackSectionLinkQueryable>(conn).expect("Error loading track section link refs").into_iter().for_each(|link| 
             infra_cache.add::<TrackSectionLink>(link.into())
@@ -923,16 +920,11 @@ pub mod tests {
             id: id.as_ref().into(),
             src,
             dst,
-            navigability: ApplicableDirections::Both,
         }
     }
 
     pub fn create_switch_connection(src: String, dst: String) -> SwitchPortConnection {
-        SwitchPortConnection {
-            src,
-            dst,
-            bidirectional: true,
-        }
+        SwitchPortConnection { src, dst }
     }
 
     pub fn create_switch_type_cache<T: AsRef<str>>(

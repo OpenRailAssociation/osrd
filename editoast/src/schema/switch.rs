@@ -21,6 +21,18 @@ pub struct Switch {
     pub switch_type: ObjectRef,
     pub group_change_delay: f64,
     pub ports: HashMap<String, TrackEndpoint>,
+    pub extensions: SwitchExtensions,
+}
+
+#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct SwitchExtensions {
+    sncf: Option<SwitchSncfExtension>,
+}
+
+#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct SwitchSncfExtension {
     pub label: String,
 }
 
