@@ -13,21 +13,17 @@ import java.util.Set;
 public class STDCMPathfinding {
 
     /** Given an infra, a rolling stock and a collection of unavailable time for each route,
-     * find a path made of a sequence of route and time blocks.
+     * find a path made of a sequence of route ranges with a matching envelope.
      * Returns null if no path is found.
-     *
-     * </p>
-     * This is the second and main step to compute STDCM.
-     * The amount of paths to evaluate can be quite large, so we avoid computing exact speed/time/position curves.
-     * We only look for one possible "opening" we can fit a train in, which may include margins to compensate possible
-     * approximations and inaccuracies.
      * */
-    public static BlockPath findPath(
+    public static STDCMResult findPath(
             SignalingInfra infra,
-            Multimap<SignalingRoute, OccupancyBlock> unavailableTimes,
             RollingStock rollingStock,
-            Set<PathfindingWaypoint> startLocations,
-            Set<PathfindingWaypoint> endLocations
+            double timeStart,
+            double timeEnd,
+            Set<Pathfinding.EdgeLocation<SignalingRoute>> startLocations,
+            Set<Pathfinding.EdgeLocation<SignalingRoute>> endLocations,
+            Multimap<SignalingRoute, OccupancyBlock> unavailableTimes
     ) {
         throw new NotImplemented();
     }
