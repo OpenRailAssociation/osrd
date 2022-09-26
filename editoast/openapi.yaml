@@ -197,8 +197,8 @@ paths:
                     id: Point
                     ports: [LEFT, RIGHT, BASE]
                     groups:
-                      LEFT: { src: BASE, dst: LEFT, bidirectional: true }
-                      RIGHT: { src: BASE, dst: RIGHT, bidirectional: true }
+                      LEFT: { src: BASE, dst: LEFT }
+                      RIGHT: { src: BASE, dst: RIGHT }
 
   /infra/refresh/:
     post:

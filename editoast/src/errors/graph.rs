@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::infra_cache::InfraCache;
-use crate::schema::{ApplicableDirections, TrackEndpoint};
+use crate::schema::TrackEndpoint;
 
 #[derive(Default, Clone, Debug)]
 pub struct Graph<'a> {
@@ -20,18 +20,8 @@ impl<'a> Graph<'a> {
 
         for link in infra_cache.track_section_links().values() {
             let link = link.unwrap_track_section_link();
-            match link.navigability {
-                ApplicableDirections::StartToStop => {
-                    graph.link(&link.src, &link.dst);
-                }
-                ApplicableDirections::StopToStart => {
-                    graph.link(&link.dst, &link.src);
-                }
-                ApplicableDirections::Both => {
-                    graph.link(&link.src, &link.dst);
-                    graph.link(&link.dst, &link.src);
-                }
-            }
+            graph.link(&link.src, &link.dst);
+            graph.link(&link.dst, &link.src);
         }
 
         for switch in infra_cache.switches().values() {
@@ -46,9 +36,7 @@ impl<'a> Graph<'a> {
                     let src = switch.ports.get(&connection.src).unwrap();
                     let dst = switch.ports.get(&connection.dst).unwrap();
                     graph.link(src, dst);
-                    if connection.bidirectional {
-                        graph.link(dst, src);
-                    }
+                    graph.link(dst, src);
                 }
             }
         }

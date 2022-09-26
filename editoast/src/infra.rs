@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 use thiserror::Error;
 
-static RAILJSON_VERSION: &str = "2.3.1";
+static RAILJSON_VERSION: &str = "3.0.0";
 
 #[derive(Clone, QueryableByName, Queryable, Debug, Serialize, Deserialize)]
 #[table_name = "osrd_infra_infra"]
