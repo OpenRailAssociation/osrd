@@ -8,7 +8,6 @@ use crate::layer::Layer;
 use super::generate_id;
 use super::operation::OperationResult;
 use super::operation::RailjsonObject;
-use super::ApplicableDirections;
 use super::Endpoint;
 use super::OSRDObject;
 use super::ObjectRef;
@@ -25,18 +24,30 @@ pub struct TrackSection {
     pub id: String,
     #[derivative(Default(value = "0."))]
     pub length: f64,
+    pub slopes: Vec<Slope>,
+    pub curves: Vec<Curve>,
+    pub loading_gauge_limits: Vec<LoadingGaugeLimit>,
+    pub geo: LineString,
+    pub sch: LineString,
+    pub extensions: TrackSectionExtensions
+}
+
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct TrackSectionExtensions {
+    pub sncf: Option<TrackSectionSncfExtension>,
+}
+
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+#[derivative(Default)]
+pub struct TrackSectionSncfExtension {
     pub line_code: i32,
     #[derivative(Default(value = r#""line_test".to_string()"#))]
     pub line_name: String,
     pub track_number: i32,
     #[derivative(Default(value = r#""track_test".to_string()"#))]
     pub track_name: String,
-    pub navigability: ApplicableDirections,
-    pub slopes: Vec<Slope>,
-    pub curves: Vec<Curve>,
-    pub loading_gauge_limits: Vec<LoadingGaugeLimit>,
-    pub geo: LineString,
-    pub sch: LineString,
 }
 
 impl OSRDObject for TrackSection {
@@ -82,18 +93,9 @@ pub enum LoadingGaugeType {
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
-pub enum ApplicableTrainType {
-    #[serde(rename = "FREIGHT")]
-    Freight,
-    #[serde(rename = "PASSENGER")]
-    Passenger,
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct LoadingGaugeLimit {
     pub category: LoadingGaugeType,
-    pub applicable_train_type: ApplicableTrainType,
     pub begin: f64,
     pub end: f64,
 }
@@ -253,9 +255,10 @@ impl Cache for TrackSectionCache {
 
 #[cfg(test)]
 mod tests {
-    use crate::layer::BoundingBox;
+    use crate::{layer::BoundingBox };
 
-    use super::LineString::LineString;
+    use serde_json::{from_str };
+    use super::{LineString::LineString, TrackSectionExtensions};
 
     /// Test bounding box from linestring
     #[test]
@@ -274,5 +277,10 @@ mod tests {
             line_string.get_bbox(),
             BoundingBox((2.4, 49.0), (3.0, 49.3))
         );
+    }
+
+    #[test]
+    fn test_track_extensions_deserialization() {
+        from_str::<TrackSectionExtensions >(r#"{}"#).unwrap();
     }
 }

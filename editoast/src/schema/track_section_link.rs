@@ -3,7 +3,6 @@ use crate::infra_cache::ObjectCache;
 use crate::layer::Layer;
 
 use super::generate_id;
-use super::ApplicableDirections;
 use super::OSRDObject;
 use super::ObjectType;
 use super::TrackEndpoint;
@@ -18,7 +17,6 @@ pub struct TrackSectionLink {
     pub id: String,
     pub src: TrackEndpoint,
     pub dst: TrackEndpoint,
-    pub navigability: ApplicableDirections,
 }
 
 impl OSRDObject for TrackSectionLink {
