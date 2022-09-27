@@ -27,6 +27,10 @@ public class EnvelopeTrainPath {
                 length += range.getLength();
             }
         }
+        if (gradeValues.isEmpty()) {
+            gradePositions.add(length);
+            gradeValues.add(0);
+        }
         return new EnvelopePath(length, gradePositions.toArray(), gradeValues.toArray());
     }
 

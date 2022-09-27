@@ -57,8 +57,11 @@ public class TrackSectionImpl implements TrackSection {
     ) {
         this(length, id, ImmutableSet.of(), null, null, ImmutableRangeMap.of());
         speedSections = new EnumMap<>(Direction.class);
-        for (var dir : Direction.values())
+        gradients = new EnumMap<>(Direction.class);
+        for (var dir : Direction.values()) {
             speedSections.put(dir, ImmutableRangeMap.of());
+            gradients.put(dir, ImmutableRangeMap.of());
+        }
     }
 
     @Override

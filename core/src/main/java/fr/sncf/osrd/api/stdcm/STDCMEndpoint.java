@@ -98,7 +98,8 @@ public class STDCMEndpoint implements Take {
         return res;
     }
 
-    private static TrackLocation routeToTrackLocation(EdgeLocation<SignalingRoute> location) {
+    /** Converts a location on a route into a track location */
+    public static TrackLocation routeToTrackLocation(EdgeLocation<SignalingRoute> location) {
         var route = location.edge();
         var routeOffset = location.offset();
         var curOffset = 0.;
