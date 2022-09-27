@@ -1,12 +1,10 @@
 use super::graph::Graph;
 use crate::infra_cache::InfraCache;
-use crate::schema::{
-    Direction, DirectionalTrackRange, InfraError, ObjectRef, ObjectType, PathEndpointField,
-};
+use crate::schema::{Direction, InfraError, ObjectRef, ObjectType, PathEndpointField, Route};
 use diesel::result::Error as DieselError;
-use diesel::sql_types::{Array, Integer, Json, Text};
+use diesel::sql_types::{Array, Integer, Json};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
-use serde_json::to_value;
+use serde_json::{to_value, Value};
 use strum::IntoEnumIterator;
 
 /// Given an ObjectRef, retrieve the id and position of its track section
@@ -32,17 +30,16 @@ fn get_object(object: &ObjectRef, infra_cache: &InfraCache) -> Option<(String, f
 /// Check if the id and the position of the endpoint referenced track
 /// matches the id and the position of the object on the tracksection
 fn get_matching_endpoint_error(
-    path: &[DirectionalTrackRange],
+    route: &Route,
     expected_track: String,
     expected_position: f64,
     endpoint_field: PathEndpointField,
-    route_id: String,
 ) -> Option<InfraError> {
-    let (track, pos) = endpoint_field.get_path_location(path);
+    let (track, pos) = endpoint_field.get_path_location(&route.path);
 
     if track != expected_track || pos != expected_position {
         Some(InfraError::new_path_does_not_match_endpoints(
-            route_id,
+            route,
             "path",
             expected_track,
             expected_position,
@@ -61,20 +58,16 @@ pub fn insert_errors(
 ) -> Result<(), DieselError> {
     let infra_errors = generate_errors(infra_cache, graph);
 
-    let mut route_ids = vec![];
-    let mut errors = vec![];
-
-    for error in infra_errors {
-        route_ids.push(error.get_id().clone());
-        errors.push(to_value(error).unwrap());
-    }
+    let errors: Vec<Value> = infra_errors
+        .iter()
+        .map(|error| to_value(error).unwrap())
+        .collect();
 
     let count = sql_query(include_str!("sql/routes_insert_errors.sql"))
         .bind::<Integer, _>(infra_id)
-        .bind::<Array<Text>, _>(&route_ids)
         .bind::<Array<Json>, _>(&errors)
         .execute(conn)?;
-    assert_eq!(count, route_ids.len());
+    assert_eq!(count, infra_errors.len());
 
     Ok(())
 }
@@ -82,10 +75,10 @@ pub fn insert_errors(
 pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraError> {
     let mut errors = vec![];
 
-    for (route_id, route) in infra_cache.routes().iter() {
+    for route in infra_cache.routes().values() {
         let route = route.unwrap_route();
         if route.path.is_empty() {
-            let infra_error = InfraError::new_empty_path(route_id.clone(), "path");
+            let infra_error = InfraError::new_empty_path(route, "path");
             errors.push(infra_error);
             continue;
         }
@@ -97,11 +90,8 @@ pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraErro
             let track_id = &path.track.obj_id;
             if !infra_cache.track_sections().contains_key(track_id) {
                 let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_id.clone());
-                let infra_error = InfraError::new_invalid_reference(
-                    route_id.clone(),
-                    format!("path.{}", index),
-                    obj_ref,
-                );
+                let infra_error =
+                    InfraError::new_invalid_reference(route, format!("path.{}", index), obj_ref);
                 errors.push(infra_error);
                 skip_continuous_path = true;
                 continue;
@@ -116,7 +106,7 @@ pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraErro
             for (pos, field) in [(path.begin, "begin"), (path.end, "end")] {
                 if !(0.0..=track_cache.length).contains(&pos) {
                     let infra_error = InfraError::new_out_of_range(
-                        route_id.clone(),
+                        route,
                         format!("path.{}.{}", index, field),
                         pos,
                         [0.0, track_cache.length],
@@ -133,10 +123,8 @@ pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraErro
 
         for (index, (prev, next)) in route.path.iter().zip(route.path.iter().skip(1)).enumerate() {
             // TODO : differentiate errors caused by range and topology
-            let infra_error = InfraError::new_path_is_not_continuous(
-                route_id.clone(),
-                format!("path.{}", index + 1),
-            );
+            let infra_error =
+                InfraError::new_path_is_not_continuous(route, format!("path.{}", index + 1));
 
             // path continuous between 2 trackrange on a same track
             if prev.track == next.track {
@@ -197,7 +185,7 @@ pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraErro
                 match get_object(path_endpoint.get_route_endpoint(route), infra_cache) {
                     None => {
                         let error = InfraError::new_invalid_reference(
-                            route_id.clone(),
+                            route,
                             path_endpoint.to_string(),
                             route.entry_point.clone(),
                         );
@@ -207,13 +195,9 @@ pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraErro
                     Some(e) => e,
                 };
 
-            if let Some(error) = get_matching_endpoint_error(
-                &route.path,
-                expected_track,
-                expected_position,
-                path_endpoint,
-                route_id.clone(),
-            ) {
+            if let Some(error) =
+                get_matching_endpoint_error(route, expected_track, expected_position, path_endpoint)
+            {
                 errors.push(error);
             }
         }
@@ -224,7 +208,7 @@ pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraErro
             let (track, position) = match get_object(release_detector, infra_cache) {
                 None => {
                     let error = InfraError::new_invalid_reference(
-                        route_id.clone(),
+                        route,
                         format!("release_detector.{}", index),
                         release_detector.clone(),
                     );
@@ -241,7 +225,7 @@ pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraErro
             });
             if track_range.is_none() {
                 let error = InfraError::new_object_out_of_path(
-                    route_id.clone(),
+                    route,
                     format!("release_detector.{}", index),
                     position,
                     track,
@@ -273,24 +257,19 @@ mod tests {
             ("E", 0., 500., Direction::StartToStop),
             ("B", 0., 250., Direction::StartToStop),
         ];
-        infra_cache.add(create_route_cache(
+        let route = create_route_cache(
             "R_error",
-            ObjectRef {
-                obj_type: ObjectType::BufferStop,
-                obj_id: "BF1".into(),
-            },
-            ObjectRef {
-                obj_type: ObjectType::Detector,
-                obj_id: "D1".into(),
-            },
+            ObjectRef::new(ObjectType::BufferStop, "BF1"),
+            ObjectRef::new(ObjectType::Detector, "D1"),
             vec![],
             error_path,
-        ));
+        );
+        infra_cache.add(route.clone());
         let graph = Graph::load(&infra_cache);
         let errors = generate_errors(&infra_cache, &graph);
         assert_eq!(1, errors.len());
         let obj_ref = ObjectRef::new(ObjectType::TrackSection, "E");
-        let infra_error = InfraError::new_invalid_reference("R_error", "path.1", obj_ref);
+        let infra_error = InfraError::new_invalid_reference(&route, "path.1", obj_ref);
         assert_eq!(infra_error, errors[0]);
     }
 
@@ -301,23 +280,18 @@ mod tests {
             ("A", 20., 600., Direction::StartToStop),
             ("B", 0., 250., Direction::StartToStop),
         ];
-        infra_cache.add(create_route_cache(
+        let route = create_route_cache(
             "R_error",
-            ObjectRef {
-                obj_type: ObjectType::BufferStop,
-                obj_id: "BF1".into(),
-            },
-            ObjectRef {
-                obj_type: ObjectType::Detector,
-                obj_id: "D1".into(),
-            },
+            ObjectRef::new(ObjectType::BufferStop, "BF1"),
+            ObjectRef::new(ObjectType::Detector, "D1"),
             vec![],
             error_path,
-        ));
+        );
+        infra_cache.add(route.clone());
         let graph = Graph::load(&infra_cache);
         let errors = generate_errors(&infra_cache, &graph);
         assert_eq!(1, errors.len());
-        let infra_error = InfraError::new_out_of_range("R_error", "path.0.end", 600., [0.0, 500.]);
+        let infra_error = InfraError::new_out_of_range(&route, "path.0.end", 600., [0.0, 500.]);
         assert_eq!(infra_error, errors[0]);
     }
 
@@ -328,18 +302,19 @@ mod tests {
             ("A", 20., 500., Direction::StartToStop),
             ("B", 0., 250., Direction::StartToStop),
         ];
-        infra_cache.add(create_route_cache(
+        let route = create_route_cache(
             "R_error",
             ObjectRef::new(ObjectType::BufferStop, "BF_non_existing"),
             ObjectRef::new(ObjectType::Detector, "D1"),
             vec![],
             error_path,
-        ));
+        );
+        infra_cache.add(route.clone());
         let graph = Graph::load(&infra_cache);
         let errors = generate_errors(&infra_cache, &graph);
         assert_eq!(1, errors.len());
         let obj_ref = ObjectRef::new(ObjectType::BufferStop, "BF_non_existing");
-        let infra_error = InfraError::new_invalid_reference("R_error", "\"entry_point\"", obj_ref);
+        let infra_error = InfraError::new_invalid_reference(&route, "\"entry_point\"", obj_ref);
         assert_eq!(infra_error, errors[0]);
     }
 
@@ -350,24 +325,19 @@ mod tests {
             ("A", 40., 500., Direction::StartToStop),
             ("B", 0., 250., Direction::StartToStop),
         ];
-        infra_cache.add(create_route_cache(
+        let route = create_route_cache(
             "R_error",
-            ObjectRef {
-                obj_type: ObjectType::BufferStop,
-                obj_id: "BF1".into(),
-            },
-            ObjectRef {
-                obj_type: ObjectType::Detector,
-                obj_id: "D1".into(),
-            },
+            ObjectRef::new(ObjectType::BufferStop, "BF1"),
+            ObjectRef::new(ObjectType::Detector, "D1"),
             vec![],
             error_path,
-        ));
+        );
+        infra_cache.add(route.clone());
         let graph = Graph::load(&infra_cache);
         let errors = generate_errors(&infra_cache, &graph);
         assert_eq!(1, errors.len());
         let infra_error = InfraError::new_path_does_not_match_endpoints(
-            "R_error",
+            &route,
             "path",
             "A".into(),
             20.,
@@ -383,32 +353,21 @@ mod tests {
             ("A", 20., 500., Direction::StartToStop),
             ("B", 0., 250., Direction::StartToStop),
         ];
-        infra_cache.add(create_route_cache(
+        let route = create_route_cache(
             "R_error",
-            ObjectRef {
-                obj_type: ObjectType::BufferStop,
-                obj_id: "BF1".into(),
-            },
-            ObjectRef {
-                obj_type: ObjectType::Detector,
-                obj_id: "D1".into(),
-            },
-            vec![ObjectRef {
-                obj_type: ObjectType::Detector,
-                obj_id: "non_existing_D".into(),
-            }],
+            ObjectRef::new(ObjectType::BufferStop, "BF1"),
+            ObjectRef::new(ObjectType::Detector, "D1"),
+            vec![ObjectRef::new(ObjectType::Detector, "non_existing_D")],
             error_path,
-        ));
+        );
+        infra_cache.add(route.clone());
         let graph = Graph::load(&infra_cache);
         let errors = generate_errors(&infra_cache, &graph);
         assert_eq!(1, errors.len());
         let infra_error = InfraError::new_invalid_reference(
-            "R_error",
+            &route,
             "release_detector.0",
-            ObjectRef {
-                obj_type: ObjectType::Detector,
-                obj_id: "non_existing_D".into(),
-            },
+            ObjectRef::new(ObjectType::Detector, "non_existing_D"),
         );
         assert_eq!(infra_error, errors[0]);
     }
@@ -421,27 +380,19 @@ mod tests {
             ("B", 0., 250., Direction::StartToStop),
         ];
         infra_cache.add(create_detector_cache("D2", "C", 250.));
-        infra_cache.add(create_route_cache(
+        let route = create_route_cache(
             "R_error",
-            ObjectRef {
-                obj_type: ObjectType::BufferStop,
-                obj_id: "BF1".into(),
-            },
-            ObjectRef {
-                obj_type: ObjectType::Detector,
-                obj_id: "D1".into(),
-            },
-            vec![ObjectRef {
-                obj_type: ObjectType::Detector,
-                obj_id: "D2".into(),
-            }],
+            ObjectRef::new(ObjectType::BufferStop, "BF1"),
+            ObjectRef::new(ObjectType::Detector, "D1"),
+            vec![ObjectRef::new(ObjectType::Detector, "D2")],
             error_path,
-        ));
+        );
+        infra_cache.add(route.clone());
         let graph = Graph::load(&infra_cache);
         let errors = generate_errors(&infra_cache, &graph);
         assert_eq!(1, errors.len());
         let infra_error =
-            InfraError::new_object_out_of_path("R_error", "release_detector.0", 250., "C".into());
+            InfraError::new_object_out_of_path(&route, "release_detector.0", 250., "C");
         assert_eq!(infra_error, errors[0]);
     }
 
@@ -452,23 +403,18 @@ mod tests {
             ("A", 20., 500., Direction::StartToStop),
             ("B", 100., 250., Direction::StartToStop),
         ];
-        infra_cache.add(create_route_cache(
+        let route = create_route_cache(
             "R_error",
-            ObjectRef {
-                obj_type: ObjectType::BufferStop,
-                obj_id: "BF1".into(),
-            },
-            ObjectRef {
-                obj_type: ObjectType::Detector,
-                obj_id: "D1".into(),
-            },
+            ObjectRef::new(ObjectType::BufferStop, "BF1"),
+            ObjectRef::new(ObjectType::Detector, "D1"),
             vec![],
             error_path,
-        ));
+        );
+        infra_cache.add(route.clone());
         let graph = Graph::load(&infra_cache);
         let errors = generate_errors(&infra_cache, &graph);
         assert_eq!(1, errors.len());
-        let infra_error = InfraError::new_path_is_not_continuous("R_error", "path.1");
+        let infra_error = InfraError::new_path_is_not_continuous(&route, "path.1");
         assert_eq!(infra_error, errors[0]);
     }
 
@@ -480,23 +426,18 @@ mod tests {
             ("A", 300., 500., Direction::StartToStop),
             ("B", 0., 250., Direction::StartToStop),
         ];
-        infra_cache.add(create_route_cache(
+        let route = create_route_cache(
             "R_error",
-            ObjectRef {
-                obj_type: ObjectType::BufferStop,
-                obj_id: "BF1".into(),
-            },
-            ObjectRef {
-                obj_type: ObjectType::Detector,
-                obj_id: "D1".into(),
-            },
+            ObjectRef::new(ObjectType::BufferStop, "BF1"),
+            ObjectRef::new(ObjectType::Detector, "D1"),
             vec![],
             error_path,
-        ));
+        );
+        infra_cache.add(route.clone());
         let graph = Graph::load(&infra_cache);
         let errors = generate_errors(&infra_cache, &graph);
         assert_eq!(1, errors.len());
-        let infra_error = InfraError::new_path_is_not_continuous("R_error", "path.1");
+        let infra_error = InfraError::new_path_is_not_continuous(&route, "path.1");
         assert_eq!(infra_error, errors[0]);
     }
 
@@ -508,23 +449,18 @@ mod tests {
             ("C", 0., 250., Direction::StartToStop),
         ];
         infra_cache.add(create_detector_cache("D2", "C", 250.));
-        infra_cache.add(create_route_cache(
+        let route = create_route_cache(
             "R_error",
-            ObjectRef {
-                obj_type: ObjectType::BufferStop,
-                obj_id: "BF1".into(),
-            },
-            ObjectRef {
-                obj_type: ObjectType::Detector,
-                obj_id: "D2".into(),
-            },
+            ObjectRef::new(ObjectType::BufferStop, "BF1"),
+            ObjectRef::new(ObjectType::Detector, "D2"),
             vec![],
             error_path,
-        ));
+        );
+        infra_cache.add(route.clone());
         let graph = Graph::load(&infra_cache);
         let errors = generate_errors(&infra_cache, &graph);
         assert_eq!(1, errors.len());
-        let infra_error = InfraError::new_path_is_not_continuous("R_error", "path.1");
+        let infra_error = InfraError::new_path_is_not_continuous(&route, "path.1");
         assert_eq!(infra_error, errors[0]);
     }
 }

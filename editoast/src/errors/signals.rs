@@ -1,10 +1,10 @@
-use diesel::sql_types::{Array, Integer, Json, Text};
+use diesel::sql_types::{Array, Integer, Json};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
 
 use crate::infra_cache::InfraCache;
 use crate::schema::{InfraError, ObjectRef, ObjectType};
 use diesel::result::Error as DieselError;
-use serde_json::to_value;
+use serde_json::{to_value, Value};
 
 pub fn insert_errors(
     conn: &PgConnection,
@@ -13,20 +13,16 @@ pub fn insert_errors(
 ) -> Result<(), DieselError> {
     let infra_errors = generate_errors(infra_cache);
 
-    let mut signal_ids = vec![];
-    let mut errors = vec![];
-
-    for error in infra_errors {
-        signal_ids.push(error.get_id().clone());
-        errors.push(to_value(error).unwrap());
-    }
+    let errors: Vec<Value> = infra_errors
+        .iter()
+        .map(|error| to_value(error).unwrap())
+        .collect();
 
     let count = sql_query(include_str!("sql/signals_insert_errors.sql"))
         .bind::<Integer, _>(infra_id)
-        .bind::<Array<Text>, _>(&signal_ids)
         .bind::<Array<Json>, _>(&errors)
         .execute(conn)?;
-    assert_eq!(count, signal_ids.len());
+    assert_eq!(count, infra_errors.len());
 
     Ok(())
 }
@@ -34,13 +30,12 @@ pub fn insert_errors(
 pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
     let mut errors = vec![];
 
-    for (signal_id, signal) in infra_cache.signals().iter() {
+    for signal in infra_cache.signals().values() {
         let signal = signal.unwrap_signal();
         // Retrieve invalid refs
         if !infra_cache.track_sections().contains_key(&signal.track) {
             let obj_ref = ObjectRef::new(ObjectType::TrackSection, signal.track.clone());
-            let infra_error =
-                InfraError::new_invalid_reference(signal_id.clone(), "track", obj_ref);
+            let infra_error = InfraError::new_invalid_reference(signal, "track", obj_ref);
             errors.push(infra_error);
             continue;
         }
@@ -53,7 +48,7 @@ pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
         // Retrieve out of range
         if !(0.0..=track_cache.length).contains(&signal.position) {
             let infra_error = InfraError::new_out_of_range(
-                signal_id.clone(),
+                signal,
                 "position",
                 signal.position,
                 [0.0, track_cache.length],
@@ -76,21 +71,23 @@ mod tests {
     #[test]
     fn invalid_ref() {
         let mut infra_cache = create_small_infra_cache();
-        infra_cache.add(create_signal_cache("S_error", "E", 250.));
+        let signal = create_signal_cache("S_error", "E", 250.);
+        infra_cache.add(signal.clone());
         let errors = generate_errors(&infra_cache);
         assert_eq!(1, errors.len());
         let obj_ref = ObjectRef::new(ObjectType::TrackSection, "E");
-        let infra_error = InfraError::new_invalid_reference("S_error", "track", obj_ref);
+        let infra_error = InfraError::new_invalid_reference(&signal, "track", obj_ref);
         assert_eq!(infra_error, errors[0]);
     }
 
     #[test]
     fn out_of_range() {
         let mut infra_cache = create_small_infra_cache();
-        infra_cache.add(create_signal_cache("S_error", "A", 530.));
+        let signal = create_signal_cache("S_error", "A", 530.);
+        infra_cache.add(signal.clone());
         let errors = generate_errors(&infra_cache);
         assert_eq!(1, errors.len());
-        let infra_error = InfraError::new_out_of_range("S_error", "position", 530., [0.0, 500.]);
+        let infra_error = InfraError::new_out_of_range(&signal, "position", 530., [0.0, 500.]);
         assert_eq!(infra_error, errors[0]);
     }
 }
