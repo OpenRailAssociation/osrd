@@ -94,6 +94,7 @@ export default function drawTrain(
     .append('g')
     .attr('id', groupID)
     .attr('class', 'chartTrain')
+    .attr('filter', () => (isStdcm ? `url(#stdcmFilter)` : null))
     .call(drag)
     .on('contextmenu', () => {
       d3.event.preventDefault();
@@ -159,43 +160,72 @@ export default function drawTrain(
       )
       */
 
-      // Let's draw route_aspects
-      dataSimulation.routeAspects.forEach((routeAspect) => {
 
-        drawRect(
-          chart,
-          `${isSelected && 'selected'} route-aspect`,
-          routeAspect,
-          groupID,
-          'curveLinear',
-          keyValues,
-          'eco_routeEndOccupancy',
-          rotate,
-          isSelected,
-          `${groupID}${routeAspect.route_id}${routeAspect.color}`
-        );
-      });
-
+/*
       const routeAspectsClipPath = chart.drawZone
         .select(`#${groupID}`)
         .append('clipPath')
-        .attr('id', `${groupID}routeAspectsClipPath`);
+        .attr('id', `${groupID}routeAspectsClipPath`)
+        .attr('maskUnits', 'userSpaceOnUse')
+        .attr('filter', `url(#stdcmFilter)`)
 
+      const routeAspectsMask = chart.drawZone
+        .select(`#${groupID}`)
+        .append('mask')
+        .attr('id', `${groupID}routeAspectsMask`)
+        .attr('maskUnits', 'userSpaceOnUse')
+        .attr('filter', `url(#stdcmFilter)`)
+        */
+       /*
+
+      dataSimulation.routeAspects.forEach((routeAspect) => {
+        routeAspectsMask
+          .append('use')
+          .attr('href', `#${groupID}${routeAspect.route_id}${routeAspect.color}`)
+          .attr('stroke-width', 15)
+          .attr('fill', 'none')
+          .attr('stroke', '#fff')
+          .attr('stroke-linejoin', 'round')
+
+      });
+      */
+/*
       dataSimulation.routeAspects.forEach((routeAspect) => {
         routeAspectsClipPath
           .append('use')
-          .attr('href', `#${groupID}${routeAspect.route_id}${routeAspect.color}`);
-      });
+          .attr('href', `#${groupID}${routeAspect.route_id}${routeAspect.color}`)
+          .attr('stroke-width', 10)
+          .attr('stroke', '#000')
 
+      });
+*/
+/*
       chart.drawZone
         .select(`#${groupID}`)
         .append('rect')
         .attr('class', `${isStdcm && 'stdcm'} routeAspectsClamp`)
         .attr('width', '100%')
         .attr('height', '100%')
-        .attr('fill', 'none')
-        .attr('clip-path', `url(#${groupID}routeAspectsClipPath)`);
+        */
     }
+
+
+     // Let's draw route_aspects
+     dataSimulation.routeAspects.forEach((routeAspect) => {
+
+      drawRect(
+        chart,
+        `${isSelected && 'selected'} route-aspect`,
+        routeAspect,
+        groupID,
+        'curveLinear',
+        keyValues,
+        'eco_routeEndOccupancy',
+        rotate,
+        isSelected,
+        `${groupID}${routeAspect.route_id}${routeAspect.color}`
+      );
+    });
 
 
     if (dataSimulation.eco_routeAspects && currentAllowanceSettings?.ecoBlocks) {

@@ -27,21 +27,19 @@ const svgDefs = (defs) => {
     .attr('stroke-linecap', 'square')
     .attr('stroke-width', 3)
     .attr('stroke', 'black')
-    .attr('fill', 'black')
+    .attr('fill', 'black');
 
-  defs
-    .append('pattern')
-    .attr('id', 'stdcmPattern')
-    .attr('width', 128)
-    .attr('height', 32)
-    .attr('patternTransform', 'scale(1) rotate(0)')
-    .attr('patternUnits', 'userSpaceOnUse')
-    .append('text')
-    .attr('x', 0)
-    .attr('y', 0)
-    .attr("font-size", "1em")
-    .attr('stroke', 'black')
-    .text('stdcm')
+  const stdcmFilterDefinition = defs.append('filter');
+
+  stdcmFilterDefinition.attr('id', 'stdcmFilter').attr('maskUnits', 'userSpaceOnUse');
+
+  stdcmFilterDefinition
+    .append('feDropShadow')
+    .attr('stdDeviation', '5 5')
+    .attr('in', 'SourceGraphic')
+    .attr('flood-color', 'black')
+    .attr('flood-opacity', '1')
+    .attr('result', 'dropShadowStdcm')
 
   defs
     .append('pattern')

@@ -153,10 +153,9 @@ select.sm {
       }
     }
   }
-  .routeAspectsClamp {
-    &.stdcm {
-      fill: url(#plusPattern)
-    }
+  rect {
+    stroke-width: inherit;
+    stroke: inherit;
   }
   .start-block {
     stroke: var(--coolgray5);
