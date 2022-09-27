@@ -5,17 +5,17 @@ use strum_macros::EnumIter;
 
 use crate::schema::ObjectRef;
 
-use super::{Direction, DirectionalTrackRange, Route};
+use super::{Direction, DirectionalTrackRange, OSRDObject, ObjectType, Route};
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct InfraError {
+    obj_id: String,
+    obj_type: ObjectType,
     field: String,
     is_warning: bool,
     #[serde(flatten)]
     sub_type: InfraErrorType,
-    #[serde(skip)]
-    obj_id: String,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
@@ -71,57 +71,58 @@ pub enum PathEndpointField {
 }
 
 impl InfraError {
-    pub fn get_id(&self) -> &String {
-        &self.obj_id
-    }
-
-    pub fn new_invalid_reference<T: AsRef<str>, U: AsRef<str>>(
-        obj_id: U,
+    pub fn new_invalid_reference<T: AsRef<str>, O: OSRDObject>(
+        obj: &O,
         field: T,
         reference: ObjectRef,
     ) -> Self {
         Self {
+            obj_id: obj.get_id().clone(),
+            obj_type: obj.get_type(),
             field: field.as_ref().into(),
             is_warning: false,
             sub_type: InfraErrorType::InvalidReference { reference },
-            obj_id: obj_id.as_ref().into(),
         }
     }
 
-    pub fn new_out_of_range<T: AsRef<str>, U: AsRef<str>>(
-        obj_id: U,
+    pub fn new_out_of_range<T: AsRef<str>, O: OSRDObject>(
+        obj: &O,
         field: T,
         position: f64,
         expected_range: [f64; 2],
     ) -> Self {
         Self {
+            obj_id: obj.get_id().clone(),
+            obj_type: obj.get_type(),
             field: field.as_ref().into(),
             is_warning: false,
             sub_type: InfraErrorType::OutOfRange {
                 position,
                 expected_range,
             },
-            obj_id: obj_id.as_ref().into(),
         }
     }
 
-    pub fn new_empty_path<T: AsRef<str>, U: AsRef<str>>(obj_id: U, field: T) -> Self {
+    pub fn new_empty_path<T: AsRef<str>, O: OSRDObject>(obj: &O, field: T) -> Self {
         Self {
+            obj_id: obj.get_id().clone(),
+            obj_type: obj.get_type(),
             field: field.as_ref().into(),
             is_warning: false,
             sub_type: InfraErrorType::EmptyPath,
-            obj_id: obj_id.as_ref().into(),
         }
     }
 
-    pub fn new_path_does_not_match_endpoints<T: AsRef<str>, U: AsRef<str>>(
-        obj_id: U,
+    pub fn new_path_does_not_match_endpoints<T: AsRef<str>, O: OSRDObject>(
+        obj: &O,
         field: T,
         expected_track: String,
         expected_position: f64,
         endpoint_field: PathEndpointField,
     ) -> Self {
         Self {
+            obj_id: obj.get_id().clone(),
+            obj_type: obj.get_type(),
             field: field.as_ref().into(),
             is_warning: false,
             sub_type: InfraErrorType::PathDoesNotMatchEndpoints {
@@ -129,125 +130,140 @@ impl InfraError {
                 expected_position,
                 endpoint_field,
             },
-            obj_id: obj_id.as_ref().into(),
         }
     }
 
-    pub fn new_empty_object<T: AsRef<str>, U: AsRef<str>>(obj_id: U, field: T) -> Self {
+    pub fn new_empty_object<T: AsRef<str>, O: OSRDObject>(obj: &O, field: T) -> Self {
         Self {
+            obj_id: obj.get_id().clone(),
+            obj_type: obj.get_type(),
             field: field.as_ref().into(),
             is_warning: true,
             sub_type: InfraErrorType::EmptyObject,
-            obj_id: obj_id.as_ref().into(),
         }
     }
 
-    pub fn new_object_out_of_path<T: AsRef<str>, U: AsRef<str>>(
-        obj_id: U,
+    pub fn new_object_out_of_path<T: AsRef<str>, U: AsRef<str>, O: OSRDObject>(
+        obj: &O,
         field: T,
         position: f64,
-        track: String,
+        track: U,
     ) -> Self {
         Self {
+            obj_id: obj.get_id().clone(),
+            obj_type: obj.get_type(),
             field: field.as_ref().into(),
             is_warning: false,
-            sub_type: InfraErrorType::ObjectOutOfPath { position, track },
-            obj_id: obj_id.as_ref().into(),
+            sub_type: InfraErrorType::ObjectOutOfPath {
+                position,
+                track: track.as_ref().into(),
+            },
         }
     }
 
-    pub fn new_missing_route<U: AsRef<str>>(obj_id: U) -> Self {
+    pub fn new_missing_route<O: OSRDObject>(obj: &O) -> Self {
         Self {
+            obj_id: obj.get_id().clone(),
+            obj_type: obj.get_type(),
             field: Default::default(),
             is_warning: true,
             sub_type: InfraErrorType::MissingRoute,
-            obj_id: obj_id.as_ref().into(),
         }
     }
 
-    pub fn new_unknown_port_name<T: AsRef<str>, U: AsRef<str>>(
-        obj_id: U,
+    pub fn new_unknown_port_name<T: AsRef<str>, O: OSRDObject>(
+        obj: &O,
         field: T,
         port_name: String,
     ) -> Self {
         Self {
+            obj_id: obj.get_id().clone(),
+            obj_type: obj.get_type(),
             field: field.as_ref().into(),
             is_warning: false,
             sub_type: InfraErrorType::UnknownPortName { port_name },
-            obj_id: obj_id.as_ref().into(),
         }
     }
 
-    pub fn new_invalid_switch_ports<T: AsRef<str>, U: AsRef<str>>(obj_id: U, field: T) -> Self {
+    pub fn new_invalid_switch_ports<T: AsRef<str>, O: OSRDObject>(obj: &O, field: T) -> Self {
         Self {
+            obj_id: obj.get_id().clone(),
+            obj_type: obj.get_type(),
             field: field.as_ref().into(),
             is_warning: false,
             sub_type: InfraErrorType::InvalidSwitchPorts,
-            obj_id: obj_id.as_ref().into(),
         }
     }
 
-    pub fn new_unused_port<T: AsRef<str>, U: AsRef<str>>(
-        obj_id: U,
+    pub fn new_unused_port<T: AsRef<str>, U: AsRef<str>, O: OSRDObject>(
+        obj: &O,
         field: T,
-        port_name: String,
+        port_name: U,
     ) -> Self {
         Self {
+            obj_id: obj.get_id().clone(),
+            obj_type: obj.get_type(),
             field: field.as_ref().into(),
             is_warning: true,
-            sub_type: InfraErrorType::UnusedPort { port_name },
-            obj_id: obj_id.as_ref().into(),
+            sub_type: InfraErrorType::UnusedPort {
+                port_name: port_name.as_ref().into(),
+            },
         }
     }
 
-    pub fn new_duplicated_group<T: AsRef<str>, U: AsRef<str>>(
-        obj_id: U,
+    pub fn new_duplicated_group<T: AsRef<str>, O: OSRDObject>(
+        obj: &O,
         field: T,
         original_group_path: String,
     ) -> Self {
         Self {
+            obj_id: obj.get_id().clone(),
+            obj_type: obj.get_type(),
             field: field.as_ref().into(),
             is_warning: true,
             sub_type: InfraErrorType::DuplicatedGroup {
                 original_group_path,
             },
-            obj_id: obj_id.as_ref().into(),
         }
     }
 
-    pub fn new_no_buffer_stop<T: AsRef<str>, U: AsRef<str>>(obj_id: U, field: T) -> Self {
+    pub fn new_no_buffer_stop<T: AsRef<str>, O: OSRDObject>(obj: &O, field: T) -> Self {
         Self {
+            obj_id: obj.get_id().clone(),
+            obj_type: obj.get_type(),
             field: field.as_ref().into(),
             is_warning: true,
             sub_type: InfraErrorType::NoBufferStop,
-            obj_id: obj_id.as_ref().into(),
         }
     }
 
-    pub fn new_path_is_not_continuous<T: AsRef<str>, U: AsRef<str>>(obj_id: U, field: T) -> Self {
+    pub fn new_path_is_not_continuous<T: AsRef<str>, O: OSRDObject>(obj: &O, field: T) -> Self {
         Self {
+            obj_id: obj.get_id().clone(),
+            obj_type: obj.get_type(),
             field: field.as_ref().into(),
             is_warning: false,
             sub_type: InfraErrorType::PathIsNotContinuous,
-            obj_id: obj_id.as_ref().into(),
         }
     }
 
-    pub fn new_overlapping_switches<U: AsRef<str>>(obj_id: U, reference: ObjectRef) -> Self {
+    pub fn new_overlapping_switches<O: OSRDObject>(obj: &O, reference: ObjectRef) -> Self {
         Self {
+            obj_id: obj.get_id().clone(),
+            obj_type: obj.get_type(),
             field: Default::default(),
             is_warning: false,
             sub_type: InfraErrorType::OverlappingSwitches { reference },
-            obj_id: obj_id.as_ref().into(),
         }
     }
 
-    pub fn new_overlapping_track_links<U: AsRef<str>>(obj_id: U, reference: ObjectRef) -> Self {
+    pub fn new_overlapping_track_links<O: OSRDObject>(obj: &O, reference: ObjectRef) -> Self {
         Self {
+            obj_id: obj.get_id().clone(),
+            obj_type: obj.get_type(),
             field: Default::default(),
             is_warning: true,
             sub_type: InfraErrorType::OverlappingTrackLinks { reference },
-            obj_id: obj_id.as_ref().into(),
         }
     }
 }

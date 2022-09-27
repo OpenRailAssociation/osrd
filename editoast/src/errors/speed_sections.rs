@@ -1,10 +1,10 @@
-use diesel::sql_types::{Array, Integer, Json, Text};
+use diesel::sql_types::{Array, Integer, Json};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
 
 use crate::infra_cache::InfraCache;
 use crate::schema::{InfraError, ObjectRef, ObjectType};
 use diesel::result::Error as DieselError;
-use serde_json::to_value;
+use serde_json::{to_value, Value};
 
 pub fn insert_errors(
     conn: &PgConnection,
@@ -13,30 +13,26 @@ pub fn insert_errors(
 ) -> Result<(), DieselError> {
     let infra_errors = generate_errors(infra_cache);
 
-    let mut speed_section_ids = vec![];
-    let mut errors = vec![];
-
-    for error in infra_errors {
-        speed_section_ids.push(error.get_id().clone());
-        errors.push(to_value(error).unwrap());
-    }
+    let errors: Vec<Value> = infra_errors
+        .iter()
+        .map(|error| to_value(error).unwrap())
+        .collect();
 
     let count = sql_query(include_str!("sql/speed_sections_insert_errors.sql"))
         .bind::<Integer, _>(infra_id)
-        .bind::<Array<Text>, _>(&speed_section_ids)
         .bind::<Array<Json>, _>(&errors)
         .execute(conn)?;
-    assert_eq!(count, speed_section_ids.len());
+    assert_eq!(count, infra_errors.len());
 
     Ok(())
 }
 
 pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
     let mut errors = vec![];
-    for (speed_id, speed_section) in infra_cache.speed_sections().iter() {
+    for speed_section in infra_cache.speed_sections().values() {
         let speed_section = speed_section.unwrap_speed_section();
         if speed_section.track_ranges.is_empty() {
-            let infra_error = InfraError::new_empty_object(speed_id.clone(), "track_ranges");
+            let infra_error = InfraError::new_empty_object(speed_section, "track_ranges");
             errors.push(infra_error);
         }
 
@@ -46,7 +42,7 @@ pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
             if !infra_cache.track_sections().contains_key(track_id) {
                 let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_id.clone());
                 let infra_error = InfraError::new_invalid_reference(
-                    speed_id.clone(),
+                    speed_section,
                     format!("track_ranges.{}", index),
                     obj_ref,
                 );
@@ -63,7 +59,7 @@ pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
             for (pos, field) in [(track_range.begin, "begin"), (track_range.end, "end")] {
                 if !(0.0..=track_cache.length).contains(&pos) {
                     let infra_error = InfraError::new_out_of_range(
-                        speed_id.clone(),
+                        speed_section,
                         format!("track_ranges.{}.{}", index, field),
                         pos,
                         [0.0, track_cache.length],
@@ -89,11 +85,13 @@ mod tests {
     fn invalid_ref() {
         let mut infra_cache = create_small_infra_cache();
         let track_ranges_error = vec![("A", 20., 500.), ("E", 0., 500.), ("B", 0., 250.)];
-        infra_cache.add(create_speed_section_cache("SP_error", track_ranges_error));
+        let speed_section = create_speed_section_cache("SP_error", track_ranges_error);
+        infra_cache.add(speed_section.clone());
         let errors = generate_errors(&infra_cache);
         assert_eq!(1, errors.len());
         let obj_ref = ObjectRef::new(ObjectType::TrackSection, "E");
-        let infra_error = InfraError::new_invalid_reference("SP_error", "track_ranges.1", obj_ref);
+        let infra_error =
+            InfraError::new_invalid_reference(&speed_section, "track_ranges.1", obj_ref);
         assert_eq!(infra_error, errors[0]);
     }
 
@@ -101,11 +99,12 @@ mod tests {
     fn out_of_range() {
         let mut infra_cache = create_small_infra_cache();
         let track_ranges_error = vec![("A", 20., 530.), ("B", 0., 250.)];
-        infra_cache.add(create_speed_section_cache("SP_error", track_ranges_error));
+        let speed_section = create_speed_section_cache("SP_error", track_ranges_error);
+        infra_cache.add(speed_section.clone());
         let errors = generate_errors(&infra_cache);
         assert_eq!(1, errors.len());
         let infra_error =
-            InfraError::new_out_of_range("SP_error", "track_ranges.0.end", 530., [0.0, 500.]);
+            InfraError::new_out_of_range(&speed_section, "track_ranges.0.end", 530., [0.0, 500.]);
         assert_eq!(infra_error, errors[0]);
     }
 }

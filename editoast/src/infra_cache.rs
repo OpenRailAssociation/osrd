@@ -806,10 +806,7 @@ pub mod tests {
     pub fn create_track_endpoint<T: AsRef<str>>(endpoint: Endpoint, obj_id: T) -> TrackEndpoint {
         TrackEndpoint {
             endpoint,
-            track: ObjectRef {
-                obj_type: ObjectType::TrackSection,
-                obj_id: obj_id.as_ref().into(),
-            },
+            track: ObjectRef::new(ObjectType::TrackSection, obj_id.as_ref()),
         }
     }
 
@@ -866,10 +863,7 @@ pub mod tests {
         let mut track_ranges = vec![];
         for (obj_id, begin, end) in range_list {
             track_ranges.push(ApplicableDirectionsTrackRange {
-                track: ObjectRef {
-                    obj_type: ObjectType::TrackSection,
-                    obj_id: obj_id.as_ref().into(),
-                },
+                track: ObjectRef::new(ObjectType::TrackSection, obj_id.as_ref()),
                 begin,
                 end,
                 applicable_directions: ApplicableDirections::Both,
@@ -893,10 +887,7 @@ pub mod tests {
         let mut path = vec![];
         for (obj_id, begin, end, direction) in path_list {
             path.push(DirectionalTrackRange {
-                track: ObjectRef {
-                    obj_type: ObjectType::TrackSection,
-                    obj_id: obj_id.as_ref().into(),
-                },
+                track: ObjectRef::new(ObjectType::TrackSection, obj_id.as_ref()),
                 begin,
                 end,
                 direction,
@@ -985,14 +976,8 @@ pub mod tests {
         ];
         infra_cache.add(create_route_cache(
             "R1",
-            ObjectRef {
-                obj_type: ObjectType::BufferStop,
-                obj_id: "BF1".into(),
-            },
-            ObjectRef {
-                obj_type: ObjectType::Detector,
-                obj_id: "D1".into(),
-            },
+            ObjectRef::new(ObjectType::BufferStop, "BF1"),
+            ObjectRef::new(ObjectType::Detector, "D1"),
             vec![],
             r1_path,
         ));
@@ -1002,14 +987,8 @@ pub mod tests {
         ];
         infra_cache.add(create_route_cache(
             "R2",
-            ObjectRef {
-                obj_type: ObjectType::Detector,
-                obj_id: "D1".into(),
-            },
-            ObjectRef {
-                obj_type: ObjectType::BufferStop,
-                obj_id: "BF2".into(),
-            },
+            ObjectRef::new(ObjectType::Detector, "D1"),
+            ObjectRef::new(ObjectType::BufferStop, "BF2"),
             vec![],
             r2_path,
         ));
@@ -1019,14 +998,8 @@ pub mod tests {
         ];
         infra_cache.add(create_route_cache(
             "R3",
-            ObjectRef {
-                obj_type: ObjectType::Detector,
-                obj_id: "D1".into(),
-            },
-            ObjectRef {
-                obj_type: ObjectType::BufferStop,
-                obj_id: "BF3".into(),
-            },
+            ObjectRef::new(ObjectType::Detector, "D1"),
+            ObjectRef::new(ObjectType::BufferStop, "BF3"),
             vec![],
             r3_path,
         ));
