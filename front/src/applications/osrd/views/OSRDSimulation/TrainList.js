@@ -189,12 +189,7 @@ export default function TrainsList(props) {
                 >
                   <i className="icons-pencil" />
                 </button>
-                <button
-                  type="button"
-                  className="btn btn-only-icon btn-transparent btn-color-gray px-0"
-                >
-                  <IoMdEye />
-                </button>
+                {simulation.trains.length > 0 ? <TrainSchedule /> : null}
               </div>
             </td>
           </tr>
