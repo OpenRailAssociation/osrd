@@ -6,6 +6,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { IoMdEye } from 'react-icons/io';
 import PropTypes from 'prop-types';
+import TrainListModal from 'applications/osrd/components/TrainList/TrainListModal';
+import TrainSchedule from 'applications/osrd/views/OSRDSimulation/TrainSchedule';
 import { changeTrain } from 'applications/osrd/components/TrainList/TrainListHelpers';
 import nextId from 'react-id-generator';
 import { timeShiftTrain } from 'applications/osrd/components/Helpers/ChartHelpers';
@@ -189,12 +191,7 @@ export default function TrainsList(props) {
                 >
                   <i className="icons-pencil" />
                 </button>
-                <button
-                  type="button"
-                  className="btn btn-only-icon btn-transparent btn-color-gray px-0"
-                >
-                  <IoMdEye />
-                </button>
+                {simulation.trains.length > 0 ? <TrainSchedule /> : null}
               </div>
             </td>
           </tr>
