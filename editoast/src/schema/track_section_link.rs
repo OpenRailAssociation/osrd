@@ -52,7 +52,7 @@ impl Layer for TrackSectionLink {
 
 impl Cache for TrackSectionLink {
     fn get_track_referenced_id(&self) -> Vec<&String> {
-        vec![&self.src.track.obj_id, &self.dst.track.obj_id]
+        vec![&self.src.track, &self.dst.track]
     }
 
     fn get_object_cache(&self) -> ObjectCache {

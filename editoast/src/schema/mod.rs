@@ -103,11 +103,43 @@ impl ObjectRef {
     }
 }
 
+#[derive(Deserialize, Serialize, Clone, Debug, PartialEq, Eq, Hash)]
+#[serde(tag = "type", deny_unknown_fields)]
+pub enum Waypoint {
+    BufferStop { id: String },
+    Detector { id: String },
+}
+
+impl Default for Waypoint {
+    fn default() -> Self {
+        Self::Detector {
+            id: "InvalidRef".into(),
+        }
+    }
+}
+
+impl OSRDObject for Waypoint {
+    fn get_id(&self) -> &String {
+        match self {
+            Waypoint::BufferStop { id } => id,
+            Waypoint::Detector { id } => id,
+        }
+    }
+
+    fn get_type(&self) -> ObjectType {
+        match self {
+            Waypoint::BufferStop { .. } => ObjectType::BufferStop,
+            Waypoint::Detector { .. } => ObjectType::Detector,
+        }
+    }
+}
+
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct ApplicableDirectionsTrackRange {
-    pub track: ObjectRef,
+    #[derivative(Default(value = r#""InvalidRef".into()"#))]
+    pub track: String,
     pub begin: f64,
     #[derivative(Default(value = "100."))]
     pub end: f64,
@@ -118,7 +150,8 @@ pub struct ApplicableDirectionsTrackRange {
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct DirectionalTrackRange {
-    pub track: ObjectRef,
+    #[derivative(Default(value = r#""InvalidRef".into()"#))]
+    pub track: String,
     pub begin: f64,
     #[derivative(Default(value = "100."))]
     pub end: f64,
@@ -183,5 +216,6 @@ pub enum Endpoint {
 pub struct TrackEndpoint {
     #[derivative(Default(value = "Endpoint::Begin"))]
     pub endpoint: Endpoint,
-    pub track: ObjectRef,
+    #[derivative(Default(value = r#""InvalidRef".into()"#))]
+    pub track: String,
 }

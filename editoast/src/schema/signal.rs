@@ -5,7 +5,6 @@ use crate::layer::Layer;
 use super::generate_id;
 use super::Direction;
 use super::OSRDObject;
-use super::ObjectRef;
 use super::ObjectType;
 use derivative::Derivative;
 use diesel::sql_types::{Double, Text};
@@ -17,14 +16,15 @@ use serde::{Deserialize, Serialize};
 pub struct Signal {
     #[derivative(Default(value = r#"generate_id("signal")"#))]
     pub id: String,
-    pub track: ObjectRef,
+    #[derivative(Default(value = r#""InvalidRef".into()"#))]
+    pub track: String,
     #[derivative(Default(value = "0."))]
     pub position: f64,
     #[derivative(Default(value = "Direction::StartToStop"))]
     pub direction: Direction,
     #[derivative(Default(value = "400."))]
     pub sight_distance: f64,
-    pub linked_detector: Option<ObjectRef>,
+    pub linked_detector: Option<String>,
     pub extensions: SignalExtensions,
 }
 
@@ -142,18 +142,17 @@ impl SignalCache {
 
 impl From<Signal> for SignalCache {
     fn from(sig: Signal) -> Self {
-        Self::new(sig.id, sig.track.obj_id, sig.position)
+        Self::new(sig.id, sig.track, sig.position)
     }
 }
 
-
 #[cfg(test)]
 mod test {
-    use serde_json::from_str;
     use super::SignalExtensions;
+    use serde_json::from_str;
 
     #[test]
     fn test_signal_extensions_deserialization() {
-        from_str::<SignalExtensions >(r#"{}"#).unwrap();
+        from_str::<SignalExtensions>(r#"{}"#).unwrap();
     }
 }

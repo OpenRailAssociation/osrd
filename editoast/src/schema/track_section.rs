@@ -29,7 +29,7 @@ pub struct TrackSection {
     pub loading_gauge_limits: Vec<LoadingGaugeLimit>,
     pub geo: LineString,
     pub sch: LineString,
-    pub extensions: TrackSectionExtensions
+    pub extensions: TrackSectionExtensions,
 }
 
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
@@ -220,14 +220,14 @@ impl TrackSectionCache {
     pub fn get_begin(&self) -> TrackEndpoint {
         TrackEndpoint {
             endpoint: Endpoint::Begin,
-            track: self.get_ref(),
+            track: self.obj_id.clone(),
         }
     }
 
     pub fn get_end(&self) -> TrackEndpoint {
         TrackEndpoint {
             endpoint: Endpoint::End,
-            track: self.get_ref(),
+            track: self.obj_id.clone(),
         }
     }
 }
@@ -255,10 +255,10 @@ impl Cache for TrackSectionCache {
 
 #[cfg(test)]
 mod tests {
-    use crate::{layer::BoundingBox };
+    use crate::layer::BoundingBox;
 
-    use serde_json::{from_str };
     use super::{LineString::LineString, TrackSectionExtensions};
+    use serde_json::from_str;
 
     /// Test bounding box from linestring
     #[test]
@@ -281,6 +281,6 @@ mod tests {
 
     #[test]
     fn test_track_extensions_deserialization() {
-        from_str::<TrackSectionExtensions >(r#"{}"#).unwrap();
+        from_str::<TrackSectionExtensions>(r#"{}"#).unwrap();
     }
 }

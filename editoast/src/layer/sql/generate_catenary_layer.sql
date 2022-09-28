@@ -6,7 +6,7 @@ WITH track_ranges AS (
         (
             jsonb_array_elements(data->'track_ranges')->'end'
         )::float AS slice_end,
-        jsonb_array_elements(data->'track_ranges')->'track'->>'id' AS track_id
+        jsonb_array_elements(data->'track_ranges')->>'track' AS track_id
     FROM osrd_infra_catenarymodel
     WHERE infra_id = $1
 ),

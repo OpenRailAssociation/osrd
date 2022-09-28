@@ -44,8 +44,8 @@ pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
 
         // Retrieve invalid refs
         for (track_ref, pos) in [
-            (link.src.track.obj_id.clone(), "src"),
-            (link.dst.track.obj_id.clone(), "dst"),
+            (link.src.track.clone(), "src"),
+            (link.dst.track.clone(), "dst"),
         ] {
             if !infra_cache.track_sections().contains_key(&track_ref) {
                 let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_ref);

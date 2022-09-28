@@ -39,7 +39,7 @@ pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
 
         for (index, part) in op.parts.iter().enumerate() {
             // Retrieve invalid refs
-            let track_id = &part.track.obj_id;
+            let track_id = &part.track;
             if !infra_cache.track_sections().contains_key(track_id) {
                 let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_id.clone());
                 let infra_error = InfraError::new_invalid_reference(

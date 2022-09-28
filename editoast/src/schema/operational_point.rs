@@ -4,7 +4,6 @@ use crate::layer::Layer;
 
 use super::generate_id;
 use super::OSRDObject;
-use super::ObjectRef;
 use super::ObjectType;
 use derivative::Derivative;
 use serde::{Deserialize, Serialize};
@@ -57,7 +56,8 @@ impl OSRDObject for OperationalPoint {
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct OperationalPointPart {
-    pub track: ObjectRef,
+    #[derivative(Default(value = r#""InvalidRef".into()"#))]
+    pub track: String,
     pub position: f64,
 }
 
@@ -115,7 +115,7 @@ impl OSRDObject for OperationalPointCache {
 
 impl Cache for OperationalPointCache {
     fn get_track_referenced_id(&self) -> Vec<&String> {
-        self.parts.iter().map(|tr| &tr.track.obj_id).collect()
+        self.parts.iter().map(|tr| &tr.track).collect()
     }
 
     fn get_object_cache(&self) -> ObjectCache {
@@ -125,11 +125,11 @@ impl Cache for OperationalPointCache {
 
 #[cfg(test)]
 mod test {
-    use serde_json::from_str;
     use super::OperationalPointExtensions;
+    use serde_json::from_str;
 
     #[test]
     fn test_op_extensions_deserialization() {
-        from_str::<OperationalPointExtensions >(r#"{}"#).unwrap();
+        from_str::<OperationalPointExtensions>(r#"{}"#).unwrap();
     }
 }
