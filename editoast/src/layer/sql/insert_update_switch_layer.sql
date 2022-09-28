@@ -4,7 +4,7 @@ WITH collect AS (
         ST_GeomFromGeoJSON(tracks.data->'geo') AS track_geo,
         ST_GeomFromGeoJSON(tracks.data->'sch') AS track_sch
     FROM osrd_infra_switchmodel AS switches
-        INNER JOIN osrd_infra_tracksectionmodel AS tracks ON tracks.obj_id = jsonb_path_query_first(switches.data->'ports', '$.*')->'track'->>'id'
+        INNER JOIN osrd_infra_tracksectionmodel AS tracks ON tracks.obj_id = jsonb_path_query_first(switches.data->'ports', '$.*')->>'track'
         AND tracks.infra_id = switches.infra_id
     WHERE switches.infra_id = $1
         AND switches.obj_id = ANY($2)

@@ -6,7 +6,6 @@ use crate::layer::Layer;
 
 use super::generate_id;
 use super::OSRDObject;
-use super::ObjectRef;
 use super::ObjectType;
 use super::TrackEndpoint;
 use derivative::Derivative;
@@ -18,7 +17,7 @@ use serde::{Deserialize, Serialize};
 pub struct Switch {
     #[derivative(Default(value = r#"generate_id("switch")"#))]
     pub id: String,
-    pub switch_type: ObjectRef,
+    pub switch_type: String,
     pub group_change_delay: f64,
     pub ports: HashMap<String, TrackEndpoint>,
     pub extensions: SwitchExtensions,
@@ -89,7 +88,7 @@ impl SwitchCache {
 
 impl From<Switch> for SwitchCache {
     fn from(switch: Switch) -> Self {
-        Self::new(switch.id, switch.switch_type.obj_id, switch.ports)
+        Self::new(switch.id, switch.switch_type, switch.ports)
     }
 }
 
@@ -105,7 +104,7 @@ impl OSRDObject for SwitchCache {
 
 impl Cache for SwitchCache {
     fn get_track_referenced_id(&self) -> Vec<&String> {
-        self.ports.iter().map(|port| &port.1.track.obj_id).collect()
+        self.ports.iter().map(|port| &port.1.track).collect()
     }
 
     fn get_object_cache(&self) -> ObjectCache {

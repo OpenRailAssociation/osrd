@@ -5,7 +5,6 @@ use crate::layer::Layer;
 use super::generate_id;
 use super::ApplicableDirections;
 use super::OSRDObject;
-use super::ObjectRef;
 use super::ObjectType;
 use derivative::Derivative;
 use diesel::sql_types::{Double, Text};
@@ -17,7 +16,8 @@ use serde::{Deserialize, Serialize};
 pub struct BufferStop {
     #[derivative(Default(value = r#"generate_id("buffer_stop")"#))]
     pub id: String,
-    pub track: ObjectRef,
+    #[derivative(Default(value = r#""InvalidRef".into()"#))]
+    pub track: String,
     #[derivative(Default(value = "0."))]
     pub position: f64,
     pub applicable_directions: ApplicableDirections,
@@ -100,6 +100,6 @@ impl BufferStopCache {
 
 impl From<BufferStop> for BufferStopCache {
     fn from(stop: BufferStop) -> Self {
-        Self::new(stop.id, stop.track.obj_id, stop.position)
+        Self::new(stop.id, stop.track, stop.position)
     }
 }

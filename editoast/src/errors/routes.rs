@@ -1,6 +1,8 @@
 use super::graph::Graph;
 use crate::infra_cache::InfraCache;
-use crate::schema::{Direction, InfraError, ObjectRef, ObjectType, PathEndpointField, Route};
+use crate::schema::{
+    Direction, InfraError, OSRDObject, ObjectRef, ObjectType, PathEndpointField, Route, Waypoint,
+};
 use diesel::result::Error as DieselError;
 use diesel::sql_types::{Array, Integer, Json};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
@@ -10,20 +12,19 @@ use strum::IntoEnumIterator;
 /// Given an ObjectRef, retrieve the id and position of its track section
 /// If the object type is not a detector or a buffer stop, return `None`
 /// If there is an invalid reference, return `None`
-fn get_object(object: &ObjectRef, infra_cache: &InfraCache) -> Option<(String, f64)> {
-    let obj_id = &object.obj_id;
-    match object.obj_type {
-        ObjectType::Detector => infra_cache
+fn get_object(object: &Waypoint, infra_cache: &InfraCache) -> Option<(String, f64)> {
+    // let obj_id = &object.id;
+    match object {
+        Waypoint::Detector { id } => infra_cache
             .detectors()
-            .get(obj_id)
+            .get(id)
             .map(|d| d.unwrap_detector())
             .map(|d| (d.track.clone(), d.position)),
-        ObjectType::BufferStop => infra_cache
+        Waypoint::BufferStop { id } => infra_cache
             .buffer_stops()
-            .get(obj_id)
+            .get(id)
             .map(|d| d.unwrap_buffer_stop())
             .map(|bs| (bs.track.clone(), bs.position)),
-        _ => None,
     }
 }
 
@@ -87,7 +88,7 @@ pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraErro
 
         for (index, path) in route.path.iter().enumerate() {
             // Retrieve invalid refs
-            let track_id = &path.track.obj_id;
+            let track_id = &path.track;
             if !infra_cache.track_sections().contains_key(track_id) {
                 let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_id.clone());
                 let infra_error =
@@ -157,7 +158,7 @@ pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraErro
             // check for the ranges
             let track_cache = infra_cache
                 .track_sections()
-                .get(&prev.track.obj_id)
+                .get(&prev.track)
                 .unwrap()
                 .unwrap_track_section();
             if (prev.direction == Direction::StartToStop && prev.end != track_cache.length)
@@ -169,11 +170,11 @@ pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraErro
 
             let track_cache = infra_cache
                 .track_sections()
-                .get(&next.track.obj_id)
+                .get(&next.track)
                 .unwrap()
                 .unwrap_track_section();
-            if (prev.direction == Direction::StartToStop && next.begin != 0.0)
-                || (prev.direction == Direction::StopToStart && next.end != track_cache.length)
+            if (next.direction == Direction::StartToStop && next.begin != 0.0)
+                || (next.direction == Direction::StopToStart && next.end != track_cache.length)
             {
                 errors.push(infra_error);
             }
@@ -187,7 +188,10 @@ pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraErro
                         let error = InfraError::new_invalid_reference(
                             route,
                             path_endpoint.to_string(),
-                            route.entry_point.clone(),
+                            ObjectRef::new(
+                                route.entry_point.get_type(),
+                                route.entry_point.get_id(),
+                            ),
                         );
                         errors.push(error);
                         continue;
@@ -205,12 +209,17 @@ pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraErro
         // TODO: Should we test the type detector ?
         for (index, release_detector) in route.release_detectors.iter().enumerate() {
             // Handle invalid ref for release detectors
-            let (track, position) = match get_object(release_detector, infra_cache) {
+            let (track, position) = match get_object(
+                &Waypoint::Detector {
+                    id: release_detector.clone(),
+                },
+                infra_cache,
+            ) {
                 None => {
                     let error = InfraError::new_invalid_reference(
                         route,
                         format!("release_detector.{}", index),
-                        release_detector.clone(),
+                        ObjectRef::new(ObjectType::Detector, release_detector.clone()),
                     );
                     errors.push(error);
                     continue;
@@ -220,7 +229,7 @@ pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraErro
 
             // Handle release detectors outside from path
             let track_range = route.path.iter().find(|track_range| {
-                track_range.track.obj_id == track
+                track_range.track == track
                     && (track_range.begin..=track_range.end).contains(&position)
             });
             if track_range.is_none() {
@@ -244,7 +253,7 @@ mod tests {
     use crate::infra_cache::tests::{
         create_detector_cache, create_route_cache, create_small_infra_cache,
     };
-    use crate::schema::{Direction, ObjectRef, ObjectType, PathEndpointField};
+    use crate::schema::{Direction, ObjectRef, ObjectType, PathEndpointField, Waypoint};
 
     use super::generate_errors;
     use super::InfraError;
@@ -259,8 +268,8 @@ mod tests {
         ];
         let route = create_route_cache(
             "R_error",
-            ObjectRef::new(ObjectType::BufferStop, "BF1"),
-            ObjectRef::new(ObjectType::Detector, "D1"),
+            Waypoint::BufferStop { id: "BF1".into() },
+            Waypoint::Detector { id: "D1".into() },
             vec![],
             error_path,
         );
@@ -282,8 +291,8 @@ mod tests {
         ];
         let route = create_route_cache(
             "R_error",
-            ObjectRef::new(ObjectType::BufferStop, "BF1"),
-            ObjectRef::new(ObjectType::Detector, "D1"),
+            Waypoint::BufferStop { id: "BF1".into() },
+            Waypoint::Detector { id: "D1".into() },
             vec![],
             error_path,
         );
@@ -304,8 +313,10 @@ mod tests {
         ];
         let route = create_route_cache(
             "R_error",
-            ObjectRef::new(ObjectType::BufferStop, "BF_non_existing"),
-            ObjectRef::new(ObjectType::Detector, "D1"),
+            Waypoint::BufferStop {
+                id: "BF_non_existing".into(),
+            },
+            Waypoint::Detector { id: "D1".into() },
             vec![],
             error_path,
         );
@@ -327,8 +338,8 @@ mod tests {
         ];
         let route = create_route_cache(
             "R_error",
-            ObjectRef::new(ObjectType::BufferStop, "BF1"),
-            ObjectRef::new(ObjectType::Detector, "D1"),
+            Waypoint::BufferStop { id: "BF1".into() },
+            Waypoint::Detector { id: "D1".into() },
             vec![],
             error_path,
         );
@@ -355,9 +366,9 @@ mod tests {
         ];
         let route = create_route_cache(
             "R_error",
-            ObjectRef::new(ObjectType::BufferStop, "BF1"),
-            ObjectRef::new(ObjectType::Detector, "D1"),
-            vec![ObjectRef::new(ObjectType::Detector, "non_existing_D")],
+            Waypoint::BufferStop { id: "BF1".into() },
+            Waypoint::Detector { id: "D1".into() },
+            vec!["non_existing_D".into()],
             error_path,
         );
         infra_cache.add(route.clone());
@@ -382,9 +393,9 @@ mod tests {
         infra_cache.add(create_detector_cache("D2", "C", 250.));
         let route = create_route_cache(
             "R_error",
-            ObjectRef::new(ObjectType::BufferStop, "BF1"),
-            ObjectRef::new(ObjectType::Detector, "D1"),
-            vec![ObjectRef::new(ObjectType::Detector, "D2")],
+            Waypoint::BufferStop { id: "BF1".into() },
+            Waypoint::Detector { id: "D1".into() },
+            vec!["D2".into()],
             error_path,
         );
         infra_cache.add(route.clone());
@@ -405,8 +416,8 @@ mod tests {
         ];
         let route = create_route_cache(
             "R_error",
-            ObjectRef::new(ObjectType::BufferStop, "BF1"),
-            ObjectRef::new(ObjectType::Detector, "D1"),
+            Waypoint::BufferStop { id: "BF1".into() },
+            Waypoint::Detector { id: "D1".into() },
             vec![],
             error_path,
         );
@@ -428,8 +439,8 @@ mod tests {
         ];
         let route = create_route_cache(
             "R_error",
-            ObjectRef::new(ObjectType::BufferStop, "BF1"),
-            ObjectRef::new(ObjectType::Detector, "D1"),
+            Waypoint::BufferStop { id: "BF1".into() },
+            Waypoint::Detector { id: "D1".into() },
             vec![],
             error_path,
         );
@@ -451,8 +462,8 @@ mod tests {
         infra_cache.add(create_detector_cache("D2", "C", 250.));
         let route = create_route_cache(
             "R_error",
-            ObjectRef::new(ObjectType::BufferStop, "BF1"),
-            ObjectRef::new(ObjectType::Detector, "D2"),
+            Waypoint::BufferStop { id: "BF1".into() },
+            Waypoint::Detector { id: "D2".into() },
             vec![],
             error_path,
         );

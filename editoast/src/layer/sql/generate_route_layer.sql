@@ -6,7 +6,7 @@ WITH paths AS (
         (
             jsonb_array_elements(data->'path')->'end'
         )::float AS slice_end,
-        jsonb_array_elements(data->'path')->'track'->>'id' AS track_id
+        jsonb_array_elements(data->'path')->>'track' AS track_id
     FROM osrd_infra_routemodel
     WHERE infra_id = $1
 ),
