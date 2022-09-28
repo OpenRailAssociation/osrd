@@ -5,8 +5,8 @@ use crate::layer::Layer;
 use super::generate_id;
 use super::DirectionalTrackRange;
 use super::OSRDObject;
-use super::ObjectRef;
 use super::ObjectType;
+use super::Waypoint;
 use derivative::Derivative;
 use serde::{Deserialize, Serialize};
 
@@ -16,9 +16,9 @@ use serde::{Deserialize, Serialize};
 pub struct Route {
     #[derivative(Default(value = r#"generate_id("route")"#))]
     pub id: String,
-    pub entry_point: ObjectRef,
-    pub exit_point: ObjectRef,
-    pub release_detectors: Vec<ObjectRef>,
+    pub entry_point: Waypoint,
+    pub exit_point: Waypoint,
+    pub release_detectors: Vec<String>,
     pub path: Vec<DirectionalTrackRange>,
 }
 
@@ -55,7 +55,7 @@ impl Layer for Route {
 
 impl Cache for Route {
     fn get_track_referenced_id(&self) -> Vec<&String> {
-        self.path.iter().map(|tr| &tr.track.obj_id).collect()
+        self.path.iter().map(|tr| &tr.track).collect()
     }
 
     fn get_object_cache(&self) -> ObjectCache {

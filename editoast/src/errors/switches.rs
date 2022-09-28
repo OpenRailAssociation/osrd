@@ -40,11 +40,8 @@ pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
 
         // Retrieve invalid refs for track sections (ports)
         for (port_name, port) in switch.ports.iter() {
-            if !infra_cache
-                .track_sections()
-                .contains_key(&port.track.obj_id)
-            {
-                let obj_ref = ObjectRef::new(ObjectType::TrackSection, port.track.obj_id.clone());
+            if !infra_cache.track_sections().contains_key(&port.track) {
+                let obj_ref = ObjectRef::new(ObjectType::TrackSection, port.track.clone());
                 let infra_error = InfraError::new_invalid_reference(
                     switch,
                     format!("ports.{}.track", port_name),

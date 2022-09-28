@@ -5,7 +5,7 @@ use strum_macros::EnumIter;
 
 use crate::schema::ObjectRef;
 
-use super::{Direction, DirectionalTrackRange, OSRDObject, ObjectType, Route};
+use super::{Direction, DirectionalTrackRange, OSRDObject, ObjectType, Route, Waypoint};
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(deny_unknown_fields)]
@@ -283,10 +283,10 @@ impl PathEndpointField {
             (PathEndpointField::ExitPoint, Direction::StopToStart) => track_range.begin,
         };
 
-        (track_range.track.obj_id.clone(), pos)
+        (track_range.track.clone(), pos)
     }
 
-    pub fn get_route_endpoint<'a>(&self, route: &'a Route) -> &'a ObjectRef {
+    pub fn get_route_endpoint<'a>(&self, route: &'a Route) -> &'a Waypoint {
         match self {
             PathEndpointField::EntryPoint => &route.entry_point,
             PathEndpointField::ExitPoint => &route.exit_point,

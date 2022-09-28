@@ -4,7 +4,7 @@ WITH collect AS (
         ST_GeomFromGeoJSON(tracks.data->'geo') AS track_geo,
         ST_GeomFromGeoJSON(tracks.data->'sch') AS track_sch
     FROM osrd_infra_tracksectionlinkmodel AS links
-        INNER JOIN osrd_infra_tracksectionmodel AS tracks ON tracks.obj_id = links.data->'dst'->'track'->>'id'
+        INNER JOIN osrd_infra_tracksectionmodel AS tracks ON tracks.obj_id = links.data->'dst'->>'track'
         AND tracks.infra_id = links.infra_id
     WHERE links.infra_id = $1
         AND links.obj_id = ANY($2)

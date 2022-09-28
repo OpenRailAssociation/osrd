@@ -252,9 +252,9 @@ pub struct RouteQueryable {
 
 impl From<RouteQueryable> for Route {
     fn from(route: RouteQueryable) -> Self {
-        let entry_point: ObjectRef = serde_json::from_str(&route.entry_point).unwrap();
-        let exit_point: ObjectRef = serde_json::from_str(&route.exit_point).unwrap();
-        let release_detectors: Vec<ObjectRef> =
+        let entry_point: Waypoint = serde_json::from_str(&route.entry_point).unwrap();
+        let exit_point: Waypoint = serde_json::from_str(&route.exit_point).unwrap();
+        let release_detectors: Vec<String> =
             serde_json::from_str(&route.release_detectors).unwrap();
         let path: Vec<DirectionalTrackRange> = serde_json::from_str(&route.path).unwrap();
         Route {
@@ -449,7 +449,7 @@ impl InfraCache {
 
         // Load signal tracks references
         sql_query(
-            "SELECT obj_id, data->'track'->>'id' AS track, (data->>'position')::float AS position FROM osrd_infra_signalmodel WHERE infra_id = $1")
+            "SELECT obj_id, data->>'track' AS track, (data->>'position')::float AS position FROM osrd_infra_signalmodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
         .load::<SignalCache>(conn).expect("Error loading signal refs").into_iter().for_each(|signal| 
             infra_cache.add(signal)
@@ -489,7 +489,7 @@ impl InfraCache {
 
         // Load switch tracks references
         sql_query(
-            "SELECT obj_id, data->'switch_type'->>'id' AS switch_type, data->>'ports' AS ports FROM osrd_infra_switchmodel WHERE infra_id = $1")
+            "SELECT obj_id, data->>'switch_type' AS switch_type, data->>'ports' AS ports FROM osrd_infra_switchmodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
         .load::<SwitchQueryable>(conn).expect("Error loading switch refs").into_iter().for_each(|switch| {
             infra_cache.add::<SwitchCache>(switch.into());
@@ -505,7 +505,7 @@ impl InfraCache {
 
         // Load detector tracks references
         sql_query(
-            "SELECT obj_id, data->'track'->>'id' AS track, (data->>'position')::float AS position FROM osrd_infra_detectormodel WHERE infra_id = $1")
+            "SELECT obj_id, data->>'track' AS track, (data->>'position')::float AS position FROM osrd_infra_detectormodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
         .load::<DetectorCache>(conn).expect("Error loading detector refs").into_iter().for_each(|detector| 
             infra_cache.add(detector)
@@ -513,7 +513,7 @@ impl InfraCache {
 
         // Load buffer stop tracks references
         sql_query(
-            "SELECT obj_id, data->'track'->>'id' AS track, (data->>'position')::float AS position FROM osrd_infra_bufferstopmodel WHERE infra_id = $1")
+            "SELECT obj_id, data->>'track' AS track, (data->>'position')::float AS position FROM osrd_infra_bufferstopmodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
         .load::<BufferStopCache>(conn).expect("Error loading buffer stop refs").into_iter().for_each(|buffer_stop| 
             infra_cache.add(buffer_stop)
@@ -615,9 +615,9 @@ pub mod tests {
     };
     use crate::schema::{
         ApplicableDirections, ApplicableDirectionsTrackRange, Catenary, Direction,
-        DirectionalTrackRange, Endpoint, OSRDObject, ObjectRef, ObjectType, OperationalPoint,
-        OperationalPointPart, Route, SpeedSection, Switch, SwitchPortConnection, SwitchType,
-        TrackEndpoint, TrackSectionLink,
+        DirectionalTrackRange, Endpoint, OSRDObject, OperationalPoint, OperationalPointPart, Route,
+        SpeedSection, Switch, SwitchPortConnection, SwitchType, TrackEndpoint, TrackSectionLink,
+        Waypoint,
     };
 
     use crate::errors::{
@@ -806,7 +806,7 @@ pub mod tests {
     pub fn create_track_endpoint<T: AsRef<str>>(endpoint: Endpoint, obj_id: T) -> TrackEndpoint {
         TrackEndpoint {
             endpoint,
-            track: ObjectRef::new(ObjectType::TrackSection, obj_id.as_ref()),
+            track: obj_id.as_ref().into(),
         }
     }
 
@@ -850,7 +850,7 @@ pub mod tests {
         OperationalPointCache {
             obj_id: obj_id.as_ref().into(),
             parts: vec![OperationalPointPart {
-                track: ObjectRef::new(ObjectType::TrackSection, track.as_ref()),
+                track: track.as_ref().into(),
                 position,
             }],
         }
@@ -863,7 +863,7 @@ pub mod tests {
         let mut track_ranges = vec![];
         for (obj_id, begin, end) in range_list {
             track_ranges.push(ApplicableDirectionsTrackRange {
-                track: ObjectRef::new(ObjectType::TrackSection, obj_id.as_ref()),
+                track: obj_id.as_ref().into(),
                 begin,
                 end,
                 applicable_directions: ApplicableDirections::Both,
@@ -879,15 +879,15 @@ pub mod tests {
 
     pub fn create_route_cache<T: AsRef<str>>(
         id: T,
-        entry_point: ObjectRef,
-        exit_point: ObjectRef,
-        release_detectors: Vec<ObjectRef>,
+        entry_point: Waypoint,
+        exit_point: Waypoint,
+        release_detectors: Vec<String>,
         path_list: Vec<(T, f64, f64, Direction)>,
     ) -> Route {
         let mut path = vec![];
         for (obj_id, begin, end, direction) in path_list {
             path.push(DirectionalTrackRange {
-                track: ObjectRef::new(ObjectType::TrackSection, obj_id.as_ref()),
+                track: obj_id.as_ref().into(),
                 begin,
                 end,
                 direction,
@@ -976,8 +976,8 @@ pub mod tests {
         ];
         infra_cache.add(create_route_cache(
             "R1",
-            ObjectRef::new(ObjectType::BufferStop, "BF1"),
-            ObjectRef::new(ObjectType::Detector, "D1"),
+            Waypoint::BufferStop { id: "BF1".into() },
+            Waypoint::Detector { id: "D1".into() },
             vec![],
             r1_path,
         ));
@@ -987,8 +987,8 @@ pub mod tests {
         ];
         infra_cache.add(create_route_cache(
             "R2",
-            ObjectRef::new(ObjectType::Detector, "D1"),
-            ObjectRef::new(ObjectType::BufferStop, "BF2"),
+            Waypoint::Detector { id: "D1".into() },
+            Waypoint::BufferStop { id: "BF2".into() },
             vec![],
             r2_path,
         ));
@@ -998,8 +998,8 @@ pub mod tests {
         ];
         infra_cache.add(create_route_cache(
             "R3",
-            ObjectRef::new(ObjectType::Detector, "D1"),
-            ObjectRef::new(ObjectType::BufferStop, "BF3"),
+            Waypoint::Detector { id: "D1".into() },
+            Waypoint::BufferStop { id: "BF3".into() },
             vec![],
             r3_path,
         ));

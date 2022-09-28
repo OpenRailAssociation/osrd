@@ -38,7 +38,7 @@ pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
 
         for (index, track_range) in speed_section.track_ranges.iter().enumerate() {
             // Retrieve invalid refs
-            let track_id = &track_range.track.obj_id;
+            let track_id = &track_range.track;
             if !infra_cache.track_sections().contains_key(track_id) {
                 let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_id.clone());
                 let infra_error = InfraError::new_invalid_reference(
