@@ -15,7 +15,7 @@ services:
       - "psql_data:/var/lib/postgresql/data"
       - "./init_db.sql:/docker-entrypoint-initdb.d/init.sql"
     healthcheck:
-      test: ["CMD", "sh", "-c", '[ "$$(cat /proc/1/cmdline)" = postgres ] && pg_isready']
+      test: ["CMD", "sh", "-c", '[ "$$(cat /proc/1/cmdline | tr ''\0'' ''\n'' | tail -n 1)" = postgres ] && pg_isready']
       start_period: 4s
       interval: 5s
 
@@ -43,10 +43,10 @@ services:
       redis: {condition: service_healthy}
     restart: unless-stopped
     command: "uvicorn --factory chartos:make_app --host 0.0.0.0 --port 80"
-    ports: ["7000:80"]
+    ports: ["7070:80"]
     environment:
       PSQL_DSN: "postgres://osrd:password@postgres/osrd"
-      ROOT_URL: "http://localhost:7000"
+      ROOT_URL: "http://localhost:7070"
       REDIS_URL: "redis://redis"
       CONFIG_PATH: "/code/chartos.yml"
     healthcheck:
@@ -111,7 +111,7 @@ services:
         NGINX_CONFIG: "nginx-dev.conf"
         REACT_APP_LOCAL_BACKEND: "True"
         REACT_APP_API_URL: "http://localhost:8000"
-        REACT_APP_CHARTIS_URL: "http://localhost:7000"
+        REACT_APP_CHARTIS_URL: "http://localhost:7070"
         REACT_APP_EDITOAST_URL: "http://localhost:8090"
     restart: unless-stopped
     ports: ["3000:80"]
