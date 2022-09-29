@@ -14,7 +14,7 @@ import { withTranslation } from 'react-i18next';
 
 import CustomGET from 'applications/customget/views/CustomGET';
 
-class HomeOSRD extends React.Component {
+class HomeCustomGET extends React.Component {
   static propTypes = {
     t: PropTypes.func.isRequired,
     osrdsimulation: PropTypes.object.isRequired,
@@ -55,4 +55,4 @@ const mapStateToProps = (state) => ({
   osrdsimulation: state.osrdsimulation,
 });
 
-export default connect(mapStateToProps)(withTranslation()(HomeOSRD));
+export default connect(mapStateToProps)(withTranslation()(HomeCustomGET));

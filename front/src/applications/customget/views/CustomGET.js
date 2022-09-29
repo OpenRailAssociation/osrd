@@ -1,4 +1,4 @@
-import './OSRDSimulation.scss';
+import './CustomGET.scss';
 
 import React, { useEffect, useState } from 'react';
 import {
@@ -6,33 +6,27 @@ import {
   persistentUndoSimulation,
 } from 'reducers/osrdsimulation/simulation';
 import {
-  updateAllowancesSettings,
   updateConsolidatedSimulation,
   updateMustRedraw,
   updateSelectedProjection,
   updateSelectedTrain,
   updateSimulation,
-  updateStickyBar,
 } from 'reducers/osrdsimulation';
 import { useDispatch, useSelector } from 'react-redux';
 
-import Allowances from 'applications/osrd/views/OSRDSimulation/Allowances';
-import ButtonFullscreen from 'common/ButtonFullscreen';
 import CenterLoader from 'common/CenterLoader/CenterLoader';
-import ContextMenu from 'applications/osrd/components/Simulation/ContextMenu';
-import Map from 'applications/osrd/views/OSRDSimulation/Map';
 import { Rnd } from 'react-rnd';
-import SpaceTimeChart from 'applications/osrd/views/OSRDSimulation/SpaceTimeChart';
-import TimeButtons from 'applications/osrd/views/OSRDSimulation/TimeButtons';
-import TimeTable from 'applications/osrd/views/OSRDSimulation/TimeTable';
-import TrainDetails from 'applications/osrd/views/OSRDSimulation/TrainDetails';
-import TrainList from 'applications/osrd/views/OSRDSimulation/TrainList';
-import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/createTrain';
-import { get } from 'common/requests';
+import SpaceTimeChart from 'applications/customget/views/SpaceTimeChart';
+import TimeTable from 'applications/customget/views/TimeTable';
+import TrainList from 'applications/customget/views/TrainList';
+import createTrain from 'applications/customget/components/SpaceTimeChart/createTrain';
+import { get } from 'common/requests.ts';
 import { sec2time } from 'utils/timeManipulation';
 import { setFailure } from 'reducers/main.ts';
-import { updateViewport } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
+
+// To remove
+import staticData from 'applications/customget/static-data-simulation.json';
 
 export const KEY_VALUES_FOR_CONSOLIDATED_SIMULATION = ['time', 'position'];
 export const timetableURI = '/timetable/';
@@ -42,37 +36,22 @@ export const trainscheduleURI = '/train_schedule/';
 function CustomGET() {
   const { t } = useTranslation(['translation', 'simulation', 'allowances']);
   const { fullscreen, darkmode } = useSelector((state) => state.main);
-  const [extViewport, setExtViewport] = useState(undefined);
   const [isEmpty, setIsEmpty] = useState(true);
   const [displayTrainList, setDisplayTrainList] = useState(false);
-  const [displayAllowances, setDisplayAllowances] = useState(false);
 
   const [heightOfSpaceTimeChart, setHeightOfSpaceTimeChart] = useState(400);
   const [initialHeightOfSpaceTimeChart, setInitialHeightOfSpaceTimeChart] =
     useState(heightOfSpaceTimeChart);
 
-  const [heightOfSpeedSpaceChart, setHeightOfSpeedSpaceChart] = useState(250);
-  const [initialHeightOfSpeedSpaceChart, setInitialHeightOfSpeedSpaceChart] =
-    useState(heightOfSpeedSpaceChart);
-
-  const [heightOfSpaceCurvesSlopesChart, setHeightOfSpaceCurvesSlopesChart] = useState(150);
-  const [initialHeightOfSpaceCurvesSlopesChart, setInitialHeightOfSpaceCurvesSlopesChart] =
-    useState(heightOfSpaceCurvesSlopesChart);
-
   const { timetableID } = useSelector((state) => state.osrdconf);
-  const {
-    allowancesSettings,
-    selectedProjection,
-    departureArrivalTimes,
-    selectedTrain,
-    stickyBar,
-    signalBase,
-  } = useSelector((state) => state.osrdsimulation);
+  const { selectedProjection, departureArrivalTimes, selectedTrain } = useSelector(
+    (state) => state.osrdsimulation
+  );
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
 
   if (darkmode) {
-    import('./OSRDSimulationDarkMode.scss');
+    import('./CustomGETDarkMode.scss');
   }
 
   function WaitingLoader() {
@@ -106,20 +85,6 @@ function CustomGET() {
         });
         simulationLocal.sort((a, b) => a.base.stops[0].time > b.base.stops[0].time);
         dispatch(updateSimulation({ trains: simulationLocal }));
-
-        // Create margins settings for each train if not set
-        const newAllowancesSettings = { ...allowancesSettings };
-        simulationLocal.forEach((train) => {
-          if (!newAllowancesSettings[train.id]) {
-            newAllowancesSettings[train.id] = {
-              base: true,
-              baseBlocks: true,
-              eco: true,
-              ecoBlocks: false,
-            };
-          }
-        });
-        dispatch(updateAllowancesSettings(newAllowancesSettings));
       } catch (e) {
         dispatch(
           setFailure({
@@ -137,10 +102,6 @@ function CustomGET() {
   const toggleTrainList = () => {
     setDisplayTrainList(!displayTrainList);
     setTimeout(() => dispatch(updateMustRedraw(true)), 200);
-  };
-
-  const toggleAllowancesDisplay = () => {
-    setDisplayAllowances(!displayAllowances);
   };
 
   const handleKey = (e) => {
@@ -170,18 +131,6 @@ function CustomGET() {
       dispatch(updateSimulation({ trains: [] }));
     };
   }, [selectedProjection]);
-
-  useEffect(() => {
-    if (extViewport !== undefined) {
-      dispatch(
-        updateViewport({
-          ...extViewport,
-          transitionDuration: 1000,
-          transitionInterpolator: new FlyToInterpolator(),
-        })
-      );
-    }
-  }, [extViewport]);
 
   // With this hook we update and store
   // the consolidatedSimuation (simualtion stucture for the selected train)
@@ -266,25 +215,9 @@ function CustomGET() {
                   <SpaceTimeChart heightOfSpaceTimeChart={heightOfSpaceTimeChart} />
                 </Rnd>
               )}
-              <ContextMenu getTimetable={getTimetable} />
             </div>
           </div>
 
-          {displayAllowances ? (
-            <div className="mb-2">
-              <Allowances toggleAllowancesDisplay={toggleAllowancesDisplay} />
-            </div>
-          ) : (
-            <div
-              role="button"
-              tabIndex="-1"
-              className="btn-selected-train d-flex align-items-center mb-2"
-              onClick={toggleAllowancesDisplay}
-            >
-              {t('simulation:allowances')}
-              <i className="icons-arrow-down ml-auto" />
-            </div>
-          )}
           <div className="row">
             <div className="col-md-6">
               <div className="osrd-simulation-container mb-2">
@@ -292,30 +225,6 @@ function CustomGET() {
               </div>
             </div>
           </div>
-          {stickyBar ? (
-            <div className="osrd-simulation-sticky-bar">
-              <div className="row">
-                <div className="col-lg-4">
-                  <TimeButtons />
-                </div>
-                <div className="col-lg-8">
-                  {simulation.trains.length > 0 ? <TrainDetails /> : null}
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="osrd-simulation-sticky-bar-mini">
-              <button
-                className="btn btn-sm btn-only-icon btn-primary ml-auto mr-1"
-                type="button"
-                onClick={() => dispatch(updateStickyBar(true))}
-              >
-                <i className="icons-arrow-prev" />
-              </button>
-              <TimeButtons />
-            </div>
-          )}
-          <ButtonFullscreen />
         </div>
       )}
     </main>
