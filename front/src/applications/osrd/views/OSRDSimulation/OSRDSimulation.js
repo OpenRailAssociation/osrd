@@ -70,20 +70,12 @@ function OSRDSimulation() {
     departureArrivalTimes,
     selectedTrain,
     stickyBar,
-    signalBase,
   } = useSelector((state) => state.osrdsimulation);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
 
   if (darkmode) {
     import('./OSRDSimulationDarkMode.scss');
-  }
-
-  function WaitingLoader() {
-    if (isEmpty) {
-      return <h1 className="text-center">{t('simulation:noData')}</h1>;
-    }
-    return <CenterLoader message={t('simulation:waiting')} />;
   }
 
   /**
@@ -200,12 +192,16 @@ function OSRDSimulation() {
     dispatch(updateConsolidatedSimulation(consolidatedSimulation));
   }, [simulation]);
 
+  const waitingLoader = isEmpty ? (
+    <h1 className="text-center">{t('simulation:noData')}</h1>
+  ) : (
+    <CenterLoader message={t('simulation:waiting')} />
+  );
+
   return (
     <main className={`mastcontainer ${fullscreen ? ' fullscreen' : ''}`}>
       {!simulation || simulation.trains.length === 0 ? (
-        <div className="pt-5 mt-5">
-          <WaitingLoader />
-        </div>
+        <div className="pt-5 mt-5">{waitingLoader}</div>
       ) : (
         <div className="m-0 p-3">
           <div className="mb-2">

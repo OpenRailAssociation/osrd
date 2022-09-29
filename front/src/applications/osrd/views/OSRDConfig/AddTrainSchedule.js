@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { post } from 'common/requests';
 import { updateName } from 'reducers/osrdconf';
-import { setFailure, setSuccess } from 'reducers/main.ts';
+import { setFailure, setSuccess } from 'reducers/main';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import { time2sec, sec2time } from 'utils/timeManipulation';

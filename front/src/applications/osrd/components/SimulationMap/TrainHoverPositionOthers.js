@@ -5,7 +5,7 @@ import nextId from 'react-id-generator';
 
 const TrainHoverPositionOthers = (props) => {
   const { trainHoverPositionOthers } = props;
-  return trainHoverPositionOthers.map((point, headIndex) => (
+  return trainHoverPositionOthers.map((point) => (
     <>
       <Marker
         className="map-search-marker"
@@ -23,28 +23,26 @@ const TrainHoverPositionOthers = (props) => {
         </span>
       </Marker>
       {point.properties.intermediaterMarkersPoints &&
-        point.properties.intermediaterMarkersPoints.map(
-          (intermediateMarkerPoint, followingIndex) => (
-            <Marker
-              className="map-search-marker"
-              longitude={intermediateMarkerPoint.geometry.coordinates[0]}
-              latitude={intermediateMarkerPoint.geometry.coordinates[1]}
-              key={nextId()}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
-                <circle
-                  style={{
-                    fill: '#333',
-                    fillOpacity: '0.60',
-                  }}
-                  cx="16"
-                  cy="16"
-                  r="8"
-                />
-              </svg>
-            </Marker>
-          )
-        )}
+        point.properties.intermediaterMarkersPoints.map((intermediateMarkerPoint) => (
+          <Marker
+            className="map-search-marker"
+            longitude={intermediateMarkerPoint.geometry.coordinates[0]}
+            latitude={intermediateMarkerPoint.geometry.coordinates[1]}
+            key={nextId()}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+              <circle
+                style={{
+                  fill: '#333',
+                  fillOpacity: '0.60',
+                }}
+                cx="16"
+                cy="16"
+                r="8"
+              />
+            </svg>
+          </Marker>
+        ))}
     </>
   ));
 };

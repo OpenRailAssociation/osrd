@@ -5,8 +5,7 @@ import { Route, Routes } from 'react-router-dom';
 import MastNavItemSNCF from 'common/BootstrapSNCF/MastNavItemSNCF';
 import MastNavSNCF from 'common/BootstrapSNCF/MastNavSNCF';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
-import { Navigate } from 'react-router';
-import { NotificationsState } from 'common/Notifications.tsx';
+import { NotificationsState } from 'common/Notifications';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { connect } from 'react-redux';
@@ -18,11 +17,10 @@ import AboutOSRD from '../osrd/About';
 class HomeStdcm extends React.Component {
   static propTypes = {
     t: PropTypes.func.isRequired,
-    osrdsimulation: PropTypes.object.isRequired,
   };
 
   render() {
-    const { t, osrdsimulation } = this.props;
+    const { t } = this.props;
     return (
       <>
         <MastNavSNCF

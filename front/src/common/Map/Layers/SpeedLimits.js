@@ -1,6 +1,6 @@
 import { Layer, Source } from 'react-map-gl';
 
-import { MAP_URL } from 'common/Map/const.ts';
+import { MAP_URL } from 'common/Map/const';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { useSelector } from 'react-redux';

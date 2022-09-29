@@ -11,6 +11,7 @@ export default class Loader extends React.Component {
 
   static defaultProps = {
     msg: '',
+    position: '',
   };
 
   render() {
