@@ -1,8 +1,6 @@
-import { MdFreeBreakfast } from 'react-icons/md';
 import produce from 'immer';
 import {
   LIST_VALUES_NAME_SPACE_TIME,
-  LIST_VALUES_SIGNAL_BASE,
   SIGNAL_BASE_DEFAULT,
 } from '../applications/osrd/components/Simulation/consts';
 import undoableSimulation, { REDO_SIMULATION, UNDO_SIMULATION } from './osrdsimulation/simulation';

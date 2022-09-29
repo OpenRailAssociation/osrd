@@ -16,7 +16,7 @@ import PropTypes from 'prop-types';
 import { WebMercatorViewport } from 'react-map-gl';
 import bbox from '@turf/bbox';
 import { post } from 'common/requests';
-import { setFailure } from 'reducers/main.ts';
+import { setFailure } from 'reducers/main';
 import { updateFeatureInfoClick } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
 
@@ -25,7 +25,7 @@ const itineraryURI = '/pathfinding/';
 function Itinerary(props) {
   const [launchPathfinding, setLaunchPathfinding] = useState(false);
   const [pathfindingInProgress, setPathfindingInProgress] = useState(false);
-  const { updateExtViewport, mode } = props;
+  const { updateExtViewport } = props;
   const dispatch = useDispatch();
   const map = useSelector((state) => state.map);
   const osrdconf = useSelector((state) => state.osrdconf);

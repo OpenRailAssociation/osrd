@@ -1,6 +1,6 @@
 import { Layer, Source } from 'react-map-gl';
 import { MAP_TRACK_SOURCES, MAP_URL } from 'common/Map/const';
-import { geoMainLayer, geoServiceLayer } from 'common/Map/Layers/geographiclayers.ts';
+import { geoMainLayer, geoServiceLayer } from 'common/Map/Layers/geographiclayers';
 import { lineNameLayer, lineNumberLayer, trackNameLayer } from 'common/Map/Layers/commonLayers';
 
 import PropTypes from 'prop-types';

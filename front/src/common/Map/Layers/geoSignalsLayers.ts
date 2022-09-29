@@ -339,10 +339,10 @@ export function getSignalVLLayerProps(
   context: SignalContext,
   _type: string,
   iconOffset: SymbolLayout['icon-offset'],
-  changeSignalContext: ChangeSignalContext
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _changeSignalContext: ChangeSignalContext
 ): LayerProps {
   const { sourceTable, sourceLayer } = context;
-  const { greenSignalsIds = [] } = changeSignalContext;
   const angleName = getAngleName(sourceLayer);
   const typeFilter = _type.split(' ')[0];
   const props: LayerProps = {

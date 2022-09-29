@@ -5,11 +5,11 @@ import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import React from 'react';
 import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
-import englishFlag from '@sncf/bootstrap-sncf.metier.reseau/dist/assets/img/flags/english.svg';
-import frenchFlag from '@sncf/bootstrap-sncf.metier.reseau/dist/assets/img/flags/french.svg';
-import i18n from 'i18next';
+// import englishFlag from '@sncf/bootstrap-sncf.metier.reseau/dist/assets/img/flags/english.svg';
+// import frenchFlag from '@sncf/bootstrap-sncf.metier.reseau/dist/assets/img/flags/french.svg';
+// import i18n from 'i18next';
 import { logout } from 'reducers/user';
-import { toggleDarkmode } from 'reducers/main.ts';
+import { toggleDarkmode } from 'reducers/main';
 import { useTranslation } from 'react-i18next';
 import DropdownSNCF, { DROPDOWN_STYLE_TYPES } from './DropdownSNCF';
 
@@ -24,9 +24,9 @@ export default function LegacyNavBarSNCF(props) {
     dispatch(logout());
   };
 
-  const changeLanguage = (lng) => {
-    i18n.changeLanguage(lng);
-  };
+  // const changeLanguage = (lng) => {
+  //   i18n.changeLanguage(lng);
+  // };
 
   const changeDarkmode = () => {
     dispatch(toggleDarkmode());
