@@ -14,6 +14,7 @@ import {
 } from 'applications/osrd/components/Helpers/ChartHelpers';
 import { lineString, point } from '@turf/helpers';
 import { useDispatch, useSelector } from 'react-redux';
+import nextId from 'react-id-generator';
 
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
@@ -41,7 +42,6 @@ import TracksOSM from 'common/Map/Layers/TracksOSM';
 import TracksSchematic from 'common/Map/Layers/TracksSchematic';
 /* Interactions */
 import TrainHoverPosition from 'applications/osrd/components/SimulationMap/TrainHoverPosition';
-import TrainHoverPositionOthers from 'applications/osrd/components/SimulationMap/TrainHoverPositionOthers';
 import along from '@turf/along';
 import bbox from '@turf/bbox';
 import bearing from '@turf/bearing';
@@ -412,12 +412,10 @@ function Map(props) {
 
         {geojsonPath !== undefined ? <RenderItinerary geojsonPath={geojsonPath} /> : null}
 
-        {trainHoverPosition !== undefined ? (
-          <TrainHoverPosition point={trainHoverPosition} />
-        ) : null}
-        {trainHoverPositionOthers !== undefined ? (
-          <TrainHoverPositionOthers trainHoverPositionOthers={trainHoverPositionOthers} />
-        ) : null}
+        {trainHoverPosition && <TrainHoverPosition point={trainHoverPosition} />}
+        {trainHoverPositionOthers.map((pt) => (
+          <TrainHoverPosition point={pt} key={nextId()} />
+        ))}
       </ReactMapGL>
     </>
   );
