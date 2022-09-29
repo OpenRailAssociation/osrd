@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { Source, Layer } from 'react-map-gl';
-import { MAP_URL } from 'common/Map/const.ts';
+import { MAP_URL } from 'common/Map/const';
 
 export default function Catenaries(props) {
   const { layersSettings } = useSelector((state) => state.map);

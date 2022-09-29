@@ -1,3 +1,4 @@
+import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { LIST_VALUES_SIGNAL_BASE } from 'applications/osrd/components/Simulation/consts';
@@ -10,7 +11,7 @@ import SignalSwitch from './SignalSwitch';
  * @returns RFC with OSRD Data. SignalSwitch
  */
 const withOSRDData = (Component) =>
-  function (props) {
+  function wrapperComponent(props) {
     const { signalBase } = useSelector((state) => state.osrdsimulation);
     const dispatch = useDispatch();
 

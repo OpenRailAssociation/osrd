@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { FlyToInterpolator } from 'react-map-gl';
-import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import nextId from 'react-id-generator';
 import { useTranslation } from 'react-i18next';
@@ -10,8 +8,7 @@ import { useDebounce } from 'utils/helpers';
 
 const searchURI = '/gaia/osrd/signalbox/'; // '/matgaia/search_station';
 
-export default function MapSearchSignalBox(props) {
-  const { updateExtViewport } = props;
+export default function MapSearchSignalBox() {
   const map = useSelector((state) => state.map);
 
   const [searchState, setSearch] = useState('');
@@ -149,7 +146,3 @@ export default function MapSearchSignalBox(props) {
     </>
   );
 }
-
-MapSearchSignalBox.propTypes = {
-  updateExtViewport: PropTypes.func.isRequired,
-};
