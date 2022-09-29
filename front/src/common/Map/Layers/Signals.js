@@ -43,6 +43,8 @@ function Signals(props) {
     (panel) => `chartis/signal/${sourceLayer}/${panel}`
   ).filter((dynamicLayerId) => map?.getLayer(dynamicLayerId)); // We need the layers concerned by eventual changes of signals
 
+  console.log("dynamicLayersIds", dynamicLayersIds)
+
   /* EveryTime the viewPort change or the timePosition or the simulation change,
   visible signals are used to fill a list of special aspects (red, yellow).
    Default is green. Special Default are to be managed by beck office
@@ -53,6 +55,8 @@ function Signals(props) {
       const selectedTrainConsolidatedSimulation = consolidatedSimulation[selectedTrain];
 
       const renderedDynamicStopsFeatures = map.queryRenderedFeatures({ layers: dynamicLayersIds }); // can' be memoïzed :(
+
+      console.log("renderedDynamicStopsFeatures", renderedDynamicStopsFeatures)
 
       const tmpRedIds = [];
       const tmpYellowIds = [];
@@ -114,6 +118,7 @@ function Signals(props) {
   };
 
   const signalsList = getSignalsList();
+  console.log("signalsList", signalsList)
   const context = {
     prefix,
     colors,
