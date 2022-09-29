@@ -6,7 +6,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { IoMdEye } from 'react-icons/io';
 import PropTypes from 'prop-types';
-import TrainListModal from 'applications/osrd/components/TrainList/TrainListModal';
 import { changeTrain } from 'applications/osrd/components/TrainList/TrainListHelpers';
 import nextId from 'react-id-generator';
 import { timeShiftTrain } from 'applications/osrd/components/Helpers/ChartHelpers';
@@ -124,6 +123,7 @@ export default function TrainsList(props) {
                     className="custom-control-input"
                     id={`timetable-train-${idx}`}
                   />
+                  {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
                   <label className="custom-control-label" htmlFor={`timetable-train-${idx}`} />
                 </div>
               </div>
@@ -272,6 +272,7 @@ export default function TrainsList(props) {
                         className="custom-control-input"
                         id="timetable-sel-all-trains"
                       />
+                      {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
                       <label className="custom-control-label" htmlFor="timetable-sel-all-trains">
                         <span className="sr-only">Select all</span>
                       </label>

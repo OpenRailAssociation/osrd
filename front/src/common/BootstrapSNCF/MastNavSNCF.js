@@ -10,7 +10,7 @@ class MastNavSNCF extends React.Component {
   };
 
   static defaultProps = {
-    itemsBottom: <></>,
+    itemsBottom: null,
   };
 
   render() {

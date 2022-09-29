@@ -24,15 +24,15 @@ import SignalingType from 'common/Map/Layers/SignalingType';
 import Signals from 'common/Map/Layers/Signals';
 import SnappedMarker from 'common/Map/Layers/SnappedMarker';
 import SpeedLimits from 'common/Map/Layers/SpeedLimits';
-import BufferStops from 'common/Map/Layers/BufferStops.tsx';
-import Detectors from 'common/Map/Layers/Detectors.tsx';
+import BufferStops from 'common/Map/Layers/BufferStops';
+import Detectors from 'common/Map/Layers/Detectors';
 import Switches from 'common/Map/Layers/Switches';
 import TracksOSM from 'common/Map/Layers/TracksOSM';
 /* Objects & various */
 import TVDs from 'common/Map/Layers/TVDs';
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 import TracksSchematic from 'common/Map/Layers/TracksSchematic';
-import colors from 'common/Map/Consts/colors.ts';
+import colors from 'common/Map/Consts/colors';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import turfNearestPointOnLine from '@turf/nearest-point-on-line';
 import { updateFeatureInfoClickOSRD } from 'reducers/osrdconf';

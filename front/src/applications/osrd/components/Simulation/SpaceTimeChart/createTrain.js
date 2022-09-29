@@ -3,11 +3,10 @@ import {
   formatSignalAspects,
   formatStepsWithTime,
   formatStepsWithTimeMulti,
-  makeStairCase,
   mergeDatasArea,
 } from 'applications/osrd/components/Helpers/ChartHelpers';
 
-import { setFailure } from 'reducers/main.ts';
+import { setFailure } from 'reducers/main';
 
 /**
  * Will do some formating & computation to get a trains to be displayed. Stored then with currentSimulation splitted reducer

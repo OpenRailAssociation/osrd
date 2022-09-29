@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { updateInfraID } from 'reducers/osrdconf';
-import { setFailure } from 'reducers/main.ts';
+import { setFailure } from 'reducers/main';
 import { get } from 'common/requests';
 import icon from 'assets/pictures/tracks.svg';
 import InfraSelectorModal from 'applications/osrd/components/InfraSelector/InfraSelectorModal';

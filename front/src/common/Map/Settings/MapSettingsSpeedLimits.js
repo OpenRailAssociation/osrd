@@ -7,8 +7,8 @@ import { IoMdSpeedometer } from 'react-icons/io';
 import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
-import { get } from 'common/requests.ts';
-import { setFailure } from 'reducers/main.ts';
+import { get } from 'common/requests';
+import { setFailure } from 'reducers/main';
 
 function FormatSwitch(props) {
   const dispatch = useDispatch();

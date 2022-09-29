@@ -1,14 +1,8 @@
 import * as d3 from 'd3';
 
-import { getDirection, timeShiftTrain } from 'applications/osrd/components/Helpers/ChartHelpers';
-import {
-  updateContextMenu,
-  updateMustRedraw,
-  updateSelectedTrain,
-  updateSimulation,
-} from 'reducers/osrdsimulation';
+import { getDirection } from 'applications/osrd/components/Helpers/ChartHelpers';
+import { updateContextMenu, updateMustRedraw, updateSelectedTrain } from 'reducers/osrdsimulation';
 
-import React from 'react';
 import drawArea from 'applications/osrd/components/Simulation/drawArea';
 import drawCurve from 'applications/osrd/components/Simulation/drawCurve';
 import drawRect from 'applications/osrd/components/Simulation/drawRect';

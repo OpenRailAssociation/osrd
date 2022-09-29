@@ -48,6 +48,7 @@ function TrainHoverPosition(props) {
             className="map-search-marker"
             longitude={intermediateMarkerPoint.geometry.coordinates[0]}
             latitude={intermediateMarkerPoint.geometry.coordinates[1]}
+            // eslint-disable-next-line react/no-array-index-key
             key={`intermediateMarker-${i}`}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">

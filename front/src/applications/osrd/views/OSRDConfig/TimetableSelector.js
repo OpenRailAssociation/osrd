@@ -71,6 +71,24 @@ export default function TimetableSelector(props) {
     }
   }, [timetableID, mustUpdateTimetable]);
 
+  let timeTable = <span className="ml-1">{t('osrdconf:noTimetable')}</span>;
+  if (timetableID !== undefined && selectedTimetable === undefined) {
+    timeTable = (
+      <span className="ml-3">
+        <DotsLoader />
+      </span>
+    );
+  } else if (selectedTimetable !== undefined) {
+    timeTable = (
+      <>
+        <span className="ml-1">{selectedTimetable.name}</span>
+        <small className="ml-1 text-primary flex-grow-1">{selectedTimetable.id}</small>
+        <span className="ml-2 badge badge-secondary">
+          {`${selectedTimetable.train_schedules.length} ${t('translation:common.train(s)')}`}
+        </span>
+      </>
+    );
+  }
   return (
     <>
       <div className="osrd-config-item mb-2">
@@ -84,27 +102,7 @@ export default function TimetableSelector(props) {
           <div className="h2 mb-0 d-flex align-items-center">
             <img width="32px" className="mr-2" src={icon} alt="timetableIcon" />
             <span className="text-muted">{t('osrdconf:timetable')}</span>
-            {timetableID !== undefined && selectedTimetable === undefined ? (
-              <span className="ml-3">
-                <DotsLoader />
-              </span>
-            ) : (
-              <>
-                {selectedTimetable !== undefined ? (
-                  <>
-                    <span className="ml-1">{selectedTimetable.name}</span>
-                    <small className="ml-1 text-primary flex-grow-1">{selectedTimetable.id}</small>
-                    <span className="ml-2 badge badge-secondary">
-                      {`${selectedTimetable.train_schedules.length} ${t(
-                        'translation:common.train(s)'
-                      )}`}
-                    </span>
-                  </>
-                ) : (
-                  <span className="ml-1">{t('osrdconf:noTimetable')}</span>
-                )}
-              </>
-            )}
+            {timeTable}
           </div>
         </div>
         {timetableID !== undefined && trainList !== undefined && trainList.length > 0 ? (

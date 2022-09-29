@@ -26,15 +26,17 @@ export default function InputGroupSNCF(props) {
           <div className="dropdown-menu dropdown-menu-right" id={id}>
             {options.map((option) => (
               <>
-                <label
-                  className="dropdown-item"
-                  htmlFor={option.id}
-                  onClick={() => {
-                    setSelected(option);
-                    handleType({ type: option.id, value: 0 });
-                  }}
-                >
-                  {option.label}
+                <label className="dropdown-item" htmlFor={option.id}>
+                  <div
+                    onClick={() => {
+                      setSelected(option);
+                      handleType({ type: option.id, value: 0 });
+                    }}
+                    role="button"
+                    tabIndex="0"
+                  >
+                    {option.label}
+                  </div>
                 </label>
                 <input
                   data-role="value"
