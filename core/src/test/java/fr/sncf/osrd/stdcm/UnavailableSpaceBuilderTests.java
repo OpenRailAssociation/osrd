@@ -39,11 +39,11 @@ public class UnavailableSpaceBuilderTests {
         assertEquals(
                 Set.of(
                         // If the train is in this area, the previous route would be "yellow", causing a conflict
-                        new OccupancyBlock(0, 100, 0, 1000),
+                        new OccupancyBlock(0, 100, 0, 1000)
 
                         // Margin added to the base occupancy to account for the train length,
                         // it can be removed if this test fails as it overlaps with the previous one
-                        new OccupancyBlock(0, 100, 0, REALISTIC_FAST_TRAIN.getLength())
+                        //new OccupancyBlock(0, 100, 0, REALISTIC_FAST_TRAIN.getLength())
                 ),
                 res.get(secondRoute)
         );
@@ -110,11 +110,11 @@ public class UnavailableSpaceBuilderTests {
         assertEquals(
                 Set.of(
                         // If the train is in this area, the previous route would be "yellow", causing a conflict
-                        new OccupancyBlock(0, 100, 0, 1000),
+                        new OccupancyBlock(0, 100, 0, 1000)
 
                         // Margin added to the base occupancy to account for the train length,
                         // it can be removed if this test fails as it overlaps with the previous one
-                        new OccupancyBlock(0, 100, 0, REALISTIC_FAST_TRAIN.getLength())
+                       // new OccupancyBlock(0, 100, 0, REALISTIC_FAST_TRAIN.getLength())
                 ),
                 res.get(b1)
         );
