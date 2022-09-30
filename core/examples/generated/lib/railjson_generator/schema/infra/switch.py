@@ -1,8 +1,9 @@
 from dataclasses import dataclass, field
 from typing import Mapping, Tuple
 
-from railjson_generator.schema.infra.endpoint import TrackEndpoint, Endpoint
 from railjson_generator.schema.infra.direction import Direction
+from railjson_generator.schema.infra.endpoint import Endpoint, TrackEndpoint
+
 import infra
 
 # Reference distances, in meters
@@ -51,9 +52,7 @@ class Switch:
                 signal_position = track_section.length - SIGNAL_TO_SWITCH
                 signal_direction = Direction.START_TO_STOP
 
-            detector = track_section.add_detector(
-                label=detector_label, position=detector_position
-            )
+            detector = track_section.add_detector(label=detector_label, position=detector_position)
             track_section.add_signal(
                 label=signal_label,
                 position=signal_position,
@@ -64,13 +63,10 @@ class Switch:
     def to_rjs(self):
         return infra.Switch(
             id=self.label,
-            switch_type=infra.ObjectReference(id=self.SWITCH_TYPE, type="SwitchType"),
+            switch_type=self.SWITCH_TYPE,
             group_change_delay=self.delay,
-            ports={
-                port_name: getattr(self, port_name).to_rjs()
-                for port_name in self.PORT_NAMES
-            },
-            label=self.label,
+            ports={port_name: getattr(self, port_name).to_rjs() for port_name in self.PORT_NAMES},
+            extensions={"sncf": {"label": self.label}},
         )
 
 

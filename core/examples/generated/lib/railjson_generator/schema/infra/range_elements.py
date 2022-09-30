@@ -48,7 +48,7 @@ class ApplicableDirectionsTrackRange(RangeElement):
 
     def to_rjs(self):
         return infra.ApplicableDirectionsTrackRange(
-            track=self.track.make_rjs_ref(),
+            track=self.track.id,
             applicable_directions=infra.ApplicableDirections[self.applicable_directions.name],
             begin=self.begin,
             end=self.end,

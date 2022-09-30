@@ -1,8 +1,9 @@
-import infra
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List
 
 from railjson_generator.schema.infra.track_section import TrackSection
+
+import infra
 
 
 @dataclass
@@ -14,15 +15,16 @@ class Catenary:
     def to_rjs(self):
         track_ranges = []
         for track in self.tracks:
-            track_ranges.append(infra.ApplicableDirectionsTrackRange(
-                track=track.make_rjs_ref(),
-                begin=0,
-                end=track.length,
-                applicable_directions=infra.ApplicableDirections.BOTH,
-            ))
+            track_ranges.append(
+                infra.ApplicableDirectionsTrackRange(
+                    track=track.id,
+                    begin=0,
+                    end=track.length,
+                    applicable_directions=infra.ApplicableDirections.BOTH,
+                )
+            )
         return infra.Catenary(
             id=self.id,
             voltage=self.voltage,
             track_ranges=track_ranges,
         )
-

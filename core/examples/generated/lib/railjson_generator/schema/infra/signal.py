@@ -1,8 +1,6 @@
-from copy import deepcopy
 from dataclasses import dataclass, field
-from enum import Enum
 
-from railjson_generator.schema.infra.direction import ApplicableDirection, Direction
+from railjson_generator.schema.infra.direction import Direction
 from railjson_generator.schema.infra.waypoint import Detector
 
 import infra
@@ -34,14 +32,27 @@ class Signal:
     def to_rjs(self, track):
         return infra.Signal(
             id=self.label,
-            track=track.make_rjs_ref(),
+            track=track.id,
             position=self.position,
             direction=infra.Direction[self.direction.name],
             sight_distance=self.sight_distance,
-            linked_detector=self.linked_detector.make_rjs_ref(),
-            angle_geo=self.angle,
-            angle_sch=self.angle,
-            side=self.side,
-            installation_type=self.installation_type,
-            label=self.label,
+            linked_detector=self.linked_detector.id,
+            extensions={
+                "sncf": {
+                    "angle_geo": self.angle,
+                    "angle_sch": self.angle,
+                    "aspects": [],
+                    "comment": "",
+                    "default_aspect": "",
+                    "installation_type": self.installation_type,
+                    "is_in_service": False,
+                    "is_lightable": False,
+                    "is_operational": False,
+                    "label": self.label,
+                    "side": self.side,
+                    "support_type": "",
+                    "type_code": "",
+                    "value": "",
+                }
+            },
         )

@@ -24,7 +24,7 @@ class Infra:
     speed_sections: List[SpeedSection] = field(default_factory=list)
     catenaries: List[Catenary] = field(default_factory=list)
 
-    VERSION = "2.3.1"
+    VERSION = "3.0.0"
 
     def add_route(self, *args, **kwargs):
         self.routes.append(Route(*args, **kwargs))
@@ -74,17 +74,16 @@ class Infra:
                 parts_per_op[op_part.operarational_point.label].append(op_part.to_rjs(track))
         ops = []
         for op in self.operational_points:
-            ops.append(
-                infra.OperationalPoint(
-                    id=op.label,
-                    parts=parts_per_op[op.label],
-                    ci=0,
-                    uic=0,
-                    ch="aa",
-                    name=op.label,
-                    trigram=op.trigram,
-                )
+            new_op = infra.OperationalPoint(
+                id=op.label,
+                parts=parts_per_op[op.label],
+                name=op.label,
             )
+            new_op.extensions["sncf"] = infra.OperationalPointSncfExtension(
+                ci=0, ch="aa", ch_short_label="aa", ch_long_label="0", trigram=op.trigram
+            )
+            new_op.extensions["identifier"] = infra.OperationalPointIdentifierExtension(uic=0, name=op.label)
+            ops.append(new_op)
         return ops
 
     def find_duplicates(self):
