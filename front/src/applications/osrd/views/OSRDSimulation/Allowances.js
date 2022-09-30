@@ -41,7 +41,7 @@ function EmptyLine(props) {
     allowances,
     setAllowances,
     setUpdateAllowances,
-    allowanceType = 'construction',
+    allowanceType,
     marecoBeginPosition,
     marecoEndPosition,
     defaultDistributionId,
@@ -407,16 +407,6 @@ export default function Allowances(props) {
     getAllowances();
   }, [selectedTrain]);
 
-  const handleExtensionsChange = (extensions) => {
-    const newMarecoProposal = extensions
-      .filter((d) => d.extensionData !== 'mareco')
-      .map((d) => ({
-        begin_position: d.currentSelection[0],
-        end_position: d.currentSelection[1],
-      }));
-    setRawExtensions(newMarecoProposal);
-  };
-
   const standardAllowance = allowances.find(
     (allowance) => allowance.allowance_type === 'standard' && allowance.ranges
   );
@@ -500,7 +490,7 @@ export default function Allowances(props) {
             allowanceType="engineering"
             allowanceTypes={allowanceTypes}
           />
-          {rawExtensions.map((rawExtension) => (
+          {rawExtensions.map(() => (
             <EmptyLine
               defaultDistributionId={defaultEngineeringDistributionId}
               setAllowances={setAllowances}
@@ -531,10 +521,17 @@ Allowance.propTypes = {
 EmptyLine.propTypes = {
   allowances: PropTypes.array,
   allowanceTypes: PropTypes.array.isRequired,
+  allowanceType: PropTypes.string,
   distributionsTypes: PropTypes.array.isRequired,
   setAllowances: PropTypes.func.isRequired,
   setUpdateAllowances: PropTypes.func.isRequired,
+  marecoBeginPosition: PropTypes.number,
+  // eslint-disable-next-line react/require-default-props
+  marecoEndPosition: PropTypes.number,
+  defaultDistributionId: PropTypes.string.isRequired,
 };
 EmptyLine.defaultProps = {
   allowances: [],
+  allowanceType: 'construction',
+  marecoBeginPosition: 0,
 };

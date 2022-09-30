@@ -12,7 +12,7 @@ import Map from 'applications/osrd/views/OSRDConfig/Map';
 import RollingStockSelector from 'applications/osrd/views/OSRDConfig/RollingStockSelector';
 import SpeedLimitByTagSelector from 'applications/osrd/views/OSRDConfig/SpeedLimitByTagSelector';
 import TimetableSelector from 'applications/osrd/views/OSRDConfig/TimetableSelector';
-import { stdcmRequestStatus } from 'applications/stdcm/views/OSRDSTDCM';
+import { stdcmRequestStatus } from 'applications/osrd/consts';
 import { updateViewport } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
 import { MODES } from '../../consts';

@@ -23,8 +23,8 @@ import SpeedSpaceChart from 'applications/osrd/views/OSRDSimulation/SpeedSpaceCh
 import TimeTable from 'applications/osrd/views/OSRDSimulation/TimeTable';
 import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/createTrain';
 import { get } from 'common/requests';
-import { setFailure } from 'reducers/main.ts';
-import { stdcmRequestStatus } from 'applications/stdcm/views/OSRDSTDCM';
+import { setFailure } from 'reducers/main';
+import { stdcmRequestStatus } from 'applications/osrd/consts';
 import { useTranslation } from 'react-i18next';
 
 export default function OSRDStcdmResults(props) {
@@ -32,7 +32,7 @@ export default function OSRDStcdmResults(props) {
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const { timetableID } = useSelector((state) => state.osrdconf);
   const { t } = useTranslation(['translation', 'osrdconf']);
-  const [isEmpty, setIsEmpty] = useState(true);
+  const [, setIsEmpty] = useState(true);
   const { currentStdcmRequestStatus } = props;
   const { allowancesSettings, selectedProjection } = useSelector((state) => state.osrdsimulation);
   const dispatch = useDispatch();

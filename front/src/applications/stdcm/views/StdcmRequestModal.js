@@ -23,8 +23,8 @@ import formatStdcmConf from 'applications/stdcm/formatStcmConf';
 import { post } from 'common/requests';
 // Static Data and Assets
 import rabbit from 'assets/pictures/KLCW_nc_standard.png';
-import { setFailure } from 'reducers/main.ts';
-import { stdcmRequestStatus } from 'applications/stdcm/views/OSRDSTDCM';
+import { setFailure } from 'reducers/main';
+import { stdcmRequestStatus } from 'applications/osrd/consts';
 import { updateItinerary } from 'reducers/osrdconf';
 import { useTranslation } from 'react-i18next';
 
@@ -111,7 +111,6 @@ export default function StdcmRequestModal(props) {
               path: result.path,
             })
           );
-
         })
         .catch((e) => {
           // Update simu in redux with data;
