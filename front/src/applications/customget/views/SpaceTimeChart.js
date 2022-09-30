@@ -24,9 +24,9 @@ import { GiResize } from 'react-icons/gi';
 import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/osrd/components/Simulation/consts';
 import PropTypes from 'prop-types';
 import { changeTrain } from 'applications/osrd/components/TrainList/TrainListHelpers';
-import createChart from 'applications/osrd/components/Simulation/SpaceTimeChart/createChart';
-import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/createTrain';
-import drawTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/drawTrain';
+import createChart from 'applications/customget/components/SpaceTimeChart/createChart';
+import createTrain from 'applications/customget/components/SpaceTimeChart/createTrain';
+import drawTrain from 'applications/customget/components/SpaceTimeChart/drawTrain';
 import { persistentUpdateSimulation } from 'reducers/osrdsimulation/simulation';
 import { useTranslation } from 'react-i18next';
 

@@ -7,7 +7,6 @@ import {
   updateSelectedTrain,
 } from 'reducers/osrdsimulation';
 
-import React from 'react';
 import drawArea from 'applications/osrd/components/Simulation/drawArea';
 import drawCurve from 'applications/osrd/components/Simulation/drawCurve';
 import drawRect from 'applications/osrd/components/Simulation/drawRect';
@@ -15,7 +14,7 @@ import drawText from 'applications/osrd/components/Simulation/drawText';
 import {
   departureArrivalTimes,
   updateDepartureArrivalTimes,
-} from '../../../../../reducers/osrdsimulation';
+} from '../../../../reducers/osrdsimulation';
 
 export default function drawTrain(
   chart,
@@ -108,185 +107,21 @@ export default function drawTrain(
 
   // Test direction to avoid displaying block
   const direction = getDirection(dataSimulation.headPosition);
-  const currentAllowanceSettings = allowancesSettings
-    ? allowancesSettings[dataSimulation.id]
-    : undefined;
 
-  if (direction && currentAllowanceSettings) {
-    if (currentAllowanceSettings?.baseBlocks || !dataSimulation.eco_routeBeginOccupancy) {
-      dataSimulation.areaBlock.forEach((dataSimulationAreaBlockSection) =>
-        drawArea(
-          chart,
-          `${isSelected && 'selected'} area`,
-          dataSimulationAreaBlockSection,
-          groupID,
-          'curveStepAfter',
-          keyValues,
-          rotate
-        )
-      );
-      /*
-      dataSimulation.routeEndOccupancy.forEach((routeEndOccupancySection) =>
-        drawCurve(
-          chart,
-          `${isSelected && 'selected'} end-block`,
-          routeEndOccupancySection,
-          groupID,
-          'curveLinear',
-          keyValues,
-          'routeEndOccupancy',
-          rotate,
-          isSelected
-        )
-      );
-      dataSimulation.routeBeginOccupancy.forEach((routeBeginOccupancySection) =>
-        drawCurve(
-          chart,
-          `${isSelected && 'selected'} start-block`,
-          routeBeginOccupancySection,
-          groupID,
-          'curveLinear',
-          keyValues,
-          'routeBeginOccupancy',
-          rotate,
-          isSelected
-        )
+  dataSimulation.headPosition.forEach((headPositionSection) =>
+    drawCurve(
+      chart,
+      `${isSelected && 'selected'} head`,
+      headPositionSection,
+      groupID,
+      'curveLinear',
+      keyValues,
+      'headPosition',
+      rotate,
+      isSelected
+    )
+  );
 
-      )
-      */
-
-      // Let's draw route_aspects
-      dataSimulation.routeAspects.forEach((ecoRouteAspect) => {
-        drawRect(
-          chart,
-          `${isSelected && 'selected'} route-aspect`,
-          ecoRouteAspect,
-          groupID,
-          'curveLinear',
-          keyValues,
-          'eco_routeEndOccupancy',
-          rotate,
-          isSelected
-        );
-      });
-    }
-    if (dataSimulation.eco_routeEndOccupancy && currentAllowanceSettings?.ecoBlocks) {
-      dataSimulation.eco_areaBlock.forEach((dataSimulationEcoAreaBlockSection) =>
-        drawArea(
-          chart,
-          `${isSelected && 'selected'} area eco`,
-          dataSimulationEcoAreaBlockSection,
-          groupID,
-          'curveStepAfter',
-          keyValues,
-          rotate
-        )
-      );
-
-      // Let's draw route_aspects
-      dataSimulation.eco_routeAspects.forEach((ecoRouteAspect) => {
-        drawRect(
-          chart,
-          `${isSelected && 'selected'} route-aspect`,
-          ecoRouteAspect,
-          groupID,
-          'curveLinear',
-          keyValues,
-          'eco_routeEndOccupancy',
-          rotate,
-          isSelected
-        );
-      });
-      /*
-      dataSimulation.eco_routeEndOccupancy.forEach((ecoRouteEndOccupancySection) =>
-        drawCurve(
-          chart,
-          `${isSelected && 'selected'} end-block`,
-          ecoRouteEndOccupancySection,
-          groupID,
-          'curveLinear',
-          keyValues,
-          'eco_routeEndOccupancy',
-          rotate,
-          isSelected
-        )
-      );
-      dataSimulation.eco_routeBeginOccupancy.forEach((ecoRouteBeginOccupancySection) =>
-        drawCurve(
-          chart,
-          `${isSelected && 'selected'} start-block`,
-          ecoRouteBeginOccupancySection,
-          groupID,
-          'curveLinear',
-          keyValues,
-          'eco_routeBeginOccupancy',
-          rotate,
-          isSelected
-        )
-      );
-      */
-    }
-  }
-
-  if (currentAllowanceSettings?.base) {
-    dataSimulation.tailPosition.forEach((tailPositionSection) =>
-      drawCurve(
-        chart,
-        `${isSelected && 'selected'} tail`,
-        tailPositionSection,
-        groupID,
-        'curveLinear',
-        keyValues,
-        'tailPosition',
-        rotate,
-        isSelected
-      )
-    );
-    dataSimulation.headPosition.forEach((headPositionSection) =>
-      drawCurve(
-        chart,
-        `${isSelected && 'selected'} head`,
-        headPositionSection,
-        groupID,
-        'curveLinear',
-        keyValues,
-        'headPosition',
-        rotate,
-        isSelected
-      )
-    );
-  }
-
-  if (dataSimulation.allowances_headPosition && currentAllowanceSettings?.allowances) {
-    dataSimulation.allowances_headPosition.forEach((tailPositionSection) =>
-      drawCurve(
-        chart,
-        `${isSelected && 'selected'} head allowances`,
-        tailPositionSection,
-        groupID,
-        'curveLinear',
-        keyValues,
-        'allowances_headPosition',
-        rotate,
-        isSelected
-      )
-    );
-  }
-  if (currentAllowanceSettings?.eco && dataSimulation.eco_headPosition) {
-    dataSimulation.eco_headPosition.forEach((tailPositionSection) =>
-      drawCurve(
-        chart,
-        `${isSelected && 'selected'} head eco`,
-        tailPositionSection,
-        groupID,
-        'curveLinear',
-        keyValues,
-        'eco_headPosition',
-        rotate,
-        isSelected
-      )
-    );
-  }
   drawText(
     chart,
     direction,

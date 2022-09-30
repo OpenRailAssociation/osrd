@@ -2,10 +2,6 @@ import './CustomGET.scss';
 
 import React, { useEffect, useState } from 'react';
 import {
-  persistentRedoSimulation,
-  persistentUndoSimulation,
-} from 'reducers/osrdsimulation/simulation';
-import {
   updateConsolidatedSimulation,
   updateMustRedraw,
   updateSelectedProjection,
@@ -29,7 +25,6 @@ import { useTranslation } from 'react-i18next';
 import staticData from 'applications/customget/static-data-simulation.json';
 
 export const KEY_VALUES_FOR_CONSOLIDATED_SIMULATION = ['time', 'position'];
-export const timetableURI = '/timetable/';
 
 export const trainscheduleURI = '/train_schedule/';
 
@@ -43,8 +38,7 @@ function CustomGET() {
   const [initialHeightOfSpaceTimeChart, setInitialHeightOfSpaceTimeChart] =
     useState(heightOfSpaceTimeChart);
 
-  const { timetableID } = useSelector((state) => state.osrdconf);
-  const { selectedProjection, departureArrivalTimes, selectedTrain } = useSelector(
+  const { departureArrivalTimes, selectedTrain } = useSelector(
     (state) => state.osrdsimulation
   );
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
@@ -61,76 +55,19 @@ function CustomGET() {
     return <CenterLoader message={t('simulation:waiting')} />;
   }
 
-  /**
-   * Recover the time table for all the trains
-   */
-  const getTimetable = async () => {
-    try {
-      if (!simulation.trains || !simulation.trains[selectedTrain]) {
-        dispatch(updateSelectedTrain(0));
-      }
-      const timetable = await get(`${timetableURI}${timetableID}/`);
-      if (timetable.train_schedules.length > 0) {
-        setIsEmpty(false);
-      }
-      const trainSchedulesIDs = timetable.train_schedules.map((train) => train.id);
-      const tempSelectedProjection = await get(`${trainscheduleURI}${trainSchedulesIDs[0]}/`);
-      if (!selectedProjection) {
-        dispatch(updateSelectedProjection(tempSelectedProjection));
-      }
-      try {
-        const simulationLocal = await get(`${trainscheduleURI}results/`, {
-          train_ids: trainSchedulesIDs.join(','),
-          path: tempSelectedProjection.path,
-        });
-        simulationLocal.sort((a, b) => a.base.stops[0].time > b.base.stops[0].time);
-        dispatch(updateSimulation({ trains: simulationLocal }));
-      } catch (e) {
-        dispatch(
-          setFailure({
-            name: t('simulation:errorMessages.unableToRetrieveTrainSchedule'),
-            message: `${e.message} `,
-          })
-        );
-        console.log('ERROR', e);
-      }
-    } catch (e) {
-      console.log('ERROR', e);
-    }
-  };
-
   const toggleTrainList = () => {
     setDisplayTrainList(!displayTrainList);
     setTimeout(() => dispatch(updateMustRedraw(true)), 200);
   };
 
-  const handleKey = (e) => {
-    if (e.key === 'z' && e.metaKey) {
-      dispatch(persistentUndoSimulation());
-    }
-    if (e.key === 'e' && e.metaKey) {
-      dispatch(persistentRedoSimulation());
-    }
-  };
-
   useEffect(() => {
-    // Setup the listener to undi /redo
-    window.addEventListener('keydown', handleKey);
-
-    getTimetable();
+    dispatch(updateSimulation({ trains: staticData }));
+    dispatch(updateSelectedTrain(0));
     return function cleanup() {
-      window.removeEventListener('keydown', handleKey);
       dispatch(updateSelectedProjection(undefined));
       dispatch(updateSimulation({ trains: [] }));
     };
   }, []);
-
-  useEffect(() => {
-    getTimetable();
-    return function cleanup() {
-      dispatch(updateSimulation({ trains: [] }));
-    };
-  }, [selectedProjection]);
 
   // With this hook we update and store
   // the consolidatedSimuation (simualtion stucture for the selected train)
