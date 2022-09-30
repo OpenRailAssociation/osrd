@@ -1,15 +1,8 @@
 import * as d3 from 'd3';
 
 import { getDirection, timeShiftTrain } from 'applications/osrd/components/Helpers/ChartHelpers';
-import {
-  updateContextMenu,
-  updateMustRedraw,
-  updateSelectedTrain,
-  updateSimulation,
-} from 'reducers/osrdsimulation';
+import { updateContextMenu, updateMustRedraw, updateSelectedTrain } from 'reducers/osrdsimulation';
 
-import React from 'react';
-import drawArea from 'applications/osrd/components/Simulation/drawArea';
 import drawCurve from 'applications/osrd/components/Simulation/drawCurve';
 import drawRect from 'applications/osrd/components/Simulation/drawRect';
 import drawText from 'applications/osrd/components/Simulation/drawText';
@@ -116,103 +109,8 @@ export default function drawTrain(
     : undefined;
 
   if (direction && currentAllowanceSettings) {
-    if (currentAllowanceSettings?.baseBlocks || !dataSimulation.routeAspects) {
-      /*
-      dataSimulation.areaBlock.forEach((dataSimulationAreaBlockSection) =>
-        drawArea(
-          chart,
-          `${isSelected && 'selected'} area`,
-          dataSimulationAreaBlockSection,
-          groupID,
-          'curveStepAfter',
-          keyValues,
-          rotate
-        )
-      );
-      */
-      /*
-      dataSimulation.routeEndOccupancy.forEach((routeEndOccupancySection) =>
-        drawCurve(
-          chart,
-          `${isSelected && 'selected'} end-block`,
-          routeEndOccupancySection,
-          groupID,
-          'curveLinear',
-          keyValues,
-          'routeEndOccupancy',
-          rotate,
-          isSelected
-        )
-      );
-      dataSimulation.routeBeginOccupancy.forEach((routeBeginOccupancySection) =>
-        drawCurve(
-          chart,
-          `${isSelected && 'selected'} start-block`,
-          routeBeginOccupancySection,
-          groupID,
-          'curveLinear',
-          keyValues,
-          'routeBeginOccupancy',
-          rotate,
-          isSelected
-        )
-
-      )
-      */
-
-
-/*
-      const routeAspectsClipPath = chart.drawZone
-        .select(`#${groupID}`)
-        .append('clipPath')
-        .attr('id', `${groupID}routeAspectsClipPath`)
-        .attr('maskUnits', 'userSpaceOnUse')
-        .attr('filter', `url(#stdcmFilter)`)
-
-      const routeAspectsMask = chart.drawZone
-        .select(`#${groupID}`)
-        .append('mask')
-        .attr('id', `${groupID}routeAspectsMask`)
-        .attr('maskUnits', 'userSpaceOnUse')
-        .attr('filter', `url(#stdcmFilter)`)
-        */
-       /*
-
-      dataSimulation.routeAspects.forEach((routeAspect) => {
-        routeAspectsMask
-          .append('use')
-          .attr('href', `#${groupID}${routeAspect.route_id}${routeAspect.color}`)
-          .attr('stroke-width', 15)
-          .attr('fill', 'none')
-          .attr('stroke', '#fff')
-          .attr('stroke-linejoin', 'round')
-
-      });
-      */
-/*
-      dataSimulation.routeAspects.forEach((routeAspect) => {
-        routeAspectsClipPath
-          .append('use')
-          .attr('href', `#${groupID}${routeAspect.route_id}${routeAspect.color}`)
-          .attr('stroke-width', 10)
-          .attr('stroke', '#000')
-
-      });
-*/
-/*
-      chart.drawZone
-        .select(`#${groupID}`)
-        .append('rect')
-        .attr('class', `${isStdcm && 'stdcm'} routeAspectsClamp`)
-        .attr('width', '100%')
-        .attr('height', '100%')
-        */
-    }
-
-
-     // Let's draw route_aspects
-     dataSimulation.routeAspects.forEach((routeAspect) => {
-
+    // Let's draw route_aspects
+    dataSimulation.routeAspects.forEach((routeAspect) => {
       drawRect(
         chart,
         `${isSelected && 'selected'} route-aspect`,
@@ -227,22 +125,7 @@ export default function drawTrain(
       );
     });
 
-
     if (dataSimulation.eco_routeAspects && currentAllowanceSettings?.ecoBlocks) {
-      /*
-      dataSimulation.eco_areaBlock.forEach((dataSimulationEcoAreaBlockSection) =>
-        drawArea(
-          chart,
-          `${isSelected && 'selected'} area eco`,
-          dataSimulationEcoAreaBlockSection,
-          groupID,
-          'curveStepAfter',
-          keyValues,
-          rotate
-        )
-      );
-      */
-
       // Let's draw route_aspects
       dataSimulation.eco_routeAspects.forEach((ecoRouteAspect) => {
         drawRect(
@@ -257,34 +140,6 @@ export default function drawTrain(
           isSelected
         );
       });
-      /*
-      dataSimulation.eco_routeEndOccupancy.forEach((ecoRouteEndOccupancySection) =>
-        drawCurve(
-          chart,
-          `${isSelected && 'selected'} end-block`,
-          ecoRouteEndOccupancySection,
-          groupID,
-          'curveLinear',
-          keyValues,
-          'eco_routeEndOccupancy',
-          rotate,
-          isSelected
-        )
-      );
-      dataSimulation.eco_routeBeginOccupancy.forEach((ecoRouteBeginOccupancySection) =>
-        drawCurve(
-          chart,
-          `${isSelected && 'selected'} start-block`,
-          ecoRouteBeginOccupancySection,
-          groupID,
-          'curveLinear',
-          keyValues,
-          'eco_routeBeginOccupancy',
-          rotate,
-          isSelected
-        )
-      );
-      */
     }
   }
 
