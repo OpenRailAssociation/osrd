@@ -8,7 +8,8 @@ const drawRect = (
   keyValues,
   name,
   rotate,
-  isSelected = true
+  isSelected = true,
+  id
 ) => {
   const width = rotate
     ? chart.x(dataSimulation[`${keyValues[1]}_end`]) -
@@ -25,6 +26,7 @@ const drawRect = (
   const drawZone = chart.drawZone.select(`#${groupID}`);
   drawZone
     .append('rect')
+    .attr('id', id || null)
     .attr('class', `rect zoomable ${classes}`)
     .datum(dataSimulation)
     .attr('fill', dataSimulation.color)

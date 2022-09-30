@@ -151,7 +151,8 @@ export default function SpaceTimeChart(props) {
           rotate,
           setDragEnding,
           setDragOffset,
-          simulation
+          simulation,
+          train.isStdcm
         );
       });
       enableInteractivity(
