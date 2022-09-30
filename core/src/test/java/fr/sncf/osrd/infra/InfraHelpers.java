@@ -20,7 +20,7 @@ import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.api.tracks.undirected.*;
 import fr.sncf.osrd.infra.implementation.tracks.undirected.*;
-import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
+import fr.sncf.osrd.railjson.schema.common.RJSWaypointRef;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
@@ -171,14 +171,6 @@ public class InfraHelpers {
         );
     }
 
-    private static RJSObjectRef<RJSTrackSection> makeTrackRef(String id) {
-        return new RJSObjectRef<>(id, "TrackSection");
-    }
-
-    private static RJSObjectRef<RJSTrainDetector> makeDetectorRef(String id) {
-        return new RJSObjectRef<>(id, "Detector");
-    }
-
     /** Make a single track infra.
      * The track has two detectors, d1 at 50 and d2 at 75.
      * It has two routes going from bs to bs either way, and two going to and from d1 */
@@ -192,39 +184,39 @@ public class InfraHelpers {
                         new RJSRoute(
                                 "route_forward",
                                 List.of(new SingleDirectionalRJSTrackRange(EdgeDirection.START_TO_STOP,
-                                        makeTrackRef("track"), 0, 100)),
+                                        "track", 0, 100)),
                                 List.of()
                         ),
                         new RJSRoute(
                                 "route_backward",
                                 List.of(new SingleDirectionalRJSTrackRange(EdgeDirection.STOP_TO_START,
-                                        makeTrackRef("track"), 100, 0)),
+                                        "track", 100, 0)),
                                 List.of()
                         ),
                         new RJSRoute(
                                 "route_forward_first_half",
                                 List.of(new SingleDirectionalRJSTrackRange(EdgeDirection.START_TO_STOP,
-                                        makeTrackRef("track"), 0, 50)),
+                                        "track", 0, 50)),
                                 List.of()
                         ),
                         new RJSRoute(
                                 "route_forward_second_half",
                                 List.of(new SingleDirectionalRJSTrackRange(EdgeDirection.START_TO_STOP,
-                                        makeTrackRef("track"), 50, 100)),
+                                        "track", 50, 100)),
                                 List.of()
                         )
                 ),
                 new ArrayList<>(),
                 List.of(
-                        new RJSSignal("signal", EdgeDirection.START_TO_STOP, 400, makeDetectorRef("d1"))
+                        new RJSSignal("signal", EdgeDirection.START_TO_STOP, 400, "d1")
                 ),
                 List.of(
-                        new RJSBufferStop("bs_start", 0, makeTrackRef("track")),
-                        new RJSBufferStop("bs_end", 100, makeTrackRef("track"))
+                        new RJSBufferStop("bs_start", 0, "track"),
+                        new RJSBufferStop("bs_end", 100, "track")
                 ),
                 List.of(
-                        new RJSTrainDetector("d1", 50, makeTrackRef("track")),
-                        new RJSTrainDetector("d2", 75, makeTrackRef("track"))
+                        new RJSTrainDetector("d1", 50, "track"),
+                        new RJSTrainDetector("d2", 75, "track")
                 ),
                 new ArrayList<>(),
                 new ArrayList<>()
