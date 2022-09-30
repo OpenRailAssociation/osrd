@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
-from typing import List, Optional, Tuple
-from pydantic.error_wrappers import ValidationError
+from typing import List, Tuple
 
+from pydantic.error_wrappers import ValidationError
 from railjson_generator.schema.infra.direction import ApplicableDirection, Direction
 from railjson_generator.schema.infra.endpoint import Endpoint, TrackEndpoint
 from railjson_generator.schema.infra.link import Link
@@ -34,9 +34,7 @@ class TrackSection:
     signals: List[Signal] = field(default_factory=list)
     operational_points: List[OperationalPointPart] = field(default_factory=list)
     index: int = field(default=-1, repr=False)
-    coordinates: List[Tuple[float, float]] = field(
-        default_factory=lambda: [(None, None), (None, None)]
-    )
+    coordinates: List[Tuple[float, float]] = field(default_factory=lambda: [(None, None), (None, None)])
     begining_links: List[TrackEndpoint] = field(default_factory=list, repr=False)
     end_links: List[TrackEndpoint] = field(default_factory=list, repr=False)
     slopes: List[Slope] = field(default_factory=list)
@@ -80,12 +78,14 @@ class TrackSection:
             if waypoint.waypoint_type == "buffer_stop":
                 return True
         return False
-    
+
     def set_remaining_coords(self, coordinates: List[Tuple[float, float]]):
         """Sets values for extremities if none was already set, else only set values between extremities."""
         begin, end = 0, len(self.coordinates)
-        if self.coordinates[0] != (None, None): begin += 1
-        if self.coordinates[-1] != (None, None): end -= 1
+        if self.coordinates[0] != (None, None):
+            begin += 1
+        if self.coordinates[-1] != (None, None):
+            end -= 1
         self.coordinates[begin:end] = coordinates
 
     @staticmethod
@@ -113,15 +113,19 @@ class TrackSection:
         return infra.TrackSection(
             id=self.label,
             length=self.length,
-            line_code=self.line_code,
-            track_number=self.track_number,
-            line_name=self.line_name,
-            track_name=self.track_name,
-            navigability=infra.ApplicableDirections[ApplicableDirection.BOTH.name],
             slopes=[slope.to_rjs() for slope in self.slopes],
             curves=[curve.to_rjs() for curve in self.curves],
             **geo_data,
+            extensions={
+                "sncf": {
+                    "line_code": self.line_code,
+                    "line_name": self.line_name,
+                    "track_number": self.track_number,
+                    "track_name": self.track_name,
+                }
+            },
         )
 
-    def make_rjs_ref(self):
-        return infra.ObjectReference(id=self.label, type=type(self).__name__)
+    @property
+    def id(self):
+        return self.label

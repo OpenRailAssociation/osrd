@@ -1,8 +1,8 @@
-import infra
 import heapq
 from dataclasses import dataclass, field
 from typing import List, Optional, Set
 
+import infra
 from railjson_generator.schema.infra.direction import Direction
 from railjson_generator.schema.infra.endpoint import Endpoint
 from railjson_generator.schema.infra.track_section import TrackSection
@@ -28,11 +28,12 @@ class PathElement:
 
     def to_rjs(self):
         return infra.DirectionalTrackRange(
-            track=self.track_section.make_rjs_ref(),
+            track=self.track_section.id,
             begin=min(self.begin, self.end),
             end=max(self.begin, self.end),
-            direction=infra.Direction[self.direction.name]
+            direction=infra.Direction[self.direction.name],
         )
+
 
 Path = List[PathElement]
 
@@ -82,15 +83,9 @@ def search_signal(candidate) -> bool:
     for signal in signals:
         if candidate.direction != signal.direction:
             continue
-        if (
-            candidate.direction == Direction.START_TO_STOP
-            and signal.position <= candidate.offset
-        ):
+        if candidate.direction == Direction.START_TO_STOP and signal.position <= candidate.offset:
             continue
-        if (
-            candidate.direction == Direction.STOP_TO_START
-            and signal.position >= candidate.offset
-        ):
+        if candidate.direction == Direction.STOP_TO_START and signal.position >= candidate.offset:
             continue
         return signal
     return None
@@ -101,15 +96,9 @@ def search_buffer_stop(candidate) -> bool:
     if candidate.direction == Direction.STOP_TO_START:
         waypoints = list(reversed(waypoints))
     for waypoint in waypoints:
-        if (
-            candidate.direction == Direction.START_TO_STOP
-            and waypoint.position <= candidate.offset
-        ):
+        if candidate.direction == Direction.START_TO_STOP and waypoint.position <= candidate.offset:
             continue
-        if (
-            candidate.direction == Direction.STOP_TO_START
-            and waypoint.position >= candidate.offset
-        ):
+        if candidate.direction == Direction.STOP_TO_START and waypoint.position >= candidate.offset:
             continue
         if waypoint.waypoint_type == "buffer_stop":
             return waypoint
@@ -204,8 +193,6 @@ def find_route_path(
             added_cost = candidate.route_node.length() - candidate.offset
             heapq.heappush(
                 queue,
-                RoutePathfindingStep(
-                    neighbor, candidate, cost=candidate.cost + added_cost
-                ),
+                RoutePathfindingStep(neighbor, candidate, cost=candidate.cost + added_cost),
             )
     return []
