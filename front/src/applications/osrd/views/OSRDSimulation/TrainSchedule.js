@@ -46,65 +46,96 @@ export default function TrainSchedule() {
         type="button"
         className="btn btn-only-icon btn-transparent btn-color-gray px-0"
         data-toggle="modal"
-        data-target="#exampleModal"
+        data-target=".bd-example-modal-xl"
       >
         <IoMdEye />
       </button>
       <div
-        className="modal fade"
-        id="exampleModal"
-        tabIndex="-1"
+        className="modal fade bd-example-modal-xl"
+        tabindex="-1"
         role="dialog"
-        aria-labelledby="exampleModalLabel"
+        aria-labelledby="myLargeModalLabel"
         aria-hidden="true"
       >
-        <div className="modal-dialog modal-dialog-centered" role="document">
-          <div className="modal-content">
+        <div className="modal-dialog modal-xl">
+          <div class="modal-content">
             <div className="modal-header">
               <button type="button" className="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
             <div className="modal-body">
-              <div className="text-primary">{t('simulation:timetable')}</div>
-              <div>
-                <div>
-                  <table>
-                    <thead>
-                      <tr>
-                        <th scope="col">
-                          <div className="text-primary">N°</div>
-                        </th>
-                        <th scope="col">
-                          <div className="text-primary">Vitesse Limite</div>
-                        </th>
-                        <th scope="col">
-                          <div className="text-primary">PK</div>
-                        </th>
-                        <th scope="col">
-                          <div className="text-primary">{t('simulation:stopPlace')}</div>
-                        </th>
-                        <th scope="col">
-                          <div className="text-primary">{t('simulation:stopTime')}</div>
-                        </th>
-                        <th scope="col">
-                          <div className="text-primary">Voie</div>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {data.map((stop, idx) =>
-                        formatStops(stop, idx, simulation.trains[selectedTrain])
-                      )}
-                    </tbody>
-                  </table>
+              <div class="d-flex bd-highlight">
+                <div class="p-2 flex-fill bd-highlight">
+                  <div className="text-primary">1 - Description de sillon</div>
+                  <div class="p-2 flex-fill bd-highlight">
+                    <h2>Origine :</h2>
+                    <div className="text-primary">Paris Montparnasse</div>
+                  </div>
+                  <div class="p-2 flex-fill bd-highlight">
+                    <h2>Destination :</h2>
+                    <div className="text-primary">Orléans</div>
+                  </div>
+                  <div class="p-2 flex-fill bd-highlight">
+                    <h2>EM de trace :</h2>
+                    <div className="text-bold">22200</div>
+                  </div>
+                  <div class="p-2 flex-fill bd-highlight">
+                    <h2>Masse de trace :</h2>
+                    <div className="text-bold">400T</div>
+                  </div>
+                  <div class="p-2 flex-fill bd-highlight">
+                    <h2>Indice de composition :</h2>
+                    <div className="text-bold">V160</div>
+                  </div>
+                  <div class="p-2 flex-fill bd-highlight">
+                    <h2>Catégorie statistique :</h2>
+                    <div className="text-bold">59U</div>
+                  </div>
+                </div>
+                <div class="p-2 flex-fill bd-highlight">
+                  <div className="text-primary">{t('simulation:timetable')}</div>
+                  <div class="text-right"> 
+                  <p class="font-italic">Nombre de lignes : 112</p>
+                    <div>
+                      <table>
+                        <thead>
+                          <tr>
+                            <th scope="col">
+                              <div className="text-primary">N°</div>
+                            </th>
+                            <th scope="col">
+                              <div className="text-primary">Vitesse Limite</div>
+                            </th>
+                            <th scope="col">
+                              <div className="text-primary">PK</div>
+                            </th>
+                            <th scope="col">
+                              <div className="text-primary">{t('simulation:stopPlace')}</div>
+                            </th>
+                            <th scope="col">
+                              <div className="text-primary">{t('simulation:stopTime')}</div>
+                            </th>
+                            <th scope="col">
+                              <div className="text-primary">Voie</div>
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {data.map((stop, idx) =>
+                            formatStops(stop, idx, simulation.trains[selectedTrain])
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" data-dismiss="modal">
-                Close
-              </button>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" data-dismiss="modal">
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>
