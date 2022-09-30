@@ -60,7 +60,8 @@ export default function StdcmRequestModal(props) {
           dispatch(updateItinerary(result.path));
 
           const fakedNewTrain = result.simulation;
-          fakedNewTrain.id = 100000;
+          fakedNewTrain.id = 1500;
+          fakedNewTrain.isStdcm = true;
 
           fakedNewTrain.base.stops = fakedNewTrain.base.head_positions[0].map(
             (headPosition, index) => ({
