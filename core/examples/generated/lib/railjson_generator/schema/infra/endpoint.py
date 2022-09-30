@@ -46,4 +46,4 @@ class TrackEndpoint:
             self.track_section.coordinates[-1] = (x, y)
 
     def to_rjs(self):
-        return infra.TrackEndpoint(endpoint=infra.Endpoint[self.endpoint.name], track=self.track_section.make_rjs_ref())
+        return infra.TrackEndpoint(endpoint=infra.Endpoint[self.endpoint.name], track=self.track_section.id)
