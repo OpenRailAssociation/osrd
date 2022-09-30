@@ -21,6 +21,7 @@ export default function createTrain(dispatch, keyValues, simulationTrains, t) {
   const dataSimulation = simulationTrains.map((train, trainNumber) => {
     const dataSimulationTrain = {};
     dataSimulationTrain.id = train.id;
+    dataSimulationTrain.isStdcm = train.isStdcm;
     dataSimulationTrain.name = train.name;
     dataSimulationTrain.trainNumber = trainNumber;
     dataSimulationTrain.headPosition = formatStepsWithTimeMulti(train.base.head_positions);

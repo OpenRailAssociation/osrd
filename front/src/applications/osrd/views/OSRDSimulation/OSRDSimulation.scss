@@ -153,6 +153,10 @@ select.sm {
       }
     }
   }
+  rect {
+    stroke-width: inherit;
+    stroke: inherit;
+  }
   .start-block {
     stroke: var(--coolgray5);
     stroke-width: 2;
