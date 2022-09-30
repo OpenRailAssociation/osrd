@@ -8,17 +8,11 @@ public class ResultStops {
     double time;
     double position;
     double duration;
-    @Json(name = "line_code")
-    int lineCode;
-    @Json(name = "track_number")
-    int trackNumber;
 
     /** RestultStops constructor */
-    public ResultStops(double time, double position, double duration, int lineCode, int trackNumber) {
+    public ResultStops(double time, double position, double duration) {
         this.time = time;
         this.position = position;
         this.duration = duration;
-        this.lineCode = lineCode;
-        this.trackNumber = trackNumber;
     }
 }

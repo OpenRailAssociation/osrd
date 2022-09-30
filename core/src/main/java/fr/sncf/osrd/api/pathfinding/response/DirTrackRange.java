@@ -1,21 +1,20 @@
 package fr.sncf.osrd.api.pathfinding.response;
 
 import com.squareup.moshi.Json;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
+import fr.sncf.osrd.railjson.schema.common.RJSWaypointRef;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 
 public class DirTrackRange {
     @Json(name = "track")
-    public final RJSObjectRef<RJSTrackSection> trackSection;
+    public final String trackSection;
     public final double begin;
     public final double end;
     public final EdgeDirection direction;
 
     /** Create a new directional track range */
     public DirTrackRange(String trackSectionID, double begin, double end) {
-        this.trackSection = new RJSObjectRef<>(trackSectionID, "TrackSection");
+        this.trackSection = trackSectionID;
         if (begin < end) {
             this.direction = EdgeDirection.START_TO_STOP;
             this.begin = begin;

@@ -3,7 +3,6 @@ package fr.sncf.osrd.api.pathfinding;
 import fr.sncf.osrd.api.pathfinding.response.DirTrackRange;
 import fr.sncf.osrd.api.pathfinding.response.PathfindingResult;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
-import fr.sncf.osrd.infra.implementation.RJSObjectParsing;
 import fr.sncf.osrd.utils.geom.LineString;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,9 +30,9 @@ public class GeomUtils {
                     continue;
                 }
 
-                if (previousTrack.trackSection.id.id.compareTo(trackSection.trackSection.id.id) != 0) {
+                if (previousTrack.trackSection.compareTo(trackSection.trackSection) != 0) {
                     if (Double.compare(previousBegin, previousEnd) != 0) {
-                        var track = RJSObjectParsing.getTrackSection(previousTrack.trackSection, infra);
+                        var track = infra.getTrackSection(previousTrack.trackSection);
                         sliceAndAdd(geoList, track.getGeo(), previousBegin, previousEnd, track.getLength());
                         sliceAndAdd(schList, track.getSch(), previousBegin, previousEnd, track.getLength());
                     }
@@ -45,7 +44,7 @@ public class GeomUtils {
         }
 
         assert previousTrack != null;
-        var track = RJSObjectParsing.getTrackSection(previousTrack.trackSection, infra);
+        var track = infra.getTrackSection(previousTrack.trackSection);
         sliceAndAdd(geoList, track.getGeo(), previousBegin, previousEnd, track.getLength());
         sliceAndAdd(schList, track.getSch(), previousBegin, previousEnd, track.getLength());
 

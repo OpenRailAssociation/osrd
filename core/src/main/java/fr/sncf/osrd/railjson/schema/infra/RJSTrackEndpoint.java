@@ -1,15 +1,15 @@
 package fr.sncf.osrd.railjson.schema.infra;
 
-import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
+import fr.sncf.osrd.railjson.schema.common.RJSWaypointRef;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
 import java.util.Objects;
 
 /** An identifier for a side of a specific track section */
 public final class RJSTrackEndpoint {
-    public RJSObjectRef<RJSTrackSection> track;
+    public String track;
     public EdgeEndpoint endpoint;
 
-    public RJSTrackEndpoint(RJSObjectRef<RJSTrackSection> track, EdgeEndpoint endpoint) {
+    public RJSTrackEndpoint(String track, EdgeEndpoint endpoint) {
         this.track = track;
         this.endpoint = endpoint;
     }

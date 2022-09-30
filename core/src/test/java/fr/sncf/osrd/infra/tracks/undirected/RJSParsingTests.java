@@ -13,7 +13,7 @@ import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.tracks.undirected.SpeedLimits;
 import fr.sncf.osrd.infra.errors.InvalidInfraError;
 import fr.sncf.osrd.infra.implementation.tracks.undirected.UndirectedInfraBuilder;
-import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
+import fr.sncf.osrd.railjson.schema.common.RJSWaypointRef;
 import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackEndpoint;
@@ -62,9 +62,8 @@ public class RJSParsingTests {
         var ports = new ArrayList<>(s.ports.values());
         rjsInfra.trackSectionLinks.add(new RJSTrackSectionLink(
                 "broken",
-                ApplicableDirection.BOTH,
                 ports.get(0),
-                new RJSTrackEndpoint(new RJSObjectRef<>("ne.micro.bar_a", "TrackSection"), EdgeEndpoint.END)
+                new RJSTrackEndpoint("ne.micro.bar_a", EdgeEndpoint.END)
         ));
         assertThrows(
                 InvalidInfraError.class,
@@ -100,7 +99,7 @@ public class RJSParsingTests {
                         "category1", 10.,
                         "category2", 20.
                 ), List.of(new RJSApplicableDirectionsTrackRange(
-                        new RJSObjectRef<>(track.id, "TrackSection"),
+                        track.id,
                         ApplicableDirection.START_TO_STOP,
                         0,
                         10
@@ -109,7 +108,7 @@ public class RJSParsingTests {
                     "category2", 12.,
                     "category3", 17.
             ), List.of(new RJSApplicableDirectionsTrackRange(
-                    new RJSObjectRef<>(track.id, "TrackSection"),
+                    track.id,
                     ApplicableDirection.START_TO_STOP,
                     5,
                     15
