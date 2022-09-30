@@ -33,7 +33,7 @@ function TracksSchematic(props) {
           ...trackNameLayer(colors),
           layout: {
             ...trackNameLayer(colors).layout,
-            'text-field': '{track_name}',
+            'text-field': '{extensions_sncf_track_name}',
             'text-size': 12,
           },
         }}
@@ -44,7 +44,7 @@ function TracksSchematic(props) {
           ...lineNumberLayer(colors),
           layout: {
             ...lineNumberLayer(colors).layout,
-            'text-field': '{line_code}',
+            'text-field': '{extensions_sncf_line_code}',
           },
         }}
         source-layer={MAP_TRACK_SOURCES.schematic}
