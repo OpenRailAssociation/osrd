@@ -37,4 +37,5 @@ Here a list of components to help you in your development:
 To install them simply run:
  ```
  $ rustup component add rustfmt clippy
+ $ cargo install cargo-tarpaulin
  ```

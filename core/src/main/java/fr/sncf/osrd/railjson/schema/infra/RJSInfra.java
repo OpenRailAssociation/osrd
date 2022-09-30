@@ -7,6 +7,7 @@ import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSBufferStop;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrainDetector;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSCatenary;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
 import fr.sncf.osrd.utils.geom.LineString;
 import java.util.ArrayList;
@@ -61,6 +62,8 @@ public class RJSInfra {
     @Json(name = "speed_sections")
     public List<RJSSpeedSection> speedSections;
 
+    public List<RJSCatenary> catenaries;
+
     /** Create a new serialized RailJSON file */
     public RJSInfra(
             Collection<RJSTrackSection> trackSections,
@@ -72,8 +75,8 @@ public class RJSInfra {
             List<RJSSignal> signals,
             List<RJSBufferStop> bufferStops,
             List<RJSTrainDetector> detectors,
-            List<RJSSpeedSection> speedSections
-
+            List<RJSSpeedSection> speedSections,
+            List<RJSCatenary> catenaries
     ) {
         this.trackSections = trackSections;
         this.trackSectionLinks = trackSectionLinks;
@@ -85,6 +88,7 @@ public class RJSInfra {
         this.bufferStops = bufferStops;
         this.detectors = detectors;
         this.speedSections = speedSections;
+        this.catenaries = catenaries;
     }
 
     /**
@@ -92,6 +96,7 @@ public class RJSInfra {
      */
     public RJSInfra() {
         this(
+                new ArrayList<>(),
                 new ArrayList<>(),
                 new ArrayList<>(),
                 new ArrayList<>(),

@@ -73,6 +73,8 @@ public class InfraManager {
         PARSING_JSON(false),
         PARSING_INFRA(false),
         CACHED(true),
+        // errors that are known to be temporary
+        TRANSIENT_ERROR(false),
         ERROR(true);
 
         static {
@@ -80,9 +82,11 @@ public class InfraManager {
             DOWNLOADING.transitions = new InfraStatus[] { PARSING_JSON, ERROR };
             PARSING_JSON.transitions = new InfraStatus[] { PARSING_INFRA, ERROR };
             PARSING_INFRA.transitions = new InfraStatus[] { CACHED, ERROR };
-            // if an infrastructure is already cached, or in an error state,
-            // a new version can re-trigger a downloaad
+            // if a new version appears
             CACHED.transitions = new InfraStatus[] { DOWNLOADING };
+            // at the next try
+            TRANSIENT_ERROR.transitions = new InfraStatus[] { DOWNLOADING };
+            // if a new version appears
             ERROR.transitions = new InfraStatus[] { DOWNLOADING };
         }
 
@@ -104,26 +108,19 @@ public class InfraManager {
     public static final class InfraCacheEntry {
         public InfraStatus status = InfraStatus.INITIALIZING;
         public InfraStatus lastStatus = null;
-        public Exception lastError = null;
+        public Throwable lastError = null;
         public SignalingInfra infra = null;
         public String expectedVersion = null;
 
         void transitionTo(InfraStatus newStatus) {
+            transitionTo(newStatus, null);
+        }
+
+        void transitionTo(InfraStatus newStatus, Throwable error) {
             assert status.canTransitionTo(newStatus);
             this.lastStatus = this.status;
-            this.status = newStatus;
-            if (newStatus.isStable)
-                this.notifyAll();
-        }
-
-        public void registerError(Exception error) {
-            transitionTo(InfraStatus.ERROR);
             this.lastError = error;
-        }
-
-        public void waitUntilStable() throws InterruptedException {
-            while (!status.isStable)
-                this.wait();
+            this.status = newStatus;
         }
     }
 
@@ -189,17 +186,17 @@ public class InfraManager {
             );
 
             // Cache the infra
-            logger.info("successfuly cached {}", endpointUrl);
+            logger.info("successfully cached {}", endpointUrl);
             cacheEntry.infra = infra;
             cacheEntry.expectedVersion = expectedVersion;
             cacheEntry.transitionTo(InfraStatus.CACHED);
             return infra;
-        } catch (IOException | UnexpectedHttpResponse | JsonDataException e) {
-            cacheEntry.registerError(e);
-            throw new InfraLoadException("error while loading new infra", cacheEntry.lastStatus, e);
-        } catch (Exception e) {
-            cacheEntry.registerError(e);
-            throw e;
+        } catch (IOException | UnexpectedHttpResponse | VirtualMachineError e) {
+            cacheEntry.transitionTo(InfraStatus.TRANSIENT_ERROR, e);
+            throw new InfraLoadException("soft error while loading new infra", cacheEntry.lastStatus, e);
+        } catch (Throwable e) {
+            cacheEntry.transitionTo(InfraStatus.ERROR, e);
+            throw new InfraLoadException("hard error while loading new infra", cacheEntry.lastStatus, e);
         }
     }
 
@@ -209,17 +206,19 @@ public class InfraManager {
     public SignalingInfra load(String infraId, String expectedVersion, DiagnosticRecorder diagnosticRecorder)
             throws InfraLoadException, InterruptedException {
         try {
-            var prevCacheEntry = infraCache.putIfAbsent(infraId, new InfraCacheEntry());
+            infraCache.putIfAbsent(infraId, new InfraCacheEntry());
             var cacheEntry = infraCache.get(infraId);
 
+            // /!\ the cache entry lock is held while a download / parse process is in progress
             synchronized (cacheEntry) {
-                // if there was no cache entry, download the infra again
-                if (prevCacheEntry == null || cacheEntry.status == InfraStatus.ERROR
-                        || expectedVersion != null && !expectedVersion.equals(cacheEntry.expectedVersion))
+                // try downloading the infra again if:
+                //  - the existing cache entry hasn't reached a stable state
+                //  - we don't have the right version
+                var obsoleteVersion = expectedVersion != null && !expectedVersion.equals(cacheEntry.expectedVersion);
+                if (!cacheEntry.status.isStable || obsoleteVersion)
                     return downloadInfra(cacheEntry, infraId, expectedVersion, diagnosticRecorder);
 
                 // otherwise, wait for the infra to reach a stable state
-                cacheEntry.waitUntilStable();
                 if (cacheEntry.status == InfraStatus.CACHED)
                     return cacheEntry.infra;
                 if (cacheEntry.status == InfraStatus.ERROR)

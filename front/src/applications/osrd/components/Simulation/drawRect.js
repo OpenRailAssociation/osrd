@@ -1,5 +1,4 @@
-import * as d3 from 'd3';
-
+/* eslint-disable no-unused-vars */
 const drawRect = (
   chart,
   classes,

@@ -50,6 +50,7 @@ export default function SpaceCurvesSlopes(props) {
     (state) => state.osrdsimulation
   );
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
+  // eslint-disable-next-line no-unused-vars
   const [rotate, setRotate] = useState(false);
   const [chart, setChart] = useState(undefined);
   const [zoomLevel, setZoomLevel] = useState(1);

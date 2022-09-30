@@ -6,6 +6,7 @@ import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.train.RollingStock;
+import java.util.Set;
 
 public class RJSRollingStock implements Identified {
     public static final JsonAdapter<RJSRollingStock> adapter = new Moshi
@@ -14,7 +15,7 @@ public class RJSRollingStock implements Identified {
             .build()
             .adapter(RJSRollingStock.class);
 
-    public static final transient String CURRENT_VERSION = "2.1";
+    public static final transient String CURRENT_VERSION = "2.2";
 
     /**
      * The version of the rolling stock format used
@@ -99,6 +100,12 @@ public class RJSRollingStock implements Identified {
 
     @Json(name = "loading_gauge")
     public RJSLoadingGaugeType loadingGauge = null;
+
+    @Json(name = "compatible_voltages")
+    public Set<Integer> compatibleVoltages;
+
+    @Json(name = "electric_only")
+    public boolean electricOnly;
 
     @SuppressFBWarnings("UWF_NULL_FIELD")
     public static final class RJSEffortCurve {

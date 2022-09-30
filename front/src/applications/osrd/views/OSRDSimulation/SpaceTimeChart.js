@@ -14,7 +14,6 @@ import {
   updateContextMenu,
   updateMustRedraw,
   updatePositionValues,
-  updateSimulation,
 } from 'reducers/osrdsimulation';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -116,6 +115,7 @@ export default function SpaceTimeChart(props) {
     });
   };
 
+  // eslint-disable-next-line default-param-last
   const drawAllTrains = (reset, forceRedraw = false, newDataSimulation) => {
     const currentDataSimulation = newDataSimulation || dataSimulation;
 
@@ -139,7 +139,6 @@ export default function SpaceTimeChart(props) {
 
       drawAxisTitle(chartLocal, rotate);
       currentDataSimulation.forEach((train, idx) => {
-        console.log('train', train)
         drawTrain(
           chartLocal,
           dispatch,

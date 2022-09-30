@@ -9,7 +9,6 @@ class Card extends React.Component {
     img: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
     disabledLink: PropTypes.bool,
-    user: PropTypes.object.isRequired,
   };
 
   static defaultProps = {

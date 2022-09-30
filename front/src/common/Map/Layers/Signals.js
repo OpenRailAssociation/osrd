@@ -114,6 +114,7 @@ function Signals(props) {
   };
 
   const signalsList = getSignalsList();
+
   const context = {
     prefix,
     colors,
