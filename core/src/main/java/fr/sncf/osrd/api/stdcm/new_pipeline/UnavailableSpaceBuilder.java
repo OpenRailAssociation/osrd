@@ -1,5 +1,6 @@
 package fr.sncf.osrd.api.stdcm.new_pipeline;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import fr.sncf.osrd.api.stdcm.STDCMEndpoint;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
@@ -7,6 +8,7 @@ import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.reporting.exceptions.NotImplemented;
 import fr.sncf.osrd.train.RollingStock;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 public class UnavailableSpaceBuilder {
 
@@ -23,6 +25,50 @@ public class UnavailableSpaceBuilder {
             Collection<STDCMEndpoint.RouteOccupancy> occupancies,
             RollingStock rollingStock
     ) {
-        throw new NotImplemented();
+
+        Multimap<SignalingRoute, OccupancyBlock> res = HashMultimap.create();
+
+        for (var occupancy : occupancies) {
+
+            var routeGraph = infra.getSignalingRouteGraph();
+            var currentRoute = infra.findSignalingRoute(occupancy.id, "BAL3");
+            var startRouteNode=routeGraph.incidentNodes(currentRoute).nodeU();
+            var endRouteNode=routeGraph.incidentNodes(currentRoute).nodeV();
+            var length = currentRoute.getInfraRoute().getLength();
+            var timeStart = occupancy.startOccupancyTime;
+            var timeEnd = occupancy.endOccupancyTime;
+
+            //Generating current block occupancy
+            var block = new OccupancyBlock(timeStart, timeEnd, 0, length);
+            res.put(currentRoute, block);
+
+            //Generating sight Distance occupancy
+            var predecessorRoutes = routeGraph.inEdges(startRouteNode);
+            for (var predecessorRoute : predecessorRoutes) {
+                var preBlockLength = predecessorRoute.getInfraRoute().getLength();
+                var sightDistance = predecessorRoute.getExitSignal().getSightDistance();
+                var previousBlock = new OccupancyBlock(timeStart, timeEnd, preBlockLength - sightDistance, preBlockLength);
+                res.put(predecessorRoute, previousBlock);
+            }
+
+            //Generating successorRoute occupancy
+            var successorRoutes = routeGraph.outEdges(endRouteNode);
+                for (var successorRoute : successorRoutes) {
+                var successorBlockLength = successorRoute.getInfraRoute().getLength();
+                var successorBlock = new OccupancyBlock(timeStart, timeEnd, 0, successorBlockLength);
+                res.put(successorRoute, successorBlock);
+            }
+
+            //Generating rollingStock length occupancy
+            for (var successorRoute : successorRoutes) {
+                var endSuccessorRoutesNode = routeGraph.incidentNodes(successorRoute).nodeV();
+                var secondSuccessorRoutes = routeGraph.outEdges(endSuccessorRoutesNode);
+                for (var secondSuccessorRoute : secondSuccessorRoutes) {
+                     var secondSuccessorBlock = new OccupancyBlock(timeStart, timeEnd, 0, rollingStock.getLength());
+                     res.put(secondSuccessorRoute, secondSuccessorBlock);
+                }
+            }
+        }
+    return res;
     }
 }
