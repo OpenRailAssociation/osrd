@@ -17,7 +17,7 @@ import fr.sncf.osrd.envelope_sim_infra.MRSP.LimitKind;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.implementation.tracks.directed.DirectedInfraBuilder;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
-import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
+import fr.sncf.osrd.railjson.schema.common.RJSWaypointRef;
 import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSApplicableDirectionsTrackRange;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
@@ -169,21 +169,21 @@ public class MaxSpeedEnvelopeTest {
         rjsInfra.speedSections = List.of(
                 new RJSSpeedSection("foo1", 42, new HashMap<>(), List.of(
                         new RJSApplicableDirectionsTrackRange(
-                                new RJSObjectRef<>("track", "TrackSection"),
+                                "track",
                                 ApplicableDirection.BOTH,
                                 0, 30
                         )
                 )),
                 new RJSSpeedSection("foo2", 21, new HashMap<>(), List.of(
                         new RJSApplicableDirectionsTrackRange(
-                                new RJSObjectRef<>("track", "TrackSection"),
+                                "track",
                                 ApplicableDirection.START_TO_STOP,
                                 30, 50
                         )
                 )),
                 new RJSSpeedSection("foo3", 10.5, new HashMap<>(), List.of(
                         new RJSApplicableDirectionsTrackRange(
-                                new RJSObjectRef<>("track", "TrackSection"),
+                                "track",
                                 ApplicableDirection.STOP_TO_START,
                                 70, 100
                         )

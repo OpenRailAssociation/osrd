@@ -22,8 +22,6 @@ public class TrackSectionImpl implements TrackSection {
     private final LineString geo;
     private final LineString sch;
     private final ImmutableRangeMap<Double, LoadingGaugeConstraint> loadingGaugeConstraints;
-    private final int trackNumber;
-    private final int lineCode;
 
     @Override
     @ExcludeFromGeneratedCodeCoverage
@@ -41,9 +39,7 @@ public class TrackSectionImpl implements TrackSection {
             ImmutableSet<OperationalPoint> operationalPoints,
             LineString geo,
             LineString sch,
-            ImmutableRangeMap<Double, LoadingGaugeConstraint> loadingGaugeConstraints,
-            int trackNumber,
-            int lineCode
+            ImmutableRangeMap<Double, LoadingGaugeConstraint> loadingGaugeConstraints
     ) {
         this.length = length;
         this.id = id;
@@ -51,8 +47,6 @@ public class TrackSectionImpl implements TrackSection {
         this.geo = geo;
         this.sch = sch;
         this.loadingGaugeConstraints = loadingGaugeConstraints;
-        this.trackNumber = trackNumber;
-        this.lineCode = lineCode;
         this.catenaryVoltages.put(Range.closed(0., length), Set.of());
     }
 
@@ -61,7 +55,7 @@ public class TrackSectionImpl implements TrackSection {
             double length,
             String id
     ) {
-        this(length, id, ImmutableSet.of(), null, null, ImmutableRangeMap.of(), 0, 0);
+        this(length, id, ImmutableSet.of(), null, null, ImmutableRangeMap.of());
         speedSections = new EnumMap<>(Direction.class);
         for (var dir : Direction.values())
             speedSections.put(dir, ImmutableRangeMap.of());
@@ -105,16 +99,6 @@ public class TrackSectionImpl implements TrackSection {
     @Override
     public ImmutableRangeMap<Double, LoadingGaugeConstraint> getLoadingGaugeConstraints() {
         return loadingGaugeConstraints;
-    }
-
-    @Override
-    public int getLineCode() {
-        return lineCode;
-    }
-
-    @Override
-    public int getTrackNumber() {
-        return trackNumber;
     }
 
     public RangeMap<Double, Set<Integer>> getVoltages() {

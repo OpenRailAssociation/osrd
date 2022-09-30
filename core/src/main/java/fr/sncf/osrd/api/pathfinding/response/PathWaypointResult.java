@@ -3,7 +3,7 @@ package fr.sncf.osrd.api.pathfinding.response;
 import fr.sncf.osrd.infra.api.tracks.undirected.OperationalPoint;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackSection;
-import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
+import fr.sncf.osrd.railjson.schema.common.RJSWaypointRef;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 
 /**
@@ -21,7 +21,7 @@ public class PathWaypointResult {
     /**
      * Track the point is on
      */
-    public RJSObjectRef<RJSTrackSection> track;
+    public String track;
     /**
      * Offset of the point on the track
      */
@@ -42,7 +42,7 @@ public class PathWaypointResult {
             double trackRangeOffset
     ) {
         this.suggestion = suggestion;
-        this.track = new RJSObjectRef<>(trackID, "TrackSection");
+        this.track = trackID;
         this.position = offset;
         this.id = opID;
         this.trackRangeOffset = trackRangeOffset;

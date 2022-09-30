@@ -21,7 +21,6 @@ import fr.sncf.osrd.infra.api.tracks.undirected.SwitchBranch;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
 import fr.sncf.osrd.infra.errors.DiscontinuousRoute;
 import fr.sncf.osrd.infra.errors.MissingDetectorsRoute;
-import fr.sncf.osrd.infra.implementation.RJSObjectParsing;
 import fr.sncf.osrd.infra.implementation.tracks.directed.DirectedInfraBuilder;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
@@ -215,11 +214,10 @@ public class ReservationInfraBuilder {
     private ImmutableList<TrackRangeView> makeTrackRanges(RJSRoute rjsRoute) {
         var res = new ArrayList<TrackRangeView>();
         for (var range : rjsRoute.path) {
-            range.track.checkType(Set.of("TrackSection"));
             res.add(new TrackRangeView(
                     range.begin,
                     range.end,
-                    diTrackInfra.getEdge(range.track.id.id, Direction.fromEdgeDir(range.direction))
+                    diTrackInfra.getEdge(range.track, Direction.fromEdgeDir(range.direction))
             ));
         }
 
@@ -255,8 +253,10 @@ public class ReservationInfraBuilder {
     /** Lists the release points on a given route (in order) */
     private ImmutableList<Detector> releasePoints(RJSRoute rjsRoute) {
         var builder = ImmutableList.<Detector>builder();
-        for (var detector : rjsRoute.releaseDetectors) {
-            builder.add(RJSObjectParsing.getDetector(detector, diTrackInfra.getDetectorMap()));
+        for (var rjsDetector : rjsRoute.releaseDetectors) {
+            var detector = diTrackInfra.getDetectorMap().get(rjsDetector);
+            assert detector != null;
+            builder.add(detector);
         }
         return builder.build();
     }

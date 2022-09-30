@@ -2,7 +2,7 @@ package fr.sncf.osrd.railjson.schema.schedule;
 
 import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
+import fr.sncf.osrd.railjson.schema.common.RJSWaypointRef;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
@@ -25,7 +25,7 @@ public class RJSTrainPath {
     }
 
     public static class RJSRoutePath {
-        public final RJSObjectRef<RJSRoute> route;
+        public final String route;
         @Json(name = "track_sections")
         public final List<RJSDirectionalTrackRange> trackSections;
         @Json(name = "signaling_type")
@@ -33,7 +33,7 @@ public class RJSTrainPath {
 
         /** Constructor */
         public RJSRoutePath(String route, List<RJSDirectionalTrackRange> trackSections, String signalingType) {
-            this.route = new RJSObjectRef<>(route, "Route");
+            this.route = route;
             this.trackSections = trackSections;
             this.signalingType = signalingType;
         }
@@ -41,14 +41,14 @@ public class RJSTrainPath {
 
     @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     public static class RJSDirectionalTrackRange {
-        public final RJSObjectRef<RJSTrackSection> track;
+        public final String track;
         private final double begin;
         private final double end;
         public final EdgeDirection direction;
 
         /** RailJSON Directional Track Range constructor */
         public RJSDirectionalTrackRange(String track, double begin, double end, EdgeDirection direction) {
-            this.track = new RJSObjectRef<>(track, "TrackSection");
+            this.track = track;
             this.begin = begin;
             this.end = end;
             this.direction = direction;
