@@ -19,6 +19,8 @@ import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
+import fr.sncf.osrd.infra_state.api.TrainPath;
+import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import java.util.ArrayList;
@@ -64,16 +66,20 @@ public class STDCMPathfinding {
         var routeWaypoints = path.waypoints().stream()
                 .map(x -> new Pathfinding.EdgeLocation<>(x.edge().route(), x.offset()))
                 .toList();
+        var physicsPath = makePhysicsPath(path.ranges());
         return new STDCMResult(
                 new Pathfinding.Result<>(routeRanges, routeWaypoints),
-                makeFinalEnvelope(path.ranges(), rollingStock)
+                makeFinalEnvelope(path.ranges(), rollingStock, physicsPath),
+                makeTrainPath(path.ranges()),
+                physicsPath
         );
     }
 
     /** Builds the final envelope, assembling the parts together and adding the final braking curve */
     private static Envelope makeFinalEnvelope(
             List<Pathfinding.EdgeRange<STDCMGraph.Edge>> edges,
-            RollingStock rollingStock
+            RollingStock rollingStock,
+            PhysicsPath physicsPath
     ) {
         var parts = new ArrayList<EnvelopePart>();
         double offset = 0;
@@ -84,14 +90,15 @@ public class STDCMPathfinding {
             }
         }
         var newEnvelope = Envelope.make(parts.toArray(new EnvelopePart[0]));
-        return addFinalBraking(edges, newEnvelope, rollingStock);
+        return addFinalBraking(edges, newEnvelope, rollingStock, physicsPath);
     }
 
     /** Adds the final braking curve to the envelope */
     private static Envelope addFinalBraking(
             List<Pathfinding.EdgeRange<STDCMGraph.Edge>> edges,
             Envelope envelope,
-            RollingStock rollingStock
+            RollingStock rollingStock,
+            PhysicsPath physicsPath
     ) {
         var partBuilder = new EnvelopePartBuilder();
         partBuilder.setAttr(EnvelopeProfile.BRAKING);
@@ -100,17 +107,15 @@ public class STDCMPathfinding {
                 new SpeedConstraint(0, FLOOR),
                 new EnvelopeConstraint(envelope, CEILING)
         );
-        var path = makePath(edges);
-        var context = new EnvelopeSimContext(rollingStock, path, 2.);
-        EnvelopeDeceleration.decelerate(context, path.getLength(), 0, overlayBuilder, -1);
+        var context = new EnvelopeSimContext(rollingStock, physicsPath, 2.);
+        EnvelopeDeceleration.decelerate(context, physicsPath.getLength(), 0, overlayBuilder, -1);
 
         var builder = OverlayEnvelopeBuilder.backward(envelope);
         builder.addPart(partBuilder.build());
         return builder.build();
     }
 
-    /** Builds a PhysicsPath from the pathfinding edges */
-    private static PhysicsPath makePath(
+    private static List<TrackRangeView> makeTrackRanges(
             List<Pathfinding.EdgeRange<STDCMGraph.Edge>> edges
     ) {
         var trackRanges = new ArrayList<TrackRangeView>();
@@ -128,7 +133,29 @@ public class STDCMPathfinding {
                     trackRanges.add(trackRange);
             }
         }
-        return EnvelopeTrainPath.from(trackRanges);
+        return trackRanges;
+    }
+
+    /** Builds a PhysicsPath from the pathfinding edges */
+    private static PhysicsPath makePhysicsPath(
+            List<Pathfinding.EdgeRange<STDCMGraph.Edge>> edges
+    ) {
+        return EnvelopeTrainPath.from(makeTrackRanges(edges));
+    }
+
+    private static TrainPath makeTrainPath(
+            List<Pathfinding.EdgeRange<STDCMGraph.Edge>> ranges
+    ) {
+        var routeList = ranges.stream()
+                .map(edge -> edge.edge().route())
+                .toList();
+        var trackRanges = makeTrackRanges(ranges);
+        var lastRange = trackRanges.get(trackRanges.size() - 1);
+        return TrainPathBuilder.from(
+                routeList,
+                trackRanges.get(0).offsetLocation(0),
+                lastRange.offsetLocation(lastRange.getLength())
+        );
     }
 
 
