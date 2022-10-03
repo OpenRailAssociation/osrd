@@ -83,12 +83,12 @@ public class TrainPathBuilder {
     /** check that everything make sense */
     private static void validate(TrainPath path) {
         assert !path.routePath().isEmpty() : "empty route path";
-        assert !path.detectionSections().isEmpty() : "no detection section on path";
         assert !path.trackRangePath().isEmpty() : "empty track range path";
         assert path.length() > 0 : "length must be strictly positive";
 
         checkDetectorOverlap(path.detectors());
-        validateDetectionSections(path);
+        if (path.detectionSections().size() > 0)
+            validateDetectionSections(path);
         checkRangeLength(path);
     }
 
@@ -123,7 +123,6 @@ public class TrainPathBuilder {
 
     /** Checks that the detectors and detection section transitions are consistent */
     private static void validateDetectionSections(TrainPath path) {
-        assert path.detectionSections().size() > 0 : "no detection section";
         int detSectionIndex = 0;
         var firstOffset = path.detectionSections().get(0).pathOffset();
         if (firstOffset < 0
