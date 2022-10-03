@@ -631,6 +631,14 @@ public final class EnvelopePart implements SearchableEnvelope {
         return sliced;
     }
 
+    /** Returns a new EnvelopePart, where all positions are shifted by positionDelta */
+    public EnvelopePart copyAndShift(double positionDelta) {
+        var newPositions = new double[positions.length];
+        for (int i = 0; i < positions.length; i++)
+            newPositions[i] = positions[i] + positionDelta;
+        return new EnvelopePart(new HashMap<>(attrs), newPositions, speeds, timeDeltas);
+    }
+
     // endregion
 
     // region EQUALS
