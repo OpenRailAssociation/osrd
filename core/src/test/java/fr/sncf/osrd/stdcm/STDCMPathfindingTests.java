@@ -222,4 +222,27 @@ public class STDCMPathfindingTests {
         assertFalse(routes2.contains("b->c2"));
         assertTrue(routes2.contains("b->c1"));
     }
+
+    /** Test that everything works well when the train is at max speed during route transitions */
+    @Test
+    public void veryLongPathTest() {
+        /*
+        a ------> b -----> c ------> d
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var firstRoute = infraBuilder.addRoute("a", "b", 10000);
+        infraBuilder.addRoute("b", "c", 10000);
+        var lastRoute = infraBuilder.addRoute("c", "d", 10000);
+        var infra = infraBuilder.build();
+        var res = STDCMPathfinding.findPath(
+                infra,
+                REALISTIC_FAST_TRAIN,
+                0,
+                0,
+                Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
+                Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 9000)),
+                ImmutableMultimap.of()
+        );
+        assertNotNull(res);
+    }
 }
