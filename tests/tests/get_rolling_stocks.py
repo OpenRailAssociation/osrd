@@ -2,7 +2,7 @@ import requests
 
 
 def get_rolling_stock(base_url):
-    r = requests.get(base_url + "rolling_stock/")
+    r = requests.get(base_url + "rolling_stock/?page_size=1000")
     if r.status_code // 100 != 2:
         raise RuntimeError(f"Rolling stock error {r.status_code}: {r.content}")
     stocks = r.json()["results"]

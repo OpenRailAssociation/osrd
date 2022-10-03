@@ -53,7 +53,7 @@ class Command(BaseCommand):
             bf = BufferStop(
                 id=f"bf.{position}",
                 applicable_directions=ApplicableDirections.BOTH,
-                track=track_section.ref(),
+                track=track_section.id,
                 position=position,
                 geo=Point(coordinates=(position, position)),
                 sch=Point(coordinates=(position, position)),
@@ -67,9 +67,7 @@ class Command(BaseCommand):
             entry_point=waypoints[0].ref(),
             exit_point=waypoints[1].ref(),
             release_detectors=[],
-            path=[
-                DirectionalTrackRange(track=track_section.ref(), begin=0, end=1000, direction=Direction.START_TO_STOP)
-            ],
+            path=[DirectionalTrackRange(track=track_section.id, begin=0, end=1000, direction=Direction.START_TO_STOP)],
             geo=LineString(coordinates=[(0, 0), (1, 1)]),
             sch=LineString(coordinates=[(0, 0), (1, 1)]),
         )

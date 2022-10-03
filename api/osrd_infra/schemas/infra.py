@@ -374,6 +374,9 @@ class BufferStop(BaseObjectTrait, TrackLocationTrait):
 
     applicable_directions: ApplicableDirections = Field(description="Direction of the application of the buffer stop")
 
+    def ref(self):
+        return BufferStopReference(type="BufferStop", id=self.id)
+
 
 class Detector(BaseObjectTrait, TrackLocationTrait):
     """This class defines detector object.
@@ -383,6 +386,9 @@ class Detector(BaseObjectTrait, TrackLocationTrait):
     """
 
     applicable_directions: ApplicableDirections = Field(description="Direction of the application of the dectector")
+
+    def ref(self):
+        return DetectorReference(type="Detector", id=self.id)
 
 
 class RailJsonInfra(BaseModel):
