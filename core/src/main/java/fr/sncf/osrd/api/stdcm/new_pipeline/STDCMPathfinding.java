@@ -15,6 +15,7 @@ import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.PhysicsPath;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
+import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
@@ -84,55 +85,48 @@ public class STDCMPathfinding {
         var parts = new ArrayList<EnvelopePart>();
         double offset = 0;
         for (var edge : edges) {
-            for (var part : edge.edge().envelope()) {
+            var envelope = Envelope.make(edge.edge().envelope().slice(0, Math.abs(edge.end() - edge.start())));
+            for (var part : envelope)
                 parts.add(part.copyAndShift(offset));
-                offset += part.getEndPos();
-            }
+            offset += edge.edge().envelope().getEndPos();
         }
         var newEnvelope = Envelope.make(parts.toArray(new EnvelopePart[0]));
-        return addFinalBraking(edges, newEnvelope, rollingStock, physicsPath);
+        return addFinalBraking(newEnvelope, rollingStock, physicsPath);
     }
 
     /** Adds the final braking curve to the envelope */
     private static Envelope addFinalBraking(
-            List<Pathfinding.EdgeRange<STDCMGraph.Edge>> edges,
             Envelope envelope,
             RollingStock rollingStock,
             PhysicsPath physicsPath
     ) {
-        var partBuilder = new EnvelopePartBuilder();
-        partBuilder.setAttr(EnvelopeProfile.BRAKING);
-        var overlayBuilder = new ConstrainedEnvelopePartBuilder(
-                partBuilder,
-                new SpeedConstraint(0, FLOOR),
-                new EnvelopeConstraint(envelope, CEILING)
-        );
         var context = new EnvelopeSimContext(rollingStock, physicsPath, 2.);
-        EnvelopeDeceleration.decelerate(context, physicsPath.getLength(), 0, overlayBuilder, -1);
+        return MaxSpeedEnvelope.from(context, new double[]{envelope.getEndPos()}, envelope);
+    }
 
-        var builder = OverlayEnvelopeBuilder.backward(envelope);
-        builder.addPart(partBuilder.build());
-        return builder.build();
+    public static List<TrackRangeView> truncateTrackRange(SignalingRoute route, double start, double end) {
+        double offset = 0;
+        var res = new ArrayList<TrackRangeView>();
+        var infraRoute = route.getInfraRoute();
+        for (var trackRange : infraRoute.getTrackRanges()) {
+            var oldOffset = offset;
+            offset += trackRange.getLength();
+            if (end < oldOffset + trackRange.getLength())
+                trackRange = trackRange.truncateEndByLength(trackRange.getLength() + oldOffset - end);
+            if (start > oldOffset)
+                trackRange = trackRange.truncateBeginByLength(start - oldOffset);
+            if (trackRange.getLength() > 0)
+                res.add(trackRange);
+        }
+        return res;
     }
 
     private static List<TrackRangeView> makeTrackRanges(
             List<Pathfinding.EdgeRange<STDCMGraph.Edge>> edges
     ) {
         var trackRanges = new ArrayList<TrackRangeView>();
-        for (var routeRange : edges) {
-            double offset = 0;
-            var infraRoute = routeRange.edge().route().getInfraRoute();
-            for (var trackRange : infraRoute.getTrackRanges()) {
-                var oldOffset = offset;
-                offset += trackRange.getLength();
-                if (routeRange.end() > oldOffset + trackRange.getLength())
-                    trackRange = trackRange.truncateEnd(trackRange.getLength() + oldOffset - routeRange.end());
-                if (routeRange.start() > oldOffset)
-                    trackRange = trackRange.truncateBegin(routeRange.start() - oldOffset);
-                if (trackRange.getLength() > 0)
-                    trackRanges.add(trackRange);
-            }
-        }
+        for (var routeRange : edges)
+            trackRanges.addAll(truncateTrackRange(routeRange.edge().route(), routeRange.start(), routeRange.end()));
         return trackRanges;
     }
 
@@ -164,12 +158,14 @@ public class STDCMPathfinding {
             STDCMGraph graph,
             Set<Pathfinding.EdgeLocation<SignalingRoute>> locations,
             double startTime,
-            boolean checkAvailability
+            boolean isStart
     ) {
         var res = new HashSet<Pathfinding.EdgeLocation<STDCMGraph.Edge>>();
         for (var location : locations) {
-            var edge = graph.makeEdge(location.edge(), startTime, 0);
-            if (!checkAvailability || !graph.isUnavailable(edge))
+            var start = isStart ? location.offset() : 0;
+            var end = location.edge().getInfraRoute().getLength();
+            var edge = graph.makeEdge(location.edge(), startTime, 0, start, end);
+            if (!isStart || !graph.isUnavailable(edge))
                 res.add(new Pathfinding.EdgeLocation<>(edge, location.offset()));
         }
         return res;

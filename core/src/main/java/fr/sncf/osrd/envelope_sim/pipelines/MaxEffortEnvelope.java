@@ -33,7 +33,8 @@ public class MaxEffortEnvelope {
     ) {
         var builder = OverlayEnvelopeBuilder.forward(maxSpeedProfile);
         var cursor = EnvelopeCursor.forward(maxSpeedProfile);
-        {
+        var maxSpeed = maxSpeedProfile.interpolateSpeedRightDir(0, 1);
+        if (initialSpeed < maxSpeed) {
             var partBuilder = new EnvelopePartBuilder();
             partBuilder.setAttr(EnvelopeProfile.ACCELERATING);
             var overlayBuilder = new ConstrainedEnvelopePartBuilder(

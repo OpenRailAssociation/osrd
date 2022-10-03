@@ -4,6 +4,7 @@ import com.google.common.collect.Multimap;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
+import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.envelope_sim_infra.MRSP;
 import fr.sncf.osrd.infra.api.reservation.DiDetector;
@@ -74,7 +75,8 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
         var neighbors = infra.getSignalingRouteGraph().outEdges(node.detector);
         var res = new HashSet<Edge>();
         for (var neighbor : neighbors) {
-            var newEdge = makeEdge(neighbor, node.time, node.speed);
+            var length = neighbor.getInfraRoute().getLength();
+            var newEdge = makeEdge(neighbor, node.time, node.speed, 0, length);
             if (!isUnavailable(newEdge))
                 res.add(newEdge);
         }
@@ -95,10 +97,10 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
     }
 
     /** Creates an edge from a given route and start time/speed */
-    public Edge makeEdge(SignalingRoute route, double startTime, double startSpeed) {
+    public Edge makeEdge(SignalingRoute route, double startTime, double startSpeed, double start, double end) {
         return new Edge(
                 route,
-                simulateRoute(route, startSpeed),
+                simulateRoute(route, startSpeed, start, end),
                 startTime
         );
     }
@@ -108,11 +110,12 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
      * </p>
      * Note: there are some approximations made here as we only "see" the tracks on the given routes.
      * We are missing slopes and speed limits from earlier in the path. */
-    private Envelope simulateRoute(SignalingRoute route, double initialSpeed) {
-        var tracks = route.getInfraRoute().getTrackRanges();
+    private Envelope simulateRoute(SignalingRoute route, double initialSpeed, double start, double end) {
+        var tracks = STDCMPathfinding.truncateTrackRange(route, start, end);
         var envelopePath = EnvelopeTrainPath.from(tracks);
         var context  = new EnvelopeSimContext(rollingStock, envelopePath, 2.);
         var mrsp = MRSP.from(tracks, rollingStock, false, Set.of());
-        return MaxEffortEnvelope.from(context, initialSpeed, mrsp);
+        var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, new double[]{}, mrsp);
+        return MaxEffortEnvelope.from(context, initialSpeed, maxSpeedEnvelope);
     }
 }
