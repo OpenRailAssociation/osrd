@@ -85,6 +85,7 @@ public class DummyRouteGraphBuilder {
         private final Signal<? extends SignalState> entrySignal;
         private final Signal<? extends SignalState> exitSignal;
         private final ImmutableList<DiDetector> detectors;
+        private final ImmutableList<TrackRangeView> trackRanges;
 
         DummyRoute(
                 String id,
@@ -98,6 +99,10 @@ public class DummyRouteGraphBuilder {
             this.entrySignal = entrySignal;
             this.exitSignal = exitSignal;
             this.detectors = detectors;
+            var track = new TrackSectionImpl(length, "track_id_" + id);
+            trackRanges = ImmutableList.of(new TrackRangeView(0, length,
+                    new DiTrackEdgeImpl(track, Direction.FORWARD)
+            ));
         }
 
         @Override
@@ -122,10 +127,7 @@ public class DummyRouteGraphBuilder {
 
         @Override
         public ImmutableList<TrackRangeView> getTrackRanges() {
-            var track = new TrackSectionImpl(100, "track_id");
-            return ImmutableList.of(new TrackRangeView(0, 100,
-                    new DiTrackEdgeImpl(track, Direction.FORWARD)
-            ));
+            return trackRanges;
         }
 
         @Override
