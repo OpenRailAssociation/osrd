@@ -34,11 +34,11 @@ def mock_api_call(payload):
         "path": {
             "route_paths": [
                 {
-                    "route": {"id": "route_1", "type": "Route"},
+                    "route": "route_1",
                     "signaling_type": "BAL3",
                     "track_sections": [
                         {
-                            "track": {"id": "track", "type": "TrackSection"},
+                            "track": "track",
                             "begin": 0,
                             "end": 100,
                             "direction": "START_TO_STOP",

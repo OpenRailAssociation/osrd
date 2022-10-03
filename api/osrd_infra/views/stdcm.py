@@ -1,7 +1,7 @@
 import requests
+from rest_framework.exceptions import APIException
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
-from rest_framework.exceptions import APIException
 
 from config import settings
 from osrd_infra.models import PathModel, TrainScheduleModel
@@ -106,7 +106,7 @@ def compute_stdcm(request, user):
     schedule.initial_speed = 0
     schedule.rolling_stock = request["rolling_stock"]
 
-    process_simulation_response([schedule], core_output["simulation"])
+    process_simulation_response(request["infra"], [schedule], core_output["simulation"])
     sim_result = create_simulation_report(schedule, path)
     return {
         "path": {
