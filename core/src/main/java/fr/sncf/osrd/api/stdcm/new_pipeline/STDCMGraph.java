@@ -38,8 +38,11 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
             double timeStart
     ) {
 
-        public boolean equals(Edge other) {
-            return route.equals(other.route);
+        @Override
+        public boolean equals(Object other) {
+            if (other.getClass() != Edge.class)
+                return false;
+            return route.equals(((Edge) other).route);
         }
     }
 
@@ -49,8 +52,11 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
             DiDetector detector
     ) {
 
-        public boolean equals(Node other) {
-            return detector.equals(other.detector);
+        @Override
+        public boolean equals(Object other) {
+            if (other.getClass() != Node.class)
+                return false;
+            return detector.equals(((Node) other).detector);
         }
     }
 
@@ -68,7 +74,7 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
         var neighbors = infra.getSignalingRouteGraph().outEdges(node.detector);
         var res = new HashSet<Edge>();
         for (var neighbor : neighbors) {
-            var newEdge = makeEdge(neighbor, node.speed, node.time);
+            var newEdge = makeEdge(neighbor, node.time, node.speed);
             if (!isUnavailable(newEdge))
                 res.add(newEdge);
         }
@@ -77,7 +83,7 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
 
     /** Returns true if the envelope crosses one of the unavailable time blocks.
      * This method only exists in this form in the "simple" implementation where a train can't slow down. */
-    private boolean isUnavailable(Edge edge) {
+    public boolean isUnavailable(Edge edge) {
         var unavailableRouteTimes  = unavailableTimes.get(edge.route);
         for (var block : unavailableRouteTimes) {
             var timeEnter = edge.envelope.interpolateTotalTime(block.distanceStart()) + edge.timeStart;
