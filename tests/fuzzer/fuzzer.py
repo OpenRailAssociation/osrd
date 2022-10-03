@@ -188,7 +188,7 @@ def check_tracks_are_unseen(seen_track_sections: Set[str], route: Dict):
     :param route: Route to check
     """
     for track_range in route["path"]:
-        track_id = track_range["track"]["id"]
+        track_id = track_range["track"]
         if track_id in seen_track_sections:
             return False
         seen_track_sections.add(track_id)
@@ -207,7 +207,7 @@ def make_steps_on_route(route: Dict, distance_from_start: [float]) -> Iterable[T
             if track_range["direction"] == "STOP_TO_START":
                 begin, end = end, begin
             offset = begin + random.random() * (end - begin)
-            yield track_range["track"]["id"], offset, distance_from_start[0] + abs(offset - begin)
+            yield track_range["track"], offset, distance_from_start[0] + abs(offset - begin)
             distance_from_start[0] += abs(end - begin)
 
 
