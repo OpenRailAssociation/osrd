@@ -56,7 +56,7 @@ class TrainScheduleView(
         # Run standalone simulation
         response_payload = run_simulation(request_payload)
         # Process simulation response
-        process_simulation_response([train_schedule], response_payload)
+        process_simulation_response(train_schedule.timetable.infra, [train_schedule], response_payload)
         train_schedule.save()
         return Response(serializer.data)
 
@@ -124,7 +124,7 @@ class TrainScheduleView(
         response_payload = run_simulation(request_payload)
 
         # Process simulation response
-        process_simulation_response(train_schedules, response_payload)
+        process_simulation_response(train_schedules[0].timetable.infra, train_schedules, response_payload)
 
         # Save results
         TrainScheduleModel.objects.bulk_create(train_schedules)

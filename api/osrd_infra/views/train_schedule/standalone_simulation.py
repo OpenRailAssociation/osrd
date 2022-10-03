@@ -4,7 +4,7 @@ import requests
 from django.conf import settings
 from rest_framework.exceptions import APIException
 
-from osrd_infra.models import TrainScheduleModel
+from osrd_infra.models import TrackSectionModel, TrainScheduleModel
 from osrd_infra.utils import make_exception_from_error
 
 
@@ -76,7 +76,7 @@ def run_simulation(request_payload):
     return response.json()
 
 
-def process_simulation_response(train_schedules, response_payload):
+def process_simulation_response(infra, train_schedules, response_payload):
     """
     This function process the payload returned by the backend and fill schedules
     """
@@ -84,12 +84,18 @@ def process_simulation_response(train_schedules, response_payload):
     assert len(train_schedules) == len(base_simulations)
     speed_limits = response_payload["speed_limits"]
     assert len(train_schedules) == len(speed_limits)
-
     eco_simulations = response_payload["eco_simulations"]
 
+    stops = train_schedules[0].path.payload["path_waypoints"]
+    ops_tracks = TrackSectionModel.objects.filter(infra=infra, obj_id__in=[stop["track"] for stop in stops])
+    ops_tracks = {track.obj_id: track for track in ops_tracks}
+
     stops_update = []
-    for stop in train_schedules[0].path.payload["path_waypoints"]:
+    for stop in stops:
         stops_update.append({"id": stop.get("id", None), "name": stop.get("name", None)})
+        track = ops_tracks[stop["track"]]
+        stops_update[-1]["line_code"] = track.data.get("extensions", {}).get("sncf", {}).get("line_code", None)
+        stops_update[-1]["track_number"] = track.data.get("extensions", {}).get("sncf", {}).get("line_code", None)
 
     for i, train_schedule in enumerate(train_schedules):
         # Update stops (adding id and name when available)

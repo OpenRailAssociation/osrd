@@ -1,7 +1,6 @@
 import requests
-
 from tests.get_rolling_stocks import get_rolling_stock
-from tests.utils.timetable import delete_timetable, create_timetable
+from tests.utils.timetable import create_timetable, delete_timetable
 
 
 def run(*args, **kwargs):

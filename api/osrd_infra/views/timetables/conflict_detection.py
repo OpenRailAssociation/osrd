@@ -1,7 +1,7 @@
 import json
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import List, Dict, Set, Optional
+from typing import Dict, List, Optional, Set
 
 from rest_framework.generics import get_object_or_404
 
@@ -80,9 +80,9 @@ def _get_simulations(timetable) -> List[Simulation]:
             sim = schedule.eco_simulation
         else:
             sim = schedule.base_simulation
-        simulations.append(Simulation(
-            sim["signal_updates"], TrainData(schedule.pk, schedule.train_name, schedule.departure_time)
-        ))
+        simulations.append(
+            Simulation(sim["signal_updates"], TrainData(schedule.pk, schedule.train_name, schedule.departure_time))
+        )
     return simulations
 
 
@@ -90,7 +90,7 @@ def _make_route_offsets(path: PathPayload) -> Dict[str, RouteOffsets]:
     res: Dict[str, RouteOffsets] = {}
     start_pos = 0
     for route_path in path.route_paths:
-        route_id = route_path.route.id
+        route_id = route_path.route
         end_pos = start_pos
         for track_range in route_path.track_sections:
             end_pos += track_range.length()
@@ -134,7 +134,7 @@ def _find_conflicts(simulations: List[Simulation], route_offsets: Dict[str, Rout
                     second.time_start,
                     min(first.time_end, second.time_end),
                     position_start,
-                    position_end
+                    position_end,
                 )
                 if position_start is not None and conflict in conflicts:
                     # In case of duplicate, keep the one with the most information

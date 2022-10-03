@@ -1,8 +1,8 @@
 import requests
-
 from tests.get_rolling_stocks import get_rolling_stock
-from tests.stdcm.utils import add_train, get_schedule_longest_occupancy, get_schedule_arrival_time
-from tests.utils.timetable import delete_timetable, create_timetable
+from tests.stdcm.utils import (add_train, get_schedule_arrival_time,
+                               get_schedule_longest_occupancy)
+from tests.utils.timetable import create_timetable, delete_timetable
 
 
 def run(*args, **kwargs):
