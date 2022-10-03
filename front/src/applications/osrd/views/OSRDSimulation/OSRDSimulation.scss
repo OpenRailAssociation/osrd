@@ -126,6 +126,11 @@ select.sm {
   overflow: auto;
 }
 
+.simulation-trainschedule {
+  max-height: 25rem;
+  overflow: auto;
+}
+
 .grid .tick {
   opacity: .2;
   line {
