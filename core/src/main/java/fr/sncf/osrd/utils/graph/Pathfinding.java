@@ -120,7 +120,7 @@ public class Pathfinding<NodeT, EdgeT> {
                 if (step.range.edge.equals(targetLocation.edge) && step.range.start <= targetLocation.offset) {
                     // Adds a new step precisely on the stop location. This ensures that we don't ignore the
                     // distance between the start of the edge and the stop location
-                    var newRange = new EdgeRange<>(targetLocation.edge, step.range.start, targetLocation.offset);
+                    var newRange = new EdgeRange<>(step.range.edge, step.range.start, targetLocation.offset);
                     newRange = filterRange(newRange);
                     assert newRange != null;
                     if (newRange.end != targetLocation.offset) {
