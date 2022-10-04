@@ -109,7 +109,7 @@ function updateViewportAction(viewport) {
 }
 
 // Functions
-export function updateViewport(viewport, baseUrl = undefined, updateRouter = true) {
+export function updateViewport(viewport, baseUrl, updateRouter = true) {
   return (dispatch) => {
     dispatch(updateViewportAction(viewport));
     if (baseUrl !== undefined && updateRouter) {
