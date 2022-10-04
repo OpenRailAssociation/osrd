@@ -43,6 +43,7 @@ public class STDCMPathfinding {
                         convertLocations(graph, endLocations, 0, false)
                 ),
                 edge -> edge.route().getInfraRoute().getLength(),
+                null,
                 null
         );
         if (path == null)

@@ -96,15 +96,22 @@ public class PathfindingRoutesEndpoint implements Take {
         // Initializes the constraints
         var loadingGaugeConstraints = new LoadingGaugeConstraints(rollingStocks);
         var electrificationConstraints = new ElectrificationConstraints(rollingStocks);
+        RemainingDistanceEstimator remainingDistanceEstimator = null;
+        if (waypoints.size() == 2) {
+            // The current implementation of A* only works well if there are no intermediate steps
+            remainingDistanceEstimator = new RemainingDistanceEstimator(waypoints.get(1));
+        }
 
         // Compute the paths from the entry waypoint to the exit waypoint
         return Pathfinding.findPath(
                 new GraphAdapter<>(infra.getSignalingRouteGraph()),
                 waypoints,
                 route -> route.getInfraRoute().getLength(),
-                new ConstraintCombiner(List.of(loadingGaugeConstraints, electrificationConstraints))
+                new ConstraintCombiner(List.of(loadingGaugeConstraints, electrificationConstraints)),
+                remainingDistanceEstimator
         );
     }
+
 
     /** Checks that the results make sense */
     private void validate(SignalingInfra infra, PathfindingResult res, PathfindingWaypoint[][] reqWaypoints) {

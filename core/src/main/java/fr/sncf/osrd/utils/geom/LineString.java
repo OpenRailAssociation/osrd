@@ -28,7 +28,7 @@ public class LineString {
     /**
      * Compute the distance between two points
      */
-    private static double computeDistance(double x1, double y1, double x2, double y2) {
+    static double computeDistance(double x1, double y1, double x2, double y2) {
         var dx2 = (x1 - x2) * (x1 - x2);
         var dy2 = (y1 - y2) * (y1 - y2);
         return Math.sqrt(dx2 + dy2);
