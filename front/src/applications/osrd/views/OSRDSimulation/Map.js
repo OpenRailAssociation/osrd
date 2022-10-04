@@ -67,7 +67,7 @@ function Map(props) {
     useSelector((state) => state.osrdsimulation);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const [geojsonPath, setGeojsonPath] = useState(undefined);
-  const [trainHoverPositionOthers, setTrainHoverPositionOthers] = useState(undefined);
+  const [trainHoverPositionOthers, setTrainHoverPositionOthers] = useState([]);
   const [trainHoverPosition, setTrainHoverPosition] = useState(undefined);
   const [idHover, setIdHover] = useState(undefined);
   const { urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
@@ -130,38 +130,25 @@ function Map(props) {
         ? 'eco_tailPosition'
         : 'tailPosition';
     if (positionValues[headKey]) {
-      const position = along(line, positionValues[headKey].position / 1000, {
+      const headPosition = along(line, positionValues[headKey].position / 1000, {
         units: 'kilometers',
       });
       const tailPosition = positionValues[tailKey]
         ? along(line, positionValues[tailKey].position / 1000, { units: 'kilometers' })
-        : position;
-
-      const intermediaterMarkersPoints = [];
-
-      // Representing the wagons is useless at outer zooms
-      if (viewport?.zoom > 13) {
-        // To do: get this data from rollingstock, stored
-        const trainLength = positionValues[headKey].position - positionValues[tailKey].position;
-        for (let i = 0; i < INTERMEDIATE_MARKERS_QTY; i++) {
-          const intermediatePosition = along(
-            line,
-            (positionValues[headKey].position - (trainLength / INTERMEDIATE_MARKERS_QTY) * i) /
-              1000,
-            { units: 'kilometers' }
-          );
-          intermediaterMarkersPoints.push(intermediatePosition);
-        }
-        intermediaterMarkersPoints.push(tailPosition);
-      }
-
+        : headPosition;
+      const trainLength = positionValues[headKey].position - positionValues[tailKey].position;
+      console.log(positionValues[headKey].position, positionValues[tailKey].position);
+      console.log(headPosition, tailPosition, trainLength);
       setTrainHoverPosition({
-        ...position,
-        properties: {
-          speedTime: positionValues.speed,
-          intermediaterMarkersPoints,
-        },
+        headPosition,
+        speedTime: positionValues.speed,
+        tailPosition,
       });
+      // ...position,
+      // properties: {
+      //   speedTime: positionValues.speed,
+      //   intermediaterMarkersPoints,
+      // },
     }
 
     // Found trains including timePosition, and organize them with geojson collection of points
@@ -172,28 +159,10 @@ function Map(props) {
           ? along(line, train.tail_position.position / 1000, { units: 'kilometers' })
           : position;
 
-        const intermediaterMarkersPoints = [];
-        // Representing the wagons is useless at outer zooms
-        if (viewport?.zoom > 13) {
-          // To do: get this data from rollingstock, stored
-          const trainLength = train.head_positions.position - train.tail_positions.position;
-          for (let i = 0; i < INTERMEDIATE_MARKERS_QTY; i++) {
-            const intermediatePosition = along(
-              line,
-              (train.head_positions.position - (trainLength / INTERMEDIATE_MARKERS_QTY) * i) / 1000,
-              { units: 'kilometers' }
-            );
-            intermediaterMarkersPoints.push(intermediatePosition);
-          }
-          intermediaterMarkersPoints.push(tailPosition);
-        }
-
         return {
-          ...position,
-          properties: {
-            speed: train.speeds.speed,
-            intermediaterMarkersPoints,
-          },
+          position,
+          speed: train.speeds.speed,
+          tailPosition,
         };
       })
     );
@@ -300,6 +269,7 @@ function Map(props) {
     const interactiveLayersLocal = [];
     if (geojsonPath) {
       interactiveLayersLocal.push('geojsonPath');
+      interactiveLayersLocal.push('trainPath');
     }
     if (layersSettings.tvds) {
       interactiveLayersLocal.push('chartis/osrd_tvd_section/geo');
@@ -412,7 +382,13 @@ function Map(props) {
 
         {geojsonPath !== undefined ? <RenderItinerary geojsonPath={geojsonPath} /> : null}
 
-        {trainHoverPosition && <TrainHoverPosition point={trainHoverPosition} />}
+        {trainHoverPosition && (
+          <TrainHoverPosition
+            point={trainHoverPosition}
+            isSelectedTrain
+            geojsonPath={geojsonPath}
+          />
+        )}
         {trainHoverPositionOthers.map((pt) => (
           <TrainHoverPosition point={pt} key={nextId()} />
         ))}
