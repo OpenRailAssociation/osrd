@@ -44,7 +44,7 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
 
         @Override
         public boolean equals(Object other) {
-            if (other.getClass() != Edge.class)
+            if (other == null || other.getClass() != Edge.class)
                 return false;
             return route.equals(((Edge) other).route);
         }
@@ -58,7 +58,7 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
 
         @Override
         public boolean equals(Object other) {
-            if (other.getClass() != Node.class)
+            if (other == null || other.getClass() != Node.class)
                 return false;
             return detector.equals(((Node) other).detector);
         }

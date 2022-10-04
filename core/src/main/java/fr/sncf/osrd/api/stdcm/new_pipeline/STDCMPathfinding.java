@@ -101,6 +101,7 @@ public class STDCMPathfinding {
         return MaxSpeedEnvelope.from(context, new double[]{envelope.getEndPos()}, envelope);
     }
 
+    /** Returns a list of TrackRangeView that cover the given route from offsets start to finish */
     public static List<TrackRangeView> truncateTrackRange(SignalingRoute route, double start, double end) {
         double offset = 0;
         var res = new ArrayList<TrackRangeView>();
@@ -118,6 +119,7 @@ public class STDCMPathfinding {
         return res;
     }
 
+    /** Converts the list of pathfinding edges into a list of TrackRangeView that covers the path exactly */
     private static List<TrackRangeView> makeTrackRanges(
             List<Pathfinding.EdgeRange<STDCMGraph.Edge>> edges
     ) {
@@ -134,6 +136,7 @@ public class STDCMPathfinding {
         return EnvelopeTrainPath.from(makeTrackRanges(edges));
     }
 
+    /** Creates a TrainPath instance from the list of pathfinding edges */
     private static TrainPath makeTrainPath(
             List<Pathfinding.EdgeRange<STDCMGraph.Edge>> ranges
     ) {

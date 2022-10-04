@@ -40,7 +40,6 @@ import org.takes.rs.RsJson;
 import org.takes.rs.RsText;
 import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
-
 import java.util.*;
 
 
@@ -118,7 +117,6 @@ public class STDCMEndpoint implements Take {
             }
 
             // Build the response
-            var pathfindingRes = PathfindingResultConverter.convert(res.routes(), infra, recorder);
             var simResult = new StandaloneSimResult();
             simResult.speedLimits.add(ResultEnvelopePoint.from(
                     MRSP.from(res.trainPath(), rollingStock, false, Set.of())
@@ -130,6 +128,7 @@ public class STDCMEndpoint implements Take {
                     infra
             ));
             simResult.ecoSimulations.add(null);
+            var pathfindingRes = PathfindingResultConverter.convert(res.routes(), infra, recorder);
             var response = new STDCMResponse(simResult, pathfindingRes);
             return new RsJson(new RsWithBody(STDCMResponse.adapter.toJson(response)));
         } catch (Throwable ex) {
