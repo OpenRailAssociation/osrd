@@ -59,7 +59,7 @@ public final class STDCMRequest {
      * Time step used in simulations
      */
     @Json(name = "time_step")
-    public double timeStep = 10.;
+    public double timeStep = 20.;
 
     /**
      * Create a default STDCMRequest

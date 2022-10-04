@@ -13,6 +13,7 @@ import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
+import fr.sncf.osrd.envelope_sim.ImpossibleSimulationError;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration;
 
 /** Max effort envelope = Max speed envelope + acceleration curves + check maintain speed
@@ -117,7 +118,10 @@ public class MaxEffortEnvelope {
     ) {
         var maxEffortEnvelope = addAccelerationCurves(context, maxSpeedProfile, initialSpeed);
         maxEffortEnvelope = addMaintainSpeedCurves(context, maxEffortEnvelope);
-        assert maxEffortEnvelope.continuous;
+        if (!maxEffortEnvelope.continuous) {
+            // Discontinuity can happen when the train stops because of high slopes
+            throw new ImpossibleSimulationError();
+        }
         assert maxEffortEnvelope.getBeginPos() == 0;
         return maxEffortEnvelope;
     }
