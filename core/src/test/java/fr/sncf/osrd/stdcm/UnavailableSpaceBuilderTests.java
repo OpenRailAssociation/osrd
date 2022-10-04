@@ -114,7 +114,7 @@ public class UnavailableSpaceBuilderTests {
 
                         // Margin added to the base occupancy to account for the train length,
                         // it can be removed if this test fails as it overlaps with the previous one
-                       // new OccupancyBlock(0, 100, 0, REALISTIC_FAST_TRAIN.getLength())
+                        // new OccupancyBlock(0, 100, 0, REALISTIC_FAST_TRAIN.getLength())
                 ),
                 res.get(b1)
         );

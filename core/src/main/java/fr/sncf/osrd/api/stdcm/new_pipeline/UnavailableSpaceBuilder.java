@@ -32,8 +32,8 @@ public class UnavailableSpaceBuilder {
 
             var routeGraph = infra.getSignalingRouteGraph();
             var currentRoute = infra.findSignalingRoute(occupancy.id, "BAL3");
-            var startRouteNode=routeGraph.incidentNodes(currentRoute).nodeU();
-            var endRouteNode=routeGraph.incidentNodes(currentRoute).nodeV();
+            var startRouteNode = routeGraph.incidentNodes(currentRoute).nodeU();
+            var endRouteNode = routeGraph.incidentNodes(currentRoute).nodeV();
             var length = currentRoute.getInfraRoute().getLength();
             var timeStart = occupancy.startOccupancyTime;
             var timeEnd = occupancy.endOccupancyTime;
@@ -47,13 +47,18 @@ public class UnavailableSpaceBuilder {
             for (var predecessorRoute : predecessorRoutes) {
                 var preBlockLength = predecessorRoute.getInfraRoute().getLength();
                 var sightDistance = predecessorRoute.getExitSignal().getSightDistance();
-                var previousBlock = new OccupancyBlock(timeStart, timeEnd, preBlockLength - sightDistance, preBlockLength);
+                var previousBlock = new OccupancyBlock(
+                        timeStart,
+                        timeEnd,
+                        preBlockLength - sightDistance,
+                        preBlockLength
+                );
                 res.put(predecessorRoute, previousBlock);
             }
 
             //Generating successorRoute occupancy
             var successorRoutes = routeGraph.outEdges(endRouteNode);
-                for (var successorRoute : successorRoutes) {
+            for (var successorRoute : successorRoutes) {
                 var successorBlockLength = successorRoute.getInfraRoute().getLength();
                 var successorBlock = new OccupancyBlock(timeStart, timeEnd, 0, successorBlockLength);
                 res.put(successorRoute, successorBlock);
@@ -64,11 +69,11 @@ public class UnavailableSpaceBuilder {
                 var endSuccessorRoutesNode = routeGraph.incidentNodes(successorRoute).nodeV();
                 var secondSuccessorRoutes = routeGraph.outEdges(endSuccessorRoutesNode);
                 for (var secondSuccessorRoute : secondSuccessorRoutes) {
-                     var secondSuccessorBlock = new OccupancyBlock(timeStart, timeEnd, 0, rollingStock.getLength());
-                     res.put(secondSuccessorRoute, secondSuccessorBlock);
+                    var secondSuccessorBlock = new OccupancyBlock(timeStart, timeEnd, 0, rollingStock.getLength());
+                    res.put(secondSuccessorRoute, secondSuccessorBlock);
                 }
             }
         }
-    return res;
+        return res;
     }
 }
