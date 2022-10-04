@@ -35,7 +35,8 @@ public class STDCMPipelineDraft {
                 timeEnd,
                 startLocations,
                 endLocations,
-                unavailableSpace
+                unavailableSpace,
+                10.
         );
     }
 }

@@ -29,7 +29,8 @@ public class STDCMPathfindingTests {
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
                 Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 50)),
-                ImmutableMultimap.of()
+                ImmutableMultimap.of(),
+                2.
         );
         assertNotNull(res);
     }
@@ -56,7 +57,8 @@ public class STDCMPathfindingTests {
                         firstRoute, new OccupancyBlock(10000, Double.POSITIVE_INFINITY, 0, 100),
                         secondRoute, new OccupancyBlock(0, 50, 0, 100),
                         secondRoute, new OccupancyBlock(10000, Double.POSITIVE_INFINITY, 0, 100)
-                )
+                ),
+                2.
         );
         assertNotNull(res);
     }
@@ -80,7 +82,8 @@ public class STDCMPathfindingTests {
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
                 Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 0)),
-                ImmutableMultimap.of()
+                ImmutableMultimap.of(),
+                2.
         );
         assertNull(res);
     }
@@ -107,7 +110,8 @@ public class STDCMPathfindingTests {
                         firstRoute, new OccupancyBlock(101, Double.POSITIVE_INFINITY, 0, 100),
                         secondRoute, new OccupancyBlock(0, 50, 0, 100),
                         secondRoute, new OccupancyBlock(1000, Double.POSITIVE_INFINITY, 0, 100)
-                )
+                ),
+                2.
         );
         assertNull(res);
     }
@@ -131,7 +135,8 @@ public class STDCMPathfindingTests {
                 Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 50)),
                 ImmutableMultimap.of(
                         secondRoute, new OccupancyBlock(0, 10, 0, 100)
-                )
+                ),
+                2.
         );
         assertNotNull(res);
     }
@@ -157,7 +162,8 @@ public class STDCMPathfindingTests {
                 Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 50)),
                 ImmutableMultimap.of(
                         intermediateRoute, new OccupancyBlock(0, 1000, 0, 100)
-                )
+                ),
+                2.
         );
         assertNotNull(res);
         assert res.envelope().getTotalTime() >= 1000;
@@ -198,7 +204,8 @@ public class STDCMPathfindingTests {
                 Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 50)),
                 ImmutableMultimap.of(
                         routeTop, new OccupancyBlock(0, Double.POSITIVE_INFINITY, 0, 100)
-                )
+                ),
+                2.
         );
         var res2 = STDCMPathfinding.findPath(
                 infra,
@@ -209,7 +216,8 @@ public class STDCMPathfindingTests {
                 Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 50)),
                 ImmutableMultimap.of(
                         routeBottom, new OccupancyBlock(0, Double.POSITIVE_INFINITY, 0, 100)
-                )
+                ),
+                2.
         );
         assertNotNull(res1);
         assertNotNull(res2);
@@ -241,7 +249,8 @@ public class STDCMPathfindingTests {
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
                 Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 9000)),
-                ImmutableMultimap.of()
+                ImmutableMultimap.of(),
+                2.
         );
         assertNotNull(res);
     }
