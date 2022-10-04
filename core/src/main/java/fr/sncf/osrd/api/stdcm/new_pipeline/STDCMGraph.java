@@ -20,16 +20,19 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
 
     public final SignalingInfra infra;
     public final RollingStock rollingStock;
+    public final double timeStep;
     private final Multimap<SignalingRoute, OccupancyBlock> unavailableTimes;
 
     /** Constructor */
     public STDCMGraph(
             SignalingInfra infra,
             RollingStock rollingStock,
+            double timeStep,
             Multimap<SignalingRoute, OccupancyBlock> unavailableTimes
     ) {
         this.infra = infra;
         this.rollingStock = rollingStock;
+        this.timeStep = timeStep;
         this.unavailableTimes = unavailableTimes;
     }
 
@@ -113,7 +116,7 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
     private Envelope simulateRoute(SignalingRoute route, double initialSpeed, double start, double end) {
         var tracks = STDCMPathfinding.truncateTrackRange(route, start, end);
         var envelopePath = EnvelopeTrainPath.from(tracks);
-        var context  = new EnvelopeSimContext(rollingStock, envelopePath, 2.);
+        var context  = new EnvelopeSimContext(rollingStock, envelopePath, timeStep);
         var mrsp = MRSP.from(tracks, rollingStock, false, Set.of());
         var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, new double[]{}, mrsp);
         return MaxEffortEnvelope.from(context, initialSpeed, maxSpeedEnvelope);

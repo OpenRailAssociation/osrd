@@ -1,20 +1,10 @@
 package fr.sncf.osrd.api.stdcm.new_pipeline;
 
-import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
-import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
-
 import com.google.common.collect.Multimap;
 import fr.sncf.osrd.envelope.Envelope;
-import fr.sncf.osrd.envelope.OverlayEnvelopeBuilder;
-import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
-import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
-import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
-import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
-import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.PhysicsPath;
-import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
@@ -42,9 +32,10 @@ public class STDCMPathfinding {
             double endTime,
             Set<Pathfinding.EdgeLocation<SignalingRoute>> startLocations,
             Set<Pathfinding.EdgeLocation<SignalingRoute>> endLocations,
-            Multimap<SignalingRoute, OccupancyBlock> unavailableTimes
+            Multimap<SignalingRoute, OccupancyBlock> unavailableTimes,
+            double timeStep
     ) {
-        var graph = new STDCMGraph(infra, rollingStock, unavailableTimes);
+        var graph = new STDCMGraph(infra, rollingStock, timeStep, unavailableTimes);
         var path = Pathfinding.findPath(
                 graph,
                 List.of(
@@ -56,11 +47,15 @@ public class STDCMPathfinding {
         );
         if (path == null)
             return null;
-        return makeResult(path, rollingStock);
+        return makeResult(path, rollingStock, timeStep);
     }
 
     /** Builds the STDCM result object from the raw pathfinding result */
-    private static STDCMResult makeResult(Pathfinding.Result<STDCMGraph.Edge> path, RollingStock rollingStock) {
+    private static STDCMResult makeResult(
+            Pathfinding.Result<STDCMGraph.Edge> path,
+            RollingStock rollingStock,
+            double timeStep
+    ) {
         var routeRanges = path.ranges().stream()
                 .map(x -> new Pathfinding.EdgeRange<>(x.edge().route(), x.start(), x.end()))
                 .toList();
@@ -70,7 +65,7 @@ public class STDCMPathfinding {
         var physicsPath = makePhysicsPath(path.ranges());
         return new STDCMResult(
                 new Pathfinding.Result<>(routeRanges, routeWaypoints),
-                makeFinalEnvelope(path.ranges(), rollingStock, physicsPath),
+                makeFinalEnvelope(path.ranges(), rollingStock, physicsPath, timeStep),
                 makeTrainPath(path.ranges()),
                 physicsPath
         );
@@ -80,7 +75,8 @@ public class STDCMPathfinding {
     private static Envelope makeFinalEnvelope(
             List<Pathfinding.EdgeRange<STDCMGraph.Edge>> edges,
             RollingStock rollingStock,
-            PhysicsPath physicsPath
+            PhysicsPath physicsPath,
+            double timeStep
     ) {
         var parts = new ArrayList<EnvelopePart>();
         double offset = 0;
@@ -91,16 +87,17 @@ public class STDCMPathfinding {
             offset += edge.edge().envelope().getEndPos();
         }
         var newEnvelope = Envelope.make(parts.toArray(new EnvelopePart[0]));
-        return addFinalBraking(newEnvelope, rollingStock, physicsPath);
+        return addFinalBraking(newEnvelope, rollingStock, physicsPath, timeStep);
     }
 
     /** Adds the final braking curve to the envelope */
     private static Envelope addFinalBraking(
             Envelope envelope,
             RollingStock rollingStock,
-            PhysicsPath physicsPath
+            PhysicsPath physicsPath,
+            double timeStep
     ) {
-        var context = new EnvelopeSimContext(rollingStock, physicsPath, 2.);
+        var context = new EnvelopeSimContext(rollingStock, physicsPath, timeStep);
         return MaxSpeedEnvelope.from(context, new double[]{envelope.getEndPos()}, envelope);
     }
 

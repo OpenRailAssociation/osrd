@@ -538,6 +538,9 @@ components:
           items:
             $ref: "#/components/schemas/Waypoint"
             minimum: 1
+        time_step:
+          type: number
+          format: double
     SimulationRequest:
       required:
         - infra
