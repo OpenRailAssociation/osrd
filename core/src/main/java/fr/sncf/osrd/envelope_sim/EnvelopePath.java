@@ -80,7 +80,7 @@ public class EnvelopePath implements PhysicsPath {
             var grade = getAverageGrade(tailPosition, position);
             if (grade >= gradeThreshold)
                 return position;
-            position += 1.0;
+            position += 10.0;
         }
         return endPos;
     }

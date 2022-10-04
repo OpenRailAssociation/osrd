@@ -22,7 +22,10 @@ public class RemainingDistanceEstimator implements BiFunction<SignalingRoute, Do
             if (pointOffset <= trackRange.getLength()) {
                 var trackLocation = trackRange.offsetLocation(pointOffset);
                 var normalizedOffset = trackLocation.offset() / trackLocation.track().getLength();
-                return trackLocation.track().getGeo().interpolateNormalized(normalizedOffset);
+                var geo = trackLocation.track().getGeo();
+                if (geo == null)
+                    return new Point(0, 0);
+                return geo.interpolateNormalized(normalizedOffset);
             }
             pointOffset -= trackRange.getLength();
         }
