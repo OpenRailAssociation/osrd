@@ -109,7 +109,8 @@ public class STDCMEndpoint implements Take {
                     endTime,
                     startLocations,
                     endLocations,
-                    unavailableSpace
+                    unavailableSpace,
+                    request.timeStep
             );
             if (res == null) {
                 var error = new NoPathFoundError("No path could be found");

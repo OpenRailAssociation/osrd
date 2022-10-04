@@ -79,7 +79,7 @@ public class MaxEffortEnvelope {
             double inertia = rollingStock.getInertia();
             double worstRamp = Math.asin((maxTractionForce - rollingResistance) / inertia / 9.81) * 1000;
             var envelopePart = cursor.getPart();
-            while (cursor.getPart() == envelopePart) {
+            while (!cursor.hasReachedEnd() && cursor.getPart() == envelopePart) {
                 double highRampPosition = path.findHighGradePosition(
                         cursor.getPosition(), envelopePart.getEndPos(), rollingStock.getLength(), worstRamp);
                 cursor.findPosition(highRampPosition);
