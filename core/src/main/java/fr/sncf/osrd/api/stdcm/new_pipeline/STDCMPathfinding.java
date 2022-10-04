@@ -1,6 +1,7 @@
 package fr.sncf.osrd.api.stdcm.new_pipeline;
 
 import com.google.common.collect.Multimap;
+import fr.sncf.osrd.api.pathfinding.RemainingDistanceEstimator;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
@@ -36,6 +37,7 @@ public class STDCMPathfinding {
             double timeStep
     ) {
         var graph = new STDCMGraph(infra, rollingStock, timeStep, unavailableTimes);
+        var remainingDistance = new RemainingDistanceEstimator(endLocations);
         var path = Pathfinding.findPath(
                 graph,
                 List.of(
@@ -44,7 +46,7 @@ public class STDCMPathfinding {
                 ),
                 edge -> edge.route().getInfraRoute().getLength(),
                 null,
-                null
+                (edge, offset) -> remainingDistance.apply(edge.route(), offset)
         );
         if (path == null)
             return null;
@@ -164,8 +166,7 @@ public class STDCMPathfinding {
         var res = new HashSet<Pathfinding.EdgeLocation<STDCMGraph.Edge>>();
         for (var location : locations) {
             var start = isStart ? location.offset() : 0;
-            var end = location.edge().getInfraRoute().getLength();
-            var edge = graph.makeEdge(location.edge(), startTime, 0, start, end);
+            var edge = graph.makeEdge(location.edge(), startTime, 0, start);
             if (!isStart || !graph.isUnavailable(edge))
                 res.add(new Pathfinding.EdgeLocation<>(edge, location.offset()));
         }

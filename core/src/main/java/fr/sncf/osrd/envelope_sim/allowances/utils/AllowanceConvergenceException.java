@@ -1,9 +1,11 @@
 package fr.sncf.osrd.envelope_sim.allowances.utils;
 
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
+import java.io.Serial;
 
 public class AllowanceConvergenceException extends OSRDError {
 
+    @Serial
     private static final long serialVersionUID = 2130748645658059205L;
     public static final String osrdErrorType = "allowance_convergence";
     public final String errorType;
