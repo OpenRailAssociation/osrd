@@ -24,7 +24,7 @@ export function getTrainDetailsForAPI(simulationTrain) {
  */
 export async function changeTrain(details, id) {
   try {
-    const trainDetail = await get(`${trainscheduleURI}/${id}/`);
+    const trainDetail = await get(`${trainscheduleURI}${id}/`);
     try {
       const params = {
         id,
@@ -36,7 +36,7 @@ export async function changeTrain(details, id) {
         timetable: details.timetable || trainDetail.timetable,
         train_name: details.train_name || trainDetail.train_name,
       };
-      await patch(`${trainscheduleURI}/${id}/`, params);
+      await patch(`${trainscheduleURI}${id}/`, params);
     } catch (e) {
       console.log('ERROR', e);
     }
