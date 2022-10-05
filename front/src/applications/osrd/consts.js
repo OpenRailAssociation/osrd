@@ -57,3 +57,12 @@ export const STDCM_MODES = {
 };
 
 export const DEFAULT_STDCM_MODE = STDCM_MODES.byOrigin;
+
+export const stdcmRequestStatus = {
+  idle: 'IDLE',
+  pending: 'PENDING',
+  success: 'SUCCESS',
+  rejected: 'REJECTED',
+  canceled: 'CANCELED',
+  noresults: 'NORESULTS',
+};
