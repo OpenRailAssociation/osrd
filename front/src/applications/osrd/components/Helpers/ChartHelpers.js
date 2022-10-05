@@ -1,6 +1,8 @@
 import * as d3 from 'd3';
 
 import { sec2time } from 'utils/timeManipulation';
+// import/no-cycle is disabled because this func call will be removed by refacto
+// eslint-disable-next-line
 import { updateMustRedraw } from 'reducers/osrdsimulation';
 
 export const sec2d3datetime = (time) => d3.timeParse('%H:%M:%S')(sec2time(time));

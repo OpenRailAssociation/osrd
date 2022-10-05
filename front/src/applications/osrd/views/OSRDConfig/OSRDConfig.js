@@ -1,6 +1,7 @@
 import 'applications/osrd/views/OSRDConfig/OSRDConfig.scss';
 
 import React, { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 
 import AddTrainLabels from 'applications/osrd/views/OSRDConfig/AddTrainLabels';
@@ -93,3 +94,10 @@ export default function OSRDConfig(props) {
     </main>
   );
 }
+
+OSRDConfig.propTypes = {
+  setCurrentStdcmRequestStatus: PropTypes.func,
+};
+OSRDConfig.defaultProps = {
+  setCurrentStdcmRequestStatus: () => {},
+};

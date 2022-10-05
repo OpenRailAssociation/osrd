@@ -276,7 +276,7 @@ export default function Allowances(props) {
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const [trainDetail, setTrainDetail] = useState(undefined);
   const [allowances, setAllowances] = useState([]);
-  const [rawExtensions, setRawExtensions] = useState([]);
+  const [rawExtensions] = useState([]);
   const [updateAllowances, setUpdateAllowances] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const dispatch = useDispatch();
