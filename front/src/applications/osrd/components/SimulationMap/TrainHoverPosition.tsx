@@ -60,6 +60,7 @@ function TrainHoverPosition(props: TrainHoverPositionProps) {
   const { selectedTrain, allowancesSettings } = useSelector(
     (state: RootState) => state.osrdsimulation
   );
+  const { viewport } = useSelector((state: RootState) => state.map);
   const simulation = useSelector((state: RootState) => state.osrdsimulation.simulation.present);
   const trainID = simulation.trains[selectedTrain].id;
   const { ecoBlocks } = allowancesSettings[trainID];
