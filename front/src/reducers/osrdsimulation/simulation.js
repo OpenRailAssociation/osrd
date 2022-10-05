@@ -31,6 +31,7 @@ export async function progressiveDuplicateTrain(
   selectedProjection,
   simulationTrains,
   selectedTrain,
+  trainDelta,
   dispatch
 ) {
   const trainDetail = await get(`${trainscheduleURI}${simulationTrains[selectedTrain].id}/`);
@@ -70,7 +71,7 @@ export async function progressiveDuplicateTrain(
   } catch (e) {
     dispatch(
       setFailure({
-        name: t('simulation:errorMessages.unableToRetrieveTrainSchedule'),
+        name: 'unableToRetrieveTrainSchedule',
         message: `${e.message} : ${e.response.data.detail}`,
       })
     );
@@ -84,7 +85,7 @@ function simulationEquals(present, newPresent) {
   return JSON.stringify(present) === JSON.stringify(newPresent);
 }
 
-function apiSyncOnDiff(present, nextPresent, dispatch = () => {}, getState = () => {}) {
+function apiSyncOnDiff(present, nextPresent, dispatch = () => {}) {
   // If there is not mod don't do anything
   if (simulationEquals(present, nextPresent)) return;
   // test missing trains and apply delete api
@@ -118,24 +119,6 @@ function apiSyncOnDiff(present, nextPresent, dispatch = () => {}, getState = () 
     ) {
       // train exists, but is different. Patch this train
       changeTrain(getTrainDetailsForAPI(nextTrain), nextTrain.id);
-    }
-  }
-
-  // test new trains and apply post api
-  for (let i = 0; i < nextPresent.trains; i += 1) {
-    const id = nextPresent.trains[i];
-    if (!present.trains.find((train) => train.id === id)) {
-      // Call standalone api
-      // ADN: infect bicolup. Will test more efficent
-      /*
-      const timeTableID = getState()?.osrdconf.timetableID;
-      const selectedProjection = getState()?.osrdsimulation.selectedProjection;
-      const selectedTrain = getState()?.osrdsimulation.selectedTrain;
-      const simulationTrains = getState()?.osrdsimulation.simulation.present.trains;
-      progressiveDuplicateTrain(
-        timeTableID, selectedProjection, simulationTrains, selectedTrain, dispatch
-      );
-      */
     }
   }
 }
@@ -196,7 +179,8 @@ function undoable(simulationReducer) {
   };
 
   // Return a reducer that handles undo and redo
-  return function undoableReducer(state = initialStateU, action) {
+  return function undoableReducer(state, action) {
+    if (!state) state = initialStateU;
     const { past, present, future } = state;
 
     switch (action.type) {
@@ -244,8 +228,8 @@ const initialState = {
   trains: [],
 };
 
-function reducer(state = initialState, action) {
-  // eslint-disable-next-line default-case
+function reducer(state, action) {
+  if (!state) state = initialState;
 
   switch (action.type) {
     case UPDATE_SIMULATION:
