@@ -70,7 +70,6 @@ function TrainHoverPosition(props: TrainHoverPositionProps) {
     point.headPosition &&
     point.tailPosition &&
     lineSlice(point.headPosition, point.tailPosition, geojsonPath);
-  // console.log(point.headPosition, point.tailPosition, trainGeoJsonPath);
   return (
     <Source type="geojson" data={trainGeoJsonPath}>
       <Layer
@@ -83,29 +82,6 @@ function TrainHoverPosition(props: TrainHoverPositionProps) {
       />
     </Source>
   );
-  // const tail =
-  //   point.properties.intermediaterMarkersPoints &&
-  //   point.properties.intermediaterMarkersPoints.map((intermediateMarkerPoint, i) => (
-  //     <TrainSection
-  //       longitude={intermediateMarkerPoint.geometry.coordinates[0]}
-  //       latitude={intermediateMarkerPoint.geometry.coordinates[1]}
-  //       fill={fill}
-  //       fillOpacity="0.60"
-  //       key={nextId()}
-  //     />
-  //   ));
-  // return (
-  //   <>
-  //     <TrainSection
-  //       longitude={point.geometry?.coordinates[0]}
-  //       latitude={point.geometry?.coordinates[1]}
-  //       fill={fill}
-  //       fillOpacity="0.75"
-  //       label={label}
-  //     />
-  //     {tail}
-  //   </>
-  // );
 }
 
 export default TrainHoverPosition;

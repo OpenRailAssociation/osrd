@@ -137,8 +137,6 @@ function Map(props) {
         ? along(line, positionValues[tailKey].position / 1000, { units: 'kilometers' })
         : headPosition;
       const trainLength = positionValues[headKey].position - positionValues[tailKey].position;
-      console.log(positionValues[headKey].position, positionValues[tailKey].position);
-      console.log(headPosition, tailPosition, trainLength);
       setTrainHoverPosition({
         headPosition,
         speedTime: positionValues.speed,
