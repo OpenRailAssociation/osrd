@@ -106,32 +106,15 @@ public class STDCMPathfinding {
         return MaxSpeedEnvelope.from(context, new double[]{envelope.getEndPos()}, envelope);
     }
 
-    /** Returns a list of TrackRangeView that cover the given route between the positions `start` and `end`.
-     * The positions are offsets from the start of the route. */
-    public static List<TrackRangeView> truncateTrackRange(SignalingRoute route, double start, double end) {
-        double offset = 0;
-        var res = new ArrayList<TrackRangeView>();
-        var infraRoute = route.getInfraRoute();
-        for (var trackRange : infraRoute.getTrackRanges()) {
-            var oldOffset = offset;
-            offset += trackRange.getLength();
-            if (end < oldOffset + trackRange.getLength())
-                trackRange = trackRange.truncateEndByLength(trackRange.getLength() + oldOffset - end);
-            if (start > oldOffset)
-                trackRange = trackRange.truncateBeginByLength(start - oldOffset);
-            if (trackRange.getLength() > 0)
-                res.add(trackRange);
-        }
-        return res;
-    }
-
     /** Converts the list of pathfinding edges into a list of TrackRangeView that covers the path exactly */
     private static List<TrackRangeView> makeTrackRanges(
             List<Pathfinding.EdgeRange<STDCMGraph.Edge>> edges
     ) {
         var trackRanges = new ArrayList<TrackRangeView>();
-        for (var routeRange : edges)
-            trackRanges.addAll(truncateTrackRange(routeRange.edge().route(), routeRange.start(), routeRange.end()));
+        for (var routeRange : edges) {
+            var infraRoute = routeRange.edge().route().getInfraRoute();
+            trackRanges.addAll(infraRoute.getTrackRanges(routeRange.start(), routeRange.end()));
+        }
         return trackRanges;
     }
 
