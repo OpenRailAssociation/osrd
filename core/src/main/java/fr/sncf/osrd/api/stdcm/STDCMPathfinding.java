@@ -95,7 +95,7 @@ public class STDCMPathfinding {
     }
 
     /** Adds any missing braking curves to the envelope (including the last stop).
-     * Until this step we may have discontinuities of the MRSP decreases right after a route transition. */
+     * Until this step we may have discontinuities if the MRSP decreases right after a route transition. */
     private static Envelope addBrakingCurves(
             Envelope envelope,
             RollingStock rollingStock,
