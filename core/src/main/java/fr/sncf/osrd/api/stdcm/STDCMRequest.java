@@ -29,7 +29,7 @@ public final class STDCMRequest {
      * Route occupancies in the given timetable
      */
     @Json(name = "route_occupancies")
-    public Collection<STDCMEndpoint.RouteOccupancy> routeOccupancies;
+    public Collection<RouteOccupancy> routeOccupancies;
 
     /**
      * List of possible start points for the train
@@ -84,7 +84,7 @@ public final class STDCMRequest {
             String infra,
             String expectedVersion,
             RJSRollingStock rollingStock,
-            Collection<STDCMEndpoint.RouteOccupancy> routeOccupancies,
+            Collection<RouteOccupancy> routeOccupancies,
             Collection<PathfindingWaypoint> startPoints,
             Collection<PathfindingWaypoint> endPoints,
             double startTime,
@@ -98,5 +98,31 @@ public final class STDCMRequest {
         this.endPoints = endPoints;
         this.startTime = startTime;
         this.endTime = endTime;
+    }
+
+    public static class RouteOccupancy {
+        /**
+         * ID of the occupied route
+         */
+        public String id;
+
+        /**
+         * Time at which the route starts being occupied
+         */
+        @Json(name = "start_occupancy_time")
+        public double startOccupancyTime;
+
+        /**
+         * Time at which the route ends being occupied
+         */
+        @Json(name = "end_occupancy_time")
+        public double endOccupancyTime;
+
+        /** Creates a new route occupancy */
+        public RouteOccupancy(String id, double startOccupancyTime, double endOccupancyTime) {
+            this.id = id;
+            this.startOccupancyTime = startOccupancyTime;
+            this.endOccupancyTime = endOccupancyTime;
+        }
     }
 }

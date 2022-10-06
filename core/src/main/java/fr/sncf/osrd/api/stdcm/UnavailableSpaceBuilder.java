@@ -1,14 +1,11 @@
-package fr.sncf.osrd.api.stdcm.new_pipeline;
+package fr.sncf.osrd.api.stdcm;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import fr.sncf.osrd.api.stdcm.STDCMEndpoint;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
-import fr.sncf.osrd.reporting.exceptions.NotImplemented;
 import fr.sncf.osrd.train.RollingStock;
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 public class UnavailableSpaceBuilder {
 
@@ -22,7 +19,7 @@ public class UnavailableSpaceBuilder {
      * as soon as possible. After this step we can look for a single curve that avoids unavailable blocks. */
     public static Multimap<SignalingRoute, OccupancyBlock> computeUnavailableSpace(
             SignalingInfra infra,
-            Collection<STDCMEndpoint.RouteOccupancy> occupancies,
+            Collection<STDCMRequest.RouteOccupancy> occupancies,
             RollingStock rollingStock
     ) {
 
