@@ -54,15 +54,11 @@ function InputTime(props) {
   );
 }
 
-export default function TrainsList(props) {
-  const { toggleTrainList } = props;
-  const { selectedTrain, departureArrivalTimes } = useSelector(
-    (state) => state.osrdsimulation
-  );
+export default function TrainsList() {
+  const { selectedTrain, departureArrivalTimes } = useSelector((state) => state.osrdsimulation);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
   const [formattedList, setFormattedList] = useState(null);
-  const [filter, setFilter] = useState('');
   const [trainNameClickedIDX, setTrainNameClickedIDX] = useState(undefined);
   const [typeOfInputFocused, setTypeOfInputFocused] = useState(undefined);
   const [inputName, setInputName] = useState(undefined);
@@ -107,97 +103,51 @@ export default function TrainsList(props) {
   const debouncedInputTime = useDebounce(inputTime, 500);
 
   const formatTrainsList = () => {
-    const newFormattedList = departureArrivalTimes.map((train, idx) => {
-      if (
-        filter === '' ||
-        (train.labels !== undefined &&
-          train.labels.join().toLowerCase().includes(filter.toLowerCase()))
-      ) {
-        return (
-          <tr className={selectedTrain === idx ? 'table-cell-selected' : null} key={nextId()}>
-            <td>
-              <div className="cell-inner">
-                <div className="custom-control custom-checkbox custom-checkbox-alone">
-                  <input
-                    type="checkbox"
-                    className="custom-control-input"
-                    id={`timetable-train-${idx}`}
-                  />
-                  <label className="custom-control-label" htmlFor={`timetable-train-${idx}`} />
-                </div>
-              </div>
-            </td>
-            <td className="td-button">
-              <div
-                className="cell-inner cell-inner-button"
-                role="button"
-                onClick={() =>
-                  changeSelectedTrain(idx, 'name', train.name, sec2time(train.departure))
-                }
-                tabIndex={0}
-              >
-                {trainNameClickedIDX === idx ? (
-                  <InputName
-                    idx={idx}
-                    changeTrainName={changeTrainName}
-                    name={train.name}
-                    typeOfInputFocused={typeOfInputFocused}
-                  />
-                ) : (
-                  train.name
-                )}
-              </div>
-            </td>
-            <td>
-              <div
-                className="cell-inner cell-inner-button"
-                role="button"
-                onClick={() =>
-                  changeSelectedTrain(idx, 'time', train.name, sec2time(train.departure))
-                }
-                tabIndex={0}
-              >
-                {trainNameClickedIDX === idx ? (
-                  <InputTime
-                    idx={idx}
-                    changeTrainStartTime={changeTrainStartTime}
-                    time={sec2time(train.departure)}
-                    typeOfInputFocused={typeOfInputFocused}
-                  />
-                ) : (
-                  sec2time(train.departure)
-                )}
-              </div>
-            </td>
-            <td>
-              <div className="cell-inner">{sec2time(train.arrival)}</div>
-            </td>
-            <td>
-              <div className="cell-inner">{train.labels && train.labels.join(' / ')}</div>
-            </td>
-            <td>
-              <div className="cell-inner">
-                <button
-                  type="button"
-                  data-toggle="modal"
-                  data-target="#trainlist-modal"
-                  className="btn btn-only-icon btn-transparent btn-color-gray pl-0"
-                >
-                  <i className="icons-pencil" />
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-only-icon btn-transparent btn-color-gray px-0"
-                >
-                  <IoMdEye />
-                </button>
-              </div>
-            </td>
-          </tr>
-        );
-      }
-      return null;
-    });
+    const newFormattedList = departureArrivalTimes.map((train, idx) => (
+      <tr className={selectedTrain === idx ? 'table-cell-selected' : null} key={nextId()}>
+        <td className="td-button">
+          <div
+            className="cell-inner cell-inner-button"
+            role="button"
+            onClick={() => changeSelectedTrain(idx, 'name', train.name, sec2time(train.departure))}
+            tabIndex={0}
+          >
+            {trainNameClickedIDX === idx ? (
+              <InputName
+                idx={idx}
+                changeTrainName={changeTrainName}
+                name={train.name}
+                typeOfInputFocused={typeOfInputFocused}
+              />
+            ) : (
+              train.name
+            )}
+          </div>
+        </td>
+        <td>
+          <div
+            className="cell-inner cell-inner-button"
+            role="button"
+            onClick={() => changeSelectedTrain(idx, 'time', train.name, sec2time(train.departure))}
+            tabIndex={0}
+          >
+            {trainNameClickedIDX === idx ? (
+              <InputTime
+                idx={idx}
+                changeTrainStartTime={changeTrainStartTime}
+                time={sec2time(train.departure)}
+                typeOfInputFocused={typeOfInputFocused}
+              />
+            ) : (
+              sec2time(train.departure)
+            )}
+          </div>
+        </td>
+        <td>
+          <div className="cell-inner">{sec2time(train.arrival)}</div>
+        </td>
+      </tr>
+    ));
     return newFormattedList;
   };
 
@@ -219,35 +169,15 @@ export default function TrainsList(props) {
     if (!onInput) {
       setFormattedList(formatTrainsList());
     }
-  }, [selectedTrain, departureArrivalTimes, filter, trainNameClickedIDX, typeOfInputFocused]);
+  }, [selectedTrain, departureArrivalTimes, trainNameClickedIDX, typeOfInputFocused]);
 
   return (
     <>
       <div className="mb-2 row">
         <div className="col-md-6 col-4">
-          <span className="h2 flex-grow-2">{t('simulation:trainList')}</span>
-        </div>
-        <div className="col-md-6 col-8 d-flex">
-          <div className="flex-grow-1">
-            <InputSNCF
-              type="text"
-              placeholder={t('simulation:placeholderlabel')}
-              id="labels-filter"
-              onChange={(e) => setFilter(e.target.value)}
-              onClear={() => setFilter('')}
-              value={filter}
-              clearButton
-              noMargin
-              sm
-            />
-          </div>
-          <button
-            type="button"
-            className="ml-1 btn btn-primary btn-only-icon btn-sm"
-            onClick={toggleTrainList}
-          >
-            <i className="icons-arrow-up" />
-          </button>
+          <span className="h2 flex-grow-2">
+            {`${t('simulation:trainList')} (${departureArrivalTimes.length})`}
+          </span>
         </div>
       </div>
       <div className="table-wrapper simulation-trainlist">
@@ -255,21 +185,7 @@ export default function TrainsList(props) {
           <table className="table table-hover">
             <thead className="thead thead-light">
               <tr>
-                <th>
-                  <div className="cell-inner">
-                    <div className="custom-control custom-checkbox custom-checkbox-alone">
-                      <input
-                        type="checkbox"
-                        className="custom-control-input"
-                        id="timetable-sel-all-trains"
-                      />
-                      <label className="custom-control-label" htmlFor="timetable-sel-all-trains">
-                        <span className="sr-only">Select all</span>
-                      </label>
-                    </div>
-                  </div>
-                </th>
-                <th scope="col" colSpan="2">
+                <th scope="col">
                   <div className="cell-inner">{t('simulation:name')}</div>
                 </th>
                 <th scope="col">
@@ -278,21 +194,12 @@ export default function TrainsList(props) {
                 <th scope="col">
                   <div className="cell-inner">{t('simulation:stop')}</div>
                 </th>
-                <th scope="col">
-                  <div className="cell-inner">{t('simulation:labels')}</div>
-                </th>
-                <th scope="col">
-                  <span className="sr-only">Actions</span>
-                </th>
               </tr>
             </thead>
             <tbody>{formattedList}</tbody>
           </table>
         </div>
       </div>
-      {/* <TrainListModal
-        trainIDX={trainIDX}
-      /> */}
     </>
   );
 }
@@ -309,8 +216,4 @@ InputTime.propTypes = {
   idx: PropTypes.number.isRequired,
   time: PropTypes.string.isRequired,
   typeOfInputFocused: PropTypes.string.isRequired,
-};
-
-TrainsList.propTypes = {
-  toggleTrainList: PropTypes.func.isRequired,
 };

@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
-import { defineLinear, defineTime } from 'applications/osrd/components/Helpers/ChartHelpers';
-import defineChart from 'applications/osrd/components/Simulation/defineChart';
+import { defineLinear, defineTime } from 'applications/customget/components/ChartHelpers';
+import defineChart from 'applications/customget/components/defineChart';
 
 export default function createChart(
   chart,
@@ -19,9 +19,7 @@ export default function createChart(
       ...dataSimulation.map((train) =>
         d3.extent(
           [].concat(
-            ...train.routeBeginOccupancy.map((section) =>
-              d3.extent(section, (step) => step[keyValues[0]])
-            )
+            ...train.headPosition.map((section) => d3.extent(section, (step) => step[keyValues[0]]))
           )
         )
       )
@@ -33,9 +31,7 @@ export default function createChart(
       [].concat(
         ...dataSimulation.map((train) =>
           d3.max(
-            train.routeEndOccupancy.map((section) =>
-              d3.max(section.map((step) => step[keyValues[1]]))
-            )
+            train.headPosition.map((section) => d3.max(section.map((step) => step[keyValues[1]])))
           )
         )
       )
@@ -44,9 +40,7 @@ export default function createChart(
       [].concat(
         ...dataSimulation.map((train) =>
           d3.max(
-            train.routeBeginOccupancy.map((section) =>
-              d3.max(section.map((step) => step[keyValues[1]]))
-            )
+            train.headPosition.map((section) => d3.max(section.map((step) => step[keyValues[1]])))
           )
         )
       )

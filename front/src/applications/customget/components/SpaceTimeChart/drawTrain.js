@@ -1,14 +1,10 @@
 import * as d3 from 'd3';
 
-import { getDirection, timeShiftTrain } from 'applications/osrd/components/Helpers/ChartHelpers';
-import {
-  updateContextMenu,
-  updateMustRedraw,
-  updateSelectedTrain,
-} from 'reducers/osrdsimulation';
+import { getDirection, timeShiftTrain } from 'applications/customget/components/ChartHelpers';
+import { updateContextMenu, updateMustRedraw, updateSelectedTrain } from 'reducers/osrdsimulation';
 
-import drawCurve from 'applications/osrd/components/Simulation/drawCurve';
-import drawText from 'applications/osrd/components/Simulation/drawText';
+import drawCurve from 'applications/customget/components/drawCurve';
+import drawText from 'applications/customget/components/drawText';
 import {
   departureArrivalTimes,
   updateDepartureArrivalTimes,

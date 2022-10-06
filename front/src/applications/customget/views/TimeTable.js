@@ -4,11 +4,34 @@ import { sec2time } from 'utils/timeManipulation';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
+import signalIcon from 'assets/pictures/layersicons/layer_signal_open.svg';
+import stopIcon from 'assets/pictures/layersicons/ops.svg';
+
+function type2icon(type) {
+  switch (type) {
+    case 'stop':
+      return <img src={stopIcon} alt="stop icon" width="32" />;
+    case 'signal':
+      return <img src={signalIcon} alt="signal icon" width="32" />;
+    default:
+      return stop.type;
+  }
+}
+
 function formatStops(stop, idx, train) {
   return (
-    <tr key={nextId()}>
+    <tr key={nextId()} className={`${stop.duration > 0 ? 'font-weight-bold' : ''}`}>
       <td>
-        <div className="cell-inner font-weight-bold">{stop.name || 'Unknown'}</div>
+        <div className="cell-inner">{idx}</div>
+      </td>
+      <td>
+        <div className="cell-inner">{Math.round(stop.position / 100) / 10}</div>
+      </td>
+      <td>
+        <div className="cell-inner text-center">{type2icon(stop.type)}</div>
+      </td>
+      <td>
+        <div className="cell-inner">{stop.name || 'Unknown'}</div>
       </td>
       <td>
         <div className="cell-inner">{sec2time(stop.time)}</div>
@@ -19,34 +42,38 @@ function formatStops(stop, idx, train) {
       <td>
         <div className="cell-inner">{stop.duration > 0 ? `${stop.duration}s` : null}</div>
       </td>
-      <td>
-        <div className="cell-inner">{train.eco && sec2time(train.eco.stops[idx].time)}</div>
-      </td>
-      <td>
-        <div className="cell-inner">
-          {train.eco &&
-            train.eco.stops[idx].duration > 0 &&
-            sec2time(train.eco.stops[idx].time + train.eco.stops[idx].duration)}
-        </div>
-      </td>
     </tr>
   );
 }
 
 export default function TimeTable() {
   const { t } = useTranslation(['simulation']);
-  const { selectedTrain } = useSelector((state) => state.osrdsimulation);
+  const { departureArrivalTimes, selectedTrain } = useSelector((state) => state.osrdsimulation);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const data = simulation.trains[selectedTrain].base.stops;
 
   return (
     <>
-      <div className="h2">{t('simulation:timetable')}</div>
+      <div className="btn-selected-train d-flex align-items-center mb-4">
+        <div className="mr-2">
+          {t('simulation:train')}
+          <span className="ml-2">{departureArrivalTimes[selectedTrain].name}</span>
+        </div>
+        <div className="small mr-1">{sec2time(departureArrivalTimes[selectedTrain].departure)}</div>
+        <div className="small">{sec2time(departureArrivalTimes[selectedTrain].arrival)}</div>
+      </div>
       <div className="table-wrapper">
         <div className="table-scroller dragscroll">
           <table className="table table-hover table-shrink">
             <thead className="thead thead-light">
               <tr>
+                <th scope="col">n°</th>
+                <th scope="col">
+                  <div className="cell-inner">KM</div>
+                </th>
+                <th scope="col">
+                  <div className="cell-inner">TYPE</div>
+                </th>
                 <th scope="col">
                   <div className="cell-inner">{t('simulation:stopPlace')}</div>
                 </th>
@@ -58,12 +85,6 @@ export default function TimeTable() {
                 </th>
                 <th scope="col">
                   <div className="cell-inner">{t('simulation:stopStopTime')}</div>
-                </th>
-                <th scope="col">
-                  <div className="cell-inner">{`${t('simulation:stopTime')} ECO`}</div>
-                </th>
-                <th scope="col">
-                  <div className="cell-inner">{`${t('simulation:departureTime')} ECO`}</div>
                 </th>
               </tr>
             </thead>

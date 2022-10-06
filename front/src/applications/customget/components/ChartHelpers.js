@@ -106,73 +106,8 @@ export const timeShiftTrain = (train, value) => ({
     head_positions: train.base.head_positions.map((section) =>
       section.map((step) => ({ ...step, time: offsetSeconds(step.time + value) }))
     ),
-    tail_positions: train.base.tail_positions.map((section) =>
-      section.map((step) => ({ ...step, time: offsetSeconds(step.time + value) }))
-    ),
-    route_end_occupancy: train.base.route_end_occupancy.map((section) =>
-      section.map((step) => ({ ...step, time: offsetSeconds(step.time + value) }))
-    ),
-    route_begin_occupancy: train.base.route_begin_occupancy.map((section) =>
-      section.map((step) => ({ ...step, time: offsetSeconds(step.time + value) }))
-    ),
-    route_aspects: train.base.route_aspects.map((square) => ({
-      ...square,
-      time_start: offsetSeconds(square.time_start + value),
-      time_end: offsetSeconds(square.time_end + value),
-    })),
-    speeds: train.base.speeds.map((step) => ({ ...step, time: offsetSeconds(step.time + value) })),
     stops: train.base.stops.map((stop) => ({ ...stop, time: offsetSeconds(stop.time + value) })),
   },
-  margins: train.margins
-    ? {
-        head_positions: train.margins.head_positions.map((section) =>
-          section.map((step) => ({ ...step, time: offsetSeconds(step.time + value) }))
-        ),
-        tail_positions: train.margins.tail_positions.map((section) =>
-          section.map((step) => ({ ...step, time: offsetSeconds(step.time + value) }))
-        ),
-        route_end_occupancy: train.margins.route_end_occupancy.map((section) =>
-          section.map((step) => ({ ...step, time: offsetSeconds(step.time + value) }))
-        ),
-        route_begin_occupancy: train.margins.route_begin_occupancy.map((section) =>
-          section.map((step) => ({ ...step, time: offsetSeconds(step.time + value) }))
-        ),
-        speeds: train.margins.speeds.map((step) => ({
-          ...step,
-          time: offsetSeconds(step.time + value),
-        })),
-        stops: train.margins.stops.map((stop) => ({
-          ...stop,
-          time: offsetSeconds(stop.time + value),
-        })),
-      }
-    : null,
-  eco: train.eco
-    ? {
-        head_positions: train.eco.head_positions.map((section) =>
-          section.map((step) => ({ ...step, time: offsetSeconds(step.time + value) }))
-        ),
-        tail_positions: train.eco.tail_positions.map((section) =>
-          section.map((step) => ({ ...step, time: offsetSeconds(step.time + value) }))
-        ),
-        route_end_occupancy: train.eco.route_end_occupancy.map((section) =>
-          section.map((step) => ({ ...step, time: offsetSeconds(step.time + value) }))
-        ),
-        route_begin_occupancy: train.eco.route_begin_occupancy.map((section) =>
-          section.map((step) => ({ ...step, time: offsetSeconds(step.time + value) }))
-        ),
-        route_aspects: train.eco.route_aspects.map((square) => ({
-          ...square,
-          time_start: offsetSeconds(square.time_start + value),
-          time_end: offsetSeconds(square.time_end + value),
-        })),
-        speeds: train.eco.speeds.map((step) => ({
-          ...step,
-          time: offsetSeconds(step.time + value),
-        })),
-        stops: train.eco.stops.map((stop) => ({ ...stop, time: offsetSeconds(stop.time + value) })),
-      }
-    : null,
 });
 
 // Merge two curves for creating area between

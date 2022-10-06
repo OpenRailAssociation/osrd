@@ -20,13 +20,14 @@ import TimeButtons from 'applications/customget/views/TimeButtons';
 import TrainDetails from 'applications/customget/views/TrainDetails';
 import createTrain from 'applications/customget/components/SpaceTimeChart/createTrain';
 import convertData from 'applications/customget/components/convertData';
-import { get } from 'common/requests.ts';
-import { sec2time } from 'utils/timeManipulation';
 import { setFailure } from 'reducers/main.ts';
 import { useTranslation } from 'react-i18next';
 
 // To remove
 import staticData from 'applications/customget/static-data-simulation.json';
+import staticData2 from 'applications/customget/static-data-simulation-baptiste.json';
+
+convertData(staticData2);
 
 export const KEY_VALUES_FOR_CONSOLIDATED_SIMULATION = ['time', 'position'];
 
@@ -42,9 +43,7 @@ function CustomGET() {
   const [initialHeightOfSpaceTimeChart, setInitialHeightOfSpaceTimeChart] =
     useState(heightOfSpaceTimeChart);
 
-  const { departureArrivalTimes, selectedTrain, stickyBar } = useSelector(
-    (state) => state.osrdsimulation
-  );
+  const { stickyBar } = useSelector((state) => state.osrdsimulation);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
 
@@ -65,7 +64,7 @@ function CustomGET() {
   };
 
   useEffect(() => {
-    dispatch(updateSimulation({ trains: convertData(staticData) }));
+    dispatch(updateSimulation({ trains: convertData(staticData2) }));
     dispatch(updateSelectedTrain(0));
     return function cleanup() {
       dispatch(updateSelectedProjection(undefined));
@@ -94,33 +93,22 @@ function CustomGET() {
         </div>
       ) : (
         <div className="m-0 p-3">
-          {displayTrainList ? (
-            <div className="osrd-simulation-container mb-2">
-              <div className="flex-fill">
-                <TrainList toggleTrainList={toggleTrainList} />
+          <div className="row">
+            <div className="col-md-6">
+              <div className="osrd-simulation-container mb-2">
+                <div className="flex-fill" style={{ maxHeight: '40vh', overflow: 'auto' }}>
+                  <TrainList />
+                </div>
               </div>
             </div>
-          ) : (
-            <div
-              role="button"
-              tabIndex="-1"
-              className="btn-selected-train d-flex align-items-center mb-2"
-              onClick={toggleTrainList}
-            >
-              <div className="mr-2">
-                {t('simulation:train')}
-                <span className="ml-2">{departureArrivalTimes[selectedTrain].name}</span>
-              </div>
-              <div className="small mr-1">
-                {sec2time(departureArrivalTimes[selectedTrain].departure)}
-              </div>
-              <div className="small">{sec2time(departureArrivalTimes[selectedTrain].arrival)}</div>
-              <div className="ml-auto d-flex align-items-center">
-                {t('simulation:trainList')}
-                <i className="ml-2 icons-arrow-down" />
+            <div className="col-md-6">
+              <div className="osrd-simulation-container mb-2">
+                <div style={{ maxHeight: '40vh', overflow: 'auto' }}>
+                  {simulation.trains.length > 0 ? <TimeTable /> : null}
+                </div>
               </div>
             </div>
-          )}
+          </div>
           <div className="osrd-simulation-container d-flex mb-2">
             <div
               className="spacetimechart-container"
@@ -156,14 +144,6 @@ function CustomGET() {
                   <SpaceTimeChart heightOfSpaceTimeChart={heightOfSpaceTimeChart} />
                 </Rnd>
               )}
-            </div>
-          </div>
-
-          <div className="row">
-            <div className="col-md-6">
-              <div className="osrd-simulation-container mb-2">
-                {simulation.trains.length > 0 ? <TimeTable /> : null}
-              </div>
             </div>
           </div>
         </div>
