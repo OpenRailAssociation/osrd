@@ -6,7 +6,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { IoMdEye } from 'react-icons/io';
 import PropTypes from 'prop-types';
-import TrainListModal from 'applications/osrd/components/TrainList/TrainListModal';
 import { changeTrain } from 'applications/osrd/components/TrainList/TrainListHelpers';
 import nextId from 'react-id-generator';
 import { timeShiftTrain } from 'applications/osrd/components/Helpers/ChartHelpers';
@@ -57,7 +56,7 @@ function InputTime(props) {
 
 export default function TrainsList(props) {
   const { toggleTrainList } = props;
-  const { selectedProjection, selectedTrain, departureArrivalTimes } = useSelector(
+  const { selectedTrain, departureArrivalTimes } = useSelector(
     (state) => state.osrdsimulation
   );
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
@@ -127,9 +126,6 @@ export default function TrainsList(props) {
                   <label className="custom-control-label" htmlFor={`timetable-train-${idx}`} />
                 </div>
               </div>
-            </td>
-            <td>
-              <div className="cell-inner">{train.id === selectedProjection.id && '🎢'}</div>
             </td>
             <td className="td-button">
               <div
@@ -208,7 +204,6 @@ export default function TrainsList(props) {
   useEffect(() => {
     if (debouncedInputName) {
       setOnInput(false);
-      changeTrain({ train_name: debouncedInputName }, simulation.trains[trainNameClickedIDX].id);
       dispatch(updateMustRedraw(true));
     }
   }, [debouncedInputName]);
@@ -216,10 +211,6 @@ export default function TrainsList(props) {
   useEffect(() => {
     if (debouncedInputTime) {
       setOnInput(false);
-      changeTrain(
-        { departure_time: time2sec(debouncedInputTime) },
-        simulation.trains[trainNameClickedIDX].id
-      );
       dispatch(updateMustRedraw(true));
     }
   }, [debouncedInputTime]);

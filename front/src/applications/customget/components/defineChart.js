@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
-import { gridX, gridY } from 'applications/osrd/components/Helpers/ChartHelpers';
+import { gridX, gridY } from 'applications/customget/components/ChartHelpers';
 import nextId from 'react-id-generator';
-import svgDefs from 'applications/osrd/components/Simulation/svgDefs';
+import svgDefs from 'applications/customget/components/svgDefs';
 
 const defineChart = (svgWidth, svgHeight, defineX, defineY, ref, rotate, keyValues, id) => {
   const margin = {

@@ -1,0 +1,1310 @@
+[
+    {
+        "train_metadata": {
+            "name": "Train(0)"
+        },
+        "space_time_curves": [
+            {
+                "curve_metadata": {
+                    "name": "timetable"
+                },
+                "points": [
+                    {
+                        "type": "signal",
+                        "label": "line_start",
+                        "position": 0.0,
+                        "time": 0.0
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(0)",
+                        "position": 2.060943415950886,
+                        "time": 123.65660495705318
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(1)",
+                        "position": 3.8529465947027868,
+                        "time": 231.1767956821672
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(2)",
+                        "position": 6.003036833864078,
+                        "time": 360.18221003184465
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(3)",
+                        "position": 8.191149777142321,
+                        "time": 491.46898662853926
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(4)",
+                        "position": 9.800942739411553,
+                        "time": 588.0565643646933
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(10)",
+                        "position": 11.976822334384119,
+                        "time": 718.6093400630472
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(11)",
+                        "position": 14.132380721469909,
+                        "time": 847.9428432881946
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(12)",
+                        "position": 16.145586860982153,
+                        "time": 968.7352116589292
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(13)",
+                        "position": 18.37103510237576,
+                        "time": 1102.2621061425457
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(14)",
+                        "position": 20.46453697082617,
+                        "time": 1227.8722182495703
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(15)",
+                        "position": 22.292678478249524,
+                        "time": 1337.5607086949715
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(16)",
+                        "position": 24.366428635066022,
+                        "time": 1461.9857181039615
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(17)",
+                        "position": 26.174652114900223,
+                        "time": 1570.4791268940135
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(18)",
+                        "position": 28.35034217516168,
+                        "time": 1701.0205305097006
+                    },
+                    {
+                        "type": "stop",
+                        "label": "BlockSection(19)",
+                        "position": 30.340356992964427,
+                        "time": 1820.4214195778657
+                    },
+                    {
+                        "type": "stop",
+                        "label": "BlockSection(19)",
+                        "position": 30.340356992964427,
+                        "time": 1940.4214195778657
+                    }
+                ]
+            },
+            {
+                "curve_metadata": {
+                    "name": "actual"
+                },
+                "points": [
+                    {
+                        "type": "signal",
+                        "label": "line_start",
+                        "position": 0.0,
+                        "time": 0.0
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(0)",
+                        "position": 2.060943415950886,
+                        "time": 152.65660495705316
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(1)",
+                        "position": 3.8529465947027868,
+                        "time": 260.1767956821672
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(2)",
+                        "position": 6.003036833864078,
+                        "time": 389.18221003184465
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(3)",
+                        "position": 8.191149777142321,
+                        "time": 520.4689866285393
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(4)",
+                        "position": 9.800942739411553,
+                        "time": 617.0565643646933
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(10)",
+                        "position": 11.976822334384119,
+                        "time": 747.6093400630472
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(11)",
+                        "position": 14.132380721469909,
+                        "time": 876.9428432881946
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(12)",
+                        "position": 16.145586860982153,
+                        "time": 997.7352116589292
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(13)",
+                        "position": 18.37103510237576,
+                        "time": 1131.2621061425457
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(14)",
+                        "position": 20.46453697082617,
+                        "time": 1256.8722182495703
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(15)",
+                        "position": 22.292678478249524,
+                        "time": 1366.5607086949715
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(16)",
+                        "position": 24.366428635066022,
+                        "time": 1490.9857181039615
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(17)",
+                        "position": 26.174652114900223,
+                        "time": 1599.4791268940135
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(18)",
+                        "position": 28.35034217516168,
+                        "time": 1730.0205305097006
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(19)",
+                        "position": 30.340356992964427,
+                        "time": 1849.4214195778657
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(19)",
+                        "position": 30.340356992964427,
+                        "time": 1969.4214195778657
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "train_metadata": {
+            "name": "Train(1)"
+        },
+        "space_time_curves": [
+            {
+                "curve_metadata": {
+                    "name": "timetable"
+                },
+                "points": [
+                    {
+                        "type": "signal",
+                        "label": "line_start",
+                        "position": 9.527914643776704,
+                        "time": 859.6748786266022
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(10)",
+                        "position": 11.70379423874927,
+                        "time": 990.2276543249561
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(11)",
+                        "position": 13.85935262583506,
+                        "time": 1119.5611575501034
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(12)",
+                        "position": 15.872558765347303,
+                        "time": 1240.3535259208381
+                    },
+                    {
+                        "type": "stop",
+                        "label": "BlockSection(13)",
+                        "position": 18.09800700674091,
+                        "time": 1373.8804204044545
+                    },
+                    {
+                        "type": "stop",
+                        "label": "BlockSection(13)",
+                        "position": 18.09800700674091,
+                        "time": 1493.8804204044545
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(14)",
+                        "position": 20.19150887519132,
+                        "time": 1619.4905325114792
+                    },
+                    {
+                        "type": "stop",
+                        "label": "BlockSection(15)",
+                        "position": 22.019650382614675,
+                        "time": 1729.1790229568803
+                    },
+                    {
+                        "type": "stop",
+                        "label": "BlockSection(15)",
+                        "position": 22.019650382614675,
+                        "time": 1849.1790229568803
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(16)",
+                        "position": 24.093400539431173,
+                        "time": 1973.6040323658704
+                    },
+                    {
+                        "type": "stop",
+                        "label": "BlockSection(17)",
+                        "position": 25.901624019265373,
+                        "time": 2082.0974411559223
+                    },
+                    {
+                        "type": "stop",
+                        "label": "BlockSection(17)",
+                        "position": 25.901624019265373,
+                        "time": 2202.0974411559223
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(18)",
+                        "position": 28.07731407952683,
+                        "time": 2332.6388447716095
+                    },
+                    {
+                        "type": "stop",
+                        "label": "BlockSection(19)",
+                        "position": 30.067328897329578,
+                        "time": 2452.0397338397743
+                    },
+                    {
+                        "type": "stop",
+                        "label": "BlockSection(19)",
+                        "position": 30.067328897329578,
+                        "time": 2572.0397338397743
+                    }
+                ]
+            },
+            {
+                "curve_metadata": {
+                    "name": "actual"
+                },
+                "points": [
+                    {
+                        "type": "signal",
+                        "label": "line_start",
+                        "position": 9.527914643776704,
+                        "time": 859.6748786266022
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(10)",
+                        "position": 11.70379423874927,
+                        "time": 554.5527756983539
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(10)",
+                        "position": 11.70379423874927,
+                        "time": 2256.4956189865484
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(11)",
+                        "position": 13.85935262583506,
+                        "time": 2385.829122211696
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(12)",
+                        "position": 15.872558765347303,
+                        "time": 2506.6214905824304
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(13)",
+                        "position": 18.09800700674091,
+                        "time": 2640.148385066047
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(13)",
+                        "position": 18.09800700674091,
+                        "time": 2760.148385066047
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(14)",
+                        "position": 20.19150887519132,
+                        "time": 2885.7584971730716
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(15)",
+                        "position": 22.019650382614675,
+                        "time": 2995.4469876184726
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(15)",
+                        "position": 22.019650382614675,
+                        "time": 3115.4469876184726
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(16)",
+                        "position": 24.093400539431173,
+                        "time": 3239.8719970274624
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(17)",
+                        "position": 25.901624019265373,
+                        "time": 3348.3654058175143
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(17)",
+                        "position": 25.901624019265373,
+                        "time": 3468.3654058175143
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(18)",
+                        "position": 28.07731407952683,
+                        "time": 3598.9068094332015
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(19)",
+                        "position": 30.067328897329578,
+                        "time": 3718.3076985013663
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(19)",
+                        "position": 30.067328897329578,
+                        "time": 3838.3076985013663
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "train_metadata": {
+            "name": "Train(2)"
+        },
+        "space_time_curves": [
+            {
+                "curve_metadata": {
+                    "name": "timetable"
+                },
+                "points": [
+                    {
+                        "type": "signal",
+                        "label": "line_start",
+                        "position": 0.0,
+                        "time": 1152.0
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(0)",
+                        "position": 2.060943415950886,
+                        "time": 1275.656604957053
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(1)",
+                        "position": 3.8529465947027868,
+                        "time": 1383.1767956821673
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(2)",
+                        "position": 6.003036833864078,
+                        "time": 1512.1822100318445
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(3)",
+                        "position": 8.191149777142321,
+                        "time": 1643.4689866285394
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(4)",
+                        "position": 9.800942739411553,
+                        "time": 1740.0565643646933
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(10)",
+                        "position": 11.976822334384119,
+                        "time": 1870.609340063047
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(11)",
+                        "position": 14.132380721469909,
+                        "time": 1999.9428432881946
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(12)",
+                        "position": 16.145586860982153,
+                        "time": 2120.735211658929
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(13)",
+                        "position": 18.37103510237576,
+                        "time": 2254.2621061425457
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(14)",
+                        "position": 20.46453697082617,
+                        "time": 2379.8722182495703
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(15)",
+                        "position": 22.292678478249524,
+                        "time": 2489.5607086949713
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(16)",
+                        "position": 24.366428635066022,
+                        "time": 2613.9857181039615
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(17)",
+                        "position": 26.174652114900223,
+                        "time": 2722.4791268940135
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(18)",
+                        "position": 28.35034217516168,
+                        "time": 2853.0205305097006
+                    },
+                    {
+                        "type": "stop",
+                        "label": "BlockSection(19)",
+                        "position": 30.340356992964427,
+                        "time": 2972.421419577866
+                    },
+                    {
+                        "type": "stop",
+                        "label": "BlockSection(19)",
+                        "position": 30.340356992964427,
+                        "time": 3092.421419577866
+                    }
+                ]
+            },
+            {
+                "curve_metadata": {
+                    "name": "actual"
+                },
+                "points": [
+                    {
+                        "type": "signal",
+                        "label": "line_start",
+                        "position": 0.0,
+                        "time": 1152.0
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(0)",
+                        "position": 2.060943415950886,
+                        "time": 1401.656604957053
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(1)",
+                        "position": 3.8529465947027868,
+                        "time": 1509.1767956821673
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(2)",
+                        "position": 6.003036833864078,
+                        "time": 1638.1822100318448
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(3)",
+                        "position": 8.191149777142321,
+                        "time": 1769.4689866285394
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(4)",
+                        "position": 9.800942739411553,
+                        "time": 1866.0565643646933
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(10)",
+                        "position": 11.976822334384119,
+                        "time": 1996.6093400630473
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(11)",
+                        "position": 14.132380721469909,
+                        "time": 2125.9428432881946
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(12)",
+                        "position": 16.145586860982153,
+                        "time": 2246.735211658929
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(13)",
+                        "position": 18.37103510237576,
+                        "time": 2380.2621061425452
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(14)",
+                        "position": 20.46453697082617,
+                        "time": 2505.87221824957
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(15)",
+                        "position": 22.292678478249524,
+                        "time": 2615.560708694971
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(16)",
+                        "position": 24.366428635066022,
+                        "time": 2739.9857181039606
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(17)",
+                        "position": 26.174652114900223,
+                        "time": 2848.4791268940126
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(18)",
+                        "position": 28.35034217516168,
+                        "time": 2979.0205305096997
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(19)",
+                        "position": 30.340356992964427,
+                        "time": 3098.4214195778645
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(19)",
+                        "position": 30.340356992964427,
+                        "time": 3218.4214195778645
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "train_metadata": {
+            "name": "Train(3)"
+        },
+        "space_time_curves": [
+            {
+                "curve_metadata": {
+                    "name": "timetable"
+                },
+                "points": [
+                    {
+                        "type": "signal",
+                        "label": "line_start",
+                        "position": 9.527914643776704,
+                        "time": 2011.674878626602
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(10)",
+                        "position": 11.70379423874927,
+                        "time": 2142.2276543249563
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(11)",
+                        "position": 13.85935262583506,
+                        "time": 2271.5611575501034
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(12)",
+                        "position": 15.872558765347303,
+                        "time": 2392.3535259208384
+                    },
+                    {
+                        "type": "stop",
+                        "label": "BlockSection(13)",
+                        "position": 18.09800700674091,
+                        "time": 2525.8804204044545
+                    },
+                    {
+                        "type": "stop",
+                        "label": "BlockSection(13)",
+                        "position": 18.09800700674091,
+                        "time": 2645.8804204044545
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(14)",
+                        "position": 20.19150887519132,
+                        "time": 2771.490532511479
+                    },
+                    {
+                        "type": "stop",
+                        "label": "BlockSection(15)",
+                        "position": 22.019650382614675,
+                        "time": 2881.1790229568805
+                    },
+                    {
+                        "type": "stop",
+                        "label": "BlockSection(15)",
+                        "position": 22.019650382614675,
+                        "time": 3001.1790229568805
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(16)",
+                        "position": 24.093400539431173,
+                        "time": 3125.6040323658704
+                    },
+                    {
+                        "type": "stop",
+                        "label": "BlockSection(17)",
+                        "position": 25.901624019265373,
+                        "time": 3234.0974411559223
+                    },
+                    {
+                        "type": "stop",
+                        "label": "BlockSection(17)",
+                        "position": 25.901624019265373,
+                        "time": 3354.0974411559223
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(18)",
+                        "position": 28.07731407952683,
+                        "time": 3484.6388447716095
+                    },
+                    {
+                        "type": "stop",
+                        "label": "BlockSection(19)",
+                        "position": 30.067328897329578,
+                        "time": 3604.0397338397743
+                    },
+                    {
+                        "type": "stop",
+                        "label": "BlockSection(19)",
+                        "position": 30.067328897329578,
+                        "time": 3724.0397338397743
+                    }
+                ]
+            },
+            {
+                "curve_metadata": {
+                    "name": "actual"
+                },
+                "points": [
+                    {
+                        "type": "signal",
+                        "label": "line_start",
+                        "position": 9.527914643776704,
+                        "time": 2011.674878626602
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(10)",
+                        "position": 11.70379423874927,
+                        "time": 1633.552775698354
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(10)",
+                        "position": 11.70379423874927,
+                        "time": 3294.495618986548
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(11)",
+                        "position": 13.85935262583506,
+                        "time": 3423.8291222116954
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(12)",
+                        "position": 15.872558765347303,
+                        "time": 3544.62149058243
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(13)",
+                        "position": 18.09800700674091,
+                        "time": 3678.148385066046
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(13)",
+                        "position": 18.09800700674091,
+                        "time": 3798.148385066046
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(14)",
+                        "position": 20.19150887519132,
+                        "time": 3923.7584971730707
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(15)",
+                        "position": 22.019650382614675,
+                        "time": 4033.4469876184717
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(15)",
+                        "position": 22.019650382614675,
+                        "time": 4153.446987618472
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(16)",
+                        "position": 24.093400539431173,
+                        "time": 4277.871997027462
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(17)",
+                        "position": 25.901624019265373,
+                        "time": 4386.365405817514
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(17)",
+                        "position": 25.901624019265373,
+                        "time": 4506.365405817514
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(18)",
+                        "position": 28.07731407952683,
+                        "time": 4636.9068094332015
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(19)",
+                        "position": 30.067328897329578,
+                        "time": 4756.307698501367
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(19)",
+                        "position": 30.067328897329578,
+                        "time": 4876.307698501367
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "train_metadata": {
+            "name": "Train(4)"
+        },
+        "space_time_curves": [
+            {
+                "curve_metadata": {
+                    "name": "timetable"
+                },
+                "points": [
+                    {
+                        "type": "signal",
+                        "label": "line_start",
+                        "position": 0.0,
+                        "time": 2304.0
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(0)",
+                        "position": 2.060943415950886,
+                        "time": 2427.6566049570533
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(1)",
+                        "position": 3.8529465947027868,
+                        "time": 2535.1767956821673
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(2)",
+                        "position": 6.003036833864078,
+                        "time": 2664.1822100318445
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(3)",
+                        "position": 8.191149777142321,
+                        "time": 2795.4689866285394
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(4)",
+                        "position": 9.800942739411553,
+                        "time": 2892.0565643646933
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(10)",
+                        "position": 11.976822334384119,
+                        "time": 3022.609340063047
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(11)",
+                        "position": 14.132380721469909,
+                        "time": 3151.9428432881946
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(12)",
+                        "position": 16.145586860982153,
+                        "time": 3272.735211658929
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(13)",
+                        "position": 18.37103510237576,
+                        "time": 3406.2621061425457
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(14)",
+                        "position": 20.46453697082617,
+                        "time": 3531.8722182495703
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(15)",
+                        "position": 22.292678478249524,
+                        "time": 3641.5607086949713
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(16)",
+                        "position": 24.366428635066022,
+                        "time": 3765.9857181039615
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(17)",
+                        "position": 26.174652114900223,
+                        "time": 3874.4791268940135
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(18)",
+                        "position": 28.35034217516168,
+                        "time": 4005.0205305097006
+                    },
+                    {
+                        "type": "stop",
+                        "label": "BlockSection(19)",
+                        "position": 30.340356992964427,
+                        "time": 4124.421419577866
+                    },
+                    {
+                        "type": "stop",
+                        "label": "BlockSection(19)",
+                        "position": 30.340356992964427,
+                        "time": 4244.421419577866
+                    }
+                ]
+            },
+            {
+                "curve_metadata": {
+                    "name": "actual"
+                },
+                "points": [
+                    {
+                        "type": "signal",
+                        "label": "line_start",
+                        "position": 0.0,
+                        "time": 2304.0
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(0)",
+                        "position": 2.060943415950886,
+                        "time": 2439.6566049570533
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(1)",
+                        "position": 3.8529465947027868,
+                        "time": 2547.1767956821673
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(2)",
+                        "position": 6.003036833864078,
+                        "time": 2676.1822100318445
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(3)",
+                        "position": 8.191149777142321,
+                        "time": 2807.468986628539
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(4)",
+                        "position": 9.800942739411553,
+                        "time": 2904.056564364693
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(10)",
+                        "position": 11.976822334384119,
+                        "time": 3034.6093400630466
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(11)",
+                        "position": 14.132380721469909,
+                        "time": 3163.942843288194
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(12)",
+                        "position": 16.145586860982153,
+                        "time": 3284.7352116589286
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(13)",
+                        "position": 18.37103510237576,
+                        "time": 3418.2621061425452
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(14)",
+                        "position": 20.46453697082617,
+                        "time": 3543.87221824957
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(15)",
+                        "position": 22.292678478249524,
+                        "time": 3653.560708694971
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(16)",
+                        "position": 24.366428635066022,
+                        "time": 3777.9857181039606
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(17)",
+                        "position": 26.174652114900223,
+                        "time": 3886.4791268940126
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(18)",
+                        "position": 28.35034217516168,
+                        "time": 4017.0205305096997
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(19)",
+                        "position": 30.340356992964427,
+                        "time": 4136.421419577865
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(19)",
+                        "position": 30.340356992964427,
+                        "time": 4256.421419577865
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "train_metadata": {
+            "name": "Train(5)"
+        },
+        "space_time_curves": [
+            {
+                "curve_metadata": {
+                    "name": "timetable"
+                },
+                "points": [
+                    {
+                        "type": "signal",
+                        "label": "line_start",
+                        "position": 9.527914643776704,
+                        "time": 3163.674878626602
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(10)",
+                        "position": 11.70379423874927,
+                        "time": 3294.2276543249563
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(11)",
+                        "position": 13.85935262583506,
+                        "time": 3423.5611575501034
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(12)",
+                        "position": 15.872558765347303,
+                        "time": 3544.3535259208384
+                    },
+                    {
+                        "type": "stop",
+                        "label": "BlockSection(13)",
+                        "position": 18.09800700674091,
+                        "time": 3677.8804204044545
+                    },
+                    {
+                        "type": "stop",
+                        "label": "BlockSection(13)",
+                        "position": 18.09800700674091,
+                        "time": 3797.8804204044545
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(14)",
+                        "position": 20.19150887519132,
+                        "time": 3923.490532511479
+                    },
+                    {
+                        "type": "stop",
+                        "label": "BlockSection(15)",
+                        "position": 22.019650382614675,
+                        "time": 4033.1790229568805
+                    },
+                    {
+                        "type": "stop",
+                        "label": "BlockSection(15)",
+                        "position": 22.019650382614675,
+                        "time": 4153.1790229568805
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(16)",
+                        "position": 24.093400539431173,
+                        "time": 4277.604032365871
+                    },
+                    {
+                        "type": "stop",
+                        "label": "BlockSection(17)",
+                        "position": 25.901624019265373,
+                        "time": 4386.097441155922
+                    },
+                    {
+                        "type": "stop",
+                        "label": "BlockSection(17)",
+                        "position": 25.901624019265373,
+                        "time": 4506.097441155922
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(18)",
+                        "position": 28.07731407952683,
+                        "time": 4636.638844771609
+                    },
+                    {
+                        "type": "stop",
+                        "label": "BlockSection(19)",
+                        "position": 30.067328897329578,
+                        "time": 4756.039733839774
+                    },
+                    {
+                        "type": "stop",
+                        "label": "BlockSection(19)",
+                        "position": 30.067328897329578,
+                        "time": 4876.039733839774
+                    }
+                ]
+            },
+            {
+                "curve_metadata": {
+                    "name": "actual"
+                },
+                "points": [
+                    {
+                        "type": "signal",
+                        "label": "line_start",
+                        "position": 9.527914643776704,
+                        "time": 3163.674878626602
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(10)",
+                        "position": 11.70379423874927,
+                        "time": 2896.552775698354
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(10)",
+                        "position": 11.70379423874927,
+                        "time": 3554.3818979100492
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(11)",
+                        "position": 13.85935262583506,
+                        "time": 3683.7154011351968
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(11)",
+                        "position": 13.85935262583506,
+                        "time": 3798.148385066046
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(12)",
+                        "position": 15.872558765347303,
+                        "time": 3918.9407534367806
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(12)",
+                        "position": 15.872558765347303,
+                        "time": 3923.7584971730707
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(13)",
+                        "position": 18.09800700674091,
+                        "time": 4057.2853916566874
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(13)",
+                        "position": 18.09800700674091,
+                        "time": 4177.285391656687
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(14)",
+                        "position": 20.19150887519132,
+                        "time": 4302.8955037637115
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(15)",
+                        "position": 22.019650382614675,
+                        "time": 4412.5839942091125
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(15)",
+                        "position": 22.019650382614675,
+                        "time": 4532.5839942091125
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(16)",
+                        "position": 24.093400539431173,
+                        "time": 4657.009003618103
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(17)",
+                        "position": 25.901624019265373,
+                        "time": 4765.502412408155
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(17)",
+                        "position": 25.901624019265373,
+                        "time": 4885.502412408155
+                    },
+                    {
+                        "type": "signal",
+                        "label": "BlockSection(18)",
+                        "position": 28.07731407952683,
+                        "time": 5016.043816023842
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(19)",
+                        "position": 30.067328897329578,
+                        "time": 5135.444705092007
+                    },
+                    {
+                        "type": "wait",
+                        "label": "BlockSection(19)",
+                        "position": 30.067328897329578,
+                        "time": 5255.444705092007
+                    }
+                ]
+            }
+        ]
+    }
+]

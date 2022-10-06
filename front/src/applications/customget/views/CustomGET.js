@@ -7,6 +7,7 @@ import {
   updateSelectedProjection,
   updateSelectedTrain,
   updateSimulation,
+  updateStickyBar,
 } from 'reducers/osrdsimulation';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -15,7 +16,10 @@ import { Rnd } from 'react-rnd';
 import SpaceTimeChart from 'applications/customget/views/SpaceTimeChart';
 import TimeTable from 'applications/customget/views/TimeTable';
 import TrainList from 'applications/customget/views/TrainList';
+import TimeButtons from 'applications/customget/views/TimeButtons';
+import TrainDetails from 'applications/customget/views/TrainDetails';
 import createTrain from 'applications/customget/components/SpaceTimeChart/createTrain';
+import convertData from 'applications/customget/components/convertData';
 import { get } from 'common/requests.ts';
 import { sec2time } from 'utils/timeManipulation';
 import { setFailure } from 'reducers/main.ts';
@@ -38,7 +42,7 @@ function CustomGET() {
   const [initialHeightOfSpaceTimeChart, setInitialHeightOfSpaceTimeChart] =
     useState(heightOfSpaceTimeChart);
 
-  const { departureArrivalTimes, selectedTrain } = useSelector(
+  const { departureArrivalTimes, selectedTrain, stickyBar } = useSelector(
     (state) => state.osrdsimulation
   );
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
@@ -61,7 +65,7 @@ function CustomGET() {
   };
 
   useEffect(() => {
-    dispatch(updateSimulation({ trains: staticData }));
+    dispatch(updateSimulation({ trains: convertData(staticData) }));
     dispatch(updateSelectedTrain(0));
     return function cleanup() {
       dispatch(updateSelectedProjection(undefined));
@@ -162,6 +166,27 @@ function CustomGET() {
               </div>
             </div>
           </div>
+        </div>
+      )}
+      {stickyBar ? (
+        <div className="osrd-simulation-sticky-bar">
+          <div className="row">
+            <div className="col-lg-4">
+              <TimeButtons />
+            </div>
+            <div className="col-lg-8">{simulation.trains.length > 0 ? <TrainDetails /> : null}</div>
+          </div>
+        </div>
+      ) : (
+        <div className="osrd-simulation-sticky-bar-mini">
+          <button
+            className="btn btn-sm btn-only-icon btn-primary ml-auto mr-1"
+            type="button"
+            onClick={() => dispatch(updateStickyBar(true))}
+          >
+            <i className="icons-arrow-prev" />
+          </button>
+          <TimeButtons />
         </div>
       )}
     </main>

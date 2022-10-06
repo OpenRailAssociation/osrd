@@ -3,7 +3,6 @@ import {
   formatSignalAspects,
   formatStepsWithTime,
   formatStepsWithTimeMulti,
-  makeStairCase,
   mergeDatasArea,
 } from 'applications/osrd/components/Helpers/ChartHelpers';
 

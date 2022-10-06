@@ -7,9 +7,7 @@ import {
   updateSelectedTrain,
 } from 'reducers/osrdsimulation';
 
-import drawArea from 'applications/osrd/components/Simulation/drawArea';
 import drawCurve from 'applications/osrd/components/Simulation/drawCurve';
-import drawRect from 'applications/osrd/components/Simulation/drawRect';
 import drawText from 'applications/osrd/components/Simulation/drawText';
 import {
   departureArrivalTimes,

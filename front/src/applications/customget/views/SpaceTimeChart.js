@@ -3,12 +3,12 @@ import * as d3 from 'd3';
 import React, { useEffect, useRef, useState } from 'react';
 import enableInteractivity, {
   traceVerticalLine,
-} from 'applications/osrd/components/Simulation/enableInteractivity';
+} from 'applications/customget/components/enableInteractivity';
 import {
   handleWindowResize,
   interpolateOnTime,
   timeShiftTrain,
-} from 'applications/osrd/components/Helpers/ChartHelpers';
+} from 'applications/customget/components/ChartHelpers';
 import {
   updateChart,
   updateContextMenu,
@@ -19,11 +19,10 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 
 import { CgLoadbar } from 'react-icons/cg';
-import ChartModal from 'applications/osrd/components/Simulation/ChartModal';
+import ChartModal from 'applications/customget/components/ChartModal';
 import { GiResize } from 'react-icons/gi';
-import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/osrd/components/Simulation/consts';
+import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/customget/components/consts';
 import PropTypes from 'prop-types';
-import { changeTrain } from 'applications/osrd/components/TrainList/TrainListHelpers';
 import createChart from 'applications/customget/components/SpaceTimeChart/createChart';
 import createTrain from 'applications/customget/components/SpaceTimeChart/createTrain';
 import drawTrain from 'applications/customget/components/SpaceTimeChart/drawTrain';
@@ -187,18 +186,6 @@ export default function SpaceTimeChart(props) {
     // ADN, entire fonction operation is subject to one condition, so aopply this condition before OR write clear and first condition to return (do nothing)
     offsetTimeByDragging(dragOffset);
   }, [dragOffset]);
-
-  useEffect(() => {
-    if (dragEnding) {
-      changeTrain(
-        {
-          departure_time: simulation.trains[selectedTrain].base.stops[0].time,
-        },
-        simulation.trains[selectedTrain].id
-      );
-      setDragEnding(false);
-    }
-  }, [dragEnding]);
 
   useEffect(() => {
     setResetChart(true);
