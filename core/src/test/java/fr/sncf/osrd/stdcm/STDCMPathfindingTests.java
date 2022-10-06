@@ -6,9 +6,12 @@ import static fr.sncf.osrd.train.TestTrains.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Range;
+import com.google.common.collect.TreeRangeMap;
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.api.stdcm.OccupancyBlock;
 import fr.sncf.osrd.api.stdcm.STDCMPathfinding;
+import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.junit.jupiter.api.Disabled;
@@ -276,6 +279,46 @@ public class STDCMPathfindingTests {
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
                 Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 9000)),
+                ImmutableMultimap.of(),
+                2.
+        );
+        assertNotNull(res);
+    }
+
+    /** Test that we avoid a path that the train can't use because of a high slope */
+    @Test
+    public void testAvoidImpossiblePath() {
+        /*
+                 c1
+                ^  \
+               /    v
+        a --> b     d --> e
+               \    ^
+                v  /
+                 c2
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        infraBuilder.addRoute("a", "b");
+        infraBuilder.addRoute("b", "c1");
+        infraBuilder.addRoute("b", "c2");
+        var routeTop = infraBuilder.addRoute("c1", "d");
+        infraBuilder.addRoute("c2", "d");
+        infraBuilder.addRoute("d", "e");
+        var infra = infraBuilder.build();
+        var track = routeTop.getInfraRoute().getTrackRanges().get(0).track.getEdge();
+        track.getGradients().put(Direction.FORWARD, TreeRangeMap.create());
+        track.getGradients().get(Direction.FORWARD).put(Range.closed(0., track.getLength()), 1000.);
+
+        var firstRoute = infra.findSignalingRoute("a->b", "BAL3");
+        var lastRoute = infra.findSignalingRoute("d->e", "BAL3");
+
+        var res = STDCMPathfinding.findPath(
+                infra,
+                REALISTIC_FAST_TRAIN,
+                0,
+                0,
+                Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
+                Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 50)),
                 ImmutableMultimap.of(),
                 2.
         );

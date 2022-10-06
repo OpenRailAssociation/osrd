@@ -68,20 +68,7 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
             double time,
             double speed,
             DiDetector detector
-    ) {
-
-        @Override
-        public boolean equals(Object other) {
-            if (other == null || other.getClass() != Node.class)
-                return false;
-            return detector.equals(((Node) other).detector);
-        }
-
-        @Override
-        public int hashCode() {
-            return detector.hashCode();
-        }
-    }
+    ) {}
 
     @Override
     public Node getEdgeEnd(Edge edge) {
