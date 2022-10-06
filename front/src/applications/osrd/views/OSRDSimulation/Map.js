@@ -18,10 +18,10 @@ import nextId from 'react-id-generator';
 
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
-import BufferStops from 'common/Map/Layers/BufferStops.tsx';
+import BufferStops from 'common/Map/Layers/BufferStops';
 /* Settings & Buttons */
 import MapButtons from 'common/Map/Buttons/MapButtons';
-import Detectors from 'common/Map/Layers/Detectors.tsx';
+import Detectors from 'common/Map/Layers/Detectors';
 import Catenaries from 'common/Map/Layers/Catenaries';
 import Hillshade from 'common/Map/Layers/Hillshade';
 import OSM from 'common/Map/Layers/OSM';
@@ -44,13 +44,12 @@ import TracksSchematic from 'common/Map/Layers/TracksSchematic';
 import TrainHoverPosition from 'applications/osrd/components/SimulationMap/TrainHoverPosition';
 import along from '@turf/along';
 import bbox from '@turf/bbox';
-import bearing from '@turf/bearing';
-import colors from 'common/Map/Consts/colors.ts';
+
+import colors from 'common/Map/Consts/colors';
 import { datetime2sec } from 'utils/timeManipulation';
 import { get } from 'common/requests';
 import lineLength from '@turf/length';
 import lineSlice from '@turf/line-slice';
-import nearestPointOnLine from '@turf/nearest-point-on-line';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import { updateTimePositionValues } from 'reducers/osrdsimulation';
 import { updateViewport } from 'reducers/map';
@@ -61,7 +60,7 @@ const INTERMEDIATE_MARKERS_QTY = 8;
 
 function Map(props) {
   const { setExtViewport } = props;
-  const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings, zoom } =
+  const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings } =
     useSelector((state) => state.map);
   const { isPlaying, selectedTrain, positionValues, timePosition, allowancesSettings } =
     useSelector((state) => state.osrdsimulation);
@@ -276,7 +275,7 @@ function Map(props) {
   };
 
   useEffect(() => {
-    mapRef.current.getMap().on('click', (e) => {});
+    mapRef.current.getMap().on('click', () => {});
 
     if (urlLat) {
       updateViewportChange({

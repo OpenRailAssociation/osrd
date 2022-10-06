@@ -67,7 +67,7 @@ export function getPointLayerProps({
   const props: LayerProps = {
     type: 'circle',
     minzoom: 9,
-    filter: ['in', 'installation_type', ...signalsList],
+    filter: ['in', 'extensions_sncf_installation_type', ...signalsList],
     paint: {
       'circle-color': colors.signal.point,
       'circle-radius': 3,
@@ -85,29 +85,29 @@ export function signalsToSprites(
 ): SymbolLayout['icon-image'] {
   switch (type) {
     case 'TIV D FIXE':
-      return ['concat', prefix, 'TIV D FIXE ', ['get', 'value']];
+      return ['concat', prefix, 'TIV D FIXE ', ['get', 'extensions_sncf_value']];
     case 'TIV D MOB':
-      return ['concat', prefix, 'TIV D MOB ', ['get', 'value']];
+      return ['concat', prefix, 'TIV D MOB ', ['get', 'extensions_sncf_value']];
     case 'TIV R MOB':
-      return ['concat', prefix, 'TIV R MOB ', ['get', 'value']];
+      return ['concat', prefix, 'TIV R MOB ', ['get', 'extensions_sncf_value']];
     case 'TIVD C FIX':
-      return ['concat', prefix, 'TIVD C FIX ', ['get', 'value']];
+      return ['concat', prefix, 'TIVD C FIX ', ['get', 'extensions_sncf_value']];
     case 'TIVD B FIX':
-      return ['concat', prefix, 'TIVD B FIX ', ['get', 'value']];
+      return ['concat', prefix, 'TIVD B FIX ', ['get', 'extensions_sncf_value']];
     case 'TIV PENDIS':
-      return ['concat', prefix, 'TIV PENDIS ', ['get', 'value']];
+      return ['concat', prefix, 'TIV PENDIS ', ['get', 'extensions_sncf_value']];
     case 'TIV PENEXE':
-      return ['concat', prefix, 'TIV PENEXE ', ['get', 'value']];
+      return ['concat', prefix, 'TIV PENEXE ', ['get', 'extensions_sncf_value']];
     case 'CHEVRON':
       return `${prefix}CHEVRON BAS`;
     case 'ARRET VOY':
-      return ['concat', prefix, 'ARRET VOY ', ['get', 'label']];
+      return ['concat', prefix, 'ARRET VOY ', ['get', 'extensions_sncf_label']];
     case 'DIVERS':
       return [
         'case',
-        ['==', ['get', 'value'], `${prefix}SIGNAUX A GAUCHE`],
+        ['==', ['get', 'extensions_sncf_value'], `${prefix}SIGNAUX A GAUCHE`],
         `${prefix}SIG A GAUCHE`,
-        ['==', ['get', 'value'], `${prefix}SIGNAUX A DROITE`],
+        ['==', ['get', 'extensions_sncf_value'], `${prefix}SIGNAUX A DROITE`],
         `${prefix}SIG A DROITE`,
         '',
       ];
@@ -118,7 +118,7 @@ export function signalsToSprites(
         prefix,
         type,
         ' ',
-        ['case', ['==', ['get', 'side'], 'RIGHT'], 'D', ['==', ['get', 'side'], 'LEFT'], 'G', ''],
+        ['case', ['==', ['get', 'extensions_sncf_side'], 'RIGHT'], 'D', ['==', ['get', 'extensions_sncf_side'], 'LEFT'], 'G', ''],
       ];
     case 'CARRE':
     case 'S':
@@ -142,17 +142,17 @@ export function getSignalMatLayerProps({
   const props: LayerProps = {
     type: 'symbol',
     minzoom: 12,
-    filter: ['in', 'installation_type', ...signalsList],
+    filter: ['in', 'extensions_sncf_installation_type', ...signalsList],
     paint: {},
     layout: {
-      'text-field': '', // '{installation_type} / {value} / {label}',
+      'text-field': '', // '{extensions_sncf_installation_type} / {extensions_sncf_value} / {extensions_sncf_label}',
       'text-font': ['Roboto Condensed'],
       'text-size': 9,
       'icon-image': [
         'case',
-        ['==', ['get', 'side'], 'RIGHT'],
+        ['==', ['get', 'extensions_sncf_side'], 'RIGHT'],
         'MATD',
-        ['==', ['get', 'side'], 'LEFT'],
+        ['==', ['get', 'extensions_sncf_side'], 'LEFT'],
         'MATG',
         '',
       ],
@@ -176,7 +176,7 @@ export function getSignalEmptyLayerProps(
   context: SignalContext,
   type: string,
   iconOffset: SymbolLayout['icon-offset'],
-  libelle = 'value'
+  libelle = 'extensions_sncf_value'
 ): LayerProps {
   const { sourceLayer, sourceTable, colors } = context;
   const angleName = getAngleName(sourceLayer);
@@ -185,7 +185,7 @@ export function getSignalEmptyLayerProps(
   const props: LayerProps = {
     type: 'symbol',
     minzoom: 13,
-    filter: ['==', 'installation_type', type],
+    filter: ['==', 'extensions_sncf_installation_type', type],
     layout: {
       'text-field': [
         'case',
@@ -197,9 +197,9 @@ export function getSignalEmptyLayerProps(
       'text-size': 8,
       'text-offset': [
         'case',
-        ['==', ['get', 'side'], 'RIGHT'],
+        ['==', ['get', 'extensions_sncf_side'], 'RIGHT'],
         ['literal', [1, -3]],
-        ['==', ['get', 'side'], 'LEFT'],
+        ['==', ['get', 'extensions_sncf_side'], 'LEFT'],
         ['literal', [-1, -3]],
         ['literal', [0, 0]],
       ],
@@ -208,9 +208,9 @@ export function getSignalEmptyLayerProps(
       'icon-size': 0.5,
       'text-anchor': [
         'case',
-        ['==', ['get', 'side'], 'RIGHT'],
+        ['==', ['get', 'extensions_sncf_side'], 'RIGHT'],
         'left',
-        ['==', ['get', 'side'], 'LEFT'],
+        ['==', ['get', 'extensions_sncf_side'], 'LEFT'],
         'right',
         'center',
       ],
@@ -246,16 +246,16 @@ export function getSignalPNLayerProps(
   const props: LayerProps = {
     type: 'symbol',
     minzoom: 13,
-    filter: ['==', 'installation_type', 'PN'],
+    filter: ['==', 'extensions_sncf_installation_type', 'PN'],
     layout: {
-      'text-field': '{label}',
+      'text-field': '{extensions_sncf_label}',
       'text-font': ['SNCF'],
       'text-size': 8,
       'text-offset': [
         'case',
-        ['==', ['get', 'side'], 'RIGHT'],
+        ['==', ['get', 'extensions_sncf_side'], 'RIGHT'],
         ['literal', [3.5, -3.5]],
-        ['==', ['get', 'side'], 'LEFT'],
+        ['==', ['get', 'extensions_sncf_side'], 'LEFT'],
         ['literal', [-3.5, -3.5]],
         ['literal', [0, 0]],
       ],
@@ -299,16 +299,16 @@ export function getSignalALayerProps(
   const props: LayerProps = {
     type: 'symbol',
     minzoom: 12,
-    filter: ['all', ['==', 'installation_type', typeFilter], filterA],
+    filter: ['all', ['==', 'extensions_sncf_installation_type', typeFilter], filterA],
     layout: {
-      'text-field': '{label}',
+      'text-field': '{extensions_sncf_label}',
       'text-font': ['SNCF'],
       'text-size': 8,
       'text-offset': [
         'case',
-        ['==', ['get', 'side'], 'RIGHT'],
+        ['==', ['get', 'extensions_sncf_side'], 'RIGHT'],
         ['literal', [signalTextOffsetX, signalTextOffsetY]],
-        ['==', ['get', 'side'], 'LEFT'],
+        ['==', ['get', 'extensions_sncf_side'], 'LEFT'],
         ['literal', [signalTextOffsetX * -1, signalTextOffsetY]],
         ['literal', [0, 0]],
       ],
@@ -348,16 +348,16 @@ export function getSignalVLLayerProps(
   const props: LayerProps = {
     type: 'symbol',
     minzoom: 12,
-    filter: ['all', ['==', 'installation_type', typeFilter]],
+    filter: ['all', ['==', 'extensions_sncf_installation_type', typeFilter]],
     layout: {
-      'text-field': '{label}',
+      'text-field': '{extensions_sncf_label}',
       'text-font': ['SNCF'],
       'text-size': 8,
       'text-offset': [
         'case',
-        ['==', ['get', 'side'], 'RIGHT'],
+        ['==', ['get', 'extensions_sncf_side'], 'RIGHT'],
         ['literal', [signalTextOffsetX, signalTextOffsetY]],
-        ['==', ['get', 'side'], 'LEFT'],
+        ['==', ['get', 'extensions_sncf_side'], 'LEFT'],
         ['literal', [signalTextOffsetX * -1, signalTextOffsetY]],
         ['literal', [0, 0]],
       ],
@@ -399,16 +399,16 @@ export function getSignalStopLayerProps(
   const props: LayerProps = {
     type: 'symbol',
     minzoom: 12,
-    filter: ['all', ['==', 'installation_type', typeFilter], filterA],
+    filter: ['all', ['==', 'extensions_sncf_installation_type', typeFilter], filterA],
     layout: {
-      'text-field': '{label}',
+      'text-field': '{extensions_sncf_label}',
       'text-font': ['SNCF'],
       'text-size': 8,
       'text-offset': [
         'case',
-        ['==', ['get', 'side'], 'RIGHT'],
+        ['==', ['get', 'extensions_sncf_side'], 'RIGHT'],
         ['literal', [signalTextOffsetX, signalTextOffsetY]],
-        ['==', ['get', 'side'], 'LEFT'],
+        ['==', ['get', 'extensions_sncf_side'], 'LEFT'],
         ['literal', [signalTextOffsetX * -1, signalTextOffsetY]],
         ['literal', [0, 0]],
       ],
@@ -469,25 +469,25 @@ export function getSignalLayerProps(
 
   const textOffset: SymbolLayout['text-offset'] = [
     'case',
-    ['==', ['get', 'side'], 'RIGHT'],
+    ['==', ['get', 'extensions_sncf_side'], 'RIGHT'],
     ['literal', [textOffsetX, textOffsetY]],
-    ['==', ['get', 'side'], 'LEFT'],
+    ['==', ['get', 'extensions_sncf_side'], 'LEFT'],
     ['literal', [textOffsetX * -1, textOffsetY]],
     ['literal', [2, 0]],
   ];
 
   const iconOffset: SymbolLayout['icon-offset'] = [
     'case',
-    ['==', ['get', 'side'], 'RIGHT'],
+    ['==', ['get', 'extensions_sncf_side'], 'RIGHT'],
     ['literal', [iconOffsetX, offsetY]],
-    ['==', ['get', 'side'], 'LEFT'],
+    ['==', ['get', 'extensions_sncf_side'], 'LEFT'],
     ['literal', [iconOffsetX * -1, offsetY]],
     ['literal', [0, 0]],
   ];
 
   switch (type) {
     case 'REPER VIT':
-      return getSignalEmptyLayerProps(context, type, iconOffset, 'label');
+      return getSignalEmptyLayerProps(context, type, iconOffset, 'extensions_sncf_label');
     case 'DESTI':
     case 'DIVERS':
       return getSignalEmptyLayerProps(context, type, iconOffset);
@@ -508,9 +508,9 @@ export function getSignalLayerProps(
   const props: LayerProps = {
     minzoom: 12,
     type: 'symbol',
-    filter: ['==', 'installation_type', type],
+    filter: ['==', 'extensions_sncf_installation_type', type],
     layout: {
-      'text-field': ['step', ['zoom'], '', minZoom, ['case', isSignal, ['get', 'label'], '']],
+      'text-field': ['step', ['zoom'], '', minZoom, ['case', isSignal, ['get', 'extensions_sncf_label'], '']],
       'text-font': ['Roboto Condensed'],
       'text-size': 9,
       'text-offset': textOffset,
@@ -519,9 +519,9 @@ export function getSignalLayerProps(
       'icon-size': ['step', ['zoom'], size / 2, minZoom, size],
       'text-anchor': [
         'case',
-        ['==', ['get', 'side'], 'RIGHT'],
+        ['==', ['get', 'extensions_sncf_side'], 'RIGHT'],
         'left',
-        ['==', ['get', 'side'], 'LEFT'],
+        ['==', ['get', 'extensions_sncf_side'], 'LEFT'],
         'right',
         'center',
       ],

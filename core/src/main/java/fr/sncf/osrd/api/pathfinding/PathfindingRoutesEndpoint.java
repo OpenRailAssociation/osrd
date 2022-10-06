@@ -109,11 +109,11 @@ public class PathfindingRoutesEndpoint implements Take {
     private void validate(SignalingInfra infra, PathfindingResult res, PathfindingWaypoint[][] reqWaypoints) {
         var start = res.pathWaypoints.get(0);
         var end = res.pathWaypoints.get(res.pathWaypoints.size() - 1);
-        var startLocation = new TrackLocation(infra.getTrackSection(start.track.id.id), start.position);
-        var endLocation = new TrackLocation(infra.getTrackSection(end.track.id.id), end.position);
+        var startLocation = new TrackLocation(infra.getTrackSection(start.track), start.position);
+        var endLocation = new TrackLocation(infra.getTrackSection(end.track), end.position);
         var routes = new ArrayList<SignalingRoute>();
         for (var route : res.routePaths) {
-            var signalingRoute = infra.findSignalingRoute(route.route.id.id, route.signalingType);
+            var signalingRoute = infra.findSignalingRoute(route.route, route.signalingType);
             assert signalingRoute != null;
             if (routes.isEmpty() || routes.get(routes.size() - 1) != signalingRoute)
                 routes.add(signalingRoute);
@@ -129,7 +129,7 @@ public class PathfindingRoutesEndpoint implements Take {
         // Checks that at least one waypoint of each step is on the path
         var tracksOnPath = res.routePaths.stream()
                 .flatMap(route -> route.trackSections.stream())
-                .map(track -> track.trackSection.id.id)
+                .map(track -> track.trackSection)
                 .collect(Collectors.toSet());
         for (var step : reqWaypoints) {
             assert Arrays.stream(step)

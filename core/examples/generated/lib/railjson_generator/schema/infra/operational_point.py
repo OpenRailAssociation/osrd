@@ -28,6 +28,6 @@ class OperationalPointPart:
 
     def to_rjs(self, track):
         return infra.OperationalPointPart(
-            track=track.make_rjs_ref(),
+            track=track.id,
             position=self.position,
         )

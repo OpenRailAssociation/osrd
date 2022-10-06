@@ -2,7 +2,6 @@ package fr.sncf.osrd.railjson.schema.infra;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.Identified;
-import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
 import java.util.List;
 import java.util.Map;
 
@@ -31,26 +30,19 @@ public class RJSSwitchType implements Identified {
         return id;
     }
 
-    public RJSObjectRef<RJSSwitchType> getRef() {
-        return new RJSObjectRef<>(this.id, "SwitchType");
-    }
-
     @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
     public static class SwitchPortConnection {
         public String src;
         public String dst;
-        public boolean bidirectional;
 
         /**
          * creates a railjson new port edge (arc between port)
          * @param src the name of the source port
          * @param dst the name of the destination port
-         * @param bidirectional true iff the arc is bidirectional
          */
         public SwitchPortConnection(String src, String dst, boolean bidirectional) {
             this.src = src;
             this.dst = dst;
-            this.bidirectional = bidirectional;
         }
     }
 

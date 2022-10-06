@@ -35,7 +35,6 @@ impl OSRDObject for SwitchType {
 pub struct SwitchPortConnection {
     pub src: String,
     pub dst: String,
-    pub bidirectional: bool,
 }
 
 impl Cache for SwitchType {

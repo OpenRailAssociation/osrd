@@ -15,14 +15,20 @@ class Waypoint:
     left_tvd: Optional["TVDSection"] = field(default=None, repr=False)
     right_tvd: Optional["TVDSection"] = field(default=None, repr=False)
 
-    def make_rjs_ref(self):
-        return infra.ObjectReference(id=self.label, type=type(self).__name__)
+    @property
+    def id(self):
+        return self.label
+
+    def get_waypoint_ref(self):
+        if self.waypoint_type == "buffer_stop":
+            return infra.BufferStopReference(id=self.label, type="BufferStop")
+        return infra.DetectorReference(id=self.label, type="Detector")
 
     def to_rjs(self, track):
         rjs_type = infra.BufferStop if self.waypoint_type == "buffer_stop" else infra.Detector
         return rjs_type(
             id=self.label,
-            track=track.make_rjs_ref(),
+            track=track.id,
             position=self.position,
             applicable_directions=infra.ApplicableDirections[self.applicable_direction.name],
         )

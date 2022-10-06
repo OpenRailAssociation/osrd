@@ -16,6 +16,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+          cache: pip
+      - run: pip install geojson-pydantic requests
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
@@ -34,8 +41,6 @@ jobs:
         env:
           DOCKER_BUILDKIT: 1
           COMPOSE_DOCKER_CLI_BUILD: 1
-
-      - run: pip install -r core/examples/generated/lib/requirements.txt
 
       - name: Run tests
         run: "python3 tests/run_integration_tests.py"

@@ -1,25 +1,34 @@
-from typing import Literal, Tuple, Union
+from typing import Annotated, Literal, Tuple, Union
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, constr
 
-from osrd_infra.schemas import infra
+from osrd_infra.schemas.infra import Identifier
+
+
+class ObjectReference(BaseModel):
+    id: Identifier = Field(description="Identifier of the referenced object")
+    type: str = Field(description="Type of the attribute of the referenced object")
 
 
 # TRAITS
 class InfraErrorTrait(BaseModel):
     is_warning: Literal[False] = Field(default=False)
-    field: str
+    obj_id: constr(max_length=255) = Field(description="Identifier of the object that caused the error")
+    obj_type: constr(max_length=32) = Field(description="Type of the object that caused the error")
+    field: constr(max_length=255) = Field(description="Field of the object that caused the error")
 
 
 class InfraWarningTrait(BaseModel):
     is_warning: Literal[True] = Field(default=True)
-    field: str
+    obj_id: constr(max_length=255) = Field(description="Identifier of the object that caused the warning")
+    obj_type: constr(max_length=32) = Field(description="Type of the object that caused the warning")
+    field: constr(max_length=255) = Field(description="Field of the object that caused the warning")
 
 
 # Errors
 class InvalidReference(InfraErrorTrait):
     error_type: Literal["invalid_reference"] = Field(default="invalid_reference")
-    reference: infra.ObjectReference
+    reference: ObjectReference
 
 
 class OutOfRange(InfraErrorTrait):
@@ -56,7 +65,7 @@ class InvalidSwitchPorts(InfraErrorTrait):
 
 class OverlappingSwitches(InfraErrorTrait):
     error_type: Literal["overlapping_switches"] = Field(default="overlapping_switches")
-    reference: infra.ObjectReference
+    reference: ObjectReference
 
 
 # Warnings
@@ -84,12 +93,11 @@ class NoBufferStop(InfraWarningTrait):
 
 class OverlappingTrackLinks(InfraWarningTrait):
     error_type: Literal["overlapping_track_links"] = Field(default="overlapping_track_links")
-    reference: infra.ObjectReference
+    reference: ObjectReference
 
 
-# Generic error
-class InfraError(BaseModel):
-    __root__: Union[
+InfraError = Annotated[
+    Union[
         InvalidReference,
         OutOfRange,
         ObjectOutsideOfPath,
@@ -104,4 +112,6 @@ class InfraError(BaseModel):
         NoBufferStop,
         OverlappingSwitches,
         OverlappingTrackLinks,
-    ] = Field(discriminator="error_type")
+    ],
+    Field(discriminator="error_type"),
+]

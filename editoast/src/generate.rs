@@ -50,7 +50,7 @@ pub fn refresh(
     Ok(true)
 }
 
-/// Refresh layers of objects affected by the given list of operations result.
+/// Update layers of objects affected by the given list of operations result.
 pub fn update(
     conn: &DBConnection,
     infra_id: i32,

@@ -28,13 +28,12 @@ class Route:
         if self.label is None:
             self.label = f"rt.{self.entry_point.label}->{self.waypoints[-1].label}"
 
-
     def to_rjs(self):
         return infra.Route(
             id=self.label,
-            entry_point=self.entry_point.make_rjs_ref(),
-            exit_point=self.exit_point.make_rjs_ref(),
-            release_detectors=[w.make_rjs_ref() for w in self.waypoints[1:-1]],
+            entry_point=self.entry_point.get_waypoint_ref(),
+            exit_point=self.exit_point.get_waypoint_ref(),
+            release_detectors=[w.id for w in self.waypoints[1:-1]],
             path=[element.to_rjs() for element in self.path_elements],
         )
 

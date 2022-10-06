@@ -3,7 +3,7 @@ WITH ops AS (
         (
             jsonb_array_elements(data->'parts')->'position'
         )::float AS position,
-        jsonb_array_elements(data->'parts')->'track'->>'id' AS track_id
+        jsonb_array_elements(data->'parts')->>'track' AS track_id
     FROM osrd_infra_operationalpointmodel
     WHERE infra_id = $1
         AND obj_id = ANY($2)

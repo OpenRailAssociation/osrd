@@ -39,8 +39,11 @@ function handleAxiosError(e: unknown): Error {
         error = new Error(
           err.response.data.map((e2) => new Error(e2.message || JSON.stringify(e2))).join('\n')
         );
-      else
+      else {
+        // we can't know the type of the result right now
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error = new Error((err.response.data as any).message || JSON.stringify(err.response.data));
+      }
     }
     if (!error && err.response && err.response.status) {
       error = new Error(`Request failed: ${err.response.status}`);

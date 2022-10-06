@@ -53,7 +53,7 @@ public class PathfindingTest extends ApiTest {
     ) {
         for (var route : result.routePaths) {
             for (var track : route.trackSections) {
-                if (!track.trackSection.id.id.equals(waypoint.trackSection))
+                if (!track.trackSection.equals(waypoint.trackSection))
                     continue;
                 final var begin = Math.min(track.getBegin(), track.getEnd());
                 final var end = Math.max(track.getBegin(), track.getEnd());
@@ -93,8 +93,8 @@ public class PathfindingTest extends ApiTest {
         assert response != null;
 
         assertEquals(2, response.routePaths.size());
-        assertEquals("rt.buffer_stop_b->tde.foo_b-switch_foo", response.routePaths.get(0).route.id.id);
-        assertEquals("rt.tde.foo_b-switch_foo->buffer_stop_c", response.routePaths.get(1).route.id.id);
+        assertEquals("rt.buffer_stop_b->tde.foo_b-switch_foo", response.routePaths.get(0).route);
+        assertEquals("rt.tde.foo_b-switch_foo->buffer_stop_c", response.routePaths.get(1).route);
 
         assertEquals(2, response.pathWaypoints.size());
         assertEquals("op.station_foo", response.pathWaypoints.get(0).id);
@@ -132,8 +132,8 @@ public class PathfindingTest extends ApiTest {
         assert response != null;
 
         assertEquals(2, response.routePaths.size());
-        assertEquals("rt.buffer_stop_b->tde.foo_b-switch_foo", response.routePaths.get(0).route.id.id);
-        assertEquals("rt.tde.foo_b-switch_foo->buffer_stop_c", response.routePaths.get(1).route.id.id);
+        assertEquals("rt.buffer_stop_b->tde.foo_b-switch_foo", response.routePaths.get(0).route);
+        assertEquals("rt.tde.foo_b-switch_foo->buffer_stop_c", response.routePaths.get(1).route);
     }
 
     @Test
@@ -445,7 +445,7 @@ public class PathfindingTest extends ApiTest {
                 // Waypoints placed on track transitions can be on either side
                 continue;
             }
-            assertEquals(waypointTrack, userDefinedWaypoints.get(0).track.id.id);
+            assertEquals(waypointTrack, userDefinedWaypoints.get(0).track);
             assertEquals(waypointOff, userDefinedWaypoints.get(0).position, POSITION_EPSILON);
         }
     }

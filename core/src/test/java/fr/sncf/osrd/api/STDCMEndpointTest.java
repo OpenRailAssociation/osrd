@@ -45,7 +45,7 @@ public class STDCMEndpointTest extends ApiTest {
         var response = STDCMResponse.adapter.fromJson(result);
         assert response != null;
         var routes = response.path.routePaths.stream()
-                .map(route -> route.route.id.id)
+                .map(route -> route.route)
                 .toList();
         assertEquals(List.of(
                 "rt.buffer_stop_b->tde.foo_b-switch_foo",

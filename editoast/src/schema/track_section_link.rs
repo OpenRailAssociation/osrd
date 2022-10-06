@@ -3,7 +3,6 @@ use crate::infra_cache::ObjectCache;
 use crate::layer::Layer;
 
 use super::generate_id;
-use super::ApplicableDirections;
 use super::OSRDObject;
 use super::ObjectType;
 use super::TrackEndpoint;
@@ -18,7 +17,6 @@ pub struct TrackSectionLink {
     pub id: String,
     pub src: TrackEndpoint,
     pub dst: TrackEndpoint,
-    pub navigability: ApplicableDirections,
 }
 
 impl OSRDObject for TrackSectionLink {
@@ -54,7 +52,7 @@ impl Layer for TrackSectionLink {
 
 impl Cache for TrackSectionLink {
     fn get_track_referenced_id(&self) -> Vec<&String> {
-        vec![&self.src.track.obj_id, &self.dst.track.obj_id]
+        vec![&self.src.track, &self.dst.track]
     }
 
     fn get_object_cache(&self) -> ObjectCache {

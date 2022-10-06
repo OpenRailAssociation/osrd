@@ -1,6 +1,6 @@
 import json
 from collections import defaultdict
-from typing import Dict, List, NewType, Tuple
+from typing import Any, Dict, List, Mapping, NewType, Tuple
 
 from asyncpg import Connection
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
@@ -105,39 +105,101 @@ async def mvt_view_tile(
     return ProtobufResponse(tile_data)
 
 
+def flatten_data(data, separator="_", _result={}, _prefix=""):
+    """
+    Flatten a dictionnary and prefix keys with the parent key separated by an underscore.
+    """
+    for key, value in data.items():
+        if isinstance(value, dict):
+            flatten_data(value, separator, _result, f"{_prefix}{key}{separator}")
+        else:
+            _result[_prefix + key] = value
+    return _result
+
+
 async def mvt_query(psql, layer, infra, view: View, z: int, x: int, y: int) -> bytes:
-    query = (
+    exclude_fields = ["- " + f"'{key}'" for key in view.exclude_fields]
+    query_get_objects = (
         # prepare the bbox of the tile for use in the tile content subquery
-        "WITH bbox AS (SELECT TileBBox($1, $2, $3, 3857) AS geom), "
-        # find all objects in the tile
-        "tile_content AS ( "
+        "WITH bbox AS (SELECT TileBBox($1, $2, $3, 3857) AS geom) "
         # {{{ beginning of the tile content subquery
         "SELECT "
         # the geometry the view is based on, converted to MVT. this field must
         # come first for ST_AsMVT to index the tile on the correct geometry
-        f"ST_AsMVTGeom({view.on_field}, bbox.geom, 4096, 64), "
-        # select all the fields the user requested
-        f"{', '.join(view.get_fields(allow_json_type=False))} "
+        f"ST_AsMVTGeom({view.on_field}, bbox.geom, 4096, 64) AS geom, "
+        # retrieve the data field the user requested
+        f"{view.data_expr} {' '.join(exclude_fields)} AS data "
         # read from the table corresponding to the layer, as well as the bbox
         # the bbox table is built by the WITH clause of the top-level query
         f"FROM {layer.table_name} layer "
         "CROSS JOIN bbox "
         # add user defined joins
         f"{' '.join(view.joins)} "
-        # filter by version
+        # filter by infra
         f"WHERE layer.infra_id = $4 "
         # we only want objects which are inside the tile BBox
         f"AND {view.on_field} && bbox.geom "
         # exclude geometry collections
         f"AND ST_GeometryType({view.on_field}) != 'ST_GeometryCollection' "
-        # }}} end of the tile content subquery
+    )
+
+    async with psql.transaction(isolation="repeatable_read", readonly=True):
+        records = await psql.fetch(query_get_objects, z, x, y, int(infra))
+
+    # No data found in the tile
+    if len(records) == 0:
+        return b""
+
+    # Prepare tile content
+    tile_content_dict: Dict[str, List[Any]] = defaultdict(list)
+    types_mapping: Mapping[str, str] = {"geom": "geometry"}
+    for i, record in enumerate(records):
+        # Flatten nested data
+        flat_data = flatten_data(json.loads(record["data"]))
+        # Serialize to json lists
+        flat_data = {k: json.dumps(v) if isinstance(v, list) else v for k, v in flat_data.items()}
+        flat_data["geom"] = record["geom"]
+
+        for key in flat_data.keys():
+            if key in tile_content_dict:
+                continue
+            tile_content_dict[key] = [None] * i
+
+        for key in flat_data.keys():
+            if key in types_mapping or flat_data[key] is None:
+                continue
+            if isinstance(flat_data[key], str):
+                types_mapping[key] = "text"
+            elif isinstance(flat_data[key], int):
+                types_mapping[key] = "int"
+            elif isinstance(flat_data[key], float):
+                types_mapping[key] = "float"
+            else:
+                raise Exception(f"Unknown type for key '{key}': {type(flat_data[key])}")
+
+        for key in tile_content_dict:
+            tile_content_dict[key].append(flat_data.get(key, None))
+
+    # Prepare query
+    tile_content_query = []
+    tile_content = []
+    for i, key in enumerate(tile_content_dict.keys()):
+        tile_content_query.append(f"unnest(${i + 1}::{types_mapping.get(key, 'text')}[]) AS \"{key}\"")
+        tile_content.append(tile_content_dict[key])
+
+    # Build query to create the tile
+    query_create_tile = (
+        # prepare tile content
+        "WITH tile_content AS ( "
+        # Unest all tile content to create a row for each key/value pair
+        f"SELECT {', '.join(tile_content_query)}"
         ") "
         # package those inside an MVT tile
         f"SELECT ST_AsMVT(tile_content, '{layer.name}') AS tile FROM tile_content"
     )
 
     async with psql.transaction(isolation="repeatable_read", readonly=True):
-        (record,) = await psql.fetch(query, z, x, y, int(infra))
+        (record,) = await psql.fetch(query_create_tile, *tile_content)
 
     return record.get("tile")
 
@@ -209,27 +271,29 @@ async def get_objects_in_bbox(
     layer: Layer = get_or_404(config.layers, layer_slug, "Layer")
     view = get_or_404(layer.views, view_slug, "Layer view")
 
+    exclude_fields = ["- " + f"'{key}'" for key in view.exclude_fields]
+
     query = (
-        # Prepare the collection of objects in the bounding box
-        "WITH collect AS ("
         # Add geometry of the object
-        f"SELECT ST_Transform(layer.{view.on_field}, 4326) as geom, "
-        # Add properties of the object
-        f"{', '.join(view.get_fields())} "
+        f"SELECT ST_AsGeoJSON(ST_Transform(layer.{view.on_field}, 4326))::jsonb as geom, "
+        # Add data of the object
+        f"{view.data_expr} {' '.join(exclude_fields)} as data "
         f"FROM {layer.table_name} AS layer "
         # Add joins
         f"{' '.join(view.joins)} "
         # Filter by infra
         "WHERE layer.infra_id = $1 "
         # Filter by objects inside the bounding box
-        f"AND layer.{view.on_field} && ST_Transform(ST_MakeEnvelope($2, $3, $4, $5, 4326), 3857)) "
-        # Return a geojson feature collection
-        "SELECT jsonb_build_object('type', 'FeatureCollection', 'features', "
-        "COALESCE(jsonb_agg(ST_AsGeoJSON(collect.*)::jsonb), '[]'::jsonb)) AS geojson "
-        "FROM collect"
+        f"AND layer.{view.on_field} && ST_Transform(ST_MakeEnvelope($2, $3, $4, $5, 4326), 3857)"
     )
 
     async with psql.transaction(isolation="repeatable_read", readonly=True):
-        (record,) = await psql.fetch(query, infra, min_x, min_y, max_x, max_y)
+        records = await psql.fetch(query, infra, min_x, min_y, max_x, max_y)
 
-    return json.loads(record.get("geojson"))
+    features = []
+    for record in records:
+        feature = json.loads(record.get("geom"))
+        feature["properties"] = json.loads(record.get("data"))
+        features.append(feature)
+
+    return {"type": "FeatureCollection", "features": features}

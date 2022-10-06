@@ -5,7 +5,6 @@ use crate::layer::Layer;
 use super::generate_id;
 use super::ApplicableDirections;
 use super::OSRDObject;
-use super::ObjectRef;
 use super::ObjectType;
 use derivative::Derivative;
 use diesel::sql_types::{Double, Text};
@@ -17,7 +16,8 @@ use serde::{Deserialize, Serialize};
 pub struct Detector {
     #[derivative(Default(value = r#"generate_id("detector")"#))]
     pub id: String,
-    pub track: ObjectRef,
+    #[derivative(Default(value = r#""InvalidRef".into()"#))]
+    pub track: String,
     #[derivative(Default(value = "0."))]
     pub position: f64,
     pub applicable_directions: ApplicableDirections,
@@ -80,7 +80,7 @@ impl DetectorCache {
 
 impl From<Detector> for DetectorCache {
     fn from(det: Detector) -> Self {
-        Self::new(det.id, det.track.obj_id, det.position)
+        Self::new(det.id, det.track, det.position)
     }
 }
 
