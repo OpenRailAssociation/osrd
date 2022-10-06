@@ -145,17 +145,6 @@ public class PathfindingRoutesEndpoint implements Take {
         }
     }
 
-    /** Returns all the EdgeLocations matching any waypoint */
-    public static Set<Pathfinding.EdgeLocation<SignalingRoute>> findRoutes(
-            SignalingInfra infra,
-            Set<PathfindingWaypoint> waypoints
-    ) {
-        var res = new HashSet<Pathfinding.EdgeLocation<SignalingRoute>>();
-        for (var waypoint : waypoints)
-            res.addAll(findRoutes(infra, waypoint));
-        return res;
-    }
-
     /** Returns all the EdgeLocations matching the given waypoint */
     public static Set<Pathfinding.EdgeLocation<SignalingRoute>> findRoutes(
             SignalingInfra infra,
