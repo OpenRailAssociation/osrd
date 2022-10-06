@@ -6,6 +6,8 @@ import fr.sncf.osrd.utils.graph.Pathfinding;
 import java.util.Collection;
 import java.util.function.BiFunction;
 
+/** This is a function object that estimates the remaining distance to the closest target point,
+ * using geo data. It is used as heuristic for A*. */
 public class RemainingDistanceEstimator implements BiFunction<SignalingRoute, Double, Double> {
 
     private final Collection<Point> targets;
@@ -17,6 +19,7 @@ public class RemainingDistanceEstimator implements BiFunction<SignalingRoute, Do
                 .toList();
     }
 
+    /** Converts a route and offset from its start into a geo point */
     private Point routeOffsetToPoint(SignalingRoute route, double pointOffset) {
         for (var trackRange : route.getInfraRoute().getTrackRanges()) {
             if (pointOffset <= trackRange.getLength()) {
