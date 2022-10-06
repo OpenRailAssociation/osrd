@@ -1,17 +1,44 @@
 package fr.sncf.osrd.stdcm;
 
+import static fr.sncf.osrd.Helpers.getResourcePath;
+import static fr.sncf.osrd.Helpers.parseRollingStockDir;
 import static fr.sncf.osrd.train.TestTrains.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.common.collect.ImmutableMultimap;
+import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.api.stdcm.OccupancyBlock;
 import fr.sncf.osrd.api.stdcm.STDCMPathfinding;
+import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Set;
 
 public class STDCMPathfindingTests {
+
+    /** Simple test on tiny infra with no occupancy.
+     * This is the same test as the one testing the STDCM API, but calling the methods directly */
+    @Test
+    public void testTinyInfra() throws IOException, URISyntaxException {
+        var infra = Helpers.infraFromRJS(Helpers.getExampleInfra("tiny_infra/infra.json"));
+        var firstRoute = infra.findSignalingRoute("rt.buffer_stop_b->tde.foo_b-switch_foo", "BAL3");
+        var secondRoute = infra.findSignalingRoute("rt.tde.foo_b-switch_foo->buffer_stop_c", "BAL3");
+        var res = STDCMPathfinding.findPath(
+                infra,
+                RJSRollingStockParser.parse(parseRollingStockDir(getResourcePath("rolling_stocks/")).get(0)),
+                0,
+                0,
+                Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 100)),
+                Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 10125)),
+                ImmutableMultimap.of(),
+                2.
+        );
+        assertNotNull(res);
+    }
+
     /** Look for a path in an empty timetable */
     @Test
     public void emptyTimetable() {
