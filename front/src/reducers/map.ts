@@ -17,8 +17,47 @@ export const UPDATE_FEATURE_INFO_CLICK = 'map/UPDATE_FEATURE_INFO_CLICK';
 export const UPDATE_LAYERS_SETTINGS = 'osrdconf/UPDATE_LAYERS_SETTINGS';
 export const UPDATE_SIGNALS_SETTINGS = 'osrdconf/UPDATE_SIGNALS_SETTINGS';
 
+export interface MapState {
+  ref: unknown;
+  url: typeof MAP_URL;
+  mapStyle: string;
+  mapTrackSources: string;
+  showOSM: boolean;
+  showOSMtracksections: boolean;
+  viewport: {
+    latitude: number;
+    longitude: number;
+    zoom: number;
+    bearing: number;
+    pitch: number;
+    transformRequest: (url: string, resourceType: string, urlmap: string) => any;
+  };
+  featureInfoHoverID: unknown;
+  featureInfoClickID: unknown;
+  featureSource: unknown;
+  signalsSettings: {
+    all: boolean;
+    stops: boolean;
+    lights: boolean;
+    tivs: boolean;
+  };
+  layersSettings: {
+    bufferstops: boolean;
+    catenaries: boolean;
+    detectors: boolean;
+    operationalpoints: boolean;
+    routes: boolean;
+    signalingtype: boolean;
+    speedlimittag: unknown;
+    speedlimits: boolean;
+    switches: boolean;
+    tvds: boolean;
+  };
+  mapSearchMarker: unknown;
+}
+
 // Reducer
-export const initialState = {
+export const initialState: MapState = {
   ref: undefined,
   url: MAP_URL,
   mapStyle: 'normal',
@@ -31,7 +70,7 @@ export const initialState = {
     zoom: 6.2,
     bearing: 0,
     pitch: 0,
-    transformRequest: (url, resourceType) => transformRequest(url, resourceType, MAP_URL),
+    transformRequest: (url, resourceType) => transformRequest(url, resourceType, MAP_URL as string),
   },
   featureInfoHoverID: undefined,
   featureInfoClickID: undefined,
@@ -66,7 +105,7 @@ export default function reducer(inputState, action) {
         break;
       case UPDATE_TRANSFORM_REQUEST:
         draft.viewport.transformRequest = (url, resourceType) =>
-          transformRequest(url, resourceType, MAP_URL);
+          transformRequest(url, resourceType, MAP_URL as string);
         break;
       case UPDATE_MAPSTYLE:
         draft.mapStyle = action.mapStyle;

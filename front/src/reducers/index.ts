@@ -6,7 +6,7 @@ import storage from 'redux-persist/lib/storage'; // defaults to localStorage
 
 import mainReducer, { MainActions } from './main';
 import userReducer from './user';
-import mapReducer from './map';
+import mapReducer, { MapState } from './map';
 import editorReducer, { EditorState, EditorActions } from './editor';
 
 import osrdconfReducer from './osrdconf';
@@ -66,7 +66,7 @@ interface GenericState {
 
 export interface RootState {
   user: GenericState;
-  map: GenericState;
+  map: MapState;
   editor: EditorState;
   main: GenericState;
   osrdconf: GenericState;
