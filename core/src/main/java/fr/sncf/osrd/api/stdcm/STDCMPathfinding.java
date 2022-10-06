@@ -1,4 +1,4 @@
-package fr.sncf.osrd.api.stdcm.new_pipeline;
+package fr.sncf.osrd.api.stdcm;
 
 import com.google.common.collect.Multimap;
 import fr.sncf.osrd.api.pathfinding.RemainingDistanceEstimator;
@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/** This class combines all the (static) methods used to find a path in the STDCM graph. */
 public class STDCMPathfinding {
 
     /** Given an infra, a rolling stock and a collection of unavailable time for each route,
@@ -74,7 +75,7 @@ public class STDCMPathfinding {
         );
     }
 
-    /** Builds the final envelope, assembling the parts together and adding the final braking curve */
+    /** Builds the final envelope, assembling the parts together and adding any missing braking curves */
     private static Envelope makeFinalEnvelope(
             List<Pathfinding.EdgeRange<STDCMGraph.Edge>> edges,
             RollingStock rollingStock,
@@ -90,11 +91,12 @@ public class STDCMPathfinding {
             offset += edge.edge().envelope().getEndPos();
         }
         var newEnvelope = Envelope.make(parts.toArray(new EnvelopePart[0]));
-        return addFinalBraking(newEnvelope, rollingStock, physicsPath, timeStep);
+        return addBrakingCurves(newEnvelope, rollingStock, physicsPath, timeStep);
     }
 
-    /** Adds the final braking curve to the envelope */
-    private static Envelope addFinalBraking(
+    /** Adds any missing braking curves to the envelope (including the last stop).
+     * Until this step we may have discontinuities of the MRSP decreases right after a route transition. */
+    private static Envelope addBrakingCurves(
             Envelope envelope,
             RollingStock rollingStock,
             PhysicsPath physicsPath,
@@ -104,7 +106,8 @@ public class STDCMPathfinding {
         return MaxSpeedEnvelope.from(context, new double[]{envelope.getEndPos()}, envelope);
     }
 
-    /** Returns a list of TrackRangeView that cover the given route from offsets start to finish */
+    /** Returns a list of TrackRangeView that cover the given route between the positions `start` and `end`.
+     * The positions are offsets from the start of the route. */
     public static List<TrackRangeView> truncateTrackRange(SignalingRoute route, double start, double end) {
         double offset = 0;
         var res = new ArrayList<TrackRangeView>();
@@ -156,7 +159,7 @@ public class STDCMPathfinding {
     }
 
 
-    /** Converts a location on a SignalingRoute into a location on a STDCMGraph.Edge */
+    /** Converts locations on a SignalingRoute into a location on a STDCMGraph.Edge. */
     private static Set<Pathfinding.EdgeLocation<STDCMGraph.Edge>> convertLocations(
             STDCMGraph graph,
             Set<Pathfinding.EdgeLocation<SignalingRoute>> locations,

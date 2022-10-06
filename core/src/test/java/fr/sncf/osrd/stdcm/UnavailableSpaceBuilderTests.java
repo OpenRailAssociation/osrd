@@ -1,13 +1,14 @@
 package fr.sncf.osrd.stdcm;
 
-import static fr.sncf.osrd.api.stdcm.new_pipeline.UnavailableSpaceBuilder.computeUnavailableSpace;
+import static fr.sncf.osrd.api.stdcm.UnavailableSpaceBuilder.computeUnavailableSpace;
 import static fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.api.stdcm.STDCMEndpoint;
-import fr.sncf.osrd.api.stdcm.new_pipeline.OccupancyBlock;
+import fr.sncf.osrd.api.stdcm.OccupancyBlock;
+import fr.sncf.osrd.api.stdcm.STDCMRequest;
 import org.junit.jupiter.api.Test;
 import java.util.Set;
 
@@ -27,7 +28,7 @@ public class UnavailableSpaceBuilderTests {
         var infra = infraBuilder.build();
         var res = computeUnavailableSpace(
                 infra,
-                Set.of(new STDCMEndpoint.RouteOccupancy("a->b", 0, 100)),
+                Set.of(new STDCMRequest.RouteOccupancy("a->b", 0, 100)),
                 REALISTIC_FAST_TRAIN
         );
         assertEquals(
@@ -57,7 +58,7 @@ public class UnavailableSpaceBuilderTests {
         var infra = infraBuilder.build();
         var res = computeUnavailableSpace(
                 infra,
-                Set.of(new STDCMEndpoint.RouteOccupancy("b->c", 0, 100)),
+                Set.of(new STDCMRequest.RouteOccupancy("b->c", 0, 100)),
                 REALISTIC_FAST_TRAIN
         );
         assertEquals(
@@ -94,7 +95,7 @@ public class UnavailableSpaceBuilderTests {
         final var infra = infraBuilder.build();
         final var res = computeUnavailableSpace(
                 infra,
-                Set.of(new STDCMEndpoint.RouteOccupancy("a1->center", 0, 100)),
+                Set.of(new STDCMRequest.RouteOccupancy("a1->center", 0, 100)),
                 REALISTIC_FAST_TRAIN
         );
         assertEquals(
@@ -130,7 +131,7 @@ public class UnavailableSpaceBuilderTests {
         var infra = infraBuilder.build();
         var res = computeUnavailableSpace(
                 infra,
-                Set.of(new STDCMEndpoint.RouteOccupancy("a->b", 0, 100)),
+                Set.of(new STDCMRequest.RouteOccupancy("a->b", 0, 100)),
                 REALISTIC_FAST_TRAIN
         );
         assertEquals(

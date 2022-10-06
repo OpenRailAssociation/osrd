@@ -4,8 +4,8 @@ import static fr.sncf.osrd.train.TestTrains.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.common.collect.ImmutableMultimap;
-import fr.sncf.osrd.api.stdcm.new_pipeline.OccupancyBlock;
-import fr.sncf.osrd.api.stdcm.new_pipeline.STDCMPathfinding;
+import fr.sncf.osrd.api.stdcm.OccupancyBlock;
+import fr.sncf.osrd.api.stdcm.STDCMPathfinding;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;

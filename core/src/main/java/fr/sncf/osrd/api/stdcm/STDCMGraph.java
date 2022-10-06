@@ -1,4 +1,4 @@
-package fr.sncf.osrd.api.stdcm.new_pipeline;
+package fr.sncf.osrd.api.stdcm;
 
 import com.google.common.collect.Multimap;
 import fr.sncf.osrd.envelope.Envelope;
@@ -17,6 +17,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
 
+/** This is the class that encodes the STDCM problem as a graph on which we can run our pathfinding implementation.
+ *
+ * </p>
+ * The implementation is incomplete for now, as we do not consider that the same location at different time
+ * can lead to different results. We only visit each route once.
+ * */
 public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
 
     public final SignalingInfra infra;
@@ -47,6 +53,8 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
         public boolean equals(Object other) {
             if (other == null || other.getClass() != Edge.class)
                 return false;
+            // TODO: we should consider that the same route at different times is a new edge.
+            // Doing this naively results in the algorithm visiting the same edges *many* times.
             return route.getInfraRoute().getID().equals(((Edge) other).route.getInfraRoute().getID());
         }
 
@@ -99,8 +107,10 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
     /** Returns true if the envelope crosses one of the unavailable time blocks.
      * This method only exists in this form in the "simple" implementation where a train can't slow down. */
     public boolean isUnavailable(Edge edge) {
-        if (edge.envelope == null)
+        if (edge.envelope == null) {
+            // The simulation failed
             return true;
+        }
         var unavailableRouteTimes  = unavailableTimes.get(edge.route);
         var routeLength = edge.route.getInfraRoute().getLength();
         var routeStartOffset = routeLength - edge.envelope.getEndPos();
@@ -139,6 +149,8 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
             var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, new double[]{}, mrsp);
             return MaxEffortEnvelope.from(context, initialSpeed, maxSpeedEnvelope);
         } catch (ImpossibleSimulationError e) {
+            // This can happen when the train can't go through this part,
+            // for example because of high slopes with a "weak" rolling stock
             return null; // The edge will be considered "unavailable"
         }
     }
