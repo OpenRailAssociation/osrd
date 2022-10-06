@@ -184,7 +184,7 @@ async def mvt_query(psql, layer, infra, view: View, z: int, x: int, y: int) -> b
     tile_content_query = []
     tile_content = []
     for i, key in enumerate(tile_content_dict.keys()):
-        tile_content_query.append(f"unnest(${i + 1}::{types_mapping.get(key, 'text')}[]) AS {key}")
+        tile_content_query.append(f"unnest(${i + 1}::{types_mapping.get(key, 'text')}[]) AS \"{key}\"")
         tile_content.append(tile_content_dict[key])
 
     # Build query to create the tile
