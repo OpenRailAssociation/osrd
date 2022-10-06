@@ -131,6 +131,15 @@ public class DummyRouteGraphBuilder {
         }
 
         @Override
+        public ImmutableList<TrackRangeView> getTrackRanges(double beginOffset, double endOffset) {
+            return ImmutableList.of(
+                    trackRanges.get(0)
+                            .truncateBeginByLength(beginOffset)
+                            .truncateEndByLength(length - endOffset)
+            );
+        }
+
+        @Override
         public double getLength() {
             return length;
         }

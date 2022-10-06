@@ -129,7 +129,7 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
     private Envelope simulateRoute(SignalingRoute route, double initialSpeed, double start) {
         try {
             var length = route.getInfraRoute().getLength();
-            var tracks = STDCMPathfinding.truncateTrackRange(route, start, length);
+            var tracks = route.getInfraRoute().getTrackRanges(start, length);
             var envelopePath = EnvelopeTrainPath.from(tracks);
             var context = new EnvelopeSimContext(rollingStock, envelopePath, timeStep);
             var mrsp = MRSP.from(tracks, rollingStock, false, Set.of());

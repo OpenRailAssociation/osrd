@@ -18,8 +18,12 @@ public interface ReservationRoute {
     /** Returns the list of conflicting routes */
     ImmutableSet<ReservationRoute> getConflictingRoutes();
 
-    /** Returns the list of track ranges on the route*/
+    /** Returns the list of track ranges on the route */
     ImmutableList<TrackRangeView> getTrackRanges();
+
+    /** Returns the list of track ranges on the route from begin offset to end offset
+     * (relative to the start of the route) */
+    ImmutableList<TrackRangeView> getTrackRanges(double beginOffset, double endOffset);
 
     /** Returns the route length (m) */
     double getLength();
