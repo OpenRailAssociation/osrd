@@ -9,8 +9,6 @@ import fr.sncf.osrd.api.pathfinding.PathfindingResultConverter;
 import fr.sncf.osrd.api.pathfinding.PathfindingRoutesEndpoint;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.api.pathfinding.response.NoPathFoundError;
-import fr.sncf.osrd.api.stdcm.new_pipeline.STDCMPathfinding;
-import fr.sncf.osrd.api.stdcm.new_pipeline.UnavailableSpaceBuilder;
 import fr.sncf.osrd.envelope_sim.PhysicsPath;
 import fr.sncf.osrd.envelope_sim_infra.MRSP;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
@@ -141,32 +139,6 @@ public class STDCMEndpoint implements Take {
         List<TrainStop> trainStops = new ArrayList<>();
         trainStops.add(new TrainStop(physicsPath.getLength(), 0.1));
         return new StandaloneTrainSchedule(rollingStock, 0., trainStops, List.of(), List.of());
-    }
-
-    public static class RouteOccupancy {
-        /**
-         * ID of the occupied route
-         */
-        public String id;
-
-        /**
-         * Time at which the route starts being occupied
-         */
-        @Json(name = "start_occupancy_time")
-        public double startOccupancyTime;
-
-        /**
-         * Time at which the route ends being occupied
-         */
-        @Json(name = "end_occupancy_time")
-        public double endOccupancyTime;
-
-        /** Creates a new route occupancy */
-        public RouteOccupancy(String id, double startOccupancyTime, double endOccupancyTime) {
-            this.id = id;
-            this.startOccupancyTime = startOccupancyTime;
-            this.endOccupancyTime = endOccupancyTime;
-        }
     }
 }
 
