@@ -1,13 +1,28 @@
 package fr.sncf.osrd.api.stdcm;
 
 import com.squareup.moshi.Json;
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
+import fr.sncf.osrd.railjson.schema.common.ID;
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
+import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
+import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceValue;
 import java.util.Collection;
 
 @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
 public final class STDCMRequest {
+
+    public static final JsonAdapter<STDCMRequest> adapter = new Moshi
+            .Builder()
+            .add(ID.Adapter.FACTORY)
+            .add(RJSRollingResistance.adapter)
+            .add(RJSAllowance.adapter)
+            .add(RJSAllowanceValue.adapter)
+            .build()
+            .adapter(STDCMRequest.class);
     /**
      * Infra id
      */
@@ -59,7 +74,7 @@ public final class STDCMRequest {
      * Time step used in simulations
      */
     @Json(name = "time_step")
-    public double timeStep = 20.;
+    public double timeStep = 2.;
 
     /**
      * Create a default STDCMRequest

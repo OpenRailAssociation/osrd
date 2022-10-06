@@ -1,8 +1,5 @@
 package fr.sncf.osrd.api.stdcm;
 
-import com.squareup.moshi.Json;
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
 import fr.sncf.osrd.api.ExceptionHandler;
 import fr.sncf.osrd.api.InfraManager;
 import fr.sncf.osrd.api.pathfinding.PathfindingResultConverter;
@@ -16,10 +13,6 @@ import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
-import fr.sncf.osrd.railjson.schema.common.ID;
-import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance;
-import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
-import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceValue;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.standalone_sim.ScheduleMetadataExtractor;
 import fr.sncf.osrd.standalone_sim.result.ResultEnvelopePoint;
@@ -46,15 +39,6 @@ public class STDCMEndpoint implements Take {
 
     private final InfraManager infraManager;
 
-    public static final JsonAdapter<STDCMRequest> adapterRequest = new Moshi
-            .Builder()
-            .add(ID.Adapter.FACTORY)
-            .add(RJSRollingResistance.adapter)
-            .add(RJSAllowance.adapter)
-            .add(RJSAllowanceValue.adapter)
-            .build()
-            .adapter(STDCMRequest.class);
-
     public STDCMEndpoint(InfraManager infraManager) {
         this.infraManager = infraManager;
     }
@@ -77,7 +61,7 @@ public class STDCMEndpoint implements Take {
         try {
             // Parse request input
             var body = new RqPrint(req).printBody();
-            var request = adapterRequest.fromJson(body);
+            var request = STDCMRequest.adapter.fromJson(body);
             if (request == null)
                 return new RsWithStatus(new RsText("missing request body"), 400);
 
