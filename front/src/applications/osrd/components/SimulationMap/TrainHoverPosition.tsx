@@ -46,19 +46,29 @@ function getLabel(isSelectedTrain, ecoBlocks, point: TrainPosition) {
     <>
       {/* <small>{point.properties.name}</small> */}
       <span className="small ml-1 font-weight-bold text-muted">
-        {Math.round(point.speedTime.speed)}
+        {Math.round(point?.speedTime?.speed)}
         km/h
       </span>
     </>
   );
 }
 
-function makeDisplayedHeadAndTail(point: TrainPosition, factor: number) {
+function makeDisplayedHeadAndTail(point: TrainPosition) {
   const trueHead = Math.max(point.tailDistanceAlong, point.headDistanceAlong);
-  const trueTail = Math.max(trueHead - point.trainLength * factor, 0);
+  const trueTail = Math.max(trueHead - point.trainLength, 0);
   const head = Math.max(trueHead, trueTail);
   const tail = Math.min(trueHead, trueTail);
   return { tail, head };
+}
+
+function getLengthFactor(
+  viewport: {
+    zoom: number;
+    transformRequest: (url: string, resourceType: string, urlmap: string) => any;
+  },
+  threshold = 12
+) {
+  return 2 ** (threshold - viewport?.zoom);
 }
 
 interface TrainHoverPositionProps {
@@ -79,16 +89,17 @@ function TrainHoverPosition(props: TrainHoverPositionProps) {
   const fill = getFill(isSelectedTrain, ecoBlocks);
   const label = getLabel(isSelectedTrain, ecoBlocks, point);
 
-  if (point.headDistanceAlong && point.tailDistanceAlong) {
-    const factor = Math.max(1, 2 ** (12 - viewport?.zoom));
-    const { tail, head } = makeDisplayedHeadAndTail(point, factor);
+  if (geojsonPath && point.headDistanceAlong && point.tailDistanceAlong) {
+    const lengthFactor = getLengthFactor(viewport);
+    const { tail, head } = makeDisplayedHeadAndTail(point);
     const trainGeoJsonPath = lineSliceAlong(geojsonPath, tail, head);
+
     return (
       <>
         <Marker
           className="map-search-marker"
-          longitude={point.headPosition.geometry.coordinates[0] + 0.08}
-          latitude={point.headPosition.geometry.coordinates[1] + 0.02}
+          longitude={point.headPosition.geometry.coordinates[0] + lengthFactor / 450}
+          latitude={point.headPosition.geometry.coordinates[1] + lengthFactor / 1000}
         >
           {label}
         </Marker>
