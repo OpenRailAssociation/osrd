@@ -48,14 +48,15 @@ public class STDCMPathfinding {
                 ));
         if (path == null)
             return null;
-        return makeResult(path, rollingStock, timeStep);
+        return makeResult(path, rollingStock, timeStep, startTime);
     }
 
     /** Builds the STDCM result object from the raw pathfinding result */
     private static STDCMResult makeResult(
             Pathfinding.Result<STDCMGraph.Edge> path,
             RollingStock rollingStock,
-            double timeStep
+            double timeStep,
+            double startTime
     ) {
         var routeRanges = path.ranges().stream()
                 .map(x -> new Pathfinding.EdgeRange<>(x.edge().route(), x.start(), x.end()))
@@ -68,7 +69,8 @@ public class STDCMPathfinding {
                 new Pathfinding.Result<>(routeRanges, routeWaypoints),
                 makeFinalEnvelope(path.ranges(), rollingStock, physicsPath, timeStep),
                 makeTrainPath(path.ranges()),
-                physicsPath
+                physicsPath,
+                computeDepartureTime(path, startTime)
         );
     }
 
@@ -149,10 +151,19 @@ public class STDCMPathfinding {
         var res = new HashSet<Pathfinding.EdgeLocation<STDCMGraph.Edge>>();
         for (var location : locations) {
             var start = isStart ? location.offset() : 0;
-            var edge = graph.makeEdge(location.edge(), startTime, 0, start);
+            var maximumDelay = 3600 * 24; // Placeholder, there will probably be a parameter eventually
+            var edge = graph.makeEdge(location.edge(), startTime, 0, start, maximumDelay);
             if (!isStart || !graph.isUnavailable(edge))
                 res.add(new Pathfinding.EdgeLocation<>(edge, location.offset()));
         }
         return res;
+    }
+
+    /** Computes the departure time, made of the sum of all delays added over the path */
+    private static double computeDepartureTime(Pathfinding.Result<STDCMGraph.Edge> path, double startTime) {
+        for (var ranges : path.ranges()) {
+            startTime += ranges.edge().addedDelay();
+        }
+        return startTime;
     }
 }
