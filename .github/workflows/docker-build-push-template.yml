@@ -38,6 +38,11 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: "${{ inputs.image_name }}"
+          tags: |
+            type=ref,event=tag
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
         id: docker_meta
 
       - name: Login to DockerHub
