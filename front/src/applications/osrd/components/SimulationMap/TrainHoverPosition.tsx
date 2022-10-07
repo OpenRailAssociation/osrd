@@ -111,6 +111,9 @@ function TrainHoverPosition(props: TrainHoverPositionProps) {
               'line-width': 8,
               'line-color': fill,
             }}
+            layout={{
+              'line-cap': 'round',
+            }}
           />
         </Source>
       </>
