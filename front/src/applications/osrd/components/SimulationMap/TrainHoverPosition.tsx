@@ -81,8 +81,8 @@ function TrainHoverPosition(props: TrainHoverPositionProps) {
       <>
         <Marker
           className="map-search-marker"
-          longitude={point.headPosition.geometry.coordinates[0]}
-          latitude={point.headPosition.geometry.coordinates[1]}
+          longitude={point.headPosition.geometry.coordinates[0] + 0.08}
+          latitude={point.headPosition.geometry.coordinates[1] + 0.02}
         >
           {label}
         </Marker>
