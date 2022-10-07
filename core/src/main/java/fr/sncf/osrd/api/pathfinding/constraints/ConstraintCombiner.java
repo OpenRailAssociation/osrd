@@ -1,23 +1,20 @@
 package fr.sncf.osrd.api.pathfinding.constraints;
 
-import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.graph.functional_interfaces.EdgeToRanges;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 
-public class ConstraintCombiner implements EdgeToRanges<SignalingRoute> {
+public class ConstraintCombiner<EdgeT> implements EdgeToRanges<EdgeT> {
 
-    public final Collection<EdgeToRanges<SignalingRoute>> functions;
-
-    public ConstraintCombiner(Collection<EdgeToRanges<SignalingRoute>> functions) {
-        this.functions = functions;
-    }
+    public final List<EdgeToRanges<EdgeT>> functions = new ArrayList<>();
 
     @Override
-    public Collection<Pathfinding.Range> apply(SignalingRoute signalingRoute) {
+    public Collection<Pathfinding.Range> apply(EdgeT signalingRoute) {
         var res = new HashSet<Pathfinding.Range>();
-        for (EdgeToRanges<SignalingRoute> f : functions)
+        for (var f : functions)
             res.addAll(f.apply(signalingRoute));
         return res;
     }

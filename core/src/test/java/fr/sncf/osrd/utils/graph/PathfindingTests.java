@@ -77,15 +77,12 @@ public class PathfindingTests {
         builder.makeEdge(1, 3, 21);
         builder.makeEdge(3, 4, 0);
         var g = builder.build();
-        var res = Pathfinding.findEdgePath(
-                g,
-                List.of(
+        var res = new Pathfinding<>(g)
+                .setEdgeToLength(edge -> edge.length)
+                .runPathfindingEdgesOnly(List.of(
                         List.of(builder.getEdgeLocation("0-1")),
                         List.of(builder.getEdgeLocation("3-4"))
-                ),
-                edge -> edge.length,
-                null,
-                null);
+                ));
         var resIDs = res.stream().map(x -> x.label).toList();
         assertEquals(
                 List.of(
@@ -114,14 +111,12 @@ public class PathfindingTests {
         builder.makeEdge(1, 3, 19);
         builder.makeEdge(3, 4, 0);
         var g = builder.build();
-        var res = Pathfinding.findEdgePath(
-                g,
-                List.of(
+        var res = new Pathfinding<>(g)
+                .setEdgeToLength(edge -> edge.length)
+                .runPathfindingEdgesOnly(List.of(
                         List.of(builder.getEdgeLocation("0-1")),
                         List.of(builder.getEdgeLocation("3-4"))
-                ),
-                edge -> edge.length,
-                null, null);
+                ));
         var resIDs = res.stream().map(x -> x.label).toList();
         assertEquals(
                 List.of(
@@ -154,17 +149,15 @@ public class PathfindingTests {
 
         builder.makeEdge(5, 6, 0);
         var g = builder.build();
-        var res = Pathfinding.findEdgePath(
-                g,
-                List.of(
+        var res = new Pathfinding<>(g)
+                .setEdgeToLength(edge -> edge.length)
+                .runPathfindingEdgesOnly(List.of(
                         List.of(
                                 builder.getEdgeLocation("0-1"),
                                 builder.getEdgeLocation("2-3")
                         ),
                         List.of(builder.getEdgeLocation("5-6"))
-                ),
-                edge -> edge.length,
-                null, null);
+                ));
         var resIDs = res.stream().map(x -> x.label).toList();
         assertEquals(
                 List.of(
@@ -197,17 +190,15 @@ public class PathfindingTests {
         builder.makeEdge(4, 5, 5);
         builder.makeEdge(5, 6, 0);
         var g = builder.build();
-        var res = Pathfinding.findEdgePath(
-                g,
-                List.of(
+        var res = new Pathfinding<>(g)
+                .setEdgeToLength(edge -> edge.length)
+                .runPathfindingEdgesOnly(List.of(
                         List.of(builder.getEdgeLocation("0-1")),
                         List.of(
                                 builder.getEdgeLocation("2-3"),
                                 builder.getEdgeLocation("5-6")
                         )
-                ),
-                edge -> edge.length,
-                null, null);
+                ));
         var resIDs = res.stream().map(x -> x.label).toList();
         assertEquals(
                 List.of(
@@ -235,14 +226,12 @@ public class PathfindingTests {
         builder.makeEdge(1, 2, 100);
         builder.makeEdge(1, 0, -100);
         var g = builder.build();
-        var res = Pathfinding.findEdgePath(
-                g,
-                List.of(
+        var res = new Pathfinding<>(g)
+                .setEdgeToLength(edge -> edge.length)
+                .runPathfindingEdgesOnly(List.of(
                         List.of(builder.getEdgeLocation("0-1")),
                         List.of(builder.getEdgeLocation("1-2", 50))
-                ),
-                edge -> edge.length,
-                null, null);
+                ));
         var resIDs = res.stream().map(x -> x.label).toList();
         assertEquals(
                 List.of(
@@ -265,14 +254,12 @@ public class PathfindingTests {
         builder.makeEdge(1, 2, 100);
         builder.makeEdge(2, 3, 100);
         var g = builder.build();
-        var res = Pathfinding.findEdgePath(
-                g,
-                List.of(
+        var res = new Pathfinding<>(g)
+                .setEdgeToLength(edge -> edge.length)
+                .runPathfindingEdgesOnly(List.of(
                         List.of(builder.getEdgeLocation("2-3")),
                         List.of(builder.getEdgeLocation("0-1"))
-                ),
-                edge -> edge.length,
-                null, null);
+                ));
         assertNull(res);
     }
 
@@ -286,14 +273,13 @@ public class PathfindingTests {
         builder.makeNodes(2);
         builder.makeEdge(0, 1, 100);
         var g = builder.build();
-        var res = Pathfinding.findEdgePath(
-                g,
-                List.of(
+        var res = new Pathfinding<>(g)
+                .setEdgeToLength(edge -> edge.length)
+                .runPathfindingEdgesOnly(List.of(
                         List.of(builder.getEdgeLocation("0-1", 60)),
                         List.of(builder.getEdgeLocation("0-1", 30))
-                ),
-                edge -> edge.length,
-                null, null);
+                ));
+
         assertNull(res);
     }
 
@@ -312,14 +298,13 @@ public class PathfindingTests {
         builder.makeEdge(1, 2, 100);
         builder.makeEdge(2, 0, 100);
         var g = builder.build();
-        var res = Pathfinding.findEdgePath(
-                g,
-                List.of(
+        var res = new Pathfinding<>(g)
+                .setEdgeToLength(edge -> edge.length)
+                .runPathfindingEdgesOnly(List.of(
                         List.of(builder.getEdgeLocation("0-1", 60)),
                         List.of(builder.getEdgeLocation("0-1", 30))
-                ),
-                edge -> edge.length,
-                null, null);
+                ));
+
         var resIDs = res.stream().map(x -> x.label).toList();
         assertEquals(
                 List.of(
@@ -349,17 +334,15 @@ public class PathfindingTests {
         builder.makeEdge(1, 4, 100);
         builder.makeEdge(4, 5, 1000);
         var g = builder.build();
-        var res = Pathfinding.findPath(
-                g,
-                List.of(
+        var res = new Pathfinding<>(g)
+                .setEdgeToLength(edge -> edge.length)
+                .runPathfinding(List.of(
                         List.of(builder.getEdgeLocation("0-1")),
                         List.of(
                                 builder.getEdgeLocation("2-3", 500),
                                 builder.getEdgeLocation("4-5", 10)
                         )
-                ),
-                edge -> edge.length,
-                null, null);
+                ));
         assertEquals(
                 List.of(
                         new SimpleRange("0-1", 0, 0),
@@ -388,15 +371,13 @@ public class PathfindingTests {
         builder.makeEdge(4, 5, 10);
         builder.makeEdge(5, 2, 1000);
         var g = builder.build();
-        var res = Pathfinding.findPath(
-                g,
-                List.of(
+        var res = new Pathfinding<>(g)
+                .setEdgeToLength(edge -> edge.length)
+                .runPathfinding(List.of(
                         List.of(builder.getEdgeLocation("0-1", 5)),
                         List.of(builder.getEdgeLocation("4-5", 5)),
                         List.of(builder.getEdgeLocation("2-3", 5))
-                ),
-                edge -> edge.length,
-                null, null);
+                ));
         assertEquals(
                 List.of(
                         new SimpleRange("0-1", 5, 10),
@@ -430,18 +411,16 @@ public class PathfindingTests {
 
         builder.makeEdge(4, 5, 0);
         var g = builder.build();
-        var res = Pathfinding.findEdgePath(
-                g,
-                List.of(
+        var res = new Pathfinding<>(g)
+                .setEdgeToLength(edge -> edge.length)
+                .addBlockedRangeOnEdges(edge -> edge.blockedRanges)
+                .runPathfindingEdgesOnly(List.of(
                         List.of(
                                 builder.getEdgeLocation("0-1"),
                                 builder.getEdgeLocation("2-3")
                         ),
                         List.of(builder.getEdgeLocation("4-5"))
-                ),
-                edge -> edge.length,
-                x -> x.blockedRanges,
-                null);
+                ));
         var resIDs = res.stream().map(x -> x.label).toList();
         assertEquals(
                 List.of(
@@ -463,15 +442,13 @@ public class PathfindingTests {
         builder.makeNodes(2);
         builder.makeEdge(0, 1, 100, Set.of(new Pathfinding.Range(0, 10)));
         var g = builder.build();
-        var res = Pathfinding.findEdgePath(
-                g,
-                List.of(
+        var res = new Pathfinding<>(g)
+                .setEdgeToLength(edge -> edge.length)
+                .addBlockedRangeOnEdges(edge -> edge.blockedRanges)
+                .runPathfindingEdgesOnly(List.of(
                         List.of(builder.getEdgeLocation("0-1", 5)),
                         List.of(builder.getEdgeLocation("0-1", 7))
-                ),
-                edge -> edge.length,
-                x -> x.blockedRanges,
-                null);
+                ));
         assertNull(res);
     }
 
@@ -488,15 +465,13 @@ public class PathfindingTests {
                 new Pathfinding.Range(70, 100)
         ));
         var g = builder.build();
-        var res = Pathfinding.findEdgePath(
-                g,
-                List.of(
+        var res = new Pathfinding<>(g)
+                .setEdgeToLength(edge -> edge.length)
+                .addBlockedRangeOnEdges(edge -> edge.blockedRanges)
+                .runPathfindingEdgesOnly(List.of(
                         List.of(builder.getEdgeLocation("0-1", 40)),
                         List.of(builder.getEdgeLocation("0-1", 50))
-                ),
-                edge -> edge.length,
-                x -> x.blockedRanges,
-                null);
+                ));
         assertNotNull(res);
     }
 
@@ -511,15 +486,13 @@ public class PathfindingTests {
         builder.makeEdge(0, 1, 100);
         builder.makeEdge(1, 2, 100, Set.of(new Pathfinding.Range(70, 100)));
         var g = builder.build();
-        var res = Pathfinding.findEdgePath(
-                g,
-                List.of(
+        var res = new Pathfinding<>(g)
+                .setEdgeToLength(edge -> edge.length)
+                .addBlockedRangeOnEdges(edge -> edge.blockedRanges)
+                .runPathfindingEdgesOnly(List.of(
                         List.of(builder.getEdgeLocation("0-1")),
                         List.of(builder.getEdgeLocation("1-2", 50))
-                ),
-                edge -> edge.length,
-                x -> x.blockedRanges,
-                null);
+                ));
         assertNotNull(res);
     }
 
@@ -534,15 +507,14 @@ public class PathfindingTests {
         builder.makeEdge(0, 1, 100);
         builder.makeEdge(1, 2, 100, Set.of(new Pathfinding.Range(10, 20)));
         var g = builder.build();
-        var res = Pathfinding.findEdgePath(
-                g,
-                List.of(
+        var res = new Pathfinding<>(g)
+                .setEdgeToLength(edge -> edge.length)
+                .addBlockedRangeOnEdges(edge -> edge.blockedRanges)
+                .runPathfindingEdgesOnly(List.of(
                         List.of(builder.getEdgeLocation("0-1")),
                         List.of(builder.getEdgeLocation("1-2", 50))
-                ),
-                edge -> edge.length,
-                x -> x.blockedRanges,
-                null);
+                ));
+
         assertNull(res);
     }
 
@@ -556,18 +528,16 @@ public class PathfindingTests {
         builder.makeNodes(2);
         builder.makeEdge(0, 1, 100, Set.of(new Pathfinding.Range(10, 20)));
         var g = builder.build();
-        var res = Pathfinding.findEdgePath(
-                g,
-                List.of(
+        var res = new Pathfinding<>(g)
+                .setEdgeToLength(edge -> edge.length)
+                .addBlockedRangeOnEdges(edge -> edge.blockedRanges)
+                .runPathfindingEdgesOnly(List.of(
                         List.of(
                                 builder.getEdgeLocation("0-1", 10),
                                 builder.getEdgeLocation("0-1", 40)
                         ),
                         List.of(builder.getEdgeLocation("0-1", 50))
-                ),
-                edge -> edge.length,
-                x -> x.blockedRanges,
-                null);
+                ));
         assertNotNull(res);
     }
 
@@ -586,15 +556,13 @@ public class PathfindingTests {
                 new Pathfinding.Range(30, 80)
         ));
         var g = builder.build();
-        var res = Pathfinding.findEdgePath(
-                g,
-                List.of(
+        var res = new Pathfinding<>(g)
+                .setEdgeToLength(edge -> edge.length)
+                .addBlockedRangeOnEdges(edge -> edge.blockedRanges)
+                .runPathfindingEdgesOnly(List.of(
                         List.of(builder.getEdgeLocation("0-1", 55)),
                         List.of(builder.getEdgeLocation("0-1", 60))
-                ),
-                edge -> edge.length,
-                x -> x.blockedRanges,
-                null);
+                ));
         assertNull(res);
     }
 
