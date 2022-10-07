@@ -122,8 +122,8 @@ function Map(props) {
     return concernedTrains;
   };
 
-  // We generate position data for the main (selected) train and the other trains
-  const getSimulationPositions = () => {
+  // specifies the position of the trains when hovering over the simulation
+  const getSimulationHoverPositions = () => {
     const line = lineString(geojsonPath.geometry.coordinates);
     const id = simulation.trains[selectedTrain]?.id;
     const headKey = checkIfEcoAndAddPrefix(allowancesSettings, id, 'headPosition');
@@ -313,7 +313,7 @@ function Map(props) {
 
   useEffect(() => {
     if (timePosition && geojsonPath) {
-      getSimulationPositions();
+      getSimulationHoverPositions();
     }
   }, [timePosition]);
 

@@ -28,7 +28,7 @@ function getFill(isSelectedTrain: boolean, ecoBlocks) {
   return '#333';
 }
 
-function getLabel(isSelectedTrain, ecoBlocks, point: TrainPosition) {
+function getSpeedAndTimeLabel(isSelectedTrain, ecoBlocks, point: TrainPosition) {
   if (isSelectedTrain) {
     return (
       <>
@@ -53,6 +53,7 @@ function getLabel(isSelectedTrain, ecoBlocks, point: TrainPosition) {
   );
 }
 
+// When the train is backward, lineSliceAlong will crash. we need to have head and tail in the right order
 function makeDisplayedHeadAndTail(point: TrainPosition) {
   const trueHead = Math.max(point.tailDistanceAlong, point.headDistanceAlong);
   const trueTail = Math.max(trueHead - point.trainLength, 0);
@@ -61,7 +62,7 @@ function makeDisplayedHeadAndTail(point: TrainPosition) {
   return { tail, head };
 }
 
-function getLengthFactor(
+function getLengthFactorToKeepLabelPlacedCorrectlyWhenZooming(
   viewport: {
     zoom: number;
     transformRequest: (url: string, resourceType: string, urlmap: string) => any;
@@ -91,10 +92,10 @@ function TrainHoverPosition(props: TrainHoverPositionProps) {
   const trainID = simulation.trains[selectedTrain].id;
   const { ecoBlocks } = allowancesSettings[trainID];
   const fill = getFill(isSelectedTrain, ecoBlocks);
-  const label = getLabel(isSelectedTrain, ecoBlocks, point);
+  const label = getSpeedAndTimeLabel(isSelectedTrain, ecoBlocks, point);
 
   if (geojsonPath && point.headDistanceAlong && point.tailDistanceAlong) {
-    const zoomLengthFactor = getLengthFactor(viewport);
+    const zoomLengthFactor = getLengthFactorToKeepLabelPlacedCorrectlyWhenZooming(viewport);
     const { tail, head } = makeDisplayedHeadAndTail(point);
     const trainGeoJsonPath = lineSliceAlong(geojsonPath, tail, head);
 
