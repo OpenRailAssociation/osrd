@@ -13,5 +13,6 @@ public record STDCMResult(
         Pathfinding.Result<SignalingRoute> routes,
         Envelope envelope,
         TrainPath trainPath,
-        PhysicsPath physicsPath
+        PhysicsPath physicsPath,
+        double departureTime
 ) {}
