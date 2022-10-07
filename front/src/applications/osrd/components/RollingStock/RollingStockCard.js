@@ -119,6 +119,21 @@ export default function RollingStockCard(props) {
                       <span className="small text-muted ml-1">m/s²</span>
                     </td>
                   </tr>
+                  <tr>
+                    <td className="text-primary">{t('electricOnly')}</td>
+                    <td>{data.electric_only === true ? t('yes') : t('no')}</td>
+                  </tr>
+                  <tr>
+                    <td className="text-primary">{t('compatibleVoltages')}</td>
+                    {data.compatible_voltages.length > 0 ? (
+                      <td>
+                        {data.compatible_voltages.join(' / ')}
+                        <span className="small text-muted ml-1">V</span>
+                      </td>
+                    ) : (
+                      t('noCompatibleVoltages')
+                    )}
+                  </tr>
                 </tbody>
               </table>
             </div>
