@@ -4,6 +4,7 @@ import { sec2time } from 'utils/timeManipulation';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
+import { BsArrowRightShort } from 'react-icons/bs';
 import signalIcon from 'assets/pictures/layersicons/layer_signal_open.svg';
 import stopIcon from 'assets/pictures/layersicons/ops.svg';
 
@@ -54,15 +55,17 @@ export default function TimeTable() {
 
   return (
     <>
-      <div className="btn-selected-train d-flex align-items-center mb-4">
+      <div className="btn-selected-train d-flex align-items-center mb-2">
         <div className="mr-2">
-          {t('simulation:train')}
           <span className="ml-2">{departureArrivalTimes[selectedTrain].name}</span>
         </div>
         <div className="small mr-1">{sec2time(departureArrivalTimes[selectedTrain].departure)}</div>
+        <span className="ml-1 mr-2">
+          <BsArrowRightShort />
+        </span>
         <div className="small">{sec2time(departureArrivalTimes[selectedTrain].arrival)}</div>
       </div>
-      <div className="table-wrapper">
+      <div className="table-wrapper" style={{ maxHeight: '40vh', overflow: 'auto' }}>
         <div className="table-scroller dragscroll">
           <table className="table table-hover table-shrink">
             <thead className="thead thead-light">

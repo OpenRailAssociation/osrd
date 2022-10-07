@@ -11,7 +11,8 @@ import {
 } from 'reducers/osrdsimulation';
 import { useDispatch, useSelector } from 'react-redux';
 
-import CenterLoader from 'common/CenterLoader/CenterLoader';
+import UploadFileModal from 'applications/customget/components/uploadFileModal';
+
 import { Rnd } from 'react-rnd';
 import SpaceTimeChart from 'applications/customget/views/SpaceTimeChart';
 import TimeTable from 'applications/customget/views/TimeTable';
@@ -19,25 +20,15 @@ import TrainList from 'applications/customget/views/TrainList';
 import TimeButtons from 'applications/customget/views/TimeButtons';
 import TrainDetails from 'applications/customget/views/TrainDetails';
 import createTrain from 'applications/customget/components/SpaceTimeChart/createTrain';
-import convertData from 'applications/customget/components/convertData';
-import { setFailure } from 'reducers/main.ts';
 import { useTranslation } from 'react-i18next';
-
-// To remove
-import staticData from 'applications/customget/static-data-simulation.json';
-import staticData2 from 'applications/customget/static-data-simulation-baptiste.json';
-
-convertData(staticData2);
 
 export const KEY_VALUES_FOR_CONSOLIDATED_SIMULATION = ['time', 'position'];
 
 export const trainscheduleURI = '/train_schedule/';
 
 function CustomGET() {
-  const { t } = useTranslation(['translation', 'simulation', 'allowances']);
+  const { t } = useTranslation(['translation', 'simulation']);
   const { fullscreen, darkmode } = useSelector((state) => state.main);
-  const [isEmpty, setIsEmpty] = useState(true);
-  const [displayTrainList, setDisplayTrainList] = useState(false);
 
   const [heightOfSpaceTimeChart, setHeightOfSpaceTimeChart] = useState(400);
   const [initialHeightOfSpaceTimeChart, setInitialHeightOfSpaceTimeChart] =
@@ -51,20 +42,8 @@ function CustomGET() {
     import('./CustomGETDarkMode.scss');
   }
 
-  function WaitingLoader() {
-    if (isEmpty) {
-      return <h1 className="text-center">{t('simulation:noData')}</h1>;
-    }
-    return <CenterLoader message={t('simulation:waiting')} />;
-  }
-
-  const toggleTrainList = () => {
-    setDisplayTrainList(!displayTrainList);
-    setTimeout(() => dispatch(updateMustRedraw(true)), 200);
-  };
-
   useEffect(() => {
-    dispatch(updateSimulation({ trains: convertData(staticData2) }));
+    dispatch(updateSimulation({ trains: [] }));
     dispatch(updateSelectedTrain(0));
     return function cleanup() {
       dispatch(updateSelectedProjection(undefined));
@@ -89,23 +68,21 @@ function CustomGET() {
     <main className={`mastcontainer ${fullscreen ? ' fullscreen' : ''}`}>
       {!simulation || simulation.trains.length === 0 ? (
         <div className="pt-5 mt-5">
-          <WaitingLoader />
+          <h1 className="text-center">{t('customget:noData')}</h1>
         </div>
       ) : (
         <div className="m-0 p-3">
           <div className="row">
-            <div className="col-md-6">
+            <div className="col-lg-5">
               <div className="osrd-simulation-container mb-2">
                 <div className="flex-fill" style={{ maxHeight: '40vh', overflow: 'auto' }}>
                   <TrainList />
                 </div>
               </div>
             </div>
-            <div className="col-md-6">
+            <div className="col-lg-7">
               <div className="osrd-simulation-container mb-2">
-                <div style={{ maxHeight: '40vh', overflow: 'auto' }}>
-                  {simulation.trains.length > 0 ? <TimeTable /> : null}
-                </div>
+                {simulation.trains.length > 0 ? <TimeTable /> : null}
               </div>
             </div>
           </div>
@@ -169,6 +146,7 @@ function CustomGET() {
           <TimeButtons />
         </div>
       )}
+      <UploadFileModal />
     </main>
   );
 }
