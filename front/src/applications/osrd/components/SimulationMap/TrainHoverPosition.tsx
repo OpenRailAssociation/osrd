@@ -1,16 +1,16 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Layer, Source } from 'react-map-gl';
+import { Layer, Source, Marker } from 'react-map-gl';
 import lineSliceAlong from '@turf/line-slice-along';
-import { Position, Feature, LineString } from 'geojson';
+import { Point, Feature, LineString } from 'geojson';
 import cx from 'classnames';
 
 import { RootState } from 'reducers';
 import { datetime2time } from 'utils/timeManipulation';
 
 interface TrainPosition {
-  headPosition: Position;
-  tailPosition: Position;
+  headPosition: Feature<Point>;
+  tailPosition: Feature<Point>;
   headDistanceAlong: number;
   tailDistanceAlong: number;
   speedTime: {
@@ -78,16 +78,25 @@ function TrainHoverPosition(props: TrainHoverPositionProps) {
     const tail = Math.min(trueHead, trueTail);
     const trainGeoJsonPath = lineSliceAlong(geojsonPath, tail, head);
     return (
-      <Source type="geojson" data={trainGeoJsonPath}>
-        <Layer
-          id="trainPath"
-          type="line"
-          paint={{
-            'line-width': 8,
-            'line-color': fill,
-          }}
-        />
-      </Source>
+      <>
+        <Marker
+          className="map-search-marker"
+          longitude={point.headPosition.geometry.coordinates[0]}
+          latitude={point.headPosition.geometry.coordinates[1]}
+        >
+          {label}
+        </Marker>
+        <Source type="geojson" data={trainGeoJsonPath}>
+          <Layer
+            id="trainPath"
+            type="line"
+            paint={{
+              'line-width': 8,
+              'line-color': fill,
+            }}
+          />
+        </Source>
+      </>
     );
   }
   return null;
