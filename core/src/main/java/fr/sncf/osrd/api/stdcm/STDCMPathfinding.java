@@ -39,16 +39,13 @@ public class STDCMPathfinding {
     ) {
         var graph = new STDCMGraph(infra, rollingStock, timeStep, unavailableTimes);
         var remainingDistance = new RemainingDistanceEstimator(endLocations);
-        var path = Pathfinding.findPath(
-                graph,
-                List.of(
+        var path = new Pathfinding<>(graph)
+                .setEdgeToLength(edge -> edge.route().getInfraRoute().getLength())
+                .setRemainingDistanceEstimator((edge, offset) -> remainingDistance.apply(edge.route(), offset))
+                .runPathfinding(List.of(
                         convertLocations(graph, startLocations, startTime, true),
                         convertLocations(graph, endLocations, 0, false)
-                ),
-                edge -> edge.route().getInfraRoute().getLength(),
-                null,
-                (edge, offset) -> remainingDistance.apply(edge.route(), offset)
-        );
+                ));
         if (path == null)
             return null;
         return makeResult(path, rollingStock, timeStep);
