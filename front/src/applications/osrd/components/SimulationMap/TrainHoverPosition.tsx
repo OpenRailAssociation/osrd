@@ -77,6 +77,10 @@ interface TrainHoverPositionProps {
   geojsonPath: Feature<LineString>;
 }
 
+const shiftFactor = {
+  long: 1 / 450,
+  lat: 1 / 1000,
+};
 function TrainHoverPosition(props: TrainHoverPositionProps) {
   const { point, isSelectedTrain, geojsonPath } = props;
   const { selectedTrain, allowancesSettings } = useSelector(
@@ -90,7 +94,7 @@ function TrainHoverPosition(props: TrainHoverPositionProps) {
   const label = getLabel(isSelectedTrain, ecoBlocks, point);
 
   if (geojsonPath && point.headDistanceAlong && point.tailDistanceAlong) {
-    const lengthFactor = getLengthFactor(viewport);
+    const zoomLengthFactor = getLengthFactor(viewport);
     const { tail, head } = makeDisplayedHeadAndTail(point);
     const trainGeoJsonPath = lineSliceAlong(geojsonPath, tail, head);
 
@@ -98,8 +102,10 @@ function TrainHoverPosition(props: TrainHoverPositionProps) {
       <>
         <Marker
           className="map-search-marker"
-          longitude={point.headPosition.geometry.coordinates[0] + lengthFactor / 450}
-          latitude={point.headPosition.geometry.coordinates[1] + lengthFactor / 1000}
+          longitude={
+            point.headPosition.geometry.coordinates[0] + zoomLengthFactor * shiftFactor.long
+          }
+          latitude={point.headPosition.geometry.coordinates[1] + zoomLengthFactor * shiftFactor.lat}
         >
           {label}
         </Marker>
@@ -120,10 +126,6 @@ function TrainHoverPosition(props: TrainHoverPositionProps) {
     );
   }
   return null;
-  // const trainGeoJsonPath =
-  //   point.headPosition &&
-  //   point.tailPosition &&
-  //   lineSlice(point.headPosition, point.tailPosition, geojsonPath);
 }
 
 export default TrainHoverPosition;
