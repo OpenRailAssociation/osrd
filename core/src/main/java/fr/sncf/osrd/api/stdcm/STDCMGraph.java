@@ -44,9 +44,16 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
     }
 
     public record Edge(
+            // Route considered for this edge
             SignalingRoute route,
+            // Envelope of the train going through the route (starts at t=0)
             Envelope envelope,
-            double timeStart
+            // Time at which the train enters the route
+            double timeStart,
+            // Maximum delay we can add after this route by delaying the start time without causing conflicts
+            double maximumAddedDelayAfter,
+            // Delay we needed to add in this route to avoid conflicts (by shifting the departure time)
+            double addedDelay
     ) {
 
         @Override
@@ -67,7 +74,8 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
     public record Node(
             double time,
             double speed,
-            DiDetector detector
+            DiDetector detector,
+            double maximumAddedDelay // Maximum delay we can add by delaying the start time without causing conflicts
     ) {}
 
     @Override
@@ -75,7 +83,8 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
         return new Node(
                 edge.envelope.getTotalTime() + edge.timeStart,
                 edge.envelope.getEndSpeed(),
-                infra.getSignalingRouteGraph().incidentNodes(edge.route).nodeV()
+                infra.getSignalingRouteGraph().incidentNodes(edge.route).nodeV(),
+                edge.maximumAddedDelayAfter
         );
     }
 
@@ -84,7 +93,7 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
         var neighbors = infra.getSignalingRouteGraph().outEdges(node.detector);
         var res = new ArrayList<Edge>();
         for (var neighbor : neighbors) {
-            var newEdge = makeEdge(neighbor, node.time, node.speed, 0);
+            var newEdge = makeEdge(neighbor, node.time, node.speed, 0, node.maximumAddedDelay);
             if (!isUnavailable(newEdge))
                 res.add(newEdge);
         }
@@ -94,30 +103,37 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
     /** Returns true if the envelope crosses one of the unavailable time blocks.
      * This method only exists in this form in the "simple" implementation where a train can't slow down. */
     public boolean isUnavailable(Edge edge) {
-        if (edge.envelope == null) {
-            // The simulation failed
-            return true;
-        }
-        var unavailableRouteTimes  = unavailableTimes.get(edge.route);
-        var routeLength = edge.route.getInfraRoute().getLength();
-        var routeStartOffset = routeLength - edge.envelope.getEndPos();
-        for (var block : unavailableRouteTimes) {
-            var distanceStart = Math.max(0, block.distanceStart() - routeStartOffset);
-            var distanceEnd = Math.min(routeLength, block.distanceEnd()) - routeStartOffset;
-            var timeEnter = edge.envelope.interpolateTotalTime(distanceStart) + edge.timeStart;
-            var timeExit = edge.envelope.interpolateTotalTime(distanceEnd) + edge.timeStart;
-            if (timeEnter < block.timeEnd() && timeExit > block.timeStart())
-                return true;
-        }
-        return false;
+        return edge.envelope == null;
     }
 
     /** Creates an edge from a given route and start time/speed */
-    public Edge makeEdge(SignalingRoute route, double startTime, double startSpeed, double start) {
+    public Edge makeEdge(
+            SignalingRoute route,
+            double startTime,
+            double startSpeed,
+            double start,
+            double prevMaximumAddedDelay
+    ) {
+        var envelope = simulateRoute(route, startSpeed, start, rollingStock, timeStep);
+        var delayNeeded = findMinimumAddedDelay(route, startTime, envelope);
+        var maximumDelay = Math.min(
+                prevMaximumAddedDelay,
+                findMaximumAddedDelay(route, startTime + delayNeeded, envelope)
+        );
+        var delay = 0.;
+        if (delayNeeded > 0) {
+            if (maximumDelay >= delayNeeded) {
+                delay = delayNeeded;
+                maximumDelay -= delay;
+            } else
+                envelope = null;
+        }
         return new Edge(
                 route,
-                simulateRoute(route, startSpeed, start),
-                startTime
+                envelope,
+                startTime + delay,
+                maximumDelay,
+                delay
         );
     }
 
@@ -125,8 +141,16 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
      *
      * </p>
      * Note: there are some approximations made here as we only "see" the tracks on the given routes.
-     * We are missing slopes and speed limits from earlier in the path. */
-    private Envelope simulateRoute(SignalingRoute route, double initialSpeed, double start) {
+     * We are missing slopes and speed limits from earlier in the path.
+     * </p>
+     * This is public for the purpose of unit tests */
+    public static Envelope simulateRoute(
+            SignalingRoute route,
+            double initialSpeed,
+            double start,
+            RollingStock rollingStock,
+            double timeStep
+    ) {
         try {
             var length = route.getInfraRoute().getLength();
             var tracks = route.getInfraRoute().getTrackRanges(start, length);
@@ -140,5 +164,47 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
             // for example because of high slopes with a "weak" rolling stock
             return null; // The edge will be considered "unavailable"
         }
+    }
+
+    /** Returns by how much we can shift this envelope (in time) before causing a conflict.
+     * </p>
+     * e.g. if the train takes 42s to go through the route, enters the route at t=10s,
+     * and we need to leave the route at t=60s, this will return 8s. */
+    private double findMaximumAddedDelay(SignalingRoute route, double startTime, Envelope envelope) {
+        var minValue = Double.POSITIVE_INFINITY;
+        for (var occupancy : unavailableTimes.get(route)) {
+            // This loop has a poor complexity, we need to optimize it by the time we handle full timetables
+            var exitTime = startTime + envelope.interpolateTotalTime(occupancy.distanceEnd());
+            var margin = occupancy.timeStart() - exitTime;
+            if (margin < 0) {
+                // This occupancy block was before the train passage, we can ignore it
+                continue;
+            }
+            minValue = Math.min(minValue, margin);
+        }
+        return minValue;
+    }
+
+    /** Returns by how much delay we need to add to avoid causing a conflict.
+     * </p>
+     * e.g. if the whole route is occupied from t=0s to t=60s, and we enter the route at t=42s,
+     * this will return 18s. */
+    private double findMinimumAddedDelay(SignalingRoute route, double startTime, Envelope envelope) {
+        double maxValue = 0;
+        for (var occupancy : unavailableTimes.get(route)) {
+            // This loop has a poor complexity, we need to optimize it by the time we handle full timetables
+            var enterTime = startTime + envelope.interpolateTotalTime(occupancy.distanceStart());
+            var exitTime = startTime + envelope.interpolateTotalTime(occupancy.distanceEnd());
+            if (enterTime > occupancy.timeEnd() || exitTime < occupancy.timeStart())
+                continue;
+            var diff = occupancy.timeEnd() - enterTime;
+            maxValue = Math.max(maxValue, diff);
+        }
+        if (maxValue == 0 || Double.isInfinite(maxValue))
+            return maxValue;
+
+        // We need a recursive call to see if we can fit a curve in the new position,
+        // or if we need to shift it further because of a different occupancy block
+        return maxValue + findMinimumAddedDelay(route, startTime + maxValue, envelope);
     }
 }

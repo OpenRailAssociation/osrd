@@ -10,6 +10,7 @@ import com.google.common.collect.Range;
 import com.google.common.collect.TreeRangeMap;
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.api.stdcm.OccupancyBlock;
+import fr.sncf.osrd.api.stdcm.STDCMGraph;
 import fr.sncf.osrd.api.stdcm.STDCMPathfinding;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
@@ -323,5 +324,94 @@ public class STDCMPathfindingTests {
                 2.
         );
         assertNotNull(res);
+    }
+
+    /** Test that we can add delays to avoid occupied sections */
+    @Test
+    public void testSimpleDelay() {
+        /*
+        a --> b --> c
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var firstRoute = infraBuilder.addRoute("a", "b");
+        var secondRoute = infraBuilder.addRoute("b", "c");
+        var infra = infraBuilder.build();
+        var res = STDCMPathfinding.findPath(
+                infra,
+                REALISTIC_FAST_TRAIN,
+                100,
+                0,
+                Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
+                Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 50)),
+                ImmutableMultimap.of(
+                        secondRoute, new OccupancyBlock(0, 3600, 0, 100)
+                ),
+                2.
+        );
+        assertNotNull(res);
+        var secondRouteEntryTime = res.departureTime()
+                + res.envelope().interpolateTotalTime(firstRoute.getInfraRoute().getLength());
+        assertTrue(secondRouteEntryTime >= 3600);
+    }
+
+    /** Test that we can add delays to avoid several occupied blocks */
+    @Test
+    public void testSimpleSeveralBlocks() {
+        /*
+        a --> b --> c
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var firstRoute = infraBuilder.addRoute("a", "b");
+        var secondRoute = infraBuilder.addRoute("b", "c");
+        var infra = infraBuilder.build();
+        var res = STDCMPathfinding.findPath(
+                infra,
+                REALISTIC_FAST_TRAIN,
+                100,
+                0,
+                Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
+                Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 50)),
+                ImmutableMultimap.of(
+                        secondRoute, new OccupancyBlock(0, 1200, 0, 100),
+                        secondRoute, new OccupancyBlock(1200, 2400, 0, 100),
+                        secondRoute, new OccupancyBlock(2400, 3600, 0, 100)
+                ),
+                2.
+        );
+        assertNotNull(res);
+        var secondRouteEntryTime = res.departureTime()
+                + res.envelope().interpolateTotalTime(firstRoute.getInfraRoute().getLength());
+        assertTrue(secondRouteEntryTime >= 3600);
+    }
+
+    /** Test that we don't add too much delay, crossing over occupied sections in previous routes */
+    @Test
+    public void testImpossibleAddedDelay() {
+        /*
+        a --> b --> c --> d
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var firstRoute = infraBuilder.addRoute("a", "b");
+        var secondRoute = infraBuilder.addRoute("b", "c");
+        var infra = infraBuilder.build();
+        var firstRouteEnvelope = STDCMGraph.simulateRoute(firstRoute, 0, 0, REALISTIC_FAST_TRAIN, 2);
+        assert firstRouteEnvelope != null;
+        var res = STDCMPathfinding.findPath(
+                infra,
+                REALISTIC_FAST_TRAIN,
+                100,
+                0,
+                Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
+                Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 100)),
+                ImmutableMultimap.of(
+                        firstRoute, new OccupancyBlock(
+                                firstRouteEnvelope.getTotalTime() + 10,
+                                Double.POSITIVE_INFINITY,
+                                0, 100),
+                        secondRoute, new OccupancyBlock(0, 3600, 0, 100)
+                ),
+                2.
+        );
+        assertNull(res);
     }
 }
