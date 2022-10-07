@@ -56,7 +56,13 @@ import { updateViewport } from 'reducers/map';
 import { useParams } from 'react-router-dom';
 
 const PATHFINDING_URI = '/pathfinding/';
-const INTERMEDIATE_MARKERS_QTY = 8;
+
+function checkIfEcoAndAddPrefix(allowancesSettings, id, baseKey) {
+  if (allowancesSettings && id && allowancesSettings[id]?.ecoBlocks) {
+    return `eco_${baseKey}`;
+  }
+  return baseKey;
+}
 
 function Map(props) {
   const { setExtViewport } = props;
@@ -120,26 +126,28 @@ function Map(props) {
   const getSimulationPositions = () => {
     const line = lineString(geojsonPath.geometry.coordinates);
     const id = simulation.trains[selectedTrain]?.id;
-    const headKey =
-      allowancesSettings && id && allowancesSettings[id]?.ecoBlocks
-        ? 'eco_headPosition'
-        : 'headPosition';
-    const tailKey =
-      allowancesSettings && id && allowancesSettings[id]?.ecoBlocks
-        ? 'eco_tailPosition'
-        : 'tailPosition';
+    const headKey = checkIfEcoAndAddPrefix(allowancesSettings, id, 'headPosition');
+    const tailKey = checkIfEcoAndAddPrefix(allowancesSettings, id, 'tailPosition');
+
+    const headDistanceAlong = positionValues[headKey].position / 1000;
+    const tailDistanceAlong = positionValues[tailKey].position / 1000;
     if (positionValues[headKey]) {
-      const headPosition = along(line, positionValues[headKey].position / 1000, {
+      const headPosition = along(line, headDistanceAlong, {
         units: 'kilometers',
       });
       const tailPosition = positionValues[tailKey]
         ? along(line, positionValues[tailKey].position / 1000, { units: 'kilometers' })
         : headPosition;
-      const trainLength = positionValues[headKey].position - positionValues[tailKey].position;
+      const trainLength =
+        Math.abs(positionValues[headKey].position - positionValues[tailKey].position) / 1000;
+
       setTrainHoverPosition({
         headPosition,
-        speedTime: positionValues.speed,
         tailPosition,
+        headDistanceAlong,
+        tailDistanceAlong,
+        speedTime: positionValues.speed,
+        trainLength,
       });
       // ...position,
       // properties: {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { Layer, Source } from 'react-map-gl';
-import lineSlice from '@turf/line-slice';
+import lineSliceAlong from '@turf/line-slice-along';
 import { Position, Feature, LineString } from 'geojson';
 import cx from 'classnames';
 
@@ -11,10 +11,13 @@ import { datetime2time } from 'utils/timeManipulation';
 interface TrainPosition {
   headPosition: Position;
   tailPosition: Position;
+  headDistanceAlong: number;
+  tailDistanceAlong: number;
   speedTime: {
     speed: number;
     time: number;
   };
+  trainLength: number;
 }
 
 function getFill(isSelectedTrain: boolean, ecoBlocks) {
@@ -67,22 +70,31 @@ function TrainHoverPosition(props: TrainHoverPositionProps) {
   const fill = getFill(isSelectedTrain, ecoBlocks);
   const label = getLabel(isSelectedTrain, ecoBlocks, point);
 
-  const trainGeoJsonPath =
-    point.headPosition &&
-    point.tailPosition &&
-    lineSlice(point.headPosition, point.tailPosition, geojsonPath);
-  return (
-    <Source type="geojson" data={trainGeoJsonPath}>
-      <Layer
-        id="trainPath"
-        type="line"
-        paint={{
-          'line-width': 8,
-          'line-color': fill,
-        }}
-      />
-    </Source>
-  );
+  if (point.headDistanceAlong && point.tailDistanceAlong) {
+    const factor = Math.max(1, 2 ** (12 - viewport?.zoom));
+    const trueHead = Math.max(point.tailDistanceAlong, point.headDistanceAlong);
+    const trueTail = Math.max(trueHead - point.trainLength * factor, 0);
+    const head = Math.max(trueHead, trueTail);
+    const tail = Math.min(trueHead, trueTail);
+    const trainGeoJsonPath = lineSliceAlong(geojsonPath, tail, head);
+    return (
+      <Source type="geojson" data={trainGeoJsonPath}>
+        <Layer
+          id="trainPath"
+          type="line"
+          paint={{
+            'line-width': 8,
+            'line-color': fill,
+          }}
+        />
+      </Source>
+    );
+  }
+  return null;
+  // const trainGeoJsonPath =
+  //   point.headPosition &&
+  //   point.tailPosition &&
+  //   lineSlice(point.headPosition, point.tailPosition, geojsonPath);
 }
 
 export default TrainHoverPosition;
