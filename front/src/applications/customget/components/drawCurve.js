@@ -9,7 +9,7 @@ const drawCurve = (
   keyValues,
   name,
   rotate,
-  isSelected = true
+  isSelected = true,
 ) => {
   const drawZone = chart.drawZone.select(`#${groupID}`);
   drawZone

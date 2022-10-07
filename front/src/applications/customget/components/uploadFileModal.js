@@ -15,7 +15,6 @@ function UploadFileModal() {
   const dispatch = useDispatch();
 
   const validateFile = async (fileToValidate) => {
-    console.log(fileToValidate);
     if (fileToValidate.type !== 'application/json') {
       return t('customget:notJSONFormat');
     }

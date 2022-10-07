@@ -106,6 +106,9 @@ export const timeShiftTrain = (train, value) => ({
     head_positions: train.base.head_positions.map((section) =>
       section.map((step) => ({ ...step, time: offsetSeconds(step.time + value) }))
     ),
+    tail_positions: train.base.tail_positions.map((section) =>
+      section.map((step) => ({ ...step, time: offsetSeconds(step.time + value) }))
+    ),
     stops: train.base.stops.map((stop) => ({ ...stop, time: offsetSeconds(stop.time + value) })),
   },
 });

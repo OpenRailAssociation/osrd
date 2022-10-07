@@ -105,6 +105,11 @@ export default function TrainsList() {
   const formatTrainsList = () => {
     const newFormattedList = departureArrivalTimes.map((train, idx) => (
       <tr className={selectedTrain === idx ? 'table-cell-selected' : null} key={nextId()}>
+        <td>
+          <div className="cell-inner">
+            <i className="icons-slider-on" style={{ color: simulation.trains[idx].color }} />
+          </div>
+        </td>
         <td className="td-button">
           <div
             className="cell-inner cell-inner-button"
@@ -185,7 +190,7 @@ export default function TrainsList() {
           <table className="table table-hover">
             <thead className="thead thead-light">
               <tr>
-                <th scope="col">
+                <th scope="col" colSpan="2">
                   <div className="cell-inner">{t('simulation:name')}</div>
                 </th>
                 <th scope="col">

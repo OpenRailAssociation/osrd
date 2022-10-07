@@ -11,9 +11,9 @@ import stopIcon from 'assets/pictures/layersicons/ops.svg';
 function type2icon(type) {
   switch (type) {
     case 'stop':
-      return <img src={stopIcon} alt="stop icon" width="32" />;
+      return <img src={stopIcon} alt="stop icon" width="24" />;
     case 'signal':
-      return <img src={signalIcon} alt="signal icon" width="32" />;
+      return <img src={signalIcon} alt="signal icon" width="24" />;
     default:
       return stop.type;
   }
@@ -55,7 +55,10 @@ export default function TimeTable() {
 
   return (
     <>
-      <div className="btn-selected-train d-flex align-items-center mb-2">
+      <div
+        className="train-name-timetable p-1 d-flex align-items-center mb-2"
+        style={{ 'background-color': simulation.trains[selectedTrain].color }}
+      >
         <div className="mr-2">
           <span className="ml-2">{departureArrivalTimes[selectedTrain].name}</span>
         </div>
@@ -67,7 +70,7 @@ export default function TimeTable() {
       </div>
       <div className="table-wrapper" style={{ maxHeight: '40vh', overflow: 'auto' }}>
         <div className="table-scroller dragscroll">
-          <table className="table table-hover table-shrink">
+          <table className="table table-hover table-shrink table-striped timetable">
             <thead className="thead thead-light">
               <tr>
                 <th scope="col">n°</th>

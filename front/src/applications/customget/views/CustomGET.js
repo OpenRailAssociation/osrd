@@ -1,5 +1,4 @@
 import './CustomGET.scss';
-
 import React, { useEffect, useState } from 'react';
 import {
   updateConsolidatedSimulation,
@@ -28,7 +27,7 @@ export const trainscheduleURI = '/train_schedule/';
 
 function CustomGET() {
   const { t } = useTranslation(['translation', 'simulation']);
-  const { fullscreen, darkmode } = useSelector((state) => state.main);
+  const { fullscreen } = useSelector((state) => state.main);
 
   const [heightOfSpaceTimeChart, setHeightOfSpaceTimeChart] = useState(400);
   const [initialHeightOfSpaceTimeChart, setInitialHeightOfSpaceTimeChart] =
@@ -37,10 +36,6 @@ function CustomGET() {
   const { stickyBar } = useSelector((state) => state.osrdsimulation);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
-
-  if (darkmode) {
-    import('./CustomGETDarkMode.scss');
-  }
 
   useEffect(() => {
     dispatch(updateSimulation({ trains: [] }));
@@ -65,7 +60,7 @@ function CustomGET() {
   }, [simulation]);
 
   return (
-    <main className={`mastcontainer ${fullscreen ? ' fullscreen' : ''}`}>
+    <main className={`mastcontainer customget ${fullscreen ? ' fullscreen' : ''}`}>
       {!simulation || simulation.trains.length === 0 ? (
         <div className="pt-5 mt-5">
           <h1 className="text-center">{t('customget:noData')}</h1>

@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 
-import { getDirection, timeShiftTrain } from 'applications/customget/components/ChartHelpers';
+import { getDirection } from 'applications/customget/components/ChartHelpers';
 import { updateContextMenu, updateMustRedraw, updateSelectedTrain } from 'reducers/osrdsimulation';
 
 import drawCurve from 'applications/customget/components/drawCurve';
@@ -101,7 +101,6 @@ export default function drawTrain(
 
   // Test direction to avoid displaying block
   const direction = getDirection(dataSimulation.headPosition);
-
   dataSimulation.headPosition.forEach((headPositionSection) =>
     drawCurve(
       chart,
@@ -111,6 +110,19 @@ export default function drawTrain(
       'curveLinear',
       keyValues,
       'headPosition',
+      rotate,
+      isSelected
+    )
+  );
+  dataSimulation.tailPosition.forEach((tailPositionSection) =>
+    drawCurve(
+      chart,
+      `${isSelected && 'selected'} tail`,
+      tailPositionSection,
+      groupID,
+      'curveLinear',
+      keyValues,
+      'tailPosition',
       rotate,
       isSelected
     )
@@ -127,6 +139,7 @@ export default function drawTrain(
       dataSimulation.headPosition[0][0].time, // x
     dataSimulation.headPosition[0] &&
       dataSimulation.headPosition[0][0] &&
-      dataSimulation.headPosition[0][0].position // y
+      dataSimulation.headPosition[0][0].position,
+    dataSimulation.color // y
   );
 }

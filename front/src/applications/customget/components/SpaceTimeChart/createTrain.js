@@ -6,8 +6,10 @@ export default function createTrain(dispatch, keyValues, simulationTrains, t) {
     const dataSimulationTrain = {};
     dataSimulationTrain.id = train.id;
     dataSimulationTrain.name = train.name;
+    dataSimulationTrain.color = train.color;
     dataSimulationTrain.trainNumber = trainNumber;
     dataSimulationTrain.headPosition = formatStepsWithTimeMulti(train.base.head_positions);
+    dataSimulationTrain.tailPosition = formatStepsWithTimeMulti(train.base.tail_positions);
 
     return dataSimulationTrain;
   });

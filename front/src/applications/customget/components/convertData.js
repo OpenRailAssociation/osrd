@@ -1,3 +1,12 @@
+import { SNCFCOLORSONLY } from 'applications/osrd/consts';
+
+const randomColor = () => {
+  const colors = Object.values(SNCFCOLORSONLY);
+  const len = colors.length;
+  const idx = Math.floor(Math.random() * len);
+  return colors[idx];
+};
+
 const convertStops = (steps) => {
   let beforeStepName;
   let beforeStepTime;
@@ -31,8 +40,15 @@ const convertData = (trains) => {
   const newData = trains.map((train, idx) => ({
     id: idx,
     name: train.name,
+    color: randomColor(),
     base: {
       head_positions: [
+        train.space_time_curves.time_table.map((step) => ({
+          time: step.time,
+          position: step.position,
+        })),
+      ],
+      tail_positions: [
         train.space_time_curves.actual.map((step) => ({
           time: step.time,
           position: step.position,
