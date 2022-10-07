@@ -52,6 +52,14 @@ function getLabel(isSelectedTrain, ecoBlocks, point: TrainPosition) {
   );
 }
 
+function makeDisplayedHeadAndTail(point: TrainPosition, factor: number) {
+  const trueHead = Math.max(point.tailDistanceAlong, point.headDistanceAlong);
+  const trueTail = Math.max(trueHead - point.trainLength * factor, 0);
+  const head = Math.max(trueHead, trueTail);
+  const tail = Math.min(trueHead, trueTail);
+  return { tail, head };
+}
+
 interface TrainHoverPositionProps {
   point: TrainPosition;
   isSelectedTrain: boolean;
@@ -72,10 +80,7 @@ function TrainHoverPosition(props: TrainHoverPositionProps) {
 
   if (point.headDistanceAlong && point.tailDistanceAlong) {
     const factor = Math.max(1, 2 ** (12 - viewport?.zoom));
-    const trueHead = Math.max(point.tailDistanceAlong, point.headDistanceAlong);
-    const trueTail = Math.max(trueHead - point.trainLength * factor, 0);
-    const head = Math.max(trueHead, trueTail);
-    const tail = Math.min(trueHead, trueTail);
+    const { tail, head } = makeDisplayedHeadAndTail(point, factor);
     const trainGeoJsonPath = lineSliceAlong(geojsonPath, tail, head);
     return (
       <>
