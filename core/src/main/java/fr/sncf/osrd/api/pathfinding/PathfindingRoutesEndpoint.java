@@ -2,7 +2,6 @@ package fr.sncf.osrd.api.pathfinding;
 
 import fr.sncf.osrd.api.ExceptionHandler;
 import fr.sncf.osrd.api.InfraManager;
-import fr.sncf.osrd.api.pathfinding.constraints.ConstraintCombiner;
 import fr.sncf.osrd.api.pathfinding.constraints.ElectrificationConstraints;
 import fr.sncf.osrd.api.pathfinding.constraints.LoadingGaugeConstraints;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingRequest;
@@ -103,13 +102,12 @@ public class PathfindingRoutesEndpoint implements Take {
         }
 
         // Compute the paths from the entry waypoint to the exit waypoint
-        return Pathfinding.findPath(
-                new GraphAdapter<>(infra.getSignalingRouteGraph()),
-                waypoints,
-                route -> route.getInfraRoute().getLength(),
-                new ConstraintCombiner(List.of(loadingGaugeConstraints, electrificationConstraints)),
-                remainingDistanceEstimator
-        );
+        return new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
+                .setEdgeToLength(route -> route.getInfraRoute().getLength())
+                .addBlockedRangeOnEdges(loadingGaugeConstraints)
+                .addBlockedRangeOnEdges(electrificationConstraints)
+                .setRemainingDistanceEstimator(remainingDistanceEstimator)
+                .runPathfinding(waypoints);
     }
 
 

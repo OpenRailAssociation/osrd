@@ -4,6 +4,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.utils.graph.functional_interfaces.AStarHeuristic;
 import fr.sncf.osrd.utils.graph.functional_interfaces.EdgeToLength;
 import fr.sncf.osrd.utils.graph.functional_interfaces.EdgeToRanges;
+import fr.sncf.osrd.api.pathfinding.constraints.ConstraintCombiner;
 import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -55,67 +56,40 @@ public class Pathfinding<NodeT, EdgeT> {
     public record Range(double start, double end){}
 
     /** Step priority queue */
-    private final PriorityQueue<Step<EdgeT>> queue;
+    private final PriorityQueue<Step<EdgeT>> queue = new PriorityQueue<>();
     /** Function to call to get edge length */
-    private final EdgeToLength<EdgeT> edgeToLength;
+    private EdgeToLength<EdgeT> edgeToLength;
     /** Function to call to get the blocked ranges on an edge */
-    private final EdgeToRanges<EdgeT> blockedRangesOnEdge;
+    private final ConstraintCombiner<EdgeT> blockedRangesOnEdge = new ConstraintCombiner<>();
     /** Input graph */
     private final Graph<NodeT, EdgeT> graph;
     /** Keeps track of visited location. For each visited range, keeps the max number of passed targets at that point */
     private final HashMap<EdgeRange<EdgeT>, Integer> seen = new HashMap<>();
     /** Function to call to get estimate of the remaining distance.
      * The function takes the edge and the offset and returns a distance. */
-    private final AStarHeuristic<EdgeT> estimateRemainingDistance;
-
-    /** Returns the shortest path from any start edge to any end edge, as a list of edge (containing start and stop) */
-    public static <NodeT, EdgeT> List<EdgeT> findEdgePath(
-            Graph<NodeT, EdgeT> graph,
-            List<Collection<EdgeLocation<EdgeT>>> locations,
-            EdgeToLength<EdgeT> edgeToLength,
-            EdgeToRanges<EdgeT> blockedRangesOnEdge,
-            AStarHeuristic<EdgeT> estimateRemainingDistance
-    ) {
-        return new Pathfinding<>(
-                graph,
-                edgeToLength,
-                blockedRangesOnEdge,
-                estimateRemainingDistance
-        ).runPathfindingEdgesOnly(locations);
-    }
-
-    /** Returns the shortest path from any start edge to any end edge, as a list of (edge, start, end) */
-    public static <NodeT, EdgeT> Result<EdgeT> findPath(
-            Graph<NodeT, EdgeT> graph,
-            List<Collection<EdgeLocation<EdgeT>>> locations,
-            EdgeToLength<EdgeT> edgeToLength,
-            EdgeToRanges<EdgeT> blockedRangesOnEdge,
-            AStarHeuristic<EdgeT> estimateRemainingDistance
-    ) {
-        return new Pathfinding<>(
-                graph,
-                edgeToLength,
-                blockedRangesOnEdge,
-                estimateRemainingDistance
-        ).runPathfinding(locations);
-    }
+    private AStarHeuristic<EdgeT> estimateRemainingDistance = null;
 
     /** Constructor */
-    private Pathfinding(
-            Graph<NodeT, EdgeT> graph,
-            EdgeToLength<EdgeT> edgeToLength,
-            EdgeToRanges<EdgeT> blockedRangesOnEdge,
-            AStarHeuristic<EdgeT> estimateRemainingDistance
-    ) {
-        if (blockedRangesOnEdge == null)
-            blockedRangesOnEdge = x -> List.of();
-        if (estimateRemainingDistance == null)
-            estimateRemainingDistance = (x, y) -> 0.;
-        this.blockedRangesOnEdge = blockedRangesOnEdge;
-        queue = new PriorityQueue<>();
+    public Pathfinding(Graph<NodeT, EdgeT> graph) {
         this.graph = graph;
-        this.edgeToLength = edgeToLength;
-        this.estimateRemainingDistance = estimateRemainingDistance;
+    }
+
+    /** Sets the functor used to estimate the remaining distance for A* */
+    public Pathfinding<NodeT, EdgeT> setEdgeToLength(EdgeToLength<EdgeT> f) {
+        this.edgeToLength = f;
+        return this;
+    }
+
+    /** Sets the functor used to estimate the remaining distance for A* */
+    public Pathfinding<NodeT, EdgeT> setRemainingDistanceEstimator(AStarHeuristic<EdgeT> f) {
+        this.estimateRemainingDistance = f;
+        return this;
+    }
+
+    /** Sets the functor used determine which ranges are blocked on an edge */
+    public Pathfinding<NodeT, EdgeT> addBlockedRangeOnEdges(EdgeToRanges<EdgeT> f) {
+        this.blockedRangesOnEdge.functions.add(f);
+        return this;
     }
 
     /** Runs the pathfinding, returning a path as a list of (edge, start offset, end offset).
@@ -123,9 +97,10 @@ public class Pathfinding<NodeT, EdgeT> {
      * It finds the shortest path from start to end,
      * going through at least one location of each every intermediate target in order.
      * It uses Dijkstra algorithm internally, but can be changed to an A* with minor changes */
-    private Result<EdgeT> runPathfinding(
+    public Result<EdgeT> runPathfinding(
             List<Collection<EdgeLocation<EdgeT>>> targets
     ) {
+        checkParameters();
         for (var location : targets.get(0)) {
             var startRange = new EdgeRange<>(location.edge, location.offset, edgeToLength.apply(location.edge));
             registerStep(startRange, null, 0, 0, List.of(location));
@@ -180,7 +155,7 @@ public class Pathfinding<NodeT, EdgeT> {
     }
 
     /** Runs the pathfinding, returning a path as a list of edge. */
-    private List<EdgeT> runPathfindingEdgesOnly(
+    public List<EdgeT> runPathfindingEdgesOnly(
             List<Collection<EdgeLocation<EdgeT>>> targets
     ) {
         var res = runPathfinding(targets);
@@ -189,6 +164,13 @@ public class Pathfinding<NodeT, EdgeT> {
         return res.ranges.stream()
                 .map(step -> step.edge)
                 .collect(Collectors.toList());
+    }
+
+    /** Checks that required parameters are set, sets the optional ones to their default values */
+    private void checkParameters() {
+        assert edgeToLength != null;
+        if (estimateRemainingDistance == null)
+            estimateRemainingDistance = (x, y) -> 0.;
     }
 
     /** Returns true if the step has reached the end of the path (last target) */
