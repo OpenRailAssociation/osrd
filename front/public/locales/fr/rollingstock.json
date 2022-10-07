@@ -45,8 +45,13 @@
   "startupTime": "Durée de démarrage",
   "subSerie": "Sous-série",
   "timetableGamma": "Décélération horaire",
+  "electricOnly": "Uniquement Eléctrique",
+  "compatibleVoltages": "Voltages Compatibles",
+  "noCompatibleVoltages": "Aucun",
   "title": "Générateur de composition matériel train",
   "tractionMode": "Mode de traction",
   "waitingLoader": "Veuillez patienter, chargement de la base de données matériel...",
-  "weight": "Masse"
+  "weight": "Masse",
+  "yes": "Oui",
+  "no": "Non"
 }
