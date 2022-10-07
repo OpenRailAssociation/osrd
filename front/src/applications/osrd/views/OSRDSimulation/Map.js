@@ -14,7 +14,6 @@ import {
 } from 'applications/osrd/components/Helpers/ChartHelpers';
 import { lineString, point } from '@turf/helpers';
 import { useDispatch, useSelector } from 'react-redux';
-import nextId from 'react-id-generator';
 
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
@@ -72,8 +71,8 @@ function Map(props) {
     useSelector((state) => state.osrdsimulation);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const [geojsonPath, setGeojsonPath] = useState(undefined);
-  const [trainHoverPositionOthers, setTrainHoverPositionOthers] = useState([]);
-  const [trainHoverPosition, setTrainHoverPosition] = useState(undefined);
+  const [selectedTrainHoverPosition, setTrainHoverPosition] = useState(undefined);
+  const [otherTrainsHoverPosition, setOtherTrainsHoverPosition] = useState([]);
   const [idHover, setIdHover] = useState(undefined);
   const { urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
   const dispatch = useDispatch();
@@ -123,6 +122,7 @@ function Map(props) {
     return concernedTrains;
   };
 
+  // We generate position data for the main (selected) train and the other trains
   const getSimulationPositions = () => {
     const line = lineString(geojsonPath.geometry.coordinates);
     const id = simulation.trains[selectedTrain]?.id;
@@ -152,7 +152,7 @@ function Map(props) {
     }
 
     // Found trains including timePosition, and organize them with geojson collection of points
-    setTrainHoverPositionOthers(
+    setOtherTrainsHoverPosition(
       createOtherPoints().map((train) => {
         const headDistanceAlong = train.head_positions.position / 1000;
         const tailDistanceAlong = train.tail_positions.position / 1000;
@@ -229,7 +229,7 @@ function Map(props) {
 
   const onFeatureHover = (e) => {
     if (!isPlaying && e) {
-      const line = lineString(geojsonPath.geometry.coordinates);
+      const line = lineString(geojsonPath?.geometry.coordinates);
       const cursorPoint = point(e.lngLat);
       const key = getRegimeKey(simulation.trains[selectedTrain].id);
       const startCoordinates = getDirection(simulation.trains[selectedTrain][key].head_positions)
@@ -278,8 +278,8 @@ function Map(props) {
     if (geojsonPath) {
       interactiveLayersLocal.push('geojsonPath');
       interactiveLayersLocal.push('main-train-path');
-      trainHoverPositionOthers.forEach((train) => {
-        interactiveLayersLocal.push(`other-train-${train.id}-path`);
+      otherTrainsHoverPosition.forEach((train) => {
+        interactiveLayersLocal.push(`${train.id}-path`);
       });
     }
     if (layersSettings.tvds) {
@@ -287,7 +287,11 @@ function Map(props) {
     }
     return interactiveLayersLocal;
   }
-  const interactiveLayerIds = useState(defineInteractiveLayers);
+  const [interactiveLayerIds, setInteractiveLayerIds] = useState([]);
+  useEffect(() => {
+    setInteractiveLayerIds(defineInteractiveLayers());
+  }, [geojsonPath, otherTrainsHoverPosition.length]);
+
   useEffect(() => {
     mapRef.current.getMap().on('click', () => {});
 
@@ -393,15 +397,15 @@ function Map(props) {
 
         {geojsonPath !== undefined ? <RenderItinerary geojsonPath={geojsonPath} /> : null}
 
-        {trainHoverPosition && (
+        {selectedTrainHoverPosition && (
           <TrainHoverPosition
-            point={trainHoverPosition}
+            point={selectedTrainHoverPosition}
             isSelectedTrain
             geojsonPath={geojsonPath}
           />
         )}
-        {trainHoverPositionOthers.map((pt) => (
-          <TrainHoverPosition point={pt} geojsonPath={geojsonPath} key={nextId()} />
+        {otherTrainsHoverPosition.map((pt) => (
+          <TrainHoverPosition point={pt} geojsonPath={geojsonPath} key={pt.id} />
         ))}
       </ReactMapGL>
     </>
