@@ -260,8 +260,8 @@ function Map(props) {
   };
 
   const onClick = (e) => {
-    console.log('Click on map');
-    console.log(mapRef.current.queryRenderedFeatures(e.point));
+    console.info('Click on map');
+    console.info(mapRef.current.queryRenderedFeatures(e.point));
   };
 
   const displayPath = () => {
