@@ -9,6 +9,7 @@ import { RootState } from 'reducers';
 import { datetime2time } from 'utils/timeManipulation';
 
 interface TrainPosition {
+  id: string;
   headPosition: Feature<Point>;
   tailPosition: Feature<Point>;
   headDistanceAlong: number;
@@ -93,7 +94,7 @@ function TrainHoverPosition(props: TrainHoverPositionProps) {
         </Marker>
         <Source type="geojson" data={trainGeoJsonPath}>
           <Layer
-            id="trainPath"
+            id={`${point.id}-path`}
             type="line"
             paint={{
               'line-width': 8,
