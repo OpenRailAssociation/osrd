@@ -117,7 +117,7 @@ impl DataObject {
 mod tests {
     use super::UpdateOperation;
     use crate::api_error::ApiError;
-    use crate::infra::tests::test_transaction;
+    use crate::infra::tests::test_infra_transaction;
     use crate::schema::operation::create::tests::{
         create_signal, create_speed, create_switch, create_track,
     };
@@ -142,7 +142,7 @@ mod tests {
 
     #[test]
     fn valid_update_track() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             let track = create_track(conn, infra.id, Default::default());
 
             let update_track = UpdateOperation {
@@ -171,7 +171,7 @@ mod tests {
 
     #[test]
     fn invalid_update_track() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             let track = create_track(conn, infra.id, Default::default());
 
             let update_track = UpdateOperation {
@@ -197,7 +197,7 @@ mod tests {
 
     #[test]
     fn valid_update_signal() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             let signal = create_signal(conn, infra.id, Default::default());
 
             let update_signal = UpdateOperation {
@@ -226,7 +226,7 @@ mod tests {
 
     #[test]
     fn valid_update_switch_extension() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             let switch = create_switch(conn, infra.id, Default::default());
 
             let update_switch = UpdateOperation {
@@ -255,7 +255,7 @@ mod tests {
 
     #[test]
     fn valid_update_speed() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             let speed = create_speed(conn, infra.id, Default::default());
 
             let update_speed = UpdateOperation {

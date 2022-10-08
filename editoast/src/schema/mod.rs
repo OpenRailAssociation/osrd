@@ -1,10 +1,10 @@
-pub mod operation;
-
 mod buffer_stop;
 mod catenary;
 mod detector;
 mod errors;
+pub mod operation;
 mod operational_point;
+mod railjson;
 mod route;
 mod signal;
 mod speed_section;
@@ -12,19 +12,18 @@ mod switch;
 mod switch_type;
 mod track_section;
 mod track_section_link;
-
-use derivative::Derivative;
-use enum_map::Enum;
-use rand::distributions::Alphanumeric;
-use rand::{thread_rng, Rng};
-use serde::{Deserialize, Serialize};
-
 pub use buffer_stop::{BufferStop, BufferStopCache};
 pub use catenary::Catenary;
+use derivative::Derivative;
 pub use detector::{Detector, DetectorCache};
+use enum_map::Enum;
 pub use errors::{InfraError, PathEndpointField};
 pub use operational_point::{OperationalPoint, OperationalPointCache, OperationalPointPart};
+pub use railjson::{find_objects, RailJson, RailjsonError};
+use rand::distributions::Alphanumeric;
+use rand::{thread_rng, Rng};
 pub use route::Route;
+use serde::{Deserialize, Serialize};
 pub use signal::{Signal, SignalCache};
 pub use speed_section::SpeedSection;
 pub use switch::{Switch, SwitchCache};
@@ -134,7 +133,7 @@ impl OSRDObject for Waypoint {
     }
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct ApplicableDirectionsTrackRange {
@@ -146,7 +145,7 @@ pub struct ApplicableDirectionsTrackRange {
     pub applicable_directions: ApplicableDirections,
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct DirectionalTrackRange {
@@ -220,7 +219,7 @@ pub struct TrackEndpoint {
     pub track: String,
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[derivative(Default)]
 pub enum Side {
     #[serde(rename = "LEFT")]
@@ -232,7 +231,7 @@ pub enum Side {
     Center,
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct Panel {

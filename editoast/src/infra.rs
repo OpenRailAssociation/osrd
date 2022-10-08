@@ -6,19 +6,21 @@ use crate::tables::osrd_infra_infra;
 use crate::tables::osrd_infra_infra::dsl::*;
 use diesel::result::Error as DieselError;
 use diesel::sql_types::Text;
-use diesel::{delete, sql_query, update, ExpressionMethods, PgConnection, QueryDsl, RunQueryDsl};
+use diesel::ExpressionMethods;
+use diesel::{delete, sql_query, update, PgConnection, QueryDsl, RunQueryDsl};
 use rocket::http::Status;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
 use thiserror::Error;
 
-const RAILJSON_VERSION: &str = "3.0.0";
+pub const RAILJSON_VERSION: &str = "3.0.0";
 
-#[derive(Clone, QueryableByName, Queryable, Debug, Serialize, Deserialize)]
+#[derive(Clone, QueryableByName, Queryable, Debug, Serialize, Deserialize, Identifiable)]
 #[table_name = "osrd_infra_infra"]
 pub struct Infra {
     pub id: i32,
     pub name: String,
+    pub railjson_version: String,
     pub version: String,
     pub generated_version: Option<String>,
     pub locked: bool,
@@ -146,17 +148,17 @@ impl Infra {
         conn: &PgConnection,
     ) -> Result<Infra, Box<dyn ApiError>> {
         match sql_query(
-                "INSERT INTO osrd_infra_infra (name, railjson_version, owner, version, generated_version, locked)
-                VALUES ($1, $2, '00000000-0000-0000-0000-000000000000', '0', '0', false)
-                RETURNING *",
-            )
-            .bind::<Text, _>(infra_name.as_ref())
-            .bind::<Text, _>(RAILJSON_VERSION)
-            .get_result::<Infra>(conn)
-            {
-                Ok(infra) => Ok(infra),
-                Err(err) => Err(Box::new(InfraApiError::DieselError(err))),
-            }
+            "INSERT INTO osrd_infra_infra (name, railjson_version, owner, version, generated_version, locked)
+             VALUES ($1, $2, '00000000-0000-0000-0000-000000000000', '0', '0', false)
+             RETURNING *",
+        )
+        .bind::<Text, _>(infra_name.as_ref())
+        .bind::<Text, _>(RAILJSON_VERSION)
+        .get_result::<Infra>(conn)
+        {
+            Ok(infra) => Ok(infra),
+            Err(err) => Err(Box::new(InfraApiError::DieselError(err))),
+        }
     }
 
     pub fn delete(infra_id: i32, conn: &PgConnection) -> Result<(), Box<dyn ApiError>> {
@@ -221,7 +223,7 @@ pub mod tests {
     use diesel::{Connection, PgConnection};
     use rocket::http::Status;
 
-    pub fn test_transaction(fn_test: fn(&PgConnection, Infra)) {
+    pub fn test_infra_transaction(fn_test: fn(&PgConnection, Infra)) {
         let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
         conn.test_transaction::<_, Error, _>(|| {
             let infra = Infra::create("test", &conn).unwrap();
@@ -233,14 +235,14 @@ pub mod tests {
 
     #[test]
     fn create_infra() {
-        test_transaction(|_, infra| {
+        test_infra_transaction(|_, infra| {
             assert_eq!("test", infra.name);
         });
     }
 
     #[test]
     fn delete_infra() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             assert!(Infra::delete(infra.id, conn).is_ok());
             let err = Infra::delete(infra.id, conn).unwrap_err();
             assert_eq!(err.get_status(), Status::NotFound);
