@@ -95,7 +95,7 @@ impl RailjsonObject {
 pub mod tests {
     use diesel::PgConnection;
 
-    use crate::infra::tests::test_transaction;
+    use crate::infra::tests::test_infra_transaction;
     use crate::schema::operation::create::{apply_create_operation, RailjsonObject};
     use crate::schema::{
         BufferStop, Catenary, Detector, OperationalPoint, Route, Signal, SpeedSection, Switch,
@@ -192,77 +192,77 @@ pub mod tests {
 
     #[test]
     fn create_track_test() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             create_track(conn, infra.id, Default::default());
         });
     }
 
     #[test]
     fn create_signal_test() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             create_signal(conn, infra.id, Default::default());
         });
     }
 
     #[test]
     fn create_speed_test() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             create_speed(conn, infra.id, Default::default());
         });
     }
 
     #[test]
     fn create_link_test() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             create_link(conn, infra.id, Default::default());
         });
     }
 
     #[test]
     fn create_switch_test() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             create_switch(conn, infra.id, Default::default());
         });
     }
 
     #[test]
     fn create_detector_test() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             create_detector(conn, infra.id, Default::default());
         });
     }
 
     #[test]
     fn create_buffer_stop_test() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             create_buffer_stop(conn, infra.id, Default::default());
         });
     }
 
     #[test]
     fn create_route_test() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             create_route(conn, infra.id, Default::default());
         });
     }
 
     #[test]
     fn create_op_test() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             create_op(conn, infra.id, Default::default());
         });
     }
 
     #[test]
     fn create_switch_type_test() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             create_switch_type(conn, infra.id, Default::default());
         });
     }
 
     #[test]
     fn create_catenary_test() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             create_catenary(conn, infra.id, Default::default());
         });
     }
