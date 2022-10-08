@@ -126,27 +126,27 @@ pub fn update_all(
 #[cfg(test)]
 pub mod tests {
     use crate::generated_data::{clear_all, refresh_all, update_all};
-    use crate::infra::tests::test_transaction;
+    use crate::infra::tests::test_infra_transaction;
     use crate::infra::Infra;
     use diesel::PgConnection;
 
     #[test]
     fn refresh_all_test() {
-        test_transaction(|conn: &PgConnection, infra: Infra| {
+        test_infra_transaction(|conn: &PgConnection, infra: Infra| {
             assert!(refresh_all(conn, infra.id, &Default::default()).is_ok());
         })
     }
 
     #[test]
     fn update_all_test() {
-        test_transaction(|conn: &PgConnection, infra: Infra| {
+        test_infra_transaction(|conn: &PgConnection, infra: Infra| {
             assert!(update_all(conn, infra.id, &[], &Default::default()).is_ok());
         })
     }
 
     #[test]
     fn clear_all_test() {
-        test_transaction(|conn: &PgConnection, infra: Infra| {
+        test_infra_transaction(|conn: &PgConnection, infra: Infra| {
             assert!(clear_all(conn, infra.id).is_ok());
         })
     }

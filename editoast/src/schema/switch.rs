@@ -1,16 +1,18 @@
-use std::collections::HashMap;
-
-use crate::infra_cache::Cache;
-use crate::infra_cache::ObjectCache;
-
 use super::generate_id;
 use super::OSRDObject;
 use super::ObjectType;
 use super::TrackEndpoint;
+use crate::api_error::ApiError;
+use crate::diesel::ExpressionMethods;
+use crate::diesel::RunQueryDsl;
+use crate::infra_cache::Cache;
+use crate::infra_cache::ObjectCache;
 use derivative::Derivative;
+use diesel::PgConnection;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct Switch {
@@ -23,13 +25,39 @@ pub struct Switch {
     pub extensions: SwitchExtensions,
 }
 
-#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+impl Switch {
+    pub fn persist_batch(
+        values: &[Self],
+        infrastructure_id: i32,
+        conn: &PgConnection,
+    ) -> Result<(), Box<dyn ApiError>> {
+        use crate::tables::osrd_infra_switchmodel::dsl::*;
+        let datas = values
+            .iter()
+            .map(|value| {
+                (
+                    obj_id.eq(value.get_id().clone()),
+                    data.eq(serde_json::to_value(value).unwrap()),
+                    infra_id.eq(infrastructure_id),
+                )
+            })
+            .collect::<Vec<_>>();
+
+        diesel::insert_into(osrd_infra_switchmodel)
+            .values(datas)
+            .execute(conn)?;
+
+        Ok(())
+    }
+}
+
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct SwitchExtensions {
     sncf: Option<SwitchSncfExtension>,
 }
 
-#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct SwitchSncfExtension {
     pub label: String,
@@ -87,5 +115,21 @@ impl Cache for SwitchCache {
 
     fn get_object_cache(&self) -> ObjectCache {
         ObjectCache::Switch(self.clone())
+    }
+}
+
+#[cfg(test)]
+mod test {
+
+    use super::Switch;
+    use crate::infra::tests::test_infra_transaction;
+
+    #[test]
+    fn test_persist() {
+        test_infra_transaction(|conn, infra| {
+            let data = (0..10).map(|_| Switch::default()).collect::<Vec<Switch>>();
+
+            assert!(Switch::persist_batch(&data, infra.id, conn).is_ok());
+        });
     }
 }
