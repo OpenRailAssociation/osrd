@@ -59,6 +59,9 @@ function OSRDSimulation() {
   const [initialHeightOfSpeedSpaceChart, setInitialHeightOfSpeedSpaceChart] =
     useState(heightOfSpeedSpaceChart);
 
+  const [heightOfSimulationMap, setHeightOfSimulationMap] = useState(500);
+  const [initialHeightOfSimulationMap, setinitialHeightOfSimulationMap] = useState(heightOfSimulationMap);
+
   const [heightOfSpaceCurvesSlopesChart, setHeightOfSpaceCurvesSlopesChart] = useState(150);
   const [initialHeightOfSpaceCurvesSlopesChart, setInitialHeightOfSpaceCurvesSlopesChart] =
     useState(heightOfSpaceCurvesSlopesChart);
@@ -254,14 +257,7 @@ function OSRDSimulation() {
                   }}
                   disableDragging
                   enableResizing={{
-                    top: false,
-                    right: false,
                     bottom: true,
-                    left: false,
-                    topRight: false,
-                    bottomRight: false,
-                    bottomLeft: false,
-                    topLeft: false,
                   }}
                   onResizeStart={() => setInitialHeightOfSpaceTimeChart(heightOfSpaceTimeChart)}
                   onResize={(e, dir, refToElement, delta) => {
@@ -292,14 +288,7 @@ function OSRDSimulation() {
                   }}
                   disableDragging
                   enableResizing={{
-                    top: false,
-                    right: false,
                     bottom: true,
-                    left: false,
-                    topRight: false,
-                    bottomRight: false,
-                    bottomLeft: false,
-                    topLeft: false,
                   }}
                   onResizeStart={() => setInitialHeightOfSpeedSpaceChart(heightOfSpeedSpaceChart)}
                   onResize={(e, dir, refToElement, delta) => {
@@ -329,14 +318,7 @@ function OSRDSimulation() {
                   }}
                   disableDragging
                   enableResizing={{
-                    top: false,
-                    right: false,
                     bottom: true,
-                    left: false,
-                    topRight: false,
-                    bottomRight: false,
-                    bottomLeft: false,
-                    topLeft: false,
                   }}
                   onResizeStart={() =>
                     setInitialHeightOfSpaceCurvesSlopesChart(heightOfSpaceCurvesSlopesChart)
@@ -381,7 +363,27 @@ function OSRDSimulation() {
             </div>
             <div className="col-md-6">
               <div className="osrd-simulation-container osrd-simulation-map mb-2">
-                <Map setExtViewport={setExtViewport} />
+              <Rnd
+                  default={{
+                    x: 0,
+                    y: 0,
+                    width: '100%',
+                    height: `${heightOfSimulationMap}px`,
+                  }}
+                  disableDragging
+                  enableResizing={{
+                    bottom: true,
+                  }}
+                  onResizeStart={() => setinitialHeightOfSimulationMap(heightOfSimulationMap)}
+                  onResize={(e, dir, refToElement, delta) => {
+                    setHeightOfSimulationMap(initialHeightOfSimulationMap + delta.height);
+                  }}
+                  onResizeStop={() => {
+                    dispatch(updateMustRedraw(true));
+                  }}
+                >
+                  <Map setExtViewport={setExtViewport} />
+                </Rnd>
               </div>
             </div>
           </div>
