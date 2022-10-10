@@ -10,6 +10,7 @@ import PropTypes from 'prop-types';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import { useTranslation } from 'react-i18next';
 import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
+import nextId from 'react-id-generator';
 
 export default function StandardAllowanceDefault(props) {
   const {
@@ -181,6 +182,7 @@ export default function StandardAllowanceDefault(props) {
           options={allowanceTypes}
           handleType={handleType}
           value={value.value}
+          key={nextId()}
           sm
         />
       </div>
