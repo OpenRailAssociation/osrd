@@ -64,7 +64,8 @@ export default function OperationalPoints(props) {
         'concat',
         ['get', 'trigram'],
         ' ',
-        ['case',
+        [
+          'case',
           ['in', ['get', 'extensions_sncf_ch'], ['literal', ['BV', '00']]],
           '',
           ['get', 'extensions_sncf_ch'],
