@@ -292,7 +292,8 @@ async def get_objects_in_bbox(
 
     features = []
     for record in records:
-        feature = json.loads(record.get("geom"))
+        feature = {"type": "Feature"}
+        feature["geometry"] = json.loads(record.get("geom"))
         feature["properties"] = json.loads(record.get("data"))
         features.append(feature)
 
