@@ -39,7 +39,7 @@ const svgDefs = (defs) => {
     .attr('in', 'SourceGraphic')
     .attr('flood-color', 'black')
     .attr('flood-opacity', '1')
-    .attr('result', 'dropShadowStdcm')
+    .attr('result', 'dropShadowStdcm');
 
   defs
     .append('pattern')

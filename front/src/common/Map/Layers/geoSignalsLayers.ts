@@ -118,7 +118,14 @@ export function signalsToSprites(
         prefix,
         type,
         ' ',
-        ['case', ['==', ['get', 'extensions_sncf_side'], 'RIGHT'], 'D', ['==', ['get', 'extensions_sncf_side'], 'LEFT'], 'G', ''],
+        [
+          'case',
+          ['==', ['get', 'extensions_sncf_side'], 'RIGHT'],
+          'D',
+          ['==', ['get', 'extensions_sncf_side'], 'LEFT'],
+          'G',
+          '',
+        ],
       ];
     case 'CARRE':
     case 'S':
@@ -510,7 +517,13 @@ export function getSignalLayerProps(
     type: 'symbol',
     filter: ['==', 'extensions_sncf_installation_type', type],
     layout: {
-      'text-field': ['step', ['zoom'], '', minZoom, ['case', isSignal, ['get', 'extensions_sncf_label'], '']],
+      'text-field': [
+        'step',
+        ['zoom'],
+        '',
+        minZoom,
+        ['case', isSignal, ['get', 'extensions_sncf_label'], ''],
+      ],
       'text-font': ['Roboto Condensed'],
       'text-size': 9,
       'text-offset': textOffset,
