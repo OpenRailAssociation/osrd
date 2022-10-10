@@ -25,7 +25,7 @@ You can override the default configuration using environment variables:
 
 Then to run the service:
 ```shell
-$ uvicorn chartos:make_app --port 7000
+$ uvicorn chartos:make_app --port 7070
 ```
 
 ## Run tests
