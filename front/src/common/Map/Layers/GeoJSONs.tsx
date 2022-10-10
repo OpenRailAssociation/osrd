@@ -177,7 +177,7 @@ const GeoJSONs: FC<{
         (entities) =>
           ({
             type: 'FeatureCollection',
-            features: entities,
+            features: entities.map((e) => ({ ...e, type: 'Feature' })),
           } as FeatureCollection)
       ),
     [editorData]
