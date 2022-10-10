@@ -121,7 +121,7 @@ fn edit(
     // Use a transaction to give scope to the infra lock
     conn.build_transaction().run::<_, EditoastError, _>(|| {
         // Retrieve and lock infra
-        let infra = Infra::retrieve_for_update(&conn, infra as i32)?;
+        let infra = Infra::retrieve_for_update(&conn, infra)?;
 
         // Check if the infra is locked
         if infra.locked {
