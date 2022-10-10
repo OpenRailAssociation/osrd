@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     max_zoom: int = 18
 
     # those are needed to build mvt layer metadata
-    root_url: str = "http://localhost:7000"
+    root_url: str = "http://localhost:7070"
 
     # postgres://user:password@host:port/database?option=value
     psql_dsn: str = "postgres://osrd:password@localhost:5432/osrd"
