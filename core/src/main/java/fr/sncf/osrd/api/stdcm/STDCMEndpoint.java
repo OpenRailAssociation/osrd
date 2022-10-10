@@ -111,7 +111,7 @@ public class STDCMEndpoint implements Take {
             ));
             simResult.ecoSimulations.add(null);
             var pathfindingRes = PathfindingResultConverter.convert(res.routes(), infra, recorder);
-            var response = new STDCMResponse(simResult, pathfindingRes);
+            var response = new STDCMResponse(simResult, pathfindingRes, res.departureTime());
             return new RsJson(new RsWithBody(STDCMResponse.adapter.toJson(response)));
         } catch (Throwable ex) {
             return ExceptionHandler.handle(ex);

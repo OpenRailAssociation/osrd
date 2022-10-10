@@ -1,5 +1,6 @@
 package fr.sncf.osrd.api.stdcm;
 
+import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import fr.sncf.osrd.api.pathfinding.response.PathfindingResult;
@@ -21,8 +22,13 @@ public final class STDCMResponse {
 
     public PathfindingResult path;
 
-    public STDCMResponse(StandaloneSimResult simulation, PathfindingResult path) {
+    @Json(name = "departure_time")
+    public double departureTime;
+
+    /** Constructor */
+    public STDCMResponse(StandaloneSimResult simulation, PathfindingResult path, double departureTime) {
         this.simulation = simulation;
         this.path = path;
+        this.departureTime = departureTime;
     }
 }
