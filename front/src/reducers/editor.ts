@@ -127,7 +127,7 @@ export function save(operations: {
   };
 }
 
-type Actions = ActionSelectZone | ActionLoadDataModel | ActionSave | ActionSetData;
+export type EditorActions = ActionSelectZone | ActionLoadDataModel | ActionSave | ActionSetData;
 
 //
 // State definition
@@ -155,7 +155,7 @@ export const initialState: EditorState = {
 //
 // State reducer
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-export default function reducer(inputState: EditorState, action: Actions) {
+export default function reducer(inputState: EditorState | undefined, action: EditorActions) {
   const state = inputState || initialState;
 
   return produce(state, (draft) => {

@@ -38,6 +38,35 @@ export const departureArrivalTimes = (simulation, dragOffset) =>
     arrival: offsetSeconds(train.base.stops[train.base.stops.length - 1].time + dragOffset),
   }));
 
+export interface OsrdSimulationState {
+  chart: any;
+  chartXGEV: any;
+  contextMenu: any;
+  hoverPosition: any;
+  isPlaying: boolean;
+  allowancesSettings: any;
+  mustRedraw: boolean;
+  positionValues: {
+    headPosition: number;
+    tailPosition: number;
+    routeEndOccupancy: number;
+    routeBeginOccupancy: number;
+  };
+  selectedProjection: any;
+  selectedTrain: number;
+  speedSpaceSettings: {
+    altitude: boolean;
+    curves: boolean;
+    maxSpeed: boolean;
+    slopes: boolean;
+  };
+  stickyBar: boolean;
+  signalBase: typeof SIGNAL_BASE_DEFAULT;
+  timePosition: any;
+  consolidatedSimulation: any;
+  departureArrivalTimes: Array<any>;
+  simulation: any;
+}
 // Reducer
 export const initialState = {
   chart: undefined,

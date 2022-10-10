@@ -1,14 +1,16 @@
+import { Action } from 'redux';
 import { persistCombineReducers, persistReducer } from 'redux-persist';
 import createCompressor from 'redux-persist-transform-compress';
 import { createFilter } from 'redux-persist-transform-filter';
 import storage from 'redux-persist/lib/storage'; // defaults to localStorage
 
-import mainReducer from './main';
+import mainReducer, { MainActions } from './main';
 import userReducer from './user';
-import mapReducer from './map';
-import editorReducer from './editor';
+import mapReducer, { MapState } from './map';
+import editorReducer, { EditorState, EditorActions } from './editor';
+
 import osrdconfReducer from './osrdconf';
-import osrdsimulationReducer from './osrdsimulation';
+import osrdsimulationReducer, { OsrdSimulationState } from './osrdsimulation';
 import rollingStockReducer from './rollingstock';
 
 const compressor = createCompressor({
@@ -55,6 +57,23 @@ const persistConfig = {
   whitelist: ['user', 'map', 'main', 'simulation'],
 };
 
+type AllActions = EditorActions | MainActions | Action<any>;
+
+interface GenericState {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: unknown;
+}
+
+export interface RootState {
+  user: GenericState;
+  map: MapState;
+  editor: EditorState;
+  main: GenericState;
+  osrdconf: GenericState;
+  osrdsimulation: OsrdSimulationState;
+  rollingstock: GenericState;
+}
+
 const rootReducer = {
   user: userReducer,
   map: mapReducer,
@@ -65,4 +84,6 @@ const rootReducer = {
   rollingstock: rollingStockReducer,
 };
 
-export default persistCombineReducers(persistConfig, rootReducer);
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: temporary
+export default persistCombineReducers<RootState, AllActions>(persistConfig, rootReducer);

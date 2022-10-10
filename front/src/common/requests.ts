@@ -74,6 +74,7 @@ export async function get<T = any>(path: string, params?: { [key: string]: unkno
   let newPath;
   // ULGY HACK https://gateway.dev.dgexsol.fr/osrd
   if (path.substr(0, 5) === '/gaia') {
+    // @ts-ignore: temporary
     newPath = `${mainConfig.proxy.replace('/osrd', '')}${path}`;
   } else {
     newPath = formatPath(path);
