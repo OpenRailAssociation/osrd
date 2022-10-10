@@ -55,6 +55,7 @@ def mock_api_call(payload):
             "eco_simulations": sim,
             "speed_limits": [[]],
         },
+        "departure_time": 0,
     }
 
 
