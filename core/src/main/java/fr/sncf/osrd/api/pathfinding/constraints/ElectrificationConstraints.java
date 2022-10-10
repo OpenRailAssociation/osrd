@@ -3,17 +3,16 @@ package fr.sncf.osrd.api.pathfinding.constraints;
 import com.google.common.collect.Sets;
 import fr.sncf.osrd.infra.api.reservation.ReservationRoute;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
-import fr.sncf.osrd.reporting.exceptions.NotImplemented;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Pathfinding;
+import fr.sncf.osrd.utils.graph.functional_interfaces.EdgeToRanges;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Function;
 
 public record ElectrificationConstraints(
         Collection<RollingStock> rollingStocks
-) implements Function<SignalingRoute, Collection<Pathfinding.Range>> {
+) implements EdgeToRanges<SignalingRoute> {
 
     @Override
     public Collection<Pathfinding.Range> apply(SignalingRoute reservationRoute) {

@@ -2,13 +2,13 @@ package fr.sncf.osrd.api.pathfinding;
 
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.utils.geom.Point;
+import fr.sncf.osrd.utils.graph.functional_interfaces.AStarHeuristic;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import java.util.Collection;
-import java.util.function.BiFunction;
 
 /** This is a function object that estimates the remaining distance to the closest target point,
  * using geo data. It is used as heuristic for A*. */
-public class RemainingDistanceEstimator implements BiFunction<SignalingRoute, Double, Double> {
+public class RemainingDistanceEstimator implements AStarHeuristic<SignalingRoute> {
 
     private final Collection<Point> targets;
 
@@ -36,7 +36,7 @@ public class RemainingDistanceEstimator implements BiFunction<SignalingRoute, Do
     }
 
     @Override
-    public Double apply(SignalingRoute signalingRoute, Double offset) {
+    public double apply(SignalingRoute signalingRoute, double offset) {
         var res = Double.POSITIVE_INFINITY;
         var point = routeOffsetToPoint(signalingRoute, offset);
         for (var target : targets)
