@@ -58,7 +58,7 @@ export const STDCM_MODES = {
 
 export const DEFAULT_STDCM_MODE = STDCM_MODES.byOrigin;
 
-export const stdcmRequestStatus = {
+export const STDCMREQUESTSTATUS = {
   idle: 'IDLE',
   pending: 'PENDING',
   success: 'SUCCESS',
