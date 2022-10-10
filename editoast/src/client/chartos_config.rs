@@ -4,8 +4,8 @@ use derivative::Derivative;
 #[derive(Args, Debug, Derivative)]
 #[derivative(Default)]
 pub struct ChartosConfig {
-    #[derivative(Default(value = r#""http://localhost:7000/".into()"#))]
-    #[clap(long, env, default_value = "http://localhost:7000/")]
+    #[derivative(Default(value = r#""http://localhost:7070/".into()"#))]
+    #[clap(long, env, default_value = "http://localhost:7070/")]
     chartos_url: String,
     #[clap(long, env, default_value_t)]
     pub chartos_token: String,
