@@ -99,6 +99,9 @@ paths:
                         $ref: "#/components/schemas/SimulationResult"
                       path:
                         $ref: "#/components/schemas/PathfindingRoutesResult"
+                      departure_time:
+                        type: number
+                        format: double
                   - type: object
                     properties:
                       error:

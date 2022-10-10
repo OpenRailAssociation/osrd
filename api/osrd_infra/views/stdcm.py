@@ -87,21 +87,13 @@ def make_stdcm_core_payload(request):
     return res
 
 
-def compute_departure_time(request, core_output):
-    if "start_time" in request:
-        return request["start_time"]
-    speeds = core_output["schedule"]["base_simulations"][0]["speeds"]
-    duration = speeds[-1]["time"] - speeds[0]["time"]
-    return request["end_time"] - duration
-
-
 def compute_stdcm(request, user):
     core_output = request_stdcm(make_stdcm_core_payload(request))
     path = PathModel()
     postprocess_path(path, core_output["path"], request["infra"], user, [0, 0])
 
     schedule = TrainScheduleModel()
-    schedule.departure_time = compute_departure_time(request, core_output)
+    schedule.departure_time = core_output["departure_time"]
     schedule.path = path
     schedule.initial_speed = 0
     schedule.rolling_stock = request["rolling_stock"]
