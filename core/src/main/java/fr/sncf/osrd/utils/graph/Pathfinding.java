@@ -1,10 +1,11 @@
 package fr.sncf.osrd.utils.graph;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.utils.graph.functional_interfaces.AStarHeuristic;
+import fr.sncf.osrd.utils.graph.functional_interfaces.EdgeToLength;
+import fr.sncf.osrd.utils.graph.functional_interfaces.EdgeToRanges;
 import org.jetbrains.annotations.NotNull;
 import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @SuppressFBWarnings(
@@ -56,24 +57,24 @@ public class Pathfinding<NodeT, EdgeT> {
     /** Step priority queue */
     private final PriorityQueue<Step<EdgeT>> queue;
     /** Function to call to get edge length */
-    private final Function<EdgeT, Double> edgeToLength;
+    private final EdgeToLength<EdgeT> edgeToLength;
     /** Function to call to get the blocked ranges on an edge */
-    private final Function<EdgeT, Collection<Range>> blockedRangesOnEdge;
+    private final EdgeToRanges<EdgeT> blockedRangesOnEdge;
     /** Input graph */
     private final Graph<NodeT, EdgeT> graph;
     /** Keeps track of visited location. For each visited range, keeps the max number of passed targets at that point */
     private final HashMap<EdgeRange<EdgeT>, Integer> seen = new HashMap<>();
     /** Function to call to get estimate of the remaining distance.
      * The function takes the edge and the offset and returns a distance. */
-    private final BiFunction<EdgeT, Double, Double> estimateRemainingDistance;
+    private final AStarHeuristic<EdgeT> estimateRemainingDistance;
 
     /** Returns the shortest path from any start edge to any end edge, as a list of edge (containing start and stop) */
     public static <NodeT, EdgeT> List<EdgeT> findEdgePath(
             Graph<NodeT, EdgeT> graph,
             List<Collection<EdgeLocation<EdgeT>>> locations,
-            Function<EdgeT, Double> edgeToLength,
-            Function<EdgeT, Collection<Range>> blockedRangesOnEdge,
-            BiFunction<EdgeT, Double, Double> estimateRemainingDistance
+            EdgeToLength<EdgeT> edgeToLength,
+            EdgeToRanges<EdgeT> blockedRangesOnEdge,
+            AStarHeuristic<EdgeT> estimateRemainingDistance
     ) {
         return new Pathfinding<>(
                 graph,
@@ -87,9 +88,9 @@ public class Pathfinding<NodeT, EdgeT> {
     public static <NodeT, EdgeT> Result<EdgeT> findPath(
             Graph<NodeT, EdgeT> graph,
             List<Collection<EdgeLocation<EdgeT>>> locations,
-            Function<EdgeT, Double> edgeToLength,
-            Function<EdgeT, Collection<Range>> blockedRangesOnEdge,
-            BiFunction<EdgeT, Double, Double> estimateRemainingDistance
+            EdgeToLength<EdgeT> edgeToLength,
+            EdgeToRanges<EdgeT> blockedRangesOnEdge,
+            AStarHeuristic<EdgeT> estimateRemainingDistance
     ) {
         return new Pathfinding<>(
                 graph,
@@ -102,9 +103,9 @@ public class Pathfinding<NodeT, EdgeT> {
     /** Constructor */
     private Pathfinding(
             Graph<NodeT, EdgeT> graph,
-            Function<EdgeT, Double> edgeToLength,
-            Function<EdgeT, Collection<Range>> blockedRangesOnEdge,
-            BiFunction<EdgeT, Double, Double> estimateRemainingDistance
+            EdgeToLength<EdgeT> edgeToLength,
+            EdgeToRanges<EdgeT> blockedRangesOnEdge,
+            AStarHeuristic<EdgeT> estimateRemainingDistance
     ) {
         if (blockedRangesOnEdge == null)
             blockedRangesOnEdge = x -> List.of();
