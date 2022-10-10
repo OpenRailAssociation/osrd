@@ -1,9 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { IoMdEye } from 'react-icons/io';
 import nextId from 'react-id-generator';
 import { sec2time } from 'utils/timeManipulation.js';
-import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import RollingStockCard from '../../components/RollingStock/RollingStockCard';
+
+function RollingStockInfo() {
+  const [resultContent, setResultContent] = useState(undefined);
+  const displayMateriel = (result) => <RollingStockCard data={result} key={result.id} />;
+
+  return <div>{resultContent.map((result) => displayMateriel(result))}</div>;
+}
 
 function formatStops(stop, idx, train) {
   return (
@@ -12,10 +20,12 @@ function formatStops(stop, idx, train) {
         <div className="cell-inner">{idx + 1}</div>
       </td>
       <td>
-        <div className="cell-inner">{140}</div>
+        <div className="cell-inner">{train.speeds || 'Unknown'}</div>
       </td>
       <td>
-        <div className="cell-inner">{Math.round(stop.position / 100) / 10}</div>
+        <div className="cell-inner" id="origine">
+          {Math.round(stop.position / 100) / 10}
+        </div>
       </td>
       <td>
         <div className="cell-inner">{stop.name || 'Unknown'}</div>
@@ -24,14 +34,14 @@ function formatStops(stop, idx, train) {
         <div className="cell-inner">{sec2time(stop.time)}</div>
       </td>
       <td>
-        <div className="cell-inner">A</div>
+        <div className="cell-inner">{stop.trackname || 'Unknown'}</div>
       </td>
     </tr>
   );
 }
 
-function dcmDetails(stop, idx, train) {
-  return <div key={nextId()} />;
+function originStop(stop) {
+  return <div className="text-primary">{stop.name || 'Unknown'}</div>;
 }
 
 export default function DriverTrainSchedule() {
@@ -72,10 +82,16 @@ export default function DriverTrainSchedule() {
                   </div>
                   <div className="col py-3">
                     <div className="row ml-n5">
-                      <div className="text-primary">Paris</div>
+                      <div className="text-primary">
+                        {data.map((stop) => originStop(stop, simulation.trains[selectedTrain]))[0]}
+                      </div>
                     </div>
                     <div className="row ml-n5">
-                      <div className="text-primary">Orléans</div>
+                      <div className="text-primary">
+                        {data
+                          .map((stop) => originStop(stop, simulation.trains[selectedTrain]))
+                          .slice(-1)}
+                      </div>
                     </div>
                   </div>
                   <div className="col py-3">
@@ -88,10 +104,10 @@ export default function DriverTrainSchedule() {
                   </div>
                   <div className="col py-3">
                     <div className="row ml-2">
-                      <div className="text-bold">22200</div>
+                      <div className="text-bold">{}</div>
                     </div>
                     <div className="row ml-2">
-                      <div className="text-bold">400T</div>
+                      <div className="text-bold">{Math.round(data.mass / 1000)}T</div>
                     </div>
                   </div>
                   <div className="col py-3">
@@ -114,7 +130,12 @@ export default function DriverTrainSchedule() {
                 <div className="text-primary ml-2 mt-5">{t('simulation:timetable')}</div>
                 <div className="text-right">
                   <p className="font-italic text-cyan font-weight-normal">
-                    Nombre de lignes : {$('table th').length - 3}
+                    Nombre de lignes :{' '}
+                    {
+                      data.map((stop, idx, train) =>
+                        formatStops(stop, idx, train, simulation.trains[selectedTrain])
+                      ).length
+                    }
                   </p>
                   <div className="row">
                     <div className="table-wrapper simulation-drivertrainschedule">
@@ -145,8 +166,8 @@ export default function DriverTrainSchedule() {
                             </tr>
                           </thead>
                           <tbody className="font-weight-normal">
-                            {data.map((stop, idx) =>
-                              formatStops(stop, idx, simulation.trains[selectedTrain])
+                            {data.map((stop, idx, train) =>
+                              formatStops(stop, idx, train, simulation.trains[selectedTrain])
                             )}
                           </tbody>
                         </table>
