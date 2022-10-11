@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import Form, { FieldProps } from '@rjsf/core';
 import Fields from '@rjsf/core/lib/components/fields';
 import { JSONSchema7 } from 'json-schema';
-import { omit, head, max as fnMax, min as fnMin, isNil } from 'lodash';
+import { omit, head, max as fnMax, min as fnMin, isNil, isArray } from 'lodash';
 import { TbZoomIn, TbZoomOut, TbZoomCancel } from 'react-icons/tb';
 import { BsBoxArrowInLeft, BsBoxArrowInRight, BsChevronLeft, BsChevronRight } from 'react-icons/bs';
 import { IoIosCut } from 'react-icons/io';
@@ -10,7 +10,7 @@ import { MdOutlineHelpOutline } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
 
 import Modal from '../Modal';
-import { tooltipPosition } from './utils';
+import { tooltipPosition, notEmpty } from './utils';
 import {
   LinearMetadataItem,
   getZoomedViewBox,
@@ -33,8 +33,9 @@ import './style.scss';
 export const FormComponent: React.FC<FieldProps> = (props) => {
   const { name, formContext, formData, schema, onChange, registry } = props;
   const { t } = useTranslation();
-  const [isHelpOpened, setIsHelpOpened] = useState<boolean>(false);
 
+  // is help modal opened
+  const [isHelpOpened, setIsHelpOpened] = useState<boolean>(false);
   // Wich segment area is visible
   const [viewBox, setViewBox] = useState<[number, number] | null>(null);
   // Ref for the tooltip
@@ -108,7 +109,12 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
     [onChange, valueField]
   );
 
-  const fixedData = useMemo(() => fixLinearMetadataItems(formData, distance), [formData, distance]);
+  const fixedData = useMemo(() => {
+    if (isArray(formData)) {
+      return fixLinearMetadataItems(formData.filter(notEmpty), distance);
+    }
+    return [];
+  }, [formData, distance]);
 
   /**
    * When the formData changed

@@ -24,6 +24,14 @@ export function isNilObject(
 }
 
 /**
+ * Function that check if value is not nil
+ * with the good typesctipt type (usefull in filters on array)
+ */
+export function notEmpty<T>(value: T | null | undefined): value is T {
+  return !isNil(value);
+}
+
+/**
  * Given a point (the provided coordinates), this function changes the position of the provided html element
  * so it's always on the user screen.
  * This funciton is really usefull when you want to display a tooltip near the mouse pointer.
