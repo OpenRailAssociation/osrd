@@ -2,6 +2,7 @@ package fr.sncf.osrd.stdcm;
 
 import static fr.sncf.osrd.Helpers.getResourcePath;
 import static fr.sncf.osrd.Helpers.parseRollingStockDir;
+import static fr.sncf.osrd.api.stdcm.UnavailableSpaceBuilder.computeUnavailableSpace;
 import static fr.sncf.osrd.train.TestTrains.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -12,7 +13,9 @@ import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.api.stdcm.OccupancyBlock;
 import fr.sncf.osrd.api.stdcm.STDCMGraph;
 import fr.sncf.osrd.api.stdcm.STDCMPathfinding;
+import fr.sncf.osrd.api.stdcm.STDCMResult;
 import fr.sncf.osrd.infra.api.Direction;
+import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.junit.jupiter.api.Disabled;
@@ -76,6 +79,11 @@ public class STDCMPathfindingTests {
         var firstRoute = infraBuilder.addRoute("a", "b");
         var secondRoute = infraBuilder.addRoute("b", "c");
         var infra = infraBuilder.build();
+        var occupancyGraph = ImmutableMultimap.of(
+                firstRoute, new OccupancyBlock(0, 50, 0, 100),
+                firstRoute, new OccupancyBlock(10000, Double.POSITIVE_INFINITY, 0, 100),
+                secondRoute, new OccupancyBlock(0, 50, 0, 100),
+                secondRoute, new OccupancyBlock(10000, Double.POSITIVE_INFINITY, 0, 100));
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
@@ -83,15 +91,11 @@ public class STDCMPathfindingTests {
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
                 Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 50)),
-                ImmutableMultimap.of(
-                        firstRoute, new OccupancyBlock(0, 50, 0, 100),
-                        firstRoute, new OccupancyBlock(10000, Double.POSITIVE_INFINITY, 0, 100),
-                        secondRoute, new OccupancyBlock(0, 50, 0, 100),
-                        secondRoute, new OccupancyBlock(10000, Double.POSITIVE_INFINITY, 0, 100)
-                ),
+                occupancyGraph,
                 2.
         );
         assertNotNull(res);
+        assertTrue(occupancyTest(res,occupancyGraph));
     }
 
     /** Test that no path is found when the routes aren't connected */
@@ -129,6 +133,11 @@ public class STDCMPathfindingTests {
         var firstRoute = infraBuilder.addRoute("a", "b");
         var secondRoute = infraBuilder.addRoute("b", "c");
         var infra = infraBuilder.build();
+        var occupancyGraph = ImmutableMultimap.of(
+                firstRoute, new OccupancyBlock(0, 99, 0, 100),
+                firstRoute, new OccupancyBlock(101, Double.POSITIVE_INFINITY, 0, 100),
+                secondRoute, new OccupancyBlock(0, 50, 0, 100),
+                secondRoute, new OccupancyBlock(1000, Double.POSITIVE_INFINITY, 0, 100));
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
@@ -136,15 +145,11 @@ public class STDCMPathfindingTests {
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
                 Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 50)),
-                ImmutableMultimap.of(
-                        firstRoute, new OccupancyBlock(0, 99, 0, 100),
-                        firstRoute, new OccupancyBlock(101, Double.POSITIVE_INFINITY, 0, 100),
-                        secondRoute, new OccupancyBlock(0, 50, 0, 100),
-                        secondRoute, new OccupancyBlock(1000, Double.POSITIVE_INFINITY, 0, 100)
-                ),
+                occupancyGraph,
                 2.
         );
         assertNull(res);
+
     }
 
     /** Test that we can find a path even if the last route is occupied when the train starts */
@@ -157,6 +162,9 @@ public class STDCMPathfindingTests {
         var firstRoute = infraBuilder.addRoute("a", "b", 1000);
         var secondRoute = infraBuilder.addRoute("b", "c");
         var infra = infraBuilder.build();
+        var occupancyGraph = ImmutableMultimap.of(
+                secondRoute, new OccupancyBlock(0, 10, 0, 100)
+        );
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
@@ -164,12 +172,11 @@ public class STDCMPathfindingTests {
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
                 Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 50)),
-                ImmutableMultimap.of(
-                        secondRoute, new OccupancyBlock(0, 10, 0, 100)
-                ),
+                occupancyGraph,
                 2.
         );
         assertNotNull(res);
+        assertTrue(occupancyTest(res,occupancyGraph));
     }
 
     /** Tests that an occupied route can cause delays */
@@ -184,6 +191,9 @@ public class STDCMPathfindingTests {
         var intermediateRoute = infraBuilder.addRoute("b", "c");
         var lastRoute = infraBuilder.addRoute("c", "d");
         var infra = infraBuilder.build();
+        var occupancyGraph = ImmutableMultimap.of(
+                intermediateRoute, new OccupancyBlock(0, 1000, 0, 100)
+        );
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
@@ -191,13 +201,12 @@ public class STDCMPathfindingTests {
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
                 Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 50)),
-                ImmutableMultimap.of(
-                        intermediateRoute, new OccupancyBlock(0, 1000, 0, 100)
-                ),
+                occupancyGraph,
                 2.
         );
         assertNotNull(res);
         assert res.envelope().getTotalTime() >= 1000;
+        assertTrue(occupancyTest(res,occupancyGraph));
     }
 
     /** Test that the path can change depending on the occupancy */
@@ -222,6 +231,12 @@ public class STDCMPathfindingTests {
         infraBuilder.addRoute("c2", "d");
         infraBuilder.addRoute("d", "e");
         var infra = infraBuilder.build();
+        var occupancyGraph1 = ImmutableMultimap.of(
+                routeTop, new OccupancyBlock(0, Double.POSITIVE_INFINITY, 0, 100)
+        );
+        var occupancyGraph2 = ImmutableMultimap.of(
+                routeBottom, new OccupancyBlock(0, Double.POSITIVE_INFINITY, 0, 100)
+        );
 
         var firstRoute = infra.findSignalingRoute("a->b", "BAL3");
         var lastRoute = infra.findSignalingRoute("d->e", "BAL3");
@@ -233,9 +248,7 @@ public class STDCMPathfindingTests {
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
                 Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 50)),
-                ImmutableMultimap.of(
-                        routeTop, new OccupancyBlock(0, Double.POSITIVE_INFINITY, 0, 100)
-                ),
+                occupancyGraph1,
                 2.
         );
         var res2 = STDCMPathfinding.findPath(
@@ -245,9 +258,7 @@ public class STDCMPathfindingTests {
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
                 Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 50)),
-                ImmutableMultimap.of(
-                        routeBottom, new OccupancyBlock(0, Double.POSITIVE_INFINITY, 0, 100)
-                ),
+                occupancyGraph2,
                 2.
         );
         assertNotNull(res1);
@@ -257,9 +268,11 @@ public class STDCMPathfindingTests {
 
         assertFalse(routes1.contains("b->c1"));
         assertTrue(routes1.contains("b->c2"));
+        assertTrue(occupancyTest(res1,occupancyGraph1));
 
         assertFalse(routes2.contains("b->c2"));
         assertTrue(routes2.contains("b->c1"));
+        assertTrue(occupancyTest(res2,occupancyGraph2));
     }
 
     /** Test that everything works well when the train is at max speed during route transitions */
@@ -336,6 +349,9 @@ public class STDCMPathfindingTests {
         var firstRoute = infraBuilder.addRoute("a", "b");
         var secondRoute = infraBuilder.addRoute("b", "c");
         var infra = infraBuilder.build();
+        var occupancyGraph = ImmutableMultimap.of(
+                secondRoute, new OccupancyBlock(0, 3600, 0, 100)
+        );
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
@@ -343,15 +359,14 @@ public class STDCMPathfindingTests {
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
                 Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 50)),
-                ImmutableMultimap.of(
-                        secondRoute, new OccupancyBlock(0, 3600, 0, 100)
-                ),
+                occupancyGraph,
                 2.
         );
         assertNotNull(res);
         var secondRouteEntryTime = res.departureTime()
                 + res.envelope().interpolateTotalTime(firstRoute.getInfraRoute().getLength());
         assertTrue(secondRouteEntryTime >= 3600);
+        assertTrue(occupancyTest(res,occupancyGraph));
     }
 
     /** Test that we can add delays to avoid several occupied blocks */
@@ -364,6 +379,11 @@ public class STDCMPathfindingTests {
         var firstRoute = infraBuilder.addRoute("a", "b");
         var secondRoute = infraBuilder.addRoute("b", "c");
         var infra = infraBuilder.build();
+        var occupancyGraph = ImmutableMultimap.of(
+                secondRoute, new OccupancyBlock(0, 1200, 0, 100),
+                secondRoute, new OccupancyBlock(1200, 2400, 0, 100),
+                secondRoute, new OccupancyBlock(2400, 3600, 0, 100)
+        );
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
@@ -371,17 +391,16 @@ public class STDCMPathfindingTests {
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
                 Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 50)),
-                ImmutableMultimap.of(
-                        secondRoute, new OccupancyBlock(0, 1200, 0, 100),
-                        secondRoute, new OccupancyBlock(1200, 2400, 0, 100),
-                        secondRoute, new OccupancyBlock(2400, 3600, 0, 100)
-                ),
+                occupancyGraph,
                 2.
         );
+
         assertNotNull(res);
         var secondRouteEntryTime = res.departureTime()
                 + res.envelope().interpolateTotalTime(firstRoute.getInfraRoute().getLength());
         assertTrue(secondRouteEntryTime >= 3600);
+
+        assertTrue(occupancyTest(res,occupancyGraph));
     }
 
     /** Test that we don't add too much delay, crossing over occupied sections in previous routes */
@@ -413,5 +432,24 @@ public class STDCMPathfindingTests {
                 2.
         );
         assertNull(res);
+    }
+
+    private boolean occupancyTest(STDCMResult res, ImmutableMultimap<SignalingRoute,OccupancyBlock> occupancyGraph){
+        var routes = res.trainPath().routePath();
+        for(var index = 1; index<routes.size(); index++) {
+            var endRoutePosition = routes.get(index).pathOffset();
+            var startRouteTime = res.departureTime();
+            var endRouteTime = res.departureTime() + res.envelope().interpolateTotalTime(endRoutePosition);
+            var routeOccupancies = occupancyGraph.get(routes.get(index-1).element());
+            for (var occupancy:routeOccupancies){
+                if ((occupancy.timeStart()<startRouteTime && startRouteTime<occupancy.timeEnd())
+                    ||(occupancy.timeStart()<endRouteTime && endRouteTime<occupancy.timeEnd())){
+                    System.out.println("start: "+occupancy.timeStart()+"//"+startRouteTime+"//end: "+occupancy.timeEnd());
+                    System.out.println("start: "+occupancy.timeStart()+"//"+endRouteTime+"//end: "+occupancy.timeEnd());
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }
