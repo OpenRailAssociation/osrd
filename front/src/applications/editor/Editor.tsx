@@ -11,7 +11,7 @@ import './Editor.scss';
 
 import { LoaderState } from '../../common/Loader';
 import { NotificationsState } from '../../common/Notifications';
-import { EditorState, loadDataModel, reset } from '../../reducers/editor';
+import { loadDataModel, reset } from '../../reducers/editor';
 import { MainState, setFailure } from '../../reducers/main';
 import { updateViewport } from '../../reducers/map';
 import { updateInfraID } from '../../reducers/osrdconf';
@@ -23,6 +23,7 @@ import { EditorContext } from './context';
 import {
   CommonToolState,
   EditorContextType,
+  EditorState,
   ExtendedEditorContextType,
   FullTool,
   ModalRequest,

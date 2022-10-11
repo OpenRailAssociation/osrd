@@ -14,11 +14,11 @@ import Hillshade from '../../common/Map/Layers/Hillshade';
 import Platform from '../../common/Map/Layers/Platform';
 import osmBlankStyle from '../../common/Map/Layers/osmBlankStyle';
 
-import { EditorState } from '../../reducers/editor';
 import { EditorContext } from './context';
 import {
   CommonToolState,
   EditorContextType,
+  EditorState,
   ExtendedEditorContextType,
   OSRDConf,
   Tool,

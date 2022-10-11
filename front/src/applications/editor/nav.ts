@@ -5,10 +5,10 @@ import { BsMap } from 'react-icons/bs';
 import { FiLayers, FiZoomIn, FiZoomOut } from 'react-icons/fi';
 import { LinearInterpolator, ViewportProps } from 'react-map-gl';
 
-import { EditorState } from '../../reducers/editor';
 import { getZoneViewport } from '../../utils/mapboxHelper';
-import { ModalRequest } from './tools/types';
+import { EditorState, ModalRequest } from './tools/types';
 import InfraSelectionModal from './components/InfraSelectionModal';
+import LayersModal from './components/LayersModal';
 
 const ZOOM_DEFAULT = 5;
 const ZOOM_DELTA = 1.5;
@@ -99,8 +99,11 @@ const NavButtons: NavButton[][] = [
       id: 'layers',
       icon: FiLayers,
       labelTranslationKey: 'Editor.nav.toggle-layers',
-      onClick() {
-        // TODO
+      onClick({ openModal }, editorState) {
+        openModal({
+          component: LayersModal,
+          arguments: { initialLayers: editorState.editorLayers },
+        });
       },
     },
     {
