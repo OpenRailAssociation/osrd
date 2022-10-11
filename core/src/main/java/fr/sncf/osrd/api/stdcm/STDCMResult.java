@@ -7,7 +7,7 @@ import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 
 /** This is the result of the STDCM computation.
- * It is made of a physical path part and and envelope, as well as different representations
+ * It is made of a physical path part and envelope, as well as different representations
  * of the same data that can be reused in later steps. */
 public record STDCMResult(
         Pathfinding.Result<SignalingRoute> routes,
