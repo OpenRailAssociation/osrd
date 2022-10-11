@@ -410,6 +410,9 @@ function Map(props) {
           <TrainHoverPosition point={pt} geojsonPath={geojsonPath} key={pt.id} />
         ))}
       </ReactMapGL>
+      <div className="handle-tab-resize">
+        <CgLoadbar />
+      </div>
     </>
   );
 }

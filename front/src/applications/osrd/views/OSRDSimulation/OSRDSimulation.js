@@ -60,7 +60,8 @@ function OSRDSimulation() {
     useState(heightOfSpeedSpaceChart);
 
   const [heightOfSimulationMap, setHeightOfSimulationMap] = useState(500);
-  const [initialHeightOfSimulationMap, setinitialHeightOfSimulationMap] = useState(heightOfSimulationMap);
+  const [initialHeightOfSimulationMap, setinitialHeightOfSimulationMap] =
+    useState(heightOfSimulationMap);
 
   const [heightOfSpaceCurvesSlopesChart, setHeightOfSpaceCurvesSlopesChart] = useState(150);
   const [initialHeightOfSpaceCurvesSlopesChart, setInitialHeightOfSpaceCurvesSlopesChart] =
@@ -362,28 +363,36 @@ function OSRDSimulation() {
               </div>
             </div>
             <div className="col-md-6">
-              <div className="osrd-simulation-container osrd-simulation-map mb-2">
-              <Rnd
-                  default={{
-                    x: 0,
-                    y: 0,
-                    width: '100%',
-                    height: `${heightOfSimulationMap}px`,
-                  }}
-                  disableDragging
-                  enableResizing={{
-                    bottom: true,
-                  }}
-                  onResizeStart={() => setinitialHeightOfSimulationMap(heightOfSimulationMap)}
-                  onResize={(e, dir, refToElement, delta) => {
-                    setHeightOfSimulationMap(initialHeightOfSimulationMap + delta.height);
-                  }}
-                  onResizeStop={() => {
-                    dispatch(updateMustRedraw(true));
-                  }}
+              <div className="osrd-simulation-container mb-2">
+                <div
+                  className="osrd-simulation-map"
+                  style={{ height: `${heightOfSimulationMap}px` }}
                 >
-                  <Map setExtViewport={setExtViewport} />
-                </Rnd>
+                  <Rnd
+                    className="map-resizer"
+                    default={{
+                      x: 0,
+                      y: 0,
+                      height: `${heightOfSimulationMap}px`,
+                    }}
+                    style={{
+                      paddingBottom: '12px',
+                    }}
+                    disableDragging
+                    enableResizing={{
+                      bottom: true,
+                    }}
+                    onResizeStart={() => setinitialHeightOfSimulationMap(heightOfSimulationMap)}
+                    onResize={(e, dir, refToElement, delta) => {
+                      setHeightOfSimulationMap(initialHeightOfSimulationMap + delta.height);
+                    }}
+                    onResizeStop={() => {
+                      dispatch(updateMustRedraw(true));
+                    }}
+                  >
+                    <Map setExtViewport={setExtViewport} />
+                  </Rnd>
+                </div>
               </div>
             </div>
           </div>

@@ -43,15 +43,33 @@ select.sm {
   padding: 1rem;
   border-radius: 4px;
 }
+
 .osrd-simulation-map {
+  width: 100%;
   height: 50vh;
-  .btn-map-container {
-    top: 1.5rem;
-    right: 2rem;
-  }
-  .map-modal {
-    top: .5rem;
-    min-width: calc(100% - 7rem);
+  .map-resizer {
+    min-width: calc(100% - 2rem);
+
+    .btn-map-container {
+      top: 1.5rem;
+      right: 2rem;
+    }
+    .map-modal {
+      top: .5rem;
+      min-width: calc(100% - 7rem);
+    }
+    .handle-tab-resize {
+      width: 100%;
+      text-align: center;
+      position: absolute;
+      bottom: -1.25rem;
+      font-size: 2rem;
+      transition: .2s;
+      color: var(--coolgray3);
+      &:hover {
+        color: var(--coolgray9);
+      }
+    }
   }
 }
 
