@@ -181,7 +181,7 @@ impl Layer for TrackSection {
         }
 
         Self::delete_list(conn, infra, delete_obj_ids)?;
-        Self::insert_update_list(conn, infra, update_obj_ids)?;
+        Self::update_list(conn, infra, update_obj_ids)?;
 
         crate::layer::invalidate_bbox_chartos_layer(
             infra,
