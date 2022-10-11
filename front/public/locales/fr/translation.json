@@ -30,7 +30,9 @@
     "tool-help": "Voir la description de l'outil actif",
     "nav": {
       "recenter": "Recentrer la carte",
-      "toggle-layers": "[TODO] Choisir les couches à afficher"
+      "toggle-layers": "[TODO] Choisir les couches à afficher",
+      "select-infra": "Choisir l'infrastructure à éditer",
+      "infra-changed": "Vous éditez maintenant l'infra \"{{label}}\" (id \"{{id}}\")."
     },
     "errors": {
       "infra-not-found": "L'infrastructure {{id}} non trouvée",

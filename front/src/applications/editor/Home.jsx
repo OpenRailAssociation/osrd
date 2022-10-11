@@ -22,7 +22,7 @@ class HomeEditorUnplugged extends React.Component {
           <Routes>
             <Route path="/" element={<Editor urlmap={config.proxy} />} />
             <Route
-              path="/:infra/:urlLat/:urlLon/:urlZoom/:urlBearing/:urlPitch"
+              path="/:infra"
               element={<Editor urlmap={config.proxy} />}
             />
           </Routes>
