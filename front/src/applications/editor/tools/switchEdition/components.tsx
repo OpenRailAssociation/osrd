@@ -109,7 +109,7 @@ export const TrackSectionEndpointSelector: FC<FieldProps> = ({
 
   return (
     <div className="mb-4">
-      {schema.title && <label>{schema.title}</label>}
+      {schema.title && <h5>{schema.title}</h5>}
       {schema.description && <p>{schema.description}</p>}
       <div className="d-flex flex-row align-items-center mb-2">
         <div className="flex-grow-1 flex-shrink-1 mr-2">
