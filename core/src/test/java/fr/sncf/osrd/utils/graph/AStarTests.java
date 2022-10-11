@@ -1,5 +1,8 @@
 package fr.sncf.osrd.utils.graph;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.google.common.collect.Sets;
 import com.google.common.graph.ImmutableNetwork;
 import fr.sncf.osrd.Helpers;
@@ -8,14 +11,10 @@ import fr.sncf.osrd.infra.api.reservation.DiDetector;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
 import org.junit.jupiter.api.Test;
-
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AStarTests {
 
