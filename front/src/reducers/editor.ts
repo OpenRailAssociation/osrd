@@ -1,11 +1,13 @@
 import produce from 'immer';
-import { keyBy } from 'lodash';
+import { flatten, keyBy } from 'lodash';
 import { createSelector } from 'reselect';
 import { Feature } from 'geojson';
 
 import { ThunkAction, Zone, EditorSchema, EditorEntity } from '../types';
 import { setLoading, setSuccess, setFailure } from './main';
 import { getEditorSchema, getEditorData, editorSave } from '../applications/editor/data/api';
+import { clip } from '../utils/mapboxHelper';
+import { EditorState, LAYERS, LayerType } from '../applications/editor/tools/types';
 
 //
 // Actions
@@ -16,7 +18,7 @@ import { getEditorSchema, getEditorData, editorSave } from '../applications/edit
 const SET_DATA = 'editor/SET_DATA';
 type ActionSetData = {
   type: typeof SET_DATA;
-  data: Array<EditorEntity>;
+  data: Record<string, EditorEntity[]>;
 };
 export function setEditorData(data: ActionSetData['data']): ThunkAction<ActionSetData> {
   return (dispatch) => {
@@ -27,28 +29,24 @@ export function setEditorData(data: ActionSetData['data']): ThunkAction<ActionSe
   };
 }
 
-const SELECT_ZONE = 'editor/SELECT_ZONE';
-type ActionSelectZone = {
-  type: typeof SELECT_ZONE;
-  zone: Zone | null;
+const RELOAD_DATA = 'editor/RELOAD_DATA';
+type ActionReloadData = {
+  type: typeof RELOAD_DATA;
 };
-export function selectZone(zone: ActionSelectZone['zone']): ThunkAction<ActionSelectZone> {
+export function reloadData(): ThunkAction<ActionReloadData> {
   return async (dispatch, getState) => {
-    dispatch({
-      type: SELECT_ZONE,
-      zone,
-    });
-    // load the data
-    if (zone) {
+    const {
+      editor,
+      osrdconf: { infraID },
+    } = getState();
+    const { editorSchema, editorLayers, editorZone } = editor as EditorState;
+
+    if (!editorZone || !editorSchema || !editorLayers) {
+      dispatch(setEditorData({}));
+    } else {
       dispatch(setLoading());
       try {
-        const { osrdconf, editor } = getState();
-        const data = await getEditorData(
-          editor.editorSchema,
-          osrdconf.infraID,
-          editor.editorLayers,
-          zone
-        );
+        const data = await getEditorData(editorSchema, infraID, editorLayers, editorZone);
         dispatch(setSuccess());
         dispatch(setEditorData(data));
       } catch (e) {
@@ -67,6 +65,40 @@ export function reset(): ThunkAction<ActionReset> {
     dispatch({
       type: RESET,
     });
+  };
+}
+
+const SELECT_ZONE = 'editor/SELECT_ZONE';
+type ActionSelectZone = {
+  type: typeof SELECT_ZONE;
+  zone: Zone | null;
+};
+export function selectZone(zone: ActionSelectZone['zone']): ThunkAction<ActionSelectZone> {
+  return (dispatch) => {
+    dispatch({
+      type: SELECT_ZONE,
+      zone,
+    });
+
+    dispatch(reloadData());
+  };
+}
+
+const SELECT_LAYERS = 'editor/SELECT_LAYERS';
+type ActionSelectLayers = {
+  type: typeof SELECT_LAYERS;
+  layers: Set<LayerType>;
+};
+export function selectLayers(
+  layers: ActionSelectLayers['layers']
+): ThunkAction<ActionSelectLayers> {
+  return (dispatch) => {
+    dispatch({
+      type: SELECT_LAYERS,
+      layers,
+    });
+
+    dispatch(reloadData());
   };
 }
 
@@ -144,28 +176,22 @@ export type EditorActions =
   | ActionLoadDataModel
   | ActionSave
   | ActionSetData
-  | ActionReset;
+  | ActionReset
+  | ActionSelectLayers;
 
 //
 // State definition
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-export interface EditorState {
-  editorSchema: EditorSchema;
-  editorLayers: Array<string>;
-  editorZone: Zone | null;
-  editorData: Array<EditorEntity>;
-  editorDataIndex: Record<string, EditorEntity>;
-}
-
 export const initialState: EditorState = {
   // Definition of entities (json schema)
   editorSchema: [],
   // ID of selected layers on which we are working
-  editorLayers: ['track_sections', 'signals', 'buffer_stops', 'detectors', 'switches'],
+  editorLayers: new Set(LAYERS),
   // Edition zone:
   editorZone: null,
   // Editor entities:
-  editorData: [],
+  editorData: {},
+  editorDataArray: [],
   editorDataIndex: {},
 };
 
@@ -180,12 +206,16 @@ export default function reducer(inputState: EditorState | undefined, action: Edi
       case SELECT_ZONE:
         draft.editorZone = action.zone;
         break;
+      case SELECT_LAYERS:
+        draft.editorLayers = action.layers;
+        break;
       case LOAD_DATA_MODEL:
         draft.editorSchema = action.schema;
         break;
       case SET_DATA:
         draft.editorData = action.data;
-        draft.editorDataIndex = keyBy(action.data, 'id');
+        draft.editorDataArray = flatten(Object.values(draft.editorData));
+        draft.editorDataIndex = keyBy(draft.editorDataArray, 'id');
         break;
       case RESET:
         draft.editorLayers = initialState.editorLayers;
@@ -204,23 +234,14 @@ export default function reducer(inputState: EditorState | undefined, action: Edi
 // Derived data selector
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 export const dataSelector = (state: EditorState) => state.editorData;
+export const dataArraySelector = (state: EditorState) => state.editorDataArray;
 export const zoneSelector = (state: EditorState) => state.editorZone;
-export const clippedDataSelector = createSelector(
-  dataSelector,
-  zoneSelector,
-  (
-    data
-    // zone
-  ) =>
-    // [jacomyal]
-    // The following code is commented at least for now, because we need the full
-    // track sections to properly compute point item coordinates from their
-    // positions:
-    // let result: Array<EditorEntity> = [];
-    // if (zone && data)
-    //   result = data.map((f) => {
-    //     const clippedFeature = clip(f, zone);
-    //     return clippedFeature ? { ...f, geometry: clippedFeature.geometry } : f;
-    //   });
-    data
-);
+export const clippedDataSelector = createSelector(dataArraySelector, zoneSelector, (data, zone) => {
+  let result: Array<EditorEntity> = [];
+  if (zone && data)
+    result = data.map((f) => {
+      const clippedFeature = clip(f, zone);
+      return clippedFeature ? { ...f, geometry: clippedFeature.geometry } : f;
+    });
+  return result;
+});

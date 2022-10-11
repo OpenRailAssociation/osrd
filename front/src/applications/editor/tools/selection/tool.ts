@@ -194,7 +194,7 @@ const SelectionTool: Tool<SelectionState> = {
     let { selection } = state;
     const isAlreadySelected = selection.find((item) => item.id === feature.id);
 
-    const current = editorState.editorData.find((item) => item.id === feature.id);
+    const current = editorState.editorDataIndex[feature.id];
     if (current) {
       if (!isAlreadySelected) {
         if (e.srcEvent.ctrlKey) {
@@ -227,11 +227,10 @@ const SelectionTool: Tool<SelectionState> = {
             selectionState: { ...state.selectionState, rectangleTopLeft: null },
           });
         } else {
-          // TODO remove the layer static variable
           setState({
             ...state,
             selectionState: { ...state.selectionState, rectangleTopLeft: null },
-            selection: selectInZone(editorState.editorData, {
+            selection: selectInZone(editorState.editorDataArray, {
               type: 'rectangle',
               points: [state.selectionState.rectangleTopLeft, position],
             }),
@@ -256,7 +255,7 @@ const SelectionTool: Tool<SelectionState> = {
               ...state.selectionState,
               polygonPoints: [],
             },
-            selection: selectInZone(editorState.editorData, {
+            selection: selectInZone(editorState.editorDataArray, {
               type: 'polygon',
               points,
             }),
@@ -275,8 +274,8 @@ const SelectionTool: Tool<SelectionState> = {
   },
 
   // Layers:
-  getInteractiveLayers({ editorState: { editorData } }) {
-    const symbolTypes = getSymbolTypes(editorData);
+  getInteractiveLayers({ editorState: { editorDataArray } }) {
+    const symbolTypes = getSymbolTypes(editorDataArray);
     return symbolTypes
       .map((type) => `editor/geo/signal-${type}`)
       .concat([

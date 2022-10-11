@@ -6,9 +6,9 @@ import { JSONSchema7 } from 'json-schema';
 
 import './EditorForm.scss';
 import { EditorEntity } from '../../../types';
-import { EditorState } from '../../../reducers/editor';
 import { FormComponent, FormLineStringLength } from './LinearMetadata';
 import { getJsonSchemaForLayer, getLayerForObjectType } from '../data/utils';
+import { EditorState } from '../tools/types';
 
 const fields = {
   ArrayField: FormComponent,
