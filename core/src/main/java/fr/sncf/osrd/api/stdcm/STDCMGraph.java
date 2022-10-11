@@ -174,8 +174,7 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
         var minValue = Double.POSITIVE_INFINITY;
         for (var occupancy : unavailableTimes.get(route)) {
             // This loop has a poor complexity, we need to optimize it by the time we handle full timetables
-            var distanceEnd = Math.min(occupancy.distanceEnd(), envelope.getEndPos());
-            var exitTime = startTime + envelope.interpolateTotalTime(distanceEnd);
+            var exitTime = interpolateTime(envelope, route, occupancy.distanceEnd(), startTime);
             var margin = occupancy.timeStart() - exitTime;
             if (margin < 0) {
                 // This occupancy block was before the train passage, we can ignore it
@@ -194,10 +193,8 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
         double maxValue = 0;
         for (var occupancy : unavailableTimes.get(route)) {
             // This loop has a poor complexity, we need to optimize it by the time we handle full timetables
-            var distanceStart = Math.max(0., occupancy.distanceStart());
-            var distanceEnd = Math.min(occupancy.distanceEnd(), envelope.getEndPos());
-            var enterTime = startTime + envelope.interpolateTotalTime(distanceStart);
-            var exitTime = startTime + envelope.interpolateTotalTime(distanceEnd);
+            var enterTime = interpolateTime(envelope, route, occupancy.distanceStart(), startTime);
+            var exitTime = interpolateTime(envelope, route, occupancy.distanceEnd(), startTime);
             if (enterTime > occupancy.timeEnd() || exitTime < occupancy.timeStart())
                 continue;
             var diff = occupancy.timeEnd() - enterTime;
@@ -209,5 +206,14 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
         // We need a recursive call to see if we can fit a curve in the new position,
         // or if we need to shift it further because of a different occupancy block
         return maxValue + findMinimumAddedDelay(route, startTime + maxValue, envelope);
+    }
+
+    /** Returns the time at which the offset on the given route is reached */
+    private double interpolateTime(Envelope envelope, SignalingRoute route, double routeOffset, double startTime) {
+        var routeLength = route.getInfraRoute().getLength();
+        var envelopeStartOffset = routeLength - envelope.getEndPos();
+        var envelopeOffset = Math.max(0, routeOffset - envelopeStartOffset);
+        assert envelopeOffset <= envelope.getEndPos();
+        return startTime + envelope.interpolateTotalTime(envelopeOffset);
     }
 }
