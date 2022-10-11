@@ -65,8 +65,13 @@ public record Point (double x, double y) {
         }
     }
 
-    /** Returns the distance between this point and another */
-    public double distance(Point other) {
-        return LineString.computeDistance(x, y, other.x, other.y);
+    /** Returns the distance between this point and another in meters, assuming x and y are latitude and longitude.
+     * This is an approximation. */
+    public double distanceAsMeters(Point other) {
+        var mPerLatDeg = 111132.954 - 559.822 * Math.cos(2.0 * x) + 1.175 * Math.cos(4.0 * x);
+        var mPerLonDeg = (Math.PI / 180) * 6367449 * Math.cos(x);
+        var latDistance = (x - other.x) * mPerLatDeg;
+        var lonDistance = (y - other.y) * mPerLonDeg;
+        return Math.sqrt(latDistance * latDistance + lonDistance * lonDistance);
     }
 }

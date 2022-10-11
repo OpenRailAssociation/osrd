@@ -40,7 +40,7 @@ public class RemainingDistanceEstimator implements AStarHeuristic<SignalingRoute
         var res = Double.POSITIVE_INFINITY;
         var point = routeOffsetToPoint(signalingRoute, offset);
         for (var target : targets)
-            res = Double.min(res, point.distance(target));
+            res = Double.min(res, point.distanceAsMeters(target));
         return res;
     }
 }
