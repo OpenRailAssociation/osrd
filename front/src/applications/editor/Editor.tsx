@@ -40,15 +40,22 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   const [toolState, setToolState] = useState<any>(activeTool.getInitialState({ osrdConf }));
   const [modal, setModal] = useState<ModalRequest<any, any> | null>(null);
   /* eslint-enable @typescript-eslint/no-explicit-any */
+  const openModal = useCallback(
+    <ArgumentsType, SubmitArgumentsType>(
+      request: ModalRequest<ArgumentsType, SubmitArgumentsType>
+    ) => {
+      setModal(request as ModalRequest<unknown, unknown>);
+    },
+    [setModal]
+  );
 
-  const { infra, urlLat, urlLon, urlZoom, urlBearing, urlPitch } =
-    useParams<Record<string, string>>();
+  const { infra } = useParams<{ infra?: string }>();
   const { mapStyle, viewport } = useSelector(
     (state: { map: { mapStyle: string; viewport: ViewportProps } }) => state.map
   );
   const setViewport = useCallback(
     (value) => {
-      dispatch(updateViewport(value, `/editor/${osrdConf.infraID || '-1'}`));
+      dispatch(updateViewport(value, `/editor/${osrdConf.infraID || '-1'}`, false));
     },
     [dispatch, osrdConf.infraID]
   );
@@ -57,11 +64,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
     () => ({
       t,
       modal,
-      openModal: <ArgumentsType, SubmitArgumentsType>(
-        request: ModalRequest<ArgumentsType, SubmitArgumentsType>
-      ) => {
-        setModal(request as ModalRequest<unknown, unknown>);
-      },
+      openModal,
       closeModal: () => {
         setModal(null);
       },
@@ -98,17 +101,6 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   useEffect(() => {
     // load the data model
     dispatch(loadDataModel());
-    if (urlLat) {
-      setViewport({
-        ...viewport,
-        latitude: parseFloat(urlLat || '0'),
-        longitude: parseFloat(urlLon || '0'),
-        zoom: parseFloat(urlZoom || '1'),
-        bearing: parseFloat(urlBearing || '1'),
-        pitch: parseFloat(urlPitch || '1'),
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Update the infrastructure in state
@@ -139,7 +131,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
           dispatch(setFailure(new Error(t('Editor.errors.technical', { msg: e.message }))));
         });
     }
-  }, [dispatch, infra, osrdConf.infraID, t]);
+  }, [infra, osrdConf.infraID]);
 
   // Lifecycle events on tools:
   useEffect(() => {
@@ -267,7 +259,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
                           )}
                           onClick={() => {
                             if (onClick) {
-                              onClick({ dispatch, setViewport, viewport }, editorState);
+                              onClick({ dispatch, setViewport, viewport, openModal }, editorState);
                             }
                           }}
                           disabled={isDisabled && isDisabled(editorState)}
