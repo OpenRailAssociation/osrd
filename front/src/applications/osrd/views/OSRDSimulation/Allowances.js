@@ -454,7 +454,7 @@ export default function Allowances(props) {
 
           {trainDetail.allowances.find((a) => a.ranges) && (
             <EmptyLine
-              defaultDistributionId={standardAllowance?.distribution}
+              defaultDistributionId={defaultEngineeringDistributionId}
               setAllowances={setAllowances}
               distributionsTypes={distributionsTypes}
               setUpdateAllowances={setUpdateAllowances}

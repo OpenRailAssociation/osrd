@@ -10,7 +10,6 @@ import PropTypes from 'prop-types';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import { useTranslation } from 'react-i18next';
 import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
-import nextId from 'react-id-generator';
 
 export default function StandardAllowanceDefault(props) {
   const {
@@ -32,6 +31,8 @@ export default function StandardAllowanceDefault(props) {
   const [distribution, setDistribution] = useState(distributionsTypes[0]);
 
   const handleType = (type) => {
+    console.log('type o standard', type);
+    console.log('allowanceTypes', allowanceTypes);
     setValue({
       type: type.type,
       value: type.value === '' ? '' : parseInt(type.value, 10),
@@ -140,9 +141,14 @@ export default function StandardAllowanceDefault(props) {
 
   useEffect(() => {
     let thereIsStandard = false;
+    console.log('Train DETAILS', trainDetail);
     trainDetail.allowances.forEach((allowance) => {
       if (allowance.allowance_type === 'standard' && allowance.ranges) {
         const currentDistribution = allowance.distribution;
+        console.log('Go set value', {
+          type: allowance.default_value.value_type,
+          value: allowance.default_value[TYPES_UNITS[allowance.default_value.value_type]],
+        });
         setValue({
           type: allowance.default_value.value_type,
           value: allowance.default_value[TYPES_UNITS[allowance.default_value.value_type]],
@@ -170,19 +176,19 @@ export default function StandardAllowanceDefault(props) {
         <SelectSNCF
           id="distributionTypeSelector"
           options={distributionsTypes}
-          selectedValue={distribution}
           labelKey="label"
           onChange={handleDistribution}
           sm
+          value={distribution}
         />
       </div>
       <div className="col-md-3">
         <InputGroupSNCF
-          id="allowanceTypeSelect"
+          id="standardAllowanceTypeSelect"
           options={allowanceTypes}
           handleType={handleType}
           value={value.value}
-          key={nextId()}
+          type={value.type}
           sm
         />
       </div>

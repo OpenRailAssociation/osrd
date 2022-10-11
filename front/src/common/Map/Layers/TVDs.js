@@ -51,7 +51,7 @@ export default function TVDs(props) {
 }
 
 TVDs.propTypes = {
-  idHover: PropTypes.number,
+  idHover: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   geomType: PropTypes.string.isRequired,
 };
 
