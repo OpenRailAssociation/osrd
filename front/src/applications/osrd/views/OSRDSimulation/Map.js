@@ -1,19 +1,22 @@
-import 'common/Map/Map.scss';
-
 import React, { useCallback, useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
 import ReactMapGL, {
   AttributionControl,
   FlyToInterpolator,
   ScaleControl,
   WebMercatorViewport,
 } from 'react-map-gl';
-import {
-  getDirection,
-  interpolateOnPosition,
-  interpolateOnTime,
-} from 'applications/osrd/components/Helpers/ChartHelpers';
+import PropTypes from 'prop-types';
 import { lineString, point } from '@turf/helpers';
-import { useDispatch, useSelector } from 'react-redux';
+import along from '@turf/along';
+import bbox from '@turf/bbox';
+import lineLength from '@turf/length';
+import lineSlice from '@turf/line-slice';
+import { CgLoadbar } from 'react-icons/cg';
+
+import { updateTimePositionValues } from 'reducers/osrdsimulation';
+import { updateViewport } from 'reducers/map';
 
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
@@ -26,7 +29,6 @@ import Hillshade from 'common/Map/Layers/Hillshade';
 import OSM from 'common/Map/Layers/OSM';
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
 import Platform from 'common/Map/Layers/Platform';
-import PropTypes from 'prop-types';
 import RenderItinerary from 'applications/osrd/components/SimulationMap/RenderItinerary';
 import Routes from 'common/Map/Layers/Routes';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
@@ -41,18 +43,18 @@ import TracksOSM from 'common/Map/Layers/TracksOSM';
 import TracksSchematic from 'common/Map/Layers/TracksSchematic';
 /* Interactions */
 import TrainHoverPosition from 'applications/osrd/components/SimulationMap/TrainHoverPosition';
-import along from '@turf/along';
-import bbox from '@turf/bbox';
 
 import colors from 'common/Map/Consts/colors';
 import { datetime2sec } from 'utils/timeManipulation';
 import { get } from 'common/requests';
-import lineLength from '@turf/length';
-import lineSlice from '@turf/line-slice';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
-import { updateTimePositionValues } from 'reducers/osrdsimulation';
-import { updateViewport } from 'reducers/map';
-import { useParams } from 'react-router-dom';
+import {
+  getDirection,
+  interpolateOnPosition,
+  interpolateOnTime,
+} from 'applications/osrd/components/Helpers/ChartHelpers';
+
+import 'common/Map/Map.scss';
 
 const PATHFINDING_URI = '/pathfinding/';
 
