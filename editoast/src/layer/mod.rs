@@ -43,7 +43,16 @@ pub trait Layer {
     }
 
     /// Insert or update some objects of the layer object
-    fn insert_update_list(
+    fn update_list(
+        conn: &PgConnection,
+        infra: i32,
+        obj_ids: HashSet<&String>,
+    ) -> Result<(), Error> {
+        Self::insert_list(conn, infra, obj_ids)
+    }
+
+    /// Insert some objects of the layer object
+    fn insert_list(
         conn: &PgConnection,
         infra: i32,
         obj_ids: HashSet<&String>,
@@ -83,7 +92,7 @@ pub trait Layer {
         Ok(())
     }
 
-    /// Search and update all detectors that needs to be refreshed given a list of operation.
+    /// Search and update all  objects that needs to be refreshed given a list of operation.
     fn update(
         conn: &PgConnection,
         infra: i32,
@@ -123,7 +132,7 @@ pub trait Layer {
         }
 
         Self::delete_list(conn, infra, delete_obj_ids)?;
-        Self::insert_update_list(conn, infra, update_obj_ids)?;
+        Self::update_list(conn, infra, update_obj_ids)?;
 
         invalidate_bbox_chartos_layer(infra, Self::layer_name(), invalid_zone, chartos_config);
 
