@@ -47,7 +47,7 @@ public class UnavailableSpaceBuilder {
                 var previousBlock = new OccupancyBlock(
                         timeStart,
                         timeEnd,
-                        preBlockLength - sightDistance,
+                        Math.max(0, preBlockLength - sightDistance),
                         preBlockLength
                 );
                 res.put(predecessorRoute, previousBlock);
@@ -66,7 +66,8 @@ public class UnavailableSpaceBuilder {
                 var endSuccessorRoutesNode = routeGraph.incidentNodes(successorRoute).nodeV();
                 var secondSuccessorRoutes = routeGraph.outEdges(endSuccessorRoutesNode);
                 for (var secondSuccessorRoute : secondSuccessorRoutes) {
-                    var secondSuccessorBlock = new OccupancyBlock(timeStart, timeEnd, 0, rollingStock.getLength());
+                    var end = Math.min(rollingStock.getLength(), secondSuccessorRoute.getInfraRoute().getLength());
+                    var secondSuccessorBlock = new OccupancyBlock(timeStart, timeEnd, 0, end);
                     res.put(secondSuccessorRoute, secondSuccessorBlock);
                 }
             }
