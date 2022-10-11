@@ -1,5 +1,6 @@
 import { Position } from 'geojson';
 import { JSONSchema7 } from 'json-schema';
+import { at } from 'lodash';
 
 import { EditorEntity, EditorSchema } from '../../../types';
 
@@ -38,15 +39,17 @@ export function cleanSymbolType(type: string): string {
 }
 
 export function getSymbolTypes(editorData: EditorEntity[]): string[] {
-  const SIGNAL_TYPE_KEY = 'installation_type';
+  const SIGNAL_TYPE_KEY = ['extensions.sncf.installation_type'];
   return Object.keys(
-    editorData.reduce(
-      (iter, feature) =>
-        feature.objType === 'Signal' && (feature.properties || {})[SIGNAL_TYPE_KEY]
-          ? { ...iter, [(feature.properties || {})[SIGNAL_TYPE_KEY]]: true }
-          : iter,
-      {}
-    )
+    editorData.reduce((acc, feature) => {
+      if (feature.objType === 'Signal') {
+        const signal = at(feature.properties, SIGNAL_TYPE_KEY);
+        if (signal && signal[0]) {
+          return { ...acc, [signal[0]]: true };
+        }
+      }
+      return acc;
+    }, {})
   ).map(cleanSymbolType);
 }
 

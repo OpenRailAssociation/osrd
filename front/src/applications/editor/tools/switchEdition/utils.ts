@@ -16,10 +16,7 @@ export function getNewSwitch(type: SwitchType): Partial<SwitchEntity> {
     objType: 'Switch',
     properties: {
       ports: {},
-      switch_type: {
-        type: 'SwitchType',
-        id: type.id as string,
-      },
+      switch_type: type.id as string,
     },
   };
 }
@@ -36,7 +33,7 @@ export function injectGeometry(
   const port = switchEntity.properties.ports[switchType.ports[0]];
   if (!port) return omit(switchEntity, 'geometry');
 
-  const track = trackSections[port.track.id];
+  const track = trackSections[port.track];
   if (!track || !track.geometry.coordinates.length) return omit(switchEntity, 'geometry');
 
   const coordinates =
@@ -100,10 +97,7 @@ export function flatSwitchToSwitch(
     objType: 'Switch',
     properties: {
       ...omitBy(flatSwitch.properties, (_, key) => key.indexOf(FLAT_SWITCH_PORTS_PREFIX) === 0),
-      switch_type: {
-        id: switchType.id as string,
-        type: 'SwitchType',
-      },
+      switch_type: switchType.id as string,
       ports: {
         ...switchType.ports.reduce(
           (iter, port) => ({
