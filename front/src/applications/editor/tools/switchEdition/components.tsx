@@ -107,6 +107,7 @@ export const TrackSectionEndpointSelector: FC<FieldProps> = ({
     }
   }, [editorDataIndex, isDisabled, isPicking, onChange, portId, setState, state]);
 
+  console.log(trackSection?.properties);
   return (
     <div className="mb-4">
       {schema.title && <h5>{schema.title}</h5>}
@@ -114,7 +115,7 @@ export const TrackSectionEndpointSelector: FC<FieldProps> = ({
       <div className="d-flex flex-row align-items-center mb-2">
         <div className="flex-grow-1 flex-shrink-1 mr-2">
           {trackSection ? (
-            <span>{trackSection?.properties?.line_name || trackSection.id}</span>
+            <span>{trackSection?.properties?.extensions?.sncf?.line_name || trackSection.id}</span>
           ) : (
             <span className="text-danger font-weight-bold">
               {t('Editor.tools.switch-edition.no-track-picked-yet')}
