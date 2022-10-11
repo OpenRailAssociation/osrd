@@ -72,12 +72,13 @@ export async function getSwitchTypes(infra: number): Promise<SwitchType[]> {
 export async function getEditorData(
   schema: EditorSchema,
   infra: number,
-  layers: Array<string>,
+  layers: Set<string>,
   zone: Zone
-): Promise<Array<EditorEntity>> {
+): Promise<Record<string, EditorEntity[]>> {
   const bbox = zoneToBBox(zone);
+  const layersArray = Array.from(layers);
   const responses = await Promise.all(
-    layers.map(async (layer) => {
+    layersArray.map(async (layer) => {
       const objType = getObjectTypeForLayer(schema, layer);
       const result = await get(
         `/layer/${layer}/objects/geo/${bbox[0]}/${bbox[1]}/${bbox[2]}/${bbox[3]}/?infra=${infra}`,
@@ -86,7 +87,14 @@ export async function getEditorData(
       return result.features.map((f) => ({ ...f, id: f.properties.id, objType }));
     })
   );
-  return responses.flat();
+
+  return layersArray.reduce(
+    (iter, layer, i) => ({
+      ...iter,
+      [layer]: responses[i],
+    }),
+    {}
+  );
 }
 
 /**

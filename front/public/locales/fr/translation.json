@@ -28,11 +28,23 @@
   "Editor": {
     "title": "Éditeur",
     "tool-help": "Voir la description de l'outil actif",
+    "layers": {
+      "track_sections": "Sections de lignes",
+      "signals": "Signaux",
+      "buffer_stops": "Heurtoirs",
+      "detectors": "Détecteurs",
+      "switches": "Aiguillages"
+    },
     "nav": {
       "recenter": "Recentrer la carte",
-      "toggle-layers": "[TODO] Choisir les couches à afficher",
+      "toggle-layers": "Choisir les types d'éléments à afficher",
       "select-infra": "Choisir l'infrastructure à éditer",
       "infra-changed": "Vous éditez maintenant l'infra \"{{label}}\" (id \"{{id}}\")."
+    },
+    "layers-modal": {
+      "layer-selected-items_one": "Un élément sera désélectionné",
+      "layer-selected-items_other": "{{count}} éléments seront désélectionnés",
+      "frozen-layer": "ne peut pas être caché pour le moment"
     },
     "errors": {
       "infra-not-found": "L'infrastructure {{id}} non trouvée",
