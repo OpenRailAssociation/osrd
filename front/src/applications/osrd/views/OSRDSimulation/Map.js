@@ -228,8 +228,8 @@ function Map(props) {
   };
 
   const onFeatureHover = (e) => {
-    if (!isPlaying && e) {
-      const line = lineString(geojsonPath?.geometry.coordinates);
+    if (!isPlaying && e && geojsonPath?.geometry?.coordinates) {
+      const line = lineString(geojsonPath.geometry.coordinates);
       const cursorPoint = point(e.lngLat);
       const key = getRegimeKey(simulation.trains[selectedTrain].id);
       const startCoordinates = getDirection(simulation.trains[selectedTrain][key].head_positions)
