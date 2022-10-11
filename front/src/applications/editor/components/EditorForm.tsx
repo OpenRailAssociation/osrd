@@ -59,6 +59,9 @@ const EditorForm: React.FC<EditorFormProps> = ({
     setFormData(data.properties);
   }, [data, schema]);
 
+  console.log('data', data);
+  console.log('schema', schema);
+
   /**
    * When errors are displayed, we scroll to them.
    */
@@ -88,7 +91,7 @@ const EditorForm: React.FC<EditorFormProps> = ({
           ...(overrideUiSchema || {}),
         }}
         formData={formData}
-        formContext={{ geometry: data.geometry }}
+        formContext={{ geometry: data.geometry, length: data.properties?.length }}
         onSubmit={async (event) => {
           try {
             setError(null);

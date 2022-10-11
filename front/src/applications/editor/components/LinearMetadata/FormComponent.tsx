@@ -33,6 +33,8 @@ import './style.scss';
 export const FormComponent: React.FC<FieldProps> = (props) => {
   const { name, formContext, formData, schema, onChange, registry } = props;
   const { t } = useTranslation();
+  console.log('formContext', formContext);
+  console.log('formData', formData);
 
   // is help modal opened
   const [isHelpOpened, setIsHelpOpened] = useState<boolean>(false);
@@ -54,13 +56,17 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
   const [clickTimeout, setClickTimeout] = useState<number | null>(null);
   const [clickPrevent, setClickPrevent] = useState<boolean>(false);
 
-  // Compute the JSON schema of the linear metadata item
-  const distance = useMemo(
-    () =>
-      formContext.geometry?.type === 'LineString' ? getLineStringDistance(formContext.geometry) : 0,
-    [formContext.geometry]
-  );
+  // Get the distance of the geometry
+  const distance = useMemo(() => {
+    if (formContext.geometry?.type === 'LineString') {
+      const geoLineLength = getLineStringDistance(formContext.geometry);
+      const inputLength = formContext.length;
+      return fnMax([geoLineLength, inputLength]) as number;
+    }
+    return 0;
+  }, [formContext]);
 
+  // Compute the JSON schema of the linear metadata item
   const jsonSchema = useMemo(
     () =>
       getFieldJsonSchema(
