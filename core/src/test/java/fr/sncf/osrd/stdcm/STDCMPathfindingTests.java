@@ -68,7 +68,7 @@ public class STDCMPathfindingTests {
                 2.
         );
         assertNotNull(res);
-        assertTrue(occupancyTest(res,occupancyGraph));
+        assertTrue(occupancyTest(res, occupancyGraph));
     }
 
     /** Test that no path is found when the routes aren't connected */
@@ -149,7 +149,7 @@ public class STDCMPathfindingTests {
                 2.
         );
         assertNotNull(res);
-        assertTrue(occupancyTest(res,occupancyGraph));
+        assertTrue(occupancyTest(res, occupancyGraph));
     }
 
     /** Tests that an occupied route can cause delays */
@@ -179,7 +179,7 @@ public class STDCMPathfindingTests {
         );
         assertNotNull(res);
         assert res.envelope().getTotalTime() >= 1000;
-        assertTrue(occupancyTest(res,occupancyGraph));
+        assertTrue(occupancyTest(res, occupancyGraph));
     }
 
     /** Test that the path can change depending on the occupancy */
@@ -236,16 +236,18 @@ public class STDCMPathfindingTests {
         );
         assertNotNull(res1);
         assertNotNull(res2);
-        var routes1 = res1.routes().ranges().stream().map(route -> route.edge().getInfraRoute().getID()).toList();
-        var routes2 = res2.routes().ranges().stream().map(route -> route.edge().getInfraRoute().getID()).toList();
+        final var routes1 = res1.routes().ranges().stream()
+                .map(route -> route.edge().getInfraRoute().getID()).toList();
+        final var routes2 = res2.routes().ranges().stream()
+                .map(route -> route.edge().getInfraRoute().getID()).toList();
 
         assertFalse(routes1.contains("b->c1"));
         assertTrue(routes1.contains("b->c2"));
-        assertTrue(occupancyTest(res1,occupancyGraph1));
+        assertTrue(occupancyTest(res1, occupancyGraph1));
 
         assertFalse(routes2.contains("b->c2"));
         assertTrue(routes2.contains("b->c1"));
-        assertTrue(occupancyTest(res2,occupancyGraph2));
+        assertTrue(occupancyTest(res2, occupancyGraph2));
     }
 
     /** Test that everything works well when the train is at max speed during route transitions */
@@ -339,7 +341,7 @@ public class STDCMPathfindingTests {
         var secondRouteEntryTime = res.departureTime()
                 + res.envelope().interpolateTotalTime(firstRoute.getInfraRoute().getLength());
         assertTrue(secondRouteEntryTime >= 3600);
-        assertTrue(occupancyTest(res,occupancyGraph));
+        assertTrue(occupancyTest(res, occupancyGraph));
     }
 
     /** Test that we can add delays to avoid several occupied blocks */
@@ -373,7 +375,7 @@ public class STDCMPathfindingTests {
                 + res.envelope().interpolateTotalTime(firstRoute.getInfraRoute().getLength());
         assertTrue(secondRouteEntryTime >= 3600);
 
-        assertTrue(occupancyTest(res,occupancyGraph));
+        assertTrue(occupancyTest(res, occupancyGraph));
     }
 
     /** Test that we don't add too much delay, crossing over occupied sections in previous routes */
@@ -407,18 +409,16 @@ public class STDCMPathfindingTests {
         assertNull(res);
     }
 
-    private boolean occupancyTest(STDCMResult res, ImmutableMultimap<SignalingRoute,OccupancyBlock> occupancyGraph){
+    private boolean occupancyTest(STDCMResult res, ImmutableMultimap<SignalingRoute, OccupancyBlock> occupancyGraph) {
         var routes = res.trainPath().routePath();
-        for(var index = 1; index<routes.size(); index++) {
+        for (var index = 1; index < routes.size(); index++) {
             var endRoutePosition = routes.get(index).pathOffset();
             var startRouteTime = res.departureTime();
             var endRouteTime = res.departureTime() + res.envelope().interpolateTotalTime(endRoutePosition);
-            var routeOccupancies = occupancyGraph.get(routes.get(index-1).element());
-            for (var occupancy:routeOccupancies){
-                if ((occupancy.timeStart()<startRouteTime && startRouteTime<occupancy.timeEnd())
-                    ||(occupancy.timeStart()<endRouteTime && endRouteTime<occupancy.timeEnd())){
-                    System.out.println("start: "+occupancy.timeStart()+"//"+startRouteTime+"//end: "+occupancy.timeEnd());
-                    System.out.println("start: "+occupancy.timeStart()+"//"+endRouteTime+"//end: "+occupancy.timeEnd());
+            var routeOccupancies = occupancyGraph.get(routes.get(index - 1).element());
+            for (var occupancy:routeOccupancies) {
+                if ((occupancy.timeStart() < startRouteTime && startRouteTime < occupancy.timeEnd())
+                        || (occupancy.timeStart() < endRouteTime && endRouteTime < occupancy.timeEnd())) {
                     return false;
                 }
             }
