@@ -91,6 +91,7 @@ def compute_stdcm(request, user):
     core_output = request_stdcm(make_stdcm_core_payload(request))
     path = PathModel()
     postprocess_path(path, core_output["path"], request["infra"], user, [0, 0])
+    path.save()
 
     schedule = TrainScheduleModel()
     schedule.departure_time = core_output["departure_time"]
