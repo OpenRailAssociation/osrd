@@ -62,7 +62,7 @@ export const TrackSectionEndpointSelector: FC<FieldProps> = ({
   const portId = name.replace(FLAT_SWITCH_PORTS_PREFIX, '');
   const endpoint = ENDPOINTS_SET.has(formData?.endpoint) ? formData.endpoint : DEFAULT_ENDPOINT;
   const trackSection =
-    typeof formData?.track?.id === 'string' ? editorDataIndex[formData.track.id] : undefined;
+    typeof formData?.track === 'string' ? editorDataIndex[formData.track] : undefined;
 
   const isPicking =
     state.portEditionState.type === 'selection' && state.portEditionState.portId === portId;
@@ -99,7 +99,7 @@ export const TrackSectionEndpointSelector: FC<FieldProps> = ({
             setState({ ...state, portEditionState: { type: 'idle' } });
             onChange({
               endpoint: closest.properties.featureIndex === 0 ? 'BEGIN' : 'END',
-              track: { type: 'TrackSection', id: trackId },
+              track: trackId,
             });
           },
         },
@@ -131,7 +131,7 @@ export const TrackSectionEndpointSelector: FC<FieldProps> = ({
                   if (o)
                     onChange({
                       endpoint: o.value,
-                      track: { type: 'TrackSection', id: trackSection?.id },
+                      track: trackSection?.id,
                     });
                 }}
               />
@@ -188,9 +188,9 @@ export const SwitchEditionLeftPanel: FC = () => {
   const isNew = !switchEntity.id;
   const switchType = useMemo(
     () =>
-      switchTypes?.find((type) => type.id === switchEntity.properties.switch_type?.id) ||
+      switchTypes?.find((type) => type.id === switchEntity.properties.switch_type) ||
       (first(switchTypes || []) as SwitchType),
-    [switchEntity.properties.switch_type?.id, switchTypes]
+    [switchEntity.properties.switch_type, switchTypes]
   );
   const flatSwitchEntity = useMemo(
     () => switchToFlatSwitch(switchType, switchEntity),

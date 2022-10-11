@@ -6,7 +6,14 @@ export function getNewSignal(point?: [number, number]): MakeOptional<SignalEntit
     type: 'Feature',
     objType: 'Signal',
     properties: {
-      installation_type: '"S"',
+      extensions: {
+        sncf: {
+          is_in_service: false,
+          is_lightable: false,
+          is_operational: false,
+          installation_type: 'S',
+        },
+      },
     },
     geometry: point
       ? {

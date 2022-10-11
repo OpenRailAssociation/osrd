@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import Form, { FieldProps } from '@rjsf/core';
 import Fields from '@rjsf/core/lib/components/fields';
 import { JSONSchema7 } from 'json-schema';
-import { omit, head, max as fnMax, min as fnMin, isNil, isArray } from 'lodash';
+import { omit, head, max as fnMax, min as fnMin, isNil } from 'lodash';
 import { TbZoomIn, TbZoomOut, TbZoomCancel } from 'react-icons/tb';
 import { BsBoxArrowInLeft, BsBoxArrowInRight, BsChevronLeft, BsChevronRight } from 'react-icons/bs';
 import { IoIosCut } from 'react-icons/io';
@@ -33,8 +33,6 @@ import './style.scss';
 export const FormComponent: React.FC<FieldProps> = (props) => {
   const { name, formContext, formData, schema, onChange, registry } = props;
   const { t } = useTranslation();
-  console.log('formContext', formContext);
-  console.log('formData', formData);
 
   // is help modal opened
   const [isHelpOpened, setIsHelpOpened] = useState<boolean>(false);
@@ -115,12 +113,10 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
     [onChange, valueField]
   );
 
-  const fixedData = useMemo(() => {
-    if (isArray(formData)) {
-      return fixLinearMetadataItems(formData.filter(notEmpty), distance);
-    }
-    return [];
-  }, [formData, distance]);
+  const fixedData = useMemo(
+    () => fixLinearMetadataItems(formData?.filter(notEmpty), distance),
+    [formData, distance]
+  );
 
   /**
    * When the formData changed
