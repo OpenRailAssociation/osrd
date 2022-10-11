@@ -59,12 +59,6 @@ export interface Notification {
 //
 // Editor data model
 //
-export interface ObjectReference<Type extends string = string> {
-  id: string;
-  type: Type;
-}
-export type TrackReference = ObjectReference<'TrackSection'>;
-
 export type ObjectType = string;
 export type EntityId = string | number | undefined;
 export type EditorSchema = Array<{ layer: string; objType: ObjectType; schema: JSONSchema7 }>;
@@ -83,20 +77,26 @@ export interface SignalEntity
   extends EditorEntity<
     Point,
     {
-      track?: { id: string; type: string };
+      track?: string;
       position?: number;
-      angle_geo?: number;
-      installation_type?: string;
+      extensions: {
+        sncf: {
+          is_in_service?: boolean;
+          is_lightable?: boolean;
+          is_operational?: boolean;
+          installation_type?: string;
+          angle_geo?: number;
+        };
+      };
     }
   > {
   objType: 'Signal';
 }
 export interface BufferStopEntity
-  extends EditorEntity<Point, { track?: TrackReference; position?: number }> {
+  extends EditorEntity<Point, { track?: string; position?: number }> {
   objType: 'BufferStop';
 }
-export interface DetectorEntity
-  extends EditorEntity<Point, { track?: TrackReference; position?: number }> {
+export interface DetectorEntity extends EditorEntity<Point, { track?: string; position?: number }> {
   objType: 'Detector';
 }
 
@@ -111,7 +111,7 @@ export interface SwitchPortConnection {
 }
 export interface TrackEndpoint {
   endpoint: EndPoint;
-  track: TrackReference;
+  track: string;
 }
 export interface SwitchType {
   id: string;
@@ -119,10 +119,7 @@ export interface SwitchType {
   groups: Record<string, SwitchPortConnection[]>;
 }
 export interface SwitchEntity
-  extends EditorEntity<
-    Point,
-    { switch_type: ObjectReference<'SwitchType'>; ports: Record<string, TrackEndpoint> }
-  > {
+  extends EditorEntity<Point, { switch_type: string; ports: Record<string, TrackEndpoint> }> {
   objType: 'Switch';
 }
 

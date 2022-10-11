@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { featureCollection } from '@turf/helpers';
 import along from '@turf/along';
 import { Feature, LineString } from 'geojson';
+import { merge } from 'lodash';
 
 import { EditorContext } from '../../context';
 import GeoJSONs from '../../../../common/Map/Layers/GeoJSONs';
@@ -63,8 +64,19 @@ export const PointEditionLeftPanel: FC = <Entity extends EditorEntity>() => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const operation = res[0] as any as CreateEntityOperation;
         const { id } = operation.railjson;
-
-        if (id && id !== savedEntity.id) setState({ ...state, entity: { ...state.entity, id } });
+        if (id && id !== savedEntity.id) {
+          setState({
+            ...state,
+            entity: {
+              ...state.entity,
+              id,
+              properties: {
+                ...state.entity.properties,
+                ...operation.railjson,
+              },
+            },
+          });
+        }
       }}
       onChange={(entity) => {
         const additionalUpdate: Partial<Entity> = {};
@@ -110,7 +122,7 @@ export const SignalEditionLayers: FC = () => {
     mapStyle: string;
   };
 
-  const type = cleanSymbolType((entity.properties || {}).installation_type || '');
+  const type = cleanSymbolType((entity.properties || {}).extensions?.sncf?.installation_type || '');
   const layerProps = getSignalLayerProps(
     {
       prefix: '',
@@ -129,8 +141,13 @@ export const SignalEditionLayers: FC = () => {
       ...entity,
       geometry: nearestPoint.feature.geometry,
       properties: {
-        ...entity.properties,
-        angle_geo: nearestPoint.angle,
+        ...merge(entity.properties, {
+          extensions: {
+            sncf: {
+              angle_geo: nearestPoint.angle,
+            },
+          },
+        }),
       },
     };
   } else if (mousePosition) {
@@ -162,7 +179,7 @@ export const SignalEditionLayers: FC = () => {
       <Source type="geojson" data={renderedSignal || featureCollection([])}>
         <Layer
           {...layerProps}
-          filter={['==', 'installation_type', `"${type}"`]}
+          filter={['==', 'extensions_sncf_installation_type', type]}
           id={POINT_LAYER_ID}
         />
       </Source>

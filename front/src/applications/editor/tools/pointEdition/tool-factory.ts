@@ -9,31 +9,27 @@ import { DEFAULT_COMMON_TOOL_STATE, LayerType, MakeOptional, Tool } from '../typ
 import { getNearestPoint } from '../../../../utils/mapboxHelper';
 import { POINT_LAYER_ID, PointEditionLeftPanel } from './components';
 import { PointEditionState } from './types';
-import { EditorEntity } from '../../../../types';
+import { BufferStopEntity, DetectorEntity, SignalEntity } from '../../../../types';
 
-interface PointEditionToolParams<Entity extends EditorEntity> {
+type EditorPoint = BufferStopEntity | DetectorEntity | SignalEntity;
+interface PointEditionToolParams<T extends EditorPoint> {
   layer: LayerType;
   icon: IconType;
-  getNewEntity: (point?: [number, number]) => MakeOptional<Entity, 'geometry'>;
+  getNewEntity: (point?: [number, number]) => MakeOptional<T, 'geometry'>;
   layersComponent: ComponentType;
   requiresAngle?: boolean;
 }
 
-function getPointEditionTool<
-  Entity extends EditorEntity<
-    Point,
-    { track?: { id: string; type: string }; position?: number; angle_geo?: number }
-  >
->({
+function getPointEditionTool<T extends EditorPoint>({
   layer,
   icon,
   getNewEntity,
   layersComponent,
   requiresAngle,
-}: PointEditionToolParams<Entity>): Tool<PointEditionState<Entity>> {
+}: PointEditionToolParams<T>): Tool<PointEditionState<T>> {
   const id = layer.replace(/_/g, '-').replace(/s$/, '');
 
-  function getInitialState(): PointEditionState<Entity> {
+  function getInitialState(): PointEditionState<T> {
     const entity = getNewEntity();
     return {
       ...DEFAULT_COMMON_TOOL_STATE,
@@ -94,7 +90,7 @@ function getPointEditionTool<
         setState({
           ...state,
           isHoveringTarget: false,
-          entity: omit(entity, 'geometry') as Entity,
+          entity: omit(entity, 'geometry') as T,
         });
       }
 
@@ -106,10 +102,10 @@ function getPointEditionTool<
         };
         newEntity.properties = newEntity.properties || {};
         newEntity.properties.position = nearestPoint.position;
-        newEntity.properties.track = { id: nearestPoint.trackSectionID, type: 'TrackSection' };
+        newEntity.properties.track = nearestPoint.trackSectionID;
 
-        if (requiresAngle) {
-          newEntity.properties.angle_geo = nearestPoint.angle;
+        if (requiresAngle && newEntity.objType === 'Signal') {
+          (newEntity as SignalEntity).properties.extensions.sncf.angle_geo = nearestPoint.angle;
         }
 
         setState({
@@ -164,7 +160,7 @@ function getPointEditionTool<
 
     // Lifecycle:
     onMount({ state: { entity }, editorState }) {
-      const trackId = entity.properties?.track?.id;
+      const trackId = entity.properties?.track;
 
       if (trackId) {
         const line = editorState.editorDataIndex[trackId];

@@ -59,9 +59,6 @@ const EditorForm: React.FC<EditorFormProps> = ({
     setFormData(data.properties);
   }, [data, schema]);
 
-  console.log('data', data);
-  console.log('schema', schema);
-
   /**
    * When errors are displayed, we scroll to them.
    */
