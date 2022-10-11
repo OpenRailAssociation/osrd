@@ -12,6 +12,7 @@ import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
+import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
@@ -109,7 +110,6 @@ public class PathfindingRoutesEndpoint implements Take {
                 .setRemainingDistanceEstimator(remainingDistanceEstimator)
                 .runPathfinding(waypoints);
     }
-
 
     /** Checks that the results make sense */
     private void validate(SignalingInfra infra, PathfindingResult res, PathfindingWaypoint[][] reqWaypoints) {
