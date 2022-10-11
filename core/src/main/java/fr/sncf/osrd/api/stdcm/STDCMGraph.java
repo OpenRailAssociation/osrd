@@ -174,7 +174,8 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
         var minValue = Double.POSITIVE_INFINITY;
         for (var occupancy : unavailableTimes.get(route)) {
             // This loop has a poor complexity, we need to optimize it by the time we handle full timetables
-            var exitTime = startTime + envelope.interpolateTotalTime(occupancy.distanceEnd());
+            var distanceEnd = Math.min(occupancy.distanceEnd(), envelope.getEndPos());
+            var exitTime = startTime + envelope.interpolateTotalTime(distanceEnd);
             var margin = occupancy.timeStart() - exitTime;
             if (margin < 0) {
                 // This occupancy block was before the train passage, we can ignore it
@@ -193,8 +194,10 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
         double maxValue = 0;
         for (var occupancy : unavailableTimes.get(route)) {
             // This loop has a poor complexity, we need to optimize it by the time we handle full timetables
-            var enterTime = startTime + envelope.interpolateTotalTime(occupancy.distanceStart());
-            var exitTime = startTime + envelope.interpolateTotalTime(occupancy.distanceEnd());
+            var distanceStart = Math.max(0., occupancy.distanceStart());
+            var distanceEnd = Math.min(occupancy.distanceEnd(), envelope.getEndPos());
+            var enterTime = startTime + envelope.interpolateTotalTime(distanceStart);
+            var exitTime = startTime + envelope.interpolateTotalTime(distanceEnd);
             if (enterTime > occupancy.timeEnd() || exitTime < occupancy.timeStart())
                 continue;
             var diff = occupancy.timeEnd() - enterTime;
