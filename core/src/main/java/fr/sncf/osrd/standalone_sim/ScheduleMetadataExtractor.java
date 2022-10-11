@@ -182,10 +182,13 @@ public class ScheduleMetadataExtractor {
             var route = entry.getValue();
             infraState.moveTrain(position);
             for (var r : Sets.union(route.getConflictingRoutes(), Set.of(route))) {
+                var routeState = infraState.getState(r).summarize();
+                var isFree = routeState.equals(ReservationRouteState.Summary.RESERVED)
+                        || routeState.equals(ReservationRouteState.Summary.FREE);
                 addUpdate(
                         routeOccupied,
                         routeFree,
-                        infraState.getState(r).summarize().equals(ReservationRouteState.Summary.RESERVED),
+                        isFree,
                         r.getID(),
                         position,
                         trainPath.length()

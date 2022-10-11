@@ -61,4 +61,27 @@ public class FullSTDCMTests {
         );
         assertNotNull(res);
     }
+
+    /** We try to fit a train in a short opening between two trains, this time on small_infra */
+    @Test
+    public void testSmallIfraSmallOpening() throws IOException, URISyntaxException {
+        var infra = Helpers.infraFromRJS(Helpers.getExampleInfra("small_infra/infra.json"));
+        var firstRoute = infra.findSignalingRoute("rt.buffer_stop.3->DB0", "BAL3");
+        var secondRoute = infra.findSignalingRoute("rt.DH1_2->buffer_stop.7", "BAL3");
+        var start = Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 1590));
+        var end = Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 1137));
+        var occupancies = STDCMHelpers.makeOccupancyFromPath(infra, start, end, 0);
+        occupancies.putAll(STDCMHelpers.makeOccupancyFromPath(infra, start, end, 600));
+        var res = STDCMPathfinding.findPath(
+                infra,
+                RJSRollingStockParser.parse(parseRollingStockDir(getResourcePath("rolling_stocks/")).get(0)),
+                300,
+                0,
+                start,
+                end,
+                occupancies,
+                2.
+        );
+        assertNotNull(res);
+    }
 }
