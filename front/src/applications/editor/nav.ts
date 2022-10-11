@@ -1,10 +1,14 @@
 import { Dispatch } from 'redux';
 import { IconType } from 'react-icons/lib/esm/iconBase';
-import { BiTargetLock, FiLayers, FiZoomIn, FiZoomOut } from 'react-icons/all';
+import { BiTargetLock } from 'react-icons/bi';
+import { BsMap } from 'react-icons/bs';
+import { FiLayers, FiZoomIn, FiZoomOut } from 'react-icons/fi';
 import { LinearInterpolator, ViewportProps } from 'react-map-gl';
 
 import { EditorState } from '../../reducers/editor';
 import { getZoneViewport } from '../../utils/mapboxHelper';
+import { ModalRequest } from './tools/types';
+import InfraSelectionModal from './components/InfraSelectionModal';
 
 const ZOOM_DEFAULT = 5;
 const ZOOM_DELTA = 1.5;
@@ -30,6 +34,9 @@ export interface NavButton {
       dispatch: Dispatch;
       viewport: ViewportProps;
       setViewport: (newViewport: ViewportProps) => void;
+      openModal: <ArgumentsType, SubmitArgumentsType>(
+        request: ModalRequest<ArgumentsType, SubmitArgumentsType>
+      ) => void;
     },
     editorState: EditorState
   ) => void;
@@ -94,6 +101,17 @@ const NavButtons: NavButton[][] = [
       labelTranslationKey: 'Editor.nav.toggle-layers',
       onClick() {
         // TODO
+      },
+    },
+    {
+      id: 'infras',
+      icon: BsMap,
+      labelTranslationKey: 'Editor.nav.select-infra',
+      async onClick({ openModal }) {
+        openModal({
+          component: InfraSelectionModal,
+          arguments: {},
+        });
       },
     },
   ],
