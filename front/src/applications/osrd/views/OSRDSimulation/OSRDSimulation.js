@@ -42,6 +42,7 @@ import { useTranslation } from 'react-i18next';
 
 export const KEY_VALUES_FOR_CONSOLIDATED_SIMULATION = ['time', 'position'];
 export const timetableURI = '/timetable/';
+const MAP_MIN_HEIGHT = 450;
 
 function OSRDSimulation() {
   const { t } = useTranslation(['translation', 'simulation', 'allowances']);
@@ -59,7 +60,7 @@ function OSRDSimulation() {
   const [initialHeightOfSpeedSpaceChart, setInitialHeightOfSpeedSpaceChart] =
     useState(heightOfSpeedSpaceChart);
 
-  const [heightOfSimulationMap, setHeightOfSimulationMap] = useState(500);
+  const [heightOfSimulationMap, setHeightOfSimulationMap] = useState(MAP_MIN_HEIGHT);
   const [initialHeightOfSimulationMap, setinitialHeightOfSimulationMap] =
     useState(heightOfSimulationMap);
 
@@ -375,6 +376,7 @@ function OSRDSimulation() {
                       y: 0,
                       height: `${heightOfSimulationMap}px`,
                     }}
+                    minHeight={MAP_MIN_HEIGHT}
                     style={{
                       paddingBottom: '12px',
                     }}
