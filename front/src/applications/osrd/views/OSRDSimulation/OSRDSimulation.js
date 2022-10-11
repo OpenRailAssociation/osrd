@@ -1,6 +1,6 @@
 import './OSRDSimulation.scss';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   persistentRedoSimulation,
   persistentUndoSimulation,
@@ -46,6 +46,7 @@ const MAP_MIN_HEIGHT = 450;
 
 function OSRDSimulation() {
   const { t } = useTranslation(['translation', 'simulation', 'allowances']);
+  const timeTableRef = useRef();
   const { fullscreen, darkmode } = useSelector((state) => state.main);
   const [extViewport, setExtViewport] = useState(undefined);
   const [isEmpty, setIsEmpty] = useState(true);
@@ -203,6 +204,7 @@ function OSRDSimulation() {
     <CenterLoader message={t('simulation:waiting')} />
   );
 
+  const mapMaxHeight = timeTableRef?.current?.clientHeight - 42;
   return (
     <main className={`mastcontainer ${fullscreen ? ' fullscreen' : ''}`}>
       {!simulation || simulation.trains.length === 0 ? (
@@ -357,7 +359,7 @@ function OSRDSimulation() {
               <i className="icons-arrow-down ml-auto" />
             </div>
           )}
-          <div className="row">
+          <div className="row" ref={timeTableRef}>
             <div className="col-md-6">
               <div className="osrd-simulation-container mb-2">
                 {simulation.trains.length > 0 ? <TimeTable /> : null}
@@ -377,6 +379,7 @@ function OSRDSimulation() {
                       height: `${heightOfSimulationMap}px`,
                     }}
                     minHeight={MAP_MIN_HEIGHT}
+                    maxHeight={mapMaxHeight}
                     style={{
                       paddingBottom: '12px',
                     }}
