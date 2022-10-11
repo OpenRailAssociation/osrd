@@ -120,13 +120,14 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
                 prevMaximumAddedDelay,
                 findMaximumAddedDelay(route, startTime + delayNeeded, envelope)
         );
-        var delay = 0.;
+        double delay = 0;
         if (delayNeeded > 0) {
             if (maximumDelay >= delayNeeded) {
                 delay = delayNeeded;
                 maximumDelay -= delay;
-            } else
+            } else {
                 envelope = null;
+            }
         }
         return new Edge(
                 route,
