@@ -294,7 +294,10 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
                           )}
                           onClick={() => {
                             if (onClick) {
-                              onClick({ dispatch, setViewport, viewport, openModal }, editorState);
+                              onClick(
+                                { dispatch, setViewport, viewport, openModal, editorState },
+                                { activeTool, toolState, setToolState }
+                              );
                             }
                           }}
                           disabled={isDisabled && isDisabled(editorState)}

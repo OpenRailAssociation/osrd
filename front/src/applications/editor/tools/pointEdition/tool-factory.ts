@@ -5,14 +5,14 @@ import { BiReset, AiOutlinePlus } from 'react-icons/all';
 import { IconType } from 'react-icons';
 import nearestPointOnLine from '@turf/nearest-point-on-line';
 
-import { DEFAULT_COMMON_TOOL_STATE, MakeOptional, Tool } from '../types';
+import { DEFAULT_COMMON_TOOL_STATE, LayerType, MakeOptional, Tool } from '../types';
 import { getNearestPoint } from '../../../../utils/mapboxHelper';
 import { POINT_LAYER_ID, PointEditionLeftPanel } from './components';
 import { PointEditionState } from './types';
 import { EditorEntity } from '../../../../types';
 
 interface PointEditionToolParams<Entity extends EditorEntity> {
-  id: string;
+  layer: LayerType;
   icon: IconType;
   getNewEntity: (point?: [number, number]) => MakeOptional<Entity, 'geometry'>;
   layersComponent: ComponentType;
@@ -25,12 +25,14 @@ function getPointEditionTool<
     { track?: { id: string; type: string }; position?: number; angle_geo?: number }
   >
 >({
-  id,
+  layer,
   icon,
   getNewEntity,
   layersComponent,
   requiresAngle,
 }: PointEditionToolParams<Entity>): Tool<PointEditionState<Entity>> {
+  const id = layer.replace(/_/g, '-').replace(/s$/, '');
+
   function getInitialState(): PointEditionState<Entity> {
     const entity = getNewEntity();
     return {
@@ -45,8 +47,13 @@ function getPointEditionTool<
     id: `${id}-edition`,
     icon,
     labelTranslationKey: `Editor.tools.${id}-edition.label`,
+    requiredLayers: new Set([layer, 'track_sections']),
     isDisabled({ editorState }) {
-      return !editorState.editorZone;
+      return (
+        !editorState.editorZone ||
+        !editorState.editorLayers.has('track_sections') ||
+        !editorState.editorLayers.has(layer)
+      );
     },
     getRadius() {
       return 20;

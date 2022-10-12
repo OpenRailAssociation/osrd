@@ -6,9 +6,10 @@ import { FiLayers, FiZoomIn, FiZoomOut } from 'react-icons/fi';
 import { LinearInterpolator, ViewportProps } from 'react-map-gl';
 
 import { getZoneViewport } from '../../utils/mapboxHelper';
-import { EditorState, ModalRequest } from './tools/types';
+import { EditorState, ModalRequest, OBJTYPE_TO_LAYER_DICT, Tool } from './tools/types';
 import InfraSelectionModal from './components/InfraSelectionModal';
 import LayersModal from './components/LayersModal';
+import { SelectionState } from './tools/selection/types';
 
 const ZOOM_DEFAULT = 5;
 const ZOOM_DELTA = 1.5;
@@ -29,16 +30,21 @@ export interface NavButton {
   isHidden?: (editorState: EditorState) => boolean;
   isDisabled?: (editorState: EditorState) => boolean;
   // On click button:
-  onClick?: (
+  onClick?: <S = unknown>(
     context: {
       dispatch: Dispatch;
       viewport: ViewportProps;
+      editorState: EditorState;
       setViewport: (newViewport: ViewportProps) => void;
       openModal: <ArgumentsType, SubmitArgumentsType>(
         request: ModalRequest<ArgumentsType, SubmitArgumentsType>
       ) => void;
     },
-    editorState: EditorState
+    toolContext: {
+      activeTool: Tool<S>;
+      toolState: S;
+      setToolState: (newState: S) => void;
+    }
   ) => void;
 }
 
@@ -76,7 +82,7 @@ const NavButtons: NavButton[][] = [
       id: 'recenter',
       icon: BiTargetLock,
       labelTranslationKey: 'Editor.nav.recenter',
-      onClick({ setViewport, viewport }, editorState) {
+      onClick({ setViewport, viewport, editorState }) {
         const newViewport = editorState.editorZone
           ? getZoneViewport(editorState.editorZone, {
               width: +(viewport.width || 1),
@@ -99,10 +105,28 @@ const NavButtons: NavButton[][] = [
       id: 'layers',
       icon: FiLayers,
       labelTranslationKey: 'Editor.nav.toggle-layers',
-      onClick({ openModal }, editorState) {
+      onClick({ openModal, editorState }, { activeTool, toolState, setToolState }) {
         openModal({
           component: LayersModal,
-          arguments: { initialLayers: editorState.editorLayers },
+          arguments: {
+            initialLayers: editorState.editorLayers,
+            frozenLayers: activeTool.requiredLayers,
+            selection:
+              activeTool.id === 'select-items'
+                ? (toolState as SelectionState).selection
+                : undefined,
+          },
+          beforeSubmit({ newLayers }) {
+            if (activeTool.id === 'select-items') {
+              const currentState = toolState as SelectionState;
+              (setToolState as (newState: SelectionState) => void)({
+                ...currentState,
+                selection: currentState.selection.filter((entity) =>
+                  newLayers.has(OBJTYPE_TO_LAYER_DICT[entity.objType])
+                ),
+              } as SelectionState);
+            }
+          },
         });
       },
     },

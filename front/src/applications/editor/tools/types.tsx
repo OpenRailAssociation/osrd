@@ -31,6 +31,14 @@ export const LAYERS = [
 ] as const;
 export type LayerType = typeof LAYERS[number];
 
+export const OBJTYPE_TO_LAYER_DICT: Record<string, LayerType> = {
+  TrackSection: 'track_sections',
+  Signal: 'signals',
+  BufferStop: 'buffer_stops',
+  Detector: 'detectors',
+  Switch: 'switches',
+};
+
 export interface MapState {
   mapStyle: string;
   viewport: ViewportProps;
@@ -124,6 +132,7 @@ export interface Tool<S> {
   labelTranslationKey: string;
   actions: ToolAction<S>[][];
   getInitialState: (context: { osrdConf: OSRDConf }) => S;
+  requiredLayers?: Set<LayerType>;
   isDisabled?: (context: ReadOnlyEditorContextType<S>) => boolean;
   getRadius?: (context: ReadOnlyEditorContextType<S>) => number;
 
@@ -141,7 +150,6 @@ export interface Tool<S> {
   ) => string;
 
   // Display:
-  getRequiredLayers?: (context: ReadOnlyEditorContextType<S>) => Set<LayerType>;
   getInteractiveLayers?: (context: ReadOnlyEditorContextType<S>) => string[];
   layersComponent?: ComponentType;
   leftPanelComponent?: ComponentType;
