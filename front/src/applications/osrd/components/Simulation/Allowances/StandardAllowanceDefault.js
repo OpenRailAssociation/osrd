@@ -31,8 +31,6 @@ export default function StandardAllowanceDefault(props) {
   const [distribution, setDistribution] = useState(distributionsTypes[0]);
 
   const handleType = (type) => {
-    console.log('type o standard', type);
-    console.log('allowanceTypes', allowanceTypes);
     setValue({
       type: type.type,
       value: type.value === '' ? '' : parseInt(type.value, 10),
@@ -141,7 +139,7 @@ export default function StandardAllowanceDefault(props) {
 
   useEffect(() => {
     let thereIsStandard = false;
-    console.log('Train DETAILS', trainDetail);
+
     trainDetail.allowances.forEach((allowance) => {
       if (allowance.allowance_type === 'standard' && allowance.ranges) {
         const currentDistribution = allowance.distribution;

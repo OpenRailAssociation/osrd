@@ -24,7 +24,7 @@ import { post } from 'common/requests';
 // Static Data and Assets
 import rabbit from 'assets/pictures/KLCW_nc_standard.png';
 import { setFailure } from 'reducers/main';
-import { STDCMREQUESTSTATUS } from 'applications/osrd/consts';
+import { STDCM_REQUEST_STATUS } from 'applications/osrd/consts';
 import { updateItinerary } from 'reducers/osrdconf';
 import { useTranslation } from 'react-i18next';
 
@@ -53,10 +53,10 @@ export default function StdcmRequestModal(props) {
   };
 
   useEffect(() => {
-    if (currentStdcmRequestStatus === STDCMREQUESTSTATUS.pending) {
+    if (currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending) {
       stdcmRequest()
         .then((result) => {
-          setCurrentStdcmRequestStatus(STDCMREQUESTSTATUS.success);
+          setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.success);
           dispatch(updateItinerary(result.path));
 
           const fakedNewTrain = result.simulation;
@@ -116,7 +116,7 @@ export default function StdcmRequestModal(props) {
         .catch((e) => {
           // Update simu in redux with data;
 
-          setCurrentStdcmRequestStatus(STDCMREQUESTSTATUS.rejected);
+          setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.rejected);
 
           dispatch(
             setFailure({
@@ -135,7 +135,7 @@ export default function StdcmRequestModal(props) {
     // when http ready https://axios-http.com/docs/cancellation
 
     controller.abort();
-    setCurrentStdcmRequestStatus(STDCMREQUESTSTATUS.canceled);
+    setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.canceled);
 
     const emptySimulation = { trains: [] };
     const consolidatedSimulation = createTrain(
@@ -150,7 +150,7 @@ export default function StdcmRequestModal(props) {
 
   return (
     <ReactModal
-      isOpen={currentStdcmRequestStatus === STDCMREQUESTSTATUS.pending}
+      isOpen={currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending}
       htmlID="stdcmRequestModal"
       className="modal-dialog-centered"
       style={{ overlay: { zIndex: 3 } }}
@@ -166,7 +166,7 @@ export default function StdcmRequestModal(props) {
           </ModalHeaderSNCF>
           <ModalBodySNCF>
             <div className="d-flex flex-column text-center">
-              {currentStdcmRequestStatus === STDCMREQUESTSTATUS.pending && (
+              {currentStdcmRequestStatus === STDCM_REQUEST_STATUS.pending && (
                 <>
                   <div className="">
                     <img src={rabbit} alt="runnning stdcm" width="50%" />

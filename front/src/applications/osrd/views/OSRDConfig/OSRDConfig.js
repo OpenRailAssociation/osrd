@@ -13,7 +13,7 @@ import Map from 'applications/osrd/views/OSRDConfig/Map';
 import RollingStockSelector from 'applications/osrd/views/OSRDConfig/RollingStockSelector';
 import SpeedLimitByTagSelector from 'applications/osrd/views/OSRDConfig/SpeedLimitByTagSelector';
 import TimetableSelector from 'applications/osrd/views/OSRDConfig/TimetableSelector';
-import { STDCMREQUESTSTATUS } from 'applications/osrd/consts';
+import { STDCM_REQUEST_STATUS } from 'applications/osrd/consts';
 import { updateViewport } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
 import { MODES } from '../../consts';
@@ -73,7 +73,7 @@ export default function OSRDConfig(props) {
               <button
                 className="btn btn-sm  btn-primary "
                 type="button"
-                onClick={() => setCurrentStdcmRequestStatus(STDCMREQUESTSTATUS.pending)}
+                onClick={() => setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.pending)}
               >
                 {t('osrdconf:apply')}
                 <span className="sr-only" aria-hidden="true">

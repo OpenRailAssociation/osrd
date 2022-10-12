@@ -24,7 +24,7 @@ import TimeTable from 'applications/osrd/views/OSRDSimulation/TimeTable';
 import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/createTrain';
 import { get } from 'common/requests';
 import { setFailure } from 'reducers/main';
-import { STDCMREQUESTSTATUS } from 'applications/osrd/consts';
+import { STDCM_REQUEST_STATUS } from 'applications/osrd/consts';
 import { useTranslation } from 'react-i18next';
 
 export default function OSRDStcdmResults(props) {
@@ -117,7 +117,7 @@ export default function OSRDStcdmResults(props) {
 
   let stdcmResultsSection;
   if (
-    currentStdcmRequestStatus === STDCMREQUESTSTATUS.success &&
+    currentStdcmRequestStatus === STDCM_REQUEST_STATUS.success &&
     simulation.trains[selectedTrain] !== undefined
   ) {
     stdcmResultsSection = (
@@ -147,7 +147,7 @@ export default function OSRDStcdmResults(props) {
         </div>
       </main>
     );
-  } else if (currentStdcmRequestStatus === STDCMREQUESTSTATUS.noresults) {
+  } else if (currentStdcmRequestStatus === STDCM_REQUEST_STATUS.noresults) {
     stdcmResultsSection = (
       <main className="osrd-config-mastcontainer mastcontainer">
         <div className="row m-0 px-1 py-3">
