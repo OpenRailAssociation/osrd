@@ -3,26 +3,14 @@ import { useSelector } from 'react-redux';
 import { Layer, Source, Marker } from 'react-map-gl';
 import lineSliceAlong from '@turf/line-slice-along';
 import length from '@turf/length';
-import { Point, Feature, LineString } from 'geojson';
+import { Feature, LineString } from 'geojson';
 import cx from 'classnames';
 
 import { RootState } from 'reducers';
 import { datetime2time } from 'utils/timeManipulation';
 import { boundedValue } from 'utils/numbers';
 import { Viewport } from 'reducers/map';
-
-export interface TrainPosition {
-  id: string;
-  headPosition: Feature<Point>;
-  tailPosition: Feature<Point>;
-  headDistanceAlong: number;
-  tailDistanceAlong: number;
-  speedTime: {
-    speed: number;
-    time: number;
-  };
-  trainLength: number;
-}
+import { TrainPosition } from './types';
 
 function getFill(isSelectedTrain: boolean, ecoBlocks) {
   if (isSelectedTrain) {
@@ -73,7 +61,7 @@ function getLengthFactorToKeepLabelPlacedCorrectlyWhenZooming(viewport: Viewport
 
 interface TrainHoverPositionProps {
   point: TrainPosition;
-  isSelectedTrain: boolean;
+  isSelectedTrain?: boolean;
   geojsonPath: Feature<LineString>;
 }
 
@@ -90,7 +78,7 @@ function TrainHoverPosition(props: TrainHoverPositionProps) {
   const simulation = useSelector((state: RootState) => state.osrdsimulation.simulation.present);
   const trainID = simulation.trains[selectedTrain].id;
   const { ecoBlocks } = allowancesSettings[trainID];
-  const fill = getFill(isSelectedTrain, ecoBlocks);
+  const fill = getFill(isSelectedTrain as boolean, ecoBlocks);
   const label = getSpeedAndTimeLabel(isSelectedTrain, ecoBlocks, point);
 
   if (geojsonPath && point.headDistanceAlong && point.tailDistanceAlong) {

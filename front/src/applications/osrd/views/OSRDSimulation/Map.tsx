@@ -6,9 +6,11 @@ import ReactMapGL, {
   FlyToInterpolator,
   ScaleControl,
   WebMercatorViewport,
+  MapRef,
 } from 'react-map-gl';
 import PropTypes from 'prop-types';
-import { lineString, point } from '@turf/helpers';
+import { Feature, LineString } from 'geojson';
+import { lineString, point, feature } from '@turf/helpers';
 import along from '@turf/along';
 import bbox from '@turf/bbox';
 import lineLength from '@turf/length';
@@ -17,6 +19,8 @@ import { CgLoadbar } from 'react-icons/cg';
 
 import { updateTimePositionValues } from 'reducers/osrdsimulation';
 import { updateViewport } from 'reducers/map';
+import { RootState } from 'reducers';
+import { TrainPosition } from 'applications/osrd/components/SimulationMap/types';
 
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
@@ -68,21 +72,21 @@ function checkIfEcoAndAddPrefix(allowancesSettings, id, baseKey) {
 function Map(props) {
   const { setExtViewport } = props;
   const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings } =
-    useSelector((state) => state.map);
+    useSelector((state: RootState) => state.map);
   const { isPlaying, selectedTrain, positionValues, timePosition, allowancesSettings } =
-    useSelector((state) => state.osrdsimulation);
-  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
-  const [geojsonPath, setGeojsonPath] = useState(undefined);
-  const [selectedTrainHoverPosition, setTrainHoverPosition] = useState(undefined);
-  const [otherTrainsHoverPosition, setOtherTrainsHoverPosition] = useState([]);
+    useSelector((state: RootState) => state.osrdsimulation);
+  const simulation = useSelector((state: RootState) => state.osrdsimulation.simulation.present);
+  const [geojsonPath, setGeojsonPath] = useState<Feature<LineString>>();
+  const [selectedTrainHoverPosition, setTrainHoverPosition] = useState<TrainPosition>();
+  const [otherTrainsHoverPosition, setOtherTrainsHoverPosition] = useState<TrainPosition[]>([]);
   const [idHover, setIdHover] = useState(undefined);
-  const { urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
+  const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
   const dispatch = useDispatch();
   const updateViewportChange = useCallback(
     (value) => dispatch(updateViewport(value, undefined)),
     [dispatch]
   );
-  const mapRef = React.useRef();
+  const mapRef = React.useRef<MapRef>(null);
 
   /**
    *
@@ -95,7 +99,7 @@ function Map(props) {
   const createOtherPoints = () => {
     const actualTime = datetime2sec(timePosition);
     // First find trains where actual time from position is between start & stop
-    const concernedTrains = [];
+    const concernedTrains: any[] = [];
     simulation.trains.forEach((train, idx) => {
       const key = getRegimeKey(train.id);
       if (
@@ -126,56 +130,58 @@ function Map(props) {
 
   // specifies the position of the trains when hovering over the simulation
   const getSimulationHoverPositions = () => {
-    const line = lineString(geojsonPath.geometry.coordinates);
-    const id = simulation.trains[selectedTrain]?.id;
-    const headKey = checkIfEcoAndAddPrefix(allowancesSettings, id, 'headPosition');
-    const tailKey = checkIfEcoAndAddPrefix(allowancesSettings, id, 'tailPosition');
-    if (positionValues[headKey]) {
-      setTrainHoverPosition(() => {
-        const headDistanceAlong = positionValues[headKey].position / 1000;
-        const tailDistanceAlong = positionValues[tailKey].position / 1000;
-        const headPosition = along(line, headDistanceAlong, {
-          units: 'kilometers',
+    if (geojsonPath) {
+      const line = lineString(geojsonPath.geometry.coordinates);
+      const id = simulation.trains[selectedTrain]?.id;
+      const headKey = checkIfEcoAndAddPrefix(allowancesSettings, id, 'headPosition');
+      const tailKey = checkIfEcoAndAddPrefix(allowancesSettings, id, 'tailPosition');
+      if (positionValues[headKey]) {
+        setTrainHoverPosition(() => {
+          const headDistanceAlong = positionValues[headKey].position / 1000;
+          const tailDistanceAlong = positionValues[tailKey].position / 1000;
+          const headPosition = along(line, headDistanceAlong, {
+            units: 'kilometers',
+          });
+          const tailPosition = positionValues[tailKey]
+            ? along(line, tailDistanceAlong, { units: 'kilometers' })
+            : headPosition;
+          const trainLength = Math.abs(headDistanceAlong - tailDistanceAlong);
+          return {
+            id: 'main-train',
+            headPosition,
+            tailPosition,
+            headDistanceAlong,
+            tailDistanceAlong,
+            speedTime: positionValues.speed,
+            trainLength,
+          };
         });
-        const tailPosition = positionValues[tailKey]
-          ? along(line, tailDistanceAlong, { units: 'kilometers' })
-          : headPosition;
-        const trainLength = Math.abs(headDistanceAlong - tailDistanceAlong);
-        return {
-          id: 'main-train',
-          headPosition,
-          tailPosition,
-          headDistanceAlong,
-          tailDistanceAlong,
-          speedTime: positionValues.speed,
-          trainLength,
-        };
-      });
-    }
+      }
 
-    // Found trains including timePosition, and organize them with geojson collection of points
-    setOtherTrainsHoverPosition(
-      createOtherPoints().map((train) => {
-        const headDistanceAlong = train.head_positions.position / 1000;
-        const tailDistanceAlong = train.tail_positions.position / 1000;
-        const headPosition = along(line, headDistanceAlong, {
-          units: 'kilometers',
-        });
-        const tailPosition = train.tail_position
-          ? along(line, tailDistanceAlong, { units: 'kilometers' })
-          : headPosition;
-        const trainLength = Math.abs(headDistanceAlong - tailDistanceAlong);
-        return {
-          id: `other-train-${train.id}`,
-          headPosition,
-          tailPosition,
-          headDistanceAlong,
-          tailDistanceAlong,
-          speedTime: positionValues.speed,
-          trainLength,
-        };
-      })
-    );
+      // Found trains including timePosition, and organize them with geojson collection of points
+      setOtherTrainsHoverPosition(
+        createOtherPoints().map((train) => {
+          const headDistanceAlong = train.head_positions.position / 1000;
+          const tailDistanceAlong = train.tail_positions.position / 1000;
+          const headPosition = along(line, headDistanceAlong, {
+            units: 'kilometers',
+          });
+          const tailPosition = train.tail_position
+            ? along(line, tailDistanceAlong, { units: 'kilometers' })
+            : headPosition;
+          const trainLength = Math.abs(headDistanceAlong - tailDistanceAlong);
+          return {
+            id: `other-train-${train.id}`,
+            headPosition,
+            tailPosition,
+            headDistanceAlong,
+            tailDistanceAlong,
+            speedTime: positionValues.speed,
+            trainLength,
+          };
+        })
+      );
+    }
   };
 
   const zoomToFeature = (boundingBox) => {
@@ -199,18 +205,11 @@ function Map(props) {
   const getGeoJSONPath = async (pathID) => {
     try {
       const path = await get(`${PATHFINDING_URI}${pathID}/`);
-      const features = {
-        type: 'Feature',
-        geometry: {
-          type: 'LineString',
-          coordinates: path.geographic.coordinates,
-        },
-        properties: {},
-      };
+      const features = lineString(path.geographic.coordinates);
       setGeojsonPath(features);
       zoomToFeature(bbox(features));
     } catch (e) {
-      console.log('ERROR', e);
+      console.info('ERROR', e);
     }
   };
 
@@ -222,8 +221,8 @@ function Map(props) {
   const resetPitchBearing = () => {
     updateViewportChange({
       ...viewport,
-      bearing: parseFloat(0),
-      pitch: parseFloat(0),
+      bearing: 0,
+      pitch: 0,
       transitionDuration: 1000,
       transitionInterpolator: new FlyToInterpolator(),
     });
@@ -240,14 +239,7 @@ function Map(props) {
             geojsonPath.geometry.coordinates[geojsonPath.geometry.coordinates.length - 1][0],
             geojsonPath.geometry.coordinates[geojsonPath.geometry.coordinates.length - 1][1],
           ];
-      const start = {
-        type: 'Feature',
-        properties: {},
-        geometry: {
-          type: 'Point',
-          coordinates: startCoordinates,
-        },
-      };
+      const start = point(startCoordinates);
       const sliced = lineSlice(start, cursorPoint, line);
       const positionLocal = lineLength(sliced, { units: 'kilometers' }) * 1000;
       const timePositionLocal = interpolateOnPosition(
@@ -265,8 +257,10 @@ function Map(props) {
   };
 
   const onClick = (e) => {
-    console.info('Click on map');
-    console.info(mapRef.current.queryRenderedFeatures(e.point));
+    if (mapRef.current) {
+      console.info('Click on map');
+      console.info(mapRef.current.queryRenderedFeatures(e.point));
+    }
   };
 
   const displayPath = () => {
@@ -276,7 +270,7 @@ function Map(props) {
   };
 
   function defineInteractiveLayers() {
-    const interactiveLayersLocal = [];
+    const interactiveLayersLocal: string[] = [];
     if (geojsonPath) {
       interactiveLayersLocal.push('geojsonPath');
       interactiveLayersLocal.push('main-train-path');
@@ -289,23 +283,25 @@ function Map(props) {
     }
     return interactiveLayersLocal;
   }
-  const [interactiveLayerIds, setInteractiveLayerIds] = useState([]);
+  const [interactiveLayerIds, setInteractiveLayerIds] = useState<string[]>([]);
   useEffect(() => {
     setInteractiveLayerIds(defineInteractiveLayers());
   }, [geojsonPath, otherTrainsHoverPosition.length]);
 
   useEffect(() => {
-    mapRef.current.getMap().on('click', () => {});
+    if (mapRef.current) {
+      mapRef.current.getMap().on('click', () => {});
 
-    if (urlLat) {
-      updateViewportChange({
-        ...viewport,
-        latitude: parseFloat(urlLat),
-        longitude: parseFloat(urlLon),
-        zoom: parseFloat(urlZoom),
-        bearing: parseFloat(urlBearing),
-        pitch: parseFloat(urlPitch),
-      });
+      if (urlLat) {
+        updateViewportChange({
+          ...viewport,
+          latitude: parseFloat(urlLat),
+          longitude: parseFloat(urlLon),
+          zoom: parseFloat(urlZoom),
+          bearing: parseFloat(urlBearing),
+          pitch: parseFloat(urlPitch),
+        });
+      }
     }
   }, []);
 
@@ -357,7 +353,7 @@ function Map(props) {
         {mapTrackSources === 'geographic' ? (
           <>
             <Catenaries geomType="geo" colors={colors[mapStyle]} />
-            <TVDs geomType="geo" colors={colors[mapStyle]} idHover={idHover} />
+            <TVDs geomType="geo" idHover={idHover} />
             <Platform colors={colors[mapStyle]} />
             <TracksGeographic colors={colors[mapStyle]} />
             <TracksOSM colors={colors[mapStyle]} />
@@ -394,21 +390,22 @@ function Map(props) {
         )}
 
         {mapSearchMarker !== undefined ? (
-          <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />
+          <SearchMarker data={mapSearchMarker as object} colors={colors[mapStyle]} />
         ) : null}
 
         {geojsonPath !== undefined ? <RenderItinerary geojsonPath={geojsonPath} /> : null}
 
-        {selectedTrainHoverPosition && (
+        {geojsonPath && selectedTrainHoverPosition && (
           <TrainHoverPosition
             point={selectedTrainHoverPosition}
             isSelectedTrain
             geojsonPath={geojsonPath}
           />
         )}
-        {otherTrainsHoverPosition.map((pt) => (
-          <TrainHoverPosition point={pt} geojsonPath={geojsonPath} key={pt.id} />
-        ))}
+        {geojsonPath &&
+          otherTrainsHoverPosition.map((pt) => (
+            <TrainHoverPosition point={pt} geojsonPath={geojsonPath} key={pt.id} />
+          ))}
       </ReactMapGL>
       <div className="handle-tab-resize">
         <CgLoadbar />

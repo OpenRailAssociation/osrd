@@ -51,6 +51,10 @@ export interface OsrdSimulationState {
     tailPosition: number;
     routeEndOccupancy: number;
     routeBeginOccupancy: number;
+    speed: {
+      speed: number;
+      time: number;
+    };
   };
   selectedProjection: any;
   selectedTrain: number;
@@ -318,12 +322,11 @@ export function updateConsolidatedSimulation(consolidatedSimulation) {
     });
   };
 }
-export function updateTimePositionValues(timePosition, positionValues) {
+export function updateTimePositionValues(timePosition) {
   return (dispatch) => {
     dispatch({
       type: UPDATE_TIME_POSITION_VALUES,
       timePosition,
-      positionValues,
     });
   };
 }
