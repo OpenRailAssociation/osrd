@@ -9,6 +9,7 @@ import cx from 'classnames';
 import { RootState } from 'reducers';
 import { datetime2time } from 'utils/timeManipulation';
 import { boundedValue } from 'utils/numbers';
+import { Viewport } from 'reducers/map';
 
 export interface TrainPosition {
   id: string;
@@ -66,13 +67,7 @@ export function makeDisplayedHeadAndTail(point: TrainPosition, geojsonPath: Feat
   };
 }
 
-function getLengthFactorToKeepLabelPlacedCorrectlyWhenZooming(
-  viewport: {
-    zoom: number;
-    transformRequest: (url: string, resourceType: string, urlmap: string) => any;
-  },
-  threshold = 12
-) {
+function getLengthFactorToKeepLabelPlacedCorrectlyWhenZooming(viewport: Viewport, threshold = 12) {
   return 2 ** (threshold - viewport?.zoom);
 }
 
