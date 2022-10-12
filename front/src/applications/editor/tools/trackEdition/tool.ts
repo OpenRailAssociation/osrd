@@ -30,8 +30,9 @@ const TrackEditionTool: Tool<TrackEditionState> = {
   id: 'track-edition',
   icon: MdShowChart,
   labelTranslationKey: 'Editor.tools.track-edition.label',
+  requiredLayers: new Set(['track_sections']),
   isDisabled({ editorState }) {
-    return !editorState.editorZone;
+    return !editorState.editorZone || !editorState.editorLayers.has('track_sections');
   },
   getRadius() {
     return 20;

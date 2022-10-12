@@ -12,18 +12,15 @@ const renderOptions = (options, labelKey, selectedValue) =>
       );
     }
     return (
-      <option
-        key={option.id || option.key}
-        value={JSON.stringify(option)}
-        selected={JSON.stringify(option) === JSON.stringify(selectedValue)}
-      >
+      <option key={option.id || option.key} value={JSON.stringify(option)}>
         {option[labelKey] || `${option.lastName} ${option.firstName}`}
       </option>
     );
   });
 
 export default function SelectSNCF(props) {
-  const { id, title, name, options, selectedValue, onChange, labelKey, selectStyle, sm } = props;
+  const { id, title, name, options, selectedValue, onChange, labelKey, selectStyle, sm, value } =
+    props;
 
   return (
     <>
@@ -31,11 +28,14 @@ export default function SelectSNCF(props) {
       <select
         id={id}
         name={name}
+        /*
         defaultValue={
           typeof selectedValue === 'string' ? selectedValue : JSON.stringify(selectedValue)
         }
+        */
         onChange={onChange}
         className={`${selectStyle} ${sm && 'sm'}`}
+        value={typeof value === 'string' ? value : JSON.stringify(value)}
       >
         {renderOptions(options, labelKey, selectedValue)}
       </select>
@@ -48,7 +48,8 @@ SelectSNCF.propTypes = {
   title: PropTypes.string,
   name: PropTypes.string,
   options: PropTypes.array.isRequired,
-  selectedValue: PropTypes.oneOfType([PropTypes.object, PropTypes.string]).isRequired,
+  selectedValue: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
+  value: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
   onChange: PropTypes.func.isRequired,
   labelKey: PropTypes.string,
   selectStyle: PropTypes.string,
@@ -61,4 +62,6 @@ SelectSNCF.defaultProps = {
   selectStyle: '',
   name: '',
   sm: false,
+  selectedValue: undefined,
+  value: undefined,
 };

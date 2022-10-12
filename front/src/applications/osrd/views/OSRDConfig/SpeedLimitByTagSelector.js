@@ -14,9 +14,19 @@ export default function SpeedLimitByTagSelector() {
   const { infraID, speedLimitByTag } = useSelector((state) => state.osrdconf);
   const { t } = useTranslation(['osrdconf']);
 
+  const getTagsListController = new AbortController();
+  const getTagsListSignal = getTagsListController.signal;
+
   const getTagsList = async (zoom, params) => {
     try {
-      const tagsList = await get(`/infra/${infraID}/speed_limit_tags/`, params, {}, true);
+      const tagsList = await get(
+        `/infra/${infraID}/speed_limit_tags/`,
+        {
+          getTagsListSignal,
+        },
+        {},
+        true
+      );
       setSpeedLimitsTags(tagsList);
     } catch (e) {
       dispatch(
@@ -33,6 +43,11 @@ export default function SpeedLimitByTagSelector() {
     setSpeedLimitsTags(undefined);
     dispatch(updateSpeedLimitByTag(undefined));
     getTagsList();
+    return function cleanup() {
+      setSpeedLimitsTags(undefined);
+      dispatch(updateSpeedLimitByTag(undefined));
+      getTagsListController.abort();
+    };
   }, [infraID]);
 
   return (

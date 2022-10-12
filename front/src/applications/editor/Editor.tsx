@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import { TFunction } from 'i18next';
 import { withTranslation } from 'react-i18next';
 import { ViewportProps } from 'react-map-gl';
+import { useNavigate } from 'react-router';
 import cx from 'classnames';
 
 import 'common/Map/Map.scss';
@@ -11,7 +12,7 @@ import './Editor.scss';
 
 import { LoaderState } from '../../common/Loader';
 import { NotificationsState } from '../../common/Notifications';
-import { EditorState, loadDataModel } from '../../reducers/editor';
+import { loadDataModel, reset } from '../../reducers/editor';
 import { MainState, setFailure } from '../../reducers/main';
 import { updateViewport } from '../../reducers/map';
 import { updateInfraID } from '../../reducers/osrdconf';
@@ -23,7 +24,9 @@ import { EditorContext } from './context';
 import {
   CommonToolState,
   EditorContextType,
+  EditorState,
   ExtendedEditorContextType,
+  FullTool,
   ModalRequest,
   OSRDConf,
   Tool,
@@ -32,23 +35,56 @@ import TOOLS from './tools/list';
 
 const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const osrdConf = useSelector((state: { osrdconf: OSRDConf }) => state.osrdconf);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
   const { fullscreen } = useSelector((state: { main: MainState }) => state.main);
   /* eslint-disable @typescript-eslint/no-explicit-any */
-  const [activeTool, activateTool] = useState<Tool<any>>(TOOLS[0]);
-  const [toolState, setToolState] = useState<any>(activeTool.getInitialState({ osrdConf }));
+  const [toolAndState, setToolAndState] = useState<FullTool<any>>({
+    tool: TOOLS[0],
+    state: TOOLS[0].getInitialState({ osrdConf }),
+  });
   const [modal, setModal] = useState<ModalRequest<any, any> | null>(null);
   /* eslint-enable @typescript-eslint/no-explicit-any */
+  const openModal = useCallback(
+    <ArgumentsType, SubmitArgumentsType>(
+      request: ModalRequest<ArgumentsType, SubmitArgumentsType>
+    ) => {
+      setModal(request as ModalRequest<unknown, unknown>);
+    },
+    [setModal]
+  );
+  const switchTool = useCallback(
+    <S extends CommonToolState>(tool: Tool<S>, partialState?: Partial<S>) => {
+      const state = { ...tool.getInitialState({ osrdConf }), ...(partialState || {}) };
+      setToolAndState({
+        tool,
+        state,
+      });
+    },
+    [osrdConf, setToolAndState]
+  );
+  const setToolState = useCallback(
+    <S extends CommonToolState>(state?: S) => {
+      setToolAndState((s) => ({
+        ...s,
+        state,
+      }));
+    },
+    [setToolAndState]
+  );
+  const resetState = useCallback(() => {
+    switchTool(TOOLS[0]);
+    dispatch(reset());
+  }, []);
 
-  const { infra, urlLat, urlLon, urlZoom, urlBearing, urlPitch } =
-    useParams<Record<string, string>>();
+  const { infra } = useParams<{ infra?: string }>();
   const { mapStyle, viewport } = useSelector(
     (state: { map: { mapStyle: string; viewport: ViewportProps } }) => state.map
   );
   const setViewport = useCallback(
     (value) => {
-      dispatch(updateViewport(value, `/editor/${osrdConf.infraID || '-1'}`));
+      dispatch(updateViewport(value, `/editor/${osrdConf.infraID || '-1'}`, false));
     },
     [dispatch, osrdConf.infraID]
   );
@@ -57,24 +93,16 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
     () => ({
       t,
       modal,
-      openModal: <ArgumentsType, SubmitArgumentsType>(
-        request: ModalRequest<ArgumentsType, SubmitArgumentsType>
-      ) => {
-        setModal(request as ModalRequest<unknown, unknown>);
-      },
+      openModal,
       closeModal: () => {
         setModal(null);
       },
-      activeTool,
-      state: toolState,
+      activeTool: toolAndState.tool,
+      state: toolAndState.state,
       setState: setToolState,
-      switchTool<S extends CommonToolState>(tool: Tool<S>, state?: Partial<S>) {
-        const fullState = { ...tool.getInitialState({ osrdConf }), ...(state || {}) };
-        activateTool(tool);
-        setToolState(fullState);
-      },
+      switchTool,
     }),
-    [activeTool, modal, osrdConf, t, toolState]
+    [toolAndState, modal, osrdConf, t]
   );
   const extendedContext = useMemo<ExtendedEditorContextType<CommonToolState>>(
     () => ({
@@ -90,25 +118,20 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
     [context, dispatch, editorState, mapStyle, osrdConf, viewport]
   );
 
-  const actionsGroups = activeTool.actions
-    .map((group) => group.filter((action) => !action.isHidden || !action.isHidden(extendedContext)))
-    .filter((group) => group.length);
+  const actionsGroups = useMemo(
+    () =>
+      toolAndState.tool.actions
+        .map((group) =>
+          group.filter((action) => !action.isHidden || !action.isHidden(extendedContext))
+        )
+        .filter((group) => group.length),
+    [toolAndState.tool]
+  );
 
   // Initial viewport:
   useEffect(() => {
     // load the data model
     dispatch(loadDataModel());
-    if (urlLat) {
-      setViewport({
-        ...viewport,
-        latitude: parseFloat(urlLat || '0'),
-        longitude: parseFloat(urlLon || '0'),
-        zoom: parseFloat(urlZoom || '1'),
-        bearing: parseFloat(urlBearing || '1'),
-        pitch: parseFloat(urlPitch || '1'),
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Update the infrastructure in state
@@ -116,21 +139,26 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   // we call the api to find the latest infrastructure modified
   useEffect(() => {
     if (infra && parseInt(infra, 10) > 0) {
-      getInfrastructure(parseInt(infra, 10))
-        .then((infrastructure) => dispatch(updateInfraID(infrastructure.id)))
+      const infraID = parseInt(infra, 10);
+      getInfrastructure(infraID)
+        .then(() => {
+          resetState();
+        })
         .catch(() => {
           dispatch(setFailure(new Error(t('Editor.errors.infra-not-found', { id: infra }))));
-          dispatch(updateViewport({}, `/editor/`));
+        })
+        .finally(() => {
+          dispatch(updateInfraID(infraID));
         });
     } else if (osrdConf.infraID) {
-      dispatch(updateViewport({}, `/editor/${osrdConf.infraID}`));
+      navigate(`/editor/${osrdConf.infraID}`);
     } else {
       getInfrastructures()
         .then((infras) => {
           if (infras && infras.length > 0) {
             const infrastructure = infras[0];
             dispatch(updateInfraID(infrastructure.id));
-            dispatch(updateViewport({}, `/editor/${infrastructure.id}`));
+            navigate(`/editor/${infrastructure.id}`);
           } else {
             dispatch(setFailure(new Error(t('Editor.errors.no-infra-available'))));
           }
@@ -139,17 +167,17 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
           dispatch(setFailure(new Error(t('Editor.errors.technical', { msg: e.message }))));
         });
     }
-  }, [dispatch, infra, osrdConf.infraID, t]);
+  }, [infra, osrdConf.infraID]);
 
   // Lifecycle events on tools:
   useEffect(() => {
-    if (activeTool.onMount) activeTool.onMount(extendedContext);
+    if (toolAndState.tool.onMount) toolAndState.tool.onMount(extendedContext);
 
     return () => {
-      if (activeTool.onUnmount) activeTool.onUnmount(extendedContext);
+      if (toolAndState.tool.onUnmount) toolAndState.tool.onUnmount(extendedContext);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTool]);
+  }, [toolAndState.tool]);
 
   return (
     <EditorContext.Provider value={extendedContext as EditorContextType<unknown>}>
@@ -166,10 +194,13 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
                 <Tipped key={id} mode="right">
                   <button
                     type="button"
-                    className={cx('btn-rounded', id === activeTool.id && 'active', 'editor-btn')}
+                    className={cx(
+                      'btn-rounded',
+                      id === toolAndState.tool.id && 'active',
+                      'editor-btn'
+                    )}
                     onClick={() => {
-                      activateTool(tool);
-                      setToolState(tool.getInitialState({ osrdConf }));
+                      switchTool(tool);
                     }}
                     disabled={isDisabled && isDisabled(extendedContext)}
                   >
@@ -224,21 +255,21 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
                 : actions;
             })}
           </div>
-          {activeTool.leftPanelComponent && (
+          {toolAndState.tool.leftPanelComponent && (
             <div className="panel-box">
-              <activeTool.leftPanelComponent />
+              <toolAndState.tool.leftPanelComponent />
             </div>
           )}
           <div className="map-wrapper">
             <div className="map">
               <Map
                 {...{
-                  toolState,
-                  setToolState,
+                  mapStyle,
                   viewport,
                   setViewport,
-                  activeTool,
-                  mapStyle,
+                  toolState: toolAndState.state,
+                  activeTool: toolAndState.tool,
+                  setToolState,
                 }}
               />
 
@@ -267,7 +298,14 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
                           )}
                           onClick={() => {
                             if (onClick) {
-                              onClick({ dispatch, setViewport, viewport }, editorState);
+                              onClick(
+                                { dispatch, setViewport, viewport, openModal, editorState },
+                                {
+                                  activeTool: toolAndState.tool,
+                                  toolState: toolAndState.state,
+                                  setToolState,
+                                }
+                              );
                             }
                           }}
                           disabled={isDisabled && isDisabled(editorState)}
@@ -287,7 +325,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
               </div>
             </div>
             <div className="messages-bar">
-              {activeTool.messagesComponent && <activeTool.messagesComponent />}
+              {toolAndState.tool.messagesComponent && <toolAndState.tool.messagesComponent />}
             </div>
           </div>
         </div>

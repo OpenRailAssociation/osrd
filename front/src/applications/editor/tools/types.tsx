@@ -4,8 +4,40 @@ import { MapEvent, ViewportProps } from 'react-map-gl';
 import { IconType } from 'react-icons/lib/esm/iconBase';
 import { TFunction } from 'i18next';
 
-import { Item, PositionnedItem, SwitchType } from '../../../types';
-import { EditorState } from '../../../reducers/editor';
+import {
+  EditorEntity,
+  EditorSchema,
+  Item,
+  PositionnedItem,
+  SwitchType,
+  Zone,
+} from '../../../types';
+
+export interface EditorState {
+  editorSchema: EditorSchema;
+  editorLayers: Set<LayerType>;
+  editorZone: Zone | null;
+  editorData: Partial<Record<LayerType, EditorEntity[]>>;
+  editorDataArray: EditorEntity[];
+  editorDataIndex: Record<string, EditorEntity>;
+}
+
+export const LAYERS = [
+  'track_sections',
+  'signals',
+  'buffer_stops',
+  'detectors',
+  'switches',
+] as const;
+export type LayerType = typeof LAYERS[number];
+
+export const OBJTYPE_TO_LAYER_DICT: Record<string, LayerType> = {
+  TrackSection: 'track_sections',
+  Signal: 'signals',
+  BufferStop: 'buffer_stops',
+  Detector: 'detectors',
+  Switch: 'switches',
+};
 
 export interface MapState {
   mapStyle: string;
@@ -16,7 +48,7 @@ export interface OSRDConf {
   switchTypes: SwitchType[] | null;
 }
 
-export interface ModalProps<ArgumentsType, SubmitArgumentsType = Record<string, unknown>> {
+export interface ModalProps<ArgumentsType = {}, SubmitArgumentsType = Record<string, unknown>> {
   arguments: ArgumentsType;
   cancel: () => void;
   submit: (args: SubmitArgumentsType) => void;
@@ -100,6 +132,7 @@ export interface Tool<S> {
   labelTranslationKey: string;
   actions: ToolAction<S>[][];
   getInitialState: (context: { osrdConf: OSRDConf }) => S;
+  requiredLayers?: Set<LayerType>;
   isDisabled?: (context: ReadOnlyEditorContextType<S>) => boolean;
   getRadius?: (context: ReadOnlyEditorContextType<S>) => number;
 
@@ -122,3 +155,8 @@ export interface Tool<S> {
   leftPanelComponent?: ComponentType;
   messagesComponent?: ComponentType;
 }
+
+export type FullTool<S> = {
+  tool: Tool<S>;
+  state: S;
+};

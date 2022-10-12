@@ -5,6 +5,9 @@ on:
   push:
     branches:
       - dev
+  release:
+    types:
+      - published
 
 jobs:
   build_push_core:

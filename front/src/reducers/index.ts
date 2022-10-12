@@ -7,11 +7,12 @@ import storage from 'redux-persist/lib/storage'; // defaults to localStorage
 import mainReducer, { MainActions } from './main';
 import userReducer from './user';
 import mapReducer, { MapState } from './map';
-import editorReducer, { EditorState, EditorActions } from './editor';
+import editorReducer, { EditorActions } from './editor';
 
 import osrdconfReducer from './osrdconf';
 import osrdsimulationReducer, { OsrdSimulationState } from './osrdsimulation';
 import rollingStockReducer from './rollingstock';
+import { EditorState } from '../applications/editor/tools/types';
 
 const compressor = createCompressor({
   whitelist: ['rollingstock'],

@@ -169,7 +169,11 @@ function Map() {
     if (trackSectionGeoJSON !== undefined && lngLatHover !== undefined) {
       const line = turfLineString(trackSectionGeoJSON.coordinates);
       const point = turfPoint(lngLatHover);
-      setSnappedPoint(turfNearestPointOnLine(line, point));
+      try {
+        setSnappedPoint(turfNearestPointOnLine(line, point));
+      } catch (error) {
+        console.warn(`Ìmpossible to snapPoint - error ${error}`);
+      }
     }
   }, [trackSectionGeoJSON, trackSectionHover, lngLatHover]);
 

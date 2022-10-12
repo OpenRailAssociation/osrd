@@ -1,12 +1,27 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
+import nextId from 'react-id-generator';
 import './InputGroupSNCF.scss';
 
 export default function InputGroupSNCF(props) {
-  const { id, handleType, options, placeholder, sm, title, value } = props;
+  const { id, handleType, options, placeholder, sm, title, value, type } = props;
   const [selected, setSelected] = useState(
-    title ? { label: title } : { id: options[0].id, label: options[0].label, unit: options[0].unit }
+    value
+      ? {
+          label: title,
+        }
+      : { id: options[0].id, label: options[0].label, unit: options[0].unit }
   );
+
+  useEffect(() => {
+    const selectedOption = options?.find((option) => option.id === type);
+
+    setSelected({
+      label: selectedOption?.label || options[0].label,
+      id: selectedOption?.id || options[0].id,
+      unit: selectedOption?.unit || options[0].unit,
+    });
+  }, [type]);
 
   return (
     <div className={`input-group ${sm && 'input-group-sm'}`}>
@@ -25,7 +40,7 @@ export default function InputGroupSNCF(props) {
           </button>
           <div className="dropdown-menu dropdown-menu-right" id={id}>
             {options.map((option) => (
-              <>
+              <React.Fragment key={nextId()}>
                 <label className="dropdown-item" htmlFor={option.id}>
                   <div
                     onClick={() => {
@@ -46,7 +61,7 @@ export default function InputGroupSNCF(props) {
                   id={option.id}
                   className="sr-only"
                 />
-              </>
+              </React.Fragment>
             ))}
           </div>
         </div>
@@ -75,10 +90,12 @@ InputGroupSNCF.propTypes = {
   sm: PropTypes.bool,
   title: PropTypes.string,
   value: PropTypes.number.isRequired,
+  type: PropTypes.string,
 };
 
 InputGroupSNCF.defaultProps = {
   placeholder: '',
   sm: false,
   title: undefined,
+  type: undefined,
 };
