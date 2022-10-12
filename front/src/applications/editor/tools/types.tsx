@@ -122,3 +122,8 @@ export interface Tool<S> {
   leftPanelComponent?: ComponentType;
   messagesComponent?: ComponentType;
 }
+
+export type FullTool<S> = {
+  tool: Tool<S>;
+  state: S;
+};

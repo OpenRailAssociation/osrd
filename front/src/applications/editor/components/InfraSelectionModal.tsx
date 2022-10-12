@@ -2,13 +2,12 @@ import React, { FC, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { datetime2string } from 'utils/timeManipulation';
+import { useNavigate } from 'react-router';
 
 import { ModalProps } from '../tools/types';
 import Modal from './Modal';
 import { get } from '../../../common/requests';
 import { addNotification, setFailure } from '../../../reducers/main';
-import history from '../../../main/history';
-import { useNavigate } from 'react-router';
 
 const infraURL = '/infra/';
 type InfrasList = {
