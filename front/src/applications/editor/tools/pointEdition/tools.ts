@@ -6,7 +6,7 @@ import { BufferStopEntity, DetectorEntity, SignalEntity } from '../../../../type
 import { BufferStopEditionLayers, DetectorEditionLayers, SignalEditionLayers } from './components';
 
 export const SignalEditionTool = getPointEditionTool<SignalEntity>({
-  id: 'signal',
+  layer: 'signals',
   icon: FaMapSigns,
   getNewEntity: getNewSignal,
   layersComponent: SignalEditionLayers,
@@ -14,14 +14,14 @@ export const SignalEditionTool = getPointEditionTool<SignalEntity>({
 });
 
 export const DetectorEditionTool = getPointEditionTool<DetectorEntity>({
-  id: 'detector',
+  layer: 'detectors',
   icon: MdSensors,
   getNewEntity: getNewDetector,
   layersComponent: DetectorEditionLayers,
 });
 
 export const BufferStopEditionTool = getPointEditionTool<BufferStopEntity>({
-  id: 'buffer-stop',
+  layer: 'buffer_stops',
   icon: BsSkipEnd,
   getNewEntity: getNewBufferStop,
   layersComponent: BufferStopEditionLayers,

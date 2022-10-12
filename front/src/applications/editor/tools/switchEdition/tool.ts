@@ -11,6 +11,14 @@ const SwitchEditionTool: Tool<SwitchEditionState> = {
   id: 'switch-edition',
   icon: TbSwitch2,
   labelTranslationKey: 'Editor.tools.switch-edition.label',
+  requiredLayers: new Set(['switches', 'track_sections']),
+  isDisabled({ editorState }) {
+    return (
+      !editorState.editorZone ||
+      !editorState.editorLayers.has('switches') ||
+      !editorState.editorLayers.has('track_sections')
+    );
+  },
 
   getInitialState({ osrdConf }) {
     if (!osrdConf.switchTypes?.length) throw new Error('There is no switch type yet.');
