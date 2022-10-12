@@ -1,0 +1,17 @@
+{
+    "composition": "Composition",
+    "dcmdetails": "Détails du sillon",
+    "destination": "Destination",
+    "numberoflines": "Nombre de lignes",
+    "origin": "Origine",
+    "pk": "PK",
+    "placeholderline": "N°",
+    "trackname": "Voies",
+    "speedlimits": "Vitesse limite",
+    "rollingstock": "Matériel roulant",
+    "speedLimitByTag": "Catégorie statistique",
+    "place": "Etablissements",
+    "time": "Horaires",
+    "timetable": "Table horaire",
+    "weight": "Masse"
+}
