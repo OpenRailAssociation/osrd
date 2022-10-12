@@ -211,7 +211,7 @@ function OSRDSimulation() {
     <CenterLoader message={t('simulation:waiting')} />
   );
 
-  const mapMaxHeight = timeTableRef?.current?.clientHeight - 42;
+  const mapMaxHeight = getMapMaxHeight(timeTableRef);
   return (
     <main className={`mastcontainer ${fullscreen ? ' fullscreen' : ''}`}>
       {!simulation || simulation.trains.length === 0 ? (
