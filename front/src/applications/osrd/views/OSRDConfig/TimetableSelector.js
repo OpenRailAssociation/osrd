@@ -2,16 +2,16 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import nextId from 'react-id-generator';
 import { useSelector, useDispatch } from 'react-redux';
-import { setFailure } from 'reducers/main.ts';
+import { setFailure } from 'reducers/main';
 import { useTranslation } from 'react-i18next';
 import { get, deleteRequest } from 'common/requests';
 import TimetableSelectorModal from 'applications/osrd/components/TimetableSelector/TimetableSelectorModal';
 import icon from 'assets/pictures/timetable.svg';
 import { sec2time } from 'utils/timeManipulation';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
+import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
 
 const timetableURL = '/timetable/';
-const scheduleURL = '/train_schedule/';
 
 export default function TimetableSelector(props) {
   const { mustUpdateTimetable } = props;
@@ -39,7 +39,7 @@ export default function TimetableSelector(props) {
   };
 
   const deleteTrainSchedule = async (id) => {
-    await deleteRequest(`${scheduleURL}${id}/`);
+    await deleteRequest(`${trainscheduleURI}${id}/`);
     getTimetable(timetableID);
   };
 
@@ -71,6 +71,24 @@ export default function TimetableSelector(props) {
     }
   }, [timetableID, mustUpdateTimetable]);
 
+  let timeTable = <span className="ml-1">{t('osrdconf:noTimetable')}</span>;
+  if (timetableID !== undefined && selectedTimetable === undefined) {
+    timeTable = (
+      <span className="ml-3">
+        <DotsLoader />
+      </span>
+    );
+  } else if (selectedTimetable !== undefined) {
+    timeTable = (
+      <>
+        <span className="ml-1">{selectedTimetable.name}</span>
+        <small className="ml-1 text-primary flex-grow-1">{selectedTimetable.id}</small>
+        <span className="ml-2 badge badge-secondary">
+          {`${selectedTimetable.train_schedules.length} ${t('translation:common.train(s)')}`}
+        </span>
+      </>
+    );
+  }
   return (
     <>
       <div className="osrd-config-item mb-2">
@@ -84,27 +102,7 @@ export default function TimetableSelector(props) {
           <div className="h2 mb-0 d-flex align-items-center">
             <img width="32px" className="mr-2" src={icon} alt="timetableIcon" />
             <span className="text-muted">{t('osrdconf:timetable')}</span>
-            {timetableID !== undefined && selectedTimetable === undefined ? (
-              <span className="ml-3">
-                <DotsLoader />
-              </span>
-            ) : (
-              <>
-                {selectedTimetable !== undefined ? (
-                  <>
-                    <span className="ml-1">{selectedTimetable.name}</span>
-                    <small className="ml-1 text-primary flex-grow-1">{selectedTimetable.id}</small>
-                    <span className="ml-2 badge badge-secondary">
-                      {`${selectedTimetable.train_schedules.length} ${t(
-                        'translation:common.train(s)'
-                      )}`}
-                    </span>
-                  </>
-                ) : (
-                  <span className="ml-1">{t('osrdconf:noTimetable')}</span>
-                )}
-              </>
-            )}
+            {timeTable}
           </div>
         </div>
         {timetableID !== undefined && trainList !== undefined && trainList.length > 0 ? (

@@ -1,7 +1,7 @@
-import PropTypes, { string } from 'prop-types';
-import React, { useCallback, useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
+import React, { useEffect, useState } from 'react';
 import { get, patch } from 'common/requests';
-import { setFailure, setSuccess } from 'reducers/main.ts';
+import { setFailure, setSuccess } from 'reducers/main';
 import {
   updateAllowancesSettings,
   updateMustRedraw,
@@ -13,7 +13,6 @@ import DotsLoader from 'common/DotsLoader/DotsLoader';
 import { FaTrash } from 'react-icons/fa';
 import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import MarecoMultiRange from 'applications/osrd/components/Simulation/Allowances/MarecoMultiRange';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import OPModal from 'applications/osrd/components/Simulation/Allowances/OPModal';
@@ -21,8 +20,7 @@ import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import StandardAllowanceDefault from 'applications/osrd/components/Simulation/Allowances/StandardAllowanceDefault';
 import nextId from 'react-id-generator';
 import { useTranslation } from 'react-i18next';
-
-const trainscheduleURI = '/train_schedule/';
+import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
 
 const TYPEUNITS = {
   time: 's',
@@ -43,7 +41,7 @@ function EmptyLine(props) {
     allowances,
     setAllowances,
     setUpdateAllowances,
-    allowanceType = 'construction',
+    allowanceType,
     marecoBeginPosition,
     marecoEndPosition,
     defaultDistributionId,
@@ -278,7 +276,7 @@ export default function Allowances(props) {
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const [trainDetail, setTrainDetail] = useState(undefined);
   const [allowances, setAllowances] = useState([]);
-  const [rawExtensions, setRawExtensions] = useState([]);
+  const [rawExtensions] = useState([]);
   const [updateAllowances, setUpdateAllowances] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const dispatch = useDispatch();
@@ -371,11 +369,11 @@ export default function Allowances(props) {
     }
   };
 
-  const delAllowance = (idx, allowance_type) => {
+  const delAllowance = (idx, allowanceType) => {
     // change to take into considerations Mareco Ones
     const newAllowances = Array.from(allowances);
     // First check if i is a construction allowance
-    if (allowance_type === 'engineering') {
+    if (allowanceType === 'engineering') {
       newAllowances.splice(idx, 1);
     } else {
       newAllowances.find((a) => a.allowance_type === 'standard')?.ranges.splice(idx, 1);
@@ -408,16 +406,6 @@ export default function Allowances(props) {
   useEffect(() => {
     getAllowances();
   }, [selectedTrain]);
-
-  const handleExtensionsChange = (extensions) => {
-    const newMarecoProposal = extensions
-      .filter((d) => d.extensionData !== 'mareco')
-      .map((d) => ({
-        begin_position: d.currentSelection[0],
-        end_position: d.currentSelection[1],
-      }));
-    setRawExtensions(newMarecoProposal);
-  };
 
   const standardAllowance = allowances.find(
     (allowance) => allowance.allowance_type === 'standard' && allowance.ranges
@@ -502,7 +490,7 @@ export default function Allowances(props) {
             allowanceType="engineering"
             allowanceTypes={allowanceTypes}
           />
-          {rawExtensions.map((rawExtension) => (
+          {rawExtensions.map(() => (
             <EmptyLine
               defaultDistributionId={defaultEngineeringDistributionId}
               setAllowances={setAllowances}
@@ -533,14 +521,17 @@ Allowance.propTypes = {
 EmptyLine.propTypes = {
   allowances: PropTypes.array,
   allowanceTypes: PropTypes.array.isRequired,
+  allowanceType: PropTypes.string,
   distributionsTypes: PropTypes.array.isRequired,
   setAllowances: PropTypes.func.isRequired,
   setUpdateAllowances: PropTypes.func.isRequired,
-  defaultDistributionId: PropTypes.string,
-  allowanceType: PropTypes.string,
   marecoBeginPosition: PropTypes.number,
+  // eslint-disable-next-line react/require-default-props
   marecoEndPosition: PropTypes.number,
+  defaultDistributionId: PropTypes.string.isRequired,
 };
 EmptyLine.defaultProps = {
   allowances: [],
+  allowanceType: 'construction',
+  marecoBeginPosition: 0,
 };

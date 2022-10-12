@@ -77,6 +77,23 @@ public class ReservationRouteImpl implements ReservationRoute {
     }
 
     @Override
+    public ImmutableList<TrackRangeView> getTrackRanges(double beginOffset, double endOffset) {
+        double offset = 0;
+        var res = ImmutableList.<TrackRangeView>builder();
+        for (var trackRange : getTrackRanges()) {
+            var oldOffset = offset;
+            offset += trackRange.getLength(); // We update the offset before truncating the track range
+            if (endOffset < oldOffset + trackRange.getLength())
+                trackRange = trackRange.truncateEndByLength(trackRange.getLength() + oldOffset - endOffset);
+            if (beginOffset > oldOffset)
+                trackRange = trackRange.truncateBeginByLength(beginOffset - oldOffset);
+            if (trackRange.getLength() > 0)
+                res.add(trackRange);
+        }
+        return res.build();
+    }
+
+    @Override
     public double getLength() {
         return length;
     }

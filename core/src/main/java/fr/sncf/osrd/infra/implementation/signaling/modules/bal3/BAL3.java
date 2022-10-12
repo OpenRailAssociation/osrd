@@ -10,7 +10,6 @@ import fr.sncf.osrd.infra.api.signaling.Signal;
 import fr.sncf.osrd.infra.api.signaling.SignalState;
 import fr.sncf.osrd.infra.api.signaling.SignalingModule;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
-import fr.sncf.osrd.infra.implementation.RJSObjectParsing;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
@@ -70,7 +69,8 @@ public class BAL3 implements SignalingModule {
                 continue;
             DiDetector linkedDetector = null;
             if (signal.linkedDetector != null) {
-                var undirectedDetector = RJSObjectParsing.getDetector(signal.linkedDetector, infra.getDetectorMap());
+                var undirectedDetector = infra.getDetectorMap().get(signal.linkedDetector);
+                assert undirectedDetector != null;
                 var dir = signal.direction == EdgeDirection.START_TO_STOP ? Direction.FORWARD : Direction.BACKWARD;
                 linkedDetector = undirectedDetector.getDiDetector(dir);
             }

@@ -82,7 +82,7 @@ export function deleteNotification(n: Notification): ThunkAction<ActionNotificat
   };
 }
 
-type Actions =
+export type MainActions =
   | ActionFailure
   | ActionSuccess
   | ActionLoading
@@ -112,7 +112,7 @@ export const initialState: MainState = {
 //
 // State reducer
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-export default function reducer(inputState, action: Actions) {
+export default function reducer(inputState, action: MainActions) {
   const state = inputState || initialState;
   return produce(state, (draft) => {
     switch (action.type) {

@@ -10,13 +10,13 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.tracks.undirected.*;
 import fr.sncf.osrd.infra.errors.InvalidInfraError;
-import fr.sncf.osrd.infra.implementation.RJSObjectParsing;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitch;
 import fr.sncf.osrd.railjson.schema.infra.RJSSwitchType;
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSRouteWaypoint;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSCatenary;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSLoadingGaugeLimit;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
 import fr.sncf.osrd.reporting.warnings.Warning;
@@ -53,7 +53,7 @@ public class UndirectedInfraBuilder {
         for (var op : infra.operationalPoints) {
             for (var part : op.parts) {
                 var newOp = new OperationalPoint(part.position, op.id);
-                operationalPointsPerTrack.put(part.track.id.id, newOp);
+                operationalPointsPerTrack.put(part.track, newOp);
             }
         }
 
@@ -91,15 +91,31 @@ public class UndirectedInfraBuilder {
 
         addSpeedSections(infra.speedSections, trackSectionsByID);
 
+        loadCatenaries(infra.catenaries, trackSectionsByID);
+
         return TrackInfraImpl.from(switches.build(), builder.build());
+    }
+
+    private void loadCatenaries(List<RJSCatenary> catenaries, HashMap<String, TrackSectionImpl> trackSectionsByID) {
+        for (var catenary : catenaries) {
+            for (var trackRange : catenary.trackRanges) {
+                var track = trackSectionsByID.get(trackRange.track);
+                assert track != null;
+                track.getVoltages().merge(
+                        Range.open(trackRange.begin, trackRange.end),
+                        Set.of(catenary.voltage),
+                        Sets::union
+                );
+            }
+        }
     }
 
     /** Creates all the track section links that haven't already been created by switches */
     private void addRemainingLinks(RJSInfra infra) {
         int generatedID = 0;
         for (var link : infra.trackSectionLinks) {
-            var srcID = link.src.track.id.id;
-            var dstID = link.dst.track.id.id;
+            var srcID = link.src.track;
+            var dstID = link.dst.track;
             var oldSrcNode = getNode(srcID, link.src.endpoint);
             var oldDstNode = getNode(dstID, link.dst.endpoint);
             if (oldSrcNode != null || oldDstNode != null) {
@@ -147,7 +163,7 @@ public class UndirectedInfraBuilder {
         for (var speedSection : speedSections) {
             var value = SpeedLimits.from(speedSection);
             for (var trackRange : speedSection.trackRanges) {
-                var track = RJSObjectParsing.getTrackSection(trackRange.track, trackSectionsByID);
+                var track = trackSectionsByID.get(trackRange.track);
                 var speedSectionMaps = track.getSpeedSections();
                 if (trackRange.applicableDirections.appliesToNormal()) {
                     speedSectionMaps.get(Direction.FORWARD).merge(
@@ -171,7 +187,7 @@ public class UndirectedInfraBuilder {
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"}) // This case only causes issues with strict equalities
     private void makeWaypoint(HashMap<String, TrackSectionImpl> trackSectionsByID,
                             RJSRouteWaypoint waypoint, boolean isBufferStop) {
-        var track = RJSObjectParsing.getTrackSection(waypoint.track, trackSectionsByID);
+        var track = trackSectionsByID.get(waypoint.track);
         var newWaypoint = new DetectorImpl(track, waypoint.position, isBufferStop, waypoint.id);
         var detectors = detectorLists.get(track);
         for (var detector : detectors)
@@ -352,11 +368,11 @@ public class UndirectedInfraBuilder {
             var newNode = new SwitchPortImpl(portName, rjsSwitch.id);
             portMap.put(portName, newNode);
             networkBuilder.addNode(newNode);
-            addNode(port.track.id.id, port.endpoint, newNode);
+            addNode(port.track, port.endpoint, newNode);
             allPorts.add(newNode);
         }
         var finalPortMap = portMap.build();
-        var switchType = RJSObjectParsing.getSwitchType(rjsSwitch.switchType, switchTypeMap);
+        var switchType = switchTypeMap.get(rjsSwitch.switchType);
         var groups = ImmutableMultimap.<String, SwitchBranch>builder();
         var allBranches = new HashSet<SwitchBranchImpl>();
         for (var entry : switchType.groups.entrySet()) {

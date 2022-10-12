@@ -23,7 +23,7 @@ class PathModel(models.Model):
         path = self.payload["route_paths"]
         track_range = path[0]["track_sections"][0]
         return {
-            "track_section": track_range["track"]["id"],
+            "track_section": track_range["track"],
             "offset": track_range["begin"],
         }
 
@@ -31,9 +31,9 @@ class PathModel(models.Model):
         path = self.payload["route_paths"]
         track_range = path[-1]["track_sections"][-1]
         return {
-            "track_section": track_range["track"]["id"],
+            "track_section": track_range["track"],
             "offset": track_range["end"],
         }
 
     def get_initial_route(self):
-        return self.payload["route_paths"][0]["route"]["id"]
+        return self.payload["route_paths"][0]["route"]

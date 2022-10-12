@@ -1,13 +1,13 @@
+use crate::api_error::ApiError;
 use crate::client::ChartosConfig;
-use crate::error::ApiError;
+use crate::db_connection::DBConnection;
+use crate::errors::generate_errors;
+use crate::infra::Infra;
 use crate::infra_cache::InfraCache;
 use crate::layer::InvalidationZone;
 use crate::layer::Layer;
-use crate::models::errors::generate_errors;
-use crate::models::DBConnection;
-use crate::models::Infra;
-use crate::objects::operation::OperationResult;
-use crate::objects::{
+use crate::schema::operation::OperationResult;
+use crate::schema::{
     BufferStop, Catenary, Detector, OperationalPoint, Route, Signal, SpeedSection, Switch,
     TrackSection, TrackSectionLink,
 };
@@ -50,7 +50,7 @@ pub fn refresh(
     Ok(true)
 }
 
-/// Refresh layers of objects affected by the given list of operations result.
+/// Update layers of objects affected by the given list of operations result.
 pub fn update(
     conn: &DBConnection,
     infra_id: i32,

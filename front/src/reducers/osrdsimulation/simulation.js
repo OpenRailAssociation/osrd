@@ -3,10 +3,10 @@ import {
   getTrainDetailsForAPI,
 } from 'applications/osrd/components/TrainList/TrainListHelpers';
 import { deleteRequest, get, post } from 'common/requests';
-import { setFailure, setSuccess } from 'reducers/main.ts';
+import { setFailure } from 'reducers/main';
 
 import trainNameWithNum from 'applications/osrd/components/AddTrainSchedule/trainNameHelper';
-import { trainscheduleURI } from 'applications/osrd/views/OSRDSimulation/OSRDSimulation';
+import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
 
 export const UPDATE_SIMULATION = 'osrdsimu/UPDATE_SIMULATION';
 export const UNDO_SIMULATION = 'osrdsimu/UNDO_SIMULATION';
@@ -31,6 +31,7 @@ export async function progressiveDuplicateTrain(
   selectedProjection,
   simulationTrains,
   selectedTrain,
+  trainDelta,
   dispatch
 ) {
   const trainDetail = await get(`${trainscheduleURI}${simulationTrains[selectedTrain].id}/`);
@@ -70,7 +71,7 @@ export async function progressiveDuplicateTrain(
   } catch (e) {
     dispatch(
       setFailure({
-        name: t('simulation:errorMessages.unableToRetrieveTrainSchedule'),
+        name: 'unableToRetrieveTrainSchedule',
         message: `${e.message} : ${e.response.data.detail}`,
       })
     );
@@ -84,7 +85,7 @@ function simulationEquals(present, newPresent) {
   return JSON.stringify(present) === JSON.stringify(newPresent);
 }
 
-function apiSyncOnDiff(present, nextPresent, dispatch = () => {}, getState = () => {}) {
+function apiSyncOnDiff(present, nextPresent, dispatch = () => {}) {
   // If there is not mod don't do anything
   if (simulationEquals(present, nextPresent)) return;
   // test missing trains and apply delete api
@@ -118,24 +119,6 @@ function apiSyncOnDiff(present, nextPresent, dispatch = () => {}, getState = () 
     ) {
       // train exists, but is different. Patch this train
       changeTrain(getTrainDetailsForAPI(nextTrain), nextTrain.id);
-    }
-  }
-
-  // test new trains and apply post api
-  for (let i = 0; i < nextPresent.trains; i += 1) {
-    const id = nextPresent.trains[i];
-    if (!present.trains.find((train) => train.id === id)) {
-      // Call standalone api
-      // ADN: infect bicolup. Will test more efficent
-      /*
-      const timeTableID = getState()?.osrdconf.timetableID;
-      const selectedProjection = getState()?.osrdsimulation.selectedProjection;
-      const selectedTrain = getState()?.osrdsimulation.selectedTrain;
-      const simulationTrains = getState()?.osrdsimulation.simulation.present.trains;
-      progressiveDuplicateTrain(
-        timeTableID, selectedProjection, simulationTrains, selectedTrain, dispatch
-      );
-      */
     }
   }
 }
@@ -196,11 +179,12 @@ function undoable(simulationReducer) {
   };
 
   // Return a reducer that handles undo and redo
-  return function (state = initialStateU, action) {
+  return function undoableReducer(state, action) {
+    if (!state) state = initialStateU;
     const { past, present, future } = state;
 
     switch (action.type) {
-      case UNDO_SIMULATION:
+      case UNDO_SIMULATION: {
         const previous = past[past.length - 1];
         // security: do not return manually to an empty simulation, it should not happen
         if (previous.trains?.length === 0) return state;
@@ -210,7 +194,8 @@ function undoable(simulationReducer) {
           present: previous,
           future: [present, ...future],
         };
-      case REDO_SIMULATION:
+      }
+      case REDO_SIMULATION: {
         const next = future[0];
         if (next.trains?.length === 0) return state;
         const newFuture = future.slice(1);
@@ -219,7 +204,8 @@ function undoable(simulationReducer) {
           present: next,
           future: newFuture,
         };
-      default:
+      }
+      default: {
         // Delegate handling the action to the passed reducer
         const newPresent = simulationReducer(present, action);
 
@@ -232,6 +218,7 @@ function undoable(simulationReducer) {
           present: newPresent,
           future: [],
         };
+      }
     }
   };
 }
@@ -241,8 +228,8 @@ const initialState = {
   trains: [],
 };
 
-function reducer(state = { trains: [] }, action) {
-  // eslint-disable-next-line default-case
+function reducer(state, action) {
+  if (!state) state = initialState;
 
   switch (action.type) {
     case UPDATE_SIMULATION:

@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 
 from osrd_infra.schemas.infra import (
     DirectionalTrackRange,
-    ObjectReference,
+    Identifier,
     TrackLocationTrait,
 )
 
@@ -20,7 +20,7 @@ class GeometryPointTrait(BaseModel):
 class RoutePath(BaseModel):
     """This class defines the path by dividing it according to the routes it takes."""
 
-    route: ObjectReference = Field(description="Identifier and type of the corresponding route")
+    route: Identifier = Field(description="Reference to the corresponding route")
     track_sections: List[DirectionalTrackRange] = Field(
         description="Identifier, direction, begin and end offset of the corresponding track section"
     )
@@ -31,7 +31,8 @@ class PathWaypoint(GeometryPointTrait, TrackLocationTrait):
     """This class is used to characterize each waypoint of the path.
     Each waypoint is defined with its coordinates, its name, its corresponding track, its duration and its position."""
 
-    name: Optional[str] = Field(description="Name of the point")
+    id: Optional[str] = Field(description="Id of the operational point")
+    name: Optional[str] = Field(description="Name of the operational point")
     suggestion: bool
     duration: float = Field(description="Duration in seconds of the stop if there is a stop at this point", ge=0)
 

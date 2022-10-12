@@ -52,25 +52,25 @@ public class TrainPathBuilder {
         try {
             var routePath = new ArrayList<SignalingRoute>();
             for (var rjsRoutePath : rjsTrainPath.routePath) {
-                var route = infra.findSignalingRoute(rjsRoutePath.route.id.id, rjsRoutePath.signalingType);
+                var route = infra.findSignalingRoute(rjsRoutePath.route, rjsRoutePath.signalingType);
                 if (route == null)
                     throw new InvalidSchedule(String.format(
                             "Can't find route %s (type %s)",
-                            rjsRoutePath.route.id.id,
+                            rjsRoutePath.route,
                             rjsRoutePath.signalingType));
                 routePath.add(route);
             }
 
             var rjsStartTrackRange = rjsTrainPath.routePath.get(0).trackSections.get(0);
             var startLocation = new TrackLocation(
-                    infra.getTrackSection(rjsStartTrackRange.track.id.id),
+                    infra.getTrackSection(rjsStartTrackRange.track),
                     rjsStartTrackRange.getBegin()
             );
 
             var rjsEndRoutePath = rjsTrainPath.routePath.get(rjsTrainPath.routePath.size() - 1);
             var rjsEndTrackRange = rjsEndRoutePath.trackSections.get(rjsEndRoutePath.trackSections.size() - 1);
             var endLocation = new TrackLocation(
-                    infra.getTrackSection(rjsEndTrackRange.track.id.id),
+                    infra.getTrackSection(rjsEndTrackRange.track),
                     rjsEndTrackRange.getEnd()
             );
 
@@ -83,12 +83,12 @@ public class TrainPathBuilder {
     /** check that everything make sense */
     private static void validate(TrainPath path) {
         assert !path.routePath().isEmpty() : "empty route path";
-        assert !path.detectionSections().isEmpty() : "no detection section on path";
         assert !path.trackRangePath().isEmpty() : "empty track range path";
         assert path.length() > 0 : "length must be strictly positive";
 
         checkDetectorOverlap(path.detectors());
-        validateDetectionSections(path);
+        if (path.detectionSections().size() > 0)
+            validateDetectionSections(path);
         checkRangeLength(path);
     }
 
@@ -123,7 +123,6 @@ public class TrainPathBuilder {
 
     /** Checks that the detectors and detection section transitions are consistent */
     private static void validateDetectionSections(TrainPath path) {
-        assert path.detectionSections().size() > 0 : "no detection section";
         int detSectionIndex = 0;
         var firstOffset = path.detectionSections().get(0).pathOffset();
         if (firstOffset < 0

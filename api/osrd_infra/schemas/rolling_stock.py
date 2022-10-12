@@ -15,7 +15,7 @@ from pydantic import (
 
 from .infra import LoadingGaugeType
 
-RAILJSON_ROLLING_STOCK_VERSION = "2.1"
+RAILJSON_ROLLING_STOCK_VERSION = "2.2"
 
 
 class RollingResistance(BaseModel, extra=Extra.forbid):
@@ -61,6 +61,8 @@ class RollingStock(BaseModel, extra=Extra.forbid):
     mass: PositiveFloat = Field(description="The mass of the train, in kg")
     rolling_resistance: RollingResistance = Field(description="The formula to use to compute rolling resistance")
     loading_gauge: LoadingGaugeType
+    electric_only: bool = Field(description="If true, the train can only use tracks with compatible catenaries")
+    compatible_voltages: List[int] = Field(description="A list of compatible voltage (in V)")
 
 
 if __name__ == "__main__":

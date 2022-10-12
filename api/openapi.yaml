@@ -843,6 +843,8 @@ components:
               time: { type: number, format: float }
               position: { type: number, format: float }
               duration: { type: number, format: float }
+              line_code: { type: number }
+              track_number: { type: number }
         route_aspects:
           type: array
           items:
@@ -1144,6 +1146,12 @@ components:
             - "FR3.3"
             - "FR3.3/GB/G2"
             - "GLOTT"
+        electric_only:
+          type: boolean
+        compatible_voltages:
+          type: array
+          items:
+            type: integer
     TrainSchedule:
       allOf:
         - type: object

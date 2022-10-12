@@ -1,7 +1,15 @@
-export const LIGHT_SIGNALS = ['D', 'GA', 'ID', 'IDD',
-'CARRE VL',
-'S VL', 'CARRE A',
-'S A', 'S', 'CARRE'];
+export const LIGHT_SIGNALS = [
+  'D',
+  'GA',
+  'ID',
+  'IDD',
+  'CARRE VL',
+  'S VL',
+  'CARRE A',
+  'S A',
+  'S',
+  'CARRE',
+];
 
 export const SIGNALS_PANELS = [
   'Aig M',
@@ -21,9 +29,9 @@ export const SIGNALS_PANELS = [
   'CAB E',
   'CAB R',
   'CAB S',
-  'CARRE',
-  'CARRE A',
   'CARRE VL',
+  'CARRE A',
+  'CARRE',
   'CARRE (CH)',
   'CC EXE',
   'CC FIN',
@@ -61,9 +69,9 @@ export const SIGNALS_PANELS = [
   'REP TGV',
   'REPER VIT',
   'REV',
-  'S',
-  'S A',
   'S VL',
+  'S A',
+  'S',
   'SAC',
   'SECT',
   'SG DIR',
@@ -110,9 +118,9 @@ export const ALL_SIGNAL_LAYERS = [
   'CAB E',
   'CAB R',
   'CAB S',
+  'CARRE VL',
   'CARRE',
   'CARRE A',
-  'CARRE VL',
   'CC EXE',
   'CC FIN',
   'CHEVRON',
@@ -145,9 +153,9 @@ export const ALL_SIGNAL_LAYERS = [
   'REPER VIT',
   'REP TGV',
   'REV',
+  'S VL',
   'S',
   'S A',
-  'S VL',
   'SECT',
   'SG HEURT',
   'SIFFLER',
@@ -170,20 +178,11 @@ export const ALL_SIGNAL_LAYERS_SET = new Set(ALL_SIGNAL_LAYERS);
 
 export const PANELS_STOPS = ['ARRET VOY', 'ARRET', 'CHEVRON', 'LIMITETS', 'LM', 'STOP'];
 
-export const DYNAMIC_LIGHTS_SIGNAL_LIST = [
-  'CARRE',
-  'S'
-];
+export const DYNAMIC_LIGHTS_SIGNAL_LIST = ['CARRE', 'S'];
 
-export const DYNAMIC_LIGHTS_ATT = [
-  'CARRE A',
-  'S A'
-];
+export const DYNAMIC_LIGHTS_ATT = ['CARRE A', 'S A'];
 
-export const DYNAMIC_LIGHTS_STOP = [
-  'CARRE STOP',
-  'S STOP'
-];
+export const DYNAMIC_LIGHTS_STOP = ['CARRE STOP', 'S STOP'];
 
 export const PANELS_TIVS = [
   'TIV A TRAM',

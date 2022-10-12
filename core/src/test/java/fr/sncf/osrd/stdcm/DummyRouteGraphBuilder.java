@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.graph.ImmutableNetwork;
+import com.google.common.graph.NetworkBuilder;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.reservation.DetectionSection;
 import fr.sncf.osrd.infra.api.reservation.DiDetector;
@@ -31,10 +32,13 @@ public class DummyRouteGraphBuilder {
     private final ImmutableMap.Builder<String, DummyRoute> builder = new ImmutableMap.Builder<>();
     private final Map<String, Signal<? extends SignalState>> signals = new HashMap<>();
     private final Map<String, DiDetector> detectors = new HashMap<>();
+    private final ImmutableNetwork.Builder<DiDetector, SignalingRoute> graphBuilder = NetworkBuilder
+            .directed()
+            .immutable();
 
     /** Builds the infra */
     public SignalingInfra build() {
-        return new DummySignalingInfra(builder.build());
+        return new DummySignalingInfra(builder.build(), graphBuilder.build());
     }
 
     /** Creates a route going from nodes `entry` to `exit` of length 100, named $entry->$exit */
@@ -48,14 +52,18 @@ public class DummyRouteGraphBuilder {
             signals.put(entry, new BAL3Signal(entry, 400));
         if (!signals.containsKey(exit))
             signals.put(exit, new BAL3Signal(exit, 400));
-        if (!detectors.containsKey(entry))
+        if (!detectors.containsKey(entry)) {
             detectors.put(entry, new DiDetector(
                     new DetectorImpl(null, 0, false, entry), Direction.FORWARD)
             );
-        if (!detectors.containsKey(exit))
+            graphBuilder.addNode(detectors.get(entry));
+        }
+        if (!detectors.containsKey(exit)) {
             detectors.put(exit, new DiDetector(
                     new DetectorImpl(null, 0, false, exit), Direction.FORWARD)
             );
+            graphBuilder.addNode(detectors.get(exit));
+        }
         var routeID = String.format("%s->%s", entry, exit);
         var newRoute = new DummyRoute(
                 routeID,
@@ -65,6 +73,7 @@ public class DummyRouteGraphBuilder {
                 ImmutableList.of(detectors.get(entry), detectors.get(exit))
         );
         builder.put(routeID, newRoute);
+        graphBuilder.addEdge(detectors.get(entry), detectors.get(exit), newRoute);
         return newRoute;
     }
 
@@ -76,6 +85,7 @@ public class DummyRouteGraphBuilder {
         private final Signal<? extends SignalState> entrySignal;
         private final Signal<? extends SignalState> exitSignal;
         private final ImmutableList<DiDetector> detectors;
+        private final ImmutableList<TrackRangeView> trackRanges;
 
         DummyRoute(
                 String id,
@@ -89,6 +99,10 @@ public class DummyRouteGraphBuilder {
             this.entrySignal = entrySignal;
             this.exitSignal = exitSignal;
             this.detectors = detectors;
+            var track = new TrackSectionImpl(length, "track_id_" + id);
+            trackRanges = ImmutableList.of(new TrackRangeView(0, length,
+                    new DiTrackEdgeImpl(track, Direction.FORWARD)
+            ));
         }
 
         @Override
@@ -113,10 +127,16 @@ public class DummyRouteGraphBuilder {
 
         @Override
         public ImmutableList<TrackRangeView> getTrackRanges() {
-            var track = new TrackSectionImpl(100, "track_id");
-            return ImmutableList.of(new TrackRangeView(0, 100,
-                    new DiTrackEdgeImpl(track, Direction.FORWARD)
-            ));
+            return trackRanges;
+        }
+
+        @Override
+        public ImmutableList<TrackRangeView> getTrackRanges(double beginOffset, double endOffset) {
+            return ImmutableList.of(
+                    trackRanges.get(0)
+                            .truncateBeginByLength(beginOffset)
+                            .truncateEndByLength(length - endOffset)
+            );
         }
 
         @Override
@@ -154,9 +174,14 @@ public class DummyRouteGraphBuilder {
     public static class DummySignalingInfra implements SignalingInfra {
 
         private final ImmutableMap<String, DummyRoute> routes;
+        private final ImmutableNetwork<DiDetector, SignalingRoute> routeGraph;
 
-        public DummySignalingInfra(ImmutableMap<String, DummyRoute> routes) {
+        public DummySignalingInfra(
+                ImmutableMap<String, DummyRoute> routes,
+                ImmutableNetwork<DiDetector, SignalingRoute> routeGraph
+        ) {
             this.routes = routes;
+            this.routeGraph = routeGraph;
         }
 
         @Override
@@ -214,7 +239,7 @@ public class DummyRouteGraphBuilder {
 
         @Override
         public ImmutableNetwork<DiDetector, SignalingRoute> getSignalingRouteGraph() {
-            return null;
+            return routeGraph;
         }
 
         @Override

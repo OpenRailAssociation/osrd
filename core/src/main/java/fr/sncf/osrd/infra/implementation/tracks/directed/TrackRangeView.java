@@ -12,6 +12,7 @@ import fr.sncf.osrd.infra.api.tracks.undirected.*;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /** An oriented view on a track range. Can be used to iterate over its content */
@@ -116,8 +117,9 @@ public class TrackRangeView {
 
     /** Returns the location of the given offset on the range */
     public TrackLocation offsetLocation(double offset) {
-        assert track.getEdge() instanceof TrackSection;
-        var trackSection = (TrackSection) track.getEdge();
+        TrackSection trackSection = null;
+        if (track.getEdge() instanceof TrackSection ts)
+            trackSection = ts;
         if (track.getDirection().equals(Direction.FORWARD))
             return new TrackLocation(trackSection, begin + offset);
         else
@@ -187,6 +189,11 @@ public class TrackRangeView {
     /** Returns the blocked gauge types projected on the range */
     public ImmutableRangeMap<Double, LoadingGaugeConstraint> getBlockedGaugeTypes() {
         return convertMap(track.getEdge().getLoadingGaugeConstraints());
+    }
+
+    /** Returns the voltage of catenaries on the track */
+    public ImmutableRangeMap<Double, Set<Integer>> getCatenaryVoltages() {
+        return convertMap(track.getEdge().getVoltages());
     }
 
     /** Converts a position on the original track to one referring to the range itself.*/

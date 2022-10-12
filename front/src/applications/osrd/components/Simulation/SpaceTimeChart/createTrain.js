@@ -3,11 +3,10 @@ import {
   formatSignalAspects,
   formatStepsWithTime,
   formatStepsWithTimeMulti,
-  makeStairCase,
   mergeDatasArea,
 } from 'applications/osrd/components/Helpers/ChartHelpers';
 
-import { setFailure } from 'reducers/main.ts';
+import { setFailure } from 'reducers/main';
 
 /**
  * Will do some formating & computation to get a trains to be displayed. Stored then with currentSimulation splitted reducer
@@ -22,6 +21,7 @@ export default function createTrain(dispatch, keyValues, simulationTrains, t) {
   const dataSimulation = simulationTrains.map((train, trainNumber) => {
     const dataSimulationTrain = {};
     dataSimulationTrain.id = train.id;
+    dataSimulationTrain.isStdcm = train.isStdcm;
     dataSimulationTrain.name = train.name;
     dataSimulationTrain.trainNumber = trainNumber;
     dataSimulationTrain.headPosition = formatStepsWithTimeMulti(train.base.head_positions);

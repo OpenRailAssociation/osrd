@@ -8,11 +8,9 @@ import {
 import {
   updateAllowancesSettings,
   updateConsolidatedSimulation,
-  updateMarginsSettings,
   updateMustRedraw,
   updateSelectedProjection,
   updateSelectedTrain,
-  updateSignalBase,
   updateSimulation,
   updateStickyBar,
 } from 'reducers/osrdsimulation';
@@ -35,18 +33,15 @@ import TimeTable from 'applications/osrd/views/OSRDSimulation/TimeTable';
 import TrainDetails from 'applications/osrd/views/OSRDSimulation/TrainDetails';
 import TrainList from 'applications/osrd/views/OSRDSimulation/TrainList';
 import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/createTrain';
+import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
 import { get } from 'common/requests';
 import { sec2time } from 'utils/timeManipulation';
-import { setFailure } from 'reducers/main.ts';
-import { updateMode } from 'reducers/osrdconf';
+import { setFailure } from 'reducers/main';
 import { updateViewport } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
-import { MODES } from '../../consts';
 
 export const KEY_VALUES_FOR_CONSOLIDATED_SIMULATION = ['time', 'position'];
 export const timetableURI = '/timetable/';
-
-export const trainscheduleURI = '/train_schedule/';
 
 function OSRDSimulation() {
   const { t } = useTranslation(['translation', 'simulation', 'allowances']);
@@ -75,20 +70,12 @@ function OSRDSimulation() {
     departureArrivalTimes,
     selectedTrain,
     stickyBar,
-    signalBase,
   } = useSelector((state) => state.osrdsimulation);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
 
   if (darkmode) {
     import('./OSRDSimulationDarkMode.scss');
-  }
-
-  function WaitingLoader() {
-    if (isEmpty) {
-      return <h1 className="text-center">{t('simulation:noData')}</h1>;
-    }
-    return <CenterLoader message={t('simulation:waiting')} />;
   }
 
   /**
@@ -205,12 +192,16 @@ function OSRDSimulation() {
     dispatch(updateConsolidatedSimulation(consolidatedSimulation));
   }, [simulation]);
 
+  const waitingLoader = isEmpty ? (
+    <h1 className="text-center">{t('simulation:noData')}</h1>
+  ) : (
+    <CenterLoader message={t('simulation:waiting')} />
+  );
+
   return (
     <main className={`mastcontainer ${fullscreen ? ' fullscreen' : ''}`}>
       {!simulation || simulation.trains.length === 0 ? (
-        <div className="pt-5 mt-5">
-          <WaitingLoader />
-        </div>
+        <div className="pt-5 mt-5">{waitingLoader}</div>
       ) : (
         <div className="m-0 p-3">
           <div className="mb-2">

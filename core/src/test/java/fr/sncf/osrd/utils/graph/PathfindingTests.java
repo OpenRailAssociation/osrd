@@ -45,8 +45,8 @@ public class PathfindingTests {
             makeEdge(n1, n2, length, Set.of());
         }
 
-        public ImmutableNetwork<Node, Edge> build() {
-            return builder.build();
+        public Graph<Node, Edge> build() {
+            return new GraphAdapter<>(builder.build());
         }
 
         public Pathfinding.EdgeLocation<Edge> getEdgeLocation(String id, double offset) {
@@ -84,6 +84,7 @@ public class PathfindingTests {
                         List.of(builder.getEdgeLocation("3-4"))
                 ),
                 edge -> edge.length,
+                null,
                 null);
         var resIDs = res.stream().map(x -> x.label).toList();
         assertEquals(
@@ -120,7 +121,7 @@ public class PathfindingTests {
                         List.of(builder.getEdgeLocation("3-4"))
                 ),
                 edge -> edge.length,
-                null);
+                null, null);
         var resIDs = res.stream().map(x -> x.label).toList();
         assertEquals(
                 List.of(
@@ -163,7 +164,7 @@ public class PathfindingTests {
                         List.of(builder.getEdgeLocation("5-6"))
                 ),
                 edge -> edge.length,
-                null);
+                null, null);
         var resIDs = res.stream().map(x -> x.label).toList();
         assertEquals(
                 List.of(
@@ -206,7 +207,7 @@ public class PathfindingTests {
                         )
                 ),
                 edge -> edge.length,
-                null);
+                null, null);
         var resIDs = res.stream().map(x -> x.label).toList();
         assertEquals(
                 List.of(
@@ -241,7 +242,7 @@ public class PathfindingTests {
                         List.of(builder.getEdgeLocation("1-2", 50))
                 ),
                 edge -> edge.length,
-                null);
+                null, null);
         var resIDs = res.stream().map(x -> x.label).toList();
         assertEquals(
                 List.of(
@@ -271,7 +272,7 @@ public class PathfindingTests {
                         List.of(builder.getEdgeLocation("0-1"))
                 ),
                 edge -> edge.length,
-                null);
+                null, null);
         assertNull(res);
     }
 
@@ -292,7 +293,7 @@ public class PathfindingTests {
                         List.of(builder.getEdgeLocation("0-1", 30))
                 ),
                 edge -> edge.length,
-                null);
+                null, null);
         assertNull(res);
     }
 
@@ -318,7 +319,7 @@ public class PathfindingTests {
                         List.of(builder.getEdgeLocation("0-1", 30))
                 ),
                 edge -> edge.length,
-                null);
+                null, null);
         var resIDs = res.stream().map(x -> x.label).toList();
         assertEquals(
                 List.of(
@@ -358,7 +359,7 @@ public class PathfindingTests {
                         )
                 ),
                 edge -> edge.length,
-                null);
+                null, null);
         assertEquals(
                 List.of(
                         new SimpleRange("0-1", 0, 0),
@@ -395,7 +396,7 @@ public class PathfindingTests {
                         List.of(builder.getEdgeLocation("2-3", 5))
                 ),
                 edge -> edge.length,
-                null);
+                null, null);
         assertEquals(
                 List.of(
                         new SimpleRange("0-1", 5, 10),
@@ -439,8 +440,8 @@ public class PathfindingTests {
                         List.of(builder.getEdgeLocation("4-5"))
                 ),
                 edge -> edge.length,
-                x -> x.blockedRanges
-        );
+                x -> x.blockedRanges,
+                null);
         var resIDs = res.stream().map(x -> x.label).toList();
         assertEquals(
                 List.of(
@@ -469,8 +470,8 @@ public class PathfindingTests {
                         List.of(builder.getEdgeLocation("0-1", 7))
                 ),
                 edge -> edge.length,
-                x -> x.blockedRanges
-        );
+                x -> x.blockedRanges,
+                null);
         assertNull(res);
     }
 
@@ -494,8 +495,8 @@ public class PathfindingTests {
                         List.of(builder.getEdgeLocation("0-1", 50))
                 ),
                 edge -> edge.length,
-                x -> x.blockedRanges
-        );
+                x -> x.blockedRanges,
+                null);
         assertNotNull(res);
     }
 
@@ -517,8 +518,8 @@ public class PathfindingTests {
                         List.of(builder.getEdgeLocation("1-2", 50))
                 ),
                 edge -> edge.length,
-                x -> x.blockedRanges
-        );
+                x -> x.blockedRanges,
+                null);
         assertNotNull(res);
     }
 
@@ -540,8 +541,8 @@ public class PathfindingTests {
                         List.of(builder.getEdgeLocation("1-2", 50))
                 ),
                 edge -> edge.length,
-                x -> x.blockedRanges
-        );
+                x -> x.blockedRanges,
+                null);
         assertNull(res);
     }
 
@@ -565,8 +566,8 @@ public class PathfindingTests {
                         List.of(builder.getEdgeLocation("0-1", 50))
                 ),
                 edge -> edge.length,
-                x -> x.blockedRanges
-        );
+                x -> x.blockedRanges,
+                null);
         assertNotNull(res);
     }
 
@@ -592,8 +593,8 @@ public class PathfindingTests {
                         List.of(builder.getEdgeLocation("0-1", 60))
                 ),
                 edge -> edge.length,
-                x -> x.blockedRanges
-        );
+                x -> x.blockedRanges,
+                null);
         assertNull(res);
     }
 

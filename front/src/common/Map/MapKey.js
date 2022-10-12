@@ -2,7 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import colors from 'common/Map/Consts/colors.ts';
+import colors from 'common/Map/Consts/colors';
 import 'common/Map/MapKey.scss';
 
 export default function MapSettings(props) {

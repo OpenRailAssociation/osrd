@@ -1,8 +1,9 @@
-import infra
 from dataclasses import dataclass, field
 
 from railjson_generator.schema.infra.direction import ApplicableDirection
 from railjson_generator.schema.infra.endpoint import TrackEndpoint
+
+import infra
 
 
 def _link_id():
@@ -38,5 +39,4 @@ class Link:
             id=self.label,
             src=self.begin.to_rjs(),
             dst=self.end.to_rjs(),
-            navigability=infra.ApplicableDirections[self.navigability.name]
         )

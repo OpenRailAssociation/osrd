@@ -125,6 +125,7 @@ export default function TrainsList(props) {
                     className="custom-control-input"
                     id={`timetable-train-${idx}`}
                   />
+                  {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
                   <label className="custom-control-label" htmlFor={`timetable-train-${idx}`} />
                 </div>
               </div>
@@ -268,6 +269,7 @@ export default function TrainsList(props) {
                         className="custom-control-input"
                         id="timetable-sel-all-trains"
                       />
+                      {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
                       <label className="custom-control-label" htmlFor="timetable-sel-all-trains">
                         <span className="sr-only">Select all</span>
                       </label>

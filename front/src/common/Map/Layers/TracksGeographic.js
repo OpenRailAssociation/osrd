@@ -1,6 +1,6 @@
 import { Layer, Source } from 'react-map-gl';
 import { MAP_TRACK_SOURCES, MAP_URL } from 'common/Map/const';
-import { geoMainLayer, geoServiceLayer } from 'common/Map/Layers/geographiclayers.ts';
+import { geoMainLayer, geoServiceLayer } from 'common/Map/Layers/geographiclayers';
 import { lineNameLayer, lineNumberLayer, trackNameLayer } from 'common/Map/Layers/commonLayers';
 
 import PropTypes from 'prop-types';
@@ -34,7 +34,7 @@ function TracksGeographic(props) {
           ...trackNameLayer(colors),
           layout: {
             ...trackNameLayer(colors).layout,
-            'text-field': '{track_name}',
+            'text-field': '{extensions_sncf_track_name}',
             'text-size': 11,
           },
         }}
@@ -47,7 +47,7 @@ function TracksGeographic(props) {
           ...trackNameLayer(colors),
           layout: {
             ...trackNameLayer(colors).layout,
-            'text-field': '{track_name}',
+            'text-field': '{extensions_sncf_track_name}',
             'text-size': 10,
           },
         }}
@@ -60,7 +60,7 @@ function TracksGeographic(props) {
           ...lineNumberLayer(colors),
           layout: {
             ...lineNumberLayer(colors).layout,
-            'text-field': '{line_code}',
+            'text-field': '{extensions_sncf_line_code}',
           },
         }}
         id="chartis/tracks-geo/number"

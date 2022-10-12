@@ -8,7 +8,7 @@ import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { setSuccess, setFailure } from 'reducers/main.ts';
+import { setSuccess, setFailure } from 'reducers/main';
 import icon from 'assets/pictures/timetable.svg';
 
 const timetableURL = '/timetable/';

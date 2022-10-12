@@ -1,14 +1,14 @@
 use super::params::List;
+use crate::api_error::{ApiResult, EditoastError, InfraLockedError};
 use crate::client::ChartosConfig;
-use crate::error::{ApiResult, EditoastError, InfraLockedError};
+use crate::db_connection::DBConnection;
+use crate::errors::{generate_errors, get_paginated_infra_errors};
 use crate::generate;
+use crate::infra::{CreateInfra, Infra, InfraApiError};
 use crate::infra_cache::{InfraCache, ObjectCache};
 use crate::layer::InvalidationZone;
-use crate::models::errors::generate_errors;
-use crate::models::infra_errors::get_paginated_infra_errors;
-use crate::models::{CreateInfra, DBConnection, Infra, InfraError};
-use crate::objects::operation::{Operation, OperationResult};
-use crate::objects::SwitchType;
+use crate::schema::operation::{Operation, OperationResult};
+use crate::schema::SwitchType;
 use chashmap::CHashMap;
 use rocket::http::Status;
 use rocket::response::status::Custom;
@@ -121,7 +121,7 @@ fn edit(
     // Use a transaction to give scope to the infra lock
     conn.build_transaction().run::<_, EditoastError, _>(|| {
         // Retrieve and lock infra
-        let infra = Infra::retrieve_for_update(&conn, infra as i32)?;
+        let infra = Infra::retrieve_for_update(&conn, infra)?;
 
         // Check if the infra is locked
         if infra.locked {
@@ -207,7 +207,7 @@ fn get_switch_types(
 ) -> ApiResult<Custom<Json<Vec<SwitchType>>>> {
     let infra = match infra_caches.get(&infra) {
         Some(infra) => infra,
-        None => return Err(InfraError::NotFound(infra).into()),
+        None => return Err(InfraApiError::NotFound(infra).into()),
     };
 
     Ok(Custom(
@@ -244,10 +244,10 @@ mod tests {
     use std::collections::HashMap;
 
     use crate::create_server;
+    use crate::infra::Infra;
     use crate::infra_cache::tests::{create_switch_connection, create_switch_type_cache};
-    use crate::models::Infra;
-    use crate::objects::operation::{Operation, RailjsonObject};
-    use crate::objects::SwitchType;
+    use crate::schema::operation::{Operation, RailjsonObject};
+    use crate::schema::SwitchType;
     use rocket::http::{ContentType, Status};
     use rocket::local::Client;
     use serde::Deserialize;

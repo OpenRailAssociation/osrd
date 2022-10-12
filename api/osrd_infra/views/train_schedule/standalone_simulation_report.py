@@ -66,9 +66,7 @@ def convert_simulation_results(
     route_begin_occupancy, route_end_occupancy = convert_route_occupancies(
         simulation_result["route_occupancies"], projection_path_payload, departure_time
     )
-    route_aspects = project_signal_updates(
-        simulation_result["signal_updates"], projection_path_payload, departure_time
-    )
+    route_aspects = project_signal_updates(simulation_result["signal_updates"], projection_path_payload, departure_time)
 
     speeds = [{**speed, "time": speed["time"] + departure_time} for speed in simulation_result["speeds"]]
     stops = [{**stop, "time": stop["time"] + departure_time} for stop in simulation_result["stops"]]
@@ -161,14 +159,16 @@ def build_signal_updates(signal_updates, departure_time):
     results = []
 
     for update in signal_updates:
-        results.append({
-            "signal_id": update["signal_id"],
-            "time_start": update["time_start"] + departure_time,
-            "time_end": update["time_end"] + departure_time,
-            "color": update["color"],
-            "blinking": update["blinking"],
-            "aspect_label": update["aspect_label"]
-        })
+        results.append(
+            {
+                "signal_id": update["signal_id"],
+                "time_start": update["time_start"] + departure_time,
+                "time_end": update["time_end"] + departure_time,
+                "color": update["color"],
+                "blinking": update["blinking"],
+                "aspect_label": update["aspect_label"],
+            }
+        )
     return results
 
 
@@ -182,23 +182,25 @@ def project_signal_updates(signal_updates, projection_path_payload: PathPayload,
 
     start_pos = 0
     for route_path in projection_path_payload.route_paths:
-        route_id = route_path.route.id
+        route_id = route_path.route
 
         end_pos = start_pos
         for track_range in route_path.track_sections:
             end_pos += track_range.length()
 
         for update in updates_by_route_id[route_id]:
-            results.append({
-                "signal_id": update["signal_id"],
-                "route_id": route_id,
-                "time_start": update["time_start"] + departure_time,
-                "time_end": update["time_end"] + departure_time,
-                "position_start": start_pos,
-                "position_end": end_pos,
-                "color": update["color"],
-                "blinking": update["blinking"]
-            })
+            results.append(
+                {
+                    "signal_id": update["signal_id"],
+                    "route_id": route_id,
+                    "time_start": update["time_start"] + departure_time,
+                    "time_end": update["time_end"] + departure_time,
+                    "position_start": start_pos,
+                    "position_end": end_pos,
+                    "color": update["color"],
+                    "blinking": update["blinking"],
+                }
+            )
         start_pos = end_pos
     return results
 
@@ -210,7 +212,7 @@ def convert_route_occupancies(route_occupancies, projection_path_payload: PathPa
     current_end_curve = []
     start_pos = 0
     for route_path in projection_path_payload.route_paths:
-        route_id = route_path.route.id
+        route_id = route_path.route
 
         end_pos = start_pos
         for track_range in route_path.track_sections:

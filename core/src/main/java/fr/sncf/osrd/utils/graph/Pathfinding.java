@@ -1,10 +1,11 @@
 package fr.sncf.osrd.utils.graph;
 
-import com.google.common.graph.ImmutableNetwork;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.utils.graph.functional_interfaces.AStarHeuristic;
+import fr.sncf.osrd.utils.graph.functional_interfaces.EdgeToLength;
+import fr.sncf.osrd.utils.graph.functional_interfaces.EdgeToRanges;
 import org.jetbrains.annotations.NotNull;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @SuppressFBWarnings(
@@ -56,46 +57,65 @@ public class Pathfinding<NodeT, EdgeT> {
     /** Step priority queue */
     private final PriorityQueue<Step<EdgeT>> queue;
     /** Function to call to get edge length */
-    private final Function<EdgeT, Double> edgeToLength;
+    private final EdgeToLength<EdgeT> edgeToLength;
     /** Function to call to get the blocked ranges on an edge */
-    private final Function<EdgeT, Collection<Range>> blockedRangesOnEdge;
+    private final EdgeToRanges<EdgeT> blockedRangesOnEdge;
     /** Input graph */
-    private final ImmutableNetwork<NodeT, EdgeT> graph;
+    private final Graph<NodeT, EdgeT> graph;
     /** Keeps track of visited location. For each visited range, keeps the max number of passed targets at that point */
     private final HashMap<EdgeRange<EdgeT>, Integer> seen = new HashMap<>();
+    /** Function to call to get estimate of the remaining distance.
+     * The function takes the edge and the offset and returns a distance. */
+    private final AStarHeuristic<EdgeT> estimateRemainingDistance;
 
     /** Returns the shortest path from any start edge to any end edge, as a list of edge (containing start and stop) */
     public static <NodeT, EdgeT> List<EdgeT> findEdgePath(
-            ImmutableNetwork<NodeT, EdgeT> graph,
+            Graph<NodeT, EdgeT> graph,
             List<Collection<EdgeLocation<EdgeT>>> locations,
-            Function<EdgeT, Double> edgeToLength,
-            Function<EdgeT, Collection<Range>> blockedRangesOnEdge
+            EdgeToLength<EdgeT> edgeToLength,
+            EdgeToRanges<EdgeT> blockedRangesOnEdge,
+            AStarHeuristic<EdgeT> estimateRemainingDistance
     ) {
-        return new Pathfinding<>(graph, edgeToLength, blockedRangesOnEdge).runPathfindingEdgesOnly(locations);
+        return new Pathfinding<>(
+                graph,
+                edgeToLength,
+                blockedRangesOnEdge,
+                estimateRemainingDistance
+        ).runPathfindingEdgesOnly(locations);
     }
 
     /** Returns the shortest path from any start edge to any end edge, as a list of (edge, start, end) */
     public static <NodeT, EdgeT> Result<EdgeT> findPath(
-            ImmutableNetwork<NodeT, EdgeT> graph,
+            Graph<NodeT, EdgeT> graph,
             List<Collection<EdgeLocation<EdgeT>>> locations,
-            Function<EdgeT, Double> edgeToLength,
-            Function<EdgeT, Collection<Range>> blockedRangesOnEdge
+            EdgeToLength<EdgeT> edgeToLength,
+            EdgeToRanges<EdgeT> blockedRangesOnEdge,
+            AStarHeuristic<EdgeT> estimateRemainingDistance
     ) {
-        return new Pathfinding<>(graph, edgeToLength, blockedRangesOnEdge).runPathfinding(locations);
+        return new Pathfinding<>(
+                graph,
+                edgeToLength,
+                blockedRangesOnEdge,
+                estimateRemainingDistance
+        ).runPathfinding(locations);
     }
 
     /** Constructor */
     private Pathfinding(
-            ImmutableNetwork<NodeT, EdgeT> graph,
-            Function<EdgeT, Double> edgeToLength,
-            Function<EdgeT, Collection<Range>> blockedRangesOnEdge
+            Graph<NodeT, EdgeT> graph,
+            EdgeToLength<EdgeT> edgeToLength,
+            EdgeToRanges<EdgeT> blockedRangesOnEdge,
+            AStarHeuristic<EdgeT> estimateRemainingDistance
     ) {
         if (blockedRangesOnEdge == null)
             blockedRangesOnEdge = x -> List.of();
+        if (estimateRemainingDistance == null)
+            estimateRemainingDistance = (x, y) -> 0.;
         this.blockedRangesOnEdge = blockedRangesOnEdge;
         queue = new PriorityQueue<>();
         this.graph = graph;
         this.edgeToLength = edgeToLength;
+        this.estimateRemainingDistance = estimateRemainingDistance;
     }
 
     /** Runs the pathfinding, returning a path as a list of (edge, start offset, end offset).
@@ -121,7 +141,7 @@ public class Pathfinding<NodeT, EdgeT> {
                 if (step.range.edge.equals(targetLocation.edge) && step.range.start <= targetLocation.offset) {
                     // Adds a new step precisely on the stop location. This ensures that we don't ignore the
                     // distance between the start of the edge and the stop location
-                    var newRange = new EdgeRange<>(targetLocation.edge, step.range.start, targetLocation.offset);
+                    var newRange = new EdgeRange<>(step.range.edge, step.range.start, targetLocation.offset);
                     newRange = filterRange(newRange);
                     assert newRange != null;
                     if (newRange.end != targetLocation.offset) {
@@ -141,8 +161,8 @@ public class Pathfinding<NodeT, EdgeT> {
             var edgeLength = edgeToLength.apply(step.range.edge);
             if (step.range.end == edgeLength) {
                 // We reach the end of the edge: we visit neighbors
-                var lastNode = graph.incidentNodes(step.range.edge).nodeV();
-                var neighbors = graph.outEdges(lastNode);
+                var lastNode = graph.getEdgeEnd(step.range.edge);
+                var neighbors = graph.getAdjacentEdges(lastNode);
                 for (var edge : neighbors) {
                     registerStep(
                             new EdgeRange<>(edge, 0, edgeToLength.apply(edge)),
@@ -244,7 +264,7 @@ public class Pathfinding<NodeT, EdgeT> {
         if (!(seen.getOrDefault(range, -1) < nPassedTargets))
             return;
         double totalDistance = prevDistance + (range.end - range.start);
-        double distanceLeftEstimation = 0; // Set this with geo coordinates if we want an A*
+        double distanceLeftEstimation = estimateRemainingDistance.apply(range.edge, range.start);
         queue.add(new Step<>(
                 range,
                 prev,

@@ -1,10 +1,7 @@
 package fr.sncf.osrd.railjson.schema.infra;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.railjson.schema.common.Identified;
-import fr.sncf.osrd.railjson.schema.common.RJSObjectRef;
-import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSLoadingGaugeLimit;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSCurve;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSlope;
@@ -32,13 +29,4 @@ public class RJSTrackSection implements Identified {
     public String getID() {
         return id;
     }
-
-    public RJSTrackEndpoint beginEndpoint() {
-        return new RJSTrackEndpoint(new RJSObjectRef<>(ID.from(this), "TrackSection"), EdgeEndpoint.BEGIN);
-    }
-
-    public RJSTrackEndpoint endEndpoint() {
-        return new RJSTrackEndpoint(new RJSObjectRef<>(ID.from(this), "TrackSection"), EdgeEndpoint.END);
-    }
-
 }

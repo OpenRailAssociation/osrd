@@ -51,7 +51,11 @@ export default function DisplayVias(props) {
         {(provided) => (
           <div {...provided.droppableProps} ref={provided.innerRef}>
             {osrdconf.vias.map((place, index) => (
-              <Draggable key={`drag-key-${index}`} draggableId={`drag-vias-${index}`} index={index}>
+              <Draggable
+                key={`drag-key-${place.id}`}
+                draggableId={`drag-vias-${index}`}
+                index={index}
+              >
                 {(providedDraggable) => (
                   <div
                     ref={providedDraggable.innerRef}
@@ -118,8 +122,4 @@ DisplayVias.propTypes = {
 
 InputStopTime.propTypes = {
   index: PropTypes.number.isRequired,
-  value: PropTypes.number,
-};
-InputStopTime.defaultProps = {
-  value: 0,
 };

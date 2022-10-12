@@ -7,6 +7,7 @@ import fr.sncf.osrd.infra.api.tracks.undirected.*;
 import fr.sncf.osrd.utils.geom.LineString;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.util.EnumMap;
+import java.util.Set;
 
 public class TrackSectionImpl implements TrackSection {
 
@@ -14,6 +15,7 @@ public class TrackSectionImpl implements TrackSection {
     private final String id;
     private final ImmutableSet<OperationalPoint> operationalPoints;
     EnumMap<Direction, RangeMap<Double, SpeedLimits>> speedSections;
+    RangeMap<Double, Set<Integer>> catenaryVoltages = TreeRangeMap.create();
     EnumMap<Direction, RangeMap<Double, Double>> gradients;
     ImmutableList<Detector> detectors = ImmutableList.of();
     int index;
@@ -45,22 +47,21 @@ public class TrackSectionImpl implements TrackSection {
         this.geo = geo;
         this.sch = sch;
         this.loadingGaugeConstraints = loadingGaugeConstraints;
+        this.catenaryVoltages.put(Range.closed(0., length), Set.of());
     }
 
-    /** Constructor with empty operational points and geometry */
+    /** Constructor with empty operational points, geometry, line code and track number */
     public TrackSectionImpl(
             double length,
             String id
     ) {
-        this.length = length;
-        this.id = id;
-        this.loadingGaugeConstraints = ImmutableRangeMap.of();
-        this.geo = null;
-        this.sch = null;
-        this.operationalPoints = ImmutableSet.of();
+        this(length, id, ImmutableSet.of(), null, null, ImmutableRangeMap.of());
         speedSections = new EnumMap<>(Direction.class);
-        for (var dir : Direction.values())
+        gradients = new EnumMap<>(Direction.class);
+        for (var dir : Direction.values()) {
             speedSections.put(dir, ImmutableRangeMap.of());
+            gradients.put(dir, ImmutableRangeMap.of());
+        }
     }
 
     @Override
@@ -101,6 +102,10 @@ public class TrackSectionImpl implements TrackSection {
     @Override
     public ImmutableRangeMap<Double, LoadingGaugeConstraint> getLoadingGaugeConstraints() {
         return loadingGaugeConstraints;
+    }
+
+    public RangeMap<Double, Set<Integer>> getVoltages() {
+        return catenaryVoltages;
     }
 
     @Override

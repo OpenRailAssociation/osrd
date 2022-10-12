@@ -1,6 +1,5 @@
 import { get, patch } from 'common/requests';
-
-const trainScheduleURI = '/train_schedule';
+import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
 
 /**
  * Premare the params to override the trains details and save them
@@ -25,7 +24,7 @@ export function getTrainDetailsForAPI(simulationTrain) {
  */
 export async function changeTrain(details, id) {
   try {
-    const trainDetail = await get(`${trainScheduleURI}/${id}/`);
+    const trainDetail = await get(`${trainscheduleURI}${id}/`);
     try {
       const params = {
         id,
@@ -37,7 +36,7 @@ export async function changeTrain(details, id) {
         timetable: details.timetable || trainDetail.timetable,
         train_name: details.train_name || trainDetail.train_name,
       };
-      await patch(`${trainScheduleURI}/${id}/`, params);
+      await patch(`${trainscheduleURI}${id}/`, params);
     } catch (e) {
       console.log('ERROR', e);
     }

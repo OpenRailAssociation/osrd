@@ -1,18 +1,18 @@
-import PropTypes, { string } from 'prop-types';
+import React from 'react';
+import PropTypes from 'prop-types';
 
 import { LIST_VALUES_SIGNAL_BASE } from 'applications/osrd/components/Simulation/consts';
 import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 
+const defaultOptions = LIST_VALUES_SIGNAL_BASE.map((val) => ({ value: val, label: val }));
 /**
  * RFC to display a switch adapted to Signal Display Logic
  * @param {object} See PropType
  * @returns JSX
  */
 function SignalSwitch(props) {
-  const { signalBase, toggleSignal, type } = props;
+  const { signalBase, toggleSignal, type, options = defaultOptions } = props;
 
-  const options =
-    props.options || LIST_VALUES_SIGNAL_BASE.map((val) => ({ value: val, label: val }));
   /*
   const [internSignalBase, setInternSignalBase] = useState(signalBase);
 
@@ -37,15 +37,14 @@ function SignalSwitch(props) {
  * PropTypes and DefultProps: ypeScript for the poor. Helps a lot though
  */
 SignalSwitch.propTypes = {
-  type: PropTypes.string.isRequired,
-  id: PropTypes.string.isRequired,
-  name: PropTypes.string.isRequired,
+  type: SwitchSNCF.propTypes.type,
   options: PropTypes.array.isRequired,
-  checkedName: PropTypes.string,
-  toggleChange: PropTypes.func,
+  signalBase: PropTypes.string.isRequired,
+  toggleSignal: SwitchSNCF.propTypes.onChange,
 };
 SignalSwitch.defaultProps = {
   type: 'inline',
+  toggleSignal: () => {},
 };
 
 export default SignalSwitch;

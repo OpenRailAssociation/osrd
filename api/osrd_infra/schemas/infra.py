@@ -1,19 +1,31 @@
 from enum import Enum
-from typing import List, Literal, Mapping, Optional
+from typing import Annotated, List, Literal, Mapping, NewType, Optional, Union
 
 from geojson_pydantic import LineString
-from pydantic import BaseModel, Field, constr, root_validator
+from pydantic import BaseConfig, BaseModel, Field, constr, create_model, root_validator
+from pydantic.fields import ModelField
 
 ALL_OBJECT_TYPES = []
-RAILJSON_INFRA_VERSION = "2.3.1"
+RAILJSON_INFRA_VERSION = "3.0.0"
+
 
 # Traits
 # Used as an input model in the definition of the following classes.
 
+Identifier = NewType("Identifier", constr(max_length=255))
 
-class ObjectReference(BaseModel):
-    id: constr(max_length=255) = Field(description="Identifier of the referenced object")
-    type: str = Field(description="Type of the attribute of the referenced object")
+
+class DetectorReference(BaseModel):
+    type: Literal["Detector"]
+    id: Identifier = Field(description="Identifier of the detector")
+
+
+class BufferStopReference(BaseModel):
+    type: Literal["BufferStop"]
+    id: Identifier = Field(description="Identifier of the buffer stop")
+
+
+Waypoint = Annotated[Union[DetectorReference, BufferStopReference], Field(discriminator="type")]
 
 
 class TrackLocationTrait(BaseModel):
@@ -21,7 +33,7 @@ class TrackLocationTrait(BaseModel):
     This class is used to define objects that associated as point on the infrastructure.
     """
 
-    track: ObjectReference = Field(description="Reference to the track section on which the object is located")
+    track: Identifier = Field(description="Reference to the track section on which the object is located")
     position: float = Field(description="Offset of the point in meters to the beginning of the track section", ge=0)
 
 
@@ -30,10 +42,7 @@ class BaseObjectTrait(BaseModel):
     This class is used to define and identify objects that associated on the infrastructure.
     """
 
-    id: constr(max_length=255) = Field(description="Unique identifier of the object")
-
-    def ref(self):
-        return ObjectReference(id=self.id, type=type(self).__name__)
+    id: Identifier = Field(description="Unique identifier of the object")
 
 
 class GeometryLineTrait(BaseModel):
@@ -83,13 +92,6 @@ class Side(str, Enum):
     CENTER = "CENTER"
 
 
-class ApplicableTrainType(str, Enum):
-    """This class allows to know if the train is carrying passengers or freight."""
-
-    FREIGHT = "FREIGHT"
-    PASSENGER = "PASSENGER"
-
-
 class LoadingGaugeType(str, Enum):
     """
     This class allows to know the category of the loading gauge.
@@ -111,7 +113,7 @@ class DirectionalTrackRange(BaseModel):
     This class is used to define the path of the route used by the train.
     """
 
-    track: ObjectReference = Field(description="Identifier of the track")
+    track: Identifier = Field(description="Identifier of the track")
     begin: float = Field(
         description="Begin offset of the path in meters, its reading and understanding depend on the direction", ge=0
     )
@@ -160,7 +162,7 @@ class ApplicableDirectionsTrackRange(BaseModel):
     This class is used to define track ranges that are associated with certain classes in the infrastructure.
     """
 
-    track: ObjectReference = Field(description="Identifier and type of the track")
+    track: Identifier = Field(description="Identifier and type of the track")
     begin: float = Field(description="Begin offset in meters of the corresponding track section", ge=0)
     end: float = Field(description="End offset in meters of the corresponding track section", ge=0)
     applicable_directions: ApplicableDirections = Field(
@@ -187,13 +189,6 @@ class OperationalPoint(BaseObjectTrait):
     """
 
     parts: List[OperationalPointPart]
-    name: constr(max_length=255) = Field(description="Name of the operational point")
-    uic: int
-    ci: int = Field(description="Infra code from THOR of the corresponding operational point")
-    ch: constr(max_length=2) = Field(description="Side code from THOR of the operational point")
-    ch_short_label: Optional[constr(max_length=255)]
-    ch_long_label: Optional[constr(max_length=255)]
-    trigram: constr(max_length=3)
 
 
 class TrackEndpoint(BaseModel):
@@ -202,7 +197,7 @@ class TrackEndpoint(BaseModel):
     """
 
     endpoint: Endpoint = Field(description="Relative position of the considered end point")
-    track: ObjectReference = Field(description="Identifier and type of the track")
+    track: Identifier = Field(description="Identifier and type of the track")
 
 
 class Route(BaseObjectTrait):
@@ -210,9 +205,9 @@ class Route(BaseObjectTrait):
     This class is used to describe routes on the infrastructure.
     """
 
-    entry_point: ObjectReference = Field(description="Identifier and type used to define an entry point for the route")
-    exit_point: ObjectReference = Field(description="Identifier and type used to define an exit point for the route")
-    release_detectors: List[ObjectReference] = Field(
+    entry_point: Waypoint
+    exit_point: Waypoint
+    release_detectors: List[Identifier] = Field(
         description="Detector allowing the release of resources reserved from the beginning of the route until this one"
     )
     path: List[DirectionalTrackRange] = Field(description="List of the path corresponding to the routes")
@@ -225,7 +220,6 @@ class SwitchPortConnection(BaseModel):
 
     src: str = Field(description="Port name that is source of the connection")
     dst: str = Field(description="Port name that is destination of the connection")
-    bidirectional: bool = Field(description="Is the connection bidirectional")
 
 
 class SwitchType(BaseObjectTrait):
@@ -242,12 +236,11 @@ class Switch(BaseObjectTrait):
     """This class is used to define switches.
     Switches are devices used for track changes."""
 
-    switch_type: ObjectReference = Field(description="Identifier and type of the switch type")
+    switch_type: Identifier = Field(description="Identifier and type of the switch type")
     group_change_delay: float = Field(
         description="Time it takes to change which group of the switch is activated", ge=0
     )
     ports: Mapping[str, TrackEndpoint] = Field(description="Location of differents ports according to track sections")
-    label: str = Field(description="Identifier of the switch")
 
 
 class TrackSectionLink(BaseObjectTrait):
@@ -262,7 +255,6 @@ class TrackSectionLink(BaseObjectTrait):
     dst: TrackEndpoint = Field(
         description="Finish track section, relative position in track section is defined by its end point"
     )
-    navigability: ApplicableDirections = Field(description="Direction of application of track section links")
 
 
 class SpeedSection(BaseObjectTrait):
@@ -346,9 +338,6 @@ class LoadingGaugeLimit(BaseModel):
     end: float = Field(
         description="Offset in meters corresponding at the end of the corresponding loading gauge limit", ge=0
     )
-    applicable_train_type: ApplicableTrainType = Field(
-        description="Type of transport of the corresponding rolling stock"
-    )
 
 
 class TrackSection(BaseObjectTrait, GeometryLineTrait):
@@ -358,11 +347,6 @@ class TrackSection(BaseObjectTrait, GeometryLineTrait):
     """
 
     length: float = Field(description="Value of the length of the track section in meters", gt=0)
-    line_code: int = Field(description="Code of the line used by the corresponding track section")
-    line_name: constr(max_length=255) = Field(description="Name of the line used by the corresponding track section")
-    track_number: int = Field(description="Number corresponding to the track used", ge=0)
-    track_name: constr(max_length=255) = Field(description="Name corresponding to the track used")
-    navigability: ApplicableDirections = Field(description="Direction in which the train can run on the track section")
     slopes: List[Slope] = Field(description="List of slopes of corresponding track section")
     curves: List[Curve] = Field(description="List of curves of corresponding track section")
     loading_gauge_limits: List[LoadingGaugeLimit] = Field(
@@ -378,23 +362,7 @@ class Signal(BaseObjectTrait, TrackLocationTrait):
 
     direction: Direction = Field(description="Direction of use of the signal")
     sight_distance: float = Field(description="Visibility distance of the signal in meters", gt=0)
-    linked_detector: Optional[ObjectReference]
-    aspects: Optional[List[str]]
-    angle_sch: float = Field(0, description="Schematic angle in degrees")
-    angle_geo: float = Field(0, description="Geographic angle in degrees")
-    type_code: Optional[str]
-    support_type: Optional[str]
-    is_in_service: Optional[bool] = Field(description="Is the signal is in service")
-    is_lightable: Optional[bool] = Field(description="Is the signal is lightable")
-    is_operational: Optional[bool] = Field(description="Is the signal is operational")
-    comment: Optional[str]
-    physical_organization_group: Optional[str]
-    responsible_group: Optional[str]
-    label: Optional[str]
-    installation_type: Optional[str]
-    value: Optional[str]
-    side: Side = Field(Side.CENTER, description="Side of the signal on the track")
-    default_aspect: Optional[str] = Field(description="Aspect displayed when no train is around")
+    linked_detector: Optional[Identifier] = Field(description="Identifier of the detector linked to the signal")
 
 
 class BufferStop(BaseObjectTrait, TrackLocationTrait):
@@ -406,6 +374,9 @@ class BufferStop(BaseObjectTrait, TrackLocationTrait):
 
     applicable_directions: ApplicableDirections = Field(description="Direction of the application of the buffer stop")
 
+    def ref(self):
+        return BufferStopReference(type="BufferStop", id=self.id)
+
 
 class Detector(BaseObjectTrait, TrackLocationTrait):
     """This class defines detector object.
@@ -415,6 +386,9 @@ class Detector(BaseObjectTrait, TrackLocationTrait):
     """
 
     applicable_directions: ApplicableDirections = Field(description="Direction of the application of the dectector")
+
+    def ref(self):
+        return DetectorReference(type="Detector", id=self.id)
 
 
 class RailJsonInfra(BaseModel):
@@ -439,5 +413,93 @@ class RailJsonInfra(BaseModel):
 for t in BaseObjectTrait.__subclasses__():
     ALL_OBJECT_TYPES.append(t)
 
-if __name__ == "__main__":
-    print(RailJsonInfra.schema_json(indent=2))
+# Extensions
+
+
+def register_extension(object, name):
+    """
+    This decorator is used to esily add an extension to an existing object.
+    Example:
+
+    ```
+    @register_extension(TrackSection, "my_extension")
+    class TrackSectionMyExtension(BaseModel):
+        ...
+    ```
+
+    This will add the optional dictionary field `extensions` to the `TrackSection` class.
+    This dictionary can contain the field `my_extension` of type `TrackSectionMyExtension`.
+    """
+
+    if "extensions" not in object.__fields__:
+        extensions_type = create_model(object.__name__ + "Extensions")
+        object.__fields__["extensions"] = ModelField(
+            name="extensions",
+            type_=extensions_type,
+            class_validators={},
+            model_config=BaseConfig,
+            required=False,
+            default_factory=dict,
+        )
+
+    def register_extension(extension):
+        extensions_field = object.__fields__["extensions"]
+        if name in extensions_field.type_.__fields__:
+            raise RuntimeError(f"Extension '{name}' already registered for {object.__name__}")
+
+        extensions_field.type_.__fields__[name] = ModelField(
+            name=name,
+            type_=extension,
+            class_validators={},
+            model_config=BaseConfig,
+            required=False,
+        )
+        return extension
+
+    return register_extension
+
+
+@register_extension(object=TrackSection, name="sncf")
+class TrackSectionSncfExtension(BaseModel):
+    line_code: int = Field(description="Code of the line used by the corresponding track section")
+    line_name: constr(max_length=255) = Field(description="Name of the line used by the corresponding track section")
+    track_number: int = Field(description="Number corresponding to the track used", ge=0)
+    track_name: constr(max_length=255) = Field(description="Name corresponding to the track used")
+
+
+@register_extension(object=OperationalPoint, name="sncf")
+class OperationalPointSncfExtension(BaseModel):
+    ci: int = Field(description="THOR immutable code of the operational point")
+    ch: constr(max_length=2) = Field(description="THOR site code of the operational point")
+    ch_short_label: constr(max_length=255) = Field(description="THOR site code short label of the operational point")
+    ch_long_label: constr(max_length=255) = Field(description="THOR site code long label of the operational point")
+    trigram: constr(max_length=3) = Field(description="Unique SNCF trigram of the operational point")
+
+
+@register_extension(object=OperationalPoint, name="identifier")
+class OperationalPointIdentifierExtension(BaseModel):
+    name: constr(max_length=255) = Field(description="Name of the operational point")
+    uic: int = Field(description="International Union of Railways code of the operational point")
+
+
+@register_extension(object=Switch, name="sncf")
+class SwitchSncfExtension(BaseModel):
+    label: str = Field(description="Identifier of the switch")
+
+
+@register_extension(object=Signal, name="sncf")
+class SignalSncfExtension(BaseModel):
+    angle_geo: float = Field(0, description="Geographic angle in degrees")
+    angle_sch: float = Field(0, description="Schematic angle in degrees")
+    aspects: List[str]
+    comment: str
+    default_aspect: str = Field(description="Aspect displayed when no train is around")
+    installation_type: str
+    is_in_service: bool = Field(description="Is the signal is in service")
+    is_lightable: bool = Field(description="Is the signal is lightable")
+    is_operational: bool = Field(description="Is the signal is operational")
+    label: str
+    side: Side = Field(Side.CENTER, description="Side of the signal on the track")
+    support_type: str
+    type_code: str
+    value: str

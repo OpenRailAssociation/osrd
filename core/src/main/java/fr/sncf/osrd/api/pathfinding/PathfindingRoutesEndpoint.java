@@ -2,6 +2,9 @@ package fr.sncf.osrd.api.pathfinding;
 
 import fr.sncf.osrd.api.ExceptionHandler;
 import fr.sncf.osrd.api.InfraManager;
+import fr.sncf.osrd.api.pathfinding.constraints.ConstraintCombiner;
+import fr.sncf.osrd.api.pathfinding.constraints.ElectrificationConstraints;
+import fr.sncf.osrd.api.pathfinding.constraints.LoadingGaugeConstraints;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingRequest;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.api.pathfinding.response.NoPathFoundError;
@@ -16,6 +19,7 @@ import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.train.RollingStock;
+import fr.sncf.osrd.utils.graph.GraphAdapter;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.takes.Request;
 import org.takes.Response;
@@ -91,25 +95,33 @@ public class PathfindingRoutesEndpoint implements Take {
 
         // Initializes the constraints
         var loadingGaugeConstraints = new LoadingGaugeConstraints(rollingStocks);
+        var electrificationConstraints = new ElectrificationConstraints(rollingStocks);
+        RemainingDistanceEstimator remainingDistanceEstimator = null;
+        if (waypoints.size() == 2) {
+            // The current implementation of A* only works well if there are no intermediate steps
+            remainingDistanceEstimator = new RemainingDistanceEstimator(waypoints.get(1));
+        }
 
         // Compute the paths from the entry waypoint to the exit waypoint
         return Pathfinding.findPath(
-                infra.getSignalingRouteGraph(),
+                new GraphAdapter<>(infra.getSignalingRouteGraph()),
                 waypoints,
                 route -> route.getInfraRoute().getLength(),
-                loadingGaugeConstraints
+                new ConstraintCombiner(List.of(loadingGaugeConstraints, electrificationConstraints)),
+                remainingDistanceEstimator
         );
     }
+
 
     /** Checks that the results make sense */
     private void validate(SignalingInfra infra, PathfindingResult res, PathfindingWaypoint[][] reqWaypoints) {
         var start = res.pathWaypoints.get(0);
         var end = res.pathWaypoints.get(res.pathWaypoints.size() - 1);
-        var startLocation = new TrackLocation(infra.getTrackSection(start.track.id.id), start.position);
-        var endLocation = new TrackLocation(infra.getTrackSection(end.track.id.id), end.position);
+        var startLocation = new TrackLocation(infra.getTrackSection(start.track), start.position);
+        var endLocation = new TrackLocation(infra.getTrackSection(end.track), end.position);
         var routes = new ArrayList<SignalingRoute>();
         for (var route : res.routePaths) {
-            var signalingRoute = infra.findSignalingRoute(route.route.id.id, route.signalingType);
+            var signalingRoute = infra.findSignalingRoute(route.route, route.signalingType);
             assert signalingRoute != null;
             if (routes.isEmpty() || routes.get(routes.size() - 1) != signalingRoute)
                 routes.add(signalingRoute);
@@ -125,7 +137,7 @@ public class PathfindingRoutesEndpoint implements Take {
         // Checks that at least one waypoint of each step is on the path
         var tracksOnPath = res.routePaths.stream()
                 .flatMap(route -> route.trackSections.stream())
-                .map(track -> track.trackSection.id.id)
+                .map(track -> track.trackSection)
                 .collect(Collectors.toSet());
         for (var step : reqWaypoints) {
             assert Arrays.stream(step)

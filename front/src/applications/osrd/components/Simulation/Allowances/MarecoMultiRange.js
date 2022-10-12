@@ -1,7 +1,8 @@
 import * as d3 from 'd3';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { select, selectAll } from 'd3-selection';
+import PropTypes from 'prop-types';
+import { select } from 'd3-selection';
 
 import { brushX } from 'd3-brush';
 
@@ -192,21 +193,6 @@ export default function MarecoMultiRange({
     setBrushes((brushes) => [...brushes, ...extensionMapped]);
   }, [extensions]);
 
-  const newBrush = (qu) => {
-    console.log('new Brush', brushesRef.current);
-
-    const brush = brushX()
-      .extent([
-        [margin.left, margin.top],
-        [viewBoxWidth - margin.right, viewBoxHeight - margin.bottom - 6],
-      ])
-      .on('start', brushstart) // Make sure don't pass surrounding brushes
-      .on('brush', brushed) // Make sure don't pass surrounding brushes
-      .on('end', brushend); // Keep track of what brushes is surrounding
-
-    setBrushes((brushes) => [...brushes, { id: brushes.length, brush }]);
-  };
-
   function brushstart({ sourceEvent }) {
     // empty for now
   }
@@ -269,6 +255,21 @@ export default function MarecoMultiRange({
     // newBrush(); /// Only on drag mode
   }
 
+  const newBrush = () => {
+    console.log('new Brush', brushesRef.current);
+
+    const brush = brushX()
+      .extent([
+        [margin.left, margin.top],
+        [viewBoxWidth - margin.right, viewBoxHeight - margin.bottom - 6],
+      ])
+      .on('start', brushstart) // Make sure don't pass surrounding brushes
+      .on('brush', brushed) // Make sure don't pass surrounding brushes
+      .on('end', brushend); // Keep track of what brushes is surrounding
+
+    setBrushes((brushes) => [...brushes, { id: brushes.length, brush }]);
+  };
+
   return (
     <svg
       ref={ref}
@@ -286,3 +287,9 @@ export default function MarecoMultiRange({
     </svg>
   );
 }
+
+MarecoMultiRange.propTypes = {
+  stops: PropTypes.array.isRequired,
+  extensions: PropTypes.array.isRequired,
+  setExtensions: PropTypes.func.isRequired,
+};

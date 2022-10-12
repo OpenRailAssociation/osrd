@@ -6,33 +6,33 @@ import {
   updateMustRedraw,
   updateSelectedTrain,
   updateSimulation,
+  updateSelectedProjection,
 } from 'reducers/osrdsimulation';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { KEY_VALUES_FOR_CONSOLIDATED_SIMULATION } from 'applications/osrd/views/OSRDSimulation/OSRDSimulation';
-import { MAIN_API } from 'config/config';
+
 // Generic components
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import PropTypes from 'prop-types';
 import ReactModal from 'react-modal';
-import axios from 'axios';
 // OSRD helpers
 import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/createTrain';
 import formatStdcmConf from 'applications/stdcm/formatStcmConf';
 import { post } from 'common/requests';
 // Static Data and Assets
 import rabbit from 'assets/pictures/KLCW_nc_standard.png';
-import { setFailure } from 'reducers/main.ts';
-import { stdcmRequestStatus } from 'applications/stdcm/views/OSRDSTDCM';
+import { setFailure } from 'reducers/main';
+import { stdcmRequestStatus } from 'applications/osrd/consts';
 import { updateItinerary } from 'reducers/osrdconf';
 import { useTranslation } from 'react-i18next';
 
 export default function StdcmRequestModal(props) {
   const { t } = useTranslation(['translation', 'osrdconf']);
   const osrdconf = useSelector((state) => state.osrdconf);
-  const { timetableID } = useSelector((state) => state.osrdconf);
-  const { allowancesSettings, selectedProjection } = useSelector((state) => state.osrdsimulation);
+
+  const { allowancesSettings } = useSelector((state) => state.osrdsimulation);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
 
@@ -61,10 +61,11 @@ export default function StdcmRequestModal(props) {
 
           const fakedNewTrain = result.simulation;
           fakedNewTrain.id = 1500;
+          fakedNewTrain.isStdcm = true;
 
           fakedNewTrain.base.stops = fakedNewTrain.base.head_positions[0].map(
             (headPosition, index) => ({
-              id: 1500,
+              id: fakedNewTrain.id,
               name: `stop ${index}`,
               time: headPosition.time,
               position: headPosition.position,
@@ -73,21 +74,25 @@ export default function StdcmRequestModal(props) {
           );
 
           const newSimulation = { ...simulation };
+          newSimulation.trains = [...simulation.trains];
 
+          const indexOfExistingStdcm = newSimulation.trains.findIndex(
+            (train) => train.id === fakedNewTrain.id
+          );
+          if (indexOfExistingStdcm !== -1) newSimulation.trains.splice(indexOfExistingStdcm, 1);
           newSimulation.trains = [...newSimulation.trains, fakedNewTrain];
 
           const newAllowancesSettings = { ...allowancesSettings };
 
-          if (!newAllowancesSettings[1500]) {
-            newAllowancesSettings[1500] = {
+          if (!newAllowancesSettings[fakedNewTrain.id]) {
+            newAllowancesSettings[fakedNewTrain.id] = {
               base: true,
               baseBlocks: true,
               eco: true,
               ecoBlocks: false,
             };
+            dispatch(updateAllowancesSettings(newAllowancesSettings));
           }
-
-          dispatch(updateAllowancesSettings(newAllowancesSettings));
 
           dispatch(updateMustRedraw(true));
 
@@ -100,6 +105,13 @@ export default function StdcmRequestModal(props) {
           dispatch(updateConsolidatedSimulation(consolidatedSimulation));
           dispatch(updateSimulation(newSimulation));
           dispatch(updateSelectedTrain(newSimulation.trains.length - 1));
+
+          dispatch(
+            updateSelectedProjection({
+              id: fakedNewTrain.id,
+              path: result.path,
+            })
+          );
         })
         .catch((e) => {
           // Update simu in redux with data;

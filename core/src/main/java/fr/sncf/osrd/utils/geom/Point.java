@@ -65,5 +65,8 @@ public record Point (double x, double y) {
         }
     }
 
-
+    /** Returns the distance between this point and another */
+    public double distance(Point other) {
+        return LineString.computeDistance(x, y, other.x, other.y);
+    }
 }
