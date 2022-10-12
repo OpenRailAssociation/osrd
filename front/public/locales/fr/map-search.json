@@ -2,13 +2,13 @@
   "linecode": "Code ligne",
   "name": "Nom",
   "noresult": "Aucun résultat",
-  "placeholderline": "N°",
+  "placeholderline": "Numéro",
   "placeholdername": "Nom, appelation, libellé",
   "pk": "PK",
   "search": "Rechercher",
   "signal": "Signal",
   "signalbox": "Poste",
   "station": "Gare",
-  "trackname": "Voies",
+  "trackname": "Voie",
   "type": "Type"
 }
