@@ -107,7 +107,6 @@ export const TrackSectionEndpointSelector: FC<FieldProps> = ({
     }
   }, [editorDataIndex, isDisabled, isPicking, onChange, portId, setState, state]);
 
-  console.log(trackSection?.properties);
   return (
     <div className="mb-4">
       {schema.title && <h5>{schema.title}</h5>}
