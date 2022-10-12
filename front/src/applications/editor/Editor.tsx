@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import { TFunction } from 'i18next';
 import { withTranslation } from 'react-i18next';
 import { ViewportProps } from 'react-map-gl';
+import { useNavigate } from 'react-router';
 import cx from 'classnames';
 
 import 'common/Map/Map.scss';
@@ -34,6 +35,7 @@ import TOOLS from './tools/list';
 
 const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const osrdConf = useSelector((state: { osrdconf: OSRDConf }) => state.osrdconf);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
   const { fullscreen } = useSelector((state: { main: MainState }) => state.main);
@@ -137,24 +139,26 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   // we call the api to find the latest infrastructure modified
   useEffect(() => {
     if (infra && parseInt(infra, 10) > 0) {
-      getInfrastructure(parseInt(infra, 10))
-        .then((infrastructure) => {
-          dispatch(updateInfraID(infrastructure.id));
+      const infraID = parseInt(infra, 10);
+      getInfrastructure(infraID)
+        .then(() => {
           resetState();
         })
         .catch(() => {
           dispatch(setFailure(new Error(t('Editor.errors.infra-not-found', { id: infra }))));
-          dispatch(updateViewport({}, `/editor/`, false));
+        })
+        .finally(() => {
+          dispatch(updateInfraID(infraID));
         });
     } else if (osrdConf.infraID) {
-      dispatch(updateViewport({}, `/editor/${osrdConf.infraID}`, false));
+      navigate(`/editor/${osrdConf.infraID}`);
     } else {
       getInfrastructures()
         .then((infras) => {
           if (infras && infras.length > 0) {
             const infrastructure = infras[0];
             dispatch(updateInfraID(infrastructure.id));
-            dispatch(updateViewport({}, `/editor/${infrastructure.id}`, false));
+            navigate(`/editor/${infrastructure.id}`);
           } else {
             dispatch(setFailure(new Error(t('Editor.errors.no-infra-available'))));
           }
