@@ -49,11 +49,7 @@ import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 
 import 'common/Map/Map.scss';
 
-interface MapProps {
-  setMapLoaded: (boolean) => void;
-}
-
-function Map({ setMapLoaded }: MapProps) {
+function Map() {
   const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings } =
     useSelector((state: RootState) => state.map);
   const [idHover, setIdHover] = useState();

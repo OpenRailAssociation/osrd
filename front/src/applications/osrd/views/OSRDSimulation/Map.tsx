@@ -69,8 +69,12 @@ function checkIfEcoAndAddPrefix(allowancesSettings, id, baseKey) {
   return baseKey;
 }
 
-function Map(props) {
+interface MapProps {
+  setExtViewport: (any) => void;
+}
+function Map(props: MapProps) {
   const { setExtViewport } = props;
+  const [mapLoaded, setMapLoaded] = useState(false);
   const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings } =
     useSelector((state: RootState) => state.map);
   const { isPlaying, selectedTrain, positionValues, timePosition, allowancesSettings } =
@@ -229,7 +233,7 @@ function Map(props) {
   };
 
   const onFeatureHover = (e) => {
-    if (!isPlaying && e && geojsonPath?.geometry?.coordinates) {
+    if (mapLoaded && !isPlaying && e && geojsonPath?.geometry?.coordinates) {
       const line = lineString(geojsonPath.geometry.coordinates);
       const cursorPoint = point(e.lngLat);
       const key = getRegimeKey(simulation.trains[selectedTrain].id);
@@ -271,7 +275,7 @@ function Map(props) {
 
   function defineInteractiveLayers() {
     const interactiveLayersLocal: string[] = [];
-    if (geojsonPath) {
+    if (mapLoaded && geojsonPath) {
       interactiveLayersLocal.push('geojsonPath');
       interactiveLayersLocal.push('main-train-path');
       otherTrainsHoverPosition.forEach((train) => {
@@ -315,6 +319,10 @@ function Map(props) {
     }
   }, [timePosition]);
 
+  const handleLoadFinished = () => {
+    setMapLoaded(true);
+  };
+
   return (
     <>
       <MapButtons resetPitchBearing={resetPitchBearing} />
@@ -333,6 +341,7 @@ function Map(props) {
         interactiveLayerIds={interactiveLayerIds}
         touchRotate
         asyncRender
+        onLoad={handleLoadFinished}
       >
         <AttributionControl
           className="attribution-control"
