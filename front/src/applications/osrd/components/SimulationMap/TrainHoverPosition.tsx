@@ -2,13 +2,15 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { Layer, Source, Marker } from 'react-map-gl';
 import lineSliceAlong from '@turf/line-slice-along';
+import length from '@turf/length';
 import { Point, Feature, LineString } from 'geojson';
 import cx from 'classnames';
 
 import { RootState } from 'reducers';
 import { datetime2time } from 'utils/timeManipulation';
+import { boundedValue } from 'utils/numbers';
 
-interface TrainPosition {
+export interface TrainPosition {
   id: string;
   headPosition: Feature<Point>;
   tailPosition: Feature<Point>;
@@ -54,12 +56,14 @@ function getSpeedAndTimeLabel(isSelectedTrain, ecoBlocks, point: TrainPosition) 
 }
 
 // When the train is backward, lineSliceAlong will crash. we need to have head and tail in the right order
-function makeDisplayedHeadAndTail(point: TrainPosition) {
+export function makeDisplayedHeadAndTail(point: TrainPosition, geojsonPath: Feature<LineString>) {
+  const pathLength = length(geojsonPath);
   const trueHead = Math.max(point.tailDistanceAlong, point.headDistanceAlong);
-  const trueTail = Math.max(trueHead - point.trainLength, 0);
-  const head = Math.max(trueHead, trueTail);
-  const tail = Math.min(trueHead, trueTail);
-  return { tail, head };
+  const trueTail = Math.min(point.tailDistanceAlong, point.headDistanceAlong);
+  return {
+    head: boundedValue(trueHead, 0, pathLength),
+    tail: boundedValue(trueTail, 0, pathLength),
+  };
 }
 
 function getLengthFactorToKeepLabelPlacedCorrectlyWhenZooming(
@@ -96,7 +100,7 @@ function TrainHoverPosition(props: TrainHoverPositionProps) {
 
   if (geojsonPath && point.headDistanceAlong && point.tailDistanceAlong) {
     const zoomLengthFactor = getLengthFactorToKeepLabelPlacedCorrectlyWhenZooming(viewport);
-    const { tail, head } = makeDisplayedHeadAndTail(point);
+    const { tail, head } = makeDisplayedHeadAndTail(point, geojsonPath);
     const trainGeoJsonPath = lineSliceAlong(geojsonPath, tail, head);
 
     return (
