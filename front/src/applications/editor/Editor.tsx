@@ -296,7 +296,11 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
                             if (onClick) {
                               onClick(
                                 { dispatch, setViewport, viewport, openModal, editorState },
-                                { activeTool, toolState, setToolState }
+                                {
+                                  activeTool: toolAndState.tool,
+                                  toolState: toolAndState.state,
+                                  setToolState,
+                                }
                               );
                             }
                           }}
