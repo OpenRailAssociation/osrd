@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
 use crate::layer::Layer;
@@ -6,6 +8,8 @@ use super::generate_id;
 use super::OSRDObject;
 use super::ObjectType;
 use derivative::Derivative;
+use diesel::result::Error;
+use diesel::PgConnection;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
@@ -80,6 +84,16 @@ impl Layer for OperationalPoint {
 
     fn get_obj_type() -> ObjectType {
         ObjectType::OperationalPoint
+    }
+
+    /// Delete and Insert for update some objects of the layer object
+    fn update_list(
+        conn: &PgConnection,
+        infra: i32,
+        obj_ids: HashSet<&String>,
+    ) -> Result<(), Error> {
+        Self::delete_list(conn, infra, obj_ids.clone())?;
+        Self::insert_list(conn, infra, obj_ids)
     }
 }
 

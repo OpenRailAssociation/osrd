@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::collections::HashSet;
 
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
@@ -9,6 +10,8 @@ use super::ApplicableDirectionsTrackRange;
 use super::OSRDObject;
 use super::ObjectType;
 use derivative::Derivative;
+use diesel::result::Error;
+use diesel::PgConnection;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
@@ -51,6 +54,16 @@ impl Layer for SpeedSection {
 
     fn get_obj_type() -> ObjectType {
         ObjectType::SpeedSection
+    }
+
+    /// Delete and Insert for update some objects of the layer object
+    fn update_list(
+        conn: &PgConnection,
+        infra: i32,
+        obj_ids: HashSet<&String>,
+    ) -> Result<(), Error> {
+        Self::delete_list(conn, infra, obj_ids.clone())?;
+        Self::insert_list(conn, infra, obj_ids)
     }
 }
 
