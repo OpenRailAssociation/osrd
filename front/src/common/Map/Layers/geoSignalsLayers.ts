@@ -56,7 +56,7 @@ export function getSignalsList(signalsSettings: SignalsSettings) {
 }
 
 export function getAngleName(sourceLayer: SourceLayer) {
-  return sourceLayer === 'sch' ? 'angle_sch' : 'angle_geo';
+  return sourceLayer === 'sch' ? 'extensions_sncf_angle_sch' : 'extensions_sncf_angle_geo';
 }
 
 export function getPointLayerProps({
@@ -137,7 +137,7 @@ export function getSignalMatLayerProps({
   sourceLayer,
   sourceTable,
 }: SignalContext): LayerProps {
-  const angleName = sourceLayer === 'sch' ? 'angle_sch' : 'angle_geo';
+  const angleName = getAngleName(sourceLayer);
 
   const props: LayerProps = {
     type: 'symbol',
