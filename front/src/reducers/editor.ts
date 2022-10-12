@@ -58,6 +58,18 @@ export function selectZone(zone: ActionSelectZone['zone']): ThunkAction<ActionSe
   };
 }
 
+const RESET = 'editor/RESET';
+type ActionReset = {
+  type: typeof RESET;
+};
+export function reset(): ThunkAction<ActionReset> {
+  return (dispatch) => {
+    dispatch({
+      type: RESET,
+    });
+  };
+}
+
 //
 // Verify if the data model definition is already loaded.
 // If not we do it and store it in the state
@@ -127,7 +139,12 @@ export function save(operations: {
   };
 }
 
-export type EditorActions = ActionSelectZone | ActionLoadDataModel | ActionSave | ActionSetData;
+export type EditorActions =
+  | ActionSelectZone
+  | ActionLoadDataModel
+  | ActionSave
+  | ActionSetData
+  | ActionReset;
 
 //
 // State definition
@@ -169,6 +186,13 @@ export default function reducer(inputState: EditorState | undefined, action: Edi
       case SET_DATA:
         draft.editorData = action.data;
         draft.editorDataIndex = keyBy(action.data, 'id');
+        break;
+      case RESET:
+        draft.editorLayers = initialState.editorLayers;
+        draft.editorZone = initialState.editorZone;
+        draft.editorData = initialState.editorData;
+        draft.editorDataIndex = initialState.editorDataIndex;
+        // The schema is preserved, because it never changes at the moment.
         break;
       default:
       // Nothing to do here
