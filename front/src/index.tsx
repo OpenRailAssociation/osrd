@@ -10,13 +10,13 @@ import 'main/App/App.scss';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 import { SENTRY_CONFIG } from 'config/config';
-import * as serviceWorker from 'serviceWorker';
 import { persistor, store } from 'Store';
 
 // Components
 import App from 'main/App';
-import Loader from './common/Loader';
+import Loader from 'common/Loader';
 import { version } from '../package.json';
+import reportWebVitals from './reportWebVitals';
 
 // Must be required and not imported to be included in production build (strange bug ?)
 require('@sncf/bootstrap-sncf.metier.reseau');
@@ -35,6 +35,7 @@ if (SENTRY_CONFIG.react_sentry_dsn) {
 export default function Container() {
   // eslint-disable-next-line no-console
   console.log('OSRD VERSION', version);
+
   return (
     <Provider store={store}>
       <PersistGate loading={<Loader />} persistor={persistor}>
@@ -46,7 +47,7 @@ export default function Container() {
 
 ReactDOM.render(<Container />, document.getElementById('root'));
 
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister();
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals();

@@ -17,6 +17,7 @@ const initKeycloak = async (onAuthenticatedCallback) => {
     if (!authenticated) throw new Error();
     onAuthenticatedCallback();
   } catch (e) {
+    console.error(e);
     login();
   }
 };
