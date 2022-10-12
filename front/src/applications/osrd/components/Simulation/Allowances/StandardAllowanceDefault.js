@@ -139,10 +139,11 @@ export default function StandardAllowanceDefault(props) {
 
   useEffect(() => {
     let thereIsStandard = false;
+
     trainDetail.allowances.forEach((allowance) => {
       if (allowance.allowance_type === 'standard' && allowance.ranges) {
         const currentDistribution = allowance.distribution;
-        setValue({
+       setValue({
           type: allowance.default_value.value_type,
           value: allowance.default_value[TYPES_UNITS[allowance.default_value.value_type]],
         });
@@ -169,18 +170,19 @@ export default function StandardAllowanceDefault(props) {
         <SelectSNCF
           id="distributionTypeSelector"
           options={distributionsTypes}
-          selectedValue={distribution}
           labelKey="label"
           onChange={handleDistribution}
           sm
+          value={distribution}
         />
       </div>
       <div className="col-md-3">
         <InputGroupSNCF
-          id="allowanceTypeSelect"
+          id="standardAllowanceTypeSelect"
           options={allowanceTypes}
           handleType={handleType}
           value={value.value}
+          type={value.type}
           sm
         />
       </div>

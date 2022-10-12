@@ -25,7 +25,10 @@ export default function ModalSugerredVias(props) {
   const nbVias = suggeredVias.length - 1;
 
   const formatVia = (via, idx, idxTrueVia) => (
-    <div className={`d-flex align-items-center p-1 ${via.suggestion && 'suggerred-via-clickable'}`}>
+    <div
+      key={via.position}
+      className={`d-flex align-items-center p-1 ${via.suggestion && 'suggerred-via-clickable'}`}
+    >
       {!via.suggestion && <small className="pr-2">{idxTrueVia}</small>}
       <i className={`${via.suggestion ? 'text-muted' : 'text-info'} icons-itinerary-bullet mr-2`} />
       {via.name || `KM ${Math.round(via.position) / 1000}`}
