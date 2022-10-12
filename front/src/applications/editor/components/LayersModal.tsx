@@ -1,6 +1,6 @@
 import React, { FC, useContext, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { groupBy, mapValues } from 'lodash';
+import { groupBy, mapKeys, mapValues, sum } from 'lodash';
 
 import bufferStopIcon from 'assets/pictures/layersicons/bufferstop.svg';
 import switchesIcon from 'assets/pictures/layersicons/switches.svg';
@@ -11,7 +11,7 @@ import signalsIcon from 'assets/pictures/layersicons/layer_signal.svg';
 import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 import { EditorContext } from '../context';
 import Modal from './Modal';
-import { LayerType, ModalProps } from '../tools/types';
+import { LayerType, ModalProps, OBJTYPE_TO_LAYER_DICT } from '../tools/types';
 import { selectLayers } from '../../../reducers/editor';
 import { EditorEntity } from '../../../types';
 
@@ -24,18 +24,36 @@ const LAYERS: { id: LayerType; icon: string }[] = [
 ];
 
 const LayersModal: FC<
-  ModalProps<{
-    initialLayers: Set<LayerType>;
-    selection?: EditorEntity[];
-    frozenLayers?: Set<LayerType>;
-  }>
+  ModalProps<
+    {
+      initialLayers: Set<LayerType>;
+      selection?: EditorEntity[];
+      frozenLayers?: Set<LayerType>;
+    },
+    { newLayers: Set<LayerType> }
+  >
 > = ({ arguments: { initialLayers, selection, frozenLayers }, cancel, submit }) => {
   const dispatch = useDispatch();
   const { t } = useContext(EditorContext);
   const [selectedLayers, setSelectedLayers] = useState<Set<LayerType>>(initialLayers);
   const selectionCounts = useMemo(
-    () => (selection ? mapValues(groupBy(selection, 'objType'), (values) => values.length) : {}),
+    () =>
+      selection
+        ? mapKeys(
+            mapValues(groupBy(selection, 'objType'), (values) => values.length),
+            (_values, key) => OBJTYPE_TO_LAYER_DICT[key]
+          )
+        : {},
     [selection]
+  );
+  const unselectCount = useMemo(
+    () =>
+      sum(
+        LAYERS.filter((layer) => !selectedLayers.has(layer.id)).map(
+          (layer) => selectionCounts[layer.id] || 0
+        )
+      ),
+    [selectedLayers, selectionCounts]
   );
 
   return (
@@ -61,19 +79,19 @@ const LayersModal: FC<
                   disabled={frozenLayers && frozenLayers.has(id)}
                 />
                 <img className="mx-2" src={icon} alt="" height="20" />
-                <div>
-                  <p>{t(`Editor.layers.${id}`)}</p>
+                <div className="d-flex flex-column">
+                  <div>{t(`Editor.layers.${id}`)}</div>
                   {!!selectionCounts[id] && (
-                    <p className="small text-muted font-italic">
+                    <div className="small text-muted font-italic">
                       {t('Editor.layers-modal.layer-selected-items', {
                         count: selectionCounts[id],
                       })}
-                    </p>
+                    </div>
                   )}
                   {frozenLayers && frozenLayers.has(id) && (
-                    <p className="small text-muted font-italic">
+                    <div className="small text-muted font-italic">
                       {t('Editor.layers-modal.frozen-layer')}
-                    </p>
+                    </div>
                   )}
                 </div>
               </div>
@@ -83,6 +101,11 @@ const LayersModal: FC<
       </div>
 
       <div className="text-right">
+        {!!unselectCount && (
+          <div className="text-primary my-2">
+            {t('Editor.layers-modal.selection-warning', { count: unselectCount })}
+          </div>
+        )}
         <button type="button" className="btn btn-danger mr-2" onClick={cancel}>
           {t('common.cancel')}
         </button>
@@ -91,7 +114,7 @@ const LayersModal: FC<
           className="btn btn-primary"
           onClick={() => {
             dispatch(selectLayers(selectedLayers));
-            submit({});
+            submit({ newLayers: selectedLayers });
           }}
         >
           {t('common.confirm')}
