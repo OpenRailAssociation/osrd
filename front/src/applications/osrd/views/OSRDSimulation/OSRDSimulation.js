@@ -1,6 +1,6 @@
 import './OSRDSimulation.scss';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   persistentRedoSimulation,
   persistentUndoSimulation,
@@ -42,9 +42,11 @@ import { useTranslation } from 'react-i18next';
 
 export const KEY_VALUES_FOR_CONSOLIDATED_SIMULATION = ['time', 'position'];
 export const timetableURI = '/timetable/';
+const MAP_MIN_HEIGHT = 450;
 
 function OSRDSimulation() {
   const { t } = useTranslation(['translation', 'simulation', 'allowances']);
+  const timeTableRef = useRef();
   const { fullscreen, darkmode } = useSelector((state) => state.main);
   const [extViewport, setExtViewport] = useState(undefined);
   const [isEmpty, setIsEmpty] = useState(true);
@@ -58,6 +60,10 @@ function OSRDSimulation() {
   const [heightOfSpeedSpaceChart, setHeightOfSpeedSpaceChart] = useState(250);
   const [initialHeightOfSpeedSpaceChart, setInitialHeightOfSpeedSpaceChart] =
     useState(heightOfSpeedSpaceChart);
+
+  const [heightOfSimulationMap, setHeightOfSimulationMap] = useState(MAP_MIN_HEIGHT);
+  const [initialHeightOfSimulationMap, setinitialHeightOfSimulationMap] =
+    useState(heightOfSimulationMap);
 
   const [heightOfSpaceCurvesSlopesChart, setHeightOfSpaceCurvesSlopesChart] = useState(150);
   const [initialHeightOfSpaceCurvesSlopesChart, setInitialHeightOfSpaceCurvesSlopesChart] =
@@ -198,6 +204,7 @@ function OSRDSimulation() {
     <CenterLoader message={t('simulation:waiting')} />
   );
 
+  const mapMaxHeight = timeTableRef?.current?.clientHeight - 42;
   return (
     <main className={`mastcontainer ${fullscreen ? ' fullscreen' : ''}`}>
       {!simulation || simulation.trains.length === 0 ? (
@@ -254,14 +261,7 @@ function OSRDSimulation() {
                   }}
                   disableDragging
                   enableResizing={{
-                    top: false,
-                    right: false,
                     bottom: true,
-                    left: false,
-                    topRight: false,
-                    bottomRight: false,
-                    bottomLeft: false,
-                    topLeft: false,
                   }}
                   onResizeStart={() => setInitialHeightOfSpaceTimeChart(heightOfSpaceTimeChart)}
                   onResize={(e, dir, refToElement, delta) => {
@@ -292,14 +292,7 @@ function OSRDSimulation() {
                   }}
                   disableDragging
                   enableResizing={{
-                    top: false,
-                    right: false,
                     bottom: true,
-                    left: false,
-                    topRight: false,
-                    bottomRight: false,
-                    bottomLeft: false,
-                    topLeft: false,
                   }}
                   onResizeStart={() => setInitialHeightOfSpeedSpaceChart(heightOfSpeedSpaceChart)}
                   onResize={(e, dir, refToElement, delta) => {
@@ -329,14 +322,7 @@ function OSRDSimulation() {
                   }}
                   disableDragging
                   enableResizing={{
-                    top: false,
-                    right: false,
                     bottom: true,
-                    left: false,
-                    topRight: false,
-                    bottomRight: false,
-                    bottomLeft: false,
-                    topLeft: false,
                   }}
                   onResizeStart={() =>
                     setInitialHeightOfSpaceCurvesSlopesChart(heightOfSpaceCurvesSlopesChart)
@@ -373,15 +359,45 @@ function OSRDSimulation() {
               <i className="icons-arrow-down ml-auto" />
             </div>
           )}
-          <div className="row">
+          <div className="row" ref={timeTableRef}>
             <div className="col-md-6">
               <div className="osrd-simulation-container mb-2">
                 {simulation.trains.length > 0 ? <TimeTable /> : null}
               </div>
             </div>
             <div className="col-md-6">
-              <div className="osrd-simulation-container osrd-simulation-map mb-2">
-                <Map setExtViewport={setExtViewport} />
+              <div className="osrd-simulation-container mb-2">
+                <div
+                  className="osrd-simulation-map"
+                  style={{ height: `${heightOfSimulationMap}px` }}
+                >
+                  <Rnd
+                    className="map-resizer"
+                    default={{
+                      x: 0,
+                      y: 0,
+                      height: `${heightOfSimulationMap}px`,
+                    }}
+                    minHeight={MAP_MIN_HEIGHT}
+                    maxHeight={mapMaxHeight}
+                    style={{
+                      paddingBottom: '12px',
+                    }}
+                    disableDragging
+                    enableResizing={{
+                      bottom: true,
+                    }}
+                    onResizeStart={() => setinitialHeightOfSimulationMap(heightOfSimulationMap)}
+                    onResize={(e, dir, refToElement, delta) => {
+                      setHeightOfSimulationMap(initialHeightOfSimulationMap + delta.height);
+                    }}
+                    onResizeStop={() => {
+                      dispatch(updateMustRedraw(true));
+                    }}
+                  >
+                    <Map setExtViewport={setExtViewport} />
+                  </Rnd>
+                </div>
               </div>
             </div>
           </div>
