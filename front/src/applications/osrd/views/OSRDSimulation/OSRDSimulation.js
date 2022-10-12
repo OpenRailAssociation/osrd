@@ -44,6 +44,13 @@ export const KEY_VALUES_FOR_CONSOLIDATED_SIMULATION = ['time', 'position'];
 export const timetableURI = '/timetable/';
 const MAP_MIN_HEIGHT = 450;
 
+function getMapMaxHeight(timeTableRef) {
+  if (timeTableRef.current) {
+    return timeTableRef.current.clientHeight - 42;
+  }
+  return 10000;
+}
+
 function OSRDSimulation() {
   const { t } = useTranslation(['translation', 'simulation', 'allowances']);
   const timeTableRef = useRef();
