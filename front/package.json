@@ -90,7 +90,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "lint-ts": "eslint --ext .ts,.tsx src"
   },
   "browserslist": {
     "production": [
