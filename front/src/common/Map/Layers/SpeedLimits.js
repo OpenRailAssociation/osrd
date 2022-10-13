@@ -9,41 +9,17 @@ export default function SpeedLimits(props) {
   const { layersSettings } = useSelector((state) => state.map);
   const { infraID } = useSelector((state) => state.osrdconf);
   const { geomType, colors } = props;
-  const tag = `"${layersSettings.speedlimittag}"`;
-  const uglyJSONParsingOfSpeedLimitByTags = [
+
+  const tag = `speed_limit_by_tag_${layersSettings.speedlimittag}`;
+  const speedLimitByTagName = [
     'round',
-    [
-      '*',
-      3.6,
-      [
-        'case',
-        ['!=', ['index-of', ['literal', tag], ['get', 'speed_limit_by_tag']], -1],
-        [
-          'to-number',
-          [
-            'slice',
-            ['get', 'speed_limit_by_tag'],
-            [
-              '+',
-              ['+', ['index-of', ['literal', tag], ['get', 'speed_limit_by_tag']], tag.length],
-              2,
-            ],
-            [
-              '+',
-              ['+', ['index-of', ['literal', tag], ['get', 'speed_limit_by_tag']], tag.length],
-              8,
-            ],
-          ],
-        ],
-        ['to-number', ['get', 'speed_limit']],
-      ],
-    ],
+    ['*', 3.6, ['case', ['!=', ['get', tag], null], ['get', tag], ['get', 'speed_limit']]],
   ];
-  const speedSectionFilter = [
-    'all',
-    ['has', 'speed_limit'],
-    ['>', uglyJSONParsingOfSpeedLimitByTags, 0],
-  ];
+
+  const speedSectionFilter =
+    layersSettings.speedlimittag === 'undefined'
+      ? ['all', ['has', 'speed_limit']]
+      : ['all', ['has', tag]];
 
   const speedValuePointParams = {
     type: 'symbol',
@@ -55,7 +31,7 @@ export default function SpeedLimits(props) {
       visibility: 'visible',
       'text-font': ['Roboto Bold'],
       'symbol-placement': 'point',
-      'text-field': ['to-string', uglyJSONParsingOfSpeedLimitByTags],
+      'text-field': ['to-string', speedLimitByTagName],
       'text-size': 12,
       'icon-allow-overlap': false,
       'icon-ignore-placement': false,
@@ -81,7 +57,7 @@ export default function SpeedLimits(props) {
       visibility: 'visible',
       'text-font': ['Roboto Bold'],
       'symbol-placement': 'line',
-      'text-field': ['concat', uglyJSONParsingOfSpeedLimitByTags, 'km/h'],
+      'text-field': ['concat', ['to-string', speedLimitByTagName], 'km/h'],
       'text-size': 9,
       'text-justify': 'left',
       'text-allow-overlap': false,
@@ -110,7 +86,7 @@ export default function SpeedLimits(props) {
       'line-color': [
         'let',
         'speed_limit',
-        uglyJSONParsingOfSpeedLimitByTags,
+        speedLimitByTagName,
         [
           'case',
           ['all', ['>', ['var', 'speed_limit'], 220]],
