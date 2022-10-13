@@ -7,6 +7,9 @@ updates:
     commit-message:
       prefix: "editoast:"
     open-pull-requests-limit: 100
+    labels:
+      - "dependencies"
+      - "area:editoast"
   - package-ecosystem: "pip"
     directory: "/api/"
     schedule:
@@ -14,6 +17,9 @@ updates:
     commit-message:
       prefix: "api:"
     open-pull-requests-limit: 100
+    labels:
+      - "dependencies"
+      - "area:api"
   - package-ecosystem: "pip"
     directory: "/chartos/"
     schedule:
@@ -21,6 +27,9 @@ updates:
     commit-message:
       prefix: "chartos:"
     open-pull-requests-limit: 100
+    labels:
+      - "dependencies"
+      - "area:chartos"
   - package-ecosystem: "npm"
     directory: "/front/"
     schedule:
@@ -28,6 +37,9 @@ updates:
     commit-message:
       prefix: "front:"
     open-pull-requests-limit: 100
+    labels:
+      - "dependencies"
+      - "area:front"
   - package-ecosystem: "gradle"
     directory: "/core/"
     schedule:
@@ -35,6 +47,9 @@ updates:
     commit-message:
       prefix: "core:"
     open-pull-requests-limit: 100
+    labels:
+      - "dependencies"
+      - "area:core"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -42,3 +57,6 @@ updates:
     commit-message:
       prefix: "actions:"
     open-pull-requests-limit: 100
+    labels:
+      - "dependencies"
+      - "area:actions"
