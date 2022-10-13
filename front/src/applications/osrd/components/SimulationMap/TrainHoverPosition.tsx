@@ -2,24 +2,15 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { Layer, Source, Marker } from 'react-map-gl';
 import lineSliceAlong from '@turf/line-slice-along';
-import { Point, Feature, LineString } from 'geojson';
+import length from '@turf/length';
+import { Feature, LineString } from 'geojson';
 import cx from 'classnames';
 
 import { RootState } from 'reducers';
 import { datetime2time } from 'utils/timeManipulation';
-
-interface TrainPosition {
-  id: string;
-  headPosition: Feature<Point>;
-  tailPosition: Feature<Point>;
-  headDistanceAlong: number;
-  tailDistanceAlong: number;
-  speedTime: {
-    speed: number;
-    time: number;
-  };
-  trainLength: number;
-}
+import { boundedValue } from 'utils/numbers';
+import { Viewport } from 'reducers/map';
+import { TrainPosition } from './types';
 
 function getFill(isSelectedTrain: boolean, ecoBlocks) {
   if (isSelectedTrain) {
@@ -54,27 +45,23 @@ function getSpeedAndTimeLabel(isSelectedTrain, ecoBlocks, point: TrainPosition) 
 }
 
 // When the train is backward, lineSliceAlong will crash. we need to have head and tail in the right order
-function makeDisplayedHeadAndTail(point: TrainPosition) {
+export function makeDisplayedHeadAndTail(point: TrainPosition, geojsonPath: Feature<LineString>) {
+  const pathLength = length(geojsonPath);
   const trueHead = Math.max(point.tailDistanceAlong, point.headDistanceAlong);
-  const trueTail = Math.max(trueHead - point.trainLength, 0);
-  const head = Math.max(trueHead, trueTail);
-  const tail = Math.min(trueHead, trueTail);
-  return { tail, head };
+  const trueTail = Math.min(point.tailDistanceAlong, point.headDistanceAlong);
+  return {
+    head: boundedValue(trueHead, 0, pathLength),
+    tail: boundedValue(trueTail, 0, pathLength),
+  };
 }
 
-function getLengthFactorToKeepLabelPlacedCorrectlyWhenZooming(
-  viewport: {
-    zoom: number;
-    transformRequest: (url: string, resourceType: string, urlmap: string) => any;
-  },
-  threshold = 12
-) {
+function getLengthFactorToKeepLabelPlacedCorrectlyWhenZooming(viewport: Viewport, threshold = 12) {
   return 2 ** (threshold - viewport?.zoom);
 }
 
 interface TrainHoverPositionProps {
   point: TrainPosition;
-  isSelectedTrain: boolean;
+  isSelectedTrain?: boolean;
   geojsonPath: Feature<LineString>;
 }
 
@@ -91,12 +78,12 @@ function TrainHoverPosition(props: TrainHoverPositionProps) {
   const simulation = useSelector((state: RootState) => state.osrdsimulation.simulation.present);
   const trainID = simulation.trains[selectedTrain].id;
   const { ecoBlocks } = allowancesSettings[trainID];
-  const fill = getFill(isSelectedTrain, ecoBlocks);
+  const fill = getFill(isSelectedTrain as boolean, ecoBlocks);
   const label = getSpeedAndTimeLabel(isSelectedTrain, ecoBlocks, point);
 
   if (geojsonPath && point.headDistanceAlong && point.tailDistanceAlong) {
     const zoomLengthFactor = getLengthFactorToKeepLabelPlacedCorrectlyWhenZooming(viewport);
-    const { tail, head } = makeDisplayedHeadAndTail(point);
+    const { tail, head } = makeDisplayedHeadAndTail(point, geojsonPath);
     const trainGeoJsonPath = lineSliceAlong(geojsonPath, tail, head);
 
     return (

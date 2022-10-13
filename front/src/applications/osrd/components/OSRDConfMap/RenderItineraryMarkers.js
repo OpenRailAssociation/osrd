@@ -54,5 +54,5 @@ export default function RenderItineraryMarkers() {
     });
   }
 
-  return markers.map((marker) => marker);
+  return <>{markers.map((marker) => marker)}</>;
 }

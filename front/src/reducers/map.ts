@@ -1,4 +1,5 @@
 /* eslint-disable default-case */
+import { MapRequest } from 'react-map-gl';
 import produce from 'immer';
 import { transformRequest, gpsRound } from 'utils/helpers';
 import history from 'main/history';
@@ -17,6 +18,14 @@ export const UPDATE_FEATURE_INFO_CLICK = 'map/UPDATE_FEATURE_INFO_CLICK';
 export const UPDATE_LAYERS_SETTINGS = 'osrdconf/UPDATE_LAYERS_SETTINGS';
 export const UPDATE_SIGNALS_SETTINGS = 'osrdconf/UPDATE_SIGNALS_SETTINGS';
 
+export interface Viewport {
+  latitude: number;
+  longitude: number;
+  zoom: number;
+  bearing: number;
+  pitch: number;
+  transformRequest: (url?: string, resourceType?: string) => MapRequest;
+}
 export interface MapState {
   ref: unknown;
   url: typeof MAP_URL;
@@ -24,14 +33,7 @@ export interface MapState {
   mapTrackSources: string;
   showOSM: boolean;
   showOSMtracksections: boolean;
-  viewport: {
-    latitude: number;
-    longitude: number;
-    zoom: number;
-    bearing: number;
-    pitch: number;
-    transformRequest: (url: string, resourceType: string, urlmap: string) => any;
-  };
+  viewport: Viewport;
   featureInfoHoverID: unknown;
   featureInfoClickID: unknown;
   featureSource: unknown;
@@ -70,7 +72,8 @@ export const initialState: MapState = {
     zoom: 6.2,
     bearing: 0,
     pitch: 0,
-    transformRequest: (url, resourceType) => transformRequest(url, resourceType, MAP_URL as string),
+    transformRequest: (url, resourceType) =>
+      transformRequest(url as string, resourceType as string, MAP_URL as string),
   },
   featureInfoHoverID: undefined,
   featureInfoClickID: undefined,
