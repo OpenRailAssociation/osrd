@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { tail, last, omit } from 'lodash';
+import { tail, last } from 'lodash';
 import distance from '@turf/distance';
 import length from '@turf/length';
 import along from '@turf/along';
@@ -11,52 +11,6 @@ const DEBUG = false;
 interface Degree {
   degree: number;
 }
-
-const simpleLine = {
-  type: 'LineString',
-  coordinates: [
-    [-1.55731201171875, 47.210240027362104],
-    [-0.560302734375, 47.47173459547315],
-  ],
-};
-
-const complexeLine = {
-  type: 'LineString',
-  coordinates: [
-    [-1.5416908264160156, 47.21717794690891],
-    [-1.5247821807861328, 47.220675713408426],
-    [-1.512765884399414, 47.22254109452638],
-    [-1.5050411224365234, 47.22568877633443],
-    [-1.5014362335205078, 47.229302550889734],
-    [-1.4915657043457031, 47.23472275076704],
-    [-1.441526412963867, 47.265368501128926],
-    [-1.4008426666259763, 47.28988397829794],
-    [-1.3797283172607422, 47.2958800972544],
-    [-1.3605022430419922, 47.30589151822937],
-    [-1.3553524017333984, 47.310663737638244],
-    [-1.3509750366210938, 47.31357341605936],
-    [-1.3391304016113281, 47.320846911252495],
-    [-1.332392692565918, 47.32398875148795],
-    [-1.3277363777160645, 47.32755218670456],
-    [-1.3100337982177734, 47.33690324274538],
-    [-1.306471824645996, 47.34001504658135],
-    [-1.3038969039916992, 47.34138185571577],
-    [-1.3013434410095215, 47.342108867434504],
-    [-1.2984466552734375, 47.34258868968457],
-    [-1.2858295440673828, 47.34389727365561],
-    [-1.2713027000427246, 47.34542391395829],
-    [-1.2511968612670898, 47.3476047520891],
-    [-1.2486863136291502, 47.34830260126135],
-    [-1.2460899353027344, 47.34939297212208],
-    [-1.2430858612060545, 47.350468782627765],
-    [-1.233065128326416, 47.353318120710746],
-    [-1.2229585647583008, 47.358202342378284],
-    [-1.2193536758422852, 47.35914715450116],
-    [-1.196737289428711, 47.363304126849265],
-    [-1.185150146484375, 47.367082908390685],
-    [-1.1779403686523438, 47.36943724309075],
-  ],
-};
 
 const defaultLine = {
   type: 'LineString',
@@ -231,7 +185,7 @@ describe('Testing linear metadata functions', () => {
     it('increase should fail on wrapper of size 1', () => {
       const wrapper: Array<LinearMetadataItem<Degree>> = [{ begin: 0, end: 10, degree: 0 }];
       try {
-        const result = resizeSegment(wrapper, 0, 10);
+        resizeSegment(wrapper, 0, 10);
         assert.fail();
       } catch (e) {
         assert.ok(e);
@@ -241,7 +195,7 @@ describe('Testing linear metadata functions', () => {
     it('decrease should fail on wrapper of size 1', () => {
       const wrapper: Array<LinearMetadataItem<Degree>> = [{ begin: 0, end: 10, degree: 0 }];
       try {
-        const result = resizeSegment(wrapper, 0, -5);
+        resizeSegment(wrapper, 0, -5);
         assert.fail();
       } catch (e) {
         assert.ok(e);
@@ -312,7 +266,7 @@ describe('Testing linear metadata functions', () => {
         { begin: 30, end: 40, degree: 0 },
       ];
       try {
-        const result = resizeSegment(wrapper, 3, -10);
+        resizeSegment(wrapper, 3, -10);
         assert.fail();
       } catch (e) {
         assert.ok(e);
@@ -327,7 +281,7 @@ describe('Testing linear metadata functions', () => {
         { begin: 30, end: 40, degree: 0 },
       ];
       try {
-        const result = resizeSegment(wrapper, 1, 10);
+        resizeSegment(wrapper, 1, 10);
         assert.fail();
       } catch (e) {
         assert.ok(e);
@@ -342,7 +296,7 @@ describe('Testing linear metadata functions', () => {
         { begin: 30, end: 40, degree: 0 },
       ];
       try {
-        const result = resizeSegment(wrapper, 3, -5);
+        resizeSegment(wrapper, 3, -5);
         assert.fail();
       } catch (e) {
         assert.ok(e);

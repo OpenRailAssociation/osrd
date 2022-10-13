@@ -259,7 +259,7 @@ function Map() {
         <RenderItinerary />
         <RenderItineraryMarkers />
         {mapSearchMarker !== undefined ? (
-          <SearchMarker data={mapSearchMarker as object} colors={colors[mapStyle]} />
+          <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />
         ) : null}
         {snappedPoint !== undefined ? <SnappedMarker geojson={snappedPoint} /> : null}
       </ReactMapGL>

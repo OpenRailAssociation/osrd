@@ -294,8 +294,6 @@ function Map(props: MapProps) {
 
   useEffect(() => {
     if (mapRef.current) {
-      mapRef.current.getMap().on('click', () => {});
-
       if (urlLat) {
         updateViewportChange({
           ...viewport,
@@ -399,7 +397,7 @@ function Map(props: MapProps) {
         )}
 
         {mapSearchMarker !== undefined ? (
-          <SearchMarker data={mapSearchMarker as object} colors={colors[mapStyle]} />
+          <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />
         ) : null}
 
         {geojsonPath !== undefined ? <RenderItinerary geojsonPath={geojsonPath} /> : null}

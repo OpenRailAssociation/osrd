@@ -6,19 +6,7 @@ import thunk from 'redux-thunk';
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
-const store = createStore(
-  persistedReducer,
-  composeEnhancers(
-    applyMiddleware(
-      thunk
-      /* createStateSyncMiddleware({
-      blacklist: ['persist/PERSIST', 'persist/REHYDRATE'],
-    }), */
-    )
-  )
-);
-
-// initMessageListener(store);
+const store = createStore(persistedReducer, composeEnhancers(applyMiddleware(thunk)));
 
 const persistor = persistStore(store);
 

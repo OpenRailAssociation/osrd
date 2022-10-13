@@ -48,7 +48,10 @@ export interface OSRDConf {
   switchTypes: SwitchType[] | null;
 }
 
-export interface ModalProps<ArgumentsType = {}, SubmitArgumentsType = Record<string, unknown>> {
+export interface ModalProps<
+  ArgumentsType = Record<string, unknown>,
+  SubmitArgumentsType = Record<string, unknown>
+> {
   arguments: ArgumentsType;
   cancel: () => void;
   submit: (args: SubmitArgumentsType) => void;

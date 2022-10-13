@@ -21,10 +21,7 @@ class HomeEditorUnplugged extends React.Component {
         <div className="no-mastnav">
           <Routes>
             <Route path="/" element={<Editor urlmap={config.proxy} />} />
-            <Route
-              path="/:infra"
-              element={<Editor urlmap={config.proxy} />}
-            />
+            <Route path="/:infra" element={<Editor urlmap={config.proxy} />} />
           </Routes>
         </div>
       </>
