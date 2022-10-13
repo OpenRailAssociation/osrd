@@ -74,7 +74,7 @@
     "react-router": "^6.3.0",
     "react-router-dom": "^6.3.0",
     "react-scripts": "^4.0.3",
-    "react-select": "^5.4.0",
+    "react-select": "^5.5.0",
     "react-transition-group": "^4.4.2",
     "redux": "^4.2.0",
     "redux-mock-store": "^1.5.4",
