@@ -105,16 +105,20 @@ async def mvt_view_tile(
     return ProtobufResponse(tile_data)
 
 
-def flatten_data(data, separator="_", _result={}, _prefix=""):
-    """
-    Flatten a dictionnary and prefix keys with the parent key separated by an underscore.
-    """
+def _flatten_data_rec(data, separator, result, prefix):
     for key, value in data.items():
         if isinstance(value, dict):
-            flatten_data(value, separator, _result, f"{_prefix}{key}{separator}")
+            _flatten_data_rec(value, separator, result, f"{prefix}{key}{separator}")
         else:
-            _result[_prefix + key] = value
-    return _result
+            result[prefix + key] = value
+    return result
+
+
+def flatten_data(data, separator="_"):
+    """
+    Flatten a dictionnary and prefix keys with the parent key separated by `separator`.
+    """
+    return _flatten_data_rec(data, separator, {}, "")
 
 
 async def mvt_query(psql, layer, infra, view: View, z: int, x: int, y: int) -> bytes:
