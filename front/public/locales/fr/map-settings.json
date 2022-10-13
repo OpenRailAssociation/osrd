@@ -12,7 +12,7 @@
     "darkmode": "Sombre",
     "normal": "Normal"
   },
-  "noSpeedLimitByTag": "Aucune catégorie",
+  "noSpeedLimitByTag": "Aucun code de composition",
   "operationalpoints": "Points remarquables",
   "routes": "Cantons",
   "signalingtype": "Type de block",
@@ -22,7 +22,7 @@
   "speedlimits": "Vitesses limites",
   "stops": "Pancartes d'arrêt",
   "switches": "Appareils de voie",
-  "tags": "Catégories",
+  "tags": "Compositions",
   "tivs": "Limites de vitesse",
   "tracksources": {
     "geographic": "Géographique",
