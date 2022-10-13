@@ -63,7 +63,8 @@ export interface ModalRequest<ArgumentsType, SubmitArgumentsType> {
   afterSubmit?: (args: SubmitArgumentsType) => void;
 }
 
-export interface EditorContextType<S> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface EditorContextType<S = any> {
   // Localisation:
   t: TFunction;
 
