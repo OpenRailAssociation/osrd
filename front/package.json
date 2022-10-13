@@ -89,7 +89,7 @@
     "short-number": "^1.0.7",
     "turf-point": "^2.0.1",
     "uuid": "^8.3.2",
-    "webpack": "4.44.2",
+    "webpack": "5.74.0",
     "wellknown": "^0.5.0"
   },
   "scripts": {
