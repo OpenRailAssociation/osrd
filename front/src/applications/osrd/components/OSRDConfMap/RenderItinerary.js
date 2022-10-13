@@ -18,5 +18,5 @@ export default function RenderItinerary() {
       </Source>
     );
   }
-  return '';
+  return null;
 }

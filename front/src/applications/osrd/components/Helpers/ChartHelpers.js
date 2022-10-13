@@ -258,14 +258,14 @@ export const interpolateOnTime = (dataSimulation, keyValues, listValues, timePos
     // If not array of array
     if (listValue === 'speed' || listValue === 'speeds') {
       if (
-        dataSimulation[listValue] &&
-        dataSimulation[listValue][0] &&
-        timePositionLocal >= dataSimulation[listValue][0][keyValues[0]]
+        dataSimulation?.[listValue] &&
+        dataSimulation?.[listValue][0] &&
+        timePositionLocal >= dataSimulation?.[listValue][0][keyValues[0]]
       ) {
         const index = bisect(dataSimulation[listValue], timePositionLocal, 1);
         bisection = [dataSimulation[listValue][index - 1], dataSimulation[listValue][index]];
       }
-    } else if (dataSimulation[listValue]) {
+    } else if (dataSimulation?.[listValue]) {
       // Array of array
       dataSimulation[listValue].forEach((section) => {
         const index = bisect(section, timePositionLocal, 1);

@@ -44,6 +44,13 @@ export const KEY_VALUES_FOR_CONSOLIDATED_SIMULATION = ['time', 'position'];
 export const timetableURI = '/timetable/';
 const MAP_MIN_HEIGHT = 450;
 
+function getMapMaxHeight(timeTableRef) {
+  if (timeTableRef.current) {
+    return timeTableRef.current.clientHeight - 42;
+  }
+  return 10000;
+}
+
 function OSRDSimulation() {
   const { t } = useTranslation(['translation', 'simulation', 'allowances']);
   const timeTableRef = useRef();
@@ -204,7 +211,7 @@ function OSRDSimulation() {
     <CenterLoader message={t('simulation:waiting')} />
   );
 
-  const mapMaxHeight = timeTableRef?.current?.clientHeight - 42;
+  const mapMaxHeight = getMapMaxHeight(timeTableRef);
   return (
     <main className={`mastcontainer ${fullscreen ? ' fullscreen' : ''}`}>
       {!simulation || simulation.trains.length === 0 ? (
