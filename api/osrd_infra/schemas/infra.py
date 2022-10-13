@@ -394,7 +394,9 @@ class Detector(BaseObjectTrait, TrackLocationTrait):
 class RailJsonInfra(BaseModel):
     """This class is used to build an infra."""
 
-    version: Literal[RAILJSON_INFRA_VERSION]
+    version: Literal[RAILJSON_INFRA_VERSION] = Field(
+        default=RAILJSON_INFRA_VERSION, description="Version of the schema"
+    )
     operational_points: List[OperationalPoint] = Field(
         description="List of operational points of the corresponding infra"
     )
