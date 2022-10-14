@@ -31,7 +31,7 @@ function FormatSwitch(props) {
     dispatch(
       updateLayersSettings({
         ...layersSettings,
-        speedlimittag: item,
+        speedlimittag: item.key,
       })
     );
   };
@@ -39,7 +39,13 @@ function FormatSwitch(props) {
   const getTagsList = async (zoom, params) => {
     try {
       const tagsList = await get(`/infra/${infraID}/speed_limit_tags/`, params, {}, true);
-      setSpeedLimitsTags([t('noSpeedLimitByTag')].concat(tagsList));
+
+      // construct an object from array to add "undefined" value
+      const tagsListObject = [{ key: 'undefined', value: t('noSpeedLimitByTag') }].concat(
+        tagsList.map((tag) => ({ key: tag, value: tag }))
+      );
+
+      setSpeedLimitsTags(tagsListObject);
     } catch (e) {
       dispatch(
         setFailure({

@@ -37,7 +37,9 @@ export default function SelectSNCF(props) {
 
   const filterOptions = (text) => {
     const localFilteredOptions = options.filter((el) =>
-      el.toLowerCase().includes(text.toLowerCase())
+      typeof el === 'string'
+        ? el.toLowerCase().includes(text.toLowerCase())
+        : el.value.toLowerCase().includes(text.toLowerCase())
     );
     setFilteredOptions(text ? localFilteredOptions : options);
   };
