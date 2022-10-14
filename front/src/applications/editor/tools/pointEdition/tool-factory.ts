@@ -115,13 +115,13 @@ function getPointEditionTool<T extends EditorPoint>({
         });
       }
     },
-    onHover(e, { setState, state, editorState: { editorDataIndex } }) {
+    onHover(e, { setState, state, editorState: { entitiesIndex } }) {
       const { entity } = state;
 
       const hoveredTarget = (e.features || []).find((f) => f.layer.id === POINT_LAYER_ID);
       const hoveredTracks = (e.features || []).flatMap((f) => {
         if (f.layer.id !== 'editor/geo/track-main') return [];
-        const trackEntity = editorDataIndex[f.properties.id];
+        const trackEntity = entitiesIndex[f.properties.id];
         return trackEntity && trackEntity.objType === 'TrackSection' ? [trackEntity] : [];
       }) as Feature<LineString>[];
 
@@ -163,7 +163,7 @@ function getPointEditionTool<T extends EditorPoint>({
       const trackId = entity.properties?.track;
 
       if (trackId) {
-        const line = editorState.editorDataIndex[trackId];
+        const line = editorState.entitiesIndex[trackId];
 
         const dbPosition = entity.properties.position;
         const computedPosition = nearestPointOnLine(

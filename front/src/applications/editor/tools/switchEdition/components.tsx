@@ -53,7 +53,7 @@ export const TrackSectionEndpointSelector: FC<FieldProps> = ({
   name,
 }) => {
   const {
-    editorState: { editorDataIndex },
+    editorState: { entitiesIndex },
     state,
     setState,
   } = useContext(EditorContext) as ExtendedEditorContextType<SwitchEditionState>;
@@ -62,7 +62,7 @@ export const TrackSectionEndpointSelector: FC<FieldProps> = ({
   const portId = name.replace(FLAT_SWITCH_PORTS_PREFIX, '');
   const endpoint = ENDPOINTS_SET.has(formData?.endpoint) ? formData.endpoint : DEFAULT_ENDPOINT;
   const trackSection =
-    typeof formData?.track === 'string' ? editorDataIndex[formData.track] : undefined;
+    typeof formData?.track === 'string' ? entitiesIndex[formData.track] : undefined;
 
   const isPicking =
     state.portEditionState.type === 'selection' && state.portEditionState.portId === portId;
@@ -88,7 +88,7 @@ export const TrackSectionEndpointSelector: FC<FieldProps> = ({
           portId,
           hoveredPoint: null,
           onSelect: (trackId: string, position: [number, number]) => {
-            const track = editorDataIndex[trackId] as TrackSectionEntity;
+            const track = entitiesIndex[trackId] as TrackSectionEntity;
             const closest = nearestPoint(
               position,
               featureCollection([
@@ -105,7 +105,7 @@ export const TrackSectionEndpointSelector: FC<FieldProps> = ({
         },
       });
     }
-  }, [editorDataIndex, isDisabled, isPicking, onChange, portId, setState, state]);
+  }, [entitiesIndex, isDisabled, isPicking, onChange, portId, setState, state]);
 
   return (
     <div className="mb-4">
@@ -169,7 +169,7 @@ export const SwitchEditionLeftPanel: FC = () => {
   const baseSchema = editorState.editorSchema.find((e) => e.objType === 'Switch')?.schema;
 
   // Retrieve proper data
-  const tracksIndex = editorState.editorDataIndex as Record<string, TrackSectionEntity>;
+  const tracksIndex = editorState.entitiesIndex as Record<string, TrackSectionEntity>;
   const { switchTypes } = useSelector(({ osrdconf }: { osrdconf: OSRDConf }) => osrdconf);
   const switchTypesDict = useMemo(() => keyBy(switchTypes, 'id'), [switchTypes]);
   const switchTypeOptions = useMemo(
@@ -240,7 +240,7 @@ export const SwitchEditionLeftPanel: FC = () => {
                 ? {
                     update: [
                       {
-                        source: editorState.editorDataIndex[entityToSave.id as string],
+                        source: editorState.entitiesIndex[entityToSave.id as string],
                         target: entityToSave,
                       },
                     ],
@@ -286,7 +286,7 @@ export const SwitchEditionLayers: FC = () => {
   const { t } = useTranslation();
   const {
     state: { entity, hovered, portEditionState, mousePosition },
-    editorState: { editorDataIndex },
+    editorState: { entitiesIndex },
   } = useContext(EditorContext) as ExtendedEditorContextType<SwitchEditionState>;
   const { mapStyle } = useSelector((s: { map: { mapStyle: string } }) => s.map) as {
     mapStyle: string;
@@ -297,7 +297,7 @@ export const SwitchEditionLayers: FC = () => {
   const nameLayerProps = getSwitchesNameLayerProps({
     colors: colors[mapStyle],
   });
-  const hoveredTrack = hovered ? (editorDataIndex[hovered.id] as TrackSectionEntity) : null;
+  const hoveredTrack = hovered ? (entitiesIndex[hovered.id] as TrackSectionEntity) : null;
 
   const closest =
     portEditionState.type === 'selection' && hoveredTrack && mousePosition

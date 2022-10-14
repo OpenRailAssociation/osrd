@@ -1,5 +1,5 @@
 import produce from 'immer';
-import { flatten, keyBy } from 'lodash';
+import { flatten, keyBy, mapValues } from 'lodash';
 import { createSelector } from 'reselect';
 import { Feature } from 'geojson';
 
@@ -8,6 +8,7 @@ import { setLoading, setSuccess, setFailure } from './main';
 import { getEditorSchema, getEditorData, editorSave } from '../applications/editor/data/api';
 import { clip } from '../utils/mapboxHelper';
 import { EditorState, LAYERS, LayerType } from '../applications/editor/tools/types';
+import { flattenEntity } from '../applications/editor/data/utils';
 
 //
 // Actions
@@ -18,13 +19,13 @@ import { EditorState, LAYERS, LayerType } from '../applications/editor/tools/typ
 const SET_DATA = 'editor/SET_DATA';
 type ActionSetData = {
   type: typeof SET_DATA;
-  data: Record<string, EditorEntity[]>;
+  entitiesByType: Partial<Record<LayerType, EditorEntity[]>>;
 };
-export function setEditorData(data: ActionSetData['data']): ThunkAction<ActionSetData> {
+export function setEditorData(data: ActionSetData['entitiesByType']): ThunkAction<ActionSetData> {
   return (dispatch) => {
     dispatch({
       type: SET_DATA,
-      data,
+      entitiesByType: data,
     });
   };
 }
@@ -190,9 +191,9 @@ export const initialState: EditorState = {
   // Edition zone:
   editorZone: null,
   // Editor entities:
-  editorData: {},
-  editorDataArray: [],
-  editorDataIndex: {},
+  flatEntitiesByTypes: {},
+  entitiesArray: [],
+  entitiesIndex: {},
 };
 
 //
@@ -213,15 +214,19 @@ export default function reducer(inputState: EditorState | undefined, action: Edi
         draft.editorSchema = action.schema;
         break;
       case SET_DATA:
-        draft.editorData = action.data;
-        draft.editorDataArray = flatten(Object.values(draft.editorData));
-        draft.editorDataIndex = keyBy(draft.editorDataArray, 'id');
+        draft.flatEntitiesByTypes = mapValues(
+          action.entitiesByType,
+          (entitiesArray: EditorEntity[]) => entitiesArray.map(flattenEntity)
+        );
+        draft.entitiesArray = flatten(Object.values(action.entitiesByType));
+        draft.entitiesIndex = keyBy(draft.entitiesArray, 'id');
         break;
       case RESET:
         draft.editorLayers = initialState.editorLayers;
         draft.editorZone = initialState.editorZone;
-        draft.editorData = initialState.editorData;
-        draft.editorDataIndex = initialState.editorDataIndex;
+        draft.flatEntitiesByTypes = initialState.flatEntitiesByTypes;
+        draft.entitiesArray = initialState.entitiesArray;
+        draft.entitiesIndex = initialState.entitiesIndex;
         // The schema is preserved, because it never changes at the moment.
         break;
       default:
@@ -233,8 +238,8 @@ export default function reducer(inputState: EditorState | undefined, action: Edi
 //
 // Derived data selector
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-export const dataSelector = (state: EditorState) => state.editorData;
-export const dataArraySelector = (state: EditorState) => state.editorDataArray;
+export const flatEntitiesSelector = (state: EditorState) => state.flatEntitiesByTypes;
+export const dataArraySelector = (state: EditorState) => state.entitiesArray;
 export const zoneSelector = (state: EditorState) => state.editorZone;
 export const clippedDataSelector = createSelector(dataArraySelector, zoneSelector, (data, zone) => {
   let result: Array<EditorEntity> = [];
