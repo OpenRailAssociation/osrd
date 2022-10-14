@@ -17,9 +17,9 @@ export interface EditorState {
   editorSchema: EditorSchema;
   editorLayers: Set<LayerType>;
   editorZone: Zone | null;
-  editorData: Partial<Record<LayerType, EditorEntity[]>>;
-  editorDataArray: EditorEntity[];
-  editorDataIndex: Record<string, EditorEntity>;
+  flatEntitiesByTypes: Partial<Record<LayerType, EditorEntity[]>>;
+  entitiesArray: EditorEntity[];
+  entitiesIndex: Record<string, EditorEntity>;
 }
 
 export const LAYERS = [

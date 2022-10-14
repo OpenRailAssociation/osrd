@@ -30,6 +30,7 @@ import colors from 'common/Map/Consts/colors';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import { updateViewport } from 'reducers/map';
 import { useParams } from 'react-router-dom';
+import { ALL_SIGNAL_LAYERS } from '../../common/Map/Consts/SignalsNames';
 
 function Map() {
   const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings } =
@@ -75,7 +76,9 @@ function Map() {
     if (layersSettings.tvds) {
       interactiveLayersLocal.push('chartis/osrd_tvd_section/geo');
     }
-    return interactiveLayersLocal;
+    return interactiveLayersLocal
+      .concat('chartis/tracks-geo/main')
+      .concat(ALL_SIGNAL_LAYERS.map((s) => `chartis/signal/geo/${s}`));
   };
 
   useEffect(() => {

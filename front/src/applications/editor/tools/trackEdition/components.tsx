@@ -199,7 +199,7 @@ export const TrackEditionLeftPanel: FC = () => {
               ? {
                   update: [
                     {
-                      source: injectGeometry(editorState.editorDataIndex[state.track.id as string]),
+                      source: injectGeometry(editorState.entitiesIndex[state.track.id as string]),
                       target: injectGeometry(savedEntity),
                     },
                   ],
