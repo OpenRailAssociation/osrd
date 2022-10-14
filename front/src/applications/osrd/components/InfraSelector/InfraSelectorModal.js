@@ -22,7 +22,7 @@ export default function InfraSelectorModal(props) {
   };
 
   return (
-    <ModalSNCF htmlID="infra-selector-modal">
+    <ModalSNCF htmlID="infra-selector-modal" size="sm">
       <ModalHeaderSNCF>
         <div className="d-flex align-items-center h1">
           <img className="mr-3" src={icon} alt="infra schema" width="48px" />
@@ -45,7 +45,6 @@ export default function InfraSelectorModal(props) {
                     <div className="d-flex align-items-center">
                       <div className="text-primary small mr-2">{infra.id}</div>
                       <div className="flex-grow-1">{infra.name}</div>
-                      <div className="small">{datetime2string(infra.modified)}</div>
                     </div>
                   </div>
                 ))
