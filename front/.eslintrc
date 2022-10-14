@@ -1,8 +1,47 @@
 {
-  "extends": ["react-app", "react-app/jest", "prettier"],
-  "plugins": ["prettier"],
+  "extends": [
+    "react-app",
+    "react-app/jest",
+    "airbnb",
+    "plugin:import/recommended",
+    "plugin:import/typescript",
+    "prettier"
+  ],
+  "plugins": ["prettier", "react", "react-hooks", "only-warn", "import"],
   "rules": {
-    "prettier/prettier": "warn"
+    "react/prefer-stateless-function": "off",
+    "react/jsx-filename-extension": "off",
+    "no-param-reassign": "off",
+    "no-console": "off",
+    "global-require": "off",
+    "react/forbid-prop-types": "off",
+    "no-named-as-default": "off",
+    "react/jsx-props-no-spreading": 0,
+    "react/static-property-placement": 0,
+    "import/no-extraneous-dependencies": 0,
+    "linebreak-style": ["error", "unix"],
+    "jsx-a11y/click-events-have-key-events": "off",
+    "prettier/prettier": ["warn"],
+    "import/no-unresolved": [2, { "commonjs": true, "amd": true }],
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "js": "never",
+        "jsx": "never",
+        "ts": "never",
+        "tsx": "never"
+      }
+    ],
+    "no-use-before-define": "off",
+    "@typescript-eslint/no-use-before-define": ["error"]
+  },
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "paths": ["src"]
+      }
+    }
   },
   "overrides": [
     {
@@ -10,12 +49,21 @@
       "parser": "@typescript-eslint/parser",
       "plugins": ["@typescript-eslint"],
       "extends": [
-        "eslint:recommended",
         "plugin:@typescript-eslint/eslint-recommended",
         "plugin:@typescript-eslint/recommended"
       ],
       "rules": {
-        "@typescript-eslint/explicit-module-boundary-types": 0
+        "@typescript-eslint/explicit-module-boundary-types": 0,
+        "@typescript-eslint/space-before-blocks": 0,
+        "camelcase": 0,
+        "no-nonoctal-decimal-escape": 0,
+        "no-param-reassign": 0,
+        "no-unsafe-optional-chaining": 0,
+        "object-curly-newline": 0,
+        "react/function-component-definition": 0,
+        "react/jsx-props-no-spreading": 0,
+        "react/no-array-index-key": 0,
+        "react/require-default-props": 0
       }
     }
   ]
