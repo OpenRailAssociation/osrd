@@ -174,17 +174,49 @@ export const ALL_SIGNAL_LAYERS = [
   'Z',
 ];
 
+export type SignalType = typeof ALL_SIGNAL_LAYERS[number];
+
 export const ALL_SIGNAL_LAYERS_SET = new Set(ALL_SIGNAL_LAYERS);
 
-export const PANELS_STOPS = ['ARRET VOY', 'ARRET', 'CHEVRON', 'LIMITETS', 'LM', 'STOP'];
+/**
+ * These structures help the editor to know which symbols to display in some
+ * cases (mostly for "CARRE A", "CARRE VL"...):
+ */
+export const SIGNALS_TO_SYMBOLS: Record<SignalType, SignalType[]> = ALL_SIGNAL_LAYERS.reduce(
+  (iter, signal) => {
+    const canonicalType = signal.split(' ')[0];
+    return {
+      ...iter,
+      [signal]: (iter[signal] || []).concat(signal),
+      [canonicalType]: (iter[canonicalType] || []).concat(signal),
+    };
+  },
+  {}
+);
+export const SYMBOLS_TO_LAYERS: Record<SignalType, SignalType> = ALL_SIGNAL_LAYERS.reduce(
+  (iter, signal) => ({
+    ...iter,
+    [signal]: signal.split(' ')[0],
+  }),
+  {}
+);
 
-export const DYNAMIC_LIGHTS_SIGNAL_LIST = ['CARRE', 'S'];
+export const PANELS_STOPS: SignalType[] = [
+  'ARRET VOY',
+  'ARRET',
+  'CHEVRON',
+  'LIMITETS',
+  'LM',
+  'STOP',
+];
 
-export const DYNAMIC_LIGHTS_ATT = ['CARRE A', 'S A'];
+export const DYNAMIC_LIGHTS_SIGNAL_LIST: SignalType[] = ['CARRE', 'S'];
 
-export const DYNAMIC_LIGHTS_STOP = ['CARRE STOP', 'S STOP'];
+export const DYNAMIC_LIGHTS_ATT: SignalType[] = ['CARRE A', 'S A'];
 
-export const PANELS_TIVS = [
+export const DYNAMIC_LIGHTS_STOP: SignalType[] = ['CARRE STOP', 'S STOP'];
+
+export const PANELS_TIVS: SignalType[] = [
   'TIV A TRAM',
   'TIV D FIXE',
   'TIV D MOB',

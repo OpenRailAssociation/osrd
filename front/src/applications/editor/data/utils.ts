@@ -1,8 +1,13 @@
 import { Position } from 'geojson';
 import { JSONSchema7 } from 'json-schema';
-import { at } from 'lodash';
+import { forEach, isArray, isNil, isObject, uniq } from 'lodash';
 
 import { EditorEntity, EditorSchema } from '../../../types';
+import {
+  ALL_SIGNAL_LAYERS_SET,
+  SIGNALS_TO_SYMBOLS,
+  SignalType,
+} from '../../../common/Map/Consts/SignalsNames';
 
 export function getObjectTypeForLayer(schema: EditorSchema, layer: string): string | undefined {
   const item = schema.find((e) => e.layer === layer);
@@ -38,19 +43,27 @@ export function cleanSymbolType(type: string): string {
   return (type || '').replace(/(^[" ]|[" ]$)/g, '');
 }
 
-export function getSymbolTypes(editorData: EditorEntity[]): string[] {
-  const SIGNAL_TYPE_KEY = ['extensions.sncf.installation_type'];
-  return Object.keys(
-    editorData.reduce((acc, feature) => {
-      if (feature.objType === 'Signal') {
-        const signal = at(feature.properties, SIGNAL_TYPE_KEY);
-        if (signal && signal[0]) {
-          return { ...acc, [signal[0]]: true };
-        }
-      }
-      return acc;
-    }, {})
+export function getSignalsList(editorData: EditorEntity[]): SignalType[] {
+  const SIGNAL_TYPE_KEY = 'extensions_sncf_installation_type';
+  const signalTypes = Object.keys(
+    editorData.reduce(
+      (iter, feature) =>
+        feature.objType === 'Signal' && (feature.properties || {})[SIGNAL_TYPE_KEY]
+          ? { ...iter, [(feature.properties || {})[SIGNAL_TYPE_KEY]]: true }
+          : iter,
+      {}
+    )
   ).map(cleanSymbolType);
+
+  return signalTypes.filter((signal: string): signal is SignalType => {
+    if (ALL_SIGNAL_LAYERS_SET.has(signal)) return true;
+    console.warn(`The signal type "${signal}" is not handled yet.`);
+    return false;
+  });
+}
+export function getSymbolsList(editorData: EditorEntity[]): SignalType[] {
+  const signalTypes = getSignalsList(editorData);
+  return uniq(signalTypes.flatMap((s) => SIGNALS_TO_SYMBOLS[s]));
 }
 
 export function getAngle(p1: Position | undefined, p2: Position | undefined): number {
@@ -58,4 +71,37 @@ export function getAngle(p1: Position | undefined, p2: Position | undefined): nu
   const [x1, y1] = p1;
   const [x2, y2] = p2;
   return (Math.atan((x2 - x1) / (y2 - y1)) * 180) / Math.PI;
+}
+
+/**
+ * This function recursively flattens an object, merging paths with a given separator.
+ */
+function flatten(
+  input: unknown,
+  separator: string,
+  collection: Record<string, unknown>,
+  prefix: string
+): unknown {
+  if (!isObject(input) || isNil(input)) {
+    collection[prefix] = input;
+    return collection[prefix];
+  }
+
+  if (isArray(input)) {
+    collection[prefix] = JSON.stringify(input);
+    return collection[prefix];
+  }
+
+  const object = input as Record<string, unknown>;
+  Object.keys(object).forEach((key) => {
+    flatten(object[key], separator, collection, (prefix ? prefix + separator : '') + key);
+  });
+
+  return collection;
+}
+export function flattenEntity(entity: EditorEntity): EditorEntity {
+  return {
+    ...entity,
+    properties: flatten(entity.properties, '_', {}, '') as Record<string, unknown>,
+  };
 }

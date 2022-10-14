@@ -53,7 +53,7 @@ export const PointEditionLeftPanel: FC = <Entity extends EditorEntity>() => {
               ? {
                   update: [
                     {
-                      source: editorState.editorDataIndex[state.entity.id as string],
+                      source: editorState.entitiesIndex[state.entity.id as string],
                       target: savedEntity,
                     },
                   ],
@@ -89,7 +89,7 @@ export const PointEditionLeftPanel: FC = <Entity extends EditorEntity>() => {
           typeof oldPosition === 'number' &&
           newPosition !== oldPosition
         ) {
-          const line = editorState.editorDataIndex[trackId];
+          const line = editorState.entitiesIndex[trackId];
           const point = along(line as Feature<LineString>, newPosition, { units: 'meters' });
           additionalUpdate.geometry = point.geometry;
         }

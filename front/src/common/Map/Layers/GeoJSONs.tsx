@@ -6,7 +6,6 @@ import { Layer, LayerProps, Source } from 'react-map-gl';
 import { AnyPaint, CirclePaint, LinePaint, SymbolPaint } from 'mapbox-gl';
 
 import { Item, Theme } from '../../../types';
-import { dataArraySelector, dataSelector } from '../../../reducers/editor';
 import { geoMainLayer, geoServiceLayer } from './geographiclayers';
 import {
   getPointLayerProps,
@@ -15,16 +14,17 @@ import {
   SignalContext,
   SignalsSettings,
 } from './geoSignalsLayers';
-import { lineNameLayer, lineNumberLayer, trackNameLayer } from './commonLayers';
 import { EditorState, LayerType } from '../../../applications/editor/tools/types';
-import { getSymbolTypes } from '../../../applications/editor/data/utils';
+import { lineNameLayer, lineNumberLayer, trackNameLayer } from './commonLayers';
+import { getSignalsList, getSymbolsList } from '../../../applications/editor/data/utils';
 import { getBufferStopsLayerProps } from './BufferStops';
 import { getDetectorsLayerProps, getDetectorsNameLayerProps } from './Detectors';
 import { getSwitchesLayerProps, getSwitchesNameLayerProps } from './Switches';
+import { SYMBOLS_TO_LAYERS } from '../Consts/SignalsNames';
 
 const HOVERED_COLOR = '#009EED';
 const UNSELECTED_OPACITY = 0.2;
-const SIGNAL_TYPE_KEY = 'installation_type';
+const SIGNAL_TYPE_KEY = 'extensions_sncf_installation_type';
 
 const NULL_FEATURE: FeatureCollection = {
   type: 'FeatureCollection',
@@ -168,21 +168,20 @@ const GeoJSONs: FC<{
   const { mapStyle } = useSelector(
     (s: { map: { mapStyle: string; signalsSettings: SignalsSettings } }) => s.map
   );
-  const editorData = useSelector((state: { editor: EditorState }) => dataSelector(state.editor));
-  const editorDataArray = useSelector((state: { editor: EditorState }) =>
-    dataArraySelector(state.editor)
+  const flatEntitiesByType = useSelector(
+    (state: { editor: EditorState }) => state.editor.flatEntitiesByTypes
   );
   const geoJSONs = useMemo<Partial<Record<LayerType, FeatureCollection>>>(
     () =>
       mapValues(
-        editorData,
+        flatEntitiesByType,
         (entities) =>
           ({
             type: 'FeatureCollection',
             features: (entities || [])?.map((e) => ({ ...e, type: 'Feature' })),
           } as FeatureCollection)
       ),
-    [editorData]
+    [flatEntitiesByType]
   );
 
   const layerContext: Context = useMemo(
@@ -195,7 +194,14 @@ const GeoJSONs: FC<{
   );
 
   // SIGNALS:
-  const signalsList = useMemo(() => getSymbolTypes(editorDataArray), [editorDataArray]);
+  const signalsList = useMemo(
+    () => getSignalsList(flatEntitiesByType.signals || []),
+    [flatEntitiesByType]
+  );
+  const symbolsList = useMemo(
+    () => getSymbolsList(flatEntitiesByType.signals || []),
+    [flatEntitiesByType]
+  );
   const signalsContext: SignalContext = useMemo(
     () => ({
       colors,
@@ -207,14 +213,14 @@ const GeoJSONs: FC<{
   );
   const signalPropsPerType = useMemo(
     () =>
-      signalsList.reduce(
+      symbolsList.reduce(
         (iter, type) => ({
           ...iter,
           [type]: getSignalLayerProps(signalsContext, type),
         }),
         {} as { [key: string]: LayerProps }
       ),
-    [signalsContext, signalsList]
+    [signalsContext, symbolsList]
   );
 
   return (
@@ -277,16 +283,16 @@ const GeoJSONs: FC<{
           {...adaptProps(getPointLayerProps(signalsContext), layerContext)}
           id={`${prefix}geo/signal-point`}
         />
-        {signalsList.map((type) => {
-          const layerId = `${prefix}geo/signal-${type}`;
-          const signalDef = signalPropsPerType[type];
+        {symbolsList.map((symbol) => {
+          const layerId = `${prefix}geo/signal-${symbol}`;
+          const signalDef = signalPropsPerType[symbol];
 
           return (
             <Layer
-              key={type}
+              key={symbol}
               {...signalDef}
               id={layerId}
-              filter={adaptFilter(['==', SIGNAL_TYPE_KEY, `"${type}"`], layerContext)}
+              filter={adaptFilter(['==', SIGNAL_TYPE_KEY, SYMBOLS_TO_LAYERS[symbol]], layerContext)}
               paint={adaptSymbolPaint(signalDef.paint as SymbolPaint, layerContext)}
             />
           );

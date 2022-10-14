@@ -105,7 +105,7 @@ export const SelectionLeftPanel: FC = () => {
               save({
                 update: [
                   {
-                    source: editorState.editorDataIndex[savedEntity.id as string],
+                    source: editorState.entitiesIndex[savedEntity.id as string],
                     target: savedEntity,
                   },
                 ],
