@@ -240,12 +240,12 @@ const TrackEditionTool: Tool<TrackEditionState> = {
       setState(newState);
     }
   },
-  onHover(e, { setState, state, editorState: { editorDataIndex } }) {
+  onHover(e, { setState, state, editorState: { entitiesIndex } }) {
     const { editionState, track } = state;
 
     const hoveredEntities = (e.features || []).flatMap((f) => {
       if (f.layer.id !== 'editor/geo/track-main') return [];
-      const entity = editorDataIndex[f.properties.id];
+      const entity = entitiesIndex[f.properties.id];
       return entity && entity.objType === 'TrackSection' ? [entity] : [];
     });
 
