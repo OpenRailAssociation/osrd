@@ -120,8 +120,8 @@ export default function SpeedLimits(props: SpeedLimitsProps) {
     },
   };
 
-  return (
-    layersSettings.speedlimits && (
+  if (layersSettings.speedlimits) {
+    return (
       <Source
         id={`osrd_speed_limit_${geomType}`}
         type="vector"
@@ -135,11 +135,7 @@ export default function SpeedLimits(props: SpeedLimitsProps) {
           beforeId={`chartis/osrd_speed_limit_points/${geomType}`}
         />
       </Source>
-    )
-  );
+    );
+  }
+  return null;
 }
-
-SpeedLimits.propTypes = {
-  geomType: PropTypes.string.isRequired,
-  colors: PropTypes.object.isRequired,
-};

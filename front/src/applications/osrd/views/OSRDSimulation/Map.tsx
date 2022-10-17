@@ -399,7 +399,7 @@ function Map(props: MapProps) {
         )}
 
         {mapSearchMarker !== undefined ? (
-          <SearchMarker data={mapSearchMarker as object} colors={colors[mapStyle]} />
+          <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />
         ) : null}
 
         {geojsonPath !== undefined ? <RenderItinerary geojsonPath={geojsonPath} /> : null}
