@@ -51,7 +51,7 @@ interface Position {
   time: number;
   position: number;
 }
-type PositionSpeed = Position & {
+export type PositionSpeed = Position & {
   speed: number;
 };
 
@@ -113,8 +113,8 @@ export interface SimulationTime {
 }
 
 export interface PositionValues {
-  headPosition: number;
-  tailPosition: number;
+  headPosition: PositionSpeed;
+  tailPosition: PositionSpeed;
   routeEndOccupancy: number;
   routeBeginOccupancy: number;
   speed: {

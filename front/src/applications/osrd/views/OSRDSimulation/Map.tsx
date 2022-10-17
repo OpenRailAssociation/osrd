@@ -7,9 +7,10 @@ import ReactMapGL, {
   ScaleControl,
   WebMercatorViewport,
   MapRef,
+  MapEvent,
 } from 'react-map-gl';
 import { Feature, LineString } from 'geojson';
-import { lineString, point } from '@turf/helpers';
+import { lineString, point, BBox } from '@turf/helpers';
 import along from '@turf/along';
 import bbox from '@turf/bbox';
 import lineLength from '@turf/length';
@@ -116,20 +117,18 @@ function Map(props: MapProps) {
     const concernedTrains: any[] = [];
     simulation.trains.forEach((train, idx: number) => {
       const key = getRegimeKey(train.id);
-      if (
-        actualTime >= train[key].head_positions[0][0].time &&
-        actualTime <=
+      const trainTime = train[key].head_positions[0][0].time;
+      const train2ndTime =
         train[key].head_positions[train[key].head_positions.length - 1][
           train[key].head_positions[train[key].head_positions.length - 1].length - 1
-        ].time &&
-        idx !== selectedTrain
-      ) {
+        ].time;
+      if (actualTime >= trainTime && actualTime <= train2ndTime && idx !== selectedTrain) {
         const interpolation = interpolateOnTime(
           train[key],
           ['time', 'position'],
           ['head_positions', 'tail_positions', 'speeds'],
           actualTime
-        );
+        ) as Record<string, PositionSpeed>;
         if (interpolation.head_positions && interpolation.speeds) {
           concernedTrains.push({
             ...interpolation,
@@ -198,7 +197,7 @@ function Map(props: MapProps) {
     }
   };
 
-  const zoomToFeature = (boundingBox) => {
+  const zoomToFeature = (boundingBox: BBox) => {
     const [minLng, minLat, maxLng, maxLat] = boundingBox;
     const viewportTemp = new WebMercatorViewport({ ...viewport, width: 600, height: 400 });
     const { longitude, latitude, zoom } = viewportTemp.fitBounds(
@@ -216,7 +215,7 @@ function Map(props: MapProps) {
     });
   };
 
-  const getGeoJSONPath = async (pathID) => {
+  const getGeoJSONPath = async (pathID: number) => {
     try {
       const path = await get(`${PATHFINDING_URI}${pathID}/`);
       const features = lineString(path.geographic.coordinates);
@@ -242,7 +241,7 @@ function Map(props: MapProps) {
     });
   };
 
-  const onFeatureHover = (e) => {
+  const onFeatureHover = (e: MapEvent) => {
     if (mapLoaded && !isPlaying && e && geojsonPath?.geometry?.coordinates) {
       const line = lineString(geojsonPath.geometry.coordinates);
       const cursorPoint = point(e.lngLat);
@@ -263,14 +262,14 @@ function Map(props: MapProps) {
       );
       dispatch(updateTimePositionValues(timePositionLocal));
     }
-    if (e.features[0]) {
+    if (e?.features?.[0]) {
       setIdHover(e.features[0].properties.id);
     } else {
       setIdHover(undefined);
     }
   };
 
-  const onClick = (e) => {
+  const onClick = (e: MapEvent) => {
     if (mapRef.current) {
       console.info('Click on map');
       console.info(mapRef.current.queryRenderedFeatures(e.point));
