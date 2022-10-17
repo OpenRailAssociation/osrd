@@ -1,4 +1,5 @@
 import * as d3 from 'd3';
+import { select as d3select } from 'd3-selection';
 import { defineLinear, defineTime } from 'applications/osrd/components/Helpers/ChartHelpers';
 import defineChart from 'applications/osrd/components/Simulation/defineChart';
 
@@ -12,7 +13,7 @@ export default function createChart(
   reset,
   rotate
 ) {
-  d3.select(`#${chartID}`).remove();
+  d3select(`#${chartID}`).remove();
 
   const dataSimulationTime = d3.extent(
     [].concat(
@@ -58,7 +59,7 @@ export default function createChart(
   const defineY =
     chart === undefined || reset ? defineLinear(dataSimulationLinearMax, 0.05) : chart.y;
 
-  const width = parseInt(d3.select(`#container-${chartID}`).style('width'), 10);
+  const width = parseInt(d3select(`#container-${chartID}`).style('width'), 10);
   const chartLocal = defineChart(
     width,
     heightOfSpaceTimeChart,
