@@ -11,7 +11,7 @@ import SignalSwitch from './SignalSwitch';
  * @returns RFC with OSRD Data. SignalSwitch
  */
 const withOSRDData = (Component) =>
-  function wrapperComponent(props) {
+  function WrapperComponent(props) {
     const { signalBase } = useSelector((state) => state.osrdsimulation);
     const dispatch = useDispatch();
 

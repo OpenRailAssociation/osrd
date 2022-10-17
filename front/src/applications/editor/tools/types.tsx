@@ -48,7 +48,10 @@ export interface OSRDConf {
   switchTypes: SwitchType[] | null;
 }
 
-export interface ModalProps<ArgumentsType = {}, SubmitArgumentsType = Record<string, unknown>> {
+export interface ModalProps<
+  ArgumentsType = Record<string, unknown>,
+  SubmitArgumentsType = Record<string, unknown>
+> {
   arguments: ArgumentsType;
   cancel: () => void;
   submit: (args: SubmitArgumentsType) => void;
@@ -63,7 +66,8 @@ export interface ModalRequest<ArgumentsType, SubmitArgumentsType> {
   afterSubmit?: (args: SubmitArgumentsType) => void;
 }
 
-export interface EditorContextType<S> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface EditorContextType<S = any> {
   // Localisation:
   t: TFunction;
 

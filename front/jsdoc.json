@@ -1,24 +1,22 @@
 {
   "tags": {
-      "allowUnknownTags": true
+    "allowUnknownTags": true
   },
   "source": {
-      "include": ["./src"]
+    "include": ["./src"],
+    "includePattern": "\\.(jsx|js|ts|tsx)$"
   },
-  "plugins": [
-      "plugins/markdown",
-      "better-docs/component"
-  ],
+  "plugins": ["better-docs/component", "better-docs/typescript"],
   "opts": {
-      "encoding": "utf8",
-      "destination": "docs/",
-      "recurse": true,
-      "verbose": true,
-      "template": "./node_modules/better-docs"
+    "encoding": "utf8",
+    "destination": "docs/",
+    "recurse": true,
+    "verbose": true,
+    "template": "./node_modules/better-docs"
   },
   "templates": {
     "better-docs": {
-        "name": "SUPER FRONT Documentation"
+      "name": "SUPER FRONT Documentation"
     }
-}
+  }
 }

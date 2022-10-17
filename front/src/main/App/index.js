@@ -1,9 +1,10 @@
 import 'i18n';
 
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { unstable_HistoryRouter as HistoryRouter, Route, Routes } from 'react-router-dom';
 import React, { Suspense, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
+import history from '../history';
 import Home from 'main/Home';
 import HomeCarto from 'applications/carto/Home';
 import HomeEditor from 'applications/editor/Home';
@@ -44,7 +45,7 @@ export default function App() {
   return (
     <Suspense fallback={<Loader />}>
       {(user.isLogged || process.env.REACT_APP_LOCAL_BACKEND) && (
-        <BrowserRouter>
+        <HistoryRouter history={history}>
           <Routes>
             <Route path="/osrd/*" element={<HomeOSRD />} />
             <Route path="/carto/*" element={<HomeCarto />} />
@@ -52,7 +53,7 @@ export default function App() {
             <Route path="/stdcm/*" element={<HomeStdcm />} />
             <Route path="/*" element={<Home />} />
           </Routes>
-        </BrowserRouter>
+        </HistoryRouter>
       )}
       {!user.isLogged && !process.env.REACT_APP_LOCAL_BACKEND && <Loader />}
     </Suspense>
