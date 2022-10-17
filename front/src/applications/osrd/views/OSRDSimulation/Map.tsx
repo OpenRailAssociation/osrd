@@ -8,17 +8,16 @@ import ReactMapGL, {
   WebMercatorViewport,
   MapRef,
 } from 'react-map-gl';
-import PropTypes from 'prop-types';
 import { Feature, LineString } from 'geojson';
-import { lineString, point, feature } from '@turf/helpers';
+import { lineString, point } from '@turf/helpers';
 import along from '@turf/along';
 import bbox from '@turf/bbox';
 import lineLength from '@turf/length';
 import lineSlice from '@turf/line-slice';
 import { CgLoadbar } from 'react-icons/cg';
 
-import { updateTimePositionValues } from 'reducers/osrdsimulation';
-import { updateViewport } from 'reducers/map';
+import { updateTimePositionValues, AllowancesSettings, PositionValues } from 'reducers/osrdsimulation';
+import { updateViewport, Viewport } from 'reducers/map';
 import { RootState } from 'reducers';
 import { TrainPosition } from 'applications/osrd/components/SimulationMap/types';
 
@@ -62,16 +61,17 @@ import 'common/Map/Map.scss';
 
 const PATHFINDING_URI = '/pathfinding/';
 
-function checkIfEcoAndAddPrefix(allowancesSettings, id, baseKey) {
+function checkIfEcoAndAddPrefix(allowancesSettings: AllowancesSettings, id: number, baseKey: string): keyof PositionValues {
   if (allowancesSettings && id && allowancesSettings[id]?.ecoBlocks) {
-    return `eco_${baseKey}`;
+    return `eco_${baseKey}` as keyof PositionValues;
   }
-  return baseKey;
+  return baseKey as keyof PositionValues;
 }
 
 interface MapProps {
-  setExtViewport: (any) => void;
+  setExtViewport: (viewport: Viewport) => void;
 }
+
 function Map(props: MapProps) {
   const { setExtViewport } = props;
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -97,14 +97,14 @@ function Map(props: MapProps) {
    * @param {int} trainId
    * @returns correct key (eco or base) to get positions in a train simulation
    */
-  const getRegimeKey = (trainId) =>
+  const getRegimeKey = (trainId: number) =>
     allowancesSettings && allowancesSettings[trainId]?.ecoBlocks ? 'eco' : 'base';
 
   const createOtherPoints = () => {
     const actualTime = datetime2sec(timePosition);
     // First find trains where actual time from position is between start & stop
     const concernedTrains: any[] = [];
-    simulation.trains.forEach((train, idx) => {
+    simulation.trains.forEach((train, idx: number) => {
       const key = getRegimeKey(train.id);
       if (
         actualTime >= train[key].head_positions[0][0].time &&
@@ -420,9 +420,5 @@ function Map(props: MapProps) {
     </>
   );
 }
-
-Map.propTypes = {
-  setExtViewport: PropTypes.func.isRequired,
-};
 
 export default Map;

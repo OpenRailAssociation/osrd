@@ -1,5 +1,5 @@
 /* eslint-disable default-case */
-import { MapRequest } from 'react-map-gl';
+import { MapRequest, FlyToInterpolator } from 'react-map-gl';
 import produce from 'immer';
 import { transformRequest, gpsRound } from 'utils/helpers';
 import history from 'main/history';
@@ -24,6 +24,8 @@ export interface Viewport {
   zoom: number;
   bearing: number;
   pitch: number;
+  transitionDuration: number;
+  transitionInterpolator: FlyToInterpolator;
   transformRequest: (url?: string, resourceType?: string) => MapRequest;
 }
 

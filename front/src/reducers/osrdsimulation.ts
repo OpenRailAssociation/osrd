@@ -38,24 +38,100 @@ export const departureArrivalTimes = (simulation, dragOffset) =>
     arrival: offsetSeconds(train.base.stops[train.base.stops.length - 1].time + dragOffset),
   }));
 
+export interface AllowancesSetting {
+  base: boolean;
+  baseBlocks: boolean;
+  eco: boolean;
+  ecoBlocks: boolean;
+}
+
+export type AllowancesSettings = Record<string | number, AllowancesSetting>;
+
+interface Position {
+  time: number;
+  position: number;
+}
+type PositionSpeed = Position & {
+  speed: number;
+};
+
+interface Stop {
+  id: number;
+  name: string;
+  time: number;
+  duration: number;
+  position: number;
+  line_code: number;
+  track_number: number;
+}
+
+interface RouteAspect {
+  signal_id: string;
+  route_id: string;
+  time_start: number;
+  time_end: number;
+  position_start: number;
+  position_end: number;
+  color: number;
+  blinking: boolean;
+}
+
+interface SignalAspect {
+  signal_id: string;
+  time_start: number;
+  time_end: number;
+  color: number;
+  blinking: boolean;
+  aspect_label: string;
+}
+
+interface Regime {
+  head_positions: [Position[]];
+  tail_positions: [Position[]];
+  route_begin_occupancy: [Position[]];
+  route_end_occupancy: [Position[]];
+  speeds: PositionSpeed[];
+  stops: Stop[];
+  route_aspects: RouteAspect[];
+  signal_aspects: SignalAspect[];
+}
+
+export interface Train {
+  id: number;
+  labels: any[];
+  path: number;
+  name: string;
+  vmax: any[];
+  slopes: any[];
+  curves: any[];
+  base: Regime;
+  eco: Regime;
+}
+
+export interface SimulationTime {
+  trains: Train[];
+}
+
+export interface PositionValues {
+  headPosition: number;
+  tailPosition: number;
+  routeEndOccupancy: number;
+  routeBeginOccupancy: number;
+  speed: {
+    speed: number;
+    time: number;
+  };
+}
+
 export interface OsrdSimulationState {
   chart: any;
   chartXGEV: any;
   contextMenu: any;
   hoverPosition: any;
   isPlaying: boolean;
-  allowancesSettings: any;
+  allowancesSettings: AllowancesSettings;
   mustRedraw: boolean;
-  positionValues: {
-    headPosition: number;
-    tailPosition: number;
-    routeEndOccupancy: number;
-    routeBeginOccupancy: number;
-    speed: {
-      speed: number;
-      time: number;
-    };
-  };
+  positionValues: PositionValues;
   selectedProjection: any;
   selectedTrain: number;
   speedSpaceSettings: {
@@ -69,7 +145,11 @@ export interface OsrdSimulationState {
   timePosition: any;
   consolidatedSimulation: any;
   departureArrivalTimes: Array<any>;
-  simulation: any;
+  simulation: {
+    past: SimulationTime;
+    present: SimulationTime;
+    future: SimulationTime;
+  };
 }
 // Reducer
 export const initialState = {
