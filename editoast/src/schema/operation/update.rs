@@ -1,5 +1,6 @@
 use super::OperationError;
 use crate::api_error::ApiError;
+
 use crate::schema::operation::RailjsonObject;
 use crate::schema::{OSRDObject, ObjectType};
 use diesel::sql_types::{Integer, Json, Jsonb, Text};
@@ -23,12 +24,13 @@ impl UpdateOperation {
         conn: &PgConnection,
     ) -> Result<RailjsonObject, Box<dyn ApiError>> {
         // Load object
+
         let mut obj: DataObject = sql_query(format!(
-            "SELECT data FROM {} WHERE infra_id = {} AND obj_id = '{}'",
-            self.obj_type.get_table(),
-            infra_id,
-            self.obj_id
+            "SELECT data FROM {} WHERE infra_id = $1 AND obj_id = $2",
+            self.obj_type.get_table()
         ))
+        .bind::<Integer, _>(infra_id)
+        .bind::<Text, _>(&self.obj_id)
         .get_result(conn)?;
 
         // Apply and check patch

@@ -31,8 +31,7 @@ pub fn apply_create_operation(
     infra_id: i32,
     conn: &PgConnection,
 ) -> Result<(), Box<dyn ApiError>> {
-    let obj_id = railjson_object.get_id();
-    if obj_id.is_empty() {
+    if railjson_object.get_id().is_empty() {
         return Err(Box::new(OperationError::EmptyId));
     }
     sql_query(format!(
@@ -94,13 +93,14 @@ impl RailjsonObject {
 
 #[cfg(test)]
 pub mod tests {
+    use diesel::PgConnection;
+
     use crate::infra::tests::test_transaction;
     use crate::schema::operation::create::{apply_create_operation, RailjsonObject};
     use crate::schema::{
         BufferStop, Catenary, Detector, OperationalPoint, Route, Signal, SpeedSection, Switch,
         SwitchType, TrackSection, TrackSectionLink,
     };
-    use diesel::PgConnection;
 
     pub fn create_track(conn: &PgConnection, infra_id: i32, track: TrackSection) -> RailjsonObject {
         let obj = RailjsonObject::TrackSection { railjson: track };

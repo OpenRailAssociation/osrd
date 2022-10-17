@@ -1,6 +1,7 @@
+use diesel::PgConnection;
+
 use crate::api_error::ApiError;
 use crate::client::ChartosConfig;
-use crate::db_connection::DBConnection;
 use crate::errors::generate_errors;
 use crate::infra::Infra;
 use crate::infra_cache::InfraCache;
@@ -11,7 +12,6 @@ use crate::schema::{
     BufferStop, Catenary, Detector, OperationalPoint, Route, Signal, SpeedSection, Switch,
     TrackSection, TrackSectionLink,
 };
-use diesel::PgConnection;
 
 /// Refreshes layers if not up to date and returns whether they were refreshed.
 /// `force` argument allows us to refresh it in any cases.
@@ -52,7 +52,7 @@ pub fn refresh(
 
 /// Update layers of objects affected by the given list of operations result.
 pub fn update(
-    conn: &DBConnection,
+    conn: &PgConnection,
     infra_id: i32,
     operations: &Vec<OperationResult>,
     cache: &InfraCache,

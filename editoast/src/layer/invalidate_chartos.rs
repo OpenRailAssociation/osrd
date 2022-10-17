@@ -1,6 +1,6 @@
-use crate::client::ChartosConfig;
-
 use super::InvalidationZone;
+use crate::client::ChartosConfig;
+use serde_json::json;
 
 /// Invalidate a whole chartos layer cache.
 pub fn invalidate_chartos_layer(infra_id: i32, layer_slug: &str, chartos_config: &ChartosConfig) {

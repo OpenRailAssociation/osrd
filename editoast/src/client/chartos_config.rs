@@ -1,7 +1,7 @@
 use clap::Args;
 use derivative::Derivative;
 
-#[derive(Args, Debug, Derivative)]
+#[derive(Args, Debug, Derivative, Clone)]
 #[derivative(Default)]
 pub struct ChartosConfig {
     #[derivative(Default(value = r#""http://localhost:7070/".into()"#))]
