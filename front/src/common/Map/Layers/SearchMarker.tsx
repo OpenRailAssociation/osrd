@@ -2,7 +2,7 @@ import React from 'react';
 import { Marker } from 'react-map-gl';
 
 import { Theme } from 'types';
-import { MapSearchMarker } from 'reducers/map'
+import { MapSearchMarker } from 'reducers/map';
 
 interface SearchMarkerProps {
   data: MapSearchMarker;
