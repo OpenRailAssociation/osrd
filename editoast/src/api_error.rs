@@ -1,7 +1,7 @@
 use diesel::result::Error as DieselError;
 use rocket::http::Status;
 use rocket::response::status::Custom;
-use rocket_contrib::json::{JsonError, JsonValue};
+use rocket::serde::json::{json, Error as JsonError, Value as JsonValue};
 use serde_json::{Map, Value};
 use std::error::Error;
 

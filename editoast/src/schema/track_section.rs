@@ -14,6 +14,7 @@ use super::ObjectRef;
 use super::ObjectType;
 use super::TrackEndpoint;
 use derivative::Derivative;
+use diesel::PgConnection;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
@@ -151,7 +152,7 @@ impl Layer for TrackSection {
     }
 
     fn update(
-        conn: &diesel::PgConnection,
+        conn: &PgConnection,
         infra: i32,
         operations: &Vec<OperationResult>,
         _: &crate::infra_cache::InfraCache,
