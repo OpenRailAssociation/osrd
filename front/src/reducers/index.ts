@@ -58,7 +58,7 @@ const persistConfig = {
   whitelist: ['user', 'map', 'main', 'simulation'],
 };
 
-type AllActions<T = unknown> = EditorActions | MainActions | Action<T>;
+type AllActions = EditorActions | MainActions | Action;
 
 interface GenericState {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

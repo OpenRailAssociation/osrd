@@ -1,4 +1,8 @@
 {
+  "compileOnSave": false,
+  "include": [
+    "src"
+  ],
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
@@ -6,9 +10,6 @@
     "allowUnusedLabels": false,
     "alwaysStrict": true,
     "baseUrl": "./src",
-    "charset": "utf8",
-    "checkJs": false,
-    "declaration": false,
     "diagnostics": false,
     "downlevelIteration": true,
     "emitBOM": false,
@@ -16,12 +17,15 @@
     "esModuleInterop": true,
     "experimentalDecorators": false,
     "forceConsistentCasingInFileNames": true,
+    "importHelpers": true,
     "importsNotUsedAsValues": "remove",
-    "inlineSourceMap": false,
-    "inlineSources": false,
     "isolatedModules": true,
     "jsx": "react-jsx",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "listEmittedFiles": false,
     "listFiles": false,
     "module": "esnext",
@@ -30,20 +34,20 @@
     "noEmitHelpers": false,
     "noEmitOnError": false,
     "noFallthroughCasesInSwitch": true,
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
-    "noImplicitUseStrict": false,
+    "noImplicitUseStrict": true,
+    "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "outDir": "./build",
+    "outDir": "build",
     "preserveConstEnums": true,
     "pretty": true,
     "removeComments": true,
     "resolveJsonModule": true,
-    "rootDirs": ["src/"],
-    "sourceMap": true,
     "skipDefaultLibCheck": true,
     "skipLibCheck": true,
+    "sourceMap": true,
     "strict": true,
     "strictBindCallApply": true,
     "strictFunctionTypes": true,
@@ -52,9 +56,6 @@
     "stripInternal": true,
     "suppressExcessPropertyErrors": false,
     "suppressImplicitAnyIndexErrors": false,
-    "target": "es5",
-    "typeRoots": ["node_modules/@types"]
-  },
-  "exclude": ["./node_modules", "**/node_modules/*"],
-  "include": ["src/types.ts", "src/*.ts", "src/*.tsx", "src/**/*.ts", "src/**/*.tsx"]
+    "target": "es5"
+  }
 }

@@ -11,7 +11,6 @@ import 'moment/locale/fr';
 /**
  * Debounce input fields
  */
-
 export const useDebounce = (value, delay) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
   useEffect(() => {
@@ -21,7 +20,7 @@ export const useDebounce = (value, delay) => {
     return () => {
       clearTimeout(handler);
     };
-  }, [value]);
+  }, [value, delay]);
   return debouncedValue;
 };
 

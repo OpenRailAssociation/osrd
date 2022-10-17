@@ -17,6 +17,7 @@ const initKeycloak = async (onAuthenticatedCallback) => {
     if (!authenticated) throw new Error();
     onAuthenticatedCallback();
   } catch (e) {
+    console.error(e);
     login();
   }
 };
@@ -26,6 +27,7 @@ const updateToken = async (minVal) => {
   return token;
 };
 
+// eslint-disable-next-line import/no-anonymous-default-export
 export default {
   initKeycloak,
   login,
