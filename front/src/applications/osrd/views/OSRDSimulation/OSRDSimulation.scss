@@ -113,6 +113,17 @@ select.sm {
   overflow: auto;
 }
 
+.noBorder {
+  border:none !important;
+  border-collapse: collapse;
+  border-color: rgba(0,0,0,.5);
+}
+
+tbody tr:nth-child {
+  border: hidden;
+  border-collapse: hidden;
+  }
+
 .grid .tick {
   opacity: .2;
   line {

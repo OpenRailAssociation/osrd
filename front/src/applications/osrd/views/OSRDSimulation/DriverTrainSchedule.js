@@ -70,7 +70,7 @@ export default function DriverTrainSchedule() {
             </div>
             <div className="modal-body">
               <div className="container">
-                <div className="text-primary ml-2 mt-2">{t('drivertrainschedule:dcmdetails')}</div>
+                <div className="h1 text-blue ml-2 mt-2">{t('drivertrainschedule:dcmdetails')}</div>
                 <div className="row">
                   <div className="col py-3">
                     <div className="row ml-4">
@@ -131,7 +131,7 @@ export default function DriverTrainSchedule() {
                     </div>
                   </div>
                 </div>
-                <div className="text-primary ml-2 mt-5">{t('drivertrainschedule:timetable')}</div>
+                <div className="h1 text-blue ml-2 mt-5">{t('drivertrainschedule:timetable')}</div>
                 <div className="text-right">
                   <p className="font-italic text-cyan font-weight-normal">
                     {t('drivertrainschedule:timetable')} : {data.length}
@@ -139,29 +139,29 @@ export default function DriverTrainSchedule() {
                   <div className="row">
                     <div className="table-wrapper simulation-drivertrainschedule">
                       <div className="table-scroller dragscroll">
-                        <table className="table">
+                        <table className="table" border="0">
                           <thead className="bg-light">
                             <tr>
-                              <th scope="col ">
+                              <th scope="col" className="noBorder">
                                 <div className="text-primary">
                                   {t('drivertrainschedule:placeholderline')}
                                 </div>
                               </th>
-                              <th scope="col">
+                              <th scope="col" className="noBorder">
                                 <div className="text-primary">
                                   {t('drivertrainschedule:speedlimits')}
                                 </div>
                               </th>
-                              <th scope="col">
+                              <th scope="col" className="noBorder">
                                 <div className="text-primary">{t('drivertrainschedule:pk')}</div>
                               </th>
-                              <th scope="col">
+                              <th scope="col" className="noBorder">
                                 <div className="text-primary">{t('drivertrainschedule:place')}</div>
                               </th>
-                              <th scope="col">
+                              <th scope="col" className="noBorder">
                                 <div className="text-primary">{t('drivertrainschedule:time')}</div>
                               </th>
-                              <th scope="col">
+                              <th scope="col" className="noBorder">
                                 <div className="text-primary">
                                   {t('drivertrainschedule:trackname')}
                                 </div>
