@@ -21,7 +21,7 @@ async function getInfrasList(): Promise<InfrasList> {
   return response.results;
 }
 
-const InfraSelectorModal: FC<ModalProps<{}>> = ({ submit, cancel }) => {
+const InfraSelectorModal: FC<ModalProps> = ({ submit, cancel }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { t } = useTranslation(['translation', 'osrdconf']);
@@ -37,9 +37,9 @@ const InfraSelectorModal: FC<ModalProps<{}>> = ({ submit, cancel }) => {
             message: e.message,
           })
         );
-        console.log('ERROR', e);
+        console.error(e);
       });
-  }, []);
+  }, [dispatch, t]);
 
   return (
     <Modal onClose={cancel} title={t('osrdconf:infrachoose')}>

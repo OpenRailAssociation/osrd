@@ -143,7 +143,7 @@ export default function StandardAllowanceDefault(props) {
     trainDetail.allowances.forEach((allowance) => {
       if (allowance.allowance_type === 'standard' && allowance.ranges) {
         const currentDistribution = allowance.distribution;
-       setValue({
+        setValue({
           type: allowance.default_value.value_type,
           value: allowance.default_value[TYPES_UNITS[allowance.default_value.value_type]],
         });

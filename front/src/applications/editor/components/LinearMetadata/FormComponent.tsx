@@ -92,9 +92,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
       Object.keys(jsonSchema?.items ? (jsonSchema.items as JSONSchema7).properties || {} : {})
         .filter((e) => !['begin', 'end'].includes(e))
         .map((e) => {
-          const properties = (
-            (jsonSchema as JSONSchema7 | undefined)?.items as JSONSchema7 | undefined
-          )?.properties as JSONSchema7;
+          const properties = (jsonSchema as JSONSchema7)?.items?.properties as JSONSchema7;
           return {
             name: e,
             type: properties ? properties[e].type || '' : '',

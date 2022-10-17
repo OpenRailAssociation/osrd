@@ -86,6 +86,6 @@ export function tooltipPosition(coordinates: [number, number], element: HTMLElem
  * Just the event preventdefault.
  * Usefull for listeners.
  */
-export function preventDefault(e: Event) {
+export function preventDefault(e: Event): void {
   e.preventDefault();
 }

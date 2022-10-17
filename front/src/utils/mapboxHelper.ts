@@ -38,7 +38,7 @@ export class KeyDownMapController extends MapController {
     this.setHandler(handler);
   }
 
-  setHandler(handler: MjolnirHandler) {
+  setHandler(handler: MjolnirHandler): void {
     this.handler = handler;
   }
 
