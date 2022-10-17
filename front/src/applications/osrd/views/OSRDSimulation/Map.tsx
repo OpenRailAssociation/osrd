@@ -69,9 +69,9 @@ const PATHFINDING_URI = '/pathfinding/';
 
 function getPosition(
   positionValues: PositionValues,
-  allowancesSettings: AllowancesSettings,
-  id: number,
-  baseKey: string
+  allowancesSettings?: AllowancesSettings,
+  id?: number,
+  baseKey?: string
 ) {
   const key = (
     allowancesSettings && id && allowancesSettings[id]?.ecoBlocks ? `eco_${baseKey}` : baseKey
