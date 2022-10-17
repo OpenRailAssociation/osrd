@@ -245,14 +245,30 @@ const GeoJSONs: FC<{
               filter: ['==', 'type_voie', 'VP'],
               layout: {
                 ...trackNameLayer(colors).layout,
-                'text-field': '{track_name}',
+                'text-field': '{extensions_sncf_track_name}',
                 'text-size': 11,
               },
             },
             layerContext,
             adaptTextPaint
           )}
-          id={`${prefix}geo/track-names`}
+          id={`${prefix}geo/track-vp-names`}
+        />
+        <Layer
+          {...adaptProps(
+            {
+              ...trackNameLayer(colors),
+              filter: ['!=', 'type_voie', 'VP'],
+              layout: {
+                ...trackNameLayer(colors).layout,
+                'text-field': '{extensions_sncf_track_name}',
+                'text-size': 10,
+              },
+            },
+            layerContext,
+            adaptTextPaint
+          )}
+          id={`${prefix}geo/track-other-names`}
         />
         <Layer
           {...adaptProps(
@@ -260,7 +276,7 @@ const GeoJSONs: FC<{
               ...lineNumberLayer(colors),
               layout: {
                 ...lineNumberLayer(colors).layout,
-                'text-field': '{line_code}',
+                'text-field': '{extensions_sncf_line_code}',
               },
             },
             layerContext,
