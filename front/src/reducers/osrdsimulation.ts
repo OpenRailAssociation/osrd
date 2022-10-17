@@ -1,3 +1,4 @@
+import { AnyAction } from 'redux';
 import produce from 'immer';
 import {
   LIST_VALUES_NAME_SPACE_TIME,
@@ -30,8 +31,8 @@ export const UPDATE_TIME_POSITION_VALUES = 'osrdsimu/UPDATE_TIME_POSITION_VALUES
 export const UPDATE_CONSOLIDATED_SIMULATION = 'osrdsimu/UPDATE_CONSOLIDATED_SIMULATION';
 export const UPDATE_DEPARTURE_ARRIVAL_TIMES = 'osrdsimu/UPDATE_DEPARTURE_ARRIVAL_TIMES';
 
-export const departureArrivalTimes = (simulation, dragOffset) =>
-  simulation.trains.map((train) => ({
+export const makeDepartureArrivalTimes = (simulation: SimulationSnapshot, dragOffset: number) =>
+  simulation.trains.map((train: Train) => ({
     labels: train.labels,
     name: train.name,
     departure: offsetSeconds(train.base.stops[0].time + dragOffset),
@@ -108,9 +109,11 @@ export interface Train {
   eco: Regime;
 }
 
-export interface SimulationTime {
+export interface SimulationSnapshot {
   trains: Train[];
 }
+
+export type SimulationHistory = SimulationSnapshot[];
 
 export interface PositionValues {
   headPosition: PositionSpeed;
@@ -129,7 +132,7 @@ export interface OsrdSimulationState {
   contextMenu: any;
   hoverPosition: any;
   isPlaying: boolean;
-  allowancesSettings: AllowancesSettings;
+  allowancesSettings?: AllowancesSettings;
   mustRedraw: boolean;
   positionValues: PositionValues;
   selectedProjection: any;
@@ -146,13 +149,13 @@ export interface OsrdSimulationState {
   consolidatedSimulation: any;
   departureArrivalTimes: Array<any>;
   simulation: {
-    past: SimulationTime;
-    present: SimulationTime;
-    future: SimulationTime;
+    past: SimulationHistory;
+    present: SimulationSnapshot;
+    future: SimulationHistory;
   };
 }
 // Reducer
-export const initialState = {
+export const initialState: OsrdSimulationState = {
   chart: undefined,
   chartXGEV: undefined,
   contextMenu: undefined,
@@ -161,10 +164,22 @@ export const initialState = {
   allowancesSettings: undefined,
   mustRedraw: true,
   positionValues: {
-    headPosition: 0,
-    tailPosition: 0,
+    headPosition: {
+      time: 0,
+      position: 0,
+      speed: 0,
+    },
+    tailPosition: {
+      time: 0,
+      position: 0,
+      speed: 0,
+    },
     routeEndOccupancy: 0,
     routeBeginOccupancy: 0,
+    speed: {
+      speed: 0,
+      time: 0,
+    },
   },
   selectedProjection: undefined,
   selectedTrain: 0,
@@ -179,9 +194,15 @@ export const initialState = {
   timePosition: undefined,
   consolidatedSimulation: null,
   departureArrivalTimes: [],
+  simulation: {
+    past: [],
+    present: { trains: [] },
+    future: [],
+  },
 };
 
-export default function reducer(inputState, action) {
+// eslint-disable-next-line default-param-last
+export default function reducer(inputState: OsrdSimulationState, action: AnyAction) {
   const state = inputState || initialState;
   return produce(state, (draft) => {
     if (!state.simulation) draft.simulation = undoableSimulation(state.simulation, action);
@@ -221,13 +242,13 @@ export default function reducer(inputState, action) {
         break;
       case UPDATE_SIMULATION:
         draft.simulation = undoableSimulation(state.simulation, action);
-        draft.departureArrivalTimes = departureArrivalTimes(draft.simulation.present, 0);
+        draft.departureArrivalTimes = makeDepartureArrivalTimes(draft.simulation.present, 0);
         break;
       case UNDO_SIMULATION:
       case REDO_SIMULATION:
         // get only the present, thanks
         draft.simulation = undoableSimulation(state.simulation, action);
-        draft.departureArrivalTimes = departureArrivalTimes(draft.simulation.present, 0);
+        draft.departureArrivalTimes = makeDepartureArrivalTimes(draft.simulation.present, 0);
         break;
       case UPDATE_SPEEDSPACE_SETTINGS:
         draft.speedSpaceSettings = action.speedSpaceSettings;
