@@ -87,10 +87,10 @@ interface SignalAspect {
 }
 
 interface Regime {
-  head_positions: [Position[]];
-  tail_positions: [Position[]];
-  route_begin_occupancy: [Position[]];
-  route_end_occupancy: [Position[]];
+  head_positions: Position[][];
+  tail_positions: Position[][];
+  route_begin_occupancy: Position[][];
+  route_end_occupancy: Position[][];
   speeds: PositionSpeed[];
   stops: Stop[];
   route_aspects: RouteAspect[];
