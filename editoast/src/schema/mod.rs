@@ -67,7 +67,7 @@ pub enum ObjectType {
 }
 
 impl ObjectType {
-    pub fn get_table(&self) -> &str {
+    pub fn get_table(&self) -> &'static str {
         match *self {
             ObjectType::TrackSection => "osrd_infra_tracksectionmodel",
             ObjectType::Signal => "osrd_infra_signalmodel",
