@@ -26,6 +26,12 @@ export interface Viewport {
   pitch: number;
   transformRequest: (url?: string, resourceType?: string) => MapRequest;
 }
+
+export interface MapSearchMarker {
+  title: string;
+  subtitle: string;
+  lonlat: [number, number];
+}
 export interface MapState {
   ref: unknown;
   url: typeof MAP_URL;
@@ -55,7 +61,7 @@ export interface MapState {
     switches: boolean;
     tvds: boolean;
   };
-  mapSearchMarker: unknown;
+  mapSearchMarker?: MapSearchMarker;
 }
 
 // Reducer
@@ -182,12 +188,10 @@ export function updateMapTrackSources(mapTrackSources) {
   };
 }
 
-export function updateMapSearchMarker(mapSearchMarker) {
-  return (dispatch) => {
-    dispatch({
-      type: UPDATE_MAP_SEARCH_MARKER,
-      mapSearchMarker,
-    });
+export function updateMapSearchMarker(mapSearchMarker: MapSearchMarker) {
+  return {
+    type: UPDATE_MAP_SEARCH_MARKER,
+    mapSearchMarker,
   };
 }
 
