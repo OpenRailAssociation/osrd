@@ -16,6 +16,7 @@ import bbox from '@turf/bbox';
 import lineLength from '@turf/length';
 import lineSlice from '@turf/line-slice';
 import { CgLoadbar } from 'react-icons/cg';
+import { last } from 'lodash';
 
 import {
   updateTimePositionValues,
@@ -117,24 +118,23 @@ function Map(props: MapProps) {
     const concernedTrains: any[] = [];
     simulation.trains.forEach((train, idx: number) => {
       const key = getRegimeKey(train.id);
-      const trainTime = train[key].head_positions[0][0].time;
-      const train2ndTime =
-        train[key].head_positions[train[key].head_positions.length - 1][
-          train[key].head_positions[train[key].head_positions.length - 1].length - 1
-        ].time;
-      if (actualTime >= trainTime && actualTime <= train2ndTime && idx !== selectedTrain) {
-        const interpolation = interpolateOnTime(
-          train[key],
-          ['time', 'position'],
-          ['head_positions', 'tail_positions', 'speeds'],
-          actualTime
-        ) as Record<string, PositionSpeed>;
-        if (interpolation.head_positions && interpolation.speeds) {
-          concernedTrains.push({
-            ...interpolation,
-            name: train.name,
-            id: idx,
-          });
+      if (train[key].head_positions[0]) {
+        const trainTime = train[key].head_positions[0][0].time;
+        const train2ndTime = last(last(train[key].head_positions))?.time as number;
+        if (actualTime >= trainTime && actualTime <= train2ndTime && idx !== selectedTrain) {
+          const interpolation = interpolateOnTime(
+            train[key],
+            ['time', 'position'],
+            ['head_positions', 'tail_positions', 'speeds'],
+            actualTime
+          ) as Record<string, PositionSpeed>;
+          if (interpolation.head_positions && interpolation.speeds) {
+            concernedTrains.push({
+              ...interpolation,
+              name: train.name,
+              id: idx,
+            });
+          }
         }
       }
     });
