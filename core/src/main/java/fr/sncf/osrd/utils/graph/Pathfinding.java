@@ -5,6 +5,7 @@ import fr.sncf.osrd.utils.graph.functional_interfaces.AStarHeuristic;
 import fr.sncf.osrd.utils.graph.functional_interfaces.EdgeToLength;
 import fr.sncf.osrd.utils.graph.functional_interfaces.EdgeToRanges;
 import fr.sncf.osrd.api.pathfinding.constraints.ConstraintCombiner;
+import fr.sncf.osrd.utils.graph.functional_interfaces.TargetsOnEdge;
 import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -96,12 +97,42 @@ public class Pathfinding<NodeT, EdgeT> {
      * Each target is given as a collection of location.
      * It finds the shortest path from start to end,
      * going through at least one location of each every intermediate target in order.
-     * It uses Dijkstra algorithm internally, but can be changed to an A* with minor changes */
+     * It uses Dijkstra algorithm by default, but can be changed to an A* by
+     * specifying a function to estimate the remaining distance, using `setRemainingDistanceEstimator` */
     public Result<EdgeT> runPathfinding(
             List<Collection<EdgeLocation<EdgeT>>> targets
     ) {
+        // We convert the targets of each step into functions, to call the more generic overload of this method below
+        var starts = targets.get(0);
+        var targetsOnEdges = new ArrayList<TargetsOnEdge<EdgeT>>();
+        for (int i = 1; i < targets.size(); i++) {
+            int finalI = i;
+            targetsOnEdges.add(edge -> {
+                var res = new HashSet<Double>();
+                for (var target : targets.get(finalI)) {
+                    if (target.edge.equals(edge))
+                        res.add(target.offset);
+                }
+                return res;
+            });
+        }
+        return runPathfinding(starts, targetsOnEdges);
+    }
+
+
+    /** Runs the pathfinding, returning a path as a list of (edge, start offset, end offset).
+     * The targets for each step are defined as functions,
+     * which tell for each edge the offsets (if any) of the target locations for the current step.
+     * It finds the shortest path from start to end,
+     * going through at least one location of each every intermediate target in order.
+     * It uses Dijkstra algorithm by default, but can be changed to an A* by
+     * specifying a function to estimate the remaining distance, using `setRemainingDistanceEstimator` */
+    public Result<EdgeT> runPathfinding(
+            Collection<EdgeLocation<EdgeT>> starts,
+            List<TargetsOnEdge<EdgeT>> targetsOnEdges
+    ) {
         checkParameters();
-        for (var location : targets.get(0)) {
+        for (var location : starts) {
             var startRange = new EdgeRange<>(location.edge, location.offset, edgeToLength.apply(location.edge));
             registerStep(startRange, null, 0, 0, List.of(location));
         }
@@ -109,22 +140,22 @@ public class Pathfinding<NodeT, EdgeT> {
             var step = queue.poll();
             if (step == null)
                 return null;
-            if (hasReachedEnd(targets, step))
+            if (hasReachedEnd(targetsOnEdges.size(), step))
                 return buildResult(step);
             // Check if the next target is reached in this step
-            for (var targetLocation : targets.get(step.nReachedTargets + 1))
-                if (step.range.edge.equals(targetLocation.edge) && step.range.start <= targetLocation.offset) {
+            for (var targetOffset : targetsOnEdges.get(step.nReachedTargets).apply(step.range.edge))
+                if (step.range.start <= targetOffset) {
                     // Adds a new step precisely on the stop location. This ensures that we don't ignore the
                     // distance between the start of the edge and the stop location
-                    var newRange = new EdgeRange<>(step.range.edge, step.range.start, targetLocation.offset);
+                    var newRange = new EdgeRange<>(step.range.edge, step.range.start, targetOffset);
                     newRange = filterRange(newRange);
                     assert newRange != null;
-                    if (newRange.end != targetLocation.offset) {
+                    if (newRange.end != targetOffset) {
                         // The target location is blocked by a blocked range, it can't be accessed from here
                         continue;
                     }
                     var stepTargets = new ArrayList<>(step.targets);
-                    stepTargets.add(targetLocation);
+                    stepTargets.add(new EdgeLocation<>(step.range.edge, targetOffset));
                     registerStep(
                             newRange,
                             step.prev,
@@ -175,10 +206,10 @@ public class Pathfinding<NodeT, EdgeT> {
 
     /** Returns true if the step has reached the end of the path (last target) */
     private boolean hasReachedEnd(
-            List<Collection<EdgeLocation<EdgeT>>> targets,
+            int nTargets,
             Step<EdgeT> step
     ) {
-        return step.nReachedTargets >= targets.size() - 1;
+        return step.nReachedTargets >= nTargets;
     }
 
     /** Builds the result, iterating over the previous steps and merging ranges */
