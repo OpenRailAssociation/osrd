@@ -106,6 +106,11 @@ public class DummyRouteGraphBuilder {
         }
 
         @Override
+        public String toString() {
+            return id;
+        }
+
+        @Override
         public String getID() {
             return id;
         }
