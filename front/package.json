@@ -51,7 +51,7 @@
     "react-icons": "^4.4.0",
     "react-id-generator": "^3.0.0",
     "react-map-gl": "^5.3.11",
-    "react-modal": "^3.15.1",
+    "react-modal": "^3.16.1",
     "react-redux": "^8.0.4",
     "react-rnd": "^10.3.7",
     "react-router-dom": "^6.4.2",

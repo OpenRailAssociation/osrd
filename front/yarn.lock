@@ -11374,10 +11374,10 @@ react-map-gl@^5.3.11:
     resize-observer-polyfill "^1.5.1"
     viewport-mercator-project "^7.0.4"
 
-react-modal@^3.15.1:
-  version "3.15.1"
-  resolved "https://registry.npmjs.org/react-modal/-/react-modal-3.15.1.tgz"
-  integrity sha512-duB9bxOaYg7Zt6TMFldIFxQRtSP+Dg3F1ZX3FXxSUn+3tZZ/9JCgeAQKDg7rhZSAqopq8TFRw3yIbnx77gyFTw==
+react-modal@^3.16.1:
+  version "3.16.1"
+  resolved "https://registry.yarnpkg.com/react-modal/-/react-modal-3.16.1.tgz#34018528fc206561b1a5467fc3beeaddafb39b2b"
+  integrity sha512-VStHgI3BVcGo7OXczvnJN7yT2TWHJPDXZWyI/a0ssFNhGZWsPmB8cF0z33ewDXq4VfYMO1vXgiv/g8Nj9NDyWg==
   dependencies:
     exenv "^1.2.0"
     prop-types "^15.7.2"
