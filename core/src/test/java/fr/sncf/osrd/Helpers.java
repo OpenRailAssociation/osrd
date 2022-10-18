@@ -18,6 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -33,6 +34,7 @@ public class Helpers {
         var res = new ArrayList<RJSRollingStock>();
         for (var filePath : rollingStocksPaths)
             res.add(MoshiUtils.deserialize(RJSRollingStock.adapter, filePath));
+        res.sort(Comparator.comparing(x -> x.name)); // Prevents different behaviors on different OS when running tests
         return res;
     }
 
