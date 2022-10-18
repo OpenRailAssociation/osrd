@@ -409,6 +409,48 @@ public class STDCMPathfindingTests {
         assertNull(res);
     }
 
+    /** Test that we can backtrack when the first "opening" doesn't lead to a valid solution.
+     * To do this, we need to consider that the same route at different times can be different edges */
+    @Test
+    public void testDifferentOpenings() {
+        /*
+        a --> b --> c --> d
+
+        space
+          ^
+        d |##############   end
+          |##############   /
+        c |##############__/____
+          |   x     ##### /
+        b |__/______#####/______
+          | /           /
+        a start________/_______> time
+
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var firstRoute = infraBuilder.addRoute("a", "b");
+        var secondRoute = infraBuilder.addRoute("b", "c");
+        var thirdRoute = infraBuilder.addRoute("c", "d");
+        var infra = infraBuilder.build();
+        var occupancyGraph = ImmutableMultimap.of(
+                secondRoute, new OccupancyBlock(300, 500, 0, 100),
+                thirdRoute, new OccupancyBlock(0, 500, 0, 100)
+        );
+        var res = STDCMPathfinding.findPath(
+                infra,
+                REALISTIC_FAST_TRAIN,
+                100,
+                0,
+                Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
+                Set.of(new Pathfinding.EdgeLocation<>(thirdRoute, 50)),
+                occupancyGraph,
+                2.
+        );
+
+        assertNotNull(res);
+        assertTrue(occupancyTest(res, occupancyGraph));
+    }
+
     private boolean occupancyTest(STDCMResult res, ImmutableMultimap<SignalingRoute, OccupancyBlock> occupancyGraph) {
         var routes = res.trainPath().routePath();
         for (var index = 1; index < routes.size(); index++) {
