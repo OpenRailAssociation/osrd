@@ -2,8 +2,7 @@ package fr.sncf.osrd.infra.implementation.reservation;
 
 import static fr.sncf.osrd.infra.api.Direction.BACKWARD;
 import static fr.sncf.osrd.infra.api.Direction.FORWARD;
-import static fr.sncf.osrd.utils.graph.GraphHelpers.getCommonNode;
-import static fr.sncf.osrd.utils.graph.GraphHelpers.getDirectionFromEndpoint;
+import static fr.sncf.osrd.utils.graph.GraphHelpers.*;
 
 import com.google.common.collect.ImmutableSet;
 import fr.sncf.osrd.infra.api.reservation.DetectionSection;
@@ -83,12 +82,13 @@ public class DetectionSectionBuilder {
 
             for (var neighbor : infra.getTrackGraph().adjacentEdges(track)) {
                 assert neighbor != track;
-                var commonNode = getCommonNode(infra.getTrackGraph(), neighbor, track);
-                var neighborDir = getDirectionFromEndpoint(infra.getTrackGraph(), neighbor, commonNode);
-                var linkIndex = beginIndex;
-                if (getDirectionFromEndpoint(infra.getTrackGraph(), track, commonNode) == BACKWARD)
-                    linkIndex = endIndex;
-                uf.union(linkIndex, getEndpointIndex(neighbor, EdgeEndpoint.startEndpoint(neighborDir)));
+                for (var commonNode : getCommonNodes(infra.getTrackGraph(), neighbor, track)) {
+                    var neighborDir = getDirectionFromEndpoint(infra.getTrackGraph(), neighbor, commonNode);
+                    var linkIndex = beginIndex;
+                    if (getDirectionFromEndpoint(infra.getTrackGraph(), track, commonNode) == BACKWARD)
+                        linkIndex = endIndex;
+                    uf.union(linkIndex, getEndpointIndex(neighbor, EdgeEndpoint.startEndpoint(neighborDir)));
+                }
             }
         }
 

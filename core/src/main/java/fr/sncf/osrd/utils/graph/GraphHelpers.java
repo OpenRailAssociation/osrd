@@ -7,6 +7,7 @@ import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackEdge;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackNode;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
+import java.util.Collection;
 import java.util.Set;
 
 /** Collection of small static methods for ImmutableNetworks */
@@ -28,15 +29,16 @@ public class GraphHelpers {
         return Sets.difference(undirectedGraph.incidentEdges(node), Set.of(edge));
     }
 
-    /** Returns the node shared by the two adjacent edges */
-    public static TrackNode getCommonNode(ImmutableNetwork<TrackNode, TrackEdge> undirectedGraph,
-                                          TrackEdge edge1, TrackEdge edge2) {
+    /** Returns the nodes shared by the two adjacent edges.
+     * It may return two nodes if the two edges form a circle. */
+    public static Collection<TrackNode> getCommonNodes(ImmutableNetwork<TrackNode, TrackEdge> undirectedGraph,
+                                                      TrackEdge edge1, TrackEdge edge2) {
         var intersection = Sets.intersection(
                 endpointPairToSet(undirectedGraph.incidentNodes(edge1)),
                 endpointPairToSet(undirectedGraph.incidentNodes(edge2))
         );
-        assert intersection.size() == 1;
-        return intersection.stream().iterator().next();
+        assert intersection.size() == 1 || intersection.size() == 2;
+        return intersection;
     }
 
     /** Creates a set from a pair of endpoints */
