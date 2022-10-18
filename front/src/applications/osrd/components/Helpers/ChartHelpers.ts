@@ -1,10 +1,9 @@
 import * as d3 from 'd3';
 
-import { Regime, Position, PositionSpeed } from 'reducers/osrdsimulation';
 import { sec2time } from 'utils/timeManipulation';
 // import/no-cycle is disabled because this func call will be removed by refacto
 // eslint-disable-next-line
-import { updateMustRedraw } from 'reducers/osrdsimulation';
+import { Regime, Position, PositionSpeed, updateMustRedraw, RouteAspect, SignalAspect } from 'reducers/osrdsimulation';
 
 export const sec2d3datetime = (time) => d3.timeParse('%H:%M:%S')(sec2time(time));
 
@@ -39,12 +38,12 @@ export const defineLinear = (max, pctMarge = 0, origin = 0) =>
 export const formatStepsWithTime = (data) =>
   data.map((step) => ({ ...step, time: sec2d3datetime(step.time) }));
 
-export const formatStepsWithTimeMulti = (data) =>
+export const formatStepsWithTimeMulti = (data: Position[][]): Position<Date | null>[][] =>
   data.map((section) =>
     section.map((step) => ({ time: sec2d3datetime(step.time), position: step.position }))
   );
 
-export const formatRouteAspects = (data = []) =>
+export const formatRouteAspects = (data: RouteAspect[] = []): RouteAspect<Date | null, string>[] =>
   data.map((step) => ({
     ...step,
     time_start: sec2d3datetime(step.time_start),
@@ -58,7 +57,9 @@ export const formatRouteAspects = (data = []) =>
  * @param {Array} data
  * @returns
  */
-export const formatSignalAspects = (data = []) =>
+export const formatSignalAspects = (
+  data: SignalAspect[] = []
+): SignalAspect<Date | null, string>[] =>
   data.map((step) => ({
     ...step,
     time_start: sec2d3datetime(step.time_start),
@@ -179,33 +180,44 @@ export const timeShiftTrain = (train, value) => ({
     : null,
 });
 
+export type MergedDataPoint<T = number> = {
+  [key: string]: number | T;
+  value0: number | T;
+  value1: number | T;
+};
+
 // Merge two curves for creating area between
-export const mergeDatasArea = (data1, data2, keyValues) => {
+export const mergeDatasArea = <T>(
+  data1: Position<T>[][],
+  data2: Position<T>[][],
+  keyValues: string[]
+) => {
   const areas = data1.map((data1Section, sectionIdx) => {
-    const points = [];
+    type KeyOfPosition = keyof Position;
+    const points: MergedDataPoint<T>[] = [];
     for (let i = 0; i <= data1Section.length; i += 2) {
       points.push({
-        [keyValues[0]]: data1Section[i][keyValues[0]],
-        value0: data1Section[i][keyValues[1]],
-        value1: data2[sectionIdx][i][keyValues[1]],
+        [keyValues[0]]: data1Section[i][keyValues[0] as KeyOfPosition],
+        value0: data1Section[i][keyValues[1] as KeyOfPosition],
+        value1: data2[sectionIdx][i][keyValues[1] as KeyOfPosition],
       });
       if (data1Section[i + 1] && data2[sectionIdx][i + 1]) {
         points.push({
-          [keyValues[0]]: data2[sectionIdx][i + 1][keyValues[0]],
-          value0: data1Section[i + 1][keyValues[1]],
-          value1: data2[sectionIdx][i + 1][keyValues[1]],
+          [keyValues[0]]: data2[sectionIdx][i + 1][keyValues[0] as KeyOfPosition],
+          value0: data1Section[i + 1][keyValues[1] as KeyOfPosition],
+          value1: data2[sectionIdx][i + 1][keyValues[1] as KeyOfPosition],
         });
       }
       if (data1Section[i + 2] && data2[sectionIdx][i + 2]) {
         points.push({
-          [keyValues[0]]: data2[sectionIdx][i + 1][keyValues[0]],
-          value0: data1Section[i + 1][keyValues[1]],
-          value1: data2[sectionIdx][i + 2][keyValues[1]],
+          [keyValues[0]]: data2[sectionIdx][i + 1][keyValues[0] as KeyOfPosition],
+          value0: data1Section[i + 1][keyValues[1] as KeyOfPosition],
+          value1: data2[sectionIdx][i + 2][keyValues[1] as KeyOfPosition],
         });
         points.push({
-          [keyValues[0]]: data1Section[i + 1][keyValues[0]],
-          value0: data1Section[i + 1][keyValues[1]],
-          value1: data2[sectionIdx][i + 2][keyValues[1]],
+          [keyValues[0]]: data1Section[i + 1][keyValues[0] as KeyOfPosition],
+          value0: data1Section[i + 1][keyValues[1] as KeyOfPosition],
+          value1: data2[sectionIdx][i + 2][keyValues[1] as KeyOfPosition],
         });
       }
     }

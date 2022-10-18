@@ -1,4 +1,5 @@
-import { AnyAction } from 'redux';
+import { AnyAction, Dispatch } from 'redux';
+import * as d3 from 'd3';
 import produce from 'immer';
 import {
   LIST_VALUES_NAME_SPACE_TIME,
@@ -39,6 +40,24 @@ export const makeDepartureArrivalTimes = (simulation: SimulationSnapshot, dragOf
     arrival: offsetSeconds(train.base.stops[train.base.stops.length - 1].time + dragOffset),
   }));
 
+export interface Chart {
+  width: number;
+  height: number;
+  margin: {
+    top: number;
+    right: number;
+    bottom: number;
+    left: number;
+  };
+  x: d3.ScaleTime<number, number>;
+  xAxis: d3.Selection<SVGGElement, unknown, null, undefined>;
+  xAxisGrid: d3.Selection<SVGGElement, unknown, null, undefined>;
+  y: d3.ScaleLinear<number, number>;
+  yAxis: d3.Selection<SVGGElement, unknown, null, undefined>;
+  yAxisGrid: d3.Selection<SVGGElement, unknown, null, undefined>;
+  svg: d3.Selection<SVGGElement, unknown, null, undefined>;
+  drawZone: d3.Selection<SVGGElement, unknown, null, undefined>;
+}
 export interface AllowancesSetting {
   base: boolean;
   baseBlocks: boolean;
@@ -48,11 +67,11 @@ export interface AllowancesSetting {
 
 export type AllowancesSettings = Record<string | number, AllowancesSetting>;
 
-interface Position {
-  time: number;
+export interface Position<Time = number> {
+  time: Time;
   position: number;
 }
-export type PositionSpeed = Position & {
+export type PositionSpeed<Time = number> = Position<Time> & {
   speed: number;
 };
 
@@ -66,27 +85,27 @@ interface Stop {
   track_number: number;
 }
 
-interface RouteAspect {
+export interface RouteAspect<Time = number, Color = number> {
   signal_id: string;
   route_id: string;
-  time_start: number;
-  time_end: number;
+  time_start: Time;
+  time_end: Time;
   position_start: number;
   position_end: number;
-  color: number;
+  color: Color;
   blinking: boolean;
 }
 
-interface SignalAspect {
+export interface SignalAspect<Time = number, Color = number> {
   signal_id: string;
-  time_start: number;
-  time_end: number;
-  color: number;
+  time_start: Time;
+  time_end: Time;
+  color: Color;
   blinking: boolean;
   aspect_label: string;
 }
 
-interface Regime {
+export interface Regime {
   head_positions: Position[][];
   tail_positions: Position[][];
   route_begin_occupancy: Position[][];
@@ -95,6 +114,7 @@ interface Regime {
   stops: Stop[];
   route_aspects: RouteAspect[];
   signal_aspects: SignalAspect[];
+  error: any;
 }
 
 export interface Train {
@@ -107,6 +127,7 @@ export interface Train {
   curves: any[];
   base: Regime;
   eco: Regime;
+  isStdcm: boolean;
 }
 
 export interface SimulationSnapshot {
@@ -287,8 +308,8 @@ export default function reducer(inputState: OsrdSimulationState, action: AnyActi
 }
 
 // Functions
-export function updateChart(chart) {
-  return (dispatch) => {
+export function updateChart(chart: Chart) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_CHART,
       chart,
