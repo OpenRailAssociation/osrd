@@ -17,7 +17,6 @@ import {
   DEFAULT_ENDPOINT,
   ENDPOINTS,
   ENDPOINTS_SET,
-  Item,
   SwitchEntity,
   SwitchType,
   TrackSectionEntity,
@@ -42,6 +41,7 @@ import {
   getSwitchesLayerProps,
   getSwitchesNameLayerProps,
 } from '../../../../common/Map/Layers/Switches';
+import { NEW_ENTITY_ID } from '../../data/utils';
 
 const ENDPOINT_OPTIONS = ENDPOINTS.map((s) => ({ value: s, label: s }));
 const ENDPOINT_OPTIONS_DICT = keyBy(ENDPOINT_OPTIONS, 'value');
@@ -114,13 +114,15 @@ export const TrackSectionEndpointSelector: FC<FieldProps> = ({
       <div className="d-flex flex-row align-items-center mb-2">
         <div className="flex-grow-1 flex-shrink-1 mr-2">
           {trackSection ? (
-            <span>{trackSection?.properties?.extensions?.sncf?.line_name || trackSection.id}</span>
+            <span>
+              {trackSection?.properties?.extensions?.sncf?.line_name || trackSection.properties.id}
+            </span>
           ) : (
             <span className="text-danger font-weight-bold">
               {t('Editor.tools.switch-edition.no-track-picked-yet')}
             </span>
           )}
-          {!!trackSection && <div className="text-muted small">{trackSection.id}</div>}
+          {!!trackSection && <div className="text-muted small">{trackSection.properties.id}</div>}
           {!!trackSection && (
             <div className="d-flex flex-row align-items-baseline mb-2">
               <span className="mr-2">{t('Editor.tools.switch-edition.endpoint')}</span>
@@ -131,7 +133,7 @@ export const TrackSectionEndpointSelector: FC<FieldProps> = ({
                   if (o)
                     onChange({
                       endpoint: o.value,
-                      track: trackSection?.id,
+                      track: trackSection.properties.id,
                     });
                 }}
               />
@@ -185,7 +187,7 @@ export const SwitchEditionLeftPanel: FC = () => {
     [switchTypeOptions]
   );
   const switchEntity = state.entity as SwitchEntity;
-  const isNew = !switchEntity.id;
+  const isNew = switchEntity.properties.id === NEW_ENTITY_ID;
   const switchType = useMemo(
     () =>
       switchTypes?.find((type) => type.id === switchEntity.properties.switch_type) ||
@@ -236,11 +238,11 @@ export const SwitchEditionLeftPanel: FC = () => {
 
           const res: any = await dispatch(
             save(
-              entityToSave.id
+              !isNew
                 ? {
                     update: [
                       {
-                        source: editorState.entitiesIndex[entityToSave.id as string],
+                        source: editorState.entitiesIndex[entityToSave.properties.id],
                         target: entityToSave,
                       },
                     ],
@@ -251,7 +253,11 @@ export const SwitchEditionLeftPanel: FC = () => {
           const operation = res[0] as CreateEntityOperation;
           const { id } = operation.railjson;
 
-          if (id && id !== entityToSave.id) setState({ ...state, entity: { ...entityToSave, id } });
+          if (id && id !== entityToSave.properties.id)
+            setState({
+              ...state,
+              entity: { ...entityToSave, properties: { ...entityToSave.properties, id: id + '' } },
+            });
         }}
         onChange={(flatSwitch) => {
           setState({
@@ -297,7 +303,9 @@ export const SwitchEditionLayers: FC = () => {
   const nameLayerProps = getSwitchesNameLayerProps({
     colors: colors[mapStyle],
   });
-  const hoveredTrack = hovered ? (entitiesIndex[hovered.id] as TrackSectionEntity) : null;
+  const hoveredTrack = hovered
+    ? (entitiesIndex[hovered.properties.id] as TrackSectionEntity)
+    : null;
 
   const closest =
     portEditionState.type === 'selection' && hoveredTrack && mousePosition
@@ -323,8 +331,8 @@ export const SwitchEditionLayers: FC = () => {
       {/* Editor data layer */}
       <GeoJSONs
         colors={colors[mapStyle]}
-        hidden={entity.id ? [entity as Item] : undefined}
-        hovered={hovered?.id ? [hovered] : undefined}
+        hidden={entity?.properties?.id ? [entity.properties.id] : undefined}
+        hovered={hovered?.properties.id ? [hovered.properties.id] : undefined}
       />
 
       {/* Edited switch */}
@@ -346,7 +354,7 @@ export const SwitchEditionLayers: FC = () => {
             {`${
               hoveredTrack.properties?.line_name || t('Editor.tools.switch-edition.untitled-track')
             } (${closestPoint.properties.name})`}
-            <div className="text-muted small">{hoveredTrack.id}</div>
+            <div className="text-muted small">{hoveredTrack.properties.id}</div>
           </Popup>
 
           <Source type="geojson" data={closestPoint}>
