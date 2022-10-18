@@ -84,7 +84,7 @@ export async function getEditorData(
         `/layer/${layer}/objects/geo/${bbox[0]}/${bbox[1]}/${bbox[2]}/${bbox[3]}/?infra=${infra}`,
         {}
       );
-      return result.features.map((f) => ({ ...f, id: f.properties.id, objType }));
+      return result.features.map((f) => ({ ...f, objType }));
     })
   );
 
@@ -114,15 +114,15 @@ export async function editorSave(
         operation_type: 'CREATE',
         obj_type: feature.objType,
         railjson: {
-          id: uuid(),
           ...feature.properties,
+          id: feature.properties.id || uuid(),
         },
       })
     ),
     ...(operations.update || []).map(
       (features): UpdateEntityOperation => ({
         operation_type: 'UPDATE',
-        obj_id: features.source.id,
+        obj_id: features.source.properties.id,
         obj_type: features.source.objType,
         railjson_patch: compare(features.source.properties || {}, features.target.properties || {}),
       })
@@ -130,7 +130,7 @@ export async function editorSave(
     ...(operations.delete || []).map(
       (feature): DeleteEntityOperation => ({
         operation_type: 'DELETE',
-        obj_id: feature.id,
+        obj_id: feature.properties.id,
         obj_type: feature.objType,
       })
     ),

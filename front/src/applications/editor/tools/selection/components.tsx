@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 
 import { EditorContext } from '../../context';
 import { SelectionState } from './types';
-import { Item, Zone } from '../../../../types';
+import { Zone } from '../../../../types';
 import GeoJSONs from '../../../../common/Map/Layers/GeoJSONs';
 import colors from '../../../../common/Map/Consts/colors';
 import EditorZone from '../../../../common/Map/Layers/EditorZone';
@@ -58,15 +58,15 @@ export const SelectionLayers: FC = () => {
     ].filter((s) => !!s && s !== 'null');
 
   if (state.hovered && !labelParts?.length) {
-    labelParts = [state.hovered.id];
+    labelParts = [state.hovered.properties.id];
   }
 
   return (
     <>
       <GeoJSONs
         colors={colors[mapStyle]}
-        hovered={state.hovered && !selectionZone ? [state.hovered] : []}
-        selection={state.selection as Item[]}
+        hovered={state.hovered && !selectionZone ? [state.hovered.properties.id] : []}
+        selection={state.selection.map((e) => e.properties.id)}
       />
       <EditorZone newZone={selectionZone} />
       {state.mousePosition && state.selectionState.type === 'single' && state.hovered && (
@@ -105,7 +105,7 @@ export const SelectionLeftPanel: FC = () => {
               save({
                 update: [
                   {
-                    source: editorState.entitiesIndex[savedEntity.id as string],
+                    source: editorState.entitiesIndex[savedEntity.properties.id],
                     target: savedEntity,
                   },
                 ],
@@ -194,9 +194,9 @@ export const SelectionLeftPanel: FC = () => {
       <h4>{t('Editor.tools.select-items.title')}</h4>
       <ul className="list-unstyled">
         {selection.map((item) => (
-          <li key={item.id} className="pb-4">
+          <li key={item.properties.id} className="pb-4">
             <div className="pb-2">
-              {t('Editor.tools.select-items.item')} <strong>{item.id}</strong>{' '}
+              {t('Editor.tools.select-items.item')} <strong>{item.properties.id}</strong>{' '}
               {t('Editor.tools.select-items.of-type')} <strong>{item.objType}</strong>
             </div>
             <div>
@@ -213,7 +213,10 @@ export const SelectionLeftPanel: FC = () => {
                 type="button"
                 className="btn btn-secondary btn-sm"
                 onClick={() =>
-                  setState({ ...state, selection: selection.filter((i) => i.id !== item.id) })
+                  setState({
+                    ...state,
+                    selection: selection.filter((i) => i.properties.id !== item.properties.id),
+                  })
                 }
               >
                 <IoMdRemoveCircleOutline /> {t('Editor.tools.select-items.unselect')}

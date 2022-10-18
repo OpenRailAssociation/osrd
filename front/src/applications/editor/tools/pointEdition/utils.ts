@@ -1,11 +1,12 @@
-import { BufferStopEntity, DetectorEntity, SignalEntity } from '../../../../types';
-import { MakeOptional } from '../types';
+import { BufferStopEntity, DetectorEntity, NULL_GEOMETRY, SignalEntity } from '../../../../types';
+import { NEW_ENTITY_ID } from '../../data/utils';
 
-export function getNewSignal(point?: [number, number]): MakeOptional<SignalEntity, 'geometry'> {
+export function getNewSignal(point?: [number, number]): SignalEntity {
   return {
     type: 'Feature',
     objType: 'Signal',
     properties: {
+      id: NEW_ENTITY_ID,
       extensions: {
         sncf: {
           is_in_service: false,
@@ -20,36 +21,38 @@ export function getNewSignal(point?: [number, number]): MakeOptional<SignalEntit
           type: 'Point',
           coordinates: point,
         }
-      : undefined,
+      : NULL_GEOMETRY,
   };
 }
 
-export function getNewBufferStop(
-  point?: [number, number]
-): MakeOptional<BufferStopEntity, 'geometry'> {
+export function getNewBufferStop(point?: [number, number]): BufferStopEntity {
   return {
     type: 'Feature',
     objType: 'BufferStop',
-    properties: {},
+    properties: {
+      id: NEW_ENTITY_ID,
+    },
     geometry: point
       ? {
           type: 'Point',
           coordinates: point,
         }
-      : undefined,
+      : NULL_GEOMETRY,
   };
 }
 
-export function getNewDetector(point?: [number, number]): MakeOptional<DetectorEntity, 'geometry'> {
+export function getNewDetector(point?: [number, number]): DetectorEntity {
   return {
     type: 'Feature',
     objType: 'Detector',
-    properties: {},
+    properties: {
+      id: NEW_ENTITY_ID,
+    },
     geometry: point
       ? {
           type: 'Point',
           coordinates: point,
         }
-      : undefined,
+      : NULL_GEOMETRY,
   };
 }

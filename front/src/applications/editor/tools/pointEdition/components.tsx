@@ -19,11 +19,10 @@ import {
   CreateEntityOperation,
   DetectorEntity,
   EditorEntity,
-  Item,
   SignalEntity,
 } from '../../../../types';
 import { getSignalLayerProps } from '../../../../common/Map/Layers/geoSignalsLayers';
-import { cleanSymbolType } from '../../data/utils';
+import { cleanSymbolType, NEW_ENTITY_ID } from '../../data/utils';
 import {
   getDetectorsLayerProps,
   getDetectorsNameLayerProps,
@@ -49,11 +48,11 @@ export const PointEditionLeftPanel: FC = <Entity extends EditorEntity>() => {
       onSubmit={async (savedEntity) => {
         const res = await dispatch(
           save(
-            state.entity.id
+            state.entity.properties.id !== NEW_ENTITY_ID
               ? {
                   update: [
                     {
-                      source: editorState.entitiesIndex[state.entity.id as string],
+                      source: editorState.entitiesIndex[state.entity.properties.id],
                       target: savedEntity,
                     },
                   ],
@@ -64,7 +63,7 @@ export const PointEditionLeftPanel: FC = <Entity extends EditorEntity>() => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const operation = res[0] as any as CreateEntityOperation;
         const { id } = operation.railjson;
-        if (id && id !== savedEntity.id) {
+        if (id && id !== savedEntity.properties.id) {
           setState({
             ...state,
             entity: {
@@ -162,17 +161,8 @@ export const SignalEditionLayers: FC = () => {
       {/* Editor data layer */}
       <GeoJSONs
         colors={colors[mapStyle]}
-        hidden={entity.id ? [entity as Item] : undefined}
-        selection={
-          entity.id
-            ? [entity as Item]
-            : [
-                {
-                  ...entity,
-                  id: 'NEW SIGNAL',
-                } as Item,
-              ]
-        }
+        hidden={entity.properties.id !== NEW_ENTITY_ID ? [entity.properties.id] : undefined}
+        selection={[entity.properties.id]}
       />
 
       {/* Edited signal */}
@@ -200,7 +190,7 @@ export const DetectorEditionLayers: FC = () => {
   const layerNameProps = getDetectorsNameLayerProps({ colors: theme });
 
   let renderedEntity: DetectorEntity | null = null;
-  if (entity.geometry) {
+  if (entity.geometry.type !== 'GeometryCollection') {
     renderedEntity = entity as DetectorEntity;
   } else if (nearestPoint) {
     renderedEntity = {
@@ -220,17 +210,8 @@ export const DetectorEditionLayers: FC = () => {
       {/* Editor data layer */}
       <GeoJSONs
         colors={colors[mapStyle]}
-        hidden={entity.id ? [entity as Item] : undefined}
-        selection={
-          entity.id
-            ? [entity as Item]
-            : [
-                {
-                  ...entity,
-                  id: 'NEW SIGNAL',
-                } as Item,
-              ]
-        }
+        hidden={entity.properties.id !== NEW_ENTITY_ID ? [entity.properties.id] : undefined}
+        selection={[entity.properties.id]}
       />
 
       {/* Edited signal */}
@@ -273,17 +254,8 @@ export const BufferStopEditionLayers: FC = () => {
       {/* Editor data layer */}
       <GeoJSONs
         colors={colors[mapStyle]}
-        hidden={entity.id ? [entity as Item] : undefined}
-        selection={
-          entity.id
-            ? [entity as Item]
-            : [
-                {
-                  ...entity,
-                  id: 'NEW SIGNAL',
-                } as Item,
-              ]
-        }
+        hidden={entity.properties.id !== NEW_ENTITY_ID ? [entity.properties.id] : undefined}
+        selection={[entity.properties.id]}
       />
 
       {/* Edited signal */}

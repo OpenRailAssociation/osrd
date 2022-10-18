@@ -4,14 +4,7 @@ import { MapEvent, ViewportProps } from 'react-map-gl';
 import { IconType } from 'react-icons/lib/esm/iconBase';
 import { TFunction } from 'i18next';
 
-import {
-  EditorEntity,
-  EditorSchema,
-  Item,
-  PositionnedItem,
-  SwitchType,
-  Zone,
-} from '../../../types';
+import { EditorEntity, EditorSchema, SwitchType, Zone } from '../../../types';
 
 export interface EditorState {
   editorSchema: EditorSchema;
@@ -106,7 +99,7 @@ export type MakeOptional<Type, Key extends keyof Type> = Omit<Type, Key> & Parti
 
 export interface CommonToolState {
   mousePosition: [number, number] | null;
-  hovered: PositionnedItem | null;
+  hovered: EditorEntity | null;
 }
 
 export const DEFAULT_COMMON_TOOL_STATE: CommonToolState = {
@@ -140,7 +133,11 @@ export interface Tool<S> {
   onMount?: (context: ExtendedEditorContextType<S>) => void;
   onUnmount?: (context: ExtendedEditorContextType<S>) => void;
   onClickMap?: (e: MapEvent, context: ExtendedEditorContextType<S>) => void;
-  onClickFeature?: (feature: Item, e: MapEvent, context: ExtendedEditorContextType<S>) => void;
+  onClickFeature?: (
+    entity: EditorEntity,
+    e: MapEvent,
+    context: ExtendedEditorContextType<S>
+  ) => void;
   onHover?: (e: MapEvent, context: ExtendedEditorContextType<S>) => void;
   onMove?: (e: MapEvent, context: ExtendedEditorContextType<S>) => void;
   onKeyDown?: (e: KeyboardEvent, context: ExtendedEditorContextType<S>) => void;

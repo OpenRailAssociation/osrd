@@ -11,9 +11,10 @@ import EditorZone from '../../../../common/Map/Layers/EditorZone';
 import { TrackEditionState } from './types';
 import EditorForm from '../../components/EditorForm';
 import { save } from '../../../../reducers/editor';
-import { CreateEntityOperation, Item, TrackSectionEntity } from '../../../../types';
+import { CreateEntityOperation, TrackSectionEntity } from '../../../../types';
 import { EditorContextType, ExtendedEditorContextType } from '../types';
 import { injectGeometry } from './utils';
+import { NEW_ENTITY_ID } from '../../data/utils';
 
 export const TRACK_LAYER_ID = 'trackEditionTool/new-track-path';
 export const POINTS_LAYER_ID = 'trackEditionTool/new-track-points';
@@ -70,7 +71,7 @@ export const TrackEditionLayers: FC = () => {
       {/* Editor data layer */}
       <GeoJSONs
         colors={colors[mapStyle]}
-        hidden={state.track.id ? [state.track as Item] : undefined}
+        hidden={state.track.properties.id ? [state.track.properties.id] : undefined}
       />
 
       {/* Track path */}
@@ -188,18 +189,19 @@ export const TrackEditionLeftPanel: FC = () => {
   const { state, setState, editorState } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<TrackEditionState>;
+  const { track } = state;
 
   return (
     <EditorForm
-      data={state.track}
+      data={track}
       onSubmit={async (savedEntity) => {
         const res = await dispatch(
           save(
-            state.track.id
+            track.properties.id !== NEW_ENTITY_ID
               ? {
                   update: [
                     {
-                      source: injectGeometry(editorState.entitiesIndex[state.track.id as string]),
+                      source: injectGeometry(editorState.entitiesIndex[track.properties.id]),
                       target: injectGeometry(savedEntity),
                     },
                   ],
@@ -211,10 +213,14 @@ export const TrackEditionLeftPanel: FC = () => {
         const operation = res[0] as any as CreateEntityOperation;
         const { id } = operation.railjson;
 
-        if (id && id !== savedEntity.id) setState({ ...state, track: { ...state.track, id } });
+        if (id && id !== savedEntity.properties.id)
+          setState({
+            ...state,
+            track: { ...track, properties: { ...track.properties, id: id + '' } },
+          });
       }}
-      onChange={(track) => {
-        setState({ ...state, track: track as TrackSectionEntity });
+      onChange={(newTrack) => {
+        setState({ ...state, track: newTrack as TrackSectionEntity });
       }}
     >
       <div className="text-right">

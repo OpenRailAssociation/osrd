@@ -219,7 +219,10 @@ export default function reducer(inputState: EditorState | undefined, action: Edi
           (entitiesArray: EditorEntity[]) => entitiesArray.map(flattenEntity)
         );
         draft.entitiesArray = flatten(Object.values(action.entitiesByType));
-        draft.entitiesIndex = keyBy(draft.entitiesArray, 'id');
+        draft.entitiesIndex = draft.entitiesArray.reduce(
+          (iter, entity) => ({ ...iter, [entity.properties.id]: entity }),
+          {}
+        );
         break;
       case RESET:
         draft.editorLayers = initialState.editorLayers;
