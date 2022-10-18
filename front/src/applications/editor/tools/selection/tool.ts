@@ -192,9 +192,11 @@ const SelectionTool: Tool<SelectionState> = {
     if (state.selectionState.type !== 'single') return;
 
     let { selection } = state;
-    const isAlreadySelected = selection.find((item) => item.id === feature.id);
+    const isAlreadySelected = selection.find(
+      (item) => item.properties.id === feature.properties.id
+    );
 
-    const current = editorState.entitiesIndex[feature.id];
+    const current = editorState.entitiesIndex[feature.properties.id];
 
     if (current) {
       if (!isAlreadySelected) {
@@ -204,7 +206,7 @@ const SelectionTool: Tool<SelectionState> = {
           selection = [current];
         }
       } else if (e.srcEvent.ctrlKey) {
-        selection = selection.filter((item) => item.id !== feature.id);
+        selection = selection.filter((item) => item.properties.id !== feature.properties.id);
       } else if (selection.length === 1) {
         selection = [];
       } else {

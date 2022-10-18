@@ -1,6 +1,6 @@
 import { Position } from 'geojson';
 import { JSONSchema7 } from 'json-schema';
-import { forEach, isArray, isNil, isObject, uniq } from 'lodash';
+import { isArray, isNil, isObject, uniq } from 'lodash';
 
 import { EditorEntity, EditorSchema } from '../../../types';
 import {
@@ -8,6 +8,8 @@ import {
   SIGNALS_TO_SYMBOLS,
   SignalType,
 } from '../../../common/Map/Consts/SignalsNames';
+
+export const NEW_ENTITY_ID = 'osrd/editor/new-signal-id';
 
 export function getObjectTypeForLayer(schema: EditorSchema, layer: string): string | undefined {
   const item = schema.find((e) => e.layer === layer);
@@ -102,6 +104,6 @@ function flatten(
 export function flattenEntity(entity: EditorEntity): EditorEntity {
   return {
     ...entity,
-    properties: flatten(entity.properties, '_', {}, '') as Record<string, unknown>,
+    properties: flatten(entity.properties, '_', {}, '') as EditorEntity['properties'],
   };
 }
