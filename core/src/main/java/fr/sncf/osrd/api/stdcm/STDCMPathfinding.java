@@ -15,6 +15,7 @@ import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Pathfinding;
+import fr.sncf.osrd.utils.graph.functional_interfaces.TargetsOnEdge;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -42,13 +43,26 @@ public class STDCMPathfinding {
         var path = new Pathfinding<>(graph)
                 .setEdgeToLength(edge -> edge.route().getInfraRoute().getLength())
                 .setRemainingDistanceEstimator((edge, offset) -> remainingDistance.apply(edge.route(), offset))
-                .runPathfinding(List.of(
-                        convertLocations(graph, startLocations, startTime, true),
-                        convertLocations(graph, endLocations, 0, false)
-                ));
+                .runPathfinding(
+                        convertLocations(graph, startLocations, startTime),
+                        makeObjectiveFunction(endLocations)
+                );
         if (path == null)
             return null;
         return makeResult(path, rollingStock, timeStep, startTime);
+    }
+
+    /** Make the objective function from the edge locations */
+    private static List<TargetsOnEdge<STDCMGraph.Edge>> makeObjectiveFunction(
+            Set<Pathfinding.EdgeLocation<SignalingRoute>> endLocations
+    ) {
+        return List.of(edge -> {
+            var res = new HashSet<Double>();
+            for (var loc : endLocations)
+                if (loc.edge().equals(edge.route()))
+                    res.add(loc.offset());
+            return res;
+        });
     }
 
     /** Builds the STDCM result object from the raw pathfinding result */
@@ -145,15 +159,13 @@ public class STDCMPathfinding {
     private static Set<Pathfinding.EdgeLocation<STDCMGraph.Edge>> convertLocations(
             STDCMGraph graph,
             Set<Pathfinding.EdgeLocation<SignalingRoute>> locations,
-            double startTime,
-            boolean isStart
+            double startTime
     ) {
         var res = new HashSet<Pathfinding.EdgeLocation<STDCMGraph.Edge>>();
         for (var location : locations) {
-            var start = isStart ? location.offset() : 0;
+            var start = location.offset();
             var maximumDelay = 3600 * 24; // Placeholder, there will probably be a parameter eventually
-            var edge = graph.makeEdge(location.edge(), startTime, 0, start, maximumDelay);
-            if (!isStart || !graph.isUnavailable(edge))
+            for (var edge : graph.makeEdges(location.edge(), startTime, 0, start, maximumDelay))
                 res.add(new Pathfinding.EdgeLocation<>(edge, location.offset()));
         }
         return res;
