@@ -5,7 +5,7 @@ import { mapValues } from 'lodash';
 import { Layer, LayerProps, Source } from 'react-map-gl';
 import { AnyPaint, CirclePaint, LinePaint, SymbolPaint } from 'mapbox-gl';
 
-import { Item, Theme } from '../../../types';
+import { Theme } from '../../../types';
 import { geoMainLayer, geoServiceLayer } from './geographiclayers';
 import {
   getPointLayerProps,
@@ -14,12 +14,12 @@ import {
   SignalContext,
   SignalsSettings,
 } from './geoSignalsLayers';
-import { EditorState, LayerType } from '../../../applications/editor/tools/types';
 import { lineNameLayer, lineNumberLayer, trackNameLayer } from './commonLayers';
 import { getSignalsList, getSymbolsList } from '../../../applications/editor/data/utils';
 import { getBufferStopsLayerProps } from './BufferStops';
 import { getDetectorsLayerProps, getDetectorsNameLayerProps } from './Detectors';
 import { getSwitchesLayerProps, getSwitchesNameLayerProps } from './Switches';
+import { EditorState, LayerType } from '../../../applications/editor/tools/types';
 import { SYMBOLS_TO_LAYERS } from '../Consts/SignalsNames';
 
 const HOVERED_COLOR = '#009EED';
@@ -159,9 +159,9 @@ function adaptProps<T extends AnyPaint>(
 
 const GeoJSONs: FC<{
   colors: Theme;
-  hidden?: Item[];
-  hovered?: Item[];
-  selection?: Item[];
+  hidden?: string[];
+  hovered?: string[];
+  selection?: string[];
   prefix?: string;
 }> = (props) => {
   const { colors, hidden, hovered, selection, prefix = 'editor/' } = props;
@@ -186,9 +186,9 @@ const GeoJSONs: FC<{
 
   const layerContext: Context = useMemo(
     () => ({
-      hiddenIDs: (hidden || []).map((item) => item.id),
-      hoveredIDs: (hovered || []).map((item) => item.id),
-      selectedIDs: (selection || []).map((item) => item.id),
+      hiddenIDs: hidden || [],
+      hoveredIDs: hovered || [],
+      selectedIDs: selection || [],
     }),
     [hidden, hovered, selection]
   );

@@ -103,18 +103,16 @@ const MapUnplugged: FC<MapProps> = ({
         }}
         onHover={(e) => {
           const feature = (e.features || [])[0];
+          const entity = feature?.properties?.id
+            ? editorState.entitiesIndex[feature.properties.id]
+            : undefined;
 
           if (activeTool.onHover) {
             activeTool.onHover(e, extendedContext);
-          } else if (feature) {
+          } else if (entity) {
             setToolState({
               ...toolState,
-              hovered: {
-                id: feature.properties.id,
-                properties: feature.properties || {},
-                lng: feature.properties.lng,
-                lat: feature.properties.lat,
-              },
+              hovered: entity,
             });
           } else {
             setToolState({ ...toolState, hovered: null });

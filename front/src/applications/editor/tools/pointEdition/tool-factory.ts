@@ -5,7 +5,7 @@ import { BiReset, AiOutlinePlus } from 'react-icons/all';
 import { IconType } from 'react-icons';
 import nearestPointOnLine from '@turf/nearest-point-on-line';
 
-import { DEFAULT_COMMON_TOOL_STATE, LayerType, MakeOptional, Tool } from '../types';
+import { DEFAULT_COMMON_TOOL_STATE, LayerType, Tool } from '../types';
 import { getNearestPoint } from '../../../../utils/mapboxHelper';
 import { POINT_LAYER_ID, PointEditionLeftPanel } from './components';
 import { PointEditionState } from './types';
@@ -15,7 +15,7 @@ type EditorPoint = BufferStopEntity | DetectorEntity | SignalEntity;
 interface PointEditionToolParams<T extends EditorPoint> {
   layer: LayerType;
   icon: IconType;
-  getNewEntity: (point?: [number, number]) => MakeOptional<T, 'geometry'>;
+  getNewEntity: (point?: [number, number]) => T;
   layersComponent: ComponentType;
   requiresAngle?: boolean;
 }
@@ -180,7 +180,7 @@ function getPointEditionTool<T extends EditorPoint>({
           // eslint-disable-next-line no-console
           console.warn(
             `
-The entity ${entity.id} position computed by Turf.js does not match the one from the database:
+The entity ${entity.properties.id} position computed by Turf.js does not match the one from the database:
   -> Database position: ${dbPosition}
   -> Turf.js position: ${computedPosition}
 `
