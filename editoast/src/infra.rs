@@ -125,6 +125,20 @@ impl Infra {
         }
     }
 
+    pub fn downgrade_generated_version(
+        &self,
+        conn: &PgConnection,
+    ) -> Result<Self, Box<dyn ApiError>> {
+        match update(osrd_infra_infra.filter(id.eq(self.id)))
+            .set(generated_version.eq(String::from("NULL")))
+            .get_result::<Infra>(conn)
+        {
+            Ok(infra) => Ok(infra),
+            Err(DieselError::NotFound) => Err(Box::new(InfraApiError::NotFound(self.id))),
+            Err(err) => Err(Box::new(InfraApiError::DieselError(err))),
+        }
+    }
+
     pub fn create<T: AsRef<str>>(
         infra_name: T,
         conn: &PgConnection,
@@ -196,5 +210,19 @@ pub mod tests {
             let err = Infra::delete(infra.id, conn).unwrap_err();
             assert_eq!(err.get_status(), Status::NotFound);
         });
+    }
+
+    #[test]
+    fn downgrade_version() {
+        let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
+        let infra = Infra::create("test", &conn).unwrap();
+        assert_eq!(
+            "NULL",
+            infra
+                .downgrade_generated_version(&conn)
+                .unwrap()
+                .generated_version
+                .unwrap()
+        )
     }
 }

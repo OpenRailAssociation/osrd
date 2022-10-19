@@ -184,6 +184,18 @@ pub trait Layer {
 
         Ok(())
     }
+
+    fn clear(conn: &PgConnection, infra: i32) -> Result<(), Error> {
+        // Clear layer
+        sql_query(format!(
+            "DELETE FROM {} WHERE infra_id = $1",
+            Self::get_table_name()
+        ))
+        .bind::<Integer, _>(infra)
+        .execute(conn)?;
+
+        Ok(())
+    }
 }
 
 /// Given an infra cache, fill results with all the objects ID of type `obj_type` that have a reference to the given `track_id`.
