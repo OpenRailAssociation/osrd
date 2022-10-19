@@ -20,6 +20,7 @@ pub struct Client {
 pub enum Commands {
     Runserver(RunserverArgs),
     Generate(GenerateArgs),
+    Clear(ClearArgs),
 }
 
 #[derive(Args, Debug)]
@@ -35,6 +36,15 @@ pub struct GenerateArgs {
     pub infra_ids: Vec<u32>,
     #[clap(short, long, help = "Force refresh")]
     pub force: bool,
+}
+
+#[derive(Args, Debug)]
+#[clap(about, long_about = "Clear generated data")]
+
+// Definition of the clear sub command, which can take an infra_id as argument
+// If no argument is mentionned, it clears all the infras
+pub struct ClearArgs {
+    pub infra_ids: Vec<u32>,
 }
 
 /// Retrieve the secret key from the environment variable `SECRET_KEY`.
