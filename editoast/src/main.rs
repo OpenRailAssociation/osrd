@@ -4,6 +4,7 @@ extern crate rocket;
 extern crate diesel;
 
 mod api_error;
+mod clear;
 mod client;
 mod db_connection;
 mod errors;
@@ -17,7 +18,9 @@ mod views;
 
 use chashmap::CHashMap;
 use clap::Parser;
-use client::{ChartosConfig, Client, Commands, GenerateArgs, PostgresConfig, RunserverArgs};
+use client::{
+    ChartosConfig, ClearArgs, Client, Commands, GenerateArgs, PostgresConfig, RunserverArgs,
+};
 use colored::*;
 use db_connection::DBConnection;
 use diesel::{Connection, PgConnection};
@@ -48,6 +51,7 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
     match client.command {
         Commands::Runserver(args) => runserver(args, pg_config, chartos_config).await,
         Commands::Generate(args) => generate(args, pg_config, chartos_config).await,
+        Commands::Clear(args) => clear(args, pg_config),
     }
 }
 pub fn create_server(
@@ -158,6 +162,31 @@ async fn generate(
                 infra.id
             );
         }
+    }
+    Ok(())
+}
+
+// Run the clear subcommand
+// This command clear all generated data for the given infra
+fn clear(args: ClearArgs, pg_config: PostgresConfig) -> Result<(), Box<dyn Error + Send + Sync>> {
+    let conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
+    let mut infras = vec![];
+    if args.infra_ids.is_empty() {
+        // Retrieve all available infra
+        for infra in Infra::list(&conn) {
+            infras.push(infra);
+        }
+    } else {
+        // Retrieve given infras
+        for id in args.infra_ids {
+            infras.push(Infra::retrieve(&conn, id as i32)?);
+        }
+    };
+
+    for infra in infras {
+        println!("🍞 Infra {}[{}] is clearing:", infra.name.bold(), infra.id);
+        clear::clear(&conn, &infra)?;
+        println!("✅ Infra {}[{}] cleared!", infra.name.bold(), infra.id);
     }
     Ok(())
 }
