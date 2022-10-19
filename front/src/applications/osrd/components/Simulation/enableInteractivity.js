@@ -20,9 +20,13 @@ import drawGuideLines from 'applications/osrd/components/Simulation/drawGuideLin
 import { store } from 'Store';
 
 export const displayGuide = (chart, opacity) => {
-  chart.svg.selectAll('#vertical-line').style('opacity', opacity);
-  chart.svg.selectAll('#horizontal-line').style('opacity', opacity);
-  chart.svg.selectAll('.pointer').style('opacity', opacity);
+  if (chart.svg) {
+    chart.svg.selectAll('#vertical-line').style('opacity', opacity);
+    chart.svg.selectAll('#horizontal-line').style('opacity', opacity);
+    chart.svg.selectAll('.pointer').style('opacity', opacity);
+  } else {
+    console.warn('attempt to display guide with no whart.svg set, check order of impl.');
+  }
 };
 
 export const updatePointers = (chart, keyValues, listValues, positionValues, rotate) => {
@@ -244,7 +248,6 @@ const enableInteractivity = (
       [chart.width, chart.height],
     ])
     .on('zoom', (event) => {
-      dispatch(updateContextMenu(undefined));
       // Permit zoom if shift pressed, if only move or if factor > .5
       if (event.sourceEvent.ctrlKey || event.sourceEvent.shiftKey) {
         /* || d3.event.transform.k >= 1
@@ -259,11 +262,13 @@ const enableInteractivity = (
       }
     })
     .filter((event) => (event.button === 0 || event.button === 1) && event.ctrlKey)
+    .on('start', () => {
+      dispatch(updateContextMenu(undefined));
+    })
     .on('end', () => {
       if (keyValues[1] === 'speed' || keyValues[1] === 'gradient') {
         dispatch(updateChartXGEV(lastChartX));
       }
-      dispatch(updateMustRedraw(true));
     });
 
   let debounceTimeoutId;
