@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Layer, Source, Marker } from 'react-map-gl';
+import { Layer, Source, Marker, LayerProps } from 'react-map-gl';
 import lineSliceAlong from '@turf/line-slice-along';
 import length from '@turf/length';
 import { Feature, LineString } from 'geojson';
@@ -49,9 +49,13 @@ export function makeDisplayedHeadAndTail(point: TrainPosition, geojsonPath: Feat
   const pathLength = length(geojsonPath);
   const trueHead = Math.max(point.tailDistanceAlong, point.headDistanceAlong);
   const trueTail = Math.min(point.tailDistanceAlong, point.headDistanceAlong);
+  const boundedHead = boundedValue(trueHead, 0, pathLength);
+  const boundedTail = boundedValue(trueTail, 0, pathLength);
+  const middle = (boundedHead + boundedTail) / 2;
   return {
-    head: boundedValue(trueHead, 0, pathLength),
-    tail: boundedValue(trueTail, 0, pathLength),
+    head: boundedHead,
+    middle,
+    tail: boundedTail,
   };
 }
 
@@ -63,6 +67,36 @@ interface TrainHoverPositionProps {
   point: TrainPosition;
   isSelectedTrain?: boolean;
   geojsonPath: Feature<LineString>;
+}
+
+export function getBufferStopsLayerProps(params: { sourceTable?: string }): LayerProps {
+  const res: LayerProps = {
+    type: 'symbol',
+    minzoom: 12,
+    layout: {
+      'text-field': ['slice', ['get', 'id'], 11],
+      'text-font': ['Roboto Condensed'],
+      'text-size': 10,
+      'text-offset': [0, 1.2],
+      'icon-image': 'HEURTOIR',
+      'icon-size': 0.2,
+      'text-anchor': 'center',
+      'icon-rotation-alignment': 'viewport',
+      'icon-allow-overlap': false,
+      'icon-ignore-placement': false,
+      'text-allow-overlap': false,
+      visibility: 'visible',
+    },
+    paint: {
+      'text-color': '#555',
+      'text-halo-width': 2,
+      'text-halo-color': 'rgba(255,255,255,0.75)',
+      'text-halo-blur': 1,
+    },
+  };
+
+  if (typeof params.sourceTable === 'string') res['source-layer'] = params.sourceTable;
+  return res;
 }
 
 const shiftFactor = {
@@ -83,8 +117,10 @@ function TrainHoverPosition(props: TrainHoverPositionProps) {
 
   if (geojsonPath && point.headDistanceAlong && point.tailDistanceAlong) {
     const zoomLengthFactor = getLengthFactorToKeepLabelPlacedCorrectlyWhenZooming(viewport);
-    const { tail, head } = makeDisplayedHeadAndTail(point, geojsonPath);
-    const trainGeoJsonPath = lineSliceAlong(geojsonPath, tail, head);
+    const { tail, middle, head } = makeDisplayedHeadAndTail(point, geojsonPath);
+    console.log(tail, middle, head);
+    const train1GeoJsonPath = lineSliceAlong(geojsonPath, tail, middle);
+    const train2GeoJsonPath = lineSliceAlong(geojsonPath, middle, head);
 
     return (
       <>
@@ -97,18 +133,34 @@ function TrainHoverPosition(props: TrainHoverPositionProps) {
         >
           {label}
         </Marker>
-        <Source type="geojson" data={trainGeoJsonPath}>
+        <Source type="geojson" data={train1GeoJsonPath}>
           <Layer
-            id={`${point.id}-path`}
+            id={`${point.id}-path-1`}
             type="line"
             paint={{
               'line-width': 8,
-              'line-color': fill,
+              'line-color': 'blue',
+            }}
+            layout={{
+              'line-cap': 'square',
+            }}
+          />
+        </Source>
+        <Source type="geojson" data={train2GeoJsonPath}>
+          <Layer
+            id={`${point.id}-path-2`}
+            type="line"
+            paint={{
+              'line-width': 8,
+              'line-color': 'blue',
             }}
             layout={{
               'line-cap': 'butt',
             }}
           />
+        </Source>
+        <Source type="vector">
+          <Layer {...getBufferStopsLayerProps({ sourceTable: 'buffer_stops' })} />
         </Source>
       </>
     );
