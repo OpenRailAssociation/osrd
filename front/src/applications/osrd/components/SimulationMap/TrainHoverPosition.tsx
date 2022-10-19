@@ -106,7 +106,7 @@ function TrainHoverPosition(props: TrainHoverPositionProps) {
               'line-color': fill,
             }}
             layout={{
-              'line-cap': 'round',
+              'line-cap': 'butt',
             }}
           />
         </Source>
