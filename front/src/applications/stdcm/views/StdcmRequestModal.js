@@ -75,7 +75,9 @@ export default function StdcmRequestModal(props) {
             })
           );
 
-          const trainSchedulesIDs = simulation.trains.map((train) => train.id);
+          const trainSchedulesIDs = simulation.trains
+            .filter((train) => !train.isStdcm)
+            .map((train) => train.id);
 
           // ask for timetable with the new path
 
@@ -85,10 +87,6 @@ export default function StdcmRequestModal(props) {
           }).then((simulationLocal) => {
             const newSimulation = {};
             newSimulation.trains = [...simulationLocal];
-            const indexOfExistingStdcm = newSimulation.trains.findIndex(
-              (train) => train.id === fakedNewTrain.id
-            );
-            if (indexOfExistingStdcm !== -1) newSimulation.trains.splice(indexOfExistingStdcm, 1);
             newSimulation.trains = [...newSimulation.trains, fakedNewTrain];
             const consolidatedSimulation = createTrain(
               dispatch,
