@@ -286,6 +286,7 @@ const enableInteractivity = (
       if (keyValues[1] === 'speed' || keyValues[1] === 'gradient') {
         dispatch(updateChartXGEV(lastChartX));
       }
+      dispatch(updateMustRedraw(true));
     });
 
   let debounceTimeoutId;
