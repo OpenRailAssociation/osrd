@@ -14,6 +14,7 @@
     "@turf/along": "^6.5.0",
     "@turf/bbox": "^6.0.1",
     "@turf/bbox-clip": "^6.3.0",
+    "@turf/bearing": "^6.5.0",
     "@turf/boolean-intersects": "^6.3.0",
     "@turf/boolean-point-in-polygon": "^6.3.0",
     "@turf/distance": "^6.3.0",
