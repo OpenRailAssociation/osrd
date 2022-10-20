@@ -241,20 +241,37 @@ const enableInteractivity = (
   let newHoverPosition;
 
   let lastChartX;
+
+  // Ovverride the default wheelDelta computation to get smoother zoom
+  function wheelDelta(event) {
+    let factor = 1;
+    if (event.deltaMode === 1) {
+      factor = 0.05;
+    } else if (event.deltaMode) {
+      factor = 0.1;
+    } else {
+      factor = 0.002;
+    }
+
+    return -event.deltaY * factor;
+  }
+
   const zoom = d3zoom(newHoverPosition)
     .scaleExtent([0.5, 20]) // This control how much you can unzoom (x0.5) and zoom (x20)
     .extent([
       [0, 0],
       [chart.width, chart.height],
     ])
+    .wheelDelta(wheelDelta)
     .on('zoom', (event) => {
       // Permit zoom if shift pressed, if only move or if factor > .5
       if (event.sourceEvent.ctrlKey || event.sourceEvent.shiftKey) {
         /* || d3.event.transform.k >= 1
         || zoomLevel >= 0.25)) { */
+        const eventTransform = event.transform;
         event.sourceEvent.preventDefault();
-        setZoomLevel(zoomLevel * event.transform.k);
-        setYPosition(yPosition + event.transform.y);
+        setZoomLevel(zoomLevel * eventTransform.k);
+        setYPosition(yPosition + eventTransform.y);
         const zoomFunctions = updateChart(chart, keyValues, rotate, event);
         const newChart = { ...chart, x: zoomFunctions.newX, y: zoomFunctions.newY };
         lastChartX = zoomFunctions.newX;
