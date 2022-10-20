@@ -1,14 +1,18 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Layer, Source, Marker, LayerProps } from 'react-map-gl';
+import { Layer, Source, Marker } from 'react-map-gl';
 import lineSliceAlong from '@turf/line-slice-along';
 import length from '@turf/length';
+import bezierSpline from '@turf/bezier-spline';
+import transformTranslate from '@turf/transform-translate';
+import { polygon, lineString } from '@turf/helpers';
 import { Feature, LineString } from 'geojson';
 import cx from 'classnames';
 
 import { RootState } from 'reducers';
 import { datetime2time } from 'utils/timeManipulation';
 import { boundedValue } from 'utils/numbers';
+import { getCurrentBearing } from 'utils/geometry';
 import { Viewport } from 'reducers/map';
 import { TrainPosition } from './types';
 
@@ -59,8 +63,46 @@ export function makeDisplayedHeadAndTail(point: TrainPosition, geojsonPath: Feat
   };
 }
 
-function getLengthFactorToKeepLabelPlacedCorrectlyWhenZooming(viewport: Viewport, threshold = 12) {
+function getzoomPowerOf2LengthFactor(viewport: Viewport, threshold = 12) {
   return 2 ** (threshold - viewport?.zoom);
+}
+
+function getFactor(zoomLengthFactor: number, size = 1) {
+  return {
+    left: 0.05 * zoomLengthFactor * size,
+    right: 0.05 * zoomLengthFactor * size,
+    up: 0.1 * zoomLengthFactor * size,
+    upWidth: 0.019 * zoomLengthFactor * size,
+    down: 0.02 * zoomLengthFactor * size,
+  };
+}
+
+function getHeadTriangle(
+  trainGeoJsonPath: Feature<LineString>,
+  point: TrainPosition,
+  zoomLengthFactor: number
+) {
+  const factor = getFactor(zoomLengthFactor, 2);
+  const bearing = getCurrentBearing(trainGeoJsonPath);
+  const left = transformTranslate(point.headPosition, factor.left, bearing - 90);
+  const right = transformTranslate(point.headPosition, factor.right, bearing + 90);
+  const up = transformTranslate(point.headPosition, factor.up, bearing);
+  const down = transformTranslate(point.headPosition, factor.down, bearing + 180);
+  const upLeft = transformTranslate(up, factor.upWidth, bearing - 90);
+  const upRight = transformTranslate(up, factor.upWidth, bearing + 90);
+  const coordinates = [
+    down.geometry.coordinates,
+    left.geometry.coordinates,
+    upLeft.geometry.coordinates,
+    upRight.geometry.coordinates,
+    right.geometry.coordinates,
+    down.geometry.coordinates,
+  ];
+
+  const contour = lineString(coordinates);
+  const bezier = bezierSpline(contour);
+  const triangle = polygon([bezier.geometry.coordinates]);
+  return triangle;
 }
 
 interface TrainHoverPositionProps {
@@ -69,40 +111,11 @@ interface TrainHoverPositionProps {
   geojsonPath: Feature<LineString>;
 }
 
-export function getBufferStopsLayerProps(params: { sourceTable?: string }): LayerProps {
-  const res: LayerProps = {
-    type: 'symbol',
-    minzoom: 12,
-    layout: {
-      'text-field': ['slice', ['get', 'id'], 11],
-      'text-font': ['Roboto Condensed'],
-      'text-size': 10,
-      'text-offset': [0, 1.2],
-      'icon-image': 'HEURTOIR',
-      'icon-size': 0.2,
-      'text-anchor': 'center',
-      'icon-rotation-alignment': 'viewport',
-      'icon-allow-overlap': false,
-      'icon-ignore-placement': false,
-      'text-allow-overlap': false,
-      visibility: 'visible',
-    },
-    paint: {
-      'text-color': '#555',
-      'text-halo-width': 2,
-      'text-halo-color': 'rgba(255,255,255,0.75)',
-      'text-halo-blur': 1,
-    },
-  };
-
-  if (typeof params.sourceTable === 'string') res['source-layer'] = params.sourceTable;
-  return res;
-}
-
 const shiftFactor = {
   long: 1 / 450,
   lat: 1 / 1000,
 };
+
 function TrainHoverPosition(props: TrainHoverPositionProps) {
   const { point, isSelectedTrain, geojsonPath } = props;
   const { selectedTrain, allowancesSettings } = useSelector(
@@ -116,12 +129,10 @@ function TrainHoverPosition(props: TrainHoverPositionProps) {
   const label = getSpeedAndTimeLabel(isSelectedTrain, ecoBlocks, point);
 
   if (geojsonPath && point.headDistanceAlong && point.tailDistanceAlong) {
-    const zoomLengthFactor = getLengthFactorToKeepLabelPlacedCorrectlyWhenZooming(viewport);
-    const { tail, middle, head } = makeDisplayedHeadAndTail(point, geojsonPath);
-    console.log(tail, middle, head);
-    const train1GeoJsonPath = lineSliceAlong(geojsonPath, tail, middle);
-    const train2GeoJsonPath = lineSliceAlong(geojsonPath, middle, head);
-
+    const zoomLengthFactor = getzoomPowerOf2LengthFactor(viewport);
+    const { tail, head } = makeDisplayedHeadAndTail(point, geojsonPath);
+    const trainGeoJsonPath = lineSliceAlong(geojsonPath, tail, head);
+    const triangle = getHeadTriangle(trainGeoJsonPath, point, zoomLengthFactor);
     return (
       <>
         <Marker
@@ -133,34 +144,24 @@ function TrainHoverPosition(props: TrainHoverPositionProps) {
         >
           {label}
         </Marker>
-        <Source type="geojson" data={train1GeoJsonPath}>
+        <Source type="geojson" data={triangle}>
           <Layer
-            id={`${point.id}-path-1`}
-            type="line"
+            id={`${point.id}-head`}
+            type="fill"
             paint={{
-              'line-width': 8,
-              'line-color': 'blue',
-            }}
-            layout={{
-              'line-cap': 'square',
+              'fill-color': fill,
             }}
           />
         </Source>
-        <Source type="geojson" data={train2GeoJsonPath}>
+        <Source type="geojson" data={trainGeoJsonPath}>
           <Layer
-            id={`${point.id}-path-2`}
+            id={`${point.id}-path`}
             type="line"
             paint={{
               'line-width': 8,
-              'line-color': 'blue',
-            }}
-            layout={{
-              'line-cap': 'butt',
+              'line-color': fill,
             }}
           />
-        </Source>
-        <Source type="vector">
-          <Layer {...getBufferStopsLayerProps({ sourceTable: 'buffer_stops' })} />
         </Source>
       </>
     );
