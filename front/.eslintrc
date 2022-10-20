@@ -39,7 +39,8 @@
   "settings": {
     "import/resolver": {
       "node": {
-        "paths": ["src"]
+        "paths": ["src"],
+        "moduleDirectory": ["node_modules", "src"]
       }
     }
   },
