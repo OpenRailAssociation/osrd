@@ -246,9 +246,9 @@ const enableInteractivity = (
   function wheelDelta(event) {
     let factor = 1;
     if (event.deltaMode === 1) {
-      factor = 0.05;
+      factor = 0.005;
     } else if (event.deltaMode) {
-      factor = 0.1;
+      factor = 0.01;
     } else {
       factor = 0.002;
     }
@@ -344,7 +344,13 @@ const enableInteractivity = (
   chart.svg // .selectAll('.zoomable')
     .on('mouseover', () => displayGuide(chart, 1))
     .on('mousemove', mousemove)
+    .on('wheel', (event) =>  {
+      if (event.ctrlKey || event.shiftKey) {
+        event.preventDefault();
+      }
+    })
     .call(zoom);
+
   drawGuideLines(chart);
 };
 
