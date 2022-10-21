@@ -5,7 +5,7 @@ import { getDirection } from 'applications/customget/components/ChartHelpers';
 import drawCurve from 'applications/customget/components/drawCurve';
 import drawText from 'applications/customget/components/drawText';
 import {
-  departureArrivalTimes,
+  makeDepartureArrivalTimes,
   updateDepartureArrivalTimes,
   updateContextMenu,
   updateMustRedraw,
@@ -78,7 +78,7 @@ export default function drawTrain(
     .on('drag', () => {
       dragFullOffset += rotate ? d3.event.dy : d3.event.dx;
       const value = getDragOffsetValue(dragFullOffset);
-      const newDepartureArrivalTimes = departureArrivalTimes(simulation, value);
+      const newDepartureArrivalTimes = makeDepartureArrivalTimes(simulation, value);
       debounceUpdateDepartureArrivalTimes(newDepartureArrivalTimes, 15);
       applyTrainCurveTranslation(dragFullOffset);
     });
