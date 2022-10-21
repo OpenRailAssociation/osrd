@@ -28,6 +28,7 @@ class ErrorType(str, Enum):
     PATHFINDING = "PATHFINDING"
     SCHEDULE = "SCHEDULE"
     RESULT = "RESULT"
+    STDCM = "STDCM"
 
 
 @dataclass
@@ -58,14 +59,32 @@ def run_test(infra: InfraGraph, base_url: str, infra_id: int, infra_name: str):
     :param base_url: Api url
     :param infra_id: Infra id
     """
+    rolling_stock = get_random_rolling_stock(base_url)
     path, path_length = make_valid_path(infra)
+    if random.randint(0, 1) == 0:
+        test_new_train(base_url, infra_id, rolling_stock, path_length, infra_name, path)
+    else:
+        test_stdcm(base_url, infra_id, rolling_stock, infra_name, path)
+
+
+def test_new_train(
+        base_url: str,
+        infra_id: int,
+        rolling_stock: int,
+        path_length: float,
+        infra_name: str,
+        path: List[Tuple[str, float]]
+):
+    """
+    Try to run a pathfinding, then create a train using the given path.
+    Ignores impossible simulation (40x errors) on the second step.
+    """
+    print("testing new train")
     path_payload = make_payload_path(infra_id, path)
     r = requests.post(base_url + "pathfinding/", json=path_payload, timeout=TIMEOUT)
     if r.status_code // 100 != 2:
         make_error(ErrorType.PATHFINDING, r.status_code, r.content.decode("utf-8"), infra_name, path_payload)
     path_id = r.json()["id"]
-    rolling_stock = get_random_rolling_stock(base_url)
-
     schedule_payload = make_payload_schedule(base_url, infra_id, path_id, rolling_stock, path_length)
     r = requests.post(base_url + "train_schedule/standalone_simulation/", json=schedule_payload, timeout=TIMEOUT)
     if r.status_code // 100 != 2:
@@ -97,8 +116,58 @@ def run_test(infra: InfraGraph, base_url: str, infra_id: int, infra_name: str):
     payload = r.json()
     assert "line_code" in payload["base"]["stops"][0]
     assert "track_number" in payload["base"]["stops"][0]
-
     print("test PASSED")
+
+
+def test_stdcm(
+        base_url: str,
+        infra_id: int,
+        rolling_stock: int,
+        infra_name: str,
+        path: List[Tuple[str, float]]
+):
+    """
+    Try to run an STDCM search on the given path.
+    Not finding a path isn't considered as an error, we only look for 500 codes here.
+    """
+    print("testing stdcm")
+    stdcm_payload = make_stdcm_payload(base_url, infra_id, path, rolling_stock)
+    r = requests.post(base_url + "stdcm/", json=stdcm_payload, timeout=TIMEOUT)
+    if r.status_code // 100 != 2:
+        if r.status_code // 100 == 4:
+            print("ignore: invalid user input")
+            return
+        make_error(
+            ErrorType.STDCM,
+            r.status_code,
+            r.content.decode("utf-8"),
+            infra_name,
+            {},
+            stdcm_payload=stdcm_payload,
+        )
+    print("test PASSED")
+
+
+def make_stdcm_payload(base_url: str, infra_id: int, path: List[Tuple[str, float]], rolling_stock: int) -> Dict:
+    """
+    Creates a payload for an STDCM request
+    """
+    start_edge, start_offset = path[0]
+    last_edge, last_offset = path[1]
+    return {
+        "infra": infra_id,
+        "rolling_stock": rolling_stock,
+        "timetable": get_schedule(base_url, infra_id),
+        "start_time": 0,
+        "start_points": [{
+            "track_section": start_edge,
+            "offset": start_offset,
+        }],
+        "end_points": [{
+            "track_section": last_edge,
+            "offset": last_offset,
+        }],
+    }
 
 
 def run(
