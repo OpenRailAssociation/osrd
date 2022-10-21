@@ -9,7 +9,7 @@ import {
   updateDepartureArrivalTimes,
   updateContextMenu,
   updateMustRedraw,
-  updateSelectedTrain
+  updateSelectedTrain,
 } from 'reducers/osrdsimulation';
 
 export default function drawTrain(
