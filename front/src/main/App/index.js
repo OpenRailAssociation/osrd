@@ -10,7 +10,6 @@ import HomeCarto from 'applications/carto/Home';
 import HomeEditor from 'applications/editor/Home';
 import HomeOSRD from 'applications/osrd/Home';
 import HomeStdcm from 'applications/stdcm/Home';
-import HomeCustomGET from 'applications/customget/Home';
 import Loader from 'common/Loader';
 import { attemptLoginOnLaunch } from 'reducers/user';
 import { bootstrapOSRDConf } from 'reducers/osrdconf';
@@ -52,7 +51,6 @@ export default function App() {
             <Route path="/carto/*" element={<HomeCarto />} />
             <Route path="/editor/*" element={<HomeEditor />} />
             <Route path="/stdcm/*" element={<HomeStdcm />} />
-            <Route path="/customget/*" element={<HomeCustomGET />} />
             <Route path="/*" element={<Home />} />
           </Routes>
         </HistoryRouter>

@@ -6,7 +6,6 @@
     "close": "Fermer",
     "confirm": "Confirmer",
     "description": "Description",
-    "download": "Télécharger",
     "dsc": "Descendant",
     "erase": "Effacer",
     "error": "Une erreur est survenue",
@@ -149,7 +148,6 @@
     }
   },
   "Home": {
-    "customget": "Visualisation JSON GET",
     "map": "Cartographie",
     "editor": "Éditeur d'infrastructure",
     "timetable": "Grilles horaires",
