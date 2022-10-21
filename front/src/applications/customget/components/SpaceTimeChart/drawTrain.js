@@ -7,7 +7,7 @@ import {
   updateContextMenu,
   updateMustRedraw,
   updateSelectedTrain,
-} from 'reducers/osrdsimulation';
+} from 'reducers/osrdsimulation.ts';
 
 import drawCurve from 'applications/customget/components/drawCurve';
 import drawText from 'applications/customget/components/drawText';
