@@ -391,6 +391,18 @@ class Detector(BaseObjectTrait, TrackLocationTrait):
         return DetectorReference(type="Detector", id=self.id)
 
 
+class Panel(TrackLocationTrait):
+    """This class is used to define panels.
+    This is a physical, ponctual, cosmetic object.
+    """
+
+    angle_geo: float = Field(0, description="Geographic angle in degrees")
+    angle_sch: float = Field(0, description="Schematic angle in degrees")
+    side: Side = Field(Side.CENTER, description="Side of the panel on the track")
+    type: str = Field(description="Precise the type of the panel")
+    value: Optional[str] = Field(description="If the panel is an announcement, precise the value(s)")
+
+
 class RailJsonInfra(BaseModel):
     """This class is used to build an infra."""
 
@@ -497,11 +509,18 @@ class SignalSncfExtension(BaseModel):
     comment: str
     default_aspect: str = Field(description="Aspect displayed when no train is around")
     installation_type: str
-    is_in_service: bool = Field(description="Is the signal is in service")
-    is_lightable: bool = Field(description="Is the signal is lightable")
-    is_operational: bool = Field(description="Is the signal is operational")
+    is_in_service: bool = Field(description="Precise if the signal is in service")
+    is_lightable: bool = Field(description="Precise if the signal is lightable")
+    is_operational: bool = Field(description="Precise if the signal is operational")
     label: str
     side: Side = Field(Side.CENTER, description="Side of the signal on the track")
     support_type: str
     type_code: str
     value: str
+
+
+@register_extension(object=SpeedSection, name="lpv_sncf")
+class SpeedSectionLpvSncfExtension(BaseModel):
+    announcement: List[Panel] = Field(description="Precise the value(s) of the speed")
+    z: Panel = Field(description="Beginning of the lpv speedsection")
+    r: List[Panel] = Field(description="End of the lpv speedsection")
