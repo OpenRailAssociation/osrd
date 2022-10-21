@@ -26,10 +26,22 @@ def schedule_with_payload(base_url, payload, accept_400):
     return r.json()["ids"][0]
 
 
+def stdcm_with_payload(base_url, payload):
+    r = requests.post(base_url + "stdcm/", json=payload)
+    if r.status_code // 100 != 2:
+        if r.status_code // 100 == 4:
+            return None
+        raise RuntimeError(f"stdcm error {r.status_code}: {r.content}")
+
+
 def reproduce_test(path_to_json, *args, **kwargs):
     base_url = kwargs["url"]
     all_infras = kwargs["all_infras"]
     fuzzer_output = json.loads(path_to_json.read_bytes())
+
+    if fuzzer_output["error_type"] == "STDCM":
+        stdcm_with_payload(base_url, fuzzer_output["stdcm_payload"])
+        return True, ""
 
     stop_after_pathfinding = fuzzer_output["error_type"] == "PATHFINDING"
     stop_after_schedule = fuzzer_output["error_type"] == "SCHEDULE"
