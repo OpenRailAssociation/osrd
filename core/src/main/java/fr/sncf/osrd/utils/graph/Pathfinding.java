@@ -2,6 +2,7 @@ package fr.sncf.osrd.utils.graph;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.utils.graph.functional_interfaces.AStarHeuristic;
+import fr.sncf.osrd.utils.graph.functional_interfaces.EdgeRangeCost;
 import fr.sncf.osrd.utils.graph.functional_interfaces.EdgeToLength;
 import fr.sncf.osrd.utils.graph.functional_interfaces.EdgeToRanges;
 import fr.sncf.osrd.api.pathfinding.constraints.ConstraintCombiner;
@@ -69,6 +70,8 @@ public class Pathfinding<NodeT, EdgeT> {
     /** Function to call to get estimate of the remaining distance.
      * The function takes the edge and the offset and returns a distance. */
     private AStarHeuristic<EdgeT> estimateRemainingDistance = null;
+    /** Function to call to know the cost of the range. */
+    private EdgeRangeCost<EdgeT> edgeRangeCost = null;
 
     /** Constructor */
     public Pathfinding(Graph<NodeT, EdgeT> graph) {
@@ -84,6 +87,12 @@ public class Pathfinding<NodeT, EdgeT> {
     /** Sets the functor used to estimate the remaining distance for A* */
     public Pathfinding<NodeT, EdgeT> setRemainingDistanceEstimator(AStarHeuristic<EdgeT> f) {
         this.estimateRemainingDistance = f;
+        return this;
+    }
+
+    /** Sets the functor used to estimate the cost for a range */
+    public Pathfinding<NodeT, EdgeT> setEdgeRangeCost(EdgeRangeCost<EdgeT> f) {
+        this.edgeRangeCost = f;
         return this;
     }
 
@@ -202,6 +211,8 @@ public class Pathfinding<NodeT, EdgeT> {
         assert edgeToLength != null;
         if (estimateRemainingDistance == null)
             estimateRemainingDistance = (x, y) -> 0.;
+        if (edgeRangeCost == null)
+            edgeRangeCost = (range) -> range.end - range.start;
     }
 
     /** Returns true if the step has reached the end of the path (last target) */
@@ -276,7 +287,7 @@ public class Pathfinding<NodeT, EdgeT> {
             return;
         if (!(seen.getOrDefault(range, -1) < nPassedTargets))
             return;
-        double totalDistance = prevDistance + (range.end - range.start);
+        double totalDistance = prevDistance + edgeRangeCost.apply(range);
         double distanceLeftEstimation = estimateRemainingDistance.apply(range.edge, range.start);
         queue.add(new Step<>(
                 range,
