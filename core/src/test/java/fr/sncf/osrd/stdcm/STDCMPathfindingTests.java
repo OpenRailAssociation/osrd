@@ -4,9 +4,7 @@ import static fr.sncf.osrd.train.TestTrains.*;
 import static java.lang.Double.POSITIVE_INFINITY;
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Range;
-import com.google.common.collect.TreeRangeMap;
+import com.google.common.collect.*;
 import fr.sncf.osrd.api.stdcm.OccupancyBlock;
 import fr.sncf.osrd.api.stdcm.STDCMGraph;
 import fr.sncf.osrd.api.stdcm.STDCMPathfinding;
@@ -17,6 +15,7 @@ import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class STDCMPathfindingTests {
 
@@ -377,6 +376,52 @@ public class STDCMPathfindingTests {
         assertTrue(secondRouteEntryTime >= 3600);
 
         occupancyTest(res, occupancyGraph);
+    }
+
+    /** Test that the path we find is the one with the earliest arrival time rather than the shortest */
+    @Test
+    public void testEarliestArrivalTime() {
+        /*
+        Top path is shorter but has a very low speed limit
+        We should use the bottom path (higher speed limit)
+        First and last routes are very long for speedup and slowdown
+
+                 c1
+                ^  \
+               /    v
+        a --> b     d --> e
+               \    ^
+                v  /
+                 c2
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var firstRoute = infraBuilder.addRoute("a", "b", 1000);
+        infraBuilder.addRoute("b", "c1", 50, 1);
+        infraBuilder.addRoute("b", "c2");
+        infraBuilder.addRoute("c1", "d", 50, 1);
+        infraBuilder.addRoute("c2", "d");
+        var lastRoute = infraBuilder.addRoute("d", "e", 1000);
+        var infra = infraBuilder.build();
+
+        var res = STDCMPathfinding.findPath(
+                infra,
+                REALISTIC_FAST_TRAIN,
+                100,
+                0,
+                Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
+                Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 1000)),
+                ImmutableMultimap.of(),
+                2.
+        );
+
+        assertNotNull(res);
+        var routes = res.routes().ranges().stream()
+                .map(edgeRange -> edgeRange.edge().getInfraRoute().getID())
+                .collect(Collectors.toSet());
+        assertTrue(routes.contains("b->c2"));
+        assertTrue(routes.contains("c2->d"));
+        assertFalse(routes.contains("b->c1"));
+        assertFalse(routes.contains("c1->d"));
     }
 
     /** Test that we don't add too much delay, crossing over occupied sections in previous routes */

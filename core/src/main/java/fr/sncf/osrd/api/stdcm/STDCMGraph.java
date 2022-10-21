@@ -244,7 +244,12 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
     }
 
     /** Returns the time at which the offset on the given route is reached */
-    private double interpolateTime(Envelope envelope, SignalingRoute route, double routeOffset, double startTime) {
+    public static double interpolateTime(
+            Envelope envelope,
+            SignalingRoute route,
+            double routeOffset,
+            double startTime
+    ) {
         var routeLength = route.getInfraRoute().getLength();
         var envelopeStartOffset = routeLength - envelope.getEndPos();
         var envelopeOffset = Math.max(0, routeOffset - envelopeStartOffset);

@@ -16,6 +16,7 @@ import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.graph.functional_interfaces.TargetsOnEdge;
+import fr.sncf.osrd.utils.graph.functional_interfaces.AStarHeuristic;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -39,10 +40,10 @@ public class STDCMPathfinding {
             double timeStep
     ) {
         var graph = new STDCMGraph(infra, rollingStock, timeStep, unavailableTimes);
-        var remainingDistance = new RemainingDistanceEstimator(endLocations);
         var path = new Pathfinding<>(graph)
                 .setEdgeToLength(edge -> edge.route().getInfraRoute().getLength())
-                .setRemainingDistanceEstimator((edge, offset) -> remainingDistance.apply(edge.route(), offset))
+                .setRemainingDistanceEstimator(makeAStarHeuristic(endLocations, rollingStock))
+                .setEdgeRangeCost(STDCMPathfinding::edgeRangeCost)
                 .runPathfinding(
                         convertLocations(graph, startLocations, startTime),
                         makeObjectiveFunction(endLocations)
@@ -64,6 +65,25 @@ public class STDCMPathfinding {
             return res;
         });
     }
+
+    private static double edgeRangeCost(Pathfinding.EdgeRange<STDCMGraph.Edge> range) {
+        var envelope = range.edge().envelope();
+        var timeStart = STDCMGraph.interpolateTime(envelope, range.edge().route(), range.start(), 0);
+        var timeEnd = STDCMGraph.interpolateTime(envelope, range.edge().route(), range.end(), 0);
+        return timeEnd - timeStart;
+    }
+
+    private static AStarHeuristic<STDCMGraph.Edge> makeAStarHeuristic(
+            Set<Pathfinding.EdgeLocation<SignalingRoute>> endLocations,
+            RollingStock rollingStock
+    ) {
+        var remainingDistance = new RemainingDistanceEstimator(endLocations);
+        return ((edge, offset) -> {
+            var distance = remainingDistance.apply(edge.route(), offset);
+            return distance / rollingStock.maxSpeed;
+        });
+    }
+
 
     /** Builds the STDCM result object from the raw pathfinding result */
     private static STDCMResult makeResult(
