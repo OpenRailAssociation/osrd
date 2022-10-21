@@ -8,7 +8,7 @@ import drawCurve from 'applications/osrd/components/Simulation/drawCurve';
 import drawRect from 'applications/osrd/components/Simulation/drawRect';
 import drawText from 'applications/osrd/components/Simulation/drawText';
 import {
-  makeDepartureArrivalTimes,
+  departureArrivalTimes,
   updateDepartureArrivalTimes,
 } from '../../../../../reducers/osrdsimulation';
 
@@ -78,7 +78,7 @@ export default function drawTrain(
     .on('drag', (event) => {
       dragFullOffset += rotate ? event.dy : event.dx;
       const value = getDragOffsetValue(dragFullOffset);
-      const newDepartureArrivalTimes = makeDepartureArrivalTimes(simulation, value);
+      const newDepartureArrivalTimes = departureArrivalTimes(simulation, value);
       debounceUpdateDepartureArrivalTimes(newDepartureArrivalTimes, 15);
       applyTrainCurveTranslation(dragFullOffset);
     });
@@ -209,10 +209,10 @@ export default function drawTrain(
     isSelected,
     `${isPathSelected ? '🎢' : ''} ${dataSimulation.name}`, // text
     dataSimulation.headPosition[0] &&
-    dataSimulation.headPosition[0][0] &&
-    dataSimulation.headPosition[0][0].time, // x
+      dataSimulation.headPosition[0][0] &&
+      dataSimulation.headPosition[0][0].time, // x
     dataSimulation.headPosition[0] &&
-    dataSimulation.headPosition[0][0] &&
-    dataSimulation.headPosition[0][0].position // y
+      dataSimulation.headPosition[0][0] &&
+      dataSimulation.headPosition[0][0].position // y
   );
 }

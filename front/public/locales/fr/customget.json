@@ -1,8 +1,0 @@
-{
-  "badJSON": "Le fichier JSON est malformé",
-  "emptyFile": "Le fichier est vide",
-  "noData": "Veuillez importer des données à l'aide du bouton +",
-  "notJSONFormat": "Le fichier n'est pas au format JSON",
-  "results": "Résultats",
-  "uploadFile": "Importer"
-}

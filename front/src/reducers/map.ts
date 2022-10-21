@@ -1,8 +1,7 @@
 /* eslint-disable default-case */
-import { AnyAction } from 'redux';
-import { MapRequest, FlyToInterpolator } from 'react-map-gl';
+import { MapRequest } from 'react-map-gl';
 import produce from 'immer';
-import { transformRequest as helperTransformRequest, gpsRound } from 'utils/helpers';
+import { transformRequest, gpsRound } from 'utils/helpers';
 import history from 'main/history';
 import { MAP_URL } from 'common/Map/const';
 
@@ -19,29 +18,13 @@ export const UPDATE_FEATURE_INFO_CLICK = 'map/UPDATE_FEATURE_INFO_CLICK';
 export const UPDATE_LAYERS_SETTINGS = 'osrdconf/UPDATE_LAYERS_SETTINGS';
 export const UPDATE_SIGNALS_SETTINGS = 'osrdconf/UPDATE_SIGNALS_SETTINGS';
 
-function transformRequest(url?: string, resourceType?: string) {
-  return helperTransformRequest(
-    url as string,
-    resourceType as string,
-    MAP_URL as string
-  ) as MapRequest;
-}
-
 export interface Viewport {
   latitude: number;
   longitude: number;
   zoom: number;
   bearing: number;
   pitch: number;
-  transitionDuration?: number;
-  transitionInterpolator?: FlyToInterpolator;
-  transformRequest: typeof transformRequest;
-}
-
-export interface MapSearchMarker {
-  title: string;
-  subtitle: string;
-  lonlat: [number, number];
+  transformRequest: (url?: string, resourceType?: string) => MapRequest;
 }
 export interface MapState {
   ref: unknown;
@@ -72,9 +55,10 @@ export interface MapState {
     switches: boolean;
     tvds: boolean;
   };
-  mapSearchMarker?: MapSearchMarker;
+  mapSearchMarker: unknown;
 }
 
+// Reducer
 export const initialState: MapState = {
   ref: undefined,
   url: MAP_URL,
@@ -88,7 +72,8 @@ export const initialState: MapState = {
     zoom: 6.2,
     bearing: 0,
     pitch: 0,
-    transformRequest,
+    transformRequest: (url, resourceType) =>
+      transformRequest(url as string, resourceType as string, MAP_URL as string),
   },
   featureInfoHoverID: undefined,
   featureInfoClickID: undefined,
@@ -114,8 +99,7 @@ export const initialState: MapState = {
   mapSearchMarker: undefined,
 };
 
-// Reducer
-export default function reducer(inputState: MapState, action: AnyAction) {
+export default function reducer(inputState, action) {
   const state = inputState || initialState;
   return produce(state, (draft) => {
     switch (action.type) {
@@ -123,7 +107,8 @@ export default function reducer(inputState: MapState, action: AnyAction) {
         draft.viewport = { ...draft.viewport, ...action.viewport };
         break;
       case UPDATE_TRANSFORM_REQUEST:
-        draft.viewport.transformRequest = transformRequest;
+        draft.viewport.transformRequest = (url, resourceType) =>
+          transformRequest(url, resourceType, MAP_URL as string);
         break;
       case UPDATE_MAPSTYLE:
         draft.mapStyle = action.mapStyle;
@@ -197,10 +182,12 @@ export function updateMapTrackSources(mapTrackSources) {
   };
 }
 
-export function updateMapSearchMarker(mapSearchMarker: MapSearchMarker) {
-  return {
-    type: UPDATE_MAP_SEARCH_MARKER,
-    mapSearchMarker,
+export function updateMapSearchMarker(mapSearchMarker) {
+  return (dispatch) => {
+    dispatch({
+      type: UPDATE_MAP_SEARCH_MARKER,
+      mapSearchMarker,
+    });
   };
 }
 

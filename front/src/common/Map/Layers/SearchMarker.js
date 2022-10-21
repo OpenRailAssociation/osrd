@@ -1,15 +1,8 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Marker } from 'react-map-gl';
 
-import { Theme } from 'types';
-import { MapSearchMarker } from 'reducers/map';
-
-interface SearchMarkerProps {
-  data: MapSearchMarker;
-  colors: Theme;
-}
-
-function SearchMarker(props: SearchMarkerProps) {
+function SearchMarker(props) {
   const { data, colors } = props;
 
   return (
@@ -33,5 +26,10 @@ function SearchMarker(props: SearchMarkerProps) {
     </Marker>
   );
 }
+
+SearchMarker.propTypes = {
+  colors: PropTypes.object.isRequired,
+  data: PropTypes.object.isRequired,
+};
 
 export default SearchMarker;

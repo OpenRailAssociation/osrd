@@ -16,9 +16,10 @@ export default function reducer(inputState, action, rootState) {
   const state = inputState || initialState;
 
   return produce(state, (draft) => {
+    // eslint-disable-next-line default-case
     switch (action.type) {
       case UPDATE_POSITION_VALUES:
-      case UPDATE_TIME_POSITION_VALUES: {
+      case UPDATE_TIME_POSITION_VALUES:
         const currentTrainSimulation = rootState.consolidatedSimulation.find(
           (consolidatedSimulation) => consolidatedSimulation.trainNumber === rootState.selectedTrain
         );
@@ -33,8 +34,6 @@ export default function reducer(inputState, action, rootState) {
         draft.routeBeginOccupancy = positionsValues.routeBeginOccupancy;
         draft.speed = positionsValues.speed;
         break;
-      }
-      default:
     }
   });
 }
