@@ -1,4 +1,5 @@
 import * as d3 from 'd3';
+import { select as d3select } from 'd3-selection';
 import { gridX, gridY } from 'applications/osrd/components/Helpers/ChartHelpers';
 import nextId from 'react-id-generator';
 import svgDefs from 'applications/osrd/components/Simulation/svgDefs';
@@ -23,8 +24,7 @@ const defineChart = (
   const height = svgHeight - margin.top - margin.bottom;
 
   // Container for easy removing
-  const svg = d3
-    .select(ref.current)
+  const svg = d3select(ref.current)
     .append('div')
     .attr('id', id)
     .append('svg')

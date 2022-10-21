@@ -1,47 +1,37 @@
 use std::marker::PhantomData;
 
-use crate::api_error::{ApiResult, EditoastError};
-use rocket::http::{RawStr, Status};
-use rocket::request::FromFormValue;
+use rocket::form::{self, FromFormField, ValueField};
 
 /// This parameter is used to deserialized a list of `T`
 #[derive(Debug)]
-pub struct List<'f, T: FromFormValue<'f>>(pub ApiResult<Vec<T>>, PhantomData<&'f T>);
+pub struct List<'f, T: FromFormField<'f> + Send + Sync>(pub Vec<T>, PhantomData<&'f T>);
 
-impl<'f, T: FromFormValue<'f>> List<'f, T> {
-    pub fn new(v: Vec<T>) -> Self {
-        Self(Ok(v), PhantomData)
+impl<'f, T: FromFormField<'f> + Send + Sync> List<'f, T> {
+    fn new(v: Vec<T>) -> Self {
+        Self(v, PhantomData)
     }
 }
 
-impl<'f, T: FromFormValue<'f>> FromFormValue<'f> for List<'f, T> {
-    type Error = ();
+impl<'f, T: FromFormField<'f> + Send + Sync> Default for List<'f, T> {
+    fn default() -> Self {
+        Self::new(Default::default())
+    }
+}
 
-    fn from_form_value(form_value: &'f RawStr) -> Result<Self, Self::Error> {
+impl<'f, T: FromFormField<'f> + Send + Sync> FromFormField<'f> for List<'f, T> {
+    fn from_value(field: ValueField<'f>) -> form::Result<'f, Self> {
+        let field = field.value;
         let mut res = vec![];
-        if !form_value.is_empty() {
-            for element in form_value.split(',') {
-                let element = RawStr::from_str(element);
-                match T::from_form_value(element) {
-                    Ok(el) => res.push(el),
-                    Err(_) => {
-                        return Ok(List(
-                            Err(EditoastError::create(
-                                "editoast:views:params:List",
-                                format!("Couldn't parse element '{}'", element),
-                                Status::BadRequest,
-                                None,
-                            )),
-                            PhantomData,
-                        ));
-                    }
-                }
+        if !field.is_empty() {
+            for element in field.split(',') {
+                let element = T::from_value(ValueField::from_value(element))?;
+                res.push(element);
             }
         }
         Ok(List::new(res))
     }
 
     fn default() -> Option<Self> {
-        Some(List::new(vec![]))
+        Some(Default::default())
     }
 }

@@ -1,5 +1,6 @@
 use diesel::sql_types::{Array, Integer, Json};
-use diesel::{sql_query, PgConnection, RunQueryDsl};
+use diesel::PgConnection;
+use diesel::{sql_query, RunQueryDsl};
 
 use crate::infra_cache::InfraCache;
 use crate::schema::{InfraError, ObjectRef, ObjectType};
@@ -17,7 +18,6 @@ pub fn insert_errors(
         .iter()
         .map(|error| to_value(error).unwrap())
         .collect();
-
     let count = sql_query(include_str!("sql/operational_points_insert_errors.sql"))
         .bind::<Integer, _>(infra_id)
         .bind::<Array<Json>, _>(&errors)

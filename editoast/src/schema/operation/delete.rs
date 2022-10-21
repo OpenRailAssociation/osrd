@@ -1,5 +1,6 @@
 use super::OperationError;
 use crate::api_error::ApiError;
+
 use crate::schema::ObjectRef;
 use crate::schema::ObjectType;
 use diesel::sql_types::{Integer, Text};
@@ -21,7 +22,7 @@ impl DeleteOperation {
             "DELETE FROM {} WHERE obj_id = $1 AND infra_id = $2",
             self.obj_type.get_table()
         ))
-        .bind::<Text, _>(self.obj_id.clone())
+        .bind::<Text, _>(&self.obj_id)
         .bind::<Integer, _>(&infra_id)
         .execute(conn)
         {

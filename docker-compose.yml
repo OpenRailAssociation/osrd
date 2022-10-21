@@ -131,7 +131,7 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
-      ROCKET_ENV: dev
+      ROCKET_PROFILE: debug
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8090/health"]
       start_period: 4s

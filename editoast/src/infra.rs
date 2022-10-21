@@ -1,4 +1,5 @@
 use crate::api_error::ApiError;
+
 use crate::tables::osrd_infra_infra;
 use crate::tables::osrd_infra_infra::dsl::*;
 use diesel::result::Error as DieselError;
@@ -6,7 +7,7 @@ use diesel::sql_types::Text;
 use diesel::{delete, sql_query, update, ExpressionMethods, PgConnection, QueryDsl, RunQueryDsl};
 use rocket::http::Status;
 use serde::{Deserialize, Serialize};
-use serde_json::{Map, Value};
+use serde_json::{json, Map, Value};
 use thiserror::Error;
 
 static RAILJSON_VERSION: &str = "3.0.0";
@@ -124,19 +125,22 @@ impl Infra {
         }
     }
 
-    pub fn create(infra_name: &String, conn: &PgConnection) -> Result<Infra, Box<dyn ApiError>> {
+    pub fn create<T: AsRef<str>>(
+        infra_name: T,
+        conn: &PgConnection,
+    ) -> Result<Infra, Box<dyn ApiError>> {
         match sql_query(
-            "INSERT INTO osrd_infra_infra (name, railjson_version, owner, version, generated_version, locked)
-             VALUES ($1, $2, '00000000-0000-0000-0000-000000000000', '0', '0', false)
-             RETURNING *",
-        )
-        .bind::<Text, _>(infra_name)
-        .bind::<Text, _>(RAILJSON_VERSION)
-        .get_result::<Infra>(conn)
-        {
-            Ok(infra) => Ok(infra),
-            Err(err) => Err(Box::new(InfraApiError::DieselError(err))),
-        }
+                "INSERT INTO osrd_infra_infra (name, railjson_version, owner, version, generated_version, locked)
+                VALUES ($1, $2, '00000000-0000-0000-0000-000000000000', '0', '0', false)
+                RETURNING *",
+            )
+            .bind::<Text, _>(infra_name.as_ref())
+            .bind::<Text, _>(RAILJSON_VERSION)
+            .get_result::<Infra>(conn)
+            {
+                Ok(infra) => Ok(infra),
+                Err(err) => Err(Box::new(InfraApiError::DieselError(err))),
+            }
     }
 
     pub fn delete(infra_id: i32, conn: &PgConnection) -> Result<(), Box<dyn ApiError>> {
@@ -171,7 +175,7 @@ pub mod tests {
     pub fn test_transaction(fn_test: fn(&PgConnection, Infra)) {
         let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
         conn.test_transaction::<_, Error, _>(|| {
-            let infra = Infra::create(&"test".to_string(), &conn).unwrap();
+            let infra = Infra::create("test", &conn).unwrap();
 
             fn_test(&conn, infra);
             Ok(())

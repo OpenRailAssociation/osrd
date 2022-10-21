@@ -1,7 +1,8 @@
+use diesel::PgConnection;
 use std::collections::{HashMap, HashSet};
 
 use diesel::sql_types::{Array, Integer, Json};
-use diesel::{sql_query, PgConnection, RunQueryDsl};
+use diesel::{sql_query, RunQueryDsl};
 
 use crate::infra_cache::InfraCache;
 use crate::schema::InfraError;
@@ -19,7 +20,6 @@ pub fn insert_errors(
         .iter()
         .map(|error| to_value(error).unwrap())
         .collect();
-
     let count = sql_query(include_str!("sql/switch_types_insert_errors.sql"))
         .bind::<Integer, _>(infra_id)
         .bind::<Array<Json>, _>(&errors)

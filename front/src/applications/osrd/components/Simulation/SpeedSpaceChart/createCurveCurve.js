@@ -8,7 +8,7 @@ const createCurveCurve = (curves, referential, nameOfReferential) => {
     d3.max(curves.map((step) => step.radius)) - d3.min(curves.map((step) => step.radius));
   return curves.map((step) => ({
     ...step,
-    radius: (step.radius * referentialHeight) / dataHeight,
+    radius: step.radius > 0 ? (step.radius * referentialHeight) / dataHeight : 0,
   }));
 };
 
