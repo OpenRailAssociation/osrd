@@ -1,9 +1,6 @@
 package fr.sncf.osrd.stdcm;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.*;
 import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.NetworkBuilder;
 import fr.sncf.osrd.infra.api.Direction;
@@ -48,6 +45,12 @@ public class DummyRouteGraphBuilder {
 
     /** Creates a route going from nodes `entry` to `exit` of length `length`, named $entry->$exit */
     public SignalingRoute addRoute(String entry, String exit, double length) {
+        return addRoute(entry, exit, length, Double.POSITIVE_INFINITY);
+    }
+
+    /** Creates a route going from nodes `entry` to `exit` of length `length`, named $entry->$exit,
+     * with the given maximum speed */
+    public SignalingRoute addRoute(String entry, String exit, double length, double maxSpeed) {
         if (!signals.containsKey(entry))
             signals.put(entry, new BAL3Signal(entry, 400));
         if (!signals.containsKey(exit))
@@ -72,6 +75,16 @@ public class DummyRouteGraphBuilder {
                 signals.get(exit),
                 ImmutableList.of(detectors.get(entry), detectors.get(exit))
         );
+
+        // Set speed limit
+        for (var track : newRoute.trackRanges) {
+            var speedSections = track.track.getEdge().getSpeedSections();
+            speedSections.put(Direction.FORWARD, ImmutableRangeMap.of(
+                    Range.closed(0., track.track.getEdge().getLength()),
+                    new SpeedLimits(maxSpeed, ImmutableMap.of())
+            ));
+        }
+
         builder.put(routeID, newRoute);
         graphBuilder.addEdge(detectors.get(entry), detectors.get(exit), newRoute);
         return newRoute;
