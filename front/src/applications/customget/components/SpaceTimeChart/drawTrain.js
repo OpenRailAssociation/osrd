@@ -1,16 +1,16 @@
 import * as d3 from 'd3';
 
 import { getDirection } from 'applications/customget/components/ChartHelpers';
+
+import drawCurve from 'applications/customget/components/drawCurve';
+import drawText from 'applications/customget/components/drawText';
 import {
   departureArrivalTimes,
   updateDepartureArrivalTimes,
   updateContextMenu,
   updateMustRedraw,
-  updateSelectedTrain,
-} from 'reducers/osrdsimulation.ts';
-
-import drawCurve from 'applications/customget/components/drawCurve';
-import drawText from 'applications/customget/components/drawText';
+  updateSelectedTrain
+} from '../../../../reducers/osrdsimulation';
 
 export default function drawTrain(
   chart,
