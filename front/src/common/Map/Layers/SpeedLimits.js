@@ -1,21 +1,13 @@
+import { Layer, Source } from 'react-map-gl';
+
+import { MAP_URL } from 'common/Map/const';
+import PropTypes from 'prop-types';
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Layer, Source, LayerProps } from 'react-map-gl';
 
-import PropTypes from 'prop-types';
-
-import { RootState } from 'reducers';
-import { MAP_URL } from 'common/Map/const';
-import { Theme } from 'types';
-
-interface SpeedLimitsProps {
-  geomType: string;
-  colors: Theme;
-}
-
-export default function SpeedLimits(props: SpeedLimitsProps) {
-  const { layersSettings } = useSelector((state: RootState) => state.map);
-  const { infraID } = useSelector((state: RootState) => state.osrdconf);
+export default function SpeedLimits(props) {
+  const { layersSettings } = useSelector((state) => state.map);
+  const { infraID } = useSelector((state) => state.osrdconf);
   const { geomType, colors } = props;
 
   const tag = `speed_limit_by_tag_${layersSettings.speedlimittag}`;
@@ -29,7 +21,7 @@ export default function SpeedLimits(props: SpeedLimitsProps) {
       ? ['all', ['has', 'speed_limit']]
       : ['all', ['has', tag]];
 
-  const speedValuePointParams: LayerProps = {
+  const speedValuePointParams = {
     type: 'symbol',
     'source-layer': 'speed_sections',
     minzoom: 9,
@@ -55,7 +47,7 @@ export default function SpeedLimits(props: SpeedLimitsProps) {
     },
   };
 
-  const speedValueParams: LayerProps = {
+  const speedValueParams = {
     type: 'symbol',
     'source-layer': 'speed_sections',
     minzoom: 9,
@@ -79,7 +71,7 @@ export default function SpeedLimits(props: SpeedLimitsProps) {
     },
   };
 
-  const speedLineParams: LayerProps = {
+  const speedLineParams = {
     type: 'line',
     'source-layer': 'speed_sections',
     minzoom: 6,
@@ -120,8 +112,8 @@ export default function SpeedLimits(props: SpeedLimitsProps) {
     },
   };
 
-  if (layersSettings.speedlimits) {
-    return (
+  return (
+    layersSettings.speedlimits && (
       <Source
         id={`osrd_speed_limit_${geomType}`}
         type="vector"
@@ -135,7 +127,11 @@ export default function SpeedLimits(props: SpeedLimitsProps) {
           beforeId={`chartis/osrd_speed_limit_points/${geomType}`}
         />
       </Source>
-    );
-  }
-  return null;
+    )
+  );
 }
+
+SpeedLimits.propTypes = {
+  geomType: PropTypes.string.isRequired,
+  colors: PropTypes.object.isRequired,
+};
