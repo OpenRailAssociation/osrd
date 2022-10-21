@@ -25,6 +25,12 @@ public class EnvelopeStopWrapper implements EnvelopeTimeInterpolate {
     }
 
     @Override
+    public double interpolateTotalTimeClamp(double position) {
+        position = Math.max(0, Math.min(envelope.getEndPos(), position));
+        return interpolateTotalTime(position);
+    }
+
+    @Override
     public double getEndPos() {
         return envelope.getEndPos();
     }
