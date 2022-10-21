@@ -5,9 +5,10 @@ import lineSliceAlong from '@turf/line-slice-along';
 import length from '@turf/length';
 import bezierSpline from '@turf/bezier-spline';
 import transformTranslate from '@turf/transform-translate';
-import { polygon, lineString } from '@turf/helpers';
+import { Point, polygon, lineString } from '@turf/helpers';
 import { Feature, LineString } from 'geojson';
 import cx from 'classnames';
+import { mapValues } from 'lodash';
 
 import { RootState } from 'reducers';
 import { datetime2time } from 'utils/timeManipulation';
@@ -48,11 +49,27 @@ function getSpeedAndTimeLabel(isSelectedTrain, ecoBlocks, point: TrainPosition) 
   );
 }
 
+interface TriangleSideDimensions {
+  left: number;
+  right: number;
+  up: number;
+  upWidth: number;
+  down: number;
+}
+
 // When the train is backward, lineSliceAlong will crash. we need to have head and tail in the right order
-export function makeDisplayedHeadAndTail(point: TrainPosition, geojsonPath: Feature<LineString>) {
+export function makeDisplayedHeadAndTail(
+  point: TrainPosition,
+  geojsonPath: Feature<LineString>,
+  sideDimensions: {
+    head: TriangleSideDimensions;
+    tail: TriangleSideDimensions;
+  }
+): { [key: string]: number } {
   const pathLength = length(geojsonPath);
-  const trueHead = Math.max(point.tailDistanceAlong, point.headDistanceAlong);
-  const trueTail = Math.min(point.tailDistanceAlong, point.headDistanceAlong);
+  const [trueTail, trueHead] = [point.tailDistanceAlong, point.headDistanceAlong].sort(
+    (a, b) => a - b
+  );
   const boundedHead = boundedValue(trueHead, 0, pathLength);
   const boundedTail = boundedValue(trueTail, 0, pathLength);
   const middle = (boundedHead + boundedTail) / 2;
@@ -68,28 +85,39 @@ function getzoomPowerOf2LengthFactor(viewport: Viewport, threshold = 12) {
 }
 
 function getFactor(zoomLengthFactor: number, size = 1) {
+  const scaleNumber = (x: number) => x * zoomLengthFactor * size;
+  const head = {
+    left: 0.05,
+    right: 0.05,
+    up: 0.1,
+    upWidth: 0.019,
+    down: 0.02,
+  };
+  const tail = {
+    left: 0.05,
+    right: 0.05,
+    up: 0.1,
+    upWidth: 0.019,
+    down: 0.02,
+  };
   return {
-    left: 0.05 * zoomLengthFactor * size,
-    right: 0.05 * zoomLengthFactor * size,
-    up: 0.1 * zoomLengthFactor * size,
-    upWidth: 0.019 * zoomLengthFactor * size,
-    down: 0.02 * zoomLengthFactor * size,
+    head: mapValues(head, scaleNumber),
+    tail: mapValues(tail, scaleNumber),
   };
 }
 
 function getHeadTriangle(
   trainGeoJsonPath: Feature<LineString>,
-  point: TrainPosition,
-  zoomLengthFactor: number
+  position: Feature<Point>,
+  sideDimensions: Record<string, number>
 ) {
-  const factor = getFactor(zoomLengthFactor, 2);
   const bearing = getCurrentBearing(trainGeoJsonPath);
-  const left = transformTranslate(point.headPosition, factor.left, bearing - 90);
-  const right = transformTranslate(point.headPosition, factor.right, bearing + 90);
-  const up = transformTranslate(point.headPosition, factor.up, bearing);
-  const down = transformTranslate(point.headPosition, factor.down, bearing + 180);
-  const upLeft = transformTranslate(up, factor.upWidth, bearing - 90);
-  const upRight = transformTranslate(up, factor.upWidth, bearing + 90);
+  const left = transformTranslate(position, sideDimensions.left, bearing - 90);
+  const right = transformTranslate(position, sideDimensions.right, bearing + 90);
+  const up = transformTranslate(position, sideDimensions.up, bearing);
+  const down = transformTranslate(position, sideDimensions.down, bearing + 180);
+  const upLeft = transformTranslate(up, sideDimensions.upWidth, bearing - 90);
+  const upRight = transformTranslate(up, sideDimensions.upWidth, bearing + 90);
   const coordinates = [
     down.geometry.coordinates,
     left.geometry.coordinates,
@@ -98,11 +126,23 @@ function getHeadTriangle(
     right.geometry.coordinates,
     down.geometry.coordinates,
   ];
-
   const contour = lineString(coordinates);
   const bezier = bezierSpline(contour);
   const triangle = polygon([bezier.geometry.coordinates]);
   return triangle;
+}
+
+function getTrainPieces(
+  point: TrainPosition,
+  geojsonPath: Feature<LineString>,
+  zoomLengthFactor: number
+) {
+  const sideDimensions = getFactor(zoomLengthFactor, 2);
+  const { tail, head } = makeDisplayedHeadAndTail(point, geojsonPath, sideDimensions);
+  const trainGeoJsonPath = lineSliceAlong(geojsonPath, tail, head);
+  const headTriangle = getHeadTriangle(trainGeoJsonPath, point.headPosition, sideDimensions.head);
+  const rearTriangle = getHeadTriangle(trainGeoJsonPath, point.tailPosition, sideDimensions.tail);
+  return [trainGeoJsonPath, headTriangle, rearTriangle];
 }
 
 interface TrainHoverPositionProps {
@@ -111,7 +151,7 @@ interface TrainHoverPositionProps {
   geojsonPath: Feature<LineString>;
 }
 
-const shiftFactor = {
+const labelShiftFactor = {
   long: 1 / 450,
   lat: 1 / 1000,
 };
@@ -130,23 +170,36 @@ function TrainHoverPosition(props: TrainHoverPositionProps) {
 
   if (geojsonPath && point.headDistanceAlong && point.tailDistanceAlong) {
     const zoomLengthFactor = getzoomPowerOf2LengthFactor(viewport);
-    const { tail, head } = makeDisplayedHeadAndTail(point, geojsonPath);
-    const trainGeoJsonPath = lineSliceAlong(geojsonPath, tail, head);
-    const triangle = getHeadTriangle(trainGeoJsonPath, point, zoomLengthFactor);
+    const [trainGeoJsonPath, headTriangle, rearTriangle] = getTrainPieces(
+      point,
+      geojsonPath,
+      zoomLengthFactor
+    );
     return (
       <>
         <Marker
           className="map-search-marker"
           longitude={
-            point.headPosition.geometry.coordinates[0] + zoomLengthFactor * shiftFactor.long
+            point.headPosition.geometry.coordinates[0] + zoomLengthFactor * labelShiftFactor.long
           }
-          latitude={point.headPosition.geometry.coordinates[1] + zoomLengthFactor * shiftFactor.lat}
+          latitude={
+            point.headPosition.geometry.coordinates[1] + zoomLengthFactor * labelShiftFactor.lat
+          }
         >
           {label}
         </Marker>
-        <Source type="geojson" data={triangle}>
+        <Source type="geojson" data={headTriangle}>
           <Layer
             id={`${point.id}-head`}
+            type="fill"
+            paint={{
+              'fill-color': fill,
+            }}
+          />
+        </Source>
+        <Source type="geojson" data={rearTriangle}>
+          <Layer
+            id={`${point.id}-rear`}
             type="fill"
             paint={{
               'fill-color': fill,
@@ -158,7 +211,7 @@ function TrainHoverPosition(props: TrainHoverPositionProps) {
             id={`${point.id}-path`}
             type="line"
             paint={{
-              'line-width': 8,
+              'line-width': 16,
               'line-color': fill,
             }}
           />
