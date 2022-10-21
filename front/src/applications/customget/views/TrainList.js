@@ -4,9 +4,7 @@ import { updateMustRedraw, updateSelectedTrain, updateSimulation } from 'reducer
 import { useDispatch, useSelector } from 'react-redux';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { IoMdEye } from 'react-icons/io';
 import PropTypes from 'prop-types';
-import { changeTrain } from 'applications/osrd/components/TrainList/TrainListHelpers';
 import nextId from 'react-id-generator';
 import { timeShiftTrain } from 'applications/osrd/components/Helpers/ChartHelpers';
 import { useDebounce } from 'utils/helpers';

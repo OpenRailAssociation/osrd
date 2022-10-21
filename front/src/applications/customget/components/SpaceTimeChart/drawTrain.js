@@ -10,7 +10,7 @@ import {
   updateContextMenu,
   updateMustRedraw,
   updateSelectedTrain
-} from '../../../../reducers/osrdsimulation';
+} from 'reducers/osrdsimulation';
 
 export default function drawTrain(
   chart,
