@@ -5,21 +5,23 @@ import lineSliceAlong from '@turf/line-slice-along';
 import length from '@turf/length';
 import { Feature, LineString } from 'geojson';
 import cx from 'classnames';
+import { get } from 'lodash';
 
 import { RootState } from 'reducers';
+import { Viewport } from 'reducers/map';
+import { AllowancesSetting } from 'reducers/osrdsimulation';
 import { datetime2time } from 'utils/timeManipulation';
 import { boundedValue } from 'utils/numbers';
-import { Viewport } from 'reducers/map';
 import { TrainPosition } from './types';
 
-function getFill(isSelectedTrain: boolean, ecoBlocks) {
+function getFill(isSelectedTrain: boolean, ecoBlocks: boolean) {
   if (isSelectedTrain) {
     return ecoBlocks ? '#82be00' : '#303383';
   }
   return '#333';
 }
 
-function getSpeedAndTimeLabel(isSelectedTrain, ecoBlocks, point: TrainPosition) {
+function getSpeedAndTimeLabel(isSelectedTrain: boolean, ecoBlocks: boolean, point: TrainPosition) {
   if (isSelectedTrain) {
     return (
       <>
@@ -70,14 +72,14 @@ const shiftFactor = {
   lat: 1 / 1000,
 };
 function TrainHoverPosition(props: TrainHoverPositionProps) {
-  const { point, isSelectedTrain, geojsonPath } = props;
+  const { point, isSelectedTrain = false, geojsonPath } = props;
   const { selectedTrain, allowancesSettings } = useSelector(
     (state: RootState) => state.osrdsimulation
   );
   const { viewport } = useSelector((state: RootState) => state.map);
   const simulation = useSelector((state: RootState) => state.osrdsimulation.simulation.present);
   const trainID = simulation.trains[selectedTrain].id;
-  const { ecoBlocks } = allowancesSettings[trainID];
+  const { ecoBlocks } = get(allowancesSettings, trainID, {} as AllowancesSetting);
   const fill = getFill(isSelectedTrain as boolean, ecoBlocks);
   const label = getSpeedAndTimeLabel(isSelectedTrain, ecoBlocks, point);
 

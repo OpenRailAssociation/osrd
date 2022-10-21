@@ -1,3 +1,5 @@
+import { AnyAction, Dispatch } from 'redux';
+import * as d3 from 'd3';
 import produce from 'immer';
 import {
   LIST_VALUES_NAME_SPACE_TIME,
@@ -30,13 +32,120 @@ export const UPDATE_TIME_POSITION_VALUES = 'osrdsimu/UPDATE_TIME_POSITION_VALUES
 export const UPDATE_CONSOLIDATED_SIMULATION = 'osrdsimu/UPDATE_CONSOLIDATED_SIMULATION';
 export const UPDATE_DEPARTURE_ARRIVAL_TIMES = 'osrdsimu/UPDATE_DEPARTURE_ARRIVAL_TIMES';
 
-export const departureArrivalTimes = (simulation, dragOffset) =>
-  simulation.trains.map((train) => ({
+export const makeDepartureArrivalTimes = (simulation: SimulationSnapshot, dragOffset: number) =>
+  simulation.trains.map((train: Train) => ({
     labels: train.labels,
     name: train.name,
     departure: offsetSeconds(train.base.stops[0].time + dragOffset),
     arrival: offsetSeconds(train.base.stops[train.base.stops.length - 1].time + dragOffset),
   }));
+
+export interface Chart {
+  width: number;
+  height: number;
+  margin: {
+    top: number;
+    right: number;
+    bottom: number;
+    left: number;
+  };
+  x: d3.ScaleTime<number, number>;
+  xAxis: d3.Selection<SVGGElement, unknown, null, undefined>;
+  xAxisGrid: d3.Selection<SVGGElement, unknown, null, undefined>;
+  y: d3.ScaleLinear<number, number>;
+  yAxis: d3.Selection<SVGGElement, unknown, null, undefined>;
+  yAxisGrid: d3.Selection<SVGGElement, unknown, null, undefined>;
+  svg: d3.Selection<SVGGElement, unknown, null, undefined>;
+  drawZone: d3.Selection<SVGGElement, unknown, null, undefined>;
+}
+export interface AllowancesSetting {
+  base: boolean;
+  baseBlocks: boolean;
+  eco: boolean;
+  ecoBlocks: boolean;
+}
+
+export type AllowancesSettings = Record<string | number, AllowancesSetting>;
+
+export interface Position<Time = number> {
+  time: Time;
+  position: number;
+}
+export type PositionSpeed<Time = number> = Position<Time> & {
+  speed: number;
+};
+
+interface Stop {
+  id: number;
+  name: string;
+  time: number;
+  duration: number;
+  position: number;
+  line_code: number;
+  track_number: number;
+}
+
+export interface RouteAspect<Time = number, Color = number> {
+  signal_id: string;
+  route_id: string;
+  time_start: Time;
+  time_end: Time;
+  position_start: number;
+  position_end: number;
+  color: Color;
+  blinking: boolean;
+}
+
+export interface SignalAspect<Time = number, Color = number> {
+  signal_id: string;
+  time_start: Time;
+  time_end: Time;
+  color: Color;
+  blinking: boolean;
+  aspect_label: string;
+}
+
+export interface Regime {
+  head_positions: Position[][];
+  tail_positions: Position[][];
+  route_begin_occupancy: Position[][];
+  route_end_occupancy: Position[][];
+  speeds: PositionSpeed[];
+  stops: Stop[];
+  route_aspects: RouteAspect[];
+  signal_aspects: SignalAspect[];
+  error: any;
+}
+
+export interface Train {
+  id: number;
+  labels: any[];
+  path: number;
+  name: string;
+  vmax: any[];
+  slopes: any[];
+  curves: any[];
+  base: Regime;
+  eco: Regime;
+  isStdcm: boolean;
+}
+
+export interface SimulationSnapshot {
+  trains: Train[];
+}
+
+export type SimulationHistory = SimulationSnapshot[];
+
+export interface PositionValues {
+  headPosition: PositionSpeed;
+  tailPosition: PositionSpeed;
+  routeEndOccupancy: number;
+  routeBeginOccupancy: number;
+  speed: {
+    speed: number;
+    time: number;
+  };
+}
 
 export interface OsrdSimulationState {
   chart: any;
@@ -44,18 +153,9 @@ export interface OsrdSimulationState {
   contextMenu: any;
   hoverPosition: any;
   isPlaying: boolean;
-  allowancesSettings: any;
+  allowancesSettings?: AllowancesSettings;
   mustRedraw: boolean;
-  positionValues: {
-    headPosition: number;
-    tailPosition: number;
-    routeEndOccupancy: number;
-    routeBeginOccupancy: number;
-    speed: {
-      speed: number;
-      time: number;
-    };
-  };
+  positionValues: PositionValues;
   selectedProjection: any;
   selectedTrain: number;
   speedSpaceSettings: {
@@ -69,10 +169,14 @@ export interface OsrdSimulationState {
   timePosition: any;
   consolidatedSimulation: any;
   departureArrivalTimes: Array<any>;
-  simulation: any;
+  simulation: {
+    past: SimulationHistory;
+    present: SimulationSnapshot;
+    future: SimulationHistory;
+  };
 }
 // Reducer
-export const initialState = {
+export const initialState: OsrdSimulationState = {
   chart: undefined,
   chartXGEV: undefined,
   contextMenu: undefined,
@@ -81,10 +185,22 @@ export const initialState = {
   allowancesSettings: undefined,
   mustRedraw: true,
   positionValues: {
-    headPosition: 0,
-    tailPosition: 0,
+    headPosition: {
+      time: 0,
+      position: 0,
+      speed: 0,
+    },
+    tailPosition: {
+      time: 0,
+      position: 0,
+      speed: 0,
+    },
     routeEndOccupancy: 0,
     routeBeginOccupancy: 0,
+    speed: {
+      speed: 0,
+      time: 0,
+    },
   },
   selectedProjection: undefined,
   selectedTrain: 0,
@@ -99,9 +215,15 @@ export const initialState = {
   timePosition: undefined,
   consolidatedSimulation: null,
   departureArrivalTimes: [],
+  simulation: {
+    past: [],
+    present: { trains: [] },
+    future: [],
+  },
 };
 
-export default function reducer(inputState, action) {
+// eslint-disable-next-line default-param-last
+export default function reducer(inputState: OsrdSimulationState, action: AnyAction) {
   const state = inputState || initialState;
   return produce(state, (draft) => {
     if (!state.simulation) draft.simulation = undoableSimulation(state.simulation, action);
@@ -141,13 +263,13 @@ export default function reducer(inputState, action) {
         break;
       case UPDATE_SIMULATION:
         draft.simulation = undoableSimulation(state.simulation, action);
-        draft.departureArrivalTimes = departureArrivalTimes(draft.simulation.present, 0);
+        draft.departureArrivalTimes = makeDepartureArrivalTimes(draft.simulation.present, 0);
         break;
       case UNDO_SIMULATION:
       case REDO_SIMULATION:
         // get only the present, thanks
         draft.simulation = undoableSimulation(state.simulation, action);
-        draft.departureArrivalTimes = departureArrivalTimes(draft.simulation.present, 0);
+        draft.departureArrivalTimes = makeDepartureArrivalTimes(draft.simulation.present, 0);
         break;
       case UPDATE_SPEEDSPACE_SETTINGS:
         draft.speedSpaceSettings = action.speedSpaceSettings;
@@ -186,8 +308,8 @@ export default function reducer(inputState, action) {
 }
 
 // Functions
-export function updateChart(chart) {
-  return (dispatch) => {
+export function updateChart(chart: Chart) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_CHART,
       chart,
