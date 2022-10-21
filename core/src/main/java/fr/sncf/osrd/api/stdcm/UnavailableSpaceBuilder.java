@@ -9,6 +9,9 @@ import java.util.Collection;
 
 public class UnavailableSpaceBuilder {
 
+    /** Only used when we have missing signal data */
+    private static final double DEFAULT_SIGHT_DISTANCE = 400;
+
     /** Computes the unavailable space for each route, i.e.
      * the times and positions where the *head* of the train cannot be.
      * This considers existing occupancy blocks, the length of the train,
@@ -43,7 +46,9 @@ public class UnavailableSpaceBuilder {
             var predecessorRoutes = routeGraph.inEdges(startRouteNode);
             for (var predecessorRoute : predecessorRoutes) {
                 var preBlockLength = predecessorRoute.getInfraRoute().getLength();
-                var sightDistance = predecessorRoute.getExitSignal().getSightDistance();
+                double sightDistance = DEFAULT_SIGHT_DISTANCE;
+                if (predecessorRoute.getExitSignal() != null)
+                    sightDistance = predecessorRoute.getExitSignal().getSightDistance();
                 var previousBlock = new OccupancyBlock(
                         timeStart,
                         timeEnd,
