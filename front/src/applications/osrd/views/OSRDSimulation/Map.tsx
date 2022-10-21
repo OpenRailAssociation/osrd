@@ -7,24 +7,18 @@ import ReactMapGL, {
   ScaleControl,
   WebMercatorViewport,
   MapRef,
-  MapEvent,
 } from 'react-map-gl';
+import PropTypes from 'prop-types';
 import { Feature, LineString } from 'geojson';
-import { lineString, point, BBox } from '@turf/helpers';
+import { lineString, point, feature } from '@turf/helpers';
 import along from '@turf/along';
 import bbox from '@turf/bbox';
 import lineLength from '@turf/length';
 import lineSlice from '@turf/line-slice';
 import { CgLoadbar } from 'react-icons/cg';
-import { last } from 'lodash';
 
-import {
-  updateTimePositionValues,
-  AllowancesSettings,
-  PositionValues,
-  PositionSpeed,
-} from 'reducers/osrdsimulation';
-import { updateViewport, Viewport } from 'reducers/map';
+import { updateTimePositionValues } from 'reducers/osrdsimulation';
+import { updateViewport } from 'reducers/map';
 import { RootState } from 'reducers';
 import { TrainPosition } from 'applications/osrd/components/SimulationMap/types';
 
@@ -68,22 +62,16 @@ import 'common/Map/Map.scss';
 
 const PATHFINDING_URI = '/pathfinding/';
 
-function getPosition(
-  positionValues: PositionValues,
-  allowancesSettings?: AllowancesSettings,
-  id?: number,
-  baseKey?: string
-) {
-  const key = (
-    allowancesSettings && id && allowancesSettings[id]?.ecoBlocks ? `eco_${baseKey}` : baseKey
-  ) as keyof PositionValues;
-  return positionValues[key] as PositionSpeed;
+function checkIfEcoAndAddPrefix(allowancesSettings, id, baseKey) {
+  if (allowancesSettings && id && allowancesSettings[id]?.ecoBlocks) {
+    return `eco_${baseKey}`;
+  }
+  return baseKey;
 }
 
 interface MapProps {
-  setExtViewport: (viewport: Viewport) => void;
+  setExtViewport: (any) => void;
 }
-
 function Map(props: MapProps) {
   const { setExtViewport } = props;
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -109,32 +97,35 @@ function Map(props: MapProps) {
    * @param {int} trainId
    * @returns correct key (eco or base) to get positions in a train simulation
    */
-  const getRegimeKey = (trainId: number) =>
+  const getRegimeKey = (trainId) =>
     allowancesSettings && allowancesSettings[trainId]?.ecoBlocks ? 'eco' : 'base';
 
   const createOtherPoints = () => {
     const actualTime = datetime2sec(timePosition);
     // First find trains where actual time from position is between start & stop
     const concernedTrains: any[] = [];
-    simulation.trains.forEach((train, idx: number) => {
+    simulation.trains.forEach((train, idx) => {
       const key = getRegimeKey(train.id);
-      if (train[key].head_positions[0]) {
-        const trainTime = train[key].head_positions[0][0].time;
-        const train2ndTime = last(last(train[key].head_positions))?.time as number;
-        if (actualTime >= trainTime && actualTime <= train2ndTime && idx !== selectedTrain) {
-          const interpolation = interpolateOnTime(
-            train[key],
-            ['time', 'position'],
-            ['head_positions', 'tail_positions', 'speeds'],
-            actualTime
-          ) as Record<string, PositionSpeed>;
-          if (interpolation.head_positions && interpolation.speeds) {
-            concernedTrains.push({
-              ...interpolation,
-              name: train.name,
-              id: idx,
-            });
-          }
+      if (
+        actualTime >= train[key].head_positions[0][0].time &&
+        actualTime <=
+          train[key].head_positions[train[key].head_positions.length - 1][
+            train[key].head_positions[train[key].head_positions.length - 1].length - 1
+          ].time &&
+        idx !== selectedTrain
+      ) {
+        const interpolation = interpolateOnTime(
+          train[key],
+          ['time', 'position'],
+          ['head_positions', 'tail_positions', 'speeds'],
+          actualTime
+        );
+        if (interpolation.head_positions && interpolation.speeds) {
+          concernedTrains.push({
+            ...interpolation,
+            name: train.name,
+            id: idx,
+          });
         }
       }
     });
@@ -146,16 +137,16 @@ function Map(props: MapProps) {
     if (geojsonPath) {
       const line = lineString(geojsonPath.geometry.coordinates);
       const id = simulation.trains[selectedTrain]?.id;
-      const headPositionRaw = getPosition(positionValues, allowancesSettings, id, 'headPosition');
-      const tailPositionRaw = getPosition(positionValues, allowancesSettings, id, 'tailPosition');
-      if (headPositionRaw) {
+      const headKey = checkIfEcoAndAddPrefix(allowancesSettings, id, 'headPosition');
+      const tailKey = checkIfEcoAndAddPrefix(allowancesSettings, id, 'tailPosition');
+      if (positionValues[headKey]) {
         setTrainHoverPosition(() => {
-          const headDistanceAlong = headPositionRaw.position / 1000;
-          const tailDistanceAlong = tailPositionRaw.position / 1000;
+          const headDistanceAlong = positionValues[headKey].position / 1000;
+          const tailDistanceAlong = positionValues[tailKey].position / 1000;
           const headPosition = along(line, headDistanceAlong, {
             units: 'kilometers',
           });
-          const tailPosition = tailPositionRaw
+          const tailPosition = positionValues[tailKey]
             ? along(line, tailDistanceAlong, { units: 'kilometers' })
             : headPosition;
           const trainLength = Math.abs(headDistanceAlong - tailDistanceAlong);
@@ -197,7 +188,7 @@ function Map(props: MapProps) {
     }
   };
 
-  const zoomToFeature = (boundingBox: BBox) => {
+  const zoomToFeature = (boundingBox) => {
     const [minLng, minLat, maxLng, maxLat] = boundingBox;
     const viewportTemp = new WebMercatorViewport({ ...viewport, width: 600, height: 400 });
     const { longitude, latitude, zoom } = viewportTemp.fitBounds(
@@ -215,7 +206,7 @@ function Map(props: MapProps) {
     });
   };
 
-  const getGeoJSONPath = async (pathID: number) => {
+  const getGeoJSONPath = async (pathID) => {
     try {
       const path = await get(`${PATHFINDING_URI}${pathID}/`);
       const features = lineString(path.geographic.coordinates);
@@ -241,7 +232,7 @@ function Map(props: MapProps) {
     });
   };
 
-  const onFeatureHover = (e: MapEvent) => {
+  const onFeatureHover = (e) => {
     if (mapLoaded && !isPlaying && e && geojsonPath?.geometry?.coordinates) {
       const line = lineString(geojsonPath.geometry.coordinates);
       const cursorPoint = point(e.lngLat);
@@ -249,9 +240,9 @@ function Map(props: MapProps) {
       const startCoordinates = getDirection(simulation.trains[selectedTrain][key].head_positions)
         ? [geojsonPath.geometry.coordinates[0][0], geojsonPath.geometry.coordinates[0][1]]
         : [
-          geojsonPath.geometry.coordinates[geojsonPath.geometry.coordinates.length - 1][0],
-          geojsonPath.geometry.coordinates[geojsonPath.geometry.coordinates.length - 1][1],
-        ];
+            geojsonPath.geometry.coordinates[geojsonPath.geometry.coordinates.length - 1][0],
+            geojsonPath.geometry.coordinates[geojsonPath.geometry.coordinates.length - 1][1],
+          ];
       const start = point(startCoordinates);
       const sliced = lineSlice(start, cursorPoint, line);
       const positionLocal = lineLength(sliced, { units: 'kilometers' }) * 1000;
@@ -262,14 +253,14 @@ function Map(props: MapProps) {
       );
       dispatch(updateTimePositionValues(timePositionLocal));
     }
-    if (e?.features?.[0]) {
+    if (e.features[0]) {
       setIdHover(e.features[0].properties.id);
     } else {
       setIdHover(undefined);
     }
   };
 
-  const onClick = (e: MapEvent) => {
+  const onClick = (e) => {
     if (mapRef.current) {
       console.info('Click on map');
       console.info(mapRef.current.queryRenderedFeatures(e.point));
@@ -429,5 +420,9 @@ function Map(props: MapProps) {
     </>
   );
 }
+
+Map.propTypes = {
+  setExtViewport: PropTypes.func.isRequired,
+};
 
 export default Map;

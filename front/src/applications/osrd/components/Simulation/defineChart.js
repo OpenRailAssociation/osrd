@@ -4,16 +4,7 @@ import { gridX, gridY } from 'applications/osrd/components/Helpers/ChartHelpers'
 import nextId from 'react-id-generator';
 import svgDefs from 'applications/osrd/components/Simulation/svgDefs';
 
-const defineChart = (
-  svgWidth: number,
-  svgHeight: number,
-  defineX: d3.ScaleTime<number, number>,
-  defineY: d3.ScaleLinear<number, number>,
-  ref: React.MutableRefObject<HTMLDivElement>,
-  rotate: boolean,
-  keyValues: string[],
-  id: string
-) => {
+const defineChart = (svgWidth, svgHeight, defineX, defineY, ref, rotate, keyValues, id) => {
   const margin = {
     top: 1,
     right: 1,
