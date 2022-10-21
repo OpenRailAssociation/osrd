@@ -6,6 +6,7 @@ import fr.sncf.osrd.api.pathfinding.PathfindingResultConverter;
 import fr.sncf.osrd.api.pathfinding.PathfindingRoutesEndpoint;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.api.pathfinding.response.NoPathFoundError;
+import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.PhysicsPath;
 import fr.sncf.osrd.envelope_sim_infra.MRSP;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
@@ -106,7 +107,7 @@ public class STDCMEndpoint implements Take {
             simResult.baseSimulations.add(ScheduleMetadataExtractor.run(
                     res.envelope(),
                     res.trainPath(),
-                    makeTrainSchedule(res.physicsPath(), rollingStock),
+                    makeTrainSchedule(res.envelope(), rollingStock),
                     infra
             ));
             simResult.ecoSimulations.add(null);
@@ -118,10 +119,10 @@ public class STDCMEndpoint implements Take {
         }
     }
 
-    /** Generate a train schedule matching the envelope path and rolling stock, with one stop at the end */
-    private static StandaloneTrainSchedule makeTrainSchedule(PhysicsPath physicsPath, RollingStock rollingStock) {
+    /** Generate a train schedule matching the envelope and rolling stock, with one stop at the end */
+    private static StandaloneTrainSchedule makeTrainSchedule(Envelope envelope, RollingStock rollingStock) {
         List<TrainStop> trainStops = new ArrayList<>();
-        trainStops.add(new TrainStop(physicsPath.getLength(), 0.1));
+        trainStops.add(new TrainStop(envelope.getEndPos(), 0.1));
         return new StandaloneTrainSchedule(rollingStock, 0., trainStops, List.of(), List.of());
     }
 }

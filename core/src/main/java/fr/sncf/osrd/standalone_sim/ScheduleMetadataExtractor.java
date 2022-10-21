@@ -232,10 +232,10 @@ public class ScheduleMetadataExtractor {
             }
 
             res.put(routeID, new ResultOccupancyTiming(
-                    envelope.interpolateTotalTime(min(occupied, trainPath.length())),
-                    envelope.interpolateTotalTime(min(headFree, trainPath.length())),
-                    envelope.interpolateTotalTime(min(tailOccupied, trainPath.length())),
-                    envelope.interpolateTotalTime(min(free, trainPath.length()))
+                    envelope.interpolateTotalTimeClamp(occupied),
+                    envelope.interpolateTotalTimeClamp(headFree),
+                    envelope.interpolateTotalTimeClamp(tailOccupied),
+                    envelope.interpolateTotalTimeClamp(free)
             ));
         }
         validate(trainPath, res, envelope, trainLength);
@@ -269,15 +269,12 @@ public class ScheduleMetadataExtractor {
 
         // Checks that every route in the path is occupied *at least* when the train is present on it
         for (var route : trainPath.routePath()) {
-            var beginOccupancy = max(0, route.pathOffset());
-            var endOccupancy = min(
-                    route.pathOffset() + route.element().getInfraRoute().getLength() + trainLength,
-                    trainPath.length()
-            );
+            var beginOccupancy = route.pathOffset();
+            var endOccupancy = route.pathOffset() + route.element().getInfraRoute().getLength() + trainLength;
             var time = times.get(route.element().getInfraRoute().getID());
             assert time != null;
-            assert envelope.interpolateTotalTime(beginOccupancy) >= time.timeHeadOccupy;
-            assert envelope.interpolateTotalTime(endOccupancy) <= time.timeTailFree;
+            assert envelope.interpolateTotalTimeClamp(beginOccupancy) >= time.timeHeadOccupy;
+            assert envelope.interpolateTotalTimeClamp(endOccupancy) <= time.timeTailFree;
         }
     }
 
