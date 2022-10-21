@@ -47,7 +47,7 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
 
     match client.command {
         Commands::Runserver(args) => runserver(args, pg_config, chartos_config).await,
-        Commands::Generate(args) => generate(args, pg_config, chartos_config),
+        Commands::Generate(args) => generate(args, pg_config, chartos_config).await,
     }
 }
 pub fn create_server(
@@ -120,7 +120,7 @@ async fn runserver(
 
 /// Run the generate sub command
 /// This command refresh all infra given as input (if no infra given then refresh all of them)
-fn generate(
+async fn generate(
     args: GenerateArgs,
     pg_config: PostgresConfig,
     chartos_config: ChartosConfig,
@@ -148,8 +148,16 @@ fn generate(
             infra.id
         );
         let infra_cache = InfraCache::load(&conn, infra.id);
-        generate::refresh(&conn, &infra, args.force, &chartos_config, &infra_cache)?;
-        println!("✅ Infra {}[{}] generated!", infra.name.bold(), infra.id);
+        if generate::refresh(&conn, &infra, args.force, &infra_cache)? {
+            generate::invalidate_after_refresh(infra.id, &chartos_config).await;
+            println!("✅ Infra {}[{}] generated!", infra.name.bold(), infra.id);
+        } else {
+            println!(
+                "✅ Infra {}[{}] already generated!",
+                infra.name.bold(),
+                infra.id
+            );
+        }
     }
     Ok(())
 }
