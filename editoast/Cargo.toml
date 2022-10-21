@@ -16,7 +16,7 @@ derivative = "2.2.0"
 diesel = { version = "1.4.8", features = ["postgres", "uuidv07", "serde_json"] }
 json-patch = "0.2.6"
 rand = "0.8.5"
-reqwest = { version = "~0.11.12", features = ["blocking", "json"] }
+reqwest = { version = "~0.11.12", features = ["json"] }
 rocket = { version = "0.5.0-rc", features = ["json"] }
 rocket_sync_db_pools = { version = "0.1.0-rc", features = [
     "diesel_postgres_pool",

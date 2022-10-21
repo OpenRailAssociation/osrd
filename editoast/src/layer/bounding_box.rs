@@ -28,10 +28,18 @@ impl Default for BoundingBox {
     }
 }
 
+/// Geographic and Schematic bounding box zone impacted by a list of operations
 #[derive(Debug, Clone)]
 pub struct InvalidationZone {
     pub geo: BoundingBox,
     pub sch: BoundingBox,
+}
+
+impl InvalidationZone {
+    /// Whether zones are valid
+    pub fn is_valid(&self) -> bool {
+        self.geo.is_valid()
+    }
 }
 
 impl InvalidationZone {
@@ -47,6 +55,7 @@ impl InvalidationZone {
         }
     }
 
+    /// Given a list of operations, compute the geographic and schematic bounding box of their impact
     pub fn compute(infra_cache: &InfraCache, operations: &Vec<OperationResult>) -> Self {
         let mut geo = BoundingBox::default();
         let mut sch = BoundingBox::default();
@@ -270,6 +279,7 @@ impl InvalidationZone {
                 }
             }
         }
+        assert_eq!(geo.is_valid(), sch.is_valid());
         Self { geo, sch }
     }
 }

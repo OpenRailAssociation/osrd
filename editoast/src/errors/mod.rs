@@ -17,19 +17,18 @@ use serde::Serialize;
 use serde_json::Value;
 
 use crate::api_error::ApiError;
-use crate::client::ChartosConfig;
+
 use crate::infra_cache::InfraCache;
-use crate::layer::invalidate_chartos_layer;
 use crate::views::pagination::{paginate, PaginationError};
 
 use graph::Graph;
 
 /// This function regenerate the errors and warnings of the infra
+/// You need to invalidate chartos layer afterwards
 pub fn generate_errors(
     conn: &PgConnection,
     infra: i32,
     infra_cache: &InfraCache,
-    chartos_config: &ChartosConfig,
 ) -> Result<(), DieselError> {
     // Clear the whole layer
     sql_query("DELETE FROM osrd_infra_errorlayer WHERE infra_id = $1")
@@ -51,8 +50,6 @@ pub fn generate_errors(
     routes::insert_errors(conn, infra, infra_cache, &graph)?;
     operational_points::insert_errors(conn, infra, infra_cache)?;
 
-    // Invalidate chartos cache
-    invalidate_chartos_layer(infra, "errors", chartos_config);
     Ok(())
 }
 
