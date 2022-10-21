@@ -64,10 +64,10 @@ public class MaxSpeedEnvelope {
             // if the stopPosition is zero, no need to build a deceleration curve
             if (stopPosition == 0.0)
                 continue;
-            if (stopPosition > context.path.getLength())
+            if (stopPosition > curveWithDecelerations.getEndPos())
                 throw new RuntimeException(String.format(
                         "Stop at index %d is out of bounds (position = %f, path length = %f)",
-                        i, stopPosition, context.path.getLength()
+                        i, stopPosition, curveWithDecelerations.getEndPos()
                 ));
             var partBuilder = new EnvelopePartBuilder();
             partBuilder.setAttr(EnvelopeProfile.BRAKING);

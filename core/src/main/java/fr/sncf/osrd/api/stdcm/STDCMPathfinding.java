@@ -104,7 +104,9 @@ public class STDCMPathfinding {
             offset += edge.edge().envelope().getEndPos();
         }
         var newEnvelope = Envelope.make(parts.toArray(new EnvelopePart[0]));
-        return addBrakingCurves(newEnvelope, rollingStock, physicsPath, timeStep);
+        var finalEnvelope = addBrakingCurves(newEnvelope, rollingStock, physicsPath, timeStep);
+        assert finalEnvelope.continuous;
+        return finalEnvelope;
     }
 
     /** Adds any missing braking curves to the envelope (including the last stop).
