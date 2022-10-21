@@ -4,7 +4,7 @@ use super::params::List;
 use crate::api_error::{ApiResult, InfraLockedError};
 use crate::client::ChartosConfig;
 use crate::db_connection::DBConnection;
-use crate::errors::{generate_errors, get_paginated_infra_errors};
+use crate::errors::get_paginated_infra_errors;
 use crate::generate;
 use crate::infra::{CreateInfra, Infra, InfraApiError};
 use crate::infra_cache::{InfraCache, ObjectCache};
@@ -42,36 +42,42 @@ async fn refresh<'a>(
     infra_caches: &State<Arc<CHashMap<i32, InfraCache>>>,
 ) -> ApiResult<JsonValue> {
     let infra_caches = infra_caches.inner().clone();
-    let chartos_config = chartos_config.inner().clone();
-    conn.run(move |conn| {
-        // Use a transaction to give scope to infra list lock
-        let mut infras_list = vec![];
-        let infras = infras.0;
+    let refreshed_infra = conn
+        .run::<_, ApiResult<Vec<i32>>>(move |conn| {
+            // Use a transaction to give scope to infra list lock
+            let mut infras_list = vec![];
+            let infras = infras.0;
 
-        if infras.is_empty() {
-            // Retrieve all available infra
-            for infra in Infra::list_for_update(conn) {
-                infras_list.push(infra);
+            if infras.is_empty() {
+                // Retrieve all available infra
+                for infra in Infra::list_for_update(conn) {
+                    infras_list.push(infra);
+                }
+            } else {
+                // Retrieve given infras
+                for id in infras.iter() {
+                    infras_list.push(Infra::retrieve_for_update(conn, *id)?);
+                }
             }
-        } else {
-            // Retrieve given infras
-            for id in infras.iter() {
-                infras_list.push(Infra::retrieve_for_update(conn, *id)?);
-            }
-        }
 
-        // Refresh each infras
-        let mut refreshed_infra = vec![];
+            // Refresh each infras
+            let mut refreshed_infra = vec![];
 
-        for infra in infras_list {
-            let infra_cache = infra_caches.get(&infra.id).unwrap();
-            if generate::refresh(conn, &infra, force, &chartos_config, &infra_cache)? {
-                refreshed_infra.push(infra.id);
+            for infra in infras_list {
+                let infra_cache = infra_caches.get(&infra.id).unwrap();
+                if generate::refresh(conn, &infra, force, &infra_cache)? {
+                    refreshed_infra.push(infra.id);
+                }
             }
-        }
-        Ok(json!({ "infra_refreshed": refreshed_infra }))
-    })
-    .await
+            Ok(refreshed_infra)
+        })
+        .await?;
+
+    for infra_id in refreshed_infra.iter() {
+        generate::invalidate_after_refresh(*infra_id, chartos_config).await;
+    }
+
+    Ok(json!({ "infra_refreshed": refreshed_infra }))
 }
 
 /// Return a list of infras
@@ -131,61 +137,55 @@ async fn edit<'a>(
 ) -> ApiResult<Json<Vec<OperationResult>>> {
     let operations = operations?;
     let infra_caches = infra_caches.inner().clone();
-    let chartos_config = chartos_config.inner().clone();
 
-    conn.run::<_, ApiResult<Json<Vec<OperationResult>>>>(move |conn| {
-        // Use a transaction to give scope to the infra lock
-        // Retrieve and lock infra
-        let infra = Infra::retrieve_for_update(conn, infra)?;
+    let (operation_results, invalid_zone) = conn
+        .run::<_, ApiResult<(Vec<OperationResult>, InvalidationZone)>>(move |conn| {
+            // Use a transaction to give scope to the infra lock
+            // Retrieve and lock infra
+            let infra = Infra::retrieve_for_update(conn, infra)?;
 
-        // Check if the infra is locked
-        if infra.locked {
-            return Err(InfraLockedError { infra_id: infra.id }.into());
-        }
+            // Check if the infra is locked
+            if infra.locked {
+                return Err(InfraLockedError { infra_id: infra.id }.into());
+            }
 
-        // Apply modifications
-        let mut operation_results = vec![];
-        for operation in operations.iter() {
-            let operation = operation.clone();
-            operation_results.push(operation.apply(infra.id, conn)?);
-        }
+            // Apply modifications
+            let mut operation_results = vec![];
+            for operation in operations.iter() {
+                let operation = operation.clone();
+                operation_results.push(operation.apply(infra.id, conn)?);
+            }
 
-        // Bump version
-        let infra = infra.bump_version(conn)?;
+            // Bump version
+            let infra = infra.bump_version(conn)?;
 
-        // Retrieve infra cache
-        let mut infra_cache = infra_caches.get_mut(&infra.id).unwrap();
+            // Retrieve infra cache
+            let mut infra_cache = infra_caches.get_mut(&infra.id).unwrap();
 
-        // Compute cache invalidation zone
-        let invalid_zone = InvalidationZone::compute(&infra_cache, &operation_results);
+            // Compute cache invalidation zone
+            let invalid_zone = InvalidationZone::compute(&infra_cache, &operation_results);
 
-        // Apply operations to infra cache
-        infra_cache.apply_operations(&operation_results);
+            // Apply operations to infra cache
+            infra_cache.apply_operations(&operation_results);
 
-        // Refresh layers if needed
-        if invalid_zone.geo.is_valid() {
-            assert!(invalid_zone.sch.is_valid());
-            generate::update(
-                conn,
-                infra.id,
-                &operation_results,
-                &infra_cache,
-                &invalid_zone,
-                &chartos_config,
-            )
-            .expect("Update generated data failed");
-        }
+            // Refresh layers if needed
+            if invalid_zone.is_valid() {
+                generate::update(conn, infra.id, &operation_results, &infra_cache)
+                    .expect("Update generated data failed");
+            }
 
-        // Generate errors
-        generate_errors(conn, infra.id, &infra_cache, &chartos_config)?;
+            // Bump infra generated version to the infra version
+            infra.bump_generated_version(conn)?;
 
-        // Bump infra generated version to the infra version
-        infra.bump_generated_version(conn)?;
+            Ok((operation_results, invalid_zone))
+        })
+        .await?;
 
-        // Check for warnings and errors
-        Ok(Json(operation_results))
-    })
-    .await
+    if invalid_zone.geo.is_valid() {
+        generate::invalidate_after_update(infra, &invalid_zone, chartos_config).await;
+    }
+
+    Ok(Json(operation_results))
 }
 
 /// Return the list of errors of an infra

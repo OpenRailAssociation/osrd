@@ -1,8 +1,8 @@
 mod bounding_box;
-mod invalidate_chartos;
 
 pub use bounding_box::{BoundingBox, InvalidationZone};
-pub use invalidate_chartos::{invalidate_bbox_chartos_layer, invalidate_chartos_layer};
+use reqwest::Client;
+use serde_json::json;
 
 use crate::client::ChartosConfig;
 use crate::infra_cache::InfraCache;
@@ -14,6 +14,7 @@ use diesel::sql_query;
 use diesel::sql_types::{Array, Integer, Text};
 use std::collections::HashSet;
 
+#[async_trait]
 pub trait Layer {
     fn get_table_name() -> &'static str;
     fn generate_layer_query() -> &'static str;
@@ -22,11 +23,8 @@ pub trait Layer {
     fn get_obj_type() -> ObjectType;
 
     /// Clear and regenerate fully the layer of a given infra id
-    fn refresh(
-        conn: &PgConnection,
-        infra: i32,
-        chartos_config: &ChartosConfig,
-    ) -> Result<(), Error> {
+    /// You need to invalidate chartos layer afterwards
+    fn refresh(conn: &PgConnection, infra: i32) -> Result<(), Error> {
         // Clear layer
         sql_query(format!(
             "DELETE FROM {} WHERE infra_id = $1",
@@ -38,7 +36,6 @@ pub trait Layer {
         sql_query(Self::generate_layer_query())
             .bind::<Integer, _>(infra)
             .execute(conn)?;
-        invalidate_chartos_layer(infra, Self::layer_name(), chartos_config);
         Ok(())
     }
 
@@ -92,14 +89,65 @@ pub trait Layer {
         Ok(())
     }
 
-    /// Search and update all  objects that needs to be refreshed given a list of operation.
+    /// Invalidate a part of chartos layer cache.
+    /// Panic if the request failed
+    async fn invalidate_bbox_chartos_layer(
+        infra_id: i32,
+        zone: &InvalidationZone,
+        chartos_config: &ChartosConfig,
+    ) {
+        let resp = Client::new()
+            .post(format!(
+                "{}layer/{}/invalidate_bbox/?infra={}",
+                chartos_config.url(),
+                Self::layer_name(),
+                infra_id
+            ))
+            .json(&json!([
+                {
+                    "view": "geo",
+                    "bbox": zone.geo,
+                },
+                {
+                    "view": "sch",
+                    "bbox": zone.sch,
+                }
+            ]))
+            .bearer_auth(&chartos_config.chartos_token)
+            .send()
+            .await
+            .expect("Failed to send invalidate request to chartos");
+        if !resp.status().is_success() {
+            panic!("Failed to invalidate chartos layer: {}", resp.status());
+        }
+    }
+
+    /// Invalidate a whole chartos layer cache.
+    /// Panic if the request failed
+    async fn invalidate_chartos_layer(infra_id: i32, chartos_config: &ChartosConfig) {
+        let resp = Client::new()
+            .post(format!(
+                "{}layer/{}/invalidate/?infra={}",
+                chartos_config.url(),
+                Self::layer_name(),
+                infra_id
+            ))
+            .bearer_auth(&chartos_config.chartos_token)
+            .send()
+            .await
+            .expect("Failed to send invalidate request to chartos");
+        if !resp.status().is_success() {
+            panic!("Failed to invalidate chartos layer: {}", resp.status());
+        }
+    }
+
+    /// Search and update all objects that needs to be refreshed given a list of operation.
+    /// You need to invalidate chartos layer afterwards
     fn update(
         conn: &PgConnection,
         infra: i32,
         operations: &Vec<OperationResult>,
         infra_cache: &InfraCache,
-        invalid_zone: &InvalidationZone,
-        chartos_config: &ChartosConfig,
     ) -> Result<(), Error> {
         let mut update_obj_ids = HashSet::new();
         let mut delete_obj_ids = HashSet::new();
@@ -133,8 +181,6 @@ pub trait Layer {
 
         Self::delete_list(conn, infra, delete_obj_ids)?;
         Self::update_list(conn, infra, update_obj_ids)?;
-
-        invalidate_bbox_chartos_layer(infra, Self::layer_name(), invalid_zone, chartos_config);
 
         Ok(())
     }
