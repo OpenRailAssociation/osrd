@@ -98,10 +98,12 @@ public class STDCMPathfinding {
         var parts = new ArrayList<EnvelopePart>();
         double offset = 0;
         for (var edge : edges) {
-            var envelope = Envelope.make(edge.edge().envelope().slice(0, Math.abs(edge.end() - edge.start())));
-            for (var part : envelope)
+            var envelope = edge.edge().envelope();
+            var sliceUntil = Math.min(envelope.getEndPos(), Math.abs(edge.end() - edge.start()));
+            var slicedEnvelope = Envelope.make(envelope.slice(0, sliceUntil));
+            for (var part : slicedEnvelope)
                 parts.add(part.copyAndShift(offset));
-            offset += edge.edge().envelope().getEndPos();
+            offset = parts.get(parts.size() - 1).getEndPos();
         }
         var newEnvelope = Envelope.make(parts.toArray(new EnvelopePart[0]));
         var finalEnvelope = addBrakingCurves(newEnvelope, rollingStock, physicsPath, timeStep);
