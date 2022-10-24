@@ -21,9 +21,25 @@ const unitKmSquare = [
 
 const unitKmLine = [convertKmCoordsToDegree([0, 0]), convertKmCoordsToDegree([1, 0])];
 
+const makeSideDimensions = (headUp = 0, tailDown = 0) => ({
+  head: {
+    left: 0,
+    right: 0,
+    up: headUp,
+    upWidth: 0,
+    down: 0,
+  },
+  tail: {
+    left: 0,
+    right: 0,
+    up: 0,
+    upWidth: 0,
+    down: tailDown,
+  },
+});
 describe('makeDisplayedHeadAndTail', () => {
   describe('normal train', () => {
-    it('should return train head and tail to display', () => {
+    it('should return train head and tail distance along the path', () => {
       const trainPosition: TrainPosition = {
         id: 'train',
         headPosition: pointFromKmCoords([1, 0]),
@@ -35,9 +51,56 @@ describe('makeDisplayedHeadAndTail', () => {
       };
       const pathPoints = unitKmSquare;
       const pathLineString = lineString(pathPoints);
-      const { head, tail } = makeDisplayedHeadAndTail(trainPosition, pathLineString);
+      const sideDimensions = makeSideDimensions();
+      const { headDistance: head, tailDistance: tail } = makeDisplayedHeadAndTail(
+        trainPosition,
+        pathLineString,
+        sideDimensions
+      );
       expect(head).toEqual(1);
       expect(tail).toEqual(0);
+    });
+    it('should take the size of the tail and head triangle into account', () => {
+      const trainPosition: TrainPosition = {
+        id: 'train',
+        headPosition: pointFromKmCoords([1, 0]),
+        tailPosition: pointFromKmCoords([0, 0]),
+        headDistanceAlong: 1,
+        tailDistanceAlong: 0,
+        speedTime: { speed: 0, time: 0 },
+        trainLength: 1,
+      };
+      const pathPoints = unitKmSquare;
+      const pathLineString = lineString(pathPoints);
+      const sideDimensions = makeSideDimensions(0.1, 0.1);
+      const { headDistance: head, tailDistance: tail } = makeDisplayedHeadAndTail(
+        trainPosition,
+        pathLineString,
+        sideDimensions
+      );
+      expect(head).toEqual(0.9);
+      expect(tail).toEqual(0.1);
+    });
+    it('should avoid overlapping head and tail. Head should be exact/tail should not exceed over the head', () => {
+      const trainPosition: TrainPosition = {
+        id: 'train',
+        headPosition: pointFromKmCoords([1, 0]),
+        tailPosition: pointFromKmCoords([0, 0]),
+        headDistanceAlong: 1,
+        tailDistanceAlong: 0,
+        speedTime: { speed: 0, time: 0 },
+        trainLength: 1,
+      };
+      const pathPoints = unitKmSquare;
+      const pathLineString = lineString(pathPoints);
+      const sideDimensions = makeSideDimensions(0.6, 0.7);
+      const { headDistance: head, tailDistance: tail } = makeDisplayedHeadAndTail(
+        trainPosition,
+        pathLineString,
+        sideDimensions
+      );
+      expect(head).toEqual(0.4);
+      expect(tail).toEqual(0.4);
     });
   });
   describe('backward train', () => {
@@ -53,7 +116,12 @@ describe('makeDisplayedHeadAndTail', () => {
       };
       const pathPoints = unitKmSquare;
       const pathLineString = lineString(pathPoints);
-      const { head, tail } = makeDisplayedHeadAndTail(trainPosition, pathLineString);
+      const sideDimensions = makeSideDimensions();
+      const { headDistance: head, tailDistance: tail } = makeDisplayedHeadAndTail(
+        trainPosition,
+        pathLineString,
+        sideDimensions
+      );
       expect(head).toEqual(1);
       expect(tail).toEqual(0);
     });
@@ -71,7 +139,12 @@ describe('makeDisplayedHeadAndTail', () => {
       };
       const pathPoints = unitKmLine;
       const pathLineString = lineString(pathPoints);
-      const { head, tail } = makeDisplayedHeadAndTail(trainPosition, pathLineString);
+      const sideDimensions = makeSideDimensions();
+      const { headDistance: head, tailDistance: tail } = makeDisplayedHeadAndTail(
+        trainPosition,
+        pathLineString,
+        sideDimensions
+      );
       expect(head).toBeCloseTo(1, 6);
       expect(tail).toBeCloseTo(1, 6);
     });
