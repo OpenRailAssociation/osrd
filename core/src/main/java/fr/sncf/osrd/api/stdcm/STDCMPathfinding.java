@@ -37,20 +37,28 @@ public class STDCMPathfinding {
             Set<Pathfinding.EdgeLocation<SignalingRoute>> startLocations,
             Set<Pathfinding.EdgeLocation<SignalingRoute>> endLocations,
             Multimap<SignalingRoute, OccupancyBlock> unavailableTimes,
-            double timeStep
+            double timeStep,
+            double maxDepartureDelay,
+            double maxRunTime
     ) {
-        var graph = new STDCMGraph(infra, rollingStock, timeStep, unavailableTimes);
+        var graph = new STDCMGraph(infra, rollingStock, timeStep, unavailableTimes, maxRunTime, startTime);
         var path = new Pathfinding<>(graph)
                 .setEdgeToLength(edge -> edge.route().getInfraRoute().getLength())
                 .setRemainingDistanceEstimator(makeAStarHeuristic(endLocations, rollingStock))
                 .setEdgeRangeCost(STDCMPathfinding::edgeRangeCost)
                 .runPathfinding(
-                        convertLocations(graph, startLocations, startTime),
+                        convertLocations(graph, startLocations, startTime, maxDepartureDelay),
                         makeObjectiveFunction(endLocations)
                 );
         if (path == null)
             return null;
-        return makeResult(path, rollingStock, timeStep, startTime);
+        var res = makeResult(path, rollingStock, timeStep, startTime);
+        if (res.envelope().getTotalTime() > maxRunTime) {
+            // This can happen if the destination is one edge away from being reachable in time,
+            // as we only check the time at the start of an edge when exploring the graph
+            return null;
+        }
+        return res;
     }
 
     /** Make the objective function from the edge locations */
@@ -120,6 +128,8 @@ public class STDCMPathfinding {
         for (var edge : edges) {
             var envelope = edge.edge().envelope();
             var sliceUntil = Math.min(envelope.getEndPos(), Math.abs(edge.end() - edge.start()));
+            if (sliceUntil == 0)
+                continue;
             var slicedEnvelope = Envelope.make(envelope.slice(0, sliceUntil));
             for (var part : slicedEnvelope)
                 parts.add(part.copyAndShift(offset));
@@ -183,13 +193,13 @@ public class STDCMPathfinding {
     private static Set<Pathfinding.EdgeLocation<STDCMGraph.Edge>> convertLocations(
             STDCMGraph graph,
             Set<Pathfinding.EdgeLocation<SignalingRoute>> locations,
-            double startTime
+            double startTime,
+            double maxDepartureDelay
     ) {
         var res = new HashSet<Pathfinding.EdgeLocation<STDCMGraph.Edge>>();
         for (var location : locations) {
             var start = location.offset();
-            var maximumDelay = 3600 * 24; // Placeholder, there will probably be a parameter eventually
-            for (var edge : graph.makeEdges(location.edge(), startTime, 0, start, maximumDelay))
+            for (var edge : graph.makeEdges(location.edge(), startTime, 0, start, maxDepartureDelay, 0))
                 res.add(new Pathfinding.EdgeLocation<>(edge, location.offset()));
         }
         return res;
