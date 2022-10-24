@@ -1,6 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { Layer, Source, Marker } from 'react-map-gl';
+import along from '@turf/along';
 import lineSliceAlong from '@turf/line-slice-along';
 import length from '@turf/length';
 import bezierSpline from '@turf/bezier-spline';
@@ -65,7 +66,7 @@ export function makeDisplayedHeadAndTail(
     head: TriangleSideDimensions;
     tail: TriangleSideDimensions;
   }
-): { [key: string]: number } {
+) {
   const pathLength = length(geojsonPath);
   const [trueTail, trueHead] = [point.tailDistanceAlong, point.headDistanceAlong].sort(
     (a, b) => a - b
@@ -78,10 +79,14 @@ export function makeDisplayedHeadAndTail(
     boundedTail + sideDimensions.tail.down,
     boundedHeadMinusTriangle
   );
+  const headPosition = along(geojsonPath, boundedHeadMinusTriangle);
+  const tailPosition = along(geojsonPath, boundedTailPlusTriangle);
   return {
-    head: boundedHeadMinusTriangle,
+    headDistance: boundedHeadMinusTriangle,
     middle,
-    tail: boundedTailPlusTriangle,
+    tailDistance: boundedTailPlusTriangle,
+    headPosition,
+    tailPosition,
   };
 }
 
@@ -89,7 +94,7 @@ function getzoomPowerOf2LengthFactor(viewport: Viewport, threshold = 12) {
   return 2 ** (threshold - viewport?.zoom);
 }
 
-function getFactor(zoomLengthFactor: number, size = 1) {
+function getTriangleSideDimensions(zoomLengthFactor: number, size = 1) {
   const scaleNumber = (x: number) => x * zoomLengthFactor * size;
   const head = {
     left: 0.05,
@@ -142,11 +147,15 @@ function getTrainPieces(
   geojsonPath: Feature<LineString>,
   zoomLengthFactor: number
 ) {
-  const sideDimensions = getFactor(zoomLengthFactor, 2);
-  const { tail, head } = makeDisplayedHeadAndTail(point, geojsonPath, sideDimensions);
-  const trainGeoJsonPath = lineSliceAlong(geojsonPath, tail, head);
-  const headTriangle = getHeadTriangle(trainGeoJsonPath, point.headPosition, sideDimensions.head);
-  const rearTriangle = getHeadTriangle(trainGeoJsonPath, point.tailPosition, sideDimensions.tail);
+  const sideDimensions = getTriangleSideDimensions(zoomLengthFactor, 2);
+  const { tailDistance, headDistance, headPosition, tailPosition } = makeDisplayedHeadAndTail(
+    point,
+    geojsonPath,
+    sideDimensions
+  );
+  const trainGeoJsonPath = lineSliceAlong(geojsonPath, tailDistance, headDistance);
+  const headTriangle = getHeadTriangle(trainGeoJsonPath, headPosition, sideDimensions.head);
+  const rearTriangle = getHeadTriangle(trainGeoJsonPath, tailPosition, sideDimensions.tail);
   return [trainGeoJsonPath, headTriangle, rearTriangle];
 }
 
