@@ -96,7 +96,7 @@ function getFactor(zoomLengthFactor: number, size = 1) {
   const tail = {
     left: 0.05,
     right: 0.05,
-    up: 0.1,
+    up: 0.05,
     upWidth: 0.019,
     down: 0.02,
   };
