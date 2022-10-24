@@ -42,6 +42,20 @@ export const SNCFCOLORS = {
   coolgray1: '#f2f2f2',
 };
 
+export const SNCFCOLORSONLY = {
+  blue: '#0088ce',
+  purple: '#6e1e78',
+  pink: '#a1006b',
+  red: '#cd0037',
+  redassistance: '#d52b1e',
+  orange: '#e05206',
+  yellow: '#ffb612',
+  green: '#82be00',
+  teal: '#d2e100',
+  cyan: '#009aa6',
+  carbon: '#333333',
+};
+
 export const DUMMYCONST = null;
 
 export const MODES = {

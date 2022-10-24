@@ -1,8 +1,7 @@
 import * as d3 from 'd3';
-import { select as d3select } from 'd3-selection';
-import { gridX, gridY } from 'applications/osrd/components/Helpers/ChartHelpers';
+import { gridX, gridY } from 'applications/customget/components/ChartHelpers';
 import nextId from 'react-id-generator';
-import svgDefs from 'applications/osrd/components/Simulation/svgDefs';
+import svgDefs from 'applications/customget/components/svgDefs';
 
 const defineChart = (svgWidth, svgHeight, defineX, defineY, ref, rotate, keyValues, id) => {
   const margin = {
@@ -15,7 +14,8 @@ const defineChart = (svgWidth, svgHeight, defineX, defineY, ref, rotate, keyValu
   const height = svgHeight - margin.top - margin.bottom;
 
   // Container for easy removing
-  const svg = d3select(ref.current)
+  const svg = d3
+    .select(ref.current)
     .append('div')
     .attr('id', id)
     .append('svg')
