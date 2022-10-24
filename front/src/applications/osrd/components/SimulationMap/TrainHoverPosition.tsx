@@ -142,6 +142,18 @@ function getHeadTriangle(
   return triangle;
 }
 
+function getTrainGeoJsonPath(
+  geojsonPath: Feature<LineString>,
+  tailDistance: number,
+  headDistance: number
+) {
+  const threshold = 0.0005;
+  if (headDistance - tailDistance > threshold) {
+    return lineSliceAlong(geojsonPath, tailDistance, headDistance);
+  }
+  return lineSliceAlong(geojsonPath, headDistance - threshold, headDistance);
+}
+
 function getTrainPieces(
   point: TrainPosition,
   geojsonPath: Feature<LineString>,
@@ -153,7 +165,7 @@ function getTrainPieces(
     geojsonPath,
     sideDimensions
   );
-  const trainGeoJsonPath = lineSliceAlong(geojsonPath, tailDistance, headDistance);
+  const trainGeoJsonPath = getTrainGeoJsonPath(geojsonPath, tailDistance, headDistance);
   const headTriangle = getHeadTriangle(trainGeoJsonPath, headPosition, sideDimensions.head);
   const rearTriangle = getHeadTriangle(trainGeoJsonPath, tailPosition, sideDimensions.tail);
   return [trainGeoJsonPath, headTriangle, rearTriangle];
