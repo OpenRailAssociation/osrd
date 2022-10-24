@@ -19,9 +19,15 @@ export default function createChart(
   d3select(`#${chartID}`).remove();
 
   const dataSimulationTime = d3.extent(
-    dataSimulation.map((train) =>
-      d3.extent(
-        train.routeBeginOccupancy.map((section) => d3.extent(section, (step) => step[keyValues[0]]))
+    [].concat(
+      ...dataSimulation.map((train) =>
+        d3.extent(
+          [].concat(
+            ...train.routeBeginOccupancy.map((section) =>
+              d3.extent(section, (step) => step[keyValues[0]])
+            )
+          )
+        )
       )
     )
   );
