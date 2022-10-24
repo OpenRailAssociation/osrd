@@ -152,8 +152,8 @@ interface TrainHoverPositionProps {
 }
 
 const labelShiftFactor = {
-  long: 1 / 450,
-  lat: 1 / 1000,
+  long: 0.005,
+  lat: 0.0011,
 };
 
 function TrainHoverPosition(props: TrainHoverPositionProps) {
