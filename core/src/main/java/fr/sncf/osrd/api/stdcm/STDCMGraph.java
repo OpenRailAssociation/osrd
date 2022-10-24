@@ -15,6 +15,9 @@ import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Graph;
 import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Set;
 
 /** This is the class that encodes the STDCM problem as a graph on which we can run our pathfinding implementation.
  *
@@ -27,6 +30,8 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
     public final SignalingInfra infra;
     public final RollingStock rollingStock;
     public final double timeStep;
+    public final double maxRunTime;
+    public final double minScheduleTimeStart;
     private final Multimap<SignalingRoute, OccupancyBlock> unavailableTimes;
 
     /** Constructor */
@@ -34,12 +39,16 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
             SignalingInfra infra,
             RollingStock rollingStock,
             double timeStep,
-            Multimap<SignalingRoute, OccupancyBlock> unavailableTimes
+            Multimap<SignalingRoute, OccupancyBlock> unavailableTimes,
+            double maxRunTime,
+            double minScheduleTimeStart
     ) {
         this.infra = infra;
         this.rollingStock = rollingStock;
         this.timeStep = timeStep;
         this.unavailableTimes = unavailableTimes;
+        this.maxRunTime = maxRunTime;
+        this.minScheduleTimeStart = minScheduleTimeStart;
     }
 
     public record Edge(
@@ -54,7 +63,9 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
             // Delay we needed to add in this route to avoid conflicts (by shifting the departure time)
             double addedDelay,
             // Time of the next occupancy of the route, used for hash / equality test
-            double timeNextOccupancy
+            double timeNextOccupancy,
+            // Total delay we have added by shifting the departure time since the start of the path
+            double totalDepartureTimeShift
     ) {
         @Override
         @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
@@ -85,7 +96,8 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
             double time,
             double speed,
             DiDetector detector,
-            double maximumAddedDelay // Maximum delay we can add by delaying the start time without causing conflicts
+            double maximumAddedDelay, // Maximum delay we can add by delaying the start time without causing conflicts
+            double totalPrevAddedDelay // Sum of all the delays we have added by shifting the departure time
     ) {}
 
     @Override
@@ -94,16 +106,24 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
                 edge.envelope.getTotalTime() + edge.timeStart,
                 edge.envelope.getEndSpeed(),
                 infra.getSignalingRouteGraph().incidentNodes(edge.route).nodeV(),
-                edge.maximumAddedDelayAfter
+                edge.maximumAddedDelayAfter,
+                edge.totalDepartureTimeShift
         );
     }
 
     @Override
     public Collection<Edge> getAdjacentEdges(Node node) {
-        var neighbors = infra.getSignalingRouteGraph().outEdges(node.detector);
         var res = new ArrayList<Edge>();
+        var neighbors = infra.getSignalingRouteGraph().outEdges(node.detector);
         for (var neighbor : neighbors) {
-            res.addAll(makeEdges(neighbor, node.time, node.speed, 0, node.maximumAddedDelay));
+            res.addAll(makeEdges(
+                    neighbor,
+                    node.time,
+                    node.speed,
+                    0,
+                    node.maximumAddedDelay,
+                    node.totalPrevAddedDelay
+            ));
         }
         return res;
     }
@@ -130,7 +150,8 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
             double startTime,
             double startSpeed,
             double start,
-            double prevMaximumAddedDelay
+            double prevMaximumAddedDelay,
+            double prevAddedDelay
     ) {
         var envelope = simulateRoute(route, startSpeed, start, rollingStock, timeStep);
         if (envelope == null)
@@ -146,14 +167,17 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
                     prevMaximumAddedDelay - delayNeeded,
                     findMaximumAddedDelay(route, startTime + delayNeeded, envelope)
             );
-            res.add(new Edge(
+            var newEdge = new Edge(
                     route,
                     envelope,
                     startTime + delayNeeded,
                     maximumDelay,
                     delayNeeded,
-                    findNextOccupancy(route, startTime + delayNeeded)
-            ));
+                    findNextOccupancy(route, startTime + delayNeeded),
+                    prevAddedDelay + delayNeeded
+            );
+            if (!isRunTimeTooLong(newEdge))
+                res.add(newEdge);
         }
         return res;
     }
@@ -168,6 +192,15 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
             earliest = Math.min(earliest, occupancyTime);
         }
         return earliest;
+    }
+
+    /** Returns true if the total run time at the start of the edge is above the specified threshold */
+    private boolean isRunTimeTooLong(Edge edge) {
+        var totalRunTime = edge.timeStart - edge.totalDepartureTimeShift - minScheduleTimeStart;
+        // We could use the A* heuristic here, but it would break STDCM on any infra where the
+        // coordinates don't match the actual distance (which is the case when generated).
+        // Ideally we should add a switch in the railjson format
+        return totalRunTime > maxRunTime;
     }
 
     /** Returns an envelope matching the given route. The envelope time starts when the train enters the route.

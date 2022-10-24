@@ -535,15 +535,25 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Waypoint"
-            minimum: 1
+          minimum: 1
         end_points:
           type: array
           items:
             $ref: "#/components/schemas/Waypoint"
-            minimum: 1
+          minimum: 1
         time_step:
           type: number
           format: double
+        maximum_departure_delay:
+          type: number
+          format: double
+          description: By how long we can shift the departure time (s). Defaults to 2h if unspecified.
+        maximum_relative_run_time:
+          type: number
+          format: double
+          description: |
+            How much longer the total run time can be compared to the shortest path on an empty timetable.
+            Defaults to 2 if unspecified, meaning that the result can't take more than twice the minimum time.
     SimulationRequest:
       required:
         - infra
