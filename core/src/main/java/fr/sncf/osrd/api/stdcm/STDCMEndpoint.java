@@ -4,23 +4,27 @@ import fr.sncf.osrd.api.ExceptionHandler;
 import fr.sncf.osrd.api.InfraManager;
 import fr.sncf.osrd.api.pathfinding.PathfindingResultConverter;
 import fr.sncf.osrd.api.pathfinding.PathfindingRoutesEndpoint;
+import fr.sncf.osrd.api.pathfinding.RemainingDistanceEstimator;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.api.pathfinding.response.NoPathFoundError;
 import fr.sncf.osrd.envelope.Envelope;
-import fr.sncf.osrd.envelope_sim.PhysicsPath;
 import fr.sncf.osrd.envelope_sim_infra.MRSP;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
+import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.standalone_sim.ScheduleMetadataExtractor;
+import fr.sncf.osrd.standalone_sim.StandaloneSim;
 import fr.sncf.osrd.standalone_sim.result.ResultEnvelopePoint;
 import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.train.TrainStop;
+import fr.sncf.osrd.utils.graph.GraphAdapter;
+import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.graph.Pathfinding.EdgeLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,6 +87,7 @@ public class STDCMEndpoint implements Take {
                     occupancies,
                     rollingStock
             );
+            double minRunTime = getMinRunTime(infra, rollingStock, startLocations, endLocations, request.timeStep);
             // Run the STDCM pathfinding
             var res = STDCMPathfinding.findPath(
                     infra,
@@ -92,7 +97,9 @@ public class STDCMEndpoint implements Take {
                     startLocations,
                     endLocations,
                     unavailableSpace,
-                    request.timeStep
+                    request.timeStep,
+                    request.maximumDepartureDelay,
+                    request.maximumRelativeRunTime * minRunTime
             );
             if (res == null) {
                 var error = new NoPathFoundError("No path could be found");
@@ -117,6 +124,45 @@ public class STDCMEndpoint implements Take {
         } catch (Throwable ex) {
             return ExceptionHandler.handle(ex);
         }
+    }
+
+    /** Find the minimum run time to go from start to end, assuming the timetable is empty.
+     * Returns 0 if we can't find a valid path. */
+    private double getMinRunTime(
+            SignalingInfra infra,
+            RollingStock rollingStock,
+            Set<EdgeLocation<SignalingRoute>> startLocations,
+            Set<EdgeLocation<SignalingRoute>> endLocations,
+            double timeStep
+    ) {
+        var remainingDistanceEstimator = new RemainingDistanceEstimator(endLocations);
+        var rawPath = new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
+                .setEdgeToLength(route -> route.getInfraRoute().getLength())
+                .setRemainingDistanceEstimator(remainingDistanceEstimator)
+                .runPathfinding(List.of(startLocations, endLocations));
+        if (rawPath == null)
+            return 0;
+        var routes = rawPath.ranges().stream()
+                .map(Pathfinding.EdgeRange::edge)
+                .toList();
+        var startLocation = routes.get(0).getInfraRoute().getTrackRanges().get(0).offsetLocation(0);
+        var lastRoute = routes.get(routes.size() - 1).getInfraRoute();
+        var lastTrack = lastRoute.getTrackRanges().get(lastRoute.getTrackRanges().size() - 1);
+        var path = TrainPathBuilder.from(routes, startLocation, lastTrack.offsetLocation(0));
+        var standaloneResult = StandaloneSim.run(
+                infra,
+                path,
+                List.of(new StandaloneTrainSchedule(
+                        rollingStock,
+                        0,
+                        List.of(new TrainStop(path.length(), 0.1)),
+                        List.of(),
+                        List.of()
+                )),
+                timeStep
+        );
+        var headPositions = standaloneResult.baseSimulations.get(0).headPositions;
+        return headPositions.get(headPositions.size() - 1).time;
     }
 
     /** Generate a train schedule matching the envelope and rolling stock, with one stop at the end */

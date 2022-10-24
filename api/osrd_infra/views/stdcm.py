@@ -84,6 +84,15 @@ def make_stdcm_core_payload(request):
         res["start_time"] = request["start_time"]
     else:
         res["end_time"] = request["end_time"]
+
+    optional_forwarded_parameters = [
+        "maximum_departure_delay",
+        "maximum_relative_run_time",
+    ]
+    for parameter in optional_forwarded_parameters:
+        if parameter in request:
+            res[parameter] = request[parameter]
+
     return res
 
 
