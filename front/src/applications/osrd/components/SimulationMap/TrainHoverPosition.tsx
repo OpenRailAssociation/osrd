@@ -73,10 +73,15 @@ export function makeDisplayedHeadAndTail(
   const boundedHead = boundedValue(trueHead, 0, pathLength);
   const boundedTail = boundedValue(trueTail, 0, pathLength);
   const middle = (boundedHead + boundedTail) / 2;
+  const boundedHeadMinusTriangle = boundedHead - sideDimensions.head.up;
+  const boundedTailPlusTriangle = Math.min(
+    boundedTail + sideDimensions.tail.down,
+    boundedHeadMinusTriangle
+  );
   return {
-    head: boundedHead,
+    head: boundedHeadMinusTriangle,
     middle,
-    tail: boundedTail,
+    tail: boundedTailPlusTriangle,
   };
 }
 
