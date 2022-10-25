@@ -13,9 +13,10 @@ pub fn routes() -> HashMap<&'static str, Vec<Route>> {
 }
 
 #[get("/health")]
-pub fn health(conn: DBConnection) -> &'static str {
+pub async fn health(conn: DBConnection) -> &'static str {
     // Check DB connection
-    sql_query("SELECT 1").execute(&conn.0).unwrap();
+    conn.run(|conn| sql_query("SELECT 1").execute(conn).unwrap())
+        .await;
     "ok"
 }
 
@@ -23,7 +24,7 @@ pub fn health(conn: DBConnection) -> &'static str {
 mod tests {
     use crate::create_server;
     use rocket::http::Status;
-    use rocket::local::Client;
+    use rocket::local::blocking::Client;
 
     #[test]
     fn health() {
@@ -33,7 +34,7 @@ mod tests {
             &Default::default(),
             Default::default(),
         );
-        let client = Client::new(rocket).expect("valid rocket instance");
+        let client = Client::tracked(rocket).expect("valid rocket instance");
         let response = client.get("/health").dispatch();
         assert_eq!(response.status(), Status::Ok);
     }

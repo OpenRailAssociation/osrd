@@ -159,13 +159,20 @@ public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelop
     public long interpolateTotalTimeMS(double position) {
         assert continuous : "interpolating times on a non continuous envelope is a risky business";
         var envelopePartIndex = findLeft(position);
-        assert envelopePartIndex != -1 : "Trying to interpolate time outside of the envelope";
+        assert envelopePartIndex >= 0 : "Trying to interpolate time outside of the envelope";
         var envelopePart = get(envelopePartIndex);
         return getCumulativeTimeMS(envelopePartIndex) + envelopePart.interpolateTotalTimeMS(position);
     }
 
     /** Computes the time required to get to a given point of the envelope */
     public double interpolateTotalTime(double position) {
+        return ((double) interpolateTotalTimeMS(position)) / 1000;
+    }
+
+    /** Computes the time required to get to a given point of the envelope.
+     * The value is clamped to the [0, envelope length] range. */
+    public double interpolateTotalTimeClamp(double position) {
+        position = Math.min(getEndPos(), Math.max(0, position));
         return ((double) interpolateTotalTimeMS(position)) / 1000;
     }
 

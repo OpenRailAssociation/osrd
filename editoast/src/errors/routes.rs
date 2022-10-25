@@ -9,6 +9,27 @@ use diesel::{sql_query, PgConnection, RunQueryDsl};
 use serde_json::{to_value, Value};
 use strum::IntoEnumIterator;
 
+pub fn insert_errors<'a>(
+    conn: &PgConnection,
+    infra_id: i32,
+    infra_cache: &InfraCache,
+    graph: &Graph<'a>,
+) -> Result<(), DieselError> {
+    let infra_errors = generate_errors(infra_cache, graph);
+
+    let errors: Vec<Value> = infra_errors
+        .iter()
+        .map(|error| to_value(error).unwrap())
+        .collect();
+    let count = sql_query(include_str!("sql/routes_insert_errors.sql"))
+        .bind::<Integer, _>(infra_id)
+        .bind::<Array<Json>, _>(&errors)
+        .execute(conn)?;
+    assert_eq!(count, infra_errors.len());
+
+    Ok(())
+}
+
 /// Given an ObjectRef, retrieve the id and position of its track section
 /// If the object type is not a detector or a buffer stop, return `None`
 /// If there is an invalid reference, return `None`
@@ -49,28 +70,6 @@ fn get_matching_endpoint_error(
     } else {
         None
     }
-}
-
-pub fn insert_errors(
-    conn: &PgConnection,
-    infra_id: i32,
-    infra_cache: &InfraCache,
-    graph: &Graph,
-) -> Result<(), DieselError> {
-    let infra_errors = generate_errors(infra_cache, graph);
-
-    let errors: Vec<Value> = infra_errors
-        .iter()
-        .map(|error| to_value(error).unwrap())
-        .collect();
-
-    let count = sql_query(include_str!("sql/routes_insert_errors.sql"))
-        .bind::<Integer, _>(infra_id)
-        .bind::<Array<Json>, _>(&errors)
-        .execute(conn)?;
-    assert_eq!(count, infra_errors.len());
-
-    Ok(())
 }
 
 pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraError> {

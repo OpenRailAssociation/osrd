@@ -1,4 +1,5 @@
 import * as d3 from 'd3';
+import { drag as d3drag } from 'd3-drag';
 
 import { getDirection } from 'applications/osrd/components/Helpers/ChartHelpers';
 import { updateContextMenu, updateMustRedraw, updateSelectedTrain } from 'reducers/osrdsimulation';
@@ -7,7 +8,7 @@ import drawCurve from 'applications/osrd/components/Simulation/drawCurve';
 import drawRect from 'applications/osrd/components/Simulation/drawRect';
 import drawText from 'applications/osrd/components/Simulation/drawText';
 import {
-  departureArrivalTimes,
+  makeDepartureArrivalTimes,
   updateDepartureArrivalTimes,
 } from '../../../../../reducers/osrdsimulation';
 
@@ -64,8 +65,7 @@ export default function drawTrain(
     }, interval);
   }
 
-  const drag = d3
-    .drag()
+  const drag = d3drag()
     .on('end', () => {
       dragTimeOffset(dragFullOffset, true);
       setDragEnding(true);
@@ -75,10 +75,10 @@ export default function drawTrain(
       dragFullOffset = 0;
       dispatch(updateSelectedTrain(dataSimulation.trainNumber));
     })
-    .on('drag', () => {
-      dragFullOffset += rotate ? d3.event.dy : d3.event.dx;
+    .on('drag', (event) => {
+      dragFullOffset += rotate ? event.dy : event.dx;
       const value = getDragOffsetValue(dragFullOffset);
-      const newDepartureArrivalTimes = departureArrivalTimes(simulation, value);
+      const newDepartureArrivalTimes = makeDepartureArrivalTimes(simulation, value);
       debounceUpdateDepartureArrivalTimes(newDepartureArrivalTimes, 15);
       applyTrainCurveTranslation(dragFullOffset);
     });
@@ -89,13 +89,13 @@ export default function drawTrain(
     .attr('class', 'chartTrain')
     .attr('filter', () => (isStdcm ? `url(#stdcmFilter)` : null))
     .call(drag)
-    .on('contextmenu', () => {
-      d3.event.preventDefault();
+    .on('contextmenu', (event) => {
+      event.preventDefault();
       dispatch(
         updateContextMenu({
           id: dataSimulation.id,
-          xPos: d3.event.layerX,
-          yPos: d3.event.layerY,
+          xPos: event.layerX,
+          yPos: event.layerY,
         })
       );
       dispatch(updateSelectedTrain(dataSimulation.trainNumber));
@@ -209,10 +209,10 @@ export default function drawTrain(
     isSelected,
     `${isPathSelected ? '🎢' : ''} ${dataSimulation.name}`, // text
     dataSimulation.headPosition[0] &&
-      dataSimulation.headPosition[0][0] &&
-      dataSimulation.headPosition[0][0].time, // x
+    dataSimulation.headPosition[0][0] &&
+    dataSimulation.headPosition[0][0].time, // x
     dataSimulation.headPosition[0] &&
-      dataSimulation.headPosition[0][0] &&
-      dataSimulation.headPosition[0][0].position // y
+    dataSimulation.headPosition[0][0] &&
+    dataSimulation.headPosition[0][0].position // y
   );
 }

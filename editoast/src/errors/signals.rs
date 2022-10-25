@@ -17,7 +17,6 @@ pub fn insert_errors(
         .iter()
         .map(|error| to_value(error).unwrap())
         .collect();
-
     let count = sql_query(include_str!("sql/signals_insert_errors.sql"))
         .bind::<Integer, _>(infra_id)
         .bind::<Array<Json>, _>(&errors)

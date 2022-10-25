@@ -1,10 +1,7 @@
-#![feature(decl_macro)]
 #[macro_use]
 extern crate rocket;
 #[macro_use]
 extern crate diesel;
-#[macro_use]
-extern crate rocket_contrib;
 
 mod api_error;
 mod client;
@@ -26,15 +23,15 @@ use db_connection::DBConnection;
 use diesel::{Connection, PgConnection};
 use infra::Infra;
 use infra_cache::InfraCache;
-use rocket::config::{Limits, Value};
-use rocket::Rocket;
+use rocket::{Build, Config, Rocket};
 use rocket_cors::CorsOptions;
-use std::collections::HashMap;
 use std::error::Error;
 use std::process::exit;
+use std::sync::Arc;
 
-fn main() {
-    match run() {
+#[rocket::main]
+async fn main() {
+    match run().await {
         Ok(_) => (),
         Err(e) => {
             eprintln!("{}", e);
@@ -43,41 +40,33 @@ fn main() {
     }
 }
 
-fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
+async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
     let client = Client::parse();
     let pg_config = client.postgres_config;
     let chartos_config = client.chartos_config;
 
     match client.command {
-        Commands::Runserver(args) => runserver(args, pg_config, chartos_config),
-        Commands::Generate(args) => generate(args, pg_config, chartos_config),
+        Commands::Runserver(args) => runserver(args, pg_config, chartos_config).await,
+        Commands::Generate(args) => generate(args, pg_config, chartos_config).await,
     }
 }
 pub fn create_server(
-    infra_caches: CHashMap<i32, InfraCache>,
+    infra_caches: Arc<CHashMap<i32, InfraCache>>,
     port: u16,
     pg_config: &PostgresConfig,
     chartos_config: ChartosConfig,
-) -> Rocket {
+) -> Rocket<Build> {
     // Config server
-    let databases = HashMap::from([(
-        "postgres",
-        Value::from(HashMap::from([("url", Value::from(pg_config.url()))])),
-    )]);
-
-    let mut config = rocket::Config::active().unwrap();
-    config.set_port(port);
-    config
-        .extras
-        .insert("databases".to_string(), databases.into());
-
-    // Set limits to 250MiB
-    config.set_limits(Limits::default().limit("json", 250 * 1024 * 1024));
+    let mut config = Config::figment()
+        .merge(("port", port))
+        .merge(("databases.postgres.url", pg_config.url()))
+        .merge(("limits.json", 250 * 1024 * 1024)) // Set limits to 250MiB
+    ;
 
     // Set secret key
     if let Some(secret_key) = client::get_secret_key() {
-        config.set_secret_key(secret_key).unwrap();
-    } else if !config.environment.is_dev() {
+        config = config.merge(("secret_key", secret_key));
+    } else if config.profile() != "debug" {
         eprintln!(
             "{}",
             "Error: No secret key set. This is a security risk!".red()
@@ -101,7 +90,7 @@ pub fn create_server(
     rocket
 }
 
-fn runserver(
+async fn runserver(
     args: RunserverArgs,
     pg_config: PostgresConfig,
     chartos_config: ChartosConfig,
@@ -110,7 +99,7 @@ fn runserver(
     let infras = Infra::list(&conn);
 
     // Initialize infra caches
-    let infra_caches = CHashMap::new();
+    let infra_caches = Arc::new(CHashMap::new());
     for infra in infras.iter() {
         println!(
             "🍞 Loading cache for infra {}[{}]...",
@@ -125,13 +114,13 @@ fn runserver(
     let rocket = create_server(infra_caches, args.port, &pg_config, chartos_config);
 
     // Run server
-    rocket.launch();
+    let _rocket = rocket.launch().await?;
     Ok(())
 }
 
 /// Run the generate sub command
 /// This command refresh all infra given as input (if no infra given then refresh all of them)
-fn generate(
+async fn generate(
     args: GenerateArgs,
     pg_config: PostgresConfig,
     chartos_config: ChartosConfig,
@@ -159,8 +148,16 @@ fn generate(
             infra.id
         );
         let infra_cache = InfraCache::load(&conn, infra.id);
-        generate::refresh(&conn, &infra, args.force, &chartos_config, &infra_cache)?;
-        println!("✅ Infra {}[{}] generated!", infra.name.bold(), infra.id);
+        if generate::refresh(&conn, &infra, args.force, &infra_cache)? {
+            generate::invalidate_after_refresh(infra.id, &chartos_config).await;
+            println!("✅ Infra {}[{}] generated!", infra.name.bold(), infra.id);
+        } else {
+            println!(
+                "✅ Infra {}[{}] already generated!",
+                infra.name.bold(),
+                infra.id
+            );
+        }
     }
     Ok(())
 }

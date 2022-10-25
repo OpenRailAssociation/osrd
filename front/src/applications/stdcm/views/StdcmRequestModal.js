@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { get } from 'common/requests';
 // osrd Redux reducers
 import {
   updateAllowancesSettings,
@@ -27,6 +28,7 @@ import { setFailure } from 'reducers/main';
 import { STDCM_REQUEST_STATUS } from 'applications/osrd/consts';
 import { updateItinerary } from 'reducers/osrdconf';
 import { useTranslation } from 'react-i18next';
+import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
 
 export default function StdcmRequestModal(props) {
   const { t } = useTranslation(['translation', 'osrdconf']);
@@ -73,45 +75,50 @@ export default function StdcmRequestModal(props) {
             })
           );
 
-          const newSimulation = { ...simulation };
-          newSimulation.trains = [...simulation.trains];
+          const trainSchedulesIDs = simulation.trains
+            .filter((train) => !train.isStdcm)
+            .map((train) => train.id);
 
-          const indexOfExistingStdcm = newSimulation.trains.findIndex(
-            (train) => train.id === fakedNewTrain.id
-          );
-          if (indexOfExistingStdcm !== -1) newSimulation.trains.splice(indexOfExistingStdcm, 1);
-          newSimulation.trains = [...newSimulation.trains, fakedNewTrain];
+          // ask for timetable with the new path
 
-          const newAllowancesSettings = { ...allowancesSettings };
+          get(`${trainscheduleURI}results/`, {
+            train_ids: trainSchedulesIDs.join(','),
+            path: result.path.id,
+          }).then((simulationLocal) => {
+            const newSimulation = {};
+            newSimulation.trains = [...simulationLocal];
+            newSimulation.trains = [...newSimulation.trains, fakedNewTrain];
+            const consolidatedSimulation = createTrain(
+              dispatch,
+              KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
+              newSimulation.trains,
+              t
+            );
+            dispatch(updateConsolidatedSimulation(consolidatedSimulation));
+            dispatch(updateSimulation(newSimulation));
+            dispatch(updateSelectedTrain(newSimulation.trains.length - 1));
 
-          if (!newAllowancesSettings[fakedNewTrain.id]) {
-            newAllowancesSettings[fakedNewTrain.id] = {
-              base: true,
-              baseBlocks: true,
-              eco: true,
-              ecoBlocks: false,
-            };
-            dispatch(updateAllowancesSettings(newAllowancesSettings));
-          }
+            const newAllowancesSettings = { ...allowancesSettings };
 
-          dispatch(updateMustRedraw(true));
+            if (!newAllowancesSettings[fakedNewTrain.id]) {
+              newAllowancesSettings[fakedNewTrain.id] = {
+                base: true,
+                baseBlocks: true,
+                eco: true,
+                ecoBlocks: false,
+              };
+              dispatch(updateAllowancesSettings(newAllowancesSettings));
+            }
 
-          const consolidatedSimulation = createTrain(
-            dispatch,
-            KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
-            newSimulation.trains,
-            t
-          );
-          dispatch(updateConsolidatedSimulation(consolidatedSimulation));
-          dispatch(updateSimulation(newSimulation));
-          dispatch(updateSelectedTrain(newSimulation.trains.length - 1));
+            dispatch(
+              updateSelectedProjection({
+                id: fakedNewTrain.id,
+                path: result.path,
+              })
+            );
 
-          dispatch(
-            updateSelectedProjection({
-              id: fakedNewTrain.id,
-              path: result.path,
-            })
-          );
+            dispatch(updateMustRedraw(true));
+          });
         })
         .catch((e) => {
           // Update simu in redux with data;

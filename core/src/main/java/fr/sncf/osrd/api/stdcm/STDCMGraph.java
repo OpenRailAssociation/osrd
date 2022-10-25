@@ -1,6 +1,7 @@
 package fr.sncf.osrd.api.stdcm;
 
 import com.google.common.collect.Multimap;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.ImpossibleSimulationError;
@@ -13,9 +14,7 @@ import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Graph;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Set;
+import java.util.*;
 
 /** This is the class that encodes the STDCM problem as a graph on which we can run our pathfinding implementation.
  *
@@ -53,21 +52,32 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
             // Maximum delay we can add after this route by delaying the start time without causing conflicts
             double maximumAddedDelayAfter,
             // Delay we needed to add in this route to avoid conflicts (by shifting the departure time)
-            double addedDelay
+            double addedDelay,
+            // Time of the next occupancy of the route, used for hash / equality test
+            double timeNextOccupancy
     ) {
-
         @Override
+        @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
         public boolean equals(Object other) {
             if (other == null || other.getClass() != Edge.class)
                 return false;
-            // TODO: we should consider that the same route at different times is a new edge.
-            // Doing this naively results in the algorithm visiting the same edges *many* times.
-            return route.getInfraRoute().getID().equals(((Edge) other).route.getInfraRoute().getID());
+            var otherEdge = (Edge) other;
+            if (!route.getInfraRoute().getID().equals(otherEdge.route.getInfraRoute().getID()))
+                return false;
+
+            // We need to consider that the edges aren't equal if the times are different,
+            // but if we do it "naively" we end up visiting the same places a near-infinite number of times.
+            // We handle it by considering that the edges are different if they are separated by an occupied block.
+            // The easiest way to implement this is to compare the time of the next occupancy.
+            return timeNextOccupancy == otherEdge.timeNextOccupancy;
         }
 
         @Override
         public int hashCode() {
-            return route.getInfraRoute().getID().hashCode();
+            return Objects.hash(
+                    route.getInfraRoute().getID(),
+                    timeNextOccupancy
+            );
         }
     }
 
@@ -93,21 +103,29 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
         var neighbors = infra.getSignalingRouteGraph().outEdges(node.detector);
         var res = new ArrayList<Edge>();
         for (var neighbor : neighbors) {
-            var newEdge = makeEdge(neighbor, node.time, node.speed, 0, node.maximumAddedDelay);
-            if (!isUnavailable(newEdge))
-                res.add(newEdge);
+            res.addAll(makeEdges(neighbor, node.time, node.speed, 0, node.maximumAddedDelay));
         }
         return res;
     }
 
-    /** Returns true if the envelope crosses one of the unavailable time blocks.
-     * This method only exists in this form in the "simple" implementation where a train can't slow down. */
-    public boolean isUnavailable(Edge edge) {
-        return edge.envelope == null;
+    /** Returns one value per "opening" (interval between two unavailable times).
+     * Always returns the shortest delay to add to enter this opening. */
+    private Set<Double> minimumDelaysPerOpening(SignalingRoute route, double startTime, Envelope envelope) {
+        var res = new HashSet<Double>();
+        res.add(findMinimumAddedDelay(route, startTime, envelope));
+        for (var block : unavailableTimes.get(route)) {
+            var enterTime = interpolateTime(envelope, route, block.distanceStart(), startTime);
+            var diff = block.timeEnd() - enterTime;
+            if (diff < 0)
+                continue;
+            var time = diff + findMinimumAddedDelay(route, startTime + diff, envelope);
+            res.add(time);
+        }
+        return res;
     }
 
-    /** Creates an edge from a given route and start time/speed */
-    public Edge makeEdge(
+    /** Creates all edges that can be accessed from a given route and start time/speed */
+    public Collection<Edge> makeEdges(
             SignalingRoute route,
             double startTime,
             double startSpeed,
@@ -115,27 +133,41 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
             double prevMaximumAddedDelay
     ) {
         var envelope = simulateRoute(route, startSpeed, start, rollingStock, timeStep);
-        var delayNeeded = findMinimumAddedDelay(route, startTime, envelope);
-        var maximumDelay = Math.min(
-                prevMaximumAddedDelay,
-                findMaximumAddedDelay(route, startTime + delayNeeded, envelope)
-        );
-        double delay = 0;
-        if (delayNeeded > 0) {
-            if (maximumDelay >= delayNeeded) {
-                delay = delayNeeded;
-                maximumDelay -= delay;
-            } else {
-                envelope = null;
-            }
+        if (envelope == null)
+            return List.of();
+        var res = new ArrayList<Edge>();
+        var delaysPerOpening = minimumDelaysPerOpening(route, startTime, envelope);
+        for (var delayNeeded : delaysPerOpening) {
+            if (delayNeeded.isInfinite())
+                continue;
+            if (prevMaximumAddedDelay < delayNeeded)
+                continue;
+            var maximumDelay = Math.min(
+                    prevMaximumAddedDelay - delayNeeded,
+                    findMaximumAddedDelay(route, startTime + delayNeeded, envelope)
+            );
+            res.add(new Edge(
+                    route,
+                    envelope,
+                    startTime + delayNeeded,
+                    maximumDelay,
+                    delayNeeded,
+                    findNextOccupancy(route, startTime + delayNeeded)
+            ));
         }
-        return new Edge(
-                route,
-                envelope,
-                startTime + delay,
-                maximumDelay,
-                delay
-        );
+        return res;
+    }
+
+    /** Returns the start time of the next occupancy for the route (does not depend on the envelope) */
+    private double findNextOccupancy(SignalingRoute route, double time) {
+        var earliest = Double.POSITIVE_INFINITY;
+        for (var occupancy : unavailableTimes.get(route)) {
+            var occupancyTime = occupancy.timeStart();
+            if (occupancyTime < time)
+                continue;
+            earliest = Math.min(earliest, occupancyTime);
+        }
+        return earliest;
     }
 
     /** Returns an envelope matching the given route. The envelope time starts when the train enters the route.
@@ -192,6 +224,8 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
      * this will return 18s. */
     private double findMinimumAddedDelay(SignalingRoute route, double startTime, Envelope envelope) {
         double maxValue = 0;
+        if (Double.isInfinite(startTime))
+            return 0;
         for (var occupancy : unavailableTimes.get(route)) {
             // This loop has a poor complexity, we need to optimize it by the time we handle full timetables
             var enterTime = interpolateTime(envelope, route, occupancy.distanceStart(), startTime);

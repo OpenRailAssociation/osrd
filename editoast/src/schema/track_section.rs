@@ -14,6 +14,7 @@ use super::ObjectRef;
 use super::ObjectType;
 use super::TrackEndpoint;
 use derivative::Derivative;
+use diesel::PgConnection;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
@@ -129,6 +130,7 @@ impl LineString {
     }
 }
 
+#[async_trait]
 impl Layer for TrackSection {
     fn get_table_name() -> &'static str {
         "osrd_infra_tracksectionlayer"
@@ -151,12 +153,10 @@ impl Layer for TrackSection {
     }
 
     fn update(
-        conn: &diesel::PgConnection,
+        conn: &PgConnection,
         infra: i32,
         operations: &Vec<OperationResult>,
         _: &crate::infra_cache::InfraCache,
-        invalid_zone: &crate::layer::InvalidationZone,
-        chartos_config: &crate::client::ChartosConfig,
     ) -> Result<(), diesel::result::Error> {
         let mut update_obj_ids = HashSet::new();
         let mut delete_obj_ids = HashSet::new();
@@ -182,13 +182,6 @@ impl Layer for TrackSection {
 
         Self::delete_list(conn, infra, delete_obj_ids)?;
         Self::update_list(conn, infra, update_obj_ids)?;
-
-        crate::layer::invalidate_bbox_chartos_layer(
-            infra,
-            Self::layer_name(),
-            invalid_zone,
-            chartos_config,
-        );
 
         Ok(())
     }

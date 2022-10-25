@@ -1,18 +1,22 @@
 import * as d3 from 'd3';
+import { select as d3select } from 'd3-selection';
+
+import { Chart } from 'reducers/osrdsimulation';
 import { defineLinear, defineTime } from 'applications/osrd/components/Helpers/ChartHelpers';
 import defineChart from 'applications/osrd/components/Simulation/defineChart';
+import { SimulationTrain } from './createTrain';
 
 export default function createChart(
-  chart,
-  chartID,
-  dataSimulation,
-  heightOfSpaceTimeChart,
-  keyValues,
-  ref,
-  reset,
-  rotate
-) {
-  d3.select(`#${chartID}`).remove();
+  chart: Chart,
+  chartID: string,
+  dataSimulation: SimulationTrain[],
+  heightOfSpaceTimeChart: number,
+  keyValues: string[],
+  ref: React.MutableRefObject<HTMLDivElement>,
+  reset: boolean,
+  rotate: boolean
+): Chart {
+  d3select(`#${chartID}`).remove();
 
   const dataSimulationTime = d3.extent(
     [].concat(
@@ -53,12 +57,11 @@ export default function createChart(
     ),
   ]);
 
-  const defineX =
-    chart === undefined || reset ? defineTime(dataSimulationTime, keyValues[0]) : chart.x;
+  const defineX = chart === undefined || reset ? defineTime(dataSimulationTime) : chart.x;
   const defineY =
     chart === undefined || reset ? defineLinear(dataSimulationLinearMax, 0.05) : chart.y;
 
-  const width = parseInt(d3.select(`#container-${chartID}`).style('width'), 10);
+  const width = parseInt(d3select(`#container-${chartID}`).style('width'), 10);
   const chartLocal = defineChart(
     width,
     heightOfSpaceTimeChart,
