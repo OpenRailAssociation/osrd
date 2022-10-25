@@ -50,7 +50,7 @@ export default class SwitchSNCF extends Component {
                     id={optionId}
                     name={name}
                     className="custom-control-input"
-                    checked={option.value === checkedName}
+                    checked={checked}
                     onChange={onChange}
                     value={option.value}
                   />
