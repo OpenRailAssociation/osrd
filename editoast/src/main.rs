@@ -190,3 +190,16 @@ fn clear(args: ClearArgs, pg_config: PostgresConfig) -> Result<(), Box<dyn Error
     }
     Ok(())
 }
+#[cfg(test)]
+mod tests {
+    use crate::clear;
+    use crate::client::ClearArgs;
+    use crate::client::PostgresConfig;
+    #[test]
+    fn clear_generated_data() {
+        let args = ClearArgs { infra_ids: vec![0] };
+        let pg_config = PostgresConfig::default();
+        let err = clear(args, pg_config);
+        assert!(err.is_err());
+    }
+}
