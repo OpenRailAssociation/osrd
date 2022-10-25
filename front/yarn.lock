@@ -2394,7 +2394,6 @@
   dependencies:
     "@babel/types" "^7.3.0"
 
-<<<<<<< HEAD
 "@types/d3-array@*":
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/@types/d3-array/-/d3-array-3.0.3.tgz#87d990bf504d14ad6b16766979d04e943c046dac"
@@ -2605,10 +2604,7 @@
     "@types/d3-transition" "*"
     "@types/d3-zoom" "*"
 
-"@types/eslint@^7.28.2":
-=======
 "@types/eslint@^7.29.0":
->>>>>>> 6965a725 (front: avoid reducer file & folder with same name (osrdsimulation))
   version "7.29.0"
   resolved "https://registry.yarnpkg.com/@types/eslint/-/eslint-7.29.0.tgz#e56ddc8e542815272720bb0b4ccc2aff9c3e1c78"
   integrity sha512-VNcvioYDH8/FxaeTKkM4/TiTwt6pBV9E3OfGmvaw8tPl0rrHCJ4Ll15HRT+pMiFAf/MLQvAzC+6RzUMEL9Ceng==
@@ -11855,10 +11851,10 @@ react-scripts@^4.0.3:
   optionalDependencies:
     fsevents "^2.1.3"
 
-react-select@^5.4.0:
-  version "5.5.4"
-  resolved "https://registry.yarnpkg.com/react-select/-/react-select-5.5.4.tgz#da05b8b66d33f6fc1f92fdccd0fa50d7f4418554"
-  integrity sha512-lyr19joBUm/CNJgjZMBSnFvJ/MeHCmBYvQ050qYAP3EPa7Oenlnx9guhU+SW0goYgxLQyqwRvkFllQpFAp8tmQ==
+react-select@^5.5.6:
+  version "5.5.6"
+  resolved "https://registry.yarnpkg.com/react-select/-/react-select-5.5.6.tgz#30735524f0d48c8442d2ecf84cfe1bd52e4b039f"
+  integrity sha512-1pynAh7scLBmrNEeDrYVYTImXowmEPzGqVlG7xdvXmBUSD6gVhNMPKdhlpwAHfPANcTwGIqms0Xerm0n5o2WxA==
   dependencies:
     "@babel/runtime" "^7.12.0"
     "@emotion/cache" "^11.4.0"
