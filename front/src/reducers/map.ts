@@ -58,7 +58,6 @@ export interface MapState {
     all: boolean;
     stops: boolean;
     lights: boolean;
-    tivs: boolean;
   };
   layersSettings: {
     bufferstops: boolean;
@@ -67,6 +66,7 @@ export interface MapState {
     operationalpoints: boolean;
     routes: boolean;
     signalingtype: boolean;
+    sncf_lpv: boolean;
     speedlimittag: unknown;
     speedlimits: boolean;
     switches: boolean;
@@ -97,7 +97,6 @@ export const initialState: MapState = {
     all: false,
     stops: true,
     lights: false,
-    tivs: false,
   },
   layersSettings: {
     bufferstops: false,
@@ -106,6 +105,7 @@ export const initialState: MapState = {
     operationalpoints: false,
     routes: false,
     signalingtype: true,
+    sncf_lpv: false,
     speedlimittag: undefined,
     speedlimits: false,
     switches: false,
