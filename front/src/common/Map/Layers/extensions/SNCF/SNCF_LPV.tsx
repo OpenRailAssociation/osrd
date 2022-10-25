@@ -6,12 +6,12 @@ import { RootState } from 'reducers';
 import { MAP_URL } from 'common/Map/const';
 import { Theme } from 'types';
 
-interface SpeedLimitsProps {
+interface SNCF_LPVProps {
   geomType: string;
   colors: Theme;
 }
 
-export default function SpeedLimits(props: SpeedLimitsProps) {
+export default function SNCF_LPV(props: SNCF_LPVProps) {
   const { layersSettings } = useSelector((state: RootState) => state.map);
   const { infraID } = useSelector((state: RootState) => state.osrdconf);
   const { geomType, colors } = props;
@@ -118,7 +118,7 @@ export default function SpeedLimits(props: SpeedLimitsProps) {
     },
   };
 
-  if (layersSettings.speedlimits) {
+  if (layersSettings.sncf_lpv) {
     return (
       <Source
         id={`osrd_speed_limit_${geomType}`}

@@ -21,8 +21,8 @@ import SearchMarker from 'common/Map/Layers/SearchMarker';
 import SignalingType from 'common/Map/Layers/SignalingType';
 import Signals from 'common/Map/Layers/Signals';
 import SpeedLimits from 'common/Map/Layers/SpeedLimits';
+import SNCF_LPV from 'common/Map/Layers/extensions/SNCF/SNCF_LPV';
 import Switches from 'common/Map/Layers/Switches';
-import TVDs from 'common/Map/Layers/TVDs';
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 import TracksOSM from 'common/Map/Layers/TracksOSM';
 import TracksSchematic from 'common/Map/Layers/TracksSchematic';
@@ -128,16 +128,16 @@ function Map() {
         {/* Have to duplicate objects with sourceLayer to avoid cache problems in mapbox */}
         {mapTrackSources === 'geographic' ? (
           <>
-            <Catenaries geomType="geo" colors={colors[mapStyle]} />
-            <TVDs geomType="geo" colors={colors[mapStyle]} idHover={idHover} />
             <Platform colors={colors[mapStyle]} />
             <TracksGeographic colors={colors[mapStyle]} />
+            <Catenaries geomType="geo" colors={colors[mapStyle]} />
             <TracksOSM colors={colors[mapStyle]} />
             <OperationalPoints geomType="geo" colors={colors[mapStyle]} />
             <SignalingType geomType="geo" />
             <Routes geomType="geo" colors={colors[mapStyle]} />
             <SpeedLimits geomType="geo" colors={colors[mapStyle]} />
-            <Signals sourceTable="signals" colors={colors[mapStyle]} sourceLayer="geo" />
+            <SNCF_LPV geomType="geo" colors={colors[mapStyle]} />
+            <Signals sourceLayer="geo" sourceTable="signals" colors={colors[mapStyle]} />
             <BufferStops geomType="geo" colors={colors[mapStyle]} />
             <Detectors geomType="geo" colors={colors[mapStyle]} />
             <Switches geomType="geo" colors={colors[mapStyle]} />
@@ -145,10 +145,12 @@ function Map() {
         ) : (
           <>
             <TracksSchematic colors={colors[mapStyle]} idHover={idHover} />
+            <Catenaries geomType="sch" colors={colors[mapStyle]} />
             <OperationalPoints geomType="sch" colors={colors[mapStyle]} />
             <Routes geomType="sch" colors={colors[mapStyle]} />
             <SpeedLimits geomType="sch" colors={colors[mapStyle]} />
-            <Signals sourceTable="signals" colors={colors[mapStyle]} sourceLayer="sch" />
+            <SNCF_LPV geomType="sch" colors={colors[mapStyle]} />
+            <Signals sourceLayer="sch" sourceTable="signals" colors={colors[mapStyle]} />
             <BufferStops geomType="sch" colors={colors[mapStyle]} />
             <Detectors geomType="sch" colors={colors[mapStyle]} />
             <Switches geomType="sch" colors={colors[mapStyle]} />
