@@ -4,17 +4,15 @@ import { useTranslation } from 'react-i18next';
 import { updateSignalsSettings } from 'reducers/map';
 import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 import stopsIcon from 'assets/pictures/layersicons/layer_stops.svg';
-import tivsIcon from 'assets/pictures/layersicons/layer_tivs.svg';
 import lightsIcon from 'assets/pictures/layersicons/layer_signal.svg';
 
 export default function MapSettingsSignals() {
   const { signalsSettings } = useSelector((state) => state.map);
   const dispatch = useDispatch();
   const { t } = useTranslation(['map-settings']);
-  const CONSTS_SETTINGS = ['all', 'stops', 'tivs', 'lights'];
+  const CONSTS_SETTINGS = ['all', 'stops', 'lights'];
   const CONSTS_SVG = {
     stops: stopsIcon,
-    tivs: tivsIcon,
     lights: lightsIcon,
   };
 
