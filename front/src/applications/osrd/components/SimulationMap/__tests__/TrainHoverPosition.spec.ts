@@ -102,6 +102,27 @@ describe('makeDisplayedHeadAndTail', () => {
       expect(head).toEqual(0.4);
       expect(tail).toEqual(0.4);
     });
+    test('triangle correction should not make head/tail go beyound track limits', () => {
+      const trainPosition: TrainPosition = {
+        id: 'train',
+        headPosition: pointFromKmCoords([1, 0]),
+        tailPosition: pointFromKmCoords([0, 0]),
+        headDistanceAlong: 1,
+        tailDistanceAlong: 0,
+        speedTime: { speed: 0, time: 0 },
+        trainLength: 1,
+      };
+      const pathPoints = unitKmSquare;
+      const pathLineString = lineString(pathPoints);
+      const sideDimensions = makeSideDimensions(10, 10);
+      const { headDistance: head, tailDistance: tail } = makeDisplayedHeadAndTail(
+        trainPosition,
+        pathLineString,
+        sideDimensions
+      );
+      expect(head).toEqual(0);
+      expect(tail).toEqual(0);
+    });
   });
   describe('backward train', () => {
     it('should return train head and tail', () => {

@@ -72,20 +72,17 @@ export function makeDisplayedHeadAndTail(
   const [trueTail, trueHead] = [point.tailDistanceAlong, point.headDistanceAlong].sort(
     (a, b) => a - b
   );
-  const boundedHead = boundedValue(trueHead, 0, pathLength);
-  const boundedTail = boundedValue(trueTail, 0, pathLength);
-  const middle = (boundedHead + boundedTail) / 2;
-  const boundedHeadMinusTriangle = boundedHead - sideDimensions.head.up;
-  const boundedTailPlusTriangle = Math.min(
-    boundedTail + sideDimensions.tail.down,
-    boundedHeadMinusTriangle
-  );
-  const headPosition = along(geojsonPath, boundedHeadMinusTriangle);
-  const tailPosition = along(geojsonPath, boundedTailPlusTriangle);
+
+  const headMinusTriangle = trueHead - sideDimensions.head.up;
+  const tailPlusTriangle = Math.min(trueTail + sideDimensions.tail.down, headMinusTriangle);
+  const boundedHead = boundedValue(headMinusTriangle, [0, pathLength]);
+  const boundedTail = boundedValue(tailPlusTriangle, [0, pathLength]);
+
+  const headPosition = along(geojsonPath, boundedHead);
+  const tailPosition = along(geojsonPath, boundedTail);
   return {
-    headDistance: boundedHeadMinusTriangle,
-    middle,
-    tailDistance: boundedTailPlusTriangle,
+    headDistance: boundedHead,
+    tailDistance: boundedTail,
     headPosition,
     tailPosition,
   };
