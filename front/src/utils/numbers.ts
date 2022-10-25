@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/prefer-default-export
-export function boundedValue(value: number, min: number, max: number) {
+export function boundedValue(value: number, [min, max]: [number, number]) {
   if (value >= max) {
     return max;
   }
