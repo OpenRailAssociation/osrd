@@ -11,6 +11,7 @@ import OPsSVGFile from 'assets/pictures/layersicons/ops.svg';
 import SwitchesSVGFile from 'assets/pictures/layersicons/switches.svg';
 import DetectorsSVGFile from 'assets/pictures/layersicons/detectors.svg';
 import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
+import TIVsSNCF from 'assets/pictures/layersicons/layer_tivs.svg';
 
 function FormatSwitch(props) {
   const dispatch = useDispatch();
