@@ -22,7 +22,7 @@ export default function OperationalPoints(props) {
   const layerName = {
     type: 'symbol',
     'source-layer': 'operational_points',
-    minzoom: 9,
+    minzoom: 9.5,
     layout: {
       'text-field': [
         'concat',
@@ -57,12 +57,12 @@ export default function OperationalPoints(props) {
   const layerNameShort = {
     type: 'symbol',
     'source-layer': 'operational_points',
-    maxzoom: 9,
+    maxzoom: 9.5,
     minzoom: 7,
     layout: {
       'text-field': [
         'concat',
-        ['get', 'trigram'],
+        ['get', 'extensions_sncf_trigram'],
         ' ',
         [
           'case',
