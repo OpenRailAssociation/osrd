@@ -424,6 +424,59 @@ public class STDCMPathfindingTests {
         assertFalse(routes.contains("c1->d"));
     }
 
+    /** Test that the path we find is the one with the earliest arrival time rather than the shortest
+     * while taking into account departure time delay caused by the first block occupancy */
+    @Test
+    public void testEarliestArrivalTimeWithOccupancy() {
+        /*
+        Bop path is shorter but is occupied at start
+        Tot path is longer but can be used with no delay
+        We should use the top path (earlier arrival time)
+        First and last routes are very long for speedup and slowdown
+
+                 c1
+                ^  \
+               /    v
+        a --> b     d --> e
+               \    ^
+                v  /
+                 c2
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var firstRoute = infraBuilder.addRoute("a", "b", 1000);
+        infraBuilder.addRoute("b", "c1");
+        var delayedRoute = infraBuilder.addRoute("b", "c2", 50);
+        infraBuilder.addRoute("c1", "d");
+        infraBuilder.addRoute("c2", "d");
+        var lastRoute = infraBuilder.addRoute("d", "e", 1000);
+        var infra = infraBuilder.build();
+
+        var res = STDCMPathfinding.findPath(
+                infra,
+                REALISTIC_FAST_TRAIN,
+                100,
+                0,
+                Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
+                Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 1000)),
+                ImmutableMultimap.of(delayedRoute, new OccupancyBlock(
+                        0,
+                        10000,
+                        0,
+                        50)
+                ),
+                2.
+        );
+
+        assertNotNull(res);
+        var routes = res.routes().ranges().stream()
+                .map(edgeRange -> edgeRange.edge().getInfraRoute().getID())
+                .collect(Collectors.toSet());
+        assertTrue(routes.contains("b->c1"));
+        assertTrue(routes.contains("c1->d"));
+        assertFalse(routes.contains("b->c2"));
+        assertFalse(routes.contains("c2->d"));
+    }
+
     /** Test that we don't add too much delay, crossing over occupied sections in previous routes */
     @Test
     public void testImpossibleAddedDelay() {

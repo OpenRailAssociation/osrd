@@ -70,7 +70,7 @@ public class STDCMPathfinding {
         var envelope = range.edge().envelope();
         var timeStart = STDCMGraph.interpolateTime(envelope, range.edge().route(), range.start(), 0);
         var timeEnd = STDCMGraph.interpolateTime(envelope, range.edge().route(), range.end(), 0);
-        return timeEnd - timeStart;
+        return timeEnd - timeStart + range.edge().addedDelay();
     }
 
     private static AStarHeuristic<STDCMGraph.Edge> makeAStarHeuristic(
