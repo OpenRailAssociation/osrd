@@ -37,7 +37,7 @@ async fn main() {
     match run().await {
         Ok(_) => (),
         Err(e) => {
-            eprintln!("{}", e);
+            eprintln!("{e}");
             exit(2);
         }
     }
@@ -166,8 +166,8 @@ async fn generate(
     Ok(())
 }
 
-// Run the clear subcommand
-// This command clear all generated data for the given infra
+/// Run the clear subcommand
+/// This command clear all generated data for the given infra
 fn clear(args: ClearArgs, pg_config: PostgresConfig) -> Result<(), Box<dyn Error + Send + Sync>> {
     let conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
     let mut infras = vec![];
@@ -190,6 +190,7 @@ fn clear(args: ClearArgs, pg_config: PostgresConfig) -> Result<(), Box<dyn Error
     }
     Ok(())
 }
+
 #[cfg(test)]
 mod tests {
     use crate::clear;
