@@ -91,7 +91,7 @@ pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraErro
             if !infra_cache.track_sections().contains_key(track_id) {
                 let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_id.clone());
                 let infra_error =
-                    InfraError::new_invalid_reference(route, format!("path.{}", index), obj_ref);
+                    InfraError::new_invalid_reference(route, format!("path.{index}"), obj_ref);
                 errors.push(infra_error);
                 skip_continuous_path = true;
                 continue;
@@ -107,7 +107,7 @@ pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraErro
                 if !(0.0..=track_cache.length).contains(&pos) {
                     let infra_error = InfraError::new_out_of_range(
                         route,
-                        format!("path.{}.{}", index, field),
+                        format!("path.{index}.{field}"),
                         pos,
                         [0.0, track_cache.length],
                     );
@@ -217,7 +217,7 @@ pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraErro
                 None => {
                     let error = InfraError::new_invalid_reference(
                         route,
-                        format!("release_detector.{}", index),
+                        format!("release_detector.{index}"),
                         ObjectRef::new(ObjectType::Detector, release_detector.clone()),
                     );
                     errors.push(error);
@@ -234,7 +234,7 @@ pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraErro
             if track_range.is_none() {
                 let error = InfraError::new_object_out_of_path(
                     route,
-                    format!("release_detector.{}", index),
+                    format!("release_detector.{index}"),
                     position,
                     track,
                 );

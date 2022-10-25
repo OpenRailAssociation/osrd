@@ -33,17 +33,17 @@ pub struct RunserverArgs {
 #[derive(Args, Debug)]
 #[clap(about, long_about = "Refresh infra generated data")]
 pub struct GenerateArgs {
+    /// List of infra ids
     pub infra_ids: Vec<u32>,
-    #[clap(short, long, help = "Force refresh")]
+    #[clap(short, long)]
+    /// Force the refresh of an infra (even if the generated version is up to date)
     pub force: bool,
 }
 
 #[derive(Args, Debug)]
-#[clap(about, long_about = "Clear generated data")]
-
-// Definition of the clear sub command, which can take an infra_id as argument
-// If no argument is mentionned, it clears all the infras
+#[clap(about, long_about = "Clear infra generated data")]
 pub struct ClearArgs {
+    /// List of infra ids
     pub infra_ids: Vec<u32>,
 }
 

@@ -42,7 +42,7 @@ pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
                 let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_id.clone());
                 let infra_error = InfraError::new_invalid_reference(
                     speed_section,
-                    format!("track_ranges.{}", index),
+                    format!("track_ranges.{index}"),
                     obj_ref,
                 );
                 errors.push(infra_error);
@@ -59,7 +59,7 @@ pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
                 if !(0.0..=track_cache.length).contains(&pos) {
                     let infra_error = InfraError::new_out_of_range(
                         speed_section,
-                        format!("track_ranges.{}.{}", index, field),
+                        format!("track_ranges.{index}.{field}"),
                         pos,
                         [0.0, track_cache.length],
                     );
