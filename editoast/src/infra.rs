@@ -130,7 +130,7 @@ impl Infra {
         conn: &PgConnection,
     ) -> Result<Self, Box<dyn ApiError>> {
         match update(osrd_infra_infra.filter(id.eq(self.id)))
-            .set(generated_version.eq(String::from("NULL")))
+            .set(generated_version.eq::<Option<String>>(None))
             .get_result::<Infra>(conn)
         {
             Ok(infra) => Ok(infra),
@@ -216,13 +216,10 @@ pub mod tests {
     fn downgrade_version() {
         let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
         let infra = Infra::create("test", &conn).unwrap();
-        assert_eq!(
-            "NULL",
-            infra
-                .downgrade_generated_version(&conn)
-                .unwrap()
-                .generated_version
-                .unwrap()
-        )
+        assert!(infra
+            .downgrade_generated_version(&conn)
+            .unwrap()
+            .generated_version
+            .is_none())
     }
 }

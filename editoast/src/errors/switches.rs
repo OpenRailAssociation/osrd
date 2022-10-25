@@ -43,7 +43,7 @@ pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
                 let obj_ref = ObjectRef::new(ObjectType::TrackSection, port.track.clone());
                 let infra_error = InfraError::new_invalid_reference(
                     switch,
-                    format!("ports.{}.track", port_name),
+                    format!("ports.{port_name}.track"),
                     obj_ref,
                 );
                 errors.push(infra_error);

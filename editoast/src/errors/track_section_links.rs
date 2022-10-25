@@ -49,7 +49,7 @@ pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
             if !infra_cache.track_sections().contains_key(&track_ref) {
                 let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_ref);
                 let infra_error =
-                    InfraError::new_invalid_reference(link, format!("{}.track", pos), obj_ref);
+                    InfraError::new_invalid_reference(link, format!("{pos}.track"), obj_ref);
                 errors.push(infra_error);
             }
         }

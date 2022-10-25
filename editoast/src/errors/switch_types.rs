@@ -43,7 +43,7 @@ pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
                     if !switch_type.ports.contains(dir) {
                         let infra_error = InfraError::new_unknown_port_name(
                             switch_type,
-                            format!("groups.{}.{}", group_name, pos),
+                            format!("groups.{group_name}.{pos}"),
                             dir.clone(),
                         );
                         errors.push(infra_error);
@@ -55,8 +55,8 @@ pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
             if let Some(duplicate_group) = duplicate_port_connection.get(group) {
                 let infra_error = InfraError::new_duplicated_group(
                     switch_type,
-                    format!("groups.{}", group_name),
-                    format!("groups.{}", duplicate_group),
+                    format!("groups.{group_name}"),
+                    format!("groups.{duplicate_group}"),
                 );
                 errors.push(infra_error);
             } else {
@@ -71,7 +71,7 @@ pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
             .filter(|(_, ports)| !used_port.contains(ports))
         {
             let infra_error =
-                InfraError::new_unused_port(switch_type, format!("ports.{}", pos), port);
+                InfraError::new_unused_port(switch_type, format!("ports.{pos}"), port);
             errors.push(infra_error);
         }
     }
