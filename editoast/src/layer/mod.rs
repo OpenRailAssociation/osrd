@@ -212,3 +212,30 @@ fn fill_objects_track_refs<'a>(
             results.insert(&obj_ref.obj_id);
         });
 }
+
+#[cfg(test)]
+pub mod tests {
+    use crate::client::PostgresConfig;
+    use crate::infra::Infra;
+    use crate::layer::Layer;
+    use crate::schema::{
+        BufferStop, Catenary, Detector, OperationalPoint, Route, Signal, SpeedSection, Switch,
+        TrackSection, TrackSectionLink,
+    };
+    use diesel::{Connection, PgConnection};
+    #[test]
+    fn clear_test() {
+        let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
+        let infra = Infra::create("test", &conn).unwrap();
+        assert_eq!(TrackSection::clear(&conn, infra.id), Ok(()));
+        assert_eq!(Switch::clear(&conn, infra.id), Ok(()));
+        assert_eq!(Detector::clear(&conn, infra.id), Ok(()));
+        assert_eq!(BufferStop::clear(&conn, infra.id), Ok(()));
+        assert_eq!(Route::clear(&conn, infra.id), Ok(()));
+        assert_eq!(OperationalPoint::clear(&conn, infra.id), Ok(()));
+        assert_eq!(Catenary::clear(&conn, infra.id), Ok(()));
+        assert_eq!(SpeedSection::clear(&conn, infra.id), Ok(()));
+        assert_eq!(Signal::clear(&conn, infra.id), Ok(()));
+        assert_eq!(TrackSectionLink::clear(&conn, infra.id), Ok(()));
+    }
+}
