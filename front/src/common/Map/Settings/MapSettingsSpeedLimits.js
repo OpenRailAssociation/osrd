@@ -9,6 +9,8 @@ import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import { get } from 'common/requests';
 import { setFailure } from 'reducers/main';
+import TIVsSVGFile from 'assets/pictures/layersicons/layer_tivs.svg';
+import { FormatSwitch as SimpleFormatSwitch, Icon2SVG } from './MapSettingsLayers';
 
 function FormatSwitch(props) {
   const dispatch = useDispatch();
@@ -78,7 +80,7 @@ function FormatSwitch(props) {
           <small>{t(name)}</small>
         </div>
       </div>
-      <div className="col-lg-6">
+      <div className="col-lg-6 pt-1">
         {speedLimitsTags ? (
           <SelectImprovedSNCF
             options={speedLimitsTags}
@@ -101,6 +103,7 @@ export default function MapSettingsLayers() {
   return (
     <div className="row">
       <FormatSwitch name="speedlimits" icon={<IoMdSpeedometer />} />
+      <SimpleFormatSwitch name="sncf_lpv" icon={Icon2SVG(TIVsSVGFile, 'SNCF LPV TIV icon svg')} />
     </div>
   );
 }
