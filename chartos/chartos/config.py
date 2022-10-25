@@ -27,6 +27,7 @@ class View:
     exclude_fields: List[str] = field(compare=False)
     joins: List[JoinExpr] = field(compare=False)
     cache_duration: int = field(compare=False)
+    where: List[str] = field(compare=False)
 
     @staticmethod
     def parse(data):
@@ -37,6 +38,7 @@ class View:
             data.get("exclude_fields", []),
             data.get("joins", []),
             data["cache_duration"],
+            data.get("where", []),
         )
 
     def todict(self):

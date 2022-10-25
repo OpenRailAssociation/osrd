@@ -25,14 +25,12 @@
       on_field: geographic
       cache_duration: 3600
       data_expr: signal.data
-      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_signalmodel signal on signal.obj_id = layer.obj_id and signal.infra_id = layer.infra_id
     - name: sch
       on_field: schematic
       cache_duration: 3600
       data_expr: signal.data
-      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_signalmodel signal on signal.obj_id = layer.obj_id and signal.infra_id = layer.infra_id
 
@@ -44,16 +42,39 @@
       on_field: geographic
       cache_duration: 3600
       data_expr: speed_section.data
-      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_speedsectionmodel speed_section on speed_section.obj_id = layer.obj_id and speed_section.infra_id = layer.infra_id
+      where:
+        - not (speed_section.data @? '$.extensions.lpv_sncf.z')
     - name: sch
       on_field: schematic
       cache_duration: 3600
       data_expr: speed_section.data
-      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_speedsectionmodel speed_section on speed_section.obj_id = layer.obj_id and speed_section.infra_id = layer.infra_id
+      where:
+        - not (speed_section.data @? '$.extensions.lpv_sncf.z')
+
+- name: lpv
+  table_name: osrd_infra_speedsectionlayer
+  id_field: id
+  views:
+    - name: geo
+      on_field: geographic
+      cache_duration: 3600
+      data_expr: speed_section.data
+      joins:
+        - inner join osrd_infra_speedsectionmodel speed_section on speed_section.obj_id = layer.obj_id and speed_section.infra_id = layer.infra_id
+      where:
+        - speed_section.data @? '$.extensions.lpv_sncf.z'
+    - name: sch
+      on_field: schematic
+      cache_duration: 3600
+      data_expr: speed_section.data
+      joins:
+        - inner join osrd_infra_speedsectionmodel speed_section on speed_section.obj_id = layer.obj_id and speed_section.infra_id = layer.infra_id
+      where:
+        - speed_section.data @? '$.extensions.lpv_sncf.z'
 
 - name: track_section_links
   table_name: osrd_infra_tracksectionlinklayer
@@ -63,14 +84,12 @@
       on_field: geographic
       cache_duration: 3600
       data_expr: track_section_link.data
-      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_tracksectionlinkmodel track_section_link on track_section_link.obj_id = layer.obj_id and track_section_link.infra_id = layer.infra_id
     - name: sch
       on_field: schematic
       cache_duration: 3600
       data_expr: track_section_link.data
-      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_tracksectionlinkmodel track_section_link on track_section_link.obj_id = layer.obj_id and track_section_link.infra_id = layer.infra_id
 
@@ -82,14 +101,12 @@
       on_field: geographic
       cache_duration: 3600
       data_expr: switch.data
-      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_switchmodel switch on switch.obj_id = layer.obj_id and switch.infra_id = layer.infra_id
     - name: sch
       on_field: schematic
       cache_duration: 3600
       data_expr: switch.data
-      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_switchmodel switch on switch.obj_id = layer.obj_id and switch.infra_id = layer.infra_id
 
@@ -101,14 +118,12 @@
       on_field: geographic
       cache_duration: 3600
       data_expr: detector.data
-      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_detectormodel detector on detector.obj_id = layer.obj_id and detector.infra_id = layer.infra_id
     - name: sch
       on_field: schematic
       cache_duration: 3600
       data_expr: detector.data
-      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_detectormodel detector on detector.obj_id = layer.obj_id and detector.infra_id = layer.infra_id
 
@@ -120,14 +135,12 @@
       on_field: geographic
       cache_duration: 3600
       data_expr: buffer_stop.data
-      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_bufferstopmodel buffer_stop on buffer_stop.obj_id = layer.obj_id and buffer_stop.infra_id = layer.infra_id
     - name: sch
       on_field: schematic
       cache_duration: 3600
       data_expr: buffer_stop.data
-      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_bufferstopmodel buffer_stop on buffer_stop.obj_id = layer.obj_id and buffer_stop.infra_id = layer.infra_id
 
@@ -139,14 +152,12 @@
       on_field: geographic
       cache_duration: 3600
       data_expr: route.data
-      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_routemodel route on route.obj_id = layer.obj_id and route.infra_id = layer.infra_id
     - name: sch
       on_field: schematic
       cache_duration: 3600
       data_expr: route.data
-      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_routemodel route on route.obj_id = layer.obj_id and route.infra_id = layer.infra_id
 
@@ -158,14 +169,12 @@
       on_field: geographic
       cache_duration: 3600
       data_expr: operational_point.data
-      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_operationalpointmodel operational_point on operational_point.obj_id = layer.obj_id and operational_point.infra_id = layer.infra_id
     - name: sch
       on_field: schematic
       cache_duration: 3600
       data_expr: operational_point.data
-      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_operationalpointmodel operational_point on operational_point.obj_id = layer.obj_id and operational_point.infra_id = layer.infra_id
 
@@ -177,14 +186,12 @@
       on_field: geographic
       cache_duration: 3600
       data_expr: catenary.data
-      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_catenarymodel catenary on catenary.obj_id = layer.obj_id and catenary.infra_id = layer.infra_id
     - name: sch
       on_field: schematic
       cache_duration: 3600
       data_expr: catenary.data
-      exclude_fields: [geo, sch]
       joins:
         - inner join osrd_infra_catenarymodel catenary on catenary.obj_id = layer.obj_id and catenary.infra_id = layer.infra_id
 
@@ -196,9 +203,7 @@
       on_field: geographic
       cache_duration: 3600
       data_expr: layer.information
-      exclude_fields: [geo, sch]
     - name: sch
       on_field: schematic
       cache_duration: 3600
       data_expr: layer.information
-      exclude_fields: [geo, sch]
