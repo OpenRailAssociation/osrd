@@ -9,6 +9,7 @@ use super::generate_id;
 use super::ApplicableDirectionsTrackRange;
 use super::OSRDObject;
 use super::ObjectType;
+use super::Panel;
 use derivative::Derivative;
 use diesel::result::Error;
 use diesel::PgConnection;
@@ -24,6 +25,21 @@ pub struct SpeedSection {
     pub speed_limit: Option<f64>,
     pub speed_limit_by_tag: HashMap<String, f64>,
     pub track_ranges: Vec<ApplicableDirectionsTrackRange>,
+    pub extensions: SpeedSectionExtensions,
+}
+
+#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct SpeedSectionExtensions {
+    pub lpv_sncf: Option<SpeedSectionLpvSncfExtension>,
+}
+
+#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct SpeedSectionLpvSncfExtension {
+    announcement: Vec<Panel>,
+    z: Panel,
+    r: Vec<Panel>,
 }
 
 impl OSRDObject for SpeedSection {
@@ -74,5 +90,17 @@ impl Cache for SpeedSection {
 
     fn get_object_cache(&self) -> ObjectCache {
         ObjectCache::SpeedSection(self.clone())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_json::from_str;
+
+    use super::SpeedSectionExtensions;
+
+    #[test]
+    fn test_speed_section_extensions_deserialization() {
+        from_str::<SpeedSectionExtensions>(r#"{}"#).unwrap();
     }
 }

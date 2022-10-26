@@ -6,6 +6,7 @@ use super::generate_id;
 use super::Direction;
 use super::OSRDObject;
 use super::ObjectType;
+use super::Side;
 use derivative::Derivative;
 use diesel::sql_types::{Double, Text};
 use serde::{Deserialize, Serialize};
@@ -18,7 +19,6 @@ pub struct Signal {
     pub id: String,
     #[derivative(Default(value = r#""InvalidRef".into()"#))]
     pub track: String,
-    #[derivative(Default(value = "0."))]
     pub position: f64,
     #[derivative(Default(value = "Direction::StartToStop"))]
     pub direction: Direction,
@@ -61,18 +61,6 @@ impl OSRDObject for Signal {
     fn get_id(&self) -> &String {
         &self.id
     }
-}
-
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
-#[derivative(Default)]
-pub enum Side {
-    #[serde(rename = "LEFT")]
-    Left,
-    #[serde(rename = "RIGHT")]
-    Right,
-    #[serde(rename = "CENTER")]
-    #[derivative(Default)]
-    Center,
 }
 
 impl Layer for Signal {
