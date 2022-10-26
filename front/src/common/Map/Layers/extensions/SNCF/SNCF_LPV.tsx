@@ -1,10 +1,14 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { Layer, Source, LayerProps } from 'react-map-gl';
+import { useTranslation } from 'react-i18next';
 
 import { RootState } from 'reducers';
 import { MAP_URL } from 'common/Map/const';
 import { Theme } from 'types';
+
+// REMOVE BEFORE PROD
+import Panel from './SNCF_LPV_PANELS';
 
 interface SNCF_LPVProps {
   geomType: string;
@@ -12,6 +16,7 @@ interface SNCF_LPVProps {
 }
 
 export default function SNCF_LPV(props: SNCF_LPVProps) {
+  const { t } = useTranslation('map-settings');
   const { layersSettings } = useSelector((state: RootState) => state.map);
   const { infraID } = useSelector((state: RootState) => state.osrdconf);
   const { geomType, colors } = props;
@@ -22,19 +27,16 @@ export default function SNCF_LPV(props: SNCF_LPVProps) {
     ['*', 3.6, ['case', ['!=', ['get', tag], null], ['get', tag], ['get', 'speed_limit']]],
   ];
 
-  const speedSectionFilter =
-    layersSettings.speedlimittag === 'undefined'
-      ? ['all', ['has', 'speed_limit']]
-      : ['all', ['has', tag]];
+  const speedSectionFilter = ['any', ['has', 'speed_limit'], ['has', tag]];
 
   const speedValuePointParams: LayerProps = {
     type: 'symbol',
-    'source-layer': 'speed_sections',
+    'source-layer': 'lpv',
     minzoom: 9,
     maxzoom: 24,
     filter: speedSectionFilter,
     layout: {
-      visibility: 'visible',
+      visibility: 'none',
       'text-font': ['Roboto Bold'],
       'symbol-placement': 'point',
       'text-field': ['to-string', speedLimitByTagName],
@@ -46,47 +48,72 @@ export default function SNCF_LPV(props: SNCF_LPVProps) {
       'text-ignore-placement': false,
     },
     paint: {
-      'text-color': colors.speed.pointtext,
-      'text-halo-color': colors.speed.pointhalo,
-      'text-halo-width': 5,
+      'text-color': colors.lpv.pointtext,
+      'text-halo-color': colors.lpv.pointhalo,
+      'text-halo-width': 7,
       'text-opacity': 1,
     },
   };
 
   const speedValueParams: LayerProps = {
     type: 'symbol',
-    'source-layer': 'speed_sections',
+    'source-layer': 'lpv',
     minzoom: 9,
     maxzoom: 24,
     filter: speedSectionFilter,
     layout: {
       visibility: 'visible',
       'text-font': ['Roboto Bold'],
-      'symbol-placement': 'line',
-      'text-field': ['concat', ['to-string', speedLimitByTagName], 'km/h'],
-      'text-size': 9,
+      'symbol-placement': 'line-center',
+      'text-field': [
+        'concat',
+        t('zone').toUpperCase(),
+        ' ',
+        ['to-string', speedLimitByTagName],
+        'km/h',
+      ],
+      'text-size': 10,
       'text-justify': 'left',
       'text-allow-overlap': false,
       'text-ignore-placement': false,
+      'text-offset': [0, -1],
     },
     paint: {
-      'text-color': colors.speed.text,
-      'text-halo-color': colors.speed.halo,
+      'text-color': colors.lpv.text,
+      'text-halo-color': colors.lpv.halo,
       'text-halo-width': 1,
       'text-opacity': 1,
     },
   };
 
-  const speedLineParams: LayerProps = {
+  const speedLineBGParams: LayerProps = {
     type: 'line',
-    'source-layer': 'speed_sections',
+    'source-layer': 'lpv',
     minzoom: 6,
     maxzoom: 24,
     filter: speedSectionFilter,
     layout: {
       visibility: 'visible',
-      'line-cap': 'round',
-      'line-join': 'miter',
+      'line-cap': 'square',
+    },
+    paint: {
+      'line-color': '#747678',
+      'line-width': 3,
+      'line-offset': 0,
+      'line-opacity': 1,
+      'line-gap-width': 7,
+    },
+  };
+
+  const speedLineParams: LayerProps = {
+    type: 'line',
+    'source-layer': 'lpv',
+    minzoom: 6,
+    maxzoom: 24,
+    filter: speedSectionFilter,
+    layout: {
+      visibility: 'visible',
+      'line-cap': 'square',
     },
     paint: {
       'line-color': [
@@ -112,27 +139,37 @@ export default function SNCF_LPV(props: SNCF_LPVProps) {
           'rgba(185, 185, 185, 1)',
         ],
       ],
-      'line-width': 4,
+      'line-width': 3,
       'line-offset': 0,
       'line-opacity': 1,
+      'line-gap-width': 7,
+      'line-dasharray': [1, 2],
     },
   };
 
   if (layersSettings.sncf_lpv) {
     return (
-      <Source
-        id={`osrd_speed_limit_${geomType}`}
-        type="vector"
-        url={`${MAP_URL}/layer/speed_sections/mvt/${geomType}/?infra=${infraID}`}
-      >
-        <Layer {...speedValuePointParams} id={`chartis/osrd_speed_limit_points/${geomType}`} />
-        <Layer {...speedValueParams} id={`chartis/osrd_speed_limit_value/${geomType}`} />
-        <Layer
-          {...speedLineParams}
-          id={`chartis/osrd_speed_limit_colors/${geomType}`}
-          beforeId={`chartis/osrd_speed_limit_points/${geomType}`}
-        />
-      </Source>
+      <>
+        <Source
+          id={`osrd_sncf_lpv_${geomType}`}
+          type="vector"
+          url={`${MAP_URL}/layer/lpv/mvt/${geomType}/?infra=${infraID}`}
+        >
+          <Layer {...speedValuePointParams} id={`chartis/osrd_sncf_lpv_points/${geomType}`} />
+          <Layer {...speedValueParams} id={`chartis/osrd_sncf_lpv_value/${geomType}`} />
+          <Layer
+            {...speedLineBGParams}
+            id={`chartis/osrd_sncf_lpv_colors_bg/${geomType}`}
+            beforeId={`chartis/osrd_sncf_lpv_points/${geomType}`}
+          />
+          <Layer
+            {...speedLineParams}
+            id={`chartis/osrd_sncf_lpv_colors/${geomType}`}
+            beforeId={`chartis/osrd_sncf_lpv_points/${geomType}`}
+          />
+        </Source>
+        <Panel />
+      </>
     );
   }
   return null;
