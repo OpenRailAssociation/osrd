@@ -8,7 +8,7 @@ import { MAP_URL } from 'common/Map/const';
 import { Theme } from 'types';
 
 // REMOVE BEFORE PROD
-import Panel from './SNCF_LPV_PANELS';
+import Panels from './SNCF_LPV_PANELS';
 
 interface SNCF_LPVProps {
   geomType: string;
@@ -94,7 +94,7 @@ export default function SNCF_LPV(props: SNCF_LPVProps) {
     filter: speedSectionFilter,
     layout: {
       visibility: 'visible',
-      'line-cap': 'square',
+      'line-cap': ['step', ['zoom'], 'round', 15, 'square'],
     },
     paint: {
       'line-color': '#747678',
@@ -113,7 +113,7 @@ export default function SNCF_LPV(props: SNCF_LPVProps) {
     filter: speedSectionFilter,
     layout: {
       visibility: 'visible',
-      'line-cap': 'square',
+      'line-cap': ['step', ['zoom'], 'round', 15, 'square'],
     },
     paint: {
       'line-color': [
@@ -168,7 +168,7 @@ export default function SNCF_LPV(props: SNCF_LPVProps) {
             beforeId={`chartis/osrd_sncf_lpv_points/${geomType}`}
           />
         </Source>
-        <Panel />
+        <Panels />
       </>
     );
   }
