@@ -7,7 +7,6 @@ mod api_error;
 mod chartos;
 mod client;
 mod db_connection;
-mod errors;
 mod generated_data;
 mod infra;
 mod infra_cache;
@@ -184,8 +183,7 @@ fn clear(args: ClearArgs, pg_config: PostgresConfig) -> Result<(), Box<dyn Error
 
     for infra in infras {
         println!("🍞 Infra {}[{}] is clearing:", infra.name.bold(), infra.id);
-        generated_data::clear_all(&conn, infra.id)?;
-        infra.downgrade_generated_version(&conn)?;
+        infra.clear(&conn)?;
         println!("✅ Infra {}[{}] cleared!", infra.name.bold(), infra.id);
     }
     Ok(())

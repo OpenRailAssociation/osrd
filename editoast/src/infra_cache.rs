@@ -510,7 +510,6 @@ pub mod tests {
     use std::collections::HashMap;
 
     use crate::chartos::BoundingBox;
-    use crate::errors::graph::Graph;
     use crate::infra::tests::test_transaction;
     use crate::infra_cache::{InfraCache, SwitchCache};
     use crate::schema::operation::create::tests::{
@@ -522,11 +521,6 @@ pub mod tests {
         DirectionalTrackRange, Endpoint, OSRDObject, OperationalPoint, OperationalPointPart, Route,
         SpeedSection, Switch, SwitchPortConnection, SwitchType, TrackEndpoint, TrackSectionLink,
         Waypoint,
-    };
-
-    use crate::errors::{
-        buffer_stops, detectors, operational_points, routes, signals, speed_sections, switch_types,
-        switches, track_section_links, track_sections,
     };
 
     use super::{
@@ -941,24 +935,5 @@ pub mod tests {
         infra_cache.add(switch);
 
         infra_cache
-    }
-
-    #[test]
-    fn small_infra_cache_validation() {
-        let small_infra_cache = create_small_infra_cache();
-
-        let graph = Graph::load(&small_infra_cache);
-
-        // Generate the errors
-        assert!(track_sections::generate_errors(&small_infra_cache, &graph).is_empty());
-        assert!(signals::generate_errors(&small_infra_cache).is_empty());
-        assert!(speed_sections::generate_errors(&small_infra_cache).is_empty());
-        assert!(track_section_links::generate_errors(&small_infra_cache).is_empty());
-        assert!(switch_types::generate_errors(&small_infra_cache).is_empty());
-        assert!(switches::generate_errors(&small_infra_cache).is_empty());
-        assert!(detectors::generate_errors(&small_infra_cache).is_empty());
-        assert!(buffer_stops::generate_errors(&small_infra_cache).is_empty());
-        assert!(routes::generate_errors(&small_infra_cache, &graph).is_empty());
-        assert!(operational_points::generate_errors(&small_infra_cache).is_empty());
     }
 }
