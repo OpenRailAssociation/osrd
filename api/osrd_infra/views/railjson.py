@@ -7,12 +7,16 @@ from osrd_infra.models import Infra
 from osrd_infra.schemas.infra import BaseObjectTrait, RailJsonInfra
 
 CURRENT_DIR = Path(__file__).parent
-GET_INFRA_SQL = open(CURRENT_DIR / "sql/get_infra.sql").read()
+GET_INFRA_NO_EXT_SQL = open(CURRENT_DIR / "sql/get_infra_no_ext.sql").read()
+GET_INFRA_WITH_EXT_SQL = open(CURRENT_DIR / "sql/get_infra_with_ext.sql").read()
 
 
-def serialize_infra(infra: Infra):
+def serialize_infra(infra: Infra, exclude_extensions: bool) -> str:
     with connection.cursor() as cursor:
-        cursor.execute(GET_INFRA_SQL, [infra.id])
+        get_infra_sql = GET_INFRA_NO_EXT_SQL
+        if exclude_extensions:
+            get_infra_sql = GET_INFRA_WITH_EXT_SQL
+        cursor.execute(get_infra_sql, [infra.id])
         res = cursor.fetchone()[0]
     return res
 
