@@ -27,17 +27,15 @@ export default function SignalingType(props) {
     },
   };
 
-  return (
-    layersSettings.signalingtype && (
-      <Source
-        id={`osrd_signaling_type_${geomType}`}
-        type="vector"
-        url={`${MAP_URL}/layer/signaling_sections/mvt/${geomType}/?infra=${infraID}`}
-      >
-        <Layer {...layerdef} id={`chartis/osrd_signaling_type/${geomType}`} />
-      </Source>
-    )
-  );
+  return layersSettings.signalingtype ? (
+    <Source
+      id={`osrd_signaling_type_${geomType}`}
+      type="vector"
+      url={`${MAP_URL}/layer/signaling_sections/mvt/${geomType}/?infra=${infraID}`}
+    >
+      <Layer {...layerdef} id={`chartis/osrd_signaling_type/${geomType}`} />
+    </Source>
+  ) : null;
 }
 
 SignalingType.propTypes = {
