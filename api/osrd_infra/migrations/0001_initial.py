@@ -11,25 +11,7 @@ import osrd_infra.schemas.path
 import osrd_infra.schemas.rolling_stock
 import osrd_infra.schemas.train_schedule
 import osrd_infra.utils
-
-
-def run_sql_add_foreign_key_infra(model_name: str):
-    return migrations.RunSQL(
-        f"""ALTER TABLE osrd_infra_{model_name}
-                ADD infra_id INTEGER,
-                ADD CONSTRAINT osrd_infra_{model_name}_fkey FOREIGN KEY (infra_id) REFERENCES osrd_infra_infra(id) ON DELETE CASCADE
-            """,
-        state_operations=[
-            migrations.AddField(
-                model_name=model_name,
-                name="infra",
-                field=models.ForeignKey(
-                    on_delete=django.db.models.deletion.CASCADE,
-                    to="osrd_infra.infra",
-                ),
-            ),
-        ],
-    )
+from osrd_infra.migrations import run_sql_add_foreign_key_infra
 
 
 class Migration(migrations.Migration):
