@@ -219,3 +219,30 @@ pub struct TrackEndpoint {
     #[derivative(Default(value = r#""InvalidRef".into()"#))]
     pub track: String,
 }
+
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[derivative(Default)]
+pub enum Side {
+    #[serde(rename = "LEFT")]
+    Left,
+    #[serde(rename = "RIGHT")]
+    Right,
+    #[serde(rename = "CENTER")]
+    #[derivative(Default)]
+    Center,
+}
+
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+#[derivative(Default)]
+pub struct Panel {
+    #[derivative(Default(value = r#""InvalidRef".into()"#))]
+    pub track: String,
+    pub position: f64,
+    pub angle_geo: f64,
+    pub angle_sch: f64,
+    pub side: Side,
+    #[serde(rename = "type")]
+    pub panel_type: String,
+    pub value: Option<String>,
+}
