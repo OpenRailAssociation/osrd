@@ -140,11 +140,11 @@ paths:
           description: Infra ID
           required: true
         - in: query
-          name: include_geom
+          name: exclude_extensions
           schema:
             type: boolean
             default: false
-          description: Whether the railjson should contain geometry information
+          description: Whether the railjson should contain extensions
       responses:
         200:
           description: The infra in railjson format
