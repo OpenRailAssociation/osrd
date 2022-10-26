@@ -3,7 +3,7 @@ use std::fmt;
 use serde::{Deserialize, Serialize};
 use strum_macros::EnumIter;
 
-use crate::{layer::Layer, schema::ObjectRef};
+use crate::schema::ObjectRef;
 
 use super::{Direction, DirectionalTrackRange, OSRDObject, ObjectType, Route, Waypoint};
 
@@ -265,28 +265,6 @@ impl InfraError {
             is_warning: true,
             sub_type: InfraErrorType::OverlappingTrackLinks { reference },
         }
-    }
-}
-
-impl Layer for InfraError {
-    fn get_table_name() -> &'static str {
-        "osrd_infra_errorlayer"
-    }
-
-    fn generate_layer_query() -> &'static str {
-        panic!("InfraError doesn't have a single generate query")
-    }
-
-    fn insert_update_layer_query() -> &'static str {
-        panic!("InfraError doesn't have a single insert/update query")
-    }
-
-    fn layer_name() -> &'static str {
-        "errors"
-    }
-
-    fn get_obj_type() -> ObjectType {
-        panic!("InfraError is not an object")
     }
 }
 
