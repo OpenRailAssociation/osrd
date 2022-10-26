@@ -1,6 +1,5 @@
 use crate::api_error::ApiError;
 
-use crate::errors::generate_errors;
 use crate::generated_data;
 use crate::infra_cache::InfraCache;
 use crate::tables::osrd_infra_infra;
@@ -182,6 +181,7 @@ impl Infra {
 
     /// Refreshes generated data if not up to date and returns whether they were refreshed.
     /// `force` argument allows us to refresh it in any cases.
+    /// This function will update `generated_version` acordingly.
     /// If refreshed you need to call `invalidate_after_refresh` to invalidate chartos layer cache
     pub fn refresh(
         &self,
@@ -198,10 +198,17 @@ impl Infra {
         }
 
         generated_data::refresh_all(conn, self.id, infra_cache)?;
-        generate_errors(conn, self.id, infra_cache)?; // TODO: This should be done in the refresh_all function
 
         // Update generated infra version
         self.bump_generated_version(conn)?;
+        Ok(true)
+    }
+
+    /// Clear generated data of the infra
+    /// This function will update `generated_version` acordingly.
+    pub fn clear(&self, conn: &PgConnection) -> Result<bool, Box<dyn ApiError>> {
+        generated_data::clear_all(conn, self.id)?;
+        self.downgrade_generated_version(conn)?;
         Ok(true)
     }
 }
