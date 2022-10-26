@@ -1,6 +1,5 @@
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
-use crate::layer::Layer;
 
 use super::generate_id;
 use super::Direction;
@@ -60,28 +59,6 @@ impl OSRDObject for Signal {
 
     fn get_id(&self) -> &String {
         &self.id
-    }
-}
-
-impl Layer for Signal {
-    fn get_table_name() -> &'static str {
-        "osrd_infra_signallayer"
-    }
-
-    fn generate_layer_query() -> &'static str {
-        include_str!("../layer/sql/generate_signal_layer.sql")
-    }
-
-    fn insert_update_layer_query() -> &'static str {
-        include_str!("../layer/sql/insert_update_signal_layer.sql")
-    }
-
-    fn layer_name() -> &'static str {
-        "signals"
-    }
-
-    fn get_obj_type() -> ObjectType {
-        ObjectType::Signal
     }
 }
 

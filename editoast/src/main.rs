@@ -4,14 +4,13 @@ extern crate rocket;
 extern crate diesel;
 
 mod api_error;
-mod clear;
+mod chartos;
 mod client;
 mod db_connection;
 mod errors;
-mod generate;
+mod generated_data;
 mod infra;
 mod infra_cache;
-mod layer;
 mod schema;
 mod tables;
 mod views;
@@ -152,8 +151,8 @@ async fn generate(
             infra.id
         );
         let infra_cache = InfraCache::load(&conn, infra.id);
-        if generate::refresh(&conn, &infra, args.force, &infra_cache)? {
-            generate::invalidate_after_refresh(infra.id, &chartos_config).await;
+        if infra.refresh(&conn, args.force, &infra_cache)? {
+            chartos::invalidate_all(infra.id, &chartos_config).await;
             println!("✅ Infra {}[{}] generated!", infra.name.bold(), infra.id);
         } else {
             println!(
@@ -185,7 +184,8 @@ fn clear(args: ClearArgs, pg_config: PostgresConfig) -> Result<(), Box<dyn Error
 
     for infra in infras {
         println!("🍞 Infra {}[{}] is clearing:", infra.name.bold(), infra.id);
-        clear::clear(&conn, &infra)?;
+        generated_data::clear_all(&conn, infra.id)?;
+        infra.downgrade_generated_version(&conn)?;
         println!("✅ Infra {}[{}] cleared!", infra.name.bold(), infra.id);
     }
     Ok(())

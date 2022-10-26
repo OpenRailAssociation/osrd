@@ -2,15 +2,15 @@ use std::sync::Arc;
 
 use super::params::List;
 use crate::api_error::{ApiResult, InfraLockedError};
+use crate::chartos::InvalidationZone;
 use crate::client::ChartosConfig;
 use crate::db_connection::DBConnection;
-use crate::errors::get_paginated_infra_errors;
-use crate::generate;
+use crate::errors::{generate_errors, get_paginated_infra_errors};
 use crate::infra::{CreateInfra, Infra, InfraApiError};
 use crate::infra_cache::{InfraCache, ObjectCache};
-use crate::layer::InvalidationZone;
 use crate::schema::operation::{Operation, OperationResult};
 use crate::schema::SwitchType;
+use crate::{chartos, generated_data};
 use chashmap::CHashMap;
 use rocket::http::Status;
 use rocket::response::status::Custom;
@@ -65,7 +65,7 @@ async fn refresh<'a>(
 
             for infra in infras_list {
                 let infra_cache = infra_caches.get(&infra.id).unwrap();
-                if generate::refresh(conn, &infra, force, &infra_cache)? {
+                if infra.refresh(conn, force, &infra_cache)? {
                     refreshed_infra.push(infra.id);
                 }
             }
@@ -74,7 +74,7 @@ async fn refresh<'a>(
         .await?;
 
     for infra_id in refreshed_infra.iter() {
-        generate::invalidate_after_refresh(*infra_id, chartos_config).await;
+        chartos::invalidate_all(*infra_id, chartos_config).await;
     }
 
     Ok(json!({ "infra_refreshed": refreshed_infra }))
@@ -170,8 +170,10 @@ async fn edit<'a>(
 
             // Refresh layers if needed
             if invalid_zone.is_valid() {
-                generate::update(conn, infra.id, &operation_results, &infra_cache)
+                generated_data::update_all(conn, infra.id, &operation_results, &infra_cache)
                     .expect("Update generated data failed");
+                // Generate errors
+                generate_errors(conn, infra.id, &infra_cache)?; // TODO: Should be done in update_all
             }
 
             // Bump infra generated version to the infra version
@@ -181,9 +183,7 @@ async fn edit<'a>(
         })
         .await?;
 
-    if invalid_zone.geo.is_valid() {
-        generate::invalidate_after_update(infra, &invalid_zone, chartos_config).await;
-    }
+    chartos::invalidate_zone(infra, chartos_config, &invalid_zone).await;
 
     Ok(Json(operation_results))
 }
