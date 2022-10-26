@@ -845,6 +845,8 @@ components:
               duration: { type: number, format: float }
               line_code: { type: number }
               track_number: { type: number }
+              line_name : {type: string}
+              track_name : {type: string}
         route_aspects:
           type: array
           items:
