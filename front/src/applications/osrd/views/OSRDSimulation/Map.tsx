@@ -249,9 +249,9 @@ function Map(props: MapProps) {
       const startCoordinates = getDirection(simulation.trains[selectedTrain][key].head_positions)
         ? [geojsonPath.geometry.coordinates[0][0], geojsonPath.geometry.coordinates[0][1]]
         : [
-          geojsonPath.geometry.coordinates[geojsonPath.geometry.coordinates.length - 1][0],
-          geojsonPath.geometry.coordinates[geojsonPath.geometry.coordinates.length - 1][1],
-        ];
+            geojsonPath.geometry.coordinates[geojsonPath.geometry.coordinates.length - 1][0],
+            geojsonPath.geometry.coordinates[geojsonPath.geometry.coordinates.length - 1][1],
+          ];
       const start = point(startCoordinates);
       const sliced = lineSlice(start, cursorPoint, line);
       const positionLocal = lineLength(sliced, { units: 'kilometers' }) * 1000;
@@ -290,9 +290,6 @@ function Map(props: MapProps) {
       otherTrainsHoverPosition.forEach((train) => {
         interactiveLayersLocal.push(`${train.id}-path`);
       });
-    }
-    if (layersSettings.tvds) {
-      interactiveLayersLocal.push('chartis/osrd_tvd_section/geo');
     }
     return interactiveLayersLocal;
   }
@@ -368,24 +365,26 @@ function Map(props: MapProps) {
         {/* Have to  duplicate objects with sourceLayer to avoid cache problems in mapbox */}
         {mapTrackSources === 'geographic' ? (
           <>
-            <Catenaries geomType="geo" colors={colors[mapStyle]} />
-            <TVDs geomType="geo" idHover={idHover} />
             <Platform colors={colors[mapStyle]} />
+
             <TracksGeographic colors={colors[mapStyle]} />
             <TracksOSM colors={colors[mapStyle]} />
-            <OperationalPoints geomType="geo" colors={colors[mapStyle]} />
-            <SignalingType geomType="geo" />
+
             <Routes geomType="geo" colors={colors[mapStyle]} />
+            <OperationalPoints geomType="geo" colors={colors[mapStyle]} />
+            <Catenaries geomType="geo" colors={colors[mapStyle]} />
+            <BufferStops geomType="geo" colors={colors[mapStyle]} />
+            <Detectors geomType="geo" colors={colors[mapStyle]} />
+            <Switches geomType="geo" colors={colors[mapStyle]} />
+
             <SpeedLimits geomType="geo" colors={colors[mapStyle]} />
+
             <Signals
               mapRef={mapRef}
               sourceTable="signals"
               colors={colors[mapStyle]}
               sourceLayer="geo"
             />
-            <BufferStops geomType="geo" colors={colors[mapStyle]} />
-            <Detectors geomType="geo" colors={colors[mapStyle]} />
-            <Switches geomType="geo" colors={colors[mapStyle]} />
           </>
         ) : (
           <>
