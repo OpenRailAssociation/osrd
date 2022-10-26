@@ -1,20 +1,13 @@
-use std::collections::HashSet;
-
+use crate::chartos::BoundingBox;
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
-use crate::layer::BoundingBox;
-use crate::layer::Layer;
 
 use super::generate_id;
-use super::operation::OperationResult;
-use super::operation::RailjsonObject;
 use super::Endpoint;
 use super::OSRDObject;
-use super::ObjectRef;
 use super::ObjectType;
 use super::TrackEndpoint;
 use derivative::Derivative;
-use diesel::PgConnection;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
@@ -129,63 +122,6 @@ impl LineString {
     }
 }
 
-#[async_trait]
-impl Layer for TrackSection {
-    fn get_table_name() -> &'static str {
-        "osrd_infra_tracksectionlayer"
-    }
-
-    fn generate_layer_query() -> &'static str {
-        include_str!("../layer/sql/generate_track_section_layer.sql")
-    }
-
-    fn insert_update_layer_query() -> &'static str {
-        include_str!("../layer/sql/insert_update_track_section_layer.sql")
-    }
-
-    fn layer_name() -> &'static str {
-        "track_sections"
-    }
-
-    fn get_obj_type() -> ObjectType {
-        ObjectType::TrackSection
-    }
-
-    fn update(
-        conn: &PgConnection,
-        infra: i32,
-        operations: &Vec<OperationResult>,
-        _: &crate::infra_cache::InfraCache,
-    ) -> Result<(), diesel::result::Error> {
-        let mut update_obj_ids = HashSet::new();
-        let mut delete_obj_ids = HashSet::new();
-        for op in operations {
-            match op {
-                OperationResult::Create(RailjsonObject::TrackSection { railjson })
-                | OperationResult::Update(RailjsonObject::TrackSection { railjson }) => {
-                    update_obj_ids.insert(&railjson.id);
-                }
-                OperationResult::Delete(ObjectRef {
-                    obj_type: ObjectType::TrackSection,
-                    obj_id: track_id,
-                }) => {
-                    delete_obj_ids.insert(track_id);
-                }
-                _ => (),
-            }
-        }
-        if update_obj_ids.is_empty() && delete_obj_ids.is_empty() {
-            // No update needed
-            return Ok(());
-        }
-
-        Self::delete_list(conn, infra, delete_obj_ids)?;
-        Self::update_list(conn, infra, update_obj_ids)?;
-
-        Ok(())
-    }
-}
-
 #[derive(Debug, Clone, Derivative)]
 #[derivative(Hash, PartialEq)]
 pub struct TrackSectionCache {
@@ -247,7 +183,7 @@ impl Cache for TrackSectionCache {
 
 #[cfg(test)]
 mod tests {
-    use crate::layer::BoundingBox;
+    use crate::chartos::BoundingBox;
 
     use super::{LineString::LineString, TrackSectionExtensions};
     use serde_json::from_str;

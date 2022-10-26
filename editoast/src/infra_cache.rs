@@ -509,10 +509,10 @@ impl InfraCache {
 pub mod tests {
     use std::collections::HashMap;
 
+    use crate::chartos::BoundingBox;
     use crate::errors::graph::Graph;
     use crate::infra::tests::test_transaction;
     use crate::infra_cache::{InfraCache, SwitchCache};
-    use crate::layer::BoundingBox;
     use crate::schema::operation::create::tests::{
         create_buffer_stop, create_catenary, create_detector, create_link, create_op, create_route,
         create_signal, create_speed, create_switch, create_switch_type, create_track,
@@ -854,7 +854,7 @@ pub mod tests {
 
     ///                    -------| C
     ///              D1   /
-    /// |--------_---*---
+    /// |--------+---*---
     ///     A        B    \
     ///                    -------| D
     ///

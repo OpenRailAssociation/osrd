@@ -1,5 +1,8 @@
 use crate::api_error::ApiError;
 
+use crate::errors::generate_errors;
+use crate::generated_data;
+use crate::infra_cache::InfraCache;
 use crate::tables::osrd_infra_infra;
 use crate::tables::osrd_infra_infra::dsl::*;
 use diesel::result::Error as DieselError;
@@ -10,7 +13,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
 use thiserror::Error;
 
-static RAILJSON_VERSION: &str = "3.0.0";
+const RAILJSON_VERSION: &str = "3.0.0";
 
 #[derive(Clone, QueryableByName, Queryable, Debug, Serialize, Deserialize)]
 #[table_name = "osrd_infra_infra"]
@@ -175,6 +178,31 @@ impl Infra {
             Err(DieselError::NotFound) => Err(Box::new(InfraApiError::NotFound(self.id))),
             Err(err) => Err(Box::new(InfraApiError::DieselError(err))),
         }
+    }
+
+    /// Refreshes generated data if not up to date and returns whether they were refreshed.
+    /// `force` argument allows us to refresh it in any cases.
+    /// If refreshed you need to call `invalidate_after_refresh` to invalidate chartos layer cache
+    pub fn refresh(
+        &self,
+        conn: &PgConnection,
+        force: bool,
+        infra_cache: &InfraCache,
+    ) -> Result<bool, Box<dyn ApiError>> {
+        // Check if refresh is needed
+        if !force
+            && self.generated_version.is_some()
+            && &self.version == self.generated_version.as_ref().unwrap()
+        {
+            return Ok(false);
+        }
+
+        generated_data::refresh_all(conn, self.id, infra_cache)?;
+        generate_errors(conn, self.id, infra_cache)?; // TODO: This should be done in the refresh_all function
+
+        // Update generated infra version
+        self.bump_generated_version(conn)?;
+        Ok(true)
     }
 }
 

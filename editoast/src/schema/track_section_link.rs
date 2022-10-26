@@ -1,6 +1,5 @@
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
-use crate::layer::Layer;
 
 use super::generate_id;
 use super::OSRDObject;
@@ -24,28 +23,6 @@ impl OSRDObject for TrackSectionLink {
         &self.id
     }
     fn get_type(&self) -> ObjectType {
-        ObjectType::TrackSectionLink
-    }
-}
-
-impl Layer for TrackSectionLink {
-    fn get_table_name() -> &'static str {
-        "osrd_infra_tracksectionlinklayer"
-    }
-
-    fn generate_layer_query() -> &'static str {
-        include_str!("../layer/sql/generate_track_section_link_layer.sql")
-    }
-
-    fn insert_update_layer_query() -> &'static str {
-        include_str!("../layer/sql/insert_update_track_section_link_layer.sql")
-    }
-
-    fn layer_name() -> &'static str {
-        "track_section_links"
-    }
-
-    fn get_obj_type() -> ObjectType {
         ObjectType::TrackSectionLink
     }
 }

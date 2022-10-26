@@ -2,7 +2,6 @@ use std::collections::HashMap;
 
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
-use crate::layer::Layer;
 
 use super::generate_id;
 use super::OSRDObject;
@@ -41,28 +40,6 @@ impl OSRDObject for Switch {
     }
 
     fn get_type(&self) -> ObjectType {
-        ObjectType::Switch
-    }
-}
-
-impl Layer for Switch {
-    fn get_table_name() -> &'static str {
-        "osrd_infra_switchlayer"
-    }
-
-    fn generate_layer_query() -> &'static str {
-        include_str!("../layer/sql/generate_switch_layer.sql")
-    }
-
-    fn insert_update_layer_query() -> &'static str {
-        include_str!("../layer/sql/insert_update_switch_layer.sql")
-    }
-
-    fn layer_name() -> &'static str {
-        "switches"
-    }
-
-    fn get_obj_type() -> ObjectType {
         ObjectType::Switch
     }
 }
