@@ -3,6 +3,7 @@ mod utils;
 mod buffer_stop;
 mod catenary;
 mod detector;
+mod error;
 mod operational_point;
 mod route;
 mod signal;
@@ -14,6 +15,7 @@ mod track_section_link;
 use buffer_stop::BufferStopLayer;
 use catenary::CatenaryLayer;
 use detector::DetectorLayer;
+use error::ErrorLayer;
 use operational_point::OperationalPointLayer;
 use route::RouteLayer;
 use signal::SignalLayer;
@@ -30,6 +32,7 @@ use diesel::result::Error;
 use diesel::sql_query;
 use diesel::sql_types::Integer;
 
+/// This trait define how a generated data table should be handled
 pub trait GeneratedData {
     fn table_name() -> &'static str;
     fn generate(conn: &PgConnection, infra: i32, infra_cache: &InfraCache) -> Result<(), Error>;
@@ -74,6 +77,7 @@ pub fn refresh_all(
     OperationalPointLayer::refresh(conn, infra, infra_cache)?;
     TrackSectionLinkLayer::refresh(conn, infra, infra_cache)?;
     RouteLayer::refresh(conn, infra, infra_cache)?;
+    ErrorLayer::refresh(conn, infra, infra_cache)?;
     Ok(())
 }
 
@@ -89,6 +93,7 @@ pub fn clear_all(conn: &PgConnection, infra: i32) -> Result<(), Box<dyn ApiError
     OperationalPointLayer::clear(conn, infra)?;
     TrackSectionLinkLayer::clear(conn, infra)?;
     RouteLayer::clear(conn, infra)?;
+    ErrorLayer::clear(conn, infra)?;
     Ok(())
 }
 
@@ -109,6 +114,7 @@ pub fn update_all(
     OperationalPointLayer::update(conn, infra, operations, infra_cache)?;
     TrackSectionLinkLayer::update(conn, infra, operations, infra_cache)?;
     RouteLayer::update(conn, infra, operations, infra_cache)?;
+    ErrorLayer::update(conn, infra, operations, infra_cache)?;
     Ok(())
 }
 

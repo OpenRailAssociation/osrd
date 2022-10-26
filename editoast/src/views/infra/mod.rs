@@ -1,16 +1,20 @@
+mod edition;
+mod errors;
+
 use std::sync::Arc;
 
+use errors::get_paginated_infra_errors;
+
 use super::params::List;
-use crate::api_error::{ApiResult, InfraLockedError};
+use crate::api_error::ApiResult;
+use crate::chartos;
 use crate::chartos::InvalidationZone;
 use crate::client::ChartosConfig;
 use crate::db_connection::DBConnection;
-use crate::errors::{generate_errors, get_paginated_infra_errors};
 use crate::infra::{CreateInfra, Infra, InfraApiError};
 use crate::infra_cache::{InfraCache, ObjectCache};
 use crate::schema::operation::{Operation, OperationResult};
 use crate::schema::SwitchType;
-use crate::{chartos, generated_data};
 use chashmap::CHashMap;
 use rocket::http::Status;
 use rocket::response::status::Custom;
@@ -140,46 +144,9 @@ async fn edit<'a>(
 
     let (operation_results, invalid_zone) = conn
         .run::<_, ApiResult<(Vec<OperationResult>, InvalidationZone)>>(move |conn| {
-            // Use a transaction to give scope to the infra lock
-            // Retrieve and lock infra
-            let infra = Infra::retrieve_for_update(conn, infra)?;
-
-            // Check if the infra is locked
-            if infra.locked {
-                return Err(InfraLockedError { infra_id: infra.id }.into());
-            }
-
-            // Apply modifications
-            let mut operation_results = vec![];
-            for operation in operations.iter() {
-                let operation = operation.clone();
-                operation_results.push(operation.apply(infra.id, conn)?);
-            }
-
-            // Bump version
-            let infra = infra.bump_version(conn)?;
-
             // Retrieve infra cache
-            let mut infra_cache = infra_caches.get_mut(&infra.id).unwrap();
-
-            // Compute cache invalidation zone
-            let invalid_zone = InvalidationZone::compute(&infra_cache, &operation_results);
-
-            // Apply operations to infra cache
-            infra_cache.apply_operations(&operation_results);
-
-            // Refresh layers if needed
-            if invalid_zone.is_valid() {
-                generated_data::update_all(conn, infra.id, &operation_results, &infra_cache)
-                    .expect("Update generated data failed");
-                // Generate errors
-                generate_errors(conn, infra.id, &infra_cache)?; // TODO: Should be done in update_all
-            }
-
-            // Bump infra generated version to the infra version
-            infra.bump_generated_version(conn)?;
-
-            Ok((operation_results, invalid_zone))
+            let mut infra_cache = infra_caches.get_mut(&infra).unwrap();
+            edition::edit(conn, infra, &operations, &mut infra_cache)
         })
         .await?;
 

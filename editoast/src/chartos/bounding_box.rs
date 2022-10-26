@@ -29,7 +29,7 @@ impl Default for BoundingBox {
 }
 
 /// Geographic and Schematic bounding box zone impacted by a list of operations
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct InvalidationZone {
     pub geo: BoundingBox,
     pub sch: BoundingBox,
