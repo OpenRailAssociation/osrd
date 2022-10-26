@@ -96,6 +96,8 @@ def process_simulation_response(infra, train_schedules, response_payload):
         track = ops_tracks[stop["track"]]
         stops_update[-1]["line_code"] = track.data.get("extensions", {}).get("sncf", {}).get("line_code", None)
         stops_update[-1]["track_number"] = track.data.get("extensions", {}).get("sncf", {}).get("track_number", None)
+        stops_update[-1]["line_name"] = track.data.get("extensions", {}).get("sncf", {}).get("line_name", None)
+        stops_update[-1]["track_name"] = track.data.get("extensions", {}).get("sncf", {}).get("track_name", None)
 
     for i, train_schedule in enumerate(train_schedules):
         # Update stops (adding id and name when available)
