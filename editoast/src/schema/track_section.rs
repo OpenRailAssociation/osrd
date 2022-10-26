@@ -23,7 +23,6 @@ use serde::{Deserialize, Serialize};
 pub struct TrackSection {
     #[derivative(Default(value = r#"generate_id("track_section")"#))]
     pub id: String,
-    #[derivative(Default(value = "0."))]
     pub length: f64,
     pub slopes: Vec<Slope>,
     pub curves: Vec<Curve>,

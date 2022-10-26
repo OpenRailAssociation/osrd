@@ -18,7 +18,6 @@ pub struct Detector {
     pub id: String,
     #[derivative(Default(value = r#""InvalidRef".into()"#))]
     pub track: String,
-    #[derivative(Default(value = "0."))]
     pub position: f64,
     pub applicable_directions: ApplicableDirections,
 }
