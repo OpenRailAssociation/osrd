@@ -2,12 +2,11 @@ from django.conf import settings
 from django.contrib.gis.db import models
 
 from osrd_infra.schemas.generated import InfraError
-from osrd_infra.schemas.infra import ALL_OBJECT_TYPES
+from osrd_infra.schemas.infra import Panel
 from osrd_infra.utils import PydanticValidator
 
 
 class ErrorLayer(models.Model):
-    OBJ_TYPE_CHOICES = [(obj_type.__name__, obj_type.__name__) for obj_type in ALL_OBJECT_TYPES]
     infra = models.ForeignKey("Infra", on_delete=models.CASCADE)
     geographic = models.GeometryField(srid=settings.MAPBOX_SRID, null=True)
     schematic = models.GeometryField(srid=settings.MAPBOX_SRID, null=True)
@@ -125,3 +124,11 @@ class CatenaryLayer(models.Model):
     class Meta:
         verbose_name_plural = "generated catenary layer"
         unique_together = (("infra", "obj_id"),)
+
+
+class LPVPanelLayer(models.Model):
+    infra = models.ForeignKey("Infra", on_delete=models.CASCADE)
+    obj = models.ForeignKey("SpeedSectionModel", on_delete=models.CASCADE)
+    geographic = models.PointField(srid=settings.MAPBOX_SRID)
+    schematic = models.PointField(srid=settings.MAPBOX_SRID)
+    data = models.JSONField(validators=[PydanticValidator(Panel)])
