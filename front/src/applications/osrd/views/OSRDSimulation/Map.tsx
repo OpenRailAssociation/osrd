@@ -391,8 +391,15 @@ function Map(props: MapProps) {
         ) : (
           <>
             <TracksSchematic colors={colors[mapStyle]} idHover={idHover} layerOrder={2} />
-            <OperationalPoints geomType="sch" colors={colors[mapStyle]} layerOrder={3} />
+
             <Routes geomType="sch" colors={colors[mapStyle]} layerOrder={3} />
+            <OperationalPoints geomType="sch" colors={colors[mapStyle]} layerOrder={3} />
+            <BufferStops geomType="sch" colors={colors[mapStyle]} layerOrder={3} />
+            <Detectors geomType="sch" colors={colors[mapStyle]} layerOrder={3} />
+            <Switches geomType="sch" colors={colors[mapStyle]} layerOrder={3} />
+
+            <SpeedLimits geomType="sch" colors={colors[mapStyle]} layerOrder={4} />
+
             <Signals
               mapRef={mapRef}
               sourceTable="signals"
@@ -400,10 +407,6 @@ function Map(props: MapProps) {
               sourceLayer="sch"
               layerOrder={5}
             />
-            <SpeedLimits geomType="sch" colors={colors[mapStyle]} layerOrder={4} />
-            <BufferStops geomType="sch" colors={colors[mapStyle]} layerOrder={3} />
-            <Detectors geomType="sch" colors={colors[mapStyle]} layerOrder={3} />
-            <Switches geomType="sch" colors={colors[mapStyle]} layerOrder={3} />
           </>
         )}
 
