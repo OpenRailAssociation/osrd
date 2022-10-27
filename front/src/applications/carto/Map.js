@@ -132,7 +132,6 @@ function Map() {
             <Catenaries geomType="geo" colors={colors[mapStyle]} />
             <TracksOSM colors={colors[mapStyle]} />
             <OperationalPoints geomType="geo" colors={colors[mapStyle]} />
-            <SignalingType geomType="geo" />
             <Routes geomType="geo" colors={colors[mapStyle]} />
             <SpeedLimits geomType="geo" colors={colors[mapStyle]} />
             <SNCF_LPV geomType="geo" colors={colors[mapStyle]} />
