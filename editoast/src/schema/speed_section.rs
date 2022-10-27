@@ -21,6 +21,7 @@ pub struct SpeedSection {
     pub speed_limit: Option<f64>,
     pub speed_limit_by_tag: HashMap<String, f64>,
     pub track_ranges: Vec<ApplicableDirectionsTrackRange>,
+    #[serde(default)]
     pub extensions: SpeedSectionExtensions,
 }
 
