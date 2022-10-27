@@ -951,6 +951,111 @@ public class STDCMPathfindingTests {
         assertNotNull(res);
     }
 
+    /** This test requires some backtracking to compute the final braking curve.
+     * With a naive approach we reach the destination in time, but the extra braking curve makes us
+     * reach the next block */
+    @Test
+    public void testBacktrackingBrakingCurve() {
+        /*
+        a ------> b
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var route = infraBuilder.addRoute("a", "b", 1000);
+        var firstRouteEnvelope = STDCMGraph.simulateRoute(route, 0, 0,
+                REALISTIC_FAST_TRAIN, 2., new double[]{});
+        assert firstRouteEnvelope != null;
+        var runTime = firstRouteEnvelope.getTotalTime();
+        var infra = infraBuilder.build();
+        var occupancyGraph = ImmutableMultimap.of(
+                route, new OccupancyBlock(runTime + 1, POSITIVE_INFINITY, 0, 1000)
+        );
+        var res = STDCMPathfinding.findPath(
+                infra,
+                REALISTIC_FAST_TRAIN,
+                0,
+                0,
+                Set.of(new Pathfinding.EdgeLocation<>(route, 0)),
+                Set.of(new Pathfinding.EdgeLocation<>(route, 1000)),
+                occupancyGraph,
+                2.,
+                3600 * 2,
+                POSITIVE_INFINITY
+        );
+        if (res == null)
+            return;
+        occupancyTest(res, occupancyGraph);
+    }
+
+    /** This is the same test as the one above, but with the braking curve spanning over several routes */
+    @Test
+    public void testBacktrackingBrakingCurveSeveralRoutes() {
+        /*
+        a ------> b -> c -> d -> e
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var firstRoute = infraBuilder.addRoute("a", "b", 1000);
+        infraBuilder.addRoute("b", "c", 10);
+        infraBuilder.addRoute("c", "d", 10);
+        var lastRoute = infraBuilder.addRoute("d", "e", 10);
+        var firstRouteEnvelope = STDCMGraph.simulateRoute(firstRoute, 0, 0,
+                REALISTIC_FAST_TRAIN, 2., new double[]{});
+        assert firstRouteEnvelope != null;
+        var runTime = firstRouteEnvelope.getTotalTime();
+        var infra = infraBuilder.build();
+        var occupancyGraph = ImmutableMultimap.of(
+                lastRoute, new OccupancyBlock(runTime + 10, POSITIVE_INFINITY, 0, 10)
+        );
+        var res = STDCMPathfinding.findPath(
+                infra,
+                REALISTIC_FAST_TRAIN,
+                0,
+                0,
+                Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
+                Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 5)),
+                occupancyGraph,
+                2.,
+                3600 * 2,
+                POSITIVE_INFINITY
+        );
+        if (res == null)
+            return;
+        occupancyTest(res, occupancyGraph);
+    }
+
+    /** Test that we don't stay in the first route for too long when there is an MRSP drop at the route transition */
+    @Test
+    public void testBacktrackingMRSPDrop() {
+        /*
+        a ------> b -> c
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var firstRoute = infraBuilder.addRoute("a", "b", 1000);
+        var secondRoute = infraBuilder.addRoute("b", "c", 100, 5);
+        var firstRouteEnvelope = STDCMGraph.simulateRoute(firstRoute, 0, 0,
+                REALISTIC_FAST_TRAIN, 2., new double[]{});
+        assert firstRouteEnvelope != null;
+        var runTime = firstRouteEnvelope.getTotalTime();
+        var infra = infraBuilder.build();
+        var occupancyGraph = ImmutableMultimap.of(
+                firstRoute, new OccupancyBlock(runTime + 10, POSITIVE_INFINITY, 0, 1000)
+        );
+        var res = STDCMPathfinding.findPath(
+                infra,
+                REALISTIC_FAST_TRAIN,
+                0,
+                0,
+                Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
+                Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 5)),
+                occupancyGraph,
+                2.,
+                3600 * 2,
+                POSITIVE_INFINITY
+        );
+        if (res == null)
+            return;
+        occupancyTest(res, occupancyGraph);
+    }
+
     /** Checks that the result don't cross in an occupied section */
     private void occupancyTest(STDCMResult res, ImmutableMultimap<SignalingRoute, OccupancyBlock> occupancyGraph) {
         var routes = res.trainPath().routePath();
