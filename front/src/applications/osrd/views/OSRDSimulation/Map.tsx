@@ -411,7 +411,7 @@ function Map(props: MapProps) {
           <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />
         ) : null}
 
-        {geojsonPath !== undefined ? <RenderItinerary geojsonPath={geojsonPath} /> : null}
+        {geojsonPath && <RenderItinerary geojsonPath={geojsonPath} layerOrder={2} />}
 
         {geojsonPath && selectedTrainHoverPosition && (
           <TrainHoverPosition
