@@ -516,7 +516,8 @@ public class STDCMPathfindingTests {
         var firstRoute = infraBuilder.addRoute("a", "b");
         var secondRoute = infraBuilder.addRoute("b", "c");
         var infra = infraBuilder.build();
-        var firstRouteEnvelope = STDCMGraph.simulateRoute(firstRoute, 0, 0, REALISTIC_FAST_TRAIN, 2);
+        var firstRouteEnvelope = STDCMGraph.simulateRoute(firstRoute, 0, 0,
+                REALISTIC_FAST_TRAIN, 2, new double[]{});
         assert firstRouteEnvelope != null;
         var res = STDCMPathfinding.findPath(
                 infra,
