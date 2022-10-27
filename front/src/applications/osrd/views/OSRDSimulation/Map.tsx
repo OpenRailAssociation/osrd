@@ -385,6 +385,7 @@ function Map(props: MapProps) {
               sourceTable="signals"
               colors={colors[mapStyle]}
               sourceLayer="geo"
+              layerOrder={5}
             />
           </>
         ) : (
@@ -397,6 +398,7 @@ function Map(props: MapProps) {
               sourceTable="signals"
               colors={colors[mapStyle]}
               sourceLayer="sch"
+              layerOrder={5}
             />
             <SpeedLimits geomType="sch" colors={colors[mapStyle]} />
             <BufferStops geomType="sch" colors={colors[mapStyle]} />

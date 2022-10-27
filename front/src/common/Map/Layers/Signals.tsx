@@ -1,30 +1,45 @@
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { Source, MapRef } from 'react-map-gl';
+import { get } from 'lodash';
+
+import { RootState } from 'reducers';
+import { Theme, SourceLayer } from 'types';
+
+import { MAP_URL } from 'common/Map/const';
 import {
   ALL_SIGNAL_LAYERS,
   LIGHT_SIGNALS,
   PANELS_STOPS,
   PANELS_TIVS,
 } from 'common/Map/Consts/SignalsNames';
-import { Layer, Source } from 'react-map-gl';
-import React, { useEffect, useState } from 'react';
 
-import { MAP_URL } from 'common/Map/const';
-import PropTypes from 'prop-types';
-import { useSelector } from 'react-redux';
+import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import {
   getPointLayerProps,
   getSignalLayerProps,
   getSignalMatLayerProps,
+  SignalContext,
 } from './geoSignalsLayers';
 
-function Signals(props) {
-  const { mapStyle, signalsSettings, viewPort } = useSelector((state) => state.map);
-  const timePosition = useSelector((state) => state.osrdsimulation.timePosition);
-  const selectedTrain = useSelector((state) => state.osrdsimulation.selectedTrain);
+interface PlatformProps {
+  colors: Theme;
+  sourceTable: string;
+  sourceLayer: SourceLayer;
+  hovered?: { id: any; layer: any };
+  mapRef: React.RefObject<MapRef>;
+  layerOrder: number;
+}
+
+function Signals(props: PlatformProps) {
+  const { mapStyle, signalsSettings, viewPort } = useSelector((state: RootState) => state.map);
+  const timePosition = useSelector((state: RootState) => state.osrdsimulation.timePosition);
+  const selectedTrain = useSelector((state: RootState) => state.osrdsimulation.selectedTrain);
   const consolidatedSimulation = useSelector(
-    (state) => state.osrdsimulation.consolidatedSimulation
+    (state: RootState) => state.osrdsimulation.consolidatedSimulation
   );
-  const { infraID } = useSelector((state) => state.osrdconf);
-  const { colors, sourceTable, sourceLayer, hovered, mapRef } = props;
+  const { infraID } = useSelector((state: RootState) => state.osrdconf);
+  const { colors, sourceTable, sourceLayer, hovered, mapRef, layerOrder } = props;
 
   let prefix;
   if (mapStyle === 'blueprint') {
@@ -33,9 +48,9 @@ function Signals(props) {
     prefix = sourceLayer === 'sch' ? 'SCH ' : '';
   }
 
-  const [redSignalIds, setRedSignalsIds] = useState([]);
-  const [yellowSignalIds, setYellowSignalsIds] = useState([]);
-  const [greenSignalsIds, setGreenSignalsIds] = useState([]);
+  const [redSignalIds, setRedSignalsIds] = useState<string[]>([]);
+  const [yellowSignalIds, setYellowSignalsIds] = useState<string[]>([]);
+  const [greenSignalsIds, setGreenSignalsIds] = useState<string[]>([]);
 
   const map = mapRef?.current?.getMap(); // We need the mapBox map object
 
@@ -54,9 +69,9 @@ function Signals(props) {
 
       const renderedDynamicStopsFeatures = map.queryRenderedFeatures({ layers: dynamicLayersIds }); // can' be memoïzed :(
 
-      const tmpRedIds = [];
-      const tmpYellowIds = [];
-      const tmpGreenIds = [];
+      const tmpRedIds: string[] = [];
+      const tmpYellowIds: string[] = [];
+      const tmpGreenIds: string[] = [];
 
       renderedDynamicStopsFeatures.forEach((renderedDynamicStopsFeature) => {
         // find the info in simulation aspects
@@ -69,6 +84,11 @@ function Signals(props) {
 
         if (matchingSignalAspect) {
           switch (matchingSignalAspect.color) {
+            case 'rgba(255, 0, 0, 255)':
+              if (tmpRedIds.indexOf(matchingSignalAspect.signal_id) === -1) {
+                tmpRedIds.push(matchingSignalAspect.signal_id);
+              }
+              break;
             case 'rgba(255, 255, 0, 255)':
               if (tmpYellowIds.indexOf(matchingSignalAspect.signal_id) === -1) {
                 tmpYellowIds.push(matchingSignalAspect.signal_id);
@@ -77,11 +97,6 @@ function Signals(props) {
             case 'rgba(0, 255, 0, 255)':
               if (tmpGreenIds.indexOf(matchingSignalAspect.signal_id) === -1) {
                 tmpGreenIds.push(matchingSignalAspect.signal_id);
-              }
-              break;
-            case 'rgba(255, 0, 0, 255)':
-              if (tmpRedIds.indexOf(matchingSignalAspect.signal_id) === -1) {
-                tmpRedIds.push(matchingSignalAspect.signal_id);
               }
               break;
             default:
@@ -115,7 +130,7 @@ function Signals(props) {
 
   const signalsList = getSignalsList();
 
-  const context = {
+  const context: SignalContext = {
     prefix,
     colors,
     signalsList,
@@ -135,17 +150,25 @@ function Signals(props) {
       type="vector"
       url={`${MAP_URL}/layer/${sourceTable}/mvt/${sourceLayer}/?infra=${infraID}`}
     >
-      <Layer {...getSignalMatLayerProps(context)} id="chartis/signal/mat" />
-      <Layer {...getPointLayerProps(context)} id="chartis/signal/point" />
+      <OrderedLayer
+        {...getSignalMatLayerProps(context)}
+        id="chartis/signal/mat"
+        layerOrder={layerOrder}
+      />
+      <OrderedLayer
+        {...getPointLayerProps(context)}
+        id="chartis/signal/point"
+        layerOrder={layerOrder}
+      />
 
       {signalsList.map((sig) => {
         const layerId = `chartis/signal/${sourceLayer}/${sig}`;
         const isHovered = hovered && hovered.layer === layerId;
         const signalDef = getSignalLayerProps(context, sig, changeSignalsContext);
-        const opacity = (signalDef.paint || {})['icon-opacity'] || 1;
+        const opacity = get(signalDef.paint, 'icon-opacity', 1);
 
         return (
-          <Layer
+          <OrderedLayer
             key={sig}
             {...signalDef}
             id={layerId}
@@ -155,24 +178,12 @@ function Signals(props) {
                 ? ['case', ['==', ['get', 'OP_id'], hovered.id], opacity * 0.6, opacity]
                 : opacity,
             }}
+            layerOrder={layerOrder}
           />
         );
       })}
     </Source>
   );
 }
-
-Signals.propTypes = {
-  hovered: PropTypes.object,
-  colors: PropTypes.object.isRequired,
-  sourceTable: PropTypes.string.isRequired,
-  sourceLayer: PropTypes.string.isRequired,
-  mapRef: PropTypes.object,
-};
-
-Signals.defaultProps = {
-  hovered: null,
-  mapRef: null,
-};
 
 export default Signals;
