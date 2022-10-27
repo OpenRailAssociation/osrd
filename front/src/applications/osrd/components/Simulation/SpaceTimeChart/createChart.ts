@@ -1,10 +1,9 @@
 import * as d3 from 'd3';
 import { select as d3select } from 'd3-selection';
 
-import { Chart } from 'reducers/osrdsimulation';
+import { Chart, SimulationTrain } from 'reducers/osrdsimulation';
 import { defineLinear, defineTime } from 'applications/osrd/components/Helpers/ChartHelpers';
 import defineChart from 'applications/osrd/components/Simulation/defineChart';
-import { SimulationTrain } from './createTrain';
 
 export default function createChart(
   chart: Chart,

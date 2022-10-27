@@ -7,34 +7,10 @@ import {
   formatStepsWithTime,
   formatStepsWithTimeMulti,
   mergeDatasArea,
-  MergedDataPoint,
 } from 'applications/osrd/components/Helpers/ChartHelpers';
 
 import { setFailure } from 'reducers/main';
-import { Train, Position, RouteAspect, SignalAspect, PositionSpeed } from 'reducers/osrdsimulation';
-
-export interface SimulationTrain {
-  id: number;
-  isStdcm: boolean;
-  name: string;
-  trainNumber: number;
-  headPosition: Position<Date | null>[][];
-  tailPosition: Position<Date | null>[][];
-  routeEndOccupancy: Position<Date | null>[][];
-  routeBeginOccupancy: Position<Date | null>[][];
-  routeAspects: RouteAspect<Date | null, string>[];
-  signalAspects: SignalAspect<Date | null, string>[];
-  areaBlock: MergedDataPoint<Date | null>[][];
-  speed: PositionSpeed<Date | null>[];
-  eco_headPosition?: Position<Date | null>[][];
-  eco_tailPosition?: Position<Date | null>[][];
-  eco_routeEndOccupancy?: Position<Date | null>[][];
-  eco_routeBeginOccupancy?: Position<Date | null>[][];
-  eco_routeAspects?: RouteAspect<Date | null, string>[];
-  eco_signalAspects?: SignalAspect<Date | null, string>[];
-  eco_areaBlock?: MergedDataPoint<Date | null>[][];
-  eco_speed?: PositionSpeed<Date | null>[];
-}
+import { Train, SimulationTrain } from 'reducers/osrdsimulation';
 
 /**
  * Will do some formating & computation to get a trains to be displayed. Stored then with currentSimulation splitted reducer
