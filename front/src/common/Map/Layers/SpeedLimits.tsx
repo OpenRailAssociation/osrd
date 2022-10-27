@@ -2,8 +2,6 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { Layer, Source, LayerProps } from 'react-map-gl';
 
-import PropTypes from 'prop-types';
-
 import { RootState } from 'reducers';
 import { MAP_URL } from 'common/Map/const';
 import { Theme } from 'types';
