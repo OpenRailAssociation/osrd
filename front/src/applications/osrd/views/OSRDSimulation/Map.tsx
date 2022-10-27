@@ -369,7 +369,7 @@ function Map(props: MapProps) {
             <Platform colors={colors[mapStyle]} layerOrder={1} />
 
             <TracksGeographic colors={colors[mapStyle]} layerOrder={2} />
-            <TracksOSM colors={colors[mapStyle]} />
+            <TracksOSM colors={colors[mapStyle]} layerOrder={2} />
 
             <Routes geomType="geo" colors={colors[mapStyle]} />
             <OperationalPoints geomType="geo" colors={colors[mapStyle]} />
