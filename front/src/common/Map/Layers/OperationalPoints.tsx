@@ -1,14 +1,24 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
-import { Source, Layer } from 'react-map-gl';
+import { Source, LayerProps } from 'react-map-gl';
+
+import { RootState } from 'reducers';
+import { Theme } from 'types';
 import { MAP_URL } from 'common/Map/const';
 
-export default function OperationalPoints(props) {
-  const { layersSettings } = useSelector((state) => state.map);
-  const { infraID } = useSelector((state) => state.osrdconf);
-  const { geomType, colors } = props;
-  const layerPoint = {
+import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+
+interface PlatformProps {
+  colors: Theme;
+  geomType: string;
+  layerOrder: number;
+}
+
+export default function OperationalPoints(props: PlatformProps) {
+  const { layersSettings } = useSelector((state: RootState) => state.map);
+  const { infraID } = useSelector((state: RootState) => state.osrdconf);
+  const { geomType, colors, layerOrder } = props;
+  const layerPoint: LayerProps = {
     type: 'circle',
     'source-layer': 'operational_points',
     paint: {
@@ -19,7 +29,7 @@ export default function OperationalPoints(props) {
     },
   };
 
-  const layerName = {
+  const layerName: LayerProps = {
     type: 'symbol',
     'source-layer': 'operational_points',
     minzoom: 9,
@@ -54,7 +64,7 @@ export default function OperationalPoints(props) {
     },
   };
 
-  const layerNameShort = {
+  const layerNameShort: LayerProps = {
     type: 'symbol',
     'source-layer': 'operational_points',
     maxzoom: 9,
@@ -87,22 +97,30 @@ export default function OperationalPoints(props) {
     },
   };
 
-  return (
-    layersSettings.operationalpoints && (
+  if (layersSettings.operationalpoints) {
+    return (
       <Source
         id={`osrd_operational_point_${geomType}`}
         type="vector"
         url={`${MAP_URL}/layer/operational_points/mvt/${geomType}/?infra=${infraID}`}
       >
-        <Layer {...layerPoint} id={`chartis/osrd_operational_point/${geomType}`} />
-        <Layer {...layerNameShort} id={`chartis/osrd_operational_point_name_short/${geomType}`} />
-        <Layer {...layerName} id={`chartis/osrd_operational_point_name/${geomType}`} />
+        <OrderedLayer
+          {...layerPoint}
+          id={`chartis/osrd_operational_point/${geomType}`}
+          layerOrder={layerOrder}
+        />
+        <OrderedLayer
+          {...layerNameShort}
+          id={`chartis/osrd_operational_point_name_short/${geomType}`}
+          layerOrder={layerOrder}
+        />
+        <OrderedLayer
+          {...layerName}
+          id={`chartis/osrd_operational_point_name/${geomType}`}
+          layerOrder={layerOrder}
+        />
       </Source>
-    )
-  );
+    );
+  }
+  return null;
 }
-
-OperationalPoints.propTypes = {
-  geomType: PropTypes.string.isRequired,
-  colors: PropTypes.object.isRequired,
-};
