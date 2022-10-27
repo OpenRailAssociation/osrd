@@ -387,7 +387,7 @@ function Map(props: MapProps) {
             <Routes
               geomType="geo"
               colors={colors[mapStyle]}
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACKS_OSM.GROUP]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.ROUTES.GROUP]}
             />
             <OperationalPoints
               geomType="geo"
