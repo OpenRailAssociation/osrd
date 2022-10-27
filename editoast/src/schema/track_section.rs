@@ -22,6 +22,7 @@ pub struct TrackSection {
     pub loading_gauge_limits: Vec<LoadingGaugeLimit>,
     pub geo: LineString,
     pub sch: LineString,
+    #[serde(default)]
     pub extensions: TrackSectionExtensions,
 }
 

@@ -19,6 +19,7 @@ pub struct Switch {
     pub switch_type: String,
     pub group_change_delay: f64,
     pub ports: HashMap<String, TrackEndpoint>,
+    #[serde(default)]
     pub extensions: SwitchExtensions,
 }
 
