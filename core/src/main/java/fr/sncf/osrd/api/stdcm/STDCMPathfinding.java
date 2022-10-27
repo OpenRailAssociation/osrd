@@ -17,10 +17,8 @@ import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.graph.functional_interfaces.TargetsOnEdge;
 import fr.sncf.osrd.utils.graph.functional_interfaces.AStarHeuristic;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+
+import java.util.*;
 
 /** This class combines all the (static) methods used to find a path in the STDCM graph. */
 public class STDCMPathfinding {
@@ -92,6 +90,34 @@ public class STDCMPathfinding {
         });
     }
 
+    /** Builds the actual list of EdgeRange given the raw result of the pathfinding.
+     * We can't use it directly because it can't handle backtracking properly */
+    private static List<Pathfinding.EdgeRange<STDCMGraph.Edge>> makeEdgeRange(
+            Pathfinding.Result<STDCMGraph.Edge> raw
+    ) {
+        var orderedEdges = new ArrayDeque<STDCMGraph.Edge>();
+        var firstRange = raw.ranges().get(0);
+        var lastRange = raw.ranges().get(raw.ranges().size() - 1);
+        var current = lastRange.edge();
+        while (true) {
+            orderedEdges.addFirst(current);
+            if (current.previousNode() == null)
+                break;
+            current = current.previousNode().previousEdge();
+        }
+        assert firstRange.edge().equals(orderedEdges.getFirst());
+        assert lastRange.edge().equals(orderedEdges.getLast());
+        orderedEdges.removeFirst();
+        if (lastRange != firstRange)
+            orderedEdges.removeLast();
+        var res = new ArrayList<Pathfinding.EdgeRange<STDCMGraph.Edge>>();
+        res.add(firstRange);
+        for (var edge : orderedEdges)
+            res.add(new Pathfinding.EdgeRange<>(edge, 0, edge.route().getInfraRoute().getLength()));
+        if (firstRange != lastRange)
+            res.add(lastRange);
+        return res;
+    }
 
     /** Builds the STDCM result object from the raw pathfinding result */
     private static STDCMResult makeResult(
@@ -100,19 +126,20 @@ public class STDCMPathfinding {
             double timeStep,
             double startTime
     ) {
-        var routeRanges = path.ranges().stream()
+        var ranges = makeEdgeRange(path);
+        var routeRanges = ranges.stream()
                 .map(x -> new Pathfinding.EdgeRange<>(x.edge().route(), x.start(), x.end()))
                 .toList();
         var routeWaypoints = path.waypoints().stream()
                 .map(x -> new Pathfinding.EdgeLocation<>(x.edge().route(), x.offset()))
                 .toList();
-        var physicsPath = makePhysicsPath(path.ranges());
+        var physicsPath = makePhysicsPath(ranges);
         return new STDCMResult(
                 new Pathfinding.Result<>(routeRanges, routeWaypoints),
-                makeFinalEnvelope(path.ranges(), rollingStock, physicsPath, timeStep),
-                makeTrainPath(path.ranges()),
+                makeFinalEnvelope(ranges, rollingStock, physicsPath, timeStep),
+                makeTrainPath(ranges),
                 physicsPath,
-                computeDepartureTime(path, startTime)
+                computeDepartureTime(ranges, startTime)
         );
     }
 
@@ -199,16 +226,16 @@ public class STDCMPathfinding {
         var res = new HashSet<Pathfinding.EdgeLocation<STDCMGraph.Edge>>();
         for (var location : locations) {
             var start = location.offset();
-            for (var edge : graph.makeEdges(location.edge(), startTime, 0, start, maxDepartureDelay, 0))
+            for (var edge : graph.makeEdges(location.edge(), startTime, 0, start, maxDepartureDelay, 0, null))
                 res.add(new Pathfinding.EdgeLocation<>(edge, location.offset()));
         }
         return res;
     }
 
     /** Computes the departure time, made of the sum of all delays added over the path */
-    private static double computeDepartureTime(Pathfinding.Result<STDCMGraph.Edge> path, double startTime) {
-        for (var ranges : path.ranges()) {
-            startTime += ranges.edge().addedDelay();
+    private static double computeDepartureTime(List<Pathfinding.EdgeRange<STDCMGraph.Edge>> ranges, double startTime) {
+        for (var range : ranges) {
+            startTime += range.edge().addedDelay();
         }
         return startTime;
     }
