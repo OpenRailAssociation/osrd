@@ -27,7 +27,7 @@ interface PlatformProps {
   sourceTable: string;
   sourceLayer: SourceLayer;
   hovered?: { id: any; layer: any };
-  mapRef: React.RefObject<MapRef>;
+  mapRef?: React.RefObject<MapRef>;
   layerOrder: number;
 }
 
