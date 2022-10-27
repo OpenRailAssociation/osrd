@@ -3,10 +3,10 @@ import { useSelector } from 'react-redux';
 import { Source, LayerProps } from 'react-map-gl';
 
 import { RootState } from 'reducers';
+import { Theme } from 'types';
 import { MAP_URL } from 'common/Map/const';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
-import { Theme } from 'types';
 
 export function getBufferStopsLayerProps(params: { sourceTable?: string }): LayerProps {
   const res: LayerProps = {
