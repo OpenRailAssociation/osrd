@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Layer, Source, Marker } from 'react-map-gl';
+import { Source, Marker } from 'react-map-gl';
 import along from '@turf/along';
 import lineSliceAlong from '@turf/line-slice-along';
 import length from '@turf/length';
