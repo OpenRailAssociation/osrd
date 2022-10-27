@@ -366,7 +366,7 @@ function Map(props: MapProps) {
         {/* Have to  duplicate objects with sourceLayer to avoid cache problems in mapbox */}
         {mapTrackSources === 'geographic' ? (
           <>
-            <Platform colors={colors[mapStyle]} />
+            <Platform colors={colors[mapStyle]} layerOrder={1} />
 
             <TracksGeographic colors={colors[mapStyle]} />
             <TracksOSM colors={colors[mapStyle]} />
