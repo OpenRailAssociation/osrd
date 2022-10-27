@@ -94,7 +94,7 @@ function Map(props: MapProps) {
   const [geojsonPath, setGeojsonPath] = useState<Feature<LineString>>();
   const [selectedTrainHoverPosition, setTrainHoverPosition] = useState<TrainPosition>();
   const [otherTrainsHoverPosition, setOtherTrainsHoverPosition] = useState<TrainPosition[]>([]);
-  const [idHover, setIdHover] = useState(undefined);
+  const [idHover, setIdHover] = useState('');
   const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
   const dispatch = useDispatch();
   const updateViewportChange = useCallback(
@@ -390,7 +390,7 @@ function Map(props: MapProps) {
           </>
         ) : (
           <>
-            <TracksSchematic colors={colors[mapStyle]} idHover={idHover} />
+            <TracksSchematic colors={colors[mapStyle]} idHover={idHover} layerOrder={2} />
             <OperationalPoints geomType="sch" colors={colors[mapStyle]} layerOrder={3} />
             <Routes geomType="sch" colors={colors[mapStyle]} layerOrder={3} />
             <Signals
