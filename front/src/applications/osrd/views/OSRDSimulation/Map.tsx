@@ -373,7 +373,7 @@ function Map(props: MapProps) {
 
             <Routes geomType="geo" colors={colors[mapStyle]} layerOrder={3} />
             <OperationalPoints geomType="geo" colors={colors[mapStyle]} layerOrder={3} />
-            <Catenaries geomType="geo" colors={colors[mapStyle]} />
+            <Catenaries geomType="geo" colors={colors[mapStyle]} layerOrder={3} />
             <BufferStops geomType="geo" colors={colors[mapStyle]} />
             <Detectors geomType="geo" colors={colors[mapStyle]} />
             <Switches geomType="geo" colors={colors[mapStyle]} />
