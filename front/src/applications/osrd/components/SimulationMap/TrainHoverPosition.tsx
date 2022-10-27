@@ -17,6 +17,7 @@ import { AllowancesSetting } from 'reducers/osrdsimulation';
 import { datetime2time } from 'utils/timeManipulation';
 import { boundedValue } from 'utils/numbers';
 import { getCurrentBearing } from 'utils/geometry';
+import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { TrainPosition } from './types';
 
 function getFill(isSelectedTrain: boolean, ecoBlocks: boolean) {
@@ -173,6 +174,7 @@ interface TrainHoverPositionProps {
   point: TrainPosition;
   isSelectedTrain?: boolean;
   geojsonPath: Feature<LineString>;
+  layerOrder: number;
 }
 
 const labelShiftFactor = {
@@ -181,7 +183,7 @@ const labelShiftFactor = {
 };
 
 function TrainHoverPosition(props: TrainHoverPositionProps) {
-  const { point, isSelectedTrain = false, geojsonPath } = props;
+  const { point, isSelectedTrain = false, geojsonPath, layerOrder } = props;
   const { selectedTrain, allowancesSettings } = useSelector(
     (state: RootState) => state.osrdsimulation
   );
@@ -213,31 +215,34 @@ function TrainHoverPosition(props: TrainHoverPositionProps) {
           {label}
         </Marker>
         <Source type="geojson" data={headTriangle}>
-          <Layer
+          <OrderedLayer
             id={`${point.id}-head`}
             type="fill"
             paint={{
               'fill-color': fill,
             }}
+            layerOrder={layerOrder}
           />
         </Source>
         <Source type="geojson" data={rearTriangle}>
-          <Layer
+          <OrderedLayer
             id={`${point.id}-rear`}
             type="fill"
             paint={{
               'fill-color': fill,
             }}
+            layerOrder={layerOrder}
           />
         </Source>
         <Source type="geojson" data={trainGeoJsonPath}>
-          <Layer
+          <OrderedLayer
             id={`${point.id}-path`}
             type="line"
             paint={{
               'line-width': 16,
               'line-color': fill,
             }}
+            layerOrder={layerOrder}
           />
         </Source>
       </>

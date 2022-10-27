@@ -418,11 +418,12 @@ function Map(props: MapProps) {
             point={selectedTrainHoverPosition}
             isSelectedTrain
             geojsonPath={geojsonPath}
+            layerOrder={6}
           />
         )}
         {geojsonPath &&
           otherTrainsHoverPosition.map((pt) => (
-            <TrainHoverPosition point={pt} geojsonPath={geojsonPath} key={pt.id} />
+            <TrainHoverPosition point={pt} geojsonPath={geojsonPath} key={pt.id} layerOrder={6} />
           ))}
       </ReactMapGL>
       <div className="handle-tab-resize">
