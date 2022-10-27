@@ -191,7 +191,7 @@ export interface OsrdSimulationState {
   stickyBar: boolean;
   signalBase: typeof SIGNAL_BASE_DEFAULT;
   timePosition: any;
-  consolidatedSimulation: SimulationTrain;
+  consolidatedSimulation: SimulationTrain[];
   departureArrivalTimes: Array<any>;
   simulation: {
     past: SimulationHistory;

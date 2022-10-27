@@ -25,7 +25,7 @@ export default function createTrain(
   keyValues: string[],
   simulationTrains: Train[],
   t: TFunction
-) {
+): SimulationTrain[] {
   // Prepare data
   const dataSimulation = simulationTrains.map((train: Train, trainNumber: number) => {
     const routeEndOccupancy = formatStepsWithTimeMulti(train.base.route_end_occupancy);
