@@ -65,7 +65,9 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
             // Time of the next occupancy of the route, used for hash / equality test
             double timeNextOccupancy,
             // Total delay we have added by shifting the departure time since the start of the path
-            double totalDepartureTimeShift
+            double totalDepartureTimeShift,
+            // Node located at the start of this edge, null if this is the first edge
+            Node previousNode
     ) {
         @Override
         @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
@@ -93,11 +95,18 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
     }
 
     public record Node(
+            // Time at the transition of the edge
             double time,
+            // Speed at the end of the previous edge
             double speed,
+            // Detector that separates the routes, this is the physical location of the node
             DiDetector detector,
-            double maximumAddedDelay, // Maximum delay we can add by delaying the start time without causing conflicts
-            double totalPrevAddedDelay // Sum of all the delays we have added by shifting the departure time
+            // Sum of all the delays we have added by shifting the departure time
+            double totalPrevAddedDelay,
+            // Maximum delay we can add by delaying the start time without causing conflicts
+            double maximumAddedDelay,
+            // Edge that lead to this node
+            Edge previousEdge
     ) {}
 
     @Override
@@ -107,7 +116,8 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
                 edge.envelope.getEndSpeed(),
                 infra.getSignalingRouteGraph().incidentNodes(edge.route).nodeV(),
                 edge.maximumAddedDelayAfter,
-                edge.totalDepartureTimeShift
+                edge.totalDepartureTimeShift,
+                edge
         );
     }
 
@@ -122,7 +132,8 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
                     node.speed,
                     0,
                     node.maximumAddedDelay,
-                    node.totalPrevAddedDelay
+                    node.totalPrevAddedDelay,
+                    node
             ));
         }
         return res;
@@ -151,7 +162,8 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
             double startSpeed,
             double start,
             double prevMaximumAddedDelay,
-            double prevAddedDelay
+            double prevAddedDelay,
+            Node node
     ) {
         var envelope = simulateRoute(route, startSpeed, start, rollingStock, timeStep);
         if (envelope == null)
@@ -174,7 +186,8 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
                     maximumDelay,
                     delayNeeded,
                     findNextOccupancy(route, startTime + delayNeeded),
-                    prevAddedDelay + delayNeeded
+                    prevAddedDelay + delayNeeded,
+                    node
             );
             if (!isRunTimeTooLong(newEdge))
                 res.add(newEdge);
