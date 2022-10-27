@@ -17,7 +17,6 @@ import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.graph.functional_interfaces.TargetsOnEdge;
 import fr.sncf.osrd.utils.graph.functional_interfaces.AStarHeuristic;
-
 import java.util.*;
 
 /** This class combines all the (static) methods used to find a path in the STDCM graph. */
@@ -39,7 +38,15 @@ public class STDCMPathfinding {
             double maxDepartureDelay,
             double maxRunTime
     ) {
-        var graph = new STDCMGraph(infra, rollingStock, timeStep, unavailableTimes, maxRunTime, startTime);
+        var graph = new STDCMGraph(
+                infra,
+                rollingStock,
+                timeStep,
+                unavailableTimes,
+                maxRunTime,
+                startTime,
+                endLocations
+        );
         var path = new Pathfinding<>(graph)
                 .setEdgeToLength(edge -> edge.route().getInfraRoute().getLength())
                 .setRemainingDistanceEstimator(makeAStarHeuristic(endLocations, rollingStock))
@@ -226,7 +233,17 @@ public class STDCMPathfinding {
         var res = new HashSet<Pathfinding.EdgeLocation<STDCMGraph.Edge>>();
         for (var location : locations) {
             var start = location.offset();
-            for (var edge : graph.makeEdges(location.edge(), startTime, 0, start, maxDepartureDelay, 0, null))
+            var edges = graph.makeEdges(
+                    location.edge(),
+                    startTime,
+                    0,
+                    start,
+                    maxDepartureDelay,
+                    0,
+                    null,
+                    null
+            );
+            for (var edge : edges)
                 res.add(new Pathfinding.EdgeLocation<>(edge, location.offset()));
         }
         return res;
