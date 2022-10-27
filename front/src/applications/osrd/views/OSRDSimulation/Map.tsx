@@ -31,6 +31,7 @@ import { TrainPosition } from 'applications/osrd/components/SimulationMap/types'
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
 import BufferStops from 'common/Map/Layers/BufferStops';
+import VirtualLayers from 'applications/osrd/views/OSRDSimulation/VirtualLayers';
 /* Settings & Buttons */
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import Detectors from 'common/Map/Layers/Detectors';
@@ -359,6 +360,8 @@ function Map(props: MapProps) {
             <Hillshade mapStyle={mapStyle} />
           </>
         )}
+
+        <VirtualLayers />
 
         {/* Have to  duplicate objects with sourceLayer to avoid cache problems in mapbox */}
         {mapTrackSources === 'geographic' ? (
