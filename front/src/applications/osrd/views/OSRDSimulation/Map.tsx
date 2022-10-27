@@ -378,7 +378,7 @@ function Map(props: MapProps) {
             <Detectors geomType="geo" colors={colors[mapStyle]} />
             <Switches geomType="geo" colors={colors[mapStyle]} />
 
-            <SpeedLimits geomType="geo" colors={colors[mapStyle]} />
+            <SpeedLimits geomType="geo" colors={colors[mapStyle]} layerOrder={4} />
 
             <Signals
               mapRef={mapRef}
@@ -400,7 +400,7 @@ function Map(props: MapProps) {
               sourceLayer="sch"
               layerOrder={5}
             />
-            <SpeedLimits geomType="sch" colors={colors[mapStyle]} />
+            <SpeedLimits geomType="sch" colors={colors[mapStyle]} layerOrder={4} />
             <BufferStops geomType="sch" colors={colors[mapStyle]} />
             <Detectors geomType="sch" colors={colors[mapStyle]} />
             <Switches geomType="sch" colors={colors[mapStyle]} />
