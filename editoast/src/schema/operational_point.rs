@@ -15,6 +15,7 @@ pub struct OperationalPoint {
     #[derivative(Default(value = r#"generate_id("operational_point")"#))]
     pub id: String,
     pub parts: Vec<OperationalPointPart>,
+    #[serde(default)]
     pub extensions: OperationalPointExtensions,
 }
 
