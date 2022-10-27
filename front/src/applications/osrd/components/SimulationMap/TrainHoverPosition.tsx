@@ -149,7 +149,10 @@ function getTrainGeoJsonPath(
   if (headDistance - tailDistance > threshold) {
     return lineSliceAlong(geojsonPath, tailDistance, headDistance);
   }
-  return lineSliceAlong(geojsonPath, headDistance - threshold, headDistance);
+  if (headDistance > threshold) {
+    return lineSliceAlong(geojsonPath, headDistance - threshold, headDistance);
+  }
+  return lineSliceAlong(geojsonPath, 0, threshold);
 }
 
 function getTrainPieces(
