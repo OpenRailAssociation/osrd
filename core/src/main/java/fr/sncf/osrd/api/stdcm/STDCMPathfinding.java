@@ -16,6 +16,7 @@ import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.graph.functional_interfaces.TargetsOnEdge;
+import fr.sncf.osrd.utils.graph.functional_interfaces.AStarHeuristic;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -36,20 +37,28 @@ public class STDCMPathfinding {
             Set<Pathfinding.EdgeLocation<SignalingRoute>> startLocations,
             Set<Pathfinding.EdgeLocation<SignalingRoute>> endLocations,
             Multimap<SignalingRoute, OccupancyBlock> unavailableTimes,
-            double timeStep
+            double timeStep,
+            double maxDepartureDelay,
+            double maxRunTime
     ) {
-        var graph = new STDCMGraph(infra, rollingStock, timeStep, unavailableTimes);
-        var remainingDistance = new RemainingDistanceEstimator(endLocations);
+        var graph = new STDCMGraph(infra, rollingStock, timeStep, unavailableTimes, maxRunTime, startTime);
         var path = new Pathfinding<>(graph)
                 .setEdgeToLength(edge -> edge.route().getInfraRoute().getLength())
-                .setRemainingDistanceEstimator((edge, offset) -> remainingDistance.apply(edge.route(), offset))
+                .setRemainingDistanceEstimator(makeAStarHeuristic(endLocations, rollingStock))
+                .setEdgeRangeCost(STDCMPathfinding::edgeRangeCost)
                 .runPathfinding(
-                        convertLocations(graph, startLocations, startTime),
+                        convertLocations(graph, startLocations, startTime, maxDepartureDelay),
                         makeObjectiveFunction(endLocations)
                 );
         if (path == null)
             return null;
-        return makeResult(path, rollingStock, timeStep, startTime);
+        var res = makeResult(path, rollingStock, timeStep, startTime);
+        if (res.envelope().getTotalTime() > maxRunTime) {
+            // This can happen if the destination is one edge away from being reachable in time,
+            // as we only check the time at the start of an edge when exploring the graph
+            return null;
+        }
+        return res;
     }
 
     /** Make the objective function from the edge locations */
@@ -64,6 +73,25 @@ public class STDCMPathfinding {
             return res;
         });
     }
+
+    private static double edgeRangeCost(Pathfinding.EdgeRange<STDCMGraph.Edge> range) {
+        var envelope = range.edge().envelope();
+        var timeStart = STDCMGraph.interpolateTime(envelope, range.edge().route(), range.start(), 0);
+        var timeEnd = STDCMGraph.interpolateTime(envelope, range.edge().route(), range.end(), 0);
+        return timeEnd - timeStart + range.edge().addedDelay();
+    }
+
+    private static AStarHeuristic<STDCMGraph.Edge> makeAStarHeuristic(
+            Set<Pathfinding.EdgeLocation<SignalingRoute>> endLocations,
+            RollingStock rollingStock
+    ) {
+        var remainingDistance = new RemainingDistanceEstimator(endLocations);
+        return ((edge, offset) -> {
+            var distance = remainingDistance.apply(edge.route(), offset);
+            return distance / rollingStock.maxSpeed;
+        });
+    }
+
 
     /** Builds the STDCM result object from the raw pathfinding result */
     private static STDCMResult makeResult(
@@ -100,6 +128,8 @@ public class STDCMPathfinding {
         for (var edge : edges) {
             var envelope = edge.edge().envelope();
             var sliceUntil = Math.min(envelope.getEndPos(), Math.abs(edge.end() - edge.start()));
+            if (sliceUntil == 0)
+                continue;
             var slicedEnvelope = Envelope.make(envelope.slice(0, sliceUntil));
             for (var part : slicedEnvelope)
                 parts.add(part.copyAndShift(offset));
@@ -163,13 +193,13 @@ public class STDCMPathfinding {
     private static Set<Pathfinding.EdgeLocation<STDCMGraph.Edge>> convertLocations(
             STDCMGraph graph,
             Set<Pathfinding.EdgeLocation<SignalingRoute>> locations,
-            double startTime
+            double startTime,
+            double maxDepartureDelay
     ) {
         var res = new HashSet<Pathfinding.EdgeLocation<STDCMGraph.Edge>>();
         for (var location : locations) {
             var start = location.offset();
-            var maximumDelay = 3600 * 24; // Placeholder, there will probably be a parameter eventually
-            for (var edge : graph.makeEdges(location.edge(), startTime, 0, start, maximumDelay))
+            for (var edge : graph.makeEdges(location.edge(), startTime, 0, start, maxDepartureDelay, 0))
                 res.add(new Pathfinding.EdgeLocation<>(edge, location.offset()));
         }
         return res;

@@ -1,9 +1,10 @@
 use crate::schema::operation::{OperationResult, RailjsonObject};
 use crate::schema::*;
-use diesel::sql_types::{Double, Integer, Nullable, Text};
+use diesel::sql_types::{Double, Integer, Text};
 use diesel::PgConnection;
 use diesel::{sql_query, QueryableByName, RunQueryDsl};
 use enum_map::EnumMap;
+use rocket::serde::DeserializeOwned;
 use std::collections::{HashMap, HashSet};
 
 /// Contains infra cached data used to generate layers and errors
@@ -187,6 +188,20 @@ impl ObjectCache {
 }
 
 #[derive(QueryableByName, Debug, Clone)]
+pub struct ObjectQueryable {
+    #[sql_type = "Text"]
+    pub data: String,
+}
+
+struct MyParsedObject<T>(T);
+
+impl<T: DeserializeOwned> From<ObjectQueryable> for MyParsedObject<T> {
+    fn from(object: ObjectQueryable) -> Self {
+        MyParsedObject(serde_json::from_str(&object.data).unwrap())
+    }
+}
+
+#[derive(QueryableByName, Debug, Clone)]
 pub struct TrackQueryable {
     #[sql_type = "Text"]
     pub obj_id: String,
@@ -212,82 +227,6 @@ impl From<TrackQueryable> for TrackSectionCache {
 }
 
 #[derive(QueryableByName, Debug, Clone)]
-pub struct SpeedSectionQueryable {
-    #[sql_type = "Text"]
-    pub obj_id: String,
-    #[sql_type = "Text"]
-    pub track_ranges: String,
-    #[sql_type = "Nullable<Double>"]
-    pub speed_limit: Option<f64>,
-    #[sql_type = "Text"]
-    pub speed_limit_by_tag: String,
-}
-
-impl From<SpeedSectionQueryable> for SpeedSection {
-    fn from(speed: SpeedSectionQueryable) -> Self {
-        let track_ranges: Vec<ApplicableDirectionsTrackRange> =
-            serde_json::from_str(&speed.track_ranges).unwrap();
-        SpeedSection {
-            id: speed.obj_id.clone(),
-            speed_limit: speed.speed_limit,
-            speed_limit_by_tag: serde_json::from_str(&speed.speed_limit_by_tag).unwrap(),
-            track_ranges,
-        }
-    }
-}
-
-#[derive(QueryableByName, Debug, Clone)]
-pub struct RouteQueryable {
-    #[sql_type = "Text"]
-    pub obj_id: String,
-    #[sql_type = "Text"]
-    pub entry_point: String,
-    #[sql_type = "Text"]
-    pub exit_point: String,
-    #[sql_type = "Text"]
-    pub release_detectors: String,
-    #[sql_type = "Text"]
-    pub path: String,
-}
-
-impl From<RouteQueryable> for Route {
-    fn from(route: RouteQueryable) -> Self {
-        let entry_point: Waypoint = serde_json::from_str(&route.entry_point).unwrap();
-        let exit_point: Waypoint = serde_json::from_str(&route.exit_point).unwrap();
-        let release_detectors: Vec<String> =
-            serde_json::from_str(&route.release_detectors).unwrap();
-        let path: Vec<DirectionalTrackRange> = serde_json::from_str(&route.path).unwrap();
-        Route {
-            id: route.obj_id,
-            entry_point,
-            exit_point,
-            release_detectors,
-            path,
-        }
-    }
-}
-
-#[derive(QueryableByName, Debug, Clone)]
-pub struct TrackSectionLinkQueryable {
-    #[sql_type = "Text"]
-    pub obj_id: String,
-    #[sql_type = "Text"]
-    pub src: String,
-    #[sql_type = "Text"]
-    pub dst: String,
-}
-
-impl From<TrackSectionLinkQueryable> for TrackSectionLink {
-    fn from(link: TrackSectionLinkQueryable) -> Self {
-        Self {
-            id: link.obj_id.clone(),
-            src: serde_json::from_str(&link.src).unwrap(),
-            dst: serde_json::from_str(&link.dst).unwrap(),
-        }
-    }
-}
-
-#[derive(QueryableByName, Debug, Clone)]
 pub struct SwitchQueryable {
     #[sql_type = "Text"]
     pub obj_id: String,
@@ -308,26 +247,6 @@ impl From<SwitchQueryable> for SwitchCache {
 }
 
 #[derive(QueryableByName, Debug, Clone)]
-pub struct SwitchTypeQueryable {
-    #[sql_type = "Text"]
-    pub obj_id: String,
-    #[sql_type = "Text"]
-    pub ports: String,
-    #[sql_type = "Text"]
-    pub groups: String,
-}
-
-impl From<SwitchTypeQueryable> for SwitchType {
-    fn from(switch_type: SwitchTypeQueryable) -> Self {
-        SwitchType {
-            id: switch_type.obj_id,
-            ports: serde_json::from_str(&switch_type.ports).unwrap(),
-            groups: serde_json::from_str(&switch_type.groups).unwrap(),
-        }
-    }
-}
-
-#[derive(QueryableByName, Debug, Clone)]
 pub struct OperationalPointQueryable {
     #[sql_type = "Text"]
     pub obj_id: String,
@@ -340,26 +259,6 @@ impl From<OperationalPointQueryable> for OperationalPointCache {
         Self {
             obj_id: op.obj_id,
             parts: serde_json::from_str(&op.parts).unwrap(),
-        }
-    }
-}
-
-#[derive(QueryableByName, Debug, Clone)]
-pub struct CatenaryQueryable {
-    #[sql_type = "Text"]
-    pub obj_id: String,
-    #[sql_type = "Double"]
-    pub voltage: f64,
-    #[sql_type = "Text"]
-    pub track_ranges: String,
-}
-
-impl From<CatenaryQueryable> for Catenary {
-    fn from(catenary: CatenaryQueryable) -> Self {
-        Self {
-            id: catenary.obj_id,
-            voltage: catenary.voltage,
-            track_ranges: serde_json::from_str(&catenary.track_ranges).unwrap(),
         }
     }
 }
@@ -456,20 +355,22 @@ impl InfraCache {
         );
 
         // Load speed sections tracks references
-        sql_query(
-            "SELECT obj_id, data->>'track_ranges' AS track_ranges, (data->>'speed_limit')::float AS speed_limit, data->>'speed_limit_by_tag' AS speed_limit_by_tag FROM osrd_infra_speedsectionmodel WHERE infra_id = $1")
-        .bind::<Integer, _>(infra_id)
-        .load::<SpeedSectionQueryable>(conn).expect("Error loading speed section refs").into_iter().for_each(|speed| 
-            infra_cache.add::<SpeedSection>(speed.into())
-        );
+        sql_query("SELECT data::text FROM osrd_infra_speedsectionmodel WHERE infra_id = $1")
+            .bind::<Integer, _>(infra_id)
+            .load::<ObjectQueryable>(conn)
+            .expect("Error loading speed section refs")
+            .into_iter()
+            .map(|speed| MyParsedObject::<SpeedSection>::from(speed).0)
+            .for_each(|speed| infra_cache.add(speed));
 
         // Load routes tracks references
-        sql_query(
-            "SELECT obj_id, data->>'entry_point' AS entry_point, data->>'exit_point' AS exit_point, data->>'release_detectors' AS release_detectors, data->>'path' AS path FROM osrd_infra_routemodel WHERE infra_id = $1")
-        .bind::<Integer, _>(infra_id)
-        .load::<RouteQueryable>(conn).expect("Error loading route refs").into_iter().for_each(|route| 
-            infra_cache.add::<Route>(route.into())
-        );
+        sql_query("SELECT data::text FROM osrd_infra_routemodel WHERE infra_id = $1")
+            .bind::<Integer, _>(infra_id)
+            .load::<ObjectQueryable>(conn)
+            .expect("Error loading route refs")
+            .into_iter()
+            .map(|route| MyParsedObject::<Route>::from(route).0)
+            .for_each(|route| infra_cache.add(route));
 
         // Load operational points tracks references
         sql_query(
@@ -480,12 +381,13 @@ impl InfraCache {
         );
 
         // Load track section links tracks references
-        sql_query(
-            "SELECT obj_id, data->>'src' AS src, data->>'dst' AS dst FROM osrd_infra_tracksectionlinkmodel WHERE infra_id = $1")
-        .bind::<Integer, _>(infra_id)
-        .load::<TrackSectionLinkQueryable>(conn).expect("Error loading track section link refs").into_iter().for_each(|link| 
-            infra_cache.add::<TrackSectionLink>(link.into())
-        );
+        sql_query("SELECT data::text FROM osrd_infra_tracksectionlinkmodel WHERE infra_id = $1")
+            .bind::<Integer, _>(infra_id)
+            .load::<ObjectQueryable>(conn)
+            .expect("Error loading track section link refs")
+            .into_iter()
+            .map(|link| MyParsedObject::<TrackSectionLink>::from(link).0)
+            .for_each(|link| infra_cache.add(link));
 
         // Load switch tracks references
         sql_query(
@@ -496,12 +398,13 @@ impl InfraCache {
         });
 
         // Load switch types references
-        sql_query(
-            "SELECT obj_id, data->>'ports' AS ports, data->>'groups' AS groups FROM osrd_infra_switchtypemodel WHERE infra_id = $1")
-        .bind::<Integer, _>(infra_id)
-        .load::<SwitchTypeQueryable>(conn).expect("Error loading switch types refs").into_iter().for_each(|switch_type| 
-            infra_cache.add::<SwitchType>(switch_type.into())
-        );
+        sql_query("SELECT data::text FROM osrd_infra_switchtypemodel WHERE infra_id = $1")
+            .bind::<Integer, _>(infra_id)
+            .load::<ObjectQueryable>(conn)
+            .expect("Error loading switch types refs")
+            .into_iter()
+            .map(|switch_type| MyParsedObject::<SwitchType>::from(switch_type).0)
+            .for_each(|switch_type| infra_cache.add(switch_type));
 
         // Load detector tracks references
         sql_query(
@@ -520,12 +423,13 @@ impl InfraCache {
         );
 
         // Load catenary tracks references
-        sql_query(
-            "SELECT obj_id, (data->>'voltage')::float AS voltage, data->>'track_ranges' AS track_ranges FROM osrd_infra_catenarymodel WHERE infra_id = $1")
-        .bind::<Integer, _>(infra_id)
-        .load::<CatenaryQueryable>(conn).expect("Error loading catenary refs").into_iter().for_each(|catenary| 
-            infra_cache.add::<Catenary>(catenary.into())
-        );
+        sql_query("SELECT data::text FROM osrd_infra_catenarymodel WHERE infra_id = $1")
+            .bind::<Integer, _>(infra_id)
+            .load::<ObjectQueryable>(conn)
+            .expect("Error loading catenary refs")
+            .into_iter()
+            .map(|catenary| MyParsedObject::<Catenary>::from(catenary).0)
+            .for_each(|catenary| infra_cache.add(catenary));
 
         infra_cache
     }
@@ -605,10 +509,9 @@ impl InfraCache {
 pub mod tests {
     use std::collections::HashMap;
 
-    use crate::errors::graph::Graph;
+    use crate::chartos::BoundingBox;
     use crate::infra::tests::test_transaction;
     use crate::infra_cache::{InfraCache, SwitchCache};
-    use crate::layer::BoundingBox;
     use crate::schema::operation::create::tests::{
         create_buffer_stop, create_catenary, create_detector, create_link, create_op, create_route,
         create_signal, create_speed, create_switch, create_switch_type, create_track,
@@ -618,11 +521,6 @@ pub mod tests {
         DirectionalTrackRange, Endpoint, OSRDObject, OperationalPoint, OperationalPointPart, Route,
         SpeedSection, Switch, SwitchPortConnection, SwitchType, TrackEndpoint, TrackSectionLink,
         Waypoint,
-    };
-
-    use crate::errors::{
-        buffer_stops, detectors, operational_points, routes, signals, speed_sections, switch_types,
-        switches, track_section_links, track_sections,
     };
 
     use super::{
@@ -874,6 +772,7 @@ pub mod tests {
             speed_limit: None,
             speed_limit_by_tag: HashMap::default(),
             track_ranges,
+            ..Default::default()
         }
     }
 
@@ -949,7 +848,7 @@ pub mod tests {
 
     ///                    -------| C
     ///              D1   /
-    /// |--------_---*---
+    /// |--------+---*---
     ///     A        B    \
     ///                    -------| D
     ///
@@ -1036,24 +935,5 @@ pub mod tests {
         infra_cache.add(switch);
 
         infra_cache
-    }
-
-    #[test]
-    fn small_infra_cache_validation() {
-        let small_infra_cache = create_small_infra_cache();
-
-        let graph = Graph::load(&small_infra_cache);
-
-        // Generate the errors
-        assert!(track_sections::generate_errors(&small_infra_cache, &graph).is_empty());
-        assert!(signals::generate_errors(&small_infra_cache).is_empty());
-        assert!(speed_sections::generate_errors(&small_infra_cache).is_empty());
-        assert!(track_section_links::generate_errors(&small_infra_cache).is_empty());
-        assert!(switch_types::generate_errors(&small_infra_cache).is_empty());
-        assert!(switches::generate_errors(&small_infra_cache).is_empty());
-        assert!(detectors::generate_errors(&small_infra_cache).is_empty());
-        assert!(buffer_stops::generate_errors(&small_infra_cache).is_empty());
-        assert!(routes::generate_errors(&small_infra_cache, &graph).is_empty());
-        assert!(operational_points::generate_errors(&small_infra_cache).is_empty());
     }
 }

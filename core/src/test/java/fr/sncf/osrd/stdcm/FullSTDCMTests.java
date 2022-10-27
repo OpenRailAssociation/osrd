@@ -32,7 +32,9 @@ public class FullSTDCMTests {
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 100)),
                 Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 10125)),
                 ImmutableMultimap.of(),
-                2.
+                2.,
+                Double.POSITIVE_INFINITY,
+                Double.POSITIVE_INFINITY
         );
         assertNotNull(res);
     }
@@ -58,7 +60,9 @@ public class FullSTDCMTests {
                 start,
                 end,
                 occupancies,
-                2.
+                2.,
+                3600 * 24,
+                Double.POSITIVE_INFINITY
         );
         assertNotNull(res);
     }
@@ -81,7 +85,9 @@ public class FullSTDCMTests {
                 start,
                 end,
                 occupancies,
-                2.
+                2.,
+                7200,
+                Double.POSITIVE_INFINITY
         );
         assertNotNull(res);
     }

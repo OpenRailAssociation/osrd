@@ -1,11 +1,11 @@
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
-use crate::layer::Layer;
 
 use super::generate_id;
 use super::Direction;
 use super::OSRDObject;
 use super::ObjectType;
+use super::Side;
 use derivative::Derivative;
 use diesel::sql_types::{Double, Text};
 use serde::{Deserialize, Serialize};
@@ -18,13 +18,13 @@ pub struct Signal {
     pub id: String,
     #[derivative(Default(value = r#""InvalidRef".into()"#))]
     pub track: String,
-    #[derivative(Default(value = "0."))]
     pub position: f64,
     #[derivative(Default(value = "Direction::StartToStop"))]
     pub direction: Direction,
     #[derivative(Default(value = "400."))]
     pub sight_distance: f64,
     pub linked_detector: Option<String>,
+    #[serde(default)]
     pub extensions: SignalExtensions,
 }
 
@@ -60,40 +60,6 @@ impl OSRDObject for Signal {
 
     fn get_id(&self) -> &String {
         &self.id
-    }
-}
-
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
-#[derivative(Default)]
-pub enum Side {
-    #[serde(rename = "LEFT")]
-    Left,
-    #[serde(rename = "RIGHT")]
-    Right,
-    #[serde(rename = "CENTER")]
-    #[derivative(Default)]
-    Center,
-}
-
-impl Layer for Signal {
-    fn get_table_name() -> &'static str {
-        "osrd_infra_signallayer"
-    }
-
-    fn generate_layer_query() -> &'static str {
-        include_str!("../layer/sql/generate_signal_layer.sql")
-    }
-
-    fn insert_update_layer_query() -> &'static str {
-        include_str!("../layer/sql/insert_update_signal_layer.sql")
-    }
-
-    fn layer_name() -> &'static str {
-        "signals"
-    }
-
-    fn get_obj_type() -> ObjectType {
-        ObjectType::Signal
     }
 }
 

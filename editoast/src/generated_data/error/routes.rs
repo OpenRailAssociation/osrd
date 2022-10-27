@@ -248,7 +248,7 @@ pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraErro
 
 #[cfg(test)]
 mod tests {
-    use crate::errors::graph::Graph;
+    use crate::generated_data::error::graph::Graph;
     use crate::infra_cache::tests::{
         create_detector_cache, create_route_cache, create_small_infra_cache,
     };

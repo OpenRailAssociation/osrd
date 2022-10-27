@@ -30,7 +30,8 @@ class InfraView(
 
     @action(url_path="railjson", detail=True, methods=["get"])
     def get_railjson(self, request, pk=None):
-        railjson = serialize_infra(self.get_object())
+        exclude_extensions = request.query_params.get("exclude_extensions", "false").lower() == "true"
+        railjson = serialize_infra(self.get_object(), exclude_extensions)
         return HttpResponse(railjson, content_type="application/json")
 
     @action(url_path="railjson", detail=False, methods=["post"])

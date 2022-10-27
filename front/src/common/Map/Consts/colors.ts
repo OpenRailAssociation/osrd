@@ -36,6 +36,14 @@ const colors: Record<string, Theme> = {
       text: '#555555',
       halo: '#eee',
     },
+    lpv: {
+      pointtext: '#5b5b5b',
+      pointhalo: '#ffffff',
+      detailtext: '#555555',
+      detailhalo: '#ffffff',
+      text: '#4d4f53',
+      halo: '#ffffff',
+    },
     mapmarker: {
       text: '#0088ce',
       circle: '#0088ce',
@@ -98,7 +106,7 @@ const colors: Record<string, Theme> = {
       pointhalo: '#5b5b5b',
       detailtext: '#555555',
       detailhalo: '#ffffff',
-      text: '#555555',
+      text: '#4d4f53',
       halo: '#ffffff',
     },
     station: {
@@ -163,6 +171,14 @@ const colors: Record<string, Theme> = {
     linename: {
       text: '#4895ef',
       halo: '#0b011d',
+    },
+    lpv: {
+      pointtext: '#eeeeee',
+      pointhalo: '#3a86ff',
+      detailtext: '#3a86ff',
+      detailhalo: '#0b011d',
+      text: '#3a86ff',
+      halo: '#000000',
     },
     mapmarker: {
       text: '#ffaa39',
@@ -289,6 +305,14 @@ const colors: Record<string, Theme> = {
       text: bpLight,
     },
     linename: {
+      text: bpLight,
+      halo: bpBg,
+    },
+    lpv: {
+      pointtext: bpLight,
+      pointhalo: bpBg,
+      detailtext: bpLight,
+      detailhalo: bpBg,
       text: bpLight,
       halo: bpBg,
     },

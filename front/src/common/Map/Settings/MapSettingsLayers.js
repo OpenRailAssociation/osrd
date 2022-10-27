@@ -12,7 +12,7 @@ import SwitchesSVGFile from 'assets/pictures/layersicons/switches.svg';
 import DetectorsSVGFile from 'assets/pictures/layersicons/detectors.svg';
 import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 
-function FormatSwitch(props) {
+export function FormatSwitch(props) {
   const dispatch = useDispatch();
   const { t } = useTranslation(['map-settings']);
   const { layersSettings } = useSelector((state) => state.map);
@@ -45,17 +45,8 @@ function FormatSwitch(props) {
   );
 }
 
-function BufferStopSVG() {
-  return <img src={BufferStopSVGFile} alt="Buffer stop icon" height="16" />;
-}
-function DetectorsSVG() {
-  return <img src={DetectorsSVGFile} alt="Buffer stop icon" height="16" />;
-}
-function OPsSVG() {
-  return <img src={OPsSVGFile} alt="Buffer stop icon" height="16" />;
-}
-function SwitchesSVG() {
-  return <img src={SwitchesSVGFile} alt="Buffer stop icon" height="16" />;
+export function Icon2SVG(file, altName) {
+  return <img src={file} alt={altName} height="16" />;
 }
 
 export default function MapSettingsLayers() {
@@ -65,10 +56,13 @@ export default function MapSettingsLayers() {
       <FormatSwitch name="signalingtype" icon={<AiOutlineBlock />} disabled />
       <FormatSwitch name="tvds" icon={<MdSpaceBar />} disabled />
       <FormatSwitch name="routes" icon={<MdLinearScale />} color="text-orange" />
-      <FormatSwitch name="operationalpoints" icon={<OPsSVG />} />
-      <FormatSwitch name="switches" icon={<SwitchesSVG />} />
-      <FormatSwitch name="bufferstops" icon={<BufferStopSVG />} />
-      <FormatSwitch name="detectors" icon={<DetectorsSVG />} />
+      <FormatSwitch
+        name="operationalpoints"
+        icon={Icon2SVG(OPsSVGFile, 'Operationnal points svg')}
+      />
+      <FormatSwitch name="switches" icon={Icon2SVG(SwitchesSVGFile, 'Switches icon svg')} />
+      <FormatSwitch name="bufferstops" icon={Icon2SVG(BufferStopSVGFile, 'Buffer stop svg')} />
+      <FormatSwitch name="detectors" icon={Icon2SVG(DetectorsSVGFile, 'Detectors circles svg')} />
     </div>
   );
 }

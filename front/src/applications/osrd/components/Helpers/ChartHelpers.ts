@@ -188,43 +188,47 @@ export type MergedDataPoint<T = number> = {
 
 // Merge two curves for creating area between
 export const mergeDatasArea = <T>(
-  data1: Position<T>[][],
-  data2: Position<T>[][],
-  keyValues: string[]
+  data1?: Position<T>[][],
+  data2?: Position<T>[][],
+  keyValues?: string[]
 ) => {
-  const areas = data1.map((data1Section, sectionIdx) => {
-    type KeyOfPosition = keyof Position;
-    const points: MergedDataPoint<T>[] = [];
-    for (let i = 0; i <= data1Section.length; i += 2) {
-      points.push({
-        [keyValues[0]]: data1Section[i][keyValues[0] as KeyOfPosition],
-        value0: data1Section[i][keyValues[1] as KeyOfPosition],
-        value1: data2[sectionIdx][i][keyValues[1] as KeyOfPosition],
-      });
-      if (data1Section[i + 1] && data2[sectionIdx][i + 1]) {
+  if (data1 && data2 && keyValues) {
+    const areas = data1.map((data1Section, sectionIdx) => {
+      type KeyOfPosition = keyof Position;
+      const points: MergedDataPoint<T>[] = [];
+      for (let i = 0; i <= data1Section.length; i += 2) {
         points.push({
-          [keyValues[0]]: data2[sectionIdx][i + 1][keyValues[0] as KeyOfPosition],
-          value0: data1Section[i + 1][keyValues[1] as KeyOfPosition],
-          value1: data2[sectionIdx][i + 1][keyValues[1] as KeyOfPosition],
+          [keyValues[0]]: data1Section[i][keyValues[0] as KeyOfPosition],
+          value0: data1Section[i][keyValues[1] as KeyOfPosition],
+          value1: data2[sectionIdx][i][keyValues[1] as KeyOfPosition],
         });
+        if (data1Section[i + 1] && data2[sectionIdx][i + 1]) {
+          points.push({
+            [keyValues[0]]: data2[sectionIdx][i + 1][keyValues[0] as KeyOfPosition],
+            value0: data1Section[i + 1][keyValues[1] as KeyOfPosition],
+            value1: data2[sectionIdx][i + 1][keyValues[1] as KeyOfPosition],
+          });
+        }
+        if (data1Section[i + 2] && data2[sectionIdx][i + 2]) {
+          points.push({
+            [keyValues[0]]: data2[sectionIdx][i + 1][keyValues[0] as KeyOfPosition],
+            value0: data1Section[i + 1][keyValues[1] as KeyOfPosition],
+            value1: data2[sectionIdx][i + 2][keyValues[1] as KeyOfPosition],
+          });
+          points.push({
+            [keyValues[0]]: data1Section[i + 1][keyValues[0] as KeyOfPosition],
+            value0: data1Section[i + 1][keyValues[1] as KeyOfPosition],
+            value1: data2[sectionIdx][i + 2][keyValues[1] as KeyOfPosition],
+          });
+        }
       }
-      if (data1Section[i + 2] && data2[sectionIdx][i + 2]) {
-        points.push({
-          [keyValues[0]]: data2[sectionIdx][i + 1][keyValues[0] as KeyOfPosition],
-          value0: data1Section[i + 1][keyValues[1] as KeyOfPosition],
-          value1: data2[sectionIdx][i + 2][keyValues[1] as KeyOfPosition],
-        });
-        points.push({
-          [keyValues[0]]: data1Section[i + 1][keyValues[0] as KeyOfPosition],
-          value0: data1Section[i + 1][keyValues[1] as KeyOfPosition],
-          value1: data2[sectionIdx][i + 2][keyValues[1] as KeyOfPosition],
-        });
-      }
-    }
-    return points;
-  });
-  return areas;
+      return points;
+    });
+    return areas;
+  }
+  return [];
 };
+
 export const mergeDatasAreaConstant = (data1, data2, keyValues) =>
   data1.map((step) => ({
     [keyValues[0]]: step[keyValues[0]],

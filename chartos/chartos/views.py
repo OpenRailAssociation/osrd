@@ -1,5 +1,6 @@
 import json
 from collections import defaultdict
+from functools import reduce
 from typing import Any, Dict, List, Mapping, NewType, Tuple
 
 from asyncpg import Connection
@@ -141,6 +142,8 @@ async def mvt_query(psql, layer, infra, view: View, z: int, x: int, y: int) -> b
         f"{' '.join(view.joins)} "
         # filter by infra
         f"WHERE layer.infra_id = $4 "
+        # Where view conditions
+        f"{reduce(lambda base, cond: f'{base} AND ({cond}) ', view.where, '')}"
         # we only want objects which are inside the tile BBox
         f"AND {view.on_field} && bbox.geom "
         # exclude geometry collections
@@ -287,6 +290,8 @@ async def get_objects_in_bbox(
         f"{' '.join(view.joins)} "
         # Filter by infra
         "WHERE layer.infra_id = $1 "
+        # Where view conditions
+        f"{reduce(lambda base, cond: f'{base} AND ({cond}) ', view.where, '')}"
         # Filter by objects inside the bounding box
         f"AND layer.{view.on_field} && ST_Transform(ST_MakeEnvelope($2, $3, $4, $5, 4326), 3857)"
     )

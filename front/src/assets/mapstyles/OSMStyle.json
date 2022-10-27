@@ -1054,19 +1054,11 @@
     "source": "openmaptiles",
     "source-layer": "building",
     "type": "fill-extrusion",
-    "minzoom": 15,
+    "minzoom": 0,
     "paint": {
         "fill-extrusion-color": "#aaa",
-        "fill-extrusion-height": [
-            "interpolate", ["linear"], ["zoom"],
-            15, 0,
-            15.05, ["get", "render_height"]
-        ],
-        "fill-extrusion-base": [
-            "interpolate", ["linear"], ["zoom"],
-            15, 0,
-            15.05, ["get", "render_min_height"]
-        ],
+        "fill-extrusion-height": ["get", "render_height"],
+        "fill-extrusion-base": ["get", "render_min_height"],
         "fill-extrusion-opacity": 0.6
     }
   },

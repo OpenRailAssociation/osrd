@@ -77,6 +77,21 @@ public final class STDCMRequest {
     public double timeStep = 2.;
 
     /**
+     * By how long we can delay the departure of the train in seconds (defaults to 2h)
+     */
+    @Json(name = "maximum_departure_delay")
+    public double maximumDepartureDelay = 3600 * 2;
+
+    /**
+     * How much longer can the train take to reach its destination,
+     * compared to the time it would take with an empty timetable.
+     * e.g. with a value of 2 and a fastest run time of 1h, we ignore results after 2h.
+     * Defaults to 2.
+     */
+    @Json(name = "maximum_relative_run_time")
+    public double maximumRelativeRunTime = 2;
+
+    /**
      * Create a default STDCMRequest
      */
     public STDCMRequest() {

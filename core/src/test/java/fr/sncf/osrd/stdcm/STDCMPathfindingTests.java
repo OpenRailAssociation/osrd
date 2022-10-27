@@ -4,9 +4,7 @@ import static fr.sncf.osrd.train.TestTrains.*;
 import static java.lang.Double.POSITIVE_INFINITY;
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Range;
-import com.google.common.collect.TreeRangeMap;
+import com.google.common.collect.*;
 import fr.sncf.osrd.api.stdcm.OccupancyBlock;
 import fr.sncf.osrd.api.stdcm.STDCMGraph;
 import fr.sncf.osrd.api.stdcm.STDCMPathfinding;
@@ -16,7 +14,9 @@ import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import java.util.ArrayList;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class STDCMPathfindingTests {
 
@@ -38,7 +38,9 @@ public class STDCMPathfindingTests {
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
                 Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 50)),
                 ImmutableMultimap.of(),
-                2.
+                2.,
+                3600 * 2,
+                Double.POSITIVE_INFINITY
         );
         assertNotNull(res);
     }
@@ -66,7 +68,9 @@ public class STDCMPathfindingTests {
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
                 Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 50)),
                 occupancyGraph,
-                2.
+                2.,
+                3600 * 2,
+                Double.POSITIVE_INFINITY
         );
         assertNotNull(res);
         occupancyTest(res, occupancyGraph);
@@ -92,7 +96,9 @@ public class STDCMPathfindingTests {
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
                 Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 0)),
                 ImmutableMultimap.of(),
-                2.
+                2.,
+                3600 * 2,
+                Double.POSITIVE_INFINITY
         );
         assertNull(res);
     }
@@ -120,7 +126,9 @@ public class STDCMPathfindingTests {
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
                 Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 50)),
                 occupancyGraph,
-                2.
+                2.,
+                3600 * 2,
+                Double.POSITIVE_INFINITY
         );
         assertNull(res);
 
@@ -147,7 +155,9 @@ public class STDCMPathfindingTests {
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
                 Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 50)),
                 occupancyGraph,
-                2.
+                2.,
+                3600 * 2,
+                Double.POSITIVE_INFINITY
         );
         assertNotNull(res);
         occupancyTest(res, occupancyGraph);
@@ -176,7 +186,9 @@ public class STDCMPathfindingTests {
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
                 Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 50)),
                 occupancyGraph,
-                2.
+                2.,
+                3600 * 2,
+                Double.POSITIVE_INFINITY
         );
         assertNotNull(res);
         assert res.envelope().getTotalTime() >= 1000;
@@ -223,7 +235,9 @@ public class STDCMPathfindingTests {
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
                 Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 50)),
                 occupancyGraph1,
-                2.
+                2.,
+                3600 * 2,
+                Double.POSITIVE_INFINITY
         );
         var res2 = STDCMPathfinding.findPath(
                 infra,
@@ -233,7 +247,9 @@ public class STDCMPathfindingTests {
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
                 Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 50)),
                 occupancyGraph2,
-                2.
+                2.,
+                3600 * 2,
+                Double.POSITIVE_INFINITY
         );
         assertNotNull(res1);
         assertNotNull(res2);
@@ -270,7 +286,9 @@ public class STDCMPathfindingTests {
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
                 Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 9000)),
                 ImmutableMultimap.of(),
-                2.
+                2.,
+                3600 * 2,
+                Double.POSITIVE_INFINITY
         );
         assertNotNull(res);
     }
@@ -310,7 +328,9 @@ public class STDCMPathfindingTests {
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
                 Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 50)),
                 ImmutableMultimap.of(),
-                2.
+                2.,
+                3600 * 2,
+                Double.POSITIVE_INFINITY
         );
         assertNotNull(res);
     }
@@ -336,7 +356,9 @@ public class STDCMPathfindingTests {
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
                 Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 50)),
                 occupancyGraph,
-                2.
+                2.,
+                3600 * 2,
+                Double.POSITIVE_INFINITY
         );
         assertNotNull(res);
         var secondRouteEntryTime = res.departureTime()
@@ -368,7 +390,9 @@ public class STDCMPathfindingTests {
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
                 Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 50)),
                 occupancyGraph,
-                2.
+                2.,
+                3600 * 2,
+                Double.POSITIVE_INFINITY
         );
 
         assertNotNull(res);
@@ -377,6 +401,109 @@ public class STDCMPathfindingTests {
         assertTrue(secondRouteEntryTime >= 3600);
 
         occupancyTest(res, occupancyGraph);
+    }
+
+    /** Test that the path we find is the one with the earliest arrival time rather than the shortest */
+    @Test
+    public void testEarliestArrivalTime() {
+        /*
+        Top path is shorter but has a very low speed limit
+        We should use the bottom path (higher speed limit)
+        First and last routes are very long for speedup and slowdown
+
+                 c1
+                ^  \
+               /    v
+        a --> b     d --> e
+               \    ^
+                v  /
+                 c2
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var firstRoute = infraBuilder.addRoute("a", "b", 1000);
+        infraBuilder.addRoute("b", "c1", 50, 1);
+        infraBuilder.addRoute("b", "c2");
+        infraBuilder.addRoute("c1", "d", 50, 1);
+        infraBuilder.addRoute("c2", "d");
+        var lastRoute = infraBuilder.addRoute("d", "e", 1000);
+        var infra = infraBuilder.build();
+
+        var res = STDCMPathfinding.findPath(
+                infra,
+                REALISTIC_FAST_TRAIN,
+                100,
+                0,
+                Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
+                Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 1000)),
+                ImmutableMultimap.of(),
+                2.,
+                3600 * 2,
+                Double.POSITIVE_INFINITY
+        );
+
+        assertNotNull(res);
+        var routes = res.routes().ranges().stream()
+                .map(edgeRange -> edgeRange.edge().getInfraRoute().getID())
+                .collect(Collectors.toSet());
+        assertTrue(routes.contains("b->c2"));
+        assertTrue(routes.contains("c2->d"));
+        assertFalse(routes.contains("b->c1"));
+        assertFalse(routes.contains("c1->d"));
+    }
+
+    /** Test that the path we find is the one with the earliest arrival time rather than the shortest
+     * while taking into account departure time delay caused by the first block occupancy */
+    @Test
+    public void testEarliestArrivalTimeWithOccupancy() {
+        /*
+        Bop path is shorter but is occupied at start
+        Tot path is longer but can be used with no delay
+        We should use the top path (earlier arrival time)
+        First and last routes are very long for speedup and slowdown
+
+                 c1
+                ^  \
+               /    v
+        a --> b     d --> e
+               \    ^
+                v  /
+                 c2
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var firstRoute = infraBuilder.addRoute("a", "b", 1000);
+        infraBuilder.addRoute("b", "c1");
+        var delayedRoute = infraBuilder.addRoute("b", "c2", 50);
+        infraBuilder.addRoute("c1", "d");
+        infraBuilder.addRoute("c2", "d");
+        var lastRoute = infraBuilder.addRoute("d", "e", 1000);
+        var infra = infraBuilder.build();
+
+        var res = STDCMPathfinding.findPath(
+                infra,
+                REALISTIC_FAST_TRAIN,
+                100,
+                0,
+                Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
+                Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 1000)),
+                ImmutableMultimap.of(delayedRoute, new OccupancyBlock(
+                        0,
+                        10000,
+                        0,
+                        50)
+                ),
+                2.,
+                3600 * 2,
+                POSITIVE_INFINITY
+        );
+
+        assertNotNull(res);
+        var routes = res.routes().ranges().stream()
+                .map(edgeRange -> edgeRange.edge().getInfraRoute().getID())
+                .collect(Collectors.toSet());
+        assertTrue(routes.contains("b->c1"));
+        assertTrue(routes.contains("c1->d"));
+        assertFalse(routes.contains("b->c2"));
+        assertFalse(routes.contains("c2->d"));
     }
 
     /** Test that we don't add too much delay, crossing over occupied sections in previous routes */
@@ -405,7 +532,9 @@ public class STDCMPathfindingTests {
                                 0, 100),
                         secondRoute, new OccupancyBlock(0, 3600, 0, 100)
                 ),
-                2.
+                2.,
+                3600 * 2,
+                Double.POSITIVE_INFINITY
         );
         assertNull(res);
     }
@@ -445,7 +574,9 @@ public class STDCMPathfindingTests {
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
                 Set.of(new Pathfinding.EdgeLocation<>(thirdRoute, 50)),
                 occupancyGraph,
-                2.
+                2.,
+                3600 * 2,
+                POSITIVE_INFINITY
         );
 
         assertNotNull(res);
@@ -483,7 +614,9 @@ public class STDCMPathfindingTests {
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
                 Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 50)),
                 occupancyGraph,
-                2.
+                2.,
+                3600 * 2,
+                POSITIVE_INFINITY
         );
 
         assertNotNull(res);
@@ -520,7 +653,9 @@ public class STDCMPathfindingTests {
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
                 Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 50)),
                 occupancyGraph,
-                2.
+                2.,
+                3600 * 2,
+                POSITIVE_INFINITY
         );
 
         assertNotNull(res);
@@ -565,7 +700,9 @@ public class STDCMPathfindingTests {
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
                 Set.of(new Pathfinding.EdgeLocation<>(forthRoute, 1)),
                 occupancyGraph,
-                2.
+                2.,
+                3600 * 2,
+                POSITIVE_INFINITY
         );
         assertNull(res);
     }
@@ -612,7 +749,9 @@ public class STDCMPathfindingTests {
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
                 Set.of(new Pathfinding.EdgeLocation<>(forthRoute, 1)),
                 occupancyGraph,
-                2.
+                2.,
+                3600 * 2,
+                POSITIVE_INFINITY
         );
         assertNull(res);
     }
@@ -655,7 +794,9 @@ public class STDCMPathfindingTests {
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
                 Set.of(new Pathfinding.EdgeLocation<>(thirdRoute, 1)),
                 occupancyGraph,
-                2.
+                2.,
+                3600 * 2,
+                POSITIVE_INFINITY
         );
 
         assertNotNull(res);
@@ -684,9 +825,130 @@ public class STDCMPathfindingTests {
                 Set.of(new Pathfinding.EdgeLocation<>(firstLoop, 0)),
                 Set.of(new Pathfinding.EdgeLocation<>(disconnectedRoute, 0)),
                 ImmutableMultimap.of(),
-                2.
+                2.,
+                3600 * 2,
+                POSITIVE_INFINITY
         );
         assertNull(res);
+    }
+
+    /** Test that we don't add more delay than specified */
+    @Test
+    public void testMaximumDepartureTimeDelay() {
+        /*
+        a --> b --> c
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var firstRoute = infraBuilder.addRoute("a", "b");
+        var lastRoute = infraBuilder.addRoute("b", "c");
+        var infra = infraBuilder.build();
+        var res1 = STDCMPathfinding.findPath(
+                infra,
+                REALISTIC_FAST_TRAIN,
+                0,
+                0,
+                Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
+                Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 0)),
+                ImmutableMultimap.of(
+                        firstRoute, new OccupancyBlock(0, 1000, 0, 100)
+                ),
+                2.,
+                1001,
+                POSITIVE_INFINITY
+        );
+        assertNotNull(res1);
+
+        var res2 = STDCMPathfinding.findPath(
+                infra,
+                REALISTIC_FAST_TRAIN,
+                0,
+                0,
+                Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
+                Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 0)),
+                ImmutableMultimap.of(
+                        firstRoute, new OccupancyBlock(0, 1000, 0, 100)
+                ),
+                2.,
+                999,
+                POSITIVE_INFINITY
+        );
+        assertNull(res2);
+    }
+
+    /** Test that we check that the total run time doesn't exceed the threshold if it happens after the edge start */
+    @Test
+    public void testTotalRunTimeLongEdge() {
+        /*
+        a ---------> b
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var route = infraBuilder.addRoute("a", "b", 10000);
+        var infra = infraBuilder.build();
+        var res = STDCMPathfinding.findPath(
+                infra,
+                REALISTIC_FAST_TRAIN,
+                0,
+                0,
+                Set.of(new Pathfinding.EdgeLocation<>(route, 0)),
+                Set.of(new Pathfinding.EdgeLocation<>(route, 10000)),
+                ImmutableMultimap.of(),
+                2.,
+                3600 * 2,
+                100
+        );
+        assertNull(res);
+    }
+
+    /** Test that we check that the total run time doesn't exceed the threshold with many small edges */
+    @Test
+    public void testTotalRunTimeShortEdges() {
+        /*
+        1 --> 2 --> ... --> 10
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var routes = new ArrayList<SignalingRoute>();
+        for (int i = 0; i < 10; i++)
+            routes.add(infraBuilder.addRoute(Integer.toString(i + 1), Integer.toString(i + 2), 1000));
+        var infra = infraBuilder.build();
+        var res = STDCMPathfinding.findPath(
+                infra,
+                REALISTIC_FAST_TRAIN,
+                0,
+                0,
+                Set.of(new Pathfinding.EdgeLocation<>(routes.get(0), 0)),
+                Set.of(new Pathfinding.EdgeLocation<>(routes.get(9), 1000)),
+                ImmutableMultimap.of(),
+                2.,
+                3600 * 2,
+                100
+        );
+        assertNull(res);
+    }
+
+    /** Test that the start delay isn't included in the total run time */
+    @Test
+    public void testMaxRunTimeWithDelay() {
+        /*
+        a --> b
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var route = infraBuilder.addRoute("a", "b");
+        var infra = infraBuilder.build();
+        var res = STDCMPathfinding.findPath(
+                infra,
+                REALISTIC_FAST_TRAIN,
+                0,
+                0,
+                Set.of(new Pathfinding.EdgeLocation<>(route, 0)),
+                Set.of(new Pathfinding.EdgeLocation<>(route, 100)),
+                ImmutableMultimap.of(
+                        route, new OccupancyBlock(0, 1000, 0, 100)
+                ),
+                2.,
+                1000,
+                100
+        );
+        assertNotNull(res);
     }
 
     /** Checks that the result don't cross in an occupied section */
