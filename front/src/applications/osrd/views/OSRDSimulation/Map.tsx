@@ -371,7 +371,7 @@ function Map(props: MapProps) {
             <TracksGeographic colors={colors[mapStyle]} layerOrder={2} />
             <TracksOSM colors={colors[mapStyle]} layerOrder={2} />
 
-            <Routes geomType="geo" colors={colors[mapStyle]} />
+            <Routes geomType="geo" colors={colors[mapStyle]} layerOrder={3} />
             <OperationalPoints geomType="geo" colors={colors[mapStyle]} />
             <Catenaries geomType="geo" colors={colors[mapStyle]} />
             <BufferStops geomType="geo" colors={colors[mapStyle]} />
@@ -391,7 +391,7 @@ function Map(props: MapProps) {
           <>
             <TracksSchematic colors={colors[mapStyle]} idHover={idHover} />
             <OperationalPoints geomType="sch" colors={colors[mapStyle]} />
-            <Routes geomType="sch" colors={colors[mapStyle]} />
+            <Routes geomType="sch" colors={colors[mapStyle]} layerOrder={3} />
             <Signals
               mapRef={mapRef}
               sourceTable="signals"
