@@ -374,7 +374,7 @@ function Map(props: MapProps) {
             <Routes geomType="geo" colors={colors[mapStyle]} layerOrder={3} />
             <OperationalPoints geomType="geo" colors={colors[mapStyle]} layerOrder={3} />
             <Catenaries geomType="geo" colors={colors[mapStyle]} layerOrder={3} />
-            <BufferStops geomType="geo" colors={colors[mapStyle]} />
+            <BufferStops geomType="geo" colors={colors[mapStyle]} layerOrder={3} />
             <Detectors geomType="geo" colors={colors[mapStyle]} />
             <Switches geomType="geo" colors={colors[mapStyle]} />
 
@@ -401,7 +401,7 @@ function Map(props: MapProps) {
               layerOrder={5}
             />
             <SpeedLimits geomType="sch" colors={colors[mapStyle]} layerOrder={4} />
-            <BufferStops geomType="sch" colors={colors[mapStyle]} />
+            <BufferStops geomType="sch" colors={colors[mapStyle]} layerOrder={3} />
             <Detectors geomType="sch" colors={colors[mapStyle]} />
             <Switches geomType="sch" colors={colors[mapStyle]} />
           </>
