@@ -8,7 +8,7 @@ use serde_json::json;
 
 use crate::client::ChartosConfig;
 
-const LAYERS: [&str; 11] = [
+const LAYERS: [&str; 12] = [
     "track_sections",
     "signals",
     "speed_sections",
@@ -19,6 +19,7 @@ const LAYERS: [&str; 11] = [
     "routes",
     "operational_points",
     "catenaries",
+    "lpv_panels",
     "errors",
 ];
 
