@@ -50,7 +50,13 @@ impl OSRDObject for SpeedSection {
 
 impl Cache for SpeedSection {
     fn get_track_referenced_id(&self) -> Vec<&String> {
-        self.track_ranges.iter().map(|tr| &tr.track).collect()
+        let mut res: Vec<_> = self.track_ranges.iter().map(|tr| &tr.track).collect();
+        if let Some(lpv) = &self.extensions.lpv_sncf {
+            res.extend(lpv.announcement.iter().map(|panel| &panel.track));
+            res.extend(lpv.r.iter().map(|panel| &panel.track));
+            res.push(&lpv.z.track);
+        }
+        res
     }
 
     fn get_object_cache(&self) -> ObjectCache {

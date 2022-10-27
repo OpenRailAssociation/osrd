@@ -7,15 +7,15 @@ use diesel::result::Error;
 use diesel::sql_types::{Array, Integer, Text};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
 
-pub struct OperationalPointLayer;
+pub struct LPVPanelLayer;
 
-impl GeneratedData for OperationalPointLayer {
+impl GeneratedData for LPVPanelLayer {
     fn table_name() -> &'static str {
-        "osrd_infra_operationalpointlayer"
+        "osrd_infra_lpvpanellayer"
     }
 
     fn generate(conn: &PgConnection, infra: i32, _infra_cache: &InfraCache) -> Result<(), Error> {
-        sql_query(include_str!("sql/generate_operational_point_layer.sql"))
+        sql_query(include_str!("sql/generate_lpv_panel_layer.sql"))
             .bind::<Integer, _>(infra)
             .execute(conn)?;
         Ok(())
@@ -28,11 +28,11 @@ impl GeneratedData for OperationalPointLayer {
         infra_cache: &crate::infra_cache::InfraCache,
     ) -> Result<(), Error> {
         let involved_objects =
-            InvolvedObjects::from_operations(operations, infra_cache, ObjectType::OperationalPoint);
+            InvolvedObjects::from_operations(operations, infra_cache, ObjectType::SpeedSection);
 
         // Delete elements
         if !involved_objects.is_empty() {
-            // We must delete both updated and deleted operational points because we can only insert them and not update
+            // We must delete both updated and deleted lpv panels because we can only insert them and not update
             let objs = involved_objects
                 .deleted
                 .iter()
@@ -47,9 +47,9 @@ impl GeneratedData for OperationalPointLayer {
             .execute(conn)?;
         }
 
-        // Insert elements
+        // Insert involved elements
         if !involved_objects.updated.is_empty() {
-            sql_query(include_str!("sql/insert_operational_point_layer.sql"))
+            sql_query(include_str!("sql/insert_lpv_panel_layer.sql"))
                 .bind::<Integer, _>(infra)
                 .bind::<Array<Text>, _>(involved_objects.updated.into_iter().collect::<Vec<_>>())
                 .execute(conn)?;
