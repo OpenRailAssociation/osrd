@@ -16,6 +16,7 @@ export default function VirtualLayers() {
           : {};
       return (
         <Layer
+          key={`virtual-layer-${n}`}
           id={`virtual-layer-${n}`}
           type="background"
           layout={{ visibility: 'none' }}
