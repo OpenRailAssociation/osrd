@@ -32,9 +32,15 @@ function OSM(props: OSMProps) {
 
   const genLayers = () => {
     const osmStyle = getMapStyle();
-    return osmStyle.map((layer) => (
-      <OrderedLayer {...layer} key={layer.id} id={`osm/${layer.id}`} layerOrder={layerOrder} />
-    ));
+    return osmStyle.map((layer) => {
+      const layerProps = {
+        ...layer,
+        key: layer.id,
+        id: `osm/${layer.id}`,
+        layerOrder,
+      };
+      return <OrderedLayer {...layerProps} />;
+    });
   };
 
   return (
