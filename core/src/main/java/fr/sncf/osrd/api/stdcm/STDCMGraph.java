@@ -12,6 +12,7 @@ import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
+import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.ImpossibleSimulationError;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
@@ -401,9 +402,10 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
             double start,
             Envelope oldEnvelope
     ) {
-        var builder = OverlayEnvelopeBuilder.backward(oldEnvelope);
         var context = makeSimContext(route, start, rollingStock, timeStep);
         var partBuilder = new EnvelopePartBuilder();
+        partBuilder.setAttr(EnvelopeProfile.BRAKING);
+        partBuilder.setAttr(new BacktrackingEnvelopeAttr());
         var overlayBuilder = new ConstrainedEnvelopePartBuilder(
                 partBuilder,
                 new SpeedConstraint(0, FLOOR),
@@ -416,6 +418,7 @@ public class STDCMGraph implements Graph<STDCMGraph.Node, STDCMGraph.Edge> {
                 overlayBuilder,
                 -1
         );
+        var builder = OverlayEnvelopeBuilder.backward(oldEnvelope);
         builder.addPart(partBuilder.build());
         return builder.build();
     }
