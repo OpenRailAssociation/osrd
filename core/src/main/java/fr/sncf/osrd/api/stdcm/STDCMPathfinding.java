@@ -4,9 +4,7 @@ import com.google.common.collect.Multimap;
 import fr.sncf.osrd.api.pathfinding.RemainingDistanceEstimator;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
-import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.PhysicsPath;
-import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
@@ -15,6 +13,7 @@ import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Pathfinding;
+import fr.sncf.osrd.utils.graph.Pathfinding.EdgeRange;
 import fr.sncf.osrd.utils.graph.functional_interfaces.TargetsOnEdge;
 import fr.sncf.osrd.utils.graph.functional_interfaces.AStarHeuristic;
 import java.util.*;
@@ -57,7 +56,7 @@ public class STDCMPathfinding {
                 );
         if (path == null)
             return null;
-        var res = makeResult(path, rollingStock, timeStep, startTime);
+        var res = makeResult(path, startTime);
         if (res.envelope().getTotalTime() > maxRunTime) {
             // This can happen if the destination is one edge away from being reachable in time,
             // as we only check the time at the start of an edge when exploring the graph
@@ -79,7 +78,7 @@ public class STDCMPathfinding {
         });
     }
 
-    private static double edgeRangeCost(Pathfinding.EdgeRange<STDCMGraph.Edge> range) {
+    private static double edgeRangeCost(EdgeRange<STDCMGraph.Edge> range) {
         var envelope = range.edge().envelope();
         var timeStart = STDCMGraph.interpolateTime(envelope, range.edge().route(), range.start(), 0);
         var timeEnd = STDCMGraph.interpolateTime(envelope, range.edge().route(), range.end(), 0);
@@ -99,7 +98,7 @@ public class STDCMPathfinding {
 
     /** Builds the actual list of EdgeRange given the raw result of the pathfinding.
      * We can't use it directly because it can't handle backtracking properly */
-    private static List<Pathfinding.EdgeRange<STDCMGraph.Edge>> makeEdgeRange(
+    private static List<EdgeRange<STDCMGraph.Edge>> makeEdgeRange(
             Pathfinding.Result<STDCMGraph.Edge> raw
     ) {
         var orderedEdges = new ArrayDeque<STDCMGraph.Edge>();
@@ -112,15 +111,13 @@ public class STDCMPathfinding {
                 break;
             current = current.previousNode().previousEdge();
         }
-        assert firstRange.edge().equals(orderedEdges.getFirst());
-        assert lastRange.edge().equals(orderedEdges.getLast());
-        orderedEdges.removeFirst();
-        if (lastRange != firstRange)
-            orderedEdges.removeLast();
-        var res = new ArrayList<Pathfinding.EdgeRange<STDCMGraph.Edge>>();
+        firstRange = new EdgeRange<>(orderedEdges.removeFirst(), firstRange.start(), firstRange.end());
+        if (lastRange.edge() != firstRange.edge())
+            lastRange = new EdgeRange<>(orderedEdges.removeLast(), lastRange.start(), lastRange.end());
+        var res = new ArrayList<EdgeRange<STDCMGraph.Edge>>();
         res.add(firstRange);
         for (var edge : orderedEdges)
-            res.add(new Pathfinding.EdgeRange<>(edge, 0, edge.route().getInfraRoute().getLength()));
+            res.add(new EdgeRange<>(edge, 0, edge.route().getInfraRoute().getLength()));
         if (firstRange != lastRange)
             res.add(lastRange);
         return res;
@@ -129,13 +126,11 @@ public class STDCMPathfinding {
     /** Builds the STDCM result object from the raw pathfinding result */
     private static STDCMResult makeResult(
             Pathfinding.Result<STDCMGraph.Edge> path,
-            RollingStock rollingStock,
-            double timeStep,
             double startTime
     ) {
         var ranges = makeEdgeRange(path);
         var routeRanges = ranges.stream()
-                .map(x -> new Pathfinding.EdgeRange<>(x.edge().route(), x.start(), x.end()))
+                .map(x -> new EdgeRange<>(x.edge().route(), x.start(), x.end()))
                 .toList();
         var routeWaypoints = path.waypoints().stream()
                 .map(x -> new Pathfinding.EdgeLocation<>(x.edge().route(), x.offset()))
@@ -143,7 +138,7 @@ public class STDCMPathfinding {
         var physicsPath = makePhysicsPath(ranges);
         return new STDCMResult(
                 new Pathfinding.Result<>(routeRanges, routeWaypoints),
-                makeFinalEnvelope(ranges, rollingStock, physicsPath, timeStep),
+                makeFinalEnvelope(ranges),
                 makeTrainPath(ranges),
                 physicsPath,
                 computeDepartureTime(ranges, startTime)
@@ -152,10 +147,7 @@ public class STDCMPathfinding {
 
     /** Builds the final envelope, assembling the parts together and adding any missing braking curves */
     private static Envelope makeFinalEnvelope(
-            List<Pathfinding.EdgeRange<STDCMGraph.Edge>> edges,
-            RollingStock rollingStock,
-            PhysicsPath physicsPath,
-            double timeStep
+            List<EdgeRange<STDCMGraph.Edge>> edges
     ) {
         var parts = new ArrayList<EnvelopePart>();
         double offset = 0;
@@ -170,26 +162,13 @@ public class STDCMPathfinding {
             offset = parts.get(parts.size() - 1).getEndPos();
         }
         var newEnvelope = Envelope.make(parts.toArray(new EnvelopePart[0]));
-        var finalEnvelope = addBrakingCurves(newEnvelope, rollingStock, physicsPath, timeStep);
-        assert finalEnvelope.continuous;
-        return finalEnvelope;
-    }
-
-    /** Adds any missing braking curves to the envelope (including the last stop).
-     * Until this step we may have discontinuities if the MRSP decreases right after a route transition. */
-    private static Envelope addBrakingCurves(
-            Envelope envelope,
-            RollingStock rollingStock,
-            PhysicsPath physicsPath,
-            double timeStep
-    ) {
-        var context = new EnvelopeSimContext(rollingStock, physicsPath, timeStep);
-        return MaxSpeedEnvelope.from(context, new double[]{envelope.getEndPos()}, envelope);
+        assert newEnvelope.continuous;
+        return newEnvelope;
     }
 
     /** Converts the list of pathfinding edges into a list of TrackRangeView that covers the path exactly */
     private static List<TrackRangeView> makeTrackRanges(
-            List<Pathfinding.EdgeRange<STDCMGraph.Edge>> edges
+            List<EdgeRange<STDCMGraph.Edge>> edges
     ) {
         var trackRanges = new ArrayList<TrackRangeView>();
         for (var routeRange : edges) {
@@ -201,14 +180,14 @@ public class STDCMPathfinding {
 
     /** Builds a PhysicsPath from the pathfinding edges */
     private static PhysicsPath makePhysicsPath(
-            List<Pathfinding.EdgeRange<STDCMGraph.Edge>> edges
+            List<EdgeRange<STDCMGraph.Edge>> edges
     ) {
         return EnvelopeTrainPath.from(makeTrackRanges(edges));
     }
 
     /** Creates a TrainPath instance from the list of pathfinding edges */
     private static TrainPath makeTrainPath(
-            List<Pathfinding.EdgeRange<STDCMGraph.Edge>> ranges
+            List<EdgeRange<STDCMGraph.Edge>> ranges
     ) {
         var routeList = ranges.stream()
                 .map(edge -> edge.edge().route())
@@ -250,7 +229,7 @@ public class STDCMPathfinding {
     }
 
     /** Computes the departure time, made of the sum of all delays added over the path */
-    private static double computeDepartureTime(List<Pathfinding.EdgeRange<STDCMGraph.Edge>> ranges, double startTime) {
+    private static double computeDepartureTime(List<EdgeRange<STDCMGraph.Edge>> ranges, double startTime) {
         for (var range : ranges) {
             startTime += range.edge().addedDelay();
         }
