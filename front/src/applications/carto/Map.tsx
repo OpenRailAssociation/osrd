@@ -126,8 +126,11 @@ function Map() {
 
         {!showOSM ? null : (
           <>
-            <OSM mapStyle={mapStyle} />
-            <Hillshade mapStyle={mapStyle} />
+            <OSM mapStyle={mapStyle} layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
+            <Hillshade
+              mapStyle={mapStyle}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
+            />
           </>
         )}
 

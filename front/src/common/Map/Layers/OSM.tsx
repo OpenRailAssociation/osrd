@@ -1,30 +1,40 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Source, Layer } from 'react-map-gl';
+import { Source, LayerProps } from 'react-map-gl';
+
 import mapStyleJson from 'assets/mapstyles/OSMStyle.json';
 import mapStyleDarkJson from 'assets/mapstyles/OSMDarkStyle.json';
 import mapStyleBluePrintJson from 'assets/mapstyles/OSMBluePrintStyle.json';
 import { OSM_URL } from 'common/Map/const';
 
-function OSM(props) {
-  const { mapStyle } = props;
+import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 
-  const getMapStyle = () => {
+interface OSMProps {
+  mapStyle: string;
+  layerOrder: number;
+}
+
+function OSM(props: OSMProps) {
+  const { mapStyle, layerOrder } = props;
+
+  function getMapStyle(): LayerProps[] {
     switch (mapStyle) {
       case 'empty':
-        return [];
+        return [] as LayerProps[];
       case 'dark':
-        return mapStyleDarkJson;
+        return mapStyleDarkJson as LayerProps[];
       case 'blueprint':
-        return mapStyleBluePrintJson;
+        return mapStyleBluePrintJson as LayerProps[];
       default:
-        return mapStyleJson;
+        return mapStyleJson as LayerProps[];
     }
-  };
+  }
 
   const genLayers = () => {
     const osmStyle = getMapStyle();
-    return osmStyle.map((layer) => <Layer {...layer} key={layer.id} id={`osm/${layer.id}`} />);
+    return osmStyle.map((layer) => (
+      <OrderedLayer {...layer} key={layer.id} id={`osm/${layer.id}`} layerOrder={layerOrder} />
+    ));
   };
 
   return (
