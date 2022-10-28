@@ -152,7 +152,7 @@ public class InfraManager {
             DiagnosticRecorder diagnosticRecorder
     ) throws InfraLoadException {
         // create a request
-        var endpointUrl = String.format("%sinfra/%s/railjson/", baseUrl, infraId);
+        var endpointUrl = String.format("%sinfra/%s/railjson/?exclude_extensions=true", baseUrl, infraId);
         var request = buildRequest(endpointUrl);
 
         try {
