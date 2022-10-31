@@ -34,8 +34,9 @@ public class DetectorImpl implements fr.sncf.osrd.infra.api.tracks.undirected.De
     @Override
     @ExcludeFromGeneratedCodeCoverage
     public String toString() {
+        var trackID = trackSection == null ? "null" : trackSection.getID();
         return MoreObjects.toStringHelper(this)
-                .add("trackSection", trackSection.getID())
+                .add("trackSection", trackID)
                 .add("offset", offset)
                 .add("id", id)
                 .toString();

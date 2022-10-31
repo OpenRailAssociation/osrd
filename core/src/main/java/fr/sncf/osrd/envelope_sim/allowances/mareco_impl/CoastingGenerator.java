@@ -9,10 +9,7 @@ import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
-import fr.sncf.osrd.envelope_sim.Action;
-import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
-import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
-import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator;
+import fr.sncf.osrd.envelope_sim.*;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeCoasting;
 
 public final class CoastingGenerator {
@@ -31,7 +28,8 @@ public final class CoastingGenerator {
         );
         var speed = envelope.interpolateSpeed(startPos);
         EnvelopeCoasting.coast(context, startPos, speed, constrainedBuilder, 1);
-        assert constrainedBuilder.lastIntersection == 1;
+        if (constrainedBuilder.lastIntersection == 0)
+            throw new ImpossibleSimulationError(); // We reached a stop while coasting
         if (partBuilder.isEmpty())
             return null;
         return partBuilder.build();

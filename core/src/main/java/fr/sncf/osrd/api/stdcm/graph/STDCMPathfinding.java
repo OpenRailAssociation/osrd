@@ -140,32 +140,11 @@ public class STDCMPathfinding {
         var physicsPath = makePhysicsPath(ranges);
         return new STDCMResult(
                 new Pathfinding.Result<>(routeRanges, routeWaypoints),
-                makeFinalEnvelope(ranges),
+                STDCMUtils.mergeEnvelopeRanges(ranges),
                 makeTrainPath(ranges),
                 physicsPath,
                 computeDepartureTime(ranges, startTime)
         );
-    }
-
-    /** Builds the final envelope, assembling the parts together and adding any missing braking curves */
-    private static Envelope makeFinalEnvelope(
-            List<EdgeRange<STDCMEdge>> edges
-    ) {
-        var parts = new ArrayList<EnvelopePart>();
-        double offset = 0;
-        for (var edge : edges) {
-            var envelope = edge.edge().envelope();
-            var sliceUntil = Math.min(envelope.getEndPos(), Math.abs(edge.end() - edge.start()));
-            if (sliceUntil == 0)
-                continue;
-            var slicedEnvelope = Envelope.make(envelope.slice(0, sliceUntil));
-            for (var part : slicedEnvelope)
-                parts.add(part.copyAndShift(offset));
-            offset = parts.get(parts.size() - 1).getEndPos();
-        }
-        var newEnvelope = Envelope.make(parts.toArray(new EnvelopePart[0]));
-        assert newEnvelope.continuous;
-        return newEnvelope;
     }
 
     /** Converts the list of pathfinding edges into a list of TrackRangeView that covers the path exactly */
@@ -222,7 +201,8 @@ public class STDCMPathfinding {
                     maxDepartureDelay,
                     0,
                     null,
-                    null
+                    null,
+                    false
             );
             for (var edge : edges)
                 res.add(new Pathfinding.EdgeLocation<>(edge, location.offset()));
