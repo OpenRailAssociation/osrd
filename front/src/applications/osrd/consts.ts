@@ -1,3 +1,7 @@
+import { SwitchType } from 'types';
+import { ValueOf } from 'utils/types';
+import { Position, Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
+
 export const BLOCKTYPES = [
   {
     key: 'BAL',
@@ -61,14 +65,14 @@ export const DUMMYCONST = null;
 export const MODES = {
   simulation: 'SIMULATION',
   stdcm: 'STDCM',
-};
+} as const;
 
 export const DEFAULT_MODE = MODES.simulation;
 
 export const STDCM_MODES = {
   byOrigin: 'BY_ORIGIN',
   byDestination: 'BY_DESTINATION',
-};
+} as const;
 
 export const DEFAULT_STDCM_MODE = STDCM_MODES.byOrigin;
 
@@ -80,3 +84,53 @@ export const STDCM_REQUEST_STATUS = {
   canceled: 'CANCELED',
   noresults: 'NORESULTS',
 };
+
+export interface PointOnMap {
+  id: string;
+  curves: string;
+  length: number;
+  slopes: string;
+  extensions_sncf_line_code: number;
+  extensions_sncf_line_name: string;
+  extensions_sncf_track_name: string;
+  extensions_sncf_track_number: number;
+  loading_gauge_limits: string;
+  source: string;
+  clickLngLat: Position;
+}
+
+export interface SuggestedPointOnMap {
+  track: string;
+  position: number;
+  geo: Feature<Point>;
+  sch: Feature<Point>;
+  id: any;
+  name: any;
+  suggestion: boolean;
+  duration: number;
+}
+
+export interface OsrdConfState {
+  name: string;
+  mode: ValueOf<typeof MODES>;
+  stdcmMode: ValueOf<typeof STDCM_MODES>;
+  labels: string[];
+  infraID?: number;
+  switchTypes?: SwitchType[];
+  pathfindingID?: number;
+  timetableID?: number;
+  rollingStockID?: number;
+  speedLimitByTag?: any;
+  origin?: PointOnMap;
+  originSpeed: number;
+  originTime?: string;
+  destination?: PointOnMap;
+  vias: PointOnMap[];
+  suggeredVias: SuggestedPointOnMap[];
+  trainCompo: undefined;
+  geojson: any[];
+  originDate: string;
+  destinationDate: string;
+  destinationTime: string;
+  featureInfoClick: { displayPopup: boolean };
+}

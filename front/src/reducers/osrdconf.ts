@@ -1,4 +1,6 @@
-import { DEFAULT_MODE, DEFAULT_STDCM_MODE } from 'applications/osrd/consts';
+import { AnyAction } from 'redux';
+
+import { OsrdConfState, DEFAULT_MODE, DEFAULT_STDCM_MODE } from 'applications/osrd/consts';
 
 import produce from 'immer';
 import { getSwitchTypes } from '../applications/editor/data/api';
@@ -34,9 +36,9 @@ export const UPDATE_ITINERARY = 'osrdconf/UPDATE_ITINERARY';
 export const UPDATE_FEATURE_INFO_CLICK_OSRD = 'osrdconf/UPDATE_FEATURE_INFO_CLICK_OSRD';
 
 // Reducer
-export const initialState = {
+export const initialState: OsrdConfState = {
   name: '',
-  mode: DEFAULT_MODE.simulation,
+  mode: DEFAULT_MODE,
   stdcmMode: DEFAULT_STDCM_MODE,
   labels: [],
   infraID: undefined,
@@ -56,7 +58,7 @@ export const initialState = {
   featureInfoClick: { displayPopup: false },
 };
 
-export default function reducer(inputState, action) {
+export default function reducer(inputState: OsrdConfState, action: AnyAction) {
   const state = inputState || initialState;
   return produce(state, (draft) => {
     switch (action.type) {
