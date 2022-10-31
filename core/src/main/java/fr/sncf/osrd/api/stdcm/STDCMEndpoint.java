@@ -7,6 +7,7 @@ import fr.sncf.osrd.api.pathfinding.PathfindingRoutesEndpoint;
 import fr.sncf.osrd.api.pathfinding.RemainingDistanceEstimator;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.api.pathfinding.response.NoPathFoundError;
+import fr.sncf.osrd.api.stdcm.graph.STDCMPathfinding;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim_infra.MRSP;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
