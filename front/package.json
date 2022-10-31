@@ -8,7 +8,7 @@
     "@nivo/tooltip": "^0.79.0",
     "@rjsf/core": "^4.2.3",
     "@sentry/browser": "^7.15.0",
-    "@sentry/react": "^7.15.0",
+    "@sentry/react": "^7.17.3",
     "@sentry/tracing": "^7.15.0",
     "@sncf/bootstrap-sncf.metier.reseau": "^4.3.1-r6-beta2",
     "@turf/along": "^6.5.0",
