@@ -100,7 +100,7 @@ export default function ContextMenu(props) {
         rolling_stock: trainDetail.rolling_stock,
         train_name: newTrainName,
         allowances: trainDetail.allowances,
-        speed_limit_category: trainDetail.speed_limit_category,
+        speed_limit_composition: trainDetail.speed_limit_composition,
       });
       actualTrainCount += trainStep;
     }

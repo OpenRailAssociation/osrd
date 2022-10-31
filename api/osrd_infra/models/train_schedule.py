@@ -17,4 +17,4 @@ class TrainScheduleModel(models.Model):
     mrsp = models.JSONField(validators=[PydanticValidator(MRSP)])
     base_simulation = models.JSONField()
     eco_simulation = models.JSONField(null=True)
-    speed_limit_category = models.CharField(max_length=128, blank=True)
+    speed_limit_composition = models.CharField(max_length=128, null=True)

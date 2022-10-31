@@ -38,6 +38,7 @@ export const makeDepartureArrivalTimes = (simulation: SimulationSnapshot, dragOf
     name: train.name,
     departure: offsetSeconds(train.base.stops[0].time + dragOffset),
     arrival: offsetSeconds(train.base.stops[train.base.stops.length - 1].time + dragOffset),
+    speed_limit_composition: train.speed_limit_composition,
   }));
 
 export interface Chart {
@@ -128,6 +129,7 @@ export interface Train {
   base: Regime;
   eco: Regime;
   isStdcm: boolean;
+  speed_limit_composition: string;
 }
 
 export interface SimulationSnapshot {
