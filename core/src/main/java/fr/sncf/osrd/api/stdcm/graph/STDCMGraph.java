@@ -17,6 +17,10 @@ import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.ImpossibleSimulationError;
+import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
+import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceConvergenceException;
+import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
+import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
@@ -24,6 +28,7 @@ import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.envelope_sim_infra.MRSP;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
+import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Graph;
 import fr.sncf.osrd.utils.graph.Pathfinding;
@@ -88,7 +93,8 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
                     node.maximumAddedDelay(),
                     node.totalPrevAddedDelay(),
                     node,
-                    null
+                    null,
+                    false
             ));
         }
         return res;
@@ -104,38 +110,75 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
             double prevMaximumAddedDelay,
             double prevAddedDelay,
             STDCMNode node,
-            Envelope envelope
+            Envelope envelope,
+            boolean forceMaxDelay
     ) {
         if (envelope == null)
             envelope = simulateRoute(route, startSpeed, start, rollingStock, timeStep, getStopsOnRoute(route, start));
         if (envelope == null)
             return List.of();
         var res = new ArrayList<STDCMEdge>();
-        var delaysPerOpening = minimumDelaysPerOpening(route, startTime, envelope);
-        for (var delayNeeded : delaysPerOpening) {
-            if (delayNeeded.isInfinite())
-                continue;
-            if (prevMaximumAddedDelay < delayNeeded)
-                continue;
-            var maximumDelay = Math.min(
-                    prevMaximumAddedDelay - delayNeeded,
-                    findMaximumAddedDelay(route, startTime + delayNeeded, envelope)
+        Set<Double> delaysPerOpening;
+        if (forceMaxDelay)
+            delaysPerOpening = Set.of(Math.min(
+                    prevMaximumAddedDelay,
+                    findMaximumAddedDelay(route, startTime, envelope))
             );
-            var newEdge = new STDCMEdge(
+        else
+            delaysPerOpening = minimumDelaysPerOpening(route, startTime, envelope);
+        for (var delayNeeded : delaysPerOpening) {
+            var newEdge = createSingleEdge(
+                    prevMaximumAddedDelay,
+                    prevAddedDelay,
+                    node,
+                    delayNeeded,
                     route,
                     envelope,
-                    startTime + delayNeeded,
-                    maximumDelay,
-                    delayNeeded,
-                    findNextOccupancy(route, startTime + delayNeeded),
-                    prevAddedDelay + delayNeeded,
-                    node
+                    startTime
             );
-            newEdge = backtrack(newEdge); // Fixes any speed discontinuity
-            if (newEdge != null && !isRunTimeTooLong(newEdge))
+            if (newEdge != null)
                 res.add(newEdge);
         }
         return res;
+    }
+
+    /** Creates an STDCM edge */
+    private STDCMEdge createSingleEdge(
+            double prevMaximumAddedDelay,
+            double prevAddedDelay,
+            STDCMNode node,
+            Double delayNeeded,
+            SignalingRoute route,
+            Envelope envelope,
+            double startTime
+    ) {
+        if (delayNeeded.isInfinite())
+            return null;
+        var maximumDelay = Math.min(
+                prevMaximumAddedDelay - delayNeeded,
+                findMaximumAddedDelay(route, startTime + delayNeeded, envelope)
+        );
+        var newEdge = new STDCMEdge(
+                route,
+                envelope,
+                startTime + delayNeeded,
+                maximumDelay,
+                delayNeeded,
+                findNextOccupancy(route, startTime + delayNeeded),
+                prevAddedDelay + delayNeeded,
+                node,
+                route.getInfraRoute().getLength() - envelope.getEndPos()
+        );
+        if (maximumDelay < 0) {
+            // We need to make the train go slower
+            newEdge = tryEngineeringAllowance(newEdge);
+            if (newEdge == null)
+                return null;
+        }
+        newEdge = backtrack(newEdge); // Fixes any speed discontinuity
+        if (newEdge == null || isRunTimeTooLong(newEdge))
+            return null;
+        return newEdge;
     }
 
     // region DELAY MANAGEMENT
@@ -208,7 +251,7 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
             // This loop has a poor complexity, we need to optimize it by the time we handle full timetables
             var enterTime = interpolateTime(envelope, route, occupancy.distanceStart(), startTime);
             var exitTime = interpolateTime(envelope, route, occupancy.distanceEnd(), startTime);
-            if (enterTime > occupancy.timeEnd() || exitTime < occupancy.timeStart())
+            if (enterTime >= occupancy.timeEnd() || exitTime <= occupancy.timeStart())
                 continue;
             var diff = occupancy.timeEnd() - enterTime;
             maxValue = Math.max(maxValue, diff);
@@ -249,23 +292,18 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
 
         // Create the new edge
         var newNode = getEdgeEnd(newPreviousEdge);
-        var startOffset = e.route().getInfraRoute().getLength() - e.envelope().getEndPos();
-        var newEdges = makeEdges(
+        return findEdgeSameNextOccupancy(
                 e.route(),
                 newNode.time(),
                 newNode.speed(),
-                startOffset,
+                e.envelopeStartOffset(),
                 newNode.maximumAddedDelay(),
                 newNode.totalPrevAddedDelay(),
                 newNode,
-                null
+                null,
+                e.timeNextOccupancy(),
+                false
         );
-        // We look for an edge that uses the same opening, identified by the next occupancy
-        for (var newEdge : newEdges) {
-            if (newEdge.timeNextOccupancy() == e.timeNextOccupancy())
-                return newEdge;
-        }
-        return null; // No result was found
     }
 
     /** Recreate the edge, but with a different end speed. Returns null if no result is possible.
@@ -276,24 +314,20 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
      * The start time and any data related to delays will be updated accordingly.
      * */
     private STDCMEdge rebuildEdgeBackward(STDCMEdge old, double endSpeed) {
-        var edgeStart = old.route().getInfraRoute().getLength() - old.envelope().getEndPos();
-        var newEnvelope = simulateBackwards(old.route(), endSpeed, edgeStart, old.envelope());
+        var newEnvelope = simulateBackwards(old.route(), endSpeed, old.envelopeStartOffset(), old.envelope());
         var prevNode = old.previousNode();
-        var newEdges = makeEdges(
+        return findEdgeSameNextOccupancy(
                 old.route(),
                 old.timeStart() - old.addedDelay(),
                 Double.NaN,
-                edgeStart,
+                old.envelopeStartOffset(),
                 old.maximumAddedDelayAfter() + old.addedDelay(),
                 prevNode == null ? 0 : prevNode.totalPrevAddedDelay(),
                 prevNode,
-                newEnvelope
+                newEnvelope,
+                old.timeNextOccupancy(),
+                false
         );
-        // We look for an edge that uses the same opening, identified by the next occupancy
-        for (var newEdge : newEdges)
-            if (newEdge.timeNextOccupancy() == old.timeNextOccupancy())
-                return newEdge;
-        return null; // No result was found
     }
 
     /** Simulates a route that already has an envelope, but with a different end speed */
@@ -303,7 +337,7 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
             double start,
             Envelope oldEnvelope
     ) {
-        var context = makeSimContext(route, start, rollingStock, timeStep);
+        var context = makeSimContext(List.of(route), start, rollingStock, timeStep);
         var partBuilder = new EnvelopePartBuilder();
         partBuilder.setAttr(EnvelopeProfile.BRAKING);
         partBuilder.setAttr(new BacktrackingEnvelopeAttr());
@@ -330,13 +364,17 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
 
     /** Create an EnvelopeSimContext instance from the route and extra parameters */
     private static EnvelopeSimContext makeSimContext(
-            SignalingRoute route,
-            double start,
+            List<SignalingRoute> routes,
+            double offsetFirstRoute,
             RollingStock rollingStock,
             double timeStep
     ) {
-        var length = route.getInfraRoute().getLength();
-        var tracks = route.getInfraRoute().getTrackRanges(start, length);
+        var tracks = new ArrayList<TrackRangeView>();
+        for (var route : routes) {
+            var routeLength = route.getInfraRoute().getLength();
+            tracks.addAll(route.getInfraRoute().getTrackRanges(offsetFirstRoute, routeLength));
+            offsetFirstRoute = 0;
+        }
         var envelopePath = EnvelopeTrainPath.from(tracks);
         return new EnvelopeSimContext(rollingStock, envelopePath, timeStep);
     }
@@ -357,7 +395,7 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
             double[] stops
     ) {
         try {
-            var context = makeSimContext(route, start, rollingStock, timeStep);
+            var context = makeSimContext(List.of(route), start, rollingStock, timeStep);
             var mrsp = MRSP.from(
                     route.getInfraRoute().getTrackRanges(start, start + context.path.getLength()),
                     rollingStock,
@@ -400,5 +438,161 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
         return startTime + envelope.interpolateTotalTime(envelopeOffset);
     }
 
+    /** Calls `makeEdges` with the same parameters, and look for a result with the specified time of next occupancy */
+    private STDCMEdge findEdgeSameNextOccupancy(
+            SignalingRoute route,
+            double startTime,
+            double startSpeed,
+            double start,
+            double prevMaximumAddedDelay,
+            double prevAddedDelay,
+            STDCMNode node,
+            Envelope envelope,
+            double timeNextOccupancy,
+            boolean forceMaxDelay
+    ) {
+        var newEdges = makeEdges(
+                route,
+                startTime,
+                startSpeed,
+                start,
+                prevMaximumAddedDelay,
+                prevAddedDelay,
+                node,
+                envelope,
+                forceMaxDelay
+        );
+        // We look for an edge that uses the same opening, identified by the next occupancy
+        for (var newEdge : newEdges)
+            if (newEdge.timeNextOccupancy() == timeNextOccupancy)
+                return newEdge;
+        return null; // No result was found
+    }
+
     // endregion // UTILS
+
+    // region ALLOWANCES
+
+    /** Try to run an engineering allowance on the routes leading to the given edge. Returns null if it failed. */
+    public STDCMEdge tryEngineeringAllowance(
+            STDCMEdge oldEdge
+    ) {
+        var neededDelay = -oldEdge.maximumAddedDelayAfter();
+        assert neededDelay > 0;
+        if (oldEdge.previousNode() == null)
+            return null; // The conflict happens on the first route, we can't add delay here
+        var affectedEdges = findAffectedEdges(
+                oldEdge.previousNode().previousEdge(),
+                oldEdge.addedDelay()
+        );
+        if (affectedEdges.isEmpty())
+            return null; // No space to try the allowance
+        var context = makeAllowanceContext(affectedEdges);
+        var oldEnvelope = STDCMUtils.mergeEnvelopes(affectedEdges);
+        var newEnvelope = findAllowance(context, oldEnvelope, neededDelay);
+        if (newEnvelope == null)
+            return null; // We couldn't find an envelope
+        var newPreviousEdge = makeNewEdges(affectedEdges, newEnvelope);
+        if (newPreviousEdge == null)
+            return null; // The new edges are invalid, conflicts shouldn't happen here but it can be too slow
+        var newPreviousNode = getEdgeEnd(newPreviousEdge);
+        return findEdgeSameNextOccupancy(
+                oldEdge.route(),
+                newPreviousNode.time(),
+                oldEdge.previousNode().speed(),
+                0,
+                oldEdge.maximumAddedDelayAfter() + oldEdge.addedDelay(),
+                oldEdge.previousNode().totalPrevAddedDelay(),
+                newPreviousNode,
+                null,
+                oldEdge.timeNextOccupancy(),
+                false
+        );
+    }
+
+    /** Re-create the edges in order, following the given envelope. */
+    private STDCMEdge makeNewEdges(List<STDCMEdge> edges, Envelope totalEnvelope) {
+        double previousEnd = 0;
+        STDCMEdge prevEdge = null;
+        if (edges.get(0).previousNode() != null)
+            prevEdge = edges.get(0).previousNode().previousEdge();
+        for (var edge : edges) {
+            var end = previousEnd + edge.envelope().getEndPos();
+            var node = prevEdge == null ? null : getEdgeEnd(prevEdge);
+            var maxAddedDelayAfter = edge.maximumAddedDelayAfter() + edge.addedDelay();
+            if (node != null)
+                maxAddedDelayAfter = node.maximumAddedDelay();
+            prevEdge = findEdgeSameNextOccupancy(
+                    edge.route(),
+                    node == null ? edge.timeStart() : node.time(),
+                    edge.envelope().getBeginSpeed(),
+                    edge.envelopeStartOffset(),
+                    maxAddedDelayAfter,
+                    node == null ? 0 : node.totalPrevAddedDelay(),
+                    node,
+                    extractEnvelopeSection(totalEnvelope, previousEnd, end),
+                    edge.timeNextOccupancy(),
+                    true
+            );
+            if (prevEdge == null)
+                return null;
+            previousEnd = end;
+        }
+        assert Math.abs(previousEnd - totalEnvelope.getEndPos()) < 1e-5;
+        return prevEdge;
+    }
+
+    /** Returns a new envelope with the content of the base envelope from start to end, with 0 as first position */
+    private static Envelope extractEnvelopeSection(Envelope base, double start, double end) {
+        var parts = base.slice(start, end);
+        for (int i = 0; i < parts.length; i++)
+            parts[i] = parts[i].copyAndShift(-start);
+        return Envelope.make(parts);
+    }
+
+    /** Try to apply an allowance on the given envelope to add the given delay */
+    private Envelope findAllowance(EnvelopeSimContext context, Envelope oldEnvelope, double neededDelay) {
+        neededDelay += context.timeStep; // error margin for the dichotomy
+        var ranges = List.of(
+                new AllowanceRange(0, oldEnvelope.getEndPos(), new AllowanceValue.FixedTime(neededDelay))
+        );
+        var allowance = new MarecoAllowance(context, 0, oldEnvelope.getEndPos(), 0, ranges);
+        try {
+            return allowance.apply(oldEnvelope);
+        } catch (AllowanceConvergenceException e) {
+            return null;
+        }
+    }
+
+    /** Creates the EnvelopeSimContext to run an allowance on the given edges */
+    private EnvelopeSimContext makeAllowanceContext(List<STDCMEdge> edges) {
+        var routes = new ArrayList<SignalingRoute>();
+        var firstOffset = edges.get(0).route().getInfraRoute().getLength() - edges.get(0).envelope().getEndPos();
+        for (var edge : edges)
+            routes.add(edge.route());
+        return makeSimContext(routes, firstOffset, rollingStock, timeStep);
+    }
+
+    /** Find on which edges to run the allowance */
+    private List<STDCMEdge> findAffectedEdges(STDCMEdge edge, double delayNeeded) {
+        var res = new ArrayDeque<STDCMEdge>();
+        while (true) {
+            var endTime = edge.timeStart() + edge.envelope().getTotalTime();
+            var maxDelayAddedOnEdge = edge.timeNextOccupancy() - endTime;
+            if (delayNeeded > maxDelayAddedOnEdge) {
+                // We can't add delay in this route, the allowance range ends here (excluded)
+                return new ArrayList<>(res);
+            }
+            res.addFirst(edge);
+            if (edge.previousNode() == null) {
+                // We've reached the start of the path, this should only happen because of the max delay parameter
+                return new ArrayList<>(res);
+            }
+            delayNeeded += edge.addedDelay();
+            edge = edge.previousNode().previousEdge();
+        }
+    }
+
+    // endregion // ALLOWANCES
+
 }
