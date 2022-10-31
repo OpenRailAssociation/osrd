@@ -6,8 +6,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.common.collect.*;
 import fr.sncf.osrd.api.stdcm.OccupancyBlock;
-import fr.sncf.osrd.api.stdcm.STDCMGraph;
-import fr.sncf.osrd.api.stdcm.STDCMPathfinding;
+import fr.sncf.osrd.api.stdcm.graph.STDCMGraph;
+import fr.sncf.osrd.api.stdcm.graph.STDCMPathfinding;
 import fr.sncf.osrd.api.stdcm.STDCMResult;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
