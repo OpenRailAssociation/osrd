@@ -25,9 +25,6 @@ class InfraView(
     queryset = Infra.objects.order_by("-pk")
     serializer_class = InfraSerializer
 
-    def perform_create(self, serializer):
-        serializer.save(owner=self.request.user.sub)
-
     @action(url_path="railjson", detail=True, methods=["get"])
     def get_railjson(self, request, pk=None):
         exclude_extensions = request.query_params.get("exclude_extensions", "false").lower() == "true"
