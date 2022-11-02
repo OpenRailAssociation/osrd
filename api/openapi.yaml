@@ -39,26 +39,7 @@ paths:
                     type: array
                     items:
                       $ref: "#/components/schemas/Infra"
-    post:
-      tags:
-        - infra
-      summary: Create an infra
-      requestBody:
-        description: Name of the infra to create
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-      responses:
-        201:
-          description: The infra list
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Infra"
+
   /infra/{id}/:
     get:
       tags:
@@ -78,20 +59,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Infra"
-    delete:
-      tags:
-        - infra
-      summary: Delete an infra, his namespace and all entities linked to it
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: integer
-          description: Timetable ID
-          required: true
-      responses:
-        204:
-          description: No content
+
   /infra/railjson/:
     post:
       tags:
@@ -845,8 +813,8 @@ components:
               duration: { type: number, format: float }
               line_code: { type: number }
               track_number: { type: number }
-              line_name : {type: string}
-              track_name : {type: string}
+              line_name: { type: string }
+              track_name: { type: string }
         route_aspects:
           type: array
           items:
