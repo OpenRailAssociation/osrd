@@ -13,10 +13,9 @@ import Map from 'applications/osrd/views/OSRDConfig/Map';
 import RollingStockSelector from 'applications/osrd/views/OSRDConfig/RollingStockSelector';
 import SpeedLimitByTagSelector from 'applications/osrd/views/OSRDConfig/SpeedLimitByTagSelector';
 import TimetableSelector from 'applications/osrd/views/OSRDConfig/TimetableSelector';
-import { STDCM_REQUEST_STATUS } from 'applications/osrd/consts';
+import { STDCM_REQUEST_STATUS, MODES } from 'applications/osrd/consts';
 import { updateViewport } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
-import { MODES } from '../../consts';
 
 export default function OSRDConfig(props) {
   const { fullscreen, darkmode } = useSelector((state) => state.main);

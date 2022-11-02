@@ -62,28 +62,28 @@ export const SNCFCOLORSONLY = {
 
 export const DUMMYCONST = null;
 
-export const MODES = {
+export const MODES = Object.freeze({
   simulation: 'SIMULATION',
   stdcm: 'STDCM',
-} as const;
+});
 
 export const DEFAULT_MODE = MODES.simulation;
 
-export const STDCM_MODES = {
+export const STDCM_MODES = Object.freeze({
   byOrigin: 'BY_ORIGIN',
   byDestination: 'BY_DESTINATION',
-} as const;
+});
 
 export const DEFAULT_STDCM_MODE = STDCM_MODES.byOrigin;
 
-export const STDCM_REQUEST_STATUS = {
+export const STDCM_REQUEST_STATUS = Object.freeze({
   idle: 'IDLE',
   pending: 'PENDING',
   success: 'SUCCESS',
   rejected: 'REJECTED',
   canceled: 'CANCELED',
   noresults: 'NORESULTS',
-};
+});
 
 export interface PointOnMap {
   id: string;
