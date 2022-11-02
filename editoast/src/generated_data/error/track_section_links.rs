@@ -1,5 +1,7 @@
 use crate::infra_cache::InfraCache;
-use crate::schema::{InfraError, OSRDObject, ObjectRef, ObjectType, TrackEndpoint};
+use crate::schema::{
+    InfraError, OSRDObject, ObjectRef, ObjectType, TrackEndpoint, TrackSectionLink,
+};
 use diesel::result::Error as DieselError;
 use diesel::sql_types::{Array, Integer, Json};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
@@ -42,30 +44,52 @@ pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
         let link = link.unwrap_track_section_link();
 
         // Retrieve invalid refs
-        for (track_ref, pos) in [
-            (link.src.track.clone(), "src"),
-            (link.dst.track.clone(), "dst"),
-        ] {
-            if !infra_cache.track_sections().contains_key(&track_ref) {
-                let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_ref);
-                let infra_error =
-                    InfraError::new_invalid_reference(link, format!("{pos}.track"), obj_ref);
-                errors.push(infra_error);
-            }
-        }
+        errors.extend(check_invalid_ref(infra_cache, link));
 
-        if switch_cache.contains_key(&link.src) {
-            errors.push(InfraError::new_overlapping_track_links(
-                link,
-                switch_cache.get(&link.src).unwrap().clone().to_owned(),
-            ));
+        let infra_errors = check_overlapping_track_links(&switch_cache, link);
+        if !infra_errors.is_empty() {
+            errors.extend(infra_errors);
         } else {
             switch_cache.insert(&link.src, link.get_ref());
             switch_cache.insert(&link.dst, link.get_ref());
         }
     }
-
     errors
+}
+
+/// Retrie invalid ref for track section links
+pub fn check_invalid_ref(infra_cache: &InfraCache, link: &TrackSectionLink) -> Vec<InfraError> {
+    let mut infra_errors = vec![];
+    for (track_ref, pos) in [
+        (link.src.track.clone(), "src"),
+        (link.dst.track.clone(), "dst"),
+    ] {
+        if !infra_cache.track_sections().contains_key(&track_ref) {
+            let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_ref);
+
+            infra_errors.push(InfraError::new_invalid_reference(
+                link,
+                format!("{pos}.track"),
+                obj_ref,
+            ));
+        }
+    }
+    infra_errors
+}
+
+/// Check if a track section link is overlapping with another one
+pub fn check_overlapping_track_links(
+    switch_cache: &HashMap<&TrackEndpoint, ObjectRef>,
+    link: &TrackSectionLink,
+) -> Vec<InfraError> {
+    if switch_cache.contains_key(&link.src) {
+        vec![InfraError::new_overlapping_track_links(
+            link,
+            switch_cache.get(&link.src).unwrap().clone(),
+        )]
+    } else {
+        vec![]
+    }
 }
 
 #[cfg(test)]

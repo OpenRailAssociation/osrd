@@ -3,7 +3,7 @@ use diesel::PgConnection;
 use diesel::{sql_query, RunQueryDsl};
 
 use crate::infra_cache::InfraCache;
-use crate::schema::{InfraError, ObjectRef, ObjectType};
+use crate::schema::{InfraError, ObjectRef, ObjectType, OperationalPointCache};
 use diesel::result::Error as DieselError;
 use serde_json::{to_value, Value};
 
@@ -32,41 +32,53 @@ pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
 
     for op in infra_cache.operational_points().values() {
         let op = op.unwrap_operational_point();
-        if op.parts.is_empty() {
-            let infra_error = InfraError::new_empty_object(op, "parts");
-            errors.push(infra_error);
-        }
-
-        for (index, part) in op.parts.iter().enumerate() {
-            // Retrieve invalid refs
-            let track_id = &part.track;
-            if !infra_cache.track_sections().contains_key(track_id) {
-                let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_id.clone());
-                let infra_error =
-                    InfraError::new_invalid_reference(op, format!("parts.{index}.track"), obj_ref);
-                errors.push(infra_error);
-                continue;
-            }
-
-            let track_cache = infra_cache
-                .track_sections()
-                .get(track_id)
-                .unwrap()
-                .unwrap_track_section();
-            // Retrieve out of range
-            if !(0.0..=track_cache.length).contains(&part.position) {
-                let infra_error = InfraError::new_out_of_range(
-                    op,
-                    format!("parts.{index}.position"),
-                    part.position,
-                    [0.0, track_cache.length],
-                );
-                errors.push(infra_error);
-            }
-        }
+        errors.extend(check_empty(op));
+        errors.extend(check_op_parts(op, infra_cache));
     }
 
     errors
+}
+/// Check if operational point is empty
+pub fn check_empty(op: &OperationalPointCache) -> Vec<InfraError> {
+    if op.parts.is_empty() {
+        vec![InfraError::new_empty_object(op, "parts")]
+    } else {
+        vec![]
+    }
+}
+
+/// Retrieve invalide ref and out of range errors for operational points
+pub fn check_op_parts(op: &OperationalPointCache, infra_cache: &InfraCache) -> Vec<InfraError> {
+    let mut infra_errors = vec![];
+
+    for (index, part) in op.parts.iter().enumerate() {
+        let track_id = &part.track;
+
+        if !infra_cache.track_sections().contains_key(track_id) {
+            let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_id.clone());
+            infra_errors.push(InfraError::new_invalid_reference(
+                op,
+                format!("parts.{index}.track"),
+                obj_ref,
+            ));
+            continue;
+        }
+        let track_cache = infra_cache
+            .track_sections()
+            .get(track_id)
+            .unwrap()
+            .unwrap_track_section();
+        // Retrieve out of range
+        if !(0.0..=track_cache.length).contains(&part.position) {
+            infra_errors.push(InfraError::new_out_of_range(
+                op,
+                format!("parts.{index}.position"),
+                part.position,
+                [0.0, track_cache.length],
+            ));
+        }
+    }
+    infra_errors
 }
 
 #[cfg(test)]
