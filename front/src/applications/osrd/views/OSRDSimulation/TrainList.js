@@ -180,6 +180,9 @@ export default function TrainsList(props) {
               <div className="cell-inner">{train.labels && train.labels.join(' / ')}</div>
             </td>
             <td>
+              <div className="cell-inner">{train.speed_limit_composition}</div>
+            </td>
+            <td>
               <div className="cell-inner">
                 <button
                   type="button"
@@ -290,6 +293,9 @@ export default function TrainsList(props) {
                 </th>
                 <th scope="col">
                   <div className="cell-inner">{t('simulation:labels')}</div>
+                </th>
+                <th scope="col">
+                  <div className="cell-inner">{t('simulation:speedLimitComposition')}</div>
                 </th>
                 <th scope="col">
                   <span className="sr-only">Actions</span>
