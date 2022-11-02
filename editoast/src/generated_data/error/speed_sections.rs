@@ -2,7 +2,7 @@ use diesel::sql_types::{Array, Integer, Json};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
 
 use crate::infra_cache::InfraCache;
-use crate::schema::{InfraError, ObjectRef, ObjectType};
+use crate::schema::{InfraError, ObjectRef, ObjectType, SpeedSection};
 use diesel::result::Error as DieselError;
 use serde_json::{to_value, Value};
 
@@ -30,46 +30,53 @@ pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
     let mut errors = vec![];
     for speed_section in infra_cache.speed_sections().values() {
         let speed_section = speed_section.unwrap_speed_section();
-        if speed_section.track_ranges.is_empty() {
-            let infra_error = InfraError::new_empty_object(speed_section, "track_ranges");
-            errors.push(infra_error);
+        errors.extend(check_empty(speed_section));
+        errors.extend(check_speed_section_track_ranges(speed_section, infra_cache));
+    }
+    errors
+}
+/// Check if a track section has empty speed section
+pub fn check_empty(speed_section: &SpeedSection) -> Vec<InfraError> {
+    if speed_section.track_ranges.is_empty() {
+        vec![InfraError::new_empty_object(speed_section, "track_ranges")]
+    } else {
+        vec![]
+    }
+}
+/// Retrieve invalid refs and out of range errors for speed sections
+pub fn check_speed_section_track_ranges(
+    speed_section: &SpeedSection,
+    infra_cache: &InfraCache,
+) -> Vec<InfraError> {
+    let mut infra_errors = vec![];
+    for (index, track_range) in speed_section.track_ranges.iter().enumerate() {
+        let track_id = &track_range.track;
+        if !infra_cache.track_sections().contains_key(track_id) {
+            let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_id.clone());
+            infra_errors.push(InfraError::new_invalid_reference(
+                speed_section,
+                format!("track_ranges.{index}"),
+                obj_ref,
+            ));
+            continue;
         }
-
-        for (index, track_range) in speed_section.track_ranges.iter().enumerate() {
-            // Retrieve invalid refs
-            let track_id = &track_range.track;
-            if !infra_cache.track_sections().contains_key(track_id) {
-                let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_id.clone());
-                let infra_error = InfraError::new_invalid_reference(
+        let track_cache = infra_cache
+            .track_sections()
+            .get(track_id)
+            .unwrap()
+            .unwrap_track_section();
+        for (pos, field) in [(track_range.begin, "begin"), (track_range.end, "end")] {
+            if !(0.0..=track_cache.length).contains(&pos) {
+                infra_errors.push(InfraError::new_out_of_range(
                     speed_section,
-                    format!("track_ranges.{index}"),
-                    obj_ref,
-                );
-                errors.push(infra_error);
-                continue;
-            }
-
-            let track_cache = infra_cache
-                .track_sections()
-                .get(track_id)
-                .unwrap()
-                .unwrap_track_section();
-            // Retrieve out of range
-            for (pos, field) in [(track_range.begin, "begin"), (track_range.end, "end")] {
-                if !(0.0..=track_cache.length).contains(&pos) {
-                    let infra_error = InfraError::new_out_of_range(
-                        speed_section,
-                        format!("track_ranges.{index}.{field}"),
-                        pos,
-                        [0.0, track_cache.length],
-                    );
-                    errors.push(infra_error);
-                }
+                    format!("track_ranges.{index}.{field}"),
+                    pos,
+                    [0.0, track_cache.length],
+                ));
             }
         }
     }
-
-    errors
+    infra_errors
 }
 
 #[cfg(test)]

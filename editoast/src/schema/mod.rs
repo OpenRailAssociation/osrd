@@ -126,6 +126,19 @@ pub enum Waypoint {
     Detector { id: String },
 }
 
+impl Waypoint {
+    pub fn new_detector<T: AsRef<str>>(detector: T) -> Self {
+        Self::Detector {
+            id: detector.as_ref().into(),
+        }
+    }
+    pub fn new_buffer_stop<T: AsRef<str>>(bf: T) -> Self {
+        Self::BufferStop {
+            id: bf.as_ref().into(),
+        }
+    }
+}
+
 impl Default for Waypoint {
     fn default() -> Self {
         Self::Detector {
