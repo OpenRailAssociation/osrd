@@ -2,7 +2,7 @@ use diesel::sql_types::{Array, Integer, Json};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
 
 use crate::infra_cache::InfraCache;
-use crate::schema::{InfraError, ObjectRef, ObjectType};
+use crate::schema::{BufferStopCache, InfraError, ObjectRef, ObjectType};
 use diesel::result::Error as DieselError;
 use serde_json::{to_value, Value};
 
@@ -32,34 +32,57 @@ pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
     for buffer_stop in infra_cache.buffer_stops().values() {
         let buffer_stop = buffer_stop.unwrap_buffer_stop();
         // Retrieve invalid refs
-        if !infra_cache
-            .track_sections()
-            .contains_key(&buffer_stop.track)
-        {
-            let obj_ref = ObjectRef::new(ObjectType::TrackSection, buffer_stop.track.clone());
-            let infra_error = InfraError::new_invalid_reference(buffer_stop, "track", obj_ref);
-            errors.push(infra_error);
+        let infra_errors = check_invalid_ref(buffer_stop, infra_cache);
+        if !infra_errors.is_empty() {
+            errors.extend(infra_errors);
             continue;
         }
 
-        let track_cache = infra_cache
-            .track_sections()
-            .get(&buffer_stop.track)
-            .unwrap()
-            .unwrap_track_section();
         // Retrieve out of range
-        if !(0.0..=track_cache.length).contains(&buffer_stop.position) {
-            let infra_error = InfraError::new_out_of_range(
-                buffer_stop,
-                "position",
-                buffer_stop.position,
-                [0.0, track_cache.length],
-            );
-            errors.push(infra_error);
-        }
+        errors.extend(check_out_of_range(buffer_stop, infra_cache));
     }
-
     errors
+}
+/// Retrieve invalid refs errors for buffer stops
+pub fn check_invalid_ref(
+    buffer_stop: &BufferStopCache,
+    infra_cache: &InfraCache,
+) -> Vec<InfraError> {
+    if !infra_cache
+        .track_sections()
+        .contains_key(&buffer_stop.track)
+    {
+        let obj_ref = ObjectRef::new(ObjectType::TrackSection, buffer_stop.track.clone());
+        vec![InfraError::new_invalid_reference(
+            buffer_stop,
+            "track",
+            obj_ref,
+        )]
+    } else {
+        vec![]
+    }
+}
+
+/// Retrieve out of range position errors for buffer stops
+pub fn check_out_of_range(
+    buffer_stop: &BufferStopCache,
+    infra_cache: &InfraCache,
+) -> Vec<InfraError> {
+    let track_cache = infra_cache
+        .track_sections()
+        .get(&buffer_stop.track)
+        .unwrap()
+        .unwrap_track_section();
+    if !(0.0..=track_cache.length).contains(&buffer_stop.position) {
+        vec![InfraError::new_out_of_range(
+            buffer_stop,
+            "position",
+            buffer_stop.position,
+            [0.0, track_cache.length],
+        )]
+    } else {
+        vec![]
+    }
 }
 
 #[cfg(test)]

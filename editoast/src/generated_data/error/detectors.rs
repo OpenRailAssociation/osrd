@@ -3,7 +3,7 @@ use diesel::PgConnection;
 use diesel::{sql_query, RunQueryDsl};
 
 use crate::infra_cache::InfraCache;
-use crate::schema::{InfraError, ObjectRef, ObjectType};
+use crate::schema::{DetectorCache, InfraError, ObjectRef, ObjectType};
 use diesel::result::Error as DieselError;
 use serde_json::{to_value, Value};
 
@@ -33,33 +33,51 @@ pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
     for detector in infra_cache.detectors().values() {
         let detector = detector.unwrap_detector();
         // Retrieve invalid refs
-        if !infra_cache.track_sections().contains_key(&detector.track) {
-            let obj_ref = ObjectRef::new(ObjectType::TrackSection, detector.track.clone());
-            let infra_error = InfraError::new_invalid_reference(detector, "track", obj_ref);
-            errors.push(infra_error);
+        let infra_errors = check_invalid_ref(detector, infra_cache);
+        if !infra_errors.is_empty() {
+            errors.extend(infra_errors);
             continue;
         }
-
-        let track_cache = infra_cache
-            .track_sections()
-            .get(&detector.track)
-            .unwrap()
-            .unwrap_track_section();
         // Retrieve out of range
-        if !(0.0..=track_cache.length).contains(&detector.position) {
-            let infra_error = InfraError::new_out_of_range(
-                detector,
-                "position",
-                detector.position,
-                [0.0, track_cache.length],
-            );
-            errors.push(infra_error);
+        let infra_errors = check_out_of_range(detector, infra_cache);
+        if !infra_errors.is_empty() {
+            errors.extend(infra_errors);
+            continue;
         }
     }
-
     errors
 }
 
+/// Retrieve invalide ref error for detectors
+pub fn check_invalid_ref(detector: &DetectorCache, infra_cache: &InfraCache) -> Vec<InfraError> {
+    if !infra_cache.track_sections().contains_key(&detector.track) {
+        let obj_ref = ObjectRef::new(ObjectType::TrackSection, detector.track.clone());
+        vec![InfraError::new_invalid_reference(
+            detector, "track", obj_ref,
+        )]
+    } else {
+        vec![]
+    }
+}
+
+/// Retrieve out of range position error for detectors
+pub fn check_out_of_range(detector: &DetectorCache, infra_cache: &InfraCache) -> Vec<InfraError> {
+    let track_cache = infra_cache
+        .track_sections()
+        .get(&detector.track)
+        .unwrap()
+        .unwrap_track_section();
+    if !(0.0..=track_cache.length).contains(&detector.position) {
+        vec![InfraError::new_out_of_range(
+            detector,
+            "position",
+            detector.position,
+            [0.0, track_cache.length],
+        )]
+    } else {
+        vec![]
+    }
+}
 #[cfg(test)]
 mod tests {
     use crate::infra_cache::tests::{create_detector_cache, create_small_infra_cache};

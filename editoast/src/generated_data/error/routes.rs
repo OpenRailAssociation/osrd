@@ -52,24 +52,24 @@ fn get_object(object: &Waypoint, infra_cache: &InfraCache) -> Option<(String, f6
 
 /// Check if the id and the position of the endpoint referenced track
 /// matches the id and the position of the object on the tracksection
-fn get_matching_endpoint_error(
+fn check_matching_endpoint(
     route: &Route,
     expected_track: String,
     expected_position: f64,
     endpoint_field: PathEndpointField,
-) -> Option<InfraError> {
+) -> Vec<InfraError> {
     let (track, pos) = endpoint_field.get_path_location(&route.path);
 
     if track != expected_track || pos != expected_position {
-        Some(InfraError::new_path_does_not_match_endpoints(
+        vec![InfraError::new_path_does_not_match_endpoints(
             route,
             "path",
             expected_track,
             expected_position,
             endpoint_field,
-        ))
+        )]
     } else {
-        None
+        vec![]
     }
 }
 
@@ -78,173 +78,197 @@ pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraErro
 
     for route in infra_cache.routes().values() {
         let route = route.unwrap_route();
-        if route.path.is_empty() {
-            let infra_error = InfraError::new_empty_path(route, "path");
-            errors.push(infra_error);
+        let infra_errors = check_empty(route);
+        if !infra_errors.is_empty() {
+            errors.extend(infra_errors);
             continue;
         }
 
-        let mut skip_continuous_path = false;
-
-        for (index, path) in route.path.iter().enumerate() {
-            // Retrieve invalid refs
-            let track_id = &path.track;
-            if !infra_cache.track_sections().contains_key(track_id) {
-                let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_id.clone());
-                let infra_error =
-                    InfraError::new_invalid_reference(route, format!("path.{index}"), obj_ref);
-                errors.push(infra_error);
-                skip_continuous_path = true;
-                continue;
-            }
-
-            let track_cache = infra_cache
-                .track_sections()
-                .get(track_id)
-                .unwrap()
-                .unwrap_track_section();
-            // Retrieve out of range
-            for (pos, field) in [(path.begin, "begin"), (path.end, "end")] {
-                if !(0.0..=track_cache.length).contains(&pos) {
-                    let infra_error = InfraError::new_out_of_range(
-                        route,
-                        format!("path.{index}.{field}"),
-                        pos,
-                        [0.0, track_cache.length],
-                    );
-                    errors.push(infra_error);
-                    skip_continuous_path = true;
-                }
-            }
-        }
-
-        if skip_continuous_path {
+        let infra_errors = check_route_path(infra_cache, route);
+        if !infra_errors.is_empty() {
+            errors.extend(infra_errors);
             continue;
         }
 
-        for (index, (prev, next)) in route.path.iter().zip(route.path.iter().skip(1)).enumerate() {
-            // TODO : differentiate errors caused by range and topology
-            let infra_error =
-                InfraError::new_path_is_not_continuous(route, format!("path.{}", index + 1));
-
-            // path continuous between 2 trackrange on a same track
-            if prev.track == next.track {
-                if prev.direction != next.direction {
-                    errors.push(infra_error);
-                    continue;
-                }
-
-                if (prev.direction == Direction::StartToStop && prev.end != next.begin)
-                    || (prev.direction == Direction::StopToStart && prev.begin != next.end)
-                {
-                    errors.push(infra_error);
-                }
-
-                continue;
-            }
-
-            // check if two paths are connected (topolgy)
-            let prev_endpoint = prev.get_end();
-            let next_endpoint = next.get_begin();
-
-            if graph
-                .get_neighbours(&prev_endpoint)
-                .map_or(true, |set| !set.contains(&next_endpoint))
-            {
-                errors.push(infra_error);
-                continue;
-            }
-
-            // check for the ranges
-            let track_cache = infra_cache
-                .track_sections()
-                .get(&prev.track)
-                .unwrap()
-                .unwrap_track_section();
-            if (prev.direction == Direction::StartToStop && prev.end != track_cache.length)
-                || (prev.direction == Direction::StopToStart && prev.begin != 0.0)
-            {
-                errors.push(infra_error);
-                continue;
-            }
-
-            let track_cache = infra_cache
-                .track_sections()
-                .get(&next.track)
-                .unwrap()
-                .unwrap_track_section();
-            if (next.direction == Direction::StartToStop && next.begin != 0.0)
-                || (next.direction == Direction::StopToStart && next.end != track_cache.length)
-            {
-                errors.push(infra_error);
-            }
-        }
-
+        errors.extend(check_path_not_continuous(route, graph, infra_cache));
         // Retrieve errors on entry and exit point
-        for path_endpoint in PathEndpointField::iter() {
-            let (expected_track, expected_position) =
-                match get_object(path_endpoint.get_route_endpoint(route), infra_cache) {
-                    None => {
-                        let error = InfraError::new_invalid_reference(
-                            route,
-                            path_endpoint.to_string(),
-                            ObjectRef::new(
-                                route.entry_point.get_type(),
-                                route.entry_point.get_id(),
-                            ),
-                        );
-                        errors.push(error);
-                        continue;
-                    }
-                    Some(e) => e,
-                };
-
-            if let Some(error) =
-                get_matching_endpoint_error(route, expected_track, expected_position, path_endpoint)
-            {
-                errors.push(error);
-            }
-        }
+        errors.extend(check_entry_exit_point_errors(route, infra_cache));
 
         // TODO: Should we test the type detector ?
-        for (index, release_detector) in route.release_detectors.iter().enumerate() {
-            // Handle invalid ref for release detectors
-            let (track, position) = match get_object(
-                &Waypoint::Detector {
-                    id: release_detector.clone(),
-                },
-                infra_cache,
-            ) {
+        errors.extend(check_detector_errors(route, infra_cache));
+    }
+
+    errors
+}
+
+///Check invalid DetectorRef and position
+pub fn check_detector_errors(route: &Route, infra_cache: &InfraCache) -> Vec<InfraError> {
+    let mut infra_errors = vec![];
+    for (index, release_detector) in route.release_detectors.iter().enumerate() {
+        // Handle invalid ref for release detectors
+        let (track, position) =
+            match get_object(&Waypoint::new_detector(release_detector), infra_cache) {
                 None => {
-                    let error = InfraError::new_invalid_reference(
+                    infra_errors.push(InfraError::new_invalid_reference(
                         route,
                         format!("release_detector.{index}"),
                         ObjectRef::new(ObjectType::Detector, release_detector.clone()),
-                    );
-                    errors.push(error);
+                    ));
                     continue;
                 }
                 Some(e) => e,
             };
 
-            // Handle release detectors outside from path
-            let track_range = route.path.iter().find(|track_range| {
-                track_range.track == track
-                    && (track_range.begin..=track_range.end).contains(&position)
-            });
-            if track_range.is_none() {
-                let error = InfraError::new_object_out_of_path(
+        // Handle release detectors outside from path
+
+        let track_range = route.path.iter().find(|track_range| {
+            track_range.track == track && (track_range.begin..=track_range.end).contains(&position)
+        });
+        if track_range.is_none() {
+            infra_errors.push(InfraError::new_object_out_of_path(
+                route,
+                format!("release_detector.{index}"),
+                position,
+                track,
+            ));
+        }
+    }
+    infra_errors
+}
+
+/// Check if the entry and exit point of the route are valid
+pub fn check_entry_exit_point_errors(route: &Route, infra_cache: &InfraCache) -> Vec<InfraError> {
+    let mut infra_errors = vec![];
+    for path_endpoint in PathEndpointField::iter() {
+        let (expected_track, expected_position) =
+            match get_object(path_endpoint.get_route_endpoint(route), infra_cache) {
+                None => {
+                    infra_errors.push(InfraError::new_invalid_reference(
+                        route,
+                        path_endpoint.to_string(),
+                        ObjectRef::new(route.entry_point.get_type(), route.entry_point.get_id()),
+                    ));
+                    continue;
+                }
+                Some(e) => e,
+            };
+
+        infra_errors.extend(check_matching_endpoint(
+            route,
+            expected_track,
+            expected_position,
+            path_endpoint,
+        ));
+    }
+    infra_errors
+}
+
+/// Check if the path is continuous
+pub fn check_path_not_continuous(
+    route: &Route,
+    graph: &Graph,
+    infra_cache: &InfraCache,
+) -> Vec<InfraError> {
+    let mut infra_errors = vec![];
+    for (index, (prev, next)) in route.path.iter().zip(route.path.iter().skip(1)).enumerate() {
+        // TODO : differentiate errors caused by range and topology
+        let infra_error =
+            InfraError::new_path_is_not_continuous(route, format!("path.{}", index + 1));
+
+        // path continuous between 2 trackrange on a same track
+        if prev.track == next.track {
+            if prev.direction != next.direction {
+                infra_errors.push(infra_error);
+                continue;
+            }
+
+            if (prev.direction == Direction::StartToStop && prev.end != next.begin)
+                || (prev.direction == Direction::StopToStart && prev.begin != next.end)
+            {
+                infra_errors.push(infra_error);
+            }
+
+            continue;
+        }
+
+        // check if two paths are connected (topolgy)
+        let prev_endpoint = prev.get_end();
+        let next_endpoint = next.get_begin();
+
+        if graph
+            .get_neighbours(&prev_endpoint)
+            .map_or(true, |set| !set.contains(&next_endpoint))
+        {
+            infra_errors.push(infra_error);
+            continue;
+        }
+
+        // check for the ranges
+        let track_cache = infra_cache
+            .track_sections()
+            .get(&prev.track)
+            .unwrap()
+            .unwrap_track_section();
+        if (prev.direction == Direction::StartToStop && prev.end != track_cache.length)
+            || (prev.direction == Direction::StopToStart && prev.begin != 0.0)
+        {
+            infra_errors.push(infra_error);
+            continue;
+        }
+
+        let track_cache = infra_cache
+            .track_sections()
+            .get(&next.track)
+            .unwrap()
+            .unwrap_track_section();
+        if (next.direction == Direction::StartToStop && next.begin != 0.0)
+            || (next.direction == Direction::StopToStart && next.end != track_cache.length)
+        {
+            infra_errors.push(infra_error);
+        }
+    }
+    infra_errors
+}
+
+/// Check if a route has a path
+pub fn check_empty(route: &Route) -> Vec<InfraError> {
+    if route.path.is_empty() {
+        vec![InfraError::new_empty_path(route, "path")]
+    } else {
+        vec![]
+    }
+}
+/// Retrieve invalid ref and out of range errors for routes
+pub fn check_route_path(infra_cache: &InfraCache, route: &Route) -> Vec<InfraError> {
+    let mut infra_errors = vec![];
+    for (index, path) in route.path.iter().enumerate() {
+        let track_id = &path.track;
+        if !infra_cache.track_sections().contains_key(track_id) {
+            let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_id.clone());
+            infra_errors.push(InfraError::new_invalid_reference(
+                route,
+                format!("path.{index}"),
+                obj_ref,
+            ));
+            continue;
+        }
+        let track_cache = infra_cache
+            .track_sections()
+            .get(track_id)
+            .unwrap()
+            .unwrap_track_section();
+        for (pos, field) in [(path.begin, "begin"), (path.end, "end")] {
+            if !(0.0..=track_cache.length).contains(&pos) {
+                infra_errors.push(InfraError::new_out_of_range(
                     route,
-                    format!("release_detector.{index}"),
-                    position,
-                    track,
-                );
-                errors.push(error);
+                    format!("path.{index}.{field}"),
+                    pos,
+                    [0.0, track_cache.length],
+                ));
             }
         }
     }
-
-    errors
+    infra_errors
 }
 
 #[cfg(test)]
