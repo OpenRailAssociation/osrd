@@ -1,14 +1,20 @@
 import { applyMiddleware, compose, createStore } from 'redux';
+import { composeWithDevTools, Config } from '@redux-devtools/extension';
 
 import { persistStore } from 'redux-persist';
 import persistedReducer from 'reducers';
 import thunk from 'redux-thunk';
 
-const reduxDevToolsOptions = {
-  serialize: true,
-}
+const reduxDevToolsOptions: Config = {
+  serialize: {
+    options: {
+      symbol: true,
+    },
+  },
+};
 
-const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__(reduxDevToolsOptions) || compose;
+// const composeEnhancers = composeWithDevToolsLogOnlyInProduction(reduxDevToolsOptions);
+const composeEnhancers = composeWithDevTools(reduxDevToolsOptions) || compose;
 
 const enhancers = composeEnhancers(applyMiddleware(thunk));
 const store = createStore(persistedReducer, enhancers);
