@@ -1,8 +1,7 @@
 {
   "compileOnSave": false,
-  "include": [
-    "src"
-  ],
+  "include": ["."],
+  "exclude": ["node_modules"],
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
@@ -10,6 +9,7 @@
     "allowUnusedLabels": false,
     "alwaysStrict": true,
     "baseUrl": "./src",
+    "checkJs": false,
     "diagnostics": false,
     "downlevelIteration": true,
     "emitBOM": false,
@@ -21,11 +21,7 @@
     "importsNotUsedAsValues": "remove",
     "isolatedModules": true,
     "jsx": "react-jsx",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "listEmittedFiles": false,
     "listFiles": false,
     "module": "esnext",
@@ -37,14 +33,14 @@
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
-    "noImplicitUseStrict": true,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false,
     "noUnusedParameters": true,
     "outDir": "build",
     "preserveConstEnums": true,
     "pretty": true,
     "removeComments": true,
     "resolveJsonModule": true,
+    "rootDir": ".",
     "skipDefaultLibCheck": true,
     "skipLibCheck": true,
     "sourceMap": true,
