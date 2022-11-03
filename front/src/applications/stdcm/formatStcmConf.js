@@ -1,8 +1,12 @@
+import { STDCM_MODES } from 'applications/osrd/consts';
 import { time2sec } from 'utils/timeManipulation';
+import { makeEnumBooleans } from 'utils/constants';
 
 export default function formatStdcmConf(dispatch, setFailure, t, osrdconf) {
+  const { isByOrigin, isByDestination } = makeEnumBooleans(STDCM_MODES, osrdconf.stdcmMode);
+
   let error = false;
-  if (!osrdconf.origin && osrdconf.stdcmMode === 'byOrigin') {
+  if (!osrdconf.origin && isByOrigin) {
     error = true;
     dispatch(
       setFailure({
@@ -11,7 +15,7 @@ export default function formatStdcmConf(dispatch, setFailure, t, osrdconf) {
       })
     );
   }
-  if (!osrdconf.originTime && osrdconf.stdcmMode === 'byOrigin') {
+  if (!osrdconf.originTime && isByOrigin) {
     error = true;
     dispatch(
       setFailure({
@@ -20,7 +24,7 @@ export default function formatStdcmConf(dispatch, setFailure, t, osrdconf) {
       })
     );
   }
-  if (!osrdconf.destination && osrdconf.stdcmMode === 'byDestination') {
+  if (!osrdconf.destination && isByDestination) {
     error = true;
     dispatch(
       setFailure({
@@ -29,7 +33,7 @@ export default function formatStdcmConf(dispatch, setFailure, t, osrdconf) {
       })
     );
   }
-  if (!osrdconf.destinationTime && osrdconf.stdcmMode === 'byDestination') {
+  if (!osrdconf.destinationTime && isByDestination) {
     error = true;
     dispatch(
       setFailure({

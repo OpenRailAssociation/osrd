@@ -1,4 +1,10 @@
+import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import PropTypes from 'prop-types';
 import { RiMapPin2Fill, RiMapPin3Fill, RiMapPin5Fill } from 'react-icons/ri';
+import { GiPathDistance } from 'react-icons/gi';
+import { useTranslation } from 'react-i18next';
+
 import {
   updateDestination,
   updateDestinationDate,
@@ -9,16 +15,12 @@ import {
   updateOriginTime,
   updateStdcmMode,
 } from 'reducers/osrdconf';
-import { useDispatch, useSelector } from 'react-redux';
+import { makeEnumBooleans } from 'utils/constants';
 
 import DisplayVias from 'applications/osrd/components/Itinerary/DisplayVias';
-import { GiPathDistance } from 'react-icons/gi';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import PropTypes from 'prop-types';
-import React from 'react';
 import { store } from 'Store';
-import { useTranslation } from 'react-i18next';
-import { MODES } from '../../consts';
+import { MODES, STDCM_MODES } from '../../consts';
 
 export default function DisplayItinerary(props) {
   const osrdconf = useSelector((state) => state.osrdconf);
@@ -26,6 +28,8 @@ export default function DisplayItinerary(props) {
   const dispatch = useDispatch();
   const { t } = useTranslation(['osrdconf']);
   const { zoomToFeaturePoint } = props;
+
+  const { isByOrigin, isByDestination } = makeEnumBooleans(STDCM_MODES, osrdconf.stdcmMode);
 
   return (
     <div
@@ -78,9 +82,8 @@ export default function DisplayItinerary(props) {
                     id="stdcmMode"
                     name="stdcmMode"
                     // className="custom-control-input"
-                    checked={osrdconf.stdcmMode === 'byOrigin'}
-                    onChange={(e) => dispatch(updateStdcmMode(e.target.value))}
-                    value="byOrigin"
+                    checked={isByOrigin}
+                    onChange={() => dispatch(updateStdcmMode(STDCM_MODES.byOrigin))}
                   />
                 )}
                 <div className="d-flex">
@@ -90,7 +93,7 @@ export default function DisplayItinerary(props) {
                       className="form-control form-control-sm"
                       onChange={(e) => dispatch(updateOriginDate(e.target.value))}
                       value={osrdconf.originDate}
-                      disabled={osrdconf.stdcmMode === 'byDestination'}
+                      disabled={isByDestination}
                     />
                   )}
                   <InputSNCF
@@ -100,7 +103,7 @@ export default function DisplayItinerary(props) {
                     value={osrdconf.originTime}
                     sm
                     noMargin
-                    readonly={osrdconf.stdcmMode === 'byDestination'}
+                    readonly={isByDestination}
                   />
                 </div>
               </div>
@@ -194,9 +197,8 @@ export default function DisplayItinerary(props) {
                     type="radio"
                     id="stdcmMode"
                     name="stdcmMode"
-                    checked={osrdconf.stdcmMode === 'byDestination'}
-                    onChange={(e) => dispatch(updateStdcmMode(e.target.value))}
-                    value="byDestination"
+                    checked={isByDestination}
+                    onChange={() => dispatch(updateStdcmMode(STDCM_MODES.byDestination))}
                   />
 
                   <div className="d-flex">
@@ -205,7 +207,7 @@ export default function DisplayItinerary(props) {
                       className="form-control form-control-sm"
                       onChange={(e) => dispatch(updateDestinationDate(e.target.value))}
                       value={osrdconf.destinationDate}
-                      disabled={osrdconf.stdcmMode === 'byOrigin'}
+                      disabled={isByOrigin}
                     />
 
                     <InputSNCF
@@ -215,7 +217,7 @@ export default function DisplayItinerary(props) {
                       value={osrdconf.destinationTime}
                       sm
                       noMargin
-                      readonly={osrdconf.stdcmMode === 'byOrigin'}
+                      readonly={isByOrigin}
                     />
                   </div>
                 </div>

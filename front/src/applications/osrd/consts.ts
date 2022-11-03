@@ -70,8 +70,8 @@ export const MODES = Object.freeze({
 export const DEFAULT_MODE = MODES.simulation;
 
 export const STDCM_MODES = Object.freeze({
-  byOrigin: 'BY_ORIGIN',
-  byDestination: 'BY_DESTINATION',
+  byOrigin: Symbol('BY_ORIGIN'),
+  byDestination: Symbol('BY_DESTINATION'),
 });
 
 export const DEFAULT_STDCM_MODE = STDCM_MODES.byOrigin;
