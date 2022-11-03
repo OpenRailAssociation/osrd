@@ -40,9 +40,19 @@ class RollingStockSerializer(ModelSerializer):
 
 
 class LightRollingStockSerializer(ModelSerializer):
+    def to_representation(self, instance):
+        """
+        Light representation of a rolling stock, removing all effort curves
+        """
+        ret = super().to_representation(instance)
+        for mode in ret["effort_curves"]["modes"].values():
+            mode.pop("curves")
+            mode.pop("default_curve")
+        return ret
+
     class Meta:
         model = RollingStock
-        exclude = ["image", "effort_curve"]
+        exclude = ["image"]
 
 
 # PATH FINDING
