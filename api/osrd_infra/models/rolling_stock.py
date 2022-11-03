@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
 from osrd_infra.schemas.infra import LoadingGaugeType
 from osrd_infra.schemas.rolling_stock import (
     RAILJSON_ROLLING_STOCK_VERSION,
-    EffortCurve,
+    EffortCurves,
     Gamma,
     RollingResistance,
 )
@@ -22,9 +22,9 @@ class RollingStock(models.Model):
         unique=True,
         help_text=_("A unique identifier for this rolling stock"),
     )
-    effort_curve = models.JSONField(
+    effort_curves = models.JSONField(
         help_text=_("A curve mapping speed (in m/s) to maximum traction (in newtons)"),
-        validators=[PydanticValidator(EffortCurve)],
+        validators=[PydanticValidator(EffortCurves)],
     )
     length = models.FloatField(
         help_text=_("The length of the train, in meters"),
@@ -50,7 +50,6 @@ class RollingStock(models.Model):
             "The inertia coefficient. It will be multiplied with the mass of the train to get its effective mass"
         ),
     )
-    power_class = models.PositiveIntegerField()
     features = ArrayField(
         models.CharField(max_length=255),
         blank=True,
@@ -63,16 +62,6 @@ class RollingStock(models.Model):
     )
     loading_gauge = models.CharField(max_length=16, choices=[(x.value, x.name) for x in LoadingGaugeType])
     image = models.ImageField(null=True, blank=True)
-
-    # Catenary related
-    electric_only = models.BooleanField(
-        help_text=_("If true, the train can only use tracks with compatible catenaries")
-    )
-    compatible_voltages = ArrayField(
-        models.PositiveIntegerField(),
-        blank=True,
-        help_text=_("A list of compatible voltage (in V)"),
-    )
 
     def __str__(self):
         return self.name
