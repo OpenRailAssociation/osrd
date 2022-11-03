@@ -210,8 +210,8 @@ function Itinerary(props) {
 
   useEffect(() => {
     if (
-      osrdconf.pathfindingID === undefined ||
-      osrdconf.geojson[map.mapTrackSources] === undefined
+      osrdconf?.pathfindingID === undefined ||
+      osrdconf?.geojson?.[map?.mapTrackSources] === undefined
     ) {
       mapItinerary();
     } else {
