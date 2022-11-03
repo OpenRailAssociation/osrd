@@ -99,6 +99,7 @@
     "react-error-overlay": "6.0.9"
   },
   "scripts": {
+    "compile": "tsc -b",
     "start": "react-scripts start",
     "build": "react-scripts --max_old_space_size=4096 build",
     "test": "react-scripts test",
