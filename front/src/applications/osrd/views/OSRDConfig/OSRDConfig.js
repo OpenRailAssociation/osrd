@@ -26,6 +26,8 @@ export default function OSRDConfig(props) {
   const [mustUpdateTimetable, setMustUpdateTimetable] = useState(true);
   const { setCurrentStdcmRequestStatus } = props;
 
+  const { isSimulation, isStdcm } = makeEnumBooleans(MODES, mode);
+
   if (darkmode) {
     import('./OSRDConfigDarkMode.scss');
   }
@@ -50,7 +52,7 @@ export default function OSRDConfig(props) {
             <div className="col-xl-6">
               <InfraSelector />
               <RollingStockSelector />
-              {mode === MODES.simulation && <SpeedLimitByTagSelector />}
+              {isSimulation && <SpeedLimitByTagSelector />}
             </div>
             <div className="col-xl-6">
               <TimetableSelector
@@ -61,13 +63,13 @@ export default function OSRDConfig(props) {
           </div>
           <Itinerary title={t('translation:common.itinerary')} updateExtViewport={setExtViewport} />
           <AddTrainLabels />
-          {mode === MODES.simulation && (
+          {isSimulation && (
             <AddTrainSchedule
               mustUpdateTimetable={mustUpdateTimetable}
               setMustUpdateTimetable={setMustUpdateTimetable}
             />
           )}
-          {mode === MODES.stdcm && (
+          {isStdcm && (
             <div className="osrd-config-stdcm-apply">
               <button
                 className="btn btn-sm  btn-primary "

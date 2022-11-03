@@ -24,12 +24,12 @@ import { MODES, STDCM_MODES } from '../../consts';
 
 export default function DisplayItinerary(props) {
   const osrdconf = useSelector((state) => state.osrdconf);
-  const mode = useSelector((state) => state.osrdconf.mode);
   const dispatch = useDispatch();
   const { t } = useTranslation(['osrdconf']);
   const { zoomToFeaturePoint } = props;
 
   const { isByOrigin, isByDestination } = makeEnumBooleans(STDCM_MODES, osrdconf.stdcmMode);
+  const { isSimulation, isStdcm } = makeEnumBooleans(MODES, osrdconf.mode);
 
   return (
     <div
@@ -76,7 +76,7 @@ export default function DisplayItinerary(props) {
                 </strong>
               </div>
               <div className="ml-auto d-flex mr-1">
-                {mode === MODES.stdcm && (
+                {isStdcm && (
                   <input
                     type="radio"
                     id="stdcmMode"
@@ -87,7 +87,7 @@ export default function DisplayItinerary(props) {
                   />
                 )}
                 <div className="d-flex">
-                  {mode === MODES.stdcm && (
+                  {isStdcm && (
                     <input
                       type="date"
                       className="form-control form-control-sm"
@@ -107,7 +107,7 @@ export default function DisplayItinerary(props) {
                   />
                 </div>
               </div>
-              {mode === MODES.simulation && (
+              {isSimulation && (
                 <div className="osrd-config-speed">
                   <InputSNCF
                     type="number"
@@ -191,7 +191,7 @@ export default function DisplayItinerary(props) {
                 </strong>
               </div>
 
-              {mode === MODES.stdcm && (
+              {isStdcm && (
                 <div className="ml-auto d-flex mr-1">
                   <input
                     type="radio"
