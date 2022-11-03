@@ -42,7 +42,7 @@ class RollingStockSerializer(ModelSerializer):
 class LightRollingStockSerializer(ModelSerializer):
     class Meta:
         model = RollingStock
-        exclude = ["image", "effort_curve"]
+        exclude = ["image", "effort_curves"]
 
 
 # PATH FINDING
