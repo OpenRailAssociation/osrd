@@ -4,6 +4,7 @@ import createCompressor from 'redux-persist-transform-compress';
 import { createFilter } from 'redux-persist-transform-filter';
 import storage from 'redux-persist/lib/storage'; // defaults to localStorage
 
+import { OsrdConfState } from 'applications/osrd/consts';
 import mainReducer, { MainActions } from './main';
 import userReducer from './user';
 import mapReducer, { MapState } from './map';
@@ -70,7 +71,7 @@ export interface RootState {
   map: MapState;
   editor: EditorState;
   main: GenericState;
-  osrdconf: GenericState;
+  osrdconf: OsrdConfState;
   osrdsimulation: OsrdSimulationState;
   rollingstock: GenericState;
 }

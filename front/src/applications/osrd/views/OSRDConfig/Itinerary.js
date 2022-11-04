@@ -58,15 +58,17 @@ function Itinerary(props) {
   };
 
   const zoomToFeaturePoint = (lngLat, id = undefined, source = undefined) => {
-    const newViewport = {
-      ...map.viewport,
-      longitude: lngLat[0],
-      latitude: lngLat[1],
-      zoom: 16,
-    };
-    updateExtViewport(newViewport);
-    if (id !== undefined && source !== undefined) {
-      updateFeatureInfoClick(Number(id), source);
+    if (lngLat) {
+      const newViewport = {
+        ...map.viewport,
+        longitude: lngLat[0],
+        latitude: lngLat[1],
+        zoom: 16,
+      };
+      updateExtViewport(newViewport);
+      if (id !== undefined && source !== undefined) {
+        updateFeatureInfoClick(Number(id), source);
+      }
     }
   };
 
