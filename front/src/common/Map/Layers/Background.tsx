@@ -7,7 +7,7 @@ import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 
 interface BackgroundProps {
   colors: Theme;
-  layerOrder: number;
+  layerOrder?: number;
 }
 
 function Background(props: BackgroundProps) {

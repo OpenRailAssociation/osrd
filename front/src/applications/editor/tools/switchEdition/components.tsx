@@ -234,7 +234,7 @@ export const SwitchEditionLeftPanel: FC = () => {
             tracksIndex
           ) as SwitchEntity;
 
-          const res = await dispatch(
+          const res: any = await dispatch(
             save(
               entityToSave.id
                 ? {
@@ -248,8 +248,7 @@ export const SwitchEditionLeftPanel: FC = () => {
                 : { create: [entityToSave] }
             )
           );
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const operation = res[0] as any as CreateEntityOperation;
+          const operation = res[0] as CreateEntityOperation;
           const { id } = operation.railjson;
 
           if (id && id !== entityToSave.id) setState({ ...state, entity: { ...entityToSave, id } });

@@ -1,14 +1,15 @@
 import { lineString, point, lengthToDegrees } from '@turf/helpers';
 
-import { makeDisplayedHeadAndTail, TrainPosition } from '../TrainHoverPosition';
+import { makeDisplayedHeadAndTail } from '../TrainHoverPosition';
+import { TrainPosition } from '../types';
 
 // test examples are given on a grid with kilometer unit
-function convertKmCoordsToDegree(coords) {
+function convertKmCoordsToDegree(coords: Array<number>) {
   return coords.map((v) => lengthToDegrees(v));
 }
 
 // test examples are given on a grid with kilometer unit
-function pointFromKmCoords(coords) {
+function pointFromKmCoords(coords: Array<number>) {
   return point(convertKmCoordsToDegree(coords));
 }
 

@@ -46,7 +46,7 @@ const defineChart = (
   const x = defineX.range([0, width]);
   const axisBottomX =
     !rotate && keyValues[0] === 'time'
-      ? d3.axisBottom(x).tickFormat(d3.timeFormat('%H:%M:%S'))
+      ? d3.axisBottom<Date>(x).tickFormat(d3.timeFormat('%H:%M:%S'))
       : d3.axisBottom(x);
   const xAxis = svg.append('g').attr('transform', `translate(0,${height})`).call(axisBottomX);
   const xAxisGrid = svg
@@ -59,7 +59,14 @@ const defineChart = (
   const y = defineY.range([height, 0]);
   const axisLeftY =
     rotate && keyValues[0] === 'time'
-      ? d3.axisLeft(y).tickFormat(d3.timeFormat('%H:%M:%S'))
+      ? d3
+          .axisLeft(y)
+          .tickFormat(
+            d3.timeFormat('%H:%M:%S') as unknown as (
+              dv: number | { valueOf(): number },
+              i: number
+            ) => string
+          )
       : d3.axisLeft(y);
   const yAxis = svg.append('g').call(axisLeftY);
   const yAxisGrid = svg.append('g').attr('class', 'grid').call(gridY(y, width));

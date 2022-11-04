@@ -6,7 +6,7 @@ import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 
 interface HillshadeProps {
   mapStyle: string;
-  layerOrder: number;
+  layerOrder?: number;
 }
 
 function Hillshade(props: HillshadeProps) {

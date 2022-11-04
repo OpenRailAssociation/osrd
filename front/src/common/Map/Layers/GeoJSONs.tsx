@@ -16,11 +16,11 @@ import {
   SignalsSettings,
 } from './geoSignalsLayers';
 import { lineNameLayer, lineNumberLayer, trackNameLayer } from './commonLayers';
+import { EditorState, LayerType } from '../../../applications/editor/tools/types';
 import { getSymbolTypes } from '../../../applications/editor/data/utils';
 import { getBufferStopsLayerProps } from './BufferStops';
 import { getDetectorsLayerProps, getDetectorsNameLayerProps } from './Detectors';
 import { getSwitchesLayerProps, getSwitchesNameLayerProps } from './Switches';
-import { EditorState, LayerType } from 'applications/editor/tools/types';
 
 const HOVERED_COLOR = '#009EED';
 const UNSELECTED_OPACITY = 0.2;
@@ -62,7 +62,9 @@ function adaptSymbolPaint(paint: SymbolPaint, { selectedIDs, hoveredIDs }: Conte
 }
 
 function adaptCirclePaint(paint: CirclePaint, { selectedIDs, hoveredIDs }: Context): CirclePaint {
-  const opacity = typeof paint['icon-opacity'] === 'number' ? paint['icon-opacity'] : 1;
+  // TODO: need to check if paint as the good type
+  // const opacity = typeof paint['icon-opacity'] === 'number' ? paint['icon-opacity'] : 1;
+  const opacity = 1;
   return {
     ...paint,
     ...(selectedIDs.length
@@ -210,7 +212,7 @@ const GeoJSONs: FC<{
           ...iter,
           [type]: getSignalLayerProps(signalsContext, type),
         }),
-        {}
+        {} as { [key: string]: LayerProps }
       ),
     [signalsContext, signalsList]
   );
@@ -285,7 +287,7 @@ const GeoJSONs: FC<{
               {...signalDef}
               id={layerId}
               filter={adaptFilter(['==', SIGNAL_TYPE_KEY, `"${type}"`], layerContext)}
-              paint={adaptSymbolPaint(signalDef.paint, layerContext)}
+              paint={adaptSymbolPaint(signalDef.paint as SymbolPaint, layerContext)}
             />
           );
         })}

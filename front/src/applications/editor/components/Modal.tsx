@@ -1,15 +1,11 @@
-import React, { FC } from 'react';
+import React, { FC, PropsWithChildren } from 'react';
 import PropTypes from 'prop-types';
 import { withTranslation } from 'react-i18next';
 import { TFunction } from 'i18next';
 
-const ModalUnplugged: FC<{ onClose: () => void; id?: string; title?: string; t: TFunction }> = ({
-  t,
-  id,
-  title,
-  onClose,
-  children,
-}) => (
+const ModalUnplugged: FC<
+  PropsWithChildren<{ onClose: () => void; id?: string; title?: string; t: TFunction }>
+> = ({ t, id, title, onClose, children }) => (
   <div
     className="modal fade show"
     id={id}
