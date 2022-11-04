@@ -48,6 +48,35 @@ function Origin(props: OriginProps) {
     </h2>
   );
 
+  const originPointName = (
+    <div
+      onClick={() => {
+        zoomToFeaturePoint(
+          osrdconf.origin?.clickLngLat,
+          osrdconf.origin?.id,
+          osrdconf.origin?.source
+        );
+      }}
+      role="button"
+      tabIndex={0}
+    >
+      <strong className="mr-1 text-nowrap">
+        {osrdconf.origin.name ? osrdconf.origin.name : osrdconf.origin.id.split('-')[0]}
+      </strong>
+    </div>
+  );
+
+  const radioButton = isStdcm && (
+    <input
+      type="radio"
+      id="stdcmMode"
+      name="stdcmMode"
+      // className="custom-control-input"
+      checked={isByOrigin}
+      onChange={() => dispatch(updateStdcmMode(STDCM_MODES.byOrigin))}
+    />
+  );
+
   return (
     <>
       {originTitle}
@@ -56,51 +85,50 @@ function Origin(props: OriginProps) {
           <>
             <i className="text-success icons-itinerary-bullet mr-2" />
             <div className="pl-1 hover w-100 d-flex align-items-center">
-              <div
-                onClick={() => {
-                  zoomToFeaturePoint(
-                    osrdconf.origin?.clickLngLat,
-                    osrdconf.origin?.id,
-                    osrdconf.origin?.source
-                  );
-                }}
-                role="button"
-                tabIndex={0}
-              >
-                <strong className="mr-1 text-nowrap">
-                  {osrdconf.origin.name ? osrdconf.origin.name : osrdconf.origin.id.split('-')[0]}
-                </strong>
-              </div>
+              {originPointName}
               <div className="ml-auto d-flex mr-1">
-                {isStdcm && (
-                  <input
-                    type="radio"
-                    id="stdcmMode"
-                    name="stdcmMode"
-                    // className="custom-control-input"
-                    checked={isByOrigin}
-                    onChange={() => dispatch(updateStdcmMode(STDCM_MODES.byOrigin))}
-                  />
-                )}
-                <div className="d-flex">
-                  {isStdcm && (
-                    <input
-                      type="date"
-                      className="form-control form-control-sm"
-                      onChange={(e) => dispatch(updateOriginDate(e.target.value))}
-                      value={osrdconf.originDate}
-                      disabled={isByDestination}
+                {radioButton}
+                <div className="d-flex flex-column">
+                  <div className="d-flex">
+                    {isStdcm && (
+                      <input
+                        type="date"
+                        className="form-control form-control-sm"
+                        onChange={(e) => dispatch(updateOriginEarlierDate(e.target.value))}
+                        value={osrdconf.originDate}
+                        disabled={isByDestination}
+                      />
+                    )}
+                    <InputSNCF
+                      type="time"
+                      id="osrd-config-time-origin"
+                      onChange={(e) => dispatch(updateOriginEarlierTime(e.target.value))}
+                      value={osrdconf.originTime}
+                      sm
+                      noMargin
+                      readonly={isByDestination}
                     />
-                  )}
-                  <InputSNCF
-                    type="time"
-                    id="osrd-config-time-origin"
-                    onChange={(e) => dispatch(updateOriginTime(e.target.value))}
-                    value={osrdconf.originTime}
-                    sm
-                    noMargin
-                    readonly={isByDestination}
-                  />
+                  </div>
+                  <div className="d-flex">
+                    {isStdcm && (
+                      <input
+                        type="date"
+                        className="form-control form-control-sm"
+                        onChange={(e) => dispatch(updateOriginLaterDate(e.target.value))}
+                        value={osrdconf.originDate}
+                        disabled={isByDestination}
+                      />
+                    )}
+                    <InputSNCF
+                      type="time"
+                      id="osrd-config-time-origin"
+                      onChange={(e) => dispatch(updateOriginLaterTime(e.target.value))}
+                      value={osrdconf.originTime}
+                      sm
+                      noMargin
+                      readonly={isByDestination}
+                    />
+                  </div>
                 </div>
               </div>
               {isSimulation && (
