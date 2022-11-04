@@ -6,8 +6,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.common.collect.*;
 import fr.sncf.osrd.api.stdcm.OccupancyBlock;
-import fr.sncf.osrd.api.stdcm.STDCMGraph;
-import fr.sncf.osrd.api.stdcm.STDCMPathfinding;
+import fr.sncf.osrd.api.stdcm.graph.STDCMGraph;
+import fr.sncf.osrd.api.stdcm.graph.STDCMPathfinding;
 import fr.sncf.osrd.api.stdcm.STDCMResult;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
@@ -516,7 +516,8 @@ public class STDCMPathfindingTests {
         var firstRoute = infraBuilder.addRoute("a", "b");
         var secondRoute = infraBuilder.addRoute("b", "c");
         var infra = infraBuilder.build();
-        var firstRouteEnvelope = STDCMGraph.simulateRoute(firstRoute, 0, 0, REALISTIC_FAST_TRAIN, 2);
+        var firstRouteEnvelope = STDCMGraph.simulateRoute(firstRoute, 0, 0,
+                REALISTIC_FAST_TRAIN, 2, new double[]{});
         assert firstRouteEnvelope != null;
         var res = STDCMPathfinding.findPath(
                 infra,
@@ -947,6 +948,200 @@ public class STDCMPathfindingTests {
                 2.,
                 1000,
                 100
+        );
+        assertNotNull(res);
+    }
+
+    /** This test requires some backtracking to compute the final braking curve.
+     * With a naive approach we reach the destination in time, but the extra braking curve makes us
+     * reach the next block */
+    @Test
+    public void testBacktrackingBrakingCurve() {
+        /*
+        a ------> b
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var route = infraBuilder.addRoute("a", "b", 1000);
+        var firstRouteEnvelope = STDCMGraph.simulateRoute(route, 0, 0,
+                REALISTIC_FAST_TRAIN, 2., new double[]{});
+        assert firstRouteEnvelope != null;
+        var runTime = firstRouteEnvelope.getTotalTime();
+        var infra = infraBuilder.build();
+        var occupancyGraph = ImmutableMultimap.of(
+                route, new OccupancyBlock(runTime + 1, POSITIVE_INFINITY, 0, 1000)
+        );
+        var res = STDCMPathfinding.findPath(
+                infra,
+                REALISTIC_FAST_TRAIN,
+                0,
+                0,
+                Set.of(new Pathfinding.EdgeLocation<>(route, 0)),
+                Set.of(new Pathfinding.EdgeLocation<>(route, 1000)),
+                occupancyGraph,
+                2.,
+                3600 * 2,
+                POSITIVE_INFINITY
+        );
+        if (res == null)
+            return;
+        occupancyTest(res, occupancyGraph);
+    }
+
+    /** This is the same test as the one above, but with the braking curve spanning over several routes */
+    @Test
+    public void testBacktrackingBrakingCurveSeveralRoutes() {
+        /*
+        a ------> b -> c -> d -> e
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var firstRoute = infraBuilder.addRoute("a", "b", 1000);
+        infraBuilder.addRoute("b", "c", 10);
+        infraBuilder.addRoute("c", "d", 10);
+        var lastRoute = infraBuilder.addRoute("d", "e", 10);
+        var firstRouteEnvelope = STDCMGraph.simulateRoute(firstRoute, 0, 0,
+                REALISTIC_FAST_TRAIN, 2., new double[]{});
+        assert firstRouteEnvelope != null;
+        var runTime = firstRouteEnvelope.getTotalTime();
+        var infra = infraBuilder.build();
+        var occupancyGraph = ImmutableMultimap.of(
+                lastRoute, new OccupancyBlock(runTime + 10, POSITIVE_INFINITY, 0, 10)
+        );
+        var res = STDCMPathfinding.findPath(
+                infra,
+                REALISTIC_FAST_TRAIN,
+                0,
+                0,
+                Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
+                Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 5)),
+                occupancyGraph,
+                2.,
+                3600 * 2,
+                POSITIVE_INFINITY
+        );
+        if (res == null)
+            return;
+        occupancyTest(res, occupancyGraph);
+    }
+
+    /** Test that we don't stay in the first route for too long when there is an MRSP drop at the route transition */
+    @Test
+    public void testBacktrackingMRSPDrop() {
+        /*
+        a ------> b -> c
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var firstRoute = infraBuilder.addRoute("a", "b", 1000);
+        var secondRoute = infraBuilder.addRoute("b", "c", 100, 5);
+        var firstRouteEnvelope = STDCMGraph.simulateRoute(firstRoute, 0, 0,
+                REALISTIC_FAST_TRAIN, 2., new double[]{});
+        assert firstRouteEnvelope != null;
+        var runTime = firstRouteEnvelope.getTotalTime();
+        var infra = infraBuilder.build();
+        var occupancyGraph = ImmutableMultimap.of(
+                firstRoute, new OccupancyBlock(runTime + 10, POSITIVE_INFINITY, 0, 1000)
+        );
+        var res = STDCMPathfinding.findPath(
+                infra,
+                REALISTIC_FAST_TRAIN,
+                0,
+                0,
+                Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
+                Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 5)),
+                occupancyGraph,
+                2.,
+                3600 * 2,
+                POSITIVE_INFINITY
+        );
+        if (res == null)
+            return;
+        occupancyTest(res, occupancyGraph);
+    }
+
+    /** Test that we can backtrack several times over the same edges */
+    @Test
+    public void testManyBacktracking() {
+        /*
+        a ------> b -> c -> d -> e ----> f
+
+        Long first route for speedup, then the MRSP drops at each (short) route
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var firstRoute = infraBuilder.addRoute("a", "b", 10000);
+        infraBuilder.addRoute("b", "c", 10, 20);
+        infraBuilder.addRoute("c", "d", 10, 15);
+        infraBuilder.addRoute("d", "e", 10, 10);
+        var lastRoute = infraBuilder.addRoute("e", "f", 1000, 5);
+        var infra = infraBuilder.build();
+        var res = STDCMPathfinding.findPath(
+                infra,
+                REALISTIC_FAST_TRAIN,
+                0,
+                0,
+                Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
+                Set.of(new Pathfinding.EdgeLocation<>(lastRoute, 1000)),
+                ImmutableMultimap.of(),
+                2.,
+                3600 * 2,
+                POSITIVE_INFINITY
+        );
+        assert res != null;
+        assertTrue(res.envelope().continuous);
+    }
+
+    /** Test that we ignore occupancy that happen after the end goal */
+    @Test
+    @Disabled("TODO")
+    public void testOccupancyEnvelopeLengthBlockSize() {
+        /*
+        a -(start) -> (end) ---------------[occupied]---------> b
+
+        The route is occupied after the destination
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var route = infraBuilder.addRoute("a", "b", 100_000);
+        var infra = infraBuilder.build();
+        var res = STDCMPathfinding.findPath(
+                infra,
+                REALISTIC_FAST_TRAIN,
+                0,
+                0,
+                Set.of(new Pathfinding.EdgeLocation<>(route, 0)),
+                Set.of(new Pathfinding.EdgeLocation<>(route, 10)),
+                ImmutableMultimap.of(
+                        route, new OccupancyBlock(0, POSITIVE_INFINITY, 99_000, 100_000)
+                ),
+                2.,
+                3600 * 2,
+                POSITIVE_INFINITY
+        );
+        assertNotNull(res);
+    }
+
+    /** Test that we don't use the full route envelope when the destination is close to the start */
+    @Test
+    @Disabled("TODO")
+    public void testOccupancyEnvelopeLength() {
+        /*
+        a -(start) -> (end) ------------------------> b
+
+        The destination is reached early and the route is occupied after a while
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var route = infraBuilder.addRoute("a", "b", 100_000);
+        var infra = infraBuilder.build();
+        var res = STDCMPathfinding.findPath(
+                infra,
+                REALISTIC_FAST_TRAIN,
+                0,
+                0,
+                Set.of(new Pathfinding.EdgeLocation<>(route, 0)),
+                Set.of(new Pathfinding.EdgeLocation<>(route, 10)),
+                ImmutableMultimap.of(
+                        route, new OccupancyBlock(300, POSITIVE_INFINITY, 0, 100_000)
+                ),
+                2.,
+                3600 * 2,
+                POSITIVE_INFINITY
         );
         assertNotNull(res);
     }

@@ -10,6 +10,7 @@ import undoableSimulation, { REDO_SIMULATION, UNDO_SIMULATION } from './simulati
 import {
   interpolateOnTime,
   offsetSeconds,
+  MergedDataPoint,
 } from '../../applications/osrd/components/Helpers/ChartHelpers';
 
 // Action Types
@@ -38,6 +39,7 @@ export const makeDepartureArrivalTimes = (simulation: SimulationSnapshot, dragOf
     name: train.name,
     departure: offsetSeconds(train.base.stops[0].time + dragOffset),
     arrival: offsetSeconds(train.base.stops[train.base.stops.length - 1].time + dragOffset),
+    speed_limit_composition: train.speed_limit_composition,
   }));
 
 export interface Chart {
@@ -128,6 +130,7 @@ export interface Train {
   base: Regime;
   eco: Regime;
   isStdcm: boolean;
+  speed_limit_composition: string;
 }
 
 export interface SimulationSnapshot {
@@ -145,6 +148,29 @@ export interface PositionValues {
     speed: number;
     time: number;
   };
+}
+
+export interface SimulationTrain {
+  id: number;
+  isStdcm: boolean;
+  name: string;
+  trainNumber: number;
+  headPosition: Position<Date | null>[][];
+  tailPosition: Position<Date | null>[][];
+  routeEndOccupancy: Position<Date | null>[][];
+  routeBeginOccupancy: Position<Date | null>[][];
+  routeAspects: RouteAspect<Date | null, string>[];
+  signalAspects: SignalAspect<Date | null, string>[];
+  areaBlock: MergedDataPoint<Date | null>[][];
+  speed: PositionSpeed<Date | null>[];
+  eco_headPosition?: Position<Date | null>[][];
+  eco_tailPosition?: Position<Date | null>[][];
+  eco_routeEndOccupancy?: Position<Date | null>[][];
+  eco_routeBeginOccupancy?: Position<Date | null>[][];
+  eco_routeAspects?: RouteAspect<Date | null, string>[];
+  eco_signalAspects?: SignalAspect<Date | null, string>[];
+  eco_areaBlock?: MergedDataPoint<Date | null>[][];
+  eco_speed?: PositionSpeed<Date | null>[];
 }
 
 export interface OsrdSimulationState {
@@ -167,7 +193,7 @@ export interface OsrdSimulationState {
   stickyBar: boolean;
   signalBase: typeof SIGNAL_BASE_DEFAULT;
   timePosition: any;
-  consolidatedSimulation: any;
+  consolidatedSimulation: SimulationTrain[];
   departureArrivalTimes: Array<any>;
   simulation: {
     past: SimulationHistory;

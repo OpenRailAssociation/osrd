@@ -1,4 +1,8 @@
-export const schematicMainLayer = (colors) => ({
+import { LayerProps } from 'react-map-gl';
+
+import { Theme } from 'types';
+
+export const schematicMainLayer = (colors: Theme): LayerProps => ({
   id: 'schematicMainLayer',
   type: 'line',
   paint: {
@@ -7,7 +11,7 @@ export const schematicMainLayer = (colors) => ({
   },
 });
 
-export const schematicServiceLayer = (colors) => ({
+export const schematicServiceLayer = (colors: Theme): LayerProps => ({
   id: 'schematicServiceLayer',
   type: 'line',
   filter: ['==', 'type_voie', 'VS'],

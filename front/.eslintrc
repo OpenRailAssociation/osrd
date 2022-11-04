@@ -34,7 +34,8 @@
       }
     ],
     "no-use-before-define": "off",
-    "@typescript-eslint/no-use-before-define": ["error"]
+    "@typescript-eslint/no-use-before-define": ["error"],
+    "react/jsx-no-useless-fragment": ["error", { "allowExpressions": true }]
   },
   "settings": {
     "import/resolver": {

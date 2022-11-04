@@ -1,12 +1,20 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { Source, Layer } from 'react-map-gl';
+import { Source, LayerProps } from 'react-map-gl';
+
+import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { OSM_URL } from 'common/Map/const';
 
-function Platform(props) {
-  const { colors } = props;
+import { Theme } from 'types';
 
-  const platformParams = {
+interface PlatformProps {
+  colors: Theme;
+  layerOrder: number;
+}
+
+function Platform(props: PlatformProps) {
+  const { colors, layerOrder } = props;
+
+  const platformParams: LayerProps = {
     id: 'osm/platform',
     type: 'fill-extrusion',
     source: 'openmaptiles',
@@ -27,13 +35,9 @@ function Platform(props) {
 
   return (
     <Source id="platform" type="vector" url={OSM_URL} source-layer="transportation">
-      <Layer {...platformParams} />
+      <OrderedLayer {...platformParams} layerOrder={layerOrder} />
     </Source>
   );
 }
-
-Platform.propTypes = {
-  colors: PropTypes.object.isRequired,
-};
 
 export default Platform;

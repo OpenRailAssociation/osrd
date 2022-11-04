@@ -1,15 +1,24 @@
-import { Layer, Source } from 'react-map-gl';
+import React from 'react';
+import { useSelector } from 'react-redux';
+import { Source } from 'react-map-gl';
+
 import { MAP_TRACK_SOURCES, MAP_URL } from 'common/Map/const';
 import { lineNameLayer, lineNumberLayer, trackNameLayer } from 'common/Map/Layers/commonLayers';
 import { schematicMainLayer, schematicServiceLayer } from 'common/Map/Layers/schematiclayers';
+import { Theme } from 'types';
+import { RootState } from 'reducers';
 
-import PropTypes from 'prop-types';
-import React from 'react';
-import { useSelector } from 'react-redux';
+import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 
-function TracksSchematic(props) {
-  const { colors, idHover } = props;
-  const { infraID } = useSelector((state) => state.osrdconf);
+interface TracksSchematicProps {
+  colors: Theme;
+  idHover: string;
+  layerOrder: number;
+}
+
+function TracksSchematic(props: TracksSchematicProps) {
+  const { colors, idHover, layerOrder } = props;
+  const { infraID } = useSelector((state: RootState) => state.osrdconf);
   const infraVersion = infraID !== undefined ? `?infra=${infraID}` : null;
   return (
     <Source
@@ -18,17 +27,19 @@ function TracksSchematic(props) {
       url={`${MAP_URL}/layer/track_sections/mvt/sch/${infraVersion}`}
       source-layer={MAP_TRACK_SOURCES.schematic}
     >
-      <Layer
+      <OrderedLayer
         {...schematicServiceLayer(colors)}
         id="chartis/tracks-sch/service"
         source-layer={MAP_TRACK_SOURCES.schematic}
+        layerOrder={layerOrder}
       />
-      <Layer
+      <OrderedLayer
         {...schematicMainLayer(colors)}
         id="chartis/tracks-sch/main"
         source-layer={MAP_TRACK_SOURCES.schematic}
+        layerOrder={layerOrder}
       />
-      <Layer
+      <OrderedLayer
         {...{
           ...trackNameLayer(colors),
           layout: {
@@ -38,8 +49,9 @@ function TracksSchematic(props) {
           },
         }}
         source-layer={MAP_TRACK_SOURCES.schematic}
+        layerOrder={layerOrder}
       />
-      <Layer
+      <OrderedLayer
         {...{
           ...lineNumberLayer(colors),
           layout: {
@@ -48,28 +60,25 @@ function TracksSchematic(props) {
           },
         }}
         source-layer={MAP_TRACK_SOURCES.schematic}
+        layerOrder={layerOrder}
       />
-      <Layer {...lineNameLayer(colors)} source-layer={MAP_TRACK_SOURCES.schematic} />
+      <OrderedLayer
+        {...lineNameLayer(colors)}
+        source-layer={MAP_TRACK_SOURCES.schematic}
+        layerOrder={layerOrder}
+      />
 
       {idHover !== undefined ? (
-        <Layer
+        <OrderedLayer
           type="line"
           paint={{ 'line-color': '#ffb612', 'line-width': 3 }}
           filter={['==', 'OP_id', idHover]}
           source-layer={MAP_TRACK_SOURCES.schematic}
+          layerOrder={layerOrder}
         />
       ) : null}
     </Source>
   );
 }
-
-TracksSchematic.propTypes = {
-  idHover: PropTypes.string,
-  colors: PropTypes.object.isRequired,
-};
-
-TracksSchematic.defaultProps = {
-  idHover: undefined,
-};
 
 export default TracksSchematic;

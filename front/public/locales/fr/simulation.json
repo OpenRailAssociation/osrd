@@ -42,5 +42,6 @@
     "speed": "Vitesse"
   },
   "trainList": "Liste des trains",
+  "speedLimitComposition": "Composition",
   "waiting": "Chargement en cours..."
 }

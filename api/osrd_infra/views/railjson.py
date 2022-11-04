@@ -13,9 +13,9 @@ GET_INFRA_WITH_EXT_SQL = open(CURRENT_DIR / "sql/get_infra_with_ext.sql").read()
 
 def serialize_infra(infra: Infra, exclude_extensions: bool) -> str:
     with connection.cursor() as cursor:
-        get_infra_sql = GET_INFRA_NO_EXT_SQL
+        get_infra_sql = GET_INFRA_WITH_EXT_SQL
         if exclude_extensions:
-            get_infra_sql = GET_INFRA_WITH_EXT_SQL
+            get_infra_sql = GET_INFRA_NO_EXT_SQL
         cursor.execute(get_infra_sql, [infra.id])
         res = cursor.fetchone()[0]
     return res
