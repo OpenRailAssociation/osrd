@@ -193,7 +193,7 @@ export const TrackEditionLeftPanel: FC = () => {
     <EditorForm
       data={state.track}
       onSubmit={async (savedEntity) => {
-        const res = await dispatch(
+        const res: any = await dispatch(
           save(
             state.track.id
               ? {
@@ -208,7 +208,7 @@ export const TrackEditionLeftPanel: FC = () => {
           )
         );
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const operation = res[0] as any as CreateEntityOperation;
+        const operation = res[0] as CreateEntityOperation;
         const { id } = operation.railjson;
 
         if (id && id !== savedEntity.id) setState({ ...state, track: { ...state.track, id } });

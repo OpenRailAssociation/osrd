@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef, CSSProperties } from 'react';
 import { head, last, maxBy, minBy } from 'lodash';
 import cx from 'classnames';
-import shortNumber from 'short-number';
 
-import { roundNumber, preventDefault, isNilObject } from './utils';
+import { roundNumber, preventDefault, isNilObject, shortNumber } from './utils';
 import { LinearMetadataItem, cropForDatavizViewbox } from './data';
 import './style.scss';
 
@@ -186,7 +185,7 @@ export interface LinearMetadataDatavizProps<T> {
  * Component that display a linear metadata of a line.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const LinearMetadataDataviz = <T extends any>({
+export const LinearMetadataDataviz = <T extends { [key: string]: any }>({
   data = [],
   field,
   viewBox,

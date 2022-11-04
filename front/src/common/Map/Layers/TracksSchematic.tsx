@@ -12,8 +12,8 @@ import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 
 interface TracksSchematicProps {
   colors: Theme;
-  idHover: string;
-  layerOrder: number;
+  idHover?: string;
+  layerOrder?: number;
 }
 
 function TracksSchematic(props: TracksSchematicProps) {

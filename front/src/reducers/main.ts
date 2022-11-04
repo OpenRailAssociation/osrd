@@ -112,7 +112,7 @@ export const initialState: MainState = {
 //
 // State reducer
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-export default function reducer(inputState, action: MainActions) {
+export default function reducer(inputState: MainState, action: MainActions) {
   const state = inputState || initialState;
   return produce(state, (draft) => {
     switch (action.type) {

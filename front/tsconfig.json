@@ -52,6 +52,7 @@
     "stripInternal": true,
     "suppressExcessPropertyErrors": false,
     "suppressImplicitAnyIndexErrors": false,
+    "typeRoots": ["node_modules/@types"],
     "target": "es5"
   }
 }

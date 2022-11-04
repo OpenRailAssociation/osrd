@@ -1,9 +1,14 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import ReactMapGL, { AttributionControl, FlyToInterpolator, ScaleControl } from 'react-map-gl';
+import ReactMapGL, {
+  AttributionControl,
+  FlyToInterpolator,
+  ScaleControl,
+  MapEvent,
+} from 'react-map-gl';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { updateViewport } from 'reducers/map';
+import { updateViewport, Viewport } from 'reducers/map';
 import { RootState } from 'reducers';
 
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
@@ -37,7 +42,7 @@ import 'common/Map/Map.scss';
 function Map() {
   const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings } =
     useSelector((state: RootState) => state.map);
-  const [idHover, setIdHover] = useState('');
+  const [idHover, setIdHover] = useState<string | undefined>(undefined);
   const { urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
   const { fullscreen } = useSelector((state: RootState) => state.main);
   const dispatch = useDispatch();
@@ -61,12 +66,12 @@ function Map() {
     });
   };
 
-  const onFeatureClick = (e) => {
+  const onFeatureClick = (e: MapEvent) => {
     console.log(e);
   };
 
-  const onFeatureHover = (e) => {
-    if (e.features[0] !== undefined) {
+  const onFeatureHover = (e: MapEvent) => {
+    if (e.features && e.features[0] !== undefined && e.features[0].properties) {
       setIdHover(e.features[0].properties.id);
     } else {
       setIdHover(undefined);
@@ -82,16 +87,13 @@ function Map() {
   };
 
   useEffect(() => {
-    if (urlLat) {
-      updateViewportChange({
-        ...viewport,
-        latitude: parseFloat(urlLat),
-        longitude: parseFloat(urlLon),
-        zoom: parseFloat(urlZoom),
-        bearing: parseFloat(urlBearing),
-        pitch: parseFloat(urlPitch),
-      });
-    }
+    const newViewport: Partial<Viewport> = {};
+    if (urlLat) newViewport.latitude = parseFloat(urlLat);
+    if (urlLon) newViewport.longitude = parseFloat(urlLon);
+    if (urlZoom) newViewport.zoom = parseFloat(urlZoom);
+    if (urlBearing) newViewport.bearing = parseFloat(urlBearing);
+    if (urlPitch) newViewport.pitch = parseFloat(urlPitch);
+    if (Object.keys(newViewport).length > 0) updateViewportChange(newViewport);
   }, []);
 
   return (
@@ -111,7 +113,6 @@ function Map() {
         interactiveLayerIds={defineInteractiveLayers()}
         touchRotate
         asyncRender
-        antialiasing
       >
         <AttributionControl
           className="attribution-control"

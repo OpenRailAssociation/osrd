@@ -1,10 +1,17 @@
 import * as assert from 'assert';
 import { tail, last } from 'lodash';
 import distance from '@turf/distance';
-import length from '@turf/length';
 import along from '@turf/along';
+import { LineString, FeatureCollection } from 'geojson';
 
-import { LinearMetadataItem, update, resizeSegment, splitAt, mergeIn } from './data';
+import {
+  getLineStringDistance,
+  LinearMetadataItem,
+  update,
+  resizeSegment,
+  splitAt,
+  mergeIn,
+} from './data';
 
 const DEBUG = false;
 
@@ -12,7 +19,7 @@ interface Degree {
   degree: number;
 }
 
-const defaultLine = {
+const defaultLine: LineString = {
   type: 'LineString',
   coordinates: [
     [-1.5416908264160156, 47.21717794690891],
@@ -71,12 +78,20 @@ const wrapperTests = [
 /**
  * Check the validity of linear metadata.
  */
-function checkWrapperValidity(result, newLine, message) {
+function checkWrapperValidity<T = any>(
+  result: Array<LinearMetadataItem<T>>,
+  newLine?: LineString,
+  message?: string
+) {
   // Checking extrimities
   assert.equal(result[0].begin, 0, message);
   // we round due to some approximation that result to a diff (below millimeter)
   if (newLine)
-    assert.equal(Math.round(last(result).end), Math.round(length(newLine) * 1000), message);
+    assert.equal(
+      Math.round(last(result)?.end || 0),
+      Math.round(getLineStringDistance(newLine) * 1000),
+      message
+    );
   // Checking the continuity
   tail(result).forEach((value, index) => {
     assert.equal(value.begin <= value.end, true, message);
@@ -119,12 +134,12 @@ function generateGeoJson<T>(
         },
       })),
     ],
-  };
+  } as unknown as FeatureCollection<LineString, T>;
 }
 
 describe('Testing linear metadata functions', () => {
   it('Impact on move point should work', () => {
-    const newLine = {
+    const newLine: LineString = {
       type: 'LineString',
       coordinates: [
         [-1.5416908264160156, 47.21717794690891],
@@ -153,7 +168,7 @@ describe('Testing linear metadata functions', () => {
   });
 
   it('Impact on delete point should work', () => {
-    const newLine = {
+    const newLine: LineString = {
       type: 'LineString',
       coordinates: [
         [-1.5416908264160156, 47.21717794690891],

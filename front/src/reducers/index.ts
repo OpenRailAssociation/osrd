@@ -62,7 +62,7 @@ type AllActions = EditorActions | MainActions | Action;
 
 interface GenericState {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: unknown;
+  [key: string]: any;
 }
 
 export interface RootState {

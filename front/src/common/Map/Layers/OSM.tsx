@@ -11,7 +11,7 @@ import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 
 interface OSMProps {
   mapStyle: string;
-  layerOrder: number;
+  layerOrder?: number;
 }
 
 function OSM(props: OSMProps) {

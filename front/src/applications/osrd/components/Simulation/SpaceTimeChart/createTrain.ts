@@ -1,5 +1,5 @@
 import { Dispatch } from 'redux';
-import { TFunction } from 'react-i18next';
+import { TFunction, Namespace } from 'react-i18next';
 
 import {
   formatRouteAspects,
@@ -24,7 +24,7 @@ export default function createTrain(
   dispatch: Dispatch,
   keyValues: string[],
   simulationTrains: Train[],
-  t: TFunction
+  t: TFunction<Namespace<string>, undefined>
 ): SimulationTrain[] {
   // Prepare data
   const dataSimulation = simulationTrains.map((train: Train, trainNumber: number) => {

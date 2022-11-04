@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { TFunction } from 'i18next';
 import { withTranslation } from 'react-i18next';
-import { ViewportProps } from 'react-map-gl';
 import { useNavigate } from 'react-router';
 import cx from 'classnames';
 
@@ -14,7 +13,7 @@ import { LoaderState } from '../../common/Loader';
 import { NotificationsState } from '../../common/Notifications';
 import { loadDataModel, reset } from '../../reducers/editor';
 import { MainState, setFailure } from '../../reducers/main';
-import { updateViewport } from '../../reducers/map';
+import { updateViewport, Viewport } from '../../reducers/map';
 import { updateInfraID } from '../../reducers/osrdconf';
 import Tipped from './components/Tipped';
 import { getInfrastructure, getInfrastructures } from './data/api';
@@ -80,10 +79,10 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
 
   const { infra } = useParams<{ infra?: string }>();
   const { mapStyle, viewport } = useSelector(
-    (state: { map: { mapStyle: string; viewport: ViewportProps } }) => state.map
+    (state: { map: { mapStyle: string; viewport: Viewport } }) => state.map
   );
   const setViewport = useCallback(
-    (value) => {
+    (value: Partial<Viewport>) => {
       dispatch(updateViewport(value, `/editor/${osrdConf.infraID || '-1'}`, false));
     },
     [dispatch, osrdConf.infraID]
