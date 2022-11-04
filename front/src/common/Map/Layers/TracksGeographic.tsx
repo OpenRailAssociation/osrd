@@ -1,15 +1,23 @@
-import { Layer, Source } from 'react-map-gl';
+import React from 'react';
+import { useSelector } from 'react-redux';
+import { Source } from 'react-map-gl';
+
+import { RootState } from 'reducers';
+import { Theme } from 'types';
+
 import { MAP_TRACK_SOURCES, MAP_URL } from 'common/Map/const';
 import { geoMainLayer, geoServiceLayer } from 'common/Map/Layers/geographiclayers';
 import { lineNameLayer, lineNumberLayer, trackNameLayer } from 'common/Map/Layers/commonLayers';
+import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 
-import PropTypes from 'prop-types';
-import React from 'react';
-import { useSelector } from 'react-redux';
+interface PlatformProps {
+  colors: Theme;
+  layerOrder: number;
+}
 
-function TracksGeographic(props) {
-  const { colors } = props;
-  const { infraID } = useSelector((state) => state.osrdconf);
+function TracksGeographic(props: PlatformProps) {
+  const { colors, layerOrder } = props;
+  const { infraID } = useSelector((state: RootState) => state.osrdconf);
   const infraVersion = infraID !== undefined ? `?infra=${infraID}` : null;
 
   return (
@@ -19,17 +27,19 @@ function TracksGeographic(props) {
       url={`${MAP_URL}/layer/track_sections/mvt/geo/${infraVersion}`}
       source-layer={MAP_TRACK_SOURCES.geographic}
     >
-      <Layer
+      <OrderedLayer
         {...geoMainLayer(colors)}
         id="chartis/tracks-geo/main"
         source-layer={MAP_TRACK_SOURCES.geographic}
+        layerOrder={layerOrder}
       />
-      <Layer
+      <OrderedLayer
         {...geoServiceLayer(colors)}
         id="chartis/tracks-geo/service"
         source-layer={MAP_TRACK_SOURCES.geographic}
+        layerOrder={layerOrder}
       />
-      <Layer
+      <OrderedLayer
         {...{
           ...trackNameLayer(colors),
           layout: {
@@ -41,8 +51,9 @@ function TracksGeographic(props) {
         id="chartis/tracks-geo/name"
         source-layer={MAP_TRACK_SOURCES.geographic}
         filter={['==', 'type_voie', 'VP']}
+        layerOrder={layerOrder}
       />
-      <Layer
+      <OrderedLayer
         {...{
           ...trackNameLayer(colors),
           layout: {
@@ -54,8 +65,9 @@ function TracksGeographic(props) {
         id="chartis/tracks-geo/name"
         source-layer={MAP_TRACK_SOURCES.geographic}
         filter={['!=', 'type_voie', 'VP']}
+        layerOrder={layerOrder}
       />
-      <Layer
+      <OrderedLayer
         {...{
           ...lineNumberLayer(colors),
           layout: {
@@ -65,14 +77,15 @@ function TracksGeographic(props) {
         }}
         id="chartis/tracks-geo/number"
         source-layer={MAP_TRACK_SOURCES.geographic}
+        layerOrder={layerOrder}
       />
-      <Layer {...lineNameLayer(colors)} source-layer={MAP_TRACK_SOURCES.geographic} />
+      <OrderedLayer
+        {...lineNameLayer(colors)}
+        source-layer={MAP_TRACK_SOURCES.geographic}
+        layerOrder={layerOrder}
+      />
     </Source>
   );
 }
-
-TracksGeographic.propTypes = {
-  colors: PropTypes.object.isRequired,
-};
 
 export default TracksGeographic;

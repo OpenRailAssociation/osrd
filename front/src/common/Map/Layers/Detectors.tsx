@@ -1,9 +1,12 @@
 import React, { FC } from 'react';
 import { useSelector } from 'react-redux';
-import { Source, Layer, LayerProps } from 'react-map-gl';
+import { Source, LayerProps } from 'react-map-gl';
 
+import { RootState } from 'reducers';
+import { Theme } from 'types';
 import { MAP_URL } from 'common/Map/const';
-import { Theme } from '../../../types';
+
+import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 
 export function getDetectorsLayerProps(params: {
   colors: Theme;
@@ -50,11 +53,15 @@ export function getDetectorsNameLayerProps(params: {
   return res;
 }
 
-const Detectors: FC<{ colors: Theme; geomType: string }> = ({ geomType, colors }) => {
+interface DetectorsProps {
+  colors: Theme;
+  geomType: string;
+  layerOrder: number;
+}
+
+const Detectors: FC<DetectorsProps> = ({ geomType, colors, layerOrder }) => {
   const { infraID } = useSelector((state: { osrdconf: { infraID: string } }) => state.osrdconf);
-  const { layersSettings } = useSelector(
-    (s: { map: { layersSettings: { detectors?: boolean } } }) => s.map
-  );
+  const { layersSettings } = useSelector((state: RootState) => state.map);
 
   const layerPoint = getDetectorsLayerProps({ colors, sourceTable: 'detectors' });
   const layerName = getDetectorsNameLayerProps({ colors, sourceTable: 'detectors' });
@@ -65,8 +72,16 @@ const Detectors: FC<{ colors: Theme; geomType: string }> = ({ geomType, colors }
       type="vector"
       url={`${MAP_URL}/layer/detectors/mvt/${geomType}/?infra=${infraID}`}
     >
-      <Layer {...layerPoint} id={`chartis/osrd_detectors/${geomType}`} />
-      <Layer {...layerName} id={`chartis/osrd_detectors_name/${geomType}`} />
+      <OrderedLayer
+        {...layerPoint}
+        id={`chartis/osrd_detectors/${geomType}`}
+        layerOrder={layerOrder}
+      />
+      <OrderedLayer
+        {...layerName}
+        id={`chartis/osrd_detectors_name/${geomType}`}
+        layerOrder={layerOrder}
+      />
     </Source>
   ) : null;
 };

@@ -1,20 +1,23 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Layer, Source, LayerProps } from 'react-map-gl';
+import { Source, LayerProps } from 'react-map-gl';
 
 import { RootState } from 'reducers';
 import { MAP_URL } from 'common/Map/const';
 import { Theme } from 'types';
 
+import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+
 interface SpeedLimitsProps {
   geomType: string;
   colors: Theme;
+  layerOrder: number;
 }
 
 export default function SpeedLimits(props: SpeedLimitsProps) {
   const { layersSettings } = useSelector((state: RootState) => state.map);
   const { infraID } = useSelector((state: RootState) => state.osrdconf);
-  const { geomType, colors } = props;
+  const { geomType, colors, layerOrder } = props;
 
   const tag = `speed_limit_by_tag_${layersSettings.speedlimittag}`;
   const speedLimitByTagName = [
@@ -125,12 +128,20 @@ export default function SpeedLimits(props: SpeedLimitsProps) {
         type="vector"
         url={`${MAP_URL}/layer/speed_sections/mvt/${geomType}/?infra=${infraID}`}
       >
-        <Layer {...speedValuePointParams} id={`chartis/osrd_speed_limit_points/${geomType}`} />
-        <Layer {...speedValueParams} id={`chartis/osrd_speed_limit_value/${geomType}`} />
-        <Layer
+        <OrderedLayer
           {...speedLineParams}
           id={`chartis/osrd_speed_limit_colors/${geomType}`}
-          beforeId={`chartis/osrd_speed_limit_points/${geomType}`}
+          layerOrder={layerOrder}
+        />
+        <OrderedLayer
+          {...speedValuePointParams}
+          id={`chartis/osrd_speed_limit_points/${geomType}`}
+          layerOrder={layerOrder}
+        />
+        <OrderedLayer
+          {...speedValueParams}
+          id={`chartis/osrd_speed_limit_value/${geomType}`}
+          layerOrder={layerOrder}
         />
       </Source>
     );
