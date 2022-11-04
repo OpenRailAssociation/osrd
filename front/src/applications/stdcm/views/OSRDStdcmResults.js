@@ -13,7 +13,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 
 import SpaceTimeChart from 'applications/osrd/views/OSRDSimulation/SpaceTimeChart';
-import SpeedSpaceChart from 'applications/osrd/views/OSRDSimulation/SpeedSpaceChart';
+import SpeedSpaceChart from 'applications/osrd/components/Simulation/SpeedSpaceChart/withOSRDData';
 import TimeTable from 'applications/osrd/views/OSRDSimulation/TimeTable';
 import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/createTrain';
 

@@ -12,7 +12,17 @@ import SpeedSpaceChart from './SpeedSpaceChart';
  */
 const withOSRDData = (Component) =>
   function WrapperComponent(props) {
-    const { signalBase } = useSelector((state) => state.osrdsimulation);
+    const chartXGEV = useSelector((state) => state.osrdsimulation.chartXGEV);
+    const mustRedraw = useSelector((state) => state.osrdsimulation.mustRedraw);
+    const positionValues = useSelector((state) => state.osrdsimulation.positionValues);
+    const selectedTrain = useSelector((state) => state.osrdsimulation.selectedTrain);
+    const speedSpaceSettings = useSelector((state) => state.osrdsimulation.speedSpaceSettings);
+    const timePosition = useSelector((state) => state.osrdsimulation.timePosition);
+    const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
+    const consolidatedSimulation = useSelector(
+      (state) => state.osrdsimulation.consolidatedSimulation
+    );
+
     const dispatch = useDispatch();
 
     const options = LIST_VALUES_SIGNAL_BASE.map((val) => ({ value: val, label: val }));
@@ -29,10 +39,20 @@ const withOSRDData = (Component) =>
       }
     };
     return (
-      <Component {...props} signalBase={signalBase} toggleSignal={toggleSignal} options={options} />
+      <Component
+        {...props}
+        simulation={simulation}
+        chartXGEV={chartXGEV}
+        mustRedraw={mustRedraw}
+        positionValues={positionValues}
+        selectedTrain={selectedTrain}
+        speedSpaceSettings={speedSpaceSettings}
+        timePosition={timePosition}
+        consolidatedSimulation={consolidatedSimulation}
+      />
     );
   };
 
-const OSRDSwitchSNCF = withOSRDData(SignalSwitch);
+const OSRDSpeedSpaceChart = withOSRDData(SpeedSpaceChart);
 
-export default OSRDSwitchSNCF;
+export default OSRDSpeedSpaceChart;
