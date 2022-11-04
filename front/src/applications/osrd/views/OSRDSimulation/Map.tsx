@@ -31,6 +31,7 @@ import { TrainPosition } from 'applications/osrd/components/SimulationMap/types'
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
 import BufferStops from 'common/Map/Layers/BufferStops';
+import VirtualLayers from 'applications/osrd/views/OSRDSimulation/VirtualLayers';
 /* Settings & Buttons */
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import Detectors from 'common/Map/Layers/Detectors';
@@ -42,12 +43,10 @@ import Platform from 'common/Map/Layers/Platform';
 import RenderItinerary from 'applications/osrd/components/SimulationMap/RenderItinerary';
 import Routes from 'common/Map/Layers/Routes';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
-import SignalingType from 'common/Map/Layers/SignalingType';
 import Signals from 'common/Map/Layers/Signals';
 import SpeedLimits from 'common/Map/Layers/SpeedLimits';
 import Switches from 'common/Map/Layers/Switches';
 /* Objects & various */
-import TVDs from 'common/Map/Layers/TVDs';
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
 import TracksOSM from 'common/Map/Layers/TracksOSM';
 import TracksSchematic from 'common/Map/Layers/TracksSchematic';
@@ -63,6 +62,7 @@ import {
   interpolateOnPosition,
   interpolateOnTime,
 } from 'applications/osrd/components/Helpers/ChartHelpers';
+import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 
 import 'common/Map/Map.scss';
 
@@ -95,7 +95,7 @@ function Map(props: MapProps) {
   const [geojsonPath, setGeojsonPath] = useState<Feature<LineString>>();
   const [selectedTrainHoverPosition, setTrainHoverPosition] = useState<TrainPosition>();
   const [otherTrainsHoverPosition, setOtherTrainsHoverPosition] = useState<TrainPosition[]>([]);
-  const [idHover, setIdHover] = useState(undefined);
+  const [idHover, setIdHover] = useState('');
   const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
   const dispatch = useDispatch();
   const updateViewportChange = useCallback(
@@ -249,9 +249,9 @@ function Map(props: MapProps) {
       const startCoordinates = getDirection(simulation.trains[selectedTrain][key].head_positions)
         ? [geojsonPath.geometry.coordinates[0][0], geojsonPath.geometry.coordinates[0][1]]
         : [
-          geojsonPath.geometry.coordinates[geojsonPath.geometry.coordinates.length - 1][0],
-          geojsonPath.geometry.coordinates[geojsonPath.geometry.coordinates.length - 1][1],
-        ];
+            geojsonPath.geometry.coordinates[geojsonPath.geometry.coordinates.length - 1][0],
+            geojsonPath.geometry.coordinates[geojsonPath.geometry.coordinates.length - 1][1],
+          ];
       const start = point(startCoordinates);
       const sliced = lineSlice(start, cursorPoint, line);
       const positionLocal = lineLength(sliced, { units: 'kilometers' }) * 1000;
@@ -290,9 +290,6 @@ function Map(props: MapProps) {
       otherTrainsHoverPosition.forEach((train) => {
         interactiveLayersLocal.push(`${train.id}-path`);
       });
-    }
-    if (layersSettings.tvds) {
-      interactiveLayersLocal.push('chartis/osrd_tvd_section/geo');
     }
     return interactiveLayersLocal;
   }
@@ -356,52 +353,132 @@ function Map(props: MapProps) {
         />
         <ScaleControl maxWidth={100} unit="metric" style={scaleControlStyle} />
 
-        <Background colors={colors[mapStyle]} />
+        <Background
+          colors={colors[mapStyle]}
+          layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
+        />
 
         {!showOSM ? null : (
           <>
-            <OSM mapStyle={mapStyle} />
-            <Hillshade mapStyle={mapStyle} />
+            <OSM mapStyle={mapStyle} layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
+            <Hillshade
+              mapStyle={mapStyle}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
+            />
           </>
         )}
+
+        <VirtualLayers />
 
         {/* Have to  duplicate objects with sourceLayer to avoid cache problems in mapbox */}
         {mapTrackSources === 'geographic' ? (
           <>
-            <Catenaries geomType="geo" colors={colors[mapStyle]} />
-            <TVDs geomType="geo" idHover={idHover} />
-            <Platform colors={colors[mapStyle]} />
-            <TracksGeographic colors={colors[mapStyle]} />
-            <TracksOSM colors={colors[mapStyle]} />
-            <OperationalPoints geomType="geo" colors={colors[mapStyle]} />
-            <SignalingType geomType="geo" />
-            <Routes geomType="geo" colors={colors[mapStyle]} />
-            <SpeedLimits geomType="geo" colors={colors[mapStyle]} />
+            <Platform
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORM.GROUP]}
+            />
+
+            <TracksGeographic
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACKS_GEOGRAPHIC.GROUP]}
+            />
+            <TracksOSM
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACKS_OSM.GROUP]}
+            />
+
+            <Routes
+              geomType="geo"
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.ROUTES.GROUP]}
+            />
+            <OperationalPoints
+              geomType="geo"
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
+            />
+            <Catenaries
+              geomType="geo"
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.CATENARIES.GROUP]}
+            />
+            <BufferStops
+              geomType="geo"
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.BUFFER_STOPS.GROUP]}
+            />
+            <Detectors
+              geomType="geo"
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.DETECTORS.GROUP]}
+            />
+            <Switches
+              geomType="geo"
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.SWITCHES.GROUP]}
+            />
+
+            <SpeedLimits
+              geomType="geo"
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
+            />
+
             <Signals
               mapRef={mapRef}
               sourceTable="signals"
               colors={colors[mapStyle]}
               sourceLayer="geo"
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.SIGNALS.GROUP]}
             />
-            <BufferStops geomType="geo" colors={colors[mapStyle]} />
-            <Detectors geomType="geo" colors={colors[mapStyle]} />
-            <Switches geomType="geo" colors={colors[mapStyle]} />
           </>
         ) : (
           <>
-            <TracksSchematic colors={colors[mapStyle]} idHover={idHover} />
-            <OperationalPoints geomType="sch" colors={colors[mapStyle]} />
-            <Routes geomType="sch" colors={colors[mapStyle]} />
+            <TracksSchematic
+              colors={colors[mapStyle]}
+              idHover={idHover}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACKS_SCHEMATIC.GROUP]}
+            />
+
+            <Routes
+              geomType="sch"
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.ROUTES.GROUP]}
+            />
+            <OperationalPoints
+              geomType="sch"
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
+            />
+            <BufferStops
+              geomType="sch"
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.BUFFER_STOPS.GROUP]}
+            />
+            <Detectors
+              geomType="sch"
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.DETECTORS.GROUP]}
+            />
+            <Switches
+              geomType="sch"
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.SWITCHES.GROUP]}
+            />
+
+            <SpeedLimits
+              geomType="sch"
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
+            />
+
             <Signals
               mapRef={mapRef}
               sourceTable="signals"
               colors={colors[mapStyle]}
               sourceLayer="sch"
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.SIGNALS.GROUP]}
             />
-            <SpeedLimits geomType="sch" colors={colors[mapStyle]} />
-            <BufferStops geomType="sch" colors={colors[mapStyle]} />
-            <Detectors geomType="sch" colors={colors[mapStyle]} />
-            <Switches geomType="sch" colors={colors[mapStyle]} />
           </>
         )}
 
@@ -409,18 +486,29 @@ function Map(props: MapProps) {
           <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />
         ) : null}
 
-        {geojsonPath !== undefined ? <RenderItinerary geojsonPath={geojsonPath} /> : null}
+        {geojsonPath && (
+          <RenderItinerary
+            geojsonPath={geojsonPath}
+            layerOrder={LAYER_GROUPS_ORDER[LAYERS.ITINERARY.GROUP]}
+          />
+        )}
 
         {geojsonPath && selectedTrainHoverPosition && (
           <TrainHoverPosition
             point={selectedTrainHoverPosition}
             isSelectedTrain
             geojsonPath={geojsonPath}
+            layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRAIN.GROUP]}
           />
         )}
         {geojsonPath &&
           otherTrainsHoverPosition.map((pt) => (
-            <TrainHoverPosition point={pt} geojsonPath={geojsonPath} key={pt.id} />
+            <TrainHoverPosition
+              point={pt}
+              geojsonPath={geojsonPath}
+              key={pt.id}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRAIN.GROUP]}
+            />
           ))}
       </ReactMapGL>
       <div className="handle-tab-resize">

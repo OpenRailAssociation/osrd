@@ -1,9 +1,12 @@
 import React, { FC } from 'react';
 import { useSelector } from 'react-redux';
-import { Source, Layer, LayerProps } from 'react-map-gl';
+import { Source, LayerProps } from 'react-map-gl';
 
+import { RootState } from 'reducers';
+import { Theme } from 'types';
 import { MAP_URL } from 'common/Map/const';
-import { Theme } from '../../../types';
+
+import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 
 export function getBufferStopsLayerProps(params: { sourceTable?: string }): LayerProps {
   const res: LayerProps = {
@@ -35,11 +38,15 @@ export function getBufferStopsLayerProps(params: { sourceTable?: string }): Laye
   return res;
 }
 
-const BufferStops: FC<{ colors: Theme; geomType: string }> = ({ geomType }) => {
+interface BufferStopsProps {
+  colors: Theme;
+  geomType: string;
+  layerOrder: number;
+}
+
+const BufferStops: FC<BufferStopsProps> = ({ geomType, layerOrder }) => {
   const { infraID } = useSelector((state: { osrdconf: { infraID: string } }) => state.osrdconf);
-  const { layersSettings } = useSelector(
-    (s: { map: { layersSettings: { bufferstops?: boolean } } }) => s.map
-  );
+  const { layersSettings } = useSelector((state: RootState) => state.map);
 
   return layersSettings.bufferstops ? (
     <Source
@@ -47,9 +54,10 @@ const BufferStops: FC<{ colors: Theme; geomType: string }> = ({ geomType }) => {
       type="vector"
       url={`${MAP_URL}/layer/buffer_stops/mvt/${geomType}/?infra=${infraID}`}
     >
-      <Layer
+      <OrderedLayer
         {...getBufferStopsLayerProps({ sourceTable: 'buffer_stops' })}
         id={`chartis/osrd_bufferstoplayer/${geomType}`}
+        layerOrder={layerOrder}
       />
     </Source>
   ) : null;
