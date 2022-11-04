@@ -19,7 +19,6 @@ import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/osrd/components/Simula
 import drawGuideLines from 'applications/osrd/components/Simulation/drawGuideLines';
 import { store } from 'Store';
 
-
 export const displayGuide = (chart, opacity) => {
   if (chart.svg) {
     chart.svg.selectAll('#vertical-line').style('opacity', opacity);
@@ -53,20 +52,13 @@ export const updatePointers = (chart, keyValues, listValues, positionValues, rot
 
 const updateChart = (chart, keyValues, rotate, event) => {
   // recover the new scale & test if movement under 0
-  const newX = (event.sourceEvent.shiftKey && rotate)
-    || ((chart.x.domain()[0] - event.transform.x) < 0 && event.transform.k === 1 && rotate)
-    ? chart.x
-    : event.transform.rescaleX(chart.x);
-  const newY = (event.sourceEvent.shiftKey && !rotate)
-    || ((chart.y.domain()[0] + event.transform.y) < 0 && event.transform.k === 1 && !rotate)
-    ? chart.y
-    : event.transform.rescaleY(chart.y);
-/*
-  const newX = event.sourceEvent.shiftKey && rotate ? chart.x : event.transform.rescaleX(chart.x);
-  const newY = event.sourceEvent.shiftKey && !rotate ? chart.y : event.transform.rescaleY(chart.y);
-  */
-  console.log(chart.x.domain[0])
-  console.log(event.sourceEvent.shiftKey)
+
+  let newX = chart.x;
+  let newY = chart.y;
+  if (event.sourceEvent.shiftKey || event.sourceEvent.ctrlKey) {
+    newX = event.transform.rescaleX(chart.originalScaleX);
+    newY = event.transform.rescaleY(chart.originalScaleY);
+  }
 
   // update axes with these new boundaries
   const axisBottomX =
@@ -270,36 +262,18 @@ const enableInteractivity = (
     ])
     .wheelDelta(wheelDelta)
     .on('zoom', (event) => {
-      console.log('zoom event', event);
-      console.log('zoom event', event.shiftKey);
-      // Permit zoom if shift pressed, if only move or if factor > .5
-      //if (event.sourceEvent.ctrlKey || event.sourceEvent.shiftKey) {
-      /* || d3.event.transform.k >= 1
-        || zoomLevel >= 0.25)) { */
       const eventTransform = event.transform;
 
-      //chart.drawZone.attr("transform", eventTransform)
-
       event.sourceEvent.preventDefault();
-      console.log('zoomLevel', zoomLevel * eventTransform.k);
-      console.log('tranform K', eventTransform.k);
-
 
       const zoomFunctions = updateChart(chart, keyValues, rotate, event);
       const newChart = { ...chart, x: zoomFunctions.newX, y: zoomFunctions.newY };
       lastChartX = zoomFunctions.newX;
       setChart(newChart);
-
-      //setZoomLevel(zoomLevel * eventTransform.k);
-      //setYPosition(yPosition + eventTransform.y);
-      //}
     })
-    .filter(
-      (event) => {
-        console.log("event", event)
-        return (event.button === 0 || event.button === 1) && (event.ctrlKey || event.shiftKey)
-      }
-    )
+    .filter((event) => {
+      return (event.button === 0 || event.button === 1) && (event.ctrlKey || event.shiftKey);
+    })
     .on('start', () => {
       dispatch(updateContextMenu(undefined));
     })
