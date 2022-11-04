@@ -128,6 +128,7 @@ export interface Train {
   base: Regime;
   eco: Regime;
   isStdcm: boolean;
+  margins:any;
 }
 
 export interface SimulationSnapshot {
