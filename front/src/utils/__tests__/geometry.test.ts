@@ -38,7 +38,7 @@ describe('getTangent', () => {
 });
 
 describe('getCurrentBearing', () => {
-  const lines = [
+  const lines: Array<[Array<[number, number]>, number]> = [
     [
       [
         [0, 0],

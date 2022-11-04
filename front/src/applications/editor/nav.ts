@@ -5,6 +5,7 @@ import { BsMap } from 'react-icons/bs';
 import { FiLayers, FiZoomIn, FiZoomOut } from 'react-icons/fi';
 import { LinearInterpolator, ViewportProps } from 'react-map-gl';
 
+import { Viewport } from 'reducers/map';
 import { getZoneViewport } from '../../utils/mapboxHelper';
 import { EditorState, ModalRequest, OBJTYPE_TO_LAYER_DICT, Tool } from './tools/types';
 import InfraSelectionModal from './components/InfraSelectionModal';
@@ -35,7 +36,7 @@ export interface NavButton {
       dispatch: Dispatch;
       viewport: ViewportProps;
       editorState: EditorState;
-      setViewport: (newViewport: ViewportProps) => void;
+      setViewport: (newViewport: Partial<Viewport>) => void;
       openModal: <ArgumentsType, SubmitArgumentsType>(
         request: ModalRequest<ArgumentsType, SubmitArgumentsType>
       ) => void;
@@ -113,13 +114,13 @@ const NavButtons: NavButton[][] = [
             frozenLayers: activeTool.requiredLayers,
             selection:
               activeTool.id === 'select-items'
-                ? (toolState as SelectionState).selection
+                ? (toolState as unknown as SelectionState).selection
                 : undefined,
           },
           beforeSubmit({ newLayers }) {
             if (activeTool.id === 'select-items') {
-              const currentState = toolState as SelectionState;
-              (setToolState as (newState: SelectionState) => void)({
+              const currentState = toolState as unknown as SelectionState;
+              (setToolState as unknown as (newState: SelectionState) => void)({
                 ...currentState,
                 selection: currentState.selection.filter((entity) =>
                   newLayers.has(OBJTYPE_TO_LAYER_DICT[entity.objType])

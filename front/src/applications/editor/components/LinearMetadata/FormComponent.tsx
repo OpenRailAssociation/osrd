@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import Form, { FieldProps } from '@rjsf/core';
-import Fields from '@rjsf/core/lib/components/fields';
+import Form, { FieldProps, utils } from '@rjsf/core';
 import { JSONSchema7 } from 'json-schema';
 import { omit, head, max as fnMax, min as fnMin, isNil } from 'lodash';
 import { TbZoomIn, TbZoomOut, TbZoomCancel } from 'react-icons/tb';
@@ -33,6 +32,7 @@ import './style.scss';
 export const FormComponent: React.FC<FieldProps> = (props) => {
   const { name, formContext, formData, schema, onChange, registry } = props;
   const { t } = useTranslation();
+  const Fields = utils.getDefaultRegistry().fields;
 
   // is help modal opened
   const [isHelpOpened, setIsHelpOpened] = useState<boolean>(false);
@@ -88,16 +88,16 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
 
   // Guess the value field of the linear metadata item
   const valueField = useMemo(() => {
+    const itemProperties = (jsonSchema?.items
+      ? (jsonSchema.items as JSONSchema7).properties || {}
+      : {}) as unknown as { [key: string]: JSONSchema7 };
     const field = head(
-      Object.keys(jsonSchema?.items ? (jsonSchema.items as JSONSchema7).properties || {} : {})
+      Object.keys(itemProperties)
         .filter((e) => !['begin', 'end'].includes(e))
-        .map((e) => {
-          const properties = (jsonSchema as JSONSchema7)?.items?.properties as JSONSchema7;
-          return {
-            name: e,
-            type: properties ? properties[e].type || '' : '',
-          };
-        })
+        .map((e) => ({
+          name: e,
+          type: itemProperties[e] ? itemProperties[e].type || '' : '',
+        }))
         .filter((e) => e.type === 'number' || e.type === 'integer')
         .map((e) => e.name)
     );

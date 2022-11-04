@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { FC, useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import ReactMapGL, {
@@ -84,8 +84,7 @@ interface MapProps {
   setExtViewport: (viewport: Viewport) => void;
 }
 
-function Map(props: MapProps) {
-  const { setExtViewport } = props;
+const Map: FC<MapProps> = ({ setExtViewport }) => {
   const [mapLoaded, setMapLoaded] = useState(false);
   const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings } =
     useSelector((state: RootState) => state.map);
@@ -95,7 +94,7 @@ function Map(props: MapProps) {
   const [geojsonPath, setGeojsonPath] = useState<Feature<LineString>>();
   const [selectedTrainHoverPosition, setTrainHoverPosition] = useState<TrainPosition>();
   const [otherTrainsHoverPosition, setOtherTrainsHoverPosition] = useState<TrainPosition[]>([]);
-  const [idHover, setIdHover] = useState('');
+  const [idHover, setIdHover] = useState<string | undefined>(undefined);
   const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
   const dispatch = useDispatch();
   const updateViewportChange = useCallback(
@@ -516,6 +515,6 @@ function Map(props: MapProps) {
       </div>
     </>
   );
-}
+};
 
 export default Map;

@@ -47,7 +47,7 @@ export const PointEditionLeftPanel: FC = <Entity extends EditorEntity>() => {
     <EditorForm
       data={state.entity as Entity}
       onSubmit={async (savedEntity) => {
-        const res = await dispatch(
+        const res: any = await dispatch(
           save(
             state.entity.id
               ? {
@@ -61,8 +61,7 @@ export const PointEditionLeftPanel: FC = <Entity extends EditorEntity>() => {
               : { create: [savedEntity] }
           )
         );
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const operation = res[0] as any as CreateEntityOperation;
+        const operation = res[0] as CreateEntityOperation;
         const { id } = operation.railjson;
         if (id && id !== savedEntity.id) {
           setState({

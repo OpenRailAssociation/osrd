@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, PropsWithChildren } from 'react';
 import Form, { Field, UiSchema } from '@rjsf/core';
 import { useSelector } from 'react-redux';
 import { GeoJsonProperties } from 'geojson';
@@ -28,7 +28,7 @@ interface EditorFormProps {
 /**
  * Display a form to create/update a new entity.
  */
-const EditorForm: React.FC<EditorFormProps> = ({
+const EditorForm: React.FC<PropsWithChildren<EditorFormProps>> = ({
   data,
   onSubmit,
   onChange,

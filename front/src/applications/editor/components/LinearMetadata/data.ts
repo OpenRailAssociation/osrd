@@ -1,5 +1,5 @@
 import { Feature, Point, LineString, Position } from 'geojson';
-import { last, differenceWith, cloneDeep, isEqual, sortBy, isArray, isNil } from 'lodash';
+import { last, differenceWith, cloneDeep, isEqual, sortBy, isArray, isNil, isObject } from 'lodash';
 import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import { utils } from '@rjsf/core';
 import lineSplit from '@turf/line-split';
@@ -544,10 +544,13 @@ export function getLinearMetadataProperties(schema: JSONSchema7): Array<string> 
       if (
         LINEAR_METADATA_FIELDS.includes(prop) &&
         propSchema.type === 'array' &&
-        propSchema.items &&
-        propSchema.items['$ref']
+        isObject(propSchema.items) &&
+        (propSchema.items as JSONSchema7)['$ref']
       ) {
-        const refName = propSchema.items['$ref'].replace('#/definitions/', '');
+        const refName = ((propSchema.items as JSONSchema7)['$ref'] || '').replace(
+          '#/definitions/',
+          ''
+        );
         const refSchema = (schema.definitions || {})[refName] as JSONSchema7;
         /* eslint-enable dot-notation */
         if (
@@ -573,7 +576,7 @@ export function getLinearMetadataProperties(schema: JSONSchema7): Array<string> 
  */
 export function entityDoUpdate<T extends EditorEntity>(entity: T, sourceLine: LineString): T {
   if (entity.geometry.type === 'LineString' && !isNil(entity.properties)) {
-    const newProps = {};
+    const newProps: EditorEntity['properties'] = {};
     Object.keys(entity.properties).forEach((name) => {
       const value = (entity.properties as { [key: string]: unknown })[name];
       // is a LM ?
