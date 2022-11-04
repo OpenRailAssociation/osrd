@@ -41,18 +41,24 @@ export default function SpeedSpaceChart(props) {
   const [chart, setChart] = useState(undefined);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [yPosition, setYPosition] = useState(0);
-  const [isResizeActive, setResizeActive] = useState(false);
   const ref = useRef();
   const keyValues = ['position', 'speed'];
 
   // Prepare data
   const dataSimulation = prepareData(simulation, selectedTrain, keyValues);
 
+  // rotation Handle (button on right bottom)
   const toggleRotation = () => {
     d3.select(`#${CHART_ID}`).remove();
-    setChart({ ...chart, x: chart.y, y: chart.x });
+    setChart({
+      ...chart,
+      x: chart.y,
+      y: chart.x,
+      originalScaleX: chart.originalScaleY,
+      originalScaleY: chart.originalScaleX,
+    });
     setRotate(!rotate);
-    dispatch(updateMustRedraw(true));
+
   };
 
   const resetChartToggle = () => {
@@ -75,6 +81,7 @@ export default function SpeedSpaceChart(props) {
     );
   };
 
+  // in case of initial ref creation of rotate, recreate the chart
   useEffect(() => {
     setChart(
       createChart(
@@ -90,13 +97,10 @@ export default function SpeedSpaceChart(props) {
         setResetChart
       )
     );
-
-    //handleWindowResize(CHART_ID, dispatch, drawTrain, isResizeActive, setResizeActive);
   }, [ref, rotate]);
 
-  // plug event handlers once the chart is ready
+  // plug event handlers once the chart is ready or recreated
   useEffect(() => {
-
     enableInteractivity(
       chart,
       dataSimulation,
@@ -111,7 +115,7 @@ export default function SpeedSpaceChart(props) {
       yPosition,
       zoomLevel
     );
-    //handleWindowResize(CHART_ID, dispatch, drawTrain, isResizeActive, setResizeActive);
+
   }, [chart]);
 
   // redraw the trains is necessary
@@ -140,10 +144,9 @@ export default function SpeedSpaceChart(props) {
       setResetChart,
       true
     );
-    //handleWindowResize(CHART_ID, dispatch, drawTrain, isResizeActive, setResizeActive);
   }, [chart, mustRedraw, rotate, consolidatedSimulation]);
 
-
+  // draw or redraw the position line indictator when usefull
   useEffect(() => {
     traceVerticalLine(
       chart,
@@ -163,12 +166,32 @@ export default function SpeedSpaceChart(props) {
     }
   }, [chartXGEV]);
 
-  /*
-  onClick={() => {
-          setResetChart(true);
-          dispatch(updateMustRedraw(true));
-        }}*/
-
+  // set the window resize event manager
+  useEffect(() => {
+    let timeOutFunctionId;
+    const resizeDrawTrain = () => {
+      d3.select(`#${CHART_ID}`).remove();
+      setChart(
+        createChart(
+          CHART_ID,
+          chart,
+          resetChart,
+          dataSimulation,
+          rotate,
+          keyValues,
+          heightOfSpeedSpaceChart,
+          ref,
+          dispatch,
+          setResetChart
+        )
+      );
+    };
+    const timeOutResize = () => {
+      clearTimeout(timeOutFunctionId);
+      timeOutFunctionId = setTimeout(resizeDrawTrain, 500);
+    };
+    window.addEventListener('resize', timeOutResize);
+  }, []);
 
   return (
     <div
@@ -188,7 +211,7 @@ export default function SpeedSpaceChart(props) {
       <button
         type="button"
         className="btn-rounded btn-rounded-white box-shadow btn-rotate mr-5"
-        onClick = {resetChartToggle}
+        onClick={resetChartToggle}
       >
         <GiResize />
       </button>
@@ -214,10 +237,7 @@ SpeedSpaceChart.propTypes = {
   positionValues: PropTypes.object,
   selectedTrain: PropTypes.number,
   speedSpaceSettings: PropTypes.object,
-  timePosition: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.instanceOf(Date)
-  ]),
+  timePosition: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
   consolidatedSimulation: PropTypes.array,
 };
 
@@ -231,6 +251,4 @@ SpeedSpaceChart.defaultProps = {
   speedSpaceSettings: ORSD_GEV_SAMPLE_DATA.speedSpaceSettings,
   timePosition: ORSD_GEV_SAMPLE_DATA.timePosition,
   consolidatedSimulation: ORSD_GEV_SAMPLE_DATA.consolidatedSimulation,
-}
-
-
+};
