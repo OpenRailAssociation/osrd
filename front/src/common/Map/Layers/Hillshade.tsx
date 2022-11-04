@@ -1,14 +1,22 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Source, Layer } from 'react-map-gl';
+import { Source, LayerProps } from 'react-map-gl';
 
-function Hillshade(props) {
-  const { mapStyle } = props;
+import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 
-  const hillshadeParams = {
-    id: 'hillshading',
+interface HillshadeProps {
+  mapStyle: string;
+  layerOrder: number;
+}
+
+function Hillshade(props: HillshadeProps) {
+  const { mapStyle, layerOrder } = props;
+
+  const hillshadeParams: LayerProps = {
+    id: 'osm/hillshade',
     source: 'hillshade',
     type: 'hillshade',
+    paint: {},
   };
 
   return mapStyle !== 'normal' ? null : (
@@ -18,7 +26,7 @@ function Hillshade(props) {
       url="https://osm.osrd.fr/data/hillshade.json"
       source-layer="transportation"
     >
-      <Layer id="osm/hillshade" {...hillshadeParams} />
+      <OrderedLayer {...hillshadeParams} layerOrder={layerOrder} />
     </Source>
   );
 }

@@ -1,69 +1,50 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-
-import ReactMapGL, {
-  AttributionControl,
-  FlyToInterpolator,
-  ScaleControl,
-  MapRef,
-  MapEvent,
-} from 'react-map-gl';
-import { lineString as turfLineString, point as turfPoint } from '@turf/helpers';
-import { useDispatch, useSelector } from 'react-redux';
-import turfNearestPointOnLine, { NearestPointOnLine } from '@turf/nearest-point-on-line';
-import { Feature, Position, LineString } from 'geojson';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import ReactMapGL, { AttributionControl, FlyToInterpolator, ScaleControl } from 'react-map-gl';
+import { useDispatch, useSelector } from 'react-redux';
 
-import { RootState } from 'reducers';
-import { updateFeatureInfoClickOSRD } from 'reducers/osrdconf';
 import { updateViewport } from 'reducers/map';
+import { RootState } from 'reducers';
+
+import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
-import VirtualLayers from 'applications/osrd/views/OSRDSimulation/VirtualLayers';
+import BufferStops from 'common/Map/Layers/BufferStops';
 /* Settings & Buttons */
 import MapButtons from 'common/Map/Buttons/MapButtons';
+import Detectors from 'common/Map/Layers/Detectors';
 import Catenaries from 'common/Map/Layers/Catenaries';
 import Hillshade from 'common/Map/Layers/Hillshade';
 import OSM from 'common/Map/Layers/OSM';
+/* Objects & various */
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
 import Platform from 'common/Map/Layers/Platform';
-import RenderItinerary from 'applications/osrd/components/OSRDConfMap/RenderItinerary';
-import RenderItineraryMarkers from 'applications/osrd/components/OSRDConfMap/RenderItineraryMarkers';
-/* Interactions */
-import RenderPopup from 'applications/osrd/components/OSRDConfMap/RenderPopup';
 import Routes from 'common/Map/Layers/Routes';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
 import Signals from 'common/Map/Layers/Signals';
-import SnappedMarker from 'common/Map/Layers/SnappedMarker';
 import SpeedLimits from 'common/Map/Layers/SpeedLimits';
-import BufferStops from 'common/Map/Layers/BufferStops';
-import Detectors from 'common/Map/Layers/Detectors';
+import SNCF_LPV from 'common/Map/Layers/extensions/SNCF/SNCF_LPV';
 import Switches from 'common/Map/Layers/Switches';
-import TracksOSM from 'common/Map/Layers/TracksOSM';
-/* Objects & various */
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
+import TracksOSM from 'common/Map/Layers/TracksOSM';
 import TracksSchematic from 'common/Map/Layers/TracksSchematic';
 import colors from 'common/Map/Consts/colors';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
-import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 
 import 'common/Map/Map.scss';
 
 function Map() {
   const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings } =
     useSelector((state: RootState) => state.map);
-  const [idHover, setIdHover] = useState<string>('');
-  const [trackSectionHover, setTrackSectionHover] = useState<Feature<any>>();
-  const [lngLatHover, setLngLatHover] = useState<Position>();
-  const [trackSectionGeoJSON, setTrackSectionGeoJSON] = useState<LineString>();
-  const [snappedPoint, setSnappedPoint] = useState<NearestPointOnLine>();
-  const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
+  const [idHover, setIdHover] = useState('');
+  const { urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
+  const { fullscreen } = useSelector((state: RootState) => state.main);
   const dispatch = useDispatch();
   const updateViewportChange = useCallback(
-    (value) => dispatch(updateViewport(value, undefined)),
+    (value) => dispatch(updateViewport(value, '/carto')),
     [dispatch]
   );
-  const mapRef = useRef<MapRef>(null);
 
   const scaleControlStyle = {
     left: 20,
@@ -73,109 +54,32 @@ function Map() {
   const resetPitchBearing = () => {
     updateViewportChange({
       ...viewport,
-      bearing: 0,
-      pitch: 0,
+      bearing: parseFloat('0'),
+      pitch: parseFloat('0'),
       transitionDuration: 1000,
       transitionInterpolator: new FlyToInterpolator(),
     });
   };
 
   const onFeatureClick = (e) => {
-    if (
-      e.features &&
-      e.features.length > 0 &&
-      e.features[0].properties.id !== undefined
-      // && e.features[0].properties.type_voie === 'VP') {
-    ) {
-      dispatch(
-        updateFeatureInfoClickOSRD({
-          displayPopup: true,
-          feature: e.features[0],
-          lngLat: e.lngLat,
-        })
-      );
-    } else {
-      dispatch(
-        updateFeatureInfoClickOSRD({
-          displayPopup: false,
-          feature: undefined,
-        })
-      );
-    }
+    console.log(e);
   };
 
-  const getGeoJSONFeature = (e: MapEvent) => {
-    if (
-      trackSectionHover === undefined ||
-      e?.features?.[0].properties.id !== trackSectionHover?.properties?.id
-    ) {
-      setTrackSectionHover(e?.features?.[0]);
-    }
-
-    // Get GEOJSON of features hovered for snapping
-    const width = 5;
-    const height = 5;
-    if (mapRef.current) {
-      const features = mapRef.current.queryRenderedFeatures(
-        [
-          [e.point[0] - width / 2, e.point[1] - height / 2],
-          [e.point[0] + width / 2, e.point[1] + height / 2],
-        ],
-        {
-          layers:
-            mapTrackSources === 'geographic'
-              ? ['chartis/tracks-geo/main']
-              : ['chartis/tracks-sch/main'],
-        }
-      );
-      if (features[0] !== undefined) {
-        setTrackSectionGeoJSON(features[0].geometry);
-      }
-    }
-  };
-
-  const onFeatureHover = (e: MapEvent) => {
-    if (e.features !== null && e?.features?.[0] !== undefined) {
-      getGeoJSONFeature(e);
+  const onFeatureHover = (e) => {
+    if (e.features[0] !== undefined) {
       setIdHover(e.features[0].properties.id);
-      setLngLatHover(e?.lngLat);
     } else {
       setIdHover(undefined);
-      setSnappedPoint(undefined);
     }
   };
 
   const defineInteractiveLayers = () => {
-    const interactiveLayersLocal: Array<string> = [];
-    if (mapTrackSources === 'geographic') {
-      interactiveLayersLocal.push('chartis/tracks-geo/main');
-      if (layersSettings.operationalpoints) {
-        interactiveLayersLocal.push('chartis/osrd_operational_point/geo');
-      }
-    }
-    if (mapTrackSources === 'schematic') {
-      interactiveLayersLocal.push('chartis/tracks-sch/main');
-      if (layersSettings.operationalpoints) {
-        interactiveLayersLocal.push('chartis/osrd_operational_point/sch');
-      }
-    }
+    const interactiveLayersLocal = [];
     if (layersSettings.tvds) {
       interactiveLayersLocal.push('chartis/osrd_tvd_section/geo');
     }
     return interactiveLayersLocal;
   };
-
-  useEffect(() => {
-    if (trackSectionGeoJSON !== undefined && lngLatHover !== undefined) {
-      const line = turfLineString(trackSectionGeoJSON.coordinates);
-      const point = turfPoint(lngLatHover);
-      try {
-        setSnappedPoint(turfNearestPointOnLine(line, point));
-      } catch (error) {
-        console.warn(`Ìmpossible to snapPoint - error ${error}`);
-      }
-    }
-  }, [trackSectionGeoJSON, trackSectionHover, lngLatHover]);
 
   useEffect(() => {
     if (urlLat) {
@@ -191,23 +95,23 @@ function Map() {
   }, []);
 
   return (
-    <>
+    <main className={`mastcontainer mastcontainer-map${fullscreen ? ' fullscreen' : ''}`}>
       <MapButtons resetPitchBearing={resetPitchBearing} />
       <ReactMapGL
-        ref={mapRef}
         {...viewport}
-        style={{ cursor: 'pointer' }}
+        style={{ cursor: 'normal' }}
         width="100%"
         height="100%"
         mapStyle={osmBlankStyle}
         onViewportChange={updateViewportChange}
-        clickRadius={10}
+        clickRadius={4}
         attributionControl={false} // Defined below
         onClick={onFeatureClick}
         onHover={onFeatureHover}
         interactiveLayerIds={defineInteractiveLayers()}
         touchRotate
         asyncRender
+        antialiasing
       >
         <AttributionControl
           className="attribution-control"
@@ -230,9 +134,7 @@ function Map() {
           </>
         )}
 
-        <VirtualLayers />
-
-        {/* Have to  duplicate objects with sourceLayer to avoid cache problems in mapbox */}
+        {/* Have to duplicate objects with sourceLayer to avoid cache problems in mapbox */}
         {mapTrackSources === 'geographic' ? (
           <>
             <Platform
@@ -285,6 +187,7 @@ function Map() {
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
             />
+            <SNCF_LPV geomType="geo" colors={colors[mapStyle]} />
 
             <Signals
               sourceTable="signals"
@@ -292,7 +195,6 @@ function Map() {
               sourceLayer="geo"
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.SIGNALS.GROUP]}
             />
-            <RenderPopup />
           </>
         ) : (
           <>
@@ -333,6 +235,7 @@ function Map() {
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
             />
+            <SNCF_LPV geomType="sch" colors={colors[mapStyle]} />
 
             <Signals
               sourceTable="signals"
@@ -343,15 +246,11 @@ function Map() {
           </>
         )}
 
-        <RenderPopup />
-        <RenderItinerary layerOrder={LAYER_GROUPS_ORDER[LAYERS.ITINERARY.GROUP]} />
-        <RenderItineraryMarkers />
         {mapSearchMarker !== undefined ? (
           <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />
         ) : null}
-        {snappedPoint !== undefined ? <SnappedMarker geojson={snappedPoint} /> : null}
       </ReactMapGL>
-    </>
+    </main>
   );
 }
 

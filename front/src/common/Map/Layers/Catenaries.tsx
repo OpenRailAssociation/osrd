@@ -1,14 +1,24 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
-import { Source, Layer } from 'react-map-gl';
+import { Source, LayerProps } from 'react-map-gl';
+
+import { RootState } from 'reducers';
+import { Theme } from 'types';
 import { MAP_URL } from 'common/Map/const';
 
-export default function Catenaries(props) {
-  const { layersSettings } = useSelector((state) => state.map);
-  const { infraID } = useSelector((state) => state.osrdconf);
-  const { geomType, colors } = props;
-  const catenariesParams = {
+import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+
+interface CatenariesProps {
+  colors: Theme;
+  geomType: string;
+  layerOrder: number;
+}
+
+export default function Catenaries(props: CatenariesProps) {
+  const { layersSettings } = useSelector((state: RootState) => state.map);
+  const { infraID } = useSelector((state: RootState) => state.osrdconf);
+  const { geomType, colors, layerOrder } = props;
+  const catenariesParams: LayerProps = {
     type: 'line',
     'source-layer': 'catenaries',
     minzoom: 5,
@@ -41,7 +51,7 @@ export default function Catenaries(props) {
     },
   };
 
-  const catenariesTextParams = {
+  const catenariesTextParams: LayerProps = {
     type: 'symbol',
     'source-layer': 'catenaries',
     minzoom: 5,
@@ -85,27 +95,27 @@ export default function Catenaries(props) {
     },
   };
 
-  return layersSettings.catenaries ? (
-    <Source
-      id={`catenaries_${geomType}`}
-      type="vector"
-      url={`${MAP_URL}/layer/catenaries/mvt/${geomType}/?infra=${infraID}`}
-    >
-      <Layer
-        {...catenariesParams}
-        beforeId={`chartis/tracks-${geomType}/main`}
-        id={`chartis/catenaries/${geomType}`}
-      />
-      <Layer
-        {...catenariesTextParams}
-        beforeId={`chartis/tracks-${geomType}/main`}
-        id={`chartis/catenaries_names/${geomType}`}
-      />
-    </Source>
-  ) : null;
+  if (layersSettings.catenaries) {
+    return (
+      <Source
+        id={`catenaries_${geomType}`}
+        type="vector"
+        url={`${MAP_URL}/layer/catenaries/mvt/${geomType}/?infra=${infraID}`}
+      >
+        <OrderedLayer
+          {...catenariesParams}
+          // beforeId={`chartis/tracks-${geomType}/main`}
+          id={`chartis/catenaries/${geomType}`}
+          layerOrder={layerOrder}
+        />
+        <OrderedLayer
+          {...catenariesTextParams}
+          // beforeId={`chartis/tracks-${geomType}/main`}
+          id={`chartis/catenaries_names/${geomType}`}
+          layerOrder={layerOrder}
+        />
+      </Source>
+    );
+  }
+  return null;
 }
-
-Catenaries.propTypes = {
-  geomType: PropTypes.string.isRequired,
-  colors: PropTypes.object.isRequired,
-};

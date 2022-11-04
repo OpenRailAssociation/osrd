@@ -1,9 +1,12 @@
 import React, { FC } from 'react';
 import { useSelector } from 'react-redux';
-import { Source, Layer, LayerProps } from 'react-map-gl';
-import { MAP_URL } from 'common/Map/const';
+import { Source, LayerProps } from 'react-map-gl';
 
-import { Theme } from '../../../types';
+import { MAP_URL } from 'common/Map/const';
+import { RootState } from 'reducers';
+import { Theme } from 'types';
+
+import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 
 export function getSwitchesLayerProps(params: { colors: Theme; sourceTable?: string }): LayerProps {
   const res: LayerProps = {
@@ -48,12 +51,16 @@ export function getSwitchesNameLayerProps(params: {
   return res;
 }
 
-const Switches: FC<{ geomType: string; colors: Theme }> = (props) => {
-  const { layersSettings } = useSelector(
-    (state: { map: { layersSettings: { switches?: boolean } } }) => state.map
-  );
-  const { infraID } = useSelector((state: { osrdconf: { infraID: string } }) => state.osrdconf);
-  const { geomType, colors } = props;
+interface SwitchesProps {
+  geomType: string;
+  colors: Theme;
+  layerOrder: number;
+}
+
+const Switches: FC<SwitchesProps> = (props) => {
+  const { layersSettings } = useSelector((state: RootState) => state.map);
+  const { infraID } = useSelector((state: RootState) => state.osrdconf);
+  const { geomType, colors, layerOrder } = props;
 
   const layerPoint: LayerProps = getSwitchesLayerProps({ colors, sourceTable: 'switches' });
   const layerName: LayerProps = getSwitchesNameLayerProps({ colors, sourceTable: 'switches' });
@@ -64,8 +71,16 @@ const Switches: FC<{ geomType: string; colors: Theme }> = (props) => {
       type="vector"
       url={`${MAP_URL}/layer/switches/mvt/${geomType}/?infra=${infraID}`}
     >
-      <Layer {...layerPoint} id={`chartis/osrd_switches/${geomType}`} />
-      <Layer {...layerName} id={`chartis/osrd_switches_name/${geomType}`} />
+      <OrderedLayer
+        {...layerPoint}
+        id={`chartis/osrd_switches/${geomType}`}
+        layerOrder={layerOrder}
+      />
+      <OrderedLayer
+        {...layerName}
+        id={`chartis/osrd_switches_name/${geomType}`}
+        layerOrder={layerOrder}
+      />
     </Source>
   ) : null;
 };

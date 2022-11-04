@@ -1,14 +1,23 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
-import { Source, Layer } from 'react-map-gl';
+import { Source, LayerProps } from 'react-map-gl';
+
+import { RootState } from 'reducers';
+import { Theme } from 'types';
 import { OSM_URL } from 'common/Map/const';
 
-function TracksOSM(props) {
-  const { showOSMtracksections } = useSelector((state) => state.map);
-  const { colors } = props;
+import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 
-  const railwayMinor = {
+interface TracksOSMProps {
+  colors: Theme;
+  layerOrder: number;
+}
+
+function TracksOSM(props: TracksOSMProps) {
+  const { showOSMtracksections } = useSelector((state: RootState) => state.map);
+  const { colors, layerOrder } = props;
+
+  const railwayMinor: LayerProps = {
     id: 'railwayMinor',
     type: 'line',
     source: 'openmaptiles',
@@ -22,7 +31,7 @@ function TracksOSM(props) {
     },
   };
 
-  const railwayMajor = {
+  const railwayMajor: LayerProps = {
     id: 'railwayMajor',
     type: 'line',
     source: 'openmaptiles',
@@ -44,14 +53,10 @@ function TracksOSM(props) {
 
   return showOSMtracksections ? (
     <Source id="tracksOSM" type="vector" url={OSM_URL} source-layer="transportation">
-      <Layer {...railwayMinor} />
-      <Layer {...railwayMajor} />
+      <OrderedLayer {...railwayMinor} layerOrder={layerOrder} />
+      <OrderedLayer {...railwayMajor} layerOrder={layerOrder} />
     </Source>
   ) : null;
 }
-
-TracksOSM.propTypes = {
-  colors: PropTypes.object.isRequired,
-};
 
 export default TracksOSM;
