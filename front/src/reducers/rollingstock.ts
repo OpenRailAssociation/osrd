@@ -1,17 +1,22 @@
 /* eslint-disable default-case */
+import { AnyAction } from 'redux';
 import produce from 'immer';
 
 // Action Types
 export const SET_MATERIEL = 'rollingstock/SET_MATERIEL';
 export const SET_BASEGOC = 'rollingstock/SET_BASEGOC';
 
+export interface RollingStockState {
+  materiel: Record<string, any>;
+  basegoc: Record<string, any>;
+}
 // Reducer
-export const initialState = {
+export const initialState: RollingStockState = {
   materiel: {},
   basegoc: {},
 };
 
-export default function reducer(inputState, action) {
+export default function reducer(inputState: RollingStockState | undefined, action: AnyAction) {
   const state = inputState || initialState;
   return produce(state, (draft) => {
     switch (action.type) {

@@ -1,18 +1,19 @@
-import { Action } from 'redux';
-import { persistCombineReducers, persistReducer } from 'redux-persist';
+import { Action, ReducersMapObject } from 'redux';
+import { persistCombineReducers, persistReducer, PersistConfig } from 'redux-persist';
 import createCompressor from 'redux-persist-transform-compress';
 import { createFilter } from 'redux-persist-transform-filter';
 import storage from 'redux-persist/lib/storage'; // defaults to localStorage
 
 import { OsrdConfState } from 'applications/osrd/consts';
-import mainReducer, { MainActions } from './main';
-import userReducer from './user';
-import mapReducer, { MapState } from './map';
-import editorReducer, { EditorActions } from './editor';
 
-import osrdconfReducer from './osrdconf';
-import osrdsimulationReducer, { OsrdSimulationState } from './osrdsimulation';
-import rollingStockReducer from './rollingstock';
+import mainReducer, { MainState, MainActions, initialState as mainInitialState } from './main';
+import userReducer, { UserState, initialState as userInitialState } from './user';
+import mapReducer, { MapState, initialState as mapInitialState } from './map';
+import editorReducer, { EditorActions, initialState as editorInitialState } from './editor';
+import osrdconfReducer, { initialState as osrdconfInitialState } from './osrdconf';
+import osrdsimulationReducer, { OsrdSimulationState, initialState as osrdSimulationInitialState } from './osrdsimulation';
+import rollingStockReducer, { RollingStockState, initialState as rollingStockInitialState } from './rollingstock';
+
 import { EditorState } from '../applications/editor/tools/types';
 
 const compressor = createCompressor({
@@ -45,7 +46,7 @@ const saveMainFilter = createFilter('main', mainWhiteList);
 const saveSimulationFilter = createFilter('osrdsimulation', simulationWhiteList);
 
 // Useful to only blacklist a sub-propertie of osrdconf
-const osrdconfPersistConfig = {
+const osrdconfPersistConfig: PersistConfig<OsrdConfState> = {
   key: 'osrdconf',
   storage,
   blacklist: ['featureInfoClick', 'switchTypes'],
@@ -61,22 +62,29 @@ const persistConfig = {
 
 type AllActions = EditorActions | MainActions | Action;
 
-interface GenericState {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: unknown;
-}
-
 export interface RootState {
-  user: GenericState;
+  user: UserState;
   map: MapState;
   editor: EditorState;
-  main: GenericState;
+  main: MainState;
   osrdconf: OsrdConfState;
   osrdsimulation: OsrdSimulationState;
-  rollingstock: GenericState;
+  rollingstock: RollingStockState;
 }
 
-const rootReducer = {
+export const rootInitialState: RootState = {
+  user: userInitialState,
+  map: mapInitialState,
+  editor: editorInitialState,
+  main: mainInitialState,
+  osrdconf: osrdconfInitialState,
+  osrdsimulation: osrdSimulationInitialState,
+  rollingstock: rollingStockInitialState,
+}
+
+export type AnyReducerState = UserState | MapState | EditorState | MainState | OsrdConfState | OsrdSimulationState | RollingStockState;
+
+export const rootReducer: ReducersMapObject<RootState> = {
   user: userReducer,
   map: mapReducer,
   editor: editorReducer,

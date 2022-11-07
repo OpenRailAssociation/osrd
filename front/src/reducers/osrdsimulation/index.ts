@@ -249,7 +249,7 @@ export const initialState: OsrdSimulationState = {
 };
 
 // eslint-disable-next-line default-param-last
-export default function reducer(inputState: OsrdSimulationState, action: AnyAction) {
+export default function reducer(inputState: OsrdSimulationState | undefined, action: AnyAction) {
   const state = inputState || initialState;
   return produce(state, (draft) => {
     if (!state.simulation) draft.simulation = undoableSimulation(state.simulation, action);

@@ -66,7 +66,7 @@ export const initialState: OsrdConfState = {
   featureInfoClick: { displayPopup: false },
 };
 
-export default function reducer(inputState: OsrdConfState, action: AnyAction) {
+export default function reducer(inputState: OsrdConfState | undefined, action: AnyAction) {
   const state = inputState || initialState;
   return produce(state, (draft) => {
     switch (action.type) {

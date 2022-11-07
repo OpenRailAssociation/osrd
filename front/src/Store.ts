@@ -1,8 +1,8 @@
-import { applyMiddleware, compose, createStore } from 'redux';
+import { applyMiddleware, compose, legacy_createStore as createStore, combineReducers } from 'redux';
 import { composeWithDevTools, Config } from '@redux-devtools/extension';
 
 import { persistStore } from 'redux-persist';
-import persistedReducer from 'reducers';
+import persistedReducer, { rootReducer, rootInitialState, RootState } from 'reducers';
 import thunk from 'redux-thunk';
 
 const reduxDevToolsOptions: Config = {
@@ -21,4 +21,11 @@ const store = createStore(persistedReducer, enhancers);
 
 const persistor = persistStore(store);
 
-export { store, persistor };
+const createStoreWithoutMiddleware = (
+  initialStateExtra: Partial<RootState>
+) => createStore(
+  combineReducers<RootState>(rootReducer),
+  { ...rootInitialState, ...initialStateExtra }
+);
+
+export { store, persistor, createStoreWithoutMiddleware };

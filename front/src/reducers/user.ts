@@ -1,5 +1,6 @@
 /* eslint-disable consistent-return */
 /* eslint-disable default-case */
+import { AnyAction } from 'redux';
 import produce from 'immer';
 import keycloak from 'keycloak';
 import jwtDecode from 'jwt-decode';
@@ -12,7 +13,7 @@ export const SERVER_ERROR = 'user/SERVER_ERROR';
 export const UPDATE_ACCOUNT = 'user/UPDATE_ACCOUNT';
 
 // Reducer
-export const initialState = {
+export const initialState: UserState = {
   isLogged: false,
   toLogin: true,
   loginError: false,
@@ -23,7 +24,18 @@ export const initialState = {
   account: {},
 };
 
-export default function reducer(inputState, action) {
+export interface UserState {
+  isLogged: boolean;
+  toLogin: boolean;
+  loginError: boolean;
+  serverError: boolean;
+  username: string;
+  language: string;
+  accessToken: any;
+  account: Record<string, any>;
+}
+
+export default function reducer(inputState: UserState | undefined, action: AnyAction) {
   const state = inputState || initialState;
   return produce(state, (draft) => {
     switch (action.type) {
