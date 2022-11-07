@@ -63,7 +63,7 @@ function Origin(props: OriginProps) {
       tabIndex={0}
     >
       <strong className="mr-1 text-nowrap">
-        {osrdconf.origin.name ? osrdconf.origin.name : osrdconf.origin.id.split('-')[0]}
+        {osrdconf?.origin?.name ? osrdconf?.origin?.name : osrdconf?.origin?.id.split('-')[0]}
       </strong>
     </div>
   );
