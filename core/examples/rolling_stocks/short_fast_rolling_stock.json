@@ -1,52 +1,62 @@
 {
-    "version": "2.2",
-    "length": 15,
-    "max_speed": 20,
-    "startup_time": 10,
-    "startup_acceleration": 0.05,
-    "comfort_acceleration": 0.25,
-    "inertia_coefficient": 1.05,
-    "features": [
-        "TVM300",
-        "TVM430",
-        "ETCS1",
-        "ETCS2",
-        "KVB"
-    ],
-    "power_class": 5,
-    "name": "short_fast_rolling_stock",
-    "mass": 900000,
-    "loading_gauge": "G1",
-    "gamma": {
-        "value": 0.5,
-        "type": "CONST"
-    },
-    "effort_curve": {
-        "speeds": [
-            0.0,
-            5.0,
-            10.0,
-            15.0,
-            20.0,
-            22.0,
-            27.0,
-            32.0,
-            37.0,
-            42.0,
-            47.0,
-            52.0,
-            57.0,
-            62.0,
-            67.0,
-            72.0,
-            77.0
-        ],
-        "max_efforts": [
+  "version": "3.0",
+  "length": 15,
+  "max_speed": 20,
+  "startup_time": 10,
+  "startup_acceleration": 0.05,
+  "comfort_acceleration": 0.25,
+  "inertia_coefficient": 1.05,
+  "features": [
+    "TVM300",
+    "TVM430",
+    "ETCS1",
+    "ETCS2",
+    "KVB"
+  ],
+  "name": "short_fast_rolling_stock",
+  "mass": 900000,
+  "loading_gauge": "G1",
+  "gamma": {
+    "value": 0.5,
+    "type": "CONST"
+  },
+  "rolling_resistance": {
+    "type": "davis",
+    "A": 5400,
+    "B": 200,
+    "C": 12
+  },
+  "effort_curves": {
+    "default_mode": "thermal",
+    "modes": {
+      "thermal": {
+        "curves": [],
+        "default_curve": {
+          "speeds": [
+            0,
+            5,
+            10,
+            15,
+            20,
+            22,
+            27,
+            32,
+            37,
+            42,
+            47,
+            52,
+            57,
+            62,
+            67,
+            72,
+            77
+          ],
+          "max_efforts": [
             441666.6666666667,
             439473.6842105263,
             435714.28571428574,
             427777.77777777775,
-            400000.0,
+            400000,
             350971.5388299929,
             347206.93642395496,
             346938.7385068534,
@@ -59,14 +69,10 @@
             204685.35097358702,
             195984.55717992093,
             192916.7642524637
-        ]
-    },
-    "rolling_resistance": {
-        "type": "davis",
-        "A": 5400.0,
-        "B": 200.0,
-        "C": 12.0
-    },
-    "compatible_voltages": [],
-    "electric_only": false
+          ]
+        },
+        "is_electric": false
+      }
+    }
+  }
 }
