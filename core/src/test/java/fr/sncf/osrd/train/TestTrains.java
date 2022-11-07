@@ -145,7 +145,7 @@ public class TestTrains {
                 RollingStock.GammaType.CONST,
                 tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
                 RJSLoadingGaugeType.G1,
-                Set.of(25000),
+                Set.of("25000"),
                 true
         );
     }

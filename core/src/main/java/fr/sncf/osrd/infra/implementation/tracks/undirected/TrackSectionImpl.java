@@ -15,7 +15,7 @@ public class TrackSectionImpl implements TrackSection {
     private final String id;
     private final ImmutableSet<OperationalPoint> operationalPoints;
     EnumMap<Direction, RangeMap<Double, SpeedLimits>> speedSections;
-    RangeMap<Double, Set<Integer>> catenaryVoltages = TreeRangeMap.create();
+    RangeMap<Double, Set<String>> catenaryVoltages = TreeRangeMap.create();
     EnumMap<Direction, RangeMap<Double, Double>> gradients;
     ImmutableList<Detector> detectors = ImmutableList.of();
     int index;
@@ -104,7 +104,7 @@ public class TrackSectionImpl implements TrackSection {
         return loadingGaugeConstraints;
     }
 
-    public RangeMap<Double, Set<Integer>> getVoltages() {
+    public RangeMap<Double, Set<String>> getVoltages() {
         return catenaryVoltages;
     }
 

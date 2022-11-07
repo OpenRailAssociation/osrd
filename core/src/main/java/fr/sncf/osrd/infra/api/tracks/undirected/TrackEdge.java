@@ -43,5 +43,5 @@ public sealed interface TrackEdge permits SwitchBranch, TrackSection {
     ImmutableRangeMap<Double, LoadingGaugeConstraint> getLoadingGaugeConstraints();
 
     /** Returns a set of voltages usable at any position */
-    RangeMap<Double, Set<Integer>> getVoltages();
+    RangeMap<Double, Set<String>> getVoltages();
 }
