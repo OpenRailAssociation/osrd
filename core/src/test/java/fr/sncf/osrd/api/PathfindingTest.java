@@ -248,7 +248,7 @@ public class PathfindingTest extends ApiTest {
             if (track instanceof TrackSection)
                 track.getVoltages().put(
                         Range.closed(0., track.getLength()),
-                        TestTrains.FAST_ELECTRIC_TRAIN.compatibleVoltages
+                        TestTrains.FAST_ELECTRIC_TRAIN.modes
                 );
         }
 

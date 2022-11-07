@@ -37,7 +37,7 @@ public record ElectrificationConstraints(
                 var interval = section.getKey();
                 if (Math.abs(interval.lowerEndpoint() - interval.upperEndpoint()) < 1e-5)
                     continue;
-                var overlap = Sets.intersection(section.getValue(), stock.compatibleVoltages);
+                var overlap = Sets.intersection(section.getValue(), stock.modes);
                 if (overlap.isEmpty()) {
                     res.add(new Pathfinding.Range(
                             offset + interval.lowerEndpoint(),
