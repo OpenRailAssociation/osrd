@@ -29,7 +29,19 @@ class Projection:
         tracks = []
         for route_path in path_payload.route_paths:
             tracks += [track for track in route_path.track_sections if track.begin != track.end]
-        return tracks
+        return Projection._merge_ranges_same_tracks(tracks)
+
+    @staticmethod
+    def _merge_ranges_same_tracks(ranges: List[DirectionalTrackRange]) -> List[DirectionalTrackRange]:
+        res: List[DirectionalTrackRange] = []
+        for r in ranges:
+            if len(res) == 0 or res[-1].track != r.track:
+                res.append(r)
+            else:
+                assert res[-1].begin == r.end or res[-1].end == r.begin
+                res[-1].begin = min(res[-1].begin, r.begin)
+                res[-1].end = max(res[-1].end, r.end)
+        return res
 
     def _init_tracks(self, dir_track_ranges: List[DirectionalTrackRange]):
         self.tracks = {}
