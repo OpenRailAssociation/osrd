@@ -7,8 +7,10 @@ import { useTranslation } from 'react-i18next';
 import {
   updateOrigin,
   updateOriginDate,
-  updateOriginSpeed,
   updateOriginTime,
+  updateOriginUpperBoundDate,
+  updateOriginUpperBoundTime,
+  updateOriginSpeed,
   updateStdcmMode,
 } from 'reducers/osrdconf';
 import { makeEnumBooleans } from 'utils/constants';
@@ -94,7 +96,7 @@ function Origin(props: OriginProps) {
                       <input
                         type="date"
                         className="form-control form-control-sm"
-                        onChange={(e) => dispatch(updateOriginEarlierDate(e.target.value))}
+                        onChange={(e) => dispatch(updateOriginDate(e.target.value))}
                         value={osrdconf.originDate}
                         disabled={isByDestination}
                       />
@@ -102,33 +104,33 @@ function Origin(props: OriginProps) {
                     <InputSNCF
                       type="time"
                       id="osrd-config-time-origin"
-                      onChange={(e) => dispatch(updateOriginEarlierTime(e.target.value))}
+                      onChange={(e) => dispatch(updateOriginTime(e.target.value))}
                       value={osrdconf.originTime}
                       sm
                       noMargin
                       readonly={isByDestination}
                     />
                   </div>
-                  <div className="d-flex">
-                    {isStdcm && (
+                  {isStdcm && (
+                    <div className="d-flex">
                       <input
                         type="date"
                         className="form-control form-control-sm"
-                        onChange={(e) => dispatch(updateOriginLaterDate(e.target.value))}
-                        value={osrdconf.originDate}
-                        disabled={isByDestination}
+                        onChange={(e) => dispatch(updateOriginUpperBoundDate(e.target.value))}
+                        value={osrdconf.originUpperBoundDate}
+                        disabled
                       />
-                    )}
-                    <InputSNCF
-                      type="time"
-                      id="osrd-config-time-origin"
-                      onChange={(e) => dispatch(updateOriginLaterTime(e.target.value))}
-                      value={osrdconf.originTime}
-                      sm
-                      noMargin
-                      readonly={isByDestination}
-                    />
-                  </div>
+                      <InputSNCF
+                        type="time"
+                        id="osrd-config-time-origin"
+                        onChange={(e) => dispatch(updateOriginUpperBoundTime(e.target.value))}
+                        value={osrdconf.originUpperBoundTime}
+                        sm
+                        noMargin
+                        readonly={isByDestination}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
               {isSimulation && (

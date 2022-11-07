@@ -123,14 +123,16 @@ export interface OsrdConfState {
   speedLimitByTag?: any;
   origin?: PointOnMap;
   originSpeed: number;
-  originTime?: string;
   destination?: PointOnMap;
   vias: PointOnMap[];
   suggeredVias: SuggestedPointOnMap[];
   trainCompo: undefined;
   geojson: any[];
-  originDate: string;
-  destinationDate: string;
-  destinationTime: string;
+  originDate?: string;
+  originTime?: string;
+  originUpperBoundDate?: string;
+  originUpperBoundTime?: string;
+  destinationDate?: string;
+  destinationTime?: string;
   featureInfoClick: { displayPopup: boolean };
 }

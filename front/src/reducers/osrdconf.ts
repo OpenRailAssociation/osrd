@@ -21,6 +21,8 @@ export const UPDATE_ORIGIN = 'osrdconf/UPDATE_ORIGIN';
 export const UPDATE_ORIGIN_SPEED = 'osrdconf/UPDATE_ORIGIN_SPEED';
 export const UPDATE_ORIGIN_TIME = 'osrdconf/UPDATE_ORIGIN_TIME';
 export const UPDATE_ORIGIN_DATE = 'osrdconf/UPDATE_ORIGIN_DATE';
+export const UPDATE_ORIGIN_UPPER_BOUND_DATE = 'osrdconf/UPDATE_ORIGIN_UPPER_BOUND_DATE';
+export const UPDATE_ORIGIN_UPPER_BOUND_TIME = 'osrdconf/UPDATE_ORIGIN_UPPER_BOUND_TIME';
 export const REPLACE_VIAS = 'osrdconf/REPLACE_VIAS';
 export const UPDATE_VIAS = 'osrdconf/UPDATE_VIAS';
 export const UPDATE_VIA_STOPTIME = 'osrdconf/UPDATE_VIA_STOPTIME';
@@ -103,6 +105,12 @@ export default function reducer(inputState: OsrdConfState, action: AnyAction) {
         break;
       case UPDATE_ORIGIN_DATE:
         draft.originDate = action.originDate;
+        break;
+      case UPDATE_ORIGIN_UPPER_BOUND_TIME:
+        draft.originUpperBoundTime = action.originUpperBoundTime;
+        break;
+      case UPDATE_ORIGIN_UPPER_BOUND_DATE:
+        draft.originUpperBoundDate = action.originUpperBoundDate;
         break;
       case REPLACE_VIAS:
         draft.vias = action.vias;
@@ -273,6 +281,21 @@ export function updateOriginDate(originDate) {
     });
   };
 }
+
+export function updateOriginUpperBoundTime(originUpperBoundTime: string) {
+  return {
+    type: UPDATE_ORIGIN_UPPER_BOUND_TIME,
+    originUpperBoundTime,
+  };
+}
+
+export function updateOriginUpperBoundDate(originUpperBoundDate: string) {
+  return {
+    type: UPDATE_ORIGIN_UPPER_BOUND_DATE,
+    originUpperBoundDate,
+  };
+}
+
 export function replaceVias(vias) {
   return (dispatch) => {
     dispatch({
