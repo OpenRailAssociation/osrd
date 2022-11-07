@@ -3,6 +3,7 @@ import produce from 'immer';
 
 import { OsrdConfState, DEFAULT_MODE, DEFAULT_STDCM_MODE } from 'applications/osrd/consts';
 import { formatIsoDate } from 'utils/date';
+import { time2sec, sec2time } from 'utils/timeManipulation';
 
 import { getSwitchTypes } from '../applications/editor/data/api';
 /* eslint-disable default-case */
@@ -106,14 +107,25 @@ export default function reducer(inputState: OsrdConfState | undefined, action: A
       case UPDATE_ORIGIN_SPEED:
         draft.originSpeed = action.originSpeed;
         break;
-      case UPDATE_ORIGIN_TIME:
+      case UPDATE_ORIGIN_TIME: {
+        const difference = 7200;
+        const newOriginTimeSeconds = time2sec(action.originTime);
+        if (!draft.originUpperBoundTime) {
+          draft.originUpperBoundTime = sec2time(newOriginTimeSeconds + difference);
+        } else if (
+          draft.originTime &&
+          time2sec(draft.originUpperBoundTime) - time2sec(draft.originTime) === difference
+        ) {
+          draft.originUpperBoundTime = sec2time(newOriginTimeSeconds + difference);
+        }
         draft.originTime = action.originTime;
+        break;
+      }
+      case UPDATE_ORIGIN_UPPER_BOUND_TIME:
+        draft.originUpperBoundTime = action.originUpperBoundTime;
         break;
       case UPDATE_ORIGIN_DATE:
         draft.originDate = action.originDate;
-        break;
-      case UPDATE_ORIGIN_UPPER_BOUND_TIME:
-        draft.originUpperBoundTime = action.originUpperBoundTime;
         break;
       case UPDATE_ORIGIN_UPPER_BOUND_DATE:
         draft.originUpperBoundDate = action.originUpperBoundDate;
@@ -271,20 +283,16 @@ export function updateOriginSpeed(originSpeed) {
     });
   };
 }
-export function updateOriginTime(originTime) {
-  return (dispatch) => {
-    dispatch({
-      type: UPDATE_ORIGIN_TIME,
-      originTime,
-    });
+export function updateOriginTime(originTime: string) {
+  return {
+    type: UPDATE_ORIGIN_TIME,
+    originTime,
   };
 }
-export function updateOriginDate(originDate) {
-  return (dispatch) => {
-    dispatch({
-      type: UPDATE_ORIGIN_DATE,
-      originDate,
-    });
+export function updateOriginDate(originDate: string) {
+  return {
+    type: UPDATE_ORIGIN_DATE,
+    originDate,
   };
 }
 
