@@ -47,7 +47,7 @@ export function setSuccess(msg?: Notification): ThunkAction<ActionSuccess> {
 }
 
 export const ACTION_FAILURE = 'main/ACTION_FAILURE';
-type ActionFailure = { type: typeof ACTION_FAILURE; error: Error };
+export type ActionFailure = { type: typeof ACTION_FAILURE; error: Error };
 export function setFailure(e: Error): ThunkAction<ActionFailure> {
   return (dispatch) => {
     dispatch({

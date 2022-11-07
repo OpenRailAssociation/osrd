@@ -1,8 +1,19 @@
-import { STDCM_MODES } from 'applications/osrd/consts';
+import { Dispatch } from 'redux';
+import { TFunction } from 'i18next';
+
+import { STDCM_MODES, OsrdConfState } from 'applications/osrd/consts';
 import { time2sec } from 'utils/timeManipulation';
 import { makeEnumBooleans } from 'utils/constants';
 
-export default function formatStdcmConf(dispatch, setFailure, t, osrdconf) {
+import { ActionFailure } from 'reducers/main';
+import { ThunkAction } from 'types';
+
+export default function formatStdcmConf(
+  dispatch: Dispatch,
+  setFailure: (e: Error) => ThunkAction<ActionFailure>,
+  t: TFunction,
+  osrdconf: OsrdConfState
+) {
   const { isByOrigin, isByDestination } = makeEnumBooleans(STDCM_MODES, osrdconf.stdcmMode);
 
   let error = false;
@@ -86,14 +97,14 @@ export default function formatStdcmConf(dispatch, setFailure, t, osrdconf) {
       end_time: destinationDate, // Build a date
       start_points: [
         {
-          track_section: osrdconf.origin.id,
-          geo_coordinate: osrdconf.origin.clickLngLat,
+          track_section: osrdconf?.origin?.id,
+          geo_coordinate: osrdconf?.origin?.clickLngLat,
         },
       ],
       end_points: [
         {
-          track_section: osrdconf.destination.id,
-          geo_coordinate: osrdconf.destination.clickLngLat,
+          track_section: osrdconf?.destination?.id,
+          geo_coordinate: osrdconf?.destination?.clickLngLat,
         },
       ],
     };
