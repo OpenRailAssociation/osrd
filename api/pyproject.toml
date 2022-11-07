@@ -6,7 +6,7 @@ authors = ["DGEX Solutions <contact@dgexsol.fr>"]
 
 [tool.poetry.dependencies]
 # base
-python = ">=3.8,<3.11"
+python = ">=3.9,<3.11"
 django = "4.1.2"
 numpy = "1.23.4"
 intervaltree = "3.1.0"
