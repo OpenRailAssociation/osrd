@@ -3,6 +3,7 @@ package fr.sncf.osrd.railjson.parser;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStockField;
 import fr.sncf.osrd.railjson.parser.exceptions.MissingRollingStockField;
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSEffortCurves;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.train.RollingStock;
@@ -18,7 +19,18 @@ public class RJSRollingStockParser {
         }
 
         // parse tractive effort curve
-        final var tractiveEffortCurve = parseEffortCurve(rjsRollingStock.effortCurve);
+        if (rjsRollingStock.effortCurves == null)
+            throw new MissingRollingStockField("effort_curves");
+        final var rjsModes = rjsRollingStock.effortCurves.modes;
+        if (!rjsModes.containsKey(rjsRollingStock.effortCurves.defaultMode))
+            throw new InvalidRollingStock(String.format("Invalid rolling stock: didn't found default mode '%s'",
+                            rjsRollingStock.effortCurves.defaultMode));
+        final var defaultMode = rjsRollingStock.effortCurves.modes.get(rjsRollingStock.effortCurves.defaultMode);
+        final var tractiveEffortCurve = parseEffortCurve(defaultMode.defaultCurve);
+        var electricOnly = true;
+        for (var mode : rjsModes.values()) {
+            electricOnly &= mode.isElectric;
+        }
 
         if (rjsRollingStock.name == null)
             throw new MissingRollingStockField("name");
@@ -44,14 +56,8 @@ public class RJSRollingStockParser {
         if (Double.isNaN(rjsRollingStock.inertiaCoefficient))
             throw new MissingRollingStockField("inertia_coefficient");
 
-        if (rjsRollingStock.powerClass < 0)
-            throw new MissingRollingStockField("power_class");
-
         if (rjsRollingStock.features == null)
             throw new MissingRollingStockField("features");
-
-        if (Double.isNaN(rjsRollingStock.mass))
-            throw new MissingRollingStockField("mass");
 
         if (rjsRollingStock.loadingGauge == null)
             throw new MissingRollingStockField("loading_gauge");
@@ -77,8 +83,8 @@ public class RJSRollingStockParser {
                 rjsRollingStock.gamma.type,
                 tractiveEffortCurve,
                 rjsRollingStock.loadingGauge,
-                rjsRollingStock.compatibleVoltages,
-                rjsRollingStock.electricOnly
+                rjsModes.keySet(),
+                electricOnly
         );
     }
 
@@ -95,7 +101,7 @@ public class RJSRollingStockParser {
     // these are commented as they'll be used soon for profiles
 
     private static RollingStock.TractiveEffortPoint[] parseEffortCurve(
-            RJSRollingStock.RJSEffortCurve rjsEffortCurve
+            RJSEffortCurves.RJSEffortCurve rjsEffortCurve
     ) throws InvalidRollingStockField {
         if (rjsEffortCurve.speeds == null)
             throw new MissingRollingStockField("effort_curve.speeds");
