@@ -1,8 +1,9 @@
 import { AnyAction } from 'redux';
+import produce from 'immer';
 
 import { OsrdConfState, DEFAULT_MODE, DEFAULT_STDCM_MODE } from 'applications/osrd/consts';
+import { formatIsoDate } from 'utils/date';
 
-import produce from 'immer';
 import { getSwitchTypes } from '../applications/editor/data/api';
 /* eslint-disable default-case */
 
@@ -51,8 +52,13 @@ export const initialState: OsrdConfState = {
   speedLimitByTag: undefined,
   origin: undefined,
   originSpeed: 0,
+  originDate: formatIsoDate(new Date()),
   originTime: undefined,
+  originUpperBoundDate: formatIsoDate(new Date()),
+  originUpperBoundTime: undefined,
   destination: undefined,
+  destinationDate: formatIsoDate(new Date()),
+  destinationTime: undefined,
   vias: [],
   suggeredVias: [],
   trainCompo: undefined,

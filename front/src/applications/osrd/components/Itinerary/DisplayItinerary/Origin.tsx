@@ -98,7 +98,7 @@ function Origin(props: OriginProps) {
                         className="form-control form-control-sm"
                         onChange={(e) => dispatch(updateOriginDate(e.target.value))}
                         value={osrdconf.originDate}
-                        disabled={isByDestination}
+                        disabled
                       />
                     )}
                     <InputSNCF
