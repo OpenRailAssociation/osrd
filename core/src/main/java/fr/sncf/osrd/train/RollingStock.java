@@ -67,7 +67,7 @@ public class RollingStock implements PhysicsRollingStock {
 
     public final RJSLoadingGaugeType loadingGaugeType;
 
-    public final Set<Integer> compatibleVoltages;
+    public final Set<String> modes;
 
     public final boolean isElectricOnly;
 
@@ -177,7 +177,7 @@ public class RollingStock implements PhysicsRollingStock {
             GammaType gammaType,
             TractiveEffortPoint[] tractiveEffortCurve,
             RJSLoadingGaugeType loadingGaugeType,
-            Set<Integer> compatibleVoltages,
+            Set<String> modes,
             boolean isElectricOnly
     ) {
         this.id = id;
@@ -194,7 +194,7 @@ public class RollingStock implements PhysicsRollingStock {
         this.mass = mass;
         this.inertiaCoefficient = inertiaCoefficient;
         this.tractiveEffortCurve = tractiveEffortCurve;
-        this.compatibleVoltages = compatibleVoltages;
+        this.modes = modes;
         this.isElectricOnly = isElectricOnly;
         this.inertia = mass * inertiaCoefficient;
         this.loadingGaugeType = loadingGaugeType;
