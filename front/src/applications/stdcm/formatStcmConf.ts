@@ -87,6 +87,10 @@ export default function formatStdcmConf(
 
   const originDate = osrdconf.originTime ? time2sec(osrdconf.originTime) : null;
   const destinationDate = osrdconf.destinationTime ? time2sec(osrdconf.destinationTime) : null;
+  const maximumDepartureDelay =
+    osrdconf.originTime && osrdconf.originUpperBoundTime
+      ? time2sec(osrdconf.originUpperBoundTime) - time2sec(osrdconf.originTime)
+      : null;
 
   if (!error) {
     const osrdConfStdcm = {
@@ -107,6 +111,8 @@ export default function formatStdcmConf(
           geo_coordinate: osrdconf?.destination?.clickLngLat,
         },
       ],
+      maximum_departure_delay: maximumDepartureDelay,
+      maximum_relative_run_time: 2,
     };
     return osrdConfStdcm;
   }
