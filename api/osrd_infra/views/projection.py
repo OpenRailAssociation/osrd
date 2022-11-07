@@ -123,7 +123,7 @@ class Projection:
                     range_end.path_offset -= b_begin - a_end
                 elif a_end > b_end:
                     range_end.offset = b_end
-                    range_end.path_offset -= b_end - a_end
+                    range_end.path_offset -= a_end - b_end
                 intersections.append(PathRange(range_begin, range_end))
                 range_begin = None
         return intersections
