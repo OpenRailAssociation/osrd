@@ -18,7 +18,7 @@ use serde::{Deserialize, Serialize};
 pub struct Catenary {
     #[derivative(Default(value = r#"generate_id("catenary")"#))]
     pub id: String,
-    pub voltage: f64,
+    pub voltage: String,
     pub track_ranges: Vec<ApplicableDirectionsTrackRange>,
 }
 
