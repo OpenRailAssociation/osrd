@@ -48,4 +48,16 @@ public record STDCMEdge(
                 timeNextOccupancy
         );
     }
+
+    /** Returns the node at the end of this edge */
+    STDCMNode getEdgeEnd(STDCMGraph graph) {
+        return new STDCMNode(
+                envelope().getTotalTime() + timeStart(),
+                envelope().getEndSpeed(),
+                graph.infra.getSignalingRouteGraph().incidentNodes(route()).nodeV(),
+                totalDepartureTimeShift(),
+                maximumAddedDelayAfter(),
+                this
+        );
+    }
 }

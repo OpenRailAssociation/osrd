@@ -4,8 +4,6 @@ import com.google.common.collect.Multimap;
 import fr.sncf.osrd.api.pathfinding.RemainingDistanceEstimator;
 import fr.sncf.osrd.api.stdcm.OccupancyBlock;
 import fr.sncf.osrd.api.stdcm.STDCMResult;
-import fr.sncf.osrd.envelope.Envelope;
-import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope_sim.PhysicsPath;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
@@ -82,8 +80,8 @@ public class STDCMPathfinding {
 
     private static double edgeRangeCost(EdgeRange<STDCMEdge> range) {
         var envelope = range.edge().envelope();
-        var timeStart = STDCMGraph.interpolateTime(envelope, range.edge().route(), range.start(), 0);
-        var timeEnd = STDCMGraph.interpolateTime(envelope, range.edge().route(), range.end(), 0);
+        var timeStart = STDCMUtils.interpolateTime(envelope, range.edge().route(), range.start(), 0);
+        var timeEnd = STDCMUtils.interpolateTime(envelope, range.edge().route(), range.end(), 0);
         return timeEnd - timeStart + range.edge().addedDelay();
     }
 
@@ -193,17 +191,11 @@ public class STDCMPathfinding {
         var res = new HashSet<Pathfinding.EdgeLocation<STDCMEdge>>();
         for (var location : locations) {
             var start = location.offset();
-            var edges = graph.makeEdges(
-                    location.edge(),
-                    startTime,
-                    0,
-                    start,
-                    maxDepartureDelay,
-                    0,
-                    null,
-                    null,
-                    false
-            );
+            var edges = new STDCMEdgeBuilder(location.edge(), graph)
+                    .setStartTime(startTime)
+                    .setStartOffset(start)
+                    .setPrevMaximumAddedDelay(maxDepartureDelay)
+                    .makeAllEdges();
             for (var edge : edges)
                 res.add(new Pathfinding.EdgeLocation<>(edge, location.offset()));
         }
