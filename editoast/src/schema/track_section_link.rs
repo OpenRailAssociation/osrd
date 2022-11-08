@@ -1,5 +1,7 @@
 use super::generate_id;
-use super::OSRDObject;
+use super::OSRDIdentified;
+
+use super::OSRDTyped;
 use super::ObjectType;
 use super::TrackEndpoint;
 use crate::api_error::ApiError;
@@ -47,12 +49,15 @@ impl TrackSectionLink {
     }
 }
 
-impl OSRDObject for TrackSectionLink {
+impl OSRDTyped for TrackSectionLink {
+    fn get_type() -> ObjectType {
+        ObjectType::TrackSectionLink
+    }
+}
+
+impl OSRDIdentified for TrackSectionLink {
     fn get_id(&self) -> &String {
         &self.id
-    }
-    fn get_type(&self) -> ObjectType {
-        ObjectType::TrackSectionLink
     }
 }
 

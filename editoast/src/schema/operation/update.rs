@@ -2,7 +2,7 @@ use super::OperationError;
 use crate::api_error::ApiError;
 
 use crate::schema::operation::RailjsonObject;
-use crate::schema::{OSRDObject, ObjectType};
+use crate::schema::{OSRDIdentified, ObjectType};
 use diesel::sql_types::{Integer, Json, Jsonb, Text};
 use diesel::{sql_query, PgConnection, QueryableByName, RunQueryDsl};
 use json_patch::Patch;
@@ -122,7 +122,7 @@ mod tests {
         create_signal, create_speed, create_switch, create_track,
     };
     use crate::schema::operation::OperationError;
-    use crate::schema::{OSRDObject, ObjectType};
+    use crate::schema::{OSRDIdentified, ObjectType};
     use diesel::sql_query;
     use diesel::sql_types::{Double, Text};
     use diesel::RunQueryDsl;

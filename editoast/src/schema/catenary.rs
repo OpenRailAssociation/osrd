@@ -1,6 +1,8 @@
 use super::generate_id;
 use super::ApplicableDirectionsTrackRange;
-use super::OSRDObject;
+use super::OSRDIdentified;
+
+use super::OSRDTyped;
 use super::ObjectType;
 use crate::api_error::ApiError;
 use crate::diesel::ExpressionMethods;
@@ -47,11 +49,13 @@ impl Catenary {
     }
 }
 
-impl OSRDObject for Catenary {
-    fn get_type(&self) -> ObjectType {
+impl OSRDTyped for Catenary {
+    fn get_type() -> ObjectType {
         ObjectType::Catenary
     }
+}
 
+impl OSRDIdentified for Catenary {
     fn get_id(&self) -> &String {
         &self.id
     }

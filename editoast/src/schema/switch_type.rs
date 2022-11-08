@@ -1,5 +1,7 @@
 use super::generate_id;
-use super::OSRDObject;
+use super::OSRDIdentified;
+
+use super::OSRDTyped;
 use super::ObjectType;
 use crate::api_error::ApiError;
 use crate::diesel::ExpressionMethods;
@@ -47,13 +49,15 @@ impl SwitchType {
     }
 }
 
-impl OSRDObject for SwitchType {
+impl OSRDTyped for SwitchType {
+    fn get_type() -> ObjectType {
+        ObjectType::SwitchType
+    }
+}
+
+impl OSRDIdentified for SwitchType {
     fn get_id(&self) -> &String {
         &self.id
-    }
-
-    fn get_type(&self) -> ObjectType {
-        ObjectType::SwitchType
     }
 }
 

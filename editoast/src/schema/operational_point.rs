@@ -1,5 +1,7 @@
 use super::generate_id;
-use super::OSRDObject;
+use super::OSRDIdentified;
+
+use super::OSRDTyped;
 use super::ObjectType;
 use crate::api_error::ApiError;
 use crate::diesel::ExpressionMethods;
@@ -71,11 +73,13 @@ pub struct OperationalPointIdentifierExtension {
     uic: i64,
 }
 
-impl OSRDObject for OperationalPoint {
-    fn get_type(&self) -> ObjectType {
+impl OSRDTyped for OperationalPoint {
+    fn get_type() -> ObjectType {
         ObjectType::OperationalPoint
     }
+}
 
+impl OSRDIdentified for OperationalPoint {
     fn get_id(&self) -> &String {
         &self.id
     }
@@ -110,11 +114,13 @@ impl From<OperationalPoint> for OperationalPointCache {
     }
 }
 
-impl OSRDObject for OperationalPointCache {
-    fn get_type(&self) -> ObjectType {
+impl OSRDTyped for OperationalPointCache {
+    fn get_type() -> ObjectType {
         ObjectType::OperationalPoint
     }
+}
 
+impl OSRDIdentified for OperationalPointCache {
     fn get_id(&self) -> &String {
         &self.obj_id
     }

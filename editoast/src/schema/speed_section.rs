@@ -1,6 +1,8 @@
 use super::generate_id;
 use super::ApplicableDirectionsTrackRange;
-use super::OSRDObject;
+use super::OSRDIdentified;
+
+use super::OSRDTyped;
 use super::ObjectType;
 use super::Panel;
 use crate::api_error::ApiError;
@@ -67,12 +69,15 @@ impl SpeedSection {
     }
 }
 
-impl OSRDObject for SpeedSection {
+impl OSRDTyped for SpeedSection {
+    fn get_type() -> ObjectType {
+        ObjectType::SpeedSection
+    }
+}
+
+impl OSRDIdentified for SpeedSection {
     fn get_id(&self) -> &String {
         &self.id
-    }
-    fn get_type(&self) -> ObjectType {
-        ObjectType::SpeedSection
     }
 }
 

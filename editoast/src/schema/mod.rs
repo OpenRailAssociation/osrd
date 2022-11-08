@@ -31,11 +31,28 @@ pub use switch_type::{SwitchPortConnection, SwitchType};
 pub use track_section::{LineString, TrackSection, TrackSectionCache};
 pub use track_section_link::TrackSectionLink;
 
-pub trait OSRDObject {
+/// This trait should be implemented by all struct that represents an OSRD type.
+pub trait OSRDTyped {
+    fn get_type() -> ObjectType;
+}
+
+/// This trait should be implemented by all OSRD objects that can be identified.
+pub trait OSRDIdentified {
     fn get_id(&self) -> &String;
+}
+
+/// This trait is used for all object that can be typed and identified.
+/// It allows to get an `ObjectRef` fromt it.
+pub trait OSRDObject: OSRDIdentified {
     fn get_type(&self) -> ObjectType;
     fn get_ref(&self) -> ObjectRef {
         ObjectRef::new(self.get_type(), self.get_id())
+    }
+}
+
+impl<T: OSRDIdentified + OSRDTyped> OSRDObject for T {
+    fn get_type(&self) -> ObjectType {
+        T::get_type()
     }
 }
 
@@ -117,14 +134,16 @@ impl Default for Waypoint {
     }
 }
 
-impl OSRDObject for Waypoint {
+impl OSRDIdentified for Waypoint {
     fn get_id(&self) -> &String {
         match self {
             Waypoint::BufferStop { id } => id,
             Waypoint::Detector { id } => id,
         }
     }
+}
 
+impl OSRDObject for Waypoint {
     fn get_type(&self) -> ObjectType {
         match self {
             Waypoint::BufferStop { .. } => ObjectType::BufferStop,
