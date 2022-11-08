@@ -5,6 +5,7 @@ import { Chart, SimulationTrain } from 'reducers/osrdsimulation';
 import { defineLinear, defineTime } from 'applications/osrd/components/Helpers/ChartHelpers';
 import defineChart from 'applications/osrd/components/Simulation/defineChart';
 
+// This is only used by SpaceTimeChart for now.
 export default function createChart(
   chart: Chart,
   chartID: string,
@@ -17,18 +18,13 @@ export default function createChart(
 ): Chart {
   d3select(`#${chartID}`).remove();
 
-  const dataSimulationTime = d3.extent(
-    [].concat(
-      ...dataSimulation.map(
-        (train) =>
-          d3.extent(
-            train.routeBeginOccupancy.map(
-              (section) => d3.extent(section, (step: any) => step[keyValues[0]]) as any
-            )
-          ) as any
+  const xValues: (number | Date)[] = dataSimulation
+    .map((train) =>
+      train.routeBeginOccupancy.map((section) =>
+        section.map((position) => (keyValues[0] === 'time' ? position.time : position.position))
       )
     )
-  );
+    .flat(Infinity) as (number | Date)[];
 
   const dataSimulationLinearMax = d3.max([
     d3.max(
@@ -55,9 +51,12 @@ export default function createChart(
     ),
   ] as any);
 
-  const defineX = chart === undefined || reset ? defineTime(dataSimulationTime) : chart.x;
+  const defineX = chart === undefined || reset ? defineTime(d3.extent(xValues)) : chart.x;
   const defineY =
     chart === undefined || reset ? defineLinear(dataSimulationLinearMax, 0.05) : chart.y;
+
+  console.log(dataSimulation);
+  console.log(defineX.domain());
 
   const width = parseInt(d3select(`#container-${chartID}`).style('width'), 10);
   const chartLocal = defineChart(
