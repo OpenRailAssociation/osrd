@@ -576,7 +576,7 @@ export function getLinearMetadataProperties(schema: JSONSchema7): Array<string> 
  */
 export function entityDoUpdate<T extends EditorEntity>(entity: T, sourceLine: LineString): T {
   if (entity.geometry.type === 'LineString' && !isNil(entity.properties)) {
-    const newProps: EditorEntity['properties'] = {};
+    const newProps: EditorEntity['properties'] = { id: entity.properties.id };
     Object.keys(entity.properties).forEach((name) => {
       const value = (entity.properties as { [key: string]: unknown })[name];
       // is a LM ?
