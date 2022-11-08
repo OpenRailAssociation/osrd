@@ -4,6 +4,7 @@ import fr.sncf.osrd.reporting.exceptions.OSRDError;
 import java.io.Serial;
 import java.util.List;
 
+@SuppressWarnings("serial") // Removes the warning about List not being serializable (moshi doesn't support ArrayList)
 public class DiagnosticError extends OSRDError {
     @Serial
     private static final long serialVersionUID = -6160787914977591307L;
