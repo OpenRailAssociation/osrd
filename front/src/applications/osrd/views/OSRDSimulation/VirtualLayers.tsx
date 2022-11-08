@@ -14,10 +14,11 @@ export default function VirtualLayers() {
               beforeId: `virtual-layer-${n + 1}`,
             }
           : {};
+      const id = `virtual-layer-${n}`;
       return (
         <Layer
-          key={`virtual-layer-${n}`}
-          id={`virtual-layer-${n}`}
+          key={id}
+          id={id}
           type="background"
           layout={{ visibility: 'none' }}
           paint={{}}
