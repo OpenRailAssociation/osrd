@@ -1,6 +1,8 @@
 use super::generate_id;
 use super::ApplicableDirections;
-use super::OSRDObject;
+use super::OSRDIdentified;
+
+use super::OSRDTyped;
 use super::ObjectType;
 use crate::api_error::ApiError;
 use crate::diesel::ExpressionMethods;
@@ -50,11 +52,13 @@ impl Detector {
     }
 }
 
-impl OSRDObject for Detector {
-    fn get_type(&self) -> ObjectType {
+impl OSRDTyped for Detector {
+    fn get_type() -> ObjectType {
         ObjectType::Detector
     }
+}
 
+impl OSRDIdentified for Detector {
     fn get_id(&self) -> &String {
         &self.id
     }
@@ -89,11 +93,13 @@ impl From<Detector> for DetectorCache {
     }
 }
 
-impl OSRDObject for DetectorCache {
-    fn get_type(&self) -> ObjectType {
+impl OSRDTyped for DetectorCache {
+    fn get_type() -> ObjectType {
         ObjectType::Detector
     }
+}
 
+impl OSRDIdentified for DetectorCache {
     fn get_id(&self) -> &String {
         &self.obj_id
     }

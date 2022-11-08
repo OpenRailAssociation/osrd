@@ -1,6 +1,8 @@
 use super::generate_id;
 use super::Direction;
-use super::OSRDObject;
+use super::OSRDIdentified;
+
+use super::OSRDTyped;
 use super::ObjectType;
 use super::Side;
 use crate::api_error::ApiError;
@@ -82,11 +84,13 @@ pub struct SignalSncfExtension {
     pub value: String,
 }
 
-impl OSRDObject for Signal {
-    fn get_type(&self) -> ObjectType {
+impl OSRDTyped for Signal {
+    fn get_type() -> ObjectType {
         ObjectType::Signal
     }
+}
 
+impl OSRDIdentified for Signal {
     fn get_id(&self) -> &String {
         &self.id
     }
@@ -105,11 +109,13 @@ pub struct SignalCache {
     pub position: f64,
 }
 
-impl OSRDObject for SignalCache {
-    fn get_type(&self) -> ObjectType {
+impl OSRDTyped for SignalCache {
+    fn get_type() -> ObjectType {
         ObjectType::Signal
     }
+}
 
+impl OSRDIdentified for SignalCache {
     fn get_id(&self) -> &String {
         &self.obj_id
     }

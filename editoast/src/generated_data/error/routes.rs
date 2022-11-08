@@ -1,7 +1,8 @@
 use super::graph::Graph;
 use crate::infra_cache::InfraCache;
 use crate::schema::{
-    Direction, InfraError, OSRDObject, ObjectRef, ObjectType, PathEndpointField, Route, Waypoint,
+    Direction, InfraError, OSRDIdentified, OSRDObject, ObjectRef, ObjectType, PathEndpointField,
+    Route, Waypoint,
 };
 use diesel::result::Error as DieselError;
 use diesel::sql_types::{Array, Integer, Json};

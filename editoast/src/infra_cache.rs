@@ -40,7 +40,7 @@ pub enum ObjectCache {
     Catenary(Catenary),
 }
 
-impl OSRDObject for ObjectCache {
+impl OSRDIdentified for ObjectCache {
     fn get_id(&self) -> &String {
         match self {
             ObjectCache::TrackSection(obj) => obj.get_id(),
@@ -56,7 +56,9 @@ impl OSRDObject for ObjectCache {
             ObjectCache::Catenary(obj) => obj.get_id(),
         }
     }
+}
 
+impl OSRDObject for ObjectCache {
     fn get_type(&self) -> ObjectType {
         match self {
             ObjectCache::TrackSection(_) => ObjectType::TrackSection,
@@ -340,12 +342,12 @@ impl InfraCache {
         );
 
         // Load speed sections tracks references
-        find_objects(conn, infra_id, ObjectType::SpeedSection)
+        find_objects(conn, infra_id)
             .into_iter()
             .for_each(|speed| infra_cache.add::<SpeedSection>(speed));
 
         // Load routes tracks references
-        find_objects(conn, infra_id, ObjectType::Route)
+        find_objects(conn, infra_id)
             .into_iter()
             .for_each(|route| infra_cache.add::<Route>(route));
 
@@ -358,7 +360,7 @@ impl InfraCache {
         );
 
         // Load track section links tracks references
-        find_objects(conn, infra_id, ObjectType::TrackSectionLink)
+        find_objects(conn, infra_id)
             .into_iter()
             .for_each(|link| infra_cache.add::<TrackSectionLink>(link));
 
@@ -371,7 +373,7 @@ impl InfraCache {
         });
 
         // Load switch types references
-        find_objects(conn, infra_id, ObjectType::SwitchType)
+        find_objects(conn, infra_id)
             .into_iter()
             .for_each(|switch_type| infra_cache.add::<SwitchType>(switch_type));
 
@@ -392,7 +394,7 @@ impl InfraCache {
         );
 
         // Load catenary tracks references
-        find_objects(conn, infra_id, ObjectType::Catenary)
+        find_objects(conn, infra_id)
             .into_iter()
             .for_each(|catenary| infra_cache.add::<Catenary>(catenary));
 
@@ -483,9 +485,9 @@ pub mod tests {
     };
     use crate::schema::{
         ApplicableDirections, ApplicableDirectionsTrackRange, Catenary, Direction,
-        DirectionalTrackRange, Endpoint, OSRDObject, OperationalPoint, OperationalPointPart, Route,
-        SpeedSection, Switch, SwitchPortConnection, SwitchType, TrackEndpoint, TrackSectionLink,
-        Waypoint,
+        DirectionalTrackRange, Endpoint, OSRDIdentified, OperationalPoint, OperationalPointPart,
+        Route, SpeedSection, Switch, SwitchPortConnection, SwitchType, TrackEndpoint,
+        TrackSectionLink, Waypoint,
     };
 
     use super::{

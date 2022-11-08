@@ -1,5 +1,7 @@
 use super::generate_id;
-use super::OSRDObject;
+use super::OSRDIdentified;
+
+use super::OSRDTyped;
 use super::ObjectType;
 use super::TrackEndpoint;
 use crate::api_error::ApiError;
@@ -63,13 +65,15 @@ pub struct SwitchSncfExtension {
     pub label: String,
 }
 
-impl OSRDObject for Switch {
+impl OSRDTyped for Switch {
+    fn get_type() -> ObjectType {
+        ObjectType::Switch
+    }
+}
+
+impl OSRDIdentified for Switch {
     fn get_id(&self) -> &String {
         &self.id
-    }
-
-    fn get_type(&self) -> ObjectType {
-        ObjectType::Switch
     }
 }
 
@@ -98,13 +102,15 @@ impl From<Switch> for SwitchCache {
     }
 }
 
-impl OSRDObject for SwitchCache {
+impl OSRDTyped for SwitchCache {
+    fn get_type() -> ObjectType {
+        ObjectType::Switch
+    }
+}
+
+impl OSRDIdentified for SwitchCache {
     fn get_id(&self) -> &String {
         &self.obj_id
-    }
-
-    fn get_type(&self) -> ObjectType {
-        ObjectType::Switch
     }
 }
 
