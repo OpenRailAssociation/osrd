@@ -18,6 +18,13 @@ export const LAYER_GROUPS_ORDER = Object.freeze({
   [LAYER_GROUPS.TRAIN]: 6,
 });
 
+/**
+ * Virtual layers are the topmost layer of each group.
+ * for example, virtual-layer-0 will be on top of all layers of group 0.
+ * Layers of group MAP_BACKGROUND (0) will have boeforeId: 'virtual-layer-0'
+ * Layers of group TOPOGRAPHY (1) will have boeforeId: 'virtual-layer-1'
+ * etc
+ */
 export const LAYERS = Object.freeze({
   // 0
   BACKGROUND: { GROUP: LAYER_GROUPS.MAP_BACKGROUND },
