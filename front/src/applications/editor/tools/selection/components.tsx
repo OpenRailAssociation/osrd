@@ -97,7 +97,6 @@ export const SelectionLeftPanel: FC = () => {
     selection.forEach((item) => types.add(item.objType));
 
     if (selection.length === 1) {
-      console.log('Editform', selection[0]);
       return (
         <EditorForm
           data={selection[0]}
