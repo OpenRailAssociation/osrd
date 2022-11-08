@@ -10,7 +10,7 @@ WORKDIR /code
 COPY poetry.lock pyproject.toml /code/
 
 RUN poetry config virtualenvs.create false \
-  && poetry install --no-dev --no-interaction --no-ansi
+  && poetry install --without dev --no-interaction --no-ansi
 
 # Creating folders, and files for a project:
 COPY . /code

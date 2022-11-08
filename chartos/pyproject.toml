@@ -23,7 +23,7 @@ production = [
     "sentry-sdk",
 ]
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 mypy = "*"
 pytest = "*"
 pytest-asyncio = "*"
