@@ -53,5 +53,16 @@ describe('osrdconfReducer', () => {
       expect(state.osrdconf.originTime).toEqual(newTime)
       expect(state.osrdconf.originUpperBoundTime).toEqual(expectedUpperBound)
     })
+    it('should not go beyond midnight', () => {
+      const store = createStore({ originTime: '10:00:00', originUpperBoundTime: '12:00:00' });
+      const newTime = '23:00:00';
+      const action = updateOriginTime(newTime)
+      store.dispatch(action);
+
+      const expectedUpperBound = '23:59:59';
+      const state = store.getState();
+      expect(state.osrdconf.originTime).toEqual(newTime)
+      expect(state.osrdconf.originUpperBoundTime).toEqual(expectedUpperBound)
+    })
   });
 });

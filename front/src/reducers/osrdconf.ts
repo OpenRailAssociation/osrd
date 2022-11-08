@@ -3,6 +3,7 @@ import produce from 'immer';
 
 import { OsrdConfState, DEFAULT_MODE, DEFAULT_STDCM_MODE } from 'applications/osrd/consts';
 import { formatIsoDate } from 'utils/date';
+import { boundedValue } from 'utils/numbers';
 import { time2sec, sec2time } from 'utils/timeManipulation';
 
 import { getSwitchTypes } from '../applications/editor/data/api';
@@ -109,14 +110,16 @@ export default function reducer(inputState: OsrdConfState | undefined, action: A
         break;
       case UPDATE_ORIGIN_TIME: {
         const difference = 7200;
+        const max = 24 * 3600 - 1;
         const newOriginTimeSeconds = time2sec(action.originTime);
-        if (!draft.originUpperBoundTime) {
-          draft.originUpperBoundTime = sec2time(newOriginTimeSeconds + difference);
-        } else if (
-          draft.originTime &&
-          time2sec(draft.originUpperBoundTime) - time2sec(draft.originTime) === difference
+        if (
+          !draft.originUpperBoundTime ||
+          (draft.originTime &&
+            time2sec(draft.originUpperBoundTime) - time2sec(draft.originTime) === difference)
         ) {
-          draft.originUpperBoundTime = sec2time(newOriginTimeSeconds + difference);
+          draft.originUpperBoundTime = sec2time(
+            boundedValue(newOriginTimeSeconds + difference, [0, max])
+          );
         }
         draft.originTime = action.originTime;
         break;
