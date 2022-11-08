@@ -1,6 +1,8 @@
 use super::generate_id;
 use super::ApplicableDirections;
-use super::OSRDObject;
+use super::OSRDIdentified;
+
+use super::OSRDTyped;
 use super::ObjectType;
 use crate::api_error::ApiError;
 use crate::infra_cache::{Cache, ObjectCache};
@@ -49,11 +51,13 @@ impl BufferStop {
     }
 }
 
-impl OSRDObject for BufferStop {
-    fn get_type(&self) -> ObjectType {
+impl OSRDTyped for BufferStop {
+    fn get_type() -> ObjectType {
         ObjectType::BufferStop
     }
+}
 
+impl OSRDIdentified for BufferStop {
     fn get_id(&self) -> &String {
         &self.id
     }
@@ -72,11 +76,13 @@ pub struct BufferStopCache {
     pub position: f64,
 }
 
-impl OSRDObject for BufferStopCache {
-    fn get_type(&self) -> ObjectType {
+impl OSRDTyped for BufferStopCache {
+    fn get_type() -> ObjectType {
         ObjectType::BufferStop
     }
+}
 
+impl OSRDIdentified for BufferStopCache {
     fn get_id(&self) -> &String {
         &self.obj_id
     }

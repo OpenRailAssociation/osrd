@@ -1,6 +1,8 @@
 use super::generate_id;
 use super::Endpoint;
-use super::OSRDObject;
+use super::OSRDIdentified;
+
+use super::OSRDTyped;
 use super::ObjectType;
 use super::TrackEndpoint;
 use crate::api_error::ApiError;
@@ -73,13 +75,15 @@ pub struct TrackSectionSncfExtension {
     pub track_name: String,
 }
 
-impl OSRDObject for TrackSection {
+impl OSRDTyped for TrackSection {
+    fn get_type() -> ObjectType {
+        ObjectType::TrackSection
+    }
+}
+
+impl OSRDIdentified for TrackSection {
     fn get_id(&self) -> &String {
         &self.id
-    }
-
-    fn get_type(&self) -> ObjectType {
-        ObjectType::TrackSection
     }
 }
 
@@ -164,13 +168,15 @@ pub struct TrackSectionCache {
     pub bbox_sch: BoundingBox,
 }
 
-impl OSRDObject for TrackSectionCache {
+impl OSRDTyped for TrackSectionCache {
+    fn get_type() -> ObjectType {
+        ObjectType::TrackSection
+    }
+}
+
+impl OSRDIdentified for TrackSectionCache {
     fn get_id(&self) -> &String {
         &self.obj_id
-    }
-
-    fn get_type(&self) -> ObjectType {
-        ObjectType::TrackSection
     }
 }
 

@@ -61,7 +61,7 @@ mod tests {
         create_signal, create_speed, create_switch, create_track,
     };
     use crate::schema::operation::delete::DeleteOperation;
-    use crate::schema::OSRDObject;
+    use crate::schema::{OSRDIdentified, OSRDObject};
     use diesel::sql_types::BigInt;
     use diesel::{sql_query, RunQueryDsl};
 

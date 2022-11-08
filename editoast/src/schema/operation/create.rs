@@ -1,7 +1,7 @@
 use crate::api_error::ApiError;
 use crate::schema::{
-    BufferStop, Catenary, Detector, OSRDObject, ObjectType, OperationalPoint, Route, Signal,
-    SpeedSection, Switch, SwitchType, TrackSection, TrackSectionLink,
+    BufferStop, Catenary, Detector, OSRDIdentified, OSRDObject, ObjectType, OperationalPoint,
+    Route, Signal, SpeedSection, Switch, SwitchType, TrackSection, TrackSectionLink,
 };
 use diesel::sql_types::{Integer, Json, Text};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
@@ -46,11 +46,13 @@ pub fn apply_create_operation(
     Ok(())
 }
 
-impl OSRDObject for RailjsonObject {
+impl OSRDIdentified for RailjsonObject {
     fn get_id(&self) -> &String {
         self.get_obj().get_id()
     }
+}
 
+impl OSRDObject for RailjsonObject {
     fn get_type(&self) -> ObjectType {
         self.get_obj().get_type()
     }

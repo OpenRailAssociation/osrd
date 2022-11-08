@@ -1,6 +1,8 @@
 use super::generate_id;
 use super::DirectionalTrackRange;
-use super::OSRDObject;
+use super::OSRDIdentified;
+
+use super::OSRDTyped;
 use super::ObjectType;
 use super::Waypoint;
 use crate::api_error::ApiError;
@@ -50,12 +52,15 @@ impl Route {
     }
 }
 
-impl OSRDObject for Route {
+impl OSRDTyped for Route {
+    fn get_type() -> ObjectType {
+        ObjectType::Route
+    }
+}
+
+impl OSRDIdentified for Route {
     fn get_id(&self) -> &String {
         &self.id
-    }
-    fn get_type(&self) -> ObjectType {
-        ObjectType::Route
     }
 }
 

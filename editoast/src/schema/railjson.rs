@@ -1,5 +1,5 @@
 use super::{
-    BufferStop, Catenary, Detector, ObjectType, OperationalPoint, Route, Signal, SpeedSection,
+    BufferStop, Catenary, Detector, OSRDTyped, OperationalPoint, Route, Signal, SpeedSection,
     Switch, SwitchType, TrackSection, TrackSectionLink,
 };
 use crate::{
@@ -96,14 +96,13 @@ impl<T: DeserializeOwned> From<ObjectQueryable> for MyParsedObject<T> {
     }
 }
 
-pub fn find_objects<T: DeserializeOwned>(
+pub fn find_objects<T: DeserializeOwned + OSRDTyped>(
     conn: &PgConnection,
     infrastructre_id: i32,
-    obj_type: ObjectType,
 ) -> Vec<T> {
     sql_query(format!(
         "SELECT data::text FROM {} WHERE infra_id = $1",
-        obj_type.get_table()
+        T::get_type().get_table()
     ))
     .bind::<Integer, _>(infrastructre_id)
     .load::<ObjectQueryable>(conn)
@@ -115,14 +114,15 @@ pub fn find_objects<T: DeserializeOwned>(
 
 #[cfg(test)]
 pub mod test {
-    use std::collections::HashMap;
-
     use super::find_objects;
     use crate::api_error::ApiError;
-    use crate::infra::{Infra, RAILJSON_VERSION};
+    use crate::infra::Infra;
+    use crate::infra::RAILJSON_VERSION;
+    use crate::schema::OSRDIdentified;
     use crate::schema::{RailJson, RailjsonError};
     use crate::tests::test_transaction;
     use diesel::PgConnection;
+    use std::collections::HashMap;
 
     #[test]
     fn persists_railjson_ko_version() {
@@ -226,17 +226,17 @@ pub mod test {
     fn find_railjson(conn: &PgConnection, infra: &Infra) -> Result<RailJson, Box<dyn ApiError>> {
         let railjson = RailJson {
             version: infra.clone().railjson_version,
-            operational_points: find_objects(conn, infra.id, ObjectType::OperationalPoint),
-            routes: find_objects(conn, infra.id, ObjectType::Route),
-            switch_types: find_objects(conn, infra.id, ObjectType::SwitchType),
-            switches: find_objects(conn, infra.id, ObjectType::Switch),
-            track_section_links: find_objects(conn, infra.id, ObjectType::TrackSectionLink),
-            track_sections: find_objects(conn, infra.id, ObjectType::TrackSection),
-            speed_sections: find_objects(conn, infra.id, ObjectType::SpeedSection),
-            catenaries: find_objects(conn, infra.id, ObjectType::Catenary),
-            signals: find_objects(conn, infra.id, ObjectType::Signal),
-            buffer_stops: find_objects(conn, infra.id, ObjectType::BufferStop),
-            detectors: find_objects(conn, infra.id, ObjectType::Detector),
+            operational_points: find_objects(conn, infra.id),
+            routes: find_objects(conn, infra.id),
+            switch_types: find_objects(conn, infra.id),
+            switches: find_objects(conn, infra.id),
+            track_section_links: find_objects(conn, infra.id),
+            track_sections: find_objects(conn, infra.id),
+            speed_sections: find_objects(conn, infra.id),
+            catenaries: find_objects(conn, infra.id),
+            signals: find_objects(conn, infra.id),
+            buffer_stops: find_objects(conn, infra.id),
+            detectors: find_objects(conn, infra.id),
         };
 
         Ok(railjson)
