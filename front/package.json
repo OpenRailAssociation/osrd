@@ -68,7 +68,7 @@
     "redux-persist-transform-compress": "^4.2.0",
     "redux-persist-transform-filter": "0.0.20",
     "redux-thunk": "^2.3.0",
-    "reselect": "^4.1.6",
+    "reselect": "^4.1.7",
     "sass": "^1.55.0",
     "tslib": "^2.4.1",
     "uuid": "^8.3.2",
