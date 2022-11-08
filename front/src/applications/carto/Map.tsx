@@ -1,3 +1,4 @@
+import { isNil } from 'lodash';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import ReactMapGL, {
@@ -88,11 +89,11 @@ function Map() {
 
   useEffect(() => {
     const newViewport: Partial<Viewport> = {};
-    if (urlLat) newViewport.latitude = parseFloat(urlLat);
-    if (urlLon) newViewport.longitude = parseFloat(urlLon);
-    if (urlZoom) newViewport.zoom = parseFloat(urlZoom);
-    if (urlBearing) newViewport.bearing = parseFloat(urlBearing);
-    if (urlPitch) newViewport.pitch = parseFloat(urlPitch);
+    if (!isNil(urlLat)) newViewport.latitude = parseFloat(urlLat);
+    if (!isNil(urlLon)) newViewport.longitude = parseFloat(urlLon);
+    if (!isNil(urlZoom)) newViewport.zoom = parseFloat(urlZoom);
+    if (!isNil(urlBearing)) newViewport.bearing = parseFloat(urlBearing);
+    if (!isNil(urlPitch)) newViewport.pitch = parseFloat(urlPitch);
     if (Object.keys(newViewport).length > 0) updateViewportChange(newViewport);
   }, []);
 
