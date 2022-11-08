@@ -183,7 +183,7 @@ export const ALL_SIGNAL_LAYERS_SET = new Set(ALL_SIGNAL_LAYERS);
  * cases (mostly for "CARRE A", "CARRE VL"...):
  */
 export const SIGNALS_TO_SYMBOLS: Record<SignalType, SignalType[]> = ALL_SIGNAL_LAYERS.reduce(
-  (iter, signal) => {
+  (iter: Record<SignalType, SignalType[]>, signal) => {
     const canonicalType = signal.split(' ')[0];
     return {
       ...iter,
