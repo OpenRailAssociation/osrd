@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Source, MapRef } from 'react-map-gl';
 import { Map as MapboxType } from 'mapbox-gl';
-import { get } from 'lodash';
+import { get, isNil } from 'lodash';
 
 import { RootState } from 'reducers';
 import { Theme, SourceLayer } from 'types';
@@ -83,9 +83,9 @@ function Signals(props: PlatformProps) {
         const matchingSignalAspect = selectedTrainConsolidatedSimulation.signalAspects.find(
           (signalAspect) =>
             signalAspect.signal_id === renderedDynamicStopsFeature.id &&
-            signalAspect.time_start &&
+            !isNil(signalAspect.time_start) &&
             signalAspect.time_start <= timePosition &&
-            signalAspect.time_end &&
+            !isNil(signalAspect.time_end) &&
             signalAspect.time_end >= timePosition
         );
 
