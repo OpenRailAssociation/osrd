@@ -3,6 +3,7 @@ package fr.sncf.osrd.reporting.exceptions;
 import com.squareup.moshi.JsonAdapter;
 import fr.sncf.osrd.reporting.ErrorContext;
 import fr.sncf.osrd.utils.Reflection;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,8 +24,10 @@ import java.util.List;
  * }
  * </pre>
  */
+@SuppressWarnings("serial") // Removes the warning about List not being serializable (moshi doesn't support ArrayList)
 public abstract class OSRDError extends RuntimeException {
 
+    @Serial
     private static final long serialVersionUID = 1197516372515951853L;
 
     public static final String osrdErrorType = "core";

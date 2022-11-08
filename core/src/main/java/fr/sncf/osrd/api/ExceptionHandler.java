@@ -41,6 +41,7 @@ public class ExceptionHandler {
     }
 
     /** Wraps an assertion error as an OSRDError, to report the stack trace with the same formatting as other errors */
+    @SuppressWarnings("serial") // Removes the warning about List not being serializable
     public static class AssertWrapper extends OSRDError {
         public static final String osrdErrorType = "assert_error";
         private static final long serialVersionUID = 1662852082101020410L;
