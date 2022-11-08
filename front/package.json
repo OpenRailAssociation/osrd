@@ -72,7 +72,7 @@
     "sass": "^1.55.0",
     "tslib": "^2.4.1",
     "uuid": "^8.3.2",
-    "web-vitals": "^2.1.0"
+    "web-vitals": "^3.0.4"
   },
   "devDependencies": {
     "@testing-library/dom": "^7.21.4",
@@ -93,7 +93,7 @@
     "eslint-plugin-prettier": "^4.2.1",
     "prettier": "^2.7.1",
     "typescript": "~4.4.2",
-    "web-vitals": "^2.1.0"
+    "web-vitals": "^3.0.4"
   },
   "resolutions": {
     "react-error-overlay": "6.0.9",
