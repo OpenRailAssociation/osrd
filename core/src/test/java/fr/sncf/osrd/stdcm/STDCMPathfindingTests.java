@@ -6,9 +6,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.common.collect.*;
 import fr.sncf.osrd.api.stdcm.OccupancyBlock;
-import fr.sncf.osrd.api.stdcm.graph.STDCMGraph;
 import fr.sncf.osrd.api.stdcm.graph.STDCMPathfinding;
 import fr.sncf.osrd.api.stdcm.STDCMResult;
+import fr.sncf.osrd.api.stdcm.graph.STDCMUtils;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.train.RollingStock;
@@ -518,7 +518,7 @@ public class STDCMPathfindingTests {
         var firstRoute = infraBuilder.addRoute("a", "b");
         var secondRoute = infraBuilder.addRoute("b", "c");
         var infra = infraBuilder.build();
-        var firstRouteEnvelope = STDCMGraph.simulateRoute(firstRoute, 0, 0,
+        var firstRouteEnvelope = STDCMUtils.simulateRoute(firstRoute, 0, 0,
                 REALISTIC_FAST_TRAIN, 2, new double[]{});
         assert firstRouteEnvelope != null;
         var res = STDCMPathfinding.findPath(
@@ -964,7 +964,7 @@ public class STDCMPathfindingTests {
          */
         var infraBuilder = new DummyRouteGraphBuilder();
         var route = infraBuilder.addRoute("a", "b", 1000);
-        var firstRouteEnvelope = STDCMGraph.simulateRoute(route, 0, 0,
+        var firstRouteEnvelope = STDCMUtils.simulateRoute(route, 0, 0,
                 REALISTIC_FAST_TRAIN, 2., new double[]{});
         assert firstRouteEnvelope != null;
         var runTime = firstRouteEnvelope.getTotalTime();
@@ -1000,7 +1000,7 @@ public class STDCMPathfindingTests {
         infraBuilder.addRoute("b", "c", 10);
         infraBuilder.addRoute("c", "d", 10);
         var lastRoute = infraBuilder.addRoute("d", "e", 10);
-        var firstRouteEnvelope = STDCMGraph.simulateRoute(firstRoute, 0, 0,
+        var firstRouteEnvelope = STDCMUtils.simulateRoute(firstRoute, 0, 0,
                 REALISTIC_FAST_TRAIN, 2., new double[]{});
         assert firstRouteEnvelope != null;
         var runTime = firstRouteEnvelope.getTotalTime();
@@ -1034,7 +1034,7 @@ public class STDCMPathfindingTests {
         var infraBuilder = new DummyRouteGraphBuilder();
         var firstRoute = infraBuilder.addRoute("a", "b", 1000);
         var secondRoute = infraBuilder.addRoute("b", "c", 100, 5);
-        var firstRouteEnvelope = STDCMGraph.simulateRoute(firstRoute, 0, 0,
+        var firstRouteEnvelope = STDCMUtils.simulateRoute(firstRoute, 0, 0,
                 REALISTIC_FAST_TRAIN, 2., new double[]{});
         assert firstRouteEnvelope != null;
         var runTime = firstRouteEnvelope.getTotalTime();
@@ -1169,10 +1169,10 @@ public class STDCMPathfindingTests {
         var firstRoute = infraBuilder.addRoute("a", "b", 1_000, 30);
         var secondRoute = infraBuilder.addRoute("b", "c", 10_000, 30);
         var thirdRoute = infraBuilder.addRoute("c", "d", 100, 30);
-        var firstRouteEnvelope = STDCMGraph.simulateRoute(firstRoute, 0, 0,
+        var firstRouteEnvelope = STDCMUtils.simulateRoute(firstRoute, 0, 0,
                 REALISTIC_FAST_TRAIN, 2., new double[]{});
         assert firstRouteEnvelope != null;
-        var secondRouteEnvelope = STDCMGraph.simulateRoute(secondRoute, firstRouteEnvelope.getEndSpeed(),
+        var secondRouteEnvelope = STDCMUtils.simulateRoute(secondRoute, firstRouteEnvelope.getEndSpeed(),
                 0, REALISTIC_FAST_TRAIN, 2., new double[]{});
         assert secondRouteEnvelope != null;
         var timeThirdRouteFree = firstRouteEnvelope.getTotalTime() + secondRouteEnvelope.getTotalTime();
@@ -1227,10 +1227,10 @@ public class STDCMPathfindingTests {
         infraBuilder.addRoute("c", "d", 1_000, 20);
         infraBuilder.addRoute("d", "e", 1_000, 20);
         var lastRoute = infraBuilder.addRoute("e", "f", 1_000, 20);
-        var firstRouteEnvelope = STDCMGraph.simulateRoute(firstRoute, 0, 0,
+        var firstRouteEnvelope = STDCMUtils.simulateRoute(firstRoute, 0, 0,
                 REALISTIC_FAST_TRAIN, 2., new double[]{});
         assert firstRouteEnvelope != null;
-        var secondRouteEnvelope = STDCMGraph.simulateRoute(secondRoute, firstRouteEnvelope.getEndSpeed(),
+        var secondRouteEnvelope = STDCMUtils.simulateRoute(secondRoute, firstRouteEnvelope.getEndSpeed(),
                 0, REALISTIC_FAST_TRAIN, 2., new double[]{});
         assert secondRouteEnvelope != null;
         var timeLastRouteFree = firstRouteEnvelope.getTotalTime() + 120 + secondRouteEnvelope.getTotalTime() * 3;
@@ -1290,10 +1290,10 @@ public class STDCMPathfindingTests {
         final var thirdRoute = infraBuilder.addRoute("c", "d", 1_000, 20);
         infraBuilder.addRoute("d", "e", 1_000, 20);
         var lastRoute = infraBuilder.addRoute("e", "f", 1_000, 20);
-        var firstRouteEnvelope = STDCMGraph.simulateRoute(firstRoute, 0, 0,
+        var firstRouteEnvelope = STDCMUtils.simulateRoute(firstRoute, 0, 0,
                 REALISTIC_FAST_TRAIN, 2., new double[]{});
         assert firstRouteEnvelope != null;
-        var secondRouteEnvelope = STDCMGraph.simulateRoute(secondRoute, firstRouteEnvelope.getEndSpeed(),
+        var secondRouteEnvelope = STDCMUtils.simulateRoute(secondRoute, firstRouteEnvelope.getEndSpeed(),
                 0, REALISTIC_FAST_TRAIN, 2., new double[]{});
         assert secondRouteEnvelope != null;
         var timeLastRouteFree = firstRouteEnvelope.getTotalTime() + 120 + secondRouteEnvelope.getTotalTime() * 3;
@@ -1427,7 +1427,7 @@ public class STDCMPathfindingTests {
         double time = 0;
         double speed = 0;
         for (var route : routes) {
-            var envelope = STDCMGraph.simulateRoute(route, speed, 0,
+            var envelope = STDCMUtils.simulateRoute(route, speed, 0,
                     rollingStock, 2., new double[]{});
             assert envelope != null;
             time += envelope.getTotalTime();
