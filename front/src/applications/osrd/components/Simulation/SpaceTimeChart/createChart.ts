@@ -18,7 +18,7 @@ export default function createChart(
   d3select(`#${chartID}`).remove();
 
   const dataSimulationTime = d3.extent(
-    (dataSimulation || []).map(
+    ([...dataSimulation] || []).map(
       (train) =>
         d3.extent(
           train.routeBeginOccupancy.map(
@@ -30,7 +30,7 @@ export default function createChart(
 
   const dataSimulationLinearMax = d3.max([
     d3.max(
-      (dataSimulation || []).map((train) =>
+      ([...dataSimulation] || []).map((train) =>
         d3.max(
           train.routeEndOccupancy.map((section) =>
             d3.max(section.map((step: any) => step[keyValues[1]]))
@@ -39,7 +39,7 @@ export default function createChart(
       )
     ),
     d3.max(
-      (dataSimulation || []).map((train) =>
+      ([...dataSimulation] || []).map((train) =>
         d3.max(
           train.routeBeginOccupancy.map((section) =>
             d3.max(section.map((step: any) => step[keyValues[1]]))
