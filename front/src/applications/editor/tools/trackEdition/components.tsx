@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Layer, Source } from 'react-map-gl';
 import { useTranslation } from 'react-i18next';
 import { last } from 'lodash';
+import { Position } from 'geojson';
 
 import { EditorContext } from '../../context';
 import GeoJSONs from '../../../../common/Map/Layers/GeoJSONs';
@@ -50,7 +51,7 @@ export const TrackEditionLayers: FC = () => {
     }
   }
 
-  let highlightedPoint: [number, number] | undefined;
+  let highlightedPoint: Position | undefined;
   if (state.editionState.type === 'movePoint') {
     if (typeof state.editionState.draggedPointIndex === 'number') {
       highlightedPoint = state.track.geometry.coordinates[state.editionState.draggedPointIndex];
