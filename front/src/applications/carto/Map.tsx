@@ -25,7 +25,7 @@ import Hillshade from 'common/Map/Layers/Hillshade';
 import OSM from 'common/Map/Layers/OSM';
 /* Objects & various */
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
-import Platform from 'common/Map/Layers/Platform';
+import Platforms from 'common/Map/Layers/Platforms';
 import Routes from 'common/Map/Layers/Routes';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
 import Signals from 'common/Map/Layers/Signals';
@@ -139,9 +139,9 @@ function Map() {
         {/* Have to duplicate objects with sourceLayer to avoid cache problems in mapbox */}
         {mapTrackSources === 'geographic' ? (
           <>
-            <Platform
+            <Platforms
               colors={colors[mapStyle]}
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORM.GROUP]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORMS.GROUP]}
             />
 
             <TracksGeographic
@@ -189,7 +189,10 @@ function Map() {
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
             />
-            <SNCF_LPV geomType="geo" colors={colors[mapStyle]} />
+            <SNCF_LPV
+              geomType="geo"
+              colors={colors[mapStyle]}
+            />
 
             <Signals
               sourceTable="signals"

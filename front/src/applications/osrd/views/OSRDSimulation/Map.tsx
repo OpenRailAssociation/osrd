@@ -39,7 +39,7 @@ import Catenaries from 'common/Map/Layers/Catenaries';
 import Hillshade from 'common/Map/Layers/Hillshade';
 import OSM from 'common/Map/Layers/OSM';
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
-import Platform from 'common/Map/Layers/Platform';
+import Platforms from 'common/Map/Layers/Platforms';
 import RenderItinerary from 'applications/osrd/components/SimulationMap/RenderItinerary';
 import Routes from 'common/Map/Layers/Routes';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
@@ -372,9 +372,9 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
         {/* Have to  duplicate objects with sourceLayer to avoid cache problems in mapbox */}
         {mapTrackSources === 'geographic' ? (
           <>
-            <Platform
+            <Platforms
               colors={colors[mapStyle]}
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORM.GROUP]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORMS.GROUP]}
             />
 
             <TracksGeographic
