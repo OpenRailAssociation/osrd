@@ -1,6 +1,6 @@
 package fr.sncf.osrd.envelope_sim;
 
-import fr.sncf.osrd.train.RollingStock;
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 
 /**
  * An utility class to help simulate the train, using numerical integration.
@@ -114,7 +114,7 @@ public final class TrainPhysicsIntegrator {
         assert brakingForce >= 0.;
         assert tractionForce >= 0.;
 
-        if (brakingForce > 0 && rollingStock.getGammaType() == RollingStock.GammaType.CONST)
+        if (brakingForce > 0 && rollingStock.getGammaType() == RJSRollingStock.GammaType.CONST)
             return rollingStock.getDeceleration();
 
         // the sum of forces that always go the direction opposite to the train's movement

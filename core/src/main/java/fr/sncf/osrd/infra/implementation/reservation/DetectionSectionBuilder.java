@@ -5,6 +5,7 @@ import static fr.sncf.osrd.infra.api.Direction.FORWARD;
 import static fr.sncf.osrd.utils.graph.GraphHelpers.*;
 
 import com.google.common.collect.ImmutableSet;
+import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.reservation.DetectionSection;
 import fr.sncf.osrd.infra.api.reservation.DiDetector;
 import fr.sncf.osrd.infra.api.tracks.directed.DiTrackInfra;
@@ -87,7 +88,7 @@ public class DetectionSectionBuilder {
                     var linkIndex = beginIndex;
                     if (getDirectionFromEndpoint(infra.getTrackGraph(), track, commonNode) == BACKWARD)
                         linkIndex = endIndex;
-                    uf.union(linkIndex, getEndpointIndex(neighbor, EdgeEndpoint.startEndpoint(neighborDir)));
+                    uf.union(linkIndex, getEndpointIndex(neighbor, Direction.startEndpoint(neighborDir)));
                 }
             }
         }

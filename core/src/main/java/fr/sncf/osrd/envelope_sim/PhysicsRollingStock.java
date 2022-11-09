@@ -1,6 +1,6 @@
 package fr.sncf.osrd.envelope_sim;
 
-import fr.sncf.osrd.train.RollingStock;
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 
 public interface PhysicsRollingStock {
     /** The mass of the train, in kilograms */
@@ -16,7 +16,7 @@ public interface PhysicsRollingStock {
     double getMaxSpeed();
 
     /** The type of gamma input of the train */
-    RollingStock.GammaType getGammaType();
+    RJSRollingStock.GammaType getGammaType();
 
     /** The resistance to movement at a given speed, in newtons */
     double getRollingResistance(double speed);

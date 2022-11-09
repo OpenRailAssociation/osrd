@@ -2,6 +2,7 @@ package fr.sncf.osrd.utils.geom;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import fr.sncf.osrd.railjson.schema.geom.Point;
 import org.junit.jupiter.api.Test;
 import java.io.IOException;
 

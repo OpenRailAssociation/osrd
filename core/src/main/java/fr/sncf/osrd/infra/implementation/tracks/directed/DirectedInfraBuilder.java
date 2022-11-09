@@ -1,6 +1,6 @@
 package fr.sncf.osrd.infra.implementation.tracks.directed;
 
-import static fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint.endEndpoint;
+import static fr.sncf.osrd.infra.api.Direction.endEndpoint;
 import static fr.sncf.osrd.utils.graph.GraphHelpers.*;
 
 import com.google.common.collect.HashBiMap;

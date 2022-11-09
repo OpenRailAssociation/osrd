@@ -1,4 +1,4 @@
-package fr.sncf.osrd.utils.geom;
+package fr.sncf.osrd.railjson.schema.geom;
 
 import com.carrotsearch.hppc.DoubleArrayList;
 import com.squareup.moshi.*;

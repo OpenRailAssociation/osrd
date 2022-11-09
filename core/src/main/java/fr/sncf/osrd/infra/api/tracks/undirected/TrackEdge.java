@@ -5,8 +5,7 @@ import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.RangeMap;
 import fr.sncf.osrd.infra.api.Direction;
-import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSCatenary;
-import fr.sncf.osrd.utils.geom.LineString;
+import fr.sncf.osrd.railjson.schema.geom.LineString;
 import java.util.EnumMap;
 import java.util.Set;
 

@@ -1,4 +1,4 @@
-package fr.sncf.osrd.utils.geom;
+package fr.sncf.osrd.railjson.schema.geom;
 
 import com.squareup.moshi.*;
 import java.io.IOException;
