@@ -1,11 +1,7 @@
 package fr.sncf.osrd.railjson.schema.common;
 
 import com.squareup.moshi.Json;
-import fr.sncf.osrd.infra.errors.InvalidInfraError;
-import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 @ExcludeFromGeneratedCodeCoverage
 public final class RJSWaypointRef<T extends Identified> {
@@ -47,14 +43,5 @@ public final class RJSWaypointRef<T extends Identified> {
     @Override
     public String toString() {
         return String.format("RJSWaypointRef { type=%s, id=%s }", type, id.id);
-    }
-
-    /** Checks that the type of the object matches one of the given expected types */
-    public void checkType(Set<RJSWaypointType> expectedTypes) {
-        if (!expectedTypes.contains(type))
-            throw new InvalidInfraError(String.format(
-                    "Mismatched ref type: expected %s, got (type=%s, id=%s)",
-                    expectedTypes, type, id
-            ));
     }
 }
