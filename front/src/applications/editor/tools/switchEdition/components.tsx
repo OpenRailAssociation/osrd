@@ -352,7 +352,8 @@ export const SwitchEditionLayers: FC = () => {
             closeButton={false}
           >
             {`${
-              hoveredTrack.properties?.line_name || t('Editor.tools.switch-edition.untitled-track')
+              hoveredTrack.properties?.extensions?.sncf?.line_name ||
+              t('Editor.tools.switch-edition.untitled-track')
             } (${closestPoint.properties.name})`}
             <div className="text-muted small">{hoveredTrack.properties.id}</div>
           </Popup>
