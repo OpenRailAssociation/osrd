@@ -95,7 +95,7 @@ function Origin(props: OriginProps) {
                     {isStdcm && (
                       <input
                         type="date"
-                        className="form-control form-control-sm"
+                        className="form-control form-control-sm mx-1"
                         onChange={(e) => dispatch(updateOriginDate(e.target.value))}
                         value={osrdconf.originDate}
                         disabled
@@ -112,10 +112,10 @@ function Origin(props: OriginProps) {
                     />
                   </div>
                   {isStdcm && (
-                    <div className="d-flex">
+                    <div className="d-flex my-1">
                       <input
                         type="date"
-                        className="form-control form-control-sm"
+                        className="form-control form-control-sm mx-1"
                         onChange={(e) => dispatch(updateOriginUpperBoundDate(e.target.value))}
                         value={osrdconf.originUpperBoundDate}
                         disabled

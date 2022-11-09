@@ -79,7 +79,7 @@ function Destination(props: DestinationProps) {
                   <div className="d-flex">
                     <input
                       type="date"
-                      className="form-control form-control-sm"
+                      className="form-control form-control-sm mx-1"
                       onChange={(e) => dispatch(updateDestinationDate(e.target.value))}
                       value={osrdconf.destinationDate}
                       disabled={isByOrigin}
