@@ -1,8 +1,8 @@
 package fr.sncf.osrd.train;
 
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 public class TestTrains {
@@ -16,7 +16,7 @@ public class TestTrains {
             1,
             1,
             1,
-            RollingStock.GammaType.CONST,
+            RJSRollingStock.GammaType.CONST,
             new RollingStock.TractiveEffortPoint[] {
                     new RollingStock.TractiveEffortPoint(0, 1)
             },
@@ -57,7 +57,7 @@ public class TestTrains {
                 0.05,
                 0.25,
                 0.5,
-                RollingStock.GammaType.CONST,
+                RJSRollingStock.GammaType.CONST,
                 tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
                 RJSLoadingGaugeType.G1,
                 Set.of(),
@@ -74,7 +74,7 @@ public class TestTrains {
                 0.05,
                 0.25,
                 0.5,
-                RollingStock.GammaType.CONST,
+                RJSRollingStock.GammaType.CONST,
                 tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
                 RJSLoadingGaugeType.G1,
                 Set.of(),
@@ -91,7 +91,7 @@ public class TestTrains {
                 0.05,
                 0.25,
                 0.5,
-                RollingStock.GammaType.CONST,
+                RJSRollingStock.GammaType.CONST,
                 tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
                 RJSLoadingGaugeType.G1,
                 Set.of(),
@@ -108,7 +108,7 @@ public class TestTrains {
                 0.05,
                 0.25,
                 0.95,
-                RollingStock.GammaType.MAX,
+                RJSRollingStock.GammaType.MAX,
                 tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
                 RJSLoadingGaugeType.G1,
                 Set.of(),
@@ -125,7 +125,7 @@ public class TestTrains {
                 0.05,
                 0.25,
                 0.5,
-                RollingStock.GammaType.CONST,
+                RJSRollingStock.GammaType.CONST,
                 tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
                 RJSLoadingGaugeType.GC,
                 Set.of(),
@@ -142,7 +142,7 @@ public class TestTrains {
                 0.05,
                 0.25,
                 0.5,
-                RollingStock.GammaType.CONST,
+                RJSRollingStock.GammaType.CONST,
                 tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
                 RJSLoadingGaugeType.G1,
                 Set.of(25000),

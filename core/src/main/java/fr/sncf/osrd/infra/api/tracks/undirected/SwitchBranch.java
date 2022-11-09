@@ -1,7 +1,7 @@
 package fr.sncf.osrd.infra.api.tracks.undirected;
 
 import com.google.common.collect.ImmutableSet;
-import fr.sncf.osrd.utils.geom.LineString;
+import fr.sncf.osrd.railjson.schema.geom.LineString;
 
 /** A branch connects two ports of the same switch */
 public non-sealed interface SwitchBranch extends TrackEdge {

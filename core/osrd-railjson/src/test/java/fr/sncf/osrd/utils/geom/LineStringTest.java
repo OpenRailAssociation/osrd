@@ -3,6 +3,8 @@ package fr.sncf.osrd.utils.geom;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.squareup.moshi.JsonDataException;
+import fr.sncf.osrd.railjson.schema.geom.LineString;
+import fr.sncf.osrd.railjson.schema.geom.Point;
 import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.util.ArrayList;

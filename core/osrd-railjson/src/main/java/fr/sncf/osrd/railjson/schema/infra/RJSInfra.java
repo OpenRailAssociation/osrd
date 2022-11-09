@@ -9,7 +9,7 @@ import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSSignal;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrainDetector;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSCatenary;
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSSpeedSection;
-import fr.sncf.osrd.utils.geom.LineString;
+import fr.sncf.osrd.railjson.schema.geom.LineString;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

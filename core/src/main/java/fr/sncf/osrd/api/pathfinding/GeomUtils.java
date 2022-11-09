@@ -3,7 +3,7 @@ package fr.sncf.osrd.api.pathfinding;
 import fr.sncf.osrd.api.pathfinding.response.DirTrackRange;
 import fr.sncf.osrd.api.pathfinding.response.PathfindingResult;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
-import fr.sncf.osrd.utils.geom.LineString;
+import fr.sncf.osrd.railjson.schema.geom.LineString;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -23,7 +23,6 @@ import fr.sncf.osrd.infra.errors.DiscontinuousRoute;
 import fr.sncf.osrd.infra.errors.MissingDetectorsRoute;
 import fr.sncf.osrd.infra.implementation.tracks.directed.DirectedInfraBuilder;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
-import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
 import fr.sncf.osrd.reporting.warnings.Warning;
@@ -231,12 +230,12 @@ public class ReservationInfraBuilder {
             var prevNode = GraphHelpers.nodeFromEdgeEndpoint(
                     g,
                     prev.track.getEdge(),
-                    EdgeEndpoint.endEndpoint(prev.track.getDirection())
+                    Direction.endEndpoint(prev.track.getDirection())
             );
             var nextNode = GraphHelpers.nodeFromEdgeEndpoint(
                     g,
                     next.track.getEdge(),
-                    EdgeEndpoint.startEndpoint(next.track.getDirection())
+                    Direction.startEndpoint(next.track.getDirection())
             );
             var connecting = g.edgeConnecting(prevNode, nextNode);
             if (connecting.isEmpty())

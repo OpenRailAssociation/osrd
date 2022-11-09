@@ -3,6 +3,7 @@ package fr.sncf.osrd.train;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock.GammaType;
 import java.util.Set;
 
 
@@ -21,7 +22,7 @@ public class RollingStock implements PhysicsRollingStock {
     /** the kind of deceleration input of the train. It can be:
      * a constant value
      * the maximum possible deceleration value */
-    public final RollingStock.GammaType gammaType;
+    public final GammaType gammaType;
 
     /** the deceleration of the train, in m/s^2 */
     public final double gamma;
@@ -121,11 +122,6 @@ public class RollingStock implements PhysicsRollingStock {
     @Override
     public GammaType getGammaType() {
         return gammaType;
-    }
-
-    public enum GammaType {
-        CONST,
-        MAX
     }
 
     public static final class TractiveEffortPoint {

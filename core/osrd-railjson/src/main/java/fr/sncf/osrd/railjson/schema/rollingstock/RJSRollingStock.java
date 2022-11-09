@@ -5,7 +5,7 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.Identified;
-import fr.sncf.osrd.train.RollingStock;
+
 import java.util.Set;
 
 public class RJSRollingStock implements Identified {
@@ -107,6 +107,11 @@ public class RJSRollingStock implements Identified {
     @Json(name = "electric_only")
     public boolean electricOnly;
 
+    public enum GammaType {
+        CONST,
+        MAX
+    }
+
     @SuppressFBWarnings("UWF_NULL_FIELD")
     public static final class RJSEffortCurve {
         public double[] speeds = null;
@@ -117,7 +122,7 @@ public class RJSRollingStock implements Identified {
     @SuppressFBWarnings("UWF_NULL_FIELD")
     public static final class RJSGamma {
         public double value = Double.NaN;
-        public RollingStock.GammaType type = null;
+        public GammaType type = null;
     }
 
     @Override

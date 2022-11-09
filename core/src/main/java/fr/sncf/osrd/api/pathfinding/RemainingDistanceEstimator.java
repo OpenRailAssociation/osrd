@@ -1,7 +1,7 @@
 package fr.sncf.osrd.api.pathfinding;
 
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
-import fr.sncf.osrd.utils.geom.Point;
+import fr.sncf.osrd.railjson.schema.geom.Point;
 import fr.sncf.osrd.utils.graph.functional_interfaces.AStarHeuristic;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import java.util.Collection;

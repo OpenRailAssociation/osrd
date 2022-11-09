@@ -5,8 +5,8 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import fr.sncf.osrd.railjson.schema.common.ID;
 import fr.sncf.osrd.reporting.warnings.Warning;
-import fr.sncf.osrd.utils.geom.LineString;
-import fr.sncf.osrd.utils.geom.Point;
+import fr.sncf.osrd.railjson.schema.geom.LineString;
+import fr.sncf.osrd.railjson.schema.geom.Point;
 import java.util.*;
 
 public class PathfindingResult {
