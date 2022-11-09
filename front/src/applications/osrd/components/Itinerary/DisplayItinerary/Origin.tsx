@@ -2,6 +2,7 @@ import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Position } from 'geojson';
 import { RiMapPin2Fill } from 'react-icons/ri';
+import { BiLink, BiUnlink } from 'react-icons/bi';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -12,12 +13,12 @@ import {
   updateOriginUpperBoundTime,
   updateOriginSpeed,
   updateStdcmMode,
+  toggleOriginLinkedBounds,
 } from 'reducers/osrdconf';
 import { makeEnumBooleans } from 'utils/constants';
 import { RootState } from 'reducers';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { store } from 'Store';
 import { MODES, STDCM_MODES } from '../../../consts';
 
 interface OriginProps {
@@ -138,7 +139,9 @@ function Origin(props: OriginProps) {
                   <InputSNCF
                     type="number"
                     id="osrd-config-speed-origin"
-                    onChange={(e) => dispatch(updateOriginSpeed(e.target.value))}
+                    onChange={(e) => {
+                      dispatch(updateOriginSpeed(e.target.value));
+                    }}
                     value={osrdconf.originSpeed}
                     unit="km/h"
                     min={0}
@@ -151,7 +154,21 @@ function Origin(props: OriginProps) {
               <button
                 className="btn btn-sm btn-only-icon btn-white"
                 type="button"
-                onClick={() => store.dispatch(updateOrigin(undefined))}
+                onClick={() => {
+                  dispatch(toggleOriginLinkedBounds());
+                }}
+              >
+                {osrdconf.originLinkedBounds ? <BiLink /> : <BiUnlink />}
+                <span className="sr-only" aria-hidden="true">
+                  Toggle link
+                </span>
+              </button>
+              <button
+                className="btn btn-sm btn-only-icon btn-white"
+                type="button"
+                onClick={() => {
+                  dispatch(updateOrigin(undefined));
+                }}
               >
                 <i className="icons-circle-delete" />
                 <span className="sr-only" aria-hidden="true">
