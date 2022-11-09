@@ -1,55 +1,102 @@
 import { OsrdConfState } from 'applications/osrd/consts';
 import { createStoreWithoutMiddleware } from 'Store';
-import { initialState, updateOriginTime, toggleOriginLinkedBounds } from '../osrdconf';
+import {
+  initialState,
+  updateOriginTime,
+  updateOriginUpperBoundTime,
+  toggleOriginLinkedBounds,
+} from '../osrdconf';
 
 const createStore = (initialStateExtra?: Partial<OsrdConfState>) =>
   createStoreWithoutMiddleware({ osrdconf: { ...initialState, ...initialStateExtra } });
 
 describe('osrdconfReducer', () => {
-  describe('updateOriginTime, depending on current state of originTime and originUpperboundTime', () => {
-    it('should update originUpperBoundTime with +2h if both are empty', () => {
-      const store = createStore();
-      const newTime = '11:00:00';
-      const action = updateOriginTime(newTime);
+  describe('updateOriginTime', () => {
+    it('should update only itself if not linked', () => {
+      const store = createStore({
+        originLinkedBounds: false,
+        originTime: '11:00:00',
+        originUpperBoundTime: '15:30:00',
+      });
+
+      const action = updateOriginTime('08:00:00');
       store.dispatch(action);
 
-      const expectedUpperBound = '13:00:00';
       const state = store.getState();
-      expect(state.osrdconf.originTime).toEqual(newTime);
-      expect(state.osrdconf.originUpperBoundTime).toEqual(expectedUpperBound);
+      expect(state.osrdconf.originTime).toEqual('08:00:00');
+      expect(state.osrdconf.originUpperBoundTime).toEqual('15:30:00');
     });
-    it('should update originUpperBoundTime with +2h if originUpperBoundTime is empty', () => {
-      const store = createStore({ originTime: '09:00:00' });
-      const newTime = '12:00:00';
-      const action = updateOriginTime(newTime);
+    it('should update originUpperBoundTime if linked', () => {
+      const store = createStore({
+        originLinkedBounds: true,
+        originTime: '11:00:00',
+        originUpperBoundTime: '15:30:00',
+      });
+
+      const action = updateOriginTime('08:00:00');
       store.dispatch(action);
 
-      const expectedUpperBound = '14:00:00';
       const state = store.getState();
-      expect(state.osrdconf.originTime).toEqual(newTime);
-      expect(state.osrdconf.originUpperBoundTime).toEqual(expectedUpperBound);
+      expect(state.osrdconf.originTime).toEqual('08:00:00');
+      expect(state.osrdconf.originUpperBoundTime).toEqual('10:00:00');
     });
-    it('should not touch originUpperBoundTime if defined and originTime empty', () => {
-      const originUpperBoundTime = '14:00:00';
-      const store = createStore({ originUpperBoundTime });
-      const newTime = '11:00:00';
-      const action = updateOriginTime(newTime);
+    it('should not make upper bound go beyond midnight', () => {
+      const store = createStore({
+        originLinkedBounds: true,
+        originTime: '11:00:00',
+        originUpperBoundTime: '15:30:00',
+      });
+
+      const action = updateOriginTime('23:30:00');
       store.dispatch(action);
 
       const state = store.getState();
-      expect(state.osrdconf.originTime).toEqual(newTime);
-      expect(state.osrdconf.originUpperBoundTime).toEqual(originUpperBoundTime);
+      expect(state.osrdconf.originTime).toEqual('23:30:00');
+      expect(state.osrdconf.originUpperBoundTime).toEqual('23:59:59');
     });
-    it('should update originUpperBoundTime with +2h if difference is 2h', () => {
-      const store = createStore({ originTime: '10:00:00', originUpperBoundTime: '12:00:00' });
-      const newTime = '11:00:00';
-      const action = updateOriginTime(newTime);
+  });
+  describe('updateOriginUpperBoundTime', () => {
+    it('should update only itself if not linked', () => {
+      const store = createStore({
+        originLinkedBounds: false,
+        originTime: '11:00:00',
+        originUpperBoundTime: '15:30:00',
+      });
+
+      const action = updateOriginUpperBoundTime('20:00:00');
       store.dispatch(action);
 
-      const expectedUpperBound = '13:00:00';
       const state = store.getState();
-      expect(state.osrdconf.originTime).toEqual(newTime);
-      expect(state.osrdconf.originUpperBoundTime).toEqual(expectedUpperBound);
+      expect(state.osrdconf.originTime).toEqual('11:00:00');
+      expect(state.osrdconf.originUpperBoundTime).toEqual('20:00:00');
+    });
+    it('should update originTime if linked', () => {
+      const store = createStore({
+        originLinkedBounds: true,
+        originTime: '11:00:00',
+        originUpperBoundTime: '15:30:00',
+      });
+
+      const action = updateOriginUpperBoundTime('20:00:00');
+      store.dispatch(action);
+
+      const state = store.getState();
+      expect(state.osrdconf.originTime).toEqual('18:00:00');
+      expect(state.osrdconf.originUpperBoundTime).toEqual('20:00:00');
+    });
+    it('should not make originTime go below 0', () => {
+      const store = createStore({
+        originLinkedBounds: true,
+        originTime: '11:00:00',
+        originUpperBoundTime: '15:30:00',
+      });
+
+      const action = updateOriginUpperBoundTime('00:30:00');
+      store.dispatch(action);
+
+      const state = store.getState();
+      expect(state.osrdconf.originTime).toEqual('00:00:00');
+      expect(state.osrdconf.originUpperBoundTime).toEqual('00:30:00');
     });
   });
   describe('toggleOriginLinkedBounds', () => {

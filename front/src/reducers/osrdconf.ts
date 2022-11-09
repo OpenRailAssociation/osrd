@@ -70,6 +70,9 @@ export const initialState: OsrdConfState = {
   featureInfoClick: { displayPopup: false },
 };
 
+const ORIGIN_TIME_BOUND_DIFFERENCE = 7200;
+const MAX_UPPER_BOUND_TIME = 24 * 3600 - 1;
+
 export default function reducer(inputState: OsrdConfState | undefined, action: AnyAction) {
   const state = inputState || initialState;
   return produce(state, (draft) => {
@@ -111,24 +114,31 @@ export default function reducer(inputState: OsrdConfState | undefined, action: A
         draft.originSpeed = action.originSpeed;
         break;
       case UPDATE_ORIGIN_TIME: {
-        const difference = 7200;
-        const max = 24 * 3600 - 1;
         const newOriginTimeSeconds = time2sec(action.originTime);
-        if (
-          !draft.originUpperBoundTime ||
-          (draft.originTime &&
-            time2sec(draft.originUpperBoundTime) - time2sec(draft.originTime) === difference)
-        ) {
+        if (draft.originLinkedBounds) {
           draft.originUpperBoundTime = sec2time(
-            boundedValue(newOriginTimeSeconds + difference, [0, max])
+            boundedValue(newOriginTimeSeconds + ORIGIN_TIME_BOUND_DIFFERENCE, [
+              0,
+              MAX_UPPER_BOUND_TIME,
+            ])
           );
         }
         draft.originTime = action.originTime;
         break;
       }
-      case UPDATE_ORIGIN_UPPER_BOUND_TIME:
+      case UPDATE_ORIGIN_UPPER_BOUND_TIME: {
+        const newOriginUpperBoundTimeSeconds = time2sec(action.originUpperBoundTime);
+        if (draft.originLinkedBounds) {
+          draft.originTime = sec2time(
+            boundedValue(newOriginUpperBoundTimeSeconds - ORIGIN_TIME_BOUND_DIFFERENCE, [
+              0,
+              MAX_UPPER_BOUND_TIME,
+            ])
+          );
+        }
         draft.originUpperBoundTime = action.originUpperBoundTime;
         break;
+      }
       case TOGGLE_ORIGIN_LINKED_BOUNDS:
         draft.originLinkedBounds = !draft.originLinkedBounds;
         break;
