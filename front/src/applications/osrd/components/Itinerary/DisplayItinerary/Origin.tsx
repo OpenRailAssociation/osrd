@@ -32,6 +32,8 @@ import { makeEnumBooleans } from 'utils/constants';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { MODES, STDCM_MODES } from '../../../consts';
 
+import './display-itinerary.scss';
+
 interface OriginProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string, source?: string) => void;
 }
@@ -96,6 +98,22 @@ function Origin(props: OriginProps) {
     />
   );
 
+  const toggleButton = (
+    <div className="toggle-button-container">
+      <button
+        className="btn btn-sm btn-only-icon btn-white"
+        type="button"
+        onClick={() => {
+          dispatch(toggleOriginLinkedBounds());
+        }}
+      >
+        {originLinkedBounds ? <BiLink /> : <BiUnlink />}
+        <span className="sr-only" aria-hidden="true">
+          Toggle link
+        </span>
+      </button>
+    </div>
+  );
   return (
     <>
       {originTitle}
@@ -103,7 +121,7 @@ function Origin(props: OriginProps) {
         {origin !== undefined ? (
           <>
             <i className="text-success icons-itinerary-bullet mr-2" />
-            <div className="pl-1 hover w-100 d-flex align-items-center">
+            <div className="pl-1 hover w-100 origin-name-and-time-container">
               {originPointName}
               <div className="ml-auto d-flex mr-1">
                 {radioButton}
@@ -167,18 +185,7 @@ function Origin(props: OriginProps) {
                   />
                 </div>
               )}
-              <button
-                className="btn btn-sm btn-only-icon btn-white"
-                type="button"
-                onClick={() => {
-                  dispatch(toggleOriginLinkedBounds());
-                }}
-              >
-                {originLinkedBounds ? <BiLink /> : <BiUnlink />}
-                <span className="sr-only" aria-hidden="true">
-                  Toggle link
-                </span>
-              </button>
+              {isStdcm && toggleButton}
               <button
                 className="btn btn-sm btn-only-icon btn-white"
                 type="button"
