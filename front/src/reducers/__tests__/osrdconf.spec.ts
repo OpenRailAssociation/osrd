@@ -1,6 +1,6 @@
 import { OsrdConfState } from 'applications/osrd/consts';
 import { createStoreWithoutMiddleware } from 'Store';
-import { initialState, updateOriginTime } from '../osrdconf';
+import { initialState, updateOriginTime, toggleOriginLinkedBounds } from '../osrdconf';
 
 const createStore = (initialStateExtra?: Partial<OsrdConfState>) =>
   createStoreWithoutMiddleware({ osrdconf: { ...initialState, ...initialStateExtra } });
@@ -51,16 +51,23 @@ describe('osrdconfReducer', () => {
       expect(state.osrdconf.originTime).toEqual(newTime);
       expect(state.osrdconf.originUpperBoundTime).toEqual(expectedUpperBound);
     });
-    it('should not go beyond midnight', () => {
-      const store = createStore({ originTime: '10:00:00', originUpperBoundTime: '12:00:00' });
-      const newTime = '23:00:00';
-      const action = updateOriginTime(newTime);
+  });
+  describe('toggleOriginLinkedBounds', () => {
+    it('should set to false if true', () => {
+      const store = createStore();
+      const action = toggleOriginLinkedBounds();
       store.dispatch(action);
 
-      const expectedUpperBound = '23:59:59';
       const state = store.getState();
-      expect(state.osrdconf.originTime).toEqual(newTime);
-      expect(state.osrdconf.originUpperBoundTime).toEqual(expectedUpperBound);
+      expect(state.osrdconf.originLinkedBounds).toEqual(false);
+    });
+    it('should set to true if false', () => {
+      const store = createStore({ originLinkedBounds: false });
+      const action = toggleOriginLinkedBounds();
+      store.dispatch(action);
+
+      const state = store.getState();
+      expect(state.osrdconf.originLinkedBounds).toEqual(true);
     });
   });
 });

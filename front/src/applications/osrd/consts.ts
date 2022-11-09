@@ -132,6 +132,7 @@ export interface OsrdConfState {
   originTime?: string;
   originUpperBoundDate?: string;
   originUpperBoundTime?: string;
+  originLinkedBounds: boolean;
   destinationDate?: string;
   destinationTime?: string;
   featureInfoClick: { displayPopup: boolean };
