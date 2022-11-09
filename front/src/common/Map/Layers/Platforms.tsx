@@ -6,16 +6,16 @@ import { OSM_URL } from 'common/Map/const';
 
 import { Theme } from 'types';
 
-interface PlatformProps {
+interface PlatformsProps {
   colors: Theme;
   layerOrder?: number;
 }
 
-function Platform(props: PlatformProps) {
+function Platforms(props: PlatformsProps) {
   const { colors, layerOrder } = props;
 
-  const platformParams: LayerProps = {
-    id: 'osm/platform',
+  const platformsParams: LayerProps = {
+    id: 'osm/platforms',
     type: 'fill-extrusion',
     source: 'openmaptiles',
     'source-layer': 'transportation',
@@ -34,10 +34,10 @@ function Platform(props: PlatformProps) {
   };
 
   return (
-    <Source id="platform" type="vector" url={OSM_URL} source-layer="transportation">
-      <OrderedLayer {...platformParams} layerOrder={layerOrder} />
+    <Source id="platforms" type="vector" url={OSM_URL} source-layer="transportation">
+      <OrderedLayer {...platformsParams} layerOrder={layerOrder} />
     </Source>
   );
 }
 
-export default Platform;
+export default Platforms;
