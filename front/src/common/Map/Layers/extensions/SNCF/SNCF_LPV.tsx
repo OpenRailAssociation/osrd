@@ -1,25 +1,28 @@
+/* eslint-disable react/jsx-pascal-case */
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { Layer, Source, LayerProps } from 'react-map-gl';
+import { Source, LayerProps } from 'react-map-gl';
 import { useTranslation } from 'react-i18next';
 
 import { RootState } from 'reducers';
 import { MAP_URL } from 'common/Map/const';
 import { Theme } from 'types';
 
-// REMOVE BEFORE PROD
-import Panels from './SNCF_LPV_PANELS';
+import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+
+import SNCF_LPV_Panels from './SNCF_LPV_PANELS';
 
 interface SNCF_LPVProps {
   geomType: string;
   colors: Theme;
+  layerOrder?: number;
 }
 
 export default function SNCF_LPV(props: SNCF_LPVProps) {
   const { t } = useTranslation('map-settings');
   const { layersSettings } = useSelector((state: RootState) => state.map);
   const { infraID } = useSelector((state: RootState) => state.osrdconf);
-  const { geomType, colors } = props;
+  const { geomType, colors, layerOrder } = props;
 
   const tag = `speed_limit_by_tag_${layersSettings.speedlimittag}`;
   const speedLimitByTagName = [
@@ -28,32 +31,6 @@ export default function SNCF_LPV(props: SNCF_LPVProps) {
   ];
 
   const speedSectionFilter = ['any', ['has', 'speed_limit'], ['has', tag]];
-
-  const speedValuePointParams: LayerProps = {
-    type: 'symbol',
-    'source-layer': 'lpv',
-    minzoom: 9,
-    maxzoom: 24,
-    filter: speedSectionFilter,
-    layout: {
-      visibility: 'none',
-      'text-font': ['Roboto Bold'],
-      'symbol-placement': 'point',
-      'text-field': ['to-string', speedLimitByTagName],
-      'text-size': 12,
-      'icon-allow-overlap': false,
-      'icon-ignore-placement': false,
-      'text-justify': 'left',
-      'text-allow-overlap': false,
-      'text-ignore-placement': false,
-    },
-    paint: {
-      'text-color': colors.lpv.pointtext,
-      'text-halo-color': colors.lpv.pointhalo,
-      'text-halo-width': 7,
-      'text-opacity': 1,
-    },
-  };
 
   const speedValueParams: LayerProps = {
     type: 'symbol',
@@ -155,20 +132,23 @@ export default function SNCF_LPV(props: SNCF_LPVProps) {
           type="vector"
           url={`${MAP_URL}/layer/lpv/mvt/${geomType}/?infra=${infraID}`}
         >
-          <Layer {...speedValuePointParams} id={`chartis/osrd_sncf_lpv_points/${geomType}`} />
-          <Layer {...speedValueParams} id={`chartis/osrd_sncf_lpv_value/${geomType}`} />
-          <Layer
+          <OrderedLayer
+            {...speedValueParams}
+            id={`chartis/osrd_sncf_lpv_value/${geomType}`}
+            layerOrder={layerOrder}
+          />
+          <OrderedLayer
             {...speedLineBGParams}
             id={`chartis/osrd_sncf_lpv_colors_bg/${geomType}`}
-            beforeId={`chartis/osrd_sncf_lpv_points/${geomType}`}
+            layerOrder={layerOrder}
           />
-          <Layer
+          <OrderedLayer
             {...speedLineParams}
             id={`chartis/osrd_sncf_lpv_colors/${geomType}`}
-            beforeId={`chartis/osrd_sncf_lpv_points/${geomType}`}
+            layerOrder={layerOrder}
           />
         </Source>
-        <Panels />
+        <SNCF_LPV_Panels geomType={geomType} layerOrder={layerOrder} />
       </>
     );
   }

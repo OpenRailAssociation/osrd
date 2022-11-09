@@ -192,6 +192,7 @@ function Map() {
             <SNCF_LPV
               geomType="geo"
               colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
             />
 
             <Signals

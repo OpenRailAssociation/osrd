@@ -3,7 +3,6 @@ import {
   ALL_SIGNAL_LAYERS_SET,
   LIGHT_SIGNALS,
   PANELS_STOPS,
-  PANELS_TIVS,
 } from 'common/Map/Consts/SignalsNames';
 
 import { LayerProps } from 'react-map-gl';
@@ -46,9 +45,6 @@ export function getSignalsList(signalsSettings: SignalsSettings) {
   if (signalsSettings.stops) {
     signalsList = signalsList.concat(PANELS_STOPS);
   }
-  if (signalsSettings.tivs) {
-    signalsList = signalsList.concat(PANELS_TIVS);
-  }
   if (signalsSettings.lights) {
     signalsList = signalsList.concat(LIGHT_SIGNALS);
   }
@@ -84,49 +80,8 @@ export function signalsToSprites(
   type: string
 ): SymbolLayout['icon-image'] {
   switch (type) {
-    case 'TIV D FIXE':
-      return ['concat', prefix, 'TIV D FIXE ', ['get', 'extensions_sncf_value']];
-    case 'TIV D MOB':
-      return ['concat', prefix, 'TIV D MOB ', ['get', 'extensions_sncf_value']];
-    case 'TIV R MOB':
-      return ['concat', prefix, 'TIV R MOB ', ['get', 'extensions_sncf_value']];
-    case 'TIVD C FIX':
-      return ['concat', prefix, 'TIVD C FIX ', ['get', 'extensions_sncf_value']];
-    case 'TIVD B FIX':
-      return ['concat', prefix, 'TIVD B FIX ', ['get', 'extensions_sncf_value']];
-    case 'TIV PENDIS':
-      return ['concat', prefix, 'TIV PENDIS ', ['get', 'extensions_sncf_value']];
-    case 'TIV PENEXE':
-      return ['concat', prefix, 'TIV PENEXE ', ['get', 'extensions_sncf_value']];
-    case 'CHEVRON':
-      return `${prefix}CHEVRON BAS`;
     case 'ARRET VOY':
       return ['concat', prefix, 'ARRET VOY ', ['get', 'extensions_sncf_label']];
-    case 'DIVERS':
-      return [
-        'case',
-        ['==', ['get', 'extensions_sncf_value'], `${prefix}SIGNAUX A GAUCHE`],
-        `${prefix}SIG A GAUCHE`,
-        ['==', ['get', 'extensions_sncf_value'], `${prefix}SIGNAUX A DROITE`],
-        `${prefix}SIG A DROITE`,
-        '',
-      ];
-    case 'TECS':
-    case 'TSCS':
-      return [
-        'concat',
-        prefix,
-        type,
-        ' ',
-        [
-          'case',
-          ['==', ['get', 'extensions_sncf_side'], 'RIGHT'],
-          'D',
-          ['==', ['get', 'extensions_sncf_side'], 'LEFT'],
-          'G',
-          '',
-        ],
-      ];
     case 'CARRE':
     case 'S':
     case 'CARRE A':
