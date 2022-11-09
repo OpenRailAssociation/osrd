@@ -15,6 +15,9 @@ import EditorZone from '../../../../common/Map/Layers/EditorZone';
 import EditorForm from '../../components/EditorForm';
 import { save } from '../../../../reducers/editor';
 import { EditorContextType, ExtendedEditorContextType } from '../types';
+import EntitySumUp from '../../components/EntitySumUp';
+
+import './styles.scss';
 
 export const SelectionMessages: FC = () => {
   const { t, state } = useContext(EditorContext) as EditorContextType<SelectionState>;
@@ -47,20 +50,6 @@ export const SelectionLayers: FC = () => {
     }
   }
 
-  let labelParts =
-    state.hovered &&
-    [
-      state.hovered.properties.RA_libelle_gare,
-      state.hovered.properties.RA_libelle_poste,
-      state.hovered.properties.RA_libelle_poste_metier,
-      state.hovered.properties.OP_id_poste_metier,
-      state.hovered.properties.track_number,
-    ].filter((s) => !!s && s !== 'null');
-
-  if (state.hovered && !labelParts?.length) {
-    labelParts = [state.hovered.properties.id];
-  }
-
   return (
     <>
       <GeoJSONs
@@ -77,7 +66,7 @@ export const SelectionLayers: FC = () => {
           latitude={state.mousePosition[1]}
           closeButton={false}
         >
-          {labelParts && labelParts.map((s, i) => <div key={i}>{s}</div>)}
+          <EntitySumUp entity={state.hovered} />
         </Popup>
       )}
     </>
@@ -195,9 +184,8 @@ export const SelectionLeftPanel: FC = () => {
       <ul className="list-unstyled">
         {selection.map((item) => (
           <li key={item.properties.id} className="pb-4">
-            <div className="pb-2">
-              {t('Editor.tools.select-items.item')} <strong>{item.properties.id}</strong>{' '}
-              {t('Editor.tools.select-items.of-type')} <strong>{item.objType}</strong>
+            <div className="pb-2 entity">
+              <EntitySumUp entity={item} classes={{ small: '' }} />
             </div>
             <div>
               {selection.length > 1 && (

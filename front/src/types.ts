@@ -1,6 +1,6 @@
 import { Action } from 'redux';
 import { JSONSchema7 } from 'json-schema';
-import { Position, Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
+import { Position, Feature, GeoJsonProperties, Geometry, Point, LineString } from 'geojson';
 import { Operation } from 'fast-json-patch';
 import { ThunkAction as ReduxThunkAction } from 'redux-thunk';
 // Next line because:
@@ -57,12 +57,21 @@ export type EditorEntity<G extends Geometry | null = Geometry, P = GeoJsonProper
   Feature<G, P & { id: string }> & { objType: string },
   'id'
 >;
-export interface TrackSectionEntity extends EditorEntity {
+export interface TrackSectionEntity
+  extends EditorEntity<
+    LineString,
+    {
+      extensions?: {
+        sncf?: {
+          line_code?: number;
+          line_name?: string;
+          track_name?: string;
+          track_number?: number;
+        };
+      };
+    }
+  > {
   objType: 'TrackSection';
-  geometry: {
-    type: 'LineString';
-    coordinates: [number, number][];
-  };
 }
 export interface SignalEntity
   extends EditorEntity<
@@ -111,7 +120,18 @@ export interface SwitchType {
   groups: Record<string, SwitchPortConnection[]>;
 }
 export interface SwitchEntity
-  extends EditorEntity<Point, { switch_type: string; ports: Record<string, TrackEndpoint> }> {
+  extends EditorEntity<
+    Point,
+    {
+      switch_type: string;
+      ports: Record<string, TrackEndpoint>;
+      extensions?: {
+        sncf: {
+          label?: string;
+        };
+      };
+    }
+  > {
   objType: 'Switch';
 }
 
