@@ -25,4 +25,9 @@ public class FlatPath implements PhysicsPath {
             return position;
         return endPos;
     }
+
+    @Override
+    public String getCatenaryProfile(double position) {
+        return null;
+    }
 }

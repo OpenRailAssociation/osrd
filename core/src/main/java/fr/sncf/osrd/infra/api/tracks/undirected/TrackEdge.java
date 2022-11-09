@@ -41,6 +41,6 @@ public sealed interface TrackEdge permits SwitchBranch, TrackSection {
     /** Returns a list of ranges, each having a set of blocked loading gauge type */
     ImmutableRangeMap<Double, LoadingGaugeConstraint> getLoadingGaugeConstraints();
 
-    /** Returns a set of voltages usable at any position */
-    RangeMap<Double, Set<String>> getVoltages();
+    /** Returns a voltage usable at any position */
+    RangeMap<Double, String> getVoltages();
 }

@@ -60,9 +60,7 @@ public class STDCMEndpoint implements Take {
     }
 
     @Override
-    public Response act(Request req) throws
-            InvalidRollingStock,
-            InvalidSchedule {
+    public Response act(Request req) throws InvalidRollingStock, InvalidSchedule {
         var recorder = new DiagnosticRecorderImpl(false);
         try {
             // Parse request input
@@ -97,7 +95,9 @@ public class STDCMEndpoint implements Take {
                     occupancies,
                     rollingStock
             );
+            // TODO get real comfort
             double minRunTime = getMinRunTime(infra, rollingStock, startLocations, endLocations, request.timeStep);
+
             // Run the STDCM pathfinding
             var res = STDCMPathfinding.findPath(
                     infra,
@@ -168,7 +168,9 @@ public class STDCMEndpoint implements Take {
                         0,
                         List.of(new TrainStop(path.length(), 0.1)),
                         List.of(),
-                        List.of()
+                        List.of(),
+                        // TODO get real comfort
+                        RollingStock.Comfort.STANDARD
                 )),
                 timeStep
         );
@@ -177,10 +179,15 @@ public class STDCMEndpoint implements Take {
     }
 
     /** Generate a train schedule matching the envelope and rolling stock, with one stop at the end */
-    private static StandaloneTrainSchedule makeTrainSchedule(Envelope envelope, RollingStock rollingStock) {
+    private static StandaloneTrainSchedule makeTrainSchedule(
+            Envelope envelope,
+            RollingStock rollingStock
+    ) {
         List<TrainStop> trainStops = new ArrayList<>();
         trainStops.add(new TrainStop(envelope.getEndPos(), 0.1));
-        return new StandaloneTrainSchedule(rollingStock, 0., trainStops, List.of(), List.of());
+        // TODO get real comfort
+        return new StandaloneTrainSchedule(
+                rollingStock, 0., trainStops, List.of(), List.of(), RollingStock.Comfort.STANDARD);
     }
 }
 
