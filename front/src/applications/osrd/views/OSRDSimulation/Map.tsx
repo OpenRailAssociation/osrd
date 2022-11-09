@@ -65,6 +65,7 @@ import {
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 
 import 'common/Map/Map.scss';
+import SNCF_LPV from 'common/Map/Layers/extensions/SNCF/SNCF_LPV';
 
 const PATHFINDING_URI = '/pathfinding/';
 
@@ -422,6 +423,11 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
             />
+            <SNCF_LPV
+              geomType="geo"
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
+            />
 
             <Signals
               mapRef={mapRef}
@@ -466,6 +472,11 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
             />
 
             <SpeedLimits
+              geomType="sch"
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
+            />
+            <SNCF_LPV
               geomType="sch"
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}

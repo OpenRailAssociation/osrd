@@ -48,6 +48,7 @@ import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 
 import 'common/Map/Map.scss';
+import SNCF_LPV from 'common/Map/Layers/extensions/SNCF/SNCF_LPV';
 
 function Map() {
   const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings } =
@@ -285,6 +286,11 @@ function Map() {
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
             />
+            <SNCF_LPV
+              geomType="geo"
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
+            />
 
             <Signals
               sourceTable="signals"
@@ -329,6 +335,11 @@ function Map() {
             />
 
             <SpeedLimits
+              geomType="sch"
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
+            />
+            <SNCF_LPV
               geomType="sch"
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
