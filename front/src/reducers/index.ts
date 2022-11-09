@@ -11,8 +11,14 @@ import userReducer, { UserState, initialState as userInitialState } from './user
 import mapReducer, { MapState, initialState as mapInitialState } from './map';
 import editorReducer, { EditorActions, initialState as editorInitialState } from './editor';
 import osrdconfReducer, { initialState as osrdconfInitialState } from './osrdconf';
-import osrdsimulationReducer, { OsrdSimulationState, initialState as osrdSimulationInitialState } from './osrdsimulation';
-import rollingStockReducer, { RollingStockState, initialState as rollingStockInitialState } from './rollingstock';
+import osrdsimulationReducer, {
+  OsrdSimulationState,
+  initialState as osrdSimulationInitialState,
+} from './osrdsimulation';
+import rollingStockReducer, {
+  RollingStockState,
+  initialState as rollingStockInitialState,
+} from './rollingstock';
 
 import { EditorState } from '../applications/editor/tools/types';
 
@@ -80,9 +86,16 @@ export const rootInitialState: RootState = {
   osrdconf: osrdconfInitialState,
   osrdsimulation: osrdSimulationInitialState,
   rollingstock: rollingStockInitialState,
-}
+};
 
-export type AnyReducerState = UserState | MapState | EditorState | MainState | OsrdConfState | OsrdSimulationState | RollingStockState;
+export type AnyReducerState =
+  | UserState
+  | MapState
+  | EditorState
+  | MainState
+  | OsrdConfState
+  | OsrdSimulationState
+  | RollingStockState;
 
 export const rootReducer: ReducersMapObject<RootState> = {
   user: userReducer,
