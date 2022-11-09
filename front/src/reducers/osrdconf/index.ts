@@ -6,7 +6,7 @@ import { formatIsoDate } from 'utils/date';
 import { boundedValue } from 'utils/numbers';
 import { time2sec, sec2time } from 'utils/timeManipulation';
 
-import { getSwitchTypes } from '../applications/editor/data/api';
+import { getSwitchTypes } from 'applications/editor/data/api';
 /* eslint-disable default-case */
 
 // Action Types

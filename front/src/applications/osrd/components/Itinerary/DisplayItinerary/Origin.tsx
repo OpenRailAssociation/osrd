@@ -15,8 +15,19 @@ import {
   updateStdcmMode,
   toggleOriginLinkedBounds,
 } from 'reducers/osrdconf';
+import {
+  getStdcmMode,
+  getMode,
+  getOrigin,
+  getOriginDate,
+  getOriginTime,
+  getOriginSpeed,
+  getOriginLinkedBounds,
+  getOriginUpperBoundDate,
+  getOriginUpperBoundTime,
+  getPathfindingID,
+} from 'reducers/osrdconf/selectors';
 import { makeEnumBooleans } from 'utils/constants';
-import { RootState } from 'reducers';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { MODES, STDCM_MODES } from '../../../consts';
@@ -27,12 +38,21 @@ interface OriginProps {
 
 function Origin(props: OriginProps) {
   const { zoomToFeaturePoint } = props;
-  const osrdconf = useSelector((state: RootState) => state.osrdconf);
+  const stdcmMode = useSelector(getStdcmMode);
+  const mode = useSelector(getMode);
+  const origin = useSelector(getOrigin);
+  const originDate = useSelector(getOriginDate);
+  const originTime = useSelector(getOriginTime);
+  const originSpeed = useSelector(getOriginSpeed);
+  const originLinkedBounds = useSelector(getOriginLinkedBounds);
+  const originUpperBoundDate = useSelector(getOriginUpperBoundDate);
+  const originUpperBoundTime = useSelector(getOriginUpperBoundTime);
+  const pathfindingID = useSelector(getPathfindingID);
   const dispatch = useDispatch();
   const { t } = useTranslation(['osrdconf']);
 
-  const { isByOrigin, isByDestination } = makeEnumBooleans(STDCM_MODES, osrdconf.stdcmMode);
-  const { isSimulation, isStdcm } = makeEnumBooleans(MODES, osrdconf.mode);
+  const { isByOrigin, isByDestination } = makeEnumBooleans(STDCM_MODES, stdcmMode);
+  const { isSimulation, isStdcm } = makeEnumBooleans(MODES, mode);
 
   const originTitle = (
     <h2 className="d-flex align-items-center mb-0 pl-4">
@@ -46,7 +66,7 @@ function Origin(props: OriginProps) {
         data-target="#modalPathJSONDetail"
         className="btn btn-link"
       >
-        <small className="ml-1">{osrdconf.pathfindingID}</small>
+        <small className="ml-1">{pathfindingID}</small>
       </button>
     </h2>
   );
@@ -54,17 +74,13 @@ function Origin(props: OriginProps) {
   const originPointName = (
     <div
       onClick={() => {
-        zoomToFeaturePoint(
-          osrdconf.origin?.clickLngLat,
-          osrdconf.origin?.id,
-          osrdconf.origin?.source
-        );
+        zoomToFeaturePoint(origin?.clickLngLat, origin?.id, origin?.source);
       }}
       role="button"
       tabIndex={0}
     >
       <strong className="mr-1 text-nowrap">
-        {osrdconf?.origin?.name ? osrdconf?.origin?.name : osrdconf?.origin?.id.split('-')[0]}
+        {origin?.name ? origin?.name : origin?.id.split('-')[0]}
       </strong>
     </div>
   );
@@ -84,7 +100,7 @@ function Origin(props: OriginProps) {
     <>
       {originTitle}
       <div className="mb-3 d-flex align-items-center w-100 osrd-config-place">
-        {osrdconf.origin !== undefined ? (
+        {origin !== undefined ? (
           <>
             <i className="text-success icons-itinerary-bullet mr-2" />
             <div className="pl-1 hover w-100 d-flex align-items-center">
@@ -98,7 +114,7 @@ function Origin(props: OriginProps) {
                         type="date"
                         className="form-control form-control-sm mx-1"
                         onChange={(e) => dispatch(updateOriginDate(e.target.value))}
-                        value={osrdconf.originDate}
+                        value={originDate}
                         disabled
                       />
                     )}
@@ -106,7 +122,7 @@ function Origin(props: OriginProps) {
                       type="time"
                       id="osrd-config-time-origin"
                       onChange={(e) => dispatch(updateOriginTime(e.target.value))}
-                      value={osrdconf.originTime}
+                      value={originTime}
                       sm
                       noMargin
                       readonly={isByDestination}
@@ -118,14 +134,14 @@ function Origin(props: OriginProps) {
                         type="date"
                         className="form-control form-control-sm mx-1"
                         onChange={(e) => dispatch(updateOriginUpperBoundDate(e.target.value))}
-                        value={osrdconf.originUpperBoundDate}
+                        value={originUpperBoundDate}
                         disabled
                       />
                       <InputSNCF
                         type="time"
                         id="osrd-config-time-origin"
                         onChange={(e) => dispatch(updateOriginUpperBoundTime(e.target.value))}
-                        value={osrdconf.originUpperBoundTime}
+                        value={originUpperBoundTime}
                         sm
                         noMargin
                         readonly={isByDestination}
@@ -142,7 +158,7 @@ function Origin(props: OriginProps) {
                     onChange={(e) => {
                       dispatch(updateOriginSpeed(e.target.value));
                     }}
-                    value={osrdconf.originSpeed}
+                    value={originSpeed}
                     unit="km/h"
                     min={0}
                     max={1000}
@@ -158,7 +174,7 @@ function Origin(props: OriginProps) {
                   dispatch(toggleOriginLinkedBounds());
                 }}
               >
-                {osrdconf.originLinkedBounds ? <BiLink /> : <BiUnlink />}
+                {originLinkedBounds ? <BiLink /> : <BiUnlink />}
                 <span className="sr-only" aria-hidden="true">
                   Toggle link
                 </span>
