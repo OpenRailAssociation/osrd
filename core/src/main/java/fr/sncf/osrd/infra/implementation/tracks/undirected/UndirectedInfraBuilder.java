@@ -101,11 +101,7 @@ public class UndirectedInfraBuilder {
             for (var trackRange : catenary.trackRanges) {
                 var track = trackSectionsByID.get(trackRange.track);
                 assert track != null;
-                track.getVoltages().merge(
-                        Range.open(trackRange.begin, trackRange.end),
-                        Set.of(catenary.voltage),
-                        Sets::union
-                );
+                track.getVoltages().put(Range.open(trackRange.begin, trackRange.end), catenary.voltage);
             }
         }
     }

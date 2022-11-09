@@ -3,6 +3,7 @@ package fr.sncf.osrd.train;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -58,17 +59,15 @@ public class RollingStock implements PhysicsRollingStock {
      */
     public final double inertiaCoefficient;
 
+    public final RJSLoadingGaugeType loadingGaugeType;
+
     /**
      * Associates a speed to a force.
      * https://en.wikipedia.org/wiki/Tractive_force#Tractive_effort_curves
      */
-    public final TractiveEffortPoint[] tractiveEffortCurve;
+    private final Map<String, ModeEffortCurves> modes;
 
-    public final RJSLoadingGaugeType loadingGaugeType;
-
-    public final Set<String> modes;
-
-    public final boolean isElectricOnly;
+    private final String defaultMode;
 
     @Override
     public double getMass() {
@@ -138,9 +137,70 @@ public class RollingStock implements PhysicsRollingStock {
         }
     }
 
+    public static class ModeEffortCurves {
+        public final boolean isElectric;
+        public final TractiveEffortPoint[] defaultCurve;
+        public final ConditionalEffortCurve[] curves;
+
+        /** Mode effort curves constructor */
+        public ModeEffortCurves(
+                boolean isElectric,
+                TractiveEffortPoint[] defaultCurve,
+                ConditionalEffortCurve[] curves
+        ) {
+            this.isElectric = isElectric;
+            this.defaultCurve = defaultCurve;
+            this.curves = curves;
+        }
+    }
+
+    public static class ConditionalEffortCurve {
+        public final EffortCurveConditions cond;
+        public final TractiveEffortPoint[] curve;
+
+        public ConditionalEffortCurve(EffortCurveConditions cond, TractiveEffortPoint[] curve) {
+            this.cond = cond;
+            this.curve = curve;
+        }
+    }
+
+    public static class EffortCurveConditions {
+        public final Comfort comfort;
+
+        public EffortCurveConditions(Comfort comfort) {
+            this.comfort = comfort;
+        }
+
+        public boolean match(Comfort comfort) {
+            return comfort == this.comfort;
+        }
+    }
+
+    public enum Comfort {
+        STANDARD,
+        HEATING,
+        AC,
+    }
+
     /** Returns Gamma */
     public double getDeceleration() {
         return - gamma;
+    }
+
+    /** Given a profile and a comfort lookup for the best tractive effort curve */
+    private TractiveEffortPoint[] getTractiveEffortCurve(String profile, Comfort comfort) {
+        // Get mode effort curves
+        var mode = modes.get(defaultMode);
+        if (profile != null && modes.containsKey(profile))
+            mode = modes.get(profile);
+
+        // Get best curve given a comfort
+        for (var condCurve : mode.curves) {
+            if (condCurve.cond.match(comfort)) {
+                return condCurve.curve;
+            }
+        }
+        return mode.defaultCurve;
     }
 
     /**
@@ -148,7 +208,8 @@ public class RollingStock implements PhysicsRollingStock {
      * @param speed the speed to compute the max tractive effort for
      * @return the max tractive effort
      */
-    public double getMaxEffort(double speed) {
+    public double getMaxEffort(double speed, String profile, Comfort comfort) {
+        final var tractiveEffortCurve = getTractiveEffortCurve(profile, comfort);
         double previousEffort = 0.0;
         double previousSpeed = 0.0;
         for (var dataPoint : tractiveEffortCurve) {
@@ -162,7 +223,18 @@ public class RollingStock implements PhysicsRollingStock {
         return previousEffort;
     }
 
-    // TODO masses
+    public Set<String> getModeNames() {
+        return modes.keySet();
+    }
+
+    /** Return whether this rolling stock support only electric profiles modes */
+    public boolean isElectricOnly() {
+        for (var mode : modes.values()) {
+            if (!mode.isElectric)
+                return false;
+        }
+        return true;
+    }
 
     /** Creates a new rolling stock (a physical train inventory item). */
     public RollingStock(
@@ -179,10 +251,9 @@ public class RollingStock implements PhysicsRollingStock {
             double comfortAcceleration,
             double gamma,
             GammaType gammaType,
-            TractiveEffortPoint[] tractiveEffortCurve,
             RJSLoadingGaugeType loadingGaugeType,
-            Set<String> modes,
-            boolean isElectricOnly
+            Map<String, ModeEffortCurves> modes,
+            String defaultMode
     ) {
         this.id = id;
         this.A = a;
@@ -197,9 +268,8 @@ public class RollingStock implements PhysicsRollingStock {
         this.gammaType = gammaType;
         this.mass = mass;
         this.inertiaCoefficient = inertiaCoefficient;
-        this.tractiveEffortCurve = tractiveEffortCurve;
         this.modes = modes;
-        this.isElectricOnly = isElectricOnly;
+        this.defaultMode = defaultMode;
         this.inertia = mass * inertiaCoefficient;
         this.loadingGaugeType = loadingGaugeType;
     }

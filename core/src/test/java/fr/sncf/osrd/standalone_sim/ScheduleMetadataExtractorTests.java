@@ -20,6 +20,7 @@ import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.standalone_sim.result.ResultOccupancyTiming;
 import fr.sncf.osrd.train.RollingStock;
+import fr.sncf.osrd.train.RollingStock.Comfort;
 import fr.sncf.osrd.train.TestTrains;
 import fr.sncf.osrd.train.TrainStop;
 import org.junit.jupiter.api.Test;
@@ -47,7 +48,7 @@ public class ScheduleMetadataExtractorTests {
                 new TrackLocation(fooA, 0)
         );
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testContext = new EnvelopeSimContext(testRollingStock, EnvelopeTrainPath.from(path), TIME_STEP);
+        var testContext = new EnvelopeSimContext(testRollingStock, EnvelopeTrainPath.from(path), TIME_STEP, RollingStock.Comfort.STANDARD);
         var envelope = makeSimpleMaxEffortEnvelope(
                 testContext,
                 testRollingStock.maxSpeed, new double[]{}
@@ -99,7 +100,7 @@ public class ScheduleMetadataExtractorTests {
                 new TrackLocation(fooA, 100)
         );
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testContext = new EnvelopeSimContext(testRollingStock, EnvelopeTrainPath.from(path), TIME_STEP);
+        var testContext = new EnvelopeSimContext(testRollingStock, EnvelopeTrainPath.from(path), TIME_STEP, Comfort.STANDARD);
         var envelope = makeSimpleMaxEffortEnvelope(
                 testContext,
                 testRollingStock.maxSpeed, new double[]{}
@@ -124,7 +125,7 @@ public class ScheduleMetadataExtractorTests {
                 new TrackLocation(fooA, 100)
         );
         var testRollingStock = TestTrains.VERY_LONG_FAST_TRAIN;
-        var testContext = new EnvelopeSimContext(testRollingStock, EnvelopeTrainPath.from(path), TIME_STEP);
+        var testContext = new EnvelopeSimContext(testRollingStock, EnvelopeTrainPath.from(path), TIME_STEP, Comfort.STANDARD);
         var envelope = makeSimpleMaxEffortEnvelope(
                 testContext,
                 testRollingStock.maxSpeed, new double[]{}
@@ -148,7 +149,7 @@ public class ScheduleMetadataExtractorTests {
                 new TrackLocation(infra.getTrackSection("track.9"), 0)
         );
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testContext = new EnvelopeSimContext(testRollingStock, EnvelopeTrainPath.from(path), TIME_STEP);
+        var testContext = new EnvelopeSimContext(testRollingStock, EnvelopeTrainPath.from(path), TIME_STEP, Comfort.STANDARD);
         var envelope = makeSimpleMaxEffortEnvelope(
                 testContext,
                 testRollingStock.maxSpeed, new double[]{}
@@ -168,7 +169,7 @@ public class ScheduleMetadataExtractorTests {
                 new TrackLocation(infra.getTrackSection("track.0"), 10)
         );
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testContext = new EnvelopeSimContext(testRollingStock, EnvelopeTrainPath.from(path), TIME_STEP);
+        var testContext = new EnvelopeSimContext(testRollingStock, EnvelopeTrainPath.from(path), TIME_STEP, Comfort.STANDARD);
         var envelope = makeSimpleMaxEffortEnvelope(
                 testContext,
                 testRollingStock.maxSpeed, new double[]{}
@@ -193,7 +194,7 @@ public class ScheduleMetadataExtractorTests {
                 new TrackLocation(fooA, 100)
         );
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testContext = new EnvelopeSimContext(testRollingStock, EnvelopeTrainPath.from(path), TIME_STEP);
+        var testContext = new EnvelopeSimContext(testRollingStock, EnvelopeTrainPath.from(path), TIME_STEP, Comfort.STANDARD);
         var envelope = makeSimpleMaxEffortEnvelope(
                 testContext,
                 testRollingStock.maxSpeed, new double[]{}
@@ -216,7 +217,7 @@ public class ScheduleMetadataExtractorTests {
                 new TrackLocation(infra.getTrackSection("track.9"), 0)
         );
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testContext = new EnvelopeSimContext(testRollingStock, EnvelopeTrainPath.from(path), TIME_STEP);
+        var testContext = new EnvelopeSimContext(testRollingStock, EnvelopeTrainPath.from(path), TIME_STEP, Comfort.STANDARD);
         var envelope = makeSimpleMaxEffortEnvelope(
                 testContext,
                 testRollingStock.maxSpeed, new double[]{}

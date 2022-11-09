@@ -1,9 +1,7 @@
 package fr.sncf.osrd.train;
 
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class TestTrains {
     public static final RollingStock FAST_NO_FRICTION_TRAIN = new RollingStock(
@@ -17,13 +15,15 @@ public class TestTrains {
             1,
             1,
             RollingStock.GammaType.CONST,
-            new RollingStock.TractiveEffortPoint[] {
-                    new RollingStock.TractiveEffortPoint(0, 1)
-            },
             RJSLoadingGaugeType.G1,
-            Set.of(),
-            false
-    );
+            Map.of("thermal", new RollingStock.ModeEffortCurves(
+                    false,
+                    new RollingStock.TractiveEffortPoint[] { new RollingStock.TractiveEffortPoint(0, 1) },
+                    new RollingStock.ConditionalEffortCurve[0]
+                    )
+            ),
+            "thermal"
+        );
 
     public static final RollingStock REALISTIC_FAST_TRAIN;
     public static final RollingStock REALISTIC_FAST_TRAIN_MAX_DEC_TYPE;
@@ -58,10 +58,13 @@ public class TestTrains {
                 0.25,
                 0.5,
                 RollingStock.GammaType.CONST,
-                tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
                 RJSLoadingGaugeType.G1,
-                Set.of(),
-                false
+                Map.of("thermal", new RollingStock.ModeEffortCurves(
+                        false,
+                        tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
+                        new RollingStock.ConditionalEffortCurve[0])
+                ),
+                "thermal"
         );
 
         VERY_LONG_FAST_TRAIN = new RollingStock(
@@ -75,10 +78,13 @@ public class TestTrains {
                 0.25,
                 0.5,
                 RollingStock.GammaType.CONST,
-                tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
                 RJSLoadingGaugeType.G1,
-                Set.of(),
-                false
+                Map.of("thermal", new RollingStock.ModeEffortCurves(
+                        false,
+                        tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
+                        new RollingStock.ConditionalEffortCurve[0])
+                ),
+                "thermal"
         );
 
         REALISTIC_FAST_TRAIN = new RollingStock(
@@ -92,10 +98,13 @@ public class TestTrains {
                 0.25,
                 0.5,
                 RollingStock.GammaType.CONST,
-                tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
                 RJSLoadingGaugeType.G1,
-                Set.of(),
-                false
+                Map.of("thermal", new RollingStock.ModeEffortCurves(
+                        false,
+                        tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
+                        new RollingStock.ConditionalEffortCurve[0])
+                ),
+                "thermal"
         );
 
         REALISTIC_FAST_TRAIN_MAX_DEC_TYPE = new RollingStock(
@@ -109,10 +118,13 @@ public class TestTrains {
                 0.25,
                 0.95,
                 RollingStock.GammaType.MAX,
-                tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
                 RJSLoadingGaugeType.G1,
-                Set.of(),
-                false
+                Map.of("thermal", new RollingStock.ModeEffortCurves(
+                        false,
+                        tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
+                        new RollingStock.ConditionalEffortCurve[0])
+                ),
+                "thermal"
         );
 
         FAST_TRAIN_LARGE_GAUGE = new RollingStock(
@@ -126,10 +138,13 @@ public class TestTrains {
                 0.25,
                 0.5,
                 RollingStock.GammaType.CONST,
-                tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
                 RJSLoadingGaugeType.GC,
-                Set.of(),
-                false
+                Map.of("thermal", new RollingStock.ModeEffortCurves(
+                        false,
+                        tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
+                        new RollingStock.ConditionalEffortCurve[0])
+                ),
+                "thermal"
         );
 
         FAST_ELECTRIC_TRAIN = new RollingStock(
@@ -143,10 +158,13 @@ public class TestTrains {
                 0.25,
                 0.5,
                 RollingStock.GammaType.CONST,
-                tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
                 RJSLoadingGaugeType.G1,
-                Set.of("25000"),
-                true
+                Map.of("25000", new RollingStock.ModeEffortCurves(
+                        true,
+                        tractiveEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
+                        new RollingStock.ConditionalEffortCurve[0])
+                ),
+                "25000"
         );
     }
 }

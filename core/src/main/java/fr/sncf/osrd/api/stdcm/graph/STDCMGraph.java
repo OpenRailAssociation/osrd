@@ -338,7 +338,8 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
         var length = route.getInfraRoute().getLength();
         var tracks = route.getInfraRoute().getTrackRanges(start, length);
         var envelopePath = EnvelopeTrainPath.from(tracks);
-        return new EnvelopeSimContext(rollingStock, envelopePath, timeStep);
+        // TODO: Get real comfort
+        return new EnvelopeSimContext(rollingStock, envelopePath, timeStep, RollingStock.Comfort.STANDARD);
     }
 
     /** Returns an envelope matching the given route. The envelope time starts when the train enters the route.

@@ -19,16 +19,20 @@ public final class TrainPhysicsIntegrator {
     private final Action action;
     private final double directionSign;
 
+    private final RollingStock.Comfort comfort;
+
     private TrainPhysicsIntegrator(
             PhysicsRollingStock rollingStock,
             PhysicsPath path,
             Action action,
-            double directionSign
+            double directionSign,
+            RollingStock.Comfort comfort
     ) {
         this.rollingStock = rollingStock;
         this.path = path;
         this.action = action;
         this.directionSign = directionSign;
+        this.comfort = comfort;
     }
 
     /** Simulates train movement */
@@ -41,7 +45,7 @@ public final class TrainPhysicsIntegrator {
     ) {
         return step(
                 context.rollingStock, context.path, context.timeStep,
-                initialLocation, initialSpeed, action, directionSign
+                initialLocation, initialSpeed, action, directionSign, context.comfort
         );
     }
 
@@ -53,9 +57,10 @@ public final class TrainPhysicsIntegrator {
             double initialLocation,
             double initialSpeed,
             Action action,
-            double directionSign
+            double directionSign,
+            RollingStock.Comfort comfort
     ) {
-        var integrator = new TrainPhysicsIntegrator(rollingStock, path, action, directionSign);
+        var integrator = new TrainPhysicsIntegrator(rollingStock, path, action, directionSign, comfort);
         var halfStep = timeStep / 2;
         var step1 = integrator.step(halfStep, initialLocation, initialSpeed);
         var step2 = integrator.step(halfStep, initialLocation + step1.positionDelta, step1.endSpeed);
@@ -75,7 +80,8 @@ public final class TrainPhysicsIntegrator {
 
         double tractionForce = 0;
         double brakingForce = 0;
-        double maxTractionForce = rollingStock.getMaxEffort(speed);
+        var profile = path.getCatenaryProfile(position);
+        double maxTractionForce = rollingStock.getMaxEffort(speed, profile, comfort);
         double rollingResistance = rollingStock.getRollingResistance(speed);
         double weightForce = getWeightForce(rollingStock, path, position);
 
