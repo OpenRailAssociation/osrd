@@ -332,7 +332,7 @@ export const SwitchEditionLayers: FC = () => {
       <GeoJSONs
         colors={colors[mapStyle]}
         hidden={entity?.properties?.id ? [entity.properties.id] : undefined}
-        hovered={hovered?.properties.id ? [hovered.properties.id] : undefined}
+        selection={entity?.properties?.id ? [entity.properties.id] : undefined}
       />
 
       {/* Edited switch */}

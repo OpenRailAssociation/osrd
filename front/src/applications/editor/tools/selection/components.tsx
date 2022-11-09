@@ -54,7 +54,6 @@ export const SelectionLayers: FC = () => {
     <>
       <GeoJSONs
         colors={colors[mapStyle]}
-        hovered={state.hovered && !selectionZone ? [state.hovered.properties.id] : []}
         selection={state.selection.map((e) => e.properties.id)}
       />
       <EditorZone newZone={selectionZone} />

@@ -73,6 +73,7 @@ export const TrackEditionLayers: FC = () => {
       <GeoJSONs
         colors={colors[mapStyle]}
         hidden={state.track.properties.id ? [state.track.properties.id] : undefined}
+        selection={state.track.properties.id ? [state.track.properties.id] : undefined}
       />
 
       {/* Track path */}

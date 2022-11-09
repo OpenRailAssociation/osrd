@@ -1,9 +1,9 @@
 import { useSelector } from 'react-redux';
 import React, { FC, useMemo } from 'react';
-import { FeatureCollection } from 'geojson';
-import { mapValues } from 'lodash';
+import { Feature, FeatureCollection } from 'geojson';
+import { isPlainObject, mapValues } from 'lodash';
 import { Layer, LayerProps, Source } from 'react-map-gl';
-import { AnyPaint, CirclePaint, LinePaint, SymbolPaint } from 'mapbox-gl';
+import chroma from 'chroma-js';
 
 import { Theme } from '../../../types';
 import { geoMainLayer, geoServiceLayer } from './geographiclayers';
@@ -21,9 +21,8 @@ import { getDetectorsLayerProps, getDetectorsNameLayerProps } from './Detectors'
 import { getSwitchesLayerProps, getSwitchesNameLayerProps } from './Switches';
 import { EditorState, LayerType } from '../../../applications/editor/tools/types';
 import { SYMBOLS_TO_LAYERS } from '../Consts/SignalsNames';
+import { SymbolPaint } from 'mapbox-gl';
 
-const HOVERED_COLOR = '#009EED';
-const UNSELECTED_OPACITY = 0.2;
 const SIGNAL_TYPE_KEY = 'extensions_sncf_installation_type';
 
 const NULL_FEATURE: FeatureCollection = {
@@ -31,140 +30,140 @@ const NULL_FEATURE: FeatureCollection = {
   features: [],
 };
 
-interface Context {
-  hiddenIDs: string[];
-  hoveredIDs: string[];
-  selectedIDs: string[];
+interface LayerContext extends SignalContext {
+  symbolsList: string[];
+  isEmphasized: boolean;
 }
 
-function adaptSymbolPaint(paint: SymbolPaint, { selectedIDs, hoveredIDs }: Context): SymbolPaint {
-  const opacity = typeof paint['icon-opacity'] === 'number' ? paint['icon-opacity'] : 1;
-  return {
-    ...paint,
-    ...(selectedIDs.length
-      ? {
-          'icon-opacity': [
-            'case',
-            ['in', ['get', 'id'], ['literal', selectedIDs]],
-            opacity,
-            opacity * UNSELECTED_OPACITY,
-          ],
-        }
-      : {}),
-    ...(hoveredIDs.length
-      ? {
-          'icon-halo-color': ['case', ['in', 'id', ...hoveredIDs], HOVERED_COLOR, 'rgba(0,0,0,0)'],
-          'icon-halo-width': ['case', ['in', 'id', ...hoveredIDs], 5, 0],
-          'icon-halo-blur': ['case', ['in', 'id', ...hoveredIDs], 5, 0],
-        }
-      : {}),
-  };
-}
-
-function adaptCirclePaint(paint: CirclePaint, { selectedIDs, hoveredIDs }: Context): CirclePaint {
-  // TODO: need to check if paint as the good type
-  // const opacity = typeof paint['icon-opacity'] === 'number' ? paint['icon-opacity'] : 1;
-  const opacity = 1;
-  return {
-    ...paint,
-    ...(selectedIDs.length
-      ? {
-          'circle-opacity': [
-            'case',
-            ['in', ['get', 'id'], ['literal', selectedIDs]],
-            opacity,
-            opacity * UNSELECTED_OPACITY,
-          ],
-        }
-      : {}),
-    ...(hoveredIDs.length
-      ? {
-          'icon-halo-color': ['case', ['in', 'id', ...hoveredIDs], HOVERED_COLOR, 'rgba(0,0,0,0)'],
-          'icon-halo-width': ['case', ['in', 'id', ...hoveredIDs], 5, 0],
-          'icon-halo-blur': ['case', ['in', 'id', ...hoveredIDs], 5, 0],
-        }
-      : {}),
-  };
-}
-
-function adaptTextPaint(paint: SymbolPaint, { hoveredIDs, selectedIDs }: Context): SymbolPaint {
-  const opacity = typeof paint['text-opacity'] === 'number' ? paint['text-opacity'] : 1;
-  return {
-    ...paint,
-    ...(selectedIDs.length
-      ? {
-          'text-opacity': [
-            'case',
-            ['in', ['get', 'id'], ['literal', selectedIDs]],
-            opacity,
-            opacity * UNSELECTED_OPACITY,
-          ],
-        }
-      : {}),
-    ...(hoveredIDs.length
-      ? {
-          'icon-halo-color': ['case', ['in', 'id', ...hoveredIDs], HOVERED_COLOR, 'rgba(0,0,0,0)'],
-          'icon-halo-width': ['case', ['in', 'id', ...hoveredIDs], 5, 0],
-          'icon-halo-blur': ['case', ['in', 'id', ...hoveredIDs], 5, 0],
-        }
-      : {}),
-  };
-}
-
-function adaptLinearPaint(paint: LinePaint, { selectedIDs }: Context): LinePaint {
-  const opacity = typeof paint['line-opacity'] === 'number' ? paint['line-opacity'] : 1;
-  return {
-    ...paint,
-    ...(selectedIDs.length
-      ? {
-          'line-opacity': [
-            'case',
-            ['in', ['get', 'id'], ['literal', selectedIDs]],
-            opacity,
-            opacity * UNSELECTED_OPACITY,
-          ],
-        }
-      : {}),
-  };
-}
-
-function adaptFilter(filter: LayerProps['filter'], { hiddenIDs }: Context): LayerProps['filter'] {
-  if (hiddenIDs.length) {
-    const hiddenFilter = ['!in', 'id', ...hiddenIDs];
-
-    if (filter) {
-      return ['all', hiddenFilter, filter];
-    }
-    return hiddenFilter;
+/**
+ * Helper to recursively transform all colors of a given theme:
+ */
+function transformTheme(theme: Theme, reducer: (color: string) => string): Theme {
+  function search<T extends string | Record<string, unknown>>(input: T): T {
+    if (typeof input === 'string') return reducer(input) as T;
+    if (isPlainObject(input)) return mapValues(input, search) as T;
+    return input;
   }
 
-  return filter;
+  return search(theme);
 }
 
-function adaptProps<T extends AnyPaint>(
-  props: LayerProps,
-  context: Context,
-  fn?: (paint: T, _context: Context) => T
-): LayerProps {
-  const res: LayerProps = {
-    ...props,
-  };
+/**
+ * Helper to add filters to existing LayerProps.filter values:
+ */
+function adaptFilter(layer: LayerProps, blackList: string[], whiteList: string[]): LayerProps {
+  const res = { ...layer };
+  const conditions: LayerProps['filter'][] = layer.filter ? [layer.filter] : [];
 
-  if (fn) res.paint = fn((props.paint as T) || {}, context);
+  if (whiteList.length) conditions.push(['in', 'id', ...whiteList]);
+  if (blackList.length) conditions.push(['!in', 'id', ...blackList]);
 
-  const filter = adaptFilter(res.filter, context);
-  if (filter) res.filter = filter;
-  return res;
+  switch (conditions.length) {
+    case 0:
+      return res;
+    case 1:
+      return { ...res, filter: conditions[0] };
+    default:
+      return { ...res, filter: ['all', ...conditions] };
+  }
 }
+
+/**
+ * Helpers to get all layers required to render entities of a given type:
+ */
+function getTrackSectionLayers(context: LayerContext, prefix: string): LayerProps[] {
+  return [
+    { ...geoMainLayer(context.colors), id: `${prefix}geo/track-main` },
+    { ...geoServiceLayer(context.colors), id: `${prefix}geo/track-service` },
+    {
+      ...trackNameLayer(context.colors),
+      filter: ['==', 'type_voie', 'VP'],
+      layout: {
+        ...trackNameLayer(context.colors).layout,
+        'text-field': '{extensions_sncf_track_name}',
+        'text-size': 11,
+      },
+      id: `${prefix}geo/track-vp-names`,
+    },
+    {
+      ...trackNameLayer(context.colors),
+      filter: ['!=', 'type_voie', 'VP'],
+      layout: {
+        ...trackNameLayer(context.colors).layout,
+        'text-field': '{extensions_sncf_track_name}',
+        'text-size': 10,
+      },
+      id: `${prefix}geo/track-other-names`,
+    },
+    {
+      ...lineNumberLayer(context.colors),
+      layout: {
+        ...lineNumberLayer(context.colors).layout,
+        'text-field': '{extensions_sncf_line_code}',
+      },
+      id: `${prefix}geo/track-numbers`,
+    },
+    { ...lineNameLayer(context.colors), id: `${prefix}geo/line-names` },
+  ];
+}
+function getSignalLayers(context: LayerContext, prefix: string): LayerProps[] {
+  return [
+    { ...getSignalMatLayerProps(context), id: `${prefix}geo/signal-mat` },
+    { ...getPointLayerProps(context), id: `${prefix}geo/signal-point` },
+  ].concat(
+    context.symbolsList.map((symbol) => {
+      const props = getSignalLayerProps(context, symbol);
+      const paint = props.paint as SymbolPaint;
+      const opacity = typeof paint['icon-opacity'] === 'number' ? paint['icon-opacity'] : 1;
+
+      return {
+        ...props,
+        paint: { ...props.paint, 'icon-opacity': opacity * (context.isEmphasized ? 1 : 0.2) },
+        filter: ['==', SIGNAL_TYPE_KEY, SYMBOLS_TO_LAYERS[symbol]],
+        id: `${prefix}geo/signal-${symbol}`,
+      };
+    })
+  );
+}
+function getBufferStopsLayers(context: LayerContext, prefix: string): LayerProps[] {
+  return [{ ...getBufferStopsLayerProps(context), id: `${prefix}geo/buffer-stop-main` }];
+}
+function getDetectorsLayers(context: LayerContext, prefix: string): LayerProps[] {
+  return [
+    { ...getDetectorsLayerProps(context), id: `${prefix}geo/detector-main` },
+    { ...getDetectorsNameLayerProps(context), id: `${prefix}geo/detector-name` },
+  ];
+}
+function getSwitchesLayers(context: LayerContext, prefix: string): LayerProps[] {
+  return [
+    { ...getSwitchesLayerProps(context), id: `${prefix}geo/switch-main` },
+    { ...getSwitchesNameLayerProps(context), id: `${prefix}geo/switch-name` },
+  ];
+}
+
+const SOURCES_DEFINITION: {
+  entityType: LayerType;
+  getLayers: (context: LayerContext, prefix: string) => LayerProps[];
+}[] = [
+  { entityType: 'track_sections', getLayers: getTrackSectionLayers },
+  { entityType: 'signals', getLayers: getSignalLayers },
+  { entityType: 'buffer_stops', getLayers: getBufferStopsLayers },
+  { entityType: 'detectors', getLayers: getDetectorsLayers },
+  { entityType: 'switches', getLayers: getSwitchesLayers },
+];
 
 const GeoJSONs: FC<{
   colors: Theme;
   hidden?: string[];
-  hovered?: string[];
   selection?: string[];
   prefix?: string;
 }> = (props) => {
-  const { colors, hidden, hovered, selection, prefix = 'editor/' } = props;
+  const { colors, hidden, selection, prefix = 'editor/' } = props;
+  const selectedPrefix = `${prefix}selected/`;
+  const hiddenColors = useMemo(
+    () => transformTheme(colors, (color) => chroma(color).desaturate(50).brighten(1).hex()),
+    [colors]
+  );
   const { mapStyle } = useSelector(
     (s: { map: { mapStyle: string; signalsSettings: SignalsSettings } }) => s.map
   );
@@ -184,15 +183,6 @@ const GeoJSONs: FC<{
     [flatEntitiesByType]
   );
 
-  const layerContext: Context = useMemo(
-    () => ({
-      hiddenIDs: hidden || [],
-      hoveredIDs: hovered || [],
-      selectedIDs: selection || [],
-    }),
-    [hidden, hovered, selection]
-  );
-
   // SIGNALS:
   const signalsList = useMemo(
     () => getSignalsList(flatEntitiesByType.signals || []),
@@ -202,155 +192,59 @@ const GeoJSONs: FC<{
     () => getSymbolsList(flatEntitiesByType.signals || []),
     [flatEntitiesByType]
   );
-  const signalsContext: SignalContext = useMemo(
+  const layerContext: LayerContext = useMemo(
     () => ({
       colors,
       signalsList,
+      symbolsList,
       sourceLayer: 'geo',
       prefix: mapStyle === 'blueprint' ? 'SCHB ' : '',
+      isEmphasized: true,
     }),
-    [colors, mapStyle, signalsList]
+    [colors, mapStyle, signalsList, symbolsList]
   );
-  const signalPropsPerType = useMemo(
-    () =>
-      symbolsList.reduce(
-        (iter, type) => ({
-          ...iter,
-          [type]: getSignalLayerProps(signalsContext, type),
+  const hiddenLayerContext: LayerContext = useMemo(
+    () => ({
+      ...layerContext,
+      colors: hiddenColors,
+      isEmphasized: false,
+    }),
+    [hiddenColors, layerContext]
+  );
+
+  const sources: { id: string; data: Feature | FeatureCollection; layers: LayerProps[] }[] =
+    useMemo(
+      () =>
+        SOURCES_DEFINITION.flatMap((source) => {
+          return [
+            {
+              id: `${prefix}geo/${source.entityType}`,
+              data: geoJSONs[source.entityType] || NULL_FEATURE,
+              layers: source
+                .getLayers(hiddenLayerContext, prefix)
+                .map((layer) => adaptFilter(layer, (hidden || []).concat(selection || []), [])),
+            },
+            {
+              id: `${selectedPrefix}geo/${source.entityType}`,
+              data: geoJSONs[source.entityType] || NULL_FEATURE,
+              layers: source
+                .getLayers(layerContext, selectedPrefix)
+                .map((layer) => adaptFilter(layer, hidden || [], selection || [])),
+            },
+          ];
         }),
-        {} as { [key: string]: LayerProps }
-      ),
-    [signalsContext, symbolsList]
-  );
+      [geoJSONs, hidden, hiddenLayerContext, layerContext, prefix, selectedPrefix, selection]
+    );
 
   return (
     <>
-      <Source
-        id={`${prefix}geo/trackSections`}
-        type="geojson"
-        data={geoJSONs.track_sections || NULL_FEATURE}
-      >
-        <Layer
-          {...adaptProps(geoMainLayer(colors), layerContext, adaptLinearPaint)}
-          id={`${prefix}geo/track-main`}
-        />
-        <Layer
-          {...adaptProps(geoServiceLayer(colors), layerContext, adaptLinearPaint)}
-          id={`${prefix}geo/track-service`}
-        />
-        <Layer
-          {...adaptProps(
-            {
-              ...trackNameLayer(colors),
-              filter: ['==', 'type_voie', 'VP'],
-              layout: {
-                ...trackNameLayer(colors).layout,
-                'text-field': '{extensions_sncf_track_name}',
-                'text-size': 11,
-              },
-            },
-            layerContext,
-            adaptTextPaint
-          )}
-          id={`${prefix}geo/track-vp-names`}
-        />
-        <Layer
-          {...adaptProps(
-            {
-              ...trackNameLayer(colors),
-              filter: ['!=', 'type_voie', 'VP'],
-              layout: {
-                ...trackNameLayer(colors).layout,
-                'text-field': '{extensions_sncf_track_name}',
-                'text-size': 10,
-              },
-            },
-            layerContext,
-            adaptTextPaint
-          )}
-          id={`${prefix}geo/track-other-names`}
-        />
-        <Layer
-          {...adaptProps(
-            {
-              ...lineNumberLayer(colors),
-              layout: {
-                ...lineNumberLayer(colors).layout,
-                'text-field': '{extensions_sncf_line_code}',
-              },
-            },
-            layerContext,
-            adaptTextPaint
-          )}
-          id={`${prefix}geo/track-numbers`}
-        />
-        <Layer
-          {...adaptProps(lineNameLayer(colors), layerContext, adaptTextPaint)}
-          id={`${prefix}geo/line-names`}
-        />
-      </Source>
-
-      <Source id={`${prefix}geo/signals`} type="geojson" data={geoJSONs.signals || NULL_FEATURE}>
-        <Layer
-          {...adaptProps(getSignalMatLayerProps(signalsContext), layerContext, adaptSymbolPaint)}
-          id={`${prefix}geo/signal-mat`}
-        />
-        <Layer
-          {...adaptProps(getPointLayerProps(signalsContext), layerContext)}
-          id={`${prefix}geo/signal-point`}
-        />
-        {symbolsList.map((symbol) => {
-          const layerId = `${prefix}geo/signal-${symbol}`;
-          const signalDef = signalPropsPerType[symbol];
-
-          return (
-            <Layer
-              key={symbol}
-              {...signalDef}
-              id={layerId}
-              filter={adaptFilter(['==', SIGNAL_TYPE_KEY, SYMBOLS_TO_LAYERS[symbol]], layerContext)}
-              paint={adaptSymbolPaint(signalDef.paint as SymbolPaint, layerContext)}
-            />
-          );
-        })}
-      </Source>
-
-      <Source
-        id={`${prefix}geo/buffer_stops`}
-        type="geojson"
-        data={geoJSONs.buffer_stops || NULL_FEATURE}
-      >
-        <Layer
-          {...adaptProps(getBufferStopsLayerProps(signalsContext), layerContext, adaptSymbolPaint)}
-          id={`${prefix}geo/buffer-stop-main`}
-        />
-      </Source>
-
-      <Source
-        id={`${prefix}geo/detectors`}
-        type="geojson"
-        data={geoJSONs.detectors || NULL_FEATURE}
-      >
-        <Layer
-          {...adaptProps(getDetectorsLayerProps(signalsContext), layerContext, adaptCirclePaint)}
-          id={`${prefix}geo/detector-main`}
-        />
-        <Layer
-          {...adaptProps(getDetectorsNameLayerProps(signalsContext), layerContext, adaptTextPaint)}
-          id={`${prefix}geo/detector-name`}
-        />
-      </Source>
-
-      <Source id={`${prefix}geo/switches`} type="geojson" data={geoJSONs.switches || NULL_FEATURE}>
-        <Layer
-          {...adaptProps(getSwitchesLayerProps(signalsContext), layerContext, adaptCirclePaint)}
-          id={`${prefix}geo/switch-main`}
-        />
-        <Layer
-          {...adaptProps(getSwitchesNameLayerProps(signalsContext), layerContext, adaptTextPaint)}
-          id={`${prefix}geo/switch-name`}
-        />
-      </Source>
+      {sources.map((source) => (
+        <Source key={source.id} type="geojson" id={source.id} data={source.data}>
+          {source.layers.map((layer) => (
+            <Layer key={layer.id} {...layer} />
+          ))}
+        </Source>
+      ))}
     </>
   );
 };
