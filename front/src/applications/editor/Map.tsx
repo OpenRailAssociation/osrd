@@ -11,7 +11,7 @@ import '../../common/Map/Map.scss';
 import Background from '../../common/Map/Layers/Background';
 import OSM from '../../common/Map/Layers/OSM';
 import Hillshade from '../../common/Map/Layers/Hillshade';
-import Platform from '../../common/Map/Layers/Platform';
+import Platform from '../../common/Map/Layers/Platforms';
 import osmBlankStyle from '../../common/Map/Layers/osmBlankStyle';
 
 import { EditorContext } from './context';
