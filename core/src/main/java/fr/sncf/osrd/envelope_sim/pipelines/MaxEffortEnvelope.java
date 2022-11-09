@@ -75,7 +75,8 @@ public class MaxEffortEnvelope {
         var cursor = EnvelopeCursor.forward(maxSpeedProfile);
         while (cursor.findPart(MaxEffortEnvelope::maxEffortPlateau)) {
             double speed = cursor.getStepBeginSpeed();
-            double maxTractionForce = rollingStock.getMaxEffort(speed);
+            var profile = path.getCatenaryProfile(cursor.getPosition());
+            double maxTractionForce = rollingStock.getMaxEffort(speed, profile, context.comfort);
             double rollingResistance = rollingStock.getRollingResistance(speed);
             double inertia = rollingStock.getInertia();
             double worstRamp = Math.asin((maxTractionForce - rollingResistance) / inertia / 9.81) * 1000;

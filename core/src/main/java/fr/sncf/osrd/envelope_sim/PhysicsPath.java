@@ -15,4 +15,7 @@ public interface PhysicsPath {
      * @return the position of the end of the next high grade area, or endPos
      */
     double findHighGradePosition(double position, double endPos, double length, double gradeThreshold);
+
+    /** The catenary profile on a given position of the path */
+    String getCatenaryProfile(double position);
 }

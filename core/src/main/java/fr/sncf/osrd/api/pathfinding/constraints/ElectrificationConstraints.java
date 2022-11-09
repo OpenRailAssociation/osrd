@@ -1,5 +1,8 @@
 package fr.sncf.osrd.api.pathfinding.constraints;
 
+import com.google.common.collect.ImmutableRangeMap;
+import com.google.common.collect.Range;
+import com.google.common.collect.RangeMap;
 import com.google.common.collect.Sets;
 import fr.sncf.osrd.infra.api.reservation.ReservationRoute;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
@@ -27,8 +30,9 @@ public record ElectrificationConstraints(
      * because it needs electrified tracks and isn't compatible with the catenaries in some range
      */
     private static Set<Pathfinding.Range> getBlockedRanges(RollingStock stock, ReservationRoute route) {
-        if (!stock.isElectricOnly)
+        if (!stock.isElectricOnly())
             return Set.of();
+
         var res = new HashSet<Pathfinding.Range>();
         double offset = 0;
         for (var range : route.getTrackRanges()) {
@@ -37,8 +41,7 @@ public record ElectrificationConstraints(
                 var interval = section.getKey();
                 if (Math.abs(interval.lowerEndpoint() - interval.upperEndpoint()) < 1e-5)
                     continue;
-                var overlap = Sets.intersection(section.getValue(), stock.modes);
-                if (overlap.isEmpty()) {
+                if (!stock.getModeNames().contains(section.getValue())) {
                     res.add(new Pathfinding.Range(
                             offset + interval.lowerEndpoint(),
                             offset + interval.upperEndpoint())
