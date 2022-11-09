@@ -1,5 +1,7 @@
 package fr.sncf.osrd.railjson.parser;
 
+import static fr.sncf.osrd.railjson.parser.RJSRollingStockParser.parseComfort;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope_sim.EnvelopePath;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
@@ -37,13 +39,16 @@ public class RJSStandaloneTrainScheduleParser {
         if (Double.isNaN(initialSpeed) || initialSpeed < 0)
             throw new InvalidSchedule("invalid initial speed");
 
+        // Parse comfort
+        var comfort = parseComfort(rjsTrainSchedule.comfort);
+
         // parse allowances
         var allowances = new ArrayList<Allowance>();
         if (rjsTrainSchedule.allowances != null)
             for (int i = 0; i < rjsTrainSchedule.allowances.length; i++) {
                 var rjsAllowance = rjsTrainSchedule.allowances[i];
                 allowances.add(
-                        parseAllowance(timeStep, rollingStock, envelopePath, rjsAllowance)
+                        parseAllowance(timeStep, rollingStock, envelopePath, rjsAllowance, comfort)
                 );
             }
 
@@ -51,7 +56,7 @@ public class RJSStandaloneTrainScheduleParser {
         if (tags == null)
             tags = Set.of();
         var stops = RJSStopsParser.parse(rjsTrainSchedule.stops, infra, trainPath);
-        return new StandaloneTrainSchedule(rollingStock, initialSpeed, stops, allowances, tags);
+        return new StandaloneTrainSchedule(rollingStock, initialSpeed, stops, allowances, tags, comfort);
     }
 
     private static double getPositiveDoubleOrDefault(double rjsInput, double defaultValue) {
@@ -65,7 +70,8 @@ public class RJSStandaloneTrainScheduleParser {
             double timeStep,
             RollingStock rollingStock,
             EnvelopePath envelopePath,
-            RJSAllowance rjsAllowance
+            RJSAllowance rjsAllowance,
+            RollingStock.Comfort comfort
     ) throws InvalidSchedule {
 
         var allowanceDistribution = rjsAllowance.distribution;
@@ -87,14 +93,14 @@ public class RJSStandaloneTrainScheduleParser {
         // parse allowance distribution
         return switch (allowanceDistribution) {
             case MARECO -> new MarecoAllowance(
-                    new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
+                    new EnvelopeSimContext(rollingStock, envelopePath, timeStep, comfort),
                     beginPos,
                     endPos,
                     getPositiveDoubleOrDefault(rjsAllowance.capacitySpeedLimit, 30 / 3.6),
                     ranges
             );
             case LINEAR -> new LinearAllowance(
-                    new EnvelopeSimContext(rollingStock, envelopePath, timeStep),
+                    new EnvelopeSimContext(rollingStock, envelopePath, timeStep, comfort),
                     beginPos,
                     endPos,
                     getPositiveDoubleOrDefault(rjsAllowance.capacitySpeedLimit, 30 / 3.6),

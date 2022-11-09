@@ -2,7 +2,6 @@ package fr.sncf.osrd.railjson.schema.rollingstock;
 
 import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import java.util.List;
 import java.util.Map;
 
@@ -33,13 +32,7 @@ public class RJSEffortCurves {
     }
 
     public static final class RJSEffortCurveConditions {
-        public RJSConfortType confort = null;
+        public RJSComfortType comfort = null;
     }
 
-    public enum RJSConfortType {
-        @Json(name = "ac")
-        AC,
-        @Json(name = "heating")
-        HEATING
-    }
 }
