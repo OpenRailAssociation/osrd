@@ -55,9 +55,6 @@ export default function createChart(
   const defineY =
     chart === undefined || reset ? defineLinear(dataSimulationLinearMax, 0.05) : chart.y;
 
-  console.log(dataSimulation);
-  console.log(defineX.domain());
-
   const width = parseInt(d3select(`#container-${chartID}`).style('width'), 10);
   const chartLocal = defineChart(
     width,
