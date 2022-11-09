@@ -48,7 +48,7 @@ function prepareData(
       speed: step.speed * 3.6,
     }));
   }
-  dataSimulation.areaBlock = mergeDatasAreaConstant(dataSimulation.speed, 0, keyValues);
+  dataSimulation.areaBlock = mergeDatasAreaConstant(dataSimulation.speed, [0], keyValues);
   dataSimulation.vmax = simulation.trains[selectedTrain].vmax.map((step) => ({
     speed: step.speed * 3.6,
     position: step.position,
@@ -67,7 +67,7 @@ function prepareData(
   }));
   dataSimulation.areaSlopesHistogram = mergeDatasAreaConstant(
     dataSimulation.slopesHistogram,
-    zeroLineSlope,
+    [zeroLineSlope],
     ['position', 'gradient']
   );
 
