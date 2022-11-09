@@ -1,6 +1,7 @@
 package fr.sncf.osrd.envelope_sim;
 
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
+import fr.sncf.osrd.train.RollingStock.Comfort;
 
 public interface PhysicsRollingStock {
     /** The mass of the train, in kilograms */
@@ -27,8 +28,8 @@ public interface PhysicsRollingStock {
     /** The second derivative of the resistance to movement at a given speed, in kg/m */
     double getRollingResistanceSecDeriv(double speed);
 
-    /** The maximum traction effort which can be deployed at a given speed, in newtons */
-    double getMaxEffort(double speed);
+    /** The maximum traction effort which can be deployed at a given speed, in newtons, track profile and comfort */
+    double getMaxEffort(double speed, String profile, Comfort comfort);
 
     /** The maximum constant deceleration, in m/s^2 */
     double getDeceleration();
