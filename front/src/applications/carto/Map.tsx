@@ -241,7 +241,11 @@ function Map() {
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
             />
-            <SNCF_LPV geomType="sch" colors={colors[mapStyle]} />
+            <SNCF_LPV
+              geomType="sch"
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
+            />
 
             <Signals
               sourceTable="signals"
