@@ -41,6 +41,7 @@ import colors from 'common/Map/Consts/colors';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 
 import 'common/Map/Map.scss';
+import VirtualLayers from 'applications/osrd/views/OSRDSimulation/VirtualLayers';
 
 function Map() {
   const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings } =
@@ -140,6 +141,8 @@ function Map() {
             />
           </>
         )}
+
+        <VirtualLayers />
 
         {/* Have to duplicate objects with sourceLayer to avoid cache problems in mapbox */}
         {mapTrackSources === 'geographic' ? (

@@ -10,6 +10,10 @@ import { SIGNALS_PANELS } from 'common/Map/const';
 import { SymbolLayout } from 'mapbox-gl';
 import { SourceLayer, Theme } from '../../../types';
 
+const signalTextOffsetX = 5;
+const signalTextOffsetY = -1;
+const signalCenteredTextOffset = [0, 6];
+
 export interface SignalsSettings {
   all?: boolean;
   stops?: boolean;
@@ -246,16 +250,13 @@ export function getSignalPNLayerProps(
   return props;
 }
 
-const signalTextOffsetX = 6;
-const signalTextOffsetY = -1;
-
 export function getSignalALayerProps(
   context: SignalContext,
   _type: string,
   iconOffset: SymbolLayout['icon-offset'],
   changeSignalContext: ChangeSignalContext
 ): LayerProps {
-  const { sourceTable, sourceLayer } = context;
+  const { sourceTable, sourceLayer, colors } = context;
   const { yellowSignalIds = [] } = changeSignalContext;
   const angleName = getAngleName(sourceLayer);
   const typeFilter = _type.split(' ')[0];
@@ -275,7 +276,7 @@ export function getSignalALayerProps(
         ['literal', [signalTextOffsetX, signalTextOffsetY]],
         ['==', ['get', 'extensions_sncf_side'], 'LEFT'],
         ['literal', [signalTextOffsetX * -1, signalTextOffsetY]],
-        ['literal', [0, 0]],
+        ['literal', signalCenteredTextOffset],
       ],
       'icon-offset': iconOffset,
       'icon-image': signalsToSprites(context, _type),
@@ -291,7 +292,10 @@ export function getSignalALayerProps(
       'text-allow-overlap': true,
     },
     paint: {
-      'text-color': '#fff',
+      'text-color': colors.signal.text,
+      'text-halo-width': 3,
+      'text-halo-color': colors.signal.halo,
+      'text-halo-blur': 0,
     },
   };
 
@@ -324,7 +328,7 @@ export function getSignalVLLayerProps(
         ['literal', [signalTextOffsetX, signalTextOffsetY]],
         ['==', ['get', 'extensions_sncf_side'], 'LEFT'],
         ['literal', [signalTextOffsetX * -1, signalTextOffsetY]],
-        ['literal', [0, 5.5]],
+        ['literal', signalCenteredTextOffset],
       ],
       'icon-offset': iconOffset,
       'icon-image': signalsToSprites(context, _type),
@@ -378,7 +382,7 @@ export function getSignalStopLayerProps(
         ['literal', [signalTextOffsetX, signalTextOffsetY]],
         ['==', ['get', 'extensions_sncf_side'], 'LEFT'],
         ['literal', [signalTextOffsetX * -1, signalTextOffsetY]],
-        ['literal', [0, 0]],
+        ['literal', signalCenteredTextOffset],
       ],
       'icon-offset': iconOffset,
       'icon-image': signalsToSprites(context, _type),
@@ -476,6 +480,7 @@ export function getSignalLayerProps(
     case 'A':
     case 'CV':
     case 'D':
+    case 'ID':
       return getSignalVLLayerProps(context, type, iconOffset, changeSignalContext);
     default:
   }
