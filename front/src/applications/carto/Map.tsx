@@ -23,6 +23,7 @@ import MapButtons from 'common/Map/Buttons/MapButtons';
 import Detectors from 'common/Map/Layers/Detectors';
 import Catenaries from 'common/Map/Layers/Catenaries';
 import Hillshade from 'common/Map/Layers/Hillshade';
+import OrthoPhoto from 'common/Map/Layers/OrthoPhoto';
 import OSM from 'common/Map/Layers/OSM';
 /* Objects & various */
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
@@ -137,6 +138,8 @@ function Map() {
             />
           </>
         )}
+
+        <OrthoPhoto layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
 
         {/* Have to duplicate objects with sourceLayer to avoid cache problems in mapbox */}
         {mapTrackSources === 'geographic' ? (
