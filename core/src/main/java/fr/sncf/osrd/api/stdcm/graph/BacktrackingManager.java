@@ -76,6 +76,7 @@ public class BacktrackingManager {
                 .setStartTime(old.timeStart() - old.addedDelay())
                 .setStartOffset(old.envelopeStartOffset())
                 .setPrevMaximumAddedDelay(old.maximumAddedDelayAfter() + old.addedDelay())
+                .setPrevAddedDelay(old.totalDepartureTimeShift() - old.addedDelay())
                 .setPrevNode(prevNode)
                 .setEnvelope(newEnvelope)
                 .findEdgeSameNextOccupancy(old.timeNextOccupancy());
