@@ -141,8 +141,6 @@ function Map() {
           </>
         )}
 
-        <VirtualLayers />
-
         {/* Have to duplicate objects with sourceLayer to avoid cache problems in mapbox */}
         {mapTrackSources === 'geographic' ? (
           <>
