@@ -15,8 +15,10 @@ use diesel::PgConnection;
 
 use super::GeneratedData;
 use crate::infra_cache::InfraCache;
+use crate::schema::InfraError;
 use graph::Graph;
 
+type ErrGenerator<T> = fn(T, &InfraCache, &Graph) -> Vec<InfraError>;
 pub struct ErrorLayer;
 
 impl GeneratedData for ErrorLayer {

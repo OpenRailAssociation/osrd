@@ -4,6 +4,8 @@ use std::collections::{HashMap, HashSet};
 use diesel::sql_types::{Array, Integer, Json};
 use diesel::{sql_query, RunQueryDsl};
 
+use super::graph::Graph;
+use crate::generated_data::error::ErrGenerator;
 use crate::infra_cache::InfraCache;
 use crate::schema::{InfraError, SwitchType};
 use diesel::result::Error as DieselError;
@@ -28,19 +30,23 @@ pub fn insert_errors(
 
     Ok(())
 }
+const SWITCH_TYPES_ERRORS: [ErrGenerator<&SwitchType>; 1] = [check_switch_types];
 
 pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
     let mut errors = vec![];
 
     for switch_type in infra_cache.switch_types().values() {
         let switch_type = switch_type.unwrap_switch_type();
-        errors.extend(check_switch_types(switch_type));
+        // errors.extend(check_switch_types(switch_type, infra_cache));
+        for f in SWITCH_TYPES_ERRORS.iter() {
+            errors.extend(f(switch_type, infra_cache, &Graph::load(&infra_cache)));
+        }
     }
     errors
 }
 
 /// Check unknown port name, duplicated group and unused port for switch_type
-pub fn check_switch_types(switch_type: &SwitchType) -> Vec<InfraError> {
+pub fn check_switch_types(switch_type: &SwitchType, _: &InfraCache, _: &Graph) -> Vec<InfraError> {
     let mut used_port = HashSet::new();
     let mut duplicate_port_connection = HashMap::new();
     let mut infra_errors = vec![];
@@ -86,16 +92,15 @@ pub fn check_switch_types(switch_type: &SwitchType) -> Vec<InfraError> {
 mod tests {
     use std::collections::HashMap;
 
-    use crate::infra_cache::tests::{
-        create_small_infra_cache, create_switch_connection, create_switch_type_cache,
-    };
+    use crate::generated_data::error::graph::Graph;
+    use crate::infra_cache;
+    use crate::infra_cache::tests::{create_switch_connection, create_switch_type_cache};
 
-    use super::generate_errors;
+    use super::check_switch_types;
     use super::InfraError;
 
     #[test]
     fn unknown_port_name() {
-        let mut infra_cache = create_small_infra_cache();
         let switch_type = create_switch_type_cache(
             "ST_error",
             vec!["BASE".into(), "LEFT".into(), "RIGHT".into()],
@@ -110,8 +115,11 @@ mod tests {
                 ),
             ]),
         );
-        infra_cache.add(switch_type.clone());
-        let errors = generate_errors(&infra_cache);
+        let errors = check_switch_types(
+            &switch_type,
+            &infra_cache::tests::create_small_infra_cache(),
+            &Graph::load(&infra_cache::tests::create_small_infra_cache()),
+        );
         assert_eq!(1, errors.len());
         let infra_error =
             InfraError::new_unknown_port_name(&switch_type, "groups.LEFT.0", "WRONG".into());
@@ -120,7 +128,6 @@ mod tests {
 
     #[test]
     fn duplicated_group() {
-        let mut infra_cache = create_small_infra_cache();
         let switch_type = create_switch_type_cache(
             "ST_error",
             vec!["BASE".into(), "LEFT".into(), "RIGHT".into()],
@@ -139,14 +146,16 @@ mod tests {
                 ),
             ]),
         );
-        infra_cache.add(switch_type);
-        let errors = generate_errors(&infra_cache);
+        let errors = check_switch_types(
+            &switch_type,
+            &infra_cache::tests::create_small_infra_cache(),
+            &Graph::load(&infra_cache::tests::create_small_infra_cache()),
+        );
         assert_eq!(1, errors.len());
     }
 
     #[test]
     fn unused_port() {
-        let mut infra_cache = create_small_infra_cache();
         let switch_type = create_switch_type_cache(
             "ST_error",
             vec!["BASE".into(), "LEFT".into(), "RIGHT".into()],
@@ -155,8 +164,8 @@ mod tests {
                 vec![create_switch_connection("BASE".into(), "LEFT".into())],
             )]),
         );
-        infra_cache.add(switch_type.clone());
-        let errors = generate_errors(&infra_cache);
+        let infra_cache = infra_cache::tests::create_small_infra_cache();
+        let errors = check_switch_types(&switch_type, &infra_cache, &Graph::load(&infra_cache));
         assert_eq!(1, errors.len());
         let infra_error = InfraError::new_unused_port(&switch_type, "ports.2", "RIGHT");
         assert_eq!(infra_error, errors[0]);
