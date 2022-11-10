@@ -1,6 +1,6 @@
-import React, { FC, useContext } from 'react';
+import React, { FC, useContext, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Layer, Source } from 'react-map-gl';
+import { Popup } from 'react-map-gl';
 import { useTranslation } from 'react-i18next';
 import { featureCollection } from '@turf/helpers';
 import along from '@turf/along';
@@ -8,27 +8,20 @@ import { Feature, LineString } from 'geojson';
 import { merge } from 'lodash';
 
 import { EditorContext } from '../../context';
-import GeoJSONs from '../../../../common/Map/Layers/GeoJSONs';
+import GeoJSONs, {
+  EditorSource,
+  SourcesDefinitionsIndex,
+} from '../../../../common/Map/Layers/GeoJSONs';
 import colors from '../../../../common/Map/Consts/colors';
 import EditorZone from '../../../../common/Map/Layers/EditorZone';
 import { PointEditionState } from './types';
 import EditorForm from '../../components/EditorForm';
 import { save } from '../../../../reducers/editor';
-import {
-  BufferStopEntity,
-  CreateEntityOperation,
-  DetectorEntity,
-  EditorEntity,
-  SignalEntity,
-} from '../../../../types';
-import { getSignalLayerProps } from '../../../../common/Map/Layers/geoSignalsLayers';
-import { cleanSymbolType, NEW_ENTITY_ID } from '../../data/utils';
-import {
-  getDetectorsLayerProps,
-  getDetectorsNameLayerProps,
-} from '../../../../common/Map/Layers/Detectors';
-import { getBufferStopsLayerProps } from '../../../../common/Map/Layers/BufferStops';
+import { CreateEntityOperation, EditorEntity } from '../../../../types';
+import { cleanSymbolType, flattenEntity, NEW_ENTITY_ID } from '../../data/utils';
 import { EditorContextType, ExtendedEditorContextType } from '../types';
+import { SIGNALS_TO_SYMBOLS } from '../../../../common/Map/Consts/SignalsNames';
+import EntitySumUp from '../../components/EntitySumUp';
 
 export const POINT_LAYER_ID = 'pointEditionTool/new-entity';
 
@@ -109,158 +102,115 @@ export const PointEditionLeftPanel: FC = <Entity extends EditorEntity>() => {
   );
 };
 
-/**
- * Specific components for specific types:
- */
-export const SignalEditionLayers: FC = () => {
+export const BasePointEditionLayers: FC<{
+  mergeEntityWithNearestPoint?: (
+    entity: EditorEntity,
+    nearestPoint: NonNullable<PointEditionState<EditorEntity>['nearestPoint']>
+  ) => EditorEntity;
+  interactiveLayerIDRegex?: RegExp;
+}> = ({ mergeEntityWithNearestPoint, interactiveLayerIDRegex }) => {
   const {
-    state: { entity, nearestPoint, mousePosition },
-  } = useContext(EditorContext) as EditorContextType<PointEditionState<SignalEntity>>;
+    state: { nearestPoint, mousePosition, entity, objType },
+  } = useContext(EditorContext) as EditorContextType<PointEditionState<EditorEntity>>;
   const { mapStyle } = useSelector((s: { map: { mapStyle: string } }) => s.map) as {
     mapStyle: string;
   };
+  const [showPopup, setShowPopup] = useState(true);
+
+  const renderedEntity = useMemo(() => {
+    let res: EditorEntity | null = null;
+    if (entity.geometry) {
+      res = entity as EditorEntity;
+    } else if (nearestPoint) {
+      if (mergeEntityWithNearestPoint) {
+        res = mergeEntityWithNearestPoint(entity, nearestPoint);
+      } else {
+        res = {
+          ...entity,
+          geometry: nearestPoint.feature.geometry,
+          properties: entity.properties,
+        };
+      }
+    } else if (mousePosition) {
+      res = { ...entity, geometry: { type: 'Point', coordinates: mousePosition } };
+    }
+
+    return res;
+  }, [entity, mergeEntityWithNearestPoint, mousePosition, nearestPoint]);
+
+  const flatRenderedEntity = useMemo(
+    () => (renderedEntity ? flattenEntity(renderedEntity) : null),
+    [renderedEntity]
+  );
 
   const type = cleanSymbolType((entity.properties || {}).extensions?.sncf?.installation_type || '');
-  const layerProps = getSignalLayerProps(
-    {
-      prefix: '',
-      colors: colors[mapStyle],
-      signalsList: [type],
-      sourceLayer: 'geo',
-    },
-    type
+  const layers = useMemo(
+    () =>
+      SourcesDefinitionsIndex[objType](
+        {
+          prefix: '',
+          colors: colors[mapStyle],
+          signalsList: [type],
+          symbolsList: SIGNALS_TO_SYMBOLS[type] || [],
+          sourceLayer: 'geo',
+          isEmphasized: true,
+        },
+        `editor/${objType}/`
+      ).map((layer) =>
+        // Quick hack to keep a proper interactive layer:
+        layer?.id?.match(interactiveLayerIDRegex || /-main$/)
+          ? { ...layer, id: POINT_LAYER_ID }
+          : layer
+      ),
+    [interactiveLayerIDRegex, mapStyle, objType, type]
   );
 
-  let renderedSignal: SignalEntity | null = null;
-  if (entity.geometry) {
-    renderedSignal = entity as SignalEntity;
-  } else if (nearestPoint) {
-    renderedSignal = {
-      ...entity,
-      geometry: nearestPoint.feature.geometry,
-      properties: {
-        ...merge(entity.properties, {
-          extensions: {
-            sncf: {
-              angle_geo: nearestPoint.angle,
+  return (
+    <>
+      {/* Zone display */}
+      <EditorZone />
+
+      {/* Editor data layer */}
+      <GeoJSONs
+        colors={colors[mapStyle]}
+        hidden={entity.properties.id !== NEW_ENTITY_ID ? [entity.properties.id] : undefined}
+        selection={[entity.properties.id]}
+      />
+
+      {/* Edited entity */}
+      <EditorSource layers={layers} data={flatRenderedEntity || featureCollection([])} />
+      {showPopup && renderedEntity && renderedEntity.geometry.type === 'Point' && (
+        <Popup
+          className="popup py-2"
+          anchor="bottom"
+          longitude={renderedEntity.geometry.coordinates[0]}
+          latitude={renderedEntity.geometry.coordinates[1]}
+          onClose={() => setShowPopup(false)}
+        >
+          <EntitySumUp entity={renderedEntity} status="edited" />
+        </Popup>
+      )}
+    </>
+  );
+};
+
+export const SignalEditionLayers: FC = () => {
+  return (
+    <BasePointEditionLayers
+      interactiveLayerIDRegex={/signal-point$/}
+      mergeEntityWithNearestPoint={(entity, nearestPoint) => ({
+        ...entity,
+        geometry: nearestPoint.feature.geometry,
+        properties: {
+          ...merge(entity.properties, {
+            extensions: {
+              sncf: {
+                angle_geo: nearestPoint.angle,
+              },
             },
-          },
-        }),
-      },
-    };
-  } else if (mousePosition) {
-    renderedSignal = { ...entity, geometry: { type: 'Point', coordinates: mousePosition } };
-  }
-
-  return (
-    <>
-      {/* Zone display */}
-      <EditorZone />
-
-      {/* Editor data layer */}
-      <GeoJSONs
-        colors={colors[mapStyle]}
-        hidden={entity.properties.id !== NEW_ENTITY_ID ? [entity.properties.id] : undefined}
-        selection={[entity.properties.id]}
-      />
-
-      {/* Edited signal */}
-      <Source type="geojson" data={renderedSignal || featureCollection([])}>
-        <Layer
-          {...layerProps}
-          filter={['==', 'extensions_sncf_installation_type', type]}
-          id={POINT_LAYER_ID}
-        />
-      </Source>
-    </>
-  );
-};
-
-export const DetectorEditionLayers: FC = () => {
-  const {
-    state: { entity, nearestPoint, mousePosition },
-  } = useContext(EditorContext) as EditorContextType<PointEditionState<DetectorEntity>>;
-  const { mapStyle } = useSelector((s: { map: { mapStyle: string } }) => s.map) as {
-    mapStyle: string;
-  };
-
-  const theme = colors[mapStyle];
-  const layerProps = getDetectorsLayerProps({ colors: theme });
-  const layerNameProps = getDetectorsNameLayerProps({ colors: theme });
-
-  let renderedEntity: DetectorEntity | null = null;
-  if (entity.geometry.type !== 'GeometryCollection') {
-    renderedEntity = entity as DetectorEntity;
-  } else if (nearestPoint) {
-    renderedEntity = {
-      ...entity,
-      geometry: nearestPoint.feature.geometry,
-      properties: entity.properties,
-    };
-  } else if (mousePosition) {
-    renderedEntity = { ...entity, geometry: { type: 'Point', coordinates: mousePosition } };
-  }
-
-  return (
-    <>
-      {/* Zone display */}
-      <EditorZone />
-
-      {/* Editor data layer */}
-      <GeoJSONs
-        colors={colors[mapStyle]}
-        hidden={entity.properties.id !== NEW_ENTITY_ID ? [entity.properties.id] : undefined}
-        selection={[entity.properties.id]}
-      />
-
-      {/* Edited signal */}
-      <Source type="geojson" data={renderedEntity || featureCollection([])}>
-        <Layer {...layerProps} id={POINT_LAYER_ID} />
-        <Layer {...layerNameProps} />
-      </Source>
-    </>
-  );
-};
-
-export const BufferStopEditionLayers: FC = () => {
-  const {
-    state: { entity, nearestPoint, mousePosition },
-  } = useContext(EditorContext) as EditorContextType<PointEditionState<BufferStopEntity>>;
-  const { mapStyle } = useSelector((s: { map: { mapStyle: string } }) => s.map) as {
-    mapStyle: string;
-  };
-
-  const layerProps = getBufferStopsLayerProps({});
-
-  let renderedEntity: BufferStopEntity | null = null;
-  if (entity.geometry) {
-    renderedEntity = entity as BufferStopEntity;
-  } else if (nearestPoint) {
-    renderedEntity = {
-      ...entity,
-      geometry: nearestPoint.feature.geometry,
-      properties: entity.properties,
-    };
-  } else if (mousePosition) {
-    renderedEntity = { ...entity, geometry: { type: 'Point', coordinates: mousePosition } };
-  }
-
-  return (
-    <>
-      {/* Zone display */}
-      <EditorZone />
-
-      {/* Editor data layer */}
-      <GeoJSONs
-        colors={colors[mapStyle]}
-        hidden={entity.properties.id !== NEW_ENTITY_ID ? [entity.properties.id] : undefined}
-        selection={[entity.properties.id]}
-      />
-
-      {/* Edited signal */}
-      <Source type="geojson" data={renderedEntity || featureCollection([])}>
-        <Layer {...layerProps} id={POINT_LAYER_ID} />
-      </Source>
-    </>
+          }),
+        },
+      })}
+    />
   );
 };

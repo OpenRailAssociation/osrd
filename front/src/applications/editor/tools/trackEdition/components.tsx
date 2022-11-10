@@ -19,7 +19,9 @@ import { NEW_ENTITY_ID } from '../../data/utils';
 
 export const TRACK_LAYER_ID = 'trackEditionTool/new-track-path';
 export const POINTS_LAYER_ID = 'trackEditionTool/new-track-points';
+
 const TRACK_COLOR = '#666';
+const TRACK_STYLE = { 'line-color': TRACK_COLOR, 'line-dasharray': [2, 1], 'line-width': 2 };
 
 export const TrackEditionLayers: FC = () => {
   const { state } = useContext(EditorContext) as EditorContextType<TrackEditionState>;
@@ -88,11 +90,7 @@ export const TrackEditionLayers: FC = () => {
           },
         }}
       >
-        <Layer
-          id={TRACK_LAYER_ID}
-          type="line"
-          paint={{ 'line-color': TRACK_COLOR, 'line-dasharray': [2, 2] }}
-        />
+        <Layer id={TRACK_LAYER_ID} type="line" paint={TRACK_STYLE} />
       </Source>
       {additionalSegment.length > 0 && (
         <Source
@@ -106,7 +104,7 @@ export const TrackEditionLayers: FC = () => {
             },
           }}
         >
-          <Layer type="line" paint={{ 'line-color': TRACK_COLOR, 'line-dasharray': [2, 2] }} />
+          <Layer type="line" paint={TRACK_STYLE} />
         </Source>
       )}
 
@@ -119,7 +117,7 @@ export const TrackEditionLayers: FC = () => {
               'circle-radius': 4,
               'circle-color': '#fff',
               'circle-stroke-color': '#009EED',
-              'circle-stroke-width': 1,
+              'circle-stroke-width': 2,
             }}
           />
         </Source>

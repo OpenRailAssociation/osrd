@@ -34,6 +34,7 @@ function getPointEditionTool<T extends EditorPoint>({
     return {
       ...DEFAULT_COMMON_TOOL_STATE,
       entity,
+      objType: layer,
       initialEntity: entity,
       nearestPoint: null,
     };
