@@ -246,7 +246,7 @@ export function getSignalPNLayerProps(
   return props;
 }
 
-const signalTextOffsetX = 5;
+const signalTextOffsetX = 6;
 const signalTextOffsetY = -1;
 
 export function getSignalALayerProps(
@@ -307,7 +307,7 @@ export function getSignalVLLayerProps(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _changeSignalContext: ChangeSignalContext
 ): LayerProps {
-  const { sourceTable, sourceLayer } = context;
+  const { sourceTable, sourceLayer, colors } = context;
   const angleName = getAngleName(sourceLayer);
   const typeFilter = _type.split(' ')[0];
   const props: LayerProps = {
@@ -317,7 +317,7 @@ export function getSignalVLLayerProps(
     layout: {
       'text-field': '{extensions_sncf_label}',
       'text-font': ['SNCF'],
-      'text-size': 8,
+      'text-size': 7,
       'text-offset': [
         'case',
         ['==', ['get', 'extensions_sncf_side'], 'RIGHT'],
@@ -340,7 +340,10 @@ export function getSignalVLLayerProps(
       'text-allow-overlap': true,
     },
     paint: {
-      'text-color': '#fff',
+      'text-color': colors.signal.text,
+      'text-halo-width': 3,
+      'text-halo-color': colors.signal.halo,
+      'text-halo-blur': 0,
     },
   };
 
@@ -355,7 +358,7 @@ export function getSignalStopLayerProps(
   iconOffset: SymbolLayout['icon-offset'],
   changeSignalContext: ChangeSignalContext
 ): LayerProps {
-  const { sourceTable, sourceLayer } = context;
+  const { sourceTable, sourceLayer, colors } = context;
   const { redSignalIds = [] } = changeSignalContext;
   const angleName = getAngleName(sourceLayer);
   const typeFilter = _type.split(' ')[0];
@@ -391,7 +394,10 @@ export function getSignalStopLayerProps(
       'text-allow-overlap': true,
     },
     paint: {
-      'text-color': '#fff',
+      'text-color': colors.signal.text,
+      'text-halo-width': 3,
+      'text-halo-color': colors.signal.halo,
+      'text-halo-blur': 0,
     },
   };
 

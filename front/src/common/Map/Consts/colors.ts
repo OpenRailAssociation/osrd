@@ -121,7 +121,7 @@ const colors: Record<string, Theme> = {
     },
     track: {
       minor: '#777777',
-      major: '#0088ce',
+      major: '#003377',
     },
     trackname: {
       text: '#555555',
