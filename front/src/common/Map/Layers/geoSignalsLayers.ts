@@ -88,6 +88,8 @@ export function signalsToSprites(
     case 'S A':
     case 'CARRE VL':
     case 'S VL':
+    case 'A':
+    case 'CV':
       return ['concat', prefix, type];
     default:
       return ALL_SIGNAL_LAYERS_SET.has(type) ? `${prefix}${type}` : `${prefix}UNKNOWN`;
@@ -322,7 +324,7 @@ export function getSignalVLLayerProps(
         ['literal', [signalTextOffsetX, signalTextOffsetY]],
         ['==', ['get', 'extensions_sncf_side'], 'LEFT'],
         ['literal', [signalTextOffsetX * -1, signalTextOffsetY]],
-        ['literal', [0, 0]],
+        ['literal', [0, 5.5]],
       ],
       'icon-offset': iconOffset,
       'icon-image': signalsToSprites(context, _type),
@@ -338,7 +340,7 @@ export function getSignalVLLayerProps(
       'text-allow-overlap': true,
     },
     paint: {
-      'text-color': '#777',
+      'text-color': '#fff',
     },
   };
 
@@ -465,6 +467,9 @@ export function getSignalLayerProps(
     case 'CARRE':
     case 'S':
       return getSignalStopLayerProps(context, type, iconOffset, changeSignalContext);
+    case 'A':
+    case 'CV':
+      return getSignalVLLayerProps(context, type, iconOffset, changeSignalContext);
     default:
   }
 
