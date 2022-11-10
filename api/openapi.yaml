@@ -1172,6 +1172,11 @@ components:
               speed_limit_composition:
                 description: Train category for speed limits
                 type: string
+              comfort:
+                description: Train category for speed limits
+                enum: ["standard", "ac", "heating" ]
+                nullable: true
+                type: string
     WritableTrainSchedule:
       properties:
         train_name:

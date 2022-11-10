@@ -18,3 +18,4 @@ class TrainScheduleModel(models.Model):
     base_simulation = models.JSONField()
     eco_simulation = models.JSONField(null=True)
     speed_limit_composition = models.CharField(max_length=128, null=True)
+    comfort = models.CharField(max_length=8, default="standard")
