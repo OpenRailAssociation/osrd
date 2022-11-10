@@ -35,7 +35,8 @@ public class STDCMEndpointTest extends ApiTest {
                         EdgeDirection.START_TO_STOP
                 )),
                 0,
-                0
+                0,
+                "foo"
         ));
 
         var result = readBodyResponse(

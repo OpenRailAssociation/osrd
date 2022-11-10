@@ -554,6 +554,9 @@ components:
           description: |
             How much longer the total run time can be compared to the shortest path on an empty timetable.
             Defaults to 2 if unspecified, meaning that the result can't take more than twice the minimum time.
+        speed_limit_composition:
+          type: string
+          description: Train composition used for speed limit
     SimulationRequest:
       required:
         - infra
