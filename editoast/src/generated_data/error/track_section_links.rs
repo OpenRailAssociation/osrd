@@ -57,7 +57,7 @@ pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
     errors
 }
 
-/// Retrie invalid ref for track section links
+/// Retrieve invalid ref for track section links
 pub fn check_invalid_ref(infra_cache: &InfraCache, link: &TrackSectionLink) -> Vec<InfraError> {
     let mut infra_errors = vec![];
     for (track_ref, pos) in [
@@ -98,10 +98,12 @@ mod tests {
         infra_cache::tests::{
             create_small_infra_cache, create_track_endpoint, create_track_link_cache,
         },
-        schema::{Endpoint, ObjectRef, ObjectType},
+        schema::{Endpoint, OSRDObject, ObjectRef, ObjectType, TrackEndpoint},
     };
+    use std::collections::HashMap;
 
-    use super::generate_errors;
+    use super::check_invalid_ref;
+    use super::check_overlapping_track_links;
     use super::InfraError;
 
     #[test]
@@ -113,7 +115,7 @@ mod tests {
             create_track_endpoint(Endpoint::Begin, "E"),
         );
         infra_cache.add(link.clone());
-        let errors = generate_errors(&infra_cache);
+        let errors = check_invalid_ref(&infra_cache, &link);
         assert_eq!(1, errors.len());
         let obj_ref = ObjectRef::new(ObjectType::TrackSection, "E");
         let infra_error = InfraError::new_invalid_reference(&link, "dst.track", obj_ref);
@@ -129,7 +131,7 @@ mod tests {
             create_track_endpoint(Endpoint::Begin, "F"),
         );
         infra_cache.add(link.clone());
-        let errors = generate_errors(&infra_cache);
+        let errors = check_invalid_ref(&infra_cache, &link);
         assert_eq!(2, errors.len());
         let obj_ref = ObjectRef::new(ObjectType::TrackSection, "E");
         let infra_error = InfraError::new_invalid_reference(&link, "src.track", obj_ref);
@@ -148,7 +150,15 @@ mod tests {
             create_track_endpoint(Endpoint::Begin, "C"),
         );
         infra_cache.add(link.clone());
-        let errors = generate_errors(&infra_cache);
+        let mut switch_cache = HashMap::<&TrackEndpoint, ObjectRef>::new();
+
+        for switch in infra_cache.switches().values() {
+            let switch = switch.unwrap_switch();
+            for port in switch.ports.values() {
+                switch_cache.insert(port, switch.get_ref());
+            }
+        }
+        let errors = check_overlapping_track_links(&switch_cache, &link);
         assert_eq!(1, errors.len());
         let obj_ref = ObjectRef::new(ObjectType::Switch, "switch");
         let infra_error = InfraError::new_overlapping_track_links(&link, obj_ref);
@@ -158,12 +168,21 @@ mod tests {
     #[test]
     fn link_over_link() {
         let mut infra_cache = create_small_infra_cache();
-        infra_cache.add(create_track_link_cache(
+        let link = create_track_link_cache(
             "link_error",
-            create_track_endpoint(Endpoint::End, "A"),
-            create_track_endpoint(Endpoint::Begin, "B"),
-        ));
-        let errors = generate_errors(&infra_cache);
+            create_track_endpoint(Endpoint::End, "B"),
+            create_track_endpoint(Endpoint::Begin, "C"),
+        );
+        infra_cache.add(link.clone());
+        let mut switch_cache = HashMap::<&TrackEndpoint, ObjectRef>::new();
+
+        for switch in infra_cache.switches().values() {
+            let switch = switch.unwrap_switch();
+            for port in switch.ports.values() {
+                switch_cache.insert(port, switch.get_ref());
+            }
+        }
+        let errors = check_overlapping_track_links(&switch_cache, &link);
         assert_eq!(1, errors.len());
     }
 }
