@@ -2,21 +2,22 @@ import 'applications/osrd/views/OSRDConfig/OSRDConfig.scss';
 
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
+import { FlyToInterpolator } from 'react-map-gl';
+
+import { updateViewport } from 'reducers/map';
+import { STDCM_REQUEST_STATUS, MODES } from 'applications/osrd/consts';
+import { makeEnumBooleans } from 'utils/constants';
 
 import AddTrainLabels from 'applications/osrd/views/OSRDConfig/AddTrainLabels';
 import AddTrainSchedule from 'applications/osrd/views/OSRDConfig/AddTrainSchedule';
-import { FlyToInterpolator } from 'react-map-gl';
 import InfraSelector from 'applications/osrd/views/OSRDConfig/InfraSelector';
 import Itinerary from 'applications/osrd/views/OSRDConfig/Itinerary';
 import Map from 'applications/osrd/views/OSRDConfig/Map';
 import RollingStockSelector from 'applications/osrd/views/OSRDConfig/RollingStockSelector';
 import SpeedLimitByTagSelector from 'applications/osrd/views/OSRDConfig/SpeedLimitByTagSelector';
 import TimetableSelector from 'applications/osrd/views/OSRDConfig/TimetableSelector';
-import { STDCM_REQUEST_STATUS } from 'applications/osrd/consts';
-import { updateViewport } from 'reducers/map';
-import { useTranslation } from 'react-i18next';
-import { MODES } from '../../consts';
 
 export default function OSRDConfig(props) {
   const { fullscreen, darkmode } = useSelector((state) => state.main);
@@ -26,6 +27,8 @@ export default function OSRDConfig(props) {
   const [extViewport, setExtViewport] = useState(undefined);
   const [mustUpdateTimetable, setMustUpdateTimetable] = useState(true);
   const { setCurrentStdcmRequestStatus } = props;
+
+  const { isSimulation, isStdcm } = makeEnumBooleans(MODES, mode);
 
   if (darkmode) {
     import('./OSRDConfigDarkMode.scss');
@@ -51,7 +54,7 @@ export default function OSRDConfig(props) {
             <div className="col-xl-6">
               <InfraSelector />
               <RollingStockSelector />
-              {mode === MODES.simulation && <SpeedLimitByTagSelector />}
+              {isSimulation && <SpeedLimitByTagSelector />}
             </div>
             <div className="col-xl-6">
               <TimetableSelector
@@ -62,13 +65,13 @@ export default function OSRDConfig(props) {
           </div>
           <Itinerary title={t('translation:common.itinerary')} updateExtViewport={setExtViewport} />
           <AddTrainLabels />
-          {mode === MODES.simulation && (
+          {isSimulation && (
             <AddTrainSchedule
               mustUpdateTimetable={mustUpdateTimetable}
               setMustUpdateTimetable={setMustUpdateTimetable}
             />
           )}
-          {mode === MODES.stdcm && (
+          {isStdcm && (
             <div className="osrd-config-stdcm-apply">
               <button
                 className="btn btn-sm  btn-primary "

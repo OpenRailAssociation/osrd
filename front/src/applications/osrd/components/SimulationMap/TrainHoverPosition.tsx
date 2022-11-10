@@ -37,7 +37,9 @@ function getSpeedAndTimeLabel(isSelectedTrain: boolean, ecoBlocks: boolean, poin
           {Math.round(point?.speedTime?.speed ?? 0)}
           km/h
         </span>
-        <span className="ml-2 small">{point.speedTime && datetime2time(point.speedTime.time)}</span>
+        <span className="ml-2 small">
+          {point.speedTime && datetime2time(point.speedTime.time as any)}
+        </span>
       </>
     );
   }
