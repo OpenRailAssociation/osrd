@@ -347,6 +347,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
         asyncRender
         onLoad={handleLoadFinished}
       >
+        <VirtualLayers />
         <AttributionControl
           className="attribution-control"
           customAttribution="©SNCF/DGEX Solutions"
@@ -367,8 +368,6 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
             />
           </>
         )}
-
-        <VirtualLayers />
 
         {/* Have to  duplicate objects with sourceLayer to avoid cache problems in mapbox */}
         {mapTrackSources === 'geographic' ? (

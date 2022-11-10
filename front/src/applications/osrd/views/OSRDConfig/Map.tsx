@@ -210,6 +210,7 @@ function Map() {
         touchRotate
         asyncRender
       >
+        <VirtualLayers />
         <AttributionControl
           className="attribution-control"
           customAttribution="©SNCF/DGEX Solutions"
@@ -230,8 +231,6 @@ function Map() {
             />
           </>
         )}
-
-        <VirtualLayers />
 
         {/* Have to  duplicate objects with sourceLayer to avoid cache problems in mapbox */}
         {mapTrackSources === 'geographic' ? (

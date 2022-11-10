@@ -16,6 +16,7 @@ import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
+import VirtualLayers from 'applications/osrd/views/OSRDSimulation/VirtualLayers';
 import BufferStops from 'common/Map/Layers/BufferStops';
 /* Settings & Buttons */
 import MapButtons from 'common/Map/Buttons/MapButtons';
@@ -115,6 +116,7 @@ function Map() {
         touchRotate
         asyncRender
       >
+        <VirtualLayers />
         <AttributionControl
           className="attribution-control"
           customAttribution="©SNCF/DGEX Solutions"
