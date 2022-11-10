@@ -117,7 +117,7 @@ export const initialState: MapState = {
 };
 
 // Reducer
-export default function reducer(inputState: MapState, action: AnyAction) {
+export default function reducer(inputState: MapState | undefined, action: AnyAction) {
   const state = inputState || initialState;
   return produce(state, (draft) => {
     switch (action.type) {
