@@ -7,12 +7,15 @@ import { TFunction } from 'i18next';
 import colors from '../../common/Map/Consts/colors';
 import '../../common/Map/Map.scss';
 
+import { LAYER_GROUPS_ORDER, LAYERS } from '../../config/layerOrder';
+
 /* Main data & layers */
 import Background from '../../common/Map/Layers/Background';
 import OSM from '../../common/Map/Layers/OSM';
 import Hillshade from '../../common/Map/Layers/Hillshade';
-import Platform from '../../common/Map/Layers/Platforms';
+import Platforms from '../../common/Map/Layers/Platforms';
 import osmBlankStyle from '../../common/Map/Layers/osmBlankStyle';
+import OrthoPhoto from '../../common/Map/Layers/OrthoPhoto';
 
 import { EditorContext } from './context';
 import {
@@ -23,6 +26,7 @@ import {
   OSRDConf,
   Tool,
 } from './tools/types';
+import VirtualLayers from 'applications/osrd/views/OSRDSimulation/VirtualLayers';
 
 const DEFAULT_RADIUS = 6;
 
@@ -143,9 +147,11 @@ const MapUnplugged: FC<MapProps> = ({
 
         {/* Common layers */}
         <Background colors={colors[mapStyle]} />
+        <OrthoPhoto layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORMS.GROUP]} />
         <OSM mapStyle={mapStyle} />
         <Hillshade mapStyle={mapStyle} />
-        <Platform colors={colors[mapStyle]} />
+        <VirtualLayers />
+        <Platforms colors={colors[mapStyle]} />
 
         {/* Tool specific layers */}
         {activeTool.layersComponent && <activeTool.layersComponent />}

@@ -9,6 +9,7 @@ import trackSectionsIcon from 'assets/pictures/layersicons/layer_adv.svg';
 import signalsIcon from 'assets/pictures/layersicons/layer_signal.svg';
 
 import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
+import MapSettingsShowOrthoPhoto from 'common/Map/Settings/MapSettingsShowOrthoPhoto';
 import { EditorContext } from '../context';
 import Modal from './Modal';
 import { LayerType, ModalProps, OBJTYPE_TO_LAYER_DICT } from '../tools/types';
@@ -58,7 +59,7 @@ const LayersModal: FC<
 
   return (
     <Modal onClose={cancel} title={t('Editor.nav.toggle-layers')}>
-      <div className="container-fluid">
+      <div className="container-fluid mb-3">
         <div className="row">
           {LAYERS.map(({ id, icon }) => (
             <div className="col-lg-6" key={id}>
@@ -97,6 +98,9 @@ const LayersModal: FC<
               </div>
             </div>
           ))}
+          <div className="col-lg-6 mt-2">
+            <MapSettingsShowOrthoPhoto />
+          </div>
         </div>
       </div>
 
