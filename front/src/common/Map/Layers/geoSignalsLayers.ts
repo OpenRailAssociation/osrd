@@ -257,13 +257,12 @@ export function getSignalALayerProps(
   const { yellowSignalIds = [] } = changeSignalContext;
   const angleName = getAngleName(sourceLayer);
   const typeFilter = _type.split(' ')[0];
-  let filter: LayerProps['filter'] = ['==', 'extensions_sncf_installation_type', typeFilter];
-  if (yellowSignalIds.length) filter = ['all', filter, ['in', 'id'].concat(yellowSignalIds)];
+  const filterA = ['in', 'id'].concat(yellowSignalIds);
 
   const props: LayerProps = {
     type: 'symbol',
     minzoom: 12,
-    filter,
+    filter: ['all', ['==', 'extensions_sncf_installation_type', typeFilter], filterA],
     layout: {
       'text-field': '{extensions_sncf_label}',
       'text-font': ['SNCF'],
@@ -358,13 +357,12 @@ export function getSignalStopLayerProps(
   const { redSignalIds = [] } = changeSignalContext;
   const angleName = getAngleName(sourceLayer);
   const typeFilter = _type.split(' ')[0];
-  let filter: LayerProps['filter'] = ['==', 'extensions_sncf_installation_type', typeFilter];
-  if (redSignalIds.length) filter = ['all', filter, ['in', 'id'].concat(redSignalIds)];
+  const filterA = ['in', 'id'].concat(redSignalIds);
 
   const props: LayerProps = {
     type: 'symbol',
     minzoom: 12,
-    filter,
+    filter: ['all', ['==', 'extensions_sncf_installation_type', typeFilter], filterA],
     layout: {
       'text-field': '{extensions_sncf_label}',
       'text-font': ['SNCF'],
