@@ -13,7 +13,7 @@ import { isEqual } from 'lodash';
 import { DEFAULT_COMMON_TOOL_STATE, Tool } from '../types';
 import { selectZone } from '../../../../reducers/editor';
 import { ZoneSelectionState } from './types';
-import { ZoneSelectionLayers } from './components';
+import { ZoneSelectionLayers, ZoneSelectionMessages } from './components';
 
 const ZoneSelectionTool: Tool<ZoneSelectionState> = {
   // Zone selection:
@@ -219,6 +219,7 @@ const ZoneSelectionTool: Tool<ZoneSelectionState> = {
   },
 
   layersComponent: ZoneSelectionLayers,
+  messagesComponent: ZoneSelectionMessages,
 };
 
 export default ZoneSelectionTool;

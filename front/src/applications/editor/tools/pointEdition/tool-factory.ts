@@ -7,7 +7,7 @@ import nearestPointOnLine from '@turf/nearest-point-on-line';
 
 import { DEFAULT_COMMON_TOOL_STATE, LayerType, Tool } from '../types';
 import { getNearestPoint } from '../../../../utils/mapboxHelper';
-import { POINT_LAYER_ID, PointEditionLeftPanel } from './components';
+import { POINT_LAYER_ID, PointEditionLeftPanel, PointEditionMessages } from './components';
 import { PointEditionState } from './types';
 import { BufferStopEntity, DetectorEntity, SignalEntity } from '../../../../types';
 
@@ -200,6 +200,7 @@ The entity ${entity.properties.id} position computed by Turf.js does not match t
 
     layersComponent,
     leftPanelComponent: PointEditionLeftPanel,
+    messagesComponent: PointEditionMessages,
   };
 }
 

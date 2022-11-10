@@ -21,6 +21,7 @@ import {
   TRACK_LAYER_ID,
   TrackEditionLayers,
   TrackEditionLeftPanel,
+  TrackEditionMessages,
 } from './components';
 import { TrackEditionState } from './types';
 import { getNewLine } from './utils';
@@ -366,6 +367,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
 
   layersComponent: TrackEditionLayers,
   leftPanelComponent: TrackEditionLeftPanel,
+  messagesComponent: TrackEditionMessages,
 };
 
 export default TrackEditionTool;

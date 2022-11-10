@@ -53,6 +53,7 @@
 
     display: flex;
     flex-direction: column;
+    flex-shrink: 0;
 
     & > * {
       margin-bottom: 0.5rem;
@@ -122,6 +123,7 @@
 
   .map-wrapper {
     flex-grow: 1;
+    flex-shrink: 1;
 
     position: relative;
     display: flex;
@@ -143,13 +145,18 @@
       height: 2em;
       line-height: 2em;
       background: white;
-      color: grey;
-      font-style: italic;
-      padding-right: 1em;
+      color: #333;
+      font-size: 0.9em;
+      position: relative;
 
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
+      & > div {
+        width: auto;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        position: absolute;
+        inset: 0;
+      }
     }
   }
 }

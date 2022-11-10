@@ -10,7 +10,6 @@ import 'common/Map/Map.scss';
 import './Editor.scss';
 
 import { LoaderState } from '../../common/Loader';
-import ButtonResetViewport from '../../common/Map/Buttons/ButtonResetViewport';
 import { NotificationsState } from '../../common/Notifications';
 import { loadDataModel, reset } from '../../reducers/editor';
 import { MainState, setFailure } from '../../reducers/main';
@@ -324,8 +323,10 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
                 })}
               </div>
             </div>
-            <div className="messages-bar">
-              {toolAndState.tool.messagesComponent && <toolAndState.tool.messagesComponent />}
+            <div className="messages-bar border-left">
+              <div className="px-1">
+                {toolAndState.tool.messagesComponent && <toolAndState.tool.messagesComponent />}
+              </div>
             </div>
           </div>
         </div>

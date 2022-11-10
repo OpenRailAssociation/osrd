@@ -366,12 +366,13 @@ export const SwitchEditionLayers: FC = () => {
     </>
   );
 };
+
 export const SwitchMessages: FC = () => {
   const { t } = useTranslation();
   const {
     state: { portEditionState },
   } = useContext(EditorContext) as ExtendedEditorContextType<SwitchEditionState>;
   return portEditionState.type === 'selection'
-    ? t('Editor.tools.switch-edition.select-track')
-    : null;
+    ? t('Editor.tools.switch-edition.help.select-track')
+    : t('Editor.tools.switch-edition.help.no-move');
 };

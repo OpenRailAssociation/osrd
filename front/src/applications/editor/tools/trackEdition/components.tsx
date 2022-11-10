@@ -16,6 +16,7 @@ import { CreateEntityOperation, TrackSectionEntity } from '../../../../types';
 import { EditorContextType, ExtendedEditorContextType } from '../types';
 import { injectGeometry } from './utils';
 import { NEW_ENTITY_ID } from '../../data/utils';
+import { ZoneSelectionState } from '../zoneSelection/types';
 
 export const TRACK_LAYER_ID = 'trackEditionTool/new-track-path';
 export const POINTS_LAYER_ID = 'trackEditionTool/new-track-points';
@@ -235,4 +236,22 @@ export const TrackEditionLeftPanel: FC = () => {
       </div>
     </EditorForm>
   );
+};
+
+export const TrackEditionMessages: FC = () => {
+  const { t, state } = useContext(EditorContext) as ExtendedEditorContextType<TrackEditionState>;
+
+  switch (state.editionState.type) {
+    case 'addPoint':
+      if (!state.anchorLinePoints) return t('Editor.tools.track-edition.help.add-point');
+      return t('Editor.tools.track-edition.help.add-anchor-point');
+    case 'movePoint':
+      if (!state.editionState.draggedPointIndex)
+        return t('Editor.tools.track-edition.help.move-point');
+      return t('Editor.tools.track-edition.help.move-point-end');
+    case 'deletePoint':
+      return t('Editor.tools.track-edition.help.delete-point');
+    default:
+      return null;
+  }
 };
