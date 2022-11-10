@@ -4,6 +4,8 @@ import com.google.common.collect.Multimap;
 import fr.sncf.osrd.api.pathfinding.RemainingDistanceEstimator;
 import fr.sncf.osrd.api.stdcm.OccupancyBlock;
 import fr.sncf.osrd.api.stdcm.STDCMResult;
+import fr.sncf.osrd.api.pathfinding.constraints.ElectrificationConstraints;
+import fr.sncf.osrd.api.pathfinding.constraints.LoadingGaugeConstraints;
 import fr.sncf.osrd.envelope_sim.PhysicsPath;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
@@ -17,6 +19,7 @@ import fr.sncf.osrd.utils.graph.Pathfinding.EdgeRange;
 import fr.sncf.osrd.utils.graph.functional_interfaces.TargetsOnEdge;
 import fr.sncf.osrd.utils.graph.functional_interfaces.AStarHeuristic;
 import java.util.*;
+
 
 /** This class combines all the (static) methods used to find a path in the STDCM graph. */
 public class STDCMPathfinding {
@@ -46,9 +49,16 @@ public class STDCMPathfinding {
                 startTime,
                 endLocations
         );
+
+        // Initializes the constraints
+        var loadingGaugeConstraints = new LoadingGaugeConstraints(List.of(rollingStock));
+        var electrificationConstraints = new ElectrificationConstraints(List.of(rollingStock));
+
         var path = new Pathfinding<>(graph)
                 .setEdgeToLength(edge -> edge.route().getInfraRoute().getLength())
                 .setRemainingDistanceEstimator(makeAStarHeuristic(endLocations, rollingStock))
+                .addBlockedRangeOnEdges(edge -> loadingGaugeConstraints.apply(edge.route()))
+                .addBlockedRangeOnEdges(edge -> electrificationConstraints.apply(edge.route()))
                 .setEdgeRangeCost(STDCMPathfinding::edgeRangeCost)
                 .runPathfinding(
                         convertLocations(graph, startLocations, startTime, maxDepartureDelay),
