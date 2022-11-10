@@ -30,6 +30,8 @@ import { updateItinerary } from 'reducers/osrdconf';
 import { useTranslation } from 'react-i18next';
 import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
 
+const timetableURI = '/timetable/';
+
 export default function StdcmRequestModal(props) {
   const { t } = useTranslation(['translation', 'osrdconf']);
   const osrdconf = useSelector((state) => state.osrdconf);
@@ -80,45 +82,62 @@ export default function StdcmRequestModal(props) {
             .map((train) => train.id);
 
           // ask for timetable with the new path
+          get(`${timetableURI}${osrdconf.timetableID}/`).then((timetable) => {
 
-          get(`${trainscheduleURI}results/`, {
-            train_ids: trainSchedulesIDs.join(','),
-            path: result.path.id,
-          }).then((simulationLocal) => {
-            const newSimulation = {};
-            newSimulation.trains = [...simulationLocal];
-            newSimulation.trains = [...newSimulation.trains, fakedNewTrain];
-            const consolidatedSimulation = createTrain(
-              dispatch,
-              KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
-              newSimulation.trains,
-              t
-            );
-            dispatch(updateConsolidatedSimulation(consolidatedSimulation));
-            dispatch(updateSimulation(newSimulation));
-            dispatch(updateSelectedTrain(newSimulation.trains.length - 1));
+            const trainIds = timetable.train_schedules.map(train_schedule => train_schedule.id)
+            get(`${trainscheduleURI}results/`, {
+              train_ids: trainIds.join(','),
+              path: result.path.id,
+            }).then((simulationLocal) => {
+              const newSimulation = {};
+              newSimulation.trains = [...simulationLocal];
+              newSimulation.trains = [...newSimulation.trains, fakedNewTrain];
+              const consolidatedSimulation = createTrain(
+                dispatch,
+                KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
+                newSimulation.trains,
+                t
+              );
+              dispatch(updateConsolidatedSimulation(consolidatedSimulation));
+              dispatch(updateSimulation(newSimulation));
+              dispatch(updateSelectedTrain(newSimulation.trains.length - 1));
 
-            const newAllowancesSettings = { ...allowancesSettings };
+              // Create margins settings for each train if not set
+              const newAllowancesSettings = { ...allowancesSettings };
+              simulationLocal.forEach((train: any) => {
+                if (!newAllowancesSettings[train.id]) {
+                  newAllowancesSettings[train.id] = {
+                    base: true,
+                    baseBlocks: true,
+                    eco: true,
+                    ecoBlocks: false,
+                  };
+                }
+              });
 
-            if (!newAllowancesSettings[fakedNewTrain.id]) {
-              newAllowancesSettings[fakedNewTrain.id] = {
-                base: true,
-                baseBlocks: true,
-                eco: true,
-                ecoBlocks: false,
-              };
-              dispatch(updateAllowancesSettings(newAllowancesSettings));
-            }
 
-            dispatch(
-              updateSelectedProjection({
-                id: fakedNewTrain.id,
-                path: result.path,
-              })
-            );
+              if (!newAllowancesSettings[fakedNewTrain.id]) {
+                newAllowancesSettings[fakedNewTrain.id] = {
+                  base: true,
+                  baseBlocks: true,
+                  eco: true,
+                  ecoBlocks: false,
+                };
+                dispatch(updateAllowancesSettings(newAllowancesSettings));
+              }
 
-            dispatch(updateMustRedraw(true));
-          });
+              dispatch(
+                updateSelectedProjection({
+                  id: fakedNewTrain.id,
+                  path: result.path,
+                })
+              );
+
+              dispatch(updateMustRedraw(true));
+            });
+          })
+
+
         })
         .catch((e) => {
           // Update simu in redux with data;
