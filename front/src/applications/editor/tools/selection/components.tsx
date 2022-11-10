@@ -52,10 +52,7 @@ export const SelectionLayers: FC = () => {
 
   return (
     <>
-      <GeoJSONs
-        colors={colors[mapStyle]}
-        selection={state.selection.map((e) => e.properties.id)}
-      />
+      <GeoJSONs colors={colors[mapStyle]} selection={state.selection.map((e) => e.properties.id)} />
       <EditorZone newZone={selectionZone} />
       {state.mousePosition && state.selectionState.type === 'single' && state.hovered && (
         <Popup
@@ -65,7 +62,13 @@ export const SelectionLayers: FC = () => {
           latitude={state.mousePosition[1]}
           closeButton={false}
         >
-          <EntitySumUp entity={state.hovered} />
+          <EntitySumUp
+            entity={state.hovered}
+            status={
+              state.selection.find((item) => item.properties.id === state.hovered?.properties.id) &&
+              'selected'
+            }
+          />
         </Popup>
       )}
     </>

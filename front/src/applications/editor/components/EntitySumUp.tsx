@@ -35,10 +35,11 @@ const DEFAULT_CLASSES = {
   strong: 'strong',
 };
 
-const EntitySumUp: FC<{ entity: EditorEntity; classes?: Partial<typeof DEFAULT_CLASSES> }> = ({
-  entity,
-  classes: classesOverride,
-}) => {
+const EntitySumUp: FC<{
+  entity: EditorEntity;
+  classes?: Partial<typeof DEFAULT_CLASSES>;
+  status?: string;
+}> = ({ entity, classes: classesOverride, status }) => {
   const { t } = useTranslation();
   const { editorState } = useContext(EditorContext) as ExtendedEditorContextType<unknown>;
   const classes = { ...DEFAULT_CLASSES, ...(classesOverride || {}) };
@@ -126,7 +127,10 @@ const EntitySumUp: FC<{ entity: EditorEntity; classes?: Partial<typeof DEFAULT_C
   return (
     <div>
       <div className={cx(classes.muted, classes.small)}>{type}</div>
-      {text && <div className={classes.strong}>{text}</div>}
+      <div>
+        <span className={classes.strong}>{text}</span>
+        {status && ` (${t(`Editor.item-statuses.${status}`)})`}
+      </div>
       {subtexts.map((s, i) => (
         <div className={classes.small} key={i}>
           {s}

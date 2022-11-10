@@ -286,7 +286,8 @@ const SelectionTool: Tool<SelectionState> = {
         'editor/geo/buffer-stop-main',
         'editor/geo/detector-main',
         'editor/geo/switch-main',
-      ]);
+      ])
+      .flatMap((s) => [s, s.replace(/^editor/, 'editor/selected')]);
   },
   getCursor({ state }, { isDragging }) {
     if (isDragging) return 'move';
