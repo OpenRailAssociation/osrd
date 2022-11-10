@@ -7,9 +7,8 @@ import colors from '../../../../common/Map/Consts/colors';
 import EditorZone from '../../../../common/Map/Layers/EditorZone';
 import TracksGeographic from '../../../../common/Map/Layers/TracksGeographic';
 import { ZoneSelectionState } from './types';
-import { EditorContextType } from '../types';
+import { EditorContextType, ExtendedEditorContextType } from '../types';
 
-// eslint-disable-next-line import/prefer-default-export
 export const ZoneSelectionLayers: FC = () => {
   const { state } = useContext(EditorContext) as EditorContextType<ZoneSelectionState>;
   const { mapStyle } = useSelector((s: { map: { mapStyle: string } }) => s.map) as {
@@ -39,4 +38,28 @@ export const ZoneSelectionLayers: FC = () => {
       <EditorZone newZone={newZone} />
     </>
   );
+};
+
+export const ZoneSelectionMessages: FC = () => {
+  const { t, state, editorState } = useContext(
+    EditorContext
+  ) as ExtendedEditorContextType<ZoneSelectionState>;
+
+  if (editorState.editorZone) {
+    return <>{t('Editor.tools.select-zone.help.open-selection-tool')}</>;
+  }
+
+  switch (state.zoneState.type) {
+    case 'polygon': {
+      const pointsCount = state.zoneState.points.length;
+      if (!pointsCount) return <>{t('Editor.tools.select-zone.help.start-polygon')}</>;
+      return <>{t('Editor.tools.select-zone.help.continue-polygon')}</>;
+    }
+    case 'rectangle':
+      if (!state.zoneState.topLeft)
+        return <>{t('Editor.tools.select-zone.help.start-rectangle')}</>;
+      return <>{t('Editor.tools.select-zone.help.continue-rectangle')}</>;
+    default:
+      return null;
+  }
 };

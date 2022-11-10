@@ -21,8 +21,8 @@ import './styles.scss';
 
 export const SelectionMessages: FC = () => {
   const { t, state } = useContext(EditorContext) as EditorContextType<SelectionState>;
-  if (!state.selection.length) return t('Editor.tools.select-items.no-selection');
-  return t('Editor.tools.select-items.selection', { count: state.selection.length });
+
+  return t(`Editor.tools.select-items.help.${state.selectionState.type}-selection`);
 };
 
 export const SelectionLayers: FC = () => {

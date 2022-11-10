@@ -75,6 +75,20 @@
           "add-at-start": "Ajouter les nouveaux points au début",
           "add-at-end": "Ajouter les nouveaux points à la fin",
           "cancel-line": "Annuler la saisie en cours"
+        },
+        "help": {
+          "add-point": "Cliquez pour ajouter un point au bout de la section de ligne.",
+          "add-anchor-point": "Cliquez pour ajouter un point au bout de la section de ligne. Cliquez sur la ligne pour ajouter un point intermédiaire.",
+          "move-point": "Cliquez une première fois sur un point pour commencer à le déplacer.",
+          "move-point-end": "Cliquez pour valider le déplacement du point.",
+          "delete-point": "Cliquez sur un point pour le supprimer de la ligne."
+        }
+      },
+      "point-edition": {
+        "help": {
+          "stop-dragging-on-line": "Cliquez pour valider le déplacement de l'élément.",
+          "stop-dragging-no-line": "L'élément doit être placé sur une section de ligne.",
+          "start-dragging": "Cliquez sur l'élément pour commencer à le déplacer."
         }
       },
       "switch-edition": {
@@ -83,10 +97,13 @@
           "delete-switch": "Supprimer l'aiguillage",
           "new-switch": "Créer un nouvel aiguillage"
         },
+        "help": {
+          "no-move": "Les aiguillages ne peuvent pas être déplacer, et sont automatiquement placés sur leur premier port.",
+          "select-track": "Sélectionnez une ligne sur la carte"
+        },
         "endpoint": "Extrémité :",
         "no-track-picked-yet": "Aucune ligne n'a encore été sélectionnée",
-        "untitled-track": "Ligne sans nom",
-        "select-track": "Sélectionnez une ligne sur la carte"
+        "untitled-track": "Ligne sans nom"
       },
       "select-items": {
         "label": "Outil \"Sélection\"",
@@ -103,6 +120,11 @@
         "errors": {
           "no-multi-edition": "Il n'est pas encore possible d'éditer plusieurs éléments en même temps (TODO).",
           "no-heterogenous-edition": "Il n'est pas possible d'éditer plusieurs éléments de différents types en même temps."
+        },
+        "help": {
+          "single-selection": "Cliquez sur un élément pour le sélectionner ou le déselectionner. Vous pouvez sélectionner plusieurs éléments en pressant la touche Contrôle.",
+          "rectangle-selection": "Cliquez deux fois pour délimiter un rectangle. Tous les éléments dans ce rectangle seront alors sélectionnés.",
+          "polygon-selection": "Cliquez pour délimiter un polygône. Double-cliquez pour le fermer, et sélectionner tous les éléments à l'intérieur."
         },
         "focus": "Focus",
         "unselect": "Désélectionner",
@@ -123,6 +145,13 @@
           "rectangle": "Sélection Rectangle",
           "unselect": "Désélectionner la zone d'édition",
           "validate-polygon": "Valider le polygône d'édition"
+        },
+        "help": {
+          "open-selection-tool": "Sélectionnez l'outil \"Sélection\" pour continuer, ou changez la zone d'édition.",
+          "start-polygon": "Cliquez pour commencer à saisir le polygône d'édition.",
+          "continue-polygon": "Cliquez pour ajouter des points au polygône de sélection. Double-cliquez pour fermer le polygône et valider la zone de sélection.",
+          "start-rectangle": "Cliquez une première fois pour sélectionner un premier coin du rectangle.",
+          "continue-rectangle": "Cliquez une seconde fois pour fermer le rectangle et valider la zone de sélection."
         }
       },
       "signal-edition": {
