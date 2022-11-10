@@ -264,3 +264,17 @@ export const BufferStopEditionLayers: FC = () => {
     </>
   );
 };
+
+export const PointEditionMessages: FC = () => {
+  const { t, state } = useContext(EditorContext) as EditorContextType<
+    PointEditionState<EditorEntity>
+  >;
+
+  if (!state.entity.geometry) {
+    return state.nearestPoint
+      ? t(`Editor.tools.point-edition.help.stop-dragging-on-line`)
+      : t(`Editor.tools.point-edition.help.stop-dragging-no-line`);
+  }
+
+  return t(`Editor.tools.point-edition.help.start-dragging`);
+};
