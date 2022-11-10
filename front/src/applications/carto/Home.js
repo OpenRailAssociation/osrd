@@ -16,7 +16,7 @@ class HomeCartoLegacy extends React.Component {
     const { t } = this.props;
     return (
       <>
-        <NavBarSNCF appName={t('Map.title')} logo={logo} />
+        <NavBarSNCF appName={t('Home.map')} logo={logo} />
         <div className="no-mastnav">
           <Routes>
             <Route path="/" element={<Map urlmap={config.proxy} />} />
