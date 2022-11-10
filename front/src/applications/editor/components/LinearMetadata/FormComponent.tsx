@@ -333,6 +333,7 @@ export const FormComponent: React.FC<FieldProps> = (props) => {
                 id={`selected-${selected}`}
                 name="selected"
                 liveValidate
+                noHtml5Validate
                 tagName="div"
                 schema={
                   (getFieldJsonSchema(schema, registry.rootSchema, {
