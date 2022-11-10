@@ -21,7 +21,9 @@ public record STDCMEdge(
         // Total delay we have added by shifting the departure time since the start of the path
         double totalDepartureTimeShift,
         // Node located at the start of this edge, null if this is the first edge
-        STDCMNode previousNode
+        STDCMNode previousNode,
+        // Offset of the envelope if it doesn't start at the beginning of the edge
+        double envelopeStartOffset
 ) {
     @Override
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
@@ -44,6 +46,18 @@ public record STDCMEdge(
         return Objects.hash(
                 route.getInfraRoute().getID(),
                 timeNextOccupancy
+        );
+    }
+
+    /** Returns the node at the end of this edge */
+    STDCMNode getEdgeEnd(STDCMGraph graph) {
+        return new STDCMNode(
+                envelope().getTotalTime() + timeStart(),
+                envelope().getEndSpeed(),
+                graph.infra.getSignalingRouteGraph().incidentNodes(route()).nodeV(),
+                totalDepartureTimeShift(),
+                maximumAddedDelayAfter(),
+                this
         );
     }
 }

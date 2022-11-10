@@ -4,7 +4,7 @@ use crate::{
     infra_cache::InfraCache,
     schema::{
         operation::{OperationResult, RailjsonObject},
-        OSRDObject, ObjectType,
+        OSRDIdentified, OSRDObject, ObjectType,
     },
 };
 

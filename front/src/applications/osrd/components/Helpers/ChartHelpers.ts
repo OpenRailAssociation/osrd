@@ -1,15 +1,28 @@
 import * as d3 from 'd3';
+import { Dispatch } from 'redux';
 
 import { sec2time } from 'utils/timeManipulation';
 // import/no-cycle is disabled because this func call will be removed by refacto
 // eslint-disable-next-line
-import { Regime, Position, PositionSpeed, updateMustRedraw, RouteAspect, SignalAspect } from 'reducers/osrdsimulation';
+import {
+  Regime,
+  Position,
+  PositionSpeed,
+  updateMustRedraw,
+  RouteAspect,
+  SignalAspect,
+} from 'reducers/osrdsimulation';
 
-export const sec2d3datetime = (time) => d3.timeParse('%H:%M:%S')(sec2time(time));
+export function sec2d3datetime(time: number) {
+  return d3.timeParse('%H:%M:%S')(sec2time(time));
+}
 
-export const colorModelToHex = (color) =>
+export function colorModelToHex(color: any) {
   // eslint-disable-next-line no-bitwise
-  `rgba(${(color >> 16) & 0xff}, ${(color >> 8) & 0xff}, ${color & 0xff}, ${(color >> 24) & 0xff})`;
+  return `rgba(${(color >> 16) & 0xff}, ${(color >> 8) & 0xff}, ${color & 0xff}, ${
+    (color >> 24) & 0xff
+  })`;
+}
 
 /**
  * returns Contextualized offset not depending on days ahead
@@ -17,7 +30,7 @@ export const colorModelToHex = (color) =>
  * @param {*} seconds
  * @return {*}
  */
-export const offsetSeconds = (seconds) => {
+export function offsetSeconds(seconds: number) {
   if (seconds > 85399) {
     return seconds - 86400;
   }
@@ -25,18 +38,26 @@ export const offsetSeconds = (seconds) => {
     return seconds + 86400;
   }
   return seconds;
-};
+}
 
-export const getDirection = (data) =>
-  data[0] && data[0][0].position < data[data.length - 1][data[data.length - 1].length - 1].position;
+export function getDirection(data: Array<any>) {
+  return (
+    data[0] &&
+    data[0][0].position < data[data.length - 1][data[data.length - 1].length - 1].position
+  );
+}
 
-export const defineTime = (extent) => d3.scaleTime().domain(extent);
+export function defineTime(extent: any) {
+  return d3.scaleTime().domain(extent);
+}
 
-export const defineLinear = (max, pctMarge = 0, origin = 0) =>
-  d3.scaleLinear().domain([origin - max * pctMarge, max + max * pctMarge]);
+export function defineLinear(max: any, pctMarge = 0, origin = 0) {
+  return d3.scaleLinear().domain([origin - max * pctMarge, max + max * pctMarge]);
+}
 
-export const formatStepsWithTime = (data) =>
-  data.map((step) => ({ ...step, time: sec2d3datetime(step.time) }));
+export function formatStepsWithTime<T extends { time: number }>(data: Array<T>) {
+  return data.map((step) => ({ ...step, time: sec2d3datetime(step.time) }));
+}
 
 export const formatStepsWithTimeMulti = (data: Position[][]): Position<Date | null>[][] =>
   data.map((section) =>
@@ -67,8 +88,8 @@ export const formatSignalAspects = (
     color: colorModelToHex(step.color),
   }));
 
-export const makeStairCase = (data) => {
-  const newData = [];
+export function makeStairCase(data: Array<{ time: number; position: number }>) {
+  const newData: Array<{ time: number; position: number }> = [];
   const { length } = data;
   data.forEach((step, idx) => {
     newData.push(step);
@@ -80,16 +101,17 @@ export const makeStairCase = (data) => {
     }
   });
   return newData;
-};
+}
+
 export const handleWindowResize = (
-  chartID,
-  dispatch,
-  drawTrain,
-  isResizeActive,
-  setResizeActive
+  chartID: string,
+  dispatch: Dispatch,
+  drawTrain: () => void,
+  isResizeActive: boolean,
+  setResizeActive: (v: boolean) => void
 ) => {
   if (!isResizeActive) {
-    let timeOutFunctionId;
+    let timeOutFunctionId: any = undefined;
     const resizeDrawTrain = () => {
       d3.select(`#${chartID}`).remove();
       dispatch(updateMustRedraw(true));
@@ -105,48 +127,54 @@ export const handleWindowResize = (
 };
 
 // Time shift a train
-export const timeShiftTrain = (train, value) => ({
+export const timeShiftTrain = (train: any, value: any) => ({
   ...train,
   base: {
-    head_positions: train.base.head_positions.map((section) =>
-      section.map((step) => ({ ...step, time: offsetSeconds(step.time + value) }))
+    head_positions: train.base.head_positions.map((section: any) =>
+      section.map((step: any) => ({ ...step, time: offsetSeconds(step.time + value) }))
     ),
-    tail_positions: train.base.tail_positions.map((section) =>
-      section.map((step) => ({ ...step, time: offsetSeconds(step.time + value) }))
+    tail_positions: train.base.tail_positions.map((section: any) =>
+      section.map((step: any) => ({ ...step, time: offsetSeconds(step.time + value) }))
     ),
-    route_end_occupancy: train.base.route_end_occupancy.map((section) =>
-      section.map((step) => ({ ...step, time: offsetSeconds(step.time + value) }))
+    route_end_occupancy: train.base.route_end_occupancy.map((section: any) =>
+      section.map((step: any) => ({ ...step, time: offsetSeconds(step.time + value) }))
     ),
-    route_begin_occupancy: train.base.route_begin_occupancy.map((section) =>
-      section.map((step) => ({ ...step, time: offsetSeconds(step.time + value) }))
+    route_begin_occupancy: train.base.route_begin_occupancy.map((section: any) =>
+      section.map((step: any) => ({ ...step, time: offsetSeconds(step.time + value) }))
     ),
-    route_aspects: train.base.route_aspects.map((square) => ({
+    route_aspects: train.base.route_aspects.map((square: any) => ({
       ...square,
       time_start: offsetSeconds(square.time_start + value),
       time_end: offsetSeconds(square.time_end + value),
     })),
-    speeds: train.base.speeds.map((step) => ({ ...step, time: offsetSeconds(step.time + value) })),
-    stops: train.base.stops.map((stop) => ({ ...stop, time: offsetSeconds(stop.time + value) })),
+    speeds: train.base.speeds.map((step: any) => ({
+      ...step,
+      time: offsetSeconds(step.time + value),
+    })),
+    stops: train.base.stops.map((stop: any) => ({
+      ...stop,
+      time: offsetSeconds(stop.time + value),
+    })),
   },
   margins: train.margins
     ? {
-        head_positions: train.margins.head_positions.map((section) =>
-          section.map((step) => ({ ...step, time: offsetSeconds(step.time + value) }))
+        head_positions: train.margins.head_positions.map((section: any) =>
+          section.map((step: any) => ({ ...step, time: offsetSeconds(step.time + value) }))
         ),
-        tail_positions: train.margins.tail_positions.map((section) =>
-          section.map((step) => ({ ...step, time: offsetSeconds(step.time + value) }))
+        tail_positions: train.margins.tail_positions.map((section: any) =>
+          section.map((step: any) => ({ ...step, time: offsetSeconds(step.time + value) }))
         ),
-        route_end_occupancy: train.margins.route_end_occupancy.map((section) =>
-          section.map((step) => ({ ...step, time: offsetSeconds(step.time + value) }))
+        route_end_occupancy: train.margins.route_end_occupancy.map((section: any) =>
+          section.map((step: any) => ({ ...step, time: offsetSeconds(step.time + value) }))
         ),
-        route_begin_occupancy: train.margins.route_begin_occupancy.map((section) =>
-          section.map((step) => ({ ...step, time: offsetSeconds(step.time + value) }))
+        route_begin_occupancy: train.margins.route_begin_occupancy.map((section: any) =>
+          section.map((step: any) => ({ ...step, time: offsetSeconds(step.time + value) }))
         ),
-        speeds: train.margins.speeds.map((step) => ({
+        speeds: train.margins.speeds.map((step: any) => ({
           ...step,
           time: offsetSeconds(step.time + value),
         })),
-        stops: train.margins.stops.map((stop) => ({
+        stops: train.margins.stops.map((stop: any) => ({
           ...stop,
           time: offsetSeconds(stop.time + value),
         })),
@@ -154,28 +182,31 @@ export const timeShiftTrain = (train, value) => ({
     : null,
   eco: train.eco
     ? {
-        head_positions: train.eco.head_positions.map((section) =>
-          section.map((step) => ({ ...step, time: offsetSeconds(step.time + value) }))
+        head_positions: train.eco.head_positions.map((section: any) =>
+          section.map((step: any) => ({ ...step, time: offsetSeconds(step.time + value) }))
         ),
-        tail_positions: train.eco.tail_positions.map((section) =>
-          section.map((step) => ({ ...step, time: offsetSeconds(step.time + value) }))
+        tail_positions: train.eco.tail_positions.map((section: any) =>
+          section.map((step: any) => ({ ...step, time: offsetSeconds(step.time + value) }))
         ),
-        route_end_occupancy: train.eco.route_end_occupancy.map((section) =>
-          section.map((step) => ({ ...step, time: offsetSeconds(step.time + value) }))
+        route_end_occupancy: train.eco.route_end_occupancy.map((section: any) =>
+          section.map((step: any) => ({ ...step, time: offsetSeconds(step.time + value) }))
         ),
-        route_begin_occupancy: train.eco.route_begin_occupancy.map((section) =>
-          section.map((step) => ({ ...step, time: offsetSeconds(step.time + value) }))
+        route_begin_occupancy: train.eco.route_begin_occupancy.map((section: any) =>
+          section.map((step: any) => ({ ...step, time: offsetSeconds(step.time + value) }))
         ),
-        route_aspects: train.eco.route_aspects.map((square) => ({
+        route_aspects: train.eco.route_aspects.map((square: any) => ({
           ...square,
           time_start: offsetSeconds(square.time_start + value),
           time_end: offsetSeconds(square.time_end + value),
         })),
-        speeds: train.eco.speeds.map((step) => ({
+        speeds: train.eco.speeds.map((step: any) => ({
           ...step,
           time: offsetSeconds(step.time + value),
         })),
-        stops: train.eco.stops.map((stop) => ({ ...stop, time: offsetSeconds(stop.time + value) })),
+        stops: train.eco.stops.map((stop: any) => ({
+          ...stop,
+          time: offsetSeconds(stop.time + value),
+        })),
       }
     : null,
 });
@@ -229,7 +260,11 @@ export const mergeDatasArea = <T>(
   return [];
 };
 
-export const mergeDatasAreaConstant = (data1, data2, keyValues) =>
+export const mergeDatasAreaConstant = (
+  data1: Array<any>,
+  data2: Array<any>,
+  keyValues: Array<any>
+) =>
   data1.map((step) => ({
     [keyValues[0]]: step[keyValues[0]],
     value0: step[keyValues[1]],
@@ -238,7 +273,7 @@ export const mergeDatasAreaConstant = (data1, data2, keyValues) =>
 
 // Transform little arrays of data (staircases values like emergency or indication)
 // along all steps values
-export const expandAndFormatData = (reference, dataToExpand) =>
+export const expandAndFormatData = (reference: Array<any>, dataToExpand: Array<any>) =>
   reference.map((step) => {
     const idx = dataToExpand.findIndex((item) => item.position >= step.position);
     return {
@@ -248,13 +283,15 @@ export const expandAndFormatData = (reference, dataToExpand) =>
     };
   });
 
-export const gridX = (x, height) => d3.axisBottom(x).ticks(10).tickSize(-height).tickFormat('');
+export const gridX = (x: any, height: number) =>
+  d3.axisBottom(x).ticks(10).tickSize(-height).tickFormat(null);
 
-export const gridY = (y, width) => d3.axisLeft(y).ticks(10).tickSize(-width).tickFormat('');
+export const gridY = (y: any, width: number) =>
+  d3.axisLeft(y).ticks(10).tickSize(-width).tickFormat(null);
 
 // Interpolation of cursor based on space position
-export const interpolateOnPosition = (dataSimulation, keyValues, positionLocal) => {
-  const bisect = d3.bisector((d) => d[keyValues[0]]).left;
+export const interpolateOnPosition = (dataSimulation: any, keyValues: any, positionLocal: any) => {
+  const bisect = d3.bisector<any, any>((d) => d[keyValues[0]]).left;
   const index = bisect(dataSimulation.speed, positionLocal, 1);
   const bisection = [dataSimulation.speed[index - 1], dataSimulation.speed[index]];
   if (bisection[1]) {
@@ -268,12 +305,12 @@ export const interpolateOnPosition = (dataSimulation, keyValues, positionLocal) 
 
 // Interpolation of cursor based on time position
 export const interpolateOnTime = (
-  dataSimulation: Regime,
+  dataSimulation: { [key: string]: any } | undefined,
   keyValues: string[],
   listValues: string[],
   timePositionLocal: number
 ) => {
-  const bisect = d3.bisector((d) => d[keyValues[0]]).left;
+  const bisect = d3.bisector<any, any>((d) => d[keyValues[0]]).left;
   const positionInterpolated: Record<string, PositionSpeed> = {};
   listValues.forEach((listValue) => {
     let bisection;
@@ -294,7 +331,7 @@ export const interpolateOnTime = (
         if (
           index !== section.length &&
           section[0] &&
-          timePositionLocal >= section[0][keyValues[0]]
+          timePositionLocal >= (section[0] as any)[keyValues[0]]
         ) {
           bisection = [section[index - 1], section[index]];
         }

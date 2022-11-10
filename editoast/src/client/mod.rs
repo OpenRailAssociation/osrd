@@ -1,6 +1,8 @@
 mod chartos_config;
 mod postgres_config;
 
+use std::path::PathBuf;
+
 pub use chartos_config::ChartosConfig;
 use clap::{Args, Parser, Subcommand};
 pub use postgres_config::PostgresConfig;
@@ -21,6 +23,7 @@ pub enum Commands {
     Runserver(RunserverArgs),
     Generate(GenerateArgs),
     Clear(ClearArgs),
+    ImportRailjson(ImportRailjsonArgs),
 }
 
 #[derive(Args, Debug)]
@@ -45,6 +48,18 @@ pub struct GenerateArgs {
 pub struct ClearArgs {
     /// List of infra ids
     pub infra_ids: Vec<u32>,
+}
+
+#[derive(Args, Debug)]
+#[clap(about, long_about = "Import an infra given a railjson file")]
+pub struct ImportRailjsonArgs {
+    /// Infra name
+    pub infra_name: String,
+    /// Railjson file path
+    pub railjson_path: PathBuf,
+    /// Whether the import should refresh generated data
+    #[clap(short = 'g', long)]
+    pub generate: bool,
 }
 
 /// Retrieve the secret key from the environment variable `SECRET_KEY`.

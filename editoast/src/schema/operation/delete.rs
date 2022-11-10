@@ -55,13 +55,13 @@ impl From<ObjectRef> for DeleteOperation {
 
 #[cfg(test)]
 mod tests {
-    use crate::infra::tests::test_transaction;
+    use crate::infra::tests::test_infra_transaction;
     use crate::schema::operation::create::tests::{
         create_buffer_stop, create_catenary, create_detector, create_link, create_op, create_route,
         create_signal, create_speed, create_switch, create_track,
     };
     use crate::schema::operation::delete::DeleteOperation;
-    use crate::schema::OSRDObject;
+    use crate::schema::{OSRDIdentified, OSRDObject};
     use diesel::sql_types::BigInt;
     use diesel::{sql_query, RunQueryDsl};
 
@@ -73,7 +73,7 @@ mod tests {
 
     #[test]
     fn delete_track() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             let track = create_track(conn, infra.id, Default::default());
 
             let track_deletion: DeleteOperation = track.get_ref().into();
@@ -93,7 +93,7 @@ mod tests {
 
     #[test]
     fn delete_signal() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             let signal = create_signal(conn, infra.id, Default::default());
 
             let signal_deletion: DeleteOperation = signal.get_ref().into();
@@ -113,7 +113,7 @@ mod tests {
 
     #[test]
     fn delete_speed() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             let speed = create_speed(conn, infra.id, Default::default());
 
             let speed_deletion: DeleteOperation = speed.get_ref().into();
@@ -133,7 +133,7 @@ mod tests {
 
     #[test]
     fn delete_link() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             let link = create_link(conn, infra.id, Default::default());
 
             let link_deletion: DeleteOperation = link.get_ref().into();
@@ -153,7 +153,7 @@ mod tests {
 
     #[test]
     fn delete_switch() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             let switch = create_switch(conn, infra.id, Default::default());
 
             let switch_deletion: DeleteOperation = switch.get_ref().into();
@@ -173,7 +173,7 @@ mod tests {
 
     #[test]
     fn delete_detector() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             let detector = create_detector(conn, infra.id, Default::default());
 
             let detector_deletion: DeleteOperation = detector.get_ref().into();
@@ -193,7 +193,7 @@ mod tests {
 
     #[test]
     fn delete_buffer_stop() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             let buffer_stop = create_buffer_stop(conn, infra.id, Default::default());
 
             let buffer_stop_deletion: DeleteOperation = buffer_stop.get_ref().into();
@@ -213,7 +213,7 @@ mod tests {
 
     #[test]
     fn delete_route() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             let route = create_route(conn, infra.id, Default::default());
 
             let route_deletion: DeleteOperation = route.get_ref().into();
@@ -233,7 +233,7 @@ mod tests {
 
     #[test]
     fn delete_op() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             let op = create_op(conn, infra.id, Default::default());
 
             let op_deletion: DeleteOperation = op.get_ref().into();
@@ -253,7 +253,7 @@ mod tests {
 
     #[test]
     fn delete_catenary() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             let catenary = create_catenary(conn, infra.id, Default::default());
 
             let op_deletion: DeleteOperation = catenary.get_ref().into();

@@ -1,11 +1,8 @@
-use std::fmt;
-
-use serde::{Deserialize, Serialize};
-use strum_macros::EnumIter;
-
-use crate::schema::ObjectRef;
-
 use super::{Direction, DirectionalTrackRange, OSRDObject, ObjectType, Route, Waypoint};
+use crate::schema::ObjectRef;
+use serde::{Deserialize, Serialize};
+use std::fmt;
+use strum_macros::EnumIter;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(deny_unknown_fields)]

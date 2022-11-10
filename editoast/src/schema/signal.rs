@@ -1,16 +1,21 @@
-use crate::infra_cache::Cache;
-use crate::infra_cache::ObjectCache;
-
 use super::generate_id;
 use super::Direction;
-use super::OSRDObject;
+use super::OSRDIdentified;
+
+use super::OSRDTyped;
 use super::ObjectType;
 use super::Side;
+use crate::api_error::ApiError;
+use crate::diesel::ExpressionMethods;
+use crate::diesel::RunQueryDsl;
+use crate::infra_cache::Cache;
+use crate::infra_cache::ObjectCache;
 use derivative::Derivative;
 use diesel::sql_types::{Double, Text};
+use diesel::PgConnection;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct Signal {
@@ -28,13 +33,39 @@ pub struct Signal {
     pub extensions: SignalExtensions,
 }
 
-#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+impl Signal {
+    pub fn persist_batch(
+        values: &[Self],
+        infrastructure_id: i32,
+        conn: &PgConnection,
+    ) -> Result<(), Box<dyn ApiError>> {
+        use crate::tables::osrd_infra_signalmodel::dsl::*;
+        let datas = values
+            .iter()
+            .map(|value| {
+                (
+                    obj_id.eq(value.get_id().clone()),
+                    data.eq(serde_json::to_value(value).unwrap()),
+                    infra_id.eq(infrastructure_id),
+                )
+            })
+            .collect::<Vec<_>>();
+
+        diesel::insert_into(osrd_infra_signalmodel)
+            .values(datas)
+            .execute(conn)?;
+
+        Ok(())
+    }
+}
+
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct SignalExtensions {
     pub sncf: Option<SignalSncfExtension>,
 }
 
-#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct SignalSncfExtension {
     pub angle_geo: f64,
@@ -53,11 +84,13 @@ pub struct SignalSncfExtension {
     pub value: String,
 }
 
-impl OSRDObject for Signal {
-    fn get_type(&self) -> ObjectType {
+impl OSRDTyped for Signal {
+    fn get_type() -> ObjectType {
         ObjectType::Signal
     }
+}
 
+impl OSRDIdentified for Signal {
     fn get_id(&self) -> &String {
         &self.id
     }
@@ -76,11 +109,13 @@ pub struct SignalCache {
     pub position: f64,
 }
 
-impl OSRDObject for SignalCache {
-    fn get_type(&self) -> ObjectType {
+impl OSRDTyped for SignalCache {
+    fn get_type() -> ObjectType {
         ObjectType::Signal
     }
+}
 
+impl OSRDIdentified for SignalCache {
     fn get_id(&self) -> &String {
         &self.obj_id
     }
@@ -114,8 +149,19 @@ impl From<Signal> for SignalCache {
 
 #[cfg(test)]
 mod test {
+    use super::Signal;
     use super::SignalExtensions;
+    use crate::infra::tests::test_infra_transaction;
     use serde_json::from_str;
+
+    #[test]
+    fn test_persist() {
+        test_infra_transaction(|conn, infra| {
+            let data = (0..10).map(|_| Signal::default()).collect::<Vec<Signal>>();
+
+            assert!(Signal::persist_batch(&data, infra.id, conn).is_ok());
+        });
+    }
 
     #[test]
     fn test_signal_extensions_deserialization() {

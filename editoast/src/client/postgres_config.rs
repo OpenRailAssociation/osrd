@@ -2,7 +2,7 @@ use clap::Args;
 use derivative::Derivative;
 use diesel::{Connection, PgConnection};
 
-#[derive(Args, Debug, Derivative)]
+#[derive(Args, Debug, Derivative, Clone)]
 #[derivative(Default)]
 pub struct PostgresConfig {
     #[derivative(Default(value = r#""osrd".into()"#))]

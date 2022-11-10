@@ -15,7 +15,7 @@ import {
   SwitchEntity,
   TrackSectionEntity,
 } from '../../../../types';
-import { getSymbolTypes } from '../../data/utils';
+import { getSymbolsList } from '../../data/utils';
 import {
   BufferStopEditionTool,
   DetectorEditionTool,
@@ -192,9 +192,12 @@ const SelectionTool: Tool<SelectionState> = {
     if (state.selectionState.type !== 'single') return;
 
     let { selection } = state;
-    const isAlreadySelected = selection.find((item) => item.id === feature.id);
+    const isAlreadySelected = selection.find(
+      (item) => item.properties.id === feature.properties.id
+    );
 
-    const current = editorState.editorDataIndex[feature.id];
+    const current = editorState.entitiesIndex[feature.properties.id];
+
     if (current) {
       if (!isAlreadySelected) {
         if (e.srcEvent.ctrlKey) {
@@ -203,7 +206,7 @@ const SelectionTool: Tool<SelectionState> = {
           selection = [current];
         }
       } else if (e.srcEvent.ctrlKey) {
-        selection = selection.filter((item) => item.id !== feature.id);
+        selection = selection.filter((item) => item.properties.id !== feature.properties.id);
       } else if (selection.length === 1) {
         selection = [];
       } else {
@@ -230,7 +233,7 @@ const SelectionTool: Tool<SelectionState> = {
           setState({
             ...state,
             selectionState: { ...state.selectionState, rectangleTopLeft: null },
-            selection: selectInZone(editorState.editorDataArray, {
+            selection: selectInZone(editorState.entitiesArray, {
               type: 'rectangle',
               points: [state.selectionState.rectangleTopLeft, position],
             }),
@@ -255,7 +258,7 @@ const SelectionTool: Tool<SelectionState> = {
               ...state.selectionState,
               polygonPoints: [],
             },
-            selection: selectInZone(editorState.editorDataArray, {
+            selection: selectInZone(editorState.entitiesArray, {
               type: 'polygon',
               points,
             }),
@@ -274,8 +277,8 @@ const SelectionTool: Tool<SelectionState> = {
   },
 
   // Layers:
-  getInteractiveLayers({ editorState: { editorDataArray } }) {
-    const symbolTypes = getSymbolTypes(editorDataArray);
+  getInteractiveLayers({ editorState: { flatEntitiesByTypes } }) {
+    const symbolTypes = getSymbolsList(flatEntitiesByTypes.signals || []);
     return symbolTypes
       .map((type) => `editor/geo/signal-${type}`)
       .concat([

@@ -15,7 +15,7 @@ import { useParams } from 'react-router-dom';
 
 import { RootState } from 'reducers';
 import { updateFeatureInfoClickOSRD } from 'reducers/osrdconf';
-import { updateViewport } from 'reducers/map';
+import { updateViewport, Viewport } from 'reducers/map';
 
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
@@ -52,7 +52,7 @@ import 'common/Map/Map.scss';
 function Map() {
   const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings } =
     useSelector((state: RootState) => state.map);
-  const [idHover, setIdHover] = useState<string>('');
+  const [idHover, setIdHover] = useState<string | undefined>(undefined);
   const [trackSectionHover, setTrackSectionHover] = useState<Feature<any>>();
   const [lngLatHover, setLngLatHover] = useState<Position>();
   const [trackSectionGeoJSON, setTrackSectionGeoJSON] = useState<LineString>();
@@ -60,10 +60,10 @@ function Map() {
   const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
   const dispatch = useDispatch();
   const updateViewportChange = useCallback(
-    (value) => dispatch(updateViewport(value, undefined)),
+    (value: Partial<Viewport>) => dispatch(updateViewport(value, undefined)),
     [dispatch]
   );
-  const mapRef = useRef<MapRef>(null);
+  const mapRef = useRef<MapRef | null>(null);
 
   const scaleControlStyle = {
     left: 20,
@@ -80,7 +80,7 @@ function Map() {
     });
   };
 
-  const onFeatureClick = (e) => {
+  const onFeatureClick = (e: MapEvent) => {
     if (
       e.features &&
       e.features.length > 0 &&

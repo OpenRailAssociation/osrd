@@ -5,7 +5,7 @@ import { BiReset, AiOutlinePlus } from 'react-icons/all';
 import { IconType } from 'react-icons';
 import nearestPointOnLine from '@turf/nearest-point-on-line';
 
-import { DEFAULT_COMMON_TOOL_STATE, LayerType, MakeOptional, Tool } from '../types';
+import { DEFAULT_COMMON_TOOL_STATE, LayerType, Tool } from '../types';
 import { getNearestPoint } from '../../../../utils/mapboxHelper';
 import { POINT_LAYER_ID, PointEditionLeftPanel } from './components';
 import { PointEditionState } from './types';
@@ -15,7 +15,7 @@ type EditorPoint = BufferStopEntity | DetectorEntity | SignalEntity;
 interface PointEditionToolParams<T extends EditorPoint> {
   layer: LayerType;
   icon: IconType;
-  getNewEntity: (point?: [number, number]) => MakeOptional<T, 'geometry'>;
+  getNewEntity: (point?: [number, number]) => T;
   layersComponent: ComponentType;
   requiresAngle?: boolean;
 }
@@ -115,13 +115,13 @@ function getPointEditionTool<T extends EditorPoint>({
         });
       }
     },
-    onHover(e, { setState, state, editorState: { editorDataIndex } }) {
+    onHover(e, { setState, state, editorState: { entitiesIndex } }) {
       const { entity } = state;
 
       const hoveredTarget = (e.features || []).find((f) => f.layer.id === POINT_LAYER_ID);
       const hoveredTracks = (e.features || []).flatMap((f) => {
         if (f.layer.id !== 'editor/geo/track-main') return [];
-        const trackEntity = editorDataIndex[f.properties.id];
+        const trackEntity = entitiesIndex[f.properties.id];
         return trackEntity && trackEntity.objType === 'TrackSection' ? [trackEntity] : [];
       }) as Feature<LineString>[];
 
@@ -163,7 +163,7 @@ function getPointEditionTool<T extends EditorPoint>({
       const trackId = entity.properties?.track;
 
       if (trackId) {
-        const line = editorState.editorDataIndex[trackId];
+        const line = editorState.entitiesIndex[trackId];
 
         const dbPosition = entity.properties.position;
         const computedPosition = nearestPointOnLine(
@@ -180,7 +180,7 @@ function getPointEditionTool<T extends EditorPoint>({
           // eslint-disable-next-line no-console
           console.warn(
             `
-The entity ${entity.id} position computed by Turf.js does not match the one from the database:
+The entity ${entity.properties.id} position computed by Turf.js does not match the one from the database:
   -> Database position: ${dbPosition}
   -> Turf.js position: ${computedPosition}
 `

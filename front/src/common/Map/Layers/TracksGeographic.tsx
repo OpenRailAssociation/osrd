@@ -10,12 +10,12 @@ import { geoMainLayer, geoServiceLayer } from 'common/Map/Layers/geographiclayer
 import { lineNameLayer, lineNumberLayer, trackNameLayer } from 'common/Map/Layers/commonLayers';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 
-interface PlatformProps {
+interface TracksGeographicProps {
   colors: Theme;
-  layerOrder: number;
+  layerOrder?: number;
 }
 
-function TracksGeographic(props: PlatformProps) {
+function TracksGeographic(props: TracksGeographicProps) {
   const { colors, layerOrder } = props;
   const { infraID } = useSelector((state: RootState) => state.osrdconf);
   const infraVersion = infraID !== undefined ? `?infra=${infraID}` : null;

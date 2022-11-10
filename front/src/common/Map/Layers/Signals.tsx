@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Source, MapRef } from 'react-map-gl';
-import { get } from 'lodash';
+import { Map as MapboxType } from 'mapbox-gl';
+import { get, isNil } from 'lodash';
 
 import { RootState } from 'reducers';
 import { Theme, SourceLayer } from 'types';
@@ -32,7 +33,7 @@ interface PlatformProps {
 }
 
 function Signals(props: PlatformProps) {
-  const { mapStyle, signalsSettings, viewPort } = useSelector((state: RootState) => state.map);
+  const { mapStyle, signalsSettings, viewport } = useSelector((state: RootState) => state.map);
   const timePosition = useSelector((state: RootState) => state.osrdsimulation.timePosition);
   const selectedTrain = useSelector((state: RootState) => state.osrdsimulation.selectedTrain);
   const consolidatedSimulation = useSelector(
@@ -52,11 +53,9 @@ function Signals(props: PlatformProps) {
   const [yellowSignalIds, setYellowSignalsIds] = useState<string[]>([]);
   const [greenSignalsIds, setGreenSignalsIds] = useState<string[]>([]);
 
-  const map = mapRef?.current?.getMap(); // We need the mapBox map object
-
   const dynamicLayersIds = LIGHT_SIGNALS.map(
     (panel) => `chartis/signal/${sourceLayer}/${panel}`
-  ).filter((dynamicLayerId) => map?.getLayer(dynamicLayerId)); // We need the layers concerned by eventual changes of signals
+  ).filter((dynamicLayerId) => mapRef?.current?.getMap().getLayer(dynamicLayerId)); // We need the layers concerned by eventual changes of signals
 
   /* EveryTime the viewPort change or the timePosition or the simulation change,
   visible signals are used to fill a list of special aspects (red, yellow).
@@ -64,10 +63,16 @@ function Signals(props: PlatformProps) {
    note: mapBox featureState is unfortunatly useless here for know so we setState
   */
   useEffect(() => {
-    if (map) {
+    if (mapRef && mapRef.current) {
       const selectedTrainConsolidatedSimulation = consolidatedSimulation[selectedTrain];
 
-      const renderedDynamicStopsFeatures = map.queryRenderedFeatures({ layers: dynamicLayersIds }); // can' be memoïzed :(
+      const renderedDynamicStopsFeatures = mapRef.current.queryRenderedFeatures(
+        (mapRef.current.getMap() as MapboxType).getBounds().toArray() as [
+          [number, number],
+          [number, number]
+        ],
+        { layers: dynamicLayersIds }
+      ); // can' be memoïzed :(
 
       const tmpRedIds: string[] = [];
       const tmpYellowIds: string[] = [];
@@ -78,7 +83,9 @@ function Signals(props: PlatformProps) {
         const matchingSignalAspect = selectedTrainConsolidatedSimulation.signalAspects.find(
           (signalAspect) =>
             signalAspect.signal_id === renderedDynamicStopsFeature.id &&
+            !isNil(signalAspect.time_start) &&
             signalAspect.time_start <= timePosition &&
+            !isNil(signalAspect.time_end) &&
             signalAspect.time_end >= timePosition
         );
 
@@ -109,10 +116,10 @@ function Signals(props: PlatformProps) {
       setYellowSignalsIds(tmpYellowIds);
       setGreenSignalsIds(tmpRedIds);
     }
-  }, [timePosition, consolidatedSimulation, viewPort, selectedTrain]);
+  }, [timePosition, consolidatedSimulation, viewport, selectedTrain]);
 
   const getSignalsList = () => {
-    let signalsList = [];
+    let signalsList: Array<string> = [];
     if (signalsSettings.all) {
       return ALL_SIGNAL_LAYERS;
     }
@@ -165,7 +172,7 @@ function Signals(props: PlatformProps) {
         const layerId = `chartis/signal/${sourceLayer}/${sig}`;
         const isHovered = hovered && hovered.layer === layerId;
         const signalDef = getSignalLayerProps(context, sig, changeSignalsContext);
-        const opacity = get(signalDef.paint, 'icon-opacity', 1);
+        const opacity = get(signalDef.paint, 'icon-opacity', 1) || 1;
 
         return (
           <OrderedLayer

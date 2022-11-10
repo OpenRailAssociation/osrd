@@ -239,7 +239,7 @@ export const initialState: OsrdSimulationState = {
   stickyBar: true,
   signalBase: SIGNAL_BASE_DEFAULT,
   timePosition: undefined,
-  consolidatedSimulation: null,
+  consolidatedSimulation: [],
   departureArrivalTimes: [],
   simulation: {
     past: [],
@@ -317,18 +317,18 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
         // position value will be computed depending on current data simulation
         // eslint-disable-next-line no-case-declarations
         const currentTrainSimulation = state.consolidatedSimulation.find(
-          (consolidatedSimulation) => consolidatedSimulation.trainNumber === state.selectedTrain
+          (consolidatedSimulation: any) =>
+            consolidatedSimulation.trainNumber === state.selectedTrain
         );
         const positionsValues = interpolateOnTime(
           currentTrainSimulation,
           ['time'],
           LIST_VALUES_NAME_SPACE_TIME,
           action.timePosition
-        );
+        ) as any;
         draft.positionValues = positionsValues;
         break;
       }
-      default:
     }
   });
 }
@@ -342,136 +342,146 @@ export function updateChart(chart: Chart) {
     });
   };
 }
-export function updateChartXGEV(chartXGEV) {
-  return (dispatch) => {
+export function updateChartXGEV(chartXGEV: OsrdSimulationState['chartXGEV']) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_CHARTXGEV,
       chartXGEV,
     });
   };
 }
-export function updateContextMenu(contextMenu) {
-  return (dispatch) => {
+export function updateContextMenu(contextMenu: OsrdSimulationState['contextMenu']) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_CONTEXTMENU,
       contextMenu,
     });
   };
 }
-export function updateHoverPosition(hoverPosition) {
-  return (dispatch) => {
+export function updateHoverPosition(hoverPosition: OsrdSimulationState['hoverPosition']) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_HOVER_POSITION,
       hoverPosition,
     });
   };
 }
-export function updateIsPlaying(isPlaying) {
-  return (dispatch) => {
+export function updateIsPlaying(isPlaying: OsrdSimulationState['isPlaying']) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_IS_PLAYING,
       isPlaying,
     });
   };
 }
-export function updateAllowancesSettings(allowancesSettings) {
-  return (dispatch) => {
+export function updateAllowancesSettings(
+  allowancesSettings: OsrdSimulationState['allowancesSettings']
+) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_ALLOWANCES_SETTINGS,
       allowancesSettings,
     });
   };
 }
-export function updateMustRedraw(mustRedraw) {
-  return (dispatch) => {
+export function updateMustRedraw(mustRedraw: OsrdSimulationState['mustRedraw']) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_MUST_REDRAW,
       mustRedraw,
     });
   };
 }
-export function updatePositionValues(positionValues) {
-  return (dispatch) => {
+export function updatePositionValues(positionValues: OsrdSimulationState['positionValues']) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_POSITION_VALUES,
       positionValues,
     });
   };
 }
-export function updateSelectedProjection(selectedProjection) {
-  return (dispatch) => {
+export function updateSelectedProjection(
+  selectedProjection: OsrdSimulationState['selectedProjection']
+) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_SELECTED_PROJECTION,
       selectedProjection,
     });
   };
 }
-export function updateSelectedTrain(selectedTrain) {
-  return (dispatch) => {
+export function updateSelectedTrain(selectedTrain: OsrdSimulationState['selectedTrain']) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_SELECTED_TRAIN,
       selectedTrain,
     });
   };
 }
-export function updateSimulation(simulation) {
-  return (dispatch) => {
+export function updateSimulation(simulation: SimulationSnapshot) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_SIMULATION,
       simulation,
     });
   };
 }
-export function updateSpeedSpaceSettings(speedSpaceSettings) {
-  return (dispatch) => {
+export function updateSpeedSpaceSettings(
+  speedSpaceSettings: OsrdSimulationState['speedSpaceSettings']
+) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_SPEEDSPACE_SETTINGS,
       speedSpaceSettings,
     });
   };
 }
-export function updateStickyBar(stickyBar) {
-  return (dispatch) => {
+export function updateStickyBar(stickyBar: OsrdSimulationState['stickyBar']) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_STICKYBAR,
       stickyBar,
     });
   };
 }
-export function updateSignalBase(signalBase) {
-  return (dispatch) => {
+export function updateSignalBase(signalBase: OsrdSimulationState['signalBase']) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_SIGNAL_BASE,
       signalBase,
     });
   };
 }
-export function updateTimePosition(timePosition) {
-  return (dispatch) => {
+export function updateTimePosition(timePosition: OsrdSimulationState['timePosition']) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_TIME_POSITION,
       timePosition,
     });
   };
 }
-export function updateDepartureArrivalTimes(newDepartureArrivalTimes) {
-  return (dispatch) => {
+export function updateDepartureArrivalTimes(
+  newDepartureArrivalTimes: OsrdSimulationState['departureArrivalTimes']
+) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_DEPARTURE_ARRIVAL_TIMES,
       departureArrivalTimes: newDepartureArrivalTimes,
     });
   };
 }
-export function updateConsolidatedSimulation(consolidatedSimulation) {
-  return (dispatch) => {
+export function updateConsolidatedSimulation(
+  consolidatedSimulation: OsrdSimulationState['consolidatedSimulation']
+) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_CONSOLIDATED_SIMULATION,
       consolidatedSimulation,
     });
   };
 }
-export function updateTimePositionValues(timePosition) {
-  return (dispatch) => {
+export function updateTimePositionValues(timePosition: OsrdSimulationState['timePosition']) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_TIME_POSITION_VALUES,
       timePosition,

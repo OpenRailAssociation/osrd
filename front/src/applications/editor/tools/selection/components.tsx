@@ -8,13 +8,16 @@ import { useTranslation } from 'react-i18next';
 
 import { EditorContext } from '../../context';
 import { SelectionState } from './types';
-import { Item, Zone } from '../../../../types';
+import { Zone } from '../../../../types';
 import GeoJSONs from '../../../../common/Map/Layers/GeoJSONs';
 import colors from '../../../../common/Map/Consts/colors';
 import EditorZone from '../../../../common/Map/Layers/EditorZone';
 import EditorForm from '../../components/EditorForm';
 import { save } from '../../../../reducers/editor';
 import { EditorContextType, ExtendedEditorContextType } from '../types';
+import EntitySumUp from '../../components/EntitySumUp';
+
+import './styles.scss';
 
 export const SelectionMessages: FC = () => {
   const { t, state } = useContext(EditorContext) as EditorContextType<SelectionState>;
@@ -47,26 +50,12 @@ export const SelectionLayers: FC = () => {
     }
   }
 
-  let labelParts =
-    state.hovered &&
-    [
-      state.hovered.properties.RA_libelle_gare,
-      state.hovered.properties.RA_libelle_poste,
-      state.hovered.properties.RA_libelle_poste_metier,
-      state.hovered.properties.OP_id_poste_metier,
-      state.hovered.properties.track_number,
-    ].filter((s) => !!s && s !== 'null');
-
-  if (state.hovered && !labelParts?.length) {
-    labelParts = [state.hovered.id];
-  }
-
   return (
     <>
       <GeoJSONs
         colors={colors[mapStyle]}
-        hovered={state.hovered && !selectionZone ? [state.hovered] : []}
-        selection={state.selection as Item[]}
+        hovered={state.hovered && !selectionZone ? [state.hovered.properties.id] : []}
+        selection={state.selection.map((e) => e.properties.id)}
       />
       <EditorZone newZone={selectionZone} />
       {state.mousePosition && state.selectionState.type === 'single' && state.hovered && (
@@ -77,7 +66,7 @@ export const SelectionLayers: FC = () => {
           latitude={state.mousePosition[1]}
           closeButton={false}
         >
-          {labelParts && labelParts.map((s, i) => <div key={i}>{s}</div>)}
+          <EntitySumUp entity={state.hovered} />
         </Popup>
       )}
     </>
@@ -105,7 +94,7 @@ export const SelectionLeftPanel: FC = () => {
               save({
                 update: [
                   {
-                    source: editorState.editorDataIndex[savedEntity.id as string],
+                    source: editorState.entitiesIndex[savedEntity.properties.id],
                     target: savedEntity,
                   },
                 ],
@@ -194,10 +183,9 @@ export const SelectionLeftPanel: FC = () => {
       <h4>{t('Editor.tools.select-items.title')}</h4>
       <ul className="list-unstyled">
         {selection.map((item) => (
-          <li key={item.id} className="pb-4">
-            <div className="pb-2">
-              {t('Editor.tools.select-items.item')} <strong>{item.id}</strong>{' '}
-              {t('Editor.tools.select-items.of-type')} <strong>{item.objType}</strong>
+          <li key={item.properties.id} className="pb-4">
+            <div className="pb-2 entity">
+              <EntitySumUp entity={item} classes={{ small: '' }} />
             </div>
             <div>
               {selection.length > 1 && (
@@ -213,7 +201,10 @@ export const SelectionLeftPanel: FC = () => {
                 type="button"
                 className="btn btn-secondary btn-sm"
                 onClick={() =>
-                  setState({ ...state, selection: selection.filter((i) => i.id !== item.id) })
+                  setState({
+                    ...state,
+                    selection: selection.filter((i) => i.properties.id !== item.properties.id),
+                  })
                 }
               >
                 <IoMdRemoveCircleOutline /> {t('Editor.tools.select-items.unselect')}

@@ -36,15 +36,16 @@ import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/
 import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
 import { get } from 'common/requests';
 import { sec2time } from 'utils/timeManipulation';
+import { RootState } from 'reducers';
 import { setFailure } from 'reducers/main';
-import { updateViewport } from 'reducers/map';
+import { updateViewport, Viewport } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
 
 export const KEY_VALUES_FOR_CONSOLIDATED_SIMULATION = ['time', 'position'];
 export const timetableURI = '/timetable/';
 const MAP_MIN_HEIGHT = 450;
 
-function getMapMaxHeight(timeTableRef) {
+function getMapMaxHeight(timeTableRef: React.MutableRefObject<HTMLDivElement | null>) {
   if (timeTableRef.current) {
     return timeTableRef.current.clientHeight - 42;
   }
@@ -53,9 +54,9 @@ function getMapMaxHeight(timeTableRef) {
 
 function OSRDSimulation() {
   const { t } = useTranslation(['translation', 'simulation', 'allowances']);
-  const timeTableRef = useRef();
-  const { fullscreen, darkmode } = useSelector((state) => state.main);
-  const [extViewport, setExtViewport] = useState(undefined);
+  const timeTableRef = useRef<HTMLDivElement | null>(null);
+  const { fullscreen, darkmode } = useSelector((state: RootState) => state.main);
+  const [extViewport, setExtViewport] = useState<Viewport | undefined>(undefined);
   const [isEmpty, setIsEmpty] = useState(true);
   const [displayTrainList, setDisplayTrainList] = useState(false);
   const [displayAllowances, setDisplayAllowances] = useState(false);
@@ -76,19 +77,19 @@ function OSRDSimulation() {
   const [initialHeightOfSpaceCurvesSlopesChart, setInitialHeightOfSpaceCurvesSlopesChart] =
     useState(heightOfSpaceCurvesSlopesChart);
 
-  const { timetableID } = useSelector((state) => state.osrdconf);
+  const { timetableID } = useSelector((state: RootState) => state.osrdconf);
   const {
     allowancesSettings,
     selectedProjection,
     departureArrivalTimes,
     selectedTrain,
     stickyBar,
-  } = useSelector((state) => state.osrdsimulation);
-  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
+  } = useSelector((state: RootState) => state.osrdsimulation);
+  const simulation = useSelector((state: RootState) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
 
   if (darkmode) {
-    import('./OSRDSimulationDarkMode.scss');
+    require('./OSRDSimulationDarkMode.scss');
   }
 
   /**
@@ -103,7 +104,7 @@ function OSRDSimulation() {
       if (timetable.train_schedules.length > 0) {
         setIsEmpty(false);
       }
-      const trainSchedulesIDs = timetable.train_schedules.map((train) => train.id);
+      const trainSchedulesIDs = timetable.train_schedules.map((train: any) => train.id);
       const tempSelectedProjection = await get(`${trainscheduleURI}${trainSchedulesIDs[0]}/`);
       if (!selectedProjection) {
         dispatch(updateSelectedProjection(tempSelectedProjection));
@@ -113,12 +114,12 @@ function OSRDSimulation() {
           train_ids: trainSchedulesIDs.join(','),
           path: tempSelectedProjection.path,
         });
-        simulationLocal.sort((a, b) => a.base.stops[0].time > b.base.stops[0].time);
+        simulationLocal.sort((a: any, b: any) => a.base.stops[0].time > b.base.stops[0].time);
         dispatch(updateSimulation({ trains: simulationLocal }));
 
         // Create margins settings for each train if not set
         const newAllowancesSettings = { ...allowancesSettings };
-        simulationLocal.forEach((train) => {
+        simulationLocal.forEach((train: any) => {
           if (!newAllowancesSettings[train.id]) {
             newAllowancesSettings[train.id] = {
               base: true,
@@ -133,7 +134,7 @@ function OSRDSimulation() {
         dispatch(
           setFailure({
             name: t('simulation:errorMessages.unableToRetrieveTrainSchedule'),
-            message: `${e.message} `,
+            message: `${(e as Error).message} `,
           })
         );
         console.log('ERROR', e);
@@ -152,7 +153,7 @@ function OSRDSimulation() {
     setDisplayAllowances(!displayAllowances);
   };
 
-  const handleKey = (e) => {
+  const handleKey = (e: KeyboardEvent) => {
     if (e.key === 'z' && e.metaKey) {
       dispatch(persistentUndoSimulation());
     }
@@ -235,7 +236,7 @@ function OSRDSimulation() {
           ) : (
             <div
               role="button"
-              tabIndex="-1"
+              tabIndex={-1}
               className="btn-selected-train d-flex align-items-center mb-2"
               onClick={toggleTrainList}
             >
@@ -271,7 +272,7 @@ function OSRDSimulation() {
                     bottom: true,
                   }}
                   onResizeStart={() => setInitialHeightOfSpaceTimeChart(heightOfSpaceTimeChart)}
-                  onResize={(e, dir, refToElement, delta) => {
+                  onResize={(_e, _dir, _refToElement, delta) => {
                     setHeightOfSpaceTimeChart(initialHeightOfSpaceTimeChart + delta.height);
                   }}
                   onResizeStop={() => {
@@ -302,7 +303,7 @@ function OSRDSimulation() {
                     bottom: true,
                   }}
                   onResizeStart={() => setInitialHeightOfSpeedSpaceChart(heightOfSpeedSpaceChart)}
-                  onResize={(e, dir, refToElement, delta) => {
+                  onResize={(_e, _dir, _refToElement, delta) => {
                     setHeightOfSpeedSpaceChart(initialHeightOfSpeedSpaceChart + delta.height);
                   }}
                   onResizeStop={() => {
@@ -334,7 +335,7 @@ function OSRDSimulation() {
                   onResizeStart={() =>
                     setInitialHeightOfSpaceCurvesSlopesChart(heightOfSpaceCurvesSlopesChart)
                   }
-                  onResize={(e, dir, refToElement, delta) => {
+                  onResize={(_e, _dir, _refToElement, delta) => {
                     setHeightOfSpaceCurvesSlopesChart(
                       initialHeightOfSpaceCurvesSlopesChart + delta.height
                     );
@@ -358,7 +359,7 @@ function OSRDSimulation() {
           ) : (
             <div
               role="button"
-              tabIndex="-1"
+              tabIndex={-1}
               className="btn-selected-train d-flex align-items-center mb-2"
               onClick={toggleAllowancesDisplay}
             >
@@ -384,6 +385,7 @@ function OSRDSimulation() {
                       x: 0,
                       y: 0,
                       height: `${heightOfSimulationMap}px`,
+                      width: 'auto',
                     }}
                     minHeight={MAP_MIN_HEIGHT}
                     maxHeight={mapMaxHeight}
@@ -395,7 +397,7 @@ function OSRDSimulation() {
                       bottom: true,
                     }}
                     onResizeStart={() => setinitialHeightOfSimulationMap(heightOfSimulationMap)}
-                    onResize={(e, dir, refToElement, delta) => {
+                    onResize={(_e, _dir, _refToElement, delta) => {
                       setHeightOfSimulationMap(initialHeightOfSimulationMap + delta.height);
                     }}
                     onResizeStop={() => {

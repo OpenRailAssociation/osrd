@@ -1,5 +1,5 @@
 /* eslint-disable default-case */
-import { AnyAction } from 'redux';
+import { AnyAction, Dispatch } from 'redux';
 import { MapRequest, FlyToInterpolator } from 'react-map-gl';
 import produce from 'immer';
 import { transformRequest as helperTransformRequest, gpsRound } from 'utils/helpers';
@@ -33,7 +33,7 @@ export interface Viewport {
   zoom: number;
   bearing: number;
   pitch: number;
-  transitionDuration?: number;
+  transitionDuration?: number | 'auto';
   transitionInterpolator?: FlyToInterpolator;
   transformRequest: typeof transformRequest;
 }
@@ -58,6 +58,7 @@ export interface MapState {
     all: boolean;
     stops: boolean;
     lights: boolean;
+    tivs: boolean;
   };
   layersSettings: {
     bufferstops: boolean;
@@ -97,6 +98,7 @@ export const initialState: MapState = {
     all: false,
     stops: true,
     lights: false,
+    tivs: false,
   },
   layersSettings: {
     bufferstops: false,
@@ -158,7 +160,7 @@ export default function reducer(inputState: MapState | undefined, action: AnyAct
 }
 
 // Action Creators
-function updateViewportAction(viewport) {
+function updateViewportAction(viewport: Partial<Viewport>) {
   return {
     type: UPDATE_VIEWPORT,
     viewport,
@@ -166,21 +168,24 @@ function updateViewportAction(viewport) {
 }
 
 // Functions
-export function updateViewport(viewport, baseUrl, updateRouter = true) {
-  return (dispatch) => {
+export function updateViewport(viewport: Partial<Viewport>, baseUrl?: string, updateRouter = true) {
+  return (dispatch: Dispatch, getState: () => { map: MapState }) => {
     dispatch(updateViewportAction(viewport));
     if (baseUrl !== undefined && updateRouter) {
+      const { map } = getState();
       history.push(
-        `${baseUrl}/${gpsRound(viewport.latitude)}/${gpsRound(viewport.longitude)}/${gpsRound(
-          viewport.zoom
-        )}/${gpsRound(viewport.bearing)}/${gpsRound(viewport.pitch)}`
+        `${baseUrl}/${gpsRound(viewport.latitude || map.viewport.latitude)}/${gpsRound(
+          viewport.longitude || map.viewport.longitude
+        )}/${gpsRound(viewport.zoom || map.viewport.zoom)}/${gpsRound(
+          viewport.bearing || map.viewport.bearing
+        )}/${gpsRound(viewport.pitch || map.viewport.pitch)}`
       );
     }
   };
 }
 
-export function updateMapStyle(mapStyle) {
-  return (dispatch) => {
+export function updateMapStyle(mapStyle: MapState['mapStyle']) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_MAPSTYLE,
       mapStyle,
@@ -188,8 +193,8 @@ export function updateMapStyle(mapStyle) {
   };
 }
 
-export function updateMapTrackSources(mapTrackSources) {
-  return (dispatch) => {
+export function updateMapTrackSources(mapTrackSources: MapState['mapTrackSources']) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_MAP_TRACK_SOURCES,
       mapTrackSources,
@@ -197,15 +202,15 @@ export function updateMapTrackSources(mapTrackSources) {
   };
 }
 
-export function updateMapSearchMarker(mapSearchMarker: MapSearchMarker) {
+export function updateMapSearchMarker(mapSearchMarker: MapState['mapSearchMarker']) {
   return {
     type: UPDATE_MAP_SEARCH_MARKER,
     mapSearchMarker,
   };
 }
 
-export function updateShowOSM(showOSM) {
-  return (dispatch) => {
+export function updateShowOSM(showOSM: MapState['showOSM']) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_SHOW_OSM,
       showOSM,
@@ -213,8 +218,8 @@ export function updateShowOSM(showOSM) {
   };
 }
 
-export function updateShowOSMtracksections(showOSMtracksections) {
-  return (dispatch) => {
+export function updateShowOSMtracksections(showOSMtracksections: MapState['showOSMtracksections']) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_SHOW_OSM_TRACKSECTIONS,
       showOSMtracksections,
@@ -222,8 +227,8 @@ export function updateShowOSMtracksections(showOSMtracksections) {
   };
 }
 
-export function updateFeatureInfoHover(featureInfoHoverID, featureSource) {
-  return (dispatch) => {
+export function updateFeatureInfoHover(featureInfoHoverID: unknown, featureSource: unknown) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_FEATURE_INFO_HOVER,
       featureInfoHoverID,
@@ -232,8 +237,8 @@ export function updateFeatureInfoHover(featureInfoHoverID, featureSource) {
   };
 }
 
-export function updateFeatureInfoClick(featureInfoClickID, featureSource) {
-  return (dispatch) => {
+export function updateFeatureInfoClick(featureInfoClickID: unknown, featureSource: unknown) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_FEATURE_INFO_CLICK,
       featureInfoClickID,
@@ -242,8 +247,8 @@ export function updateFeatureInfoClick(featureInfoClickID, featureSource) {
   };
 }
 
-export function updateLayersSettings(layersSettings) {
-  return (dispatch) => {
+export function updateLayersSettings(layersSettings: MapState['layersSettings']) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_LAYERS_SETTINGS,
       layersSettings,
@@ -251,8 +256,8 @@ export function updateLayersSettings(layersSettings) {
   };
 }
 
-export function updateSignalsSettings(signalsSettings) {
-  return (dispatch) => {
+export function updateSignalsSettings(signalsSettings: MapState['signalsSettings']) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_SIGNALS_SETTINGS,
       signalsSettings,

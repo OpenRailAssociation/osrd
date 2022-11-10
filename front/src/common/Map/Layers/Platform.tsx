@@ -8,7 +8,7 @@ import { Theme } from 'types';
 
 interface PlatformProps {
   colors: Theme;
-  layerOrder: number;
+  layerOrder?: number;
 }
 
 function Platform(props: PlatformProps) {

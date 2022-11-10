@@ -1,4 +1,5 @@
 import { EditorEntity, TrackSectionEntity } from '../../../../types';
+import { NEW_ENTITY_ID } from '../../data/utils';
 
 // eslint-disable-next-line import/prefer-default-export
 export function getNewLine(points: [number, number][]): TrackSectionEntity {
@@ -9,7 +10,9 @@ export function getNewLine(points: [number, number][]): TrackSectionEntity {
       type: 'LineString',
       coordinates: points,
     },
-    properties: {},
+    properties: {
+      id: NEW_ENTITY_ID,
+    },
   };
 }
 

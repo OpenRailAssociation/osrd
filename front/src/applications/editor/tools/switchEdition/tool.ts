@@ -6,6 +6,7 @@ import { DEFAULT_COMMON_TOOL_STATE, Tool } from '../types';
 import { SwitchEditionState } from './types';
 import { getNewSwitch } from './utils';
 import { SwitchEditionLayers, SwitchEditionLeftPanel, SwitchMessages } from './components';
+import { NEW_ENTITY_ID } from '../../data/utils';
 
 const SwitchEditionTool: Tool<SwitchEditionState> = {
   id: 'switch-edition',
@@ -44,7 +45,10 @@ const SwitchEditionTool: Tool<SwitchEditionState> = {
           // Delete currently edited switch
         },
         isDisabled({ state }) {
-          return !state.initialEntity.id;
+          return (
+            !state.initialEntity.properties?.id ||
+            state.initialEntity.properties.id === NEW_ENTITY_ID
+          );
         },
       },
       {
@@ -81,7 +85,7 @@ const SwitchEditionTool: Tool<SwitchEditionState> = {
   },
   onClickFeature(feature, e, { state }) {
     if (state.portEditionState.type === 'selection') {
-      state.portEditionState.onSelect(feature.id, e.point);
+      state.portEditionState.onSelect(feature.properties.id, e.point);
     }
   },
 

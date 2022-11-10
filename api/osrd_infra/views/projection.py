@@ -29,7 +29,24 @@ class Projection:
         tracks = []
         for route_path in path_payload.route_paths:
             tracks += [track for track in route_path.track_sections if track.begin != track.end]
-        return tracks
+        return Projection._merge_ranges_same_tracks(tracks)
+
+    @staticmethod
+    def _merge_ranges_same_tracks(ranges: List[DirectionalTrackRange]) -> List[DirectionalTrackRange]:
+        res: List[DirectionalTrackRange] = ranges[:1]
+        for r in ranges[1:]:
+            if res[-1].track != r.track:
+                res.append(r)
+                continue
+            assert res[-1].direction == r.direction
+            assert res[-1].begin == r.end or res[-1].end == r.begin
+            res[-1] = DirectionalTrackRange(
+                track=r.track,
+                direction=r.direction,
+                begin=min(res[-1].begin, r.begin),
+                end=max(res[-1].end, r.end),
+            )
+        return res
 
     def _init_tracks(self, dir_track_ranges: List[DirectionalTrackRange]):
         self.tracks = {}
@@ -66,7 +83,7 @@ class Projection:
 
         return abs(pos - begin) + offset
 
-    def intersections(self, path_payload: PathPayload):
+    def intersections(self, path_payload: PathPayload) -> List[PathRange]:
         """
         Intersect a given path to the projected path and return a list of PathRange
         """
@@ -111,7 +128,7 @@ class Projection:
                     range_end.path_offset -= b_begin - a_end
                 elif a_end > b_end:
                     range_end.offset = b_end
-                    range_end.path_offset -= b_end - a_end
+                    range_end.path_offset -= a_end - b_end
                 intersections.append(PathRange(range_begin, range_end))
                 range_begin = None
         return intersections

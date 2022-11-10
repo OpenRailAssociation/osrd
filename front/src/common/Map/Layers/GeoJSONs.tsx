@@ -5,8 +5,7 @@ import { mapValues } from 'lodash';
 import { Layer, LayerProps, Source } from 'react-map-gl';
 import { AnyPaint, CirclePaint, LinePaint, SymbolPaint } from 'mapbox-gl';
 
-import { Item, Theme } from '../../../types';
-import { dataArraySelector, dataSelector } from '../../../reducers/editor';
+import { Theme } from '../../../types';
 import { geoMainLayer, geoServiceLayer } from './geographiclayers';
 import {
   getPointLayerProps,
@@ -16,15 +15,16 @@ import {
   SignalsSettings,
 } from './geoSignalsLayers';
 import { lineNameLayer, lineNumberLayer, trackNameLayer } from './commonLayers';
-import { getSymbolTypes } from '../../../applications/editor/data/utils';
+import { getSignalsList, getSymbolsList } from '../../../applications/editor/data/utils';
 import { getBufferStopsLayerProps } from './BufferStops';
 import { getDetectorsLayerProps, getDetectorsNameLayerProps } from './Detectors';
 import { getSwitchesLayerProps, getSwitchesNameLayerProps } from './Switches';
-import { EditorState, LayerType } from 'applications/editor/tools/types';
+import { EditorState, LayerType } from '../../../applications/editor/tools/types';
+import { SYMBOLS_TO_LAYERS } from '../Consts/SignalsNames';
 
 const HOVERED_COLOR = '#009EED';
 const UNSELECTED_OPACITY = 0.2;
-const SIGNAL_TYPE_KEY = 'installation_type';
+const SIGNAL_TYPE_KEY = 'extensions_sncf_installation_type';
 
 const NULL_FEATURE: FeatureCollection = {
   type: 'FeatureCollection',
@@ -62,7 +62,9 @@ function adaptSymbolPaint(paint: SymbolPaint, { selectedIDs, hoveredIDs }: Conte
 }
 
 function adaptCirclePaint(paint: CirclePaint, { selectedIDs, hoveredIDs }: Context): CirclePaint {
-  const opacity = typeof paint['icon-opacity'] === 'number' ? paint['icon-opacity'] : 1;
+  // TODO: need to check if paint as the good type
+  // const opacity = typeof paint['icon-opacity'] === 'number' ? paint['icon-opacity'] : 1;
+  const opacity = 1;
   return {
     ...paint,
     ...(selectedIDs.length
@@ -157,43 +159,49 @@ function adaptProps<T extends AnyPaint>(
 
 const GeoJSONs: FC<{
   colors: Theme;
-  hidden?: Item[];
-  hovered?: Item[];
-  selection?: Item[];
+  hidden?: string[];
+  hovered?: string[];
+  selection?: string[];
   prefix?: string;
 }> = (props) => {
   const { colors, hidden, hovered, selection, prefix = 'editor/' } = props;
   const { mapStyle } = useSelector(
     (s: { map: { mapStyle: string; signalsSettings: SignalsSettings } }) => s.map
   );
-  const editorData = useSelector((state: { editor: EditorState }) => dataSelector(state.editor));
-  const editorDataArray = useSelector((state: { editor: EditorState }) =>
-    dataArraySelector(state.editor)
+  const flatEntitiesByType = useSelector(
+    (state: { editor: EditorState }) => state.editor.flatEntitiesByTypes
   );
   const geoJSONs = useMemo<Partial<Record<LayerType, FeatureCollection>>>(
     () =>
       mapValues(
-        editorData,
+        flatEntitiesByType,
         (entities) =>
           ({
             type: 'FeatureCollection',
             features: (entities || [])?.map((e) => ({ ...e, type: 'Feature' })),
           } as FeatureCollection)
       ),
-    [editorData]
+    [flatEntitiesByType]
   );
 
   const layerContext: Context = useMemo(
     () => ({
-      hiddenIDs: (hidden || []).map((item) => item.id),
-      hoveredIDs: (hovered || []).map((item) => item.id),
-      selectedIDs: (selection || []).map((item) => item.id),
+      hiddenIDs: hidden || [],
+      hoveredIDs: hovered || [],
+      selectedIDs: selection || [],
     }),
     [hidden, hovered, selection]
   );
 
   // SIGNALS:
-  const signalsList = useMemo(() => getSymbolTypes(editorDataArray), [editorDataArray]);
+  const signalsList = useMemo(
+    () => getSignalsList(flatEntitiesByType.signals || []),
+    [flatEntitiesByType]
+  );
+  const symbolsList = useMemo(
+    () => getSymbolsList(flatEntitiesByType.signals || []),
+    [flatEntitiesByType]
+  );
   const signalsContext: SignalContext = useMemo(
     () => ({
       colors,
@@ -205,14 +213,14 @@ const GeoJSONs: FC<{
   );
   const signalPropsPerType = useMemo(
     () =>
-      signalsList.reduce(
+      symbolsList.reduce(
         (iter, type) => ({
           ...iter,
           [type]: getSignalLayerProps(signalsContext, type),
         }),
-        {}
+        {} as { [key: string]: LayerProps }
       ),
-    [signalsContext, signalsList]
+    [signalsContext, symbolsList]
   );
 
   return (
@@ -237,14 +245,30 @@ const GeoJSONs: FC<{
               filter: ['==', 'type_voie', 'VP'],
               layout: {
                 ...trackNameLayer(colors).layout,
-                'text-field': '{track_name}',
+                'text-field': '{extensions_sncf_track_name}',
                 'text-size': 11,
               },
             },
             layerContext,
             adaptTextPaint
           )}
-          id={`${prefix}geo/track-names`}
+          id={`${prefix}geo/track-vp-names`}
+        />
+        <Layer
+          {...adaptProps(
+            {
+              ...trackNameLayer(colors),
+              filter: ['!=', 'type_voie', 'VP'],
+              layout: {
+                ...trackNameLayer(colors).layout,
+                'text-field': '{extensions_sncf_track_name}',
+                'text-size': 10,
+              },
+            },
+            layerContext,
+            adaptTextPaint
+          )}
+          id={`${prefix}geo/track-other-names`}
         />
         <Layer
           {...adaptProps(
@@ -252,7 +276,7 @@ const GeoJSONs: FC<{
               ...lineNumberLayer(colors),
               layout: {
                 ...lineNumberLayer(colors).layout,
-                'text-field': '{line_code}',
+                'text-field': '{extensions_sncf_line_code}',
               },
             },
             layerContext,
@@ -275,17 +299,17 @@ const GeoJSONs: FC<{
           {...adaptProps(getPointLayerProps(signalsContext), layerContext)}
           id={`${prefix}geo/signal-point`}
         />
-        {signalsList.map((type) => {
-          const layerId = `${prefix}geo/signal-${type}`;
-          const signalDef = signalPropsPerType[type];
+        {symbolsList.map((symbol) => {
+          const layerId = `${prefix}geo/signal-${symbol}`;
+          const signalDef = signalPropsPerType[symbol];
 
           return (
             <Layer
-              key={type}
+              key={symbol}
               {...signalDef}
               id={layerId}
-              filter={adaptFilter(['==', SIGNAL_TYPE_KEY, `"${type}"`], layerContext)}
-              paint={adaptSymbolPaint(signalDef.paint, layerContext)}
+              filter={adaptFilter(['==', SIGNAL_TYPE_KEY, SYMBOLS_TO_LAYERS[symbol]], layerContext)}
+              paint={adaptSymbolPaint(signalDef.paint as SymbolPaint, layerContext)}
             />
           );
         })}
