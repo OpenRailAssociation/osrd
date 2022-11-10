@@ -25,7 +25,8 @@
     "next": "Suivant",
     "zoom-in": "Zoomer",
     "zoom-out": "Dézoomer",
-    "zoom-reset": "Réinitialiser le zoom"
+    "zoom-reset": "Réinitialiser le zoom",
+    "reset-north": "Réinitialiser la caméra"
   },
   "Editor": {
     "title": "Éditeur",

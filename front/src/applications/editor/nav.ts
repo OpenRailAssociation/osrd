@@ -3,6 +3,7 @@ import { IconType } from 'react-icons/lib/esm/iconBase';
 import { BiTargetLock } from 'react-icons/bi';
 import { BsMap } from 'react-icons/bs';
 import { FiLayers, FiZoomIn, FiZoomOut } from 'react-icons/fi';
+import { FaCompass } from 'react-icons/fa';
 import { LinearInterpolator, ViewportProps } from 'react-map-gl';
 
 import { Viewport } from 'reducers/map';
@@ -97,6 +98,18 @@ const NavButtons: NavButton[][] = [
 
           transitionInterpolator: new LinearInterpolator(),
           transitionDuration: 400,
+        });
+      },
+    },
+    {
+      id: 'reset-viewport',
+      icon: FaCompass,
+      labelTranslationKey: 'common.reset-north',
+      onClick({ setViewport, viewport }) {
+        setViewport({
+          ...viewport,
+          bearing: 0,
+          pitch: 0,
         });
       },
     },

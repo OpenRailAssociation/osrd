@@ -10,6 +10,7 @@ import 'common/Map/Map.scss';
 import './Editor.scss';
 
 import { LoaderState } from '../../common/Loader';
+import ButtonResetViewport from '../../common/Map/Buttons/ButtonResetViewport';
 import { NotificationsState } from '../../common/Notifications';
 import { loadDataModel, reset } from '../../reducers/editor';
 import { MainState, setFailure } from '../../reducers/main';
