@@ -475,6 +475,7 @@ export function getSignalLayerProps(
       return getSignalStopLayerProps(context, type, iconOffset, changeSignalContext);
     case 'A':
     case 'CV':
+    case 'D':
       return getSignalVLLayerProps(context, type, iconOffset, changeSignalContext);
     default:
   }
