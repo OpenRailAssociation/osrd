@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { Position } from 'geojson';
 import cx from 'classnames';
 
-import { RootState } from 'reducers';
+import { getOrigin, getDestination, getVias } from 'reducers/osrdconf/selectors';
 
 import Origin from './Origin';
 import Vias from './Vias';
@@ -17,12 +17,14 @@ interface DisplayItineraryProps {
 export default function DisplayItinerary(props: DisplayItineraryProps) {
   const { zoomToFeaturePoint } = props;
 
-  const osrdconf = useSelector((state: RootState) => state.osrdconf);
+  const origin = useSelector(getOrigin);
+  const destination = useSelector(getDestination);
+  const vias = useSelector(getVias);
 
   return (
     <div
       className={cx({
-        'osrd-config-anchor': !osrdconf.origin && !osrdconf.destination && osrdconf.vias.length < 1,
+        'osrd-config-anchor': !origin && !destination && vias.length < 1,
       })}
     >
       <Origin zoomToFeaturePoint={zoomToFeaturePoint} />
