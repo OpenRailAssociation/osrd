@@ -129,6 +129,8 @@ function Map() {
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
         />
 
+        <OrthoPhoto layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
+
         {!showOSM ? null : (
           <>
             <OSM mapStyle={mapStyle} layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
@@ -138,8 +140,6 @@ function Map() {
             />
           </>
         )}
-
-        <OrthoPhoto layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
 
         {/* Have to duplicate objects with sourceLayer to avoid cache problems in mapbox */}
         {mapTrackSources === 'geographic' ? (

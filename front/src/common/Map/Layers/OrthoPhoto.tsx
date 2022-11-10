@@ -1,7 +1,9 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 import { Source, LayerProps } from 'react-map-gl';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
+import { RootState } from 'reducers';
 
 interface OrthoPhotoProps {
   layerOrder?: number;
@@ -9,14 +11,23 @@ interface OrthoPhotoProps {
 
 export default function OrthoPhoto(props: OrthoPhotoProps) {
   const { layerOrder } = props;
+  const { showOrthoPhoto } = useSelector((state: RootState) => state.map);
 
   const orthoPhotoParams: LayerProps = {
     source: 'orthophoto',
     type: 'raster',
-    paint: {},
+    paint: {
+      'raster-resampling': 'linear',
+      'raster-opacity': 1,
+      'raster-hue-rotate': 0,
+      'raster-fade-duration': 0,
+      'raster-contrast': 0.35,
+      'raster-brightness-max': 1,
+      'raster-brightness-min': 0.15,
+    },
   };
 
-  return (
+  return showOrthoPhoto ? (
     <Source
       id="orthophoto"
       type="raster"
@@ -27,5 +38,5 @@ export default function OrthoPhoto(props: OrthoPhotoProps) {
     >
       <OrderedLayer {...orthoPhotoParams} layerOrder={layerOrder} />
     </Source>
-  );
+  ) : null;
 }

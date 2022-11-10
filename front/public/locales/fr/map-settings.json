@@ -17,6 +17,7 @@
   "routes": "Cantons",
   "signalingtype": "Type de block",
   "signalisation": "Signalisation",
+  "showOrthoPhoto": "Afficher l'ortho photo",
   "showOSM": "Afficher le fond de carte",
   "showOSMtracksections": "Afficher les voies OSM",
   "sncf_lpv": "Limites permanentes de vitesse",
