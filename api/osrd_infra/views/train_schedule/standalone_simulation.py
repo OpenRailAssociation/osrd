@@ -49,6 +49,7 @@ def create_backend_request_payload(train_schedules: List[TrainScheduleModel]):
                 "initial_speed": schedule.initial_speed,
                 "allowances": schedule.allowances,
                 "tags": [schedule.speed_limit_composition],
+                "comfort": schedule.comfort,
             }
         )
 
