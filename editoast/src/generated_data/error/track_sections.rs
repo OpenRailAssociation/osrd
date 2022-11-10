@@ -1,4 +1,5 @@
 use super::graph::Graph;
+use crate::generated_data::error::ErrGenerator;
 use crate::infra_cache::InfraCache;
 use crate::schema::{InfraError, ObjectType};
 use diesel::result::Error as DieselError;
@@ -26,15 +27,23 @@ pub fn insert_errors(
 
     Ok(())
 }
+const TRACK_SECTIONS_ERRORS: [ErrGenerator<&Graph>; 1] = [check_track_sections];
 
 pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraError> {
     let mut errors = vec![];
-    errors.extend(check_track_sections(infra_cache, graph));
+    // errors.extend(check_track_sections(graph, infra_cache));
+    for f in TRACK_SECTIONS_ERRORS.iter() {
+        errors.extend(f(graph, infra_cache, &Graph::load(&infra_cache)));
+    }
     errors
 }
 
 /// Check if routes or buffer stops are missing in the track section
-pub fn check_track_sections(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraError> {
+pub fn check_track_sections(
+    graph: &'static Graph,
+    infra_cache: &InfraCache,
+    _: &Graph,
+) -> Vec<InfraError> {
     let mut infra_errors = vec![];
     for (track_id, track) in infra_cache.track_sections().iter() {
         if let Some(e) = infra_cache.track_sections_refs.get(track_id) {
@@ -70,7 +79,7 @@ mod tests {
     use crate::infra_cache::tests::create_small_infra_cache;
     use crate::schema::{ObjectRef, ObjectType};
 
-    use super::generate_errors;
+    use super::check_track_sections;
     use super::InfraError;
 
     #[test]
@@ -79,7 +88,7 @@ mod tests {
         let obj_ref = ObjectRef::new(ObjectType::Route, "R1");
         infra_cache.apply_delete(&obj_ref);
         let graph = Graph::load(&infra_cache);
-        let errors = generate_errors(&infra_cache, &graph);
+        let errors = check_track_sections(&graph, &infra_cache, &Graph::load(&infra_cache));
         assert_eq!(1, errors.len());
         let infra_error =
             InfraError::new_missing_route(infra_cache.track_sections().get("A").unwrap());
@@ -92,7 +101,7 @@ mod tests {
         let obj_ref = ObjectRef::new(ObjectType::BufferStop, "BF1");
         infra_cache.apply_delete(&obj_ref);
         let graph = Graph::load(&infra_cache);
-        let errors = generate_errors(&infra_cache, &graph);
+        let errors = check_track_sections(&graph, &infra_cache, &Graph::load(&infra_cache));
         assert_eq!(1, errors.len());
         let infra_error = InfraError::new_no_buffer_stop(
             infra_cache.track_sections().get("A").unwrap(),

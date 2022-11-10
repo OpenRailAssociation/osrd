@@ -1,4 +1,5 @@
 use super::graph::Graph;
+use crate::generated_data::error::ErrGenerator;
 use crate::infra_cache::InfraCache;
 use crate::schema::{
     Direction, InfraError, OSRDIdentified, OSRDObject, ObjectRef, ObjectType, PathEndpointField,
@@ -72,19 +73,26 @@ fn check_matching_endpoint(
         vec![]
     }
 }
+const ROUTE_ERRORS: [ErrGenerator<&Route>; 4] = [
+    check_detector_errors,
+    check_entry_exit_point_errors,
+    //check_path_not_continuous,
+    check_empty,
+    check_route_path,
+];
 
 pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraError> {
     let mut errors = vec![];
 
     for route in infra_cache.routes().values() {
         let route = route.unwrap_route();
-        let infra_errors = check_empty(route);
+        let infra_errors = check_empty(route, infra_cache, graph);
         if !infra_errors.is_empty() {
             errors.extend(infra_errors);
             continue;
         }
 
-        let infra_errors = check_route_path(infra_cache, route);
+        let infra_errors = check_route_path(route, infra_cache, graph);
         if !infra_errors.is_empty() {
             errors.extend(infra_errors);
             continue;
@@ -92,17 +100,21 @@ pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraErro
 
         errors.extend(check_path_not_continuous(route, graph, infra_cache));
         // Retrieve errors on entry and exit point
-        errors.extend(check_entry_exit_point_errors(route, infra_cache));
+        errors.extend(check_entry_exit_point_errors(route, infra_cache, graph));
 
         // TODO: Should we test the type detector ?
-        errors.extend(check_detector_errors(route, infra_cache));
+        errors.extend(check_detector_errors(route, infra_cache, graph));
     }
 
     errors
 }
 
 ///Check invalid DetectorRef and position
-pub fn check_detector_errors(route: &Route, infra_cache: &InfraCache) -> Vec<InfraError> {
+pub fn check_detector_errors(
+    route: &Route,
+    infra_cache: &InfraCache,
+    _: &Graph,
+) -> Vec<InfraError> {
     let mut infra_errors = vec![];
     for (index, release_detector) in route.release_detectors.iter().enumerate() {
         // Handle invalid ref for release detectors
@@ -137,7 +149,11 @@ pub fn check_detector_errors(route: &Route, infra_cache: &InfraCache) -> Vec<Inf
 }
 
 /// Check if the entry and exit point of the route are valid
-pub fn check_entry_exit_point_errors(route: &Route, infra_cache: &InfraCache) -> Vec<InfraError> {
+pub fn check_entry_exit_point_errors(
+    route: &'static Route,
+    infra_cache: &InfraCache,
+    _: &Graph,
+) -> Vec<InfraError> {
     let mut infra_errors = vec![];
     for path_endpoint in PathEndpointField::iter() {
         let (expected_track, expected_position) =
@@ -165,7 +181,7 @@ pub fn check_entry_exit_point_errors(route: &Route, infra_cache: &InfraCache) ->
 
 /// Check if the path is continuous
 pub fn check_path_not_continuous(
-    route: &Route,
+    route: &'static Route,
     graph: &Graph,
     infra_cache: &InfraCache,
 ) -> Vec<InfraError> {
@@ -231,7 +247,7 @@ pub fn check_path_not_continuous(
 }
 
 /// Check if a route has a path
-pub fn check_empty(route: &Route) -> Vec<InfraError> {
+pub fn check_empty(route: &'static Route, _: &InfraCache, _: &Graph) -> Vec<InfraError> {
     if route.path.is_empty() {
         vec![InfraError::new_empty_path(route, "path")]
     } else {
@@ -239,7 +255,11 @@ pub fn check_empty(route: &Route) -> Vec<InfraError> {
     }
 }
 /// Retrieve invalid ref and out of range errors for routes
-pub fn check_route_path(infra_cache: &InfraCache, route: &Route) -> Vec<InfraError> {
+pub fn check_route_path(
+    route: &'static Route,
+    infra_cache: &InfraCache,
+    _: &Graph,
+) -> Vec<InfraError> {
     let mut infra_errors = vec![];
     for (index, path) in route.path.iter().enumerate() {
         let track_id = &path.track;
@@ -279,7 +299,12 @@ mod tests {
     };
     use crate::schema::{Direction, ObjectRef, ObjectType, PathEndpointField, Waypoint};
 
-    use super::generate_errors;
+    use super::check_detector_errors;
+    use super::check_entry_exit_point_errors;
+    use super::check_matching_endpoint;
+    use super::check_path_not_continuous;
+    use super::check_route_path;
+    use super::get_object;
     use super::InfraError;
 
     #[test]
@@ -298,8 +323,7 @@ mod tests {
             error_path,
         );
         infra_cache.add(route.clone());
-        let graph = Graph::load(&infra_cache);
-        let errors = generate_errors(&infra_cache, &graph);
+        let errors = check_route_path(&route, &infra_cache, &Graph::load(&infra_cache));
         assert_eq!(1, errors.len());
         let obj_ref = ObjectRef::new(ObjectType::TrackSection, "E");
         let infra_error = InfraError::new_invalid_reference(&route, "path.1", obj_ref);
@@ -321,8 +345,7 @@ mod tests {
             error_path,
         );
         infra_cache.add(route.clone());
-        let graph = Graph::load(&infra_cache);
-        let errors = generate_errors(&infra_cache, &graph);
+        let errors = check_route_path(&route, &infra_cache, &Graph::load(&infra_cache));
         assert_eq!(1, errors.len());
         let infra_error = InfraError::new_out_of_range(&route, "path.0.end", 600., [0.0, 500.]);
         assert_eq!(infra_error, errors[0]);
@@ -345,8 +368,8 @@ mod tests {
             error_path,
         );
         infra_cache.add(route.clone());
-        let graph = Graph::load(&infra_cache);
-        let errors = generate_errors(&infra_cache, &graph);
+        let errors =
+            check_entry_exit_point_errors(&route, &infra_cache, &Graph::load(&infra_cache));
         assert_eq!(1, errors.len());
         let obj_ref = ObjectRef::new(ObjectType::BufferStop, "BF_non_existing");
         let infra_error = InfraError::new_invalid_reference(&route, "\"entry_point\"", obj_ref);
@@ -368,8 +391,20 @@ mod tests {
             error_path,
         );
         infra_cache.add(route.clone());
-        let graph = Graph::load(&infra_cache);
-        let errors = generate_errors(&infra_cache, &graph);
+
+        let (expected_track, expected_position) = get_object(
+            PathEndpointField::EntryPoint.get_route_endpoint(&route),
+            &infra_cache,
+        )
+        .unwrap();
+
+        let errors = check_matching_endpoint(
+            &route,
+            expected_track,
+            expected_position,
+            PathEndpointField::EntryPoint,
+        );
+
         assert_eq!(1, errors.len());
         let infra_error = InfraError::new_path_does_not_match_endpoints(
             &route,
@@ -396,8 +431,8 @@ mod tests {
             error_path,
         );
         infra_cache.add(route.clone());
-        let graph = Graph::load(&infra_cache);
-        let errors = generate_errors(&infra_cache, &graph);
+        let errors = check_detector_errors(&route, &infra_cache, &Graph::load(&infra_cache));
+
         assert_eq!(1, errors.len());
         let infra_error = InfraError::new_invalid_reference(
             &route,
@@ -423,8 +458,7 @@ mod tests {
             error_path,
         );
         infra_cache.add(route.clone());
-        let graph = Graph::load(&infra_cache);
-        let errors = generate_errors(&infra_cache, &graph);
+        let errors = check_detector_errors(&route, &infra_cache, &Graph::load(&infra_cache));
         assert_eq!(1, errors.len());
         let infra_error =
             InfraError::new_object_out_of_path(&route, "release_detector.0", 250., "C");
@@ -447,7 +481,7 @@ mod tests {
         );
         infra_cache.add(route.clone());
         let graph = Graph::load(&infra_cache);
-        let errors = generate_errors(&infra_cache, &graph);
+        let errors = check_path_not_continuous(&route, &graph, &infra_cache);
         assert_eq!(1, errors.len());
         let infra_error = InfraError::new_path_is_not_continuous(&route, "path.1");
         assert_eq!(infra_error, errors[0]);
@@ -470,7 +504,7 @@ mod tests {
         );
         infra_cache.add(route.clone());
         let graph = Graph::load(&infra_cache);
-        let errors = generate_errors(&infra_cache, &graph);
+        let errors = check_path_not_continuous(&route, &graph, &infra_cache);
         assert_eq!(1, errors.len());
         let infra_error = InfraError::new_path_is_not_continuous(&route, "path.1");
         assert_eq!(infra_error, errors[0]);
@@ -493,7 +527,7 @@ mod tests {
         );
         infra_cache.add(route.clone());
         let graph = Graph::load(&infra_cache);
-        let errors = generate_errors(&infra_cache, &graph);
+        let errors = check_path_not_continuous(&route, &graph, &infra_cache);
         assert_eq!(1, errors.len());
         let infra_error = InfraError::new_path_is_not_continuous(&route, "path.1");
         assert_eq!(infra_error, errors[0]);

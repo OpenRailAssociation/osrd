@@ -1,6 +1,8 @@
 use diesel::sql_types::{Array, Integer, Json};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
 
+use super::graph::Graph;
+use crate::generated_data::error::ErrGenerator;
 use crate::infra_cache::InfraCache;
 use crate::schema::{InfraError, ObjectRef, ObjectType, SpeedSection};
 use diesel::result::Error as DieselError;
@@ -26,17 +28,21 @@ pub fn insert_errors(
     Ok(())
 }
 
+const SPEED_SECTION_ERRORS: [ErrGenerator<&SpeedSection>; 2] =
+    [check_empty, check_speed_section_track_ranges];
+
 pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
     let mut errors = vec![];
     for speed_section in infra_cache.speed_sections().values() {
         let speed_section = speed_section.unwrap_speed_section();
-        errors.extend(check_empty(speed_section));
-        errors.extend(check_speed_section_track_ranges(speed_section, infra_cache));
+        for f in SPEED_SECTION_ERRORS.iter() {
+            errors.extend(f(speed_section, infra_cache, &Graph::load(&infra_cache)));
+        }
     }
     errors
 }
 /// Check if a track section has empty speed section
-pub fn check_empty(speed_section: &SpeedSection) -> Vec<InfraError> {
+pub fn check_empty(speed_section: &SpeedSection, _: &InfraCache, _: &Graph) -> Vec<InfraError> {
     if speed_section.track_ranges.is_empty() {
         vec![InfraError::new_empty_object(speed_section, "track_ranges")]
     } else {
@@ -45,8 +51,9 @@ pub fn check_empty(speed_section: &SpeedSection) -> Vec<InfraError> {
 }
 /// Retrieve invalid refs and out of range errors for speed sections
 pub fn check_speed_section_track_ranges(
-    speed_section: &SpeedSection,
+    speed_section: &'static SpeedSection,
     infra_cache: &InfraCache,
+    _: &Graph,
 ) -> Vec<InfraError> {
     let mut infra_errors = vec![];
     for (index, track_range) in speed_section.track_ranges.iter().enumerate() {
@@ -84,8 +91,9 @@ mod tests {
     use crate::infra_cache::tests::{create_small_infra_cache, create_speed_section_cache};
     use crate::schema::{ObjectRef, ObjectType};
 
-    use super::generate_errors;
+    use super::check_speed_section_track_ranges;
     use super::InfraError;
+    use crate::generated_data::error::graph::Graph;
 
     #[test]
     fn invalid_ref() {
@@ -93,7 +101,11 @@ mod tests {
         let track_ranges_error = vec![("A", 20., 500.), ("E", 0., 500.), ("B", 0., 250.)];
         let speed_section = create_speed_section_cache("SP_error", track_ranges_error);
         infra_cache.add(speed_section.clone());
-        let errors = generate_errors(&infra_cache);
+        let errors = check_speed_section_track_ranges(
+            &speed_section,
+            &infra_cache,
+            &Graph::load(&infra_cache),
+        );
         assert_eq!(1, errors.len());
         let obj_ref = ObjectRef::new(ObjectType::TrackSection, "E");
         let infra_error =
@@ -107,7 +119,11 @@ mod tests {
         let track_ranges_error = vec![("A", 20., 530.), ("B", 0., 250.)];
         let speed_section = create_speed_section_cache("SP_error", track_ranges_error);
         infra_cache.add(speed_section.clone());
-        let errors = generate_errors(&infra_cache);
+        let errors = check_speed_section_track_ranges(
+            &speed_section,
+            &infra_cache,
+            &Graph::load(&infra_cache),
+        );
         assert_eq!(1, errors.len());
         let infra_error =
             InfraError::new_out_of_range(&speed_section, "track_ranges.0.end", 530., [0.0, 500.]);
