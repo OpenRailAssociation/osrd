@@ -38,6 +38,10 @@
       "detectors": "Détecteurs",
       "switches": "Aiguillages"
     },
+    "item-statuses": {
+      "selected": "sélectionné",
+      "edited": "en cours d'édition"
+    },
     "obj-types": {
       "TrackSection": "Section de ligne",
       "Signal": "Signal",

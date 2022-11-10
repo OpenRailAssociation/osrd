@@ -1,8 +1,9 @@
 import { useSelector } from 'react-redux';
 import React, { FC, useMemo } from 'react';
 import { Feature, FeatureCollection } from 'geojson';
-import { isPlainObject, mapValues } from 'lodash';
+import { isPlainObject, keyBy, mapValues } from 'lodash';
 import { Layer, LayerProps, Source } from 'react-map-gl';
+import { SymbolPaint } from 'mapbox-gl';
 import chroma from 'chroma-js';
 
 import { Theme } from '../../../types';
@@ -21,7 +22,6 @@ import { getDetectorsLayerProps, getDetectorsNameLayerProps } from './Detectors'
 import { getSwitchesLayerProps, getSwitchesNameLayerProps } from './Switches';
 import { EditorState, LayerType } from '../../../applications/editor/tools/types';
 import { SYMBOLS_TO_LAYERS } from '../Consts/SignalsNames';
-import { SymbolPaint } from 'mapbox-gl';
 
 const SIGNAL_TYPE_KEY = 'extensions_sncf_installation_type';
 
@@ -151,6 +151,23 @@ const SOURCES_DEFINITION: {
   { entityType: 'detectors', getLayers: getDetectorsLayers },
   { entityType: 'switches', getLayers: getSwitchesLayers },
 ];
+
+export const SourcesDefinitionsIndex = mapValues(
+  keyBy(SOURCES_DEFINITION, 'entityType'),
+  (def) => def.getLayers
+) as Record<LayerType, (context: LayerContext, prefix: string) => LayerProps[]>;
+
+export const EditorSource: FC<{
+  id?: string;
+  data: Feature | FeatureCollection;
+  layers: LayerProps[];
+}> = ({ id, data, layers }) => (
+  <Source type="geojson" id={id} data={data}>
+    {layers.map((layer) => (
+      <Layer key={layer.id} {...layer} />
+    ))}
+  </Source>
+);
 
 const GeoJSONs: FC<{
   colors: Theme;

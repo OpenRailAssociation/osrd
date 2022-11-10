@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useContext, useMemo } from 'react';
+import React, { FC, useCallback, useContext, useMemo, useState } from 'react';
 import { FieldProps } from '@rjsf/core';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -42,6 +42,7 @@ import {
   getSwitchesNameLayerProps,
 } from '../../../../common/Map/Layers/Switches';
 import { NEW_ENTITY_ID } from '../../data/utils';
+import EntitySumUp from '../../components/EntitySumUp';
 
 const ENDPOINT_OPTIONS = ENDPOINTS.map((s) => ({ value: s, label: s }));
 const ENDPOINT_OPTIONS_DICT = keyBy(ENDPOINT_OPTIONS, 'value');
@@ -290,6 +291,7 @@ export const SwitchEditionLeftPanel: FC = () => {
 
 export const SwitchEditionLayers: FC = () => {
   const { t } = useTranslation();
+  const [showPopup, setShowPopup] = useState(true);
   const {
     state: { entity, hovered, portEditionState, mousePosition },
     editorState: { entitiesIndex },
@@ -340,6 +342,17 @@ export const SwitchEditionLayers: FC = () => {
         <Layer {...layerProps} />
         <Layer {...nameLayerProps} />
       </Source>
+      {showPopup && entity && entity.geometry?.type === 'Point' && (
+        <Popup
+          className="popup py-2"
+          anchor="bottom"
+          longitude={entity.geometry.coordinates[0]}
+          latitude={entity.geometry.coordinates[1]}
+          onClose={() => setShowPopup(false)}
+        >
+          <EntitySumUp entity={entity as SwitchEntity} status="edited" />
+        </Popup>
+      )}
 
       {/* Hovered track section */}
       {portEditionState.type === 'selection' && hoveredTrack && mousePosition && closestPoint && (
