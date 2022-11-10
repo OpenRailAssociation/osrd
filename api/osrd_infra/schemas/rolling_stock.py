@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Literal, Mapping, Optional, Union
+from typing import List, Literal, Mapping, Optional
 
 from pydantic import (
     BaseModel,
@@ -15,6 +15,16 @@ from pydantic import (
 from .infra import LoadingGaugeType
 
 RAILJSON_ROLLING_STOCK_VERSION = "3.0"
+
+
+class ComfortType(str, Enum):
+    """
+    This enum defines the comfort type that can take a train.
+    """
+
+    STANDARD = "STANDARD"
+    AC = "AC"
+    HEATING = "HEATING"
 
 
 class RollingResistance(BaseModel, extra=Extra.forbid):
@@ -35,7 +45,7 @@ class EffortCurve(BaseModel, extra=Extra.forbid):
 
 
 class EffortCurveConditions(BaseModel, extra=Extra.forbid):
-    comfort: Optional[Union[Literal["ac"], Literal["heating"]]]
+    comfort: Optional[ComfortType]
 
 
 class ConditionalEffortCurve(BaseModel, extra=Extra.forbid):

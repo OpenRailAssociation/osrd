@@ -1061,26 +1061,64 @@ components:
         - $ref: "#/components/schemas/LightRollingStock"
         - type: object
           properties:
-            effort_curve:
+            effort_curves:
               type: object
               properties:
-                speeds:
-                  type: array
-                  minItems: 2
-                  items:
-                    type: number
-                    format: float
-                max_efforts:
-                  type: array
-                  minItems: 2
-                  items:
-                    type: number
-                    format: float
+                default_mode:
+                  type: string
+                modes:
+                  type: object
+                  additionalProperties:
+                    type: object
+                    properties:
+                      curves:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/ConditionalEffortCurve"
+                      default_curve:
+                        $ref: "#/components/schemas/EffortCurve"
+                      is_electric:
+                        type: boolean
+    ConditionalEffortCurve:
+      type: object
+      properties:
+        cond:
+          type: object
+          nullable: true
+          properties:
+            comfort:
+              $ref: "#/components/schemas/Comfort"
+        curve:
+          $ref: "#/components/schemas/EffortCurve"
+    Comfort:
+      description: Train comfort that will be used for the simulation
+      type: string
+      enum: [ "AC", "HEATING", "STANDARD"]
+      default: "STANDARD"
+    EffortCurve:
+      type: object
+      properties:
+        speeds:
+          type: array
+          example: [0.0, 2.958, 46.719]
+          minItems: 2
+          items:
+            type: number
+            format: float
+        max_efforts:
+          type: array
+          example: [23500.0, 23200.0, 21200.0]
+          minItems: 2
+          items:
+            type: number
+            format: float
     LightRollingStock:
       properties:
+        id:
+          type: number
         version:
           type: string
-          example: "2.1"
+          example: "3.0"
         name:
           type: string
         length:
@@ -1110,8 +1148,6 @@ components:
         inertia_coefficient:
           type: number
           format: float
-        power_class:
-          type: number
         features:
           type: array
           items:
@@ -1143,12 +1179,18 @@ components:
             - "FR3.3"
             - "FR3.3/GB/G2"
             - "GLOTT"
-        electric_only:
-          type: boolean
-        compatible_voltages:
-          type: array
-          items:
-            type: integer
+        effort_curves:
+          type: object
+          properties:
+            default_mode:
+              type: string
+            modes:
+              type: object
+              additionalProperties:
+                type: object
+                properties:
+                  is_electric:
+                    type: boolean
     TrainSchedule:
       allOf:
         - type: object
@@ -1189,6 +1231,8 @@ components:
               speed_limit_composition:
                 description: Train category for speed limits
                 type: string
+              comfort:
+                $ref: "#/components/schemas/Comfort"
     WritableTrainSchedule:
       properties:
         train_name:
