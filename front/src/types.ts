@@ -1,11 +1,17 @@
 import { Action } from 'redux';
 import { JSONSchema7 } from 'json-schema';
-import { Position, Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
+import { Position, Feature, GeoJsonProperties, Geometry, Point, LineString } from 'geojson';
 import { Operation } from 'fast-json-patch';
 import { ThunkAction as ReduxThunkAction } from 'redux-thunk';
 // Next line because:
 // https://github.com/reduxjs/redux-thunk/issues/333#issuecomment-1107532912
 import type {} from 'redux-thunk/extend-redux';
+
+export const NULL_GEOMETRY = {
+  type: 'GeometryCollection',
+  geometries: [] as Geometry[],
+} as const;
+export type NullGeometry = typeof NULL_GEOMETRY;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type EditorModelsDefinition = any;
@@ -33,21 +39,6 @@ export interface PolygonZone {
 export type Zone = RectangleZone | PolygonZone;
 export type SourceLayer = 'sch' | 'geo';
 
-//
-//  Metadata types
-//
-
-export interface Item {
-  id: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  properties: Record<string, any>;
-}
-
-export type PositionnedItem = Item & {
-  lng: number;
-  lat: number;
-};
-
 // Notification type
 export interface Notification {
   title?: string;
@@ -62,20 +53,29 @@ export interface Notification {
 export type ObjectType = string;
 export type EntityId = string | number | undefined;
 export type EditorSchema = Array<{ layer: string; objType: ObjectType; schema: JSONSchema7 }>;
-export type EditorEntity<G extends Geometry | null = Geometry, P = GeoJsonProperties> = Feature<
-  G,
-  P
-> & { objType: string };
-export interface TrackSectionEntity extends EditorEntity {
+export type EditorEntity<G extends Geometry | null = Geometry, P = GeoJsonProperties> = Omit<
+  Feature<G, P & { id: string }> & { objType: string },
+  'id'
+>;
+export interface TrackSectionEntity
+  extends EditorEntity<
+    LineString,
+    {
+      extensions?: {
+        sncf?: {
+          line_code?: number;
+          line_name?: string;
+          track_name?: string;
+          track_number?: number;
+        };
+      };
+    }
+  > {
   objType: 'TrackSection';
-  geometry: {
-    type: 'LineString';
-    coordinates: [number, number][];
-  };
 }
 export interface SignalEntity
   extends EditorEntity<
-    Point,
+    Point | NullGeometry,
     {
       track?: string;
       position?: number;
@@ -93,10 +93,11 @@ export interface SignalEntity
   objType: 'Signal';
 }
 export interface BufferStopEntity
-  extends EditorEntity<Point, { track?: string; position?: number }> {
+  extends EditorEntity<Point | NullGeometry, { track?: string; position?: number }> {
   objType: 'BufferStop';
 }
-export interface DetectorEntity extends EditorEntity<Point, { track?: string; position?: number }> {
+export interface DetectorEntity
+  extends EditorEntity<Point | NullGeometry, { track?: string; position?: number }> {
   objType: 'Detector';
 }
 
@@ -119,7 +120,18 @@ export interface SwitchType {
   groups: Record<string, SwitchPortConnection[]>;
 }
 export interface SwitchEntity
-  extends EditorEntity<Point, { switch_type: string; ports: Record<string, TrackEndpoint> }> {
+  extends EditorEntity<
+    Point,
+    {
+      switch_type: string;
+      ports: Record<string, TrackEndpoint>;
+      extensions?: {
+        sncf: {
+          label?: string;
+        };
+      };
+    }
+  > {
   objType: 'Switch';
 }
 

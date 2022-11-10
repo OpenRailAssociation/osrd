@@ -1,9 +1,15 @@
+import { isNil } from 'lodash';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import ReactMapGL, { AttributionControl, FlyToInterpolator, ScaleControl } from 'react-map-gl';
+import ReactMapGL, {
+  AttributionControl,
+  FlyToInterpolator,
+  ScaleControl,
+  MapEvent,
+} from 'react-map-gl';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { updateViewport } from 'reducers/map';
+import { updateViewport, Viewport } from 'reducers/map';
 import { RootState } from 'reducers';
 
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
@@ -20,7 +26,7 @@ import Hillshade from 'common/Map/Layers/Hillshade';
 import OSM from 'common/Map/Layers/OSM';
 /* Objects & various */
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
-import Platform from 'common/Map/Layers/Platform';
+import Platforms from 'common/Map/Layers/Platforms';
 import Routes from 'common/Map/Layers/Routes';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
 import Signals from 'common/Map/Layers/Signals';
@@ -38,7 +44,7 @@ import 'common/Map/Map.scss';
 function Map() {
   const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings } =
     useSelector((state: RootState) => state.map);
-  const [idHover, setIdHover] = useState('');
+  const [idHover, setIdHover] = useState<string | undefined>(undefined);
   const { urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
   const { fullscreen } = useSelector((state: RootState) => state.main);
   const dispatch = useDispatch();
@@ -62,12 +68,12 @@ function Map() {
     });
   };
 
-  const onFeatureClick = (e) => {
+  const onFeatureClick = (e: MapEvent) => {
     console.log(e);
   };
 
-  const onFeatureHover = (e) => {
-    if (e.features[0] !== undefined) {
+  const onFeatureHover = (e: MapEvent) => {
+    if (e.features && e.features[0] !== undefined && e.features[0].properties) {
       setIdHover(e.features[0].properties.id);
     } else {
       setIdHover(undefined);
@@ -83,16 +89,13 @@ function Map() {
   };
 
   useEffect(() => {
-    if (urlLat) {
-      updateViewportChange({
-        ...viewport,
-        latitude: parseFloat(urlLat),
-        longitude: parseFloat(urlLon),
-        zoom: parseFloat(urlZoom),
-        bearing: parseFloat(urlBearing),
-        pitch: parseFloat(urlPitch),
-      });
-    }
+    const newViewport: Partial<Viewport> = {};
+    if (!isNil(urlLat)) newViewport.latitude = parseFloat(urlLat);
+    if (!isNil(urlLon)) newViewport.longitude = parseFloat(urlLon);
+    if (!isNil(urlZoom)) newViewport.zoom = parseFloat(urlZoom);
+    if (!isNil(urlBearing)) newViewport.bearing = parseFloat(urlBearing);
+    if (!isNil(urlPitch)) newViewport.pitch = parseFloat(urlPitch);
+    if (Object.keys(newViewport).length > 0) updateViewportChange(newViewport);
   }, []);
 
   return (
@@ -112,7 +115,6 @@ function Map() {
         interactiveLayerIds={defineInteractiveLayers()}
         touchRotate
         asyncRender
-        antialiasing
       >
         <VirtualLayers />
         <AttributionControl
@@ -139,9 +141,9 @@ function Map() {
         {/* Have to duplicate objects with sourceLayer to avoid cache problems in mapbox */}
         {mapTrackSources === 'geographic' ? (
           <>
-            <Platform
+            <Platforms
               colors={colors[mapStyle]}
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORM.GROUP]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORMS.GROUP]}
             />
 
             <TracksGeographic
@@ -189,7 +191,11 @@ function Map() {
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
             />
-            <SNCF_LPV geomType="geo" colors={colors[mapStyle]} />
+            <SNCF_LPV
+              geomType="geo"
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
+            />
 
             <Signals
               sourceTable="signals"
@@ -237,7 +243,11 @@ function Map() {
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
             />
-            <SNCF_LPV geomType="sch" colors={colors[mapStyle]} />
+            <SNCF_LPV
+              geomType="sch"
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
+            />
 
             <Signals
               sourceTable="signals"

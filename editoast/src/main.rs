@@ -17,7 +17,8 @@ mod views;
 use chashmap::CHashMap;
 use clap::Parser;
 use client::{
-    ChartosConfig, ClearArgs, Client, Commands, GenerateArgs, PostgresConfig, RunserverArgs,
+    ChartosConfig, ClearArgs, Client, Commands, GenerateArgs, ImportRailjsonArgs, PostgresConfig,
+    RunserverArgs,
 };
 use colored::*;
 use db_connection::DBConnection;
@@ -27,8 +28,12 @@ use infra_cache::InfraCache;
 use rocket::{Build, Config, Rocket};
 use rocket_cors::CorsOptions;
 use std::error::Error;
+use std::fs::File;
+use std::io::BufReader;
 use std::process::exit;
 use std::sync::Arc;
+
+use crate::schema::RailJson;
 
 #[rocket::main]
 async fn main() {
@@ -50,6 +55,7 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
         Commands::Runserver(args) => runserver(args, pg_config, chartos_config).await,
         Commands::Generate(args) => generate(args, pg_config, chartos_config).await,
         Commands::Clear(args) => clear(args, pg_config),
+        Commands::ImportRailjson(args) => import_railjson(args, pg_config),
     }
 }
 pub fn create_server(
@@ -164,6 +170,32 @@ async fn generate(
     Ok(())
 }
 
+fn import_railjson(
+    args: ImportRailjsonArgs,
+    pg_config: PostgresConfig,
+) -> Result<(), Box<dyn Error + Send + Sync>> {
+    let railjson_file = File::open(args.railjson_path)?;
+    let conn = &PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
+
+    let railjson: RailJson = serde_json::from_reader(BufReader::new(railjson_file))?;
+
+    let infra = railjson.persist(args.infra_name, conn)?;
+
+    println!("✅ Infra {}[{}] saved!", infra.name.bold(), infra.id);
+    // Generate only if the was set
+    if args.generate {
+        let infra_cache = InfraCache::load(conn, infra.id);
+        infra.refresh(conn, true, &infra_cache)?;
+        println!(
+            "✅ Infra {}[{}] generated data refreshed!",
+            infra.name.bold(),
+            infra.id
+        );
+    }
+
+    Ok(())
+}
+
 /// Run the clear subcommand
 /// This command clear all generated data for the given infra
 fn clear(args: ClearArgs, pg_config: PostgresConfig) -> Result<(), Box<dyn Error + Send + Sync>> {
@@ -191,14 +223,78 @@ fn clear(args: ClearArgs, pg_config: PostgresConfig) -> Result<(), Box<dyn Error
 
 #[cfg(test)]
 mod tests {
-    use crate::clear;
-    use crate::client::ClearArgs;
-    use crate::client::PostgresConfig;
+    use crate::client::{ImportRailjsonArgs, PostgresConfig};
+    use crate::import_railjson;
+    use crate::schema::RailJson;
+    use diesel::result::Error;
+    use diesel::sql_types::Text;
+    use diesel::{sql_query, Connection, PgConnection, RunQueryDsl};
+    use rand::distributions::Alphanumeric;
+    use rand::{thread_rng, Rng};
+    use std::io::Write;
+    use tempfile::NamedTempFile;
+
+    pub fn test_transaction(fn_test: fn(&PgConnection)) {
+        let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
+        conn.test_transaction::<_, Error, _>(|| {
+            fn_test(&conn);
+            Ok(())
+        });
+    }
+
     #[test]
-    fn clear_generated_data() {
-        let args = ClearArgs { infra_ids: vec![0] };
+    fn import_railjson_ko_file_not_found() {
+        // GIVEN
+        let pg_config = Default::default();
+        let args: ImportRailjsonArgs = ImportRailjsonArgs {
+            infra_name: "test".into(),
+            railjson_path: "non/existing/railjson/file/location".into(),
+            generate: false,
+        };
+
+        // WHEN
+        let result = import_railjson(args, pg_config);
+
+        // THEN
+        assert!(result.is_err())
+    }
+
+    #[test]
+    fn import_railjson_ok() {
+        // GIVEN
+        let railjson = Default::default();
+        let file = generate_railjson_temp_file(&railjson);
         let pg_config = PostgresConfig::default();
-        let err = clear(args, pg_config);
-        assert!(err.is_err());
+        let infra_name = format!(
+            "{}_{}",
+            "infra",
+            (0..10)
+                .map(|_| thread_rng().sample(Alphanumeric) as char)
+                .collect::<String>(),
+        );
+        let args: ImportRailjsonArgs = ImportRailjsonArgs {
+            infra_name: infra_name.clone(),
+            railjson_path: file.path().into(),
+            generate: false,
+        };
+
+        // WHEN
+        let result = import_railjson(args, pg_config.clone());
+
+        // THEN
+        assert!(result.is_ok());
+
+        // CLEANUP
+        let conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
+        sql_query("DELETE FROM osrd_infra_infra WHERE name = $1")
+            .bind::<Text, _>(infra_name)
+            .execute(&conn)
+            .unwrap();
+    }
+
+    fn generate_railjson_temp_file(railjson: &RailJson) -> NamedTempFile {
+        let mut tmp_file = NamedTempFile::new().unwrap();
+        write!(tmp_file, "{}", serde_json::to_string(railjson).unwrap()).unwrap();
+        tmp_file
     }
 }

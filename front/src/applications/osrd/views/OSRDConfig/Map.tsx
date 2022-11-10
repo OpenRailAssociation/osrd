@@ -15,7 +15,7 @@ import { useParams } from 'react-router-dom';
 
 import { RootState } from 'reducers';
 import { updateFeatureInfoClickOSRD } from 'reducers/osrdconf';
-import { updateViewport } from 'reducers/map';
+import { updateViewport, Viewport } from 'reducers/map';
 
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
@@ -26,7 +26,7 @@ import Catenaries from 'common/Map/Layers/Catenaries';
 import Hillshade from 'common/Map/Layers/Hillshade';
 import OSM from 'common/Map/Layers/OSM';
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
-import Platform from 'common/Map/Layers/Platform';
+import Platforms from 'common/Map/Layers/Platforms';
 import RenderItinerary from 'applications/osrd/components/OSRDConfMap/RenderItinerary';
 import RenderItineraryMarkers from 'applications/osrd/components/OSRDConfMap/RenderItineraryMarkers';
 /* Interactions */
@@ -48,11 +48,12 @@ import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 
 import 'common/Map/Map.scss';
+import SNCF_LPV from 'common/Map/Layers/extensions/SNCF/SNCF_LPV';
 
 function Map() {
   const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings } =
     useSelector((state: RootState) => state.map);
-  const [idHover, setIdHover] = useState<string>('');
+  const [idHover, setIdHover] = useState<string | undefined>(undefined);
   const [trackSectionHover, setTrackSectionHover] = useState<Feature<any>>();
   const [lngLatHover, setLngLatHover] = useState<Position>();
   const [trackSectionGeoJSON, setTrackSectionGeoJSON] = useState<LineString>();
@@ -60,10 +61,10 @@ function Map() {
   const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
   const dispatch = useDispatch();
   const updateViewportChange = useCallback(
-    (value) => dispatch(updateViewport(value, undefined)),
+    (value: Partial<Viewport>) => dispatch(updateViewport(value, undefined)),
     [dispatch]
   );
-  const mapRef = useRef<MapRef>(null);
+  const mapRef = useRef<MapRef | null>(null);
 
   const scaleControlStyle = {
     left: 20,
@@ -80,7 +81,7 @@ function Map() {
     });
   };
 
-  const onFeatureClick = (e) => {
+  const onFeatureClick = (e: MapEvent) => {
     if (
       e.features &&
       e.features.length > 0 &&
@@ -234,9 +235,9 @@ function Map() {
         {/* Have to  duplicate objects with sourceLayer to avoid cache problems in mapbox */}
         {mapTrackSources === 'geographic' ? (
           <>
-            <Platform
+            <Platforms
               colors={colors[mapStyle]}
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORM.GROUP]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORMS.GROUP]}
             />
 
             <TracksGeographic
@@ -280,6 +281,11 @@ function Map() {
             />
 
             <SpeedLimits
+              geomType="geo"
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
+            />
+            <SNCF_LPV
               geomType="geo"
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
@@ -328,6 +334,11 @@ function Map() {
             />
 
             <SpeedLimits
+              geomType="sch"
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
+            />
+            <SNCF_LPV
               geomType="sch"
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}

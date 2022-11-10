@@ -1,11 +1,11 @@
 import { Feature, Point } from 'geojson';
 
-import { CommonToolState, MakeOptional } from '../types';
+import { CommonToolState } from '../types';
 import { EditorEntity } from '../../../../types';
 
 export type PointEditionState<E extends EditorEntity> = CommonToolState & {
-  initialEntity: MakeOptional<E, 'geometry'>;
-  entity: MakeOptional<E, 'geometry'>;
+  initialEntity: E;
+  entity: E;
   isHoveringTarget?: boolean;
   nearestPoint: {
     feature: Feature<Point>;

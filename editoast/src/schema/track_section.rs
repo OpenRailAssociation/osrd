@@ -1,16 +1,22 @@
-use crate::chartos::BoundingBox;
-use crate::infra_cache::Cache;
-use crate::infra_cache::ObjectCache;
-
 use super::generate_id;
 use super::Endpoint;
-use super::OSRDObject;
+use super::OSRDIdentified;
+
+use super::OSRDTyped;
 use super::ObjectType;
 use super::TrackEndpoint;
+use crate::api_error::ApiError;
+use crate::chartos::BoundingBox;
+use crate::diesel::ExpressionMethods;
+use crate::diesel::RunQueryDsl;
+use crate::infra_cache::Cache;
+use crate::infra_cache::ObjectCache;
+use crate::tables::osrd_infra_tracksectionmodel::dsl::*;
 use derivative::Derivative;
+use diesel::PgConnection;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct TrackSection {
@@ -26,13 +32,38 @@ pub struct TrackSection {
     pub extensions: TrackSectionExtensions,
 }
 
-#[derive(Debug, Clone, Default, Deserialize, Serialize)]
+impl TrackSection {
+    pub fn persist_batch(
+        values: &[Self],
+        infrastructure_id: i32,
+        conn: &PgConnection,
+    ) -> Result<(), Box<dyn ApiError>> {
+        let datas = values
+            .iter()
+            .map(|value| {
+                (
+                    obj_id.eq(value.get_id().clone()),
+                    data.eq(serde_json::to_value(value).unwrap()),
+                    infra_id.eq(infrastructure_id),
+                )
+            })
+            .collect::<Vec<_>>();
+
+        diesel::insert_into(osrd_infra_tracksectionmodel)
+            .values(datas)
+            .execute(conn)?;
+
+        Ok(())
+    }
+}
+
+#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct TrackSectionExtensions {
     pub sncf: Option<TrackSectionSncfExtension>,
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct TrackSectionSncfExtension {
@@ -44,17 +75,19 @@ pub struct TrackSectionSncfExtension {
     pub track_name: String,
 }
 
-impl OSRDObject for TrackSection {
-    fn get_id(&self) -> &String {
-        &self.id
-    }
-
-    fn get_type(&self) -> ObjectType {
+impl OSRDTyped for TrackSection {
+    fn get_type() -> ObjectType {
         ObjectType::TrackSection
     }
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+impl OSRDIdentified for TrackSection {
+    fn get_id(&self) -> &String {
+        &self.id
+    }
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Curve {
     pub radius: f64,
@@ -62,7 +95,7 @@ pub struct Curve {
     pub end: f64,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Slope {
     pub gradient: f64,
@@ -70,7 +103,7 @@ pub struct Slope {
     pub end: f64,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 pub enum LoadingGaugeType {
     G1,
     G2,
@@ -86,7 +119,7 @@ pub enum LoadingGaugeType {
     Glott,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct LoadingGaugeLimit {
     pub category: LoadingGaugeType,
@@ -94,7 +127,7 @@ pub struct LoadingGaugeLimit {
     pub end: f64,
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(tag = "type", deny_unknown_fields)]
 #[derivative(Default)]
 pub enum LineString {
@@ -135,13 +168,15 @@ pub struct TrackSectionCache {
     pub bbox_sch: BoundingBox,
 }
 
-impl OSRDObject for TrackSectionCache {
+impl OSRDTyped for TrackSectionCache {
+    fn get_type() -> ObjectType {
+        ObjectType::TrackSection
+    }
+}
+
+impl OSRDIdentified for TrackSectionCache {
     fn get_id(&self) -> &String {
         &self.obj_id
-    }
-
-    fn get_type(&self) -> ObjectType {
-        ObjectType::TrackSection
     }
 }
 
@@ -183,11 +218,23 @@ impl Cache for TrackSectionCache {
 }
 
 #[cfg(test)]
-mod tests {
-    use crate::chartos::BoundingBox;
-
+mod test {
+    use super::TrackSection;
     use super::{LineString::LineString, TrackSectionExtensions};
+    use crate::chartos::BoundingBox;
+    use crate::infra::tests::test_infra_transaction;
     use serde_json::from_str;
+
+    #[test]
+    fn test_persist() {
+        test_infra_transaction(|conn, infra| {
+            let data = (0..10)
+                .map(|_| TrackSection::default())
+                .collect::<Vec<TrackSection>>();
+
+            assert!(TrackSection::persist_batch(&data, infra.id, conn).is_ok());
+        });
+    }
 
     /// Test bounding box from linestring
     #[test]

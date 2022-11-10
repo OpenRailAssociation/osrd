@@ -29,20 +29,22 @@ pub fn insert_errors(
 
 pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraError> {
     let mut errors = vec![];
+    errors.extend(check_track_sections(infra_cache, graph));
+    errors
+}
 
+/// Check if routes or buffer stops are missing in the track section
+pub fn check_track_sections(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraError> {
+    let mut infra_errors = vec![];
     for (track_id, track) in infra_cache.track_sections().iter() {
         if let Some(e) = infra_cache.track_sections_refs.get(track_id) {
             if !e
                 .iter()
                 .any(|obj_ref| obj_ref.obj_type == ObjectType::Route)
             {
-                errors.push(InfraError::new_missing_route(track));
+                infra_errors.push(InfraError::new_missing_route(track));
             }
         }
-    }
-
-    // topological error : no buffer stop on graph leaves
-    for (track_id, track) in infra_cache.track_sections().iter() {
         let track_cache = track.unwrap_track_section();
         if graph.get_neighbours(&track_cache.get_begin()).is_none()
             || graph.get_neighbours(&track_cache.get_end()).is_none()
@@ -55,13 +57,11 @@ pub fn generate_errors(infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraErro
                     .iter()
                     .any(|x| x.obj_type == ObjectType::BufferStop)
             {
-                let infra_error = InfraError::new_no_buffer_stop(track, "buffer_stop");
-                errors.push(infra_error);
+                infra_errors.push(InfraError::new_no_buffer_stop(track, "buffer_stop"));
             }
         }
     }
-
-    errors
+    infra_errors
 }
 
 #[cfg(test)]

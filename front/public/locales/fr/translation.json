@@ -1,5 +1,6 @@
 {
   "common": {
+    "and": "et",
     "asc": "Ascendant",
     "cancel": "Annuler",
     "change": "Changer",
@@ -24,7 +25,8 @@
     "next": "Suivant",
     "zoom-in": "Zoomer",
     "zoom-out": "Dézoomer",
-    "zoom-reset": "Réinitialiser le zoom"
+    "zoom-reset": "Réinitialiser le zoom",
+    "reset-north": "Réinitialiser la caméra"
   },
   "Editor": {
     "title": "Éditeur",
@@ -35,6 +37,13 @@
       "buffer_stops": "Heurtoirs",
       "detectors": "Détecteurs",
       "switches": "Aiguillages"
+    },
+    "obj-types": {
+      "TrackSection": "Section de ligne",
+      "Signal": "Signal",
+      "BufferStop": "Heurtoir",
+      "Detector": "Détecteur",
+      "Switch": "Aiguillage"
     },
     "nav": {
       "recenter": "Recentrer la carte",
@@ -101,7 +110,9 @@
         "no-selection": "Aucun élément sélectionné",
         "selection": "{{count}} élément sélectionné",
         "selection_plural": "{{count}} éléments sélectionnés",
-        "of-type": "de type"
+        "of-type": "de type",
+        "linked-to-line_one": "lié à la ligne",
+        "linked-to-line_other": "lié aux lignes"
       },
       "select-zone": {
         "label": "Sélection de la zone d'édition",

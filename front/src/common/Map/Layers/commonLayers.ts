@@ -1,6 +1,8 @@
 import { LayerProps } from 'react-map-gl';
 
-export const trackNameLayer = (colors): LayerProps => ({
+import { Theme } from '../../../types';
+
+export const trackNameLayer = (colors: Theme): LayerProps => ({
   type: 'symbol',
   layout: {
     'text-font': ['Roboto Condensed'],
@@ -26,7 +28,7 @@ export const trackNameLayer = (colors): LayerProps => ({
   },
 });
 
-export const lineNameLayer = (colors): LayerProps => ({
+export const lineNameLayer = (colors: Theme): LayerProps => ({
   type: 'symbol',
   layout: {
     'text-font': ['Roboto Condensed'],
@@ -43,7 +45,7 @@ export const lineNameLayer = (colors): LayerProps => ({
   },
 });
 
-export const lineNumberLayer = (colors): LayerProps => ({
+export const lineNumberLayer = (colors: Theme): LayerProps => ({
   type: 'symbol',
   minzoom: 11,
   layout: {

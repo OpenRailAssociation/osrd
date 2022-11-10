@@ -4,7 +4,6 @@ use diesel::sql_types::{Double, Integer, Text};
 use diesel::PgConnection;
 use diesel::{sql_query, QueryableByName, RunQueryDsl};
 use enum_map::EnumMap;
-use rocket::serde::DeserializeOwned;
 use std::collections::{HashMap, HashSet};
 
 /// Contains infra cached data used to generate layers and errors
@@ -41,7 +40,7 @@ pub enum ObjectCache {
     Catenary(Catenary),
 }
 
-impl OSRDObject for ObjectCache {
+impl OSRDIdentified for ObjectCache {
     fn get_id(&self) -> &String {
         match self {
             ObjectCache::TrackSection(obj) => obj.get_id(),
@@ -57,7 +56,9 @@ impl OSRDObject for ObjectCache {
             ObjectCache::Catenary(obj) => obj.get_id(),
         }
     }
+}
 
+impl OSRDObject for ObjectCache {
     fn get_type(&self) -> ObjectType {
         match self {
             ObjectCache::TrackSection(_) => ObjectType::TrackSection,
@@ -184,20 +185,6 @@ impl ObjectCache {
             ObjectCache::Catenary(catenary) => catenary,
             _ => panic!("ObjectCache is not a Catenary"),
         }
-    }
-}
-
-#[derive(QueryableByName, Debug, Clone)]
-pub struct ObjectQueryable {
-    #[sql_type = "Text"]
-    pub data: String,
-}
-
-struct MyParsedObject<T>(T);
-
-impl<T: DeserializeOwned> From<ObjectQueryable> for MyParsedObject<T> {
-    fn from(object: ObjectQueryable) -> Self {
-        MyParsedObject(serde_json::from_str(&object.data).unwrap())
     }
 }
 
@@ -355,22 +342,14 @@ impl InfraCache {
         );
 
         // Load speed sections tracks references
-        sql_query("SELECT data::text FROM osrd_infra_speedsectionmodel WHERE infra_id = $1")
-            .bind::<Integer, _>(infra_id)
-            .load::<ObjectQueryable>(conn)
-            .expect("Error loading speed section refs")
+        find_objects(conn, infra_id)
             .into_iter()
-            .map(|speed| MyParsedObject::<SpeedSection>::from(speed).0)
-            .for_each(|speed| infra_cache.add(speed));
+            .for_each(|speed| infra_cache.add::<SpeedSection>(speed));
 
         // Load routes tracks references
-        sql_query("SELECT data::text FROM osrd_infra_routemodel WHERE infra_id = $1")
-            .bind::<Integer, _>(infra_id)
-            .load::<ObjectQueryable>(conn)
-            .expect("Error loading route refs")
+        find_objects(conn, infra_id)
             .into_iter()
-            .map(|route| MyParsedObject::<Route>::from(route).0)
-            .for_each(|route| infra_cache.add(route));
+            .for_each(|route| infra_cache.add::<Route>(route));
 
         // Load operational points tracks references
         sql_query(
@@ -381,13 +360,9 @@ impl InfraCache {
         );
 
         // Load track section links tracks references
-        sql_query("SELECT data::text FROM osrd_infra_tracksectionlinkmodel WHERE infra_id = $1")
-            .bind::<Integer, _>(infra_id)
-            .load::<ObjectQueryable>(conn)
-            .expect("Error loading track section link refs")
+        find_objects(conn, infra_id)
             .into_iter()
-            .map(|link| MyParsedObject::<TrackSectionLink>::from(link).0)
-            .for_each(|link| infra_cache.add(link));
+            .for_each(|link| infra_cache.add::<TrackSectionLink>(link));
 
         // Load switch tracks references
         sql_query(
@@ -398,13 +373,9 @@ impl InfraCache {
         });
 
         // Load switch types references
-        sql_query("SELECT data::text FROM osrd_infra_switchtypemodel WHERE infra_id = $1")
-            .bind::<Integer, _>(infra_id)
-            .load::<ObjectQueryable>(conn)
-            .expect("Error loading switch types refs")
+        find_objects(conn, infra_id)
             .into_iter()
-            .map(|switch_type| MyParsedObject::<SwitchType>::from(switch_type).0)
-            .for_each(|switch_type| infra_cache.add(switch_type));
+            .for_each(|switch_type| infra_cache.add::<SwitchType>(switch_type));
 
         // Load detector tracks references
         sql_query(
@@ -423,13 +394,9 @@ impl InfraCache {
         );
 
         // Load catenary tracks references
-        sql_query("SELECT data::text FROM osrd_infra_catenarymodel WHERE infra_id = $1")
-            .bind::<Integer, _>(infra_id)
-            .load::<ObjectQueryable>(conn)
-            .expect("Error loading catenary refs")
+        find_objects(conn, infra_id)
             .into_iter()
-            .map(|catenary| MyParsedObject::<Catenary>::from(catenary).0)
-            .for_each(|catenary| infra_cache.add(catenary));
+            .for_each(|catenary| infra_cache.add::<Catenary>(catenary));
 
         infra_cache
     }
@@ -510,7 +477,7 @@ pub mod tests {
     use std::collections::HashMap;
 
     use crate::chartos::BoundingBox;
-    use crate::infra::tests::test_transaction;
+    use crate::infra::tests::test_infra_transaction;
     use crate::infra_cache::{InfraCache, SwitchCache};
     use crate::schema::operation::create::tests::{
         create_buffer_stop, create_catenary, create_detector, create_link, create_op, create_route,
@@ -518,9 +485,9 @@ pub mod tests {
     };
     use crate::schema::{
         ApplicableDirections, ApplicableDirectionsTrackRange, Catenary, Direction,
-        DirectionalTrackRange, Endpoint, OSRDObject, OperationalPoint, OperationalPointPart, Route,
-        SpeedSection, Switch, SwitchPortConnection, SwitchType, TrackEndpoint, TrackSectionLink,
-        Waypoint,
+        DirectionalTrackRange, Endpoint, OSRDIdentified, OperationalPoint, OperationalPointPart,
+        Route, SpeedSection, Switch, SwitchPortConnection, SwitchType, TrackEndpoint,
+        TrackSectionLink, Waypoint,
     };
 
     use super::{
@@ -529,7 +496,7 @@ pub mod tests {
 
     #[test]
     fn load_track_section() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             let track = create_track(conn, infra.id, Default::default());
             let infra_cache = InfraCache::load(conn, infra.id);
             assert_eq!(infra_cache.track_sections().len(), 1);
@@ -539,7 +506,7 @@ pub mod tests {
 
     #[test]
     fn load_signal() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             let signal = create_signal(conn, infra.id, Default::default());
 
             let infra_cache = InfraCache::load(conn, infra.id);
@@ -552,7 +519,7 @@ pub mod tests {
 
     #[test]
     fn load_speed_section() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             let speed = create_speed(
                 conn,
                 infra.id,
@@ -572,7 +539,7 @@ pub mod tests {
 
     #[test]
     fn load_route() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             let route = create_route(
                 conn,
                 infra.id,
@@ -592,7 +559,7 @@ pub mod tests {
 
     #[test]
     fn load_operational_point() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             let op = create_op(
                 conn,
                 infra.id,
@@ -612,7 +579,7 @@ pub mod tests {
 
     #[test]
     fn load_track_section_link() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             let link = create_link(conn, infra.id, Default::default());
             let infra_cache = InfraCache::load(conn, infra.id);
             assert!(infra_cache
@@ -623,7 +590,7 @@ pub mod tests {
 
     #[test]
     fn load_switch() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             let switch = create_switch(
                 conn,
                 infra.id,
@@ -639,7 +606,7 @@ pub mod tests {
 
     #[test]
     fn load_switch_type() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             let s_type = create_switch_type(conn, infra.id, Default::default());
             let infra_cache = InfraCache::load(conn, infra.id);
             assert!(infra_cache.switch_types().contains_key(s_type.get_id()));
@@ -648,7 +615,7 @@ pub mod tests {
 
     #[test]
     fn load_detector() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             let detector = create_detector(conn, infra.id, Default::default());
 
             let infra_cache = InfraCache::load(conn, infra.id);
@@ -661,7 +628,7 @@ pub mod tests {
 
     #[test]
     fn load_buffer_stop() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             let bs = create_buffer_stop(conn, infra.id, Default::default());
 
             let infra_cache = InfraCache::load(conn, infra.id);
@@ -674,7 +641,7 @@ pub mod tests {
 
     #[test]
     fn load_catenary() {
-        test_transaction(|conn, infra| {
+        test_infra_transaction(|conn, infra| {
             let catenary = create_catenary(
                 conn,
                 infra.id,

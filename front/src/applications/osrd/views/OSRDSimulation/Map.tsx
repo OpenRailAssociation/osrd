@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { FC, useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import ReactMapGL, {
@@ -39,7 +39,7 @@ import Catenaries from 'common/Map/Layers/Catenaries';
 import Hillshade from 'common/Map/Layers/Hillshade';
 import OSM from 'common/Map/Layers/OSM';
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
-import Platform from 'common/Map/Layers/Platform';
+import Platforms from 'common/Map/Layers/Platforms';
 import RenderItinerary from 'applications/osrd/components/SimulationMap/RenderItinerary';
 import Routes from 'common/Map/Layers/Routes';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
@@ -65,6 +65,7 @@ import {
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 
 import 'common/Map/Map.scss';
+import SNCF_LPV from 'common/Map/Layers/extensions/SNCF/SNCF_LPV';
 
 const PATHFINDING_URI = '/pathfinding/';
 
@@ -84,8 +85,7 @@ interface MapProps {
   setExtViewport: (viewport: Viewport) => void;
 }
 
-function Map(props: MapProps) {
-  const { setExtViewport } = props;
+const Map: FC<MapProps> = ({ setExtViewport }) => {
   const [mapLoaded, setMapLoaded] = useState(false);
   const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings } =
     useSelector((state: RootState) => state.map);
@@ -95,7 +95,7 @@ function Map(props: MapProps) {
   const [geojsonPath, setGeojsonPath] = useState<Feature<LineString>>();
   const [selectedTrainHoverPosition, setTrainHoverPosition] = useState<TrainPosition>();
   const [otherTrainsHoverPosition, setOtherTrainsHoverPosition] = useState<TrainPosition[]>([]);
-  const [idHover, setIdHover] = useState('');
+  const [idHover, setIdHover] = useState<string | undefined>(undefined);
   const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
   const dispatch = useDispatch();
   const updateViewportChange = useCallback(
@@ -372,9 +372,9 @@ function Map(props: MapProps) {
         {/* Have to  duplicate objects with sourceLayer to avoid cache problems in mapbox */}
         {mapTrackSources === 'geographic' ? (
           <>
-            <Platform
+            <Platforms
               colors={colors[mapStyle]}
-              layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORM.GROUP]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORMS.GROUP]}
             />
 
             <TracksGeographic
@@ -418,6 +418,11 @@ function Map(props: MapProps) {
             />
 
             <SpeedLimits
+              geomType="geo"
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
+            />
+            <SNCF_LPV
               geomType="geo"
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
@@ -470,6 +475,11 @@ function Map(props: MapProps) {
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
             />
+            <SNCF_LPV
+              geomType="sch"
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.SPEED_LIMITS.GROUP]}
+            />
 
             <Signals
               mapRef={mapRef}
@@ -515,6 +525,6 @@ function Map(props: MapProps) {
       </div>
     </>
   );
-}
+};
 
 export default Map;

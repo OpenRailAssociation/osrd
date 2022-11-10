@@ -1,6 +1,7 @@
 import { omit } from 'lodash';
 import { v4 as uuid } from 'uuid';
 import { compare } from 'fast-json-patch';
+import { FeatureCollection } from 'geojson';
 
 import { get, post } from '../../../common/requests';
 import {
@@ -37,15 +38,15 @@ export async function getInfrastructures(): Promise<Array<ApiInfrastructure>> {
 export async function getEditorSchema(): Promise<EditorSchema> {
   const schemaResponse = await get('/infra/schema/');
   const fieldToOmit = ['id', 'geo', 'sch'];
-  return Object.keys(schemaResponse.properties)
-    .filter((e) => schemaResponse.properties[e].type === 'array')
-    .map((e) => {
+  return Object.keys(schemaResponse.properties || {})
+    .filter((e: string) => schemaResponse.properties[e].type === 'array')
+    .map((e: string) => {
       // we assume here, that the definition of the object is ref and not inline
       const ref = schemaResponse.properties[e].items.$ref.split('/');
       const refTarget = schemaResponse[ref[1]][ref[2]];
       refTarget.properties = omit(refTarget.properties, fieldToOmit);
       refTarget.required = (refTarget.required || []).filter(
-        (field) => !fieldToOmit.includes(field)
+        (field: string) => !fieldToOmit.includes(field)
       );
 
       return {
@@ -80,11 +81,11 @@ export async function getEditorData(
   const responses = await Promise.all(
     layersArray.map(async (layer) => {
       const objType = getObjectTypeForLayer(schema, layer);
-      const result = await get(
+      const result = await get<FeatureCollection>(
         `/layer/${layer}/objects/geo/${bbox[0]}/${bbox[1]}/${bbox[2]}/${bbox[3]}/?infra=${infra}`,
         {}
       );
-      return result.features.map((f) => ({ ...f, id: f.properties.id, objType }));
+      return result.features.map((f) => ({ ...f, objType }));
     })
   );
 
@@ -114,15 +115,15 @@ export async function editorSave(
         operation_type: 'CREATE',
         obj_type: feature.objType,
         railjson: {
-          id: uuid(),
           ...feature.properties,
+          id: feature.properties.id || uuid(),
         },
       })
     ),
     ...(operations.update || []).map(
       (features): UpdateEntityOperation => ({
         operation_type: 'UPDATE',
-        obj_id: features.source.id,
+        obj_id: features.source.properties.id,
         obj_type: features.source.objType,
         railjson_patch: compare(features.source.properties || {}, features.target.properties || {}),
       })
@@ -130,7 +131,7 @@ export async function editorSave(
     ...(operations.delete || []).map(
       (feature): DeleteEntityOperation => ({
         operation_type: 'DELETE',
-        obj_id: feature.id,
+        obj_id: feature.properties.id,
         obj_type: feature.objType,
       })
     ),

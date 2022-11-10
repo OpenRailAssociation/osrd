@@ -1,5 +1,6 @@
 import React from 'react';
-import { Layer, LayerProps } from 'react-map-gl';
+import { Layer, LayerProps, MapContext } from 'react-map-gl';
+import { Map as MapboxType } from 'mapbox-gl';
 import { isNumber } from 'lodash';
 
 type OrderedLayerProps = LayerProps & {
@@ -7,10 +8,12 @@ type OrderedLayerProps = LayerProps & {
 };
 
 export default function OrderedLayer(props: OrderedLayerProps) {
+  const { map } = React.useContext(MapContext);
   const { layerOrder, ...restOfLayerProps } = props;
-  const layerProps = {
-    ...restOfLayerProps,
-    ...(isNumber(layerOrder) && { beforeId: `virtual-layer-${layerOrder}` }),
-  };
+
+  const layerProps = { ...restOfLayerProps };
+  if (isNumber(layerOrder) && (map as MapboxType).getLayer(`virtual-layer-${layerOrder}`)) {
+    layerProps.beforeId = `virtual-layer-${layerOrder}`;
+  }
   return <Layer {...layerProps} />;
 }

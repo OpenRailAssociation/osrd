@@ -70,7 +70,7 @@
     "redux-thunk": "^2.3.0",
     "reselect": "^4.1.6",
     "sass": "^1.55.0",
-    "short-number": "^1.0.7",
+    "tslib": "^2.4.1",
     "uuid": "^8.3.2",
     "web-vitals": "^2.1.0"
   },
@@ -86,6 +86,7 @@
     "@types/react": "^17.0.20",
     "@types/react-dom": "^17.0.9",
     "@types/react-transition-group": "^4.4.5",
+    "@types/uuid": "^8.3.4",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-only-warn": "^1.0.3",
@@ -95,10 +96,11 @@
     "web-vitals": "^2.1.0"
   },
   "resolutions": {
-    "//": "See https://github.com/facebook/create-react-app/issues/11773",
-    "react-error-overlay": "6.0.9"
+    "react-error-overlay": "6.0.9",
+    "@types/react": "17.0.30"
   },
   "scripts": {
+    "compile": "tsc -b",
     "start": "react-scripts start",
     "build": "react-scripts --max_old_space_size=4096 build",
     "test": "react-scripts test",

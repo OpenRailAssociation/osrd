@@ -9,6 +9,7 @@ import {
   TrackEndpoint,
   TrackSectionEntity,
 } from '../../../../types';
+import { NEW_ENTITY_ID } from '../../data/utils';
 
 export function getNewSwitch(type: SwitchType): Partial<SwitchEntity> {
   return {
@@ -17,6 +18,7 @@ export function getNewSwitch(type: SwitchType): Partial<SwitchEntity> {
     properties: {
       ports: {},
       switch_type: type.id as string,
+      id: NEW_ENTITY_ID,
     },
   };
 }
@@ -97,6 +99,7 @@ export function flatSwitchToSwitch(
     objType: 'Switch',
     properties: {
       ...omitBy(flatSwitch.properties, (_, key) => key.indexOf(FLAT_SWITCH_PORTS_PREFIX) === 0),
+      id: flatSwitch.properties.id,
       switch_type: switchType.id as string,
       ports: {
         ...switchType.ports.reduce(

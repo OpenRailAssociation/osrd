@@ -26,6 +26,14 @@ $ cargo build
 $ cargo run -- runserver
 ```
 
+## Tests
+
+```sh
+# limit threads to avoid test errors with database connections
+export RUST_TEST_THREADS=2
+cargo test
+```
+
 ## Useful tools
 
 Here a list of components to help you in your development:
@@ -35,7 +43,7 @@ Here a list of components to help you in your development:
  - [tarpaulin](https://github.com/xd009642/tarpaulin): Check code coverage `cargo tarpaulin --skip-clean -o Lcov --output-dir target/tarpaulin/`
 
 To install them simply run:
- ```
- $ rustup component add rustfmt clippy
- $ cargo install cargo-tarpaulin
- ```
+```sh
+$ rustup component add rustfmt clippy
+$ cargo install cargo-tarpaulin
+```

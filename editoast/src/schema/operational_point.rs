@@ -1,14 +1,18 @@
+use super::generate_id;
+use super::OSRDIdentified;
+
+use super::OSRDTyped;
+use super::ObjectType;
+use crate::api_error::ApiError;
+use crate::diesel::ExpressionMethods;
+use crate::diesel::RunQueryDsl;
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
-
-use super::generate_id;
-use super::OSRDObject;
-use super::ObjectType;
 use derivative::Derivative;
-
+use diesel::PgConnection;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct OperationalPoint {
@@ -19,14 +23,40 @@ pub struct OperationalPoint {
     pub extensions: OperationalPointExtensions,
 }
 
-#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+impl OperationalPoint {
+    pub fn persist_batch(
+        values: &[Self],
+        infrastructure_id: i32,
+        conn: &PgConnection,
+    ) -> Result<(), Box<dyn ApiError>> {
+        use crate::tables::osrd_infra_operationalpointmodel::dsl::*;
+        let datas = values
+            .iter()
+            .map(|value| {
+                (
+                    obj_id.eq(value.get_id().clone()),
+                    data.eq(serde_json::to_value(value).unwrap()),
+                    infra_id.eq(infrastructure_id),
+                )
+            })
+            .collect::<Vec<_>>();
+
+        diesel::insert_into(osrd_infra_operationalpointmodel)
+            .values(datas)
+            .execute(conn)?;
+
+        Ok(())
+    }
+}
+
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct OperationalPointExtensions {
     pub sncf: Option<OperationalPointSncfExtension>,
     pub identifier: Option<OperationalPointIdentifierExtension>,
 }
 
-#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct OperationalPointSncfExtension {
     pub ci: i64,
@@ -36,18 +66,20 @@ pub struct OperationalPointSncfExtension {
     pub trigram: String,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct OperationalPointIdentifierExtension {
     name: String,
     uic: i64,
 }
 
-impl OSRDObject for OperationalPoint {
-    fn get_type(&self) -> ObjectType {
+impl OSRDTyped for OperationalPoint {
+    fn get_type() -> ObjectType {
         ObjectType::OperationalPoint
     }
+}
 
+impl OSRDIdentified for OperationalPoint {
     fn get_id(&self) -> &String {
         &self.id
     }
@@ -55,7 +87,7 @@ impl OSRDObject for OperationalPoint {
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
-#[derivative(Default)]
+#[derivative(Default, PartialEq)]
 pub struct OperationalPointPart {
     #[derivative(Default(value = r#""InvalidRef".into()"#))]
     pub track: String,
@@ -82,11 +114,13 @@ impl From<OperationalPoint> for OperationalPointCache {
     }
 }
 
-impl OSRDObject for OperationalPointCache {
-    fn get_type(&self) -> ObjectType {
+impl OSRDTyped for OperationalPointCache {
+    fn get_type() -> ObjectType {
         ObjectType::OperationalPoint
     }
+}
 
+impl OSRDIdentified for OperationalPointCache {
     fn get_id(&self) -> &String {
         &self.obj_id
     }
@@ -104,8 +138,22 @@ impl Cache for OperationalPointCache {
 
 #[cfg(test)]
 mod test {
+
+    use super::OperationalPoint;
     use super::OperationalPointExtensions;
+    use crate::infra::tests::test_infra_transaction;
     use serde_json::from_str;
+
+    #[test]
+    fn test_persist() {
+        test_infra_transaction(|conn, infra| {
+            let data = (0..10)
+                .map(|_| OperationalPoint::default())
+                .collect::<Vec<OperationalPoint>>();
+
+            assert!(OperationalPoint::persist_batch(&data, infra.id, conn).is_ok());
+        });
+    }
 
     #[test]
     fn test_op_extensions_deserialization() {

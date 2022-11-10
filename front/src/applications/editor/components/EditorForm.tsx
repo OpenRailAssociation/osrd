@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, PropsWithChildren } from 'react';
 import Form, { Field, UiSchema } from '@rjsf/core';
 import { useSelector } from 'react-redux';
 import { GeoJsonProperties } from 'geojson';
@@ -28,7 +28,7 @@ interface EditorFormProps {
 /**
  * Display a form to create/update a new entity.
  */
-const EditorForm: React.FC<EditorFormProps> = ({
+const EditorForm: React.FC<PropsWithChildren<EditorFormProps>> = ({
   data,
   onSubmit,
   onChange,
@@ -39,6 +39,7 @@ const EditorForm: React.FC<EditorFormProps> = ({
 }) => {
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<GeoJsonProperties>(data.properties);
+  const [submited, setSubmited] = useState<boolean>(false);
 
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
   const layer = useMemo(
@@ -71,14 +72,16 @@ const EditorForm: React.FC<EditorFormProps> = ({
 
   return (
     <div>
-      {error !== null && (
+      {submited && error !== null && (
         <div className="form-error mt-3 mb-3">
           <p>{error}</p>
         </div>
       )}
       <Form
         fields={{ ...fields, ...(overrideFields || {}) }}
+        liveValidate={submited}
         action={undefined}
+        noHtml5Validate
         method={undefined}
         schema={schema}
         uiSchema={{
@@ -89,6 +92,7 @@ const EditorForm: React.FC<EditorFormProps> = ({
         }}
         formData={formData}
         formContext={{ geometry: data.geometry, length: data.properties?.length }}
+        onError={() => setSubmited(true)}
         onSubmit={async (event) => {
           try {
             setError(null);
@@ -97,11 +101,15 @@ const EditorForm: React.FC<EditorFormProps> = ({
           } catch (e) {
             if (e instanceof Error) setError(e.message);
             else setError(JSON.stringify(e));
+          } finally {
+            setSubmited(true);
           }
         }}
         onChange={(event) => {
-          if (onChange)
+          setFormData({ ...data.properties, ...event.formData });
+          if (onChange) {
             onChange({ ...data, properties: { ...data.properties, ...event.formData } });
+          }
         }}
       >
         {children}
