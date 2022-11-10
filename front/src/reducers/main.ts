@@ -47,7 +47,7 @@ export function setSuccess(msg?: Notification): ThunkAction<ActionSuccess> {
 }
 
 export const ACTION_FAILURE = 'main/ACTION_FAILURE';
-type ActionFailure = { type: typeof ACTION_FAILURE; error: Error };
+export type ActionFailure = { type: typeof ACTION_FAILURE; error: Error };
 export function setFailure(e: Error): ThunkAction<ActionFailure> {
   return (dispatch) => {
     dispatch({
@@ -112,7 +112,7 @@ export const initialState: MainState = {
 //
 // State reducer
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-export default function reducer(inputState: MainState, action: MainActions) {
+export default function reducer(inputState: MainState | undefined, action: MainActions) {
   const state = inputState || initialState;
   return produce(state, (draft) => {
     switch (action.type) {
