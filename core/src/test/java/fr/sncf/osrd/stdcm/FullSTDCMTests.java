@@ -34,8 +34,8 @@ public class FullSTDCMTests {
                 ImmutableMultimap.of(),
                 2.,
                 Double.POSITIVE_INFINITY,
-                Double.POSITIVE_INFINITY
-        );
+                Double.POSITIVE_INFINITY,
+                Set.of());
         assertNotNull(res);
     }
 
@@ -62,8 +62,8 @@ public class FullSTDCMTests {
                 occupancies,
                 2.,
                 3600 * 24,
-                Double.POSITIVE_INFINITY
-        );
+                Double.POSITIVE_INFINITY,
+                Set.of());
         assertNotNull(res);
     }
 
@@ -87,8 +87,8 @@ public class FullSTDCMTests {
                 occupancies,
                 2.,
                 7200,
-                Double.POSITIVE_INFINITY
-        );
+                Double.POSITIVE_INFINITY,
+                Set.of());
         assertNotNull(res);
     }
 }

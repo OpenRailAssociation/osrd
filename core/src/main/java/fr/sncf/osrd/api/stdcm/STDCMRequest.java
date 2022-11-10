@@ -92,6 +92,12 @@ public final class STDCMRequest {
     public double maximumRelativeRunTime = 2;
 
     /**
+     * Train category for speed limits
+     */
+    @Json(name = "speed_limit_composition")
+    public String speedLimitComposition = null;
+
+    /**
      * Create a default STDCMRequest
      */
     public STDCMRequest() {
@@ -103,7 +109,8 @@ public final class STDCMRequest {
                 null,
                 null,
                 Double.NaN,
-                Double.NaN
+                Double.NaN,
+                null
         );
     }
 
@@ -118,7 +125,8 @@ public final class STDCMRequest {
             Collection<PathfindingWaypoint> startPoints,
             Collection<PathfindingWaypoint> endPoints,
             double startTime,
-            double endTime
+            double endTime,
+            String speedLimitComposition
     ) {
         this.infra = infra;
         this.expectedVersion = expectedVersion;
@@ -128,6 +136,7 @@ public final class STDCMRequest {
         this.endPoints = endPoints;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.speedLimitComposition = speedLimitComposition;
     }
 
     public static class RouteOccupancy {
