@@ -29,8 +29,9 @@ export const FormLineStringLength: React.FC<WidgetProps> = (props) => {
    * => if it is valid, we call the onChange
    */
   useEffect(() => {
-    setLength(value);
-  }, [value]);
+    if (value !== undefined) setLength(value);
+    else setLength(geoLength);
+  }, [value, geoLength]);
 
   return (
     <div>
@@ -53,7 +54,7 @@ export const FormLineStringLength: React.FC<WidgetProps> = (props) => {
           }}
         />
       )}
-      {(length < min || length > max) && (
+      {(length === undefined || length < min || length > max) && (
         <p className="text-danger">
           {t('Editor.errors.length-out-of-sync-with-geometry', { min, max })}.{' '}
           <button
