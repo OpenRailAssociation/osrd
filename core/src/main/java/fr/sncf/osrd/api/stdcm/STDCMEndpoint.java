@@ -79,6 +79,9 @@ public class STDCMEndpoint implements Take {
             var occupancies = request.routeOccupancies;
             var startLocations = findRoutes(infra, request.startPoints);
             var endLocations = findRoutes(infra, request.endPoints);
+            Set<String> tags = Set.of();
+            if (request.speedLimitComposition != null)
+                tags = Set.of(request.speedLimitComposition);
 
             assert Double.isFinite(startTime);
 
@@ -100,7 +103,8 @@ public class STDCMEndpoint implements Take {
                     unavailableSpace,
                     request.timeStep,
                     request.maximumDepartureDelay,
-                    request.maximumRelativeRunTime * minRunTime
+                    request.maximumRelativeRunTime * minRunTime,
+                    tags
             );
             if (res == null) {
                 var error = new NoPathFoundError("No path could be found");
@@ -110,7 +114,7 @@ public class STDCMEndpoint implements Take {
             // Build the response
             var simResult = new StandaloneSimResult();
             simResult.speedLimits.add(ResultEnvelopePoint.from(
-                    MRSP.from(res.trainPath(), rollingStock, false, Set.of())
+                    MRSP.from(res.trainPath(), rollingStock, false, tags)
             ));
             simResult.baseSimulations.add(ScheduleMetadataExtractor.run(
                     res.envelope(),

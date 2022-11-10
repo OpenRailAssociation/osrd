@@ -38,7 +38,8 @@ public class STDCMPathfinding {
             Multimap<SignalingRoute, OccupancyBlock> unavailableTimes,
             double timeStep,
             double maxDepartureDelay,
-            double maxRunTime
+            double maxRunTime,
+            Set<String> tags
     ) {
         var graph = new STDCMGraph(
                 infra,
@@ -47,7 +48,8 @@ public class STDCMPathfinding {
                 unavailableTimes,
                 maxRunTime,
                 startTime,
-                endLocations
+                endLocations,
+                tags
         );
 
         // Initializes the constraints

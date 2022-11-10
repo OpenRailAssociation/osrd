@@ -126,7 +126,8 @@ public class STDCMEdgeBuilder {
                     startOffset,
                     graph.rollingStock,
                     graph.timeStep,
-                    STDCMUtils.getStopsOnRoute(graph, route, startOffset)
+                    STDCMUtils.getStopsOnRoute(graph, route, startOffset),
+                    graph.tags
             );
         if (envelope == null)
             return List.of();

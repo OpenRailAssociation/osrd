@@ -28,6 +28,7 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
     final DelayManager delayManager;
     final AllowanceManager allowanceManager;
     final BacktrackingManager backtrackingManager;
+    final Set<String> tags;
 
     /** Constructor */
     public STDCMGraph(
@@ -37,7 +38,8 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
             Multimap<SignalingRoute, OccupancyBlock> unavailableTimes,
             double maxRunTime,
             double minScheduleTimeStart,
-            Set<Pathfinding.EdgeLocation<SignalingRoute>> endLocations
+            Set<Pathfinding.EdgeLocation<SignalingRoute>> endLocations,
+            Set<String> tags
     ) {
         this.infra = infra;
         this.rollingStock = rollingStock;
@@ -46,6 +48,7 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
         this.delayManager = new DelayManager(minScheduleTimeStart, maxRunTime, unavailableTimes);
         this.allowanceManager = new AllowanceManager(this);
         this.backtrackingManager = new BacktrackingManager(this);
+        this.tags = tags;
     }
 
     @Override

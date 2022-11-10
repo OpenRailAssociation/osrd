@@ -81,7 +81,8 @@ public class STDCMUtils {
             double start,
             RollingStock rollingStock,
             double timeStep,
-            double[] stops
+            double[] stops,
+            Set<String> tags
     ) {
         try {
             var context = makeSimContext(List.of(route), start, rollingStock, timeStep);
@@ -89,7 +90,7 @@ public class STDCMUtils {
                     route.getInfraRoute().getTrackRanges(start, start + context.path.getLength()),
                     rollingStock,
                     false,
-                    Set.of()
+                    tags
             );
             var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, mrsp);
             return MaxEffortEnvelope.from(context, initialSpeed, maxSpeedEnvelope);
