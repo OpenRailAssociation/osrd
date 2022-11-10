@@ -139,7 +139,9 @@ function Origin(props: OriginProps) {
                     <InputSNCF
                       type="time"
                       id="osrd-config-time-origin"
-                      onChange={(e) => dispatch(updateOriginTime(e.target.value))}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        dispatch(updateOriginTime(e.target.value))
+                      }
                       value={originTime}
                       sm
                       noMargin
@@ -158,7 +160,9 @@ function Origin(props: OriginProps) {
                       <InputSNCF
                         type="time"
                         id="osrd-config-time-origin"
-                        onChange={(e) => dispatch(updateOriginUpperBoundTime(e.target.value))}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                          dispatch(updateOriginUpperBoundTime(e.target.value))
+                        }
                         value={originUpperBoundTime}
                         sm
                         noMargin
@@ -173,7 +177,7 @@ function Origin(props: OriginProps) {
                   <InputSNCF
                     type="number"
                     id="osrd-config-speed-origin"
-                    onChange={(e) => {
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                       dispatch(updateOriginSpeed(e.target.value));
                     }}
                     value={originSpeed}

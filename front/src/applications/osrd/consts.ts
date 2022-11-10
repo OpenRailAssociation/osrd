@@ -87,6 +87,7 @@ export const STDCM_REQUEST_STATUS = Object.freeze({
 
 export interface PointOnMap {
   id: string;
+  name?: string;
   curves: string;
   length: number;
   slopes: string;
@@ -97,6 +98,7 @@ export interface PointOnMap {
   loading_gauge_limits: string;
   source: string;
   clickLngLat: Position;
+  duration?: number;
 }
 
 export interface SuggestedPointOnMap {

@@ -1,7 +1,12 @@
-import { AnyAction } from 'redux';
+import { AnyAction, Dispatch } from 'redux';
 import produce from 'immer';
 
-import { OsrdConfState, DEFAULT_MODE, DEFAULT_STDCM_MODE } from 'applications/osrd/consts';
+import {
+  OsrdConfState,
+  DEFAULT_MODE,
+  DEFAULT_STDCM_MODE,
+  PointOnMap,
+} from 'applications/osrd/consts';
 import { formatIsoDate } from 'utils/date';
 import { boundedValue } from 'utils/numbers';
 import { time2sec, sec2time } from 'utils/timeManipulation';
@@ -48,7 +53,7 @@ export const initialState: OsrdConfState = {
   stdcmMode: DEFAULT_STDCM_MODE,
   labels: [],
   infraID: undefined,
-  switchTypes: null,
+  switchTypes: undefined,
   pathfindingID: undefined,
   timetableID: undefined,
   rollingStockID: undefined,
@@ -170,7 +175,7 @@ export default function reducer(inputState: OsrdConfState | undefined, action: A
         draft.origin = undefined;
         draft.vias = [];
         draft.destination = undefined;
-        draft.geojson = undefined;
+        draft.geojson = [];
         draft.originTime = undefined;
         draft.pathfindingID = undefined;
         break;
@@ -197,48 +202,48 @@ export default function reducer(inputState: OsrdConfState | undefined, action: A
 }
 
 // Functions
-export function updateName(name) {
-  return (dispatch) => {
+export function updateName(name: any) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_NAME,
       name,
     });
   };
 }
-export function updateMode(mode) {
-  return (dispatch) => {
+export function updateMode(mode: any) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_MODE,
       mode,
     });
   };
 }
-export function updateStdcmMode(stdcmMode) {
-  return (dispatch) => {
+export function updateStdcmMode(stdcmMode: any) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_STDCM_MODE,
       stdcmMode,
     });
   };
 }
-export function updateLabels(labels) {
-  return (dispatch) => {
+export function updateLabels(labels: any) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_LABELS,
       labels,
     });
   };
 }
-export function updateSwitchTypes(switchTypes) {
-  return (dispatch) => {
+export function updateSwitchTypes(switchTypes: any) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_SWITCH_TYPES,
       switchTypes,
     });
   };
 }
-export function updateInfraID(infraID) {
-  return async (dispatch) => {
+export function updateInfraID(infraID: any) {
+  return async (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_INFRA_ID,
       infraID,
@@ -253,48 +258,48 @@ export function updateInfraID(infraID) {
     }
   };
 }
-export function updatePathfindingID(pathfindingID) {
-  return (dispatch) => {
+export function updatePathfindingID(pathfindingID: any) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_PATHFINDING_ID,
       pathfindingID,
     });
   };
 }
-export function updateTimetableID(timetableID) {
-  return (dispatch) => {
+export function updateTimetableID(timetableID: any) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_TIMETABLE_ID,
       timetableID,
     });
   };
 }
-export function updateRollingStockID(rollingStockID) {
-  return (dispatch) => {
+export function updateRollingStockID(rollingStockID: any) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_ROLLINGSTOCK_ID,
       rollingStockID,
     });
   };
 }
-export function updateSpeedLimitByTag(speedLimitByTag) {
-  return (dispatch) => {
+export function updateSpeedLimitByTag(speedLimitByTag: any) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_SPEED_LIMIT_BY_TAG,
       speedLimitByTag,
     });
   };
 }
-export function updateOrigin(origin) {
-  return (dispatch) => {
+export function updateOrigin(origin: any) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_ORIGIN,
       origin,
     });
   };
 }
-export function updateOriginSpeed(originSpeed) {
-  return (dispatch) => {
+export function updateOriginSpeed(originSpeed: any) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_ORIGIN_SPEED,
       originSpeed,
@@ -334,103 +339,103 @@ export function updateOriginUpperBoundDate(originUpperBoundDate: string) {
   };
 }
 
-export function replaceVias(vias) {
-  return (dispatch) => {
+export function replaceVias(vias: any) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: REPLACE_VIAS,
       vias,
     });
   };
 }
-export function updateVias(vias) {
-  return (dispatch) => {
+export function updateVias(vias: any) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_VIAS,
       vias,
     });
   };
 }
-export function permuteVias(vias, from, to) {
+export function permuteVias(vias: any, from: any, to: any) {
   const newVias = Array.from(vias); // Copy of vias to permit modification
   const item = newVias.slice(from, from + 1); // Get item to permute
   newVias.splice(from, 1); // Remove it from array
   newVias.splice(to, 0, item[0]); // Replace to right position
 
-  return (dispatch) => {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: PERMUTE_VIAS,
       vias: newVias,
     });
   };
 }
-export function updateSuggeredVias(suggeredVias) {
-  return (dispatch) => {
+export function updateSuggeredVias(suggeredVias: any) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_SUGGERED_VIAS,
       suggeredVias,
     });
   };
 }
-export function updateViaStopTime(vias, index, value) {
+export function updateViaStopTime(vias: PointOnMap[], index: number, value: number) {
   const newVias = Array.from(vias); // Copy of vias to permit modification
   newVias[index] = { ...newVias[index], duration: value };
-  return (dispatch) => {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_VIA_STOPTIME,
       vias: newVias,
     });
   };
 }
-export function deleteVias(index) {
-  return (dispatch) => {
+export function deleteVias(index: any) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: DELETE_VIAS,
       index,
     });
   };
 }
-export function updateDestination(destination) {
-  return (dispatch) => {
+export function updateDestination(destination: any) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_DESTINATION,
       destination,
     });
   };
 }
-export function updateDestinationTime(destinationTime) {
-  return (dispatch) => {
+export function updateDestinationTime(destinationTime: any) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_DESTINATION_TIME,
       destinationTime,
     });
   };
 }
-export function updateDestinationDate(destinationDate) {
-  return (dispatch) => {
+export function updateDestinationDate(destinationDate: any) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_DESTINATION_DATE,
       destinationDate,
     });
   };
 }
-export function updateTrainCompo(trainCompo) {
-  return (dispatch) => {
+export function updateTrainCompo(trainCompo: any) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_TRAINCOMPO,
       trainCompo,
     });
   };
 }
-export function updateItinerary(geojson) {
-  return (dispatch) => {
+export function updateItinerary(geojson: any) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_ITINERARY,
       geojson,
     });
   };
 }
-export function updateFeatureInfoClickOSRD(featureInfoClick) {
-  return (dispatch) => {
+export function updateFeatureInfoClickOSRD(featureInfoClick: any) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_FEATURE_INFO_CLICK_OSRD,
       featureInfoClick,
@@ -438,7 +443,7 @@ export function updateFeatureInfoClickOSRD(featureInfoClick) {
   };
 }
 export function deleteItinerary() {
-  return (dispatch) => {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: DELETE_ITINERARY,
     });
@@ -446,8 +451,8 @@ export function deleteItinerary() {
 }
 
 // Give this function a whole OSRDConf state:
-export function bootstrapOSRDConf(conf) {
-  return (dispatch) => {
+export function bootstrapOSRDConf(conf: any) {
+  return (dispatch: Dispatch) => {
     dispatch(updateInfraID(conf.infraID));
   };
 }

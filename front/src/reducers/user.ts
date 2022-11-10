@@ -1,6 +1,6 @@
 /* eslint-disable consistent-return */
 /* eslint-disable default-case */
-import { AnyAction } from 'redux';
+import { AnyAction, Dispatch } from 'redux';
 import produce from 'immer';
 import keycloak from 'keycloak';
 import jwtDecode from 'jwt-decode';
@@ -37,6 +37,7 @@ export interface UserState {
 
 export default function reducer(inputState: UserState | undefined, action: AnyAction) {
   const state = inputState || initialState;
+  // @ts-ignore
   return produce(state, (draft) => {
     switch (action.type) {
       case LOGIN_SUCCESS:
@@ -59,12 +60,13 @@ export default function reducer(inputState: UserState | undefined, action: AnyAc
       case UPDATE_ACCOUNT:
         draft.account = action.account;
         break;
+      default:
     }
   });
 }
 
 // Action Creators
-function loginSuccess(accessToken, username = undefined) {
+function loginSuccess(accessToken: any, username = undefined) {
   return {
     type: LOGIN_SUCCESS,
     accessToken,
@@ -91,7 +93,7 @@ function serverError() {
   };
 }
 
-function updateAccount(account) {
+function updateAccount(account: any) {
   return {
     type: UPDATE_ACCOUNT,
     account,
@@ -100,14 +102,14 @@ function updateAccount(account) {
 
 // Functions
 export function logout() {
-  return (dispatch) => {
+  return (dispatch: Dispatch) => {
     keycloak.logout();
     dispatch(logoutUser());
   };
 }
 
 export function refreshToken() {
-  return async (dispatch) => {
+  return async (dispatch: Dispatch) => {
     try {
       const isUpdated = await keycloak.updateToken(60);
       if (isUpdated) {
@@ -124,14 +126,14 @@ export function refreshToken() {
 }
 
 export function login() {
-  return async (dispatch) => {
+  return async (dispatch: Dispatch) => {
     try {
       const accessToken = keycloak.getToken();
       const username = keycloak.getUsername();
       localStorage.setItem('access_token', accessToken);
       setTimeout(() => refreshToken()(dispatch), 60000);
 
-      const decoded = jwtDecode(accessToken);
+      const decoded = jwtDecode(accessToken) as any;
       const account = {
         id: decoded.id,
         username: decoded.preferred_username,
@@ -143,7 +145,7 @@ export function login() {
       dispatch(updateAccount(account));
       dispatch(loginSuccess(accessToken, username));
       console.log('Connecté');
-    } catch (e) {
+    } catch (e: any) {
       console.log('Login ERROR', e.response);
       dispatch(loginError());
     }
@@ -151,10 +153,10 @@ export function login() {
 }
 
 export function attemptLoginOnLaunch() {
-  return async (dispatch) => {
+  return async (dispatch: Dispatch) => {
     try {
       await keycloak.initKeycloak(() => login()(dispatch));
-    } catch (e) {
+    } catch (e: any) {
       if (!e.response) {
         // When server error and unreachable no code is send, e.response/status/code are empty
         console.log('Erreur serveur');

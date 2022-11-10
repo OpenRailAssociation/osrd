@@ -84,7 +84,9 @@ function Destination(props: DestinationProps) {
                     <input
                       type="date"
                       className="form-control form-control-sm mx-1"
-                      onChange={(e) => dispatch(updateDestinationDate(e.target.value))}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        dispatch(updateDestinationDate(e.target.value))
+                      }
                       value={destinationDate}
                       disabled={isByOrigin}
                     />
@@ -92,7 +94,9 @@ function Destination(props: DestinationProps) {
                     <InputSNCF
                       type="time"
                       id="osrd-config-time-origin"
-                      onChange={(e) => dispatch(updateDestinationTime(e.target.value))}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        dispatch(updateDestinationTime(e.target.value))
+                      }
                       value={destinationTime}
                       sm
                       noMargin

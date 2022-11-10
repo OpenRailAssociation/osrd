@@ -1,5 +1,5 @@
 /* eslint-disable default-case */
-import { AnyAction } from 'redux';
+import { AnyAction, Dispatch } from 'redux';
 import produce from 'immer';
 
 // Action Types
@@ -31,16 +31,16 @@ export default function reducer(inputState: RollingStockState | undefined, actio
 }
 
 // Functions
-export function setMateriel(materiel) {
-  return (dispatch) => {
+export function setMateriel(materiel: any) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: SET_MATERIEL,
       materiel,
     });
   };
 }
-export function setBaseGoc(basegoc) {
-  return (dispatch) => {
+export function setBaseGoc(basegoc: any) {
+  return (dispatch: Dispatch) => {
     dispatch({
       type: SET_BASEGOC,
       basegoc,

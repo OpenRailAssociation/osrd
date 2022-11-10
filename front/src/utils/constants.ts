@@ -12,5 +12,5 @@ export function makeEnumBooleans<T = symbol>(
     }),
     {}
   );
-  return mapKeys(booleans, (v, k) => `is${upperFirst(k)}`);
+  return mapKeys(booleans, (_, k) => `is${upperFirst(k)}`);
 }

@@ -102,6 +102,7 @@ export const rootReducer: ReducersMapObject<RootState> = {
   map: mapReducer,
   editor: editorReducer,
   main: mainReducer,
+  // @ts-ignore
   osrdconf: persistReducer(osrdconfPersistConfig, osrdconfReducer),
   osrdsimulation: osrdsimulationReducer,
   rollingstock: rollingStockReducer,
