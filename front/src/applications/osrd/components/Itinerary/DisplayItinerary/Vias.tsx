@@ -5,7 +5,7 @@ import { RiMapPin3Fill } from 'react-icons/ri';
 import { GiPathDistance } from 'react-icons/gi';
 import { useTranslation } from 'react-i18next';
 
-import { RootState } from 'reducers';
+import { getVias } from 'reducers/osrdconf/selectors';
 
 import DisplayVias from 'applications/osrd/components/Itinerary/DisplayVias';
 
@@ -15,7 +15,7 @@ interface ViasProps {
 
 function Vias(props: ViasProps) {
   const { zoomToFeaturePoint } = props;
-  const osrdconf = useSelector((state: RootState) => state.osrdconf);
+  const vias = useSelector(getVias);
   const { t } = useTranslation(['osrdconf']);
 
   const viasTitle = (
@@ -38,7 +38,7 @@ function Vias(props: ViasProps) {
     <>
       {viasTitle}
       <div className="mb-3">
-        {osrdconf.vias.length > 0 ? (
+        {vias.length > 0 ? (
           <DisplayVias zoomToFeaturePoint={zoomToFeaturePoint} />
         ) : (
           <small className="ml-4">{t('osrdconf:noplacechosen')}</small>
