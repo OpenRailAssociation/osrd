@@ -23,6 +23,7 @@ import MapButtons from 'common/Map/Buttons/MapButtons';
 import Detectors from 'common/Map/Layers/Detectors';
 import Catenaries from 'common/Map/Layers/Catenaries';
 import Hillshade from 'common/Map/Layers/Hillshade';
+import OrthoPhoto from 'common/Map/Layers/OrthoPhoto';
 import OSM from 'common/Map/Layers/OSM';
 /* Objects & various */
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
@@ -127,6 +128,8 @@ function Map() {
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
         />
+
+        <OrthoPhoto layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
 
         {!showOSM ? null : (
           <>

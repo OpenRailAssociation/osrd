@@ -28,6 +28,7 @@ const compressor = createCompressor({
 
 const mapWhiteList = [
   'mapStyle',
+  'showOrthoPhoto',
   'showOSM',
   'mapTrackSources',
   'trackSource',
