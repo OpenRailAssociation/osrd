@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import MapSettingsLayers from 'common/Map/Settings/MapSettingsLayers';
 import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
+import MapSettingsShowOrthoPhoto from 'common/Map/Settings/MapSettingsShowOrthoPhoto';
 import MapSettingsShowOSM from 'common/Map/Settings/MapSettingsShowOSM';
 import MapSettingsShowOSMtracksections from 'common/Map/Settings/MapSettingsShowOSMtracksections';
 import MapSettingsSignals from 'common/Map/Settings/MapSettingsSignals';
@@ -20,9 +21,16 @@ export default function MapSettings(props) {
         <div className="my-2" />
         <MapSettingsTrackSources />
         <div className="my-2" />
-        <MapSettingsShowOSM />
-        <div className="my-1" />
-        <MapSettingsShowOSMtracksections />
+        <div className="row">
+          <div className="col-lg-6">
+            <MapSettingsShowOSM />
+            <div className="my-1" />
+            <MapSettingsShowOSMtracksections />
+          </div>
+          <div className="col-lg-6">
+            <MapSettingsShowOrthoPhoto />
+          </div>
+        </div>
         <div className="mb-1 mt-3 border-bottom">{t('map-settings:signalisation')}</div>
         <MapSettingsSignals />
         <div className="mb-1 mt-3 border-bottom">{t('map-settings:layers')}</div>

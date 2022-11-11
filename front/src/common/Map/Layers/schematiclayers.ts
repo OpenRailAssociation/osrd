@@ -7,7 +7,7 @@ export const schematicMainLayer = (colors: Theme): LayerProps => ({
   type: 'line',
   paint: {
     'line-color': colors.track.major,
-    'line-width': ['match', ['get', 'TDV_mnemonique'], 'VPL', 2, 1],
+    'line-width': 1,
   },
 });
 

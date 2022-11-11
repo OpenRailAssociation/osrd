@@ -49,6 +49,7 @@ import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 
 import 'common/Map/Map.scss';
 import SNCF_LPV from 'common/Map/Layers/extensions/SNCF/SNCF_LPV';
+import OrthoPhoto from 'common/Map/Layers/OrthoPhoto';
 
 function Map() {
   const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings } =
@@ -221,6 +222,8 @@ function Map() {
           colors={colors[mapStyle]}
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
         />
+
+        <OrthoPhoto layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
 
         {!showOSM ? null : (
           <>

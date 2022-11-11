@@ -12,6 +12,7 @@ export const UPDATE_TRANSFORM_REQUEST = 'map/UPDATE_TRANSFORM_REQUEST';
 export const UPDATE_MAPSTYLE = 'map/UPDATE_MAPSTYLE';
 export const UPDATE_MAP_TRACK_SOURCES = 'map/UPDATE_MAP_TRACK_SOURCES';
 export const UPDATE_MAP_SEARCH_MARKER = 'map/UPDATE_MAP_SEARCH_MARKER';
+export const UPDATE_SHOW_ORTHOPHOTO = 'map/UPDATE_SHOW_ORTHOPHOTO';
 export const UPDATE_SHOW_OSM = 'map/UPDATE_SHOW_OSM';
 export const UPDATE_SHOW_OSM_TRACKSECTIONS = 'map/UPDATE_SHOW_OSM_TRACKSECTIONS';
 export const UPDATE_FEATURE_INFO_HOVER = 'map/UPDATE_FEATURE_INFO_HOVER';
@@ -48,6 +49,7 @@ export interface MapState {
   url: typeof MAP_URL;
   mapStyle: string;
   mapTrackSources: string;
+  showOrthoPhoto: boolean;
   showOSM: boolean;
   showOSMtracksections: boolean;
   viewport: Viewport;
@@ -81,6 +83,7 @@ export const initialState: MapState = {
   url: MAP_URL,
   mapStyle: 'normal',
   mapTrackSources: 'geographic',
+  showOrthoPhoto: false,
   showOSM: true,
   showOSMtracksections: false,
   viewport: {
@@ -135,6 +138,9 @@ export default function reducer(inputState: MapState | undefined, action: AnyAct
         break;
       case UPDATE_MAP_SEARCH_MARKER:
         draft.mapSearchMarker = action.mapSearchMarker;
+        break;
+      case UPDATE_SHOW_ORTHOPHOTO:
+        draft.showOrthoPhoto = action.showOrthoPhoto;
         break;
       case UPDATE_SHOW_OSM:
         draft.showOSM = action.showOSM;
@@ -206,6 +212,15 @@ export function updateMapSearchMarker(mapSearchMarker: MapState['mapSearchMarker
   return {
     type: UPDATE_MAP_SEARCH_MARKER,
     mapSearchMarker,
+  };
+}
+
+export function updateShowOrthoPhoto(showOrthoPhoto: MapState['showOrthoPhoto']) {
+  return (dispatch: Dispatch) => {
+    dispatch({
+      type: UPDATE_SHOW_ORTHOPHOTO,
+      showOrthoPhoto,
+    });
   };
 }
 
