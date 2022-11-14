@@ -32,11 +32,11 @@ trio = ["trio (>=0.16)"]
 
 [[package]]
 name = "asgi-lifespan"
-version = "1.0.1"
+version = "2.0.0"
 description = "Programmatic startup/shutdown of ASGI apps."
 category = "dev"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 
 [package.dependencies]
 sniffio = "*"
@@ -74,7 +74,7 @@ python-versions = ">=3.5"
 dev = ["cloudpickle", "coverage[toml] (>=5.0.2)", "furo", "hypothesis", "mypy (>=0.900,!=0.940)", "pre-commit", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "sphinx", "sphinx-notfound-page", "zope.interface"]
 docs = ["furo", "sphinx", "sphinx-notfound-page", "zope.interface"]
 tests = ["cloudpickle", "coverage[toml] (>=5.0.2)", "hypothesis", "mypy (>=0.900,!=0.940)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "zope.interface"]
-tests_no_zope = ["cloudpickle", "coverage[toml] (>=5.0.2)", "hypothesis", "mypy (>=0.900,!=0.940)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins"]
+tests-no-zope = ["cloudpickle", "coverage[toml] (>=5.0.2)", "hypothesis", "mypy (>=0.900,!=0.940)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins"]
 
 [[package]]
 name = "certifi"
@@ -384,7 +384,7 @@ falcon = ["falcon (>=1.4)"]
 fastapi = ["fastapi (>=0.79.0)"]
 flask = ["blinker (>=1.1)", "flask (>=0.11)"]
 httpx = ["httpx (>=0.16.0)"]
-pure_eval = ["asttokens", "executing", "pure-eval"]
+pure-eval = ["asttokens", "executing", "pure-eval"]
 pyspark = ["pyspark (>=2.4.4)"]
 quart = ["blinker (>=1.1)", "quart (>=0.16.1)"]
 rq = ["rq (>=0.6)"]
@@ -517,7 +517,7 @@ production = ["gunicorn", "sentry-sdk"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "e602d5ecf3942b9705189130b18c71fb15a87041a59eacbe524290378aa65f8b"
+content-hash = "8711a779cd45ccef4e54dbf584f57872f443cfed720f8513bfe2091f10d7bfe5"
 
 [metadata.files]
 aioredis = [
@@ -529,8 +529,8 @@ anyio = [
     {file = "anyio-3.6.1.tar.gz", hash = "sha256:413adf95f93886e442aea925f3ee43baa5a765a64a0f52c6081894f9992fdd0b"},
 ]
 asgi-lifespan = [
-    {file = "asgi-lifespan-1.0.1.tar.gz", hash = "sha256:9a33e7da2073c4764bc79bd6136501d6c42f60e3d2168ba71235e84122eadb7f"},
-    {file = "asgi_lifespan-1.0.1-py3-none-any.whl", hash = "sha256:9ea969dc5eb5cf08e52c08dce6f61afcadd28112e72d81c972b1d8eb8691ab53"},
+    {file = "asgi-lifespan-2.0.0.tar.gz", hash = "sha256:d46a31ff681e9edf1f776c9f61cf8fa6274cc66fca8cb4f11e940b1183e18842"},
+    {file = "asgi_lifespan-2.0.0-py3-none-any.whl", hash = "sha256:420582b1786b238d035244415dc11536acdbcb24762cba1c5e9bddc565960277"},
 ]
 async-timeout = [
     {file = "async-timeout-4.0.2.tar.gz", hash = "sha256:2163e1640ddb52b7a8c80d0a67a08587e5d245cc9c553a74a847056bc2976b15"},

@@ -29,7 +29,7 @@ pytest = "*"
 pytest-asyncio = "*"
 
 # used for starting the app without an asgi server during tests
-asgi-lifespan = "^1"
+asgi-lifespan = "^2"
 # used for querying the server during tests
 httpx = "*"
 
