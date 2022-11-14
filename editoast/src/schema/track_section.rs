@@ -49,9 +49,11 @@ impl TrackSection {
             })
             .collect::<Vec<_>>();
 
-        diesel::insert_into(osrd_infra_tracksectionmodel)
-            .values(datas)
-            .execute(conn)?;
+        for data_chunk in datas.chunks(65534) {
+            diesel::insert_into(osrd_infra_tracksectionmodel)
+                .values(data_chunk)
+                .execute(conn)?;
+        }
 
         Ok(())
     }
