@@ -1421,6 +1421,53 @@ public class STDCMPathfindingTests {
         occupancyTest(res, occupancyGraph);
     }
 
+    /** Test that we return null with no crash when we can't slow down fast enough */
+    @Test
+    public void testImpossibleEngineeringAllowance() {
+        /*
+        a ------> b -> c -----> d
+
+        space
+          ^
+        d |##################### end
+          |#####################
+        c |#########x###########
+          |      __/
+        b |   __/
+          |  /#######################
+        a |_/_#######################> time
+
+        The second route is very short and not long enough to slow down
+
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var routes = List.of(
+                infraBuilder.addRoute("a", "b", 1_000),
+                infraBuilder.addRoute("b", "c", 1),
+                infraBuilder.addRoute("c", "d", 1_000)
+        );
+        var infra = infraBuilder.build();
+        var occupancyGraph = ImmutableMultimap.of(
+                routes.get(0), new OccupancyBlock(300, POSITIVE_INFINITY, 0, 1_000),
+                routes.get(2), new OccupancyBlock(0, 3600, 0, 1_000)
+        );
+        double timeStep = 2;
+        var res = STDCMPathfinding.findPath(
+                infra,
+                REALISTIC_FAST_TRAIN,
+                0,
+                0,
+                Set.of(new Pathfinding.EdgeLocation<>(routes.get(0), 0)),
+                Set.of(new Pathfinding.EdgeLocation<>(routes.get(2), 1_000)),
+                occupancyGraph,
+                timeStep,
+                POSITIVE_INFINITY,
+                POSITIVE_INFINITY
+        );
+
+        assertNull(res);
+    }
+
     /** Test that we can visit the same "opening" several times at very different times */
     @Test
     public void testVisitSameOpeningDifferentTimes() {

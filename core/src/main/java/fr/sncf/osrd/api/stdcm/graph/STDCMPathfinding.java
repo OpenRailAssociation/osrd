@@ -62,7 +62,7 @@ public class STDCMPathfinding {
                 .setEdgeRangeCost(STDCMPathfinding::edgeRangeCost)
                 .runPathfinding(
                         convertLocations(graph, startLocations, startTime, maxDepartureDelay),
-                        makeObjectiveFunction(endLocations)
+                        makeObjectiveFunction(endLocations, graph)
                 );
         if (path == null)
             return null;
@@ -77,13 +77,17 @@ public class STDCMPathfinding {
 
     /** Make the objective function from the edge locations */
     private static List<TargetsOnEdge<STDCMEdge>> makeObjectiveFunction(
-            Set<Pathfinding.EdgeLocation<SignalingRoute>> endLocations
+            Set<Pathfinding.EdgeLocation<SignalingRoute>> endLocations,
+            STDCMGraph graph
     ) {
         return List.of(edge -> {
-            var res = new HashSet<Double>();
+            var res = new HashSet<Pathfinding.EdgeLocation<STDCMEdge>>();
+            edge = edge.finishBuildingEdge(graph);
+            if (edge == null)
+                return res;
             for (var loc : endLocations)
                 if (loc.edge().equals(edge.route()))
-                    res.add(loc.offset());
+                    res.add(new Pathfinding.EdgeLocation<>(edge, loc.offset()));
             return res;
         });
     }
