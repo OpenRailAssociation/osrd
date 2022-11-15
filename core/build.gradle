@@ -91,7 +91,7 @@ dependencies {
     testImplementation 'net.jqwik:jqwik:1.7.+'  // EPL 2.0
     // mockito for mocking
     testImplementation group: 'org.mockito', name: 'mockito-inline', version: '4.8.+'  // MIT
-    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '4.8.+'  // MIT
+    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '4.9.+'  // MIT
 
     // Only needed to run tests in a version of IntelliJ IDEA that bundles older versions
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.9.+'  // EPL 2.0
