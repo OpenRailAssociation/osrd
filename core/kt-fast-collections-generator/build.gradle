@@ -8,6 +8,6 @@ repositories {
 
 dependencies {
     api project(":kt-fast-collections-annotations")
-    implementation 'com.google.devtools.ksp:symbol-processing-api:1.7.10-1.0.6'
+    implementation 'com.google.devtools.ksp:symbol-processing-api:1.7.21-1.0.8'
     implementation "org.jetbrains.kotlin:kotlin-reflect:1.7.10"
 }
