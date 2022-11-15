@@ -155,16 +155,18 @@ public class STDCMEdgeBuilder {
                 prevMaximumAddedDelay - delayNeeded,
                 graph.delayManager.findMaximumAddedDelay(route, startTime + delayNeeded, envelope)
         );
+        var actualStartTime = startTime + delayNeeded;
         var newEdge = new STDCMEdge(
                 route,
                 envelope,
-                startTime + delayNeeded,
+                actualStartTime,
                 maximumDelay,
                 delayNeeded,
                 graph.delayManager.findNextOccupancy(route, startTime + delayNeeded),
                 prevAddedDelay + delayNeeded,
                 prevNode,
-                route.getInfraRoute().getLength() - envelope.getEndPos()
+                route.getInfraRoute().getLength() - envelope.getEndPos(),
+                (int) (actualStartTime / 60)
         );
         if (maximumDelay < 0) {
             // We need to make the train go slower
@@ -184,9 +186,11 @@ public class STDCMEdgeBuilder {
     STDCMEdge findEdgeSameNextOccupancy(double timeNextOccupancy) {
         var newEdges = makeAllEdges();
         // We look for an edge that uses the same opening, identified by the next occupancy
-        for (var newEdge : newEdges)
+        for (var newEdge : newEdges) {
+            // The time of next occupancy is always copied from the same place, we can use float equality
             if (newEdge.timeNextOccupancy() == timeNextOccupancy)
                 return newEdge;
+        }
         return null; // No result was found
     }
 
