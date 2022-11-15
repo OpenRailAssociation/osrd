@@ -12,7 +12,6 @@ import {
   offsetSeconds,
   MergedDataPoint,
 } from '../../applications/osrd/components/Helpers/ChartHelpers';
-import { TrainScheduleResultData } from 'common/api/osrdApi'
 
 // Action Types
 export const UPDATE_CHART = 'osrdsimu/UPDATE_CHART';
@@ -87,7 +86,7 @@ interface Stop {
   line_code: number;
   track_number: number;
 }
-/*
+
 export interface RouteAspect<Time = number, Color = number> {
   signal_id: string;
   route_id: string;
@@ -98,9 +97,6 @@ export interface RouteAspect<Time = number, Color = number> {
   color: Color;
   blinking: boolean;
 }
-*/
-
-type RouteAspect = TrainScheduleResultData['route_aspects']
 
 export interface SignalAspect<Time = number, Color = number> {
   signal_id: string;
@@ -163,7 +159,7 @@ export interface SimulationTrain {
   tailPosition: Position<Date | null>[][];
   routeEndOccupancy: Position<Date | null>[][];
   routeBeginOccupancy: Position<Date | null>[][];
-  routeAspects: RouteAspect[];
+  routeAspects: RouteAspect<Date | null, string>[];
   signalAspects: SignalAspect<Date | null, string>[];
   areaBlock: MergedDataPoint<Date | null>[][];
   speed: PositionSpeed<Date | null>[];
@@ -171,7 +167,7 @@ export interface SimulationTrain {
   eco_tailPosition?: Position<Date | null>[][];
   eco_routeEndOccupancy?: Position<Date | null>[][];
   eco_routeBeginOccupancy?: Position<Date | null>[][];
-  eco_routeAspects?: RouteAspect[];
+  eco_routeAspects?: RouteAspect<Date | null, string>[];
   eco_signalAspects?: SignalAspect<Date | null, string>[];
   eco_areaBlock?: MergedDataPoint<Date | null>[][];
   eco_speed?: PositionSpeed<Date | null>[];
