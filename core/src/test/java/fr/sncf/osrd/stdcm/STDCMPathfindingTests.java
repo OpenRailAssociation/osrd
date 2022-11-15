@@ -1421,6 +1421,55 @@ public class STDCMPathfindingTests {
         occupancyTest(res, occupancyGraph);
     }
 
+    /** Test that we can visit the same "opening" several times at very different times */
+    @Test
+    public void testVisitSameOpeningDifferentTimes() {
+        /*
+        a --> b --> c --> d
+
+        space
+          ^
+        d |#####################    end
+          |#####################     /
+        c |#####################    /
+          |    x                   /
+        b |   /                   /
+          |  /################## /
+        a |_/_##################/____> time
+
+        Allowances have been disabled (by setting max run time)
+
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var routes = List.of(
+                infraBuilder.addRoute("a", "b"),
+                infraBuilder.addRoute("b", "c"),
+                infraBuilder.addRoute("c", "d")
+        );
+        var infra = infraBuilder.build();
+        var runTime = getRoutesRunTime(routes, REALISTIC_FAST_TRAIN);
+        var occupancyGraph = ImmutableMultimap.of(
+                routes.get(0), new OccupancyBlock(300, 3600, 0, 1),
+                routes.get(2), new OccupancyBlock(0, 3600, 0, 1)
+        );
+        double timeStep = 2;
+        var res = STDCMPathfinding.findPath(
+                infra,
+                REALISTIC_FAST_TRAIN,
+                0,
+                0,
+                Set.of(new Pathfinding.EdgeLocation<>(routes.get(0), 0)),
+                Set.of(new Pathfinding.EdgeLocation<>(routes.get(2), 100)),
+                occupancyGraph,
+                timeStep,
+                POSITIVE_INFINITY,
+                runTime + 60 // We add a margin for the stop time
+        );
+
+        assertNotNull(res);
+        occupancyTest(res, occupancyGraph);
+    }
+
     /** Returns the time it takes to reach the end of the last routes,
      * starting at speed 0 at the start of the first route*/
     private double getRoutesRunTime(List<SignalingRoute> routes, RollingStock rollingStock) {

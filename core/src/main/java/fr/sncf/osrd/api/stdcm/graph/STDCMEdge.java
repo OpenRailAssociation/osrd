@@ -16,17 +16,19 @@ public record STDCMEdge(
         double maximumAddedDelayAfter,
         // Delay we needed to add in this route to avoid conflicts (by shifting the departure time)
         double addedDelay,
-        // Time of the next occupancy of the route, used for hash / equality test
+        // Time of the next occupancy of the route, used to identify the "opening" used by the edge
         double timeNextOccupancy,
         // Total delay we have added by shifting the departure time since the start of the path
         double totalDepartureTimeShift,
         // Node located at the start of this edge, null if this is the first edge
         STDCMNode previousNode,
         // Offset of the envelope if it doesn't start at the beginning of the edge
-        double envelopeStartOffset
+        double envelopeStartOffset,
+        // Time at which the train enters the route, discretized by only considering the minutes.
+        // Used to identify visited edges
+        int minuteTimeStart
 ) {
     @Override
-    @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
     public boolean equals(Object other) {
         if (other == null || other.getClass() != STDCMEdge.class)
             return false;
@@ -36,9 +38,9 @@ public record STDCMEdge(
 
         // We need to consider that the edges aren't equal if the times are different,
         // but if we do it "naively" we end up visiting the same places a near-infinite number of times.
-        // We handle it by considering that the edges are different if they are separated by an occupied block.
-        // The easiest way to implement this is to compare the time of the next occupancy.
-        return timeNextOccupancy == otherEdge.timeNextOccupancy;
+        // We handle it by discretizing the start time of the edge: we round the time down to the minute and compare
+        // this value.
+        return minuteTimeStart == otherEdge.minuteTimeStart;
     }
 
     @Override
