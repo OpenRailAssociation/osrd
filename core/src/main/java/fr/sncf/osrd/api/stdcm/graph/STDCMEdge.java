@@ -53,13 +53,33 @@ public record STDCMEdge(
 
     /** Returns the node at the end of this edge */
     STDCMNode getEdgeEnd(STDCMGraph graph) {
+        var newEdge = finishBuildingEdge(graph);
+        if (newEdge == null)
+            return null;
         return new STDCMNode(
-                envelope().getTotalTime() + timeStart(),
-                envelope().getEndSpeed(),
-                graph.infra.getSignalingRouteGraph().incidentNodes(route()).nodeV(),
-                totalDepartureTimeShift(),
-                maximumAddedDelayAfter(),
-                this
+                newEdge.envelope().getTotalTime() + newEdge.timeStart(),
+                newEdge.envelope().getEndSpeed(),
+                graph.infra.getSignalingRouteGraph().incidentNodes(newEdge.route()).nodeV(),
+                newEdge.totalDepartureTimeShift(),
+                newEdge.maximumAddedDelayAfter(),
+                newEdge
         );
+    }
+
+    /** Finish building all the expensive computations, such as allowances and backtracking. Returns a new edge,
+     * or null if the edge is actually not possible.
+     * <p/>
+     * This needs to be done before the edge is properly visited,
+     * i.e. before accessing the neighbors or the destinations */
+    STDCMEdge finishBuildingEdge(STDCMGraph graph) {
+        var res = this;
+        if (maximumAddedDelayAfter < 0)
+            res = graph.allowanceManager.tryEngineeringAllowance(res);
+        if (res == null)
+            return null;
+        res = graph.backtrackingManager.backtrack(res);
+        if (res == null || graph.delayManager.isRunTimeTooLong(res))
+            return null;
+        return res;
     }
 }

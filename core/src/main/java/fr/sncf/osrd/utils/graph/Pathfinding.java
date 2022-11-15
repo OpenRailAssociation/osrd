@@ -1,12 +1,8 @@
 package fr.sncf.osrd.utils.graph;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.utils.graph.functional_interfaces.AStarHeuristic;
-import fr.sncf.osrd.utils.graph.functional_interfaces.EdgeRangeCost;
-import fr.sncf.osrd.utils.graph.functional_interfaces.EdgeToLength;
-import fr.sncf.osrd.utils.graph.functional_interfaces.EdgeToRanges;
+import fr.sncf.osrd.utils.graph.functional_interfaces.*;
 import fr.sncf.osrd.api.pathfinding.constraints.ConstraintCombiner;
-import fr.sncf.osrd.utils.graph.functional_interfaces.TargetsOnEdge;
 import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -96,7 +92,7 @@ public class Pathfinding<NodeT, EdgeT> {
         return this;
     }
 
-    /** Sets the functor used determine which ranges are blocked on an edge */
+    /** Sets the functor used to determine which ranges are blocked on an edge */
     public Pathfinding<NodeT, EdgeT> addBlockedRangeOnEdges(EdgeToRanges<EdgeT> f) {
         this.blockedRangesOnEdge.functions.add(f);
         return this;
@@ -117,10 +113,10 @@ public class Pathfinding<NodeT, EdgeT> {
         for (int i = 1; i < targets.size(); i++) {
             int finalI = i;
             targetsOnEdges.add(edge -> {
-                var res = new HashSet<Double>();
+                var res = new HashSet<EdgeLocation<EdgeT>>();
                 for (var target : targets.get(finalI)) {
                     if (target.edge.equals(edge))
-                        res.add(target.offset);
+                        res.add(new EdgeLocation<>(edge, target.offset));
                 }
                 return res;
             });
@@ -149,22 +145,28 @@ public class Pathfinding<NodeT, EdgeT> {
             var step = queue.poll();
             if (step == null)
                 return null;
+            final var endNode = graph.getEdgeEnd(step.range.edge);
+            if (endNode == null)
+                continue;
+            if (!(seen.getOrDefault(step.range, -1) < step.nReachedTargets))
+                continue;
+            seen.put(step.range, step.nReachedTargets);
             if (hasReachedEnd(targetsOnEdges.size(), step))
                 return buildResult(step);
             // Check if the next target is reached in this step
-            for (var targetOffset : targetsOnEdges.get(step.nReachedTargets).apply(step.range.edge))
-                if (step.range.start <= targetOffset) {
+            for (var target : targetsOnEdges.get(step.nReachedTargets).apply(step.range.edge))
+                if (step.range.start <= target.offset) {
                     // Adds a new step precisely on the stop location. This ensures that we don't ignore the
                     // distance between the start of the edge and the stop location
-                    var newRange = new EdgeRange<>(step.range.edge, step.range.start, targetOffset);
+                    var newRange = new EdgeRange<>(target.edge, step.range.start, target.offset);
                     newRange = filterRange(newRange);
                     assert newRange != null;
-                    if (newRange.end != targetOffset) {
+                    if (newRange.end != target.offset) {
                         // The target location is blocked by a blocked range, it can't be accessed from here
                         continue;
                     }
                     var stepTargets = new ArrayList<>(step.targets);
-                    stepTargets.add(new EdgeLocation<>(step.range.edge, targetOffset));
+                    stepTargets.add(target);
                     registerStep(
                             newRange,
                             step.prev,
@@ -176,8 +178,7 @@ public class Pathfinding<NodeT, EdgeT> {
             var edgeLength = edgeToLength.apply(step.range.edge);
             if (step.range.end == edgeLength) {
                 // We reach the end of the edge: we visit neighbors
-                var lastNode = graph.getEdgeEnd(step.range.edge);
-                var neighbors = graph.getAdjacentEdges(lastNode);
+                var neighbors = graph.getAdjacentEdges(endNode);
                 for (var edge : neighbors) {
                     registerStep(
                             new EdgeRange<>(edge, 0, edgeToLength.apply(edge)),
@@ -285,8 +286,6 @@ public class Pathfinding<NodeT, EdgeT> {
         range = filterRange(range);
         if (range == null)
             return;
-        if (!(seen.getOrDefault(range, -1) < nPassedTargets))
-            return;
         double totalDistance = prevDistance + edgeRangeCost.apply(range);
         double distanceLeftEstimation = estimateRemainingDistance.apply(range.edge, range.start);
         queue.add(new Step<>(
@@ -297,6 +296,5 @@ public class Pathfinding<NodeT, EdgeT> {
                 nPassedTargets,
                 targets
         ));
-        seen.put(range, nPassedTargets);
     }
 }
