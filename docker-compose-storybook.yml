@@ -1,0 +1,12 @@
+version: '3'
+services:
+  storybook:
+    image: osrd/storybook
+    container_name: osrd-storybook
+    build:
+      context: front
+      dockerfile: Dockerfile.storybook
+    restart: unless-stopped
+    ports: ["6006:80"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6006/"]
