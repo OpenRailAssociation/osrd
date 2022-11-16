@@ -125,9 +125,7 @@ export default function reducer(inputState: OsrdConfState | undefined, action: A
             draft.originTime && draft.originUpperBoundTime
               ? time2sec(draft.originUpperBoundTime) - time2sec(draft.originTime)
               : ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE;
-          draft.originUpperBoundTime = sec2time(
-            boundedValue(newOriginTimeSeconds + difference, [0, MAX_UPPER_BOUND_TIME])
-          );
+          draft.originUpperBoundTime = sec2time(newOriginTimeSeconds + difference);
         }
         draft.originTime = action.originTime;
         break;
@@ -139,9 +137,7 @@ export default function reducer(inputState: OsrdConfState | undefined, action: A
             draft.originTime && draft.originUpperBoundTime
               ? time2sec(draft.originUpperBoundTime) - time2sec(draft.originTime)
               : ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE;
-          draft.originTime = sec2time(
-            boundedValue(newOriginUpperBoundTimeSeconds - difference, [0, MAX_UPPER_BOUND_TIME])
-          );
+          draft.originTime = sec2time(newOriginUpperBoundTimeSeconds - difference);
         }
         draft.originUpperBoundTime = action.originUpperBoundTime;
         break;
