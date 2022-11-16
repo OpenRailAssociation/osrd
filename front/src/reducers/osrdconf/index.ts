@@ -75,7 +75,7 @@ export const initialState: OsrdConfState = {
   featureInfoClick: { displayPopup: false },
 };
 
-const ORIGIN_TIME_BOUND_DIFFERENCE = 7200;
+const ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE = 7200;
 const MAX_UPPER_BOUND_TIME = 24 * 3600 - 1;
 
 export default function reducer(inputState: OsrdConfState | undefined, action: AnyAction) {
@@ -121,11 +121,12 @@ export default function reducer(inputState: OsrdConfState | undefined, action: A
       case UPDATE_ORIGIN_TIME: {
         const newOriginTimeSeconds = time2sec(action.originTime);
         if (draft.originLinkedBounds) {
+          const difference =
+            draft.originTime && draft.originUpperBoundTime
+              ? time2sec(draft.originUpperBoundTime) - time2sec(draft.originTime)
+              : ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE;
           draft.originUpperBoundTime = sec2time(
-            boundedValue(newOriginTimeSeconds + ORIGIN_TIME_BOUND_DIFFERENCE, [
-              0,
-              MAX_UPPER_BOUND_TIME,
-            ])
+            boundedValue(newOriginTimeSeconds + difference, [0, MAX_UPPER_BOUND_TIME])
           );
         }
         draft.originTime = action.originTime;
@@ -134,11 +135,12 @@ export default function reducer(inputState: OsrdConfState | undefined, action: A
       case UPDATE_ORIGIN_UPPER_BOUND_TIME: {
         const newOriginUpperBoundTimeSeconds = time2sec(action.originUpperBoundTime);
         if (draft.originLinkedBounds) {
+          const difference =
+            draft.originTime && draft.originUpperBoundTime
+              ? time2sec(draft.originUpperBoundTime) - time2sec(draft.originTime)
+              : ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE;
           draft.originTime = sec2time(
-            boundedValue(newOriginUpperBoundTimeSeconds - ORIGIN_TIME_BOUND_DIFFERENCE, [
-              0,
-              MAX_UPPER_BOUND_TIME,
-            ])
+            boundedValue(newOriginUpperBoundTimeSeconds - difference, [0, MAX_UPPER_BOUND_TIME])
           );
         }
         draft.originUpperBoundTime = action.originUpperBoundTime;
