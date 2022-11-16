@@ -10,7 +10,7 @@ license = "LGPL-3.0"
 
 [dependencies]
 chashmap = "2.2.2"
-clap = { version = "~4.0.18", features = ["derive", "env"] }
+clap = { version = "~4.0.26", features = ["derive", "env"] }
 colored = "2.0.0"
 derivative = "2.2.0"
 diesel = { version = "1.4.8", features = ["postgres", "uuidv07", "serde_json"] }
