@@ -127,7 +127,14 @@ export default function reducer(inputState: OsrdConfState | undefined, action: A
               : ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE;
           draft.originUpperBoundTime = sec2time(newOriginTimeSeconds + difference);
         }
-        draft.originTime = action.originTime;
+        if (
+          draft.originUpperBoundTime &&
+          time2sec(action.originTime) > time2sec(draft.originUpperBoundTime)
+        ) {
+          draft.originTime = draft.originUpperBoundTime;
+        } else {
+          draft.originTime = action.originTime;
+        }
         break;
       }
       case UPDATE_ORIGIN_UPPER_BOUND_TIME: {
@@ -139,7 +146,14 @@ export default function reducer(inputState: OsrdConfState | undefined, action: A
               : ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE;
           draft.originTime = sec2time(newOriginUpperBoundTimeSeconds - difference);
         }
-        draft.originUpperBoundTime = action.originUpperBoundTime;
+        if (
+          draft.originTime &&
+          time2sec(action.originUpperBoundTime) < time2sec(draft.originTime)
+        ) {
+          draft.originUpperBoundTime = draft.originTime;
+        } else {
+          draft.originUpperBoundTime = action.originUpperBoundTime;
+        }
         break;
       }
       case TOGGLE_ORIGIN_LINKED_BOUNDS:
