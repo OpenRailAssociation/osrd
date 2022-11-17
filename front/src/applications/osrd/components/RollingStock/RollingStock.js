@@ -11,8 +11,9 @@ import { MdLocalGasStation } from 'react-icons/md';
 import 'applications/osrd/components/RollingStock/RollingStock.scss';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import { filter } from 'lodash';
 
-const ROLLING_STOCK_URL = '/rolling_stock/';
+const ROLLING_STOCK_URL = '/light_rolling_stock/';
 
 export default function RollingStock() {
   const dispatch = useDispatch();
@@ -22,8 +23,8 @@ export default function RollingStock() {
   const [resultContent, setResultContent] = useState(undefined);
   const [filters, setFilters] = useState({
     text: '',
-    elec: true,
-    diesel: true,
+    elec: false,
+    thermal: false,
   });
   const [isFiltering, setIsFiltering] = useState(false);
 
@@ -43,11 +44,19 @@ export default function RollingStock() {
     );
 
     // checkbox filters
-    if (!filters.elec) {
-      resultContentNew = resultContentNew.filter((el) => el.modetraction !== 'E');
+    if (filters.elec) {
+      resultContentNew = resultContentNew.filter((el) =>
+        Object.keys(el.effort_curves.modes).find(
+          (mode) => el.effort_curves.modes[mode].is_electric === true
+        )
+      );
     }
-    if (!filters.diesel) {
-      resultContentNew = resultContentNew.filter((el) => el.modetraction !== 'D');
+    if (filters.thermal) {
+      resultContentNew = resultContentNew.filter((el) =>
+        Object.keys(el.effort_curves.modes).find(
+          (mode) => el.effort_curves.modes[mode].is_electric === false
+        )
+      );
     }
 
     // ASC sort by default
@@ -121,28 +130,28 @@ export default function RollingStock() {
                     <span className="text-primary mr-1">
                       <BsLightningFill />
                     </span>
-                    Électrique
+                    {t('rollingstock:electric')}
                   </>
                 }
                 type="checkbox"
-                checked
+                checked={filters.elec}
               />
             </div>
             <div>
               <CheckboxRadioSNCF
                 onChange={toggleFilter}
-                name="diesel"
-                id="diesel"
+                name="thermal"
+                id="thermal"
                 label={
                   <>
                     <span className="text-pink mr-1">
                       <MdLocalGasStation />
                     </span>
-                    Diesel
+                    {t('rollingstock:thermal')}
                   </>
                 }
                 type="checkbox"
-                checked
+                checked={filters.thermal}
               />
             </div>
           </div>

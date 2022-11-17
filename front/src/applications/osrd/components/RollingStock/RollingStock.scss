@@ -101,21 +101,18 @@
 
 .rollingstock-footer {
   padding: 0 .5rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   border-radius: 0 0 4px 4px;
   font-size: .8rem;
   transition: .2s;
   border-left: 2px solid #d7d7d7;
   border-right: 2px solid #d7d7d7;
   border-bottom: 2px solid #d7d7d7;
-}
-.rollingstock-footer svg {
-  vertical-align: top;
-  font-size: 1.1rem;
-  margin-right: 3px;
-}
-.rollingstock-footer small {
-  font-size: 80%;
+  svg {
+    vertical-align: top;
+    font-size: 1.1rem;
+    margin-right: 3px;
+  }
+  small {
+    font-size: 80%;
+  }
 }
