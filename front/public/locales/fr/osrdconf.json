@@ -1,10 +1,11 @@
 {
   "addTrainSchedule": "Ajouter",
   "apply": "Appliquer",
+  "BoundsAreLinked": "Les deux bornes sont liées",
+  "BoundsAreNotLinked": "Les deux bornes ne sont pas liées",
   "cancelRequest": "Annuler la requête",
   "stdcmResults": "Résultats",
   "stdcmComputation": "Calcul de l'itinéraire",
-  "stdcmResults": "Résultats",
   "spaceSpeedGraphic": "Graphique Espace-Vitesse",
   "stdcmNoResults": "Désolé, aucun sillon n'a pu être trouvé avec les paramètre renseignés",
   "searchingItinerary": "Nous recherchons un itinéraire pour vote demande....",
