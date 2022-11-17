@@ -3,52 +3,25 @@ use super::OSRDIdentified;
 
 use super::OSRDTyped;
 use super::ObjectType;
-use crate::api_error::ApiError;
-use crate::diesel::ExpressionMethods;
-use crate::diesel::RunQueryDsl;
+
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
-use crate::tables::osrd_infra_switchtypemodel::dsl::*;
+
 use derivative::Derivative;
-use diesel::PgConnection;
+
+use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, Model)]
 #[serde(deny_unknown_fields)]
+#[model(table = "crate::tables::osrd_infra_switchtypemodel")]
 #[derivative(Default)]
 pub struct SwitchType {
     #[derivative(Default(value = r#"generate_id("switchtype")"#))]
     pub id: String,
     pub ports: Vec<String>,
     pub groups: HashMap<String, Vec<SwitchPortConnection>>,
-}
-
-impl SwitchType {
-    pub fn persist_batch(
-        values: &[Self],
-        infrastructure_id: i32,
-        conn: &PgConnection,
-    ) -> Result<(), Box<dyn ApiError>> {
-        let datas = values
-            .iter()
-            .map(|value| {
-                (
-                    obj_id.eq(value.get_id().clone()),
-                    data.eq(serde_json::to_value(value).unwrap()),
-                    infra_id.eq(infrastructure_id),
-                )
-            })
-            .collect::<Vec<_>>();
-
-        for data_chunk in datas.chunks(65534) {
-            diesel::insert_into(osrd_infra_switchtypemodel)
-                .values(data_chunk)
-                .execute(conn)?;
-        }
-
-        Ok(())
-    }
 }
 
 impl OSRDTyped for SwitchType {
