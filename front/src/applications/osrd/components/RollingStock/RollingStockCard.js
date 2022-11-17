@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { updateRollingStockID } from 'reducers/osrdconf';
@@ -15,61 +15,37 @@ import { powerClasses } from 'applications/osrd/components/RollingStock/consts';
 export default function RollingStockCard(props) {
   const dispatch = useDispatch();
   const [detailDisplay, setDetailDisplay] = useState(false);
+  const [tractionModes, setTractionModes] = useState({
+    electric: false,
+    thermal: false,
+    voltages: [],
+  });
   const { data } = props;
   const { t } = useTranslation(['rollingstock']);
 
-  const dummyTractionValues = ['NA', 'D'];
-  let modetraction;
-
-  const toggleDetailDisplay = () => {
-    setDetailDisplay(!detailDisplay);
-  };
-
-  switch (data.modetraction) {
-    case 'E':
-    case 'Bicourant':
-    case 'Tricourant':
-    case 'Quadricourant':
-      modetraction = (
-        <>
-          <span className="text-primary">
-            <BsLightningFill />
-          </span>
-          {data.tensionutilisation}
-        </>
-      );
-      break;
-    case 'D':
-      modetraction = (
-        <span className="text-pink">
-          <MdLocalGasStation />
-        </span>
-      );
-      break;
-    case 'BiBi':
-    case 'Bimode':
-      modetraction = (
-        <>
-          <span className="text-pink">
-            <MdLocalGasStation />
-          </span>
-          <span className="text-primary">
-            <BsLightningFill />
-          </span>
-          {dummyTractionValues.includes(data.tensionutilisation) ? '' : data.tensionutilisation}
-        </>
-      );
-      break;
-    default:
-      modetraction = data.modetraction;
-      break;
-  }
+  useEffect(() => {
+    if (typeof data.effort_curves.modes === 'object') {
+      const localVoltages = {};
+      const localModes = {};
+      Object.keys(data.effort_curves.modes).forEach((modeName) => {
+        if (data.effort_curves.modes[modeName].is_electric) {
+          localModes.electric = true;
+          localVoltages[modeName] = true;
+        } else {
+          localModes.thermal = true;
+        }
+      });
+      setTractionModes({ ...localModes, voltages: Object.keys(localVoltages) });
+    }
+    // Has to be run only once
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div
       className="rollingstock-container mb-3"
       role="button"
-      onClick={toggleDetailDisplay}
+      // onClick={() => setDetailDisplay(!detailDisplay)}
       tabIndex={0}
     >
       <div className="rollingstock-header">
@@ -202,23 +178,49 @@ export default function RollingStockCard(props) {
         </div>
       ) : null}
       <div className="rollingstock-footer py-2">
-        <div className="rollingstock-tractionmode" style={{ display: 'none' }}>
-          {modetraction}
-        </div>
-        <div className="rollingstock-size">
-          <AiOutlineColumnWidth />
-          {data.length}
-          <small>M</small>
-        </div>
-        <div className="rollingstock-weight">
-          <FaWeightHanging />
-          {Math.round(data.mass / 1000)}
-          <small>T</small>
-        </div>
-        <div className="rollingstock-speed">
-          <IoIosSpeedometer />
-          {Math.round(data.max_speed * 3.6)}
-          <small>KM/H</small>
+        <div className="row">
+          <div className="col-5">
+            <div className="rollingstock-tractionmode text-nowrap">
+              {tractionModes.thermal ? (
+                <span className="text-pink">
+                  <MdLocalGasStation />
+                </span>
+              ) : null}
+              {tractionModes.electric ? (
+                <>
+                  <span className="text-primary">
+                    <BsLightningFill />
+                  </span>
+                  <small>
+                    {tractionModes.voltages.map((voltage) => (
+                      <span className="ml-1">{voltage}V</span>
+                    ))}
+                  </small>
+                </>
+              ) : null}
+            </div>
+          </div>
+          <div className="col-2">
+            <div className="rollingstock-size text-nowrap">
+              <AiOutlineColumnWidth />
+              {data.length}
+              <small>M</small>
+            </div>
+          </div>
+          <div className="col-2">
+            <div className="rollingstock-weight text-nowrap">
+              <FaWeightHanging />
+              {Math.round(data.mass / 1000)}
+              <small>T</small>
+            </div>
+          </div>
+          <div className="col-3">
+            <div className="rollingstock-speed text-nowrap">
+              <IoIosSpeedometer />
+              {Math.round(data.max_speed * 3.6)}
+              <small>KM/H</small>
+            </div>
+          </div>
         </div>
         {detailDisplay ? (
           <button
