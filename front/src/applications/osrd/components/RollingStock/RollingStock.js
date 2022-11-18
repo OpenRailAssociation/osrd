@@ -11,7 +11,6 @@ import { MdLocalGasStation } from 'react-icons/md';
 import 'applications/osrd/components/RollingStock/RollingStock.scss';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { filter } from 'lodash';
 
 const ROLLING_STOCK_URL = '/light_rolling_stock/';
 
@@ -95,22 +94,31 @@ export default function RollingStock() {
 
   useEffect(() => {
     getAllMateriel();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (rollingStock !== undefined) {
       updateSearch();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
   return (
     <div className="rollingstock-search p-2">
       <div className="rollingstock-search-filters">
+        <h2 className="d-flex">
+          {t('translation:common.filter')}
+          <small className="ml-auto">
+            {resultContent !== undefined && resultContent.length > 0
+              ? `${resultContent.length} ${t('rollingstock:resultsFound')}`
+              : t('rollingstock:noResultFound')}
+          </small>
+        </h2>
         <div className="row">
           <div className="col-md-6 mb-3">
             <InputSNCF
               id="searchfilter"
-              label={t('translation:common.filter')}
               type="text"
               onChange={searchMateriel}
               placeholder={t('translation:common.search')}
@@ -155,11 +163,6 @@ export default function RollingStock() {
               />
             </div>
           </div>
-        </div>
-        <div className="pt-3 text-center">
-          {resultContent !== undefined && resultContent.length > 0
-            ? `${resultContent.length} ${t('rollingstock:resultsFound')}`
-            : t('rollingstock:noResultFound')}
         </div>
       </div>
       <div className="rollingstock-search-list">
