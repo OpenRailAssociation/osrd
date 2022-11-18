@@ -11,10 +11,6 @@
   padding: 1rem;
   margin-bottom: 1rem;
   border-radius: 4px;
-
-  @media screen and (max-width: 767px) {
-    height: 17rem;
-  }
 }
 
 /* Results */
@@ -43,18 +39,12 @@
       border-color: #333;
     }
   }
-  &.active {
-    .rollingstock-header, .rollingstock-body, .rollingstock-footer {
-      border-color: #0088ce;
-    }
-  }
 }
 
 .rollingstock-header {
   border-radius: 4px 4px 0 0;
   background-color: #d7d7d7;
-  padding: 0 .5rem;
-  height: 2rem;
+  padding: .25rem .5rem;
   overflow: hidden;
   border-top: 2px solid #d7d7d7;
   border-left: 2px solid #d7d7d7;
@@ -62,27 +52,23 @@
   transition: .2s;
   .rollingstock-title {
     display: flex;
-    justify-content: space-between;
-    margin-right: 1rem;
+    overflow: hidden;
+    white-space: nowrap;
+    align-items: center;
     font-weight: bold;
-    font-size: 1.25rem;
+    height: 1.5rem;
   }
 }
 .rollingstock-img {
-  width: 100%;
-  position: relative;
-  white-space: nowrap;
-  flex-grow: 20;
-  overflow: hidden;
-}
-.rollingstock-img img {
   display: inline-block;
-  position: relative;
-  vertical-align: baseline;
-}
-.rollingstock-img-scale {
-  transform: scale(.4);
+  white-space: nowrap;
+  transform: scale(.4); // Have to scale whole <img> because electric trains with pantograph have taller pictures
   transform-origin: left;
+  img {
+    display: inline-block;
+    position: relative;
+    vertical-align: baseline;
+  }
 }
 
 .rollingstock-body {
@@ -92,8 +78,6 @@
   transition: .2s;
   font-size: .8rem;
   font-weight: lighter;
-  .rollingstock-details-table {
-  }
   .curve-container {
     height: 15rem;
   }
