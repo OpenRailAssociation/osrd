@@ -4,8 +4,10 @@ import produce from 'immer';
 import {
   LIST_VALUES_NAME_SPACE_TIME,
   SIGNAL_BASE_DEFAULT,
+  KEY_VALUES_FOR_CONSOLIDATED_SIMULATION
 } from '../../applications/osrd/components/Simulation/consts';
 import undoableSimulation, { REDO_SIMULATION, UNDO_SIMULATION } from './simulation';
+import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/createTrain';
 
 import {
   interpolateOnTime,
@@ -289,14 +291,20 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
         draft.departureArrivalTimes = action.departureArrivalTimes;
         break;
       case UPDATE_SIMULATION:
-        draft.simulation = undoableSimulation(state.simulation, action);
-        draft.departureArrivalTimes = makeDepartureArrivalTimes(draft.simulation.present, 0);
-        break;
       case UNDO_SIMULATION:
       case REDO_SIMULATION:
         // get only the present, thanks
         draft.simulation = undoableSimulation(state.simulation, action);
         draft.departureArrivalTimes = makeDepartureArrivalTimes(draft.simulation.present, 0);
+        const consolidatedSimulation = createTrain(
+          undefined,
+          KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
+          draft.simulation.present.trains,
+          undefined
+        );
+
+        draft.consolidatedSimulation = consolidatedSimulation
+
         break;
       case UPDATE_SPEEDSPACE_SETTINGS:
         draft.speedSpaceSettings = action.speedSpaceSettings;
@@ -330,6 +338,8 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
         draft.positionValues = positionsValues;
         break;
       }
+      default:
+        break;
     }
   });
 }
