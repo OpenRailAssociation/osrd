@@ -1,8 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { useTranslation } from 'react-i18next';
-import { updateRollingStockID } from 'reducers/osrdconf';
-import { useDispatch } from 'react-redux';
 import { BsLightningFill } from 'react-icons/bs';
 import { MdLocalGasStation } from 'react-icons/md';
 import { IoIosSpeedometer } from 'react-icons/io';
@@ -12,15 +9,16 @@ import RollingStockCardDetail from 'applications/osrd/components/RollingStock/Ro
 import RollingStock2Img from 'applications/osrd/components/RollingStock/RollingStock2Img';
 
 export default function RollingStockCard(props) {
-  const dispatch = useDispatch();
-  const [detailDisplay, setDetailDisplay] = useState(false);
   const [tractionModes, setTractionModes] = useState({
     electric: false,
     thermal: false,
     voltages: [],
   });
-  const { data } = props;
-  const { t } = useTranslation(['rollingstock']);
+  const { data, openedRollingStockCardId, setOpenedRollingStockCardId } = props;
+
+  function displayCardDetail() {
+    setOpenedRollingStockCardId(data.id);
+  }
 
   useEffect(() => {
     if (typeof data.effort_curves.modes === 'object') {
@@ -42,15 +40,17 @@ export default function RollingStockCard(props) {
 
   return (
     <div
-      className="rollingstock-container mb-3"
+      className={`rollingstock-container mb-3 ${
+        openedRollingStockCardId === data.id ? 'active' : null
+      }`}
       role="button"
-      onClick={() => setDetailDisplay(!detailDisplay)}
+      onClick={displayCardDetail}
       tabIndex={0}
     >
       <div className="rollingstock-header">
         <div className="rollingstock-title">
           <div>{data.name}</div>
-          <div className="rollingstock-img ml-1">
+          <div className="rollingstock-img ml-2">
             <RollingStock2Img name={data.name} />
           </div>
           <div className="sr-only">
@@ -59,11 +59,7 @@ export default function RollingStockCard(props) {
           </div>
         </div>
       </div>
-      <RollingStockCardDetail
-        id={data.id}
-        detailDisplay={detailDisplay}
-        setDetailDisplay={setDetailDisplay}
-      />
+      {openedRollingStockCardId === data.id ? <RollingStockCardDetail id={data.id} /> : null}
       <div className="rollingstock-footer py-2">
         <div className="row">
           <div className="col-5">
@@ -116,6 +112,12 @@ export default function RollingStockCard(props) {
   );
 }
 
+RollingStockCard.defaultProps = {
+  openedRollingStockCardId: undefined,
+};
+
 RollingStockCard.propTypes = {
   data: PropTypes.object.isRequired,
+  openedRollingStockCardId: PropTypes.number,
+  setOpenedRollingStockCardId: PropTypes.func.isRequired,
 };

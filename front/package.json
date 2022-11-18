@@ -3,9 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@nivo/core": "^0.79.0",
-    "@nivo/line": "^0.79.1",
-    "@nivo/tooltip": "^0.79.0",
+    "babel-loader": "8.1.0",
+    "@nivo/core": "^0.80.0",
+    "@nivo/line": "^0.80.0",
+    "@nivo/tooltip": "^0.80.0",
     "@redux-devtools/extension": "^3.2.3",
     "@reduxjs/toolkit": "^1.9.0",
     "@rjsf/core": "^4.2.3",
