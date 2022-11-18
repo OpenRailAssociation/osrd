@@ -411,5 +411,39 @@
     "SNCF/AM/BRGC4_T2_R",
     "SNCF/AM/BRGC_T2_R",
     "SNCF/AM/AGCBibi_T2_R"
+  ],
+  "1TGVPBKA": [
+    "Intl/Thalys_PBKA_L3_M_L",
+    "Intl/Thalys_L3_R8_L",
+    "Intl/Thalys_L3_R7_L",
+    "Intl/Thalys_L3_R6_L",
+    "Intl/Thalys_L3_R5_R",
+    "Intl/Thalys_L3_R4_R",
+    "Intl/Thalys_L3_R3_R",
+    "Intl/Thalys_L3_R2_R",
+    "Intl/Thalys_L3_R1_R",
+    "Intl/Thalys_PBKA_L3_M_R"
+  ],
+  "2TGVPBKA": [
+    "Intl/Thalys_PBKA_L3_M_L",
+    "Intl/Thalys_L3_R8_L",
+    "Intl/Thalys_L3_R7_L",
+    "Intl/Thalys_L3_R6_L",
+    "Intl/Thalys_L3_R5_R",
+    "Intl/Thalys_L3_R4_R",
+    "Intl/Thalys_L3_R3_R",
+    "Intl/Thalys_L3_R2_R",
+    "Intl/Thalys_L3_R1_R",
+    "Intl/Thalys_PBKA_L3_M_R",
+    "Intl/Thalys_PBKA_L3_M_L",
+    "Intl/Thalys_L3_R8_L",
+    "Intl/Thalys_L3_R7_L",
+    "Intl/Thalys_L3_R6_L",
+    "Intl/Thalys_L3_R5_R",
+    "Intl/Thalys_L3_R4_R",
+    "Intl/Thalys_L3_R3_R",
+    "Intl/Thalys_L3_R2_R",
+    "Intl/Thalys_L3_R1_R",
+    "Intl/Thalys_PBKA_L3_M_R"
   ]
 }

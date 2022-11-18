@@ -5,15 +5,42 @@ import { get } from 'common/requests';
 import { updateRollingStockID } from 'reducers/osrdconf';
 import { useDispatch } from 'react-redux';
 import { setFailure } from 'reducers/main';
-import RollingStockCurve from 'applications/osrd/components/RollingStock/RollingStockCurve';
+import { IoMdSunny, IoIosSnow } from 'react-icons/io';
+import Loader from 'common/Loader';
+import RollingStockCardButtons from './RollingStockCardButtons';
+import RollingStockCurves from './RollingStockCurves';
 
 const ROLLING_STOCK_URL = '/rolling_stock/';
 
 export default function RollingStockCardDetail(props) {
   const dispatch = useDispatch();
-  const { id, detailDisplay, setDetailDisplay } = props;
+  const { id } = props;
   const [data, setData] = useState();
+  const [displayDefaultCurve, setDisplayDefaultCurve] = useState(true);
   const { t } = useTranslation(['rollingstock']);
+
+  const mode2name = (mode) => (mode !== 'thermal' ? `${mode}V` : t('thermal'));
+
+  const transformCurves = (curvesData) => {
+    const transformedCurves = {};
+    if (!displayDefaultCurve) {
+      Object.keys(curvesData.modes).forEach((mode) => {
+        curvesData.modes[mode].curves.forEach((curve) => {
+          const name = mode2name(mode);
+          const serieId = `${name} ${curve.cond.comfort}`;
+          transformedCurves[serieId] = { ...curve.curve, mode: name, comfort: curve.cond.comfort };
+        });
+      });
+      return transformedCurves;
+    }
+    return {
+      default: {
+        ...curvesData.modes[curvesData.default_mode].default_curve,
+        mode: mode2name(curvesData.default_mode),
+        comfort: null,
+      },
+    };
+  };
 
   const getRollingStock = async () => {
     try {
@@ -31,13 +58,13 @@ export default function RollingStockCardDetail(props) {
   };
 
   useEffect(() => {
-    if (detailDisplay && id) {
+    if (id) {
       getRollingStock();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [detailDisplay, id]);
+  }, [id]);
 
-  return detailDisplay && data ? (
+  return data ? (
     <div className="rollingstock-body">
       <div className="row pt-2">
         <div className="col-sm-6">
@@ -75,10 +102,29 @@ export default function RollingStockCardDetail(props) {
                   <span className="small text-muted ml-1">m/s²</span>
                 </td>
               </tr>
+              <tr>
+                <td className="text-primary">{t('loadingGauge')}</td>
+                <td>{data.loading_gauge}</td>
+              </tr>
             </tbody>
           </table>
         </div>
         <div className="col-sm-6">
+          <div className="">
+            <span className="font-weight-bold text-primary mr-3">{t('legend')}</span>
+            <span className="mr-2">
+              <span className="text-yellow mr-1">
+                <IoMdSunny />
+              </span>
+              {t('comfortTypes.heating')}
+            </span>
+            <span>
+              <span className="text-blue mr-1">
+                <IoIosSnow />
+              </span>
+              {t('comfortTypes.ac')}
+            </span>
+          </div>
           {data.features && data.features.length > 0 ? (
             <div>
               {t('features')}
@@ -119,32 +165,20 @@ export default function RollingStockCardDetail(props) {
           </table>
         </div>
       </div>
-      <div className="row">
-        <div className="col-md-12">
-          <div className="curve-container">
-            {/* <RollingStockCurve data={data.effort_curve} /> */}
-          </div>
-        </div>
-      </div>
+      <RollingStockCurves
+        data={transformCurves(data.effort_curves)}
+        displayDefaultCurve={displayDefaultCurve}
+        setDisplayDefaultCurve={setDisplayDefaultCurve}
+      />
+      <RollingStockCardButtons />
     </div>
-  ) : null;
+  ) : (
+    <div className="rollingstock-body">
+      <Loader />
+    </div>
+  );
 }
-
-/*
-{detailDisplay ? (
-  <button
-    className="btn btn-primary btn-sm"
-    type="button"
-    data-dismiss="modal"
-    onClick={() => dispatch(updateRollingStockID(data.id))}
-  >
-    {t('selectRollingStock')}
-  </button>
-) : null}
-*/
 
 RollingStockCardDetail.propTypes = {
   id: PropTypes.number.isRequired,
-  detailDisplay: PropTypes.bool.isRequired,
-  setDetailDisplay: PropTypes.func.isRequired,
 };

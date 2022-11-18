@@ -18,14 +18,15 @@ export default function RollingStock() {
   const dispatch = useDispatch();
   const { darkmode } = useSelector((state) => state.main);
   const { t } = useTranslation(['translation', 'rollingstock']);
-  const [rollingStock, setRollingStock] = useState(undefined);
-  const [resultContent, setResultContent] = useState(undefined);
+  const [rollingStock, setRollingStock] = useState();
+  const [filteredRollingStockList, setFilteredRollingStockList] = useState();
   const [filters, setFilters] = useState({
     text: '',
     elec: false,
     thermal: false,
   });
   const [isFiltering, setIsFiltering] = useState(false);
+  const [openedRollingStockCardId, setOpenedRollingStockCardId] = useState();
 
   if (darkmode) {
     import('./RollingStockDarkMode.scss');
@@ -38,20 +39,20 @@ export default function RollingStock() {
 
   const updateSearch = () => {
     // Text filter
-    let resultContentNew = rollingStock.filter((el) =>
+    let filteredRollingStockListNew = rollingStock.filter((el) =>
       el.name.toLowerCase().includes(filters.text)
     );
 
     // checkbox filters
     if (filters.elec) {
-      resultContentNew = resultContentNew.filter((el) =>
+      filteredRollingStockListNew = filteredRollingStockListNew.filter((el) =>
         Object.keys(el.effort_curves.modes).find(
           (mode) => el.effort_curves.modes[mode].is_electric === true
         )
       );
     }
     if (filters.thermal) {
-      resultContentNew = resultContentNew.filter((el) =>
+      filteredRollingStockListNew = filteredRollingStockListNew.filter((el) =>
         Object.keys(el.effort_curves.modes).find(
           (mode) => el.effort_curves.modes[mode].is_electric === false
         )
@@ -59,27 +60,27 @@ export default function RollingStock() {
     }
 
     // ASC sort by default
-    resultContentNew = resultContentNew.sort((a, b) => a.name.localeCompare(b.name));
+    filteredRollingStockListNew = filteredRollingStockListNew.sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
 
     setTimeout(() => {
-      setResultContent(resultContentNew);
+      setFilteredRollingStockList(filteredRollingStockListNew);
       setIsFiltering(false);
     }, 0);
   };
-
-  const displayMateriel = (result) => <RollingStockCard data={result} key={result.id} />;
 
   const toggleFilter = (e) => {
     setFilters({ ...filters, [e.target.name]: !filters[e.target.name] });
     setIsFiltering(true);
   };
 
-  const getAllMateriel = async () => {
+  const getAllRollingStock = async () => {
     if (rollingStock === undefined) {
       try {
         const data = await get(ROLLING_STOCK_URL, { page_size: 1000 });
         setRollingStock(data.results);
-        setResultContent(data.results);
+        setFilteredRollingStockList(data.results);
       } catch (e) {
         dispatch(
           setFailure({
@@ -93,7 +94,7 @@ export default function RollingStock() {
   };
 
   useEffect(() => {
-    getAllMateriel();
+    getAllRollingStock();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -110,8 +111,8 @@ export default function RollingStock() {
         <h2 className="d-flex">
           {t('translation:common.filter')}
           <small className="ml-auto">
-            {resultContent !== undefined && resultContent.length > 0
-              ? `${resultContent.length} ${t('rollingstock:resultsFound')}`
+            {filteredRollingStockList !== undefined && filteredRollingStockList.length > 0
+              ? `${filteredRollingStockList.length} ${t('rollingstock:resultsFound')}`
               : t('rollingstock:noResultFound')}
           </small>
         </h2>
@@ -134,12 +135,12 @@ export default function RollingStock() {
                 name="elec"
                 id="elec"
                 label={
-                  <>
+                  <span className="text-nowrap">
                     <span className="text-primary mr-1">
                       <BsLightningFill />
                     </span>
                     {t('rollingstock:electric')}
-                  </>
+                  </span>
                 }
                 type="checkbox"
                 checked={filters.elec}
@@ -151,12 +152,12 @@ export default function RollingStock() {
                 name="thermal"
                 id="thermal"
                 label={
-                  <>
+                  <span className="text-nowrap">
                     <span className="text-pink mr-1">
                       <MdLocalGasStation />
                     </span>
                     {t('rollingstock:thermal')}
-                  </>
+                  </span>
                 }
                 type="checkbox"
                 checked={filters.thermal}
@@ -166,8 +167,15 @@ export default function RollingStock() {
         </div>
       </div>
       <div className="rollingstock-search-list">
-        {resultContent !== undefined && !isFiltering ? (
-          resultContent.map((result) => displayMateriel(result))
+        {filteredRollingStockList !== undefined && !isFiltering ? (
+          filteredRollingStockList.map((item) => (
+            <RollingStockCard
+              data={item}
+              key={item.id}
+              openedRollingStockCardId={openedRollingStockCardId}
+              setOpenedRollingStockCardId={setOpenedRollingStockCardId}
+            />
+          ))
         ) : (
           <Loader msg={t('rollingstock:waitingLoader')} />
         )}

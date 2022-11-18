@@ -34,9 +34,15 @@
   cursor: pointer;
   transition: .2s;
   border-radius: 4px;
-  &:hover {
+  &:hover :not(.active) {
     .rollingstock-header, .rollingstock-body, .rollingstock-footer {
       border-color: #333;
+    }
+  }
+  &.active {
+    cursor: default;
+    .rollingstock-header, .rollingstock-body, .rollingstock-footer {
+      border-color: #303383;;
     }
   }
 }
@@ -62,7 +68,7 @@
 .rollingstock-img {
   display: inline-block;
   white-space: nowrap;
-  transform: scale(.4); // Have to scale whole <img> because electric trains with pantograph have taller pictures
+  transform: scale(.3); // Have to scale whole <img> because electric trains with pantograph have taller pictures
   transform-origin: left;
   img {
     display: inline-block;
@@ -78,8 +84,70 @@
   transition: .2s;
   font-size: .8rem;
   font-weight: lighter;
-  .curve-container {
-    height: 15rem;
+  .loader {
+    margin: 0;
+    padding: 2rem 0;
+  }
+  .curves-container {
+    height: 17rem;
+    .ac {
+      color: #0088ce;
+    }
+    .heating {
+      color: #ffb612;
+    }
+    .curves-chart-legend {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      .curves-chart-legend-item {
+        display: flex;
+        align-items: center;
+        border-bottom: 2px solid #d7d7d7;
+        .ac, .heating {
+          display: flex;
+          align-items: center;
+          margin-left: .1rem;
+        }
+      }
+    }
+    .curves-chart-tooltip {
+      border-radius: 4px;
+      border: 2px solid #d7d7d7;
+      background-color: white;
+      .curves-chart-tooltip-head {
+        display: flex;
+        align-items: center;
+        font-weight: bold;
+        font-size: .8rem;
+        justify-content: space-between;
+        background-color: #d7d7d7;
+        border-bottom: 2px solid #d7d7d7;
+        padding-left: .5rem;
+        .curves-chart-tooltip-comfort {
+          display: flex;
+          align-items: center;
+          border-radius: 0 4px 0 0;
+          background-color: #fff;
+          padding: 0 .3rem .1rem;
+        }
+      }
+      .curves-chart-tooltip-body {
+        display: flex;
+        align-items: center;
+        padding: 0 .5rem;
+      }
+    }
+  }
+  .rollingstock-defaultcurveswitch {
+    .custom-control {
+      padding-left: 1.5rem;
+    }
+    .custom-control-label::before, .custom-control-label::after {
+      height: 1rem;
+      width: 1rem;
+      left: -1.5rem;
+    }
   }
 }
 
