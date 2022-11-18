@@ -102,4 +102,15 @@ mod test {
             assert!(BufferStop::persist_batch(&data, infra.id, conn).is_ok());
         });
     }
+
+    #[test]
+    fn test_persist_large() {
+        test_infra_transaction(|conn, infra| {
+            let data = (0..(2_usize.pow(16) * 2))
+                .map(|_| BufferStop::default())
+                .collect::<Vec<BufferStop>>();
+
+            assert!(BufferStop::persist_batch(&data, infra.id, conn).is_ok());
+        });
+    }
 }
