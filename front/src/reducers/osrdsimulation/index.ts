@@ -1,6 +1,8 @@
 import { AnyAction, Dispatch } from 'redux';
 import * as d3 from 'd3';
 import produce from 'immer';
+
+import { TimeString } from 'common/types';
 import {
   LIST_VALUES_NAME_SPACE_TIME,
   SIGNAL_BASE_DEFAULT,
@@ -192,7 +194,7 @@ export interface OsrdSimulationState {
   };
   stickyBar: boolean;
   signalBase: typeof SIGNAL_BASE_DEFAULT;
-  timePosition: any;
+  timePosition: TimeString;
   consolidatedSimulation: SimulationTrain[];
   departureArrivalTimes: Array<any>;
   simulation: {
