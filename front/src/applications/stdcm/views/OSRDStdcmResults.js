@@ -1,4 +1,7 @@
-import { KEY_VALUES_FOR_CONSOLIDATED_SIMULATION } from 'applications/osrd/views/OSRDSimulation/OSRDSimulation';
+import 'applications/osrd/views/OSRDSimulation/OSRDSimulation.scss';
+import 'applications/osrd/views/OSRDConfig/OSRDConfig.scss';
+
+import { KEY_VALUES_FOR_CONSOLIDATED_SIMULATION } from 'applications/osrd/components/Simulation/consts';
 
 import React, { useEffect } from 'react';
 import {
