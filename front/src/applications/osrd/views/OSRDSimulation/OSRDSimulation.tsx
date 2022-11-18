@@ -16,6 +16,7 @@ import {
 } from 'reducers/osrdsimulation';
 import { useDispatch, useSelector } from 'react-redux';
 
+
 import Allowances from 'applications/osrd/views/OSRDSimulation/Allowances';
 import ButtonFullscreen from 'common/ButtonFullscreen';
 import CenterLoader from 'common/CenterLoader/CenterLoader';
@@ -32,7 +33,7 @@ import TimeLine from 'applications/osrd/components/TimeLine/TimeLine';
 import TimeTable from 'applications/osrd/views/OSRDSimulation/TimeTable';
 import TrainDetails from 'applications/osrd/views/OSRDSimulation/TrainDetails';
 import TrainList from 'applications/osrd/views/OSRDSimulation/TrainList';
-import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/createTrain';
+
 import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
 import { get } from 'common/requests';
 import { sec2time } from 'utils/timeManipulation';
@@ -41,7 +42,7 @@ import { setFailure } from 'reducers/main';
 import { updateViewport, Viewport } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
 
-export const KEY_VALUES_FOR_CONSOLIDATED_SIMULATION = ['time', 'position'];
+
 export const timetableURI = '/timetable/';
 const MAP_MIN_HEIGHT = 450;
 
@@ -195,6 +196,7 @@ function OSRDSimulation() {
 
   // With this hook we update and store
   // the consolidatedSimuation (simualtion stucture for the selected train)
+  /*
   useEffect(() => {
     const consolidatedSimulation = createTrain(
       dispatch,
@@ -205,6 +207,7 @@ function OSRDSimulation() {
     // Store it to allow time->position logic to be hosted by redux
     dispatch(updateConsolidatedSimulation(consolidatedSimulation));
   }, [simulation]);
+  */
 
   const waitingLoader = isEmpty ? (
     <h1 className="text-center">{t('simulation:noData')}</h1>
