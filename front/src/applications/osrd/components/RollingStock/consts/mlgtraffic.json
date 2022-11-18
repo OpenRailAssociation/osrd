@@ -1,0 +1,415 @@
+{
+  "15000": [
+    "SNCF/LE/BB15000_3SR_CP2I_R"
+  ],
+  "1FLIRT F": [
+    "Suisse/CFF/AE/CFF_RABe522_2_a_RegR_L",
+    "Suisse/CFF/AE/CFF_RABe522_2_b_RegR_L",
+    "Suisse/CFF/AE/CFF_RABe522_2_c_RegR_R",
+    "Suisse/CFF/AE/CFF_RABe522_2_d_RegR_R"
+  ],
+  "1X73500": [
+    "SNCF/AD/X73500_T2B"
+  ],
+  "1X76503": [
+    "SNCF/AM/XGC_T2_AB_L",
+    "SNCF/AM/XRGC_T2_R",
+    "SNCF/AM/XGC_T2_AB_R"
+  ],
+  "1X76504": [
+    "SNCF/AM/XGC_T2_AB_L",
+    "SNCF/AM/XRGC_T2_R",
+    "SNCF/AM/XRGC_T2_R",
+    "SNCF/AM/XGC_T2_AB_R"
+  ],
+  "1X84504": [
+    "SNCF/AM/Regiolis_BMXi_TER_L",
+    "SNCF/AM/Regiolis_RI4_TER_L",
+    "SNCF/AM/Regiolis_BMXp_TER_R"
+  ],
+  "1X84506": [
+    "SNCF/AM/Regiolis_BMX_TERb_L",
+    "SNCF/AM/Regiolis_BRI6a_TERb_L",
+    "SNCF/AM/Regiolis_BRI6b_TERb_R",
+    "SNCF/AM/Regiolis_BMXi_TERb_R"
+  ],
+  "1Z24502": [
+    "SNCF/AE/Z24500_T2B_Z1_L",
+    "SNCF/AE/Z24500_T2B_Z1_R"
+  ],
+  "1Z24503": [
+    "SNCF/AE/Z24500_T2B_Z1_L",
+    "SNCF/AE/Z24500_T2B_Z3_L",
+    "SNCF/AE/Z24500_T2B_Z1_R"
+  ],
+  "1Z51504": [
+    "SNCF/AM/CoradiaLiner_ZMXi_Carm_L",
+    "SNCF/AM/CoradiaLiner_RI4_Carm_R",
+    "SNCF/AM/CoradiaLiner_ZMXp_Carm_R"
+  ],
+  "1Z84504": [
+    "SNCF/AM/Regiolis_BMXi_TER_L",
+    "SNCF/AM/Regiolis_RI4_TER_L",
+    "SNCF/AM/Regiolis_BMXp_TER_R"
+  ],
+  "1Z84506": [
+    "SNCF/AM/Regiolis_BMX_TERb_L",
+    "SNCF/AM/Regiolis_BRI6a_TERb_L",
+    "SNCF/AM/Regiolis_BRI6b_TERb_R",
+    "SNCF/AM/Regiolis_BMXi_TERb_R"
+  ],
+  "2FLIRT F": [
+    "Suisse/CFF/AE/CFF_RABe522_2_a_RegR_L",
+    "Suisse/CFF/AE/CFF_RABe522_2_b_RegR_L",
+    "Suisse/CFF/AE/CFF_RABe522_2_c_RegR_R",
+    "Suisse/CFF/AE/CFF_RABe522_2_d_RegR_R",
+    "Suisse/CFF/AE/CFF_RABe522_2_a_RegR_L",
+    "Suisse/CFF/AE/CFF_RABe522_2_b_RegR_L",
+    "Suisse/CFF/AE/CFF_RABe522_2_c_RegR_R",
+    "Suisse/CFF/AE/CFF_RABe522_2_d_RegR_R"
+  ],
+  "2X73500": [
+    "SNCF/AD/X73500_T2B",
+    "SNCF/AD/X73500_T2B"
+  ],
+  "2X76503": [
+    "SNCF/AM/XGC_T2_AB_L",
+    "SNCF/AM/XRGC_T2_R",
+    "SNCF/AM/XGC_T2_AB_R",
+    "SNCF/AM/XGC_T2_AB_L",
+    "SNCF/AM/XRGC_T2_R",
+    "SNCF/AM/XGC_T2_AB_R"
+  ],
+  "2X76504": [
+    "SNCF/AM/XGC_T2_AB_L",
+    "SNCF/AM/XRGC_T2_R",
+    "SNCF/AM/XRGC_T2_R",
+    "SNCF/AM/XGC_T2_AB_R",
+    "SNCF/AM/XGC_T2_AB_L",
+    "SNCF/AM/XRGC_T2_R",
+    "SNCF/AM/XRGC_T2_R",
+    "SNCF/AM/XGC_T2_AB_R"
+  ],
+  "2X84504": [
+    "SNCF/AM/Regiolis_BMXi_TER_L",
+    "SNCF/AM/Regiolis_RI4_TER_L",
+    "SNCF/AM/Regiolis_BMXp_TER_R",
+    "SNCF/AM/Regiolis_BMXi_TER_L",
+    "SNCF/AM/Regiolis_RI4_TER_L",
+    "SNCF/AM/Regiolis_BMXp_TER_R"
+  ],
+  "2X84506": [
+    "SNCF/AM/Regiolis_BMX_TERb_L",
+    "SNCF/AM/Regiolis_BRI6a_TERb_L",
+    "SNCF/AM/Regiolis_BRI6b_TERb_R",
+    "SNCF/AM/Regiolis_BMXi_TERb_R",
+    "SNCF/AM/Regiolis_BMX_TERb_L",
+    "SNCF/AM/Regiolis_BRI6a_TERb_L",
+    "SNCF/AM/Regiolis_BRI6b_TERb_R",
+    "SNCF/AM/Regiolis_BMXi_TERb_R"
+  ],
+  "2Z24502": [
+    "SNCF/AE/Z24500_T2B_Z1_L",
+    "SNCF/AE/Z24500_T2B_Z1_R",
+    "SNCF/AE/Z24500_T2B_Z1_L",
+    "SNCF/AE/Z24500_T2B_Z1_R"
+  ],
+  "2Z24503": [
+    "SNCF/AE/Z24500_T2B_Z1_L",
+    "SNCF/AE/Z24500_T2B_Z3_L",
+    "SNCF/AE/Z24500_T2B_Z1_R",
+    "SNCF/AE/Z24500_T2B_Z1_L",
+    "SNCF/AE/Z24500_T2B_Z3_L",
+    "SNCF/AE/Z24500_T2B_Z1_R"
+  ],
+  "2Z51504": [
+    "SNCF/AM/CoradiaLiner_ZMXi_Carm_L",
+    "SNCF/AM/CoradiaLiner_RI4_Carm_R",
+    "SNCF/AM/CoradiaLiner_ZMXp_Carm_R",
+    "SNCF/AM/CoradiaLiner_ZMXi_Carm_L",
+    "SNCF/AM/CoradiaLiner_RI4_Carm_R",
+    "SNCF/AM/CoradiaLiner_ZMXp_Carm_R"
+  ],
+  "2Z84504": [
+    "SNCF/AM/Regiolis_BMXi_TER_L",
+    "SNCF/AM/Regiolis_RI4_TER_L",
+    "SNCF/AM/Regiolis_BMXp_TER_R",
+    "SNCF/AM/Regiolis_BMXi_TER_L",
+    "SNCF/AM/Regiolis_RI4_TER_L",
+    "SNCF/AM/Regiolis_BMXp_TER_R"
+  ],
+  "2Z84506": [
+    "SNCF/AM/Regiolis_BMX_TERb_L",
+    "SNCF/AM/Regiolis_BRI6a_TERb_L",
+    "SNCF/AM/Regiolis_BRI6b_TERb_R",
+    "SNCF/AM/Regiolis_BMXi_TERb_R",
+    "SNCF/AM/Regiolis_BMX_TERb_L",
+    "SNCF/AM/Regiolis_BRI6a_TERb_L",
+    "SNCF/AM/Regiolis_BRI6b_TERb_R",
+    "SNCF/AM/Regiolis_BMXi_TERb_R"
+  ],
+  "3X73500": [
+    "SNCF/AD/X73500_T2B",
+    "SNCF/AD/X73500_T2B",
+    "SNCF/AD/X73500_T2B"
+  ],
+  "3X76503": [
+    "SNCF/AM/XGC_T2_AB_L",
+    "SNCF/AM/XRGC_T2_R",
+    "SNCF/AM/XGC_T2_AB_R",
+    "SNCF/AM/XGC_T2_AB_L",
+    "SNCF/AM/XRGC_T2_R",
+    "SNCF/AM/XGC_T2_AB_R",
+    "SNCF/AM/XGC_T2_AB_L",
+    "SNCF/AM/XRGC_T2_R",
+    "SNCF/AM/XGC_T2_AB_R"
+  ],
+  "3X76504": [
+    "SNCF/AM/XGC_T2_AB_L",
+    "SNCF/AM/XRGC_T2_R",
+    "SNCF/AM/XRGC_T2_R",
+    "SNCF/AM/XGC_T2_AB_R",
+    "SNCF/AM/XGC_T2_AB_L",
+    "SNCF/AM/XRGC_T2_R",
+    "SNCF/AM/XRGC_T2_R",
+    "SNCF/AM/XGC_T2_AB_R",
+    "SNCF/AM/XGC_T2_AB_L",
+    "SNCF/AM/XRGC_T2_R",
+    "SNCF/AM/XRGC_T2_R",
+    "SNCF/AM/XGC_T2_AB_R"
+  ],
+  "3X84504": [
+    "SNCF/AM/Regiolis_BMXi_TER_L",
+    "SNCF/AM/Regiolis_RI4_TER_L",
+    "SNCF/AM/Regiolis_BMXp_TER_R",
+    "SNCF/AM/Regiolis_BMXi_TER_L",
+    "SNCF/AM/Regiolis_RI4_TER_L",
+    "SNCF/AM/Regiolis_BMXp_TER_R",
+    "SNCF/AM/Regiolis_BMXi_TER_L",
+    "SNCF/AM/Regiolis_RI4_TER_L",
+    "SNCF/AM/Regiolis_BMXp_TER_R"
+  ],
+  "3X84506": [
+    "SNCF/AM/Regiolis_BMX_TERb_L",
+    "SNCF/AM/Regiolis_BRI6a_TERb_L",
+    "SNCF/AM/Regiolis_BRI6b_TERb_R",
+    "SNCF/AM/Regiolis_BMXi_TERb_R",
+    "SNCF/AM/Regiolis_BMX_TERb_L",
+    "SNCF/AM/Regiolis_BRI6a_TERb_L",
+    "SNCF/AM/Regiolis_BRI6b_TERb_R",
+    "SNCF/AM/Regiolis_BMXi_TERb_R",
+    "SNCF/AM/Regiolis_BMX_TERb_L",
+    "SNCF/AM/Regiolis_BRI6a_TERb_L",
+    "SNCF/AM/Regiolis_BRI6b_TERb_R",
+    "SNCF/AM/Regiolis_BMXi_TERb_R"
+  ],
+  "3Z24502": [
+    "SNCF/AE/Z24500_T2B_Z1_L",
+    "SNCF/AE/Z24500_T2B_Z1_R",
+    "SNCF/AE/Z24500_T2B_Z1_L",
+    "SNCF/AE/Z24500_T2B_Z1_R",
+    "SNCF/AE/Z24500_T2B_Z1_L",
+    "SNCF/AE/Z24500_T2B_Z1_R"
+  ],
+  "3Z24503": [
+    "SNCF/AE/Z24500_T2B_Z1_L",
+    "SNCF/AE/Z24500_T2B_Z3_L",
+    "SNCF/AE/Z24500_T2B_Z1_R",
+    "SNCF/AE/Z24500_T2B_Z1_L",
+    "SNCF/AE/Z24500_T2B_Z3_L",
+    "SNCF/AE/Z24500_T2B_Z1_R",
+    "SNCF/AE/Z24500_T2B_Z1_L",
+    "SNCF/AE/Z24500_T2B_Z3_L",
+    "SNCF/AE/Z24500_T2B_Z1_R"
+  ],
+  "3Z51504": [
+    "SNCF/AM/CoradiaLiner_ZMXi_Carm_L",
+    "SNCF/AM/CoradiaLiner_RI4_Carm_R",
+    "SNCF/AM/CoradiaLiner_ZMXp_Carm_R",
+    "SNCF/AM/CoradiaLiner_ZMXi_Carm_L",
+    "SNCF/AM/CoradiaLiner_RI4_Carm_R",
+    "SNCF/AM/CoradiaLiner_ZMXp_Carm_R",
+    "SNCF/AM/CoradiaLiner_ZMXi_Carm_L",
+    "SNCF/AM/CoradiaLiner_RI4_Carm_R",
+    "SNCF/AM/CoradiaLiner_ZMXp_Carm_R"
+  ],
+  "3Z51506": [
+    "SNCF/AM/CoradiaLiner_BMXi_Carm_L",
+    "SNCF/AM/CoradiaLiner_BRI6i_Carm_L",
+    "SNCF/AM/CoradiaLiner_BRI6p_Carm_R",
+    "SNCF/AM/CoradiaLiner_BMXp_Carm_R",
+    "SNCF/AM/CoradiaLiner_BMXi_Carm_L",
+    "SNCF/AM/CoradiaLiner_BRI6i_Carm_L",
+    "SNCF/AM/CoradiaLiner_BRI6p_Carm_R",
+    "SNCF/AM/CoradiaLiner_BMXp_Carm_R",
+    "SNCF/AM/CoradiaLiner_BMXi_Carm_L",
+    "SNCF/AM/CoradiaLiner_BRI6i_Carm_L",
+    "SNCF/AM/CoradiaLiner_BRI6p_Carm_R",
+    "SNCF/AM/CoradiaLiner_BMXp_Carm_R"
+  ],
+  "3Z84504": [
+    "SNCF/AM/Regiolis_BMXi_TER_L",
+    "SNCF/AM/Regiolis_RI4_TER_L",
+    "SNCF/AM/Regiolis_BMXp_TER_R",
+    "SNCF/AM/Regiolis_BMXi_TER_L",
+    "SNCF/AM/Regiolis_RI4_TER_L",
+    "SNCF/AM/Regiolis_BMXp_TER_R",
+    "SNCF/AM/Regiolis_BMXi_TER_L",
+    "SNCF/AM/Regiolis_RI4_TER_L",
+    "SNCF/AM/Regiolis_BMXp_TER_R"
+  ],
+  "3Z84506": [
+    "SNCF/AM/Regiolis_BMX_TERb_L",
+    "SNCF/AM/Regiolis_BRI6a_TERb_L",
+    "SNCF/AM/Regiolis_BRI6b_TERb_R",
+    "SNCF/AM/Regiolis_BMXi_TERb_R",
+    "SNCF/AM/Regiolis_BMX_TERb_L",
+    "SNCF/AM/Regiolis_BRI6a_TERb_L",
+    "SNCF/AM/Regiolis_BRI6b_TERb_R",
+    "SNCF/AM/Regiolis_BMXi_TERb_R",
+    "SNCF/AM/Regiolis_BMX_TERb_L",
+    "SNCF/AM/Regiolis_BRI6a_TERb_L",
+    "SNCF/AM/Regiolis_BRI6b_TERb_R",
+    "SNCF/AM/Regiolis_BMXi_TERb_R"
+  ],
+  "4Z24502": [
+    "SNCF/AE/Z24500_T2B_Z1_L",
+    "SNCF/AE/Z24500_T2B_Z1_R",
+    "SNCF/AE/Z24500_T2B_Z1_L",
+    "SNCF/AE/Z24500_T2B_Z1_R",
+    "SNCF/AE/Z24500_T2B_Z1_L",
+    "SNCF/AE/Z24500_T2B_Z1_R",
+    "SNCF/AE/Z24500_T2B_Z1_L",
+    "SNCF/AE/Z24500_T2B_Z1_R"
+  ],
+  "141RCH": [
+    "SNCF/LV/SNCF_141R_CN1_L"
+  ],
+  "141RF": [
+    "SNCF/LV/SNCF_141R_FN2_L"
+  ],
+  "26000US": [
+    "SNCF/LE/BB26000_OC_L"
+  ],
+  "63500A": [
+    "SNCF/LD/BB63500_1S_ArzI_R"
+  ],
+  "63500ACH": [
+    "SNCF/LD/BB63500_1S_ArzI_R"
+  ],
+  "67400A": [
+    "SNCF/LD/BB67400_BN_L"
+  ],
+  "67400AUM": [
+    "SNCF/LD/BB67400_BN_L",
+    "SNCF/LD/BB67400_BN_L"
+  ],
+  "1X81503": [
+    "SNCF/AM/XGC_T2_AB_L",
+    "SNCF/AM/BRGC_T2_R",
+    "SNCF/AM/XGC_T2_R"
+  ],
+  "1Z81503": [
+    "SNCF/AM/XGC_T2_AB_L",
+    "SNCF/AM/BRGC_T2_R",
+    "SNCF/AM/XGC_T2_R"
+  ],
+  "1X81504": [
+    "SNCF/AM/AGCBibi_T2_L",
+    "SNCF/AM/BRGC4_T2_R",
+    "SNCF/AM/BRGC_T2_R",
+    "SNCF/AM/AGCBibi_T2_R"
+  ],
+  "1Z81504": [
+    "SNCF/AM/AGCBibi_T2_L",
+    "SNCF/AM/BRGC4_T2_R",
+    "SNCF/AM/BRGC_T2_R",
+    "SNCF/AM/AGCBibi_T2_R"
+  ],
+  "2X81503": [
+    "SNCF/AM/XGC_T2_AB_L",
+    "SNCF/AM/BRGC_T2_R",
+    "SNCF/AM/XGC_T2_R",
+    "SNCF/AM/XGC_T2_AB_L",
+    "SNCF/AM/BRGC_T2_R",
+    "SNCF/AM/XGC_T2_R"
+  ],
+  "2Z81503": [
+    "SNCF/AM/XGC_T2_AB_L",
+    "SNCF/AM/BRGC_T2_R",
+    "SNCF/AM/XGC_T2_R",
+    "SNCF/AM/XGC_T2_AB_L",
+    "SNCF/AM/BRGC_T2_R",
+    "SNCF/AM/XGC_T2_R"
+  ],
+  "2X81504": [
+    "SNCF/AM/AGCBibi_T2_L",
+    "SNCF/AM/BRGC4_T2_R",
+    "SNCF/AM/BRGC_T2_R",
+    "SNCF/AM/AGCBibi_T2_R",
+    "SNCF/AM/AGCBibi_T2_L",
+    "SNCF/AM/BRGC4_T2_R",
+    "SNCF/AM/BRGC_T2_R",
+    "SNCF/AM/AGCBibi_T2_R"
+  ],
+  "2Z81504": [
+    "SNCF/AM/AGCBibi_T2_L",
+    "SNCF/AM/BRGC4_T2_R",
+    "SNCF/AM/BRGC_T2_R",
+    "SNCF/AM/AGCBibi_T2_R",
+    "SNCF/AM/AGCBibi_T2_L",
+    "SNCF/AM/BRGC4_T2_R",
+    "SNCF/AM/BRGC_T2_R",
+    "SNCF/AM/AGCBibi_T2_R"
+  ],
+  "3X81503": [
+    "SNCF/AM/XGC_T2_AB_L",
+    "SNCF/AM/BRGC_T2_R",
+    "SNCF/AM/XGC_T2_R",
+    "SNCF/AM/XGC_T2_AB_L",
+    "SNCF/AM/BRGC_T2_R",
+    "SNCF/AM/XGC_T2_R",
+    "SNCF/AM/XGC_T2_AB_L",
+    "SNCF/AM/BRGC_T2_R",
+    "SNCF/AM/XGC_T2_R"
+  ],
+  "3Z81503": [
+    "SNCF/AM/XGC_T2_AB_L",
+    "SNCF/AM/BRGC_T2_R",
+    "SNCF/AM/XGC_T2_R",
+    "SNCF/AM/XGC_T2_AB_L",
+    "SNCF/AM/BRGC_T2_R",
+    "SNCF/AM/XGC_T2_R",
+    "SNCF/AM/XGC_T2_AB_L",
+    "SNCF/AM/BRGC_T2_R",
+    "SNCF/AM/XGC_T2_R"
+  ],
+  "3X81504": [
+    "SNCF/AM/AGCBibi_T2_L",
+    "SNCF/AM/BRGC4_T2_R",
+    "SNCF/AM/BRGC_T2_R",
+    "SNCF/AM/AGCBibi_T2_R",
+    "SNCF/AM/AGCBibi_T2_L",
+    "SNCF/AM/BRGC4_T2_R",
+    "SNCF/AM/BRGC_T2_R",
+    "SNCF/AM/AGCBibi_T2_R",
+    "SNCF/AM/AGCBibi_T2_L",
+    "SNCF/AM/BRGC4_T2_R",
+    "SNCF/AM/BRGC_T2_R",
+    "SNCF/AM/AGCBibi_T2_R"
+  ],
+  "3Z81504": [
+    "SNCF/AM/AGCBibi_T2_L",
+    "SNCF/AM/BRGC4_T2_R",
+    "SNCF/AM/BRGC_T2_R",
+    "SNCF/AM/AGCBibi_T2_R",
+    "SNCF/AM/AGCBibi_T2_L",
+    "SNCF/AM/BRGC4_T2_R",
+    "SNCF/AM/BRGC_T2_R",
+    "SNCF/AM/AGCBibi_T2_R",
+    "SNCF/AM/AGCBibi_T2_L",
+    "SNCF/AM/BRGC4_T2_R",
+    "SNCF/AM/BRGC_T2_R",
+    "SNCF/AM/AGCBibi_T2_R"
+  ]
+}
