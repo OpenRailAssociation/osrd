@@ -51,9 +51,9 @@ export default function RollingStockSelector() {
           </div>
         </div>
       </div>
+      <RollingStock />
       <ModalSNCF htmlID="rollingStockModal" size="lg">
         <ModalBodySNCF>
-          <RollingStock />
         </ModalBodySNCF>
         <ModalFooterSNCF>
           <div className="d-flex flex-row-reverse w-100">

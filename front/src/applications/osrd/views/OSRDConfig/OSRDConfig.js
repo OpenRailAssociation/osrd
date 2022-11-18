@@ -48,6 +48,12 @@ export default function OSRDConfig(props) {
 
   return (
     <main className={`osrd-config-mastcontainer mastcontainer${fullscreen ? ' fullscreen' : ''}`}>
+      <RollingStockSelector />
+    </main>
+  );
+
+  return (
+    <main className={`osrd-config-mastcontainer mastcontainer${fullscreen ? ' fullscreen' : ''}`}>
       <div className="row m-0 px-1 py-3 h-100">
         <div className="col-sm-6">
           <div className="row">
