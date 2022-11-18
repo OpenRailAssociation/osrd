@@ -110,7 +110,8 @@
     "build": "react-scripts --max_old_space_size=4096 build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "lint-ts": "eslint --ext .ts,.tsx src"
+    "lint-ts": "eslint --ext .ts,.tsx src",
+    "generate-types": "npx @rtk-query/codegen-openapi src/common/api/openapi-config.js"
   },
   "browserslist": {
     "production": [
