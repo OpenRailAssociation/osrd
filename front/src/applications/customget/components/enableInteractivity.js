@@ -17,7 +17,6 @@ import {
 import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/customget/components/consts';
 import drawGuideLines from 'applications/customget/components/drawGuideLines';
 import { store } from 'Store';
-import createTrain from './SpaceTimeChart/createTrain';
 
 export const displayGuide = (chart, opacity) => {
   chart.svg.selectAll('#vertical-line').style('opacity', opacity);
