@@ -4,11 +4,16 @@ import PropTypes from 'prop-types';
 import mlgTraffic from 'applications/osrd/components/RollingStock/consts/mlgtraffic.json';
 import { mlgTrafficURL } from 'applications/osrd/components/RollingStock/consts/consts';
 
+function cleanGifName(gifName) {
+  const regex = /http:\/\/www\.mlgtraffic\.net\/images\/|\.gif/gi;
+  return gifName.replaceAll(regex, '');
+}
+
 export default function RollingStock2Img(props) {
   const { name } = props;
   return mlgTraffic[name]
     ? mlgTraffic[name].map((gif) => (
-        <img src={`${mlgTrafficURL}${gif}.gif`} alt={name} key={nextId()} />
+        <img src={`${mlgTrafficURL}${cleanGifName(gif)}.gif`} alt={name} key={nextId()} />
       ))
     : null;
 }
