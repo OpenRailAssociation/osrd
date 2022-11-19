@@ -9,10 +9,17 @@ import RollingStockCard from 'applications/osrd/components/RollingStock/RollingS
 import { BsLightningFill } from 'react-icons/bs';
 import { MdLocalGasStation } from 'react-icons/md';
 import 'applications/osrd/components/RollingStock/RollingStock.scss';
-
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import rollingStockDetailDB from './consts/rollingstockDetailDB.json';
 
 const ROLLING_STOCK_URL = '/light_rolling_stock/';
+
+// To remove when details will be inside backend DB
+const mergeDetailsWithDB = (data, dataDetails) =>
+  data.map((rollingstock) => ({
+    ...rollingstock,
+    ...dataDetails[rollingstock.name],
+  }));
 
 export default function RollingStock() {
   const dispatch = useDispatch();
@@ -39,8 +46,14 @@ export default function RollingStock() {
 
   const updateSearch = () => {
     // Text filter
-    let filteredRollingStockListNew = rollingStock.filter((el) =>
-      el.name.toLowerCase().includes(filters.text)
+    let filteredRollingStockListNew = rollingStock.filter(
+      (el) =>
+        el.name.toLowerCase().includes(filters.text) ||
+        (el.detail && el.detail.toLowerCase().includes(filters.text)) ||
+        (el.reference && el.reference.toLowerCase().includes(filters.text)) ||
+        (el.series && el.series.toLowerCase().includes(filters.text)) ||
+        (el.type && el.type.toLowerCase().includes(filters.text)) ||
+        (el.grouping && el.grouping.toLowerCase().includes(filters.text))
     );
 
     // checkbox filters
@@ -60,9 +73,12 @@ export default function RollingStock() {
     }
 
     // ASC sort by default
-    filteredRollingStockListNew = filteredRollingStockListNew.sort((a, b) =>
-      a.name.localeCompare(b.name)
-    );
+    filteredRollingStockListNew = filteredRollingStockListNew.sort((a, b) => {
+      if (a.reference && b.reference && a.reference !== b.reference) {
+        return a.name.localeCompare(b.name) && a.reference.localeCompare(b.reference);
+      }
+      return a.name.localeCompare(b.name);
+    });
 
     setTimeout(() => {
       setFilteredRollingStockList(filteredRollingStockListNew);
@@ -79,8 +95,9 @@ export default function RollingStock() {
     if (rollingStock === undefined) {
       try {
         const data = await get(ROLLING_STOCK_URL, { page_size: 1000 });
-        setRollingStock(data.results);
-        setFilteredRollingStockList(data.results);
+        const mergedData = mergeDetailsWithDB(data.results, rollingStockDetailDB);
+        setRollingStock(mergedData);
+        setFilteredRollingStockList(mergedData);
       } catch (e) {
         dispatch(
           setFailure({
