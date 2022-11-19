@@ -5,11 +5,12 @@ import { setFailure } from 'reducers/main';
 import { get } from 'common/requests';
 import { useTranslation } from 'react-i18next';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
-import RollingStockCard from 'applications/osrd/components/RollingStock/RollingStockCard';
 import { BsLightningFill } from 'react-icons/bs';
 import { MdLocalGasStation } from 'react-icons/md';
 import 'applications/osrd/components/RollingStock/RollingStock.scss';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import RollingStockEmpty from './RollingStockEmpty';
+import RollingStockCard from './RollingStockCard';
 import rollingStockDetailDB from './consts/rollingstockDetailDB.json';
 import mlgTraffic from './consts/mlgtraffic.json';
 
@@ -46,6 +47,7 @@ export default function RollingStock() {
   };
 
   const updateSearch = () => {
+    setOpenedRollingStockCardId(undefined);
     // Text filter
     let filteredRollingStockListNew = rollingStock.filter(
       (el) =>
@@ -109,6 +111,20 @@ export default function RollingStock() {
       }
     }
   };
+
+  const listOfRollingStock = () =>
+    filteredRollingStockList.length > 0 ? (
+      filteredRollingStockList.map((item) => (
+        <RollingStockCard
+          data={item}
+          key={item.id}
+          openedRollingStockCardId={openedRollingStockCardId}
+          setOpenedRollingStockCardId={setOpenedRollingStockCardId}
+        />
+      ))
+    ) : (
+      <RollingStockEmpty />
+    );
 
   useEffect(() => {
     getAllRollingStock();
@@ -186,14 +202,7 @@ export default function RollingStock() {
       </div>
       <div className="rollingstock-search-list">
         {filteredRollingStockList !== undefined && !isFiltering ? (
-          filteredRollingStockList.map((item) => (
-            <RollingStockCard
-              data={item}
-              key={item.id}
-              openedRollingStockCardId={openedRollingStockCardId}
-              setOpenedRollingStockCardId={setOpenedRollingStockCardId}
-            />
-          ))
+          listOfRollingStock()
         ) : (
           <Loader msg={t('rollingstock:waitingLoader')} />
         )}
