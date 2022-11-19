@@ -9,6 +9,7 @@ import { IoMdSunny, IoIosSnow } from 'react-icons/io';
 import Loader from 'common/Loader';
 import RollingStockCardButtons from './RollingStockCardButtons';
 import RollingStockCurves from './RollingStockCurves';
+import RollingStock2Img from './RollingStock2Img';
 
 const ROLLING_STOCK_URL = '/rolling_stock/';
 
@@ -20,6 +21,16 @@ export default function RollingStockCardDetail(props) {
   const { t } = useTranslation(['rollingstock']);
 
   const mode2name = (mode) => (mode !== 'thermal' ? `${mode}V` : t('thermal'));
+
+  const countCurves = (curvesData) => {
+    let nbCurves = 0;
+    Object.keys(curvesData.modes).forEach((mode) => {
+      curvesData.modes[mode].curves.forEach(() => {
+        nbCurves += 1;
+      });
+    });
+    return nbCurves;
+  };
 
   const transformCurves = (curvesData) => {
     const transformedCurves = {};
@@ -168,8 +179,14 @@ export default function RollingStockCardDetail(props) {
       <RollingStockCurves
         data={transformCurves(data.effort_curves)}
         displayDefaultCurve={displayDefaultCurve}
+        nbCurves={countCurves(data.effort_curves)}
         setDisplayDefaultCurve={setDisplayDefaultCurve}
       />
+      <div className="rollingstock-detail-container-img">
+        <div className="rollingstock-detail-img">
+          <RollingStock2Img name={data.name} />
+        </div>
+      </div>
       <RollingStockCardButtons />
     </div>
   ) : (
