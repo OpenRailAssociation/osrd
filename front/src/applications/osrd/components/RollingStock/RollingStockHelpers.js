@@ -3,13 +3,13 @@ import PropTypes from 'prop-types';
 
 export function checkUnit(data) {
   if (data.unit && data.unit !== 'US') {
-    return <span className="rollingstock-infos-unit">{data.unit !== 'US' ? data.unit : null}</span>;
-  }
-  if (data.detail.search(/UM2|MUX/i) !== -1) {
-    return <span className="rollingstock-infos-unit">UM2</span>;
+    return <span className={`rollingstock-infos-unit ${data.unit}`}>{data.unit}</span>;
   }
   if (data.detail.search(/UM3/i) !== -1) {
-    return <span className="rollingstock-infos-unit">UM3</span>;
+    return <span className="rollingstock-infos-unit UM3">UM3</span>;
+  }
+  if (data.detail.search(/UM|MUX/i) !== -1) {
+    return <span className="rollingstock-infos-unit UM2">UM2</span>;
   }
   return null;
 }
@@ -19,10 +19,10 @@ export function RollingStockInfos(props) {
   const series = data.series ? (
     <span className="rollingstock-infos-begin">
       <span className="rollingstock-infos-series">{data.series}</span>
+      {checkUnit(data)}
       <span className="rollingstock-infos-subseries">
         {data.series !== data.subseries ? data.subseries : null}
       </span>
-      {checkUnit(data)}
     </span>
   ) : (
     <span className="rollingstock-infos-begin">

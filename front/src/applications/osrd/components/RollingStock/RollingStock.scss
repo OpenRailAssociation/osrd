@@ -19,11 +19,28 @@
   position: relative;
   overflow: auto;
   height: 60vh;
-  padding-right: .5rem;
-
   .loader {
     margin-top: 1rem;
     transform: none;
+  }
+  .rollingstock-empty {
+    display: flex;
+    position: relative;
+    margin-top: 2rem;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    span {
+      z-index: 1;
+      font-size: 4rem;
+      color: #a0a0a0;
+    }
+    img {
+      position: absolute;
+      width: 7rem;
+      filter: blur(2px);
+      opacity: .20;
+    }
   }
 }
 
@@ -32,10 +49,14 @@
   position: relative;
   width: 100%;
   cursor: pointer;
-  transition: .2s;
   border-radius: 4px;
+  &.inactive:not(:hover) {
+    transition: .5s;
+    opacity: .5;
+  }
   &:hover:not(.active) {
-    .rollingstock-header, .rollingstock-body, .rollingstock-body-img, .rollingstock-footer {
+    .rollingstock-header, .rollingstock-body, .rollingstock-body-container-img, .rollingstock-footer {
+      transition: .5s;
       border-color: #333;
     }
   }
@@ -55,10 +76,11 @@
   border-top: 2px solid #d7d7d7;
   border-left: 2px solid #d7d7d7;
   border-right: 2px solid #d7d7d7;
-  transition: .2s;
+  cursor: pointer;
   .rollingstock-title {
     white-space: nowrap;
     height: 1.5rem;
+    overflow: hidden;
     .rollingstock-infos {
       display: flex;
       align-items: center;
@@ -72,22 +94,27 @@
           height: 1.5rem;
           font-weight: bold;
         }
-        .rollingstock-infos-subseries {
-          margin-left: .5rem;
-          text-transform: uppercase;
-          font-size: .7rem;
-        }
         .rollingstock-infos-unit {
           color: #6e1e78;
           font-weight: bold;
-          margin-left: .5rem;
+          margin-left: .25rem;
+          font-size: .7rem;
+        }
+        .rollingstock-infos-subseries {
+          margin-left: .25rem;
+          text-transform: uppercase;
           font-size: .7rem;
         }
       }
       .rollingstock-infos-middle {
+        white-space: normal;
+        overflow-wrap: break-word;
+        overflow: hidden;
+        max-width: 55%;
         text-transform: uppercase;
         color: #303383;
         font-size: .6rem;
+        line-height: .6rem;
       }
       .rollingstock-infos-end {
         color: #4d4d4d;
@@ -96,39 +123,66 @@
     }
   }
 }
-.rollingstock-body-img {
-  display: flex;
-  transition: .2s;
+.rollingstock-body-container-img {
   padding: 0 .5rem;
-  overflow: hidden;
-  height: 1.75rem;
   border-left: 2px solid #d7d7d7;
   border-right: 2px solid #d7d7d7;
-  .rollingstock-img {
-    display: block;
-    white-space: nowrap;
-    transform: scale(.3); // Have to scale whole <img> because electric trains with pantograph have taller pictures
-    transform-origin: left;
-    img {
-      display: inline-block;
-      position: relative;
-      vertical-align: baseline;
+  .rollingstock-body-img {
+    display: flex;
+    overflow: hidden;
+    height: 2.5rem;
+    .rollingstock-img {
+      display: block;
+      white-space: nowrap;
+      transform: scale(.4); // Have to scale whole <img> because electric trains with pantograph have taller pictures
+      transform-origin: left;
+      img {
+        display: inline-block;
+        position: relative;
+        vertical-align: baseline;
+      }
     }
   }
 }
 
 .rollingstock-body {
+  position: relative;
   padding: 0 .5rem;
   border-left: 2px solid #d7d7d7;
   border-right: 2px solid #d7d7d7;
-  transition: .2s;
   font-size: .8rem;
   font-weight: lighter;
+  .rollingstock-detail-container-img {
+    position: absolute;
+    z-index: 0;
+    width: calc(100% - 5rem);
+    overflow: hidden;
+    bottom: 3.5rem;
+    left: 3.5rem;
+    opacity: .35;
+    padding-top: 1rem; // Need padding...because
+    padding-bottom: 1rem;
+    .rollingstock-detail-img {
+      display: flex;
+      align-items: baseline;
+      position: relative;
+      white-space: nowrap;
+      transform: scale(1.5); // Have to scale whole <img> because electric trains with pantograph have taller pictures
+      transform-origin: left;
+      img {
+        display: inline-block;
+        position: relative;
+        vertical-align: baseline;
+      }
+    }
+  }
   .loader {
     margin: 0;
     padding: 2rem 0;
   }
   .curves-container {
+    position: relative;
+    z-index: 1;
     height: 17rem;
     .ac {
       color: #0088ce;
@@ -195,7 +249,6 @@
   padding: 0 .5rem;
   border-radius: 0 0 4px 4px;
   font-size: .8rem;
-  transition: .2s;
   border-left: 2px solid #d7d7d7;
   border-right: 2px solid #d7d7d7;
   border-bottom: 2px solid #d7d7d7;
