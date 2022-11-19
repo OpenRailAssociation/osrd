@@ -136,9 +136,11 @@ export default function RollingStockCurve(props) {
         }}
       >
         {data[tooltip.point.serieId].mode}
-        <span className="curves-chart-tooltip-comfort">
-          {comfort2pictogram(data[tooltip.point.serieId].comfort)}
-        </span>
+        {data[tooltip.point.serieId].comfort ? (
+          <span className="curves-chart-tooltip-comfort">
+            {comfort2pictogram(data[tooltip.point.serieId].comfort)}
+          </span>
+        ) : null}
       </div>
       <div className="curves-chart-tooltip-body">
         {`${tooltip.point.data.y}kN ${Math.floor(tooltip.point.data.x)}km/h`}

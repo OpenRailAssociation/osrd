@@ -34,8 +34,8 @@
   cursor: pointer;
   transition: .2s;
   border-radius: 4px;
-  &:hover :not(.active) {
-    .rollingstock-header, .rollingstock-body, .rollingstock-footer {
+  &:hover:not(.active) {
+    .rollingstock-header, .rollingstock-body, .rollingstock-body-img, .rollingstock-footer {
       border-color: #333;
     }
   }
@@ -57,23 +57,63 @@
   border-right: 2px solid #d7d7d7;
   transition: .2s;
   .rollingstock-title {
-    display: flex;
-    overflow: hidden;
     white-space: nowrap;
-    align-items: center;
-    font-weight: bold;
     height: 1.5rem;
+    .rollingstock-infos {
+      display: flex;
+      align-items: center;
+      height: 1.5rem;
+      justify-content: space-between;
+      .rollingstock-infos-begin {
+        height: 1.5rem;
+        display: flex;
+        align-items: center;
+        .rollingstock-infos-series {
+          height: 1.5rem;
+          font-weight: bold;
+        }
+        .rollingstock-infos-subseries {
+          margin-left: .5rem;
+          text-transform: uppercase;
+          font-size: .7rem;
+        }
+        .rollingstock-infos-unit {
+          color: #6e1e78;
+          font-weight: bold;
+          margin-left: .5rem;
+          font-size: .7rem;
+        }
+      }
+      .rollingstock-infos-middle {
+        text-transform: uppercase;
+        color: #303383;
+        font-size: .6rem;
+      }
+      .rollingstock-infos-end {
+        color: #4d4d4d;
+        font-size: 1rem;
+      }
+    }
   }
 }
-.rollingstock-img {
-  display: inline-block;
-  white-space: nowrap;
-  transform: scale(.3); // Have to scale whole <img> because electric trains with pantograph have taller pictures
-  transform-origin: left;
-  img {
-    display: inline-block;
-    position: relative;
-    vertical-align: baseline;
+.rollingstock-body-img {
+  display: flex;
+  transition: .2s;
+  padding: 0 .5rem;
+  overflow: hidden;
+  height: 1.75rem;
+  border-left: 2px solid #d7d7d7;
+  border-right: 2px solid #d7d7d7;
+  .rollingstock-img {
+    display: block;
+    white-space: nowrap;
+    transform: scale(.3); // Have to scale whole <img> because electric trains with pantograph have taller pictures
+    transform-origin: left;
+    img {
+      display: inline-block;
+      position: relative;
+      vertical-align: baseline;
+    }
   }
 }
 
@@ -123,7 +163,7 @@
         justify-content: space-between;
         background-color: #d7d7d7;
         border-bottom: 2px solid #d7d7d7;
-        padding-left: .5rem;
+        padding-left: .25rem;
         .curves-chart-tooltip-comfort {
           display: flex;
           align-items: center;
@@ -135,7 +175,7 @@
       .curves-chart-tooltip-body {
         display: flex;
         align-items: center;
-        padding: 0 .5rem;
+        padding: 0 .25rem;
       }
     }
   }
