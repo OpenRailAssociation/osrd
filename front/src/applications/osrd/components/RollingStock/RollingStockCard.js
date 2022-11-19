@@ -19,7 +19,9 @@ export default function RollingStockCard(props) {
   const { data, openedRollingStockCardId, setOpenedRollingStockCardId } = props;
 
   function displayCardDetail() {
-    setOpenedRollingStockCardId(data.id);
+    if (openedRollingStockCardId !== data.id) {
+      setOpenedRollingStockCardId(data.id);
+    }
   }
 
   useEffect(() => {
@@ -43,13 +45,24 @@ export default function RollingStockCard(props) {
   return (
     <div
       className={`rollingstock-container mb-3 ${
-        openedRollingStockCardId === data.id ? 'active' : null
+        openedRollingStockCardId === data.id ? 'active' : ''
+      } ${
+        openedRollingStockCardId !== data.id && openedRollingStockCardId !== undefined
+          ? 'inactive'
+          : ''
       }`}
       role="button"
       onClick={displayCardDetail}
       tabIndex={0}
     >
-      <div className="rollingstock-header">
+      <div
+        className="rollingstock-header"
+        onClick={() =>
+          openedRollingStockCardId === data.id ? setOpenedRollingStockCardId(undefined) : {}
+        }
+        role="button"
+        tabIndex={0}
+      >
         <div className="rollingstock-title">
           <RollingStockInfos data={data} />
           <div className="sr-only">
@@ -60,9 +73,11 @@ export default function RollingStockCard(props) {
       </div>
       {openedRollingStockCardId === data.id ? <RollingStockCardDetail id={data.id} /> : null}
       {openedRollingStockCardId !== data.id && mlgTraffic[data.name] ? (
-        <div className="rollingstock-body-img">
-          <div className="rollingstock-img">
-            <RollingStock2Img name={data.name} />
+        <div className="rollingstock-body-container-img">
+          <div className="rollingstock-body-img">
+            <div className="rollingstock-img">
+              <RollingStock2Img name={data.name} />
+            </div>
           </div>
         </div>
       ) : null}

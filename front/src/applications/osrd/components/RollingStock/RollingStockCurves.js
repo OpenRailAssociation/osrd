@@ -60,7 +60,7 @@ const comfort2pictogram = (comfort) => {
 };
 
 function DefaultCurveSwitch(props) {
-  const { displayDefaultCurve, setDisplayDefaultCurve } = props;
+  const { displayDefaultCurve, nbCurves, setDisplayDefaultCurve } = props;
   const { t } = useTranslation(['rollingstock']);
   return (
     <div className="rollingstock-defaultcurveswitch">
@@ -77,19 +77,21 @@ function DefaultCurveSwitch(props) {
           {t('curves.default')}
         </label>
       </div>
-      <div className="custom-control custom-radio custom-control-inline">
-        <input
-          type="radio"
-          id="allCurvesChoice"
-          name="allCurvesChoice"
-          className="custom-control-input"
-          checked={!displayDefaultCurve}
-          onChange={() => setDisplayDefaultCurve(false)}
-        />
-        <label className="custom-control-label font-weight-medium" htmlFor="allCurvesChoice">
-          {t('curves.all')}
-        </label>
-      </div>
+      { nbCurves > 0 ? (
+        <div className="custom-control custom-radio custom-control-inline">
+          <input
+            type="radio"
+            id="allCurvesChoice"
+            name="allCurvesChoice"
+            className="custom-control-input"
+            checked={!displayDefaultCurve}
+            onChange={() => setDisplayDefaultCurve(false)}
+          />
+          <label className="custom-control-label font-weight-medium" htmlFor="allCurvesChoice">
+            {t('curves.all')} ({nbCurves})
+          </label>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -119,7 +121,7 @@ function curveColor(index) {
 }
 
 export default function RollingStockCurve(props) {
-  const { data, displayDefaultCurve, setDisplayDefaultCurve } = props;
+  const { data, displayDefaultCurve, nbCurves, setDisplayDefaultCurve } = props;
 
   const curves = Object.keys(data).map((name, index) =>
     parseData(name, curveColor(index), data[name])
@@ -154,6 +156,7 @@ export default function RollingStockCurve(props) {
         <DefaultCurveSwitch
           displayDefaultCurve={displayDefaultCurve}
           setDisplayDefaultCurve={setDisplayDefaultCurve}
+          nbCurves={nbCurves}
         />
         <Legend curves={curves} />
       </div>
@@ -210,13 +213,21 @@ Legend.propTypes = {
   curves: PropTypes.array.isRequired,
 };
 
+DefaultCurveSwitch.defaultProps = {
+  nbCurves: 0,
+};
 DefaultCurveSwitch.propTypes = {
   displayDefaultCurve: PropTypes.bool.isRequired,
+  nbCurves: PropTypes.number,
   setDisplayDefaultCurve: PropTypes.func.isRequired,
 };
 
+RollingStockCurve.defaultProps = {
+  nbCurves: 0,
+};
 RollingStockCurve.propTypes = {
   data: PropTypes.object.isRequired,
   displayDefaultCurve: PropTypes.bool.isRequired,
+  nbCurves: PropTypes.number,
   setDisplayDefaultCurve: PropTypes.func.isRequired,
 };
