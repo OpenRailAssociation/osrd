@@ -11,6 +11,7 @@ import { MdLocalGasStation } from 'react-icons/md';
 import 'applications/osrd/components/RollingStock/RollingStock.scss';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import rollingStockDetailDB from './consts/rollingstockDetailDB.json';
+import mlgTraffic from './consts/mlgtraffic.json';
 
 const ROLLING_STOCK_URL = '/light_rolling_stock/';
 
@@ -97,7 +98,6 @@ export default function RollingStock() {
         const data = await get(ROLLING_STOCK_URL, { page_size: 1000 });
         const mergedData = mergeDetailsWithDB(data.results, rollingStockDetailDB);
         setRollingStock(mergedData);
-        setFilteredRollingStockList(mergedData);
       } catch (e) {
         dispatch(
           setFailure({
@@ -120,10 +120,11 @@ export default function RollingStock() {
       updateSearch();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters]);
+  }, [filters, rollingStock]);
 
   return (
     <div className="rollingstock-search p-2">
+      <div>Images renseignées {Object.keys(mlgTraffic).length}</div>
       <div className="rollingstock-search-filters">
         <h2 className="d-flex">
           {t('translation:common.filter')}

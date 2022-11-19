@@ -5,39 +5,10 @@ import { MdLocalGasStation } from 'react-icons/md';
 import { IoIosSpeedometer } from 'react-icons/io';
 import { FaWeightHanging } from 'react-icons/fa';
 import { AiOutlineColumnWidth } from 'react-icons/ai';
-import RollingStockCardDetail from 'applications/osrd/components/RollingStock/RollingStockCardDetail';
-import RollingStock2Img from 'applications/osrd/components/RollingStock/RollingStock2Img';
-import mlgTraffic from 'applications/osrd/components/RollingStock/consts/mlgtraffic.json';
-
-function RollingStockInfos(props) {
-  const { data } = props;
-  const series = data.series ? (
-    <span className="rollingstock-infos-begin">
-      <span className="rollingstock-infos-series">{data.series}</span>
-      <span className="rollingstock-infos-subseries">
-        {data.series !== data.subseries ? data.subseries : null}
-      </span>
-      <span className="rollingstock-infos-unit">{data.unit !== 'US' ? data.unit : null}</span>
-    </span>
-  ) : (
-    <span className="rollingstock-infos-begin">
-      <span className="rollingstock-infos-series">{data.reference}</span>
-      <span className="rollingstock-infos-subseries">{data.detail}</span>
-    </span>
-  );
-  const family = data.series ? (
-    <span className="rollingstock-infos-middle">
-      {`${data.family} / ${data.type} / ${data.grouping}`}
-    </span>
-  ) : null;
-  return (
-    <div className="rollingstock-infos">
-      {series}
-      {family}
-      <span className="rollingstock-infos-end">{data.name}</span>
-    </div>
-  );
-}
+import RollingStockCardDetail from './RollingStockCardDetail';
+import RollingStock2Img from './RollingStock2Img';
+import { RollingStockInfos } from './RollingStockHelpers';
+import mlgTraffic from './consts/mlgtraffic.json';
 
 export default function RollingStockCard(props) {
   const [tractionModes, setTractionModes] = useState({
@@ -149,10 +120,6 @@ export default function RollingStockCard(props) {
 
 RollingStockCard.defaultProps = {
   openedRollingStockCardId: undefined,
-};
-
-RollingStockInfos.propTypes = {
-  data: PropTypes.object.isRequired,
 };
 
 RollingStockCard.propTypes = {
