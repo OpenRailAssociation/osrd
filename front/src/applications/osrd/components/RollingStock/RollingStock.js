@@ -12,7 +12,6 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import RollingStockEmpty from './RollingStockEmpty';
 import RollingStockCard from './RollingStockCard';
 import rollingStockDetailDB from './consts/rollingstockDetailDB.json';
-import mlgTraffic from './consts/mlgtraffic.json';
 
 const ROLLING_STOCK_URL = '/light_rolling_stock/';
 
@@ -140,7 +139,6 @@ export default function RollingStock() {
 
   return (
     <div className="rollingstock-search p-2">
-      <div>Images renseignées {Object.keys(mlgTraffic).length}</div>
       <div className="rollingstock-search-filters">
         <h2 className="d-flex">
           {t('translation:common.filter')}

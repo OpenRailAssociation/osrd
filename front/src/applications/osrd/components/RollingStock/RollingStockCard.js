@@ -81,7 +81,7 @@ export default function RollingStockCard(props) {
           </div>
         </div>
       ) : null}
-      <div className="rollingstock-footer py-2">
+      <div className="rollingstock-footer">
         <div className="row">
           <div className="col-5">
             <div className="rollingstock-tractionmode text-nowrap">
@@ -97,7 +97,7 @@ export default function RollingStockCard(props) {
                   </span>
                   <small>
                     {tractionModes.voltages.map((voltage) => (
-                      <span className="ml-1" key={`${voltage}${data.id}`}>
+                      <span className="mr-1" key={`${voltage}${data.id}`}>
                         {voltage}V
                       </span>
                     ))}
