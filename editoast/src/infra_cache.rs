@@ -321,6 +321,10 @@ impl InfraCache {
         &self.objects[ObjectType::Catenary]
     }
 
+    pub fn get_objects_by_type(&self, object_type: ObjectType) -> &HashMap<String, ObjectCache> {
+        &self.objects[object_type]
+    }
+
     /// Given an infra id load infra cache from database
     pub fn load(conn: &PgConnection, infra_id: i32) -> InfraCache {
         let mut infra_cache = Self::default();
@@ -491,7 +495,8 @@ pub mod tests {
     };
 
     use super::{
-        BufferStopCache, DetectorCache, OperationalPointCache, SignalCache, TrackSectionCache,
+        BufferStopCache, DetectorCache, ObjectCache, OperationalPointCache, SignalCache,
+        TrackSectionCache,
     };
 
     #[test]
@@ -659,9 +664,57 @@ pub mod tests {
         })
     }
 
-    pub fn create_track_section_cache(obj_id: String, length: f64) -> TrackSectionCache {
+    impl From<TrackSectionCache> for ObjectCache {
+        fn from(track_section: TrackSectionCache) -> Self {
+            ObjectCache::TrackSection(track_section)
+        }
+    }
+
+    impl From<DetectorCache> for ObjectCache {
+        fn from(detector: DetectorCache) -> Self {
+            ObjectCache::Detector(detector)
+        }
+    }
+
+    impl From<BufferStopCache> for ObjectCache {
+        fn from(buffer_stop: BufferStopCache) -> Self {
+            ObjectCache::BufferStop(buffer_stop)
+        }
+    }
+
+    impl From<SpeedSection> for ObjectCache {
+        fn from(speed_section: SpeedSection) -> Self {
+            ObjectCache::SpeedSection(speed_section)
+        }
+    }
+
+    impl From<SignalCache> for ObjectCache {
+        fn from(signal: SignalCache) -> Self {
+            ObjectCache::Signal(signal)
+        }
+    }
+
+    impl From<SwitchType> for ObjectCache {
+        fn from(switch: SwitchType) -> Self {
+            ObjectCache::SwitchType(switch)
+        }
+    }
+
+    impl From<OperationalPointCache> for ObjectCache {
+        fn from(op: OperationalPointCache) -> Self {
+            ObjectCache::OperationalPoint(op)
+        }
+    }
+
+    impl From<Route> for ObjectCache {
+        fn from(route: Route) -> Self {
+            ObjectCache::Route(route)
+        }
+    }
+
+    pub fn create_track_section_cache<T: AsRef<str>>(obj_id: T, length: f64) -> TrackSectionCache {
         TrackSectionCache {
-            obj_id,
+            obj_id: obj_id.as_ref().into(),
             length,
             bbox_geo: BoundingBox::default(),
             bbox_sch: BoundingBox::default(),
@@ -827,7 +880,7 @@ pub mod tests {
         let mut infra_cache = InfraCache::default();
 
         for id in 'A'..='D' {
-            infra_cache.add(create_track_section_cache(id.into(), 500.))
+            infra_cache.add(create_track_section_cache(id.to_string(), 500.))
         }
 
         infra_cache.add(create_detector_cache("D1", "B", 250.));
