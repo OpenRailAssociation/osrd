@@ -85,8 +85,9 @@ function OSRDSimulation() {
     departureArrivalTimes,
     selectedTrain,
     stickyBar,
+    displaySimulation
   } = useSelector((state: RootState) => state.osrdsimulation);
-  const simulation = useSelector((state: RootState) => state.osrdsimulation.simulation.present);
+  //const simulation = useSelector((state: RootState) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
 
   if (darkmode) {
@@ -98,7 +99,7 @@ function OSRDSimulation() {
    */
   const getTimetable = async () => {
     try {
-      if (!simulation.trains || !simulation.trains[selectedTrain]) {
+      if (displaySimulation) {
         dispatch(updateSelectedTrain(0));
       }
       const timetable = await get(`${timetableURI}${timetableID}/`);
@@ -218,7 +219,7 @@ function OSRDSimulation() {
   const mapMaxHeight = getMapMaxHeight(timeTableRef);
   return (
     <main className={`mastcontainer ${fullscreen ? ' fullscreen' : ''}`}>
-      {!simulation || simulation.trains.length === 0 ? (
+      {!displaySimulation ? (
         <div className="pt-5 mt-5">{waitingLoader}</div>
       ) : (
         <div className="m-0 p-3">
@@ -262,7 +263,7 @@ function OSRDSimulation() {
               className="spacetimechart-container"
               style={{ height: `${heightOfSpaceTimeChart}px` }}
             >
-              {simulation.trains.length > 0 && (
+              {displaySimulation && (
                 <Rnd
                   default={{
                     x: 0,
@@ -293,7 +294,7 @@ function OSRDSimulation() {
               className="speedspacechart-container"
               style={{ height: `${heightOfSpeedSpaceChart}px` }}
             >
-              {simulation.trains.length > 0 && (
+              {displaySimulation && (
                 <Rnd
                   default={{
                     x: 0,
@@ -323,7 +324,7 @@ function OSRDSimulation() {
               className="spacecurvesslopes-container"
               style={{ height: `${heightOfSpaceCurvesSlopesChart}px` }}
             >
-              {simulation.trains.length > 0 && (
+              {displaySimulation && (
                 <Rnd
                   default={{
                     x: 0,
@@ -373,7 +374,7 @@ function OSRDSimulation() {
           <div className="row" ref={timeTableRef}>
             <div className="col-md-6">
               <div className="osrd-simulation-container mb-2">
-                {simulation.trains.length > 0 ? <TimeTable /> : null}
+                {displaySimulation ? <TimeTable /> : null}
               </div>
             </div>
             <div className="col-md-6">
@@ -420,7 +421,7 @@ function OSRDSimulation() {
                   <TimeButtons />
                 </div>
                 <div className="col-lg-8">
-                  {simulation.trains.length > 0 ? <TrainDetails /> : null}
+                  {displaySimulation ? <TrainDetails /> : null}
                 </div>
               </div>
             </div>
