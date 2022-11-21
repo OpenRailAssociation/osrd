@@ -1,7 +1,7 @@
 package fr.sncf.osrd.sim
 
-import fr.sncf.osrd.sim.impl.MovableElementSimImpl
-import fr.sncf.osrd.sim.api.withLock
+import fr.sncf.osrd.sim.interlocking.impl.MovableElementSimImpl
+import fr.sncf.osrd.sim.interlocking.api.withLock
 import fr.sncf.osrd.sim_infra.impl.simInfra
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
