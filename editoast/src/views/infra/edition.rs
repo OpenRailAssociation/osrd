@@ -9,14 +9,10 @@ use crate::schema::operation::{Operation, OperationResult};
 
 pub fn edit(
     conn: &PgConnection,
-    infra: i32,
+    infra: &Infra,
     operations: &[Operation],
     infra_cache: &mut InfraCache,
 ) -> ApiResult<(Vec<OperationResult>, InvalidationZone)> {
-    // Use a transaction to give scope to the infra lock
-    // Retrieve and lock infra
-    let infra = Infra::retrieve_for_update(conn, infra)?;
-
     // Check if the infra is locked
     if infra.locked {
         return Err(InfraLockedError { infra_id: infra.id }.into());
