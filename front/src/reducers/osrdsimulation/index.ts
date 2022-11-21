@@ -4,7 +4,7 @@ import produce from 'immer';
 import {
   LIST_VALUES_NAME_SPACE_TIME,
   SIGNAL_BASE_DEFAULT,
-  KEY_VALUES_FOR_CONSOLIDATED_SIMULATION
+  KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
 } from '../../applications/osrd/components/Simulation/consts';
 import undoableSimulation, { REDO_SIMULATION, UNDO_SIMULATION } from './simulation';
 import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/createTrain';
@@ -14,6 +14,7 @@ import {
   offsetSeconds,
   MergedDataPoint,
 } from '../../applications/osrd/components/Helpers/ChartHelpers';
+import { isNull } from 'lodash';
 
 // Action Types
 export const UPDATE_CHART = 'osrdsimu/UPDATE_CHART';
@@ -197,6 +198,7 @@ export interface OsrdSimulationState {
   timePosition: any;
   consolidatedSimulation: SimulationTrain[];
   departureArrivalTimes: Array<any>;
+  displaySimulation: boolean;
   simulation: {
     past: SimulationHistory;
     present: SimulationSnapshot;
@@ -243,6 +245,7 @@ export const initialState: OsrdSimulationState = {
   timePosition: undefined,
   consolidatedSimulation: [],
   departureArrivalTimes: [],
+  displaySimulation: false,
   simulation: {
     past: [],
     present: { trains: [] },
@@ -295,14 +298,16 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
         // get only the present, thanks
         draft.simulation = undoableSimulation(state.simulation, action);
         draft.departureArrivalTimes = makeDepartureArrivalTimes(draft.simulation.present, 0);
-        const consolidatedSimulation = createTrain(
-          undefined,
+        
+        draft.consolidatedSimulation = createTrain(
+          () => {},
           KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
           draft.simulation.present.trains,
-          undefined
+          () => {}
         );
-
-        draft.consolidatedSimulation = consolidatedSimulation
+        draft.displaySimulation =
+          draft.simulation.present?.trains.length > 0 &&
+          draft.simulation.present.trains[state.selectedTrain] !== undefined;
 
         break;
       case UPDATE_SPEEDSPACE_SETTINGS:

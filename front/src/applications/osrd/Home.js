@@ -19,11 +19,15 @@ import AboutOSRD from './About';
 class HomeOSRD extends React.Component {
   static propTypes = {
     t: PropTypes.func.isRequired,
-    osrdsimulation: PropTypes.object.isRequired,
+    redirectToGraph: PropTypes.bool.isRequired,
   };
 
+  static defaultProps = {
+    redirectToGraph: false
+  }
+
   render() {
-    const { t, osrdsimulation } = this.props;
+    const { t, redirectToGraph } = this.props;
     return (
       <>
         <MastNavSNCF
@@ -60,7 +64,7 @@ class HomeOSRD extends React.Component {
             path=""
             element={
               <Navigate
-                to={osrdsimulation.redirectToGraph ? '/osrd/simulation' : '/osrd/settings'}
+                to={redirectToGraph ? '/osrd/simulation' : '/osrd/settings'}
                 replace
               />
             }
@@ -73,7 +77,7 @@ class HomeOSRD extends React.Component {
 }
 
 const mapStateToProps = (state) => ({
-  osrdsimulation: state.osrdsimulation,
+  redirectToGraph: state.osrdsimulation.redirectToGraph,
 });
 
 export default connect(mapStateToProps)(withTranslation()(HomeOSRD));
