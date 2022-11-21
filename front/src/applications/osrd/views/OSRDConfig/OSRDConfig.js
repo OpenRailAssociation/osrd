@@ -54,7 +54,7 @@ export default function OSRDConfig(props) {
             <div className="col-xl-6">
               <InfraSelector />
               <RollingStockSelector />
-              {isSimulation && <SpeedLimitByTagSelector />}
+              <SpeedLimitByTagSelector />
             </div>
             <div className="col-xl-6">
               <TimetableSelector
@@ -102,5 +102,5 @@ OSRDConfig.propTypes = {
   setCurrentStdcmRequestStatus: PropTypes.func,
 };
 OSRDConfig.defaultProps = {
-  setCurrentStdcmRequestStatus: () => {},
+  setCurrentStdcmRequestStatus: () => { },
 };
