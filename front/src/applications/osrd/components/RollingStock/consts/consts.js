@@ -22,3 +22,17 @@ export const powerClasses = {
     kw: 8000,
   },
 };
+
+// key = backgroundColor, value = text forehead color
+export const COLORS = {
+  '#009aa6': '#fff',
+  '#d2e100': '#333',
+  '#82be00': '#333',
+  '#ffb612': '#333',
+  '#e05206': '#333',
+  '#cd0037': '#fff',
+  '#a1006b': '#fff',
+  '#6e1e78': '#fff',
+  '#303383': '#fff',
+  '#333': '#fff',
+};
