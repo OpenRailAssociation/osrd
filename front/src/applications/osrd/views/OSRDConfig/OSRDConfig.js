@@ -46,11 +46,11 @@ export default function OSRDConfig(props) {
     }
   }, [extViewport]);
 
-  return (
+  /* return (
     <main className={`osrd-config-mastcontainer mastcontainer${fullscreen ? ' fullscreen' : ''}`}>
       <RollingStockSelector />
     </main>
-  );
+  ); */
 
   return (
     <main className={`osrd-config-mastcontainer mastcontainer${fullscreen ? ' fullscreen' : ''}`}>

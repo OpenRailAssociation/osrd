@@ -28,6 +28,7 @@ export default function RollingStockSelector() {
     if (rollingStockID !== undefined) {
       getRollingStock();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rollingStockID]);
 
   return (
@@ -51,9 +52,9 @@ export default function RollingStockSelector() {
           </div>
         </div>
       </div>
-      <RollingStock />
       <ModalSNCF htmlID="rollingStockModal" size="lg">
         <ModalBodySNCF>
+          <RollingStock />
         </ModalBodySNCF>
         <ModalFooterSNCF>
           <div className="d-flex flex-row-reverse w-100">

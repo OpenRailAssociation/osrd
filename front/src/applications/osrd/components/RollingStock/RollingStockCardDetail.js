@@ -2,10 +2,8 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { get } from 'common/requests';
-import { updateRollingStockID } from 'reducers/osrdconf';
 import { useDispatch } from 'react-redux';
 import { setFailure } from 'reducers/main';
-import { IoMdSunny, IoIosSnow } from 'react-icons/io';
 import Loader from 'common/Loader';
 import RollingStockCurves from './RollingStockCurves';
 import RollingStock2Img from './RollingStock2Img';
@@ -14,7 +12,7 @@ const ROLLING_STOCK_URL = '/rolling_stock/';
 
 export default function RollingStockCardDetail(props) {
   const dispatch = useDispatch();
-  const { id } = props;
+  const { id, nbCurves, setNbCurves } = props;
   const [data, setData] = useState();
   const [displayDefaultCurve, setDisplayDefaultCurve] = useState(true);
   const { t } = useTranslation(['rollingstock']);
@@ -22,17 +20,22 @@ export default function RollingStockCardDetail(props) {
   const mode2name = (mode) => (mode !== 'thermal' ? `${mode}V` : t('thermal'));
 
   const countCurves = (curvesData) => {
-    let nbCurves = 0;
+    let count = 1;
     Object.keys(curvesData.modes).forEach((mode) => {
       curvesData.modes[mode].curves.forEach(() => {
-        nbCurves += 1;
+        count += 1;
       });
     });
-    return nbCurves;
+    return count;
   };
 
   const transformCurves = (curvesData) => {
     const transformedCurves = {};
+    transformedCurves.default = {
+      ...curvesData.modes[curvesData.default_mode].default_curve,
+      mode: mode2name(curvesData.default_mode),
+      comfort: null,
+    };
     if (!displayDefaultCurve) {
       Object.keys(curvesData.modes).forEach((mode) => {
         curvesData.modes[mode].curves.forEach((curve) => {
@@ -41,21 +44,15 @@ export default function RollingStockCardDetail(props) {
           transformedCurves[serieId] = { ...curve.curve, mode: name, comfort: curve.cond.comfort };
         });
       });
-      return transformedCurves;
     }
-    return {
-      default: {
-        ...curvesData.modes[curvesData.default_mode].default_curve,
-        mode: mode2name(curvesData.default_mode),
-        comfort: null,
-      },
-    };
+    return transformedCurves;
   };
 
   const getRollingStock = async () => {
     try {
       const rollingStockData = await get(`${ROLLING_STOCK_URL + id}/`);
       setData(rollingStockData);
+      setNbCurves(countCurves(rollingStockData.effort_curves));
     } catch (e) {
       dispatch(
         setFailure({
@@ -163,7 +160,7 @@ export default function RollingStockCardDetail(props) {
       <RollingStockCurves
         data={transformCurves(data.effort_curves)}
         displayDefaultCurve={displayDefaultCurve}
-        nbCurves={countCurves(data.effort_curves)}
+        nbCurves={nbCurves}
         setDisplayDefaultCurve={setDisplayDefaultCurve}
       />
       <div className="rollingstock-detail-container-img">
@@ -181,4 +178,6 @@ export default function RollingStockCardDetail(props) {
 
 RollingStockCardDetail.propTypes = {
   id: PropTypes.number.isRequired,
+  nbCurves: PropTypes.number.isRequired,
+  setNbCurves: PropTypes.func.isRequired,
 };
