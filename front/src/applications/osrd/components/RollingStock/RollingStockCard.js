@@ -17,6 +17,7 @@ export default function RollingStockCard(props) {
     thermal: false,
     voltages: [],
   });
+  const [nbCurves, setNbCurves] = useState(0);
   const { data, openedRollingStockCardId, setOpenedRollingStockCardId } = props;
 
   function displayCardDetail() {
@@ -72,7 +73,9 @@ export default function RollingStockCard(props) {
           </div>
         </div>
       </div>
-      {openedRollingStockCardId === data.id ? <RollingStockCardDetail id={data.id} /> : null}
+      {openedRollingStockCardId === data.id ? (
+        <RollingStockCardDetail id={data.id} nbCurves={nbCurves} setNbCurves={setNbCurves} />
+      ) : null}
       {openedRollingStockCardId !== data.id && mlgTraffic[data.name] ? (
         <div className="rollingstock-body-container-img">
           <div className="rollingstock-body-img">
@@ -131,7 +134,13 @@ export default function RollingStockCard(props) {
             </div>
           </div>
         </div>
-        {openedRollingStockCardId === data.id ? <RollingStockCardButtons /> : null}
+        {openedRollingStockCardId === data.id ? (
+          <RollingStockCardButtons
+            id={data.id}
+            nbCurves={nbCurves}
+            setOpenedRollingStockCardId={setOpenedRollingStockCardId}
+          />
+        ) : null}
       </div>
     </div>
   );
