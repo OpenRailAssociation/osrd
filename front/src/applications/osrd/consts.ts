@@ -113,6 +113,7 @@ export interface SuggestedPointOnMap {
 }
 
 export interface OsrdConfState {
+  rollingStockComfort: any;
   name: string;
   mode: ValueOf<typeof MODES>;
   stdcmMode: ValueOf<typeof STDCM_MODES>;
