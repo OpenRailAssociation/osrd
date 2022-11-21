@@ -1,7 +1,7 @@
-package fr.sncf.osrd.sim.impl
+package fr.sncf.osrd.sim.interlocking.impl
 
-import fr.sncf.osrd.sim.api.*
-import fr.sncf.osrd.sim.api.ZoneReservationStatus.*
+import fr.sncf.osrd.sim.interlocking.api.*
+import fr.sncf.osrd.sim.interlocking.api.ZoneReservationStatus.*
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.indexing.*
 import kotlinx.coroutines.CoroutineName

@@ -1,7 +1,10 @@
 package fr.sncf.osrd.sim
 
-import fr.sncf.osrd.sim.api.Train
-import fr.sncf.osrd.sim.impl.*
+import fr.sncf.osrd.sim.interlocking.api.Train
+import fr.sncf.osrd.sim.interlocking.impl.LocationSimImpl
+import fr.sncf.osrd.sim.interlocking.impl.movableElementSim
+import fr.sncf.osrd.sim.interlocking.impl.reservationSim
+import fr.sncf.osrd.sim.interlocking.impl.routingSim
 import fr.sncf.osrd.sim_infra.api.ZonePath
 import fr.sncf.osrd.sim_infra.api.normal
 import fr.sncf.osrd.sim_infra.api.reverse
