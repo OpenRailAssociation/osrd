@@ -331,6 +331,7 @@ export default function reducer(inputState: OsrdSimulationState | undefined, act
         draft.positionValues = positionsValues;
         break;
       }
+      default:
     }
   });
 }
