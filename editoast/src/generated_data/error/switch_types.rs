@@ -6,18 +6,18 @@ use diesel::{sql_query, RunQueryDsl};
 
 use super::graph::Graph;
 use crate::generated_data::error::ErrGenerator;
-use crate::infra_cache::InfraCache;
-use crate::schema::{InfraError, SwitchType};
+use crate::infra_cache::{InfraCache, ObjectCache};
+use crate::schema::InfraError;
 use diesel::result::Error as DieselError;
 use serde_json::{to_value, Value};
 
+pub const SWITCH_TYPES_ERRORS: [ErrGenerator; 1] = [ErrGenerator::new(1, check_switch_types)];
+
 pub fn insert_errors(
+    infra_errors: Vec<InfraError>,
     conn: &PgConnection,
     infra_id: i32,
-    infra_cache: &InfraCache,
 ) -> Result<(), DieselError> {
-    let infra_errors = generate_errors(infra_cache);
-
     let errors: Vec<Value> = infra_errors
         .iter()
         .map(|error| to_value(error).unwrap())
@@ -30,23 +30,10 @@ pub fn insert_errors(
 
     Ok(())
 }
-const SWITCH_TYPES_ERRORS: [ErrGenerator<&SwitchType>; 1] = [check_switch_types];
-
-pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
-    let mut errors = vec![];
-
-    for switch_type in infra_cache.switch_types().values() {
-        let switch_type = switch_type.unwrap_switch_type();
-        // errors.extend(check_switch_types(switch_type, infra_cache));
-        for f in SWITCH_TYPES_ERRORS.iter() {
-            errors.extend(f(switch_type, infra_cache, &Graph::load(&infra_cache)));
-        }
-    }
-    errors
-}
 
 /// Check unknown port name, duplicated group and unused port for switch_type
-pub fn check_switch_types(switch_type: &SwitchType, _: &InfraCache, _: &Graph) -> Vec<InfraError> {
+pub fn check_switch_types(switch_type: &ObjectCache, _: &InfraCache, _: &Graph) -> Vec<InfraError> {
+    let switch_type = switch_type.unwrap_switch_type();
     let mut used_port = HashSet::new();
     let mut duplicate_port_connection = HashMap::new();
     let mut infra_errors = vec![];
@@ -114,7 +101,8 @@ mod tests {
                     vec![create_switch_connection("BASE".into(), "RIGHT".into())],
                 ),
             ]),
-        );
+        )
+        .into();
         let errors = check_switch_types(
             &switch_type,
             &infra_cache::tests::create_small_infra_cache(),
@@ -145,7 +133,8 @@ mod tests {
                     vec![create_switch_connection("BASE".into(), "RIGHT".into())],
                 ),
             ]),
-        );
+        )
+        .into();
         let errors = check_switch_types(
             &switch_type,
             &infra_cache::tests::create_small_infra_cache(),
@@ -163,7 +152,8 @@ mod tests {
                 "LEFT".into(),
                 vec![create_switch_connection("BASE".into(), "LEFT".into())],
             )]),
-        );
+        )
+        .into();
         let infra_cache = infra_cache::tests::create_small_infra_cache();
         let errors = check_switch_types(&switch_type, &infra_cache, &Graph::load(&infra_cache));
         assert_eq!(1, errors.len());
