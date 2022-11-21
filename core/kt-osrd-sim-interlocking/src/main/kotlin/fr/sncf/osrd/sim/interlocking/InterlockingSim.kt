@@ -1,4 +1,4 @@
-package fr.sncf.osrd.sim.api
+package fr.sncf.osrd.sim.interlocking.api
 
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.sim_infra.api.*
