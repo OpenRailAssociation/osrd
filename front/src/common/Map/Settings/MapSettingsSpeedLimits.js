@@ -40,7 +40,7 @@ function FormatSwitch(props) {
 
   const getTagsList = async (zoom, params) => {
     try {
-      const tagsList = await get(`/infra/${infraID}/speed_limit_tags/`, params, {}, true);
+      const tagsList = await get(`/infra/${infraID}/speed_limit_tags/`);
 
       // construct an object from array to add "undefined" value
       const tagsListObject = [{ key: 'undefined', value: t('noSpeedLimitByTag') }].concat(

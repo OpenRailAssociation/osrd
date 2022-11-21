@@ -19,14 +19,7 @@ export default function SpeedLimitByTagSelector() {
 
   const getTagsList = async (zoom, params) => {
     try {
-      const tagsList = await get(
-        `/infra/${infraID}/speed_limit_tags/`,
-        {
-          getTagsListSignal,
-        },
-        {},
-        true
-      );
+      const tagsList = await get(`/infra/${infraID}/speed_limit_tags/`);
       setSpeedLimitsTags(tagsList);
     } catch (e) {
       dispatch(
