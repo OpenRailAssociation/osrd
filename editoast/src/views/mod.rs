@@ -28,12 +28,7 @@ mod tests {
 
     #[test]
     fn health() {
-        let rocket = create_server(
-            Default::default(),
-            6000,
-            &Default::default(),
-            Default::default(),
-        );
+        let rocket = create_server(6000, &Default::default(), Default::default());
         let client = Client::tracked(rocket).expect("valid rocket instance");
         let response = client.get("/health").dispatch();
         assert_eq!(response.status(), Status::Ok);
