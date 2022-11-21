@@ -27,8 +27,6 @@ jobs:
     with:
       context: api
       image_name: osrd/api
-      build_args: |
-        environment=test
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
