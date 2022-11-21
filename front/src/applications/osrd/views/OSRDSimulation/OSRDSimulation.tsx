@@ -78,14 +78,15 @@ function OSRDSimulation() {
     useState(heightOfSpaceCurvesSlopesChart);
 
   const { timetableID } = useSelector((state: RootState) => state.osrdconf);
-  const {
-    allowancesSettings,
-    selectedProjection,
-    departureArrivalTimes,
-    selectedTrain,
-    stickyBar,
-    displaySimulation
-  } = useSelector((state: RootState) => state.osrdsimulation);
+
+  const allowancesSettings = useSelector(
+    (state: RootState) => state.osrdsimulation.allowancesSettings
+  );
+  const selectedProjection = useSelector((state: RootState) => state.osrdsimulation.selectedProjection);
+  const departureArrivalTimes = useSelector((state: RootState) => state.osrdsimulation.departureArrivalTimes);
+  const selectedTrain = useSelector((state: RootState) => state.osrdsimulation.selectedTrain);
+  const stickyBar = useSelector((state: RootState) => state.osrdsimulation.stickyBar);
+  const displaySimulation = useSelector((state: RootState) => state.osrdsimulation.displaySimulation);
   //const simulation = useSelector((state: RootState) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
 
