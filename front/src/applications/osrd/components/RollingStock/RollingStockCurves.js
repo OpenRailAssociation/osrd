@@ -1,22 +1,9 @@
 import React from 'react';
 import { ResponsiveLine } from '@nivo/line';
 import PropTypes from 'prop-types';
-import { IoMdSunny, IoIosSnow } from 'react-icons/io';
 import { useTranslation } from 'react-i18next';
-
-// key = backgroundColor, value = text forehead color
-const COLORS = {
-  '#009aa6': '#fff',
-  '#d2e100': '#333',
-  '#82be00': '#333',
-  '#ffb612': '#333',
-  '#e05206': '#333',
-  '#cd0037': '#fff',
-  '#a1006b': '#fff',
-  '#6e1e78': '#fff',
-  '#303383': '#fff',
-  '#333': '#fff',
-};
+import { comfort2pictogram } from './RollingStockHelpers';
+import { COLORS } from './consts/consts';
 
 // Format RollingStock Curves to NIVO format
 const parseData = (label, color, curve) => {
@@ -40,25 +27,6 @@ const parseData = (label, color, curve) => {
   };
 };
 
-const comfort2pictogram = (comfort) => {
-  switch (comfort) {
-    case 'ac':
-      return (
-        <span className={comfort}>
-          <IoIosSnow />
-        </span>
-      );
-    case 'heating':
-      return (
-        <span className={comfort}>
-          <IoMdSunny />
-        </span>
-      );
-    default:
-      return null;
-  }
-};
-
 function DefaultCurveSwitch(props) {
   const { displayDefaultCurve, nbCurves, setDisplayDefaultCurve } = props;
   const { t } = useTranslation(['rollingstock']);
@@ -77,7 +45,7 @@ function DefaultCurveSwitch(props) {
           {t('curves.default')}
         </label>
       </div>
-      { nbCurves > 0 ? (
+      {nbCurves > 0 ? (
         <div className="custom-control custom-radio custom-control-inline">
           <input
             type="radio"

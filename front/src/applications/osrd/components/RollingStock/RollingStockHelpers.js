@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { IoMdSunny, IoIosSnow } from 'react-icons/io';
 
 export function checkUnit(data) {
   if (data.unit && data.unit !== 'US') {
@@ -43,6 +44,25 @@ export function RollingStockInfos(props) {
       <span className="rollingstock-infos-end">{data.name}</span>
     </div>
   );
+}
+
+export function comfort2pictogram(comfort) {
+  switch (comfort) {
+    case 'ac':
+      return (
+        <span className={`comfort-${comfort}`}>
+          <IoIosSnow />
+        </span>
+      );
+    case 'heating':
+      return (
+        <span className={`comfort-${comfort}`}>
+          <IoMdSunny />
+        </span>
+      );
+    default:
+      return null;
+  }
 }
 
 RollingStockInfos.propTypes = {
