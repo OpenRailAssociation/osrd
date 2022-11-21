@@ -162,7 +162,7 @@
     z-index: 0;
     width: calc(100% - 5rem);
     overflow: hidden;
-    bottom: 3.5rem;
+    bottom: 2.6rem;
     left: 3.5rem;
     opacity: .35;
     padding-top: 1rem; // Need padding...because
@@ -191,11 +191,12 @@
     height: 17rem;
     .curves-chart-legend {
       display: flex;
-      align-items: center;
+      align-items: end;
       justify-content: space-between;
       .curves-chart-legend-item {
         display: flex;
         align-items: center;
+        white-space: nowrap;
         border-bottom: 2px solid var(--coolgray3);
         .ac, .heating {
           display: flex;

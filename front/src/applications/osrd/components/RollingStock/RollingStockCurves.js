@@ -45,7 +45,7 @@ function DefaultCurveSwitch(props) {
           {t('curves.default')}
         </label>
       </div>
-      {nbCurves > 0 ? (
+      {nbCurves > 1 ? (
         <div className="custom-control custom-radio custom-control-inline">
           <input
             type="radio"
@@ -66,15 +66,16 @@ function DefaultCurveSwitch(props) {
 
 function Legend(props) {
   const { curves } = props;
+  const { t } = useTranslation(['rollingstock']);
   return (
     <span className="d-flex">
       {curves.map((curve) => (
         <span
-          className="curves-chart-legend-item ml-3"
+          className="curves-chart-legend-item ml-2"
           style={{ borderColor: curve.color }}
           key={`legend-${curve.id}`}
         >
-          {curve.mode}
+          {curve.id === 'default' ? `${t('comfortTypes.standard')} (${curve.mode})` : curve.mode}
           {comfort2pictogram(curve.comfort)}
         </span>
       ))}
@@ -90,6 +91,7 @@ function curveColor(index) {
 
 export default function RollingStockCurve(props) {
   const { data, displayDefaultCurve, nbCurves, setDisplayDefaultCurve } = props;
+  const { t } = useTranslation(['rollingstock']);
 
   const curves = Object.keys(data).map((name, index) =>
     parseData(name, curveColor(index), data[name])
@@ -105,7 +107,10 @@ export default function RollingStockCurve(props) {
           borderColor: tooltip.point.color,
         }}
       >
-        {data[tooltip.point.serieId].mode}
+        {tooltip.point.serieId === 'default'
+          ? `${t('comfortTypes.standard')} (${data[tooltip.point.serieId].mode})`
+          : data[tooltip.point.serieId].mode}
+        <span className="ml-1" />
         {data[tooltip.point.serieId].comfort ? (
           <span className="curves-chart-tooltip-comfort">
             {comfort2pictogram(data[tooltip.point.serieId].comfort)}
@@ -182,7 +187,7 @@ Legend.propTypes = {
 };
 
 DefaultCurveSwitch.defaultProps = {
-  nbCurves: 0,
+  nbCurves: 1,
 };
 DefaultCurveSwitch.propTypes = {
   displayDefaultCurve: PropTypes.bool.isRequired,
@@ -191,7 +196,7 @@ DefaultCurveSwitch.propTypes = {
 };
 
 RollingStockCurve.defaultProps = {
-  nbCurves: 0,
+  nbCurves: 1,
 };
 RollingStockCurve.propTypes = {
   data: PropTypes.object.isRequired,
