@@ -7,7 +7,6 @@ import { useDispatch } from 'react-redux';
 import { setFailure } from 'reducers/main';
 import { IoMdSunny, IoIosSnow } from 'react-icons/io';
 import Loader from 'common/Loader';
-import RollingStockCardButtons from './RollingStockCardButtons';
 import RollingStockCurves from './RollingStockCurves';
 import RollingStock2Img from './RollingStock2Img';
 
@@ -121,28 +120,13 @@ export default function RollingStockCardDetail(props) {
           </table>
         </div>
         <div className="col-sm-6">
-          <div className="">
-            <span className="font-weight-bold text-primary mr-3">{t('legend')}</span>
-            <span className="mr-2">
-              <span className="text-yellow mr-1">
-                <IoMdSunny />
-              </span>
-              {t('comfortTypes.heating')}
-            </span>
-            <span>
-              <span className="text-blue mr-1">
-                <IoIosSnow />
-              </span>
-              {t('comfortTypes.ac')}
-            </span>
-          </div>
           {data.features && data.features.length > 0 ? (
-            <div>
+            <div className="pb-1">
               {t('features')}
               <span className="ml-1">{data.features.join(', ')}</span>
             </div>
           ) : null}
-          <div className="pt-1">
+          <div>
             {t('rollingResistance')}
             <div className="text-muted small">{t('rollingResistanceFormula')}</div>
           </div>
@@ -187,7 +171,6 @@ export default function RollingStockCardDetail(props) {
           <RollingStock2Img name={data.name} />
         </div>
       </div>
-      <RollingStockCardButtons />
     </div>
   ) : (
     <div className="rollingstock-body">

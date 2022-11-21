@@ -2,7 +2,7 @@
   "comfort": "Confort",
   "comfortAcceleration": "Accélération « confort »",
   "comfortTypes": {
-    "ac": "Air conditionné",
+    "ac": "Climatisation",
     "heating": "Chauffage",
     "standard": "Standard"
   },
