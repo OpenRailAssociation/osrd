@@ -4,18 +4,21 @@ use diesel::{sql_query, RunQueryDsl};
 
 use super::graph::Graph;
 use crate::generated_data::error::ErrGenerator;
-use crate::infra_cache::InfraCache;
-use crate::schema::{InfraError, ObjectRef, ObjectType, OperationalPointCache};
+use crate::infra_cache::{InfraCache, ObjectCache};
+use crate::schema::{InfraError, ObjectRef, ObjectType};
 use diesel::result::Error as DieselError;
 use serde_json::{to_value, Value};
 
+pub const OPERATIONAL_POINTS_ERRORS: [ErrGenerator; 2] = [
+    ErrGenerator::new(1, check_empty),
+    ErrGenerator::new(1, check_op_parts),
+];
+
 pub fn insert_errors(
+    infra_errors: Vec<InfraError>,
     conn: &PgConnection,
     infra_id: i32,
-    infra_cache: &InfraCache,
 ) -> Result<(), DieselError> {
-    let infra_errors = generate_errors(infra_cache);
-
     let errors: Vec<Value> = infra_errors
         .iter()
         .map(|error| to_value(error).unwrap())
@@ -28,29 +31,10 @@ pub fn insert_errors(
 
     Ok(())
 }
-pub const OPERATIONAL_POINT_ERRORS: [ErrGenerator<&OperationalPointCache>; 2] =
-    [check_empty, check_op_parts];
 
-pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
-    let mut errors = vec![];
-
-    for op in infra_cache.operational_points().values() {
-        let op = op.unwrap_operational_point();
-        for f in OPERATIONAL_POINT_ERRORS.iter() {
-            errors.extend(f(op, infra_cache, &Graph::load(infra_cache)));
-        }
-        // errors.extend(check_empty(op, infra_cache));
-        // errors.extend(check_op_parts(op, infra_cache));
-    }
-
-    errors
-}
 /// Check if operational point is empty
-pub fn check_empty(
-    op: &'static OperationalPointCache,
-    _: &InfraCache,
-    _: &Graph,
-) -> Vec<InfraError> {
+pub fn check_empty(op: &ObjectCache, _: &InfraCache, _: &Graph) -> Vec<InfraError> {
+    let op = op.unwrap_operational_point();
     if op.parts.is_empty() {
         vec![InfraError::new_empty_object(op, "parts")]
     } else {
@@ -59,13 +43,9 @@ pub fn check_empty(
 }
 
 /// Retrieve invalide ref and out of range errors for operational points
-pub fn check_op_parts(
-    op: &'static OperationalPointCache,
-    infra_cache: &InfraCache,
-    _: &Graph,
-) -> Vec<InfraError> {
+pub fn check_op_parts(op: &ObjectCache, infra_cache: &InfraCache, _: &Graph) -> Vec<InfraError> {
     let mut infra_errors = vec![];
-
+    let op = op.unwrap_operational_point();
     for (index, part) in op.parts.iter().enumerate() {
         let track_id = &part.track;
 
@@ -99,6 +79,7 @@ pub fn check_op_parts(
 #[cfg(test)]
 mod tests {
     use crate::infra_cache::tests::{create_operational_point_cache, create_small_infra_cache};
+    use crate::infra_cache::ObjectCache;
     use crate::schema::{ObjectRef, ObjectType};
 
     use super::check_op_parts;
@@ -108,7 +89,7 @@ mod tests {
     #[test]
     fn invalid_ref() {
         let mut infra_cache = create_small_infra_cache();
-        let op = create_operational_point_cache("OP_error", "E", 250.);
+        let op: ObjectCache = create_operational_point_cache("OP_error", "E", 250.).into();
         infra_cache.add(op.clone());
         let errors = check_op_parts(&op, &infra_cache, &Graph::load(&infra_cache));
         assert_eq!(1, errors.len());
@@ -120,7 +101,7 @@ mod tests {
     #[test]
     fn out_of_range() {
         let mut infra_cache = create_small_infra_cache();
-        let op = create_operational_point_cache("OP_error", "A", 530.);
+        let op: ObjectCache = create_operational_point_cache("OP_error", "A", 530.).into();
         infra_cache.add(op.clone());
         let errors = check_op_parts(&op, &infra_cache, &Graph::load(&infra_cache));
         assert_eq!(1, errors.len());
