@@ -1,7 +1,7 @@
-package fr.sncf.osrd.sim.impl
+package fr.sncf.osrd.sim.interlocking.impl
 
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim.api.MovableElementSim
+import fr.sncf.osrd.sim.interlocking.api.MovableElementSim
 import fr.sncf.osrd.utils.indexing.get
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow

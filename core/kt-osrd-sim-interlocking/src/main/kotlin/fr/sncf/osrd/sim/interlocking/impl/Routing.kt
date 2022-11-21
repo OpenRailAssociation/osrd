@@ -1,6 +1,6 @@
-package fr.sncf.osrd.sim.impl
+package fr.sncf.osrd.sim.interlocking.impl
 
-import fr.sncf.osrd.sim.api.*
+import fr.sncf.osrd.sim.interlocking.api.*
 import fr.sncf.osrd.sim_infra.api.LocationInfra
 import fr.sncf.osrd.sim_infra.api.RouteId
 import fr.sncf.osrd.sim_infra.api.RoutingInfra
