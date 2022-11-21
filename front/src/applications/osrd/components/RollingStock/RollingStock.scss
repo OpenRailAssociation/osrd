@@ -70,12 +70,12 @@
 
 .rollingstock-header {
   border-radius: 4px 4px 0 0;
-  background-color: #d7d7d7;
+  background-color: var(--coolgray3);
   padding: .15rem .5rem;
   overflow: hidden;
-  border-top: 2px solid #d7d7d7;
-  border-left: 2px solid #d7d7d7;
-  border-right: 2px solid #d7d7d7;
+  border-top: 2px solid var(--coolgray3);
+  border-left: 2px solid var(--coolgray3);
+  border-right: 2px solid var(--coolgray3);
   cursor: pointer;
   .rollingstock-title {
     white-space: nowrap;
@@ -132,8 +132,8 @@
 }
 .rollingstock-body-container-img {
   padding: 0 .5rem;
-  border-left: 2px solid #d7d7d7;
-  border-right: 2px solid #d7d7d7;
+  border-left: 2px solid var(--coolgray3);
+  border-right: 2px solid var(--coolgray3);
   .rollingstock-body-img {
     overflow: hidden;
     .rollingstock-img {
@@ -153,8 +153,8 @@
 .rollingstock-body {
   position: relative;
   padding: 0 .5rem;
-  border-left: 2px solid #d7d7d7;
-  border-right: 2px solid #d7d7d7;
+  border-left: 2px solid var(--coolgray3);
+  border-right: 2px solid var(--coolgray3);
   font-size: .8rem;
   font-weight: lighter;
   .rollingstock-detail-container-img {
@@ -189,12 +189,6 @@
     position: relative;
     z-index: 1;
     height: 17rem;
-    .ac {
-      color: #0088ce;
-    }
-    .heating {
-      color: #ffb612;
-    }
     .curves-chart-legend {
       display: flex;
       align-items: center;
@@ -202,7 +196,7 @@
       .curves-chart-legend-item {
         display: flex;
         align-items: center;
-        border-bottom: 2px solid #d7d7d7;
+        border-bottom: 2px solid var(--coolgray3);
         .ac, .heating {
           display: flex;
           align-items: center;
@@ -212,7 +206,7 @@
     }
     .curves-chart-tooltip {
       border-radius: 4px;
-      border: 2px solid #d7d7d7;
+      border: 2px solid var(--coolgray3);
       background-color: white;
       .curves-chart-tooltip-head {
         display: flex;
@@ -220,8 +214,8 @@
         font-weight: bold;
         font-size: .8rem;
         justify-content: space-between;
-        background-color: #d7d7d7;
-        border-bottom: 2px solid #d7d7d7;
+        background-color: var(--coolgray3);
+        border-bottom: 2px solid var(--coolgray3);
         padding-left: .25rem;
         .curves-chart-tooltip-comfort {
           display: flex;
@@ -251,18 +245,37 @@
 }
 
 .rollingstock-footer {
-  padding: .5rem .5rem .25rem;
   border-radius: 0 0 4px 4px;
-  font-size: .8rem;
-  border-left: 2px solid #d7d7d7;
-  border-right: 2px solid #d7d7d7;
-  border-bottom: 2px solid #d7d7d7;
-  svg {
-    vertical-align: text-top;
-    font-size: .9rem;
-    margin-right: 3px;
+  border-left: 2px solid var(--coolgray3);
+  border-right: 2px solid var(--coolgray3);
+  border-bottom: 2px solid var(--coolgray3);
+  .rollingstock-footer-specs {
+    padding: .5rem .5rem .25rem;
+    svg {
+      vertical-align: text-top;
+      font-size: .9rem;
+      margin-right: 3px;
+    }
+    small {
+      font-size: 80%;
+    }
+    font-size: .8rem;
   }
-  small {
-    font-size: 80%;
+  .rollingstock-footer-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    height: 2.75rem;
+    padding: 0 .5rem;
+    border-radius: 0 0 4px 4px;
+    color: var(--light);
+    background-color: var(--coolgray3);
   }
+}
+
+.comfort-ac {
+  color: #0088ce;
+}
+.comfort-heating {
+  color: #ffb612;
 }

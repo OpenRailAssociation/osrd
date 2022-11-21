@@ -9,6 +9,7 @@ import RollingStockCardDetail from './RollingStockCardDetail';
 import RollingStock2Img from './RollingStock2Img';
 import { RollingStockInfos } from './RollingStockHelpers';
 import mlgTraffic from './consts/mlgtraffic.json';
+import RollingStockCardButtons from './RollingStockCardButtons';
 
 export default function RollingStockCard(props) {
   const [tractionModes, setTractionModes] = useState({
@@ -82,52 +83,55 @@ export default function RollingStockCard(props) {
         </div>
       ) : null}
       <div className="rollingstock-footer">
-        <div className="row">
-          <div className="col-5">
-            <div className="rollingstock-tractionmode text-nowrap">
-              {tractionModes.thermal ? (
-                <span className="text-pink">
-                  <MdLocalGasStation />
-                </span>
-              ) : null}
-              {tractionModes.electric ? (
-                <>
-                  <span className="text-primary">
-                    <BsLightningFill />
+        <div className="rollingstock-footer-specs">
+          <div className="row">
+            <div className="col-5">
+              <div className="rollingstock-tractionmode text-nowrap">
+                {tractionModes.thermal ? (
+                  <span className="text-pink">
+                    <MdLocalGasStation />
                   </span>
-                  <small>
-                    {tractionModes.voltages.map((voltage) => (
-                      <span className="mr-1" key={`${voltage}${data.id}`}>
-                        {voltage}V
-                      </span>
-                    ))}
-                  </small>
-                </>
-              ) : null}
+                ) : null}
+                {tractionModes.electric ? (
+                  <>
+                    <span className="text-primary">
+                      <BsLightningFill />
+                    </span>
+                    <small>
+                      {tractionModes.voltages.map((voltage) => (
+                        <span className="mr-1" key={`${voltage}${data.id}`}>
+                          {voltage}V
+                        </span>
+                      ))}
+                    </small>
+                  </>
+                ) : null}
+              </div>
             </div>
-          </div>
-          <div className="col-2">
-            <div className="rollingstock-size text-nowrap">
-              <AiOutlineColumnWidth />
-              {data.length}
-              <small>M</small>
+            <div className="col-2">
+              <div className="rollingstock-size text-nowrap">
+                <AiOutlineColumnWidth />
+                {data.length}
+                <small>M</small>
+              </div>
             </div>
-          </div>
-          <div className="col-2">
-            <div className="rollingstock-weight text-nowrap">
-              <FaWeightHanging />
-              {Math.round(data.mass / 1000)}
-              <small>T</small>
+            <div className="col-2">
+              <div className="rollingstock-weight text-nowrap">
+                <FaWeightHanging />
+                {Math.round(data.mass / 1000)}
+                <small>T</small>
+              </div>
             </div>
-          </div>
-          <div className="col-3">
-            <div className="rollingstock-speed text-nowrap">
-              <IoIosSpeedometer />
-              {Math.round(data.max_speed * 3.6)}
-              <small>KM/H</small>
+            <div className="col-3">
+              <div className="rollingstock-speed text-nowrap">
+                <IoIosSpeedometer />
+                {Math.round(data.max_speed * 3.6)}
+                <small>KM/H</small>
+              </div>
             </div>
           </div>
         </div>
+        {openedRollingStockCardId === data.id ? <RollingStockCardButtons /> : null}
       </div>
     </div>
   );
