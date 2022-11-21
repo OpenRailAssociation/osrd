@@ -4,14 +4,14 @@ import { Dispatch } from 'redux';
 import { sec2time } from 'utils/timeManipulation';
 // import/no-cycle is disabled because this func call will be removed by refacto
 // eslint-disable-next-line
+import { updateMustRedraw } from "reducers/osrdsimulation/actions";
 import {
-  Regime,
   Position,
   PositionSpeed,
-  updateMustRedraw,
   RouteAspect,
   SignalAspect,
-} from 'reducers/osrdsimulation';
+  MergedDataPoint,
+} from 'reducers/osrdsimulation/types';
 
 export function sec2d3datetime(time: number) {
   return d3.timeParse('%H:%M:%S')(sec2time(time));
@@ -111,7 +111,7 @@ export const handleWindowResize = (
   setResizeActive: (v: boolean) => void
 ) => {
   if (!isResizeActive) {
-    let timeOutFunctionId: any = undefined;
+    let timeOutFunctionId: any;
     const resizeDrawTrain = () => {
       d3.select(`#${chartID}`).remove();
       dispatch(updateMustRedraw(true));
@@ -210,12 +210,6 @@ export const timeShiftTrain = (train: any, value: any) => ({
       }
     : null,
 });
-
-export type MergedDataPoint<T = number> = {
-  [key: string]: number | T;
-  value0: number | T;
-  value1: number | T;
-};
 
 // Merge two curves for creating area between
 export const mergeDatasArea = <T>(

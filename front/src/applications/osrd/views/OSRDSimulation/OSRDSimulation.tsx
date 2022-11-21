@@ -12,8 +12,8 @@ import {
   updateSelectedProjection,
   updateSelectedTrain,
   updateSimulation,
-  updateStickyBar,
-} from 'reducers/osrdsimulation';
+  updateStickyBar
+} from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
 import Allowances from 'applications/osrd/views/OSRDSimulation/Allowances';

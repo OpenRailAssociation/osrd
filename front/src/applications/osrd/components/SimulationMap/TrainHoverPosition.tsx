@@ -13,7 +13,7 @@ import { mapValues, get } from 'lodash';
 
 import { RootState } from 'reducers';
 import { Viewport } from 'reducers/map';
-import { AllowancesSetting } from 'reducers/osrdsimulation';
+import { AllowancesSetting } from 'reducers/SimulationSnapshot';
 import { datetime2time } from 'utils/timeManipulation';
 import { boundedValue } from 'utils/numbers';
 import { getCurrentBearing } from 'utils/geometry';

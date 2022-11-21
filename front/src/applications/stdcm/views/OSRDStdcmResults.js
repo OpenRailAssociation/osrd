@@ -8,8 +8,8 @@ import {
   updateConsolidatedSimulation,
   updateMustRedraw,
   updateSelectedProjection,
-  updateSimulation,
-} from 'reducers/osrdsimulation';
+  updateSimulation
+} from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
 import SpaceTimeChart from 'applications/osrd/views/OSRDSimulation/SpaceTimeChart';

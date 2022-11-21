@@ -11,8 +11,8 @@ import {
   updateContextMenu,
   updateMustRedraw,
   updateTimePosition,
-  updateTimePositionValues,
-} from 'reducers/osrdsimulation';
+  updateTimePositionValues
+} from 'reducers/osrdsimulation/actions';
 
 import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/customget/components/consts';
 import drawGuideLines from 'applications/customget/components/drawGuideLines';

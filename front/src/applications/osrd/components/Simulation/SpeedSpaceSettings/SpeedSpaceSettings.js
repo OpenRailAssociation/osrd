@@ -1,4 +1,4 @@
-import { updateMustRedraw, updateSpeedSpaceSettings } from 'reducers/osrdsimulation';
+import { updateMustRedraw, updateSpeedSpaceSettings } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';

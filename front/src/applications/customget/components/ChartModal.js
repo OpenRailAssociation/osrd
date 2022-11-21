@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
 import PropTypes from 'prop-types';
-import { updateMustRedraw } from 'reducers/osrdsimulation';
+import { updateMustRedraw } from 'reducers/osrdsimulation/actions';
 import { useTranslation } from 'react-i18next';
 
 function ChartModal(props) {

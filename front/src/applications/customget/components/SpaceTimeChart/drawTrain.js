@@ -6,11 +6,13 @@ import drawCurve from 'applications/customget/components/drawCurve';
 import drawText from 'applications/customget/components/drawText';
 import {
   makeDepartureArrivalTimes,
+} from 'reducers/osrdsimulation';
+import {
   updateDepartureArrivalTimes,
   updateContextMenu,
   updateMustRedraw,
-  updateSelectedTrain,
-} from 'reducers/osrdsimulation';
+  updateSelectedTrain
+} from 'reducers/osrdsimulation/actions';
 
 export default function drawTrain(
   chart,

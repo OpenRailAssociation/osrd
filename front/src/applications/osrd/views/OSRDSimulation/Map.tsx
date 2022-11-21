@@ -18,12 +18,8 @@ import lineSlice from '@turf/line-slice';
 import { CgLoadbar } from 'react-icons/cg';
 import { last } from 'lodash';
 
-import {
-  updateTimePositionValues,
-  AllowancesSettings,
-  PositionValues,
-  PositionSpeed,
-} from 'reducers/osrdsimulation';
+import { updateTimePositionValues } from 'reducers/osrdsimulation/actions';
+import { AllowancesSettings, PositionValues, PositionSpeed } from 'reducers/SimulationSnapshot';
 import { updateViewport, Viewport } from 'reducers/map';
 import { RootState } from 'reducers';
 import { TrainPosition } from 'applications/osrd/components/SimulationMap/types';

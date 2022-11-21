@@ -12,9 +12,9 @@ import mapReducer, { MapState, initialState as mapInitialState } from './map';
 import editorReducer, { EditorActions, initialState as editorInitialState } from './editor';
 import osrdconfReducer, { initialState as osrdconfInitialState } from './osrdconf';
 import osrdsimulationReducer, {
-  OsrdSimulationState,
   initialState as osrdSimulationInitialState,
 } from './osrdsimulation';
+import { OsrdSimulationState } from './osrdsimulation/types';
 import rollingStockReducer, {
   RollingStockState,
   initialState as rollingStockInitialState,

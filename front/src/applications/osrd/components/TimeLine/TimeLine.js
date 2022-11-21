@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 import React, { useEffect, useRef, useState } from 'react';
 import { getDirection, gridX } from 'applications/osrd/components/Helpers/ChartHelpers';
 import { sec2datetime, time2datetime } from 'utils/timeManipulation';
-import { updateChart, updateMustRedraw } from 'reducers/osrdsimulation';
+import { updateChart, updateMustRedraw } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
 const drawTrains = (trains, selectedTrain, xScale, svg, height) => {
