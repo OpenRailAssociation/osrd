@@ -12,21 +12,21 @@ const ROLLING_STOCK_URL = '/rolling_stock/';
 
 export default function RollingStockCardDetail(props) {
   const dispatch = useDispatch();
-  const { id, nbCurves, setNbCurves } = props;
+  const { id, curvesComfortList, setCurvesComfortList } = props;
   const [data, setData] = useState();
   const [displayDefaultCurve, setDisplayDefaultCurve] = useState(true);
   const { t } = useTranslation(['rollingstock']);
 
   const mode2name = (mode) => (mode !== 'thermal' ? `${mode}V` : t('thermal'));
 
-  const countCurves = (curvesData) => {
-    let count = 1;
+  const listCurvesComfort = (curvesData) => {
+    const list = [];
     Object.keys(curvesData.modes).forEach((mode) => {
-      curvesData.modes[mode].curves.forEach(() => {
-        count += 1;
+      curvesData.modes[mode].curves.forEach((curve) => {
+        list.push(curve.cond.comfort);
       });
     });
-    return count;
+    return list;
   };
 
   const transformCurves = (curvesData) => {
@@ -52,7 +52,7 @@ export default function RollingStockCardDetail(props) {
     try {
       const rollingStockData = await get(`${ROLLING_STOCK_URL + id}/`);
       setData(rollingStockData);
-      setNbCurves(countCurves(rollingStockData.effort_curves));
+      setCurvesComfortList(listCurvesComfort(rollingStockData.effort_curves));
     } catch (e) {
       dispatch(
         setFailure({
@@ -160,7 +160,7 @@ export default function RollingStockCardDetail(props) {
       <RollingStockCurves
         data={transformCurves(data.effort_curves)}
         displayDefaultCurve={displayDefaultCurve}
-        nbCurves={nbCurves}
+        curvesComfortList={curvesComfortList}
         setDisplayDefaultCurve={setDisplayDefaultCurve}
       />
       <div className="rollingstock-detail-container-img">
@@ -178,6 +178,6 @@ export default function RollingStockCardDetail(props) {
 
 RollingStockCardDetail.propTypes = {
   id: PropTypes.number.isRequired,
-  nbCurves: PropTypes.number.isRequired,
-  setNbCurves: PropTypes.func.isRequired,
+  curvesComfortList: PropTypes.number.isRequired,
+  setCurvesComfortList: PropTypes.func.isRequired,
 };
