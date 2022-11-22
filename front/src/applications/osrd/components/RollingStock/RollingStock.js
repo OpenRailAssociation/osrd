@@ -11,16 +11,9 @@ import 'applications/osrd/components/RollingStock/RollingStock.scss';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import RollingStockEmpty from './RollingStockEmpty';
 import RollingStockCard from './RollingStockCard';
-import rollingStockDetailDB from './consts/rollingstockDetailDB.json';
+import { enhanceData } from './RollingStockHelpers';
 
 const ROLLING_STOCK_URL = '/light_rolling_stock/';
-
-// To remove when details will be inside backend DB
-const mergeDetailsWithDB = (data, dataDetails) =>
-  data.map((rollingstock) => ({
-    ...rollingstock,
-    ...dataDetails[rollingstock.name],
-  }));
 
 export default function RollingStock() {
   const dispatch = useDispatch();
@@ -97,7 +90,7 @@ export default function RollingStock() {
     if (rollingStock === undefined) {
       try {
         const data = await get(ROLLING_STOCK_URL, { page_size: 1000 });
-        const mergedData = mergeDetailsWithDB(data.results, rollingStockDetailDB);
+        const mergedData = enhanceData(data.results);
         setRollingStock(mergedData);
       } catch (e) {
         dispatch(
