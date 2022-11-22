@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { BsLightningFill } from 'react-icons/bs';
 import { MdLocalGasStation } from 'react-icons/md';
@@ -17,11 +17,13 @@ export default function RollingStockCard(props) {
     voltages: [],
   });
   const [nbCurves, setNbCurves] = useState(0);
-  const { data, openedRollingStockCardId, setOpenedRollingStockCardId } = props;
+  const { data, openedRollingStockCardId, ref2scroll, setOpenedRollingStockCardId } = props;
+  const ref2scrollWhenOpened = useRef();
 
   function displayCardDetail() {
     if (openedRollingStockCardId !== data.id) {
       setOpenedRollingStockCardId(data.id);
+      setTimeout(() => ref2scrollWhenOpened.current?.scrollIntoView({ behavior: 'smooth' }), 500);
     }
   }
 
@@ -55,6 +57,7 @@ export default function RollingStockCard(props) {
       role="button"
       onClick={displayCardDetail}
       tabIndex={0}
+      ref={ref2scroll}
     >
       <div
         className="rollingstock-header"
@@ -63,6 +66,7 @@ export default function RollingStockCard(props) {
         }
         role="button"
         tabIndex={0}
+        ref={openedRollingStockCardId === data.id ? ref2scrollWhenOpened : undefined}
       >
         <div className="rollingstock-title">
           <RollingStockInfos data={data} />
@@ -146,10 +150,12 @@ export default function RollingStockCard(props) {
 
 RollingStockCard.defaultProps = {
   openedRollingStockCardId: undefined,
+  ref2scroll: undefined,
 };
 
 RollingStockCard.propTypes = {
   data: PropTypes.object.isRequired,
   openedRollingStockCardId: PropTypes.number,
   setOpenedRollingStockCardId: PropTypes.func.isRequired,
+  ref2scroll: PropTypes.object,
 };

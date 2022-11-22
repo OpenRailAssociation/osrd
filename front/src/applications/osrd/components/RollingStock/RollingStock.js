@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import Loader from 'common/Loader';
 import { useSelector, useDispatch } from 'react-redux';
 import { setFailure } from 'reducers/main';
@@ -15,9 +16,11 @@ import { enhanceData } from './RollingStockHelpers';
 
 const ROLLING_STOCK_URL = '/light_rolling_stock/';
 
-export default function RollingStock() {
+export default function RollingStock(props) {
+  const { ref2scroll } = props;
   const dispatch = useDispatch();
   const { darkmode } = useSelector((state) => state.main);
+  const { rollingStockID } = useSelector((state) => state.osrdconf);
   const { t } = useTranslation(['translation', 'rollingstock']);
   const [rollingStock, setRollingStock] = useState();
   const [filteredRollingStockList, setFilteredRollingStockList] = useState();
@@ -112,6 +115,7 @@ export default function RollingStock() {
           key={item.id}
           openedRollingStockCardId={openedRollingStockCardId}
           setOpenedRollingStockCardId={setOpenedRollingStockCardId}
+          ref2scroll={rollingStockID === item.id ? ref2scroll : undefined}
         />
       ))
     ) : (
@@ -201,3 +205,7 @@ export default function RollingStock() {
     </div>
   );
 }
+
+RollingStock.propTypes = {
+  ref2scroll: PropTypes.object.isRequired,
+};
