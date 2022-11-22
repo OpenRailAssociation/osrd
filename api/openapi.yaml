@@ -650,6 +650,13 @@ paths:
       tags:
         - infra
       summary: List all speed limit tags
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Infra ID
+          required: true
       responses:
         200:
           description: Tags list
@@ -665,6 +672,13 @@ paths:
       tags:
         - infra
       summary: List all voltages
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Infra ID
+          required: true
       responses:
         200:
           description: Voltages list
