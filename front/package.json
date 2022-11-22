@@ -82,6 +82,7 @@
     "redux-thunk": "^2.3.0",
     "reselect": "^4.1.6",
     "sass": "^1.55.0",
+    "ts-node": "^10.9.1",
     "tslib": "^2.4.1",
     "uuid": "^8.3.2",
     "viewport-mercator-project": "^7.0.4",
@@ -134,7 +135,7 @@
     "test-coverage": "react-scripts test --watchAll=false --coverage --coverageDirectory=test",
     "eject": "react-scripts eject",
     "lint-ts": "eslint --ext .ts,.tsx src",
-    "generate-types": "npx @rtk-query/codegen-openapi src/common/api/openapi-config.js",
+    "generate-types": "npx @rtk-query/codegen-openapi src/config/openapi-chartos-config.ts && npx @rtk-query/codegen-openapi src/config/openapi-middleware-config.ts && npx @rtk-query/codegen-openapi src/config/openapi-editoast-config.ts",
     "storybook": "start-storybook -p 6006 -s public",
     "build-storybook": "build-storybook -s public"
   },
