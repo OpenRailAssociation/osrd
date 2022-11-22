@@ -97,6 +97,7 @@ class STDCMTestCase(TestCase):
             {
                 "infra": self.infra,
                 "rolling_stock": self.rolling_stock,
+                "comfort": "standard",
                 "timetable": self.timetable,
                 "start_time": 0,
                 "start_points": [{"track_section": "track", "offset": 0}],

@@ -76,6 +76,7 @@ def make_stdcm_core_payload(request):
         "infra": infra.pk,
         "expected_version": infra.version,
         "rolling_stock": request["rolling_stock"].to_schema().dict(),
+        "comfort": request["comfort"],
         "start_points": start_points,
         "end_points": end_points,
         "route_occupancies": make_route_occupancies(request["timetable"]),
@@ -108,6 +109,7 @@ def compute_stdcm(request, user):
     schedule.path = path
     schedule.initial_speed = 0
     schedule.rolling_stock = request["rolling_stock"]
+    schedule.comfort = request["comfort"]
 
     process_simulation_response(request["infra"], [schedule], core_output["simulation"])
     sim_result = create_simulation_report(schedule, path)

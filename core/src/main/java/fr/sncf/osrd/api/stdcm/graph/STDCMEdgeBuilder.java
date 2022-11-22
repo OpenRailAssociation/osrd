@@ -125,6 +125,7 @@ public class STDCMEdgeBuilder {
                     startSpeed,
                     startOffset,
                     graph.rollingStock,
+                    graph.comfort,
                     graph.timeStep,
                     STDCMUtils.getStopsOnRoute(graph, route, startOffset),
                     graph.tags
