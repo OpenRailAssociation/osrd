@@ -7,18 +7,24 @@ import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import RollingStock from 'applications/osrd/components/RollingStock/RollingStock';
 import icon from 'assets/pictures/train.svg';
+import RollingStock2Img from 'applications/osrd/components/RollingStock/RollingStock2Img';
+import {
+  comfort2pictogram,
+  enhanceData,
+  RollingStockInfos,
+} from 'applications/osrd/components/RollingStock/RollingStockHelpers';
 
 const ROLLINGSTOCK_URL = '/rolling_stock';
 
 export default function RollingStockSelector() {
-  const { rollingStockID } = useSelector((state) => state.osrdconf);
-  const { t } = useTranslation(['translation', 'osrdconf', 'rollingstock']);
+  const { rollingStockID, rollingStockComfort } = useSelector((state) => state.osrdconf);
+  const { t } = useTranslation(['translation', 'rollingstock']);
   const [rollingStockSelected, setRollingStockSelected] = useState(undefined);
 
   const getRollingStock = async () => {
     try {
       const rollingStock = await get(`${ROLLINGSTOCK_URL}/${rollingStockID}/`);
-      setRollingStockSelected(rollingStock);
+      setRollingStockSelected(enhanceData([rollingStock])[0]);
     } catch (e) {
       console.log('ERROR', e);
     }
@@ -35,21 +41,39 @@ export default function RollingStockSelector() {
     <>
       <div className="osrd-config-item mb-2">
         <div
-          className="osrd-config-item-container d-flex osrd-config-item-clickable"
+          className="osrd-config-item-container osrd-config-item-clickable"
           data-toggle="modal"
           data-target="#rollingStockModal"
         >
-          <div className="h2 d-flex align-items-center">
-            <img width="32px" className="mr-2" src={icon} alt="infraIcon" />
-            <span className="mr-2 text-muted">{t('osrdconf:rollingstock')}</span>
-            {rollingStockSelected !== undefined ? (
-              rollingStockSelected.name
-            ) : (
-              <span className="mr-2 text-muted text-italic">
-                {t('rollingstock:noRollingStock')}
-              </span>
-            )}
-          </div>
+          {rollingStockSelected !== undefined ? (
+            <div className="rollingstock-minicard">
+              <RollingStockInfos data={rollingStockSelected} showMiddle={false} showEnd={false} />
+              <div className="rollingstock-container-img">
+                <div className="rollingstock-img">
+                  <RollingStock2Img name={rollingStockSelected.name} />
+                </div>
+              </div>
+              <div className="rollingstock-minicard-end">
+                <span className="rollingstock-infos-comfort text-uppercase small">
+                  <span className="text-uppercase font-weight-bold">
+                    {`${t('rollingstock:comfort')} `}
+                  </span>
+                  <span className="mx-2">{comfort2pictogram(rollingStockComfort)}</span>
+                  {`${t(`rollingstock:comfortTypes.${rollingStockComfort}`)}`}
+                </span>
+                <RollingStockInfos
+                  data={rollingStockSelected}
+                  showMiddle={false}
+                  showSeries={false}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="h2 d-flex align-items-center">
+              <img width="32px" className="mr-2" src={icon} alt="infraIcon" />
+              <span className="mr-2 text-muted">{t('rollingstock:rollingstockChoice')}</span>
+            </div>
+          )}
         </div>
       </div>
       <ModalSNCF htmlID="rollingStockModal" size="lg">
