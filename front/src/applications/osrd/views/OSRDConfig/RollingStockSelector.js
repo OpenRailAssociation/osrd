@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { get } from 'common/requests';
 import { useTranslation } from 'react-i18next';
@@ -20,6 +20,7 @@ export default function RollingStockSelector() {
   const { rollingStockID, rollingStockComfort } = useSelector((state) => state.osrdconf);
   const { t } = useTranslation(['translation', 'rollingstock']);
   const [rollingStockSelected, setRollingStockSelected] = useState(undefined);
+  const ref2scroll = useRef(null);
 
   const getRollingStock = async () => {
     try {
@@ -27,6 +28,16 @@ export default function RollingStockSelector() {
       setRollingStockSelected(enhanceData([rollingStock])[0]);
     } catch (e) {
       console.log('ERROR', e);
+    }
+  };
+
+  const scroll2ref = () => {
+    if (rollingStockID !== undefined) {
+      // Because of modal waiting for displaying, have to set a timeout to correctly scroll to ref
+      // BUT finally, it's great, it creates a micro-interaction (smooth scroll) !
+      setTimeout(() => {
+        ref2scroll.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 1000);
     }
   };
 
@@ -44,6 +55,9 @@ export default function RollingStockSelector() {
           className="osrd-config-item-container osrd-config-item-clickable"
           data-toggle="modal"
           data-target="#rollingStockModal"
+          onClick={scroll2ref}
+          role="button"
+          tabIndex={0}
         >
           {rollingStockSelected !== undefined ? (
             <div className="rollingstock-minicard">
@@ -78,7 +92,7 @@ export default function RollingStockSelector() {
       </div>
       <ModalSNCF htmlID="rollingStockModal" size="lg">
         <ModalBodySNCF>
-          <RollingStock />
+          <RollingStock ref2scroll={ref2scroll} />
         </ModalBodySNCF>
         <ModalFooterSNCF>
           <div className="d-flex flex-row-reverse w-100">
