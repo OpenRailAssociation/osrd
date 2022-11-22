@@ -1,6 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { IoMdSunny, IoIosSnow } from 'react-icons/io';
+import rollingStockDetailDB from './consts/rollingstockDetailDB.json';
+
+// To remove when details will be inside backend DB
+export const enhanceData = (data) =>
+  data.map((rollingstock) => ({
+    ...rollingstock,
+    ...rollingStockDetailDB[rollingstock.name],
+  }));
 
 export function checkUnit(data) {
   if (data.unit && data.unit !== 'US') {
@@ -16,7 +24,7 @@ export function checkUnit(data) {
 }
 
 export function RollingStockInfos(props) {
-  const { data } = props;
+  const { data, showSeries, showMiddle, showEnd } = props;
   const series = data.series ? (
     <span className="rollingstock-infos-begin">
       <span className="rollingstock-infos-series">{data.series}</span>
@@ -37,11 +45,12 @@ export function RollingStockInfos(props) {
       {`${data.family} / ${data.type} / ${data.grouping}`}
     </span>
   ) : null;
+  const end = <span className="rollingstock-infos-end">{data.name}</span>;
   return (
     <div className="rollingstock-infos">
-      {series}
-      {family}
-      <span className="rollingstock-infos-end">{data.name}</span>
+      {showSeries ? series : null}
+      {showMiddle ? family : null}
+      {showEnd ? end : null}
     </div>
   );
 }
@@ -65,6 +74,15 @@ export function comfort2pictogram(comfort) {
   }
 }
 
+RollingStockInfos.defaultProps = {
+  showSeries: true,
+  showMiddle: true,
+  showEnd: true,
+};
+
 RollingStockInfos.propTypes = {
   data: PropTypes.object.isRequired,
+  showSeries: PropTypes.bool,
+  showMiddle: PropTypes.bool,
+  showEnd: PropTypes.bool,
 };

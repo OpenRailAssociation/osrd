@@ -8,7 +8,6 @@ import { AiOutlineColumnWidth } from 'react-icons/ai';
 import RollingStockCardDetail from './RollingStockCardDetail';
 import RollingStock2Img from './RollingStock2Img';
 import { RollingStockInfos } from './RollingStockHelpers';
-import mlgTraffic from './consts/mlgtraffic.json';
 import RollingStockCardButtons from './RollingStockCardButtons';
 
 export default function RollingStockCard(props) {
@@ -75,8 +74,7 @@ export default function RollingStockCard(props) {
       </div>
       {openedRollingStockCardId === data.id ? (
         <RollingStockCardDetail id={data.id} nbCurves={nbCurves} setNbCurves={setNbCurves} />
-      ) : null}
-      {openedRollingStockCardId !== data.id && mlgTraffic[data.name] ? (
+      ) : (
         <div className="rollingstock-body-container-img">
           <div className="rollingstock-body-img">
             <div className="rollingstock-img">
@@ -84,7 +82,7 @@ export default function RollingStockCard(props) {
             </div>
           </div>
         </div>
-      ) : null}
+      )}
       <div className="rollingstock-footer">
         <div className="rollingstock-footer-specs">
           <div className="row">
