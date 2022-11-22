@@ -158,3 +158,4 @@ class STDCMInputSerializer(Serializer):
         child=WaypointInputSerializer(),
     )
     rolling_stock = serializers.PrimaryKeyRelatedField(queryset=RollingStock.objects.all())
+    comfort = serializers.CharField(max_length=8, default="standard")

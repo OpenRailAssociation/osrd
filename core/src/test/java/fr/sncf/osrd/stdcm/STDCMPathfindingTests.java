@@ -35,6 +35,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 0,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
@@ -66,6 +67,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 100,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
@@ -95,6 +97,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 100,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
@@ -126,6 +129,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 100,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
@@ -156,6 +160,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 0,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
@@ -188,6 +193,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 0,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
@@ -238,6 +244,7 @@ public class STDCMPathfindingTests {
         var res1 = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 0,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
@@ -251,6 +258,7 @@ public class STDCMPathfindingTests {
         var res2 = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 0,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
@@ -291,6 +299,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 0,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
@@ -334,6 +343,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 0,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
@@ -363,6 +373,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 100,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
@@ -398,6 +409,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 100,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
@@ -445,6 +457,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 100,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
@@ -496,6 +509,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 100,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
@@ -533,11 +547,12 @@ public class STDCMPathfindingTests {
         var secondRoute = infraBuilder.addRoute("b", "c");
         var infra = infraBuilder.build();
         var firstRouteEnvelope = STDCMUtils.simulateRoute(firstRoute, 0, 0,
-                REALISTIC_FAST_TRAIN, 2, new double[]{}, Set.of());
+                REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2, new double[]{}, Set.of());
         assert firstRouteEnvelope != null;
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 100,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
@@ -587,6 +602,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 100,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
@@ -628,6 +644,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 100,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
@@ -668,6 +685,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 100,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
@@ -716,6 +734,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 0,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
@@ -766,6 +785,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 0,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
@@ -812,6 +832,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 100,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
@@ -844,6 +865,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 100,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstLoop, 0)),
@@ -870,6 +892,7 @@ public class STDCMPathfindingTests {
         var res1 = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 0,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
@@ -887,6 +910,7 @@ public class STDCMPathfindingTests {
         var res2 = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 0,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
@@ -914,6 +938,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 0,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(route, 0)),
@@ -941,6 +966,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 0,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(routes.get(0), 0)),
@@ -966,6 +992,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 0,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(route, 0)),
@@ -992,7 +1019,7 @@ public class STDCMPathfindingTests {
         var infraBuilder = new DummyRouteGraphBuilder();
         var route = infraBuilder.addRoute("a", "b", 1000);
         var firstRouteEnvelope = STDCMUtils.simulateRoute(route, 0, 0,
-                REALISTIC_FAST_TRAIN, 2., new double[]{}, Set.of());
+                REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, Set.of());
         assert firstRouteEnvelope != null;
         var runTime = firstRouteEnvelope.getTotalTime();
         var infra = infraBuilder.build();
@@ -1002,6 +1029,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 0,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(route, 0)),
@@ -1029,7 +1057,7 @@ public class STDCMPathfindingTests {
         infraBuilder.addRoute("c", "d", 10);
         var lastRoute = infraBuilder.addRoute("d", "e", 10);
         var firstRouteEnvelope = STDCMUtils.simulateRoute(firstRoute, 0, 0,
-                REALISTIC_FAST_TRAIN, 2., new double[]{}, Set.of());
+                REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, Set.of());
         assert firstRouteEnvelope != null;
         var runTime = firstRouteEnvelope.getTotalTime();
         var infra = infraBuilder.build();
@@ -1039,6 +1067,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 0,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
@@ -1064,8 +1093,7 @@ public class STDCMPathfindingTests {
         var firstRoute = infraBuilder.addRoute("a", "b", 1000);
         var secondRoute = infraBuilder.addRoute("b", "c", 100, 5);
         var firstRouteEnvelope = STDCMUtils.simulateRoute(firstRoute, 0, 0,
-                REALISTIC_FAST_TRAIN, 2., new double[]{}, Set.of()
-        );
+                REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, Set.of());
         assert firstRouteEnvelope != null;
         var runTime = firstRouteEnvelope.getTotalTime();
         var infra = infraBuilder.build();
@@ -1075,6 +1103,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 0,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
@@ -1108,6 +1137,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 0,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
@@ -1137,6 +1167,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 0,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(route, 0)),
@@ -1167,6 +1198,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 0,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(route, 0)),
@@ -1204,10 +1236,10 @@ public class STDCMPathfindingTests {
         var secondRoute = infraBuilder.addRoute("b", "c", 10_000, 30);
         var thirdRoute = infraBuilder.addRoute("c", "d", 100, 30);
         var firstRouteEnvelope = STDCMUtils.simulateRoute(firstRoute, 0, 0,
-                REALISTIC_FAST_TRAIN, 2., new double[]{}, Set.of());
+                REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, Set.of());
         assert firstRouteEnvelope != null;
         var secondRouteEnvelope = STDCMUtils.simulateRoute(secondRoute, firstRouteEnvelope.getEndSpeed(),
-                0, REALISTIC_FAST_TRAIN, 2., new double[]{}, Set.of());
+                0, REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, Set.of());
         assert secondRouteEnvelope != null;
         var timeThirdRouteFree = firstRouteEnvelope.getTotalTime() + secondRouteEnvelope.getTotalTime();
         var infra = infraBuilder.build();
@@ -1219,6 +1251,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 0,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
@@ -1263,10 +1296,10 @@ public class STDCMPathfindingTests {
         infraBuilder.addRoute("d", "e", 1_000, 20);
         var lastRoute = infraBuilder.addRoute("e", "f", 1_000, 20);
         var firstRouteEnvelope = STDCMUtils.simulateRoute(firstRoute, 0, 0,
-                REALISTIC_FAST_TRAIN, 2., new double[]{}, Set.of());
+                REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, Set.of());
         assert firstRouteEnvelope != null;
         var secondRouteEnvelope = STDCMUtils.simulateRoute(secondRoute, firstRouteEnvelope.getEndSpeed(),
-                0, REALISTIC_FAST_TRAIN, 2., new double[]{}, Set.of());
+                0, REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, Set.of());
         assert secondRouteEnvelope != null;
         var timeLastRouteFree = firstRouteEnvelope.getTotalTime() + 120 + secondRouteEnvelope.getTotalTime() * 3;
         var infra = infraBuilder.build();
@@ -1278,6 +1311,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 0,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
@@ -1327,10 +1361,10 @@ public class STDCMPathfindingTests {
         infraBuilder.addRoute("d", "e", 1_000, 20);
         var lastRoute = infraBuilder.addRoute("e", "f", 1_000, 20);
         var firstRouteEnvelope = STDCMUtils.simulateRoute(firstRoute, 0, 0,
-                REALISTIC_FAST_TRAIN, 2., new double[]{}, Set.of());
+                REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, Set.of());
         assert firstRouteEnvelope != null;
         var secondRouteEnvelope = STDCMUtils.simulateRoute(secondRoute, firstRouteEnvelope.getEndSpeed(),
-                0, REALISTIC_FAST_TRAIN, 2., new double[]{}, Set.of());
+                0, REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, Set.of());
         assert secondRouteEnvelope != null;
         var timeLastRouteFree = firstRouteEnvelope.getTotalTime() + 120 + secondRouteEnvelope.getTotalTime() * 3;
         var timeThirdRouteOccupied = firstRouteEnvelope.getTotalTime() + 5 + secondRouteEnvelope.getTotalTime() * 2;
@@ -1344,6 +1378,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 0,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
@@ -1384,7 +1419,7 @@ public class STDCMPathfindingTests {
         var firstRoute = infraBuilder.addRoute("a", "b", 1_000, 30);
         var secondRoute = infraBuilder.addRoute("b", "c", 1_000, 30);
         var thirdRoute = infraBuilder.addRoute("c", "d", 1, 30);
-        var lastRouteEntryTime = getRoutesRunTime(List.of(firstRoute, secondRoute), REALISTIC_FAST_TRAIN);
+        var lastRouteEntryTime = getRoutesRunTime(List.of(firstRoute, secondRoute));
         var timeThirdRouteFree = lastRouteEntryTime + 3600 * 2 + 60;
         var infra = infraBuilder.build();
         var occupancyGraph = ImmutableMultimap.of(
@@ -1394,6 +1429,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 0,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
@@ -1446,6 +1482,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 0,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)),
@@ -1494,6 +1531,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 0,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(routes.get(0), 0)),
@@ -1534,7 +1572,7 @@ public class STDCMPathfindingTests {
                 infraBuilder.addRoute("c", "d")
         );
         var infra = infraBuilder.build();
-        var runTime = getRoutesRunTime(routes, REALISTIC_FAST_TRAIN);
+        var runTime = getRoutesRunTime(routes);
         var occupancyGraph = ImmutableMultimap.of(
                 routes.get(0), new OccupancyBlock(300, 3600, 0, 1),
                 routes.get(2), new OccupancyBlock(0, 3600, 0, 1)
@@ -1543,6 +1581,7 @@ public class STDCMPathfindingTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 0,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(routes.get(0), 0)),
@@ -1560,12 +1599,12 @@ public class STDCMPathfindingTests {
 
     /** Returns the time it takes to reach the end of the last routes,
      * starting at speed 0 at the start of the first route*/
-    private double getRoutesRunTime(List<SignalingRoute> routes, RollingStock rollingStock) {
+    private double getRoutesRunTime(List<SignalingRoute> routes) {
         double time = 0;
         double speed = 0;
         for (var route : routes) {
             var envelope = STDCMUtils.simulateRoute(route, speed, 0,
-                    rollingStock, 2., new double[]{}, Set.of());
+                    REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, Set.of());
             assert envelope != null;
             time += envelope.getTotalTime();
             speed = envelope.getEndSpeed();

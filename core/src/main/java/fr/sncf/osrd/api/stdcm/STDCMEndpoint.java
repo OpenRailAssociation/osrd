@@ -80,6 +80,7 @@ public class STDCMEndpoint implements Take {
                 throw new RuntimeException("STDCM requests with unspecified start time are not supported yet");
             var infra = infraManager.load(request.infra, request.expectedVersion, recorder);
             var rollingStock = RJSRollingStockParser.parse(request.rollingStock);
+            var comfort = RJSRollingStockParser.parseComfort(request.comfort);
             var occupancies = request.routeOccupancies;
             var startLocations = findRoutes(infra, request.startPoints);
             var endLocations = findRoutes(infra, request.endPoints);
@@ -95,13 +96,14 @@ public class STDCMEndpoint implements Take {
                     occupancies,
                     rollingStock
             );
-            // TODO get real comfort
-            double minRunTime = getMinRunTime(infra, rollingStock, startLocations, endLocations, request.timeStep);
+            double minRunTime = getMinRunTime(
+                    infra, rollingStock, comfort, startLocations, endLocations, request.timeStep);
 
             // Run the STDCM pathfinding
             var res = STDCMPathfinding.findPath(
                     infra,
                     rollingStock,
+                    comfort,
                     startTime,
                     endTime,
                     startLocations,
@@ -125,7 +127,7 @@ public class STDCMEndpoint implements Take {
             simResult.baseSimulations.add(ScheduleMetadataExtractor.run(
                     res.envelope(),
                     res.trainPath(),
-                    makeTrainSchedule(res.envelope(), rollingStock),
+                    makeTrainSchedule(res.envelope(), rollingStock, comfort),
                     infra
             ));
             simResult.ecoSimulations.add(null);
@@ -142,6 +144,7 @@ public class STDCMEndpoint implements Take {
     private double getMinRunTime(
             SignalingInfra infra,
             RollingStock rollingStock,
+            RollingStock.Comfort comfort,
             Set<EdgeLocation<SignalingRoute>> startLocations,
             Set<EdgeLocation<SignalingRoute>> endLocations,
             double timeStep
@@ -169,8 +172,7 @@ public class STDCMEndpoint implements Take {
                         List.of(new TrainStop(path.length(), 0.1)),
                         List.of(),
                         List.of(),
-                        // TODO get real comfort
-                        RollingStock.Comfort.STANDARD
+                        comfort
                 )),
                 timeStep
         );
@@ -181,13 +183,12 @@ public class STDCMEndpoint implements Take {
     /** Generate a train schedule matching the envelope and rolling stock, with one stop at the end */
     private static StandaloneTrainSchedule makeTrainSchedule(
             Envelope envelope,
-            RollingStock rollingStock
+            RollingStock rollingStock,
+            RollingStock.Comfort comfort
     ) {
         List<TrainStop> trainStops = new ArrayList<>();
         trainStops.add(new TrainStop(envelope.getEndPos(), 0.1));
-        // TODO get real comfort
-        return new StandaloneTrainSchedule(
-                rollingStock, 0., trainStops, List.of(), List.of(), RollingStock.Comfort.STANDARD);
+        return new StandaloneTrainSchedule(rollingStock, 0., trainStops, List.of(), List.of(), comfort);
     }
 }
 

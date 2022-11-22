@@ -109,7 +109,7 @@ public class AllowanceManager {
         var firstOffset = edges.get(0).route().getInfraRoute().getLength() - edges.get(0).envelope().getEndPos();
         for (var edge : edges)
             routes.add(edge.route());
-        return STDCMUtils.makeSimContext(routes, firstOffset, graph.rollingStock, graph.timeStep);
+        return STDCMUtils.makeSimContext(routes, firstOffset, graph.rollingStock, graph.comfort, graph.timeStep);
     }
 
     /** Find on which edges to run the allowance */

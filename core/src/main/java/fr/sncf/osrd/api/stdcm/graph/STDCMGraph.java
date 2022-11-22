@@ -23,6 +23,7 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
 
     public final SignalingInfra infra;
     public final RollingStock rollingStock;
+    public final RollingStock.Comfort comfort;
     public final double timeStep;
     final Set<Pathfinding.EdgeLocation<SignalingRoute>> endLocations;
     final DelayManager delayManager;
@@ -34,6 +35,7 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
     public STDCMGraph(
             SignalingInfra infra,
             RollingStock rollingStock,
+            RollingStock.Comfort comfort,
             double timeStep,
             Multimap<SignalingRoute, OccupancyBlock> unavailableTimes,
             double maxRunTime,
@@ -43,6 +45,7 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
     ) {
         this.infra = infra;
         this.rollingStock = rollingStock;
+        this.comfort = comfort;
         this.timeStep = timeStep;
         this.endLocations = endLocations;
         this.delayManager = new DelayManager(minScheduleTimeStart, maxRunTime, unavailableTimes);
