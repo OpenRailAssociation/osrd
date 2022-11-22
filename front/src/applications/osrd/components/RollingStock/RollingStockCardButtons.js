@@ -8,7 +8,7 @@ import { comfort2pictogram } from './RollingStockHelpers';
 
 export default function RollingStockCardButtons(props) {
   const { t } = useTranslation(['rollingstock']);
-  const { id, nbCurves, setOpenedRollingStockCardId } = props;
+  const { id, curvesComfortList, setOpenedRollingStockCardId } = props;
   const [comfort, setComfort] = useState('standard');
   const dispatch = useDispatch();
 
@@ -29,18 +29,23 @@ export default function RollingStockCardButtons(props) {
     dispatch(updateRollingStockID(id));
   };
 
-  const options = [
-    { value: 'standard', label: t('comfortTypes.standard') },
-    { value: 'heating', label: heatingLabel },
-    { value: 'ac', label: acLabel },
-  ];
+  const setOptions = () => {
+    const options = [{ value: 'standard', label: t('comfortTypes.standard') }];
+    if (curvesComfortList.includes('heating')) {
+      options.push({ value: 'heating', label: heatingLabel });
+    }
+    if (curvesComfortList.includes('ac')) {
+      options.push({ value: 'ac', label: acLabel });
+    }
+    return options;
+  };
 
   return (
     <div className="rollingstock-footer-buttons">
-      {nbCurves > 1 ? (
+      {curvesComfortList.length > 1 ? (
         <OptionsSNCF
           onChange={(e) => setComfort(e.target.value)}
-          options={options}
+          options={setOptions()}
           name="comfortChoice"
           selectedValue={comfort}
           sm
@@ -60,6 +65,6 @@ export default function RollingStockCardButtons(props) {
 
 RollingStockCardButtons.propTypes = {
   id: PropTypes.number.isRequired,
-  nbCurves: PropTypes.number.isRequired,
+  curvesComfortList: PropTypes.array.isRequired,
   setOpenedRollingStockCardId: PropTypes.func.isRequired,
 };

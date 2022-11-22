@@ -28,7 +28,7 @@ const parseData = (label, color, curve) => {
 };
 
 function DefaultCurveSwitch(props) {
-  const { displayDefaultCurve, nbCurves, setDisplayDefaultCurve } = props;
+  const { displayDefaultCurve, curvesComfortList, setDisplayDefaultCurve } = props;
   const { t } = useTranslation(['rollingstock']);
   return (
     <div className="rollingstock-defaultcurveswitch">
@@ -45,7 +45,7 @@ function DefaultCurveSwitch(props) {
           {t('curves.default')}
         </label>
       </div>
-      {nbCurves > 1 ? (
+      {curvesComfortList.length > 1 ? (
         <div className="custom-control custom-radio custom-control-inline">
           <input
             type="radio"
@@ -56,7 +56,7 @@ function DefaultCurveSwitch(props) {
             onChange={() => setDisplayDefaultCurve(false)}
           />
           <label className="custom-control-label font-weight-medium" htmlFor="allCurvesChoice">
-            {t('curves.all')} ({nbCurves})
+            {t('curves.all')} ({curvesComfortList.length})
           </label>
         </div>
       ) : null}
@@ -90,7 +90,7 @@ function curveColor(index) {
 }
 
 export default function RollingStockCurve(props) {
-  const { data, displayDefaultCurve, nbCurves, setDisplayDefaultCurve } = props;
+  const { data, displayDefaultCurve, curvesComfortList, setDisplayDefaultCurve } = props;
   const { t } = useTranslation(['rollingstock']);
 
   const curves = Object.keys(data).map((name, index) =>
@@ -129,7 +129,7 @@ export default function RollingStockCurve(props) {
         <DefaultCurveSwitch
           displayDefaultCurve={displayDefaultCurve}
           setDisplayDefaultCurve={setDisplayDefaultCurve}
-          nbCurves={nbCurves}
+          curvesComfortList={curvesComfortList}
         />
         <Legend curves={curves} />
       </div>
@@ -187,20 +187,20 @@ Legend.propTypes = {
 };
 
 DefaultCurveSwitch.defaultProps = {
-  nbCurves: 1,
+  curvesComfortList: 1,
 };
 DefaultCurveSwitch.propTypes = {
   displayDefaultCurve: PropTypes.bool.isRequired,
-  nbCurves: PropTypes.number,
+  curvesComfortList: PropTypes.number,
   setDisplayDefaultCurve: PropTypes.func.isRequired,
 };
 
 RollingStockCurve.defaultProps = {
-  nbCurves: 1,
+  curvesComfortList: 1,
 };
 RollingStockCurve.propTypes = {
   data: PropTypes.object.isRequired,
   displayDefaultCurve: PropTypes.bool.isRequired,
-  nbCurves: PropTypes.number,
+  curvesComfortList: PropTypes.number,
   setDisplayDefaultCurve: PropTypes.func.isRequired,
 };
