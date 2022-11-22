@@ -37,7 +37,7 @@ export default function RollingStockCardButtons(props) {
 
   return (
     <div className="rollingstock-footer-buttons">
-      {nbCurves > 0 ? (
+      {nbCurves > 1 ? (
         <OptionsSNCF
           onChange={(e) => setComfort(e.target.value)}
           options={options}
