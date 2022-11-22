@@ -137,8 +137,8 @@ class STDCMInputSerializer(Serializer):
 
     infra = serializers.PrimaryKeyRelatedField(queryset=Infra.objects.all())
     timetable = serializers.PrimaryKeyRelatedField(queryset=Timetable.objects.all())
-    start_time = serializers.FloatField(required=False)
-    end_time = serializers.FloatField(required=False)
+    start_time = serializers.FloatField(required=False, allow_null=True)
+    end_time = serializers.FloatField(required=False, allow_null=True)
     start_points = serializers.ListField(
         min_length=1,
         child=WaypointInputSerializer(),
