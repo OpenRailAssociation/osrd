@@ -72,10 +72,16 @@ public class STDCMEndpoint implements Take {
                 return new RsWithStatus(new RsText("missing request body"), 400);
 
             // parse input data
-            var infra = infraManager.load(request.infra, request.expectedVersion, recorder);
-            var rollingStock = RJSRollingStockParser.parse(request.rollingStock);
             var startTime = request.startTime;
             var endTime = request.endTime;
+            if (Double.isNaN(startTime) && Double.isNaN(endTime))
+                throw new RuntimeException(
+                        "Invalid STDCM request: both end time and start time are unspecified, at least one must be set"
+                );
+            if (Double.isNaN(startTime))
+                throw new RuntimeException("STDCM requests with unspecified start time are not supported yet");
+            var infra = infraManager.load(request.infra, request.expectedVersion, recorder);
+            var rollingStock = RJSRollingStockParser.parse(request.rollingStock);
             var occupancies = request.routeOccupancies;
             var startLocations = findRoutes(infra, request.startPoints);
             var endLocations = findRoutes(infra, request.endPoints);
