@@ -31,6 +31,7 @@ public class STDCMPathfinding {
     public static STDCMResult findPath(
             SignalingInfra infra,
             RollingStock rollingStock,
+            RollingStock.Comfort comfort,
             double startTime,
             double endTime,
             Set<Pathfinding.EdgeLocation<SignalingRoute>> startLocations,
@@ -44,6 +45,7 @@ public class STDCMPathfinding {
         var graph = new STDCMGraph(
                 infra,
                 rollingStock,
+                comfort,
                 timeStep,
                 unavailableTimes,
                 maxRunTime,

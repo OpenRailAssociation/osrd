@@ -968,6 +968,8 @@ components:
           type: integer
         rolling_stock:
           type: integer
+        comfort:
+          $ref: "#/components/schemas/Comfort"
         timetable:
           type: integer
           description: timetable ID

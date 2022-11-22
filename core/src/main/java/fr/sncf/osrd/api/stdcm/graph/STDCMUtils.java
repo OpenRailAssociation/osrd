@@ -56,6 +56,7 @@ public class STDCMUtils {
             List<SignalingRoute> routes,
             double offsetFirstRoute,
             RollingStock rollingStock,
+            RollingStock.Comfort comfort,
             double timeStep
     ) {
         var tracks = new ArrayList<TrackRangeView>();
@@ -65,8 +66,7 @@ public class STDCMUtils {
             offsetFirstRoute = 0;
         }
         var envelopePath = EnvelopeTrainPath.from(tracks);
-        // TODO: Get the real comfort
-        return new EnvelopeSimContext(rollingStock, envelopePath, timeStep, RollingStock.Comfort.STANDARD);
+        return new EnvelopeSimContext(rollingStock, envelopePath, timeStep, comfort);
     }
 
     /** Returns an envelope matching the given route. The envelope time starts when the train enters the route.
@@ -81,12 +81,13 @@ public class STDCMUtils {
             double initialSpeed,
             double start,
             RollingStock rollingStock,
+            RollingStock.Comfort comfort,
             double timeStep,
             double[] stops,
             Set<String> tags
     ) {
         try {
-            var context = makeSimContext(List.of(route), start, rollingStock, timeStep);
+            var context = makeSimContext(List.of(route), start, rollingStock, comfort, timeStep);
             var mrsp = MRSP.from(
                     route.getInfraRoute().getTrackRanges(start, start + context.path.getLength()),
                     rollingStock,
