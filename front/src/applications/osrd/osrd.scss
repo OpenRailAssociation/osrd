@@ -1,3 +1,14 @@
+@media (min-width: 576px) {
+  .modal-dialog {
+    max-width: calc(100vw - 3rem) !important;
+  }
+}
+@media (min-width: 1024px) {
+  .modal-dialog {
+    max-width: 800px !important;
+  }
+}
+
 :root {
   --coolgray15: #202020;
   --coolgray13: #333333;
