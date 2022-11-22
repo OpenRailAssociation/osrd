@@ -130,6 +130,7 @@ export interface Train {
   base: Regime;
   eco: Regime;
   isStdcm: boolean;
+  margins: any;
   speed_limit_composition: string;
 }
 
