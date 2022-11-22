@@ -16,7 +16,6 @@ import {
 } from 'reducers/osrdsimulation';
 import { useDispatch, useSelector } from 'react-redux';
 
-
 import Allowances from 'applications/osrd/views/OSRDSimulation/Allowances';
 import ButtonFullscreen from 'common/ButtonFullscreen';
 import CenterLoader from 'common/CenterLoader/CenterLoader';
@@ -40,7 +39,6 @@ import { RootState } from 'reducers';
 import { setFailure } from 'reducers/main';
 import { updateViewport, Viewport } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
-
 
 export const timetableURI = '/timetable/';
 const MAP_MIN_HEIGHT = 450;
@@ -82,11 +80,17 @@ function OSRDSimulation() {
   const allowancesSettings = useSelector(
     (state: RootState) => state.osrdsimulation.allowancesSettings
   );
-  const selectedProjection = useSelector((state: RootState) => state.osrdsimulation.selectedProjection);
-  const departureArrivalTimes = useSelector((state: RootState) => state.osrdsimulation.departureArrivalTimes);
+  const selectedProjection = useSelector(
+    (state: RootState) => state.osrdsimulation.selectedProjection
+  );
+  const departureArrivalTimes = useSelector(
+    (state: RootState) => state.osrdsimulation.departureArrivalTimes
+  );
   const selectedTrain = useSelector((state: RootState) => state.osrdsimulation.selectedTrain);
   const stickyBar = useSelector((state: RootState) => state.osrdsimulation.stickyBar);
-  const displaySimulation = useSelector((state: RootState) => state.osrdsimulation.displaySimulation);
+  const displaySimulation = useSelector(
+    (state: RootState) => state.osrdsimulation.displaySimulation
+  );
   //const simulation = useSelector((state: RootState) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
 
@@ -190,21 +194,6 @@ function OSRDSimulation() {
       );
     }
   }, [extViewport]);
-
-  // With this hook we update and store
-  // the consolidatedSimuation (simualtion stucture for the selected train)
-  /*
-  useEffect(() => {
-    const consolidatedSimulation = createTrain(
-      dispatch,
-      KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
-      simulation.trains,
-      t
-    );
-    // Store it to allow time->position logic to be hosted by redux
-    dispatch(updateConsolidatedSimulation(consolidatedSimulation));
-  }, [simulation]);
-  */
 
   const waitingLoader = isEmpty ? (
     <h1 className="text-center">{t('simulation:noData')}</h1>
@@ -411,9 +400,7 @@ function OSRDSimulation() {
                 <div className="col-lg-4">
                   <TimeButtons />
                 </div>
-                <div className="col-lg-8">
-                  {displaySimulation ? <TrainDetails /> : null}
-                </div>
+                <div className="col-lg-8">{displaySimulation ? <TrainDetails /> : null}</div>
               </div>
             </div>
           ) : (
