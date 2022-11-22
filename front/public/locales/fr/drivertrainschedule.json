@@ -1,0 +1,23 @@
+{
+    "actualspeed": "Actuelle",
+    "actualspeed-short": "Act.",
+    "averagespeed": "Moyenne",
+    "averagespeed-short": "Moy.",
+    "composition": "Composition",
+    "dcmdetails": "Détails du sillon",
+    "destination": "Destination",
+    "mass": "Masse",
+    "numberoflines": "Nombre de lignes",
+    "origin": "Origine",
+    "pk": "PK",
+    "place": "Etablissement",
+    "placeholderline": "N°",
+    "rollingstock": "Matériel roulant",
+    "speed": "Vitesse",
+    "speedLimitByTag": "Code de composition",
+    "speedlimit": "Limite",
+    "speedlimit-short": "Lim.",
+    "time": "Horaire",
+    "timetable": "Table horaire",
+    "trackname": "Voie"
+}
