@@ -1501,7 +1501,8 @@ public class STDCMPathfindingTests {
                 occupancyGraph,
                 timeStep,
                 POSITIVE_INFINITY,
-                POSITIVE_INFINITY
+                POSITIVE_INFINITY,
+                Set.of()
         );
 
         assertNull(res);
