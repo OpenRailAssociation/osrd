@@ -96,6 +96,7 @@ public class BacktrackingManager {
                 List.of(route),
                 start,
                 graph.rollingStock,
+                graph.comfort,
                 graph.timeStep
         );
         var partBuilder = new EnvelopePartBuilder();

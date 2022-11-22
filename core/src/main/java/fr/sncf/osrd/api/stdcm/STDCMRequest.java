@@ -6,6 +6,7 @@ import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.railjson.schema.common.ID;
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSComfortType;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
@@ -39,6 +40,9 @@ public final class STDCMRequest {
      */
     @Json(name = "rolling_stock")
     public RJSRollingStock rollingStock;
+
+    /** Train comfort */
+    public RJSComfortType comfort;
 
     /**
      * Route occupancies in the given timetable
