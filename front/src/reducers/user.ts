@@ -31,8 +31,8 @@ export interface UserState {
   serverError: boolean;
   username: string;
   language: string;
-  accessToken: any;
-  account: Record<string, any>;
+  accessToken?: string;
+  account: Record<string, string>;
 }
 
 export default function reducer(inputState: UserState | undefined, action: AnyAction) {
@@ -66,7 +66,7 @@ export default function reducer(inputState: UserState | undefined, action: AnyAc
 }
 
 // Action Creators
-function loginSuccess(accessToken: any, username = undefined) {
+function loginSuccess(accessToken: string, username = undefined) {
   return {
     type: LOGIN_SUCCESS,
     accessToken,
@@ -93,7 +93,7 @@ function serverError() {
   };
 }
 
-function updateAccount(account: any) {
+function updateAccount(account: Record<string, string>) {
   return {
     type: UPDATE_ACCOUNT,
     account,
@@ -133,7 +133,7 @@ export function login() {
       localStorage.setItem('access_token', accessToken);
       setTimeout(() => refreshToken()(dispatch), 60000);
 
-      const decoded = jwtDecode(accessToken) as any;
+      const decoded = jwtDecode(accessToken) as Record<string, string>;
       const account = {
         id: decoded.id,
         username: decoded.preferred_username,
