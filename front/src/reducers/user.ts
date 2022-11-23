@@ -37,7 +37,6 @@ export interface UserState {
 
 export default function reducer(inputState: UserState | undefined, action: AnyAction) {
   const state = inputState || initialState;
-  // @ts-ignore
   return produce(state, (draft) => {
     switch (action.type) {
       case LOGIN_SUCCESS:
@@ -144,9 +143,9 @@ export function login() {
 
       dispatch(updateAccount(account));
       dispatch(loginSuccess(accessToken, username));
-      console.log('Connecté');
+      console.info('Connecté');
     } catch (e: any) {
-      console.log('Login ERROR', e.response);
+      console.error('Login ERROR', e.response);
       dispatch(loginError());
     }
   };
@@ -159,10 +158,10 @@ export function attemptLoginOnLaunch() {
     } catch (e: any) {
       if (!e.response) {
         // When server error and unreachable no code is send, e.response/status/code are empty
-        console.log('Erreur serveur');
+        console.error('Erreur serveur');
         dispatch(serverError());
       } else {
-        console.log('Non authentifié :', e.message);
+        console.error('Non authentifié :', e.message);
         dispatch(loginError(false));
       }
     }
