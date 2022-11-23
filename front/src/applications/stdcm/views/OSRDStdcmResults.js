@@ -48,15 +48,17 @@ export default function OSRDStcdmResults(props) {
     // Setup the listener to undi /redo
     // window.addEventListener('keydown', handleKey);
 
-    getStdcmTimetable(
-      simulation,
-      selectedTrain,
-      dispatch,
-      timetableID,
-      allowancesSettings,
-      selectedProjection,
-      t
-    );
+    if (timetableID) {
+      getStdcmTimetable(
+        simulation,
+        selectedTrain,
+        dispatch,
+        timetableID,
+        allowancesSettings,
+        selectedProjection,
+        t
+      );
+    }
     return function cleanup() {
       // window.removeEventListener('keydown', handleKey);
       dispatch(updateSelectedProjection(undefined));
