@@ -10,6 +10,7 @@ import icon from 'assets/pictures/timetable.svg';
 import { sec2time } from 'utils/timeManipulation';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
+import { updateTimetableID } from 'reducers/osrdconf';
 
 const timetableURL = '/timetable/';
 
@@ -28,6 +29,7 @@ export default function TimetableSelector(props) {
       setselectedTimetable(timetableQuery);
       setTrainList(timetableQuery.train_schedules);
     } catch (e) {
+      dispatch(updateTimetableID(undefined));
       dispatch(
         setFailure({
           name: t('osrdconf:errorMessages.unableToRetrieveTimetable'),
