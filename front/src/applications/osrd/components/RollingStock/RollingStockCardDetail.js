@@ -14,16 +14,15 @@ export default function RollingStockCardDetail(props) {
   const dispatch = useDispatch();
   const { id, curvesComfortList, setCurvesComfortList } = props;
   const [data, setData] = useState();
-  const [displayDefaultCurve, setDisplayDefaultCurve] = useState(true);
   const { t } = useTranslation(['rollingstock']);
 
   const mode2name = (mode) => (mode !== 'thermal' ? `${mode}V` : t('thermal'));
 
   const listCurvesComfort = (curvesData) => {
-    const list = [];
+    const list = ['standard'];
     Object.keys(curvesData.modes).forEach((mode) => {
       curvesData.modes[mode].curves.forEach((curve) => {
-        list.push(curve.cond.comfort);
+        if (!list.includes(curve.cond.comfort)) list.push(curve.cond.comfort);
       });
     });
     return list;
@@ -31,20 +30,20 @@ export default function RollingStockCardDetail(props) {
 
   const transformCurves = (curvesData) => {
     const transformedCurves = {};
-    transformedCurves.default = {
-      ...curvesData.modes[curvesData.default_mode].default_curve,
-      mode: mode2name(curvesData.default_mode),
-      comfort: null,
-    };
-    if (!displayDefaultCurve) {
-      Object.keys(curvesData.modes).forEach((mode) => {
-        curvesData.modes[mode].curves.forEach((curve) => {
-          const name = mode2name(mode);
-          const serieId = `${name} ${curve.cond.comfort}`;
-          transformedCurves[serieId] = { ...curve.curve, mode: name, comfort: curve.cond.comfort };
-        });
+    Object.keys(curvesData.modes).forEach((mode) => {
+      // Standard curves (required)
+      const name = mode2name(mode);
+      transformedCurves[`${name} standard`] = {
+        ...curvesData.modes[mode].default_curve,
+        mode: name,
+        comfort: 'standard',
+      };
+      // AC & HEATING curves (optional)
+      curvesData.modes[mode].curves.forEach((curve) => {
+        const serieId = `${name} ${curve.cond.comfort}`;
+        transformedCurves[serieId] = { ...curve.curve, mode: name, comfort: curve.cond.comfort };
       });
-    }
+    });
     return transformedCurves;
   };
 
@@ -71,7 +70,7 @@ export default function RollingStockCardDetail(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  return data ? (
+  return data && curvesComfortList ? (
     <div className="rollingstock-body">
       <div className="row pt-2">
         <div className="col-sm-6">
@@ -159,9 +158,7 @@ export default function RollingStockCardDetail(props) {
       </div>
       <RollingStockCurves
         data={transformCurves(data.effort_curves)}
-        displayDefaultCurve={displayDefaultCurve}
         curvesComfortList={curvesComfortList}
-        setDisplayDefaultCurve={setDisplayDefaultCurve}
       />
       <div className="rollingstock-detail-container-img">
         <div className="rollingstock-detail-img">
@@ -176,8 +173,12 @@ export default function RollingStockCardDetail(props) {
   );
 }
 
+RollingStockCardDetail.defaultProps = {
+  curvesComfortList: undefined,
+};
+
 RollingStockCardDetail.propTypes = {
   id: PropTypes.number.isRequired,
-  curvesComfortList: PropTypes.number.isRequired,
+  curvesComfortList: PropTypes.array,
   setCurvesComfortList: PropTypes.func.isRequired,
 };

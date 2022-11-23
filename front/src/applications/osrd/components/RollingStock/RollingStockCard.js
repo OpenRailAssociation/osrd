@@ -16,7 +16,7 @@ export default function RollingStockCard(props) {
     thermal: false,
     voltages: [],
   });
-  const [curvesComfortList, setCurvesComfortList] = useState(0);
+  const [curvesComfortList, setCurvesComfortList] = useState();
   const { data, openedRollingStockCardId, ref2scroll, setOpenedRollingStockCardId } = props;
   const ref2scrollWhenOpened = useRef();
 
@@ -140,7 +140,7 @@ export default function RollingStockCard(props) {
             </div>
           </div>
         </div>
-        {openedRollingStockCardId === data.id ? (
+        {openedRollingStockCardId === data.id && curvesComfortList ? (
           <RollingStockCardButtons
             id={data.id}
             curvesComfortList={curvesComfortList}

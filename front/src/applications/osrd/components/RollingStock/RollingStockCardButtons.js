@@ -13,12 +13,12 @@ export default function RollingStockCardButtons(props) {
   const dispatch = useDispatch();
 
   const acLabel = (
-    <span>
+    <span className="rollingstock-footer-button-with-picto">
       {comfort2pictogram('ac')} {t('comfortTypes.ac')}
     </span>
   );
   const heatingLabel = (
-    <span>
+    <span className="rollingstock-footer-button-with-picto">
       {comfort2pictogram('heating')} {t('comfortTypes.heating')}
     </span>
   );
