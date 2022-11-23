@@ -7,10 +7,11 @@ import ReactMapGL, {
   MapRef,
   MapEvent,
 } from 'react-map-gl';
-import { lineString as turfLineString, point as turfPoint } from '@turf/helpers';
+import { point as turfPoint, featureCollection } from '@turf/helpers';
 import { useDispatch, useSelector } from 'react-redux';
 import turfNearestPointOnLine, { NearestPointOnLine } from '@turf/nearest-point-on-line';
-import { Feature, Position, LineString } from 'geojson';
+import combine from '@turf/combine';
+import { Position, LineString } from 'geojson';
 import { useParams } from 'react-router-dom';
 
 import { RootState } from 'reducers';
@@ -55,7 +56,6 @@ function Map() {
   const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings } =
     useSelector((state: RootState) => state.map);
   const [idHover, setIdHover] = useState<string | undefined>(undefined);
-  const [trackSectionHover, setTrackSectionHover] = useState<Feature<any>>();
   const [lngLatHover, setLngLatHover] = useState<Position>();
   const [trackSectionGeoJSON, setTrackSectionGeoJSON] = useState<LineString>();
   const [snappedPoint, setSnappedPoint] = useState<NearestPointOnLine>();
@@ -83,12 +83,7 @@ function Map() {
   };
 
   const onFeatureClick = (e: MapEvent) => {
-    if (
-      e.features &&
-      e.features.length > 0 &&
-      e.features[0].properties.id !== undefined
-      // && e.features[0].properties.type_voie === 'VP') {
-    ) {
+    if (e.features && e.features.length > 0 && e.features[0].properties.id !== undefined) {
       dispatch(
         updateFeatureInfoClickOSRD({
           displayPopup: true,
@@ -107,32 +102,9 @@ function Map() {
   };
 
   const getGeoJSONFeature = (e: MapEvent) => {
-    if (
-      trackSectionHover === undefined ||
-      e?.features?.[0].properties.id !== trackSectionHover?.properties?.id
-    ) {
-      setTrackSectionHover(e?.features?.[0]);
-    }
-
-    // Get GEOJSON of features hovered for snapping
-    const width = 5;
-    const height = 5;
-    if (mapRef.current) {
-      const features = mapRef.current.queryRenderedFeatures(
-        [
-          [e.point[0] - width / 2, e.point[1] - height / 2],
-          [e.point[0] + width / 2, e.point[1] + height / 2],
-        ],
-        {
-          layers:
-            mapTrackSources === 'geographic'
-              ? ['chartis/tracks-geo/main']
-              : ['chartis/tracks-sch/main'],
-        }
-      );
-      if (features[0] !== undefined) {
-        setTrackSectionGeoJSON(features[0].geometry);
-      }
+    if (e.features && e.features[0] !== undefined) {
+      const mergedFeatures = combine(featureCollection(e.features));
+      setTrackSectionGeoJSON(mergedFeatures.features[0].geometry);
     }
   };
 
@@ -169,15 +141,14 @@ function Map() {
 
   useEffect(() => {
     if (trackSectionGeoJSON !== undefined && lngLatHover !== undefined) {
-      const line = turfLineString(trackSectionGeoJSON.coordinates);
       const point = turfPoint(lngLatHover);
       try {
-        setSnappedPoint(turfNearestPointOnLine(line, point));
+        setSnappedPoint(turfNearestPointOnLine(trackSectionGeoJSON, point));
       } catch (error) {
         console.warn(`Ìmpossible to snapPoint - error ${error}`);
       }
     }
-  }, [trackSectionGeoJSON, trackSectionHover, lngLatHover]);
+  }, [trackSectionGeoJSON, lngLatHover]);
 
   useEffect(() => {
     if (urlLat) {

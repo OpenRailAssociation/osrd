@@ -3385,6 +3385,14 @@
   dependencies:
     "@turf/helpers" "^6.5.0"
 
+"@turf/combine@^6.5.0":
+  version "6.5.0"
+  resolved "https://registry.yarnpkg.com/@turf/combine/-/combine-6.5.0.tgz#e0f3468ac9c09c24fa7184ebbd8a79d2e595ef81"
+  integrity sha512-Q8EIC4OtAcHiJB3C4R+FpB4LANiT90t17uOd851qkM2/o6m39bfN5Mv0PWqMZIHWrrosZqRqoY9dJnzz/rJxYQ==
+  dependencies:
+    "@turf/helpers" "^6.5.0"
+    "@turf/meta" "^6.5.0"
+
 "@turf/destination@^6.5.0":
   version "6.5.0"
   resolved "https://registry.yarnpkg.com/@turf/destination/-/destination-6.5.0.tgz#30a84702f9677d076130e0440d3223ae503fdae1"
