@@ -46,6 +46,7 @@ export default function SelectSNCF(props) {
 
   useEffect(() => {
     filterOptions(filterText);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterText]);
 
   return (

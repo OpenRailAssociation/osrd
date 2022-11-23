@@ -44,13 +44,8 @@ export default function OSRDConfig(props) {
         })
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [extViewport]);
-
-  /* return (
-    <main className={`osrd-config-mastcontainer mastcontainer${fullscreen ? ' fullscreen' : ''}`}>
-      <RollingStockSelector />
-    </main>
-  ); */
 
   return (
     <main className={`osrd-config-mastcontainer mastcontainer${fullscreen ? ' fullscreen' : ''}`}>
@@ -108,5 +103,5 @@ OSRDConfig.propTypes = {
   setCurrentStdcmRequestStatus: PropTypes.func,
 };
 OSRDConfig.defaultProps = {
-  setCurrentStdcmRequestStatus: () => { },
+  setCurrentStdcmRequestStatus: () => {},
 };
