@@ -275,17 +275,42 @@
     height: 17rem;
     .curves-chart-legend {
       display: flex;
-      align-items: end;
+      align-items: flex-end;
       justify-content: space-between;
+      margin-left: 2.5rem;
+      .curves-chart-legend-comfort-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        margin: 0 .25rem 2px 0;
+        min-width: 1rem;
+        border-bottom: 2px solid transparent;
+        &.active {
+          border-color: var(--coolgray9);
+        }
+        .comfort-ac, .comfort-heating {
+          display: flex;
+        }
+        &:hover {
+          margin-bottom: 0;
+          border-bottom-width: 4px;
+          border-color: var(--coolgray5);
+        }
+      }
       .curves-chart-legend-item {
         display: flex;
         align-items: center;
         white-space: nowrap;
+        cursor: pointer;
         border-bottom: 2px solid var(--coolgray3);
-        .ac, .heating {
+        margin: 0 0 2px .5rem;
+        .comfort-ac, .comfort-heating {
           display: flex;
-          align-items: center;
-          margin-left: .1rem;
+        }
+        &:hover {
+          margin-bottom: 0;
+          border-bottom-width: 4px;
         }
       }
     }
@@ -317,16 +342,6 @@
       }
     }
   }
-  .rollingstock-defaultcurveswitch {
-    .custom-control {
-      padding-left: 1.5rem;
-    }
-    .custom-control-label::before, .custom-control-label::after {
-      height: 1rem;
-      width: 1rem;
-      left: -1.5rem;
-    }
-  }
 }
 
 .rollingstock-footer {
@@ -355,6 +370,14 @@
     border-radius: 0 0 4px 4px;
     color: var(--light);
     background-color: var(--coolgray3);
+    .rollingstock-footer-button-with-picto {
+      display: flex;
+      align-items: center;
+      span {
+        display: flex;
+        padding: 0 .25rem .1rem 0;
+      }
+    }
   }
 }
 
@@ -362,5 +385,8 @@
   color: #0088ce;
 }
 .comfort-heating {
-  color: #ffb612;
+  color: var(--yellow);
+}
+.comfort-standard {
+  font-weight: bold;
 }

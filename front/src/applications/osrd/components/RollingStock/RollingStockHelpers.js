@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { IoMdSunny, IoIosSnow } from 'react-icons/io';
+import { IoIosSnow } from 'react-icons/io';
+import { ImFire } from 'react-icons/im';
 import rollingStockDetailDB from './consts/rollingstockDetailDB.json';
 
 // To remove when details will be inside backend DB
@@ -66,9 +67,11 @@ export function comfort2pictogram(comfort) {
     case 'heating':
       return (
         <span className={`comfort-${comfort}`}>
-          <IoMdSunny />
+          <ImFire />
         </span>
       );
+    case 'standard':
+      return <span className={`comfort-${comfort}`}>S</span>;
     default:
       return null;
   }
