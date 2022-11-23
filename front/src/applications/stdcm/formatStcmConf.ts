@@ -96,6 +96,7 @@ export default function formatStdcmConf(
     const osrdConfStdcm = {
       infra: osrdconf.infraID,
       rolling_stock: osrdconf.rollingStockID,
+      comfort: osrdconf.rollingStockComfort,
       timetable: osrdconf.timetableID,
       start_time: originDate, // Build a date
       end_time: destinationDate, // Build a date
