@@ -10,11 +10,11 @@ use diesel::{sql_query, PgConnection, RunQueryDsl};
 use serde_json::{to_value, Value};
 use strum::IntoEnumIterator;
 
-pub fn insert_errors<'a>(
+pub fn insert_errors(
     conn: &PgConnection,
     infra_id: i32,
     infra_cache: &InfraCache,
-    graph: &Graph<'a>,
+    graph: &Graph,
 ) -> Result<(), DieselError> {
     let infra_errors = generate_errors(infra_cache, graph);
 
