@@ -56,7 +56,7 @@ function DefaultCurveSwitch(props) {
             onChange={() => setDisplayDefaultCurve(false)}
           />
           <label className="custom-control-label font-weight-medium" htmlFor="allCurvesChoice">
-            {t('curves.all')} ({curvesComfortList.length})
+            {t('curves.all')} ({curvesComfortList.length + 1})
           </label>
         </div>
       ) : null}
