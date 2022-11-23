@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ResponsiveLine } from '@nivo/line';
 import PropTypes from 'prop-types';
-import { useTranslation } from 'react-i18next';
 import { comfort2pictogram } from './RollingStockHelpers';
 import { COLORS } from './consts/consts';
 
@@ -27,56 +26,49 @@ const parseData = (label, color, curve) => {
   };
 };
 
-function DefaultCurveSwitch(props) {
-  const { displayDefaultCurve, curvesComfortList, setDisplayDefaultCurve } = props;
-  const { t } = useTranslation(['rollingstock']);
-  return (
-    <div className="rollingstock-defaultcurveswitch">
-      <div className="custom-control custom-radio custom-control-inline">
-        <input
-          type="radio"
-          id="defaultCurveChoice"
-          name="defaultCurveChoice"
-          className="custom-control-input"
-          checked={displayDefaultCurve}
-          onChange={() => setDisplayDefaultCurve(true)}
-        />
-        <label className="custom-control-label font-weight-medium" htmlFor="defaultCurveChoice">
-          {t('curves.default')}
-        </label>
-      </div>
-      {curvesComfortList.length > 1 ? (
-        <div className="custom-control custom-radio custom-control-inline">
-          <input
-            type="radio"
-            id="allCurvesChoice"
-            name="allCurvesChoice"
-            className="custom-control-input"
-            checked={!displayDefaultCurve}
-            onChange={() => setDisplayDefaultCurve(false)}
-          />
-          <label className="custom-control-label font-weight-medium" htmlFor="allCurvesChoice">
-            {t('curves.all')} ({curvesComfortList.length + 1})
-          </label>
-        </div>
-      ) : null}
-    </div>
-  );
+function LegendComfortSwitches(props) {
+  const { curvesComfortList, comfortsStates, setComfortsStates } = props;
+  const changeComfortState = (id) => {
+    setComfortsStates({ ...comfortsStates, [id]: !comfortsStates[id] });
+  };
+  return curvesComfortList ? (
+    <span className="d-flex">
+      {curvesComfortList.map((comfort) => (
+        <span
+          className={`curves-chart-legend-comfort-button ${
+            comfortsStates[comfort] ? 'active' : null
+          }`}
+          key={`comfortSwitch-${comfort}`}
+          role="button"
+          tabIndex={0}
+          onClick={() => changeComfortState(comfort)}
+        >
+          {comfort2pictogram(comfort)}
+        </span>
+      ))}
+    </span>
+  ) : null;
 }
 
 function Legend(props) {
-  const { curves } = props;
-  const { t } = useTranslation(['rollingstock']);
+  const { curves, curvesState, setCurvesState } = props;
+  const changeCurveState = (id) => {
+    setCurvesState({ ...curvesState, [id]: !curvesState[id] });
+  };
+
   return (
     <span className="d-flex">
       {curves.map((curve) => (
         <span
-          className="curves-chart-legend-item ml-2"
-          style={{ borderColor: curve.color }}
+          className="curves-chart-legend-item"
+          style={curvesState[curve.id] ? { borderColor: curve.color } : null}
           key={`legend-${curve.id}`}
+          role="button"
+          tabIndex={0}
+          onClick={() => changeCurveState(curve.id)}
         >
-          {curve.id === 'default' ? `${t('comfortTypes.standard')} (${curve.mode})` : curve.mode}
-          {comfort2pictogram(curve.comfort)}
+          {curve.mode}
+          {curve.comfort !== 'standard' ? comfort2pictogram(curve.comfort) : null}
         </span>
       ))}
     </span>
@@ -89,13 +81,28 @@ function curveColor(index) {
   return Object.keys(COLORS)[indexShort];
 }
 
-export default function RollingStockCurve(props) {
-  const { data, displayDefaultCurve, curvesComfortList, setDisplayDefaultCurve } = props;
-  const { t } = useTranslation(['rollingstock']);
+function initialCurvesState(data) {
+  const curvesState = {};
+  Object.keys(data).forEach((id) => {
+    curvesState[id] = true;
+  });
+  return curvesState;
+}
 
-  const curves = Object.keys(data).map((name, index) =>
-    parseData(name, curveColor(index), data[name])
-  );
+function initialComfortsState(data) {
+  const comfortsState = {};
+  data.forEach((id) => {
+    comfortsState[id] = true;
+  });
+  return comfortsState;
+}
+
+export default function RollingStockCurve(props) {
+  const { data, curvesComfortList } = props;
+  const [curves, setCurves] = useState();
+  const [curvesState, setCurvesState] = useState(initialCurvesState(data));
+  const [curvesToDisplay, setCurvesToDisplay] = useState(curves);
+  const [comfortsStates, setComfortsStates] = useState(initialComfortsState(curvesComfortList));
 
   const formatTooltip = (tooltip) => (
     <div className="curves-chart-tooltip" style={{ borderColor: tooltip.point.color }}>
@@ -107,11 +114,9 @@ export default function RollingStockCurve(props) {
           borderColor: tooltip.point.color,
         }}
       >
-        {tooltip.point.serieId === 'default'
-          ? `${t('comfortTypes.standard')} (${data[tooltip.point.serieId].mode})`
-          : data[tooltip.point.serieId].mode}
+        {data[tooltip.point.serieId].mode}
         <span className="ml-1" />
-        {data[tooltip.point.serieId].comfort ? (
+        {data[tooltip.point.serieId].comfort !== 'standard' ? (
           <span className="curves-chart-tooltip-comfort">
             {comfort2pictogram(data[tooltip.point.serieId].comfort)}
           </span>
@@ -123,18 +128,34 @@ export default function RollingStockCurve(props) {
     </div>
   );
 
-  return (
+  useEffect(() => {
+    if (data && comfortsStates) {
+      setCurves(
+        Object.keys(data)
+          .map((name, index) => parseData(name, curveColor(index), data[name]))
+          .filter((curve) => comfortsStates[curve.comfort])
+      );
+    }
+  }, [data, comfortsStates]);
+
+  useEffect(() => {
+    if (curves && curvesState) {
+      setCurvesToDisplay(curves.filter((curve) => curvesState[curve.id]));
+    }
+  }, [curves, curvesState]);
+
+  return curves && curvesState && curvesToDisplay && comfortsStates ? (
     <div className="curves-container py-3">
       <div className="curves-chart-legend mr-2 mb-1">
-        <DefaultCurveSwitch
-          displayDefaultCurve={displayDefaultCurve}
-          setDisplayDefaultCurve={setDisplayDefaultCurve}
+        <LegendComfortSwitches
           curvesComfortList={curvesComfortList}
+          comfortsStates={comfortsStates}
+          setComfortsStates={setComfortsStates}
         />
-        <Legend curves={curves} />
+        <Legend curves={curves} curvesState={curvesState} setCurvesState={setCurvesState} />
       </div>
       <ResponsiveLine
-        data={curves}
+        data={curvesToDisplay}
         margin={{
           top: 5,
           right: 10,
@@ -179,28 +200,22 @@ export default function RollingStockCurve(props) {
         tooltip={formatTooltip}
       />
     </div>
-  );
+  ) : null;
 }
+
+LegendComfortSwitches.propTypes = {
+  curvesComfortList: PropTypes.array.isRequired,
+  comfortsStates: PropTypes.object.isRequired,
+  setComfortsStates: PropTypes.func.isRequired,
+};
 
 Legend.propTypes = {
   curves: PropTypes.array.isRequired,
+  curvesState: PropTypes.object.isRequired,
+  setCurvesState: PropTypes.func.isRequired,
 };
 
-DefaultCurveSwitch.defaultProps = {
-  curvesComfortList: 1,
-};
-DefaultCurveSwitch.propTypes = {
-  displayDefaultCurve: PropTypes.bool.isRequired,
-  curvesComfortList: PropTypes.number,
-  setDisplayDefaultCurve: PropTypes.func.isRequired,
-};
-
-RollingStockCurve.defaultProps = {
-  curvesComfortList: 1,
-};
 RollingStockCurve.propTypes = {
   data: PropTypes.object.isRequired,
-  displayDefaultCurve: PropTypes.bool.isRequired,
-  curvesComfortList: PropTypes.number,
-  setDisplayDefaultCurve: PropTypes.func.isRequired,
+  curvesComfortList: PropTypes.array.isRequired,
 };
