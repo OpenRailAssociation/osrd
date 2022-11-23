@@ -6,7 +6,7 @@ import enableInteractivity, {
   traceVerticalLine,
 } from 'applications/osrd/components/Simulation/enableInteractivity';
 import { updateChartXGEV, updateMustRedraw } from 'reducers/osrdsimulation';
-import { useDispatch, useSelector } from 'react-redux';
+
 
 import { CgLoadbar } from 'react-icons/cg';
 import { GiResize } from 'react-icons/gi';
@@ -17,7 +17,7 @@ import {
   createChart,
   drawTrain,
 } from 'applications/osrd/components/Simulation/SpeedSpaceChart/d3Helpers';
-import OSRDSpeedSpaceSettings from 'applications/osrd/components/Simulation/SpeedSpaceSettings/withOSRDData';
+import SpeedSpaceSettings from 'applications/osrd/components/Simulation/SpeedSpaceSettings/SpeedSpaceSettings';
 
 const CHART_ID = 'SpeedSpaceChart';
 
@@ -33,8 +33,8 @@ export default function SpeedSpaceChart(props) {
     timePosition,
     consolidatedSimulation,
   } = props;
-  const dispatch = useDispatch();
 
+  console.log("props", props)
   const [showSettings, setShowSettings] = useState(false);
   const [rotate, setRotate] = useState(false);
   const [resetChart, setResetChart] = useState(false);
@@ -45,7 +45,7 @@ export default function SpeedSpaceChart(props) {
   const keyValues = ['position', 'speed'];
 
   // Prepare data
-  const dataSimulation = prepareData(simulation, selectedTrain, keyValues);
+  const dataSimulation = prepareData(simulation.present, selectedTrain, keyValues);
 
   // rotation Handle (button on right bottom)
   const toggleRotation = () => {
@@ -75,7 +75,7 @@ export default function SpeedSpaceChart(props) {
         keyValues,
         heightOfSpeedSpaceChart,
         ref,
-        dispatch,
+        undefined,
         setResetChart
       )
     );
@@ -93,7 +93,7 @@ export default function SpeedSpaceChart(props) {
         keyValues,
         heightOfSpeedSpaceChart,
         ref,
-        dispatch,
+        undefined,
         setResetChart
       )
     );
@@ -104,7 +104,7 @@ export default function SpeedSpaceChart(props) {
     enableInteractivity(
       chart,
       dataSimulation,
-      dispatch,
+      undefined,
       keyValues,
       LIST_VALUES_NAME_SPEED_SPACE,
       positionValues,
@@ -134,7 +134,7 @@ export default function SpeedSpaceChart(props) {
       setYPosition,
       setZoomLevel,
       yPosition,
-      dispatch,
+      undefined,
       zoomLevel,
       CHART_ID,
       chart,
@@ -181,7 +181,7 @@ export default function SpeedSpaceChart(props) {
           keyValues,
           heightOfSpeedSpaceChart,
           ref,
-          dispatch,
+          undefined,
           setResetChart
         )
       );
@@ -206,7 +206,7 @@ export default function SpeedSpaceChart(props) {
       >
         <i className={showSettings ? 'icons-arrow-prev' : 'icons-arrow-next'} />
       </button>
-      <OSRDSpeedSpaceSettings showSettings={showSettings} />
+      
       <div ref={ref} className="w-100" />
       <button
         type="button"
