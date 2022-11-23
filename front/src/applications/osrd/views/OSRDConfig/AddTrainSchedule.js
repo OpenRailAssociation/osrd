@@ -62,7 +62,7 @@ export default function AddTrainSchedule(props) {
         dispatch(
           setFailure({
             name: e.name,
-            message: e.message,
+            message: t(`osrdconf:errorMessages.${e.message}`),
           })
         );
       }
