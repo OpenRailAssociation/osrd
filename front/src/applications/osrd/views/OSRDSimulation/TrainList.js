@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { IoMdEye } from 'react-icons/io';
 import PropTypes from 'prop-types';
+import DriverTrainSchedule from 'applications/osrd/views/OSRDSimulation/DriverTrainSchedule';
 import { changeTrain } from 'applications/osrd/components/TrainList/TrainListHelpers';
 import nextId from 'react-id-generator';
 import { timeShiftTrain } from 'applications/osrd/components/Helpers/ChartHelpers';
@@ -68,6 +69,7 @@ export default function TrainsList(props) {
   const [inputName, setInputName] = useState(undefined);
   const [inputTime, setInputTime] = useState(undefined);
   const [onInput, setOnInput] = useState(false);
+  const [dataDisplayModal, setDataDisplayModal] = useState(undefined);
 
   const { t } = useTranslation(['simulation']);
 
@@ -186,15 +188,10 @@ export default function TrainsList(props) {
               <div className="cell-inner">
                 <button
                   type="button"
-                  data-toggle="modal"
-                  data-target="#trainlist-modal"
-                  className="btn btn-only-icon btn-transparent btn-color-gray pl-0"
-                >
-                  <i className="icons-pencil" />
-                </button>
-                <button
-                  type="button"
                   className="btn btn-only-icon btn-transparent btn-color-gray px-0"
+                  data-toggle="modal"
+                  data-target="#driverTrainScheduleModal"
+                  onClick={() => setDataDisplayModal(simulation.trains[idx])}
                 >
                   <IoMdEye />
                 </button>
@@ -306,9 +303,7 @@ export default function TrainsList(props) {
           </table>
         </div>
       </div>
-      {/* <TrainListModal
-        trainIDX={trainIDX}
-      /> */}
+      <DriverTrainSchedule data={dataDisplayModal} />
     </>
   );
 }
