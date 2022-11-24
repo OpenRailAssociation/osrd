@@ -95,7 +95,9 @@ public class AllowanceManager {
         var ranges = List.of(
                 new AllowanceRange(0, oldEnvelope.getEndPos(), new AllowanceValue.FixedTime(neededDelay))
         );
-        var allowance = new MarecoAllowance(context, 0, oldEnvelope.getEndPos(), 0, ranges);
+        var capacitySpeedLimit = 1; // We set a minimum because generating curves at very low speed can cause issues
+        // TODO: add a parameter and set a higher default value once we can handle proper stops
+        var allowance = new MarecoAllowance(context, 0, oldEnvelope.getEndPos(), capacitySpeedLimit, ranges);
         try {
             return allowance.apply(oldEnvelope);
         } catch (AllowanceConvergenceException e) {

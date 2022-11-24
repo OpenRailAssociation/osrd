@@ -1431,17 +1431,17 @@ public class STDCMPathfindingTests {
 
          */
         var infraBuilder = new DummyRouteGraphBuilder();
-        var firstRoute = infraBuilder.addRoute("a", "b", 1_000, 20);
-        var secondRoute = infraBuilder.addRoute("b", "c", 1_000, 20);
-        var thirdRoute = infraBuilder.addRoute("c", "d", 1_000, 20);
-        var forthRoute = infraBuilder.addRoute("d", "e", 1_000, 20);
+        var firstRoute = infraBuilder.addRoute("a", "b", 2_000, 20);
+        var secondRoute = infraBuilder.addRoute("b", "c", 2_000, 20);
+        var thirdRoute = infraBuilder.addRoute("c", "d", 2_000, 20);
+        var forthRoute = infraBuilder.addRoute("d", "e", 2_000, 20);
         var infra = infraBuilder.build();
         var occupancyGraph = ImmutableMultimap.of(
                 firstRoute, new OccupancyBlock(0, 600, 0, 100),
                 firstRoute, new OccupancyBlock(2_000, POSITIVE_INFINITY, 0, 100),
                 secondRoute, new OccupancyBlock(0, 1200, 0, 100),
                 thirdRoute, new OccupancyBlock(0, 1800, 0, 100),
-                forthRoute, new OccupancyBlock(0, 10_000, 0, 100)
+                forthRoute, new OccupancyBlock(0, 4_000, 0, 100)
         );
         var res = STDCMPathfinding.findPath(
                 infra,
