@@ -293,8 +293,8 @@ mod tests {
         ];
         let route: ObjectCache = create_route_cache(
             "R_error",
-            Waypoint::BufferStop { id: "BF1".into() },
-            Waypoint::Detector { id: "D1".into() },
+            Waypoint::new_buffer_stop("BF1"),
+            Waypoint::new_detector("D1"),
             vec![],
             error_path,
         )
@@ -316,8 +316,8 @@ mod tests {
         ];
         let route: ObjectCache = create_route_cache(
             "R_error",
-            Waypoint::BufferStop { id: "BF1".into() },
-            Waypoint::Detector { id: "D1".into() },
+            Waypoint::new_buffer_stop("BF1"),
+            Waypoint::new_detector("D1"),
             vec![],
             error_path,
         )
@@ -338,10 +338,8 @@ mod tests {
         ];
         let route: ObjectCache = create_route_cache(
             "R_error",
-            Waypoint::BufferStop {
-                id: "BF_non_existing".into(),
-            },
-            Waypoint::Detector { id: "D1".into() },
+            Waypoint::new_buffer_stop("BF_non_existing"),
+            Waypoint::new_detector("D1"),
             vec![],
             error_path,
         )
@@ -364,8 +362,8 @@ mod tests {
         ];
         let route = create_route_cache(
             "R_error",
-            Waypoint::BufferStop { id: "BF1".into() },
-            Waypoint::Detector { id: "D1".into() },
+            Waypoint::new_buffer_stop("BF1"),
+            Waypoint::new_detector("D1"),
             vec![],
             error_path,
         );
@@ -404,8 +402,8 @@ mod tests {
         ];
         let route: ObjectCache = create_route_cache(
             "R_error",
-            Waypoint::BufferStop { id: "BF1".into() },
-            Waypoint::Detector { id: "D1".into() },
+            Waypoint::new_buffer_stop("BF1"),
+            Waypoint::new_detector("D1"),
             vec!["non_existing_D".into()],
             error_path,
         )
@@ -432,8 +430,8 @@ mod tests {
         infra_cache.add(create_detector_cache("D2", "C", 250.));
         let route: ObjectCache = create_route_cache(
             "R_error",
-            Waypoint::BufferStop { id: "BF1".into() },
-            Waypoint::Detector { id: "D1".into() },
+            Waypoint::new_buffer_stop("BF1"),
+            Waypoint::new_detector("D1"),
             vec!["D2".into()],
             error_path,
         )
@@ -455,8 +453,8 @@ mod tests {
         ];
         let route: ObjectCache = create_route_cache(
             "R_error",
-            Waypoint::BufferStop { id: "BF1".into() },
-            Waypoint::Detector { id: "D1".into() },
+            Waypoint::new_buffer_stop("BF1"),
+            Waypoint::new_detector("D1"),
             vec![],
             error_path,
         )
@@ -479,8 +477,8 @@ mod tests {
         ];
         let route: ObjectCache = create_route_cache(
             "R_error",
-            Waypoint::BufferStop { id: "BF1".into() },
-            Waypoint::Detector { id: "D1".into() },
+            Waypoint::new_buffer_stop("BF1"),
+            Waypoint::new_detector("D1"),
             vec![],
             error_path,
         )
@@ -503,8 +501,8 @@ mod tests {
         infra_cache.add(create_detector_cache("D2", "C", 250.));
         let route: ObjectCache = create_route_cache(
             "R_error",
-            Waypoint::BufferStop { id: "BF1".into() },
-            Waypoint::Detector { id: "D2".into() },
+            Waypoint::new_buffer_stop("BF1"),
+            Waypoint::new_detector("D2"),
             vec![],
             error_path,
         )
