@@ -2,9 +2,9 @@
   "comfort": "Confort",
   "comfortAcceleration": "Accélération « confort »",
   "comfortTypes": {
-    "ac": "Climatisation",
-    "heating": "Chauffage",
-    "standard": "Standard"
+    "AC": "Climatisation",
+    "HEATING": "Chauffage",
+    "STANDARD": "Standard"
   },
   "compatibleVoltages": "Voltages Compatibles",
   "curves": {

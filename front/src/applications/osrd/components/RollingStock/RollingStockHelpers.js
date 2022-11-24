@@ -58,19 +58,19 @@ export function RollingStockInfos(props) {
 
 export function comfort2pictogram(comfort) {
   switch (comfort) {
-    case 'ac':
+    case 'AC':
       return (
         <span className={`comfort-${comfort}`}>
           <IoIosSnow />
         </span>
       );
-    case 'heating':
+    case 'HEATING':
       return (
         <span className={`comfort-${comfort}`}>
           <ImFire />
         </span>
       );
-    case 'standard':
+    case 'STANDARD':
       return <span className={`comfort-${comfort}`}>S</span>;
     default:
       return null;
