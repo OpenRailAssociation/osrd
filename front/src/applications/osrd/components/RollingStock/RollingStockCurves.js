@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
 import { ResponsiveLine } from '@nivo/line';
 import PropTypes from 'prop-types';
-import { comfort2pictogram } from './RollingStockHelpers';
+import { useEffect, useState } from 'react';
 import { COLORS } from './consts/consts';
+import { comfort2pictogram } from './RollingStockHelpers';
 
 // Format RollingStock Curves to NIVO format
 const parseData = (label, color, curve) => {
@@ -68,7 +68,7 @@ function Legend(props) {
           onClick={() => changeCurveState(curve.id)}
         >
           {curve.mode}
-          {curve.comfort !== 'standard' ? comfort2pictogram(curve.comfort) : null}
+          {curve.comfort !== 'STANDARD' ? comfort2pictogram(curve.comfort) : null}
         </span>
       ))}
     </span>
@@ -116,7 +116,7 @@ export default function RollingStockCurve(props) {
       >
         {data[tooltip.point.serieId].mode}
         <span className="ml-1" />
-        {data[tooltip.point.serieId].comfort !== 'standard' ? (
+        {data[tooltip.point.serieId].comfort !== 'STANDARD' ? (
           <span className="curves-chart-tooltip-comfort">
             {comfort2pictogram(data[tooltip.point.serieId].comfort)}
           </span>
