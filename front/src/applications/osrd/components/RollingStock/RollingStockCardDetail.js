@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
-import { useTranslation } from 'react-i18next';
+import Loader from 'common/Loader';
 import { get } from 'common/requests';
+import PropTypes from 'prop-types';
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { setFailure } from 'reducers/main';
-import Loader from 'common/Loader';
-import RollingStockCurves from './RollingStockCurves';
 import RollingStock2Img from './RollingStock2Img';
+import RollingStockCurves from './RollingStockCurves';
 
 const ROLLING_STOCK_URL = '/rolling_stock/';
 
@@ -19,7 +19,7 @@ export default function RollingStockCardDetail(props) {
   const mode2name = (mode) => (mode !== 'thermal' ? `${mode}V` : t('thermal'));
 
   const listCurvesComfort = (curvesData) => {
-    const list = ['standard'];
+    const list = ['STANDARD'];
     Object.keys(curvesData.modes).forEach((mode) => {
       curvesData.modes[mode].curves.forEach((curve) => {
         if (!list.includes(curve.cond.comfort)) list.push(curve.cond.comfort);
@@ -33,10 +33,10 @@ export default function RollingStockCardDetail(props) {
     Object.keys(curvesData.modes).forEach((mode) => {
       // Standard curves (required)
       const name = mode2name(mode);
-      transformedCurves[`${name} standard`] = {
+      transformedCurves[`${name} STANDARD`] = {
         ...curvesData.modes[mode].default_curve,
         mode: name,
-        comfort: 'standard',
+        comfort: 'STANDARD',
       };
       // AC & HEATING curves (optional)
       curvesData.modes[mode].curves.forEach((curve) => {

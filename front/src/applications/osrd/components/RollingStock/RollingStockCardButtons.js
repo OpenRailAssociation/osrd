@@ -9,17 +9,17 @@ import { comfort2pictogram } from './RollingStockHelpers';
 export default function RollingStockCardButtons(props) {
   const { t } = useTranslation(['rollingstock']);
   const { id, curvesComfortList, setOpenedRollingStockCardId } = props;
-  const [comfort, setComfort] = useState('standard');
+  const [comfort, setComfort] = useState('STANDARD');
   const dispatch = useDispatch();
 
   const acLabel = (
     <span className="rollingstock-footer-button-with-picto">
-      {comfort2pictogram('ac')} {t('comfortTypes.ac')}
+      {comfort2pictogram('AC')} {t('comfortTypes.AC')}
     </span>
   );
   const heatingLabel = (
     <span className="rollingstock-footer-button-with-picto">
-      {comfort2pictogram('heating')} {t('comfortTypes.heating')}
+      {comfort2pictogram('HEATING')} {t('comfortTypes.HEATING')}
     </span>
   );
 
@@ -30,12 +30,12 @@ export default function RollingStockCardButtons(props) {
   };
 
   const setOptions = () => {
-    const options = [{ value: 'standard', label: t('comfortTypes.standard') }];
-    if (curvesComfortList.includes('heating')) {
-      options.push({ value: 'heating', label: heatingLabel });
+    const options = [{ value: 'STANDARD', label: t('comfortTypes.STANDARD') }];
+    if (curvesComfortList.includes('HEATING')) {
+      options.push({ value: 'HEATING', label: heatingLabel });
     }
-    if (curvesComfortList.includes('ac')) {
-      options.push({ value: 'ac', label: acLabel });
+    if (curvesComfortList.includes('AC')) {
+      options.push({ value: 'AC', label: acLabel });
     }
     return options;
   };
