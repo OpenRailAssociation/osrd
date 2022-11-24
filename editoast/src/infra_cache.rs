@@ -895,8 +895,8 @@ pub mod tests {
         ];
         infra_cache.add(create_route_cache(
             "R1",
-            Waypoint::BufferStop { id: "BF1".into() },
-            Waypoint::Detector { id: "D1".into() },
+            Waypoint::new_buffer_stop("BF1"),
+            Waypoint::new_detector("D1"),
             vec![],
             r1_path,
         ));
@@ -906,8 +906,8 @@ pub mod tests {
         ];
         infra_cache.add(create_route_cache(
             "R2",
-            Waypoint::Detector { id: "D1".into() },
-            Waypoint::BufferStop { id: "BF2".into() },
+            Waypoint::new_detector("D1"),
+            Waypoint::new_buffer_stop("BF2"),
             vec![],
             r2_path,
         ));
@@ -917,8 +917,8 @@ pub mod tests {
         ];
         infra_cache.add(create_route_cache(
             "R3",
-            Waypoint::Detector { id: "D1".into() },
-            Waypoint::BufferStop { id: "BF3".into() },
+            Waypoint::new_detector("D1"),
+            Waypoint::new_buffer_stop("BF3"),
             vec![],
             r3_path,
         ));
