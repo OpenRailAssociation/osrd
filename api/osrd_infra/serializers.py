@@ -9,6 +9,7 @@ from osrd_infra.models import (
     Timetable,
     TrainScheduleModel,
 )
+from osrd_infra.schemas.rolling_stock import ComfortType
 
 
 # monkey patch rest_framework_gis so that it properly converts
@@ -158,4 +159,4 @@ class STDCMInputSerializer(Serializer):
         child=WaypointInputSerializer(),
     )
     rolling_stock = serializers.PrimaryKeyRelatedField(queryset=RollingStock.objects.all())
-    comfort = serializers.CharField(max_length=8, default="standard")
+    comfort = serializers.ChoiceField(choices=[(x.value, x.name) for x in ComfortType], default=ComfortType.STANDARD)
