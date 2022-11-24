@@ -1,15 +1,13 @@
-import { AnyAction, Dispatch } from 'redux';
 import produce from 'immer';
+import { AnyAction, Dispatch } from 'redux';
 
 import {
-  OsrdConfState,
   DEFAULT_MODE,
-  DEFAULT_STDCM_MODE,
-  PointOnMap,
+  DEFAULT_STDCM_MODE, OsrdConfState, PointOnMap
 } from 'applications/osrd/consts';
 import { formatIsoDate } from 'utils/date';
 import { boundedValue } from 'utils/numbers';
-import { time2sec, sec2time } from 'utils/timeManipulation';
+import { sec2time, time2sec } from 'utils/timeManipulation';
 
 import { getSwitchTypes } from 'applications/editor/data/api';
 /* eslint-disable default-case */
@@ -58,7 +56,7 @@ export const initialState: OsrdConfState = {
   pathfindingID: undefined,
   timetableID: undefined,
   rollingStockID: undefined,
-  rollingStockComfort: 'standard',
+  rollingStockComfort: 'STANDARD',
   speedLimitByTag: undefined,
   origin: undefined,
   originSpeed: 0,

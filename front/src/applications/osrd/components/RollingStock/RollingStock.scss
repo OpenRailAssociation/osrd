@@ -110,7 +110,7 @@
         padding: 0rem .5rem;
         border-radius: 4px;
       }
-      .comfort-ac, .comfort-heating {
+      .comfort-AC, .comfort-HEATING {
         display: flex;
       }
       .rollingstock-infos-end {
@@ -289,7 +289,7 @@
         &.active {
           border-color: var(--coolgray9);
         }
-        .comfort-ac, .comfort-heating {
+        .comfort-AC, .comfort-HEATING {
           display: flex;
         }
         &:hover {
@@ -305,7 +305,7 @@
         cursor: pointer;
         border-bottom: 2px solid var(--coolgray3);
         margin: 0 0 2px .5rem;
-        .comfort-ac, .comfort-heating {
+        .comfort-AC, .comfort-HEATING {
           display: flex;
         }
         &:hover {
@@ -381,12 +381,12 @@
   }
 }
 
-.comfort-ac {
+.comfort-AC {
   color: #0088ce;
 }
-.comfort-heating {
+.comfort-HEATING {
   color: var(--yellow);
 }
-.comfort-standard {
+.comfort-STANDARD {
   font-weight: bold;
 }
