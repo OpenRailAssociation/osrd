@@ -1,6 +1,6 @@
+import React, { useEffect, useState } from 'react';
 import { ResponsiveLine } from '@nivo/line';
 import PropTypes from 'prop-types';
-import { useEffect, useState } from 'react';
 import { COLORS } from './consts/consts';
 import { comfort2pictogram } from './RollingStockHelpers';
 
@@ -11,7 +11,7 @@ const parseData = (label, color, curve) => {
   // const curveFormatted = curve.map((item)
   // => ({ x: item.speed * 3.6, y: item.max_effort / 1000 }));
   const curveFormatted = curve.speeds.map((speed, index) => ({
-    x: speed,
+    x: speed * 3.6,
     y: curve.max_efforts[index] / 1000,
   }));
 
@@ -160,7 +160,7 @@ export default function RollingStockCurve(props) {
           top: 5,
           right: 10,
           bottom: 50,
-          left: 40,
+          left: 45,
         }}
         xScale={{
           type: 'linear',
@@ -190,7 +190,7 @@ export default function RollingStockCurve(props) {
           tickPadding: 5,
           tickRotation: 0,
           legend: 'kN',
-          legendOffset: -30,
+          legendOffset: -40,
           legendPosition: 'middle',
         }}
         colors={{ datum: 'color' }}
