@@ -23,6 +23,8 @@ import defineChart from 'applications/osrd/components/Simulation/defineChart';
 import drawArea from 'applications/osrd/components/Simulation/drawArea';
 import drawCurve from 'applications/osrd/components/Simulation/drawCurve';
 
+import OSRDSpeedSpaceSettings from 'applications/osrd/components/Simulation/SpeedSpaceSettings/withOSRDData';
+
 const CHART_ID = 'SpeedSpaceChart';
 
 const drawAxisTitle = (chart, rotate) => {
@@ -358,7 +360,7 @@ export default function SpeedSpaceChart(props) {
       >
         <i className={showSettings ? 'icons-arrow-prev' : 'icons-arrow-next'} />
       </button>
-      <SpeedSpaceSettings showSettings={showSettings} />
+      <OSRDSpeedSpaceSettings showSettings={showSettings} />
       <div ref={ref} className="w-100" />
       <button
         type="button"

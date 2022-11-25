@@ -51,7 +51,9 @@ export default function ModalPathJSONDetail(props) {
   };
 
   useEffect(() => {
-    getPathJSON();
+    if (pathfindingID) {
+      getPathJSON();
+    }
   }, [pathfindingID]);
 
   return (

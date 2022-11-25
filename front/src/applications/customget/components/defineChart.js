@@ -45,6 +45,7 @@ const defineChart = (svgWidth, svgHeight, defineX, defineY, ref, rotate, keyValu
     .attr('transform', `translate(0,${height})`)
     .attr('class', 'grid')
     .call(gridX(x, height));
+  const originalScaleX = x; // We need to keep a ref on that to not double translation
 
   // Add Y axis
   const y = defineY.range([height, 0]);
@@ -54,6 +55,7 @@ const defineChart = (svgWidth, svgHeight, defineX, defineY, ref, rotate, keyValu
       : d3.axisLeft(y);
   const yAxis = svg.append('g').call(axisLeftY);
   const yAxisGrid = svg.append('g').attr('class', 'grid').call(gridY(y, width));
+  const originalScaleY = y; // We need to keep a ref on that to not double translation
 
   // Create clip path to hide everything out of this area
   const idClip = `clip-${nextId()}`;
@@ -90,6 +92,8 @@ const defineChart = (svgWidth, svgHeight, defineX, defineY, ref, rotate, keyValu
     yAxisGrid,
     svg,
     drawZone,
+    originalScaleX,
+    originalScaleY
   };
 };
 

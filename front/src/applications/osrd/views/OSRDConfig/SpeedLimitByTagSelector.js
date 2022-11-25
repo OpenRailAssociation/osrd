@@ -10,23 +10,16 @@ import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 
 export default function SpeedLimitByTagSelector() {
   const dispatch = useDispatch();
-  const [speedLimitsTags, setSpeedLimitsTags] = useState(undefined);
   const { infraID, speedLimitByTag } = useSelector((state) => state.osrdconf);
+  const [speedLimitsTags, setSpeedLimitsTags] = useState(undefined);
+  const [oldInfraID, setOldInfraID] = useState(infraID);
   const { t } = useTranslation(['osrdconf']);
 
   const getTagsListController = new AbortController();
-  const getTagsListSignal = getTagsListController.signal;
 
-  const getTagsList = async (zoom, params) => {
+  const getTagsList = async () => {
     try {
-      const tagsList = await get(
-        `/infra/${infraID}/speed_limit_tags/`,
-        {
-          getTagsListSignal,
-        },
-        {},
-        true
-      );
+      const tagsList = await get(`/infra/${infraID}/speed_limit_tags/`);
       setSpeedLimitsTags(tagsList);
     } catch (e) {
       dispatch(
@@ -40,14 +33,17 @@ export default function SpeedLimitByTagSelector() {
   };
 
   useEffect(() => {
-    setSpeedLimitsTags(undefined);
-    dispatch(updateSpeedLimitByTag(undefined));
-    getTagsList();
-    return function cleanup() {
+    // Check if infraID has changed to avoid clearing value on first mount
+    if (infraID !== oldInfraID) {
       setSpeedLimitsTags(undefined);
       dispatch(updateSpeedLimitByTag(undefined));
+      setOldInfraID(infraID);
+    }
+    getTagsList();
+    return function cleanup() {
       getTagsListController.abort();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [infraID]);
 
   return (

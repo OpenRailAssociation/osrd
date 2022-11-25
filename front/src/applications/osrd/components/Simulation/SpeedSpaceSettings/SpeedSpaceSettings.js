@@ -1,5 +1,4 @@
-import { updateMustRedraw, updateSpeedSpaceSettings } from 'reducers/osrdsimulation';
-import { useDispatch, useSelector } from 'react-redux';
+
 
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import PropTypes from 'prop-types';
@@ -7,20 +6,9 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 export default function SpeedSpaceSettings(props) {
-  const { showSettings } = props;
+  const { showSettings, speedSpaceSettings, toggleSetting } = props;
   const { t } = useTranslation(['simulation']);
-  const dispatch = useDispatch();
-  const { speedSpaceSettings } = useSelector((state) => state.osrdsimulation);
 
-  const toggleSetting = (settingName) => {
-    dispatch(
-      updateSpeedSpaceSettings({
-        ...speedSpaceSettings,
-        [settingName]: !speedSpaceSettings[settingName],
-      })
-    );
-    dispatch(updateMustRedraw(true));
-  };
 
   return (
     <div
@@ -65,5 +53,12 @@ export default function SpeedSpaceSettings(props) {
 }
 
 SpeedSpaceSettings.propTypes = {
-  showSettings: PropTypes.bool.isRequired,
+  showSettings: PropTypes.bool,
+  toggleSetting: PropTypes.func,
+  speedSpaceSettings: PropTypes.object.isRequired
+};
+
+SpeedSpaceSettings.defaultProps = {
+  showSettings: false,
+  toggleSetting: () => {},
 };

@@ -8,10 +8,9 @@ use errors::get_paginated_infra_errors;
 use super::params::List;
 use crate::api_error::ApiResult;
 use crate::chartos;
-use crate::chartos::InvalidationZone;
 use crate::client::ChartosConfig;
 use crate::db_connection::DBConnection;
-use crate::infra::{CreateInfra, Infra, InfraApiError};
+use crate::infra::{CreateInfra, Infra};
 use crate::infra_cache::{InfraCache, ObjectCache};
 use crate::schema::operation::{Operation, OperationResult};
 use crate::schema::SwitchType;
@@ -47,7 +46,7 @@ async fn refresh<'a>(
 ) -> ApiResult<JsonValue> {
     let infra_caches = infra_caches.inner().clone();
     let refreshed_infra = conn
-        .run::<_, ApiResult<Vec<i32>>>(move |conn| {
+        .run::<_, ApiResult<_>>(move |conn| {
             // Use a transaction to give scope to infra list lock
             let mut infras_list = vec![];
             let infras = infras.0;
@@ -68,7 +67,7 @@ async fn refresh<'a>(
             let mut refreshed_infra = vec![];
 
             for infra in infras_list {
-                let infra_cache = infra_caches.get(&infra.id).unwrap();
+                let infra_cache = InfraCache::get_or_load(conn, &infra_caches, &infra)?;
                 if infra.refresh(conn, force, &infra_cache)? {
                     refreshed_infra.push(infra.id);
                 }
@@ -99,16 +98,13 @@ async fn get(conn: DBConnection, infra: i32) -> ApiResult<Custom<Json<Infra>>> {
 
 /// Create an infra
 #[post("/", data = "<data>")]
-async fn create<'a>(
-    data: Result<Json<CreateInfra>, JsonError<'a>>,
+async fn create(
+    data: Result<Json<CreateInfra>, JsonError<'_>>,
     conn: DBConnection,
-    infra_caches: &State<Arc<CHashMap<i32, InfraCache>>>,
 ) -> ApiResult<Custom<Json<Infra>>> {
-    let infra_caches = infra_caches.inner().clone();
     let data = data?;
     conn.run(move |conn| {
         let infra = Infra::create(&data.name, conn)?;
-        infra_caches.insert_new(infra.id, InfraCache::default());
         Ok(Custom(Status::Created, Json(infra)))
     })
     .await
@@ -143,10 +139,10 @@ async fn edit<'a>(
     let infra_caches = infra_caches.inner().clone();
 
     let (operation_results, invalid_zone) = conn
-        .run::<_, ApiResult<(Vec<OperationResult>, InvalidationZone)>>(move |conn| {
-            // Retrieve infra cache
-            let mut infra_cache = infra_caches.get_mut(&infra).unwrap();
-            edition::edit(conn, infra, &operations, &mut infra_cache)
+        .run::<_, ApiResult<_>>(move |conn| {
+            let infra = Infra::retrieve_for_update(conn, infra)?;
+            let mut infra_cache = InfraCache::get_or_load_mut(conn, &infra_caches, &infra).unwrap();
+            edition::edit(conn, &infra, &operations, &mut infra_cache)
         })
         .await?;
 
@@ -187,24 +183,26 @@ async fn list_errors(
 #[get("/<infra>/switch_types")]
 async fn get_switch_types(
     infra: i32,
+    conn: DBConnection,
     infra_caches: &State<Arc<CHashMap<i32, InfraCache>>>,
 ) -> ApiResult<Custom<Json<Vec<SwitchType>>>> {
-    let infra = match infra_caches.get(&infra) {
-        Some(infra) => infra,
-        None => return Err(InfraApiError::NotFound(infra).into()),
-    };
-
-    Ok(Custom(
-        Status::Ok,
-        Json(
-            infra
-                .switch_types()
-                .values()
-                .map(ObjectCache::unwrap_switch_type)
-                .cloned()
-                .collect(),
-        ),
-    ))
+    let infra_caches = infra_caches.inner().clone();
+    conn.run(move |conn| {
+        let infra = Infra::retrieve(conn, infra)?;
+        let infra = InfraCache::get_or_load(conn, &infra_caches, &infra)?;
+        Ok(Custom(
+            Status::Ok,
+            Json(
+                infra
+                    .switch_types()
+                    .values()
+                    .map(ObjectCache::unwrap_switch_type)
+                    .cloned()
+                    .collect(),
+            ),
+        ))
+    })
+    .await
 }
 
 /// Lock an infra
@@ -244,12 +242,7 @@ mod tests {
 
     #[test]
     fn infra_list() {
-        let rocket = create_server(
-            Default::default(),
-            6000,
-            &Default::default(),
-            Default::default(),
-        );
+        let rocket = create_server(6000, &Default::default(), Default::default());
 
         let client = Client::tracked(rocket).expect("valid rocket instance");
         let response = client.get("/infra").dispatch();
@@ -258,12 +251,7 @@ mod tests {
 
     #[test]
     fn infra_create_delete() {
-        let rocket = create_server(
-            Default::default(),
-            6000,
-            &Default::default(),
-            Default::default(),
-        );
+        let rocket = create_server(6000, &Default::default(), Default::default());
 
         let client = Client::tracked(rocket).expect("valid rocket instance");
         let create_infra_response = client
@@ -286,12 +274,7 @@ mod tests {
 
     #[test]
     fn infra_get() {
-        let rocket = create_server(
-            Default::default(),
-            6000,
-            &Default::default(),
-            Default::default(),
-        );
+        let rocket = create_server(6000, &Default::default(), Default::default());
 
         let client = Client::tracked(rocket).expect("valid rocket instance");
         let create_infra_response = client
@@ -324,12 +307,7 @@ mod tests {
 
     #[test]
     fn infra_refresh() {
-        let rocket = create_server(
-            Default::default(),
-            6000,
-            &Default::default(),
-            Default::default(),
-        );
+        let rocket = create_server(6000, &Default::default(), Default::default());
 
         let client = Client::tracked(rocket).expect("valid rocket instance");
 
@@ -365,12 +343,7 @@ mod tests {
 
     #[test]
     fn infra_refresh_force() {
-        let rocket = create_server(
-            Default::default(),
-            6000,
-            &Default::default(),
-            Default::default(),
-        );
+        let rocket = create_server(6000, &Default::default(), Default::default());
 
         let client = Client::tracked(rocket).expect("valid rocket instance");
 
@@ -405,12 +378,7 @@ mod tests {
 
     #[test]
     fn infra_get_switch_types() {
-        let rocket = create_server(
-            Default::default(),
-            6000,
-            &Default::default(),
-            Default::default(),
-        );
+        let rocket = create_server(6000, &Default::default(), Default::default());
 
         let client = Client::tracked(rocket).expect("valid rocket instance");
 
@@ -469,12 +437,7 @@ mod tests {
 
     #[test]
     fn infra_lock() {
-        let rocket = create_server(
-            Default::default(),
-            6000,
-            &Default::default(),
-            Default::default(),
-        );
+        let rocket = create_server(6000, &Default::default(), Default::default());
 
         let client = Client::tracked(rocket).expect("valid rocket instance");
 

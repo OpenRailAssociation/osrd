@@ -1,9 +1,6 @@
-import 'applications/osrd/views/OSRDSimulation/OSRDSimulation.scss';
-import 'applications/osrd/views/OSRDConfig/OSRDConfig.scss';
-
 import { KEY_VALUES_FOR_CONSOLIDATED_SIMULATION } from 'applications/osrd/views/OSRDSimulation/OSRDSimulation';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import {
   updateConsolidatedSimulation,
   updateMustRedraw,
@@ -13,13 +10,13 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 
 import SpaceTimeChart from 'applications/osrd/views/OSRDSimulation/SpaceTimeChart';
-import SpeedSpaceChart from 'applications/osrd/views/OSRDSimulation/SpeedSpaceChart';
-import TimeTable from 'applications/osrd/views/OSRDSimulation/TimeTable';
+import SpeedSpaceChart from 'applications/osrd/components/Simulation/SpeedSpaceChart/withOSRDData';
 import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/createTrain';
 
 import { STDCM_REQUEST_STATUS } from 'applications/osrd/consts';
 import { useTranslation } from 'react-i18next';
 import getStdcmTimetable from 'applications/stdcm/getStdcmTimetable';
+import DriverTrainSchedule from 'applications/osrd/views/OSRDSimulation/DriverTrainSchedule';
 
 export default function OSRDStcdmResults(props) {
   const { selectedTrain } = useSelector((state) => state.osrdsimulation);
@@ -48,15 +45,17 @@ export default function OSRDStcdmResults(props) {
     // Setup the listener to undi /redo
     // window.addEventListener('keydown', handleKey);
 
-    getStdcmTimetable(
-      simulation,
-      selectedTrain,
-      dispatch,
-      timetableID,
-      allowancesSettings,
-      selectedProjection,
-      t
-    );
+    if (timetableID) {
+      getStdcmTimetable(
+        simulation,
+        selectedTrain,
+        dispatch,
+        timetableID,
+        allowancesSettings,
+        selectedProjection,
+        t
+      );
+    }
     return function cleanup() {
       // window.removeEventListener('keydown', handleKey);
       dispatch(updateSelectedProjection(undefined));
@@ -71,27 +70,23 @@ export default function OSRDStcdmResults(props) {
   ) {
     stdcmResultsSection = (
       <main className="osrd-config-mastcontainer mastcontainer">
-        <div className="row m-0 px-1 py-3">
-          <div className="col-sm-12">
-            <div className="osrd-config-item-container ">
-              <h1 className=" text-center text-info">
-                <b>{t('osrdconf:stdcmResults')}</b>
-              </h1>
-              <div className="osrd-config-item mb-2">
-                <h2>{t('osrdconf:spaceSpeedGraphic')}</h2>
-                <div className="speedspacechart-container" style={{ height: '450px' }}>
-                  <SpeedSpaceChart heightOfSpeedSpaceChart={450} showSettings={false} />
-                </div>
-                <div className="speedspacechart-container" style={{ height: '450px' }}>
-                  <SpaceTimeChart heightOfSpaceTimeChart={450} />
-                </div>
-              </div>
-              <div className="osrd-config-item">
-                <div className="col-sm-12">
-                  <TimeTable />
-                </div>
-              </div>
+        <div className="osrd-simulation-container mb-2 mx-3">
+          <h1 className="text-center text-info">
+            <b>{t('osrdconf:stdcmResults')}</b>
+          </h1>
+          <div className="osrd-config-item mb-2">
+            <h2>{t('osrdconf:spaceSpeedGraphic')}</h2>
+            <div className="speedspacechart-container" style={{ height: '450px' }}>
+              <SpeedSpaceChart heightOfSpeedSpaceChart={450} showSettings={false} />
             </div>
+            <div className="speedspacechart-container" style={{ height: '450px' }}>
+              <SpaceTimeChart heightOfSpaceTimeChart={450} />
+            </div>
+          </div>
+        </div>
+        <div className="osrd-simulation-container mx-3">
+          <div className="col-sm-12">
+            <DriverTrainSchedule data={simulation.trains[selectedTrain]} isModal={false} />
           </div>
         </div>
       </main>
@@ -99,31 +94,23 @@ export default function OSRDStcdmResults(props) {
   } else if (currentStdcmRequestStatus === STDCM_REQUEST_STATUS.noresults) {
     stdcmResultsSection = (
       <main className="osrd-config-mastcontainer mastcontainer">
-        <div className="row m-0 px-1 py-3">
-          <div className="col-sm-12">
-            <div className="osrd-config-item-container">
-              <h1 className="text-center text-info">{t('osrdconf:stdcmResults')}</h1>
-              <p>{t('osrdconf:stdcmNoResults')}</p>
-            </div>
-          </div>
+        <div className="osrd-simulation-container">
+          <h1 className="text-center text-info">{t('osrdconf:stdcmResults')}</h1>
+          <p>{t('osrdconf:stdcmNoResults')}</p>
         </div>
       </main>
     );
   } else
     stdcmResultsSection = (
       <main className="osrd-config-mastcontainer mastcontainer">
-        <div className="row m-0 px-1 py-3">
-          <div className="col-sm-12">
-            <div className="osrd-config-item-container ">
-              <h1 className=" text-center text-info">
-                <b>{t('osrdconf:stdcmResults')}</b>
-              </h1>
-              <div className="osrd-config-item mb-2">
-                <h2>{t('osrdconf:spaceSpeedGraphic')}</h2>
-                <div className="speedspacechart-container" style={{ height: '450px' }}>
-                  {simulation.trains.length > 0 && <SpaceTimeChart heightOfSpaceTimeChart={450} />}
-                </div>
-              </div>
+        <div className="osrd-simulation-container mx-3">
+          <h1 className="text-center text-info">
+            <b>{t('osrdconf:stdcmResults')}</b>
+          </h1>
+          <div className="osrd-config-item mb-2">
+            <h2>{t('osrdconf:spaceSpeedGraphic')}</h2>
+            <div className="speedspacechart-container" style={{ height: '450px' }}>
+              {simulation.trains.length > 0 && <SpaceTimeChart heightOfSpaceTimeChart={450} />}
             </div>
           </div>
         </div>

@@ -5,18 +5,18 @@ use super::OSRDIdentified;
 use super::OSRDTyped;
 use super::ObjectType;
 use super::Side;
-use crate::api_error::ApiError;
-use crate::diesel::ExpressionMethods;
-use crate::diesel::RunQueryDsl;
+
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
 use derivative::Derivative;
 use diesel::sql_types::{Double, Text};
-use diesel::PgConnection;
+
+use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Model)]
 #[serde(deny_unknown_fields)]
+#[model(table = "crate::tables::osrd_infra_signalmodel")]
 #[derivative(Default)]
 pub struct Signal {
     #[derivative(Default(value = r#"generate_id("signal")"#))]
@@ -31,32 +31,6 @@ pub struct Signal {
     pub linked_detector: Option<String>,
     #[serde(default)]
     pub extensions: SignalExtensions,
-}
-
-impl Signal {
-    pub fn persist_batch(
-        values: &[Self],
-        infrastructure_id: i32,
-        conn: &PgConnection,
-    ) -> Result<(), Box<dyn ApiError>> {
-        use crate::tables::osrd_infra_signalmodel::dsl::*;
-        let datas = values
-            .iter()
-            .map(|value| {
-                (
-                    obj_id.eq(value.get_id().clone()),
-                    data.eq(serde_json::to_value(value).unwrap()),
-                    infra_id.eq(infrastructure_id),
-                )
-            })
-            .collect::<Vec<_>>();
-
-        diesel::insert_into(osrd_infra_signalmodel)
-            .values(datas)
-            .execute(conn)?;
-
-        Ok(())
-    }
 }
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq)]

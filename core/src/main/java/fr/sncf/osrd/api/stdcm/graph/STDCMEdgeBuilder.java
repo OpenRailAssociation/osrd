@@ -125,8 +125,10 @@ public class STDCMEdgeBuilder {
                     startSpeed,
                     startOffset,
                     graph.rollingStock,
+                    graph.comfort,
                     graph.timeStep,
-                    STDCMUtils.getStopsOnRoute(graph, route, startOffset)
+                    STDCMUtils.getStopsOnRoute(graph, route, startOffset),
+                    graph.tags
             );
         if (envelope == null)
             return List.of();
@@ -155,27 +157,19 @@ public class STDCMEdgeBuilder {
                 prevMaximumAddedDelay - delayNeeded,
                 graph.delayManager.findMaximumAddedDelay(route, startTime + delayNeeded, envelope)
         );
-        var newEdge = new STDCMEdge(
+        var actualStartTime = startTime + delayNeeded;
+        return new STDCMEdge(
                 route,
                 envelope,
-                startTime + delayNeeded,
+                actualStartTime,
                 maximumDelay,
                 delayNeeded,
                 graph.delayManager.findNextOccupancy(route, startTime + delayNeeded),
                 prevAddedDelay + delayNeeded,
                 prevNode,
-                route.getInfraRoute().getLength() - envelope.getEndPos()
+                route.getInfraRoute().getLength() - envelope.getEndPos(),
+                (int) (actualStartTime / 60)
         );
-        if (maximumDelay < 0) {
-            // We need to make the train go slower
-            newEdge = graph.allowanceManager.tryEngineeringAllowance(newEdge);
-            if (newEdge == null)
-                return null;
-        }
-        newEdge = graph.backtrackingManager.backtrack(newEdge); // Fixes any speed discontinuity
-        if (newEdge == null || graph.delayManager.isRunTimeTooLong(newEdge))
-            return null;
-        return newEdge;
     }
 
     /** Creates all the edges in the given settings, then look for one that shares the given time of next occupancy.
@@ -184,9 +178,11 @@ public class STDCMEdgeBuilder {
     STDCMEdge findEdgeSameNextOccupancy(double timeNextOccupancy) {
         var newEdges = makeAllEdges();
         // We look for an edge that uses the same opening, identified by the next occupancy
-        for (var newEdge : newEdges)
+        for (var newEdge : newEdges) {
+            // The time of next occupancy is always copied from the same place, we can use float equality
             if (newEdge.timeNextOccupancy() == timeNextOccupancy)
                 return newEdge;
+        }
         return null; // No result was found
     }
 

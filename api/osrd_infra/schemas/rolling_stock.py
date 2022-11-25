@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Literal
+from typing import List, Literal, Mapping, Optional
 
 from pydantic import (
     BaseModel,
@@ -7,7 +7,6 @@ from pydantic import (
     Field,
     PositiveFloat,
     confloat,
-    conint,
     conlist,
     constr,
     root_validator,
@@ -15,7 +14,17 @@ from pydantic import (
 
 from .infra import LoadingGaugeType
 
-RAILJSON_ROLLING_STOCK_VERSION = "2.2"
+RAILJSON_ROLLING_STOCK_VERSION = "3.0"
+
+
+class ComfortType(str, Enum):
+    """
+    This enum defines the comfort type that can take a train.
+    """
+
+    STANDARD = "STANDARD"
+    AC = "AC"
+    HEATING = "HEATING"
 
 
 class RollingResistance(BaseModel, extra=Extra.forbid):
@@ -29,9 +38,47 @@ class EffortCurve(BaseModel, extra=Extra.forbid):
     speeds: conlist(confloat(ge=0), min_items=2)
     max_efforts: conlist(confloat(ge=0), min_items=2)
 
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def check_size(cls, v):
-        assert len(v.get("speeds")) == len(v.get("max_efforts")), "speeds and max_efforts must be the same length"
+        assert len(v["speeds"]) == len(v["max_efforts"]), "speeds and max_efforts must be the same length"
+        return v
+
+
+class EffortCurveConditions(BaseModel, extra=Extra.forbid):
+    comfort: Optional[ComfortType]
+
+
+class ConditionalEffortCurve(BaseModel, extra=Extra.forbid):
+    """Effort curve subject to application conditions"""
+
+    cond: EffortCurveConditions = Field(default=EffortCurveConditions())
+    curve: EffortCurve = Field(description="Effort curve to apply if the conditions are met")
+
+
+class ModeEffortCurves(BaseModel, extra=Extra.forbid):
+    """Effort curves for a given mode"""
+
+    curves: List[ConditionalEffortCurve] = Field(
+        description="List of conditional effort curves, sorted by match priority"
+    )
+    default_curve: EffortCurve = Field(description="Standard comfort mode")
+    is_electric: bool = Field(description="Whether the mode is electric or not")
+
+
+class EffortCurves(BaseModel, extra=Extra.forbid):
+    """
+    Effort curves for a given rolling stock.
+    This schema handle multiple modes and conditions such as comfort, power restrictions, etc.
+    """
+
+    modes: Mapping[str, ModeEffortCurves] = Field(description="Map profiles such as '25kV' to comfort effort curves")
+    default_mode: str = Field(description="The default profile to use")
+
+    @root_validator(skip_on_failure=True)
+    def check_default_profile(cls, v):
+        assert (
+            v["default_mode"] in v["modes"]
+        ), f"Invalid default mode '{v['default_mode']}' expected one of [{', '.join(v['modes'].keys())}]"
         return v
 
 
@@ -48,7 +95,7 @@ class Gamma(BaseModel, extra=Extra.forbid):
 class RollingStock(BaseModel, extra=Extra.forbid):
     version: Literal[RAILJSON_ROLLING_STOCK_VERSION] = Field(default=RAILJSON_ROLLING_STOCK_VERSION)
     name: constr(max_length=255)
-    effort_curve: EffortCurve = Field(description="A curve mapping speed (in m/s) to maximum traction (in newtons)")
+    effort_curves: EffortCurves = Field(description="Curves mapping speed (in m/s) to maximum traction (in newtons)")
     length: PositiveFloat = Field(description="The length of the train, in m")
     max_speed: PositiveFloat = Field(description="Maximum speed in m/s")
     startup_time: confloat(ge=0) = Field(description="The time the train takes before it can start accelerating in s")
@@ -56,13 +103,10 @@ class RollingStock(BaseModel, extra=Extra.forbid):
     comfort_acceleration: PositiveFloat = Field(description="The maximum operational acceleration in m/s^2")
     gamma: Gamma = Field(description="The max or const braking coefficient in m/s^2")
     inertia_coefficient: float = Field(gt=0)
-    power_class: conint(ge=0)
     features: List[constr(max_length=255)] = Field(description="A list of features the train exhibits")
     mass: PositiveFloat = Field(description="The mass of the train, in kg")
     rolling_resistance: RollingResistance = Field(description="The formula to use to compute rolling resistance")
     loading_gauge: LoadingGaugeType
-    electric_only: bool = Field(description="If true, the train can only use tracks with compatible catenaries")
-    compatible_voltages: List[int] = Field(description="A list of compatible voltage (in V)")
 
 
 if __name__ == "__main__":

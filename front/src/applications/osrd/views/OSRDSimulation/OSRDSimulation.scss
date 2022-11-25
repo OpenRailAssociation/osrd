@@ -126,6 +126,60 @@ select.sm {
   overflow: auto;
 }
 
+// Driver Train Schedule
+
+.container-drivertrainschedule {
+  max-height: 30rem;
+}
+
+.modal-drivertrainschedule {
+  height: 50%;
+}
+
+
+
+.simulation-drivertrainschedule {
+  max-height: 15rem;
+  overflow: auto;
+}
+
+.table-drivertrainschedule, .table-drivertrainschedule th, .table-drivertrainschedule td {
+  border : none !important;
+  padding-right: 10px;
+
+  .drivertrainschedule-pk {
+    text-align: right;
+    width: 2rem;
+  }
+  
+  .drivertrainschedule-stop {
+    font-weight: bold;
+    small {
+      font-weight: bold;
+    }
+    .timeWithPlus::after {
+      content: '+';
+    }
+  }
+  .drivertrainschedule-stop-time{
+    position: relative;
+
+    .timeWithPlus::after :not(.drivertrainschedule-stop) {
+      content: '+';
+      display: inline;
+      position: absolute;
+      bottom: 0;
+    }
+  }
+  
+}
+
+.table-drivertrainschedule th, thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
 .grid .tick {
   opacity: .2;
   line {
@@ -392,8 +446,6 @@ select.sm {
   }
 }
 
-
-
 /* OPERATIONAL POINTS */
 .op-line {
   stroke: var(--coolgray7);
@@ -407,7 +459,7 @@ select.sm {
 
 /* TABLE OVERRIDE */
 .table-cell-selected {
-  color: var(--blue);
+  //color: var(--blue);
   font-weight: bold;
 }
 .table-shrink {

@@ -9,6 +9,7 @@ export const getSwitchTypes = (state: RootState) => state.osrdconf.switchTypes;
 export const getPathfindingID = (state: RootState) => state.osrdconf.pathfindingID;
 export const getTimetableID = (state: RootState) => state.osrdconf.timetableID;
 export const getRollingStockID = (state: RootState) => state.osrdconf.rollingStockID;
+export const getRollingStockComfort = (state: RootState) => state.osrdconf.rollingStockComfort;
 export const getSpeedLimitByTag = (state: RootState) => state.osrdconf.speedLimitByTag;
 export const getOrigin = (state: RootState) => state.osrdconf.origin;
 export const getOriginSpeed = (state: RootState) => state.osrdconf.originSpeed;

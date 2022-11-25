@@ -15,10 +15,6 @@ import osrdsimulationReducer, {
   OsrdSimulationState,
   initialState as osrdSimulationInitialState,
 } from './osrdsimulation';
-import rollingStockReducer, {
-  RollingStockState,
-  initialState as rollingStockInitialState,
-} from './rollingstock';
 
 import { EditorState } from '../applications/editor/tools/types';
 
@@ -76,7 +72,6 @@ export interface RootState {
   main: MainState;
   osrdconf: OsrdConfState;
   osrdsimulation: OsrdSimulationState;
-  rollingstock: RollingStockState;
 }
 
 export const rootInitialState: RootState = {
@@ -86,7 +81,6 @@ export const rootInitialState: RootState = {
   main: mainInitialState,
   osrdconf: osrdconfInitialState,
   osrdsimulation: osrdSimulationInitialState,
-  rollingstock: rollingStockInitialState,
 };
 
 export type AnyReducerState =
@@ -95,8 +89,7 @@ export type AnyReducerState =
   | EditorState
   | MainState
   | OsrdConfState
-  | OsrdSimulationState
-  | RollingStockState;
+  | OsrdSimulationState;
 
 export const rootReducer: ReducersMapObject<RootState> = {
   user: userReducer,
@@ -106,7 +99,6 @@ export const rootReducer: ReducersMapObject<RootState> = {
   // @ts-ignore
   osrdconf: persistReducer(osrdconfPersistConfig, osrdconfReducer),
   osrdsimulation: osrdsimulationReducer,
-  rollingstock: rollingStockReducer,
 };
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment

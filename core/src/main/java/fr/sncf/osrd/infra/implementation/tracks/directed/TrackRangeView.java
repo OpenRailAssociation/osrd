@@ -192,7 +192,7 @@ public class TrackRangeView {
     }
 
     /** Returns the voltage of catenaries on the track */
-    public ImmutableRangeMap<Double, Set<Integer>> getCatenaryVoltages() {
+    public ImmutableRangeMap<Double, String> getCatenaryVoltages() {
         return convertMap(track.getEdge().getVoltages());
     }
 

@@ -44,6 +44,7 @@ export default function OSRDConfig(props) {
         })
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [extViewport]);
 
   return (
@@ -54,7 +55,7 @@ export default function OSRDConfig(props) {
             <div className="col-xl-6">
               <InfraSelector />
               <RollingStockSelector />
-              {isSimulation && <SpeedLimitByTagSelector />}
+              <SpeedLimitByTagSelector />
             </div>
             <div className="col-xl-6">
               <TimetableSelector

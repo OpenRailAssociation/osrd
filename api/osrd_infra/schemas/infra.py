@@ -6,7 +6,7 @@ from pydantic import BaseConfig, BaseModel, Field, constr, create_model, root_va
 from pydantic.fields import ModelField
 
 ALL_OBJECT_TYPES = []
-RAILJSON_INFRA_VERSION = "3.0.0"
+RAILJSON_INFRA_VERSION = "3.0.1"
 
 
 # Traits
@@ -110,7 +110,7 @@ class LoadingGaugeType(str, Enum):
 
 class DirectionalTrackRange(BaseModel):
     """
-    This class is used to define the path of the route used by the train.
+    A directional track range is a track range with an associated direction.
     """
 
     track: Identifier = Field(description="Identifier of the track")
@@ -122,7 +122,7 @@ class DirectionalTrackRange(BaseModel):
     )
     direction: Direction = Field(description="Description of the direction")
 
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def check_range(cls, v):
         assert v.get("begin") <= v.get("end"), "expected: begin <= end"
         return v
@@ -159,7 +159,7 @@ class DirectionalTrackRange(BaseModel):
 
 class ApplicableDirectionsTrackRange(BaseModel):
     """
-    This class is used to define track ranges that are associated with certain classes in the infrastructure.
+    An applicable directions track range is a track range with associated directions.
     """
 
     track: Identifier = Field(description="Identifier and type of the track")
@@ -169,7 +169,7 @@ class ApplicableDirectionsTrackRange(BaseModel):
         description="Direction where the corresponding object is applied"
     )
 
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def check_range(cls, v):
         assert v.get("begin") < v.get("end"), "expected: begin < end"
         return v
@@ -177,7 +177,7 @@ class ApplicableDirectionsTrackRange(BaseModel):
 
 class OperationalPointPart(TrackLocationTrait):
     """
-    This class allows to define the track section and the position on which the operational point is located.
+    Operational point part is a single point on the infrastructure. It's linked to an operational point.
     """
 
     pass
@@ -193,7 +193,7 @@ class OperationalPoint(BaseObjectTrait):
 
 class TrackEndpoint(BaseModel):
     """
-    This class is used to define the end point of the considered object on the infrastructure.
+    This class is used to define the endpoint (begin or end) of the considered track on the infrastructure.
     """
 
     endpoint: Endpoint = Field(description="Relative position of the considered end point")
@@ -216,6 +216,7 @@ class Route(BaseObjectTrait):
 class SwitchPortConnection(BaseModel):
     """
     This class allows to know the connection between each port in switch type.
+    The connection is always bidirectional.
     """
 
     src: str = Field(description="Port name that is source of the connection")
@@ -224,8 +225,8 @@ class SwitchPortConnection(BaseModel):
 
 class SwitchType(BaseObjectTrait):
     """
-    This class is used to define switch types.
-    We always have three switch types characterized by their identifier: point, cross and double cross.
+    Switch types are used to define what kind of switch is used in the infrastructure.
+    A switch type is defined by a list of ports and groups which are the possible configurations of the switch.
     """
 
     ports: List[str] = Field(description="List of ports. A port correspond at the ends of the switches")
@@ -233,8 +234,9 @@ class SwitchType(BaseObjectTrait):
 
 
 class Switch(BaseObjectTrait):
-    """This class is used to define switches.
-    Switches are devices used for track changes."""
+    """
+    Switches are devices used for track changes.
+    """
 
     switch_type: Identifier = Field(description="Identifier and type of the switch type")
     group_change_delay: float = Field(
@@ -244,7 +246,7 @@ class Switch(BaseObjectTrait):
 
 
 class TrackSectionLink(BaseObjectTrait):
-    """This class is used to define the track section links object.
+    """
     Track section links is used to connect and link two track sections.
     A track section link is characterized by its identifier.
     """
@@ -258,8 +260,9 @@ class TrackSectionLink(BaseObjectTrait):
 
 
 class SpeedSection(BaseObjectTrait):
-    """This class is used to define speed sections.
-    Speed sections is recognized by its identifier and are in meters per second."""
+    """
+    Speed sections are recognized by their identifiers and are in meters per second.
+    """
 
     speed_limit: Optional[float] = Field(
         description="Speed limit (m/s) applied by default to trains that aren't in any specified category", gt=0
@@ -271,14 +274,12 @@ class SpeedSection(BaseObjectTrait):
 
 
 class Catenary(BaseObjectTrait):
-    """This class is used to define catenary.
-    A catenary correspond at a set of cables designed
-    to power electric trains by capturing the current through
-    the use of a pantograph.
-    Catenary is identified by its identifier.
+    """
+    A catenary corresponds to a set of cables designed to power electric trains by capturing the current through the use
+    of a pantograph. Catenary is identified by its identifier.
     """
 
-    voltage: float = Field(description="Type of power supply (in Volts) used for electrification", gt=0)
+    voltage: str = Field(description="Type of power supply (in Volts) used for electrification")
     track_ranges: List[ApplicableDirectionsTrackRange] = Field(
         description="List of locations where the voltage is applied"
     )
@@ -297,7 +298,7 @@ class Curve(BaseModel):
         description="Offset in meters corresponding at the end of the corresponding radius in a track section", ge=0
     )
 
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def check_range(cls, v):
         assert v.get("begin") < v.get("end"), "expected: begin < end"
         return v
@@ -319,7 +320,7 @@ class Slope(BaseModel):
         description="Offset in meters corresponding at the end of the corresponding gradient in a track section", ge=0
     )
 
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def check_range(cls, v):
         assert v.get("begin") < v.get("end"), "expected: begin < end"
         return v

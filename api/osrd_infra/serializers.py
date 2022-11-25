@@ -9,6 +9,7 @@ from osrd_infra.models import (
     Timetable,
     TrainScheduleModel,
 )
+from osrd_infra.schemas.rolling_stock import ComfortType
 
 
 # monkey patch rest_framework_gis so that it properly converts
@@ -40,9 +41,19 @@ class RollingStockSerializer(ModelSerializer):
 
 
 class LightRollingStockSerializer(ModelSerializer):
+    def to_representation(self, instance):
+        """
+        Light representation of a rolling stock, removing all effort curves
+        """
+        ret = super().to_representation(instance)
+        for mode in ret["effort_curves"]["modes"].values():
+            mode.pop("curves")
+            mode.pop("default_curve")
+        return ret
+
     class Meta:
         model = RollingStock
-        exclude = ["image", "effort_curve"]
+        exclude = ["image"]
 
 
 # PATH FINDING
@@ -137,8 +148,8 @@ class STDCMInputSerializer(Serializer):
 
     infra = serializers.PrimaryKeyRelatedField(queryset=Infra.objects.all())
     timetable = serializers.PrimaryKeyRelatedField(queryset=Timetable.objects.all())
-    start_time = serializers.FloatField(required=False)
-    end_time = serializers.FloatField(required=False)
+    start_time = serializers.FloatField(required=False, allow_null=True)
+    end_time = serializers.FloatField(required=False, allow_null=True)
     start_points = serializers.ListField(
         min_length=1,
         child=WaypointInputSerializer(),
@@ -148,3 +159,4 @@ class STDCMInputSerializer(Serializer):
         child=WaypointInputSerializer(),
     )
     rolling_stock = serializers.PrimaryKeyRelatedField(queryset=RollingStock.objects.all())
+    comfort = serializers.ChoiceField(choices=[(x.value, x.name) for x in ComfortType], default=ComfortType.STANDARD)

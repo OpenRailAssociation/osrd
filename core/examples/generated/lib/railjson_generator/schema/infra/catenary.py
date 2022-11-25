@@ -9,7 +9,7 @@ import infra
 @dataclass
 class Catenary:
     id: str
-    voltage: int
+    voltage: str
     tracks: List[TrackSection]
 
     def to_rjs(self):

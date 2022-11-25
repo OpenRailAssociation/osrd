@@ -26,10 +26,9 @@ import OSRDSignalSwitch from 'applications/osrd/components/Simulation/SignalSwit
 import { Rnd } from 'react-rnd';
 import SpaceCurvesSlopes from 'applications/osrd/views/OSRDSimulation/SpaceCurvesSlopes';
 import SpaceTimeChart from 'applications/osrd/views/OSRDSimulation/SpaceTimeChart';
-import SpeedSpaceChart from 'applications/osrd/views/OSRDSimulation/SpeedSpaceChart';
+import SpeedSpaceChart from 'applications/osrd/components/Simulation/SpeedSpaceChart/withOSRDData';
 import TimeButtons from 'applications/osrd/views/OSRDSimulation/TimeButtons';
 import TimeLine from 'applications/osrd/components/TimeLine/TimeLine';
-import TimeTable from 'applications/osrd/views/OSRDSimulation/TimeTable';
 import TrainDetails from 'applications/osrd/views/OSRDSimulation/TrainDetails';
 import TrainList from 'applications/osrd/views/OSRDSimulation/TrainList';
 import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/createTrain';
@@ -55,7 +54,7 @@ function getMapMaxHeight(timeTableRef: React.MutableRefObject<HTMLDivElement | n
 function OSRDSimulation() {
   const { t } = useTranslation(['translation', 'simulation', 'allowances']);
   const timeTableRef = useRef<HTMLDivElement | null>(null);
-  const { fullscreen, darkmode } = useSelector((state: RootState) => state.main);
+  const { fullscreen } = useSelector((state: RootState) => state.main);
   const [extViewport, setExtViewport] = useState<Viewport | undefined>(undefined);
   const [isEmpty, setIsEmpty] = useState(true);
   const [displayTrainList, setDisplayTrainList] = useState(false);
@@ -87,10 +86,6 @@ function OSRDSimulation() {
   } = useSelector((state: RootState) => state.osrdsimulation);
   const simulation = useSelector((state: RootState) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
-
-  if (darkmode) {
-    require('./OSRDSimulationDarkMode.scss');
-  }
 
   /**
    * Recover the time table for all the trains
@@ -368,12 +363,7 @@ function OSRDSimulation() {
             </div>
           )}
           <div className="row" ref={timeTableRef}>
-            <div className="col-md-6">
-              <div className="osrd-simulation-container mb-2">
-                {simulation.trains.length > 0 ? <TimeTable /> : null}
-              </div>
-            </div>
-            <div className="col-md-6">
+            <div className="col-12">
               <div className="osrd-simulation-container mb-2">
                 <div
                   className="osrd-simulation-map"

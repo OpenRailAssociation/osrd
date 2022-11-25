@@ -1,15 +1,13 @@
-import { AnyAction, Dispatch } from 'redux';
 import produce from 'immer';
+import { AnyAction, Dispatch } from 'redux';
 
 import {
-  OsrdConfState,
   DEFAULT_MODE,
-  DEFAULT_STDCM_MODE,
-  PointOnMap,
+  DEFAULT_STDCM_MODE, OsrdConfState, PointOnMap
 } from 'applications/osrd/consts';
 import { formatIsoDate } from 'utils/date';
 import { boundedValue } from 'utils/numbers';
-import { time2sec, sec2time } from 'utils/timeManipulation';
+import { sec2time, time2sec } from 'utils/timeManipulation';
 
 import { getSwitchTypes } from 'applications/editor/data/api';
 /* eslint-disable default-case */
@@ -24,6 +22,7 @@ export const UPDATE_SWITCH_TYPES = 'osrdconf/UPDATE_SWITCH_TYPES';
 export const UPDATE_PATHFINDING_ID = 'osrdconf/UPDATE_PATHFINDING_ID';
 export const UPDATE_TIMETABLE_ID = 'osrdconf/UPDATE_TIMETABLE_ID';
 export const UPDATE_ROLLINGSTOCK_ID = 'osrdconf/UPDATE_ROLLINGSTOCK_ID';
+export const UPDATE_ROLLINGSTOCK_COMFORT = 'osrdconf/UPDATE_ROLLINGSTOCK_COMFORT';
 export const UPDATE_SPEED_LIMIT_BY_TAG = 'osrdconf/UPDATE_SPEED_LIMIT_BY_TAG';
 export const UPDATE_ORIGIN = 'osrdconf/UPDATE_ORIGIN';
 export const UPDATE_ORIGIN_SPEED = 'osrdconf/UPDATE_ORIGIN_SPEED';
@@ -57,6 +56,7 @@ export const initialState: OsrdConfState = {
   pathfindingID: undefined,
   timetableID: undefined,
   rollingStockID: undefined,
+  rollingStockComfort: 'STANDARD',
   speedLimitByTag: undefined,
   origin: undefined,
   originSpeed: 0,
@@ -108,6 +108,9 @@ export default function reducer(inputState: OsrdConfState | undefined, action: A
         break;
       case UPDATE_ROLLINGSTOCK_ID:
         draft.rollingStockID = action.rollingStockID;
+        break;
+      case UPDATE_ROLLINGSTOCK_COMFORT:
+        draft.rollingStockComfort = action.rollingStockComfort;
         break;
       case UPDATE_SPEED_LIMIT_BY_TAG:
         draft.speedLimitByTag = action.speedLimitByTag;
@@ -286,11 +289,19 @@ export function updateTimetableID(timetableID: any) {
     });
   };
 }
-export function updateRollingStockID(rollingStockID: any) {
+export function updateRollingStockID(rollingStockID: number) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_ROLLINGSTOCK_ID,
       rollingStockID,
+    });
+  };
+}
+export function updateRollingStockComfort(rollingStockComfort: string) {
+  return (dispatch: Dispatch) => {
+    dispatch({
+      type: UPDATE_ROLLINGSTOCK_COMFORT,
+      rollingStockComfort,
     });
   };
 }

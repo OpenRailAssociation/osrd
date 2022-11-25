@@ -5,19 +5,19 @@ use super::OSRDIdentified;
 use super::OSRDTyped;
 use super::ObjectType;
 use super::Panel;
-use crate::api_error::ApiError;
-use crate::diesel::ExpressionMethods;
-use crate::diesel::RunQueryDsl;
+
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
-use crate::tables::osrd_infra_speedsectionmodel::dsl::*;
+
 use derivative::Derivative;
-use diesel::PgConnection;
+
+use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Model)]
 #[serde(deny_unknown_fields)]
+#[model(table = "crate::tables::osrd_infra_speedsectionmodel")]
 #[derivative(Default)]
 pub struct SpeedSection {
     #[derivative(Default(value = r#"generate_id("speed_section")"#))]
@@ -42,31 +42,6 @@ pub struct SpeedSectionLpvSncfExtension {
     announcement: Vec<Panel>,
     z: Panel,
     r: Vec<Panel>,
-}
-
-impl SpeedSection {
-    pub fn persist_batch(
-        values: &[Self],
-        infrastructure_id: i32,
-        conn: &PgConnection,
-    ) -> Result<(), Box<dyn ApiError>> {
-        let datas = values
-            .iter()
-            .map(|value| {
-                (
-                    obj_id.eq(value.get_id().clone()),
-                    data.eq(serde_json::to_value(value).unwrap()),
-                    infra_id.eq(infrastructure_id),
-                )
-            })
-            .collect::<Vec<_>>();
-
-        diesel::insert_into(osrd_infra_speedsectionmodel)
-            .values(datas)
-            .execute(conn)?;
-
-        Ok(())
-    }
 }
 
 impl OSRDTyped for SpeedSection {

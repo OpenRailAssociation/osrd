@@ -59,14 +59,14 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
     }
 }
 pub fn create_server(
-    infra_caches: Arc<CHashMap<i32, InfraCache>>,
-    port: u16,
+    runserver_config: &RunserverArgs,
     pg_config: &PostgresConfig,
     chartos_config: ChartosConfig,
 ) -> Rocket<Build> {
     // Config server
     let mut config = Config::figment()
-        .merge(("port", port))
+        .merge(("port", runserver_config.port))
+        .merge(("address", runserver_config.address.clone()))
         .merge(("databases.postgres.url", pg_config.url()))
         .merge(("limits.json", 250 * 1024 * 1024)) // Set limits to 250MiB
     ;
@@ -88,7 +88,7 @@ pub fn create_server(
     let mut rocket = rocket::custom(config)
         .attach(DBConnection::fairing())
         .attach(cors)
-        .manage(infra_caches)
+        .manage(Arc::<CHashMap<i32, InfraCache>>::default())
         .manage(chartos_config);
 
     // Mount routes
@@ -103,25 +103,10 @@ async fn runserver(
     pg_config: PostgresConfig,
     chartos_config: ChartosConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let conn = pg_config.make_connection();
-    let infras = Infra::list(&conn);
-
-    // Initialize infra caches
-    let infra_caches = Arc::new(CHashMap::new());
-    for infra in infras.iter() {
-        println!(
-            "🍞 Loading cache for infra {}[{}]...",
-            infra.name.bold(),
-            infra.id
-        );
-        let infra_cache = InfraCache::load(&conn, infra.id);
-        infra_caches.insert_new(infra.id, infra_cache);
-    }
-    println!("✅ Done loading infra caches!");
-
-    let rocket = create_server(infra_caches, args.port, &pg_config, chartos_config);
-
+    println!("Building server...");
+    let rocket = create_server(&args, &pg_config, chartos_config);
     // Run server
+    println!("Running server...");
     let _rocket = rocket.launch().await?;
     Ok(())
 }
@@ -155,7 +140,7 @@ async fn generate(
             infra.name.bold(),
             infra.id
         );
-        let infra_cache = InfraCache::load(&conn, infra.id);
+        let infra_cache = InfraCache::load(&conn, &infra)?;
         if infra.refresh(&conn, args.force, &infra_cache)? {
             chartos::invalidate_all(infra.id, &chartos_config).await;
             println!("✅ Infra {}[{}] generated!", infra.name.bold(), infra.id);
@@ -184,7 +169,7 @@ fn import_railjson(
     println!("✅ Infra {}[{}] saved!", infra.name.bold(), infra.id);
     // Generate only if the was set
     if args.generate {
-        let infra_cache = InfraCache::load(conn, infra.id);
+        let infra_cache = InfraCache::load(conn, &infra)?;
         infra.refresh(conn, true, &infra_cache)?;
         println!(
             "✅ Infra {}[{}] generated data refreshed!",
@@ -224,6 +209,7 @@ fn clear(args: ClearArgs, pg_config: PostgresConfig) -> Result<(), Box<dyn Error
 #[cfg(test)]
 mod tests {
     use crate::client::{ImportRailjsonArgs, PostgresConfig};
+
     use crate::import_railjson;
     use crate::schema::RailJson;
     use diesel::result::Error;

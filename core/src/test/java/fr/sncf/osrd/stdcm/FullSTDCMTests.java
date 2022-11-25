@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableMultimap;
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.api.stdcm.graph.STDCMPathfinding;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
+import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.junit.jupiter.api.Test;
 import java.io.IOException;
@@ -27,6 +28,7 @@ public class FullSTDCMTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 RJSRollingStockParser.parse(parseRollingStockDir(getResourcePath("rolling_stocks/")).get(0)),
+                RollingStock.Comfort.STANDARD,
                 0,
                 0,
                 Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 100)),
@@ -34,8 +36,8 @@ public class FullSTDCMTests {
                 ImmutableMultimap.of(),
                 2.,
                 Double.POSITIVE_INFINITY,
-                Double.POSITIVE_INFINITY
-        );
+                Double.POSITIVE_INFINITY,
+                Set.of());
         assertNotNull(res);
     }
 
@@ -55,6 +57,7 @@ public class FullSTDCMTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 minDelay,
                 0,
                 start,
@@ -62,8 +65,8 @@ public class FullSTDCMTests {
                 occupancies,
                 2.,
                 3600 * 24,
-                Double.POSITIVE_INFINITY
-        );
+                Double.POSITIVE_INFINITY,
+                Set.of());
         assertNotNull(res);
     }
 
@@ -80,6 +83,7 @@ public class FullSTDCMTests {
         var res = STDCMPathfinding.findPath(
                 infra,
                 REALISTIC_FAST_TRAIN,
+                RollingStock.Comfort.STANDARD,
                 300,
                 0,
                 start,
@@ -87,8 +91,8 @@ public class FullSTDCMTests {
                 occupancies,
                 2.,
                 7200,
-                Double.POSITIVE_INFINITY
-        );
+                Double.POSITIVE_INFINITY,
+                Set.of());
         assertNotNull(res);
     }
 }

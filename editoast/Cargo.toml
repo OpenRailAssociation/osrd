@@ -10,13 +10,13 @@ license = "LGPL-3.0"
 
 [dependencies]
 chashmap = "2.2.2"
-clap = { version = "~4.0.18", features = ["derive", "env"] }
+clap = { version = "~4.0.26", features = ["derive", "env"] }
 colored = "2.0.0"
 derivative = "2.2.0"
 diesel = { version = "1.4.8", features = ["postgres", "uuidv07", "serde_json"] }
 json-patch = "0.2.6"
 rand = "0.8.5"
-reqwest = { version = "~0.11.12", features = ["json"] }
+reqwest = { version = "~0.11.13", features = ["json"] }
 rocket = { version = "0.5.0-rc", features = ["json"] }
 rocket_sync_db_pools = { version = "0.1.0-rc", features = [
     "diesel_postgres_pool",
@@ -24,9 +24,10 @@ rocket_sync_db_pools = { version = "0.1.0-rc", features = [
 rocket_cors = { git = "https://github.com/lawliet89/rocket_cors.git", rev = "54fae070" }
 serde = "~1.0.147"
 serde_derive = "~1.0.147"
-serde_json = "~1.0.86"
+serde_json = "~1.0.89"
 strum = "~0.24.1"
 strum_macros = "~0.24.3"
 thiserror = "~1.0.37"
 enum-map = "2.4.1"
 tempfile = "3.3.0"
+editoast_derive = {path = "./editoast_derive"}

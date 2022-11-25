@@ -244,11 +244,12 @@ public class PathfindingTest extends ApiTest {
         var infra = Helpers.infraFromRJS(Helpers.getExampleInfra("small_infra/infra.json"));
 
         // Put catenary everywhere
+        assert TestTrains.FAST_ELECTRIC_TRAIN.getModeNames().contains("25000");
         for (var track : infra.getTrackGraph().edges()) {
             if (track instanceof TrackSection)
                 track.getVoltages().put(
                         Range.closed(0., track.getLength()),
-                        TestTrains.FAST_ELECTRIC_TRAIN.compatibleVoltages
+                        "25000"
                 );
         }
 
@@ -261,7 +262,7 @@ public class PathfindingTest extends ApiTest {
         var middleRoute = normalPath.ranges().get(normalPath.ranges().size() / 2);
         var tracks = middleRoute.edge().getInfraRoute().getTrackRanges();
         var middleTrack = tracks.get(tracks.size() / 2).track.getEdge();
-        middleTrack.getVoltages().put(Range.closed(0., middleTrack.getLength()), Set.of());
+        middleTrack.getVoltages().put(Range.closed(0., middleTrack.getLength()), "");
 
         // Run another pathfinding with an electric train
         var electricPath = PathfindingRoutesEndpoint.runPathfinding(
