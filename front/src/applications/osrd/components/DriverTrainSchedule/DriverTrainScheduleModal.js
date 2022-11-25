@@ -1,10 +1,15 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import formatStops from 'applications/osrd/components/DriverTrainSchedule/DriverTrainScheduleHelpers';
+import nextId from 'react-id-generator';
+import formatStops, { massWithOneDecimal } from 'applications/osrd/components/DriverTrainSchedule/DriverTrainScheduleHelpers';
 
 function originStop(stop) {
-  return <div className="text-primary">{stop.name || 'Unknown'}</div>;
+  return (
+    <div className="text-primary" key={nextId()}>
+      {stop.name || 'Unknown'}
+    </div>
+  );
 }
 
 export default function DriverTrainScheduleModal(props) {
@@ -41,7 +46,7 @@ export default function DriverTrainScheduleModal(props) {
           <div className="row no-gutters">
             <div className="col-4 col-xl-5">{t('drivertrainschedule:mass')}</div>
             <div className="font-weight-bold text-primary col-8 col-xl-7">
-              {rollingStockSelected.mass}T
+              {massWithOneDecimal(rollingStockSelected.mass)}T
             </div>
           </div>
         </div>
