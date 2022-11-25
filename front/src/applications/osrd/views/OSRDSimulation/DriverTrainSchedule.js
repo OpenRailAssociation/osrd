@@ -38,10 +38,8 @@ export default function DriverTrainSchedule(props) {
   return isModal ? (
     <ModalSNCF className="modal-drivertrainschedule" htmlID="driverTrainScheduleModal" size="xl">
       <ModalBodySNCF>
-        {data && rollingStockSelected ? (
+        {data && rollingStockSelected && (
           <DriverTrainScheduleModal data={data} rollingStockSelected={rollingStockSelected} />
-        ) : (
-          ''
         )}
       </ModalBodySNCF>
       <ModalFooterSNCF>
