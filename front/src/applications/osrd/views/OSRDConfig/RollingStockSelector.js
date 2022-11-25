@@ -13,11 +13,15 @@ import {
   enhanceData,
   RollingStockInfos,
 } from 'applications/osrd/components/RollingStock/RollingStockHelpers';
+import { getRollingStockID, getRollingStockComfort } from 'reducers/osrdconf/selectors';
 
 const ROLLINGSTOCK_URL = '/rolling_stock';
 
 export default function RollingStockSelector() {
-  const { rollingStockID, rollingStockComfort } = useSelector((state) => state.osrdconf);
+
+  const rollingStockID = useSelector(getRollingStockID);
+  const rollingStockComfort = useSelector(getRollingStockComfort);
+
   const { t } = useTranslation(['translation', 'rollingstock']);
   const [rollingStockSelected, setRollingStockSelected] = useState(undefined);
   const ref2scroll = useRef(null);
