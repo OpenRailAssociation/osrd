@@ -2,6 +2,10 @@ import React from 'react';
 import * as d3 from 'd3';
 import nextId from 'react-id-generator';
 
+export function massWithOneDecimal(number) {
+  return Math.round(number / 100) / 10;
+}
+
 function getTime(sec) {
   const timeplus = new Date(sec * 1000);
   const time = timeplus.toISOString().substr(11, 8);

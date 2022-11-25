@@ -1,13 +1,15 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-export default class ModalBodySNCF extends React.Component {
-  static propTypes = {
-    children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.node), PropTypes.node]).isRequired,
-  };
-
-  render() {
-    const { children } = this.props;
-    return <div className="modal-body">{children}</div>;
-  }
+export default function ModalBodySNCF(props) {
+  const { children } = props;
+  return <div className="modal-body">{children}</div>;
 }
+
+ModalBodySNCF.defaultProps = {
+  children: undefined,
+};
+
+ModalBodySNCF.propTypes = {
+  children: PropTypes.any,
+};
