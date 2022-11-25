@@ -7,10 +7,12 @@ import { get } from 'common/requests';
 import icon from 'assets/pictures/speedometer.svg';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
+import { getInfraID, getSpeedLimitByTag } from 'reducers/osrdconf/selectors';
 
 export default function SpeedLimitByTagSelector() {
   const dispatch = useDispatch();
-  const { infraID, speedLimitByTag } = useSelector((state) => state.osrdconf);
+  const infraID = useSelector(getInfraID);
+  const speedLimitByTag = useSelector(getSpeedLimitByTag);
   const [speedLimitsTags, setSpeedLimitsTags] = useState(undefined);
   const [oldInfraID, setOldInfraID] = useState(infraID);
   const { t } = useTranslation(['osrdconf']);

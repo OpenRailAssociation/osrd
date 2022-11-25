@@ -7,6 +7,7 @@ import { get } from 'common/requests';
 import icon from 'assets/pictures/tracks.svg';
 import InfraSelectorModal from 'applications/osrd/components/InfraSelector/InfraSelectorModal';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
+import { getInfraID } from 'reducers/osrdconf/selectors';
 
 const infraURL = '/infra/';
 
@@ -14,7 +15,8 @@ export default function InfraSelector() {
   const dispatch = useDispatch();
   const [infrasList, setInfrasList] = useState(undefined);
   const [selectedInfra, setSelectedInfra] = useState(undefined);
-  const { infraID } = useSelector((state) => state.osrdconf);
+  const { infraID } = useSelector(getInfraID);
+
   const { t } = useTranslation(['osrdconf']);
 
   const getInfra = async (id) => {

@@ -14,10 +14,12 @@ import HomeCustomGET from 'applications/customget/Home';
 import Loader from 'common/Loader';
 import { attemptLoginOnLaunch } from 'reducers/user';
 import { bootstrapOSRDConf } from 'reducers/osrdconf';
+import { getInfraID } from 'reducers/osrdconf/selectors';
 
 export default function App() {
   const user = useSelector((state) => state.user);
-  const osrdConf = useSelector((state) => state.osrdconf);
+  const infraID = useSelector(getInfraID);
+
   const { darkmode } = useSelector((state) => state.main);
   const dispatch = useDispatch();
 
@@ -40,7 +42,8 @@ export default function App() {
 
   // Loading initial data
   useEffect(() => {
-    dispatch(bootstrapOSRDConf(osrdConf));
+    console.log('INFRA ID', infraID);
+    dispatch(bootstrapOSRDConf(infraID));
   }, []);
 
   return (
