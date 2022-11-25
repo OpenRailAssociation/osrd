@@ -54,7 +54,7 @@ function UploadFileModal() {
           <div className="h1 modal-title text-center mb-4">
             <i className="icons-download text-primary" aria-hidden="true" />
           </div>
-          <input type="file" name="file" onChange={handleSelect} />
+          <input type="file" name="file" onChange={handleSelect} accept=".json"/>
           <div className="text-danger">{isValid}</div>
         </>
       </ModalBodySNCF>
