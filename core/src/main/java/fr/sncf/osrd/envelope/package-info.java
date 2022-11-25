@@ -1,5 +1,4 @@
 /**
- * <h1>Envelopes</h1>
  * <h2>Overview</h2>
  * <p>Envelopes are a framework for working with position / speed curves, with constant acceleration between each point.
  * This isn't as simple as it may seem, as acceleration works over time, and the envelopes work over space.</p>
