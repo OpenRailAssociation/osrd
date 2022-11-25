@@ -140,13 +140,14 @@ class MRSPEnvelopeBuilderTest {
         for (var dir : Direction.values())
             speedSections.put(dir, map);
         setTrackSpeedSections(edge, speedSections);
-        var path = List.of(
+        List<TrackRangeView> path = List.of(
                 new TrackRangeView(20, 100, new DiTrackEdgeImpl(edge, Direction.FORWARD))
         );
 
-        var mrspNoTags = MRSP.from(path, REALISTIC_FAST_TRAIN, false, List.of());
-        var mrspFastShort = MRSP.from(path, REALISTIC_FAST_TRAIN, false, List.of("FAST", "SHORT"));
-        var mrspFastLong = MRSP.from(path, REALISTIC_FAST_TRAIN, false, List.of("FAST", "LONG"));
+        var mrspNoTags = MRSP.from(path, REALISTIC_FAST_TRAIN, false, null);
+        var mrspFast = MRSP.from(path, REALISTIC_FAST_TRAIN, false, "FAST");
+        var mrspShort = MRSP.from(path, REALISTIC_FAST_TRAIN, false, "SHORT");
+        var mrspLong = MRSP.from(path, REALISTIC_FAST_TRAIN, false, "LONG");
 
         EnvelopeTestUtils.assertEquals(
                 Envelope.make(
@@ -158,15 +159,22 @@ class MRSPEnvelopeBuilderTest {
         EnvelopeTestUtils.assertEquals(
                 Envelope.make(
                         makeFlatPart(List.of(SPEED_LIMIT, CONSTANT_SPEED), 0, 5, 75),
+                        makeFlatPart(List.of(SPEED_LIMIT, CONSTANT_SPEED), 5, 30, 25),
+                        makeFlatPart(List.of(TRAIN_LIMIT, CONSTANT_SPEED), 30, 80, REALISTIC_FAST_TRAIN.maxSpeed)
+                ), mrspFast, 0.001);
+
+        EnvelopeTestUtils.assertEquals(
+                Envelope.make(
+                        makeFlatPart(List.of(SPEED_LIMIT, CONSTANT_SPEED), 0, 5, 50),
                         makeFlatPart(List.of(SPEED_LIMIT, CONSTANT_SPEED), 5, 30, 10),
                         makeFlatPart(List.of(TRAIN_LIMIT, CONSTANT_SPEED), 30, 80, REALISTIC_FAST_TRAIN.maxSpeed)
-                ), mrspFastShort, 0.001);
+                ), mrspShort, 0.001);
 
         EnvelopeTestUtils.assertEquals(
                 Envelope.make(
                         makeFlatPart(List.of(SPEED_LIMIT, CONSTANT_SPEED), 0, 5, 22),
                         makeFlatPart(List.of(SPEED_LIMIT, CONSTANT_SPEED), 5, 30, 25),
                         makeFlatPart(List.of(TRAIN_LIMIT, CONSTANT_SPEED), 30, 80, REALISTIC_FAST_TRAIN.maxSpeed)
-                ), mrspFastLong, 0.001);
+                ), mrspLong, 0.001);
     }
 }

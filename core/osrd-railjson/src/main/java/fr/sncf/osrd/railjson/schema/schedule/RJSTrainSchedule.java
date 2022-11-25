@@ -35,7 +35,7 @@ public class RJSTrainSchedule implements Identified {
     /** List of stops */
     public RJSTrainStop[] stops;
 
-    public Collection<String> tags;
+    public String tag;
 
     /** The delay in seconds between the previous train and this train.
      * Can only be specified if previous_train_id is also set. Defaults to 0. */
@@ -53,7 +53,7 @@ public class RJSTrainSchedule implements Identified {
             RJSTrainStop[] stops,
             ID<RJSRoute>[] routes,
             double trainTransitionDelay,
-            Collection<String> tags
+            String tag
     ) {
         this.id = id;
         this.rollingStock = rollingStock;
@@ -64,13 +64,13 @@ public class RJSTrainSchedule implements Identified {
         this.stops = stops;
         this.routes = routes;
         this.trainTransitionDelay = trainTransitionDelay;
-        this.tags = tags;
+        this.tag = tag;
     }
 
     /** Copy constructor */
     public RJSTrainSchedule(RJSTrainSchedule other) {
         this(other.id, other.rollingStock, other.departureTime, other.initialHeadLocation, other.initialSpeed,
-                other.finalHeadLocation, other.stops, other.routes, other.trainTransitionDelay, other.tags);
+                other.finalHeadLocation, other.stops, other.routes, other.trainTransitionDelay, other.tag);
     }
 
     @Override

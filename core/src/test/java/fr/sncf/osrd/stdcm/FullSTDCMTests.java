@@ -37,7 +37,7 @@ public class FullSTDCMTests {
                 2.,
                 Double.POSITIVE_INFINITY,
                 Double.POSITIVE_INFINITY,
-                Set.of());
+                null);
         assertNotNull(res);
     }
 
@@ -66,7 +66,7 @@ public class FullSTDCMTests {
                 2.,
                 3600 * 24,
                 Double.POSITIVE_INFINITY,
-                Set.of());
+                null);
         assertNotNull(res);
     }
 
@@ -92,7 +92,7 @@ public class FullSTDCMTests {
                 2.,
                 7200,
                 Double.POSITIVE_INFINITY,
-                Set.of());
+                null);
         assertNotNull(res);
     }
 }

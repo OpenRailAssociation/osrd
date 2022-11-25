@@ -27,13 +27,13 @@ public class SpeedLimits {
     }
 
     /** Returns the speed limit for the given tags */
-    public double getSpeedLimit(Collection<String> tags) {
+    public double getSpeedLimit(String tag) {
         var min = Double.POSITIVE_INFINITY;
-        for (var tag : tags) {
-            var value = speedLimitByTag.getOrDefault(tag, Double.POSITIVE_INFINITY);
-            if (value != null)
-                min = Double.min(min, value);
-        }
+
+        var value = speedLimitByTag.getOrDefault(tag, Double.POSITIVE_INFINITY);
+        if (value != null)
+            min = Double.min(min, value);
+
         if (Double.isFinite(min))
             return min;
         return defaultSpeedLimit;
