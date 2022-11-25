@@ -42,7 +42,6 @@ export default function App() {
 
   // Loading initial data
   useEffect(() => {
-    console.log('INFRA ID', infraID);
     dispatch(bootstrapOSRDConf(infraID));
   }, []);
 
