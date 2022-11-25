@@ -24,7 +24,7 @@ public class RJSStandaloneTrainSchedule implements Identified {
     /** List of stops */
     public RJSTrainStop[] stops;
 
-    public Collection<String> tags;
+    public String tag;
 
     /** The type of comfort the train using */
     public RJSComfortType comfort = RJSComfortType.STANDARD;
@@ -36,14 +36,14 @@ public class RJSStandaloneTrainSchedule implements Identified {
             double initialSpeed,
             RJSAllowance[] allowances,
             RJSTrainStop[] stops,
-            Collection<String> tags
+            String tag
     ) {
         this.id = id;
         this.rollingStock = rollingStock;
         this.initialSpeed = initialSpeed;
         this.allowances = allowances;
         this.stops = stops;
-        this.tags = tags;
+        this.tag = tag;
     }
 
     @Override

@@ -52,11 +52,9 @@ public class RJSStandaloneTrainScheduleParser {
                 );
             }
 
-        var tags = rjsTrainSchedule.tags;
-        if (tags == null)
-            tags = Set.of();
+        var tag = rjsTrainSchedule.tag;
         var stops = RJSStopsParser.parse(rjsTrainSchedule.stops, infra, trainPath);
-        return new StandaloneTrainSchedule(rollingStock, initialSpeed, stops, allowances, tags, comfort);
+        return new StandaloneTrainSchedule(rollingStock, initialSpeed, stops, allowances, tag, comfort);
     }
 
     private static double getPositiveDoubleOrDefault(double rjsInput, double defaultValue) {
