@@ -32,16 +32,17 @@ export default function DriverTrainSchedule(props) {
   };
 
   useEffect(() => {
-    if (data) getRollingStock();
+    if (data && !data.isStdcm) getRollingStock(); // Useless if new train is from stDcm (no persistance, 404 garanteed)
   }, [data]);
+
+  const driveTrainScheduleModal =
+    data && rollingStockSelected ? (
+      <DriverTrainScheduleModal data={data} rollingStockSelected={rollingStockSelected} />
+    ) : null;
 
   return isModal ? (
     <ModalSNCF className="modal-drivertrainschedule" htmlID="driverTrainScheduleModal" size="xl">
-      <ModalBodySNCF>
-        {data && rollingStockSelected && (
-          <DriverTrainScheduleModal data={data} rollingStockSelected={rollingStockSelected} />
-        )}
-      </ModalBodySNCF>
+      <ModalBodySNCF>{driveTrainScheduleModal}</ModalBodySNCF>
       <ModalFooterSNCF>
         <div className="d-flex flex-row-reverse w-100">
           <button className="btn btn-secondary btn-sm" type="button" data-dismiss="modal">
@@ -51,9 +52,7 @@ export default function DriverTrainSchedule(props) {
       </ModalFooterSNCF>
     </ModalSNCF>
   ) : (
-    data && rollingStockSelected && (
-      <DriverTrainScheduleModal data={data} rollingStockSelected={rollingStockSelected} />
-    )
+    driveTrainScheduleModal
   );
 }
 
