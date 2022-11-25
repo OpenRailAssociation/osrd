@@ -53,13 +53,9 @@ export default function DriverTrainSchedule(props) {
       </ModalFooterSNCF>
     </ModalSNCF>
   ) : (
-    <span>
-      {data && rollingStockSelected ? (
-        <DriverTrainScheduleModal data={data} rollingStockSelected={rollingStockSelected} />
-      ) : (
-        ''
-      )}
-    </span>
+    data && rollingStockSelected && (
+      <DriverTrainScheduleModal data={data} rollingStockSelected={rollingStockSelected} />
+    )
   );
 }
 
