@@ -40,7 +40,9 @@ export default function DriverTrainSchedule(props) {
       <ModalBodySNCF>
         {data && rollingStockSelected ? (
           <DriverTrainScheduleModal data={data} rollingStockSelected={rollingStockSelected} />
-        ) : null}
+        ) : (
+          ''
+        )}
       </ModalBodySNCF>
       <ModalFooterSNCF>
         <div className="d-flex flex-row-reverse w-100">
