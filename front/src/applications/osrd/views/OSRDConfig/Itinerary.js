@@ -169,7 +169,7 @@ function Itinerary(props) {
             duration: via.duration === undefined ? 0 : parseInt(via.duration, 10),
             waypoints: [
               {
-                track_section: via.track,
+                track_section: via.track || via.id,
                 geo_coordinate: via.clickLngLat,
               },
             ],
