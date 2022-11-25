@@ -19,11 +19,11 @@ public class SpeedLimitsTests {
                 ImmutableMap.of("a", 30.));
         var selfMerge = SpeedLimits.merge(infiniteLimit, infiniteLimit);
         var otherMerge = SpeedLimits.merge(otherLimit, infiniteLimit);
-        assertEquals(Double.POSITIVE_INFINITY, selfMerge.getSpeedLimit(List.of()));
-        assertEquals(10., otherMerge.getSpeedLimit(List.of()));
-        assertEquals(30., otherMerge.getSpeedLimit(List.of("a")));
-        assertEquals(42., infiniteLimit.getSpeedLimit(List.of("a")));
-        assertEquals(Double.POSITIVE_INFINITY, infiniteLimit.getSpeedLimit(List.of()));
+        assertEquals(Double.POSITIVE_INFINITY, selfMerge.getSpeedLimit(null));
+        assertEquals(10., otherMerge.getSpeedLimit(null));
+        assertEquals(30., otherMerge.getSpeedLimit("a"));
+        assertEquals(42., infiniteLimit.getSpeedLimit("a"));
+        assertEquals(Double.POSITIVE_INFINITY, infiniteLimit.getSpeedLimit(null));
     }
 
     @Test
@@ -44,10 +44,9 @@ public class SpeedLimitsTests {
         var a = new SpeedLimits(42, categoriesA.build());
         var b = new SpeedLimits(21, categoriesB.build());
         var merged = SpeedLimits.merge(a, b);
-        assertEquals(21, merged.getSpeedLimit(Set.of("default")));
-        assertEquals(10, merged.getSpeedLimit(Set.of("x")));
-        assertEquals(15, merged.getSpeedLimit(Set.of("y")));
-        assertEquals(25, merged.getSpeedLimit(Set.of("z")));
-        assertEquals(10, merged.getSpeedLimit(Set.of("x", "z")));
+        assertEquals(21, merged.getSpeedLimit("default"));
+        assertEquals(10, merged.getSpeedLimit("x"));
+        assertEquals(15, merged.getSpeedLimit("y"));
+        assertEquals(25, merged.getSpeedLimit("z"));
     }
 }

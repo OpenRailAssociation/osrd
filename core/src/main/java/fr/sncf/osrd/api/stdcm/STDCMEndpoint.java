@@ -84,9 +84,7 @@ public class STDCMEndpoint implements Take {
             var occupancies = request.routeOccupancies;
             var startLocations = findRoutes(infra, request.startPoints);
             var endLocations = findRoutes(infra, request.endPoints);
-            Set<String> tags = Set.of();
-            if (request.speedLimitComposition != null)
-                tags = Set.of(request.speedLimitComposition);
+            String tag = request.speedLimitComposition;
 
             assert Double.isFinite(startTime);
 
@@ -112,7 +110,7 @@ public class STDCMEndpoint implements Take {
                     request.timeStep,
                     request.maximumDepartureDelay,
                     request.maximumRelativeRunTime * minRunTime,
-                    tags
+                    tag
             );
             if (res == null) {
                 var error = new NoPathFoundError("No path could be found");
@@ -122,7 +120,7 @@ public class STDCMEndpoint implements Take {
             // Build the response
             var simResult = new StandaloneSimResult();
             simResult.speedLimits.add(ResultEnvelopePoint.from(
-                    MRSP.from(res.trainPath(), rollingStock, false, tags)
+                    MRSP.from(res.trainPath(), rollingStock, false, tag)
             ));
             simResult.baseSimulations.add(ScheduleMetadataExtractor.run(
                     res.envelope(),
@@ -171,7 +169,7 @@ public class STDCMEndpoint implements Take {
                         0,
                         List.of(new TrainStop(path.length(), 0.1)),
                         List.of(),
-                        List.of(),
+                        null,
                         comfort
                 )),
                 timeStep
@@ -188,7 +186,7 @@ public class STDCMEndpoint implements Take {
     ) {
         List<TrainStop> trainStops = new ArrayList<>();
         trainStops.add(new TrainStop(envelope.getEndPos(), 0.1));
-        return new StandaloneTrainSchedule(rollingStock, 0., trainStops, List.of(), List.of(), comfort);
+        return new StandaloneTrainSchedule(rollingStock, 0., trainStops, List.of(), null, comfort);
     }
 }
 

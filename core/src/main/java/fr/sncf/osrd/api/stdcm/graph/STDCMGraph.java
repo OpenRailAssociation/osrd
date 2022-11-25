@@ -29,7 +29,7 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
     final DelayManager delayManager;
     final AllowanceManager allowanceManager;
     final BacktrackingManager backtrackingManager;
-    final Set<String> tags;
+    final String tag;
 
     /** Constructor */
     public STDCMGraph(
@@ -41,7 +41,7 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
             double maxRunTime,
             double minScheduleTimeStart,
             Set<Pathfinding.EdgeLocation<SignalingRoute>> endLocations,
-            Set<String> tags
+            String tag
     ) {
         this.infra = infra;
         this.rollingStock = rollingStock;
@@ -51,7 +51,7 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
         this.delayManager = new DelayManager(minScheduleTimeStart, maxRunTime, unavailableTimes);
         this.allowanceManager = new AllowanceManager(this);
         this.backtrackingManager = new BacktrackingManager(this);
-        this.tags = tags;
+        this.tag = tag;
     }
 
     @Override

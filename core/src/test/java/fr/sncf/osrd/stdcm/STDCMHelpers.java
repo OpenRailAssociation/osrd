@@ -37,7 +37,7 @@ public class STDCMHelpers {
                         0,
                         List.of(new TrainStop(trainPath.length(), 1)),
                         List.of(),
-                        List.of(),
+                        null,
                         RollingStock.Comfort.STANDARD
                 )),
                 2.
