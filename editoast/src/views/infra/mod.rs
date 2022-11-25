@@ -242,7 +242,7 @@ mod tests {
 
     #[test]
     fn infra_list() {
-        let rocket = create_server(6000, &Default::default(), Default::default());
+        let rocket = create_server(&Default::default(), &Default::default(), Default::default());
 
         let client = Client::tracked(rocket).expect("valid rocket instance");
         let response = client.get("/infra").dispatch();
@@ -251,7 +251,7 @@ mod tests {
 
     #[test]
     fn infra_create_delete() {
-        let rocket = create_server(6000, &Default::default(), Default::default());
+        let rocket = create_server(&Default::default(), &Default::default(), Default::default());
 
         let client = Client::tracked(rocket).expect("valid rocket instance");
         let create_infra_response = client
@@ -274,7 +274,7 @@ mod tests {
 
     #[test]
     fn infra_get() {
-        let rocket = create_server(6000, &Default::default(), Default::default());
+        let rocket = create_server(&Default::default(), &Default::default(), Default::default());
 
         let client = Client::tracked(rocket).expect("valid rocket instance");
         let create_infra_response = client
@@ -307,7 +307,7 @@ mod tests {
 
     #[test]
     fn infra_refresh() {
-        let rocket = create_server(6000, &Default::default(), Default::default());
+        let rocket = create_server(&Default::default(), &Default::default(), Default::default());
 
         let client = Client::tracked(rocket).expect("valid rocket instance");
 
@@ -343,7 +343,7 @@ mod tests {
 
     #[test]
     fn infra_refresh_force() {
-        let rocket = create_server(6000, &Default::default(), Default::default());
+        let rocket = create_server(&Default::default(), &Default::default(), Default::default());
 
         let client = Client::tracked(rocket).expect("valid rocket instance");
 
@@ -378,7 +378,7 @@ mod tests {
 
     #[test]
     fn infra_get_switch_types() {
-        let rocket = create_server(6000, &Default::default(), Default::default());
+        let rocket = create_server(&Default::default(), &Default::default(), Default::default());
 
         let client = Client::tracked(rocket).expect("valid rocket instance");
 
@@ -437,7 +437,7 @@ mod tests {
 
     #[test]
     fn infra_lock() {
-        let rocket = create_server(6000, &Default::default(), Default::default());
+        let rocket = create_server(&Default::default(), &Default::default(), Default::default());
 
         let client = Client::tracked(rocket).expect("valid rocket instance");
 

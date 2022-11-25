@@ -5,6 +5,7 @@ use std::path::PathBuf;
 
 pub use chartos_config::ChartosConfig;
 use clap::{Args, Parser, Subcommand};
+use derivative::Derivative;
 pub use postgres_config::PostgresConfig;
 
 #[derive(Parser, Debug)]
@@ -26,11 +27,14 @@ pub enum Commands {
     ImportRailjson(ImportRailjsonArgs),
 }
 
-#[derive(Args, Debug)]
+#[derive(Args, Debug, Derivative)]
+#[derivative(Default)]
 #[clap(about, long_about = "Launch the server")]
 pub struct RunserverArgs {
+    #[derivative(Default(value = "8090"))]
     #[clap(long, env = "EDITOAST_PORT", default_value_t = 8090)]
     pub port: u16,
+    #[derivative(Default(value = r#""0.0.0.0".into()"#))]
     #[clap(long, env = "EDITOAST_ADDRESS", default_value_t = String::from("0.0.0.0"))]
     pub address: String,
 }
