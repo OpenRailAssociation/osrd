@@ -25,6 +25,7 @@ const itineraryURI = '/pathfinding/';
 function Itinerary(props) {
   const [launchPathfinding, setLaunchPathfinding] = useState(false);
   const [pathfindingInProgress, setPathfindingInProgress] = useState(false);
+  const { vias } = useSelector((state) => state.osrdconf);
   const { updateExtViewport } = props;
   const dispatch = useDispatch();
   const map = useSelector((state) => state.map);
@@ -80,7 +81,7 @@ function Itinerary(props) {
       if (idx !== 0 && idx !== count && (!step.suggestion || idxToAdd === idx)) {
         vias.push({
           ...step,
-          id: step.track.id,
+          id: step.position,
           clickLngLat: [
             step[map.mapTrackSources.substr(0, 3)].coordinates[0],
             step[map.mapTrackSources.substr(0, 3)].coordinates[1],
@@ -90,6 +91,10 @@ function Itinerary(props) {
     });
     dispatch(replaceVias(vias));
     dispatch(updateSuggeredVias(steps));
+  };
+
+  const removeViaFromPath = (step) => {
+    dispatch(replaceVias(vias.filter((via) => via.track !== step.track)));
   };
 
   // Way to ensure marker position on track
@@ -246,6 +251,7 @@ function Itinerary(props) {
         inverseOD={inverseOD}
         removeAllVias={removeAllVias}
         pathfindingInProgress={pathfindingInProgress}
+        removeViaFromPath={removeViaFromPath}
       />
       <ModalPathJSONDetail pathfindingInProgress={pathfindingInProgress} />
     </>
