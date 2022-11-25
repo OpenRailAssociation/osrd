@@ -1,6 +1,7 @@
 import React from 'react';
 import nextId from 'react-id-generator';
 import PropTypes from 'prop-types';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
 import mlgTraffic from 'applications/osrd/components/RollingStock/consts/mlgtraffic.json';
 import { mlgTrafficURL } from 'applications/osrd/components/RollingStock/consts/consts';
 
@@ -13,7 +14,7 @@ export default function RollingStock2Img(props) {
   const { name } = props;
   return mlgTraffic[name]
     ? mlgTraffic[name].map((gif) => (
-        <img src={`${mlgTrafficURL}${cleanGifName(gif)}.gif`} alt={name} key={nextId()} />
+        <LazyLoadImage src={`${mlgTrafficURL}${cleanGifName(gif)}.gif`} alt={name} key={nextId()} />
       ))
     : null;
 }
