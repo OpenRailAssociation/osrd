@@ -16,6 +16,7 @@ import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/
 import { STDCM_REQUEST_STATUS } from 'applications/osrd/consts';
 import { useTranslation } from 'react-i18next';
 import getStdcmTimetable from 'applications/stdcm/getStdcmTimetable';
+import DriverTrainSchedule from 'applications/osrd/views/OSRDSimulation/DriverTrainSchedule';
 
 export default function OSRDStcdmResults(props) {
   const { selectedTrain } = useSelector((state) => state.osrdsimulation);
@@ -84,7 +85,9 @@ export default function OSRDStcdmResults(props) {
           </div>
         </div>
         <div className="osrd-simulation-container mx-3">
-          <div className="col-sm-12">Timetable</div>
+          <div className="col-sm-12">
+            <DriverTrainSchedule data={simulation.trains[selectedTrain]} isModal={false} />
+          </div>
         </div>
       </main>
     );
