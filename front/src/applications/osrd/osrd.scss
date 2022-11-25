@@ -1,11 +1,16 @@
 @media (min-width: 576px) {
-  .modal-dialog {
+  .modal-dialog.modal-lg, .modal-dialog.modal-xl {
     max-width: calc(100vw - 3rem) !important;
   }
 }
 @media (min-width: 1024px) {
-  .modal-dialog {
+  .modal-dialog.modal-lg, .modal-dialog.modal-xl {
     max-width: 800px !important;
+  }
+}
+@media (min-width: 1280px) {
+  .modal-dialog.modal-xl {
+    max-width: 1140px !important;
   }
 }
 

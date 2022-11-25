@@ -12,7 +12,7 @@ const ROLLINGSTOCK_URL = '/rolling_stock';
 
 export default function DriverTrainSchedule(props) {
   const { t } = useTranslation(['drivertrainschedule', 'translation', 'osrdconf', 'rollingstock']);
-  const { data } = props;
+  const { data, isModal } = props;
   const [rollingStockSelected, setRollingStockSelected] = useState(undefined);
 
   const getRollingStock = async () => {
@@ -35,12 +35,12 @@ export default function DriverTrainSchedule(props) {
     if (data) getRollingStock();
   }, [data]);
 
-  return (
+  return isModal ? (
     <ModalSNCF className="modal-drivertrainschedule" htmlID="driverTrainScheduleModal" size="xl">
       <ModalBodySNCF>
-        {data && rollingStockSelected ? (
+        {data && rollingStockSelected && (
           <DriverTrainScheduleModal data={data} rollingStockSelected={rollingStockSelected} />
-        ) : null}
+        )}
       </ModalBodySNCF>
       <ModalFooterSNCF>
         <div className="d-flex flex-row-reverse w-100">
@@ -50,13 +50,19 @@ export default function DriverTrainSchedule(props) {
         </div>
       </ModalFooterSNCF>
     </ModalSNCF>
+  ) : (
+    data && rollingStockSelected && (
+      <DriverTrainScheduleModal data={data} rollingStockSelected={rollingStockSelected} />
+    )
   );
 }
 
 DriverTrainSchedule.propTypes = {
   data: PropTypes.object,
+  isModal: PropTypes.bool,
 };
 
 DriverTrainSchedule.defaultProps = {
   data: undefined,
+  isModal: true,
 };
