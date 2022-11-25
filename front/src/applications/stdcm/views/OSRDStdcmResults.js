@@ -86,7 +86,9 @@ export default function OSRDStcdmResults(props) {
         </div>
         <div className="osrd-simulation-container mx-3">
           <div className="col-sm-12">
-            <DriverTrainSchedule data={simulation.trains[selectedTrain]} isModal={false} />
+            {simulation.trains[selectedTrain] && (
+              <DriverTrainSchedule data={simulation.trains[selectedTrain]} isModal={false} />
+            )}
           </div>
         </div>
       </main>
