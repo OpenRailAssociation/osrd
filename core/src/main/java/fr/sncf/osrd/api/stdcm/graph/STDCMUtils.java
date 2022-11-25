@@ -71,7 +71,7 @@ public class STDCMUtils {
 
     /** Returns an envelope matching the given route. The envelope time starts when the train enters the route.
      *
-     * </p>
+     * <p>
      * Note: there are some approximations made here as we only "see" the tracks on the given routes.
      * We are missing slopes and speed limits from earlier in the path.
      * </p>
