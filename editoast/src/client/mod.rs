@@ -31,6 +31,8 @@ pub enum Commands {
 pub struct RunserverArgs {
     #[clap(long, env = "EDITOAST_PORT", default_value_t = 8090)]
     pub port: u16,
+    #[clap(long, env = "EDITOAST_ADDRESS", default_value_t = String::from("0.0.0.0"))]
+    pub address: String,
 }
 
 #[derive(Args, Debug)]
