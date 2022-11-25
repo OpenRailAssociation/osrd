@@ -26,6 +26,7 @@ export default function SpeedSpaceChart(props) {
     heightOfSpeedSpaceChart,
     simulation,
     chartXGEV,
+    dispatch,
     mustRedraw,
     positionValues,
     selectedTrain,
@@ -45,7 +46,7 @@ export default function SpeedSpaceChart(props) {
   const keyValues = ['position', 'speed'];
 
   // Prepare data
-  const dataSimulation = prepareData(simulation.present, selectedTrain, keyValues);
+  const dataSimulation = prepareData(simulation, selectedTrain, keyValues);
 
   // rotation Handle (button on right bottom)
   const toggleRotation = () => {
@@ -68,14 +69,14 @@ export default function SpeedSpaceChart(props) {
     setChart(
       createChart(
         CHART_ID,
-        undefined,
+        dispatch,
         resetChart,
         dataSimulation,
         false,
         keyValues,
         heightOfSpeedSpaceChart,
         ref,
-        undefined,
+        dispatch,
         setResetChart
       )
     );
@@ -93,7 +94,7 @@ export default function SpeedSpaceChart(props) {
         keyValues,
         heightOfSpeedSpaceChart,
         ref,
-        undefined,
+        dispatch,
         setResetChart
       )
     );
@@ -104,7 +105,7 @@ export default function SpeedSpaceChart(props) {
     enableInteractivity(
       chart,
       dataSimulation,
-      undefined,
+      dispatch,
       keyValues,
       LIST_VALUES_NAME_SPEED_SPACE,
       positionValues,
@@ -134,7 +135,7 @@ export default function SpeedSpaceChart(props) {
       setYPosition,
       setZoomLevel,
       yPosition,
-      undefined,
+      dispatch,
       zoomLevel,
       CHART_ID,
       chart,
@@ -181,7 +182,7 @@ export default function SpeedSpaceChart(props) {
           keyValues,
           heightOfSpeedSpaceChart,
           ref,
-          undefined,
+          dispatch,
           setResetChart
         )
       );
@@ -233,6 +234,7 @@ SpeedSpaceChart.propTypes = {
   heightOfSpeedSpaceChart: PropTypes.number,
   simulation: PropTypes.object,
   chartXGEV: PropTypes.func,
+  dispatch: PropTypes.func,
   mustRedraw: PropTypes.bool,
   positionValues: PropTypes.object,
   selectedTrain: PropTypes.number,
@@ -243,8 +245,9 @@ SpeedSpaceChart.propTypes = {
 
 SpeedSpaceChart.defaultProps = {
   heightOfSpeedSpaceChart: 250,
-  simulation: ORSD_GEV_SAMPLE_DATA.simulation,
+  simulation: ORSD_GEV_SAMPLE_DATA.simulation.present,
   chartXGEV: undefined,
+  dispatch: () => {},
   mustRedraw: ORSD_GEV_SAMPLE_DATA.mustRedraw,
   positionValues: ORSD_GEV_SAMPLE_DATA.positionValues,
   selectedTrain: ORSD_GEV_SAMPLE_DATA.selectedTrain,
