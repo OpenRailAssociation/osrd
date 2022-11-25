@@ -17,7 +17,7 @@ public class UnavailableSpaceBuilder {
      * This considers existing occupancy blocks, the length of the train,
      * and the routes that must be left available behind the train
      *
-     * </p>
+     * <br/>
      * This is the first step to compute STDCM, the goal is to get rid of railway rules and extra complexity
      * as soon as possible. After this step we can look for a single curve that avoids unavailable blocks. */
     public static Multimap<SignalingRoute, OccupancyBlock> computeUnavailableSpace(

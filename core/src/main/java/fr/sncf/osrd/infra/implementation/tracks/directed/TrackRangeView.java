@@ -17,9 +17,9 @@ import java.util.stream.Collectors;
 
 /** An oriented view on a track range. Can be used to iterate over its content */
 public class TrackRangeView {
-    /** Start of the range on the original undirected track (begin < end) */
+    /** Start of the range on the original undirected track (begin &lt; end) */
     public final double begin;
-    /** End of the range on the original undirected track (begin < end) */
+    /** End of the range on the original undirected track (begin &lt; end) */
     public final double end;
     /** Referenced oriented track. This sets the direction of the range */
     public final DiTrackEdge track;
