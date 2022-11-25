@@ -40,7 +40,7 @@ public class STDCMPathfinding {
             double timeStep,
             double maxDepartureDelay,
             double maxRunTime,
-            Set<String> tags
+            String tag
     ) {
         var graph = new STDCMGraph(
                 infra,
@@ -51,7 +51,7 @@ public class STDCMPathfinding {
                 maxRunTime,
                 startTime,
                 endLocations,
-                tags
+                tag
         );
 
         // Initializes the constraints

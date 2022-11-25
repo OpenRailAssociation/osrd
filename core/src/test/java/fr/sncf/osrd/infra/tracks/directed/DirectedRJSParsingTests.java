@@ -305,7 +305,7 @@ public class DirectedRJSParsingTests {
                                 section.getKey().lowerEndpoint() + pos,
                                 section.getKey().upperEndpoint() + pos
                         ),
-                        section.getValue().getSpeedLimit(Set.of())
+                        section.getValue().getSpeedLimit(null)
                 );
             pos += range.getLength();
         }

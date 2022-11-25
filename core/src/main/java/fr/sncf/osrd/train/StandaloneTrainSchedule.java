@@ -16,7 +16,7 @@ public class StandaloneTrainSchedule {
 
     public final List<? extends Allowance> allowances;
 
-    public final Collection<String> tags;
+    public final String tag;
 
     public final RollingStock.Comfort comfort;
 
@@ -26,14 +26,14 @@ public class StandaloneTrainSchedule {
             double initialSpeed,
             List<TrainStop> stops,
             List<? extends Allowance> allowances,
-            Collection<String> tags,
+            String tag,
             RollingStock.Comfort comfort
     ) {
         this.rollingStock = rollingStock;
         this.initialSpeed = initialSpeed;
         this.stops = stops;
         this.allowances = allowances;
-        this.tags = tags;
+        this.tag = tag;
         this.comfort = comfort;
     }
 

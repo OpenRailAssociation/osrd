@@ -128,7 +128,7 @@ public class STDCMEdgeBuilder {
                     graph.comfort,
                     graph.timeStep,
                     STDCMUtils.getStopsOnRoute(graph, route, startOffset),
-                    graph.tags
+                    graph.tag
             );
         if (envelope == null)
             return List.of();
