@@ -1,5 +1,5 @@
 /**
- * <h1>The core OSRD module</h1>
+ * <h2>The core OSRD module</h2>
  *
  * <p>Reading through a log file gives a good overview of how the project works:</p>
  * <ul>

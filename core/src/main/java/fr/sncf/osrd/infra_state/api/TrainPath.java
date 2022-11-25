@@ -45,13 +45,13 @@ public record TrainPath(
                 .collect(Collectors.toList());
     }
 
-    /** Utility function, returns the last element with offset <= the given offset.
+    /** Utility function, returns the last element with offset &lt;= the given offset.
      * For range objects (route / sections), it returns the element containing the offset. */
     public static <T> T getLastElementBefore(ImmutableList<LocatedElement<T>> list, double offset) {
         return getLastLocatedElementBefore(list, offset).element;
     }
 
-    /** Utility function, returns the last located element with offset <= the given offset.
+    /** Utility function, returns the last located element with offset &lt;= the given offset.
      * For range objects (route / sections), it returns the element containing the offset. */
     public static <T> LocatedElement<T> getLastLocatedElementBefore(
             ImmutableList<LocatedElement<T>> list,
