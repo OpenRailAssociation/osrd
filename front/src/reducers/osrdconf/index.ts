@@ -474,8 +474,8 @@ export function deleteItinerary() {
 }
 
 // Give this function a whole OSRDConf state:
-export function bootstrapOSRDConf(conf: any) {
+export function bootstrapOSRDConf(infraID: number) {
   return (dispatch: Dispatch) => {
-    dispatch(updateInfraID(conf.infraID));
+    dispatch(updateInfraID(infraID));
   };
 }
