@@ -59,13 +59,14 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
     }
 }
 pub fn create_server(
-    port: u16,
+    runserver_config: &RunserverArgs,
     pg_config: &PostgresConfig,
     chartos_config: ChartosConfig,
 ) -> Rocket<Build> {
     // Config server
     let mut config = Config::figment()
-        .merge(("port", port))
+        .merge(("port", runserver_config.port))
+        .merge(("address", runserver_config.address.clone()))
         .merge(("databases.postgres.url", pg_config.url()))
         .merge(("limits.json", 250 * 1024 * 1024)) // Set limits to 250MiB
     ;
@@ -102,8 +103,10 @@ async fn runserver(
     pg_config: PostgresConfig,
     chartos_config: ChartosConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let rocket = create_server(args.port, &pg_config, chartos_config);
+    println!("Building server...");
+    let rocket = create_server(&args, &pg_config, chartos_config);
     // Run server
+    println!("Running server...");
     let _rocket = rocket.launch().await?;
     Ok(())
 }
