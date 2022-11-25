@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Loader from 'common/Loader';
+import nextId from 'react-id-generator';
 import { useSelector, useDispatch } from 'react-redux';
 import { setFailure } from 'reducers/main';
 import { get } from 'common/requests';
@@ -112,7 +113,7 @@ export default function RollingStock(props) {
       filteredRollingStockList.map((item) => (
         <RollingStockCard
           data={item}
-          key={item.id}
+          key={nextId()}
           openedRollingStockCardId={openedRollingStockCardId}
           setOpenedRollingStockCardId={setOpenedRollingStockCardId}
           ref2scroll={rollingStockID === item.id ? ref2scroll : undefined}
