@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { LIST_VALUES_SIGNAL_BASE } from 'applications/osrd/components/Simulation/consts';
 import { updateSignalBase } from 'reducers/osrdsimulation';
+import { updateMustRedraw, updateSpeedSpaceSettings } from 'reducers/osrdsimulation';
 import SpeedSpaceChart from './SpeedSpaceChart';
 
 /**
@@ -38,17 +39,30 @@ const withOSRDData = (Component) =>
         console.warn('Try to toggle Signal with unavailableValue');
       }
     };
+
+    const toggleSetting = (settingName) => {
+      dispatch(
+        updateSpeedSpaceSettings({
+          ...speedSpaceSettings,
+          [settingName]: !speedSpaceSettings[settingName],
+        })
+      );
+      dispatch(updateMustRedraw(true));
+    };
+
     return (
       <Component
         {...props}
         simulation={simulation}
         chartXGEV={chartXGEV}
         mustRedraw={mustRedraw}
+        dispatch={dispatch}
         positionValues={positionValues}
         selectedTrain={selectedTrain}
         speedSpaceSettings={speedSpaceSettings}
         timePosition={timePosition}
         consolidatedSimulation={consolidatedSimulation}
+        toggleSetting={toggleSetting}
       />
     );
   };

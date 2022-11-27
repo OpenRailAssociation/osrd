@@ -7,10 +7,14 @@ export default {
     * See https://storybook.js.org/docs/react/configure/overview#configure-story-loading
     * to learn how to generate automatic titles
     */
-    title: 'SpeedSpaceChart',
+    title: 'TrainSimulation/SpeedSpaceChart',
     component: SpeedSpaceChart,
   };
 
-  const Template: ComponentStory<typeof SpeedSpaceChart> = (args) => <SpeedSpaceChart {...args} />;
+const Template: ComponentStory<typeof SpeedSpaceChart> = (args) => (
+  <div className="speedspacechart-container">
+    <SpeedSpaceChart {...args} />
+  </div>
+);
 
-export const Base = Template.bind({});
+export const Standard = Template.bind({});

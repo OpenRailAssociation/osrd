@@ -55,10 +55,11 @@ export default function SpeedSpaceSettings(props) {
 SpeedSpaceSettings.propTypes = {
   showSettings: PropTypes.bool,
   toggleSetting: PropTypes.func,
-  speedSpaceSettings: PropTypes.object.isRequired
+  speedSpaceSettings: PropTypes.object
 };
 
 SpeedSpaceSettings.defaultProps = {
   showSettings: false,
   toggleSetting: () => {},
+  speedSpaceSettings: {}
 };

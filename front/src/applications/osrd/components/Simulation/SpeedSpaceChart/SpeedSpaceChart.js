@@ -20,8 +20,14 @@ import {
 import SpeedSpaceSettings from 'applications/osrd/components/Simulation/SpeedSpaceSettings/SpeedSpaceSettings';
 
 const CHART_ID = 'SpeedSpaceChart';
-
-export default function SpeedSpaceChart(props) {
+/**
+ * A chart to see the evolution of speed of one train on its journey
+ * Features:
+ * - One train only (current selected)
+ * - Vertical line to the current position
+ * - 2 marchs displayed: base and alternative
+ * 
+ */export default function SpeedSpaceChart(props) {
   const {
     heightOfSpeedSpaceChart,
     simulation,
@@ -33,9 +39,9 @@ export default function SpeedSpaceChart(props) {
     speedSpaceSettings,
     timePosition,
     consolidatedSimulation,
+    toggleSetting
   } = props;
 
-  console.log("props", props)
   const [showSettings, setShowSettings] = useState(false);
   const [rotate, setRotate] = useState(false);
   const [resetChart, setResetChart] = useState(false);
@@ -207,7 +213,11 @@ export default function SpeedSpaceChart(props) {
       >
         <i className={showSettings ? 'icons-arrow-prev' : 'icons-arrow-next'} />
       </button>
-      
+      <SpeedSpaceSettings
+        showSettings={showSettings}
+        toggleSetting={toggleSetting}
+        SpeedSpaceSettings={speedSpaceSettings}
+      />
       <div ref={ref} className="w-100" />
       <button
         type="button"
@@ -231,27 +241,62 @@ export default function SpeedSpaceChart(props) {
 }
 
 SpeedSpaceChart.propTypes = {
+  /**
+   * height of chart
+   */
   heightOfSpeedSpaceChart: PropTypes.number,
+  /**
+   * current simulation (selected train) ! to be removed
+   */
   simulation: PropTypes.object,
+  /**
+   * Current X linear scale for synced charts
+   */
   chartXGEV: PropTypes.func,
+  /**
+   * Dispath to store func
+   */
   dispatch: PropTypes.func,
+  /**
+   * Force d3 render trigger ! To be removed
+   */
   mustRedraw: PropTypes.bool,
+  /**
+   * Current Position to be showed (vertical line)
+   */
   positionValues: PropTypes.object,
+  /**
+   * Current Selected Train index
+   */
   selectedTrain: PropTypes.number,
+  /**
+   * Chart settings
+   */
   speedSpaceSettings: PropTypes.object,
+  /**
+   * Current Time Position to be showed (vertical line)
+   */
   timePosition: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]),
+  /**
+   * Current Simulation with more data (for current train)
+   */
   consolidatedSimulation: PropTypes.array,
+  /**
+   * Toggle the Settings div ! Not isolated
+   */
+  toggleSetting: PropTypes.func
 };
 
 SpeedSpaceChart.defaultProps = {
   heightOfSpeedSpaceChart: 250,
   simulation: ORSD_GEV_SAMPLE_DATA.simulation.present,
   chartXGEV: undefined,
-  dispatch: () => {},
+  dispatch: () => { },
   mustRedraw: ORSD_GEV_SAMPLE_DATA.mustRedraw,
   positionValues: ORSD_GEV_SAMPLE_DATA.positionValues,
   selectedTrain: ORSD_GEV_SAMPLE_DATA.selectedTrain,
   speedSpaceSettings: ORSD_GEV_SAMPLE_DATA.speedSpaceSettings,
   timePosition: ORSD_GEV_SAMPLE_DATA.timePosition,
   consolidatedSimulation: ORSD_GEV_SAMPLE_DATA.consolidatedSimulation,
+  toggleSetting: () => {}
 };
