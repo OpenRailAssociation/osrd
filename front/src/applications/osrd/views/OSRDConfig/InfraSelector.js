@@ -70,7 +70,6 @@ export default function InfraSelector() {
   };
 
   useEffect(() => {
-    console.log('new Infra ID', infraID)
     setInitialInfra();
   }, [infrasList, infraID]);
 
