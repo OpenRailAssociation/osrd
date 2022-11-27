@@ -15,7 +15,7 @@ export default function InfraSelector() {
   const dispatch = useDispatch();
   const [infrasList, setInfrasList] = useState(undefined);
   const [selectedInfra, setSelectedInfra] = useState(undefined);
-  const { infraID } = useSelector(getInfraID);
+  const infraID = useSelector(getInfraID);
 
   const { t } = useTranslation(['osrdconf']);
 
@@ -70,6 +70,7 @@ export default function InfraSelector() {
   };
 
   useEffect(() => {
+    console.log('new Infra ID', infraID)
     setInitialInfra();
   }, [infrasList, infraID]);
 
