@@ -10,8 +10,7 @@ import {
   updateChartXGEV,
   updateContextMenu,
   updateMustRedraw,
-  updateTimePosition,
-  updateTimePositionValues
+  updateTimePositionValues,
 } from 'reducers/osrdsimulation/actions';
 
 import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/customget/components/consts';
@@ -304,13 +303,6 @@ const enableInteractivity = (
           : chart.x.invert(d3.mouse(d3.event.currentTarget)[0]);
         const timePositionLocal = interpolateOnPosition(dataSimulation, keyValues, positionLocal);
         if (timePositionLocal) {
-          const immediatePositionsValues = interpolateOnTime(
-            dataSimulation,
-            ['time'],
-            LIST_VALUES_NAME_SPACE_TIME,
-            timePositionLocal
-          );
-
           debounceUpdateTimePositionValues(timePositionLocal, null, 15);
         }
       }
