@@ -14,14 +14,14 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import RollingStockEmpty from './RollingStockEmpty';
 import RollingStockCard from './RollingStockCard';
 import { enhanceData } from './RollingStockHelpers';
-
+import { getRollingStockID } from 'reducers/osrdconf/selectors';
 const ROLLING_STOCK_URL = '/light_rolling_stock/';
 
 export default function RollingStock(props) {
   const { ref2scroll } = props;
   const dispatch = useDispatch();
   const { darkmode } = useSelector((state) => state.main);
-  const { rollingStockID } = useSelector((state) => state.osrdconf);
+  const rollingStockID = useSelector(getRollingStockID);
   const { t } = useTranslation(['translation', 'rollingstock']);
   const [rollingStock, setRollingStock] = useState();
   const [filteredRollingStockList, setFilteredRollingStockList] = useState();
