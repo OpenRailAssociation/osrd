@@ -4,18 +4,18 @@ import ReactMapGL, { AttributionControl, ScaleControl, ViewportProps } from 'rea
 import { withTranslation } from 'react-i18next';
 import { TFunction } from 'i18next';
 
-import colors from '../../common/Map/Consts/colors';
-import '../../common/Map/Map.scss';
-
-import { LAYER_GROUPS_ORDER, LAYERS } from '../../config/layerOrder';
+import VirtualLayers from 'applications/osrd/views/OSRDSimulation/VirtualLayers';
+import colors from 'common/Map/Consts/colors';
+import 'common/Map/Map.scss';
 
 /* Main data & layers */
-import Background from '../../common/Map/Layers/Background';
-import OSM from '../../common/Map/Layers/OSM';
-import Hillshade from '../../common/Map/Layers/Hillshade';
-import Platforms from '../../common/Map/Layers/Platforms';
-import osmBlankStyle from '../../common/Map/Layers/osmBlankStyle';
-import OrthoPhoto from '../../common/Map/Layers/OrthoPhoto';
+import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
+import Background from 'common/Map/Layers/Background';
+import OSM from 'common/Map/Layers/OSM';
+import Hillshade from 'common/Map/Layers/Hillshade';
+import Platforms from 'common/Map/Layers/Platforms';
+import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
+import OrthoPhoto from 'common/Map/Layers/OrthoPhoto';
 
 import { EditorContext } from './context';
 import {
@@ -26,7 +26,6 @@ import {
   OSRDConf,
   Tool,
 } from './tools/types';
-import VirtualLayers from 'applications/osrd/views/OSRDSimulation/VirtualLayers';
 
 const DEFAULT_RADIUS = 6;
 
