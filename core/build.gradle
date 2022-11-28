@@ -18,7 +18,7 @@ import static org.apache.tools.ant.taskdefs.condition.Os.*
 plugins {
     id 'java'
     // must be kept in sync with kotlin_version below
-    id 'org.jetbrains.kotlin.jvm' version '1.7.21'
+    id 'org.jetbrains.kotlin.jvm' version '1.7.22'
     id 'com.google.devtools.ksp' version '1.7.21-1.0.8' apply false
     id 'application'
     id 'checkstyle'
