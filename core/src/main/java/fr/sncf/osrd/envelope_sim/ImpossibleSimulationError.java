@@ -9,7 +9,11 @@ public class ImpossibleSimulationError extends OSRDError {
     private static final long serialVersionUID = -5665109729224986723L;
     public static final String osrdErrorType = "impossible_simulation";
 
+    /** Constructor */
     public ImpossibleSimulationError() {
-        super("The requested train couldn't reach its destination", ErrorCause.USER);
+        super(
+                "The requested train stopped before reaching its destination (not enough traction)",
+                ErrorCause.USER
+        );
     }
 }
