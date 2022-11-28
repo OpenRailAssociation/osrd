@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import { select as d3select } from 'd3-selection';
 
-import { Chart, SimulationTrain } from 'reducers/SimulationSnapshot';
+import { Chart, SimulationTrain } from 'reducers/osrdsimulation/types';
 import { defineLinear, defineTime } from 'applications/osrd/components/Helpers/ChartHelpers';
 import defineChart from 'applications/osrd/components/Simulation/defineChart';
 

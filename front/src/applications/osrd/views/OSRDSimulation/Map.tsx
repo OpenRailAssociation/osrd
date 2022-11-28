@@ -19,7 +19,7 @@ import { CgLoadbar } from 'react-icons/cg';
 import { last } from 'lodash';
 
 import { updateTimePositionValues } from 'reducers/osrdsimulation/actions';
-import { AllowancesSettings, PositionValues, PositionSpeed } from 'reducers/SimulationSnapshot';
+import { AllowancesSettings, PositionValues, PositionSpeed } from 'reducers/osrdsimulation/types';
 import { updateViewport, Viewport } from 'reducers/map';
 import { RootState } from 'reducers';
 import { TrainPosition } from 'applications/osrd/components/SimulationMap/types';
