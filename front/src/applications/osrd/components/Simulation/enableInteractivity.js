@@ -275,13 +275,13 @@ const enableInteractivity = (
       return (event.button === 0 || event.button === 1) && (event.ctrlKey || event.shiftKey);
     })
     .on('start', () => {
-      dispatch(updateContextMenu(undefined));
+      if(dispatch) dispatch(updateContextMenu(undefined));
     })
     .on('end', () => {
       if (keyValues[1] === 'speed' || keyValues[1] === 'gradient') {
         //dispatch(updateChartXGEV(lastChartX));
       }
-      dispatch(updateMustRedraw(true));
+      if(dispatch) dispatch(updateMustRedraw(true));
     });
 
   let debounceTimeoutId;
@@ -289,7 +289,7 @@ const enableInteractivity = (
   function debounceUpdateTimePositionValues(timePositionLocal, immediatePositionsValues, interval) {
     clearTimeout(debounceTimeoutId);
     debounceTimeoutId = setTimeout(() => {
-      dispatch(updateTimePositionValues(timePositionLocal, null));
+      if(dispatch) dispatch(updateTimePositionValues(timePositionLocal, null));
     }, interval);
   }
 
