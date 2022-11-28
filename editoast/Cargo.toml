@@ -22,7 +22,7 @@ rocket_sync_db_pools = { version = "0.1.0-rc", features = [
     "diesel_postgres_pool",
 ] }
 rocket_cors = { git = "https://github.com/lawliet89/rocket_cors.git", rev = "54fae070" }
-serde = "~1.0.147"
+serde = "~1.0.148"
 serde_derive = "~1.0.147"
 serde_json = "~1.0.89"
 strum = "~0.24.1"
