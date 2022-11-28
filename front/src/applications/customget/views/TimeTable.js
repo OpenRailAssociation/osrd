@@ -15,11 +15,11 @@ function type2icon(type) {
     case 'signal':
       return <img src={signalIcon} alt="signal icon" width="24" />;
     default:
-      return stop.type;
+      return type;
   }
 }
 
-function formatStops(stop, idx, train) {
+function formatStops(stop, idx) {
   return (
     <tr key={nextId()} className={`${stop.duration > 0 ? 'font-weight-bold' : ''}`}>
       <td>
