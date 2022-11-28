@@ -20,15 +20,19 @@ import { STDCM_REQUEST_STATUS } from 'applications/osrd/consts';
 import { useTranslation } from 'react-i18next';
 import getStdcmTimetable from 'applications/stdcm/getStdcmTimetable';
 import DriverTrainSchedule from 'applications/osrd/views/OSRDSimulation/DriverTrainSchedule';
+import { getTimetableID } from 'reducers/osrdconf/selectors';
 
 export default function OSRDStcdmResults(props) {
-  const { selectedTrain } = useSelector((state) => state.osrdsimulation);
+  const selectedTrain = useSelector((state) => state.osrdsimulation.selectedTrain);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
-  const { timetableID } = useSelector((state) => state.osrdconf);
+  const timetableID = useSelector(getTimetableID);
+  //const { timetableID } = useSelector((state) => state.osrdconf);
   const { t } = useTranslation(['translation', 'osrdconf']);
   const { currentStdcmRequestStatus } = props;
-  const { allowancesSettings, selectedProjection } = useSelector((state) => state.osrdsimulation);
+  const allowancesSettings = useSelector((state) => state.osrdsimulation.allowancesSettings);
+  const selectedProjection = useSelector((state) => state.osrdsimulation.selectedProjection);
   const dispatch = useDispatch();
+
 
   // With this hook we update and store
   // the consolidatedSimuation (simualtion stucture for the selected train)
@@ -43,36 +47,14 @@ export default function OSRDStcdmResults(props) {
     dispatch(updateConsolidatedSimulation(consolidatedSimulation));
     dispatch(updateMustRedraw(true));
   }, [simulation]);
-
-  useEffect(() => {
-    // Setup the listener to undi /redo
-    // window.addEventListener('keydown', handleKey);
-
-    if (timetableID) {
-      getStdcmTimetable(
-        simulation,
-        selectedTrain,
-        dispatch,
-        timetableID,
-        allowancesSettings,
-        selectedProjection,
-        t
-      );
-    }
-    return function cleanup() {
-      // window.removeEventListener('keydown', handleKey);
-      dispatch(updateSelectedProjection(undefined));
-      dispatch(updateSimulation({ trains: [] }));
-    };
-  }, []);
-
+  
   let stdcmResultsSection;
   if (
     currentStdcmRequestStatus === STDCM_REQUEST_STATUS.success &&
     simulation.trains[selectedTrain] !== undefined
   ) {
     stdcmResultsSection = (
-      <main className="osrd-config-mastcontainer mastcontainer">
+      <main className="osrd-config-mastcontainer mastcontainer" style={{ height: '115vh' }}>
         <div className="osrd-simulation-container mb-2 mx-3">
           <h1 className="text-center text-info">
             <b>{t('osrdconf:stdcmResults')}</b>
@@ -87,13 +69,7 @@ export default function OSRDStcdmResults(props) {
             </div>
           </div>
         </div>
-        <div className="osrd-simulation-container mx-3">
-          <div className="col-sm-12">
-            {simulation.trains[selectedTrain] && (
-              <DriverTrainSchedule data={simulation.trains[selectedTrain]} isModal={false} />
-            )}
-          </div>
-        </div>
+        
       </main>
     );
   } else if (currentStdcmRequestStatus === STDCM_REQUEST_STATUS.noresults) {
