@@ -4,14 +4,12 @@ import { getDirection } from 'applications/customget/components/ChartHelpers';
 
 import drawCurve from 'applications/customget/components/drawCurve';
 import drawText from 'applications/customget/components/drawText';
-import {
-  makeDepartureArrivalTimes,
-} from 'reducers/osrdsimulation';
+import { makeDepartureArrivalTimes } from 'reducers/osrdsimulation';
 import {
   updateDepartureArrivalTimes,
   updateContextMenu,
   updateMustRedraw,
-  updateSelectedTrain
+  updateSelectedTrain,
 } from 'reducers/osrdsimulation/actions';
 
 export default function drawTrain(
