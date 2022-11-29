@@ -14,6 +14,8 @@ public class SwitchImpl implements Switch {
     private final ImmutableNetwork<SwitchPort, SwitchBranch> graph;
     private final ImmutableMultimap<String, SwitchBranch> groups;
 
+    private final double groupChangeDelay;
+
     @Override
     @ExcludeFromGeneratedCodeCoverage
     public String toString() {
@@ -32,11 +34,13 @@ public class SwitchImpl implements Switch {
             String id,
             ImmutableNetwork<SwitchPort, SwitchBranch> graph,
             ImmutableMultimap<String, SwitchBranch> groups,
+            double groupChangeDelay,
             ImmutableMap<String, SwitchPort> ports
     ) {
         this.id = id;
         this.graph = graph;
         this.groups = groups;
+        this.groupChangeDelay = groupChangeDelay;
         this.ports = ports;
     }
 
@@ -58,5 +62,21 @@ public class SwitchImpl implements Switch {
     @Override
     public ImmutableMultimap<String, SwitchBranch> getGroups() {
         return groups;
+    }
+
+    @Override
+    public String findBranchGroup(SwitchBranch branch) {
+        for (var group : groups.asMap().entrySet()) {
+            for (var groupBranch : group.getValue()) {
+                if (groupBranch == branch)
+                    return group.getKey();
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public double getGroupChangeDelay() {
+        return groupChangeDelay;
     }
 }

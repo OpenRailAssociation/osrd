@@ -47,6 +47,7 @@ dependencies {
     testImplementation group: 'org.jetbrains.kotlin', name: 'kotlin-test', version: kotlin_version  // Apache 2.0
 
     implementation project(":kt-osrd-sim-interlocking")
+    implementation project(":kt-osrd-sim-infra")
 
     // base primitives
     implementation group: 'com.google.guava', name: 'guava', version: '31.1-jre'  // Apache 2.0
