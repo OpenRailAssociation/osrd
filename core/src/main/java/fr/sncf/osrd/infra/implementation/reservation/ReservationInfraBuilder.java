@@ -69,8 +69,8 @@ public class ReservationInfraBuilder {
                 makeSectionMap(reservationSections),
                 routeGraph,
                 makeReservationRouteMap(routeGraph),
-                makeRouteOnEdgeMap(routeGraph.edges())
-        );
+                makeRouteOnEdgeMap(routeGraph.edges()),
+                ImmutableList.copyOf(reservationSections));
     }
 
     /** Builds a multimap of routes present on each edge */

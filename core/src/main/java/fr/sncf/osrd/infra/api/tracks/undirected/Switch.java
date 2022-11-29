@@ -15,4 +15,9 @@ public interface Switch {
 
     /** Switch branches which are not part of the active group are not available */
     ImmutableMultimap<String, SwitchBranch> getGroups();
+
+    /** Find the group a given branch belongs to */
+    String findBranchGroup(SwitchBranch branch);
+
+    double getGroupChangeDelay();
 }

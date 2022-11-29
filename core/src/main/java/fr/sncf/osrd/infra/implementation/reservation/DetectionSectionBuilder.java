@@ -9,6 +9,7 @@ import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.reservation.DetectionSection;
 import fr.sncf.osrd.infra.api.reservation.DiDetector;
 import fr.sncf.osrd.infra.api.tracks.directed.DiTrackInfra;
+import fr.sncf.osrd.infra.api.tracks.undirected.Switch;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackEdge;
 import fr.sncf.osrd.infra.implementation.tracks.undirected.DetectorImpl;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeEndpoint;
@@ -21,10 +22,11 @@ public class DetectionSectionBuilder {
     /** Represents a DetectionSection that isn't complete yet */
     private static class SectionBuilder {
         public final ImmutableSet.Builder<DiDetector> detectors = new ImmutableSet.Builder<>();
+        public final ImmutableSet.Builder<Switch> switches = new ImmutableSet.Builder<>();
 
         /** Builds the DetectionSection */
         DetectionSection build() {
-            return new DetectionSectionImpl(detectors.build());
+            return new DetectionSectionImpl(switches.build(), detectors.build());
         }
     }
 
@@ -61,7 +63,7 @@ public class DetectionSectionBuilder {
             for (int i = 1; i < waypoints.size(); i++) {
                 var prev = waypoints.get(i - 1);
                 var cur = waypoints.get(i);
-                var detectionSection = new DetectionSectionImpl(ImmutableSet.of(
+                var detectionSection = new DetectionSectionImpl(ImmutableSet.of(), ImmutableSet.of(
                         prev.getDiDetector(FORWARD),
                         cur.getDiDetector(BACKWARD)
                 ));
@@ -75,6 +77,7 @@ public class DetectionSectionBuilder {
         // Keep track of what detection section each endpoint belongs to
         var uf = new UnionFind(infra.getTrackGraph().edges().size() * 2);
 
+        // run an union find to associate each track endpoint to a detection section identifier
         for (var track : infra.getTrackGraph().edges()) {
             var beginIndex = getEndpointIndex(track, EdgeEndpoint.BEGIN);
             var endIndex = getEndpointIndex(track, EdgeEndpoint.END);
@@ -93,6 +96,8 @@ public class DetectionSectionBuilder {
             }
         }
 
+        // now that we know which track endpoints are in which detection section,
+        // associate detectors to detection sections
         var detectionSectionsMap = new HashMap<Integer, SectionBuilder>();
         for (var track : infra.getTrackGraph().edges()) {
             var waypoints = track.getDetectors();
@@ -112,6 +117,15 @@ public class DetectionSectionBuilder {
 
             startDetectionSection.detectors.add(firstWaypoint.getDiDetector(BACKWARD));
             endDetectionSection.detectors.add(lastWaypoint.getDiDetector(FORWARD));
+        }
+
+        // also associate switches with their detection section
+        for (var switchVal : infra.getSwitches().values()) {
+            // take any branch of the switch, as they all most be within the same detection section
+            var switchBranch = switchVal.getGraph().edges().iterator().next();
+            var switchDetectSectionIndex = uf.findRoot(getEndpointIndex(switchBranch, EdgeEndpoint.BEGIN));
+            var detSection = detectionSectionsMap.get(switchDetectSectionIndex);
+            detSection.switches.add(switchVal);
         }
 
         for (var builder : detectionSectionsMap.values()) {
