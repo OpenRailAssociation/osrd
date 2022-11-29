@@ -22,7 +22,6 @@ interface MovableElementsInfra {
     val movableElements: StaticIdxSpace<MovableElement>
     fun getMovableElementConfigs(movableElement: MovableElementId): StaticIdxSpace<MovableElementConfig>
     fun getMovableElementDelay(movableElement: MovableElementId): Duration
-    fun getMovableElementDefaultConfig(movableElement: MovableElementId): MovableElementConfigId
     fun getMovableElementConfigName(movableElement: MovableElementId, config: MovableElementConfigId): String
 }
 
