@@ -8,16 +8,13 @@ import kotlin.time.Duration
 class MovableElementDescriptorBuilder @PublishedApi internal constructor (
     private val delay: Duration,
     private val configs: StaticPool<MovableElementConfig, MovableElementConfigDescriptor>,
-    var defaultConfig: MovableElementConfigId?
 ) {
     fun config(name: String): MovableElementConfigId {
         return configs.add(MovableElementConfigDescriptor(name))
     }
 
     @PublishedApi internal fun build(): MovableElementDescriptor {
-        if (defaultConfig == null)
-            throw RuntimeException("invalid MovableElement: there must be a default config")
-        return MovableElementDescriptor(delay, configs, defaultConfig!!)
+        return MovableElementDescriptor(delay, configs)
     }
 }
 
@@ -43,7 +40,7 @@ class SimInfraBuilder @PublishedApi internal constructor(
     )
 
     inline fun movableElement(delay: Duration, init: MovableElementDescriptorBuilder.() -> Unit): MovableElementId {
-        val movableElementBuilder = MovableElementDescriptorBuilder(delay, StaticPool(), null)
+        val movableElementBuilder = MovableElementDescriptorBuilder(delay, StaticPool())
         movableElementBuilder.init()
         val movableElement = movableElementBuilder.build()
         return movableElementPool.add(movableElement)

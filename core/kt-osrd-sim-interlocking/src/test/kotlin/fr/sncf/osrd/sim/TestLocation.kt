@@ -20,7 +20,7 @@ class TestLocation {
         val infra = simInfra {
             // create a test switch
             val switchA = movableElement(delay = 42L.milliseconds) {
-                defaultConfig = config("a")
+                config("a")
                 config("b")
             }
 
