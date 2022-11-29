@@ -9,8 +9,14 @@ import kotlin.contracts.contract
 
 // region MOVABLE ELEMENTS
 
+/** Defines how movable elements are initialized */
+enum class MovableElementInitPolicy {
+    OPTIMISTIC,
+    PESSIMISTIC,
+}
+
 interface MovableElementSim {
-    fun watchMovableElement(movable: MovableElementId): StateFlow<MovableElementConfigId>
+    fun watchMovableElement(movable: MovableElementId): StateFlow<MovableElementConfigId?>
     suspend fun move(movable: MovableElementId, config: MovableElementConfigId)
     suspend fun lockMovableElement(movable: MovableElementId)
     suspend fun unlockMovableElement(movable: MovableElementId)

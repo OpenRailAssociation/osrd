@@ -39,7 +39,7 @@ class TestReservation {
         // region build the test infrastructure
         val builder = SimInfraBuilder()
         val switch = builder.movableElement(delay = 42L.milliseconds) {
-            defaultConfig = config("a")
+            config("a")
             config("b")
         }
 
