@@ -93,7 +93,7 @@ const defineChart = (svgWidth, svgHeight, defineX, defineY, ref, rotate, keyValu
     svg,
     drawZone,
     originalScaleX,
-    originalScaleY
+    originalScaleY,
   };
 };
 
