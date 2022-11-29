@@ -5,10 +5,7 @@ import static fr.sncf.osrd.infra.api.Direction.FORWARD;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.RangeMap;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.Network;
 import com.google.common.graph.NetworkBuilder;
@@ -79,29 +76,40 @@ public class InfraHelpers {
     *    3       3
      */
     public static TrackInfra makeSwitchInfra() {
-        var builder = NetworkBuilder
-                .directed()
-                .<TrackNode, TrackEdge>immutable();
-
         final var nodeIn1 = new SwitchPortImpl("1", "switchID");
         final var nodeIn2 = new SwitchPortImpl("2", "switchID");
         final var nodeIn3 = new SwitchPortImpl("3", "switchID");
+        final var branch12 = new SwitchBranchImpl("1", "2");
+        final var branch31 = new SwitchBranchImpl("3", "1");
         final var nodeOut1 = new TrackNodeImpl.Joint("1-out");
         final var nodeOut2 = new TrackNodeImpl.Joint("2-out");
         final var nodeOut3 = new TrackNodeImpl.Joint("3-out");
-        builder.addNode(nodeIn1);
-        builder.addNode(nodeIn2);
-        builder.addNode(nodeIn3);
-        builder.addNode(nodeOut1);
-        builder.addNode(nodeOut2);
-        builder.addNode(nodeOut3);
-        builder.addEdge(nodeIn1, nodeOut1, new TrackSectionImpl(0, "1"));
-        builder.addEdge(nodeIn2, nodeOut2, new TrackSectionImpl(0, "2"));
-        builder.addEdge(nodeIn3, nodeOut3, new TrackSectionImpl(0, "3"));
-        builder.addEdge(nodeIn1, nodeIn2, new SwitchBranchImpl("1", "2"));
-        builder.addEdge(nodeIn3, nodeIn1, new SwitchBranchImpl("3", "1"));
 
-        return TrackInfraImpl.from(null, builder.build());
+        final var switchNet = NetworkBuilder
+                .directed()
+                .<SwitchPort, SwitchBranch>immutable();
+        switchNet.addEdge(nodeIn1, nodeIn2, branch12);
+        switchNet.addEdge(nodeIn3, nodeIn1, branch31);
+        final var switchGroups = ImmutableMultimap.<String, SwitchBranch>builder();
+        switchGroups.put("left", branch12);
+        switchGroups.put("right", branch31);
+        final var ports = ImmutableMap.<String, SwitchPort>builder();
+        ports.put(nodeIn1.getID(), nodeIn1);
+        ports.put(nodeIn2.getID(), nodeIn2);
+        ports.put(nodeIn3.getID(), nodeIn3);
+        final var switchA = new SwitchImpl("a", switchNet.build(), switchGroups.build(), 42, ports.build());
+
+        var trackNet = NetworkBuilder
+                .directed()
+                .<TrackNode, TrackEdge>immutable();
+        trackNet.addEdge(nodeIn1, nodeOut1, new TrackSectionImpl(0, "1"));
+        trackNet.addEdge(nodeIn2, nodeOut2, new TrackSectionImpl(0, "2"));
+        trackNet.addEdge(nodeIn3, nodeOut3, new TrackSectionImpl(0, "3"));
+        trackNet.addEdge(nodeIn1, nodeIn2, branch12);
+        trackNet.addEdge(nodeIn3, nodeIn1, branch31);
+
+        var switches = ImmutableMap.<String, Switch>of(switchA.getID(), switchA);
+        return TrackInfraImpl.from(switches, trackNet.build());
     }
 
     /** Get the value in the map, throw if absent */

@@ -1,5 +1,6 @@
 package fr.sncf.osrd.infra.api.reservation;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.graph.ImmutableNetwork;
@@ -14,6 +15,8 @@ public interface ReservationInfra extends TrackInfra, DiTrackInfra {
 
     /** Returns a map from detector directions to their next detection section */
     ImmutableMap<DiDetector, DetectionSection> getSectionMap();
+
+    ImmutableList<DetectionSection> getDetectionSections();
 
     /** Returns the detection routes infrastructure graph */
     ImmutableNetwork<DiDetector, ReservationRoute> getInfraRouteGraph();
