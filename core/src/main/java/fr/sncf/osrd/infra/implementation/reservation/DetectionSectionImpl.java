@@ -5,16 +5,24 @@ import com.google.common.collect.ImmutableSet;
 import fr.sncf.osrd.infra.api.reservation.DetectionSection;
 import fr.sncf.osrd.infra.api.reservation.DiDetector;
 import fr.sncf.osrd.infra.api.reservation.ReservationRoute;
+import fr.sncf.osrd.infra.api.tracks.undirected.Switch;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 
 public class DetectionSectionImpl implements DetectionSection {
+    private final ImmutableSet<Switch> switches;
 
     private final ImmutableSet<DiDetector> detectors;
     private ImmutableSet<ReservationRoute> routes;
 
     /** Constructor */
-    public DetectionSectionImpl(ImmutableSet<DiDetector> detectors) {
+    public DetectionSectionImpl(ImmutableSet<Switch> switches, ImmutableSet<DiDetector> detectors) {
+        this.switches = switches;
         this.detectors = detectors;
+    }
+
+    @Override
+    public ImmutableSet<Switch> getSwitches() {
+        return switches;
     }
 
     @Override
