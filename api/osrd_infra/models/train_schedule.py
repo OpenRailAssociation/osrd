@@ -1,6 +1,7 @@
 from django.contrib.gis.db import models
 
 from osrd_infra.models import PathModel, RollingStock, Timetable
+from osrd_infra.schemas.rolling_stock import ComfortType
 from osrd_infra.schemas.train_schedule import MRSP, Allowances, TrainScheduleLabels
 from osrd_infra.utils import PydanticValidator
 
@@ -18,3 +19,6 @@ class TrainScheduleModel(models.Model):
     base_simulation = models.JSONField()
     eco_simulation = models.JSONField(null=True)
     speed_limit_composition = models.CharField(max_length=128, null=True)
+    comfort = models.CharField(
+        max_length=8, choices=[(x.value, x.name) for x in ComfortType], default=ComfortType.STANDARD
+    )

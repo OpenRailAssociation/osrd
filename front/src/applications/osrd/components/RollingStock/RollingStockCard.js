@@ -1,240 +1,165 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { useTranslation } from 'react-i18next';
-import { updateRollingStockID } from 'reducers/osrdconf';
-import { useDispatch } from 'react-redux';
-import ProgressSNCF from 'common/BootstrapSNCF/ProgressSNCF';
-import RollingStockCurve from 'applications/osrd/components/RollingStock/RollingStockCurve';
 import { BsLightningFill } from 'react-icons/bs';
 import { MdLocalGasStation } from 'react-icons/md';
 import { IoIosSpeedometer } from 'react-icons/io';
 import { FaWeightHanging } from 'react-icons/fa';
 import { AiOutlineColumnWidth } from 'react-icons/ai';
-import { powerClasses } from 'applications/osrd/components/RollingStock/consts';
+import RollingStockCardDetail from './RollingStockCardDetail';
+import RollingStock2Img from './RollingStock2Img';
+import { RollingStockInfos } from './RollingStockHelpers';
+import RollingStockCardButtons from './RollingStockCardButtons';
 
 export default function RollingStockCard(props) {
-  const dispatch = useDispatch();
-  const [detailDisplay, setDetailDisplay] = useState(false);
-  const { data } = props;
-  const { t } = useTranslation(['rollingstock']);
+  const [tractionModes, setTractionModes] = useState({
+    electric: false,
+    thermal: false,
+    voltages: [],
+  });
+  const [curvesComfortList, setCurvesComfortList] = useState();
+  const { data, openedRollingStockCardId, ref2scroll, setOpenedRollingStockCardId } = props;
+  const ref2scrollWhenOpened = useRef();
 
-  const dummyTractionValues = ['NA', 'D'];
-  let modetraction;
-
-  const toggleDetailDisplay = () => {
-    setDetailDisplay(!detailDisplay);
-  };
-
-  switch (data.modetraction) {
-    case 'E':
-    case 'Bicourant':
-    case 'Tricourant':
-    case 'Quadricourant':
-      modetraction = (
-        <>
-          <span className="text-primary">
-            <BsLightningFill />
-          </span>
-          {data.tensionutilisation}
-        </>
-      );
-      break;
-    case 'D':
-      modetraction = (
-        <span className="text-pink">
-          <MdLocalGasStation />
-        </span>
-      );
-      break;
-    case 'BiBi':
-    case 'Bimode':
-      modetraction = (
-        <>
-          <span className="text-pink">
-            <MdLocalGasStation />
-          </span>
-          <span className="text-primary">
-            <BsLightningFill />
-          </span>
-          {dummyTractionValues.includes(data.tensionutilisation) ? '' : data.tensionutilisation}
-        </>
-      );
-      break;
-    default:
-      modetraction = data.modetraction;
-      break;
+  function displayCardDetail() {
+    if (openedRollingStockCardId !== data.id) {
+      setOpenedRollingStockCardId(data.id);
+      setTimeout(() => ref2scrollWhenOpened.current?.scrollIntoView({ behavior: 'smooth' }), 500);
+    }
   }
+
+  useEffect(() => {
+    if (typeof data.effort_curves.modes === 'object') {
+      const localVoltages = {};
+      const localModes = {};
+      Object.keys(data.effort_curves.modes).forEach((modeName) => {
+        if (data.effort_curves.modes[modeName].is_electric) {
+          localModes.electric = true;
+          localVoltages[modeName] = true;
+        } else {
+          localModes.thermal = true;
+        }
+      });
+      setTractionModes({ ...localModes, voltages: Object.keys(localVoltages) });
+    }
+    // Has to be run only once
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div
-      className="rollingstock-container mb-3"
+      className={`rollingstock-container mb-3 ${
+        openedRollingStockCardId === data.id ? 'active' : ''
+      } ${
+        openedRollingStockCardId !== data.id && openedRollingStockCardId !== undefined
+          ? 'inactive'
+          : ''
+      }`}
       role="button"
-      onClick={toggleDetailDisplay}
+      onClick={displayCardDetail}
       tabIndex={0}
+      ref={ref2scroll}
     >
-      <div className="rollingstock-header">
+      <div
+        className="rollingstock-header"
+        onClick={() =>
+          openedRollingStockCardId === data.id ? setOpenedRollingStockCardId(undefined) : {}
+        }
+        role="button"
+        tabIndex={0}
+        ref={openedRollingStockCardId === data.id ? ref2scrollWhenOpened : undefined}
+      >
         <div className="rollingstock-title">
-          <div>{data.name}</div>
-          <div>
+          <RollingStockInfos data={data} />
+          <div className="sr-only">
             <small className="text-primary mr-1">ID</small>
             <span className="font-weight-lighter small">{data.id}</span>
           </div>
         </div>
       </div>
-      {detailDisplay ? (
-        <div className="rollingstock-body">
-          <div className="row pt-2">
-            <div className="col-sm-6">
-              <table className="rollingstock-details-table">
-                <tbody>
-                  <tr>
-                    <td className="text-primary">{t('startupTime')}</td>
-                    <td>
-                      {data.startup_time}
-                      <span className="small text-muted ml-1">s</span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="text-primary">{t('startupAcceleration')}</td>
-                    <td>
-                      {data.startup_acceleration}
-                      <span className="small text-muted ml-1">m/s²</span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="text-primary">{t('comfortAcceleration')}</td>
-                    <td>
-                      {data.comfort_acceleration}
-                      <span className="small text-muted ml-1">m/s²</span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="text-primary">{t('intertiaCoefficient')}</td>
-                    <td>{data.inertia_coefficient}</td>
-                  </tr>
-                  <tr>
-                    <td className="text-primary">{t('timetableGamma')}</td>
-                    <td>
-                      {data.gamma.value * -1}
-                      <span className="small text-muted ml-1">m/s²</span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="text-primary">{t('electricOnly')}</td>
-                    <td>{data.electric_only === true ? t('yes') : t('no')}</td>
-                  </tr>
-                  <tr>
-                    <td className="text-primary">{t('compatibleVoltages')}</td>
-                    {data.compatible_voltages.length > 0 ? (
-                      <td>
-                        {data.compatible_voltages.join(' / ')}
-                        <span className="small text-muted ml-1">V</span>
-                      </td>
-                    ) : (
-                      t('noCompatibleVoltages')
-                    )}
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div className="col-sm-6">
-              {data.power_class && data.power_class < 7 ? (
-                <>
-                  <div>
-                    <small className="mr-1 text-primary">{t('powerClass')}</small>
-                    {data.power_class}
-                    <span>: </span>
-                    {powerClasses[data.power_class].a}
-                    <span>A / </span>
-                    {powerClasses[data.power_class].kw}
-                    <small>kW</small>
-                  </div>
-                  <ProgressSNCF value={Math.floor(data.power_class * 16.67)} small />
-                </>
-              ) : null}
-              {data.features && data.features.length > 0 ? (
-                <div>
-                  {t('features')}
-                  <span className="ml-1">{data.features.join(', ')}</span>
-                </div>
-              ) : null}
-              <div className="pt-1">
-                {t('rollingResistance')}
-                <div className="text-muted small">{t('rollingResistanceFormula')}</div>
-              </div>
-              <table className="rollingstock-details-table ml-2">
-                <tbody>
-                  <tr>
-                    <td className="text-primary">a</td>
-                    <td>
-                      {Math.floor(data.rolling_resistance.A * 10000) / 10000}
-                      <span className="small ml-1 text-muted">N</span>
-                    </td>
-                    <td className="text-primary">{t('rollingResistanceA')}</td>
-                  </tr>
-                  <tr>
-                    <td className="text-primary">b</td>
-                    <td>
-                      {Math.floor(data.rolling_resistance.B * 10000) / 10000}
-                      <span className="small ml-1 text-muted">N/(m/s)</span>
-                    </td>
-                    <td className="text-primary">{t('rollingResistanceB')}</td>
-                  </tr>
-                  <tr>
-                    <td className="text-primary">c</td>
-                    <td>
-                      {Math.floor(data.rolling_resistance.C * 10000) / 10000}
-                      <span className="small ml-1 text-muted">N/(m/s²)</span>
-                    </td>
-                    <td className="text-primary">{t('rollingResistanceC')}</td>
-                  </tr>
-                </tbody>
-              </table>
+      {openedRollingStockCardId === data.id ? (
+        <RollingStockCardDetail
+          id={data.id}
+          curvesComfortList={curvesComfortList}
+          setCurvesComfortList={setCurvesComfortList}
+        />
+      ) : (
+        <div className="rollingstock-body-container-img">
+          <div className="rollingstock-body-img">
+            <div className="rollingstock-img">
+              <RollingStock2Img name={data.name} />
             </div>
           </div>
+        </div>
+      )}
+      <div className="rollingstock-footer">
+        <div className="rollingstock-footer-specs">
           <div className="row">
-            <div className="col-md-12">
-              <div className="curve-container">
-                <RollingStockCurve data={data.effort_curve} />
+            <div className="col-5">
+              <div className="rollingstock-tractionmode text-nowrap">
+                {tractionModes.thermal ? (
+                  <span className="text-pink">
+                    <MdLocalGasStation />
+                  </span>
+                ) : null}
+                {tractionModes.electric ? (
+                  <>
+                    <span className="text-primary">
+                      <BsLightningFill />
+                    </span>
+                    <small>
+                      {tractionModes.voltages.map((voltage) => (
+                        <span className="mr-1" key={`${voltage}${data.id}`}>
+                          {voltage}V
+                        </span>
+                      ))}
+                    </small>
+                  </>
+                ) : null}
+              </div>
+            </div>
+            <div className="col-2">
+              <div className="rollingstock-size text-nowrap">
+                <AiOutlineColumnWidth />
+                {data.length}
+                <small>M</small>
+              </div>
+            </div>
+            <div className="col-2">
+              <div className="rollingstock-weight text-nowrap">
+                <FaWeightHanging />
+                {Math.round(data.mass / 1000)}
+                <small>T</small>
+              </div>
+            </div>
+            <div className="col-3">
+              <div className="rollingstock-speed text-nowrap">
+                <IoIosSpeedometer />
+                {Math.round(data.max_speed * 3.6)}
+                <small>KM/H</small>
               </div>
             </div>
           </div>
         </div>
-      ) : null}
-      <div className="rollingstock-footer py-2">
-        <div className="rollingstock-tractionmode" style={{ display: 'none' }}>
-          {modetraction}
-        </div>
-        <div className="rollingstock-size">
-          <AiOutlineColumnWidth />
-          {data.length}
-          <small>M</small>
-        </div>
-        <div className="rollingstock-weight">
-          <FaWeightHanging />
-          {Math.round(data.mass / 1000)}
-          <small>T</small>
-        </div>
-        <div className="rollingstock-speed">
-          <IoIosSpeedometer />
-          {Math.round(data.max_speed * 3.6)}
-          <small>KM/H</small>
-        </div>
-        {detailDisplay ? (
-          <button
-            className="btn btn-primary btn-sm"
-            type="button"
-            data-dismiss="modal"
-            onClick={() => dispatch(updateRollingStockID(data.id))}
-          >
-            {t('selectRollingStock')}
-          </button>
+        {openedRollingStockCardId === data.id && curvesComfortList ? (
+          <RollingStockCardButtons
+            id={data.id}
+            curvesComfortList={curvesComfortList}
+            setOpenedRollingStockCardId={setOpenedRollingStockCardId}
+          />
         ) : null}
       </div>
     </div>
   );
 }
 
+RollingStockCard.defaultProps = {
+  openedRollingStockCardId: undefined,
+  ref2scroll: undefined,
+};
+
 RollingStockCard.propTypes = {
   data: PropTypes.object.isRequired,
+  openedRollingStockCardId: PropTypes.number,
+  setOpenedRollingStockCardId: PropTypes.func.isRequired,
+  ref2scroll: PropTypes.object,
 };

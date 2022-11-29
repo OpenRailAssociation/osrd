@@ -6,8 +6,6 @@ import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 
-import java.util.Set;
-
 public class RJSRollingStock implements Identified {
     public static final JsonAdapter<RJSRollingStock> adapter = new Moshi
             .Builder()
@@ -15,16 +13,13 @@ public class RJSRollingStock implements Identified {
             .build()
             .adapter(RJSRollingStock.class);
 
-    public static final transient String CURRENT_VERSION = "2.2";
 
-    /**
-     * The version of the rolling stock format used
-     */
+    public static final transient String CURRENT_VERSION = "3.0";
+
+    /** The version of the rolling stock format used */
     public String version = null;
 
-    /**
-     * A unique train identifier
-     */
+    /** A unique train identifier */
     public String name = null;
 
     /**
@@ -34,17 +29,13 @@ public class RJSRollingStock implements Identified {
      * https://en.wikipedia.org/wiki/Tractive_force#Tractive_effort_curves</p>
      * This match the default effort curve to take
      */
-    @Json(name = "effort_curve")
-    public RJSEffortCurve effortCurve;
+    @Json(name = "effort_curves")
+    public RJSEffortCurves effortCurves;
 
-    /**
-     * the length of the train, in meters.
-     */
+    /** the length of the train, in meters. */
     public double length = Double.NaN;
 
-    /**
-     * The max speed of the train, in meters per seconds.
-     */
+    /** The max speed of the train, in meters per seconds. */
     @Json(name = "max_speed")
     public double maxSpeed = Double.NaN;
 
@@ -55,21 +46,15 @@ public class RJSRollingStock implements Identified {
     @Json(name = "startup_time")
     public double startUpTime = Double.NaN;
 
-    /**
-     * The acceleration to apply during the startup state.
-     */
+    /** The acceleration to apply during the startup state. */
     @Json(name = "startup_acceleration")
     public double startUpAcceleration = Double.NaN;
 
-    /**
-     * The maximum acceleration when the train is in its regular operating mode.
-     */
+    /** The maximum acceleration when the train is in its regular operating mode. */
     @Json(name = "comfort_acceleration")
     public double comfortAcceleration = Double.NaN;
 
-    /**
-     * The braking deceleration coefficient can be the max or constant (depends on type field).
-     */
+    /** The braking deceleration coefficient can be the max or constant (depends on type field). */
     public RJSGamma gamma = null;
 
 
@@ -82,17 +67,10 @@ public class RJSRollingStock implements Identified {
     @Json(name = "inertia_coefficient")
     public double inertiaCoefficient = Double.NaN;
 
-    @Json(name = "power_class")
-    public int powerClass = -1;
+    /** The list of equipments (protection systems, signaling equipment) the train is able to deal with */
+    public String[] features = new String[0];
 
-    /**
-     * The list of equipments (protection systems, signaling equipment) the train is able to deal with
-     */
-    public RJSTrainFeature[] features = new RJSTrainFeature[0];
-
-    /**
-     * The mass of the train
-     */
+    /** The mass of the train */
     public double mass = Double.NaN;
 
     @Json(name = "rolling_resistance")
@@ -101,22 +79,9 @@ public class RJSRollingStock implements Identified {
     @Json(name = "loading_gauge")
     public RJSLoadingGaugeType loadingGauge = null;
 
-    @Json(name = "compatible_voltages")
-    public Set<Integer> compatibleVoltages;
-
-    @Json(name = "electric_only")
-    public boolean electricOnly;
-
     public enum GammaType {
         CONST,
         MAX
-    }
-
-    @SuppressFBWarnings("UWF_NULL_FIELD")
-    public static final class RJSEffortCurve {
-        public double[] speeds = null;
-        @Json(name = "max_efforts")
-        public double[] maxEfforts = null;
     }
 
     @SuppressFBWarnings("UWF_NULL_FIELD")

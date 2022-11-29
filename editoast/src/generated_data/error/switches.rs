@@ -142,9 +142,13 @@ mod tests {
     use crate::infra_cache::tests::{
         create_small_infra_cache, create_switch_cache_point, create_track_endpoint,
     };
-    use crate::schema::{Endpoint, ObjectRef, ObjectType};
+    use crate::schema::{Endpoint, ObjectRef, ObjectType, TrackEndpoint};
+    use std::collections::HashMap;
 
-    use super::generate_errors;
+    use super::check_another_switch;
+    use super::check_invalid_ref_ports;
+    use super::check_invalid_ref_switch_type;
+    use super::check_match_ports_type;
     use super::InfraError;
 
     #[test]
@@ -158,7 +162,7 @@ mod tests {
             "point".into(),
         );
         infra_cache.add(switch.clone());
-        let errors = generate_errors(&infra_cache);
+        let errors = check_invalid_ref_ports(&infra_cache, &switch);
         assert_eq!(1, errors.len());
         let obj_ref = ObjectRef::new(ObjectType::TrackSection, "E");
         let infra_error = InfraError::new_invalid_reference(&switch, "ports.BASE.track", obj_ref);
@@ -176,7 +180,7 @@ mod tests {
             "non_existing_switch_type".into(),
         );
         infra_cache.add(switch.clone());
-        let errors = generate_errors(&infra_cache);
+        let errors = check_invalid_ref_switch_type(&infra_cache, &switch);
         assert_eq!(1, errors.len());
         let obj_ref = ObjectRef::new(ObjectType::SwitchType, "non_existing_switch_type");
         let infra_error = InfraError::new_invalid_reference(&switch, "switch_type", obj_ref);
@@ -194,7 +198,7 @@ mod tests {
             "point".into(),
         );
         infra_cache.add(switch.clone());
-        let errors = generate_errors(&infra_cache);
+        let errors = check_match_ports_type(&infra_cache, &switch);
         assert_eq!(1, errors.len());
         let infra_error = InfraError::new_invalid_switch_ports(&switch, "ports");
         assert_eq!(infra_error, errors[0]);
@@ -203,14 +207,24 @@ mod tests {
     #[test]
     fn overlapping_switches() {
         let mut infra_cache = create_small_infra_cache();
-        infra_cache.add(create_switch_cache_point(
+        let mut switch_cache = HashMap::<&TrackEndpoint, ObjectRef>::new();
+        let switch = create_switch_cache_point(
             "SW_error".into(),
             ("BASE", create_track_endpoint(Endpoint::End, "B")),
             ("LEFT", create_track_endpoint(Endpoint::Begin, "C")),
             ("RIGHT", create_track_endpoint(Endpoint::Begin, "D")),
             "point".into(),
-        ));
-        let errors = generate_errors(&infra_cache);
+        );
+        infra_cache.add(switch.clone());
+
+        let switch_ref = ObjectRef {
+            obj_type: ObjectType::Switch,
+            obj_id: switch.obj_id.clone(),
+        };
+        for port in switch.ports.values() {
+            switch_cache.insert(port, switch_ref.clone());
+        }
+        let errors = check_another_switch(&switch_cache, &switch);
         assert_eq!(1, errors.len());
     }
 }

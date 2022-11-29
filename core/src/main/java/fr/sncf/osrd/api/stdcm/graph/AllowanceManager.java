@@ -45,6 +45,8 @@ public class AllowanceManager {
         if (newPreviousEdge == null)
             return null; // The new edges are invalid, conflicts shouldn't happen here but it can be too slow
         var newPreviousNode = newPreviousEdge.getEdgeEnd(graph);
+        if (newPreviousNode == null)
+            return null;
         return STDCMEdgeBuilder.fromNode(graph, newPreviousNode, oldEdge.route())
                 .findEdgeSameNextOccupancy(oldEdge.timeNextOccupancy());
     }
@@ -93,7 +95,9 @@ public class AllowanceManager {
         var ranges = List.of(
                 new AllowanceRange(0, oldEnvelope.getEndPos(), new AllowanceValue.FixedTime(neededDelay))
         );
-        var allowance = new MarecoAllowance(context, 0, oldEnvelope.getEndPos(), 0, ranges);
+        var capacitySpeedLimit = 1; // We set a minimum because generating curves at very low speed can cause issues
+        // TODO: add a parameter and set a higher default value once we can handle proper stops
+        var allowance = new MarecoAllowance(context, 0, oldEnvelope.getEndPos(), capacitySpeedLimit, ranges);
         try {
             return allowance.apply(oldEnvelope);
         } catch (AllowanceConvergenceException e) {
@@ -107,7 +111,7 @@ public class AllowanceManager {
         var firstOffset = edges.get(0).route().getInfraRoute().getLength() - edges.get(0).envelope().getEndPos();
         for (var edge : edges)
             routes.add(edge.route());
-        return STDCMUtils.makeSimContext(routes, firstOffset, graph.rollingStock, graph.timeStep);
+        return STDCMUtils.makeSimContext(routes, firstOffset, graph.rollingStock, graph.comfort, graph.timeStep);
     }
 
     /** Find on which edges to run the allowance */

@@ -1,15 +1,13 @@
-import { AnyAction, Dispatch } from 'redux';
 import produce from 'immer';
+import { AnyAction, Dispatch } from 'redux';
 
 import {
-  OsrdConfState,
   DEFAULT_MODE,
-  DEFAULT_STDCM_MODE,
-  PointOnMap,
+  DEFAULT_STDCM_MODE, OsrdConfState, PointOnMap
 } from 'applications/osrd/consts';
 import { formatIsoDate } from 'utils/date';
 import { boundedValue } from 'utils/numbers';
-import { time2sec, sec2time } from 'utils/timeManipulation';
+import { sec2time, time2sec } from 'utils/timeManipulation';
 
 import { getSwitchTypes } from 'applications/editor/data/api';
 /* eslint-disable default-case */
@@ -24,6 +22,7 @@ export const UPDATE_SWITCH_TYPES = 'osrdconf/UPDATE_SWITCH_TYPES';
 export const UPDATE_PATHFINDING_ID = 'osrdconf/UPDATE_PATHFINDING_ID';
 export const UPDATE_TIMETABLE_ID = 'osrdconf/UPDATE_TIMETABLE_ID';
 export const UPDATE_ROLLINGSTOCK_ID = 'osrdconf/UPDATE_ROLLINGSTOCK_ID';
+export const UPDATE_ROLLINGSTOCK_COMFORT = 'osrdconf/UPDATE_ROLLINGSTOCK_COMFORT';
 export const UPDATE_SPEED_LIMIT_BY_TAG = 'osrdconf/UPDATE_SPEED_LIMIT_BY_TAG';
 export const UPDATE_ORIGIN = 'osrdconf/UPDATE_ORIGIN';
 export const UPDATE_ORIGIN_SPEED = 'osrdconf/UPDATE_ORIGIN_SPEED';
@@ -57,6 +56,7 @@ export const initialState: OsrdConfState = {
   pathfindingID: undefined,
   timetableID: undefined,
   rollingStockID: undefined,
+  rollingStockComfort: 'STANDARD',
   speedLimitByTag: undefined,
   origin: undefined,
   originSpeed: 0,
@@ -75,7 +75,7 @@ export const initialState: OsrdConfState = {
   featureInfoClick: { displayPopup: false },
 };
 
-const ORIGIN_TIME_BOUND_DIFFERENCE = 7200;
+const ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE = 7200;
 const MAX_UPPER_BOUND_TIME = 24 * 3600 - 1;
 
 export default function reducer(inputState: OsrdConfState | undefined, action: AnyAction) {
@@ -109,6 +109,9 @@ export default function reducer(inputState: OsrdConfState | undefined, action: A
       case UPDATE_ROLLINGSTOCK_ID:
         draft.rollingStockID = action.rollingStockID;
         break;
+      case UPDATE_ROLLINGSTOCK_COMFORT:
+        draft.rollingStockComfort = action.rollingStockComfort;
+        break;
       case UPDATE_SPEED_LIMIT_BY_TAG:
         draft.speedLimitByTag = action.speedLimitByTag;
         break;
@@ -121,27 +124,39 @@ export default function reducer(inputState: OsrdConfState | undefined, action: A
       case UPDATE_ORIGIN_TIME: {
         const newOriginTimeSeconds = time2sec(action.originTime);
         if (draft.originLinkedBounds) {
-          draft.originUpperBoundTime = sec2time(
-            boundedValue(newOriginTimeSeconds + ORIGIN_TIME_BOUND_DIFFERENCE, [
-              0,
-              MAX_UPPER_BOUND_TIME,
-            ])
-          );
+          const difference =
+            draft.originTime && draft.originUpperBoundTime
+              ? time2sec(draft.originUpperBoundTime) - time2sec(draft.originTime)
+              : ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE;
+          draft.originUpperBoundTime = sec2time(newOriginTimeSeconds + difference);
         }
-        draft.originTime = action.originTime;
+        if (
+          draft.originUpperBoundTime &&
+          time2sec(action.originTime) > time2sec(draft.originUpperBoundTime)
+        ) {
+          draft.originTime = draft.originUpperBoundTime;
+        } else {
+          draft.originTime = action.originTime;
+        }
         break;
       }
       case UPDATE_ORIGIN_UPPER_BOUND_TIME: {
         const newOriginUpperBoundTimeSeconds = time2sec(action.originUpperBoundTime);
         if (draft.originLinkedBounds) {
-          draft.originTime = sec2time(
-            boundedValue(newOriginUpperBoundTimeSeconds - ORIGIN_TIME_BOUND_DIFFERENCE, [
-              0,
-              MAX_UPPER_BOUND_TIME,
-            ])
-          );
+          const difference =
+            draft.originTime && draft.originUpperBoundTime
+              ? time2sec(draft.originUpperBoundTime) - time2sec(draft.originTime)
+              : ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE;
+          draft.originTime = sec2time(newOriginUpperBoundTimeSeconds - difference);
         }
-        draft.originUpperBoundTime = action.originUpperBoundTime;
+        if (
+          draft.originTime &&
+          time2sec(action.originUpperBoundTime) < time2sec(draft.originTime)
+        ) {
+          draft.originUpperBoundTime = draft.originTime;
+        } else {
+          draft.originUpperBoundTime = action.originUpperBoundTime;
+        }
         break;
       }
       case TOGGLE_ORIGIN_LINKED_BOUNDS:
@@ -274,11 +289,19 @@ export function updateTimetableID(timetableID: any) {
     });
   };
 }
-export function updateRollingStockID(rollingStockID: any) {
+export function updateRollingStockID(rollingStockID: number) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_ROLLINGSTOCK_ID,
       rollingStockID,
+    });
+  };
+}
+export function updateRollingStockComfort(rollingStockComfort: string) {
+  return (dispatch: Dispatch) => {
+    dispatch({
+      type: UPDATE_ROLLINGSTOCK_COMFORT,
+      rollingStockComfort,
     });
   };
 }
@@ -451,8 +474,8 @@ export function deleteItinerary() {
 }
 
 // Give this function a whole OSRDConf state:
-export function bootstrapOSRDConf(conf: any) {
+export function bootstrapOSRDConf(infraID: number) {
   return (dispatch: Dispatch) => {
-    dispatch(updateInfraID(conf.infraID));
+    dispatch(updateInfraID(infraID));
   };
 }

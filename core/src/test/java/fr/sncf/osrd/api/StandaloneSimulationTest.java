@@ -70,7 +70,7 @@ class StandaloneSimulationTest extends ApiTest {
         var trainSchedules = new ArrayList<RJSStandaloneTrainSchedule>();
         trainSchedules.add(new RJSStandaloneTrainSchedule("Test.", "fast_rolling_stock", 0,
                 new RJSAllowance[0],
-                new RJSTrainStop[] { RJSTrainStop.lastStop(0.1) }, Set.of()));
+                new RJSTrainStop[] { RJSTrainStop.lastStop(0.1) }, null));
         var query = new StandaloneSimulationRequest(
                 "tiny_infra/infra.json",
                 "1",
@@ -109,7 +109,7 @@ class StandaloneSimulationTest extends ApiTest {
             var trainID = String.format("Test.%d", i);
             trainSchedules.add(new RJSStandaloneTrainSchedule(trainID, "fast_rolling_stock", 0,
                     new RJSAllowance[0],
-                    new RJSTrainStop[]{ RJSTrainStop.lastStop(0.1) }, Set.of()));
+                    new RJSTrainStop[]{ RJSTrainStop.lastStop(0.1) }, null));
         }
 
         var query = new StandaloneSimulationRequest(
@@ -144,9 +144,9 @@ class StandaloneSimulationTest extends ApiTest {
         };
         var trains = new ArrayList<RJSStandaloneTrainSchedule>();
         trains.add(new RJSStandaloneTrainSchedule("no_stops", "fast_rolling_stock",
-                0, null, noStops, Set.of()));
+                0, null, noStops, null));
         trains.add(new RJSStandaloneTrainSchedule("stops", "fast_rolling_stock",
-                0, null, stops, Set.of()));
+                0, null, stops, null));
 
         var query = new StandaloneSimulationRequest(
                 "tiny_infra/infra.json",
@@ -180,9 +180,9 @@ class StandaloneSimulationTest extends ApiTest {
         };
         var trains = new ArrayList<RJSStandaloneTrainSchedule>();
         trains.add(new RJSStandaloneTrainSchedule("no_allowance", "fast_rolling_stock",
-                0, null, stops, Set.of()));
+                0, null, stops, null));
         trains.add(new RJSStandaloneTrainSchedule("allowance", "fast_rolling_stock",
-                0, allowance, stops, Set.of()));
+                0, allowance, stops, null));
 
         var query = new StandaloneSimulationRequest(
                 "tiny_infra/infra.json",
@@ -228,9 +228,9 @@ class StandaloneSimulationTest extends ApiTest {
         };
         var trains = new ArrayList<RJSStandaloneTrainSchedule>();
         trains.add(new RJSStandaloneTrainSchedule("no_allowance", "fast_rolling_stock",
-                0, null, stops, Set.of()));
+                0, null, stops, null));
         trains.add(new RJSStandaloneTrainSchedule("allowance", "fast_rolling_stock",
-                0, allowance, stops, Set.of()));
+                0, allowance, stops, null));
 
         var query = new StandaloneSimulationRequest(
                 "tiny_infra/infra.json",
@@ -268,9 +268,9 @@ class StandaloneSimulationTest extends ApiTest {
         };
         var trains = new ArrayList<RJSStandaloneTrainSchedule>();
         trains.add(new RJSStandaloneTrainSchedule("no_allowance", "fast_rolling_stock",
-                0, null, stops, Set.of()));
+                0, null, stops, null));
         trains.add(new RJSStandaloneTrainSchedule("allowance", "fast_rolling_stock",
-                0, allowance, stops, Set.of()));
+                0, allowance, stops, null));
 
         var query = new StandaloneSimulationRequest(
                 "tiny_infra/infra.json",
@@ -304,9 +304,9 @@ class StandaloneSimulationTest extends ApiTest {
         };
         var trains = new ArrayList<RJSStandaloneTrainSchedule>();
         trains.add(new RJSStandaloneTrainSchedule("no_allowance", "fast_rolling_stock",
-                0, null, stops, Set.of()));
+                0, null, stops, null));
         trains.add(new RJSStandaloneTrainSchedule("allowance", "fast_rolling_stock",
-                0, allowance, stops, Set.of()));
+                0, allowance, stops, null));
 
         var query = new StandaloneSimulationRequest(
                 "tiny_infra/infra.json",
@@ -352,9 +352,9 @@ class StandaloneSimulationTest extends ApiTest {
         };
         var trains = new ArrayList<RJSStandaloneTrainSchedule>();
         trains.add(new RJSStandaloneTrainSchedule("no_allowance", "fast_rolling_stock",
-                0, null, stops, Set.of()));
+                0, null, stops, null));
         trains.add(new RJSStandaloneTrainSchedule("allowance", "fast_rolling_stock",
-                0, allowance, stops, Set.of()));
+                0, allowance, stops, null));
 
         var query = new StandaloneSimulationRequest(
                 "tiny_infra/infra.json",

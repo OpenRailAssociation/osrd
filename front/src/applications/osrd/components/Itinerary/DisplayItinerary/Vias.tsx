@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { getVias } from 'reducers/osrdconf/selectors';
 
 import DisplayVias from 'applications/osrd/components/Itinerary/DisplayVias';
+import { RootState } from 'reducers';
 
 interface ViasProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string, source?: string) => void;
@@ -17,6 +18,7 @@ function Vias(props: ViasProps) {
   const { zoomToFeaturePoint } = props;
   const vias = useSelector(getVias);
   const { t } = useTranslation(['osrdconf']);
+  const osrdconf = useSelector((state: RootState) => state.osrdconf);
 
   const viasTitle = (
     <h2 className="d-flex align-items-center mb-0 ml-4">
@@ -25,7 +27,7 @@ function Vias(props: ViasProps) {
       </span>
       <span>{t('osrdconf:vias')}</span>
       <button
-        className="btn btn-info btn-only-icon btn-sm ml-1"
+        className={`btn btn-info btn-only-icon btn-sm ml-1 ${osrdconf.geojson ? '' : 'disabled'}`}
         type="button"
         data-toggle="modal"
         data-target="#suggeredViasModal"

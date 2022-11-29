@@ -63,7 +63,7 @@ export default function createTrain(
         eco_speed: formatStepsWithTime(train.eco.speeds),
       };
     }
-    if (train.eco && train.eco.error) {
+    if (train.eco && train.eco.error && dispatch && t) {
       // Tbe removed, useless
       dispatch(
         setFailure({

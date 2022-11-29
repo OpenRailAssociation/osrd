@@ -5,7 +5,6 @@ import fr.sncf.osrd.envelope_sim.allowances.Allowance;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 public class StandaloneTrainSchedule {
     /** The identifier of the rolling stock for this train */
@@ -17,7 +16,9 @@ public class StandaloneTrainSchedule {
 
     public final List<? extends Allowance> allowances;
 
-    public final Collection<String> tags;
+    public final String tag;
+
+    public final RollingStock.Comfort comfort;
 
     /** Standalone Train Schedule constructor */
     public StandaloneTrainSchedule(
@@ -25,13 +26,15 @@ public class StandaloneTrainSchedule {
             double initialSpeed,
             List<TrainStop> stops,
             List<? extends Allowance> allowances,
-            Collection<String> tags
+            String tag,
+            RollingStock.Comfort comfort
     ) {
         this.rollingStock = rollingStock;
         this.initialSpeed = initialSpeed;
         this.stops = stops;
         this.allowances = allowances;
-        this.tags = tags;
+        this.tag = tag;
+        this.comfort = comfort;
     }
 
     @Override

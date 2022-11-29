@@ -106,6 +106,7 @@ function Origin(props: OriginProps) {
         onClick={() => {
           dispatch(toggleOriginLinkedBounds());
         }}
+        title={t(originLinkedBounds ? 'osrdconf:BoundsAreLinked' : 'osrdconf:BoundsAreNotLinked')}
       >
         {originLinkedBounds ? <BiLink /> : <BiUnlink />}
         <span className="sr-only" aria-hidden="true">

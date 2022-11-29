@@ -31,6 +31,7 @@ public class STDCMPathfinding {
     public static STDCMResult findPath(
             SignalingInfra infra,
             RollingStock rollingStock,
+            RollingStock.Comfort comfort,
             double startTime,
             double endTime,
             Set<Pathfinding.EdgeLocation<SignalingRoute>> startLocations,
@@ -38,16 +39,19 @@ public class STDCMPathfinding {
             Multimap<SignalingRoute, OccupancyBlock> unavailableTimes,
             double timeStep,
             double maxDepartureDelay,
-            double maxRunTime
+            double maxRunTime,
+            String tag
     ) {
         var graph = new STDCMGraph(
                 infra,
                 rollingStock,
+                comfort,
                 timeStep,
                 unavailableTimes,
                 maxRunTime,
                 startTime,
-                endLocations
+                endLocations,
+                tag
         );
 
         // Initializes the constraints
@@ -62,7 +66,7 @@ public class STDCMPathfinding {
                 .setEdgeRangeCost(STDCMPathfinding::edgeRangeCost)
                 .runPathfinding(
                         convertLocations(graph, startLocations, startTime, maxDepartureDelay),
-                        makeObjectiveFunction(endLocations)
+                        makeObjectiveFunction(endLocations, graph)
                 );
         if (path == null)
             return null;
@@ -77,13 +81,17 @@ public class STDCMPathfinding {
 
     /** Make the objective function from the edge locations */
     private static List<TargetsOnEdge<STDCMEdge>> makeObjectiveFunction(
-            Set<Pathfinding.EdgeLocation<SignalingRoute>> endLocations
+            Set<Pathfinding.EdgeLocation<SignalingRoute>> endLocations,
+            STDCMGraph graph
     ) {
         return List.of(edge -> {
-            var res = new HashSet<Double>();
+            var res = new HashSet<Pathfinding.EdgeLocation<STDCMEdge>>();
+            edge = edge.finishBuildingEdge(graph);
+            if (edge == null)
+                return res;
             for (var loc : endLocations)
                 if (loc.edge().equals(edge.route()))
-                    res.add(loc.offset());
+                    res.add(new Pathfinding.EdgeLocation<>(edge, loc.offset()));
             return res;
         });
     }

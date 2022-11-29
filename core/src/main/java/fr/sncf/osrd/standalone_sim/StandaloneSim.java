@@ -16,6 +16,7 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSTrainPath;
 import fr.sncf.osrd.standalone_sim.result.ResultEnvelopePoint;
 import fr.sncf.osrd.standalone_sim.result.ResultTrain;
 import fr.sncf.osrd.standalone_sim.result.StandaloneSimResult;
+import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import java.util.HashMap;
 import java.util.List;
@@ -41,8 +42,8 @@ public class StandaloneSim {
         for (var trainSchedule : schedules) {
             if (!cacheMaxEffort.containsKey(trainSchedule)) {
                 // MRSP & SpeedLimits
-                var mrsp = MRSP.from(trainsPath, trainSchedule.rollingStock, true, trainSchedule.tags);
-                var speedLimits = MRSP.from(trainsPath, trainSchedule.rollingStock, false, trainSchedule.tags);
+                var mrsp = MRSP.from(trainsPath, trainSchedule.rollingStock, true, trainSchedule.tag);
+                var speedLimits = MRSP.from(trainsPath, trainSchedule.rollingStock, false, trainSchedule.tag);
                 cacheSpeedLimits.put(trainSchedule, ResultEnvelopePoint.from(speedLimits));
 
                 // Base
@@ -82,7 +83,7 @@ public class StandaloneSim {
     ) {
         final var rollingStock = schedule.rollingStock;
         final var stops = schedule.getStopsPositions();
-        final var context = new EnvelopeSimContext(rollingStock, envelopePath, timeStep);
+        final var context = new EnvelopeSimContext(rollingStock, envelopePath, timeStep, schedule.comfort);
         final var maxSpeedEnvelope = MaxSpeedEnvelope.from(context, stops, mrsp);
         return MaxEffortEnvelope.from(context, schedule.initialSpeed, maxSpeedEnvelope);
     }

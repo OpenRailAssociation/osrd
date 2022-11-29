@@ -11,6 +11,7 @@ import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.standalone_sim.StandaloneSim;
+import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.StandaloneTrainSchedule;
 import fr.sncf.osrd.train.TrainStop;
 import fr.sncf.osrd.utils.graph.GraphAdapter;
@@ -36,7 +37,8 @@ public class STDCMHelpers {
                         0,
                         List.of(new TrainStop(trainPath.length(), 1)),
                         List.of(),
-                        List.of()
+                        null,
+                        RollingStock.Comfort.STANDARD
                 )),
                 2.
         );

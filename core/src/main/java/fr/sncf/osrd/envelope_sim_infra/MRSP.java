@@ -31,9 +31,9 @@ public class MRSP {
             TrainPath trainPath,
             RollingStock rollingStock,
             boolean addRollingStockLength,
-            Collection<String> tags
+            String tag
     ) {
-        return from(TrainPath.removeLocation(trainPath.trackRangePath()), rollingStock, addRollingStockLength, tags);
+        return from(TrainPath.removeLocation(trainPath.trackRangePath()), rollingStock, addRollingStockLength, tag);
     }
 
     /** Computes the most restricted speed profile from a list of track ranges */
@@ -41,7 +41,7 @@ public class MRSP {
             List<TrackRangeView> ranges,
             RollingStock rollingStock,
             boolean addRollingStockLength,
-            Collection<String> tags
+            String tag
     ) {
         var builder = new MRSPEnvelopeBuilder();
         var pathLength = 0.;
@@ -70,7 +70,7 @@ public class MRSP {
                     if (end > pathLength)
                         end = pathLength;
                 }
-                var speed = speedRange.getValue().getSpeedLimit(tags);
+                var speed = speedRange.getValue().getSpeedLimit(tag);
                 if (Double.isInfinite(speed) || speed == 0)
                     continue;
 

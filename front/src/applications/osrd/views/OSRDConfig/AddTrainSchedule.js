@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
@@ -8,6 +8,7 @@ import { setFailure, setSuccess } from 'reducers/main';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import { time2sec, sec2time } from 'utils/timeManipulation';
+import debounce from 'lodash/debounce';
 
 import formatConf from 'applications/osrd/components/AddTrainSchedule/formatConf';
 import trainNameWithNum from 'applications/osrd/components/AddTrainSchedule/trainNameHelper';
@@ -15,6 +16,7 @@ import { scheduleURL } from 'applications/osrd/components/Simulation/consts';
 
 export default function AddTrainSchedule(props) {
   const { mustUpdateTimetable, setMustUpdateTimetable } = props;
+  const [name, setName] = useState(undefined);
   const [isWorking, setIsWorking] = useState(false);
   const [trainCount, setTrainCount] = useState(1);
   const [trainStep, setTrainStep] = useState(2);
@@ -62,13 +64,28 @@ export default function AddTrainSchedule(props) {
         dispatch(
           setFailure({
             name: e.name,
-            message: e.message,
+            message: t(`osrdconf:errorMessages.${e.message}`),
           })
         );
       }
       setMustUpdateTimetable(!mustUpdateTimetable);
     }
   };
+
+  const debouncedUpdateName = debounce((newName) => {
+    dispatch(updateName(newName))
+  }, 300)
+
+  const handleNameChange = useCallback((newName) => {
+    setName(newName)
+    debouncedUpdateName(newName)
+  }, [])
+
+  useEffect(() => {
+    setName(osrdconf.name)
+  }, [osrdconf]);
+
+
 
   return (
     <div className="osrd-config-item">
@@ -78,8 +95,8 @@ export default function AddTrainSchedule(props) {
             type="text"
             label={t('osrdconf:trainScheduleName')}
             id="osrdconf-name"
-            onChange={(e) => dispatch(updateName(e.target.value))}
-            value={osrdconf.name}
+            onChange={(e) => handleNameChange(e.target.value)}
+            value={name}
             noMargin
             sm
           />

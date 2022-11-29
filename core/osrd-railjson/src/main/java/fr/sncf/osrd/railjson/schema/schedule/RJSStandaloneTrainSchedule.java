@@ -2,6 +2,7 @@ package fr.sncf.osrd.railjson.schema.schedule;
 
 import com.squareup.moshi.Json;
 import fr.sncf.osrd.railjson.schema.common.Identified;
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSComfortType;
 import java.util.Collection;
 
 
@@ -23,7 +24,10 @@ public class RJSStandaloneTrainSchedule implements Identified {
     /** List of stops */
     public RJSTrainStop[] stops;
 
-    public Collection<String> tags;
+    public String tag;
+
+    /** The type of comfort the train using */
+    public RJSComfortType comfort = RJSComfortType.STANDARD;
 
     /** Create a new train schedule */
     public RJSStandaloneTrainSchedule(
@@ -32,14 +36,14 @@ public class RJSStandaloneTrainSchedule implements Identified {
             double initialSpeed,
             RJSAllowance[] allowances,
             RJSTrainStop[] stops,
-            Collection<String> tags
+            String tag
     ) {
         this.id = id;
         this.rollingStock = rollingStock;
         this.initialSpeed = initialSpeed;
         this.allowances = allowances;
         this.stops = stops;
-        this.tags = tags;
+        this.tag = tag;
     }
 
     @Override

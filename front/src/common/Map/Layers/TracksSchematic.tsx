@@ -63,7 +63,13 @@ function TracksSchematic(props: TracksSchematicProps) {
         layerOrder={layerOrder}
       />
       <OrderedLayer
-        {...lineNameLayer(colors)}
+        {...{
+          ...lineNameLayer(colors),
+          layout: {
+            ...lineNameLayer(colors).layout,
+            'text-field': '{extensions_sncf_line_name}',
+          },
+        }}
         source-layer={MAP_TRACK_SOURCES.schematic}
         layerOrder={layerOrder}
       />

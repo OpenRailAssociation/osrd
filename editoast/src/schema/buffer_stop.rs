@@ -4,16 +4,15 @@ use super::OSRDIdentified;
 
 use super::OSRDTyped;
 use super::ObjectType;
-use crate::api_error::ApiError;
 use crate::infra_cache::{Cache, ObjectCache};
 use derivative::Derivative;
 use diesel::sql_types::{Double, Text};
-use diesel::ExpressionMethods;
-use diesel::{PgConnection, RunQueryDsl};
+use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Model)]
 #[serde(deny_unknown_fields)]
+#[model(table = "crate::tables::osrd_infra_bufferstopmodel")]
 #[derivative(Default)]
 pub struct BufferStop {
     #[derivative(Default(value = r#"generate_id("buffer_stop")"#))]
@@ -22,33 +21,6 @@ pub struct BufferStop {
     pub track: String,
     pub position: f64,
     pub applicable_directions: ApplicableDirections,
-}
-
-impl BufferStop {
-    pub fn persist_batch(
-        values: &[Self],
-        infrastructure_id: i32,
-        conn: &PgConnection,
-    ) -> Result<(), Box<dyn ApiError>> {
-        use crate::tables::osrd_infra_bufferstopmodel::dsl::*;
-
-        let datas = values
-            .iter()
-            .map(|value| {
-                (
-                    obj_id.eq(value.get_id().clone()),
-                    data.eq(serde_json::to_value(value).unwrap()),
-                    infra_id.eq(infrastructure_id),
-                )
-            })
-            .collect::<Vec<_>>();
-
-        diesel::insert_into(osrd_infra_bufferstopmodel)
-            .values(datas)
-            .execute(conn)?;
-
-        Ok(())
-    }
 }
 
 impl OSRDTyped for BufferStop {
@@ -124,6 +96,17 @@ mod test {
     fn test_persist() {
         test_infra_transaction(|conn, infra| {
             let data = (0..10)
+                .map(|_| BufferStop::default())
+                .collect::<Vec<BufferStop>>();
+
+            assert!(BufferStop::persist_batch(&data, infra.id, conn).is_ok());
+        });
+    }
+
+    #[test]
+    fn test_persist_large() {
+        test_infra_transaction(|conn, infra| {
+            let data = (0..(2_usize.pow(16) * 2))
                 .map(|_| BufferStop::default())
                 .collect::<Vec<BufferStop>>();
 

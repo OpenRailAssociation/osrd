@@ -52,17 +52,13 @@ export const updatePointers = (chart, keyValues, listValues, positionValues, rot
 
 const updateChart = (chart, keyValues, rotate, event) => {
   // recover the new scale & test if movement under 0
-  /* const newX = (d3.event.sourceEvent.shiftKey && rotate)
-    || ((chart.x.domain()[0] - d3.event.transform.x) < 0 && d3.event.transform.k === 1 && rotate)
-    ? chart.x
-    : d3.event.transform.rescaleX(chart.x);
-  const newY = (d3.event.sourceEvent.shiftKey && !rotate)
-    || ((chart.y.domain()[0] + d3.event.transform.y) < 0 && d3.event.transform.k === 1 && !rotate)
-    ? chart.y
-    : d3.event.transform.rescaleY(chart.y); */
 
-  const newX = event.sourceEvent.shiftKey && rotate ? chart.x : event.transform.rescaleX(chart.x);
-  const newY = event.sourceEvent.shiftKey && !rotate ? chart.y : event.transform.rescaleY(chart.y);
+  let newX = chart.x;
+  let newY = chart.y;
+  if (event.sourceEvent.shiftKey || event.sourceEvent.ctrlKey) {
+    newX = event.transform.rescaleX(chart.originalScaleX);
+    newY = event.transform.rescaleY(chart.originalScaleY);
+  }
 
   // update axes with these new boundaries
   const axisBottomX =
@@ -238,6 +234,8 @@ const enableInteractivity = (
   yPosition,
   zoomLevel
 ) => {
+  if (!chart) return;
+
   let newHoverPosition;
 
   let lastChartX;
@@ -257,36 +255,33 @@ const enableInteractivity = (
   }
 
   const zoom = d3zoom(newHoverPosition)
-    .scaleExtent([0.5, 20]) // This control how much you can unzoom (x0.5) and zoom (x20)
+    .scaleExtent([0.3, 20]) // This control how much you can unzoom (x0.5) and zoom (x20)
     .extent([
       [0, 0],
       [chart.width, chart.height],
     ])
     .wheelDelta(wheelDelta)
     .on('zoom', (event) => {
-      // Permit zoom if shift pressed, if only move or if factor > .5
-      if (event.sourceEvent.ctrlKey || event.sourceEvent.shiftKey) {
-        /* || d3.event.transform.k >= 1
-        || zoomLevel >= 0.25)) { */
-        const eventTransform = event.transform;
-        event.sourceEvent.preventDefault();
-        setZoomLevel(zoomLevel * eventTransform.k);
-        setYPosition(yPosition + eventTransform.y);
-        const zoomFunctions = updateChart(chart, keyValues, rotate, event);
-        const newChart = { ...chart, x: zoomFunctions.newX, y: zoomFunctions.newY };
-        lastChartX = zoomFunctions.newX;
-        setChart(newChart);
-      }
+      const eventTransform = event.transform;
+
+      event.sourceEvent.preventDefault();
+
+      const zoomFunctions = updateChart(chart, keyValues, rotate, event);
+      const newChart = { ...chart, x: zoomFunctions.newX, y: zoomFunctions.newY };
+      lastChartX = zoomFunctions.newX;
+      setChart(newChart);
     })
-    .filter((event) => (event.button === 0 || event.button === 1) && event.ctrlKey)
+    .filter((event) => {
+      return (event.button === 0 || event.button === 1) && (event.ctrlKey || event.shiftKey);
+    })
     .on('start', () => {
-      dispatch(updateContextMenu(undefined));
+      if(dispatch) dispatch(updateContextMenu(undefined));
     })
     .on('end', () => {
       if (keyValues[1] === 'speed' || keyValues[1] === 'gradient') {
-        dispatch(updateChartXGEV(lastChartX));
+        //dispatch(updateChartXGEV(lastChartX));
       }
-      dispatch(updateMustRedraw(true));
+      if(dispatch) dispatch(updateMustRedraw(true));
     });
 
   let debounceTimeoutId;
@@ -294,7 +289,7 @@ const enableInteractivity = (
   function debounceUpdateTimePositionValues(timePositionLocal, immediatePositionsValues, interval) {
     clearTimeout(debounceTimeoutId);
     debounceTimeoutId = setTimeout(() => {
-      dispatch(updateTimePositionValues(timePositionLocal, null));
+      if(dispatch) dispatch(updateTimePositionValues(timePositionLocal, null));
     }, interval);
   }
 

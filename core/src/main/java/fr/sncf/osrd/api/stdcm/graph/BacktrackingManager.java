@@ -18,7 +18,7 @@ import java.util.List;
 /** This class contains all the methods used to backtrack in the graph.
  * We need to backtrack to remove any kind of speed discontinuity, generally because of deceleration spanning over
  * several edges.
- * </p>
+ * <br/>
  * A short explanation of how it's done: given nodes a, b, c, d
  * If we compute the edge "c->d" and see that we need to go slower at the start of the node (e.g. because we stop here)
  * We instantiate a new edge going from b to c, with the specified end speed. The predecessor of this new "b->c" edge
@@ -57,8 +57,11 @@ public class BacktrackingManager {
 
         // Create the new edge
         var newNode = newPreviousEdge.getEdgeEnd(graph);
+        if (newNode == null)
+            return null;
         return STDCMEdgeBuilder.fromNode(graph, newNode, e.route())
                 .setStartOffset(e.envelopeStartOffset())
+                .setEnvelope(e.envelope())
                 .findEdgeSameNextOccupancy(e.timeNextOccupancy());
     }
 
@@ -93,6 +96,7 @@ public class BacktrackingManager {
                 List.of(route),
                 start,
                 graph.rollingStock,
+                graph.comfort,
                 graph.timeStep
         );
         var partBuilder = new EnvelopePartBuilder();

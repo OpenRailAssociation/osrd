@@ -71,6 +71,7 @@ impl RailJson {
             Detector::persist_batch(&self.detectors, infra.id, conn)?;
             OperationalPoint::persist_batch(&self.operational_points, infra.id, conn)?;
             Route::persist_batch(&self.routes, infra.id, conn)?;
+
             Signal::persist_batch(&self.signals, infra.id, conn)?;
             Switch::persist_batch(&self.switches, infra.id, conn)?;
             SpeedSection::persist_batch(&self.speed_sections, infra.id, conn)?;

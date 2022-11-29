@@ -2,18 +2,23 @@ use diesel::sql_types::{Array, Integer, Json};
 use diesel::PgConnection;
 use diesel::{sql_query, RunQueryDsl};
 
-use crate::infra_cache::InfraCache;
-use crate::schema::{DetectorCache, InfraError, ObjectRef, ObjectType};
+use super::graph::Graph;
+use crate::generated_data::error::ErrGenerator;
+use crate::infra_cache::{InfraCache, ObjectCache};
+use crate::schema::{InfraError, ObjectRef, ObjectType};
 use diesel::result::Error as DieselError;
 use serde_json::{to_value, Value};
 
+pub const DETECTOR_ERRORS: [ErrGenerator; 2] = [
+    ErrGenerator::new(1, check_invalid_ref),
+    ErrGenerator::new(2, check_out_of_range),
+];
+
 pub fn insert_errors(
+    infra_errors: Vec<InfraError>,
     conn: &PgConnection,
     infra_id: i32,
-    infra_cache: &InfraCache,
 ) -> Result<(), DieselError> {
-    let infra_errors = generate_errors(infra_cache);
-
     let errors: Vec<Value> = infra_errors
         .iter()
         .map(|error| to_value(error).unwrap())
@@ -27,29 +32,13 @@ pub fn insert_errors(
     Ok(())
 }
 
-pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
-    let mut errors = vec![];
-
-    for detector in infra_cache.detectors().values() {
-        let detector = detector.unwrap_detector();
-        // Retrieve invalid refs
-        let infra_errors = check_invalid_ref(detector, infra_cache);
-        if !infra_errors.is_empty() {
-            errors.extend(infra_errors);
-            continue;
-        }
-        // Retrieve out of range
-        let infra_errors = check_out_of_range(detector, infra_cache);
-        if !infra_errors.is_empty() {
-            errors.extend(infra_errors);
-            continue;
-        }
-    }
-    errors
-}
-
 /// Retrieve invalide ref error for detectors
-pub fn check_invalid_ref(detector: &DetectorCache, infra_cache: &InfraCache) -> Vec<InfraError> {
+pub fn check_invalid_ref(
+    detector: &ObjectCache,
+    infra_cache: &InfraCache,
+    _: &Graph,
+) -> Vec<InfraError> {
+    let detector = detector.unwrap_detector();
     if !infra_cache.track_sections().contains_key(&detector.track) {
         let obj_ref = ObjectRef::new(ObjectType::TrackSection, detector.track.clone());
         vec![InfraError::new_invalid_reference(
@@ -61,7 +50,12 @@ pub fn check_invalid_ref(detector: &DetectorCache, infra_cache: &InfraCache) -> 
 }
 
 /// Retrieve out of range position error for detectors
-pub fn check_out_of_range(detector: &DetectorCache, infra_cache: &InfraCache) -> Vec<InfraError> {
+pub fn check_out_of_range(
+    detector: &ObjectCache,
+    infra_cache: &InfraCache,
+    _: &Graph,
+) -> Vec<InfraError> {
+    let detector = detector.unwrap_detector();
     let track_cache = infra_cache
         .track_sections()
         .get(&detector.track)
@@ -81,17 +75,20 @@ pub fn check_out_of_range(detector: &DetectorCache, infra_cache: &InfraCache) ->
 #[cfg(test)]
 mod tests {
     use crate::infra_cache::tests::{create_detector_cache, create_small_infra_cache};
+    use crate::infra_cache::ObjectCache;
     use crate::schema::{ObjectRef, ObjectType};
 
-    use super::generate_errors;
+    use super::check_invalid_ref;
+    use super::check_out_of_range;
     use super::InfraError;
+    use crate::generated_data::error::graph::Graph;
 
     #[test]
     fn invalid_ref() {
         let mut infra_cache = create_small_infra_cache();
-        let detector = create_detector_cache("D_error", "E", 250.);
+        let detector: ObjectCache = create_detector_cache("D_error", "E", 250.).into();
         infra_cache.add(detector.clone());
-        let errors = generate_errors(&infra_cache);
+        let errors = check_invalid_ref(&detector, &infra_cache, &Graph::load(&infra_cache));
         assert_eq!(1, errors.len());
         let obj_ref = ObjectRef::new(ObjectType::TrackSection, "E");
         let infra_error = InfraError::new_invalid_reference(&detector, "track", obj_ref);
@@ -101,9 +98,9 @@ mod tests {
     #[test]
     fn out_of_range() {
         let mut infra_cache = create_small_infra_cache();
-        let detector = create_detector_cache("D_error", "A", 530.);
+        let detector: ObjectCache = create_detector_cache("D_error", "A", 530.).into();
         infra_cache.add(detector.clone());
-        let errors = generate_errors(&infra_cache);
+        let errors = check_out_of_range(&detector, &infra_cache, &Graph::load(&infra_cache));
         assert_eq!(1, errors.len());
         let infra_error = InfraError::new_out_of_range(&detector, "position", 530., [0.0, 500.]);
         assert_eq!(infra_error, errors[0]);

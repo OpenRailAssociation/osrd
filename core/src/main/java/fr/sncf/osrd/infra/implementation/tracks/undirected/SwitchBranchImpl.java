@@ -69,7 +69,7 @@ public class SwitchBranchImpl implements SwitchBranch {
     }
 
     @Override
-    public ImmutableRangeMap<Double, Set<Integer>> getVoltages() {
+    public ImmutableRangeMap<Double, String> getVoltages() {
         return ImmutableRangeMap.of();
     }
 

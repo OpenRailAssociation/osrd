@@ -6,6 +6,7 @@ import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.railjson.schema.common.ID;
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSComfortType;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowance;
@@ -39,6 +40,9 @@ public final class STDCMRequest {
      */
     @Json(name = "rolling_stock")
     public RJSRollingStock rollingStock;
+
+    /** Train comfort */
+    public RJSComfortType comfort;
 
     /**
      * Route occupancies in the given timetable
@@ -92,6 +96,12 @@ public final class STDCMRequest {
     public double maximumRelativeRunTime = 2;
 
     /**
+     * Train category for speed limits
+     */
+    @Json(name = "speed_limit_composition")
+    public String speedLimitComposition = null;
+
+    /**
      * Create a default STDCMRequest
      */
     public STDCMRequest() {
@@ -103,7 +113,8 @@ public final class STDCMRequest {
                 null,
                 null,
                 Double.NaN,
-                Double.NaN
+                Double.NaN,
+                null
         );
     }
 
@@ -118,7 +129,8 @@ public final class STDCMRequest {
             Collection<PathfindingWaypoint> startPoints,
             Collection<PathfindingWaypoint> endPoints,
             double startTime,
-            double endTime
+            double endTime,
+            String speedLimitComposition
     ) {
         this.infra = infra;
         this.expectedVersion = expectedVersion;
@@ -128,6 +140,7 @@ public final class STDCMRequest {
         this.endPoints = endPoints;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.speedLimitComposition = speedLimitComposition;
     }
 
     public static class RouteOccupancy {

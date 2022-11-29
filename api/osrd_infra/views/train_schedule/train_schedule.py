@@ -37,14 +37,18 @@ class TrainScheduleView(
         # Check if a new simulation must be done
         data = serializer.validated_data
         simulation_needed = False
-        if "rolling_stock" in data and data["rolling_stock"] != train_schedule.rolling_stock.pk:
-            simulation_needed = True
-        elif "path" in data and data["path"] != train_schedule.path.pk:
-            simulation_needed = True
-        elif "initial_speed" in data and data["initial_speed"] != train_schedule.initial_speed:
-            simulation_needed = True
-        elif "allowances" in data and data["allowances"] != train_schedule.allowances:
-            simulation_needed = True
+        fields_requiring_simulation = [
+            "rolling_stock",
+            "path",
+            "initial_speed",
+            "allowances",
+            "speed_limit_composition",
+            "comfort",
+        ]
+        for field in fields_requiring_simulation:
+            if field in data and data[field] != getattr(train_schedule, field):
+                simulation_needed = True
+                break
 
         serializer.save()
 

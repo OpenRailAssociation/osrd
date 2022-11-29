@@ -1,5 +1,8 @@
+use crate::api_error::ApiError;
+use crate::infra::Infra;
 use crate::schema::operation::{OperationResult, RailjsonObject};
 use crate::schema::*;
+use chashmap::{CHashMap, ReadGuard, WriteGuard};
 use diesel::sql_types::{Double, Integer, Text};
 use diesel::PgConnection;
 use diesel::{sql_query, QueryableByName, RunQueryDsl};
@@ -321,8 +324,13 @@ impl InfraCache {
         &self.objects[ObjectType::Catenary]
     }
 
+    pub fn get_objects_by_type(&self, object_type: ObjectType) -> &HashMap<String, ObjectCache> {
+        &self.objects[object_type]
+    }
+
     /// Given an infra id load infra cache from database
-    pub fn load(conn: &PgConnection, infra_id: i32) -> InfraCache {
+    pub fn load(conn: &PgConnection, infra: &Infra) -> Result<InfraCache, Box<dyn ApiError>> {
+        let infra_id = infra.id;
         let mut infra_cache = Self::default();
 
         // Load track sections list
@@ -330,14 +338,14 @@ impl InfraCache {
             "SELECT obj_id, (data->>'length')::float as length, data->>'geo' as geo, data->>'sch' as sch FROM osrd_infra_tracksectionmodel WHERE infra_id = $1",
         )
         .bind::<Integer, _>(infra_id)
-        .load::<TrackQueryable>(conn)
-        .expect("Error loading track sections").into_iter().for_each(|track| infra_cache.add::<TrackSectionCache>(track.into()));
+        .load::<TrackQueryable>(conn)?
+        .into_iter().for_each(|track| infra_cache.add::<TrackSectionCache>(track.into()));
 
         // Load signal tracks references
         sql_query(
             "SELECT obj_id, data->>'track' AS track, (data->>'position')::float AS position FROM osrd_infra_signalmodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
-        .load::<SignalCache>(conn).expect("Error loading signal refs").into_iter().for_each(|signal| 
+        .load::<SignalCache>(conn)?.into_iter().for_each(|signal|
             infra_cache.add(signal)
         );
 
@@ -355,7 +363,7 @@ impl InfraCache {
         sql_query(
             "SELECT obj_id, data->>'parts' AS parts FROM osrd_infra_operationalpointmodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
-        .load::<OperationalPointQueryable>(conn).expect("Error loading operational point refs").into_iter().for_each(|op| 
+        .load::<OperationalPointQueryable>(conn)?.into_iter().for_each(|op|
             infra_cache.add::<OperationalPointCache>(op.into())
         );
 
@@ -368,7 +376,7 @@ impl InfraCache {
         sql_query(
             "SELECT obj_id, data->>'switch_type' AS switch_type, data->>'ports' AS ports FROM osrd_infra_switchmodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
-        .load::<SwitchQueryable>(conn).expect("Error loading switch refs").into_iter().for_each(|switch| {
+        .load::<SwitchQueryable>(conn)?.into_iter().for_each(|switch| {
             infra_cache.add::<SwitchCache>(switch.into());
         });
 
@@ -381,7 +389,7 @@ impl InfraCache {
         sql_query(
             "SELECT obj_id, data->>'track' AS track, (data->>'position')::float AS position FROM osrd_infra_detectormodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
-        .load::<DetectorCache>(conn).expect("Error loading detector refs").into_iter().for_each(|detector| 
+        .load::<DetectorCache>(conn)?.into_iter().for_each(|detector|
             infra_cache.add(detector)
         );
 
@@ -389,7 +397,7 @@ impl InfraCache {
         sql_query(
             "SELECT obj_id, data->>'track' AS track, (data->>'position')::float AS position FROM osrd_infra_bufferstopmodel WHERE infra_id = $1")
         .bind::<Integer, _>(infra_id)
-        .load::<BufferStopCache>(conn).expect("Error loading buffer stop refs").into_iter().for_each(|buffer_stop| 
+        .load::<BufferStopCache>(conn)?.into_iter().for_each(|buffer_stop|
             infra_cache.add(buffer_stop)
         );
 
@@ -398,7 +406,39 @@ impl InfraCache {
             .into_iter()
             .for_each(|catenary| infra_cache.add::<Catenary>(catenary));
 
-        infra_cache
+        Ok(infra_cache)
+    }
+
+    /// This function tries to get the infra from the cache, if it fails, it loads it from the database
+    /// If the infra is not found in the database, it returns `None`
+    pub fn get_or_load<'a>(
+        conn: &PgConnection,
+        infra_caches: &'a CHashMap<i32, InfraCache>,
+        infra: &Infra,
+    ) -> Result<ReadGuard<'a, i32, InfraCache>, Box<dyn ApiError>> {
+        // Cache hit
+        if let Some(infra_cache) = infra_caches.get(&infra.id) {
+            return Ok(infra_cache);
+        }
+        // Cache miss
+        infra_caches.insert_new(infra.id, InfraCache::load(conn, infra)?);
+        Ok(infra_caches.get(&infra.id).unwrap())
+    }
+
+    /// This function tries to get the infra from the cache, if it fails, it loads it from the database
+    /// If the infra is not found in the database, it returns `None`
+    pub fn get_or_load_mut<'a>(
+        conn: &PgConnection,
+        infra_caches: &'a CHashMap<i32, InfraCache>,
+        infra: &Infra,
+    ) -> Result<WriteGuard<'a, i32, InfraCache>, Box<dyn ApiError>> {
+        // Cache hit
+        if let Some(infra_cache) = infra_caches.get_mut(&infra.id) {
+            return Ok(infra_cache);
+        }
+        // Cache miss
+        infra_caches.insert_new(infra.id, InfraCache::load(conn, infra)?);
+        Ok(infra_caches.get_mut(&infra.id).unwrap())
     }
 
     /// Get all track sections references of a given track and type
@@ -476,6 +516,8 @@ impl InfraCache {
 pub mod tests {
     use std::collections::HashMap;
 
+    use chashmap::CHashMap;
+
     use crate::chartos::BoundingBox;
     use crate::infra::tests::test_infra_transaction;
     use crate::infra_cache::{InfraCache, SwitchCache};
@@ -491,14 +533,15 @@ pub mod tests {
     };
 
     use super::{
-        BufferStopCache, DetectorCache, OperationalPointCache, SignalCache, TrackSectionCache,
+        BufferStopCache, DetectorCache, ObjectCache, OperationalPointCache, SignalCache,
+        TrackSectionCache,
     };
 
     #[test]
     fn load_track_section() {
         test_infra_transaction(|conn, infra| {
             let track = create_track(conn, infra.id, Default::default());
-            let infra_cache = InfraCache::load(conn, infra.id);
+            let infra_cache = InfraCache::load(conn, &infra).unwrap();
             assert_eq!(infra_cache.track_sections().len(), 1);
             assert!(infra_cache.track_sections().contains_key(track.get_id()));
         });
@@ -508,9 +551,7 @@ pub mod tests {
     fn load_signal() {
         test_infra_transaction(|conn, infra| {
             let signal = create_signal(conn, infra.id, Default::default());
-
-            let infra_cache = InfraCache::load(conn, infra.id);
-
+            let infra_cache = InfraCache::load(conn, &infra).unwrap();
             assert!(infra_cache.signals().contains_key(signal.get_id()));
             let refs = infra_cache.track_sections_refs;
             assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
@@ -528,9 +569,7 @@ pub mod tests {
                     ..Default::default()
                 },
             );
-
-            let infra_cache = InfraCache::load(conn, infra.id);
-
+            let infra_cache = InfraCache::load(conn, &infra).unwrap();
             assert!(infra_cache.speed_sections().contains_key(speed.get_id()));
             let refs = infra_cache.track_sections_refs;
             assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
@@ -549,7 +588,7 @@ pub mod tests {
                 },
             );
 
-            let infra_cache = InfraCache::load(conn, infra.id);
+            let infra_cache = InfraCache::load(conn, &infra).unwrap();
 
             assert!(infra_cache.routes().contains_key(route.get_id()));
             let refs = infra_cache.track_sections_refs;
@@ -569,7 +608,7 @@ pub mod tests {
                 },
             );
 
-            let infra_cache = InfraCache::load(conn, infra.id);
+            let infra_cache = InfraCache::load(conn, &infra).unwrap();
 
             assert!(infra_cache.operational_points().contains_key(op.get_id()));
             let refs = infra_cache.track_sections_refs;
@@ -581,7 +620,7 @@ pub mod tests {
     fn load_track_section_link() {
         test_infra_transaction(|conn, infra| {
             let link = create_link(conn, infra.id, Default::default());
-            let infra_cache = InfraCache::load(conn, infra.id);
+            let infra_cache = InfraCache::load(conn, &infra).unwrap();
             assert!(infra_cache
                 .track_section_links()
                 .contains_key(link.get_id()));
@@ -599,7 +638,7 @@ pub mod tests {
                     ..Default::default()
                 },
             );
-            let infra_cache = InfraCache::load(conn, infra.id);
+            let infra_cache = InfraCache::load(conn, &infra).unwrap();
             assert!(infra_cache.switches().contains_key(switch.get_id()));
         })
     }
@@ -608,7 +647,7 @@ pub mod tests {
     fn load_switch_type() {
         test_infra_transaction(|conn, infra| {
             let s_type = create_switch_type(conn, infra.id, Default::default());
-            let infra_cache = InfraCache::load(conn, infra.id);
+            let infra_cache = InfraCache::load(conn, &infra).unwrap();
             assert!(infra_cache.switch_types().contains_key(s_type.get_id()));
         })
     }
@@ -618,7 +657,7 @@ pub mod tests {
         test_infra_transaction(|conn, infra| {
             let detector = create_detector(conn, infra.id, Default::default());
 
-            let infra_cache = InfraCache::load(conn, infra.id);
+            let infra_cache = InfraCache::load(conn, &infra).unwrap();
 
             assert!(infra_cache.detectors().contains_key(detector.get_id()));
             let refs = infra_cache.track_sections_refs;
@@ -631,7 +670,7 @@ pub mod tests {
         test_infra_transaction(|conn, infra| {
             let bs = create_buffer_stop(conn, infra.id, Default::default());
 
-            let infra_cache = InfraCache::load(conn, infra.id);
+            let infra_cache = InfraCache::load(conn, &infra).unwrap();
 
             assert!(infra_cache.buffer_stops().contains_key(bs.get_id()));
             let refs = infra_cache.track_sections_refs;
@@ -651,7 +690,7 @@ pub mod tests {
                 },
             );
 
-            let infra_cache = InfraCache::load(conn, infra.id);
+            let infra_cache = InfraCache::load(conn, &infra).unwrap();
 
             assert!(infra_cache.catenaries().contains_key(catenary.get_id()));
             let refs = infra_cache.track_sections_refs;
@@ -659,9 +698,57 @@ pub mod tests {
         })
     }
 
-    pub fn create_track_section_cache(obj_id: String, length: f64) -> TrackSectionCache {
+    impl From<TrackSectionCache> for ObjectCache {
+        fn from(track_section: TrackSectionCache) -> Self {
+            ObjectCache::TrackSection(track_section)
+        }
+    }
+
+    impl From<DetectorCache> for ObjectCache {
+        fn from(detector: DetectorCache) -> Self {
+            ObjectCache::Detector(detector)
+        }
+    }
+
+    impl From<BufferStopCache> for ObjectCache {
+        fn from(buffer_stop: BufferStopCache) -> Self {
+            ObjectCache::BufferStop(buffer_stop)
+        }
+    }
+
+    impl From<SpeedSection> for ObjectCache {
+        fn from(speed_section: SpeedSection) -> Self {
+            ObjectCache::SpeedSection(speed_section)
+        }
+    }
+
+    impl From<SignalCache> for ObjectCache {
+        fn from(signal: SignalCache) -> Self {
+            ObjectCache::Signal(signal)
+        }
+    }
+
+    impl From<SwitchType> for ObjectCache {
+        fn from(switch: SwitchType) -> Self {
+            ObjectCache::SwitchType(switch)
+        }
+    }
+
+    impl From<OperationalPointCache> for ObjectCache {
+        fn from(op: OperationalPointCache) -> Self {
+            ObjectCache::OperationalPoint(op)
+        }
+    }
+
+    impl From<Route> for ObjectCache {
+        fn from(route: Route) -> Self {
+            ObjectCache::Route(route)
+        }
+    }
+
+    pub fn create_track_section_cache<T: AsRef<str>>(obj_id: T, length: f64) -> TrackSectionCache {
         TrackSectionCache {
-            obj_id,
+            obj_id: obj_id.as_ref().into(),
             length,
             bbox_geo: BoundingBox::default(),
             bbox_sch: BoundingBox::default(),
@@ -827,7 +914,7 @@ pub mod tests {
         let mut infra_cache = InfraCache::default();
 
         for id in 'A'..='D' {
-            infra_cache.add(create_track_section_cache(id.into(), 500.))
+            infra_cache.add(create_track_section_cache(id.to_string(), 500.))
         }
 
         infra_cache.add(create_detector_cache("D1", "B", 250.));
@@ -842,8 +929,8 @@ pub mod tests {
         ];
         infra_cache.add(create_route_cache(
             "R1",
-            Waypoint::BufferStop { id: "BF1".into() },
-            Waypoint::Detector { id: "D1".into() },
+            Waypoint::new_buffer_stop("BF1"),
+            Waypoint::new_detector("D1"),
             vec![],
             r1_path,
         ));
@@ -853,8 +940,8 @@ pub mod tests {
         ];
         infra_cache.add(create_route_cache(
             "R2",
-            Waypoint::Detector { id: "D1".into() },
-            Waypoint::BufferStop { id: "BF2".into() },
+            Waypoint::new_detector("D1"),
+            Waypoint::new_buffer_stop("BF2"),
             vec![],
             r2_path,
         ));
@@ -864,8 +951,8 @@ pub mod tests {
         ];
         infra_cache.add(create_route_cache(
             "R3",
-            Waypoint::Detector { id: "D1".into() },
-            Waypoint::BufferStop { id: "BF3".into() },
+            Waypoint::new_detector("D1"),
+            Waypoint::new_buffer_stop("BF3"),
             vec![],
             r3_path,
         ));
@@ -902,5 +989,27 @@ pub mod tests {
         infra_cache.add(switch);
 
         infra_cache
+    }
+
+    #[test]
+    fn load_infra_cache() {
+        test_infra_transaction(|conn, infra| {
+            let infra_caches = CHashMap::new();
+            InfraCache::get_or_load(conn, &infra_caches, &infra).unwrap();
+            assert_eq!(infra_caches.len(), 1);
+            InfraCache::get_or_load(conn, &infra_caches, &infra).unwrap();
+            assert_eq!(infra_caches.len(), 1);
+        });
+    }
+
+    #[test]
+    fn load_infra_cache_mut() {
+        test_infra_transaction(|conn, infra| {
+            let infra_caches = CHashMap::new();
+            InfraCache::get_or_load_mut(conn, &infra_caches, &infra).unwrap();
+            assert_eq!(infra_caches.len(), 1);
+            InfraCache::get_or_load_mut(conn, &infra_caches, &infra).unwrap();
+            assert_eq!(infra_caches.len(), 1);
+        });
     }
 }
