@@ -228,6 +228,11 @@ public class DummyRouteGraphBuilder {
         }
 
         @Override
+        public ImmutableList<DetectionSection> getDetectionSections() {
+            return null;
+        }
+
+        @Override
         public ImmutableNetwork<DiDetector, ReservationRoute> getInfraRouteGraph() {
             return null;
         }
