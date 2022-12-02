@@ -82,7 +82,7 @@
     "web-vitals": "^2.1.0"
   },
   "devDependencies": {
-    "@storybook/addon-actions": "^6.5.13",
+    "@storybook/addon-actions": "^6.5.14",
     "@storybook/addon-essentials": "^6.5.13",
     "@storybook/addon-interactions": "^6.5.13",
     "@storybook/addon-links": "^6.5.13",
