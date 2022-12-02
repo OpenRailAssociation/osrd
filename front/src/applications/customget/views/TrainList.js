@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import PropTypes from 'prop-types';
 import nextId from 'react-id-generator';
-import { timeShiftTrain } from 'applications/osrd/components/Helpers/ChartHelpers';
+import { timeShiftTrain } from 'applications/customget/components/ChartHelpers';
 import { useDebounce } from 'utils/helpers';
 import { useTranslation } from 'react-i18next';
 
