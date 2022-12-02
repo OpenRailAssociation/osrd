@@ -139,6 +139,7 @@ export interface SimulationTrain {
 }
 
 export interface OsrdSimulationState {
+  redirectToGraph?: boolean;
   chart: any;
   chartXGEV: any;
   contextMenu: any;
