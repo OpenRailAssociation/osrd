@@ -30,4 +30,4 @@ strum_macros = "~0.24.3"
 thiserror = "~1.0.37"
 enum-map = "2.4.1"
 tempfile = "3.3.0"
-editoast_derive = {path = "./editoast_derive"}
+editoast_derive = { path = "./editoast_derive" }
