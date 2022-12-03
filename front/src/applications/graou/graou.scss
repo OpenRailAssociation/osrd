@@ -1,59 +1,63 @@
-.results-stations {
-  height: 15rem;
-  overflow: auto;
-}
-.results-stations, .result-station-selected {
-  position: relative;
-  margin-top: .5rem;
-  .results-station-data {
-    flex-grow: 1;
-    cursor: pointer;
-    border: 2px solid var(--coolgray1);
-    padding-top: .15rem;
-    margin-bottom: .25rem;
-    border-radius: 4px;
-    transition: .2s;
-    &:hover {
-      border-color: var(--coolgray7);
-    }
-    .station-data-body {
-      display: flex;
-      align-items: baseline;
-      padding: 0 .25rem;
-      height: 1.5rem;
-      .station-data-code {
-        font-size: .8rem;
-        width: 2rem;
+.graou-import {
+  --graougreen: #329623;
+
+  .results-stations {
+    height: 15rem;
+    overflow: auto;
+  }
+  .results-stations, .result-station-selected {
+    position: relative;
+    margin-top: .5rem;
+    .results-station-data {
+      flex-grow: 1;
+      cursor: pointer;
+      border: 2px solid var(--coolgray1);
+      padding-top: .15rem;
+      margin-bottom: .25rem;
+      border-radius: 4px;
+      transition: .2s;
+      &:hover {
+        border-color: var(--coolgray7);
       }
-      .station-data-name {
-        
+      .station-data-body {
+        display: flex;
+        align-items: baseline;
+        padding: 0 .25rem;
+        height: 1.5rem;
+        .station-data-code {
+          font-size: .8rem;
+          width: 2rem;
+        }
+        .station-data-name {
+          
+        }
+        .station-data-ch {
+          margin-left: .5rem;
+          font-weight: 500;
+          font-size: .8rem;
+        }
+        .station-data-uic {
+          margin-left: auto;
+          font-size: .7rem;
+          color: var(--primary);    
+        }
       }
-      .station-data-ch {
-        margin-left: .5rem;
-        font-weight: 500;
-        font-size: .8rem;
-      }
-      .station-data-uic {
-        margin-left: auto;
+      .station-data-footer {
+        display: flex;
+        align-items: center;
+        padding: 0 .25rem;
         font-size: .7rem;
-        color: var(--primary);    
-      }
-    }
-    .station-data-footer {
-      display: flex;
-      align-items: center;
-      padding: 0 .25rem;
-      font-size: .7rem;
-      background-color: var(--coolgray1);
-      border-radius: 0 0 4px 4px;
-      height: 1rem;
-      .station-data-line {
-        color: var(--coolgray9);
-      }
-      .station-data-line-number {
-        margin-left: auto;
-        font-size: .6rem;    
-        color: var(--purple);
+        background-color: var(--coolgray1);
+        border-radius: 0 0 4px 4px;
+        height: 1rem;
+        .station-data-line {
+          color: var(--coolgray9);
+        }
+        .station-data-line-number {
+          margin-left: auto;
+          font-size: .6rem;    
+          color: var(--purple);
+        }
       }
     }
   }

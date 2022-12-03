@@ -1,6 +1,15 @@
 {
+  "date": "DATE",
   "from": "Origine",
   "to": "Destination",
   "import": "Importation",
-  "inputPlaceholder": "Nom, trigramme"
+  "inputPlaceholder": "Nom, trigramme",
+  "startTime": "DÉBUT",
+  "endTime": "FIN",
+  "errorMessages": {
+    "error": "Une erreur est survenue",
+    "errorNoFrom": "Vous devez renseigner une origine",
+    "errorNoTo": "Vous devez renseigner une destination",
+    "errorNoDate": "Vous devez renseigner une date"
+  }
 }

@@ -5,6 +5,7 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useDebounce } from 'utils/helpers';
 import { useTranslation } from 'react-i18next';
 import Loader from 'common/Loader';
+import nextId from 'react-id-generator';
 import { GRAOU_URL } from '../consts';
 
 export function formatStation(stationData) {
@@ -27,7 +28,7 @@ export function formatStation(stationData) {
 }
 
 export default function StationSelector(props) {
-  const { onSelect, term, setTerm } = props;
+  const { id, onSelect, term, setTerm } = props;
   const { t } = useTranslation(['graou']);
   const [stationsList, setStationsList] = useState();
   const [isSearching, setIsSearching] = useState(false);
@@ -60,18 +61,20 @@ export default function StationSelector(props) {
   return (
     <>
       <InputSNCF
+        id={id}
+        type="text"
         value={term}
         onChange={(e) => setTerm(e.target.value)}
         placeholder={t('inputPlaceholder')}
         sm
         noMargin
         isInvalid={stationsList && stationsList.length === 0}
-        unit={stationsList && stationsList.length > 0 ? stationsList.length : false}
+        unit={stationsList && stationsList.length > 0 ? stationsList.length.toString() : ''}
       />
       {stationsList && stationsList.length > 0 ? (
         <div className="results-stations">
           {stationsList.map((station) => (
-            <div role="button" tabIndex={0} onClick={() => onSelect(station)}>
+            <div role="button" tabIndex={0} onClick={() => onSelect(station)} key={nextId()}>
               {formatStation(station)}
             </div>
           ))}
@@ -90,4 +93,5 @@ StationSelector.propTypes = {
   onSelect: PropTypes.func.isRequired,
   term: PropTypes.string,
   setTerm: PropTypes.func.isRequired,
+  id: PropTypes.string.isRequired,
 };
