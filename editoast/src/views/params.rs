@@ -1,6 +1,12 @@
 use std::marker::PhantomData;
 
-use rocket::form::{self, FromFormField, ValueField};
+use rocket::{
+    form::{self, FromFormField, ValueField},
+    request::FromParam,
+};
+use strum::IntoEnumIterator;
+
+use crate::schema::ObjectType;
 
 /// This parameter is used to deserialized a list of `T`
 #[derive(Debug)]
@@ -33,5 +39,38 @@ impl<'f, T: FromFormField<'f> + Send + Sync> FromFormField<'f> for List<'f, T> {
 
     fn default() -> Option<Self> {
         Some(Default::default())
+    }
+}
+
+impl<'a> FromParam<'a> for ObjectType {
+    type Error = &'a str;
+
+    fn from_param(param: &'a str) -> Result<Self, Self::Error> {
+        for obj_type in ObjectType::iter() {
+            let type_str = serde_json::to_string(&obj_type).unwrap();
+            let type_str = type_str.trim_matches('"');
+            if type_str == param {
+                return Ok(obj_type);
+            }
+        }
+        Err(param)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::schema::ObjectType;
+    use rocket::request::FromParam;
+
+    #[test]
+    fn obj_type_from_param() {
+        let res = ObjectType::from_param("TrackSection").unwrap();
+        assert_eq!(res, ObjectType::TrackSection);
+    }
+
+    #[test]
+    fn obj_type_from_wrong_param() {
+        let res = ObjectType::from_param("ObjectType").unwrap_err();
+        assert_eq!(res, "ObjectType");
     }
 }
