@@ -1,0 +1,6 @@
+{
+  "from": "Origine",
+  "to": "Destination",
+  "import": "Importation",
+  "inputPlaceholder": "Nom, trigramme"
+}
