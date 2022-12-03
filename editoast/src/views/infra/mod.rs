@@ -1,5 +1,6 @@
 mod edition;
 mod errors;
+mod objects;
 
 use std::sync::Arc;
 
@@ -15,6 +16,7 @@ use crate::infra_cache::{InfraCache, ObjectCache};
 use crate::schema::operation::{Operation, OperationResult};
 use crate::schema::SwitchType;
 use chashmap::CHashMap;
+use objects::get_objects;
 use rocket::http::Status;
 use rocket::response::status::Custom;
 use rocket::serde::json::{json, Error as JsonError, Json, Value as JsonValue};
@@ -30,6 +32,7 @@ pub fn routes() -> Vec<Route> {
         refresh,
         list_errors,
         get_switch_types,
+        get_objects,
         lock,
         unlock
     ]
@@ -229,11 +232,8 @@ async fn unlock(infra: i32, conn: DBConnection) -> ApiResult<Custom<JsonValue>> 
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
-
     use crate::create_server;
     use crate::infra::Infra;
-    use crate::infra_cache::tests::{create_switch_connection, create_switch_type_cache};
     use crate::schema::operation::{Operation, RailjsonObject};
     use crate::schema::SwitchType;
     use rocket::http::{ContentType, Status};
@@ -394,20 +394,7 @@ mod tests {
         assert!(body_infra.is_some());
         let infra: Infra = serde_json::from_str(body_infra.unwrap().as_str()).unwrap();
 
-        let switch_type = create_switch_type_cache(
-            "point",
-            vec!["BASE".into(), "LEFT".into(), "RIGHT".into()],
-            HashMap::from([
-                (
-                    "LEFT".into(),
-                    vec![create_switch_connection("BASE".into(), "LEFT".into())],
-                ),
-                (
-                    "RIGHT".into(),
-                    vec![create_switch_connection("BASE".into(), "RIGHT".into())],
-                ),
-            ]),
-        );
+        let switch_type = SwitchType::default();
         let operation = Operation::Create(Box::new(RailjsonObject::SwitchType {
             railjson: switch_type.clone(),
         }));

@@ -26,6 +26,7 @@ pub use route::Route;
 use serde::{Deserialize, Serialize};
 pub use signal::{Signal, SignalCache};
 pub use speed_section::SpeedSection;
+use strum_macros::EnumIter;
 pub use switch::{Switch, SwitchCache};
 pub use switch_type::{SwitchPortConnection, SwitchType};
 pub use track_section::{LineString, TrackSection, TrackSectionCache};
@@ -66,7 +67,7 @@ fn generate_id(prefix: &str) -> String {
     )
 }
 
-#[derive(Debug, Clone, Copy, Deserialize, Hash, Eq, PartialEq, Serialize, Enum)]
+#[derive(Debug, Clone, Copy, Deserialize, Hash, Eq, PartialEq, Serialize, Enum, EnumIter)]
 #[serde(deny_unknown_fields)]
 pub enum ObjectType {
     TrackSection,
@@ -96,6 +97,22 @@ impl ObjectType {
             ObjectType::Route => "osrd_infra_routemodel",
             ObjectType::OperationalPoint => "osrd_infra_operationalpointmodel",
             ObjectType::Catenary => "osrd_infra_catenarymodel",
+        }
+    }
+
+    pub fn get_geometry_layer_table(&self) -> Result<&'static str, &'static str> {
+        match *self {
+            ObjectType::TrackSection => Ok("osrd_infra_tracksectionlayer"),
+            ObjectType::Signal => Ok("osrd_infra_signallayer"),
+            ObjectType::SpeedSection => Ok("osrd_infra_speedsectionlayer"),
+            ObjectType::Detector => Ok("osrd_infra_detectorlayer"),
+            ObjectType::TrackSectionLink => Ok("osrd_infra_tracksectionlinklayer"),
+            ObjectType::Switch => Ok("osrd_infra_switchlayer"),
+            ObjectType::SwitchType => Err("SwitchType has no geometry"),
+            ObjectType::BufferStop => Ok("osrd_infra_bufferstoplayer"),
+            ObjectType::Route => Ok("osrd_infra_routelayer"),
+            ObjectType::OperationalPoint => Ok("osrd_infra_operationalpointlayer"),
+            ObjectType::Catenary => Ok("osrd_infra_catenarylayer"),
         }
     }
 }
