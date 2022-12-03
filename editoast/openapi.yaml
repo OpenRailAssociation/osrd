@@ -262,6 +262,53 @@ paths:
         204:
           description: No content
 
+  /infra/{id}/objects/{object_type}/:
+    post:
+      tags:
+        - infra
+      summary: ""
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Infra id
+          required: true
+        - in: path
+          name: object_type
+          schema:
+            $ref: "#/components/schemas/ObjectType"
+          description: The type of the object
+          required: true
+      requestBody:
+        description: List of object id's
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+      responses:
+        200:
+          description: No content
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    railjson:
+                      type: object
+                      description: Object properties in railjson format
+                    geographic:
+                      type: object
+                      description: object's geographic in geojson format
+                    schematic:
+                      type: object
+                      description: object's schematic in geojson format
+
 components:
   schemas:
     Infra:
@@ -290,6 +337,9 @@ components:
         - Switch
         - SwitchType
         - BufferStop
+        - Route
+        - OperationalPoint
+        - Catenary
 
     Operation:
       oneOf:
