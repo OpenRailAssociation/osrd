@@ -1,16 +1,39 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import GraouImportConfig from 'applications/graou/views/GraouImportConfig';
 import GraouTrainsList from 'applications/graou/views/GraouTrainsList';
+import { get } from 'common/requests';
+import Loader from 'common/Loader';
+
+const ROLLING_STOCK_URL = '/light_rolling_stock/';
 
 export default function GraouImport() {
   const [config, setConfig] = useState();
+  const [rollingStockDB, setRollingStockDB] = useState();
 
-  return (
+  async function getRollingStockDB() {
+    try {
+      const data = await get(ROLLING_STOCK_URL, { page_size: 1000 });
+      setRollingStockDB(data.results);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    if (!rollingStockDB) {
+      getRollingStockDB();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return rollingStockDB ? (
     <main className="osrd-config-mastcontainer mastcontainer graou-import">
       <div className="p-3">
         <GraouImportConfig setConfig={setConfig} />
-        <GraouTrainsList config={config} />
+        <GraouTrainsList config={config} rollingStockDB={rollingStockDB} />
       </div>
     </main>
+  ) : (
+    <Loader />
   );
 }

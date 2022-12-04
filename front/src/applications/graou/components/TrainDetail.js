@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import nextId from 'react-id-generator';
 import { seconds2hhmmss } from 'applications/graou/components/GraouHelpers';
+import RollingStock2Img from 'applications/osrd/components/RollingStock/RollingStock2Img';
+import rollingstockGraou2OSRD from './rollingstock_graou2osrd.json';
 
 export default function TrainDetail(props) {
   const { trainData, idx } = props;
@@ -22,6 +25,11 @@ export default function TrainDetail(props) {
           {trainData.debut} - {trainData.fin}
         </span>
         <span className="graou-traindetail-duration">{seconds2hhmmss(trainData.duree)}</span>
+        <span className="graou-traindetail-rollingstock">
+          <span className="graou-traindetail-rollingstock-img">
+            <RollingStock2Img name={rollingstockGraou2OSRD[trainData.type_em]} />
+          </span>
+        </span>
         <span className="graou-traindetail-transilien">{trainData.num_transilien}</span>
         <span
           className={`graou-traindetail-stepnb ${
@@ -35,7 +43,7 @@ export default function TrainDetail(props) {
         {trainData.etapes.map((step, stepIdx) =>
           // Remove origin & destination
           stepIdx !== 0 && stepIdx !== trainData.etapes.length - 1 ? (
-            <div className="graou-traindetail-step">
+            <div className="graou-traindetail-step" key={nextId()}>
               <span className="graou-traindetail-step-nb">{stepIdx}</span>
               <span className="graou-traindetail-step-startend">
                 {`${step.debut} - ${step.fin}`}

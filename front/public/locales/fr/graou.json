@@ -14,5 +14,15 @@
     "errorSameFromTo": "L'origine et la destination doivent être différentes."
   },
   "noResults": "Aucun résultat",
-  "datetime": "Date & horaires"
+  "datetime": "Date & horaires",
+  "trainsFound": "trains trouvé(s)",
+  "launchImport": "Démarrer l'importation",
+  "completeTrackSectionID": "Compléter les coordonnées GPS",
+  "generatePaths": "Générer les pathfinding",
+  "generateTrainSchedules": "Générer les calculs de marche",
+  "status": {
+    "nothing": "Prêt à travailler.",
+    "complete": "positionnez",
+    "uicComplete": "Tous les lieux ont été renseignés."
+  }
 }

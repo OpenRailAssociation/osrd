@@ -9,6 +9,7 @@ import nextId from 'react-id-generator';
 import TrainDetail from 'applications/graou/components/TrainDetail';
 import GraouImportModal from 'applications/graou/views/GraouImportModal';
 import { GRAOU_URL } from '../consts';
+import { GoRocket } from 'react-icons/go';
 
 function LoadingIfSearching(props) {
   const { t } = useTranslation(['graou']);
@@ -22,11 +23,12 @@ function LoadingIfSearching(props) {
 
 export default function GraouTrainsList(props) {
   const { t } = useTranslation(['graou']);
-  const { config } = props;
+  const { config, rollingStockDB } = props;
   const [trainsList, setTrainList] = useState();
   const [isSearching, setIsSearching] = useState(false);
 
   async function getTrains() {
+    setTrainList(undefined);
     setIsSearching(true);
     try {
       const params = {
@@ -34,7 +36,6 @@ export default function GraouTrainsList(props) {
         config,
       };
       const result = await get(`${GRAOU_URL}/api/trainschedules.php`, { params });
-      console.log(result.data);
       setTrainList(result.data);
       setIsSearching(false);
     } catch (error) {
@@ -65,7 +66,8 @@ export default function GraouTrainsList(props) {
             data-toggle="modal"
             data-target="#GraouImportModal"
           >
-            {t('launchImport')}
+            <GoRocket />
+            <span className="ml-3">{t('launchImport')}</span>
           </button>
         </div>
         <div className="graou-trainlist-results">
@@ -74,7 +76,7 @@ export default function GraouTrainsList(props) {
           ))}
         </div>
       </div>
-      <GraouImportModal trains={trainsList} />
+      <GraouImportModal rollingStockDB={rollingStockDB} trains={trainsList} />
     </div>
   ) : (
     <div className="osrd-config-item mb-2">
@@ -95,4 +97,5 @@ LoadingIfSearching.propTypes = {
 
 GraouTrainsList.propTypes = {
   config: PropTypes.object,
+  rollingStockDB: PropTypes.array.isRequired,
 };
