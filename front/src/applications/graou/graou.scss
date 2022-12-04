@@ -1,14 +1,28 @@
 .graou-import {
   --graougreen: #329623;
+  .osrd-config-item-from {
+    background-color: var(--green);
+  }
+  .osrd-config-item-to {
+    background-color: var(--yellow);
+  }
+  .osrd-config-item-datetime {
+    h2 {
+      color: var(--light);
+    }
+    background-color: var(--secondary);
+  }
 
   .results-stations {
     height: 15rem;
     overflow: auto;
   }
   .results-stations, .result-station-selected {
+    border-radius: 4px;
     position: relative;
     margin-top: .5rem;
     .results-station-data {
+      background-color: var(--white);
       flex-grow: 1;
       cursor: pointer;
       border: 2px solid var(--coolgray1);
@@ -17,19 +31,19 @@
       border-radius: 4px;
       transition: .2s;
       &:hover {
-        border-color: var(--coolgray7);
+        border-color: var(--coolgray9);
       }
-      .station-data-body {
+      .station-data-head {
         display: flex;
         align-items: baseline;
         padding: 0 .25rem;
         height: 1.5rem;
         .station-data-code {
           font-size: .8rem;
-          width: 2rem;
+          width: 2.25rem;
         }
         .station-data-name {
-          
+          font-size: 1.1rem;
         }
         .station-data-ch {
           margin-left: .5rem;
@@ -42,9 +56,31 @@
           color: var(--primary);    
         }
       }
+      .station-data-localization {
+        display: flex;
+        align-items: baseline;
+        position: relative;
+        padding: 0 .25rem 0 2.5rem;
+        height: 1rem;
+        line-height: .8rem;
+        color: var(--coolgray9);
+        gap: .25rem;
+        .station-data-city {
+          font-size: .7rem;
+        }
+        .station-data-department {
+          text-transform: uppercase;
+          font-size: .6rem;
+        }
+        .station-data-region {
+          text-transform: uppercase;
+          font-size: .6rem;   
+        }
+      }
       .station-data-footer {
         display: flex;
         align-items: center;
+        justify-content: space-between;
         padding: 0 .25rem;
         font-size: .7rem;
         background-color: var(--coolgray1);
@@ -53,11 +89,79 @@
         .station-data-line {
           color: var(--coolgray9);
         }
-        .station-data-line-number {
+        .station-data-pk {
           margin-left: auto;
+          margin-right: .25rem;
+          font-size: .6rem;
+        }
+        .station-data-line-number {
           font-size: .6rem;    
           color: var(--purple);
         }
+      }
+    }
+  }
+
+  .graou-trainlist {
+    .graou-traindetail {
+      display: flex;
+      align-items: baseline;
+      // justify-content: space-between;
+      cursor: pointer;
+      background-color: var(--coolgray1);
+      border-radius: 4px;
+      padding: .5rem;
+      margin-bottom: .5rem;
+      transition: .2s;
+      &:hover {
+        background-color: var(--coolgray3);
+      }
+      .graou-traindetail-idx {
+        width: 1.5rem;
+        font-size: .7rem;
+      }
+      .graou-traindetail-num {
+        width: 4.5rem;
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: var(--coolgray9);
+        height: 2rem;
+        .graou-traindetail-activity {
+          display: block;
+          font-weight: normal;
+          text-transform: uppercase;
+          font-size: .6rem;      
+          line-height: .5rem;  
+        }
+      }
+      .graou-traindetail-startend {
+        width: 9rem;
+        font-size: .9rem;
+        text-align: center;
+      }
+      .graou-traindetail-duration {
+        width: 3.5rem;
+        font-size: .8rem;        
+      }
+      .graou-traindetail-transilien {   
+        color: var(--blue);
+        font-weight: 500;
+        margin-left: auto;
+        text-transform: uppercase;
+        margin-right: .5rem;
+        font-size: .8rem;        
+      }
+      .graou-traindetail-stepnb {
+        background-color: var(--blue);     
+        color: var(--light);
+        font-weight: bold;
+        font-size: .8rem;
+        border-radius: 1rem;
+        padding: .5rem;
+        line-height: 1rem;
+        width: 2rem;
+        height: 2rem;
+        text-align: center;
       }
     }
   }

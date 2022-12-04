@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import StationSelector, { formatStation } from 'applications/graou/components/StationSelector';
+import { MemoStationSelector, formatStation } from 'applications/graou/components/StationSelector';
 import { setFailure } from 'reducers/main';
 import { useDispatch } from 'react-redux';
 
@@ -24,22 +24,33 @@ export default function GraouImportConfig(props) {
   const dispatch = useDispatch();
 
   function defineConfig() {
+    let error = false;
     if (!from) {
       dispatch(
         setFailure({ name: t('errorMessages.error'), message: t('errorMessages.errorNoFrom') })
       );
+      error = true;
     }
     if (!to) {
       dispatch(
         setFailure({ name: t('errorMessages.error'), message: t('errorMessages.errorNoTo') })
       );
+      error = true;
     }
     if (!date) {
       dispatch(
         setFailure({ name: t('errorMessages.error'), message: t('errorMessages.errorNoDate') })
       );
+      error = true;
     }
-    if (from && to && date) {
+    if (JSON.stringify(from) === JSON.stringify(to)) {
+      dispatch(
+        setFailure({ name: t('errorMessages.error'), message: t('errorMessages.errorSameFromTo') })
+      );
+      error = true;
+    }
+
+    if (!error) {
       setConfig({
         from,
         to,
@@ -54,7 +65,7 @@ export default function GraouImportConfig(props) {
     <div className="row">
       <div className="col-lg-4">
         <div className="osrd-config-item mb-2">
-          <div className="osrd-config-item-container">
+          <div className="osrd-config-item-container osrd-config-item-from">
             <h2>{t('from')}</h2>
             {from ? (
               <div
@@ -66,7 +77,7 @@ export default function GraouImportConfig(props) {
                 {formatStation(from)}
               </div>
             ) : (
-              <StationSelector
+              <MemoStationSelector
                 id="fromSearch"
                 onSelect={setFrom}
                 term={fromSearchString}
@@ -78,7 +89,7 @@ export default function GraouImportConfig(props) {
       </div>
       <div className="col-lg-4">
         <div className="osrd-config-item mb-2">
-          <div className="osrd-config-item-container">
+          <div className="osrd-config-item-container osrd-config-item-to">
             <h2>{t('to')}</h2>
             {to ? (
               <div
@@ -90,7 +101,7 @@ export default function GraouImportConfig(props) {
                 {formatStation(to)}
               </div>
             ) : (
-              <StationSelector
+              <MemoStationSelector
                 id="toSearch"
                 onSelect={setTo}
                 term={toSearchString}
@@ -102,7 +113,7 @@ export default function GraouImportConfig(props) {
       </div>
       <div className="col-lg-4">
         <div className="osrd-config-item mb-2">
-          <div className="osrd-config-item-container">
+          <div className="osrd-config-item-container osrd-config-item-datetime">
             <h2>{t('datetime')}</h2>
             <div className="row no-gutters">
               <div className="col-9">
@@ -118,8 +129,8 @@ export default function GraouImportConfig(props) {
                     unit={t('date')}
                   />
                 </div>
-                <div className="d-flex">
-                  <span className="flex-fill mr-1">
+                <div className="row">
+                  <span className="col-sm-6 col-lg-12 col-xl-6 mb-2 mb-sm-0 mb-lg-2 mb-xl-0">
                     <InputSNCF
                       id="startTime"
                       type="time"
@@ -131,7 +142,7 @@ export default function GraouImportConfig(props) {
                       unit={t('startTime')}
                     />
                   </span>
-                  <span className="flex-fill ml-1">
+                  <span className="col-sm-6 col-lg-12 col-xl-6">
                     <InputSNCF
                       id="endTime"
                       type="time"
