@@ -7,10 +7,6 @@
     background-color: var(--yellow);
   }
   .osrd-config-item-datetime {
-    h2 {
-      color: var(--light);
-    }
-    background-color: var(--secondary);
   }
 
   .results-stations {
@@ -43,17 +39,14 @@
           width: 2.25rem;
         }
         .station-data-name {
+          overflow: hidden;
+          white-space: nowrap;
           font-size: 1.1rem;
         }
         .station-data-ch {
-          margin-left: .5rem;
+          margin-left: auto;
           font-weight: 500;
           font-size: .8rem;
-        }
-        .station-data-uic {
-          margin-left: auto;
-          font-size: .7rem;
-          color: var(--primary);    
         }
       }
       .station-data-localization {
@@ -76,6 +69,11 @@
           text-transform: uppercase;
           font-size: .6rem;   
         }
+        .station-data-uic {
+          margin-left: auto;
+          font-size: .6rem;
+          color: var(--primary);    
+        }
       }
       .station-data-footer {
         display: flex;
@@ -87,9 +85,13 @@
         border-radius: 0 0 4px 4px;
         height: 1rem;
         .station-data-line {
+          overflow: hidden;
+          white-space: nowrap;
           color: var(--coolgray9);
         }
         .station-data-pk {
+          overflow: hidden;
+          white-space: nowrap;
           margin-left: auto;
           margin-right: .25rem;
           font-size: .6rem;
@@ -103,65 +105,115 @@
   }
 
   .graou-trainlist {
-    .graou-traindetail {
+    .graou-trainlist-launchbar {
       display: flex;
-      align-items: baseline;
-      // justify-content: space-between;
-      cursor: pointer;
-      background-color: var(--coolgray1);
-      border-radius: 4px;
+      align-items: center;
       padding: .5rem;
-      margin-bottom: .5rem;
-      transition: .2s;
-      &:hover {
-        background-color: var(--coolgray3);
-      }
-      .graou-traindetail-idx {
-        width: 1.5rem;
-        font-size: .7rem;
-      }
-      .graou-traindetail-num {
-        width: 4.5rem;
-        font-size: 1.2rem;
-        font-weight: bold;
-        color: var(--coolgray9);
-        height: 2rem;
-        .graou-traindetail-activity {
-          display: block;
-          font-weight: normal;
-          text-transform: uppercase;
-          font-size: .6rem;      
-          line-height: .5rem;  
+      border-radius: 4px 4px 0 0;
+      height: 2.5rem;
+      color: var(--light);
+      background-color: var(--secondary);
+    }
+    .graou-trainlist-results {
+      overflow: auto;
+      max-height: calc(100vh - 17.5rem);
+      .graou-traindetail {
+        margin-bottom: .5rem;
+        border: 2px solid var(--coolgray3);
+        border-radius: 4px;
+        .graou-traindetail-main {
+          display: flex;
+          align-items: baseline;
+          // justify-content: space-between;
+          cursor: pointer;
+          background-color: var(--coolgray1);
+          padding: .5rem;
+          transition: .2s;
+          &:hover {
+            background-color: var(--coolgray3);
+          }
+          .graou-traindetail-idx {
+            width: 1.5rem;
+            font-size: .7rem;
+          }
+          .graou-traindetail-num {
+            width: 4.5rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--coolgray9);
+            height: 2rem;
+            .graou-traindetail-activity {
+              display: block;
+              font-weight: normal;
+              text-transform: uppercase;
+              font-size: .6rem;      
+              line-height: .5rem;  
+            }
+          }
+          .graou-traindetail-startend {
+            width: 9rem;
+            font-size: .9rem;
+            text-align: center;
+          }
+          .graou-traindetail-duration {
+            width: 3.5rem;
+            font-size: .8rem;        
+          }
+          .graou-traindetail-transilien {   
+            color: var(--blue);
+            font-weight: 500;
+            margin-left: auto;
+            text-transform: uppercase;
+            margin-right: .5rem;
+            font-size: .8rem;        
+          }
+          .graou-traindetail-stepnb {   
+            color: var(--light);
+            font-weight: bold;
+            font-size: .8rem;
+            border-radius: 1rem;
+            padding: .5rem;
+            line-height: 1rem;
+            width: 2rem;
+            height: 2rem;
+            text-align: center;
+          }
         }
-      }
-      .graou-traindetail-startend {
-        width: 9rem;
-        font-size: .9rem;
-        text-align: center;
-      }
-      .graou-traindetail-duration {
-        width: 3.5rem;
-        font-size: .8rem;        
-      }
-      .graou-traindetail-transilien {   
-        color: var(--blue);
-        font-weight: 500;
-        margin-left: auto;
-        text-transform: uppercase;
-        margin-right: .5rem;
-        font-size: .8rem;        
-      }
-      .graou-traindetail-stepnb {
-        background-color: var(--blue);     
-        color: var(--light);
-        font-weight: bold;
-        font-size: .8rem;
-        border-radius: 1rem;
-        padding: .5rem;
-        line-height: 1rem;
-        width: 2rem;
-        height: 2rem;
-        text-align: center;
+        .graou-traindetail-steps {
+          overflow: auto;
+          max-height: 0rem;
+          transition: .2s;
+          &.opened {
+            max-height: 10rem;
+          }
+          .graou-traindetail-step {
+            display: flex;
+            align-items: center;
+            margin-left: 5rem;
+            &:hover {
+              background-color: var(--coolgray1);
+            }
+            .graou-traindetail-step-nb {
+              width: 2rem;
+              text-align: right;
+              padding: 0 .5rem;
+              font-size: .6rem;
+            }
+            .graou-traindetail-step-startend {
+              width: 8.5rem;
+              font-size: .9rem;
+            }
+            .graou-traindetail-step-duration {
+              width: 2rem;
+              margin-right: .5rem;
+              text-align: right;
+              font-size: .8rem;
+            }
+            .graou-traindetail-step-name {
+              font-size: .9rem;
+            }
+          }
+        }
       }
     }
   }

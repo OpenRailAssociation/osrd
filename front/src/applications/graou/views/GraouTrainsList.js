@@ -7,6 +7,7 @@ import Loader from 'common/Loader';
 import { get } from 'axios';
 import nextId from 'react-id-generator';
 import TrainDetail from 'applications/graou/components/TrainDetail';
+import GraouImportModal from 'applications/graou/views/GraouImportModal';
 import { GRAOU_URL } from '../consts';
 
 function LoadingIfSearching(props) {
@@ -58,14 +59,22 @@ export default function GraouTrainsList(props) {
           <span className="graou-trainlist-launchbar-nbresults">
             {trainsList.length} {t('trainsFound')}
           </span>
-          <button className="btn btn-primary btn-sm" type="button">
+          <button
+            className="btn btn-primary btn-sm ml-auto"
+            type="button"
+            data-toggle="modal"
+            data-target="#GraouImportModal"
+          >
             {t('launchImport')}
           </button>
         </div>
-        {trainsList.map((train, idx) => (
-          <TrainDetail trainData={train} idx={idx} key={nextId()} />
-        ))}
+        <div className="graou-trainlist-results">
+          {trainsList.map((train, idx) => (
+            <TrainDetail trainData={train} idx={idx} key={nextId()} />
+          ))}
+        </div>
       </div>
+      <GraouImportModal trains={trainsList} />
     </div>
   ) : (
     <div className="osrd-config-item mb-2">

@@ -15,12 +15,12 @@ export function formatStation(stationData) {
         <span className="station-data-code">{stationData.code}</span>
         <span className="station-data-name">{stationData.localite}</span>
         <span className="station-data-ch">{stationData.chantier}</span>
-        <span className="station-data-uic">{stationData.uic}</span>
       </div>
       <div className="station-data-localization">
         <span className="station-data-city">{stationData.commune}</span>
         <span className="station-data-department">{stationData.departement} / </span>
         <span className="station-data-region">{stationData.region}</span>
+        <span className="station-data-uic">{stationData.uic}</span>
       </div>
       {stationData.ligne ? (
         <div className="station-data-footer">
