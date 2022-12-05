@@ -35,7 +35,7 @@ jobs:
           # tell codecov the sha of the unmerged PR https://github.com/codecov/uploader/issues/525
           override_commit: "${{ github.event.pull_request.head.sha }}"
           name: codecov
-          flags: core
+          flags: front
           directory: ./front
           files: junit.xml
           token: ${{ secrets.CODECOV_TOKEN }}
