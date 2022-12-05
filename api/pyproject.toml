@@ -33,7 +33,7 @@ mock = "^4.0.3"
 production = ["gunicorn", "sentry-sdk", "uvloop", "httptools", "uvicorn"]
 
 [tool.poetry.dev-dependencies]
-django-debug-toolbar = "3.7.0"
+django-debug-toolbar = "3.8.1"
 black = "22.10.0"
 isort = "5.10.1"
 pyproject-flake8 = "5.0.4"
