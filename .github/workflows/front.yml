@@ -24,3 +24,5 @@ jobs:
       - run: yarn --cwd front install
       - run: yarn --cwd front test-coverage
       - run: yarn --cwd front build
+        env:
+          CI: false
