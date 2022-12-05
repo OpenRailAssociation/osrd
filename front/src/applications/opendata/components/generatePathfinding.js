@@ -1,4 +1,4 @@
-import rollingstockGraou2OSRD from 'applications/graou/components/rollingstock_graou2osrd.json';
+import rollingstockOpenData2OSRD from 'applications/opendata/components/rollingstock_opendata2osrd.json';
 
 export default function generatePathfindingPayload(
   infraID,
@@ -12,7 +12,7 @@ export default function generatePathfindingPayload(
   pathsDictionnary.forEach((pathRef) => {
     const trainFromPathRef = trainsWithPathRef.find((train) => train.num === pathRef.num);
     const rollingStockFound = rollingStockDB.find(
-      (rollingstock) => rollingstock.name === rollingstockGraou2OSRD[trainFromPathRef.type_em]
+      (rollingstock) => rollingstock.name === rollingstockOpenData2OSRD[trainFromPathRef.type_em]
     );
     pathsToGenerate[pathRef.num] = {
       infra: infraID,

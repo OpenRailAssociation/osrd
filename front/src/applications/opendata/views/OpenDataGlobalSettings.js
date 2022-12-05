@@ -4,15 +4,15 @@ import RollingStockSelector from 'applications/osrd/views/OSRDConfig/RollingStoc
 import TimetableSelector from 'applications/osrd/views/OSRDConfig/TimetableSelector';
 import { useTranslation } from 'react-i18next';
 
-function GraouGlobalSettings() {
+function OpenDataGlobalSettings() {
   const [mustUpdateTimetable, setMustUpdateTimetable] = useState(true);
   const [showGlobalSettings, setShowGlobalSettings] = useState(false);
-  const { t } = useTranslation(['graou']);
+  const { t } = useTranslation(['opendata']);
 
   return (
-    <div className="graou-import-global-settings">
+    <div className="opendata-import-global-settings">
       <div
-        className="graou-import-global-settings-bar"
+        className="opendata-import-global-settings-bar"
         role="button"
         tabIndex={0}
         onClick={() => setShowGlobalSettings(!showGlobalSettings)}
@@ -29,7 +29,7 @@ function GraouGlobalSettings() {
           </>
         )}
       </div>
-      <div className={`graou-import-global-settings-items ${showGlobalSettings ? 'active' : ''}`}>
+      <div className={`opendata-import-global-settings-items ${showGlobalSettings ? 'active' : ''}`}>
         <div className="row">
           <div className="col-6">
             <InfraSelector />
@@ -46,4 +46,4 @@ function GraouGlobalSettings() {
     </div>
   );
 }
-export default React.memo(GraouGlobalSettings);
+export default React.memo(OpenDataGlobalSettings);

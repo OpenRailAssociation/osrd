@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
-import Map from 'applications/graou/components/Map';
-import rollingstockGraou2OSRD from 'applications/graou/components/rollingstock_graou2osrd.json';
+import Map from 'applications/opendata/components/Map';
+import rollingstockOpenData2OSRD from 'applications/opendata/components/rollingstock_opendata2osrd.json';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { getRollingStockID, getInfraID, getTimetableID } from 'reducers/osrdconf/selectors';
-import generatePathfindingPayload from 'applications/graou/components/generatePathfinding';
+import generatePathfindingPayload from 'applications/opendata/components/generatePathfinding';
 import { post } from 'common/requests';
 
 const itineraryURI = '/pathfinding/';
@@ -37,7 +37,7 @@ function refactorUniquePaths(
             ? `${step.duree}${step.lat}${step.lon}`
             : `0${step.lat}${step.lon}`
         )
-        .join() + rollingstockGraou2OSRD[train.type_em];
+        .join() + rollingstockOpenData2OSRD[train.type_em];
     const pathRef = pathsDictionnary.find((entry) => entry.pathString === pathString);
     if (pathRef === undefined) {
       pathsDictionnary.push({
@@ -57,9 +57,9 @@ function refactorUniquePaths(
   setPointsDictionnary(pointsList);
 }
 
-export default function GraouImportModal(props) {
+export default function OpenDataImportModal(props) {
   const { rollingStockDB, trains } = props;
-  const { t } = useTranslation('graou');
+  const { t } = useTranslation('opendata');
   const infraID = useSelector(getInfraID);
   const rollingStockID = useSelector(getRollingStockID);
   const timetableID = useSelector(getTimetableID);
@@ -106,7 +106,7 @@ export default function GraouImportModal(props) {
 
   function completePaths(init = false) {
     if (init) {
-      setStatus({ ...status, uicComplete: false });
+      setStatus(initialStatus);
       setUicNumberToComplete(undefined);
     }
     const uic2complete = Object.keys(pointsDictionnary);
@@ -208,7 +208,7 @@ export default function GraouImportModal(props) {
   }, [trains, rollingStockDB]);
 
   return (
-    <ModalSNCF htmlID="GraouImportModal">
+    <ModalSNCF htmlID="OpenDataImportModal">
       {pathsDictionnary && trainsWithPathRef ? (
         <ModalBodySNCF>
           <button
@@ -223,7 +223,7 @@ export default function GraouImportModal(props) {
           </button>
           <button
             className={`btn btn-sm btn-block d-flex justify-content-between ${
-              status.uicComplete ? 'btn-outline-success' : 'btn-primary'
+              status.pathFindingDone ? 'btn-outline-success' : 'btn-primary'
             } ${status.uicComplete ? '' : 'disabled'}`}
             type="button"
             onClick={() => generatePaths(0)}
@@ -262,7 +262,7 @@ export default function GraouImportModal(props) {
   );
 }
 
-GraouImportModal.propTypes = {
+OpenDataImportModal.propTypes = {
   trains: PropTypes.array.isRequired,
   rollingStockDB: PropTypes.array.isRequired,
 };

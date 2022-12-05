@@ -6,13 +6,13 @@ import { useDispatch } from 'react-redux';
 import Loader from 'common/Loader';
 import { get } from 'axios';
 import nextId from 'react-id-generator';
-import TrainDetail from 'applications/graou/components/TrainDetail';
-import GraouImportModal from 'applications/graou/views/GraouImportModal';
+import TrainDetail from 'applications/opendata/components/TrainDetail';
+import OpenDataImportModal from 'applications/opendata/views/OpenDataImportModal';
 import { GRAOU_URL } from '../consts';
 import { GoRocket } from 'react-icons/go';
 
 function LoadingIfSearching(props) {
-  const { t } = useTranslation(['graou']);
+  const { t } = useTranslation(['opendata']);
   const { isSearching } = props;
   return (
     <h1 className="text-center text-muted my-5">
@@ -21,8 +21,8 @@ function LoadingIfSearching(props) {
   );
 }
 
-export default function GraouTrainsList(props) {
-  const { t } = useTranslation(['graou']);
+export default function OpenDataTrainsList(props) {
+  const { t } = useTranslation(['opendata']);
   const { config, rollingStockDB } = props;
   const [trainsList, setTrainList] = useState();
   const [isSearching, setIsSearching] = useState(false);
@@ -55,28 +55,28 @@ export default function GraouTrainsList(props) {
 
   return trainsList && trainsList.length > 0 ? (
     <div className="osrd-config-item mb-2">
-      <div className="osrd-config-item-container graou-trainlist">
-        <div className="graou-trainlist-launchbar">
-          <span className="graou-trainlist-launchbar-nbresults">
+      <div className="osrd-config-item-container opendata-trainlist">
+        <div className="opendata-trainlist-launchbar">
+          <span className="opendata-trainlist-launchbar-nbresults">
             {trainsList.length} {t('trainsFound')}
           </span>
           <button
             className="btn btn-primary btn-sm ml-auto"
             type="button"
             data-toggle="modal"
-            data-target="#GraouImportModal"
+            data-target="#OpenDataImportModal"
           >
             <GoRocket />
             <span className="ml-3">{t('launchImport')}</span>
           </button>
         </div>
-        <div className="graou-trainlist-results">
+        <div className="opendata-trainlist-results">
           {trainsList.map((train, idx) => (
             <TrainDetail trainData={train} idx={idx} key={nextId()} />
           ))}
         </div>
       </div>
-      <GraouImportModal rollingStockDB={rollingStockDB} trains={trainsList} />
+      <OpenDataImportModal rollingStockDB={rollingStockDB} trains={trainsList} />
     </div>
   ) : (
     <div className="osrd-config-item mb-2">
@@ -87,7 +87,7 @@ export default function GraouTrainsList(props) {
   );
 }
 
-GraouTrainsList.defaultProps = {
+OpenDataTrainsList.defaultProps = {
   config: undefined,
 };
 
@@ -95,7 +95,7 @@ LoadingIfSearching.propTypes = {
   isSearching: PropTypes.bool.isRequired,
 };
 
-GraouTrainsList.propTypes = {
+OpenDataTrainsList.propTypes = {
   config: PropTypes.object,
   rollingStockDB: PropTypes.array.isRequired,
 };

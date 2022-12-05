@@ -9,7 +9,7 @@ import logo from 'assets/logo_osrd_seul_blanc.svg';
 import osrdLogo from 'assets/pictures/osrd.png';
 import timetablePic from 'assets/pictures/timetable.png';
 import customget from 'assets/pictures/customget.png';
-import graou from 'applications/graou/graou-logo.png';
+import opendata from 'assets/pictures/customget.png';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
@@ -40,7 +40,7 @@ export default function Home() {
               <Card img={timetablePic} title={t('Home.stdcm')} link="/stdcm" />
             </div>
             <div className="col-sm-6 col-md-3 col-lg-2 mb-2">
-              <Card img={graou} title="GRAOU" link="/graou" />
+              <Card img={opendata} title="OpenData" link="/opendata" />
             </div>
             <div className="col-sm-6 col-md-3 col-lg-2 mb-2">
               <Card img={customget} title={t('Home.customget')} link="/customget" />

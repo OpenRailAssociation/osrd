@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { MemoStationSelector, formatStation } from 'applications/graou/components/StationSelector';
+import { MemoStationSelector, formatStation } from 'applications/opendata/components/StationSelector';
 import { setFailure } from 'reducers/main';
 import { useDispatch } from 'react-redux';
 
@@ -11,9 +11,9 @@ function dateOfToday() {
   return date.toJSON().substring(0, 10);
 }
 
-export default function GraouImportConfig(props) {
+export default function OpenDataImportConfig(props) {
   const { setConfig } = props;
-  const { t } = useTranslation(['graou']);
+  const { t } = useTranslation(['opendata']);
   const [from, setFrom] = useState();
   const [fromSearchString, setFromSearchString] = useState('');
   const [to, setTo] = useState();
@@ -173,6 +173,6 @@ export default function GraouImportConfig(props) {
   );
 }
 
-GraouImportConfig.propTypes = {
+OpenDataImportConfig.propTypes = {
   setConfig: PropTypes.func.isRequired,
 };

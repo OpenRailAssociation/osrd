@@ -6,23 +6,23 @@ import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { NotificationsState } from 'common/Notifications';
 import { useTranslation } from 'react-i18next';
 import { MdMoreTime } from 'react-icons/md';
-import logo from './graou-logo.png';
-import './graou.scss';
-import GraouImport from './GraouImport';
+import logo from 'assets/logo_osrd_seul_blanc.svg';
+import './opendata.scss';
+import OpenDataImport from './OpenDataImport';
 
-export default function HomeGraou() {
-  const { t } = useTranslation(['graou']);
+export default function HomeOpenData() {
+  const { t } = useTranslation(['opendata']);
   return (
     <>
       <MastNavSNCF
         items={
-          <MastNavItemSNCF link="/graou/import" linkname={t('import')} icon={<MdMoreTime />} />
+          <MastNavItemSNCF link="/opendata/import" linkname={t('import')} icon={<MdMoreTime />} />
         }
       />
-      <NavBarSNCF appName="GRAOU" logo={logo} />
+      <NavBarSNCF appName="OSRD / Open data" logo={logo} />
       <Routes>
-        <Route path="/import" element={<GraouImport />} />
-        <Route path="" element={<Navigate to="/graou/import" replace />} />
+        <Route path="/import" element={<OpenDataImport />} />
+        <Route path="" element={<Navigate to="/opendata/import" replace />} />
       </Routes>
       <NotificationsState />
     </>

@@ -9,7 +9,7 @@ import HomeCarto from 'applications/carto/Home';
 import HomeEditor from 'applications/editor/Home';
 import HomeOSRD from 'applications/osrd/Home';
 import HomeStdcm from 'applications/stdcm/Home';
-import HomeGraou from 'applications/graou/Home';
+import HomeOpenData from 'applications/opendata/Home';
 import HomeCustomGET from 'applications/customget/Home';
 import Loader from 'common/Loader';
 import { attemptLoginOnLaunch } from 'reducers/user';
@@ -57,7 +57,7 @@ export default function App() {
             <Route path="/carto/*" element={<HomeCarto />} />
             <Route path="/editor/*" element={<HomeEditor />} />
             <Route path="/stdcm/*" element={<HomeStdcm />} />
-            <Route path="/graou/*" element={<HomeGraou />} />
+            <Route path="/opendata/*" element={<HomeOpenData />} />
             <Route path="/customget/*" element={<HomeCustomGET />} />
             <Route path="/*" element={<Home />} />
           </Routes>

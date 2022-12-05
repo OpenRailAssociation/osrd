@@ -35,7 +35,7 @@ export function formatStation(stationData) {
 
 function StationSelector(props) {
   const { id, onSelect, term, setTerm } = props;
-  const { t } = useTranslation(['graou']);
+  const { t } = useTranslation(['opendata']);
   const [stationsList, setStationsList] = useState();
   const [isSearching, setIsSearching] = useState(false);
   const debouncedTerm = useDebounce(term, 500);
