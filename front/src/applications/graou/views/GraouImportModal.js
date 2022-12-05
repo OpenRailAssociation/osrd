@@ -8,6 +8,15 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { getRollingStockID, getInfraID, getTimetableID } from 'reducers/osrdconf/selectors';
 import generatePathfindingPayload from 'applications/graou/components/generatePathfinding';
+import { post } from 'common/requests';
+
+const itineraryURI = '/pathfinding/';
+
+const initialStatus = {
+  uicComplete: false,
+  pathFindingDone: false,
+  trainSchedulesDone: false,
+};
 
 // Look for unique pathways by concatenation of duration & coordinates
 // Compare them & create dictionnary, associate reference of unique path to each train
@@ -56,12 +65,16 @@ export default function GraouImportModal(props) {
   const timetableID = useSelector(getTimetableID);
 
   const [trainsWithPathRef, setTrainsWithPathRef] = useState();
-  const [pathsDictionnary, setPathsDictionnary] = useState();
+
+  // Places, points, OPs to add track section id
   const [pointsDictionnary, setPointsDictionnary] = useState();
   const [clickedFeature, setClickedFeature] = useState();
   const [uicNumberToComplete, setUicNumberToComplete] = useState();
 
-  const [whatIAmDoingNow, setWhatIAmDoingNow] = useState(t('status.nothing'));
+  // Path to compute
+  const [pathsDictionnary, setPathsDictionnary] = useState();
+
+  const [whatIAmDoingNow, setWhatIAmDoingNow] = useState(t('status.ready'));
 
   const [viewport, setViewport] = useState({
     latitude: 48.86521728735368,
@@ -78,11 +91,7 @@ export default function GraouImportModal(props) {
     minPitch: 0,
     transitionDuration: 100,
   });
-  const [status, setStatus] = useState({
-    uicComplete: false,
-    pathFindingDone: false,
-    trainSchedulesDone: false,
-  });
+  const [status, setStatus] = useState(initialStatus);
 
   function getTrackSectionID(lat, lng) {
     setViewport({
@@ -96,6 +105,10 @@ export default function GraouImportModal(props) {
   }
 
   function completePaths(init = false) {
+    if (init) {
+      setStatus({ ...status, uicComplete: false });
+      setUicNumberToComplete(undefined);
+    }
     const uic2complete = Object.keys(pointsDictionnary);
     const uicNumberToCompleteLocal =
       uicNumberToComplete === undefined || init ? 0 : uicNumberToComplete + 1;
@@ -117,8 +130,27 @@ export default function GraouImportModal(props) {
     }
   }
 
-  function generatePaths() {
-    const paths = generatePathfindingPayload(
+  async function launchPathfinding(
+    params,
+    pathRefNum,
+    pathNumberToComplete,
+    pathsIDs,
+    continuePath
+  ) {
+    try {
+      const itineraryCreated = await post(itineraryURI, params, {}, true);
+      continuePath(pathNumberToComplete + 1, { ...pathsIDs, [pathRefNum]: itineraryCreated.id });
+    } catch (e) {
+      setWhatIAmDoingNow(
+        <span className="text-danger">{t('errorMessages.unableToRetrievePathfinding')}</span>
+      );
+      setStatus(initialStatus);
+      console.log('ERROR', e);
+    }
+  }
+
+  function generatePaths(pathNumberToComplete = 0, pathsIDs = {}) {
+    const pathfindingPayloads = generatePathfindingPayload(
       infraID,
       rollingStockID,
       trainsWithPathRef,
@@ -126,7 +158,31 @@ export default function GraouImportModal(props) {
       pointsDictionnary,
       rollingStockDB
     );
-    console.log('coucou', paths);
+    const path2complete = Object.keys(pathfindingPayloads);
+    if (pathNumberToComplete < path2complete.length) {
+      setWhatIAmDoingNow(
+        `${pathNumberToComplete}/${path2complete.length} ${t('status.searchingPath')} ${
+          path2complete[pathNumberToComplete]
+        }`
+      );
+      launchPathfinding(
+        pathfindingPayloads[path2complete[pathNumberToComplete]],
+        path2complete[pathNumberToComplete],
+        pathNumberToComplete,
+        pathsIDs,
+        generatePaths
+      );
+    } else {
+      setWhatIAmDoingNow(t('status.pathComplete'));
+      setTrainsWithPathRef(
+        trainsWithPathRef.map((train) => ({ ...train, pathId: pathsIDs[train.pathRef] }))
+      );
+      setStatus({ ...status, pathFindingDone: true });
+    }
+  }
+
+  function generateTrainSchedules() {
+    console.log('coucou', trainsWithPathRef);
   }
 
   useEffect(() => {
@@ -157,7 +213,7 @@ export default function GraouImportModal(props) {
         <ModalBodySNCF>
           <button
             className={`btn btn-sm btn-block d-flex justify-content-between ${
-              status.uicComplete ? 'btn-success' : 'btn-primary'
+              status.uicComplete ? 'btn-outline-success' : 'btn-primary'
             }`}
             type="button"
             onClick={() => completePaths(true)}
@@ -166,11 +222,11 @@ export default function GraouImportModal(props) {
             <span>{Object.keys(pointsDictionnary).length}</span>
           </button>
           <button
-            className={`btn btn-primary btn-sm btn-block d-flex justify-content-between ${
-              status.uicComplete ? '' : 'disabled'
-            }`}
+            className={`btn btn-sm btn-block d-flex justify-content-between ${
+              status.uicComplete ? 'btn-outline-success' : 'btn-primary'
+            } ${status.uicComplete ? '' : 'disabled'}`}
             type="button"
-            onClick={generatePaths}
+            onClick={() => generatePaths(0)}
           >
             <span>2 — {t('generatePaths')}</span>
             <span>{pathsDictionnary.length}</span>
@@ -180,7 +236,7 @@ export default function GraouImportModal(props) {
               status.pathFindingDone ? '' : 'disabled'
             }`}
             type="button"
-            onClick={completePaths}
+            onClick={generateTrainSchedules}
           >
             <span>3 — {t('generateTrainSchedules')}</span>
             <span>{trains.length}</span>

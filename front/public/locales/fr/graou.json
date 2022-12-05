@@ -11,18 +11,21 @@
     "errorNoFrom": "Vous devez renseigner une origine.",
     "errorNoTo": "Vous devez renseigner une destination.",
     "errorNoDate": "Vous devez renseigner une date.",
-    "errorSameFromTo": "L'origine et la destination doivent être différentes."
+    "errorSameFromTo": "L'origine et la destination doivent être différentes.",
+    "unableToRetrievePathfinding": "Impossible de créer un chemin"
   },
   "noResults": "Aucun résultat",
   "datetime": "Date & horaires",
   "trainsFound": "trains trouvé(s)",
   "launchImport": "Démarrer l'importation",
-  "completeTrackSectionID": "Compléter les coordonnées GPS",
+  "completeTrackSectionID": "Compléter les coordonnées",
   "generatePaths": "Générer les pathfinding",
   "generateTrainSchedules": "Générer les calculs de marche",
   "status": {
-    "nothing": "Prêt à travailler.",
+    "ready": "Prêt.",
     "complete": "positionnez",
-    "uicComplete": "Tous les lieux ont été renseignés."
+    "uicComplete": "Tous les lieux ont été renseignés.",
+    "pathComplete": "Tous les pathfinding ont été effectués",
+    "searchingPath": "Génération pathfinding"
   }
 }

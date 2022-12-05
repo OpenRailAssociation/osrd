@@ -3,18 +3,12 @@ import PropTypes from 'prop-types';
 import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl';
 import { point as turfPoint, featureCollection } from '@turf/helpers';
 import { useSelector } from 'react-redux';
-import turfNearestPointOnLine, { NearestPointOnLine } from '@turf/nearest-point-on-line';
+import turfNearestPointOnLine from '@turf/nearest-point-on-line';
 import combine from '@turf/combine';
 
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
 import VirtualLayers from 'applications/osrd/views/OSRDSimulation/VirtualLayers';
-/* Settings & Buttons */
-import RenderItinerary from 'applications/osrd/components/OSRDConfMap/RenderItinerary';
-import RenderItineraryMarkers from 'applications/osrd/components/OSRDConfMap/RenderItineraryMarkers';
-/* Interactions */
-import RenderPopup from 'applications/osrd/components/OSRDConfMap/RenderPopup';
-import SearchMarker from 'common/Map/Layers/SearchMarker';
 import SnappedMarker from 'common/Map/Layers/SnappedMarker';
 /* Objects & various */
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
@@ -27,8 +21,8 @@ import OperationalPoints from 'common/Map/Layers/OperationalPoints';
 import Platforms from 'common/Map/Layers/Platforms';
 
 export default function Map(props) {
-  const { lngLat, viewport, setViewport, setClickedFeature } = props;
-  const { mapSearchMarker, mapStyle } = useSelector((state) => state.map);
+  const { viewport, setViewport, setClickedFeature } = props;
+  const { mapStyle } = useSelector((state) => state.map);
   const [idHover, setIdHover] = useState();
   const [lngLatHover, setLngLatHover] = useState();
   const [trackSectionGeoJSON, setTrackSectionGeoJSON] = useState();
@@ -117,25 +111,12 @@ export default function Map(props) {
         colors={colors[mapStyle]}
         layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
       />
-      <RenderPopup />
-
-      <RenderPopup />
-      <RenderItinerary layerOrder={LAYER_GROUPS_ORDER[LAYERS.ITINERARY.GROUP]} />
-      <RenderItineraryMarkers />
-      {mapSearchMarker !== undefined ? (
-        <SearchMarker data={mapSearchMarker} colors={colors[mapStyle]} />
-      ) : null}
       {snappedPoint !== undefined ? <SnappedMarker geojson={snappedPoint} /> : null}
     </ReactMapGL>
   );
 }
 
-Map.defaultProps = {
-  lngLat: undefined,
-};
-
 Map.propTypes = {
-  lngLat: PropTypes.array,
   viewport: PropTypes.object.isRequired,
   setViewport: PropTypes.func.isRequired,
   setClickedFeature: PropTypes.func.isRequired,
