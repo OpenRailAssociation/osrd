@@ -7,9 +7,10 @@ import rollingstockOpenData2OSRD from 'applications/opendata/components/rollings
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { getRollingStockID, getInfraID, getTimetableID } from 'reducers/osrdconf/selectors';
-import generatePathfindingPayload from 'applications/opendata/components/generatePathfinding';
-import generateTrainSchedules from 'applications/opendata/components/generateTrainSchedules';
+import generatePathfindingPayload from 'applications/opendata/components/generatePathfindingPayload';
+import generateTrainSchedulesPayload from 'applications/opendata/components/generateTrainSchedulesPayload';
 import { post } from 'common/requests';
+import { scheduleURL } from 'applications/osrd/components/Simulation/consts';
 
 const itineraryURI = '/pathfinding/';
 
@@ -189,6 +190,22 @@ export default function OpenDataImportModal(props) {
     }
   }
 
+  async function launchTrainSchedules(params) {
+    setWhatIAmDoingNow(`${t('status.calculatingTrainSchedule')}${params.path}`);
+    try {
+      await post(scheduleURL, params, {});
+      setWhatIAmDoingNow(`${t('status.calculatingTrainScheduleComplete')}${params.path}`);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  function generateTrainSchedules() {
+    const payload = generateTrainSchedulesPayload(trainsWithPathRef, infraID, timetableID);
+    Object.values(payload).forEach((params) => {
+      launchTrainSchedules(params);
+    });
+  }
+
   useEffect(() => {
     if (clickedFeature) {
       const actualUic = Object.keys(pointsDictionnary)[uicNumberToComplete];
@@ -240,7 +257,7 @@ export default function OpenDataImportModal(props) {
               status.pathFindingDone ? '' : 'disabled'
             }`}
             type="button"
-            onClick={() => generateTrainSchedules(trainsWithPathRef)}
+            onClick={generateTrainSchedules}
           >
             <span>3 — {t('generateTrainSchedules')}</span>
             <span>{trains.length}</span>
