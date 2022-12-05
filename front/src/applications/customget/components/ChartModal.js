@@ -27,7 +27,6 @@ function ChartModal(props) {
   );
 
   useEffect(() => {
-    console.log('effect');
     window.addEventListener('keydown', sendOffset);
     return () => {
       window.removeEventListener('keydown', sendOffset);
