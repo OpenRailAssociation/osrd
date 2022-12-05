@@ -25,4 +25,4 @@ jobs:
       - run: yarn --cwd front build
         env:
           CI: false
-      - run: yarn --cwd front --passWithNoTests test
+      - run: yarn --cwd front test-coverage
