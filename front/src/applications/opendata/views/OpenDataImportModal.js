@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { getRollingStockID, getInfraID, getTimetableID } from 'reducers/osrdconf/selectors';
 import generatePathfindingPayload from 'applications/opendata/components/generatePathfinding';
+import generateTrainSchedules from 'applications/opendata/components/generateTrainSchedules';
 import { post } from 'common/requests';
 
 const itineraryURI = '/pathfinding/';
@@ -139,7 +140,10 @@ export default function OpenDataImportModal(props) {
   ) {
     try {
       const itineraryCreated = await post(itineraryURI, params, {}, true);
-      continuePath(pathNumberToComplete + 1, { ...pathsIDs, [pathRefNum]: itineraryCreated.id });
+      continuePath(pathNumberToComplete + 1, {
+        ...pathsIDs,
+        [pathRefNum]: { pathId: itineraryCreated.id, rollingStockId: params.rolling_stocks[0] },
+      });
     } catch (e) {
       setWhatIAmDoingNow(
         <span className="text-danger">{t('errorMessages.unableToRetrievePathfinding')}</span>
@@ -175,14 +179,14 @@ export default function OpenDataImportModal(props) {
     } else {
       setWhatIAmDoingNow(t('status.pathComplete'));
       setTrainsWithPathRef(
-        trainsWithPathRef.map((train) => ({ ...train, pathId: pathsIDs[train.pathRef] }))
+        trainsWithPathRef.map((train) => ({
+          ...train,
+          pathId: pathsIDs[train.pathRef].pathId,
+          rollingStockId: pathsIDs[train.pathRef].rollingStockId,
+        }))
       );
       setStatus({ ...status, pathFindingDone: true });
     }
-  }
-
-  function generateTrainSchedules() {
-    console.log('coucou', trainsWithPathRef);
   }
 
   useEffect(() => {
@@ -236,7 +240,7 @@ export default function OpenDataImportModal(props) {
               status.pathFindingDone ? '' : 'disabled'
             }`}
             type="button"
-            onClick={generateTrainSchedules}
+            onClick={() => generateTrainSchedules(trainsWithPathRef)}
           >
             <span>3 — {t('generateTrainSchedules')}</span>
             <span>{trains.length}</span>
