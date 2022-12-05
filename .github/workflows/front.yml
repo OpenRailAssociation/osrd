@@ -21,8 +21,28 @@ jobs:
           node-version: 16
           cache: "yarn"
           cache-dependency-path: front/yarn.lock
-      - run: yarn --cwd front install
-      - run: yarn --cwd front test-coverage
-      - run: yarn --cwd front build
+
+      - name: install dependencies
+        run: yarn --cwd front install
+
+      - name: run front test suite
+        run: yarn --cwd front test-coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          # github runs PR workflows on the result of a merge commit.
+          # tell codecov the sha of the unmerged PR https://github.com/codecov/uploader/issues/525
+          override_commit: "${{ github.event.pull_request.head.sha }}"
+          name: codecov
+          flags: core
+          directory: ./core/build/reports/jacoco/test
+          files: jacocoTestReport.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          verbose: true
+
+      - name: build project
+        run: yarn --cwd front build
         env:
           CI: false
