@@ -21,8 +21,6 @@ jobs:
           node-version: 16
           cache: "yarn"
           cache-dependency-path: front/yarn.lock
+      - run: yarn --cwd front test-coverage
       - run: yarn --cwd front install
       - run: yarn --cwd front build
-        env:
-          CI: false
-      - run: yarn --cwd front test-coverage
