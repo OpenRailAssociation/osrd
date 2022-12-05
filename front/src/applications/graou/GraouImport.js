@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import GraouImportConfig from 'applications/graou/views/GraouImportConfig';
 import GraouTrainsList from 'applications/graou/views/GraouTrainsList';
+import GraouGlobalSettings from 'applications/graou/views/GraouGlobalSettings';
 import { get } from 'common/requests';
 import Loader from 'common/Loader';
 
@@ -30,6 +31,7 @@ export default function GraouImport() {
     <main className="osrd-config-mastcontainer mastcontainer graou-import">
       <div className="p-3">
         <GraouImportConfig setConfig={setConfig} />
+        <GraouGlobalSettings />
         <GraouTrainsList config={config} rollingStockDB={rollingStockDB} />
       </div>
     </main>

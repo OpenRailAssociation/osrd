@@ -88,7 +88,7 @@ function StationSelector(props) {
           ))}
         </div>
       ) : null}
-      {isSearching ? <Loader /> : null}
+      {isSearching ? <Loader position="center" /> : null}
     </>
   );
 }

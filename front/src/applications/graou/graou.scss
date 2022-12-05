@@ -1,5 +1,31 @@
 .graou-import {
   --graougreen: #329623;
+  
+  .graou-import-global-settings {
+    background-color: var(--coolgray9);
+    border-radius: 4px;
+    padding: .25rem .5rem 0;
+    margin-bottom: .5rem;
+    transition: .2s;
+    &:hover {
+      background-color: var(--coolgray7);
+    }
+    .graou-import-global-settings-bar {
+      display: flex;
+      align-items: center;
+      justify-content: end;
+      cursor: pointer;
+      color: var(--light);
+      padding: 0 0 .25rem;
+    }
+    .graou-import-global-settings-items {
+      display: none;
+      &.active {
+        display: block;
+      }
+    }
+  }
+  
   .osrd-config-item-from {
     background-color: var(--green);
   }

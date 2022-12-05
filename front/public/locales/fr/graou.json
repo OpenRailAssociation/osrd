@@ -1,31 +1,33 @@
 {
+  "closeOSRDConfig": "Fermer",
+  "completeTrackSectionID": "Compléter les coordonnées",
   "date": "DATE",
-  "from": "Origine",
-  "to": "Destination",
-  "import": "Importation",
-  "inputPlaceholder": "Nom, trigramme",
-  "startTime": "DÉBUT",
+  "datetime": "Date & horaires",
   "endTime": "FIN",
   "errorMessages": {
     "error": "Une erreur est survenue",
+    "errorNoDate": "Vous devez renseigner une date.",
     "errorNoFrom": "Vous devez renseigner une origine.",
     "errorNoTo": "Vous devez renseigner une destination.",
-    "errorNoDate": "Vous devez renseigner une date.",
     "errorSameFromTo": "L'origine et la destination doivent être différentes.",
     "unableToRetrievePathfinding": "Impossible de créer un chemin"
   },
-  "noResults": "Aucun résultat",
-  "datetime": "Date & horaires",
-  "trainsFound": "trains trouvé(s)",
-  "launchImport": "Démarrer l'importation",
-  "completeTrackSectionID": "Compléter les coordonnées",
+  "from": "Origine",
   "generatePaths": "Générer les pathfinding",
   "generateTrainSchedules": "Générer les calculs de marche",
+  "import": "Importation",
+  "inputPlaceholder": "Nom, trigramme",
+  "launchImport": "Démarrer l'importation",
+  "noResults": "Aucun résultat",
+  "openOSRDConfig": "Infra / Table horaire / Matériel",
+  "startTime": "DÉBUT",
   "status": {
-    "ready": "Prêt.",
     "complete": "positionnez",
-    "uicComplete": "Tous les lieux ont été renseignés.",
     "pathComplete": "Tous les pathfinding ont été effectués",
-    "searchingPath": "Génération pathfinding"
-  }
+    "ready": "Prêt.",
+    "searchingPath": "Génération pathfinding",
+    "uicComplete": "Tous les lieux ont été renseignés."
+  },
+  "to": "Destination",
+  "trainsFound": "trains trouvé(s)"
 }
