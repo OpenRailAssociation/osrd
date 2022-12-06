@@ -122,7 +122,7 @@
     "compile": "tsc -b",
     "start": "react-scripts start",
     "build": "react-scripts --max_old_space_size=4096 build",
-    "test": "react-scripts test --watchAll=false",
+    "test": "react-scripts test",
     "test-coverage": "react-scripts test --watchAll=false --coverage --testResultsProcessor=jest-junit --reporters=default --reporters=jest-junit",
     "eject": "react-scripts eject",
     "lint-ts": "eslint --ext .ts,.tsx src",
