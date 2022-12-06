@@ -41,6 +41,12 @@ const convertData = (trains) => {
     id: idx,
     name: train.name ? train.name : train.train_metadata.name,
     color: randomColor(),
+    labels: [],
+    path: 0,
+    vmax: [],
+    slopes: [],
+    curves: [],
+    speeds: [],
     base: {
       head_positions: [
         train.space_time_curves.time_table
@@ -69,6 +75,10 @@ const convertData = (trains) => {
           ? train.space_time_curves.time_table
           : train.space_time_curves[0].points
       ),
+      route_begin_occupancy: [],
+      route_end_occupancy: [],
+      route_aspects: [],
+      signals: [],
     },
   }));
   return newData;

@@ -55,7 +55,7 @@ export function defineLinear(max: any, pctMarge = 0, origin = 0) {
   return d3.scaleLinear().domain([origin - max * pctMarge, max + max * pctMarge]);
 }
 
-export function formatStepsWithTime<T extends { time: number }>(data: Array<T>) {
+export function formatStepsWithTime<T extends { time: number }>(data: Array<T> = []) {
   return data.map((step) => ({ ...step, time: sec2d3datetime(step.time) }));
 }
 
