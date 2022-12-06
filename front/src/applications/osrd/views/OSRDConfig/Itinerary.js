@@ -14,7 +14,7 @@ import ModalSugerredVias from 'applications/osrd/components/Itinerary/ModalSugge
 import ModalPathJSONDetail from 'applications/osrd/components/Itinerary/ModalPathJSONDetail';
 import PropTypes from 'prop-types';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
-import { WebMercatorViewport } from 'react-map-gl';
+import { WebMercatorViewport } from 'viewport-mercator-project';
 import bbox from '@turf/bbox';
 import { post } from 'common/requests';
 import { setFailure } from 'reducers/main';

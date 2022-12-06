@@ -5,8 +5,8 @@ import booleanIntersects from '@turf/boolean-intersects';
 import bbox from '@turf/bbox';
 import lineIntersect from '@turf/line-intersect';
 import lineSlice from '@turf/line-slice';
-import { MapController, ViewportProps, WebMercatorViewport } from 'react-map-gl';
-import { MjolnirEvent } from 'react-map-gl/dist/es5/utils/map-controller';
+import WebMercatorViewport from 'viewport-mercator-project';
+import { ViewState } from 'react-map-gl';
 import { BBox, Coord, featureCollection } from '@turf/helpers';
 import {
   Feature,
@@ -23,33 +23,6 @@ import nearestPoint, { NearestPoint } from '@turf/nearest-point';
 
 import { Zone } from '../types';
 import { getAngle } from '../applications/editor/data/utils';
-
-/**
- * This class allows binding keyboard events to react-map-gl. Since those events are not supported
- * by the lib, you can instantiate this KeyDownMapController and give it to your ReactMapGL
- * component as the `controller` prop, and keep its handler function up to date with an effect.
- */
-type MjolnirHandler = (event: MjolnirEvent) => boolean;
-export class KeyDownMapController extends MapController {
-  handler: MjolnirHandler | undefined;
-
-  constructor(handler: MjolnirHandler) {
-    super();
-    this.setHandler(handler);
-  }
-
-  setHandler(handler: MjolnirHandler): void {
-    this.handler = handler;
-  }
-
-  handleEvent(event: MjolnirEvent): boolean {
-    if (this.handler && event.type === 'keydown') {
-      this.handler(event);
-    }
-
-    return super.handleEvent(event);
-  }
-}
 
 /**
  * This helpers transforms a given Zone object to the related Feature object (mainly to use with
@@ -244,8 +217,8 @@ export function selectInZone<T extends Feature>(data: Array<T>, zone?: Zone): T[
  */
 export function getZoneViewport(
   zone: Zone,
-  viewport: { width: number; height: number }
-): ViewportProps {
+  viewport?: { width: number; height: number }
+): ViewState {
   const [minLng, minLat, maxLng, maxLat] = zoneToBBox(zone);
   const vp = new WebMercatorViewport(viewport);
   const { longitude, latitude, zoom } = vp.fitBounds(
@@ -264,6 +237,7 @@ export function getZoneViewport(
     zoom,
     bearing: 0,
     pitch: 0,
+    padding: { top: 0, left: 0, bottom: 0, right: 0 },
   };
 }
 

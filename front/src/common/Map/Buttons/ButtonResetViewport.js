@@ -1,5 +1,4 @@
 import React from 'react';
-import { FlyToInterpolator } from 'react-map-gl';
 import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import { FaCompass } from 'react-icons/fa';
@@ -13,8 +12,6 @@ export default function ButtonResetViewport(props) {
       ...viewport,
       bearing: 0,
       pitch: 0,
-      transitionDuration: 1000,
-      transitionInterpolator: new FlyToInterpolator(),
     };
     updateLocalViewport(newViewport, 1000);
   };

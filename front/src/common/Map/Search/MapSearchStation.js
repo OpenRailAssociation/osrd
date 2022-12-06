@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { FlyToInterpolator } from 'react-map-gl';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateMapSearchMarker } from 'reducers/map';
@@ -52,8 +51,6 @@ export default function MapSearchStation(props) {
         longitude: lonlat[0],
         latitude: lonlat[1],
         zoom: 12,
-        transitionDuration: 1000,
-        transitionInterpolator: new FlyToInterpolator(),
       };
       updateExtViewport(newViewport);
       dispatch(updateMapSearchMarker({ title: result.name, lonlat }));

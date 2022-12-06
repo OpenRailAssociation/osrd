@@ -168,3 +168,5 @@ export interface ApiInfrastructure {
   name: string;
   version: string;
 }
+
+export * from './mapbox-gl';

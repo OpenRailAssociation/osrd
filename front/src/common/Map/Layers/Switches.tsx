@@ -1,15 +1,17 @@
 import React, { FC } from 'react';
 import { useSelector } from 'react-redux';
-import { Source, LayerProps } from 'react-map-gl';
-
+import { Source, SymbolLayer, CircleLayer } from 'react-map-gl';
 import { MAP_URL } from 'common/Map/const';
 import { RootState } from 'reducers';
 import { Theme } from 'types';
 
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 
-export function getSwitchesLayerProps(params: { colors: Theme; sourceTable?: string }): LayerProps {
-  const res: LayerProps = {
+export function getSwitchesLayerProps(params: {
+  colors: Theme;
+  sourceTable?: string;
+}): Omit<CircleLayer, 'id'> {
+  const res: Omit<CircleLayer, 'id'> = {
     type: 'circle',
     paint: {
       'circle-stroke-color': params.colors.switches.circle,
@@ -26,8 +28,8 @@ export function getSwitchesLayerProps(params: { colors: Theme; sourceTable?: str
 export function getSwitchesNameLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
-}): LayerProps {
-  const res: LayerProps = {
+}): Omit<SymbolLayer, 'id'> {
+  const res: Omit<SymbolLayer, 'id'> = {
     type: 'symbol',
     layout: {
       'text-field': '{label}',
@@ -62,8 +64,8 @@ const Switches: FC<SwitchesProps> = (props) => {
   const { infraID } = useSelector((state: RootState) => state.osrdconf);
   const { geomType, colors, layerOrder } = props;
 
-  const layerPoint: LayerProps = getSwitchesLayerProps({ colors, sourceTable: 'switches' });
-  const layerName: LayerProps = getSwitchesNameLayerProps({ colors, sourceTable: 'switches' });
+  const layerPoint = getSwitchesLayerProps({ colors, sourceTable: 'switches' });
+  const layerName = getSwitchesNameLayerProps({ colors, sourceTable: 'switches' });
 
   return layersSettings.switches ? (
     <Source

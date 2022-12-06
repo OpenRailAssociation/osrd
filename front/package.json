@@ -79,6 +79,7 @@
     "sass": "^1.55.0",
     "tslib": "^2.4.1",
     "uuid": "^8.3.2",
+    "viewport-mercator-project": "^7.0.4",
     "web-vitals": "^2.1.0"
   },
   "devDependencies": {
