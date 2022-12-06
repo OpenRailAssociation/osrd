@@ -3,7 +3,9 @@ import { AnyAction, Dispatch } from 'redux';
 
 import {
   DEFAULT_MODE,
-  DEFAULT_STDCM_MODE, OsrdConfState, PointOnMap
+  DEFAULT_STDCM_MODE,
+  OsrdConfState,
+  PointOnMap,
 } from 'applications/osrd/consts';
 import { formatIsoDate } from 'utils/date';
 import { boundedValue } from 'utils/numbers';
@@ -457,7 +459,7 @@ export function updateItinerary(geojson: any) {
     });
   };
 }
-export function updateFeatureInfoClickOSRD(featureInfoClick: any) {
+export function updateFeatureInfoClickOSRD(featureInfoClick: OsrdConfState['featureInfoClick']) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_FEATURE_INFO_CLICK_OSRD,

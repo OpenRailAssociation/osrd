@@ -29,6 +29,7 @@ export type {
   RasterLayer,
   SymbolLayer,
   SkyLayer,
+  LngLat,
 } from 'mapbox-gl';
 
 export type AnyLayer =

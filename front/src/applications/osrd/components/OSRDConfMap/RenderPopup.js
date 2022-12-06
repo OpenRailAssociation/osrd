@@ -20,12 +20,15 @@ export default function RenderPopup() {
     }
 
     featureInfoClick.feature.properties.source = featureInfoClick.feature.source;
-    featureInfoClick.feature.properties.clickLngLat = featureInfoClick.lngLat;
+    featureInfoClick.feature.properties.clickLngLat = [
+      featureInfoClick.lngLat.lng,
+      featureInfoClick.lngLat.lat,
+    ];
 
     return (
       <Popup
-        longitude={featureInfoClick.lngLat[0]}
-        latitude={featureInfoClick.lngLat[1]}
+        longitude={featureInfoClick.lngLat.lng}
+        latitude={featureInfoClick.lngLat.lat}
         closeButton={false}
         className="mapboxgl-hover-custom-popup"
       >
