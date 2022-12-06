@@ -89,7 +89,7 @@ function checkWrapperValidity<T = any>(
   if (newLine)
     assert.equal(
       Math.round(last(result)?.end || 0),
-      Math.round(getLineStringDistance(newLine) * 1000),
+      Math.round(getLineStringDistance(newLine)),
       message
     );
   // Checking the continuity
