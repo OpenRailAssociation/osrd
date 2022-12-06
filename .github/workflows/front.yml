@@ -36,8 +36,8 @@ jobs:
           override_commit: "${{ github.event.pull_request.head.sha }}"
           name: codecov
           flags: front
-          directory: ./front
-          files: junit.xml
+          directory: ./front/test
+          files: cobertura-coverage.xml
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
           verbose: true
