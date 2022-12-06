@@ -1,7 +1,7 @@
 import React, { FC, useContext } from 'react';
 import { useSelector } from 'react-redux';
 
-import { EditorContext } from '../../context';
+import EditorContext from '../../context';
 import { Zone } from '../../../../types';
 import colors from '../../../../common/Map/Consts/colors';
 import EditorZone from '../../../../common/Map/Layers/EditorZone';

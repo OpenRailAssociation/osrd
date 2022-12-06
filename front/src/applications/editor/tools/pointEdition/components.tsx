@@ -17,7 +17,7 @@ import { PointEditionState } from './types';
 import EditorForm from '../../components/EditorForm';
 import { cleanSymbolType, flattenEntity, NEW_ENTITY_ID } from '../../data/utils';
 import { EditorContextType, ExtendedEditorContextType } from '../types';
-import { EditorContext } from '../../context';
+import EditorContext from '../../context';
 import EntitySumUp from '../../components/EntitySumUp';
 
 export const POINT_LAYER_ID = 'pointEditionTool/new-entity';

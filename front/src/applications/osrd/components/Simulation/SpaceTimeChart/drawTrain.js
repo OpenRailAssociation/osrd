@@ -2,16 +2,15 @@ import * as d3 from 'd3';
 import { drag as d3drag } from 'd3-drag';
 
 import { getDirection } from 'applications/osrd/components/Helpers/ChartHelpers';
+import drawCurve from 'applications/osrd/components/Simulation/drawCurve';
+import drawRect from 'applications/osrd/components/Simulation/drawRect';
+import drawText from 'applications/osrd/components/Simulation/drawText';
 import {
   updateContextMenu,
   updateMustRedraw,
   updateSelectedTrain,
   updateDepartureArrivalTimes,
 } from 'reducers/osrdsimulation/actions';
-
-import drawCurve from 'applications/osrd/components/Simulation/drawCurve';
-import drawRect from 'applications/osrd/components/Simulation/drawRect';
-import drawText from 'applications/osrd/components/Simulation/drawText';
 import { makeDepartureArrivalTimes } from 'reducers/osrdsimulation';
 
 export default function drawTrain(

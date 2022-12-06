@@ -10,7 +10,7 @@ import signalsIcon from 'assets/pictures/layersicons/layer_signal.svg';
 
 import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 import MapSettingsShowOrthoPhoto from 'common/Map/Settings/MapSettingsShowOrthoPhoto';
-import { EditorContext } from '../context';
+import EditorContext from '../context';
 import Modal from './Modal';
 import { LayerType, ModalProps, OBJTYPE_TO_LAYER_DICT } from '../tools/types';
 import { selectLayers } from '../../../reducers/editor';

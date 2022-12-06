@@ -1,5 +1,5 @@
 import React from 'react';
-import { Source, Layer } from 'react-map-gl';
+import { Source } from 'react-map-gl';
 import { useSelector } from 'react-redux';
 
 import { RootState } from 'reducers';

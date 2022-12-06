@@ -69,6 +69,4 @@ export default async function getStdcmTimetable(
   } catch (e) {
     console.log('ERROR', e);
   }
-};
-
-
+}

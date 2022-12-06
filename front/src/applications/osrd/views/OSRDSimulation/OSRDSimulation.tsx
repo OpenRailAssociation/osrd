@@ -11,7 +11,7 @@ import {
   updateSelectedProjection,
   updateSelectedTrain,
   updateSimulation,
-  updateStickyBar
+  updateStickyBar,
 } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 

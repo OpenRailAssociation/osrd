@@ -4,12 +4,7 @@ import 'applications/osrd/views/OSRDConfig/OSRDConfig.scss';
 import { KEY_VALUES_FOR_CONSOLIDATED_SIMULATION } from 'applications/osrd/components/Simulation/consts';
 
 import React, { useEffect } from 'react';
-import {
-  updateConsolidatedSimulation,
-  updateMustRedraw,
-  updateSelectedProjection,
-  updateSimulation
-} from 'reducers/osrdsimulation/actions';
+import { updateConsolidatedSimulation, updateMustRedraw } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
 import SpaceTimeChart from 'applications/osrd/views/OSRDSimulation/SpaceTimeChart';
@@ -18,21 +13,13 @@ import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/
 
 import { STDCM_REQUEST_STATUS } from 'applications/osrd/consts';
 import { useTranslation } from 'react-i18next';
-import getStdcmTimetable from 'applications/stdcm/getStdcmTimetable';
-import DriverTrainSchedule from 'applications/osrd/views/OSRDSimulation/DriverTrainSchedule';
-import { getTimetableID } from 'reducers/osrdconf/selectors';
 
 export default function OSRDStcdmResults(props) {
   const selectedTrain = useSelector((state) => state.osrdsimulation.selectedTrain);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
-  const timetableID = useSelector(getTimetableID);
-  //const { timetableID } = useSelector((state) => state.osrdconf);
   const { t } = useTranslation(['translation', 'osrdconf']);
   const { currentStdcmRequestStatus } = props;
-  const allowancesSettings = useSelector((state) => state.osrdsimulation.allowancesSettings);
-  const selectedProjection = useSelector((state) => state.osrdsimulation.selectedProjection);
   const dispatch = useDispatch();
-
 
   // With this hook we update and store
   // the consolidatedSimuation (simualtion stucture for the selected train)
@@ -47,7 +34,7 @@ export default function OSRDStcdmResults(props) {
     dispatch(updateConsolidatedSimulation(consolidatedSimulation));
     dispatch(updateMustRedraw(true));
   }, [simulation]);
-  
+
   let stdcmResultsSection;
   if (
     currentStdcmRequestStatus === STDCM_REQUEST_STATUS.success &&
@@ -69,7 +56,6 @@ export default function OSRDStcdmResults(props) {
             </div>
           </div>
         </div>
-        
       </main>
     );
   } else if (currentStdcmRequestStatus === STDCM_REQUEST_STATUS.noresults) {

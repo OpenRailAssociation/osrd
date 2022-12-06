@@ -9,7 +9,6 @@ import {
   interpolateOnTime,
 } from 'applications/osrd/components/Helpers/ChartHelpers';
 import {
-  updateChartXGEV,
   updateContextMenu,
   updateMustRedraw,
   updateTimePositionValues,
@@ -229,16 +228,14 @@ const enableInteractivity = (
   positionValues,
   rotate,
   setChart,
-  setYPosition,
-  setZoomLevel,
-  yPosition,
-  zoomLevel
+  _setYPosition,
+  _setZoomLevel,
+  _yPosition,
+  _zoomLevel
 ) => {
   if (!chart) return;
 
   let newHoverPosition;
-
-  let lastChartX;
 
   // Ovverride the default wheelDelta computation to get smoother zoom
   function wheelDelta(event) {
@@ -262,26 +259,20 @@ const enableInteractivity = (
     ])
     .wheelDelta(wheelDelta)
     .on('zoom', (event) => {
-      const eventTransform = event.transform;
-
       event.sourceEvent.preventDefault();
 
       const zoomFunctions = updateChart(chart, keyValues, rotate, event);
       const newChart = { ...chart, x: zoomFunctions.newX, y: zoomFunctions.newY };
-      lastChartX = zoomFunctions.newX;
       setChart(newChart);
     })
-    .filter((event) => {
-      return (event.button === 0 || event.button === 1) && (event.ctrlKey || event.shiftKey);
-    })
+    .filter(
+      (event) => (event.button === 0 || event.button === 1) && (event.ctrlKey || event.shiftKey)
+    )
     .on('start', () => {
-      if(dispatch) dispatch(updateContextMenu(undefined));
+      if (dispatch) dispatch(updateContextMenu(undefined));
     })
     .on('end', () => {
-      if (keyValues[1] === 'speed' || keyValues[1] === 'gradient') {
-        //dispatch(updateChartXGEV(lastChartX));
-      }
-      if(dispatch) dispatch(updateMustRedraw(true));
+      if (dispatch) dispatch(updateMustRedraw(true));
     });
 
   let debounceTimeoutId;
@@ -289,11 +280,11 @@ const enableInteractivity = (
   function debounceUpdateTimePositionValues(timePositionLocal, immediatePositionsValues, interval) {
     clearTimeout(debounceTimeoutId);
     debounceTimeoutId = setTimeout(() => {
-      if(dispatch) dispatch(updateTimePositionValues(timePositionLocal, null));
+      if (dispatch) dispatch(updateTimePositionValues(timePositionLocal, null));
     }, interval);
   }
 
-  const mousemove = (event, value) => {
+  const mousemove = (event, _value) => {
     // If GET && not playing
     const { osrdsimulation } = store.getState();
     if (!osrdsimulation.isPlaying) {

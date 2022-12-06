@@ -38,7 +38,7 @@ function FormatSwitch(props) {
     );
   };
 
-  const getTagsList = async (zoom, params) => {
+  const getTagsList = async (_zoom, _params) => {
     try {
       const tagsList = await get(`/infra/${infraID}/speed_limit_tags/`);
 

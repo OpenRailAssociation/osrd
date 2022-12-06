@@ -17,7 +17,7 @@ import Platforms from '../../common/Map/Layers/Platforms';
 import osmBlankStyle from '../../common/Map/Layers/osmBlankStyle';
 import OrthoPhoto from '../../common/Map/Layers/OrthoPhoto';
 import { Viewport } from '../../reducers/map';
-import { EditorContext } from './context';
+import EditorContext from './context';
 import {
   CommonToolState,
   EditorContextType,
@@ -26,8 +26,6 @@ import {
   OSRDConf,
   Tool,
 } from './tools/types';
-
-const DEFAULT_RADIUS = 6;
 
 interface MapProps<S extends CommonToolState = CommonToolState> {
   t: TFunction;
