@@ -67,6 +67,18 @@
         "react/no-array-index-key": 0,
         "react/require-default-props": 0
       }
+    },
+    {
+      "files": ["**/*.ts", "**/*.tsx"],
+      "rules": {
+        "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }]
+      }
+    },
+    {
+      "files": ["**/*.js", "**/*.jsx"],
+      "rules": {
+        "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }]
+      }
     }
   ]
 }

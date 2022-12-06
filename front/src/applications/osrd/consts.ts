@@ -1,6 +1,6 @@
-import { SwitchType, LngLat } from 'types';
+import { SwitchType } from 'types';
 import { ValueOf } from 'utils/types';
-import { Position, Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
+import { Position, Feature, Point } from 'geojson';
 
 export const BLOCKTYPES = [
   {

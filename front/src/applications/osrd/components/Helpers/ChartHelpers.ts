@@ -17,12 +17,13 @@ export function sec2d3datetime(time: number) {
   return d3.timeParse('%H:%M:%S')(sec2time(time));
 }
 
+/* eslint-disable no-bitwise */
 export function colorModelToHex(color: any) {
-  // eslint-disable-next-line no-bitwise
   return `rgba(${(color >> 16) & 0xff}, ${(color >> 8) & 0xff}, ${color & 0xff}, ${
     (color >> 24) & 0xff
   })`;
 }
+/* eslint-enable no-bitwise */
 
 /**
  * returns Contextualized offset not depending on days ahead

@@ -1,5 +1,5 @@
 import produce from 'immer';
-import { flatten, keyBy, mapValues } from 'lodash';
+import { flatten, mapValues } from 'lodash';
 import { createSelector } from 'reselect';
 import { Feature } from 'geojson';
 

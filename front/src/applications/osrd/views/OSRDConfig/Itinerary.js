@@ -77,10 +77,10 @@ function Itinerary(props) {
   // Obtain only asked vias
   const convertPathfindingVias = (steps, idxToAdd) => {
     const count = steps.length - 1;
-    const vias = [];
+    const newVias = [];
     steps.forEach((step, idx) => {
       if (idx !== 0 && idx !== count && (!step.suggestion || idxToAdd === idx)) {
-        vias.push({
+        newVias.push({
           ...step,
           id: step.position,
           clickLngLat: [
@@ -90,7 +90,7 @@ function Itinerary(props) {
         });
       }
     });
-    dispatch(replaceVias(vias));
+    dispatch(replaceVias(newVias));
     dispatch(updateSuggeredVias(steps));
   };
 
@@ -204,8 +204,8 @@ function Itinerary(props) {
       dispatch(updateOrigin(osrdconf.destination));
       dispatch(updateDestination(origin));
       if (osrdconf.vias && osrdconf.vias.length > 1) {
-        const vias = Array.from(osrdconf.vias);
-        dispatch(replaceVias(vias.reverse()));
+        const newVias = Array.from(osrdconf.vias);
+        dispatch(replaceVias(newVias.reverse()));
       }
       setLaunchPathfinding(true);
     }

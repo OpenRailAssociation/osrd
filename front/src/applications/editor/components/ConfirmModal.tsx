@@ -1,6 +1,6 @@
 import React, { FC, useContext } from 'react';
 
-import { EditorContext } from '../context';
+import EditorContext from '../context';
 import Modal from './Modal';
 import { ModalProps } from '../tools/types';
 

@@ -114,8 +114,7 @@ export default function SpaceTimeChart(props) {
     });
   };
 
-  // eslint-disable-next-line default-param-last
-  const drawAllTrains = (reset, forceRedraw = false, newDataSimulation) => {
+  const drawAllTrains = (reset, forceRedraw = false, newDataSimulation = undefined) => {
     const currentDataSimulation = newDataSimulation || dataSimulation;
 
     if (mustRedraw || forceRedraw) {

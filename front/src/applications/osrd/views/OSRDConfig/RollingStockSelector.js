@@ -18,7 +18,6 @@ import { getRollingStockID, getRollingStockComfort } from 'reducers/osrdconf/sel
 const ROLLINGSTOCK_URL = '/rolling_stock';
 
 export default function RollingStockSelector() {
-
   const rollingStockID = useSelector(getRollingStockID);
   const rollingStockComfort = useSelector(getRollingStockComfort);
 
