@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { updateInfraID, updateTimetableID, deleteItinerary } from 'reducers/osrdconf';
 import nextId from 'react-id-generator';
-import { datetime2string } from 'utils/timeManipulation';
 import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';

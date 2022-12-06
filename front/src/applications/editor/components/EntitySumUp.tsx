@@ -10,7 +10,7 @@ import {
   SwitchEntity,
   TrackSectionEntity,
 } from '../../../types';
-import { EditorContext } from '../context';
+import EditorContext from '../context';
 import { ExtendedEditorContextType } from '../tools/types';
 
 function prettifyStringsArray(strings: string[], finalSeparator: string): string {

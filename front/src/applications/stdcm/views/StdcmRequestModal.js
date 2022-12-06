@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { get } from 'common/requests';
+import { get, post } from 'common/requests';
 // osrd Redux reducers
 import {
   updateAllowancesSettings,
@@ -7,11 +7,14 @@ import {
   updateMustRedraw,
   updateSelectedTrain,
   updateSimulation,
-  updateSelectedProjection
+  updateSelectedProjection,
 } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { KEY_VALUES_FOR_CONSOLIDATED_SIMULATION } from 'applications/osrd/components/Simulation/consts';
+import {
+  KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
+  trainscheduleURI,
+} from 'applications/osrd/components/Simulation/consts';
 
 // Generic components
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
@@ -21,14 +24,12 @@ import ReactModal from 'react-modal';
 // OSRD helpers
 import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/createTrain';
 import formatStdcmConf from 'applications/stdcm/formatStcmConf';
-import { post } from 'common/requests';
 // Static Data and Assets
 import rabbit from 'assets/pictures/KLCW_nc_standard.png';
 import { setFailure } from 'reducers/main';
 import { STDCM_REQUEST_STATUS } from 'applications/osrd/consts';
 import { updateItinerary } from 'reducers/osrdconf';
 import { useTranslation } from 'react-i18next';
-import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
 
 const timetableURI = '/timetable/';
 
@@ -37,7 +38,6 @@ export default function StdcmRequestModal(props) {
   const osrdconf = useSelector((state) => state.osrdconf);
 
   const { allowancesSettings } = useSelector((state) => state.osrdsimulation);
-  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
 
   // Theses are prop-drilled from OSRDSTDCM Component, which is conductor.
@@ -76,10 +76,6 @@ export default function StdcmRequestModal(props) {
               duration: 0,
             })
           );
-
-          const trainSchedulesIDs = simulation.trains
-            .filter((train) => !train.isStdcm)
-            .map((train) => train.id);
 
           // ask for timetable with the new path
           get(`${timetableURI}${osrdconf.timetableID}/`).then((timetable) => {

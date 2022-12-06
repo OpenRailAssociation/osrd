@@ -73,19 +73,17 @@ export default function AddTrainSchedule(props) {
   };
 
   const debouncedUpdateName = debounce((newName) => {
-    dispatch(updateName(newName))
-  }, 300)
+    dispatch(updateName(newName));
+  }, 300);
 
   const handleNameChange = useCallback((newName) => {
-    setName(newName)
-    debouncedUpdateName(newName)
-  }, [])
+    setName(newName);
+    debouncedUpdateName(newName);
+  }, []);
 
   useEffect(() => {
-    setName(osrdconf.name)
+    setName(osrdconf.name);
   }, [osrdconf]);
-
-
 
   return (
     <div className="osrd-config-item">

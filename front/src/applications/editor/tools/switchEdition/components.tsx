@@ -10,7 +10,7 @@ import { Layer, Popup, Source } from 'react-map-gl';
 import { featureCollection, point } from '@turf/helpers';
 import nearestPoint from '@turf/nearest-point';
 
-import { EditorContext } from '../../context';
+import EditorContext from '../../context';
 import { ExtendedEditorContextType, OSRDConf } from '../types';
 import {
   CreateEntityOperation,
@@ -257,7 +257,7 @@ export const SwitchEditionLeftPanel: FC = () => {
           if (id && id !== entityToSave.properties.id)
             setState({
               ...state,
-              entity: { ...entityToSave, properties: { ...entityToSave.properties, id: id + '' } },
+              entity: { ...entityToSave, properties: { ...entityToSave.properties, id: `${id}` } },
             });
         }}
         onChange={(flatSwitch) => {

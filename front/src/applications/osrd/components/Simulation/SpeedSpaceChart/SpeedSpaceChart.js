@@ -1,23 +1,19 @@
 import * as d3 from 'd3';
-import { ORSD_GEV_SAMPLE_DATA } from 'applications/osrd/components/Simulation/SpeedSpaceChart/sampleData';
 import React, { useEffect, useRef, useState } from 'react';
-
+import { CgLoadbar } from 'react-icons/cg';
+import { GiResize } from 'react-icons/gi';
+import PropTypes from 'prop-types';
 import enableInteractivity, {
   traceVerticalLine,
 } from 'applications/osrd/components/Simulation/enableInteractivity';
-import { updateChartXGEV, updateMustRedraw } from 'reducers/osrdsimulation';
-
-
-import { CgLoadbar } from 'react-icons/cg';
-import { GiResize } from 'react-icons/gi';
 import { LIST_VALUES_NAME_SPEED_SPACE } from 'applications/osrd/components/Simulation/consts';
-import PropTypes from 'prop-types';
 import prepareData from 'applications/osrd/components/Simulation/SpeedSpaceChart/prepareData';
 import {
   createChart,
   drawTrain,
 } from 'applications/osrd/components/Simulation/SpeedSpaceChart/d3Helpers';
 import SpeedSpaceSettings from 'applications/osrd/components/Simulation/SpeedSpaceSettings/SpeedSpaceSettings';
+import ORSD_GEV_SAMPLE_DATA from './sampleData';
 
 const CHART_ID = 'SpeedSpaceChart';
 /**
@@ -26,8 +22,8 @@ const CHART_ID = 'SpeedSpaceChart';
  * - One train only (current selected)
  * - Vertical line to the current position
  * - 2 marchs displayed: base and alternative
- * 
- */export default function SpeedSpaceChart(props) {
+ *
+ */ export default function SpeedSpaceChart(props) {
   const {
     heightOfSpeedSpaceChart,
     simulation,
@@ -39,7 +35,7 @@ const CHART_ID = 'SpeedSpaceChart';
     speedSpaceSettings,
     timePosition,
     consolidatedSimulation,
-    toggleSetting
+    toggleSetting,
   } = props;
 
   const [showSettings, setShowSettings] = useState(false);
@@ -65,7 +61,6 @@ const CHART_ID = 'SpeedSpaceChart';
       originalScaleY: chart.originalScaleX,
     });
     setRotate(!rotate);
-
   };
 
   const resetChartToggle = () => {
@@ -122,7 +117,6 @@ const CHART_ID = 'SpeedSpaceChart';
       yPosition,
       zoomLevel
     );
-
   }, [chart]);
 
   // redraw the trains is necessary
@@ -284,19 +278,19 @@ SpeedSpaceChart.propTypes = {
   /**
    * Toggle the Settings div ! Not isolated
    */
-  toggleSetting: PropTypes.func
+  toggleSetting: PropTypes.func,
 };
 
 SpeedSpaceChart.defaultProps = {
   heightOfSpeedSpaceChart: 250,
   simulation: ORSD_GEV_SAMPLE_DATA.simulation.present,
   chartXGEV: undefined,
-  dispatch: () => { },
+  dispatch: () => {},
   mustRedraw: ORSD_GEV_SAMPLE_DATA.mustRedraw,
   positionValues: ORSD_GEV_SAMPLE_DATA.positionValues,
   selectedTrain: ORSD_GEV_SAMPLE_DATA.selectedTrain,
   speedSpaceSettings: ORSD_GEV_SAMPLE_DATA.speedSpaceSettings,
   timePosition: ORSD_GEV_SAMPLE_DATA.timePosition,
   consolidatedSimulation: ORSD_GEV_SAMPLE_DATA.consolidatedSimulation,
-  toggleSetting: () => {}
+  toggleSetting: () => {},
 };

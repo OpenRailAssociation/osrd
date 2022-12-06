@@ -6,7 +6,7 @@ import { IoMdRemoveCircleOutline } from 'react-icons/io';
 import { RiFocus3Line } from 'react-icons/ri';
 import { useTranslation } from 'react-i18next';
 
-import { EditorContext } from '../../context';
+import EditorContext from '../../context';
 import { SelectionState } from './types';
 import { Zone } from '../../../../types';
 import GeoJSONs from '../../../../common/Map/Layers/GeoJSONs';

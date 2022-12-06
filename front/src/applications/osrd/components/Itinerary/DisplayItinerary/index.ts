@@ -1,1 +1,3 @@
-export { default } from './DisplayItinerary';
+import DisplayItinerary from './DisplayItinerary';
+
+export default DisplayItinerary;

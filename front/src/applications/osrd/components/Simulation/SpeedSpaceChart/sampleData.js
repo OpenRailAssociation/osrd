@@ -1,4 +1,4 @@
-export const ORSD_GEV_SAMPLE_DATA = {
+const ORSD_GEV_SAMPLE_DATA = {
   chart: {
     width: 1864,
     height: 369,
@@ -2783,3 +2783,5 @@ export const ORSD_GEV_SAMPLE_DATA = {
     future: [],
   },
 };
+
+export default ORSD_GEV_SAMPLE_DATA;

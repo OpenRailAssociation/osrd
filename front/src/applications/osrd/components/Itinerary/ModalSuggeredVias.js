@@ -1,8 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { deleteVias } from 'reducers/osrdconf';
 import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
@@ -21,8 +20,13 @@ function LoaderPathfindingInProgress() {
 
 export default function ModalSugerredVias(props) {
   const { suggeredVias, vias } = useSelector((state) => state.osrdconf);
-  const { convertPathfindingVias, inverseOD, removeAllVias, removeViaFromPath, pathfindingInProgress } = props;
-  const dispatch = useDispatch();
+  const {
+    convertPathfindingVias,
+    inverseOD,
+    removeAllVias,
+    removeViaFromPath,
+    pathfindingInProgress,
+  } = props;
   const { t } = useTranslation('osrdconf');
   const nbVias = suggeredVias.length - 1;
   const selectedViasTracks = vias.map((via) => via.position);
