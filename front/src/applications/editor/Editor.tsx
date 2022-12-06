@@ -19,7 +19,7 @@ import Tipped from './components/Tipped';
 import { getInfrastructure, getInfrastructures } from './data/api';
 import Map from './Map';
 import NavButtons from './nav';
-import { EditorContext } from './context';
+import EditorContext from './context';
 import {
   CommonToolState,
   EditorContextType,

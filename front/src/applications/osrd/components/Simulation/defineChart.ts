@@ -109,7 +109,7 @@ const defineChart = (
     svg,
     drawZone,
     originalScaleX,
-    originalScaleY
+    originalScaleY,
   };
 };
 

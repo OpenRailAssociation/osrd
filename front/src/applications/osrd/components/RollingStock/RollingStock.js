@@ -11,10 +11,11 @@ import { BsLightningFill } from 'react-icons/bs';
 import { MdLocalGasStation } from 'react-icons/md';
 import 'applications/osrd/components/RollingStock/RollingStock.scss';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import { getRollingStockID } from 'reducers/osrdconf/selectors';
 import RollingStockEmpty from './RollingStockEmpty';
 import RollingStockCard from './RollingStockCard';
 import { enhanceData } from './RollingStockHelpers';
-import { getRollingStockID } from 'reducers/osrdconf/selectors';
+
 const ROLLING_STOCK_URL = '/light_rolling_stock/';
 
 export default function RollingStock(props) {

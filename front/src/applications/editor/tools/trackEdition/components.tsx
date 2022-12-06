@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { last } from 'lodash';
 import { Position } from 'geojson';
 
-import { EditorContext } from '../../context';
+import EditorContext from '../../context';
 import GeoJSONs from '../../../../common/Map/Layers/GeoJSONs';
 import colors from '../../../../common/Map/Consts/colors';
 import EditorZone from '../../../../common/Map/Layers/EditorZone';
@@ -16,7 +16,6 @@ import { CreateEntityOperation, TrackSectionEntity } from '../../../../types';
 import { EditorContextType, ExtendedEditorContextType } from '../types';
 import { injectGeometry } from './utils';
 import { NEW_ENTITY_ID } from '../../data/utils';
-import { ZoneSelectionState } from '../zoneSelection/types';
 
 export const TRACK_LAYER_ID = 'trackEditionTool/new-track-path';
 export const POINTS_LAYER_ID = 'trackEditionTool/new-track-points';
@@ -217,7 +216,7 @@ export const TrackEditionLeftPanel: FC = () => {
         if (id && id !== savedEntity.properties.id)
           setState({
             ...state,
-            track: { ...track, properties: { ...track.properties, id: id + '' } },
+            track: { ...track, properties: { ...track.properties, id: `${id}` } },
           });
       }}
       onChange={(newTrack) => {

@@ -1,10 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import ReactMapGL, { AttributionControl, ScaleControl, MapRef } from 'react-map-gl';
-import { point as turfPoint, featureCollection } from '@turf/helpers';
+import { point as turfPoint } from '@turf/helpers';
 import { useDispatch, useSelector } from 'react-redux';
 import turfNearestPointOnLine, { NearestPointOnLine } from '@turf/nearest-point-on-line';
-import combine from '@turf/combine';
 import { Position, LineString } from 'geojson';
 import { useParams } from 'react-router-dom';
 

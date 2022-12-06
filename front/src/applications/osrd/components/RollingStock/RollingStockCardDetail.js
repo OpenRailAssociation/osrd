@@ -1,7 +1,7 @@
 import Loader from 'common/Loader';
 import { get } from 'common/requests';
 import PropTypes from 'prop-types';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { setFailure } from 'reducers/main';
