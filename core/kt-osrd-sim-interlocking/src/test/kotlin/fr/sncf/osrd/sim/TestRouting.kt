@@ -1,7 +1,11 @@
 package fr.sncf.osrd.sim
 
-import fr.sncf.osrd.sim.api.Train
-import fr.sncf.osrd.sim.impl.*
+import fr.sncf.osrd.sim.interlocking.api.Train
+import fr.sncf.osrd.sim.interlocking.api.MovableElementInitPolicy
+import fr.sncf.osrd.sim.interlocking.impl.LocationSimImpl
+import fr.sncf.osrd.sim.interlocking.impl.movableElementSim
+import fr.sncf.osrd.sim.interlocking.impl.reservationSim
+import fr.sncf.osrd.sim.interlocking.impl.routingSim
 import fr.sncf.osrd.sim_infra.api.ZonePath
 import fr.sncf.osrd.sim_infra.api.normal
 import fr.sncf.osrd.sim_infra.api.reverse
@@ -39,7 +43,7 @@ class TestRouting {
         val builder = SimInfraBuilder()
         // region switches
         val switch = builder.movableElement(delay = 10L.milliseconds) {
-            defaultConfig = config("xy")
+            config("xy")
             config("vy")
         }
 
@@ -102,7 +106,7 @@ class TestRouting {
         val locationSim = LocationSimImpl(infra)
         val simJob = Job()
         val reservationScope = CoroutineScope(coroutineContext + simJob)
-        val movableElementSim = movableElementSim(infra)
+        val movableElementSim = movableElementSim(infra, MovableElementInitPolicy.OPTIMISTIC)
         val reservationSim = reservationSim(infra, locationSim, reservationScope)
         val routingSim = routingSim(infra, movableElementSim, reservationSim, reservationScope)
 

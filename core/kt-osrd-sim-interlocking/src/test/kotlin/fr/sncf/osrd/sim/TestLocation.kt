@@ -1,9 +1,9 @@
 package fr.sncf.osrd.sim
 
 
-import fr.sncf.osrd.sim.api.Train
-import fr.sncf.osrd.sim.api.ZoneOccupation
-import fr.sncf.osrd.sim.impl.locationSim
+import fr.sncf.osrd.sim.interlocking.api.Train
+import fr.sncf.osrd.sim.interlocking.api.ZoneOccupation
+import fr.sncf.osrd.sim.interlocking.impl.locationSim
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.simInfra
 import fr.sncf.osrd.utils.indexing.MutableArena
@@ -20,7 +20,7 @@ class TestLocation {
         val infra = simInfra {
             // create a test switch
             val switchA = movableElement(delay = 42L.milliseconds) {
-                defaultConfig = config("a")
+                config("a")
                 config("b")
             }
 

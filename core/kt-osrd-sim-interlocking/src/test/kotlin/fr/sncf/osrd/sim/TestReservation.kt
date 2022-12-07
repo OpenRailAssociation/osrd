@@ -1,10 +1,10 @@
 package fr.sncf.osrd.sim
 
-import fr.sncf.osrd.sim.api.Train
-import fr.sncf.osrd.sim.api.ZoneReservation
-import fr.sncf.osrd.sim.api.ZoneReservationStatus.*
-import fr.sncf.osrd.sim.api.ZoneState
-import fr.sncf.osrd.sim.impl.*
+import fr.sncf.osrd.sim.interlocking.api.Train
+import fr.sncf.osrd.sim.interlocking.api.ZoneReservation
+import fr.sncf.osrd.sim.interlocking.api.ZoneReservationStatus.*
+import fr.sncf.osrd.sim.interlocking.api.ZoneState
+import fr.sncf.osrd.sim.interlocking.impl.*
 import fr.sncf.osrd.sim_infra.api.ZonePath
 import fr.sncf.osrd.sim_infra.api.normal
 import fr.sncf.osrd.sim_infra.api.reverse
@@ -39,7 +39,7 @@ class TestReservation {
         // region build the test infrastructure
         val builder = SimInfraBuilder()
         val switch = builder.movableElement(delay = 42L.milliseconds) {
-            defaultConfig = config("a")
+            config("a")
             config("b")
         }
 

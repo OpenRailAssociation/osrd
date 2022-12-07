@@ -1,7 +1,8 @@
 package fr.sncf.osrd.sim
 
-import fr.sncf.osrd.sim.impl.MovableElementSimImpl
-import fr.sncf.osrd.sim.api.withLock
+import fr.sncf.osrd.sim.interlocking.api.MovableElementInitPolicy
+import fr.sncf.osrd.sim.interlocking.impl.MovableElementSimImpl
+import fr.sncf.osrd.sim.interlocking.api.withLock
 import fr.sncf.osrd.sim_infra.impl.simInfra
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
@@ -17,12 +18,12 @@ class TestMovableElements {
         // setup test data
         val infra = simInfra {
             movableElement(delay = 42L.milliseconds) {
-                defaultConfig = config("a")
+                config("a")
                 config("b")
             }
         }
 
-        val sim = MovableElementSimImpl(infra)
+        val sim = MovableElementSimImpl(infra, MovableElementInitPolicy.PESSIMISTIC)
         val movableElement = infra.movableElements[0]
         val configs = infra.getMovableElementConfigs(movableElement)
 

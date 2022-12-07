@@ -1,6 +1,8 @@
-package fr.sncf.osrd.sim.impl
+package fr.sncf.osrd.sim.interlocking.impl
 
-import fr.sncf.osrd.sim.api.*
+import fr.sncf.osrd.sim.interlocking.api.LocationSim
+import fr.sncf.osrd.sim.interlocking.api.Train
+import fr.sncf.osrd.sim.interlocking.api.ZoneOccupation
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.indexing.*
 import kotlinx.coroutines.flow.MutableStateFlow

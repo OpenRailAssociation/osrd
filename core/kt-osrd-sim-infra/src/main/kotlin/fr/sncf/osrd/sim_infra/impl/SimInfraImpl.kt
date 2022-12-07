@@ -11,7 +11,6 @@ value class MovableElementConfigDescriptor(val name: String)
 class MovableElementDescriptor(
     val delay: Duration,
     val configs: StaticPool<MovableElementConfig, MovableElementConfigDescriptor>,
-    val defaultConfig: StaticIdx<MovableElementConfig>
 )
 
 @JvmInline
@@ -64,10 +63,6 @@ class SimInfraImpl(
 
     override fun getMovableElementDelay(movableElement: MovableElementId): Duration {
         return movableElementPool[movableElement].delay
-    }
-
-    override fun getMovableElementDefaultConfig(movableElement: MovableElementId): MovableElementConfigId {
-        return movableElementPool[movableElement].defaultConfig
     }
 
     override fun getMovableElementConfigName(
