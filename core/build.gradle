@@ -82,7 +82,7 @@ dependencies {
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.4.+'
 
     // Sentry
-    implementation group: 'io.sentry', name: 'sentry', version: '6.8.+'  // MIT
+    implementation group: 'io.sentry', name: 'sentry', version: '6.9.+'  // MIT
 
     // Use JUnit Jupiter API for testing.
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.+'  // EPL 2.0
