@@ -7,7 +7,6 @@ import {
 } from 'reducers/osrdsimulation/simulation';
 import {
   updateAllowancesSettings,
-  updateConsolidatedSimulation,
   updateMustRedraw,
   updateSelectedProjection,
   updateSelectedTrain,
@@ -20,7 +19,6 @@ import Allowances from 'applications/osrd/views/OSRDSimulation/Allowances';
 import ButtonFullscreen from 'common/ButtonFullscreen';
 import CenterLoader from 'common/CenterLoader/CenterLoader';
 import ContextMenu from 'applications/osrd/components/Simulation/ContextMenu';
-import { FlyToInterpolator } from 'react-map-gl';
 import Map from 'applications/osrd/views/OSRDSimulation/Map';
 import OSRDSignalSwitch from 'applications/osrd/components/Simulation/SignalSwitch/withOSRDData';
 import { Rnd } from 'react-rnd';
@@ -91,7 +89,7 @@ function OSRDSimulation() {
   const displaySimulation = useSelector(
     (state: RootState) => state.osrdsimulation.displaySimulation
   );
-  //const simulation = useSelector((state: RootState) => state.osrdsimulation.simulation.present);
+  // const simulation = useSelector((state: RootState) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
 
   /**
@@ -188,8 +186,6 @@ function OSRDSimulation() {
       dispatch(
         updateViewport({
           ...extViewport,
-          transitionDuration: 1000,
-          transitionInterpolator: new FlyToInterpolator(),
         })
       );
     }

@@ -4,7 +4,6 @@ import { BiTargetLock } from 'react-icons/bi';
 import { BsMap } from 'react-icons/bs';
 import { FiLayers, FiZoomIn, FiZoomOut } from 'react-icons/fi';
 import { FaCompass } from 'react-icons/fa';
-import { LinearInterpolator, ViewportProps } from 'react-map-gl';
 
 import { Viewport } from 'reducers/map';
 import { getZoneViewport } from '../../utils/mapboxHelper';
@@ -35,7 +34,7 @@ export interface NavButton {
   onClick?: <S = unknown>(
     context: {
       dispatch: Dispatch;
-      viewport: ViewportProps;
+      viewport: Viewport;
       editorState: EditorState;
       setViewport: (newViewport: Partial<Viewport>) => void;
       openModal: <ArgumentsType, SubmitArgumentsType>(
@@ -60,9 +59,6 @@ const NavButtons: NavButton[][] = [
         setViewport({
           ...viewport,
           zoom: (viewport.zoom || ZOOM_DEFAULT) + ZOOM_DELTA,
-
-          transitionInterpolator: new LinearInterpolator(),
-          transitionDuration: 400,
         });
       },
     },
@@ -74,9 +70,6 @@ const NavButtons: NavButton[][] = [
         setViewport({
           ...viewport,
           zoom: (viewport.zoom || ZOOM_DEFAULT) - ZOOM_DELTA,
-
-          transitionInterpolator: new LinearInterpolator(),
-          transitionDuration: 400,
         });
       },
     },
@@ -86,18 +79,12 @@ const NavButtons: NavButton[][] = [
       labelTranslationKey: 'Editor.nav.recenter',
       onClick({ setViewport, viewport, editorState }) {
         const newViewport = editorState.editorZone
-          ? getZoneViewport(editorState.editorZone, {
-              width: +(viewport.width || 1),
-              height: +(viewport.height || 1),
-            })
+          ? getZoneViewport(editorState.editorZone, viewport)
           : DEFAULT_VIEWPORT;
 
         setViewport({
           ...viewport,
           ...newViewport,
-
-          transitionInterpolator: new LinearInterpolator(),
-          transitionDuration: 400,
         });
       },
     },

@@ -151,6 +151,7 @@ export const BasePointEditionLayers: FC<{
           symbolsList: SIGNALS_TO_SYMBOLS[type] || [],
           sourceLayer: 'geo',
           isEmphasized: true,
+          showOrthoPhoto: false,
         },
         `editor/${objType}/`
       ).map((layer) =>

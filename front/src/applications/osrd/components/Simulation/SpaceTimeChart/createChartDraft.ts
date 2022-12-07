@@ -1,10 +1,9 @@
 import * as d3 from 'd3';
 import { select as d3select } from 'd3-selection';
 
-import { Chart } from 'reducers/osrdsimulation';
+import { Chart, SimulationTrain } from 'reducers/osrdsimulation/types';
 import { defineLinear, defineTime } from 'applications/osrd/components/Helpers/ChartHelpers';
 import defineChart from 'applications/osrd/components/Simulation/defineChart';
-import { SimulationTrain } from './createTrain';
 
 export default function createChart(
   chart: Chart,
@@ -19,10 +18,13 @@ export default function createChart(
   d3select(`#${chartID}`).remove();
 
   const dataSimulationTime = d3.extent(
-    dataSimulation.map((train) =>
-      d3.extent(
-        train.routeBeginOccupancy.map((section) => d3.extent(section, (step) => step[keyValues[0]]))
-      )
+    dataSimulation.map(
+      (train) =>
+        d3.extent(
+          train.routeBeginOccupancy.map((section) =>
+            d3.extent(section, (step: any) => step[keyValues[0]])
+          ) as any
+        ) as any
     )
   );
 
@@ -32,23 +34,23 @@ export default function createChart(
         ...dataSimulation.map((train) =>
           d3.max(
             train.routeEndOccupancy.map((section) =>
-              d3.max(section.map((step) => step[keyValues[1]]))
+              d3.max(section.map((step: any) => step[keyValues[1]]))
             )
           )
         )
       )
-    ),
+    ) || '',
     d3.max(
       [].concat(
         ...dataSimulation.map((train) =>
           d3.max(
             train.routeBeginOccupancy.map((section) =>
-              d3.max(section.map((step) => step[keyValues[1]]))
+              d3.max(section.map((step: any) => step[keyValues[1]]))
             )
           )
         )
       )
-    ),
+    ) || '',
   ]);
 
   const defineX = chart === undefined || reset ? defineTime(dataSimulationTime) : chart.x;

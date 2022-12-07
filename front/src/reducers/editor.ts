@@ -233,7 +233,8 @@ export default function reducer(inputState: EditorState | undefined, action: Edi
         // The schema is preserved, because it never changes at the moment.
         break;
       default:
-      // Nothing to do here
+        // Nothing to do here
+        break;
     }
   });
 }

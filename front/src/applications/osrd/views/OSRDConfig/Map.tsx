@@ -1,12 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-
-import ReactMapGL, {
-  AttributionControl,
-  FlyToInterpolator,
-  ScaleControl,
-  MapRef,
-  MapEvent,
-} from 'react-map-gl';
+import maplibregl from 'maplibre-gl';
+import ReactMapGL, { AttributionControl, ScaleControl, MapRef } from 'react-map-gl';
 import { point as turfPoint, featureCollection } from '@turf/helpers';
 import { useDispatch, useSelector } from 'react-redux';
 import turfNearestPointOnLine, { NearestPointOnLine } from '@turf/nearest-point-on-line';
@@ -47,10 +41,11 @@ import TracksSchematic from 'common/Map/Layers/TracksSchematic';
 import colors from 'common/Map/Consts/colors';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
-
 import 'common/Map/Map.scss';
 import SNCF_LPV from 'common/Map/Layers/extensions/SNCF/SNCF_LPV';
 import OrthoPhoto from 'common/Map/Layers/OrthoPhoto';
+import { MapLayerMouseEvent } from '../../../../types';
+import { getMapMouseEventNearestFeature } from '../../../../utils/mapboxHelper';
 
 function Map() {
   const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings } =
@@ -77,18 +72,22 @@ function Map() {
       ...viewport,
       bearing: 0,
       pitch: 0,
-      transitionDuration: 1000,
-      transitionInterpolator: new FlyToInterpolator(),
     });
   };
 
-  const onFeatureClick = (e: MapEvent) => {
-    if (e.features && e.features.length > 0 && e.features[0].properties.id !== undefined) {
+  const onFeatureClick = (e: MapLayerMouseEvent) => {
+    const result = getMapMouseEventNearestFeature(e);
+    if (
+      result &&
+      result.feature.properties &&
+      result.feature.properties.id &&
+      result.feature.geometry.type === 'LineString'
+    ) {
       dispatch(
         updateFeatureInfoClickOSRD({
           displayPopup: true,
-          feature: e.features[0],
-          lngLat: e.lngLat,
+          feature: result.feature,
+          coordinates: result.nearest,
         })
       );
     } else {
@@ -101,18 +100,17 @@ function Map() {
     }
   };
 
-  const getGeoJSONFeature = (e: MapEvent) => {
-    if (e.features && e.features[0] !== undefined) {
-      const mergedFeatures = combine(featureCollection(e.features));
-      setTrackSectionGeoJSON(mergedFeatures.features[0].geometry);
-    }
-  };
-
-  const onFeatureHover = (e: MapEvent) => {
-    if (e.features !== null && e?.features?.[0] !== undefined) {
-      getGeoJSONFeature(e);
-      setIdHover(e.features[0].properties.id);
-      setLngLatHover(e?.lngLat);
+  const onMoveGetFeature = (e: MapLayerMouseEvent) => {
+    const result = getMapMouseEventNearestFeature(e);
+    if (
+      result &&
+      result.feature.properties &&
+      result.feature.properties.id &&
+      result.feature.geometry.type === 'LineString'
+    ) {
+      setTrackSectionGeoJSON(result.feature.geometry);
+      setIdHover(result.feature.properties.id);
+      setLngLatHover(result.nearest);
     } else {
       setIdHover(undefined);
       setSnappedPoint(undefined);
@@ -169,24 +167,25 @@ function Map() {
       <ReactMapGL
         ref={mapRef}
         {...viewport}
-        style={{ cursor: 'pointer' }}
-        width="100%"
-        height="100%"
+        mapLib={maplibregl}
+        style={{ width: '100%', height: '100%' }}
+        cursor="pointer"
         mapStyle={osmBlankStyle}
-        onViewportChange={updateViewportChange}
-        clickRadius={10}
+        onMove={(e) => updateViewportChange(e.viewState)}
+        onMouseMove={(e) => onMoveGetFeature(e)}
         attributionControl={false} // Defined below
         onClick={onFeatureClick}
-        onHover={onFeatureHover}
+        onResize={(e) => {
+          updateViewportChange({
+            width: e.target.getContainer().offsetWidth,
+            height: e.target.getContainer().offsetHeight,
+          });
+        }}
         interactiveLayerIds={defineInteractiveLayers()}
-        touchRotate
-        asyncRender
+        touchZoomRotate
       >
         <VirtualLayers />
-        <AttributionControl
-          className="attribution-control"
-          customAttribution="©SNCF/DGEX Solutions"
-        />
+        <AttributionControl position="bottom-right" customAttribution="©SNCF/DGEX Solutions" />
         <ScaleControl maxWidth={100} unit="metric" style={scaleControlStyle} />
 
         <Background
@@ -271,7 +270,6 @@ function Map() {
               sourceLayer="geo"
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.SIGNALS.GROUP]}
             />
-            <RenderPopup />
           </>
         ) : (
           <>

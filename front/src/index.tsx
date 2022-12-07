@@ -7,7 +7,7 @@ import { BrowserTracing } from '@sentry/tracing';
 // Styles
 import 'config/variables.css';
 import 'main/App/App.scss';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import 'maplibre-gl/dist/maplibre-gl.css';
 
 import { SENTRY_CONFIG } from 'config/config';
 import { persistor, store } from 'Store';

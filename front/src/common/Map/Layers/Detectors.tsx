@@ -1,6 +1,6 @@
 import React, { FC } from 'react';
 import { useSelector } from 'react-redux';
-import { Source, LayerProps } from 'react-map-gl';
+import { Source, CircleLayer, SymbolLayer } from 'react-map-gl';
 
 import { RootState } from 'reducers';
 import { Theme } from 'types';
@@ -11,8 +11,8 @@ import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 export function getDetectorsLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
-}): LayerProps {
-  const res: LayerProps = {
+}): Omit<CircleLayer, 'id'> {
+  const res: Omit<CircleLayer, 'id'> = {
     type: 'circle',
     paint: {
       'circle-stroke-color': params.colors.detectors.circle,
@@ -28,8 +28,8 @@ export function getDetectorsLayerProps(params: {
 export function getDetectorsNameLayerProps(params: {
   colors: Theme;
   sourceTable?: string;
-}): LayerProps {
-  const res: LayerProps = {
+}): Omit<SymbolLayer, 'id'> {
+  const res: Omit<SymbolLayer, 'id'> = {
     type: 'symbol',
     layout: {
       'text-field': ['slice', ['get', 'id'], 9],

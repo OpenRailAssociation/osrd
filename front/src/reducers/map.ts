@@ -1,6 +1,6 @@
 /* eslint-disable default-case */
 import { AnyAction, Dispatch } from 'redux';
-import { MapRequest, FlyToInterpolator } from 'react-map-gl';
+import { MapProps, ViewState } from 'react-map-gl';
 import produce from 'immer';
 import { transformRequest as helperTransformRequest, gpsRound } from 'utils/helpers';
 import history from 'main/history';
@@ -20,24 +20,14 @@ export const UPDATE_FEATURE_INFO_CLICK = 'map/UPDATE_FEATURE_INFO_CLICK';
 export const UPDATE_LAYERS_SETTINGS = 'osrdconf/UPDATE_LAYERS_SETTINGS';
 export const UPDATE_SIGNALS_SETTINGS = 'osrdconf/UPDATE_SIGNALS_SETTINGS';
 
-function transformRequest(url?: string, resourceType?: string) {
-  return helperTransformRequest(
-    url as string,
-    resourceType as string,
-    MAP_URL as string
-  ) as MapRequest;
-}
+const transformRequest: MapProps['transformRequest'] = (url, resourceType) =>
+  helperTransformRequest(url as string, resourceType as string, MAP_URL as string);
 
-export interface Viewport {
-  latitude: number;
-  longitude: number;
-  zoom: number;
-  bearing: number;
-  pitch: number;
-  transitionDuration?: number | 'auto';
-  transitionInterpolator?: FlyToInterpolator;
-  transformRequest: typeof transformRequest;
-}
+export type Viewport = ViewState & {
+  transformRequest: MapProps['transformRequest'];
+  width: number;
+  height: number;
+};
 
 export interface MapSearchMarker {
   title: string;
@@ -92,6 +82,9 @@ export const initialState: MapState = {
     zoom: 6.2,
     bearing: 0,
     pitch: 0,
+    padding: { top: 0, left: 0, bottom: 0, right: 0 },
+    width: 0,
+    height: 0,
     transformRequest,
   },
   featureInfoHoverID: undefined,
