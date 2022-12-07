@@ -10,14 +10,12 @@ import {
   updateChartXGEV,
   updateContextMenu,
   updateMustRedraw,
-  updateTimePosition,
   updateTimePositionValues,
-} from 'reducers/osrdsimulation';
+} from 'reducers/osrdsimulation/actions';
 
 import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/customget/components/consts';
 import drawGuideLines from 'applications/customget/components/drawGuideLines';
 import { store } from 'Store';
-import createTrain from './SpaceTimeChart/createTrain';
 
 export const displayGuide = (chart, opacity) => {
   chart.svg.selectAll('#vertical-line').style('opacity', opacity);
@@ -305,13 +303,6 @@ const enableInteractivity = (
           : chart.x.invert(d3.mouse(d3.event.currentTarget)[0]);
         const timePositionLocal = interpolateOnPosition(dataSimulation, keyValues, positionLocal);
         if (timePositionLocal) {
-          const immediatePositionsValues = interpolateOnTime(
-            dataSimulation,
-            ['time'],
-            LIST_VALUES_NAME_SPACE_TIME,
-            timePositionLocal
-          );
-
           debounceUpdateTimePositionValues(timePositionLocal, null, 15);
         }
       }

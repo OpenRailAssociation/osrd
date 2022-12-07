@@ -2,15 +2,17 @@ import * as d3 from 'd3';
 import { drag as d3drag } from 'd3-drag';
 
 import { getDirection } from 'applications/osrd/components/Helpers/ChartHelpers';
-import { updateContextMenu, updateMustRedraw, updateSelectedTrain } from 'reducers/osrdsimulation';
+import {
+  updateContextMenu,
+  updateMustRedraw,
+  updateSelectedTrain,
+  updateDepartureArrivalTimes,
+} from 'reducers/osrdsimulation/actions';
 
 import drawCurve from 'applications/osrd/components/Simulation/drawCurve';
 import drawRect from 'applications/osrd/components/Simulation/drawRect';
 import drawText from 'applications/osrd/components/Simulation/drawText';
-import {
-  makeDepartureArrivalTimes,
-  updateDepartureArrivalTimes,
-} from '../../../../../reducers/osrdsimulation';
+import { makeDepartureArrivalTimes } from 'reducers/osrdsimulation';
 
 export default function drawTrain(
   chart,
@@ -209,10 +211,10 @@ export default function drawTrain(
     isSelected,
     `${isPathSelected ? '🎢' : ''} ${dataSimulation.name}`, // text
     dataSimulation.headPosition[0] &&
-    dataSimulation.headPosition[0][0] &&
-    dataSimulation.headPosition[0][0].time, // x
+      dataSimulation.headPosition[0][0] &&
+      dataSimulation.headPosition[0][0].time, // x
     dataSimulation.headPosition[0] &&
-    dataSimulation.headPosition[0][0] &&
-    dataSimulation.headPosition[0][0].position // y
+      dataSimulation.headPosition[0][0] &&
+      dataSimulation.headPosition[0][0].position // y
   );
 }

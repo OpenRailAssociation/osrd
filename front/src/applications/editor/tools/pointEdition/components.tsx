@@ -7,20 +7,17 @@ import along from '@turf/along';
 import { Feature, LineString } from 'geojson';
 import { merge } from 'lodash';
 
-import { EditorContext } from '../../context';
-import GeoJSONs, {
-  EditorSource,
-  SourcesDefinitionsIndex,
-} from '../../../../common/Map/Layers/GeoJSONs';
-import colors from '../../../../common/Map/Consts/colors';
-import EditorZone from '../../../../common/Map/Layers/EditorZone';
+import GeoJSONs, { EditorSource, SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
+import colors from 'common/Map/Consts/colors';
+import EditorZone from 'common/Map/Layers/EditorZone';
+import { save } from 'reducers/editor';
+import { CreateEntityOperation, EditorEntity } from 'types';
+import { SIGNALS_TO_SYMBOLS } from 'common/Map/Consts/SignalsNames';
 import { PointEditionState } from './types';
 import EditorForm from '../../components/EditorForm';
-import { save } from '../../../../reducers/editor';
-import { CreateEntityOperation, EditorEntity } from '../../../../types';
 import { cleanSymbolType, flattenEntity, NEW_ENTITY_ID } from '../../data/utils';
 import { EditorContextType, ExtendedEditorContextType } from '../types';
-import { SIGNALS_TO_SYMBOLS } from '../../../../common/Map/Consts/SignalsNames';
+import { EditorContext } from '../../context';
 import EntitySumUp from '../../components/EntitySumUp';
 
 export const POINT_LAYER_ID = 'pointEditionTool/new-entity';
@@ -194,26 +191,24 @@ export const BasePointEditionLayers: FC<{
   );
 };
 
-export const SignalEditionLayers: FC = () => {
-  return (
-    <BasePointEditionLayers
-      interactiveLayerIDRegex={/signal-point$/}
-      mergeEntityWithNearestPoint={(entity, nearestPoint) => ({
-        ...entity,
-        geometry: nearestPoint.feature.geometry,
-        properties: {
-          ...merge(entity.properties, {
-            extensions: {
-              sncf: {
-                angle_geo: nearestPoint.angle,
-              },
+export const SignalEditionLayers: FC = () => (
+  <BasePointEditionLayers
+    interactiveLayerIDRegex={/signal-point$/}
+    mergeEntityWithNearestPoint={(entity, nearestPoint) => ({
+      ...entity,
+      geometry: nearestPoint.feature.geometry,
+      properties: {
+        ...merge(entity.properties, {
+          extensions: {
+            sncf: {
+              angle_geo: nearestPoint.angle,
             },
-          }),
-        },
-      })}
-    />
-  );
-};
+          },
+        }),
+      },
+    })}
+  />
+);
 
 export const PointEditionMessages: FC = () => {
   const { t, state } = useContext(EditorContext) as EditorContextType<

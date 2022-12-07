@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { get, patch } from 'common/requests';
 import { setFailure, setSuccess } from 'reducers/main';
-import { updateMustRedraw, updateSimulation } from 'reducers/osrdsimulation';
+import { updateMustRedraw, updateSimulation } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { FaTrash } from 'react-icons/fa';

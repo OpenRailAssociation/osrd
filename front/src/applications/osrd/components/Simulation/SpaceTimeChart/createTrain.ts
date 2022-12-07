@@ -10,7 +10,7 @@ import {
 } from 'applications/osrd/components/Helpers/ChartHelpers';
 
 import { setFailure } from 'reducers/main';
-import { Train, SimulationTrain } from 'reducers/osrdsimulation';
+import { Train, SimulationTrain } from 'reducers/osrdsimulation/types';
 
 /**
  * Will do some formating & computation to get a trains to be displayed. Stored then with currentSimulation splitted reducer

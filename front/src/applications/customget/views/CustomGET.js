@@ -7,7 +7,7 @@ import {
   updateSelectedTrain,
   updateSimulation,
   updateStickyBar,
-} from 'reducers/osrdsimulation';
+} from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
 import UploadFileModal from 'applications/customget/components/uploadFileModal';

@@ -50,7 +50,9 @@ function Map() {
   const { fullscreen } = useSelector((state: RootState) => state.main);
   const dispatch = useDispatch();
   const updateViewportChange = useCallback(
-    (value) => dispatch(updateViewport(value, '/carto')),
+    (value) => {
+      dispatch(updateViewport(value, '/carto'));
+    },
     [dispatch]
   );
 
@@ -97,6 +99,7 @@ function Map() {
     if (!isNil(urlBearing)) newViewport.bearing = parseFloat(urlBearing);
     if (!isNil(urlPitch)) newViewport.pitch = parseFloat(urlPitch);
     if (Object.keys(newViewport).length > 0) updateViewportChange(newViewport);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

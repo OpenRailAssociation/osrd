@@ -2,11 +2,7 @@ import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
 import { get, patch } from 'common/requests';
 import { setFailure, setSuccess } from 'reducers/main';
-import {
-  updateAllowancesSettings,
-  updateMustRedraw,
-  updateSimulation,
-} from 'reducers/osrdsimulation';
+import { updateAllowancesSettings, updateMustRedraw, updateSimulation } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
 import DotsLoader from 'common/DotsLoader/DotsLoader';

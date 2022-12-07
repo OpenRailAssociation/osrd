@@ -1,10 +1,10 @@
 import 'applications/customget/components/ChartModal.scss';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 
 import PropTypes from 'prop-types';
-import { updateMustRedraw } from 'reducers/osrdsimulation';
+import { updateMustRedraw } from 'reducers/osrdsimulation/actions';
 import { useTranslation } from 'react-i18next';
 
 function ChartModal(props) {
@@ -14,21 +14,24 @@ function ChartModal(props) {
   const [offset, setOffset] = useState('');
 
   // ADN: just do an upadteSimulation, should do the rest
-  const sendOffset = ({ key }) => {
-    if (key === 'Enter') {
-      setShowModal('');
-      const seconds = parseInt(type === '-' ? offset * -1 : offset, 10);
-      offsetTimeByDragging(seconds);
-      dispatch(updateMustRedraw(true));
-    }
-  };
+  const sendOffset = useCallback(
+    ({ key }) => {
+      if (key === 'Enter') {
+        setShowModal('');
+        const seconds = parseInt(type === '-' ? offset * -1 : offset, 10);
+        offsetTimeByDragging(seconds);
+        dispatch(updateMustRedraw(true));
+      }
+    },
+    [setShowModal, offsetTimeByDragging, dispatch, offset, type]
+  );
 
   useEffect(() => {
     window.addEventListener('keydown', sendOffset);
     return () => {
       window.removeEventListener('keydown', sendOffset);
     };
-  }, [offset]);
+  }, [offset, sendOffset]);
 
   return (
     <div className="osrd-simulation-chart-modal">

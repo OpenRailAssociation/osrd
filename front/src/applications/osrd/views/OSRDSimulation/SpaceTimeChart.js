@@ -14,7 +14,7 @@ import {
   updateContextMenu,
   updateMustRedraw,
   updatePositionValues,
-} from 'reducers/osrdsimulation';
+} from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { CgLoadbar } from 'react-icons/cg';

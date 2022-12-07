@@ -19,7 +19,7 @@ import createSlopeCurve from 'applications/osrd/components/Simulation/SpeedSpace
 import defineChart from 'applications/osrd/components/Simulation/defineChart';
 import drawArea from 'applications/osrd/components/Simulation/drawArea';
 import drawCurve from 'applications/osrd/components/Simulation/drawCurve';
-import { updateMustRedraw } from 'reducers/osrdsimulation';
+import { updateMustRedraw } from 'reducers/osrdsimulation/actions';
 
 const CHART_ID = 'SpaceCurvesSlopes';
 
