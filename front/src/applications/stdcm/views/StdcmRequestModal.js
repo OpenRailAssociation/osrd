@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { get } from 'common/requests';
+import { get, post } from 'common/requests';
 // osrd Redux reducers
 import {
   updateAllowancesSettings,
@@ -11,7 +11,10 @@ import {
 } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { KEY_VALUES_FOR_CONSOLIDATED_SIMULATION } from 'applications/osrd/components/Simulation/consts';
+import {
+  KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
+  trainscheduleURI,
+} from 'applications/osrd/components/Simulation/consts';
 
 // Generic components
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
@@ -21,14 +24,12 @@ import ReactModal from 'react-modal';
 // OSRD helpers
 import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/createTrain';
 import formatStdcmConf from 'applications/stdcm/formatStcmConf';
-import { post } from 'common/requests';
 // Static Data and Assets
 import rabbit from 'assets/pictures/KLCW_nc_standard.png';
 import { setFailure } from 'reducers/main';
 import { STDCM_REQUEST_STATUS } from 'applications/osrd/consts';
 import { updateItinerary } from 'reducers/osrdconf';
 import { useTranslation } from 'react-i18next';
-import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
 
 const timetableURI = '/timetable/';
 
@@ -83,8 +84,7 @@ export default function StdcmRequestModal(props) {
 
           // ask for timetable with the new path
           get(`${timetableURI}${osrdconf.timetableID}/`).then((timetable) => {
-
-            const trainIds = timetable.train_schedules.map(train_schedule => train_schedule.id)
+            const trainIds = timetable.train_schedules.map((train_schedule) => train_schedule.id);
             get(`${trainscheduleURI}results/`, {
               train_ids: trainIds.join(','),
               path: result.path.id,
@@ -104,7 +104,7 @@ export default function StdcmRequestModal(props) {
 
               // Create margins settings for each train if not set
               const newAllowancesSettings = { ...allowancesSettings };
-              simulationLocal.forEach((train: any) => {
+              simulationLocal.forEach((train) => {
                 if (!newAllowancesSettings[train.id]) {
                   newAllowancesSettings[train.id] = {
                     base: true,
@@ -114,7 +114,6 @@ export default function StdcmRequestModal(props) {
                   };
                 }
               });
-
 
               if (!newAllowancesSettings[fakedNewTrain.id]) {
                 newAllowancesSettings[fakedNewTrain.id] = {
@@ -135,9 +134,7 @@ export default function StdcmRequestModal(props) {
 
               dispatch(updateMustRedraw(true));
             });
-          })
-
-
+          });
         })
         .catch((e) => {
           // Update simu in redux with data;
