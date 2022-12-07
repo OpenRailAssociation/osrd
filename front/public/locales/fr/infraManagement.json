@@ -1,0 +1,10 @@
+{
+  "errorMessages": {
+    "noExistingInfra": "Aucune intrastructure disponible",
+    "unableToRetrieveInfra": "Récupération infra impossible",
+    "unableToRetrieveInfraList": "Récupération liste d'infra impossible"
+  },
+  "noInfra": "Veuillez choisir une insfrastructure",
+  "infrachoose": "Choix de l'infrastructure",
+  "infrastructure": "Infrastructure"
+}

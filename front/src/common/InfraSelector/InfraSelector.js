@@ -10,6 +10,7 @@ import InfraSelectorModal from 'common/InfraSelector/InfraSelectorModal';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import nextId from 'react-id-generator';
 import { getInfraID } from 'reducers/osrdconf/selectors';
+import './InfraSelector.scss';
 
 const infraURL = '/infra/';
 
@@ -20,7 +21,7 @@ export default function InfraSelector(props) {
   const [selectedInfra, setSelectedInfra] = useState(undefined);
   const infraID = useSelector(getInfraID);
 
-  const { t } = useTranslation(['osrdconf']);
+  const { t } = useTranslation(['infraMnagement']);
 
   const getInfra = async (id) => {
     try {

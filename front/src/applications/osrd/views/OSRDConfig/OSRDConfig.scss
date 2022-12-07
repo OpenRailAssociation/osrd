@@ -174,21 +174,6 @@
   font-size: 0.9rem;
 }
 
-.osrd-config-infraselector {
-  max-height: 50vh;
-  overflow: auto;
-  .osrd-config-infraselector-item {
-    background-color: #f2f2f2;
-    cursor: pointer;
-    padding: 0 0.5rem;
-    border-radius: 4px;
-    transition: 0.2s;
-    &:hover {
-      background-color: #d7d7d7;
-    }
-  }
-}
-
 /* itinerary */
 .suggered-vias {
   max-height: 30vh;

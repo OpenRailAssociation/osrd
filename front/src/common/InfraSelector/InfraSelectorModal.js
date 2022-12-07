@@ -12,7 +12,7 @@ import icon from 'assets/pictures/tracks.svg';
 export default function InfraSelectorModal(props) {
   const dispatch = useDispatch();
   const { infrasList, modalID } = props;
-  const { t } = useTranslation(['translation', 'osrdconf']);
+  const { t } = useTranslation(['translation', 'infraManagement']);
 
   const setInfraID = (id) => {
     dispatch(updateInfraID(id));
@@ -21,11 +21,11 @@ export default function InfraSelectorModal(props) {
   };
 
   return (
-    <ModalSNCF htmlID={modalID} size="sm">
+    <ModalSNCF htmlID={modalID} size="lg">
       <ModalHeaderSNCF>
         <div className="d-flex align-items-center h1">
           <img className="mr-3" src={icon} alt="infra schema" width="48px" />
-          {t('osrdconf:infrachoose')}
+          {t('infraManagement:infrachoose')}
         </div>
       </ModalHeaderSNCF>
       <ModalBodySNCF>

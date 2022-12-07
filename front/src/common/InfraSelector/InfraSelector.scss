@@ -1,0 +1,14 @@
+.osrd-config-infraselector {
+  max-height: 50vh;
+  overflow: auto;
+  .osrd-config-infraselector-item {
+    background-color: #f2f2f2;
+    cursor: pointer;
+    padding: 0 .5rem;
+    border-radius: 4px;
+    transition: .2s;
+    &:hover {
+      background-color: #d7d7d7;
+    }
+  }
+}
