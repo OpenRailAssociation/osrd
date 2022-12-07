@@ -5,6 +5,7 @@
     "unableToRetrieveInfraList": "Récupération liste d'infra impossible"
   },
   "noInfra": "Veuillez choisir une insfrastructure",
-  "infrachoose": "Choix de l'infrastructure",
-  "infrastructure": "Infrastructure"
+  "infraManagement": "Gestion des infrastructures",
+  "infrastructure": "Infrastructure",
+  "infrasFound": "insfrastructure(s) trouvée(s)"
 }

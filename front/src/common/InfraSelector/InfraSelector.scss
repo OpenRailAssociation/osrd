@@ -1,14 +1,37 @@
-.osrd-config-infraselector {
+.osrd-config-infraslist {
   max-height: 50vh;
   overflow: auto;
-  .osrd-config-infraselector-item {
-    background-color: #f2f2f2;
-    cursor: pointer;
-    padding: 0 .5rem;
-    border-radius: 4px;
-    transition: .2s;
-    &:hover {
-      background-color: #d7d7d7;
+  .osrd-config-infraslist-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: .5rem;
+    height: 2rem;
+    line-height: 2rem;
+    .osrd-config-infraslist-item-name, .osrd-config-infraslist-item-lock, .osrd-config-infraslist-item-delete {
+      display: flex;
+      align-items: baseline;
+      height: 2rem;
+      text-align: left;
+      border-radius: 4px;
+      transition: .2s;
+      background-color: var(--coolgray1);
+      font-weight: 100;
+      color: var(--coolgray11);
+      border: none;
+      &:hover {
+        background-color: var(--coolgray3);
+      }
+    }
+    .osrd-config-infraslist-item-name {
+      flex-grow: 1;
+      margin: 0 .25rem;
+    }
+    .osrd-config-infraslist-item-lock, .osrd-config-infraslist-item-delete {
+      width: 2rem;
+      padding: .5rem;
+      span {
+        display: flex;
+      }
     }
   }
 }

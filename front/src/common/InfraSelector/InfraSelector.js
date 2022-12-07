@@ -12,7 +12,7 @@ import nextId from 'react-id-generator';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import './InfraSelector.scss';
 
-const infraURL = '/infra/';
+const infraURL = '/editoast/infra/';
 
 export default function InfraSelector(props) {
   const { modalOnly, modalID } = props;
@@ -57,9 +57,9 @@ export default function InfraSelector(props) {
     if (infraID !== undefined) {
       getInfra(infraID);
     } else if (infrasList !== undefined) {
-      if (infrasList.results[0] !== undefined) {
-        setSelectedInfra(infrasList.results[0]);
-        dispatch(updateInfraID(infrasList.results[0].id));
+      if (infrasList[0] !== undefined) {
+        setSelectedInfra(infrasList[0]);
+        dispatch(updateInfraID(infrasList[0].id));
       } else {
         dispatch(
           setFailure({
