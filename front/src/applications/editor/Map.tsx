@@ -8,7 +8,6 @@ import { TFunction } from 'i18next';
 import VirtualLayers from 'applications/osrd/views/OSRDSimulation/VirtualLayers';
 import colors from 'common/Map/Consts/colors';
 import 'common/Map/Map.scss';
-
 /* Main data & layers */
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import Background from '../../common/Map/Layers/Background';
@@ -27,7 +26,6 @@ import {
   OSRDConf,
   Tool,
 } from './tools/types';
-import VirtualLayers from '../osrd/views/OSRDSimulation/VirtualLayers';
 
 const DEFAULT_RADIUS = 6;
 
