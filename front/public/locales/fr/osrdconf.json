@@ -31,6 +31,7 @@
     "unableToRetrieveTimetable": "Récupération grille horaire impossible",
     "unableToRetrieveTimetableList": "Récupération liste de grilles horaires impossible"
   },
+  "pathFindingInProgress": "Récupération du chemin en cours",
   "gare": "Gare, poste",
   "infrachoose": "Choix de l'infrastructure",
   "infrastructure": "Infrastructure",
