@@ -270,7 +270,6 @@ function Map() {
               sourceLayer="geo"
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.SIGNALS.GROUP]}
             />
-            <RenderPopup />
           </>
         ) : (
           <>
