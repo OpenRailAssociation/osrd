@@ -1,11 +1,12 @@
 import * as d3 from 'd3';
 
 import { sec2time } from 'utils/timeManipulation';
-import { updateMustRedraw } from 'reducers/osrdsimulation';
+import { updateMustRedraw } from 'reducers/osrdsimulation/actions';
 
 export const sec2d3datetime = (time) => d3.timeParse('%H:%M:%S')(sec2time(time));
 
 export const colorModelToHex = (color) =>
+  // eslint-disable-next-line no-bitwise
   `rgba(${(color >> 16) & 0xff}, ${(color >> 8) & 0xff}, ${color & 0xff}, ${(color >> 24) & 0xff})`;
 
 /**

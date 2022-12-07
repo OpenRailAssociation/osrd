@@ -1,6 +1,6 @@
 import { formatStepsWithTimeMulti } from 'applications/customget/components/ChartHelpers';
 
-export default function createTrain(dispatch, keyValues, simulationTrains, t) {
+export default function createTrain(dispatch, keyValues, simulationTrains) {
   // Prepare data
   const dataSimulation = simulationTrains.map((train, trainNumber) => {
     const dataSimulationTrain = {};

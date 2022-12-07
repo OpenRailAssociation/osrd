@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { updateStickyBar } from 'reducers/osrdsimulation';
+import { updateStickyBar } from 'reducers/osrdsimulation/actions';
 
 export default function TrainDetails() {
   const { positionValues, stickyBar, timePosition } = useSelector((state) => state.osrdsimulation);

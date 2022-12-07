@@ -4,8 +4,8 @@ import {
   updateAllowancesSettings,
   updateSelectedProjection,
   updateSelectedTrain,
-  updateSimulation,
-} from 'reducers/osrdsimulation';
+  updateSimulation
+} from 'reducers/osrdsimulation/actions';
 import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
 import { timetableURI } from 'applications/osrd/views/OSRDSimulation/OSRDSimulation';
 /**

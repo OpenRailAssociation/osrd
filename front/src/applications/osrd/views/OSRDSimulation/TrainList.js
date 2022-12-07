@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { sec2datetime, sec2time, time2datetime, time2sec } from 'utils/timeManipulation';
-import { updateMustRedraw, updateSelectedTrain, updateSimulation } from 'reducers/osrdsimulation';
+import { updateMustRedraw, updateSelectedTrain, updateSimulation } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
