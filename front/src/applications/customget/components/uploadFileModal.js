@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { updateSimulation } from 'reducers/osrdsimulation';
+import { updateSimulation } from 'reducers/osrdsimulation/actions';
 import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
@@ -54,7 +54,7 @@ function UploadFileModal() {
           <div className="h1 modal-title text-center mb-4">
             <i className="icons-download text-primary" aria-hidden="true" />
           </div>
-          <input type="file" name="file" onChange={handleSelect} accept=".json"/>
+          <input type="file" name="file" onChange={handleSelect} accept=".json" />
           <div className="text-danger">{isValid}</div>
         </>
       </ModalBodySNCF>

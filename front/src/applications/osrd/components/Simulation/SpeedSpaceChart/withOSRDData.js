@@ -2,8 +2,11 @@ import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { LIST_VALUES_SIGNAL_BASE } from 'applications/osrd/components/Simulation/consts';
-import { updateSignalBase } from 'reducers/osrdsimulation';
-import { updateMustRedraw, updateSpeedSpaceSettings } from 'reducers/osrdsimulation';
+import {
+  updateMustRedraw,
+  updateSpeedSpaceSettings,
+  updateSignalBase,
+} from 'reducers/osrdsimulation/actions';
 import SpeedSpaceChart from './SpeedSpaceChart';
 
 /**

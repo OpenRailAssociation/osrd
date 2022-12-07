@@ -1,6 +1,5 @@
 import * as d3 from 'd3';
-
-type TimeString = string;
+import { TimeString } from 'common/types';
 
 export function datetime2string(ts: string | number | Date) {
   const datetime = new Date(ts);

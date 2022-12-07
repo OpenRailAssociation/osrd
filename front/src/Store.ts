@@ -1,4 +1,9 @@
-import { applyMiddleware, compose, legacy_createStore as createStore, combineReducers } from 'redux';
+import {
+  applyMiddleware,
+  compose,
+  legacy_createStore as createStore,
+  combineReducers,
+} from 'redux';
 import { composeWithDevTools, Config } from '@redux-devtools/extension';
 
 import { persistStore } from 'redux-persist';
@@ -21,11 +26,10 @@ const store = createStore(persistedReducer, enhancers);
 
 const persistor = persistStore(store);
 
-const createStoreWithoutMiddleware = (
-  initialStateExtra: Partial<RootState>
-) => createStore(
-  combineReducers<RootState>(rootReducer),
-  { ...rootInitialState, ...initialStateExtra }
-);
+const createStoreWithoutMiddleware = (initialStateExtra: Partial<RootState>) =>
+  createStore(combineReducers<RootState>(rootReducer), {
+    ...rootInitialState,
+    ...initialStateExtra,
+  });
 
 export { store, persistor, createStoreWithoutMiddleware };

@@ -9,3 +9,12 @@ export const DATA_TYPES = {
   number: 'NUMBER',
   percent: 'PERCENT',
 };
+
+type Year = number;
+type Month = number;
+type Day = number;
+type Hour = number;
+type Minute = number;
+type Second = number;
+
+export type TimeString = `${Year}-${Month}-${Day}T${Hour}:${Minute}:${Second}`;

@@ -1,5 +1,3 @@
-
-
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -8,7 +6,6 @@ import { useTranslation } from 'react-i18next';
 export default function SpeedSpaceSettings(props) {
   const { showSettings, speedSpaceSettings, toggleSetting } = props;
   const { t } = useTranslation(['simulation']);
-
 
   return (
     <div
@@ -55,11 +52,11 @@ export default function SpeedSpaceSettings(props) {
 SpeedSpaceSettings.propTypes = {
   showSettings: PropTypes.bool,
   toggleSetting: PropTypes.func,
-  speedSpaceSettings: PropTypes.object
+  speedSpaceSettings: PropTypes.object,
 };
 
 SpeedSpaceSettings.defaultProps = {
   showSettings: false,
   toggleSetting: () => {},
-  speedSpaceSettings: {}
+  speedSpaceSettings: {},
 };

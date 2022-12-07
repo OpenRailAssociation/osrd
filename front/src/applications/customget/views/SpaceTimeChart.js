@@ -14,8 +14,7 @@ import {
   updateContextMenu,
   updateMustRedraw,
   updatePositionValues,
-  updateSimulation,
-} from 'reducers/osrdsimulation';
+} from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { CgLoadbar } from 'react-icons/cg';
@@ -67,7 +66,7 @@ export default function SpaceTimeChart(props) {
   const [dataSimulation, setDataSimulation] = useState(undefined);
   const [showModal, setShowModal] = useState('');
   const [dragOffset, setDragOffset] = useState(0);
-  const [dragEnding, setDragEnding] = useState(false);
+  const [, setDragEnding] = useState(false);
 
   const handleKey = ({ key }) => {
     if (['+', '-'].includes(key)) {
@@ -115,6 +114,7 @@ export default function SpaceTimeChart(props) {
     });
   };
 
+  // eslint-disable-next-line default-param-last
   const drawAllTrains = (reset, forceRedraw = false, newDataSimulation) => {
     const currentDataSimulation = newDataSimulation || dataSimulation;
 

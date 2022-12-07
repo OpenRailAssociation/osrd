@@ -1,7 +1,7 @@
 import { FaBackward, FaPause, FaPlay, FaStop } from 'react-icons/fa';
 import React, { useState } from 'react';
 import { datetime2time, sec2datetime, time2datetime } from 'utils/timeManipulation';
-import { updateIsPlaying, updateTimePositionValues } from 'reducers/osrdsimulation';
+import { updateIsPlaying, updateTimePositionValues } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';

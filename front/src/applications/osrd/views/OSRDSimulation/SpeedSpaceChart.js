@@ -9,7 +9,7 @@ import {
 import enableInteractivity, {
   traceVerticalLine,
 } from 'applications/osrd/components/Simulation/enableInteractivity';
-import { updateChartXGEV, updateMustRedraw } from 'reducers/osrdsimulation';
+import { updateChartXGEV, updateMustRedraw } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { CgLoadbar } from 'react-icons/cg';

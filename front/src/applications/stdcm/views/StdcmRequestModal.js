@@ -7,8 +7,8 @@ import {
   updateMustRedraw,
   updateSelectedTrain,
   updateSimulation,
-  updateSelectedProjection,
-} from 'reducers/osrdsimulation';
+  updateSelectedProjection
+} from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { KEY_VALUES_FOR_CONSOLIDATED_SIMULATION } from 'applications/osrd/components/Simulation/consts';
