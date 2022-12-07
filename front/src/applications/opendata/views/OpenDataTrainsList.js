@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
-import { setFailure } from 'reducers/main';
-import { useDispatch } from 'react-redux';
 import Loader from 'common/Loader';
 import { get } from 'axios';
 import nextId from 'react-id-generator';
 import TrainDetail from 'applications/opendata/components/TrainDetail';
 import OpenDataImportModal from 'applications/opendata/views/OpenDataImportModal';
-import { GRAOU_URL } from '../consts';
 import { GoRocket } from 'react-icons/go';
+import { GRAOU_URL } from '../consts';
 
 function LoadingIfSearching(props) {
   const { t } = useTranslation(['opendata']);
