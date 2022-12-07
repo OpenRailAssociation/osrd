@@ -1,19 +1,20 @@
 import { useSelector } from 'react-redux';
 import React, { FC, useMemo } from 'react';
+import chroma from 'chroma-js';
 import { Feature, FeatureCollection } from 'geojson';
 import { isPlainObject, keyBy, mapValues } from 'lodash';
-import { Layer, LayerProps, Source } from 'react-map-gl';
-import { SymbolPaint } from 'mapbox-gl';
-import chroma from 'chroma-js';
+import { Layer, Source } from 'react-map-gl';
 
-import { Theme } from '../../../types';
+import { SymbolPaint } from 'mapbox-gl';
+
+import { AnyLayer, Theme } from '../../../types';
+import { RootState } from '../../../reducers';
 import { geoMainLayer, geoServiceLayer } from './geographiclayers';
 import {
   getPointLayerProps,
   getSignalLayerProps,
   getSignalMatLayerProps,
   SignalContext,
-  SignalsSettings,
 } from './geoSignalsLayers';
 import { lineNameLayer, lineNumberLayer, trackNameLayer } from './commonLayers';
 import { getSignalsList, getSymbolsList } from '../../../applications/editor/data/utils';
@@ -33,6 +34,7 @@ const NULL_FEATURE: FeatureCollection = {
 interface LayerContext extends SignalContext {
   symbolsList: string[];
   isEmphasized: boolean;
+  showOrthoPhoto: boolean;
 }
 
 /**
@@ -51,9 +53,9 @@ function transformTheme(theme: Theme, reducer: (color: string) => string): Theme
 /**
  * Helper to add filters to existing LayerProps.filter values:
  */
-function adaptFilter(layer: LayerProps, blackList: string[], whiteList: string[]): LayerProps {
+function adaptFilter(layer: AnyLayer, blackList: string[], whiteList: string[]): AnyLayer {
   const res = { ...layer };
-  const conditions: LayerProps['filter'][] = layer.filter ? [layer.filter] : [];
+  const conditions: AnyLayer['filter'][] = layer.filter ? [layer.filter] : [];
 
   if (whiteList.length) conditions.push(['in', 'id', ...whiteList]);
   if (blackList.length) conditions.push(['!in', 'id', ...blackList]);
@@ -71,9 +73,9 @@ function adaptFilter(layer: LayerProps, blackList: string[], whiteList: string[]
 /**
  * Helpers to get all layers required to render entities of a given type:
  */
-function getTrackSectionLayers(context: LayerContext, prefix: string): LayerProps[] {
+function getTrackSectionLayers(context: LayerContext, prefix: string): AnyLayer[] {
   return [
-    { ...geoMainLayer(context.colors), id: `${prefix}geo/track-main` },
+    { ...geoMainLayer(context.colors, context.showOrthoPhoto), id: `${prefix}geo/track-main` },
     { ...geoServiceLayer(context.colors), id: `${prefix}geo/track-service` },
     {
       ...trackNameLayer(context.colors),
@@ -106,7 +108,7 @@ function getTrackSectionLayers(context: LayerContext, prefix: string): LayerProp
     { ...lineNameLayer(context.colors), id: `${prefix}geo/line-names` },
   ];
 }
-function getSignalLayers(context: LayerContext, prefix: string): LayerProps[] {
+function getSignalLayers(context: LayerContext, prefix: string): AnyLayer[] {
   return [
     { ...getSignalMatLayerProps(context), id: `${prefix}geo/signal-mat` },
     { ...getPointLayerProps(context), id: `${prefix}geo/signal-point` },
@@ -125,16 +127,16 @@ function getSignalLayers(context: LayerContext, prefix: string): LayerProps[] {
     })
   );
 }
-function getBufferStopsLayers(context: LayerContext, prefix: string): LayerProps[] {
+function getBufferStopsLayers(context: LayerContext, prefix: string): AnyLayer[] {
   return [{ ...getBufferStopsLayerProps(context), id: `${prefix}geo/buffer-stop-main` }];
 }
-function getDetectorsLayers(context: LayerContext, prefix: string): LayerProps[] {
+function getDetectorsLayers(context: LayerContext, prefix: string): AnyLayer[] {
   return [
     { ...getDetectorsLayerProps(context), id: `${prefix}geo/detector-main` },
     { ...getDetectorsNameLayerProps(context), id: `${prefix}geo/detector-name` },
   ];
 }
-function getSwitchesLayers(context: LayerContext, prefix: string): LayerProps[] {
+function getSwitchesLayers(context: LayerContext, prefix: string): AnyLayer[] {
   return [
     { ...getSwitchesLayerProps(context), id: `${prefix}geo/switch-main` },
     { ...getSwitchesNameLayerProps(context), id: `${prefix}geo/switch-name` },
@@ -143,7 +145,7 @@ function getSwitchesLayers(context: LayerContext, prefix: string): LayerProps[] 
 
 const SOURCES_DEFINITION: {
   entityType: LayerType;
-  getLayers: (context: LayerContext, prefix: string) => LayerProps[];
+  getLayers: (context: LayerContext, prefix: string) => AnyLayer[];
 }[] = [
   { entityType: 'track_sections', getLayers: getTrackSectionLayers },
   { entityType: 'signals', getLayers: getSignalLayers },
@@ -155,12 +157,12 @@ const SOURCES_DEFINITION: {
 export const SourcesDefinitionsIndex = mapValues(
   keyBy(SOURCES_DEFINITION, 'entityType'),
   (def) => def.getLayers
-) as Record<LayerType, (context: LayerContext, prefix: string) => LayerProps[]>;
+) as Record<LayerType, (context: LayerContext, prefix: string) => AnyLayer[]>;
 
 export const EditorSource: FC<{
   id?: string;
   data: Feature | FeatureCollection;
-  layers: LayerProps[];
+  layers: AnyLayer[];
 }> = ({ id, data, layers }) => (
   <Source type="geojson" id={id} data={data}>
     {layers.map((layer) => (
@@ -181,9 +183,8 @@ const GeoJSONs: FC<{
     () => transformTheme(colors, (color) => chroma(color).desaturate(50).brighten(1).hex()),
     [colors]
   );
-  const { mapStyle } = useSelector(
-    (s: { map: { mapStyle: string; signalsSettings: SignalsSettings } }) => s.map
-  );
+
+  const { mapStyle, showOrthoPhoto } = useSelector((s: RootState) => s.map);
   const flatEntitiesByType = useSelector(
     (state: { editor: EditorState }) => state.editor.flatEntitiesByTypes
   );
@@ -217,8 +218,9 @@ const GeoJSONs: FC<{
       sourceLayer: 'geo',
       prefix: mapStyle === 'blueprint' ? 'SCHB ' : '',
       isEmphasized: true,
+      showOrthoPhoto,
     }),
-    [colors, mapStyle, signalsList, symbolsList]
+    [colors, mapStyle, signalsList, symbolsList, showOrthoPhoto]
   );
   const hiddenLayerContext: LayerContext = useMemo(
     () => ({
@@ -229,29 +231,26 @@ const GeoJSONs: FC<{
     [hiddenColors, layerContext]
   );
 
-  const sources: { id: string; data: Feature | FeatureCollection; layers: LayerProps[] }[] =
-    useMemo(
-      () =>
-        SOURCES_DEFINITION.flatMap((source) => {
-          return [
-            {
-              id: `${prefix}geo/${source.entityType}`,
-              data: geoJSONs[source.entityType] || NULL_FEATURE,
-              layers: source
-                .getLayers(hiddenLayerContext, prefix)
-                .map((layer) => adaptFilter(layer, (hidden || []).concat(selection || []), [])),
-            },
-            {
-              id: `${selectedPrefix}geo/${source.entityType}`,
-              data: geoJSONs[source.entityType] || NULL_FEATURE,
-              layers: source
-                .getLayers(layerContext, selectedPrefix)
-                .map((layer) => adaptFilter(layer, hidden || [], selection || [])),
-            },
-          ];
-        }),
-      [geoJSONs, hidden, hiddenLayerContext, layerContext, prefix, selectedPrefix, selection]
-    );
+  const sources: { id: string; data: Feature | FeatureCollection; layers: AnyLayer[] }[] = useMemo(
+    () =>
+      SOURCES_DEFINITION.flatMap((source) => [
+        {
+          id: `${prefix}geo/${source.entityType}`,
+          data: geoJSONs[source.entityType] || NULL_FEATURE,
+          layers: source
+            .getLayers(hiddenLayerContext, prefix)
+            .map((layer) => adaptFilter(layer, (hidden || []).concat(selection || []), [])),
+        },
+        {
+          id: `${selectedPrefix}geo/${source.entityType}`,
+          data: geoJSONs[source.entityType] || NULL_FEATURE,
+          layers: source
+            .getLayers(layerContext, selectedPrefix)
+            .map((layer) => adaptFilter(layer, hidden || [], selection || [])),
+        },
+      ]),
+    [geoJSONs, hidden, hiddenLayerContext, layerContext, prefix, selectedPrefix, selection]
+  );
 
   return (
     <>

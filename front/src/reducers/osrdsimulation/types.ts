@@ -94,6 +94,7 @@ export interface Train {
   curves: any[];
   base: Regime;
   eco: Regime;
+  margins: Regime;
   isStdcm: boolean;
   speed_limit_composition: string;
 }
@@ -166,4 +167,5 @@ export interface OsrdSimulationState {
     present: SimulationSnapshot;
     future: SimulationHistory;
   };
+  displaySimulation: boolean;
 }

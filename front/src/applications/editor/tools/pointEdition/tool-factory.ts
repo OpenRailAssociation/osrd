@@ -52,9 +52,6 @@ function getPointEditionTool<T extends EditorPoint>({
         !editorState.editorLayers.has(layer)
       );
     },
-    getRadius() {
-      return 20;
-    },
     getInitialState,
     actions: [
       [
@@ -122,13 +119,13 @@ function getPointEditionTool<T extends EditorPoint>({
       const hoveredTarget = (e.features || []).find((f) => f.layer.id === POINT_LAYER_ID);
       const hoveredTracks = (e.features || []).flatMap((f) => {
         if (f.layer.id !== 'editor/geo/track-main') return [];
-        const trackEntity = entitiesIndex[f.properties.id];
+        const trackEntity = entitiesIndex[(f.properties ?? {}).id];
         return trackEntity && trackEntity.objType === 'TrackSection' ? [trackEntity] : [];
       }) as Feature<LineString>[];
 
       if (!entity.geometry) {
         if (hoveredTracks.length) {
-          const nearestPoint = getNearestPoint(hoveredTracks, e.lngLat);
+          const nearestPoint = getNearestPoint(hoveredTracks, e.lngLat.toArray());
           const angle = nearestPoint.properties.angleAtPoint;
 
           setState({
@@ -163,7 +160,7 @@ function getPointEditionTool<T extends EditorPoint>({
     onMount({ state: { entity }, editorState }) {
       const trackId = entity.properties?.track;
 
-      if (trackId) {
+      if (trackId && editorState.entitiesIndex[trackId]) {
         const line = editorState.entitiesIndex[trackId];
 
         const dbPosition = entity.properties.position;

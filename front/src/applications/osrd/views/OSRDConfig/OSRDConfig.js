@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
-import { FlyToInterpolator } from 'react-map-gl';
 
 import { updateViewport } from 'reducers/map';
 import { STDCM_REQUEST_STATUS, MODES } from 'applications/osrd/consts';
@@ -39,8 +38,6 @@ export default function OSRDConfig(props) {
       dispatch(
         updateViewport({
           ...extViewport,
-          transitionDuration: 1000,
-          transitionInterpolator: new FlyToInterpolator(),
         })
       );
     }
