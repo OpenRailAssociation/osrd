@@ -45,6 +45,7 @@ import 'common/Map/Map.scss';
 import SNCF_LPV from 'common/Map/Layers/extensions/SNCF/SNCF_LPV';
 import OrthoPhoto from 'common/Map/Layers/OrthoPhoto';
 import { MapLayerMouseEvent } from '../../../../types';
+import { getMapMouseEventNearestFeature } from '../../../../utils/mapboxHelper';
 
 function Map() {
   const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings } =
@@ -75,17 +76,18 @@ function Map() {
   };
 
   const onFeatureClick = (e: MapLayerMouseEvent) => {
+    const result = getMapMouseEventNearestFeature(e);
     if (
-      e.features &&
-      e.features.length > 0 &&
-      (e.features[0].properties ?? {}).id !== undefined
-      // && e.features[0].properties.type_voie === 'VP') {
+      result &&
+      result.feature.properties &&
+      result.feature.properties.id &&
+      result.feature.geometry.type === 'LineString'
     ) {
       dispatch(
         updateFeatureInfoClickOSRD({
           displayPopup: true,
-          feature: e.features[0],
-          lngLat: e.lngLat,
+          feature: result.feature,
+          coordinates: result.nearest,
         })
       );
     } else {
@@ -98,18 +100,17 @@ function Map() {
     }
   };
 
-  const getGeoJSONFeature = (e: MapLayerMouseEvent) => {
-    if (e.features && e.features.length > 0 && e.features[0] !== undefined) {
-      const mergedFeatures = combine(featureCollection(e.features as any)) as any;
-      setTrackSectionGeoJSON(mergedFeatures.features[0].geometry);
-    }
-  };
-
-  const onFeatureHover = (e: MapLayerMouseEvent) => {
-    if (e.features !== null && e?.features?.[0] !== undefined && e.features[0].properties) {
-      getGeoJSONFeature(e);
-      setIdHover(e.features[0].properties.id);
-      setLngLatHover(e.lngLat.toArray());
+  const onMoveGetFeature = (e: MapLayerMouseEvent) => {
+    const result = getMapMouseEventNearestFeature(e);
+    if (
+      result &&
+      result.feature.properties &&
+      result.feature.properties.id &&
+      result.feature.geometry.type === 'LineString'
+    ) {
+      setTrackSectionGeoJSON(result.feature.geometry);
+      setIdHover(result.feature.properties.id);
+      setLngLatHover(result.nearest);
     } else {
       setIdHover(undefined);
       setSnappedPoint(undefined);
@@ -171,6 +172,7 @@ function Map() {
         cursor="pointer"
         mapStyle={osmBlankStyle}
         onMove={(e) => updateViewportChange(e.viewState)}
+        onMouseMove={(e) => onMoveGetFeature(e)}
         attributionControl={false} // Defined below
         onClick={onFeatureClick}
         onResize={(e) => {
@@ -179,8 +181,6 @@ function Map() {
             height: e.target.getContainer().offsetHeight,
           });
         }}
-        onMouseEnter={onFeatureHover}
-        onMouseLeave={() => setIdHover(undefined)}
         interactiveLayerIds={defineInteractiveLayers()}
         touchZoomRotate
       >

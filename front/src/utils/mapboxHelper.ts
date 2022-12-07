@@ -1,5 +1,5 @@
 import bboxClip from '@turf/bbox-clip';
-import { chunk } from 'lodash';
+import { chunk, head, sortBy } from 'lodash';
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
 import booleanIntersects from '@turf/boolean-intersects';
 import bbox from '@turf/bbox';
@@ -20,8 +20,9 @@ import {
 } from 'geojson';
 import nearestPointOnLine from '@turf/nearest-point-on-line';
 import nearestPoint, { NearestPoint } from '@turf/nearest-point';
-
-import { Zone } from '../types';
+import fnDistance from '@turf/distance';
+import fnExplode from '@turf/explode';
+import { Zone, MapLayerMouseEvent } from '../types';
 import { getAngle } from '../applications/editor/data/utils';
 
 /**
@@ -278,4 +279,98 @@ export function getNearestPoint(lines: Feature<LineString>[], coord: Coord): Nea
   });
 
   return nearestPoint(coord, featureCollection(nearestPoints));
+}
+
+/**
+ * Given a Map MouseEvent, findthe nearest feature from the position of the mouse.
+ * @param e The MouseEvent
+ * @param opts Option object where
+ *   - layerIds ->  list of layer's id on which we search element
+ *   - tolerance -> value in pixel to create the hitbox
+ */
+export function getMapMouseEventNearestFeature(
+  e: MapLayerMouseEvent,
+  opts?: { layersId?: string[]; tolerance: number }
+): { feature: Feature; nearest: number[]; distance: number } | null {
+  const layers = opts?.layersId;
+  const tolerance = opts?.tolerance || 30;
+  const { target: map, point } = e;
+  const coord = e.lngLat.toArray();
+
+  const features = map.queryRenderedFeatures(
+    [
+      [point.x - tolerance / 2, point.y - tolerance / 2],
+      [point.x + tolerance / 2, point.y + tolerance / 2],
+    ],
+    { layers }
+  );
+
+  const result = head(
+    sortBy(
+      features.map((feature: Feature) => {
+        let distance = Infinity;
+        let nearestFeaturePoint: Feature<Point> | null = null;
+        switch (feature.geometry.type) {
+          case 'Point': {
+            nearestFeaturePoint = feature as Feature<Point>;
+            distance = fnDistance(coord, nearestFeaturePoint.geometry.coordinates);
+            break;
+          }
+          case 'LineString': {
+            nearestFeaturePoint = nearestPointOnLine(feature.geometry, coord);
+            distance = fnDistance(coord, nearestFeaturePoint.geometry.coordinates);
+            break;
+          }
+          case 'MultiPoint': {
+            const points: FeatureCollection<Point> = {
+              type: 'FeatureCollection',
+              features: feature.geometry.coordinates.map((p) => ({
+                type: 'Feature',
+                geometry: {
+                  type: 'Point',
+                  coordinates: p,
+                },
+                properties: {},
+              })),
+            };
+            const pt = nearestPoint(coord, points);
+            distance = pt.properties.distanceToPoint;
+            nearestFeaturePoint = pt;
+            break;
+          }
+          case 'MultiLineString': {
+            const points: FeatureCollection<Point> = {
+              type: 'FeatureCollection',
+              features: feature.geometry.coordinates.map((lineString) =>
+                nearestPointOnLine({ type: 'LineString', coordinates: lineString }, coord)
+              ),
+            };
+            const pt = nearestPoint(coord, points);
+            distance = pt.properties.distanceToPoint;
+            nearestFeaturePoint = pt;
+            break;
+          }
+          case 'Polygon': {
+            const points = fnExplode(feature.geometry);
+            const pt = nearestPoint(coord, points);
+            distance = pt.properties.distanceToPoint;
+            nearestFeaturePoint = pt;
+            break;
+          }
+          default:
+            distance = Infinity;
+            break;
+        }
+        return {
+          feature,
+          nearest: nearestFeaturePoint ? nearestFeaturePoint.geometry.coordinates : [0, 0],
+          distance,
+        };
+      }),
+      ['distance']
+    )
+  );
+
+  if (!result) return null;
+  return result;
 }

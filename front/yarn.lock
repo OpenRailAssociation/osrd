@@ -3405,6 +3405,14 @@
     "@turf/helpers" "^6.5.0"
     "@turf/invariant" "^6.5.0"
 
+"@turf/explode@^6.5.0":
+  version "6.5.0"
+  resolved "https://registry.yarnpkg.com/@turf/explode/-/explode-6.5.0.tgz#02c292cc143dd629643da5b70bb5b19b9f0f1c6b"
+  integrity sha512-6cSvMrnHm2qAsace6pw9cDmK2buAlw8+tjeJVXMfMyY+w7ZUi1rprWMsY92J7s2Dar63Bv09n56/1V7+tcj52Q==
+  dependencies:
+    "@turf/helpers" "^6.5.0"
+    "@turf/meta" "^6.5.0"
+
 "@turf/helpers@6.x", "@turf/helpers@^6.3.0", "@turf/helpers@^6.5.0":
   version "6.5.0"
   resolved "https://registry.yarnpkg.com/@turf/helpers/-/helpers-6.5.0.tgz#f79af094bd6b8ce7ed2bd3e089a8493ee6cae82e"

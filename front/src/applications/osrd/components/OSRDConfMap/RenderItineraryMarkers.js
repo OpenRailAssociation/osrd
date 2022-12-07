@@ -8,7 +8,6 @@ import viaSVG from 'assets/pictures/via.svg';
 
 export default function RenderItineraryMarkers() {
   const osrdconf = useSelector((state) => state.osrdconf);
-
   const markers = [];
 
   if (osrdconf.origin !== undefined) {
@@ -16,8 +15,7 @@ export default function RenderItineraryMarkers() {
       <Marker
         longitude={osrdconf.origin.clickLngLat[0]}
         latitude={osrdconf.origin.clickLngLat[1]}
-        offsetLeft={-12}
-        offsetTop={-24}
+        offset={[0, -12]}
         key={nextId()}
       >
         <img src={originSVG} alt="Origin" style={{ height: '1.5rem' }} />
@@ -29,8 +27,7 @@ export default function RenderItineraryMarkers() {
       <Marker
         longitude={osrdconf.destination.clickLngLat[0]}
         latitude={osrdconf.destination.clickLngLat[1]}
-        offsetLeft={-12}
-        offsetTop={-24}
+        offset={[0, -12]}
         key={nextId()}
       >
         <img src={destinationSVG} alt="Destination" style={{ height: '1.5rem' }} />
@@ -43,8 +40,7 @@ export default function RenderItineraryMarkers() {
         <Marker
           longitude={via.clickLngLat[0]}
           latitude={via.clickLngLat[1]}
-          offsetLeft={-12}
-          offsetTop={-24}
+          offset={[0, -12]}
           key={nextId()}
         >
           <img src={viaSVG} alt="Destination" style={{ height: '1.5rem' }} />

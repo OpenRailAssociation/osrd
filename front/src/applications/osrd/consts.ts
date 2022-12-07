@@ -138,5 +138,5 @@ export interface OsrdConfState {
   originLinkedBounds: boolean;
   destinationDate?: string;
   destinationTime?: string;
-  featureInfoClick: { displayPopup: boolean; feature?: Feature; lngLat?: LngLat };
+  featureInfoClick: { displayPopup: boolean; feature?: Feature; coordinates?: number[] };
 }

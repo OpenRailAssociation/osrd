@@ -23,6 +23,7 @@
     "@turf/boolean-point-in-polygon": "^6.3.0",
     "@turf/combine": "^6.5.0",
     "@turf/distance": "^6.3.0",
+    "@turf/explode": "^6.5.0",
     "@turf/helpers": "^6.3.0",
     "@turf/length": "^6.5.0",
     "@turf/line-intersect": "^6.3.0",
