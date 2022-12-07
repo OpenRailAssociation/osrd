@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
+import { PropTypes } from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { updateInfraID } from 'reducers/osrdconf';
 import { setFailure } from 'reducers/main';
 import { get } from 'common/requests';
 import icon from 'assets/pictures/tracks.svg';
-import InfraSelectorModal from 'applications/osrd/components/InfraSelector/InfraSelectorModal';
+import InfraSelectorModal from 'common/InfraSelector/InfraSelectorModal';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
+import nextId from 'react-id-generator';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 
 const infraURL = '/infra/';
 
-export default function InfraSelector() {
+export default function InfraSelector(props) {
+  const { modalOnly, modalID } = props;
   const dispatch = useDispatch();
   const [infrasList, setInfrasList] = useState(undefined);
   const [selectedInfra, setSelectedInfra] = useState(undefined);
@@ -71,9 +74,19 @@ export default function InfraSelector() {
 
   useEffect(() => {
     setInitialInfra();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [infrasList, infraID]);
 
-  return (
+  useEffect(() => {
+    if (!infrasList) {
+      getInfrasList();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return modalOnly ? (
+    <InfraSelectorModal infrasList={infrasList} modalID={modalID} />
+  ) : (
     <>
       <div className="osrd-config-item mb-2">
         <div
@@ -82,7 +95,7 @@ export default function InfraSelector() {
           tabIndex="-1"
           onClick={getInfrasList}
           data-toggle="modal"
-          data-target="#infra-selector-modal"
+          data-target={`#${modalID}`}
         >
           <div className="h2 mb-0">
             <img width="32px" className="mr-2" src={icon} alt="infraIcon" />
@@ -100,7 +113,16 @@ export default function InfraSelector() {
           </div>
         </div>
       </div>
-      <InfraSelectorModal infrasList={infrasList} />
+      <InfraSelectorModal infrasList={infrasList} modalID={modalID} />
     </>
   );
 }
+
+InfraSelector.defaultProps = {
+  modalOnly: false,
+  modalID: `infra-selector-modal-${nextId()}`,
+};
+InfraSelector.propTypes = {
+  modalOnly: PropTypes.bool,
+  modalID: PropTypes.string,
+};
