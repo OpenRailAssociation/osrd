@@ -1,8 +1,7 @@
 import { mergeDatasAreaConstant } from 'applications/osrd/components/Helpers/ChartHelpers';
 import createSlopeCurve from 'applications/osrd/components/Simulation/SpeedSpaceChart/createSlopeCurve';
 import createCurveCurve from 'applications/osrd/components/Simulation/SpeedSpaceChart/createCurveCurve';
-import { SimulationSnapshot } from 'reducers/osrdsimulation/index';
-
+import { SimulationSnapshot } from 'reducers/osrdsimulation/types';
 
 interface gevPreparedata {
   speed: Record<string, unknown>[];
@@ -30,17 +29,19 @@ function prepareData(
     slopesCurve: [],
     slopesHistogram: [],
     areaSlopesHistogram: [],
-    curvesHistogram: []
+    curvesHistogram: [],
   };
   dataSimulation.speed = simulation.trains[selectedTrain].base.speeds.map((step) => ({
     ...step,
     speed: step.speed * 3.6,
   }));
   if (simulation.trains[selectedTrain].margins && !simulation.trains[selectedTrain].margins.error) {
-    dataSimulation.margins_speed = simulation.trains[selectedTrain].margins.speeds.map((step: any) => ({
-      ...step,
-      speed: step.speed * 3.6,
-    }));
+    dataSimulation.margins_speed = simulation.trains[selectedTrain].margins.speeds.map(
+      (step: any) => ({
+        ...step,
+        speed: step.speed * 3.6,
+      })
+    );
   }
   if (simulation.trains[selectedTrain].eco && !simulation.trains[selectedTrain].eco.error) {
     dataSimulation.eco_speed = simulation.trains[selectedTrain].eco.speeds.map((step) => ({
@@ -78,7 +79,7 @@ function prepareData(
     'speed'
   );
 
-  return dataSimulation
+  return dataSimulation;
 }
 
-export default prepareData
+export default prepareData;

@@ -1,11 +1,6 @@
-import { LayerProps } from 'react-map-gl';
-import { useSelector } from 'react-redux';
-import { RootState } from 'reducers';
+import { Theme, AnyLayer } from '../../../types';
 
-import { Theme } from '../../../types';
-
-const definePaint = (theme: Theme) => {
-  const { showOrthoPhoto } = useSelector((state: RootState) => state.map);
+function definePaint(theme: Theme, showOrthoPhoto: boolean) {
   return showOrthoPhoto
     ? {
         'line-color': theme.track.major,
@@ -15,17 +10,17 @@ const definePaint = (theme: Theme) => {
         'line-color': theme.track.major,
         'line-width': 1,
       };
-};
+}
 
-export function geoMainLayer(theme: Theme): LayerProps {
+export function geoMainLayer(theme: Theme, showOrthoPhoto = false): AnyLayer {
   return {
     id: 'geoMainLayer',
     type: 'line',
-    paint: definePaint(theme),
+    paint: definePaint(theme, showOrthoPhoto),
   };
 }
 
-export function geoServiceLayer(theme: Theme): LayerProps {
+export function geoServiceLayer(theme: Theme): AnyLayer {
   return {
     id: 'geoServiceLayer',
     type: 'line',

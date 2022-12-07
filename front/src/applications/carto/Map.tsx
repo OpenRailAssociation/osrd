@@ -1,14 +1,9 @@
 import { isNil } from 'lodash';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import ReactMapGL, {
-  AttributionControl,
-  FlyToInterpolator,
-  ScaleControl,
-  MapEvent,
-} from 'react-map-gl';
+import ReactMapGL, { AttributionControl, ScaleControl, MapRef } from 'react-map-gl';
+import maplibregl from 'maplibre-gl';
 import { useDispatch, useSelector } from 'react-redux';
-
 import { updateViewport, Viewport } from 'reducers/map';
 import { RootState } from 'reducers';
 
@@ -40,11 +35,14 @@ import TracksSchematic from 'common/Map/Layers/TracksSchematic';
 import colors from 'common/Map/Consts/colors';
 import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 
+import { MapLayerMouseEvent } from '../../types';
+
 import 'common/Map/Map.scss';
 
 function Map() {
   const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings } =
     useSelector((state: RootState) => state.map);
+  const mapRef = useRef<MapRef | null>(null);
   const [idHover, setIdHover] = useState<string | undefined>(undefined);
   const { urlLat, urlLon, urlZoom, urlBearing, urlPitch } = useParams();
   const { fullscreen } = useSelector((state: RootState) => state.main);
@@ -64,18 +62,16 @@ function Map() {
   const resetPitchBearing = () => {
     updateViewportChange({
       ...viewport,
-      bearing: parseFloat('0'),
-      pitch: parseFloat('0'),
-      transitionDuration: 1000,
-      transitionInterpolator: new FlyToInterpolator(),
+      bearing: 0,
+      pitch: 0,
     });
   };
 
-  const onFeatureClick = (e: MapEvent) => {
+  const onFeatureClick = (e: MapLayerMouseEvent) => {
     console.log(e);
   };
 
-  const onFeatureHover = (e: MapEvent) => {
+  const onFeatureHover = (e: MapLayerMouseEvent) => {
     if (e.features && e.features[0] !== undefined && e.features[0].properties) {
       setIdHover(e.features[0].properties.id);
     } else {
@@ -99,6 +95,7 @@ function Map() {
     if (!isNil(urlBearing)) newViewport.bearing = parseFloat(urlBearing);
     if (!isNil(urlPitch)) newViewport.pitch = parseFloat(urlPitch);
     if (Object.keys(newViewport).length > 0) updateViewportChange(newViewport);
+    // we only do it at mount time
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -107,24 +104,26 @@ function Map() {
       <MapButtons resetPitchBearing={resetPitchBearing} />
       <ReactMapGL
         {...viewport}
-        style={{ cursor: 'normal' }}
-        width="100%"
-        height="100%"
+        ref={mapRef}
+        mapLib={maplibregl}
+        cursor="normal"
+        style={{ width: '100%', height: '100%' }}
         mapStyle={osmBlankStyle}
-        onViewportChange={updateViewportChange}
-        clickRadius={4}
+        onMove={(e) => updateViewportChange(e.viewState)}
         attributionControl={false} // Defined below
         onClick={onFeatureClick}
-        onHover={onFeatureHover}
+        onResize={(e) => {
+          updateViewportChange({
+            width: e.target.getContainer().offsetWidth,
+            height: e.target.getContainer().offsetHeight,
+          });
+        }}
+        onMouseOver={onFeatureHover}
         interactiveLayerIds={defineInteractiveLayers()}
-        touchRotate
-        asyncRender
+        touchZoomRotate
       >
         <VirtualLayers />
-        <AttributionControl
-          className="attribution-control"
-          customAttribution="©SNCF/DGEX Solutions"
-        />
+        <AttributionControl customAttribution="©SNCF/DGEX Solutions" />
         <ScaleControl maxWidth={100} unit="metric" style={scaleControlStyle} />
 
         <Background

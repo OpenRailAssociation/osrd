@@ -200,12 +200,12 @@ const SelectionTool: Tool<SelectionState> = {
 
     if (current) {
       if (!isAlreadySelected) {
-        if (e.srcEvent.ctrlKey) {
+        if (e.originalEvent.ctrlKey) {
           selection = selection.concat([current]);
         } else {
           selection = [current];
         }
-      } else if (e.srcEvent.ctrlKey) {
+      } else if (e.originalEvent.ctrlKey) {
         selection = selection.filter((item) => item.properties.id !== feature.properties.id);
       } else if (selection.length === 1) {
         selection = [];
@@ -235,14 +235,17 @@ const SelectionTool: Tool<SelectionState> = {
             selectionState: { ...state.selectionState, rectangleTopLeft: null },
             selection: selectInZone(editorState.entitiesArray, {
               type: 'rectangle',
-              points: [state.selectionState.rectangleTopLeft, position],
+              points: [state.selectionState.rectangleTopLeft, position.toArray()],
             }),
           });
         }
       } else {
         setState({
           ...state,
-          selectionState: { ...state.selectionState, rectangleTopLeft: position },
+          selectionState: {
+            ...state.selectionState,
+            rectangleTopLeft: position.toArray() as [number, number],
+          },
         });
       }
     } else if (state.selectionState.type === 'polygon') {
@@ -269,7 +272,7 @@ const SelectionTool: Tool<SelectionState> = {
           ...state,
           selectionState: {
             ...state.selectionState,
-            polygonPoints: points.concat([position]),
+            polygonPoints: points.concat([position.toArray() as [number, number]]),
           },
         });
       }

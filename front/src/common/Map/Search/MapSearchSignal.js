@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { FlyToInterpolator } from 'react-map-gl';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import PropTypes from 'prop-types';
 import { get } from 'common/requests';
@@ -69,8 +68,6 @@ export default function MapSearchSignal(props) {
         longitude: lonlat[0],
         latitude: lonlat[1],
         zoom: 16,
-        transitionDuration: 1000,
-        transitionInterpolator: new FlyToInterpolator(),
       };
       updateExtViewport(newViewport);
       dispatch(

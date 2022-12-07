@@ -7,7 +7,6 @@ import {
   MdPhotoSizeSelectSmall,
   TiTimesOutline,
 } from 'react-icons/all';
-import { MapEvent } from 'react-map-gl';
 import { isEqual } from 'lodash';
 
 import { DEFAULT_COMMON_TOOL_STATE, Tool } from '../types';
@@ -162,7 +161,7 @@ const ZoneSelectionTool: Tool<ZoneSelectionState> = {
   ],
 
   // Interactions:
-  onClickMap(e: MapEvent, { setState, dispatch, state }) {
+  onClickMap(e, { setState, dispatch, state }) {
     const position = e.lngLat;
 
     if (state.zoneState.type === 'rectangle') {
@@ -173,7 +172,7 @@ const ZoneSelectionTool: Tool<ZoneSelectionState> = {
           dispatch<ReturnType<typeof selectZone>>(
             selectZone({
               type: 'rectangle',
-              points: [state.zoneState.topLeft, position],
+              points: [state.zoneState.topLeft, position.toArray()],
             })
           );
           setState({ ...state, zoneState: { ...state.zoneState, topLeft: null } });
@@ -181,7 +180,7 @@ const ZoneSelectionTool: Tool<ZoneSelectionState> = {
       } else {
         setState({
           ...state,
-          zoneState: { ...state.zoneState, topLeft: position },
+          zoneState: { ...state.zoneState, topLeft: position.toArray() as [number, number] },
         });
       }
     } else if (state.zoneState.type === 'polygon') {
@@ -201,7 +200,10 @@ const ZoneSelectionTool: Tool<ZoneSelectionState> = {
       } else {
         setState({
           ...state,
-          zoneState: { ...state.zoneState, points: points.concat([position]) },
+          zoneState: {
+            ...state.zoneState,
+            points: points.concat([position.toArray() as [number, number]]),
+          },
         });
       }
     }

@@ -9,7 +9,7 @@ import {
   RiDragMoveLine,
   TiDeleteOutline,
 } from 'react-icons/all';
-import { Feature, LineString } from 'geojson';
+import { Feature, LineString, Point } from 'geojson';
 import nearestPointFn from '@turf/nearest-point';
 import { featureCollection } from '@turf/helpers';
 import nearestPointOnLine from '@turf/nearest-point-on-line';
@@ -34,9 +34,6 @@ const TrackEditionTool: Tool<TrackEditionState> = {
   requiredLayers: new Set(['track_sections']),
   isDisabled({ editorState }) {
     return !editorState.editorZone || !editorState.editorLayers.has('track_sections');
-  },
-  getRadius() {
-    return 20;
   },
   getInitialState() {
     return {
@@ -184,10 +181,9 @@ const TrackEditionTool: Tool<TrackEditionState> = {
       }
       // Adding a new point at the extremity of the track:
       else {
-        const position: [number, number] =
-          anchorLinePoints && nearestPoint
-            ? (nearestPoint.geometry.coordinates as [number, number])
-            : e.lngLat;
+        const position = (
+          anchorLinePoints && nearestPoint ? nearestPoint.geometry.coordinates : e.lngLat.toArray()
+        ) as [number, number];
 
         const points = track.geometry.coordinates;
         const lastPoint = points[points.length - 1];
@@ -246,7 +242,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
 
     const hoveredEntities = (e.features || []).flatMap((f) => {
       if (f.layer.id !== 'editor/geo/track-main') return [];
-      const entity = entitiesIndex[f.properties.id];
+      const entity = entitiesIndex[(f.properties ?? {}).id];
       return entity && entity.objType === 'TrackSection' ? [entity] : [];
     });
 
@@ -254,13 +250,13 @@ const TrackEditionTool: Tool<TrackEditionState> = {
       setState({
         ...state,
         nearestPoint: hoveredEntities.length
-          ? getNearestPoint(hoveredEntities as Feature<LineString>[], e.lngLat)
+          ? getNearestPoint(hoveredEntities as Feature<LineString>[], e.lngLat.toArray())
           : null,
       });
     } else if (editionState.type === 'addPoint' && state.anchorLinePoints) {
       let isStateUpdated = false;
       if (track.geometry.coordinates.length > 1) {
-        const closest = nearestPointOnLine(track, e.lngLat);
+        const closest = nearestPointOnLine(track, e.lngLat.toArray());
         const closestPosition = closest.geometry.coordinates;
 
         if (state.track.geometry.coordinates.every((point) => !isEqual(point, closestPosition))) {
@@ -279,7 +275,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
         setState({
           ...state,
           nearestPoint: hoveredEntities.length
-            ? getNearestPoint(hoveredEntities as Feature<LineString>[], e.lngLat)
+            ? getNearestPoint(hoveredEntities as Feature<LineString>[], e.lngLat.toArray())
             : null,
         });
       }
@@ -289,7 +285,9 @@ const TrackEditionTool: Tool<TrackEditionState> = {
       (editionState.type === 'movePoint' && typeof editionState.draggedPointIndex !== 'number') ||
       editionState.type === 'deletePoint'
     ) {
-      const pointFeatures = (e.features || []).filter((f) => f.layer.id === POINTS_LAYER_ID);
+      const pointFeatures = (e.features || []).filter(
+        (f) => f.layer.id === POINTS_LAYER_ID
+      ) as Array<Feature<Point>>;
 
       if (!pointFeatures.length) {
         setState({
@@ -300,7 +298,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
           },
         });
       } else {
-        const nearest = nearestPointFn(e.lngLat, featureCollection(pointFeatures));
+        const nearest = nearestPointFn(e.lngLat.toArray(), featureCollection(pointFeatures));
         setState({
           ...state,
           editionState: {
@@ -317,10 +315,11 @@ const TrackEditionTool: Tool<TrackEditionState> = {
       typeof state.editionState.draggedPointIndex === 'number'
     ) {
       const track = cloneDeep(state.track);
-      track.geometry.coordinates[state.editionState.draggedPointIndex] =
+      track.geometry.coordinates[state.editionState.draggedPointIndex] = (
         state.anchorLinePoints && state.nearestPoint
-          ? (state.nearestPoint.geometry.coordinates as [number, number])
-          : e.lngLat;
+          ? state.nearestPoint.geometry.coordinates
+          : e.lngLat.toArray()
+      ) as [number, number];
 
       setState({
         ...state,

@@ -83,8 +83,7 @@ export default function StdcmRequestModal(props) {
 
           // ask for timetable with the new path
           get(`${timetableURI}${osrdconf.timetableID}/`).then((timetable) => {
-
-            const trainIds = timetable.train_schedules.map(train_schedule => train_schedule.id)
+            const trainIds = timetable.train_schedules.map((train_schedule) => train_schedule.id);
             get(`${trainscheduleURI}results/`, {
               train_ids: trainIds.join(','),
               path: result.path.id,
@@ -104,7 +103,7 @@ export default function StdcmRequestModal(props) {
 
               // Create margins settings for each train if not set
               const newAllowancesSettings = { ...allowancesSettings };
-              simulationLocal.forEach((train: any) => {
+              simulationLocal.forEach((train) => {
                 if (!newAllowancesSettings[train.id]) {
                   newAllowancesSettings[train.id] = {
                     base: true,
@@ -114,7 +113,6 @@ export default function StdcmRequestModal(props) {
                   };
                 }
               });
-
 
               if (!newAllowancesSettings[fakedNewTrain.id]) {
                 newAllowancesSettings[fakedNewTrain.id] = {
@@ -135,9 +133,7 @@ export default function StdcmRequestModal(props) {
 
               dispatch(updateMustRedraw(true));
             });
-          })
-
-
+          });
         })
         .catch((e) => {
           // Update simu in redux with data;

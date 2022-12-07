@@ -1,4 +1,6 @@
-const osmBlankStyle = {
+import { MapProps } from 'react-map-gl';
+
+const osmBlankStyle: MapProps['mapStyle'] = {
   version: 8,
   name: 'Blank',
   sources: {},
@@ -13,7 +15,6 @@ const osmBlankStyle = {
       },
     },
   ],
-  id: 'blank',
 };
 
 export default osmBlankStyle;

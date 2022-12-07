@@ -52,7 +52,8 @@ export default function reducer(inputState: UserState | undefined, action: AnyAc
         draft.toLogin = true;
         break;
       case LOGOUT:
-        return initialState;
+        draft = initialState;
+        break;
       case SERVER_ERROR:
         draft.serverError = true;
         break;
@@ -60,6 +61,7 @@ export default function reducer(inputState: UserState | undefined, action: AnyAc
         draft.account = action.account;
         break;
       default:
+        break;
     }
   });
 }

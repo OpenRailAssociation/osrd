@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Source, MapRef } from 'react-map-gl';
-import { Map as MapboxType } from 'mapbox-gl';
 import { get, isNil } from 'lodash';
 
 import { RootState } from 'reducers';
@@ -27,7 +26,7 @@ interface PlatformProps {
   colors: Theme;
   sourceTable: string;
   sourceLayer: SourceLayer;
-  hovered?: { id: any; layer: any };
+  hovered?: { id: string; layer: string };
   mapRef?: React.RefObject<MapRef>;
   layerOrder: number;
 }
@@ -67,10 +66,7 @@ function Signals(props: PlatformProps) {
       const selectedTrainConsolidatedSimulation = consolidatedSimulation[selectedTrain];
 
       const renderedDynamicStopsFeatures = mapRef.current.queryRenderedFeatures(
-        (mapRef.current.getMap() as MapboxType).getBounds().toArray() as [
-          [number, number],
-          [number, number]
-        ],
+        mapRef.current.getBounds().toArray() as [[number, number], [number, number]],
         { layers: dynamicLayersIds }
       ); // can' be memoïzed :(
 
@@ -172,7 +168,7 @@ function Signals(props: PlatformProps) {
         const layerId = `chartis/signal/${sourceLayer}/${sig}`;
         const isHovered = hovered && hovered.layer === layerId;
         const signalDef = getSignalLayerProps(context, sig, changeSignalsContext);
-        const opacity = get(signalDef.paint, 'icon-opacity', 1) || 1;
+        const opacity = get(signalDef.paint, 'icon-opacity', 1) as number;
 
         return (
           <OrderedLayer
