@@ -3,13 +3,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Popup } from 'react-map-gl';
 import { useTranslation } from 'react-i18next';
 import { featureCollection } from '@turf/helpers';
-import along from '@turf/along';
-import { Feature, LineString } from 'geojson';
 import { merge, isEqual } from 'lodash';
 
 import GeoJSONs, { EditorSource, SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
 import colors from 'common/Map/Consts/colors';
-import EditorZone from 'common/Map/Layers/EditorZone';
 import { save } from 'reducers/editor';
 import { NULL_GEOMETRY, CreateEntityOperation, EditorEntity } from 'types';
 import { SIGNALS_TO_SYMBOLS } from 'common/Map/Consts/SignalsNames';
@@ -28,7 +25,7 @@ export const POINT_LAYER_ID = 'pointEditionTool/new-entity';
 export const PointEditionLeftPanel: FC = <Entity extends EditorEntity>() => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const { state, setState, editorState } = useContext(EditorContext) as ExtendedEditorContextType<
+  const { state, setState } = useContext(EditorContext) as ExtendedEditorContextType<
     PointEditionState<Entity>
   >;
 
@@ -42,7 +39,8 @@ export const PointEditionLeftPanel: FC = <Entity extends EditorEntity>() => {
               ? {
                   update: [
                     {
-                      source: editorState.entitiesIndex[state.entity.properties.id],
+                      // TODO: Find original entity
+                      source: savedEntity, // editorState.entitiesIndex[state.entity.properties.id],
                       target: savedEntity,
                     },
                   ],
@@ -78,9 +76,10 @@ export const PointEditionLeftPanel: FC = <Entity extends EditorEntity>() => {
           typeof oldPosition === 'number' &&
           newPosition !== oldPosition
         ) {
-          const line = editorState.entitiesIndex[trackId];
-          const point = along(line as Feature<LineString>, newPosition, { units: 'meters' });
-          additionalUpdate.geometry = point.geometry;
+          // TODO
+          // const line = editorState.entitiesIndex[trackId];
+          // const point = along(line as Feature<LineString>, newPosition, { units: 'meters' });
+          // additionalUpdate.geometry = point.geometry;
         }
 
         setState({ ...state, entity: { ...(entity as Entity), ...additionalUpdate } });
@@ -153,6 +152,7 @@ export const BasePointEditionLayers: FC<{
           sourceLayer: 'geo',
           isEmphasized: true,
           showIGNBDORTHO: false,
+          sourceTable: objType,
         },
         `editor/${objType}/`
       ).map((layer) =>
@@ -166,9 +166,6 @@ export const BasePointEditionLayers: FC<{
 
   return (
     <>
-      {/* Zone display */}
-      <EditorZone />
-
       {/* Editor data layer */}
       <GeoJSONs
         colors={colors[mapStyle]}

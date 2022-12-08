@@ -47,9 +47,7 @@ function getPointEditionTool<T extends EditorPoint>({
     requiredLayers: new Set([layer, 'track_sections']),
     isDisabled({ editorState }) {
       return (
-        !editorState.editorZone ||
-        !editorState.editorLayers.has('track_sections') ||
-        !editorState.editorLayers.has(layer)
+        !editorState.editorLayers.has('track_sections') || !editorState.editorLayers.has(layer)
       );
     },
     getInitialState,
@@ -112,13 +110,15 @@ function getPointEditionTool<T extends EditorPoint>({
         });
       }
     },
-    onHover(e, { setState, state, editorState: { entitiesIndex } }) {
+    onHover(e, { setState, state }) {
       const { entity } = state;
       const hoveredTarget = (e.features || []).find((f) => f.layer.id === POINT_LAYER_ID);
       const hoveredTracks = (e.features || []).flatMap((f) => {
         if (f.layer.id !== 'editor/geo/track-main') return [];
-        const trackEntity = entitiesIndex[(f.properties ?? {}).id];
-        return trackEntity && trackEntity.objType === 'TrackSection' ? [trackEntity] : [];
+        // TODO
+        // const trackEntity = entitiesIndex[(f.properties ?? {}).id];
+        // return trackEntity && trackEntity.objType === 'TrackSection' ? [trackEntity] : [];
+        return [];
       }) as Feature<LineString>[];
 
       if (!entity.geometry || isEqual(entity.geometry, NULL_GEOMETRY)) {
@@ -155,34 +155,40 @@ function getPointEditionTool<T extends EditorPoint>({
     },
 
     // Lifecycle:
-    onMount({ state: { entity }, editorState }) {
-      const trackId = entity.properties?.track;
-
-      if (trackId && editorState.entitiesIndex[trackId]) {
-        const line = editorState.entitiesIndex[trackId];
-
-        const dbPosition = entity.properties.position;
-        const computedPosition = nearestPointOnLine(
-          line as Feature<LineString>,
-          entity as Feature<Point>,
-          { units: 'meters' }
-        ).properties?.location;
-
-        if (
-          typeof dbPosition === 'number' &&
-          typeof computedPosition === 'number' &&
-          Math.abs(dbPosition - computedPosition) >= 1
-        ) {
-          // eslint-disable-next-line no-console
-          console.warn(
-            `
-The entity ${entity.properties.id} position computed by Turf.js does not match the one from the database:
-  -> Database position: ${dbPosition}
-  -> Turf.js position: ${computedPosition}
-`
-          );
-        }
+    onMount(
+      {
+        /*state: { entity }, editorState*/
       }
+    ) {
+      // TODO
+      //
+      //       const trackId = entity.properties?.track;
+      //
+      //       if (trackId && editorState.entitiesIndex[trackId]) {
+      //         const line = editorState.entitiesIndex[trackId];
+      //
+      //         const dbPosition = entity.properties.position;
+      //         const computedPosition = nearestPointOnLine(
+      //           line as Feature<LineString>,
+      //           entity as Feature<Point>,
+      //           { units: 'meters' }
+      //         ).properties?.location;
+      //
+      //         if (
+      //           typeof dbPosition === 'number' &&
+      //           typeof computedPosition === 'number' &&
+      //           Math.abs(dbPosition - computedPosition) >= 1
+      //         ) {
+      //           // eslint-disable-next-line no-console
+      //           console.warn(
+      //             `
+      // The entity ${entity.properties.id} position computed by Turf.js does not match the one from the database:
+      //   -> Database position: ${dbPosition}
+      //   -> Turf.js position: ${computedPosition}
+      // `
+      //           );
+      //         }
+      //       }
     },
 
     getInteractiveLayers() {

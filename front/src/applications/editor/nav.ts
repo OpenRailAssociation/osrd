@@ -6,7 +6,6 @@ import { FiLayers, FiZoomIn, FiZoomOut } from 'react-icons/fi';
 import { FaCompass } from 'react-icons/fa';
 
 import { Viewport } from 'reducers/map';
-import { getZoneViewport } from '../../utils/mapboxHelper';
 import { EditorState, ModalRequest, OBJTYPE_TO_LAYER_DICT, Tool } from './tools/types';
 import InfraSelectionModal from './components/InfraSelectionModal';
 import LayersModal from './components/LayersModal';
@@ -77,14 +76,10 @@ const NavButtons: NavButton[][] = [
       id: 'recenter',
       icon: BiTargetLock,
       labelTranslationKey: 'Editor.nav.recenter',
-      onClick({ setViewport, viewport, editorState }) {
-        const newViewport = editorState.editorZone
-          ? getZoneViewport(editorState.editorZone, viewport)
-          : DEFAULT_VIEWPORT;
-
+      onClick({ setViewport, viewport }) {
         setViewport({
           ...viewport,
-          ...newViewport,
+          ...DEFAULT_VIEWPORT,
         });
       },
     },

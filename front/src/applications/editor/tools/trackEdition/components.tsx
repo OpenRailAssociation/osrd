@@ -8,7 +8,6 @@ import { Position } from 'geojson';
 import EditorContext from '../../context';
 import GeoJSONs from '../../../../common/Map/Layers/GeoJSONs';
 import colors from '../../../../common/Map/Consts/colors';
-import EditorZone from '../../../../common/Map/Layers/EditorZone';
 import { TrackEditionState } from './types';
 import EditorForm from '../../components/EditorForm';
 import { save } from '../../../../reducers/editor';
@@ -68,9 +67,6 @@ export const TrackEditionLayers: FC = () => {
 
   return (
     <>
-      {/* Zone display */}
-      <EditorZone />
-
       {/* Editor data layer */}
       <GeoJSONs
         colors={colors[mapStyle]}
@@ -201,7 +197,8 @@ export const TrackEditionLeftPanel: FC = () => {
               ? {
                   update: [
                     {
-                      source: injectGeometry(editorState.entitiesIndex[track.properties.id]),
+                      // TODO
+                      source: injectGeometry(savedEntity), // injectGeometry(editorState.entitiesIndex[track.properties.id]),
                       target: injectGeometry(savedEntity),
                     },
                   ],
