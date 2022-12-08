@@ -1,13 +1,16 @@
 import React, { FC, PropsWithChildren, useContext, useMemo, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import maplibregl from 'maplibre-gl';
 import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl';
 import { withTranslation } from 'react-i18next';
 import { TFunction } from 'i18next';
+import maplibregl from 'maplibre-gl';
 import VirtualLayers from 'applications/osrd/views/OSRDSimulation/VirtualLayers';
 import colors from 'common/Map/Consts/colors';
 import 'common/Map/Map.scss';
+
 /* Main data & layers */
+import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
+import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import TracksOSM from 'common/Map/Layers/TracksOSM';
 import { RootState } from 'reducers';
@@ -28,8 +31,7 @@ import {
   OSRDConf,
   Tool,
 } from './tools/types';
-import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
-import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
+import { EditorEntity } from '../../types';
 
 interface MapProps<S extends CommonToolState = CommonToolState> {
   t: TFunction;
@@ -79,6 +81,10 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
     }),
     [context, dispatch, editorState, mapStyle, osrdConf, viewport]
   );
+  const interactiveLayerIDs = useMemo(
+    () => (activeTool.getInteractiveLayers ? activeTool.getInteractiveLayers(extendedContext) : []),
+    [activeTool, extendedContext]
+  );
 
   const cursor = useMemo(
     () => (activeTool.getCursor ? activeTool.getCursor(extendedContext, mapState) : 'default'),
@@ -124,9 +130,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
               if (activeTool.onHover) {
                 activeTool.onHover(eventWithFeature, extendedContext);
               } else if (feature && feature.properties) {
-                const entity = feature?.properties?.id
-                  ? editorState.entitiesIndex[feature.properties.id]
-                  : undefined;
+                const entity = feature as any as EditorEntity;
                 partialToolState.hovered = entity || null;
                 setToolState({ ...toolState, ...partialToolState });
               }
@@ -136,7 +140,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
             setMapState((prev) => ({ ...prev, ...partialMapState }));
           }}
           onLoad={(e) => {
-            // need to call resize, otherwise sometime the canvas doesn't take 100%
+            // need to call resize, otherwise sometimes the canvas doesn't take 100%
             e.target.resize();
             setMapState((prev) => ({ ...prev, isLoaded: false }));
           }}
@@ -150,10 +154,8 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
           touchZoomRotate
           doubleClickZoom={false}
           interactive
-          interactiveLayerIds={
-            activeTool.getInteractiveLayers ? activeTool.getInteractiveLayers(extendedContext) : []
-          }
           cursor={cursor}
+          interactiveLayerIds={interactiveLayerIDs}
           onClick={(e) => {
             const nearestResult = getMapMouseEventNearestFeature(e);
             const eventWithFeature = nearestResult

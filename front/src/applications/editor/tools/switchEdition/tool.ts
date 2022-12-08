@@ -15,9 +15,7 @@ const SwitchEditionTool: Tool<SwitchEditionState> = {
   requiredLayers: new Set(['switches', 'track_sections']),
   isDisabled({ editorState }) {
     return (
-      !editorState.editorZone ||
-      !editorState.editorLayers.has('switches') ||
-      !editorState.editorLayers.has('track_sections')
+      !editorState.editorLayers.has('switches') || !editorState.editorLayers.has('track_sections')
     );
   },
 

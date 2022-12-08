@@ -33,7 +33,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
   labelTranslationKey: 'Editor.tools.track-edition.label',
   requiredLayers: new Set(['track_sections']),
   isDisabled({ editorState }) {
-    return !editorState.editorZone || !editorState.editorLayers.has('track_sections');
+    return !editorState.editorLayers.has('track_sections');
   },
   getInitialState() {
     return {
@@ -237,13 +237,14 @@ const TrackEditionTool: Tool<TrackEditionState> = {
       setState(newState);
     }
   },
-  onHover(e, { setState, state, editorState: { entitiesIndex } }) {
+  onHover(e, { setState, state }) {
     const { editionState, track } = state;
 
     const hoveredEntities = (e.features || []).flatMap((f) => {
       if (f.layer.id !== 'editor/geo/track-main') return [];
-      const entity = entitiesIndex[(f.properties ?? {}).id];
-      return entity && entity.objType === 'TrackSection' ? [entity] : [];
+      // const entity = entitiesIndex[(f.properties ?? {}).id];
+      // return entity && entity.objType === 'TrackSection' ? [entity] : [];
+      return [];
     });
 
     if (editionState.type === 'movePoint' && state.anchorLinePoints) {
