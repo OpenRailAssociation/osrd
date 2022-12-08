@@ -50,8 +50,11 @@ pub fn check_speed_section_track_ranges(
     let speed_section = speed_section.unwrap_speed_section();
     for (index, track_range) in speed_section.track_ranges.iter().enumerate() {
         let track_id = &track_range.track;
-        if !infra_cache.track_sections().contains_key(track_id) {
-            let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_id.clone());
+        if !infra_cache
+            .track_sections()
+            .contains_key::<String>(track_id)
+        {
+            let obj_ref = ObjectRef::new::<&String>(ObjectType::TrackSection, track_id);
             infra_errors.push(InfraError::new_invalid_reference(
                 speed_section,
                 format!("track_ranges.{index}"),
@@ -61,7 +64,7 @@ pub fn check_speed_section_track_ranges(
         }
         let track_cache = infra_cache
             .track_sections()
-            .get(track_id)
+            .get::<String>(track_id)
             .unwrap()
             .unwrap_track_section();
         for (pos, field) in [(track_range.begin, "begin"), (track_range.end, "end")] {

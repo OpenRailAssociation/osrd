@@ -1,7 +1,7 @@
-use super::generate_id;
 use super::ApplicableDirections;
 use super::OSRDIdentified;
 
+use super::utils::Identifier;
 use super::OSRDTyped;
 use super::ObjectType;
 
@@ -19,10 +19,9 @@ use editoast_derive::Model;
 #[model(table = "crate::tables::osrd_infra_detectormodel")]
 #[derivative(Default)]
 pub struct Detector {
-    #[derivative(Default(value = r#"generate_id("detector")"#))]
-    pub id: String,
+    pub id: Identifier,
     #[derivative(Default(value = r#""InvalidRef".into()"#))]
-    pub track: String,
+    pub track: Identifier,
     pub position: f64,
     pub applicable_directions: ApplicableDirections,
 }
@@ -63,8 +62,8 @@ impl DetectorCache {
 }
 
 impl From<Detector> for DetectorCache {
-    fn from(det: Detector) -> Self {
-        Self::new(det.id, det.track, det.position)
+    fn from(detector: Detector) -> Self {
+        Self::new(detector.id.0, detector.track.0, detector.position)
     }
 }
 

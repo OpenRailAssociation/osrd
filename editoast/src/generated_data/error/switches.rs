@@ -77,8 +77,11 @@ pub fn generate_errors(infra_cache: &InfraCache) -> Vec<InfraError> {
 pub fn check_invalid_ref_ports(infra_cache: &InfraCache, switch: &SwitchCache) -> Vec<InfraError> {
     let mut infra_errors = vec![];
     for (port_name, port) in switch.ports.iter() {
-        if !infra_cache.track_sections().contains_key(&port.track) {
-            let obj_ref = ObjectRef::new(ObjectType::TrackSection, port.track.clone());
+        if !infra_cache
+            .track_sections()
+            .contains_key::<String>(&port.track)
+        {
+            let obj_ref = ObjectRef::new::<&String>(ObjectType::TrackSection, &port.track);
             infra_errors.push(InfraError::new_invalid_reference(
                 switch,
                 format!("ports.{port_name}.track"),
@@ -114,7 +117,7 @@ pub fn check_match_ports_type(infra_cache: &InfraCache, switch: &SwitchCache) ->
         .get(&switch.switch_type)
         .unwrap()
         .unwrap_switch_type();
-    let original_ports: HashSet<&String> = switch_type.ports.iter().collect();
+    let original_ports: HashSet<&String> = switch_type.ports.iter().map(|e| &e.0).collect();
     if match_ports != original_ports {
         vec![InfraError::new_invalid_switch_ports(switch, "ports")]
     } else {

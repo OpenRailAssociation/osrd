@@ -64,8 +64,11 @@ pub fn check_invalid_ref(infra_cache: &InfraCache, link: &TrackSectionLink) -> V
         (link.src.track.clone(), "src"),
         (link.dst.track.clone(), "dst"),
     ] {
-        if !infra_cache.track_sections().contains_key(&track_ref) {
-            let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_ref);
+        if !infra_cache
+            .track_sections()
+            .contains_key::<String>(&track_ref)
+        {
+            let obj_ref = ObjectRef::new::<&String>(ObjectType::TrackSection, &track_ref);
 
             infra_errors.push(InfraError::new_invalid_reference(
                 link,

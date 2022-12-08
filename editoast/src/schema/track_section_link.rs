@@ -1,6 +1,6 @@
-use super::generate_id;
 use super::OSRDIdentified;
 
+use super::utils::Identifier;
 use super::OSRDTyped;
 use super::ObjectType;
 use super::TrackEndpoint;
@@ -18,8 +18,7 @@ use serde::{Deserialize, Serialize};
 #[model(table = "crate::tables::osrd_infra_tracksectionlinkmodel")]
 #[derivative(Default)]
 pub struct TrackSectionLink {
-    #[derivative(Default(value = r#"generate_id("track_section_link")"#))]
-    pub id: String,
+    pub id: Identifier,
     pub src: TrackEndpoint,
     pub dst: TrackEndpoint,
 }

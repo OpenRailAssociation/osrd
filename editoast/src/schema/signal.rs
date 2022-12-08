@@ -1,7 +1,7 @@
-use super::generate_id;
 use super::Direction;
 use super::OSRDIdentified;
 
+use super::utils::Identifier;
 use super::OSRDTyped;
 use super::ObjectType;
 use super::Side;
@@ -19,10 +19,9 @@ use serde::{Deserialize, Serialize};
 #[model(table = "crate::tables::osrd_infra_signalmodel")]
 #[derivative(Default)]
 pub struct Signal {
-    #[derivative(Default(value = r#"generate_id("signal")"#))]
-    pub id: String,
+    pub id: Identifier,
     #[derivative(Default(value = r#""InvalidRef".into()"#))]
-    pub track: String,
+    pub track: Identifier,
     pub position: f64,
     #[derivative(Default(value = "Direction::StartToStop"))]
     pub direction: Direction,
@@ -117,7 +116,7 @@ impl SignalCache {
 
 impl From<Signal> for SignalCache {
     fn from(sig: Signal) -> Self {
-        Self::new(sig.id, sig.track, sig.position)
+        Self::new(sig.id.0, sig.track.0, sig.position)
     }
 }
 

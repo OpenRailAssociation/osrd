@@ -1,4 +1,5 @@
-use super::generate_id;
+use super::utils::Identifier;
+use super::utils::NonBlankString;
 use super::ApplicableDirectionsTrackRange;
 use super::OSRDIdentified;
 use editoast_derive::Model;
@@ -16,9 +17,8 @@ use serde::{Deserialize, Serialize};
 #[model(table = "crate::tables::osrd_infra_catenarymodel")]
 #[derivative(Default)]
 pub struct Catenary {
-    #[derivative(Default(value = r#"generate_id("catenary")"#))]
-    pub id: String,
-    pub voltage: String,
+    pub id: Identifier,
+    pub voltage: NonBlankString,
     pub track_ranges: Vec<ApplicableDirectionsTrackRange>,
 }
 
@@ -36,7 +36,7 @@ impl OSRDIdentified for Catenary {
 
 impl Cache for Catenary {
     fn get_track_referenced_id(&self) -> Vec<&String> {
-        self.track_ranges.iter().map(|tr| &tr.track).collect()
+        self.track_ranges.iter().map(|tr| &*tr.track).collect()
     }
 
     fn get_object_cache(&self) -> ObjectCache {

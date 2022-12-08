@@ -45,12 +45,12 @@ fn get_object(object: &Waypoint, infra_cache: &InfraCache) -> Option<(String, f6
     match object {
         Waypoint::Detector { id } => infra_cache
             .detectors()
-            .get(id)
+            .get::<String>(id)
             .map(|d| d.unwrap_detector())
             .map(|d| (d.track.clone(), d.position)),
         Waypoint::BufferStop { id } => infra_cache
             .buffer_stops()
-            .get(id)
+            .get::<String>(id)
             .map(|d| d.unwrap_buffer_stop())
             .map(|bs| (bs.track.clone(), bs.position)),
     }
@@ -89,23 +89,24 @@ pub fn check_detector_errors(
     let route = route.unwrap_route();
     for (index, release_detector) in route.release_detectors.iter().enumerate() {
         // Handle invalid ref for release detectors
-        let (track, position) =
-            match get_object(&Waypoint::new_detector(release_detector), infra_cache) {
-                None => {
-                    infra_errors.push(InfraError::new_invalid_reference(
-                        route,
-                        format!("release_detector.{index}"),
-                        ObjectRef::new(ObjectType::Detector, release_detector.clone()),
-                    ));
-                    continue;
-                }
-                Some(e) => e,
-            };
+        let (track, position) = match get_object(
+            &Waypoint::new_detector::<&String>(release_detector),
+            infra_cache,
+        ) {
+            None => {
+                infra_errors.push(InfraError::new_invalid_reference(
+                    route,
+                    format!("release_detector.{index}"),
+                    ObjectRef::new::<&String>(ObjectType::Detector, release_detector),
+                ));
+                continue;
+            }
+            Some(e) => e,
+        };
 
         // Handle release detectors outside from path
-
         let track_range = route.path.iter().find(|track_range| {
-            track_range.track == track && (track_range.begin..=track_range.end).contains(&position)
+            *track_range.track == track && (track_range.begin..=track_range.end).contains(&position)
         });
         if track_range.is_none() {
             infra_errors.push(InfraError::new_object_out_of_path(
@@ -195,7 +196,7 @@ pub fn check_path_not_continuous(
         // check for the ranges
         let track_cache = infra_cache
             .track_sections()
-            .get(&prev.track)
+            .get::<String>(&prev.track)
             .unwrap()
             .unwrap_track_section();
         if (prev.direction == Direction::StartToStop && prev.end != track_cache.length)
@@ -207,7 +208,7 @@ pub fn check_path_not_continuous(
 
         let track_cache = infra_cache
             .track_sections()
-            .get(&next.track)
+            .get::<String>(&next.track)
             .unwrap()
             .unwrap_track_section();
         if (next.direction == Direction::StartToStop && next.begin != 0.0)
@@ -238,8 +239,11 @@ pub fn check_route_path(
     let route = route.unwrap_route();
     for (index, path) in route.path.iter().enumerate() {
         let track_id = &path.track;
-        if !infra_cache.track_sections().contains_key(track_id) {
-            let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_id.clone());
+        if !infra_cache
+            .track_sections()
+            .contains_key::<String>(track_id)
+        {
+            let obj_ref = ObjectRef::new::<&String>(ObjectType::TrackSection, track_id);
             infra_errors.push(InfraError::new_invalid_reference(
                 route,
                 format!("path.{index}"),
@@ -249,7 +253,7 @@ pub fn check_route_path(
         }
         let track_cache = infra_cache
             .track_sections()
-            .get(track_id)
+            .get::<String>(track_id)
             .unwrap()
             .unwrap_track_section();
         for (pos, field) in [(path.begin, "begin"), (path.end, "end")] {
