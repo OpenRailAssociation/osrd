@@ -4,15 +4,12 @@ import { ViewState } from 'react-map-gl';
 import { IconType } from 'react-icons/lib/esm/iconBase';
 import { TFunction } from 'i18next';
 
-import { EditorEntity, EditorSchema, SwitchType, Zone, MapLayerMouseEvent } from '../../../types';
+import { EditorEntity, EditorSchema, SwitchType, MapLayerMouseEvent } from '../../../types';
+import { reduce } from 'lodash';
 
 export interface EditorState {
   editorSchema: EditorSchema;
   editorLayers: Set<LayerType>;
-  editorZone: Zone | null;
-  flatEntitiesByTypes: Partial<Record<LayerType, EditorEntity[]>>;
-  entitiesArray: EditorEntity[];
-  entitiesIndex: Record<string, EditorEntity>;
 }
 
 export const LAYERS = [
@@ -31,6 +28,14 @@ export const OBJTYPE_TO_LAYER_DICT: Record<string, LayerType> = {
   Detector: 'detectors',
   Switch: 'switches',
 };
+export const LAYER_DICT_TO_OBJTYPE = reduce(
+  OBJTYPE_TO_LAYER_DICT,
+  (iter, value, key) => ({
+    ...iter,
+    [value]: key,
+  }),
+  {}
+) as Record<LayerType, string>;
 
 export interface MapState {
   mapStyle: string;
