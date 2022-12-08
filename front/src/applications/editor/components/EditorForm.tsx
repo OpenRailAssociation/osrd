@@ -3,7 +3,7 @@ import Form, { Field, UiSchema } from '@rjsf/core';
 import { useSelector } from 'react-redux';
 import { GeoJsonProperties } from 'geojson';
 import { JSONSchema7 } from 'json-schema';
-import { isNil } from 'lodash';
+import { isNil, omitBy } from 'lodash';
 
 import './EditorForm.scss';
 import { EditorEntity } from '../../../types';
@@ -58,7 +58,7 @@ const EditorForm: React.FC<PropsWithChildren<EditorFormProps>> = ({
    * => recompute formData by fixing LM
    */
   useEffect(() => {
-    setFormData(data.properties);
+    setFormData(omitBy(data.properties, isNil));
   }, [data, schema]);
 
   /**
