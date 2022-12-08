@@ -1,7 +1,7 @@
-use super::generate_id;
 use super::DirectionalTrackRange;
 use super::OSRDIdentified;
 
+use super::utils::Identifier;
 use super::OSRDTyped;
 use super::ObjectType;
 use super::Waypoint;
@@ -19,11 +19,10 @@ use serde::{Deserialize, Serialize};
 #[model(table = "crate::tables::osrd_infra_routemodel")]
 #[derivative(Default)]
 pub struct Route {
-    #[derivative(Default(value = r#"generate_id("route")"#))]
-    pub id: String,
+    pub id: Identifier,
     pub entry_point: Waypoint,
     pub exit_point: Waypoint,
-    pub release_detectors: Vec<String>,
+    pub release_detectors: Vec<Identifier>,
     pub path: Vec<DirectionalTrackRange>,
 }
 
@@ -41,7 +40,7 @@ impl OSRDIdentified for Route {
 
 impl Cache for Route {
     fn get_track_referenced_id(&self) -> Vec<&String> {
-        self.path.iter().map(|tr| &tr.track).collect()
+        self.path.iter().map(|tr| &*tr.track).collect()
     }
 
     fn get_object_cache(&self) -> ObjectCache {

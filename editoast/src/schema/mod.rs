@@ -12,6 +12,7 @@ mod switch;
 mod switch_type;
 mod track_section;
 mod track_section_link;
+pub mod utils;
 pub use buffer_stop::{BufferStop, BufferStopCache};
 pub use catenary::Catenary;
 use derivative::Derivative;
@@ -20,8 +21,6 @@ use enum_map::Enum;
 pub use errors::{InfraError, PathEndpointField};
 pub use operational_point::{OperationalPoint, OperationalPointCache, OperationalPointPart};
 pub use railjson::{find_objects, RailJson, RailjsonError};
-use rand::distributions::Alphanumeric;
-use rand::{thread_rng, Rng};
 pub use route::Route;
 use serde::{Deserialize, Serialize};
 pub use signal::{Signal, SignalCache};
@@ -31,6 +30,8 @@ pub use switch::{Switch, SwitchCache};
 pub use switch_type::{SwitchPortConnection, SwitchType};
 pub use track_section::{LineString, TrackSection, TrackSectionCache};
 pub use track_section_link::TrackSectionLink;
+
+use self::utils::{Identifier, NonBlankString};
 
 /// This trait should be implemented by all struct that represents an OSRD type.
 pub trait OSRDTyped {
@@ -55,16 +56,6 @@ impl<T: OSRDIdentified + OSRDTyped> OSRDObject for T {
     fn get_type(&self) -> ObjectType {
         T::get_type()
     }
-}
-
-fn generate_id(prefix: &str) -> String {
-    format!(
-        "{}_{}",
-        prefix,
-        (0..10)
-            .map(|_| thread_rng().sample(Alphanumeric) as char)
-            .collect::<String>(),
-    )
 }
 
 #[derive(Debug, Clone, Copy, Deserialize, Hash, Eq, PartialEq, Serialize, Enum, EnumIter)]
@@ -124,7 +115,6 @@ pub struct ObjectRef {
     #[serde(rename = "type")]
     #[derivative(Default(value = "ObjectType::TrackSection"))]
     pub obj_type: ObjectType,
-    #[serde(rename = "id")]
     #[derivative(Default(value = r#""InvalidRef".into()"#))]
     pub obj_id: String,
 }
@@ -139,8 +129,8 @@ impl ObjectRef {
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[serde(tag = "type", deny_unknown_fields)]
 pub enum Waypoint {
-    BufferStop { id: String },
-    Detector { id: String },
+    BufferStop { id: Identifier },
+    Detector { id: Identifier },
 }
 
 impl Waypoint {
@@ -187,7 +177,7 @@ impl OSRDObject for Waypoint {
 #[derivative(Default)]
 pub struct ApplicableDirectionsTrackRange {
     #[derivative(Default(value = r#""InvalidRef".into()"#))]
-    pub track: String,
+    pub track: Identifier,
     pub begin: f64,
     #[derivative(Default(value = "100."))]
     pub end: f64,
@@ -199,7 +189,7 @@ pub struct ApplicableDirectionsTrackRange {
 #[derivative(Default)]
 pub struct DirectionalTrackRange {
     #[derivative(Default(value = r#""InvalidRef".into()"#))]
-    pub track: String,
+    pub track: Identifier,
     pub begin: f64,
     #[derivative(Default(value = "100."))]
     pub end: f64,
@@ -230,67 +220,60 @@ impl DirectionalTrackRange {
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
-#[serde(deny_unknown_fields)]
+#[serde(deny_unknown_fields, rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Direction {
-    #[serde(rename = "START_TO_STOP")]
     StartToStop,
-    #[serde(rename = "STOP_TO_START")]
     StopToStart,
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[derivative(Default)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ApplicableDirections {
-    #[serde(rename = "START_TO_STOP")]
     StartToStop,
-    #[serde(rename = "STOP_TO_START")]
     StopToStart,
-    #[serde(rename = "BOTH")]
     #[derivative(Default)]
     Both,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, Hash)]
+#[serde(rename_all = "UPPERCASE")]
 pub enum Endpoint {
-    #[serde(rename = "BEGIN")]
     Begin,
-    #[serde(rename = "END")]
     End,
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, Hash)]
-#[serde(deny_unknown_fields)]
 #[derivative(Default)]
+#[serde(deny_unknown_fields)]
 pub struct TrackEndpoint {
     #[derivative(Default(value = "Endpoint::Begin"))]
     pub endpoint: Endpoint,
     #[derivative(Default(value = r#""InvalidRef".into()"#))]
-    pub track: String,
+    pub track: Identifier,
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[derivative(Default)]
+#[serde(rename_all = "UPPERCASE")]
 pub enum Side {
-    #[serde(rename = "LEFT")]
     Left,
-    #[serde(rename = "RIGHT")]
     Right,
-    #[serde(rename = "CENTER")]
     #[derivative(Default)]
     Center,
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
-#[serde(deny_unknown_fields)]
 #[derivative(Default)]
+#[serde(deny_unknown_fields)]
 pub struct Panel {
     #[derivative(Default(value = r#""InvalidRef".into()"#))]
-    pub track: String,
+    pub track: Identifier,
     pub position: f64,
     pub angle_geo: f64,
     pub angle_sch: f64,
     pub side: Side,
     #[serde(rename = "type")]
-    pub panel_type: String,
-    pub value: Option<String>,
+    pub panel_type: NonBlankString,
+    pub value: Option<NonBlankString>,
 }

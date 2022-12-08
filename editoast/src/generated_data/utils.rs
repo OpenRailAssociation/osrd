@@ -67,6 +67,7 @@ mod test {
 
     use crate::infra_cache::tests::create_small_infra_cache;
     use crate::schema::operation::{OperationResult, RailjsonObject};
+    use crate::schema::utils::Identifier;
     use crate::schema::{Detector, ObjectRef, ObjectType, TrackSection};
 
     #[test]
@@ -90,14 +91,14 @@ mod test {
         let operations = vec![
             OperationResult::Update(RailjsonObject::TrackSection {
                 railjson: TrackSection {
-                    id: track,
+                    id: track.into(),
                     length: 420.,
                     ..Default::default()
                 },
             }),
             OperationResult::Create(RailjsonObject::Detector {
                 railjson: Detector {
-                    id: String::from("D2"),
+                    id: Identifier::from("D2"),
                     ..Default::default()
                 },
             }),

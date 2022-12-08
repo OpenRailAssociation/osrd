@@ -1,6 +1,7 @@
-use super::generate_id;
 use super::OSRDIdentified;
 
+use super::utils::Identifier;
+use super::utils::NonBlankString;
 use super::OSRDTyped;
 use super::ObjectType;
 use super::TrackEndpoint;
@@ -18,11 +19,10 @@ use std::collections::HashMap;
 #[model(table = "crate::tables::osrd_infra_switchmodel")]
 #[derivative(Default)]
 pub struct Switch {
-    #[derivative(Default(value = r#"generate_id("switch")"#))]
-    pub id: String,
-    pub switch_type: String,
+    pub id: Identifier,
+    pub switch_type: Identifier,
     pub group_change_delay: f64,
-    pub ports: HashMap<String, TrackEndpoint>,
+    pub ports: HashMap<Identifier, TrackEndpoint>,
     #[serde(default)]
     pub extensions: SwitchExtensions,
 }
@@ -36,7 +36,7 @@ pub struct SwitchExtensions {
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct SwitchSncfExtension {
-    pub label: String,
+    pub label: NonBlankString,
 }
 
 impl OSRDTyped for Switch {
@@ -72,7 +72,11 @@ impl SwitchCache {
 
 impl From<Switch> for SwitchCache {
     fn from(switch: Switch) -> Self {
-        Self::new(switch.id, switch.switch_type, switch.ports)
+        Self::new(
+            switch.id.0,
+            switch.switch_type.0,
+            switch.ports.into_iter().map(|(k, v)| (k.0, v)).collect(),
+        )
     }
 }
 
@@ -90,7 +94,7 @@ impl OSRDIdentified for SwitchCache {
 
 impl Cache for SwitchCache {
     fn get_track_referenced_id(&self) -> Vec<&String> {
-        self.ports.iter().map(|port| &port.1.track).collect()
+        self.ports.iter().map(|port| &*port.1.track).collect()
     }
 
     fn get_object_cache(&self) -> ObjectCache {

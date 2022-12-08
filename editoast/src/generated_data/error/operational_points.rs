@@ -47,7 +47,7 @@ pub fn check_op_parts(op: &ObjectCache, infra_cache: &InfraCache, _: &Graph) -> 
     let mut infra_errors = vec![];
     let op = op.unwrap_operational_point();
     for (index, part) in op.parts.iter().enumerate() {
-        let track_id = &part.track;
+        let track_id = &*part.track;
 
         if !infra_cache.track_sections().contains_key(track_id) {
             let obj_ref = ObjectRef::new(ObjectType::TrackSection, track_id.clone());

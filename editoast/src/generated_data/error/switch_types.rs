@@ -44,7 +44,7 @@ pub fn check_switch_types(switch_type: &ObjectCache, _: &InfraCache, _: &Graph) 
                     infra_errors.push(InfraError::new_unknown_port_name(
                         switch_type,
                         format!("groups.{group_name}.{pos}"),
-                        dir.clone(),
+                        dir,
                     ));
                 }
                 used_port.insert(dir);
@@ -94,11 +94,11 @@ mod tests {
             HashMap::from([
                 (
                     "LEFT".into(),
-                    vec![create_switch_connection("WRONG".into(), "LEFT".into())],
+                    vec![create_switch_connection("WRONG", "LEFT")],
                 ),
                 (
                     "RIGHT".into(),
-                    vec![create_switch_connection("BASE".into(), "RIGHT".into())],
+                    vec![create_switch_connection("BASE", "RIGHT")],
                 ),
             ]),
         )
@@ -109,8 +109,7 @@ mod tests {
             &Graph::load(&infra_cache::tests::create_small_infra_cache()),
         );
         assert_eq!(1, errors.len());
-        let infra_error =
-            InfraError::new_unknown_port_name(&switch_type, "groups.LEFT.0", "WRONG".into());
+        let infra_error = InfraError::new_unknown_port_name(&switch_type, "groups.LEFT.0", "WRONG");
         assert_eq!(infra_error, errors[0]);
     }
 
@@ -122,15 +121,15 @@ mod tests {
             HashMap::from([
                 (
                     "LEFT".into(),
-                    vec![create_switch_connection("BASE".into(), "LEFT".into())],
+                    vec![create_switch_connection("BASE", "LEFT")],
                 ),
                 (
                     "ERROR".into(),
-                    vec![create_switch_connection("BASE".into(), "LEFT".into())],
+                    vec![create_switch_connection("BASE", "LEFT")],
                 ),
                 (
                     "RIGHT".into(),
-                    vec![create_switch_connection("BASE".into(), "RIGHT".into())],
+                    vec![create_switch_connection("BASE", "RIGHT")],
                 ),
             ]),
         )
@@ -150,7 +149,7 @@ mod tests {
             vec!["BASE".into(), "LEFT".into(), "RIGHT".into()],
             HashMap::from([(
                 "LEFT".into(),
-                vec![create_switch_connection("BASE".into(), "LEFT".into())],
+                vec![create_switch_connection("BASE", "LEFT")],
             )]),
         )
         .into();

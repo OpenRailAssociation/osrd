@@ -2,7 +2,15 @@ from enum import Enum
 from typing import Annotated, List, Literal, Mapping, NewType, Optional, Union
 
 from geojson_pydantic import LineString
-from pydantic import BaseConfig, BaseModel, Field, constr, create_model, root_validator
+from pydantic import (
+    BaseConfig,
+    BaseModel,
+    Field,
+    conlist,
+    constr,
+    create_model,
+    root_validator,
+)
 from pydantic.fields import ModelField
 
 ALL_OBJECT_TYPES = []
@@ -12,7 +20,8 @@ RAILJSON_INFRA_VERSION = "3.0.1"
 # Traits
 # Used as an input model in the definition of the following classes.
 
-Identifier = NewType("Identifier", constr(max_length=255))
+Identifier = NewType("Identifier", constr(min_length=1, max_length=255))
+NonBlankStr = NewType("NonBlankStr", constr(min_length=1))
 
 
 class DetectorReference(BaseModel):
@@ -219,8 +228,8 @@ class SwitchPortConnection(BaseModel):
     The connection is always bidirectional.
     """
 
-    src: str = Field(description="Port name that is source of the connection")
-    dst: str = Field(description="Port name that is destination of the connection")
+    src: Identifier = Field(description="Port name that is source of the connection")
+    dst: Identifier = Field(description="Port name that is destination of the connection")
 
 
 class SwitchType(BaseObjectTrait):
@@ -229,8 +238,12 @@ class SwitchType(BaseObjectTrait):
     A switch type is defined by a list of ports and groups which are the possible configurations of the switch.
     """
 
-    ports: List[str] = Field(description="List of ports. A port correspond at the ends of the switches")
-    groups: Mapping[str, List[SwitchPortConnection]] = Field(description="Connection between and according ports")
+    ports: conlist(Identifier, min_items=1) = Field(
+        description="List of ports. A port correspond at the ends of the switches"
+    )
+    groups: Mapping[Identifier, List[SwitchPortConnection]] = Field(
+        description="Connection between and according ports"
+    )
 
 
 class Switch(BaseObjectTrait):
@@ -242,7 +255,9 @@ class Switch(BaseObjectTrait):
     group_change_delay: float = Field(
         description="Time it takes to change which group of the switch is activated", ge=0
     )
-    ports: Mapping[str, TrackEndpoint] = Field(description="Location of differents ports according to track sections")
+    ports: Mapping[Identifier, TrackEndpoint] = Field(
+        description="Location of differents ports according to track sections"
+    )
 
 
 class TrackSectionLink(BaseObjectTrait):
@@ -267,7 +282,9 @@ class SpeedSection(BaseObjectTrait):
     speed_limit: Optional[float] = Field(
         description="Speed limit (m/s) applied by default to trains that aren't in any specified category", gt=0
     )
-    speed_limit_by_tag: Mapping[str, float] = Field(description="Speed limit (m/s) applied to trains with a given tag")
+    speed_limit_by_tag: Mapping[NonBlankStr, float] = Field(
+        description="Speed limit (m/s) applied to trains with a given tag"
+    )
     track_ranges: List[ApplicableDirectionsTrackRange] = Field(
         description="List of locations where speed section is applied"
     )
@@ -279,7 +296,7 @@ class Catenary(BaseObjectTrait):
     of a pantograph. Catenary is identified by its identifier.
     """
 
-    voltage: str = Field(description="Type of power supply (in Volts) used for electrification")
+    voltage: NonBlankStr = Field(description="Type of power supply (in Volts) used for electrification")
     track_ranges: List[ApplicableDirectionsTrackRange] = Field(
         description="List of locations where the voltage is applied"
     )
@@ -400,8 +417,8 @@ class Panel(TrackLocationTrait):
     angle_geo: float = Field(0, description="Geographic angle in degrees")
     angle_sch: float = Field(0, description="Schematic angle in degrees")
     side: Side = Field(Side.CENTER, description="Side of the panel on the track")
-    type: str = Field(description="Precise the type of the panel")
-    value: Optional[str] = Field(description="If the panel is an announcement, precise the value(s)")
+    type: NonBlankStr = Field(description="Precise the type of the panel")
+    value: Optional[NonBlankStr] = Field(description="If the panel is an announcement, precise the value(s)")
 
 
 class RailJsonInfra(BaseModel):
@@ -477,29 +494,29 @@ def register_extension(object, name):
 @register_extension(object=TrackSection, name="sncf")
 class TrackSectionSncfExtension(BaseModel):
     line_code: int = Field(description="Code of the line used by the corresponding track section")
-    line_name: constr(max_length=255) = Field(description="Name of the line used by the corresponding track section")
+    line_name: NonBlankStr = Field(description="Name of the line used by the corresponding track section")
     track_number: int = Field(description="Number corresponding to the track used", ge=0)
-    track_name: constr(max_length=255) = Field(description="Name corresponding to the track used")
+    track_name: NonBlankStr = Field(description="Name corresponding to the track used")
 
 
 @register_extension(object=OperationalPoint, name="sncf")
 class OperationalPointSncfExtension(BaseModel):
     ci: int = Field(description="THOR immutable code of the operational point")
-    ch: constr(max_length=2) = Field(description="THOR site code of the operational point")
-    ch_short_label: constr(max_length=255) = Field(description="THOR site code short label of the operational point")
-    ch_long_label: constr(max_length=255) = Field(description="THOR site code long label of the operational point")
-    trigram: constr(max_length=3) = Field(description="Unique SNCF trigram of the operational point")
+    ch: constr(min_length=1, max_length=2) = Field(description="THOR site code of the operational point")
+    ch_short_label: NonBlankStr = Field(description="THOR site code short label of the operational point")
+    ch_long_label: NonBlankStr = Field(description="THOR site code long label of the operational point")
+    trigram: constr(min_length=1, max_length=3) = Field(description="Unique SNCF trigram of the operational point")
 
 
 @register_extension(object=OperationalPoint, name="identifier")
 class OperationalPointIdentifierExtension(BaseModel):
-    name: constr(max_length=255) = Field(description="Name of the operational point")
+    name: NonBlankStr = Field(description="Name of the operational point")
     uic: int = Field(description="International Union of Railways code of the operational point")
 
 
 @register_extension(object=Switch, name="sncf")
 class SwitchSncfExtension(BaseModel):
-    label: str = Field(description="Identifier of the switch")
+    label: NonBlankStr = Field(description="Identifier of the switch")
 
 
 @register_extension(object=Signal, name="sncf")
