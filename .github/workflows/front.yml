@@ -22,11 +22,14 @@ jobs:
           cache: "yarn"
           cache-dependency-path: front/yarn.lock
 
-      - name: install dependencies
+      - name: Install dependencies
         run: yarn --cwd front install
 
-      - name: run front test suite
+      - name: Run front test suite
         run: yarn --cwd front test-coverage
+
+      - name: Run typescript compilation
+        run: yarn compile
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
@@ -42,7 +45,7 @@ jobs:
           fail_ci_if_error: true
           verbose: true
 
-      - name: build project
+      - name: Build project
         run: yarn --cwd front build
         env:
           CI: false
