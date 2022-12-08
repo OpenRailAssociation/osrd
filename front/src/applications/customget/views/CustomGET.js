@@ -57,6 +57,7 @@ function CustomGET() {
     );
     // Store it to allow time->position logic to be hosted by redux
     dispatch(updateConsolidatedSimulation(consolidatedSimulation));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [simulation]);
 
   return (
