@@ -9,7 +9,7 @@ import { DEFAULT_COMMON_TOOL_STATE, LayerType, Tool } from '../types';
 import { getNearestPoint } from '../../../../utils/mapboxHelper';
 import { POINT_LAYER_ID, PointEditionLeftPanel, PointEditionMessages } from './components';
 import { PointEditionState } from './types';
-import { BufferStopEntity, DetectorEntity, SignalEntity } from '../../../../types';
+import { NULL_GEOMETRY, BufferStopEntity, DetectorEntity, SignalEntity } from '../../../../types';
 
 type EditorPoint = BufferStopEntity | DetectorEntity | SignalEntity;
 interface PointEditionToolParams<T extends EditorPoint> {
@@ -83,8 +83,7 @@ function getPointEditionTool<T extends EditorPoint>({
     // Interactions:
     onClickMap(_e, { setState, state }) {
       const { isHoveringTarget, entity, nearestPoint } = state;
-
-      if (entity.geometry && isHoveringTarget) {
+      if (entity.geometry && !isEqual(entity.geometry, NULL_GEOMETRY) && isHoveringTarget) {
         setState({
           ...state,
           isHoveringTarget: false,
@@ -92,7 +91,7 @@ function getPointEditionTool<T extends EditorPoint>({
         });
       }
 
-      if (!entity.geometry && nearestPoint) {
+      if ((!entity.geometry || isEqual(entity.geometry, NULL_GEOMETRY)) && nearestPoint) {
         const newEntity = cloneDeep(entity);
         newEntity.geometry = {
           type: 'Point',
@@ -115,7 +114,6 @@ function getPointEditionTool<T extends EditorPoint>({
     },
     onHover(e, { setState, state, editorState: { entitiesIndex } }) {
       const { entity } = state;
-
       const hoveredTarget = (e.features || []).find((f) => f.layer.id === POINT_LAYER_ID);
       const hoveredTracks = (e.features || []).flatMap((f) => {
         if (f.layer.id !== 'editor/geo/track-main') return [];
@@ -123,7 +121,7 @@ function getPointEditionTool<T extends EditorPoint>({
         return trackEntity && trackEntity.objType === 'TrackSection' ? [trackEntity] : [];
       }) as Feature<LineString>[];
 
-      if (!entity.geometry) {
+      if (!entity.geometry || isEqual(entity.geometry, NULL_GEOMETRY)) {
         if (hoveredTracks.length) {
           const nearestPoint = getNearestPoint(hoveredTracks, e.lngLat.toArray());
           const angle = nearestPoint.properties.angleAtPoint;
@@ -134,7 +132,7 @@ function getPointEditionTool<T extends EditorPoint>({
               angle,
               feature: nearestPoint,
               position: nearestPoint.properties.location,
-              trackSectionID: hoveredTracks[nearestPoint.properties.featureIndex].id as string,
+              trackSectionID: hoveredTracks[nearestPoint.properties.featureIndex].properties?.id,
             },
           });
         } else {
