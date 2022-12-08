@@ -7,7 +7,7 @@ import {
   updateMustRedraw,
   updateSelectedTrain,
   updateSimulation,
-  updateSelectedProjection
+  updateSelectedProjection,
 } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -38,7 +38,6 @@ export default function StdcmRequestModal(props) {
   const osrdconf = useSelector((state) => state.osrdconf);
 
   const { allowancesSettings } = useSelector((state) => state.osrdsimulation);
-  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
 
   // Theses are prop-drilled from OSRDSTDCM Component, which is conductor.
@@ -77,10 +76,6 @@ export default function StdcmRequestModal(props) {
               duration: 0,
             })
           );
-
-          const trainSchedulesIDs = simulation.trains
-            .filter((train) => !train.isStdcm)
-            .map((train) => train.id);
 
           // ask for timetable with the new path
           get(`${timetableURI}${osrdconf.timetableID}/`).then((timetable) => {

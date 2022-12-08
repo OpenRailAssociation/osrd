@@ -2,7 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
-import formatStops, { massWithOneDecimal } from 'applications/osrd/components/DriverTrainSchedule/DriverTrainScheduleHelpers';
+import formatStops, {
+  massWithOneDecimal,
+} from 'applications/osrd/components/DriverTrainSchedule/DriverTrainScheduleHelpers';
 
 function originStop(stop) {
   return (

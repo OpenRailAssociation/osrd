@@ -55,10 +55,10 @@ export function gpsRound(val) {
 
 /**
  * Fonction de callback lors d'un requête vers une URL extérieure
- * @param {string} url - L'URL de la requête
- * @param {string} resourceType - Le type de ressource
- * @param {string} urlmap - L'URL de base pour la carte
- * @returns {(object| null)} Le token d'authentifcation lorsqu'il est nécessaire
+ * @param url - L'URL de la requête
+ * @param resourceType - Le type de ressource
+ * @param urlmap - L'URL de base pour la carte
+ * @returns Le token d'authentifcation lorsqu'il est nécessaire
  */
 export function transformRequest(url, resourceType, urlmap) {
   if ((resourceType === 'Source' || resourceType === 'Tile') && url.startsWith(urlmap)) {
@@ -67,7 +67,7 @@ export function transformRequest(url, resourceType, urlmap) {
       headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
     };
   }
-  return null;
+  return { url };
 }
 
 /**

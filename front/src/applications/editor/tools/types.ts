@@ -1,10 +1,10 @@
 import { ComponentType } from 'react';
 import { Dispatch } from 'redux';
-import { MapEvent, ViewportProps } from 'react-map-gl';
+import { ViewState } from 'react-map-gl';
 import { IconType } from 'react-icons/lib/esm/iconBase';
 import { TFunction } from 'i18next';
 
-import { EditorEntity, EditorSchema, SwitchType, Zone } from '../../../types';
+import { EditorEntity, EditorSchema, SwitchType, Zone, MapLayerMouseEvent } from '../../../types';
 
 export interface EditorState {
   editorSchema: EditorSchema;
@@ -34,7 +34,7 @@ export const OBJTYPE_TO_LAYER_DICT: Record<string, LayerType> = {
 
 export interface MapState {
   mapStyle: string;
-  viewport: ViewportProps;
+  viewport: ViewState;
 }
 export interface OSRDConf {
   infraID: string | number | undefined;
@@ -131,19 +131,18 @@ export interface Tool<S> {
   getInitialState: (context: { osrdConf: OSRDConf }) => S;
   requiredLayers?: Set<LayerType>;
   isDisabled?: (context: ReadOnlyEditorContextType<S>) => boolean;
-  getRadius?: (context: ReadOnlyEditorContextType<S>) => number;
 
   // Interactions with Mapbox:
   onMount?: (context: ExtendedEditorContextType<S>) => void;
   onUnmount?: (context: ExtendedEditorContextType<S>) => void;
-  onClickMap?: (e: MapEvent, context: ExtendedEditorContextType<S>) => void;
+  onClickMap?: (e: MapLayerMouseEvent, context: ExtendedEditorContextType<S>) => void;
   onClickFeature?: (
     entity: EditorEntity,
-    e: MapEvent,
+    e: MapLayerMouseEvent,
     context: ExtendedEditorContextType<S>
   ) => void;
-  onHover?: (e: MapEvent, context: ExtendedEditorContextType<S>) => void;
-  onMove?: (e: MapEvent, context: ExtendedEditorContextType<S>) => void;
+  onHover?: (e: MapLayerMouseEvent, context: ExtendedEditorContextType<S>) => void;
+  onMove?: (e: MapLayerMouseEvent, context: ExtendedEditorContextType<S>) => void;
   onKeyDown?: (e: KeyboardEvent, context: ExtendedEditorContextType<S>) => void;
   getCursor?: (
     context: ExtendedEditorContextType<S>,

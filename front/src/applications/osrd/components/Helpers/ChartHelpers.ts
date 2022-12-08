@@ -17,12 +17,13 @@ export function sec2d3datetime(time: number) {
   return d3.timeParse('%H:%M:%S')(sec2time(time));
 }
 
+/* eslint-disable no-bitwise */
 export function colorModelToHex(color: any) {
-  // eslint-disable-next-line no-bitwise
   return `rgba(${(color >> 16) & 0xff}, ${(color >> 8) & 0xff}, ${color & 0xff}, ${
     (color >> 24) & 0xff
   })`;
 }
+/* eslint-enable no-bitwise */
 
 /**
  * returns Contextualized offset not depending on days ahead
@@ -55,7 +56,7 @@ export function defineLinear(max: any, pctMarge = 0, origin = 0) {
   return d3.scaleLinear().domain([origin - max * pctMarge, max + max * pctMarge]);
 }
 
-export function formatStepsWithTime<T extends { time: number }>(data: Array<T>) {
+export function formatStepsWithTime<T extends { time: number }>(data: Array<T> = []) {
   return data.map((step) => ({ ...step, time: sec2d3datetime(step.time) }));
 }
 

@@ -1,6 +1,6 @@
 import { SwitchType } from 'types';
 import { ValueOf } from 'utils/types';
-import { Position, Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
+import { Position, Feature, Point } from 'geojson';
 
 export const BLOCKTYPES = [
   {
@@ -138,5 +138,5 @@ export interface OsrdConfState {
   originLinkedBounds: boolean;
   destinationDate?: string;
   destinationTime?: string;
-  featureInfoClick: { displayPopup: boolean };
+  featureInfoClick: { displayPopup: boolean; feature?: Feature; coordinates?: number[] };
 }

@@ -1,9 +1,7 @@
 import drawArea from 'applications/osrd/components/Simulation/drawArea';
 import drawCurve from 'applications/osrd/components/Simulation/drawCurve';
 import defineChart from 'applications/osrd/components/Simulation/defineChart';
-import { updateChartXGEV, updateMustRedraw } from 'reducers/osrdsimulation';
 import { defineLinear } from 'applications/osrd/components/Helpers/ChartHelpers';
-import enableInteractivity from 'applications/osrd/components/Simulation/enableInteractivity';
 import * as d3 from 'd3';
 
 function createChart(
@@ -15,8 +13,8 @@ function createChart(
   keyValues,
   heightOfSpeedSpaceChart,
   ref,
-  dispatch,
-  setResetChart
+  _dispatch,
+  _setResetChart
 ) {
   d3.select(`#${CHART_ID}`).remove();
 
@@ -38,7 +36,7 @@ function createChart(
       : chart.y;
 
   const width = parseInt(d3.select(`#container-${CHART_ID}`).style('width'), 10);
-/*
+  /*
   if (resetChart) {
     dispatch(updateChartXGEV(defineX));
   }
@@ -54,34 +52,6 @@ function createChart(
     keyValues,
     CHART_ID
   );
-}
-
-function drawOPs(simulation, selectedTrain, rotate, chartLocal) {
-  const operationalPointsZone = chartLocal.drawZone
-    .append('g')
-    .attr('id', 'gev-operationalPointsZone');
-  simulation.trains[selectedTrain].base.stops.forEach((stop) => {
-    operationalPointsZone
-      .append('line')
-      .datum(stop.position)
-      .attr('id', `op-${stop.id}`)
-      .attr('class', 'op-line')
-      .attr('x1', rotate ? 0 : (d) => chartLocal.x(d))
-      .attr('y1', rotate ? (d) => chartLocal.y(d) : chartLocal.height)
-      .attr('x2', rotate ? chartLocal.width : (d) => chartLocal.x(d))
-      .attr('y2', rotate ? (d) => chartLocal.y(d) : 0);
-    operationalPointsZone
-      .append('text')
-      .datum(stop.position)
-      .attr('class', 'op-text')
-      .text(`${stop.name}`)
-      .attr('x', rotate ? 0 : (d) => chartLocal.x(d))
-      .attr('y', rotate ? (d) => chartLocal.y(d) : chartLocal.height)
-      .attr('text-anchor', 'center')
-      .attr('transform', `rotate(0 ${chartLocal.x(stop.position)}, ${chartLocal.height})`)
-      .attr('dx', 5)
-      .attr('dy', rotate ? -5 : 15 - chartLocal.height);
-  });
 }
 
 function drawAxisTitle(chart, rotate) {
@@ -257,9 +227,10 @@ function drawTrain(
       yPosition,
       zoomLevel
     );
+
+    setChart(chartLocal);
+    dispatch(updateMustRedraw(false));
     */
-    //setChart(chartLocal);
-    //dispatch(updateMustRedraw(false));
   }
 }
 

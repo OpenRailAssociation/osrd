@@ -28,15 +28,15 @@ function HomeCustomGET() {
               icon="icons-itinerary-train-station"
             />
             <li>
-              <div
+              <button
+                type="button"
                 className="mastnav-item"
-                href=""
                 data-toggle="modal"
                 data-target="#add-file-modal"
               >
                 <i className="icons-add icons-size-1x5" aria-hidden="true" />
                 <span className="font-weight-medium">{t('uploadFile')}</span>
-              </div>
+              </button>
             </li>
           </div>
         }

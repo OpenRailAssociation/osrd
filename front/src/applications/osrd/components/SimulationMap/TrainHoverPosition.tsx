@@ -209,7 +209,6 @@ function TrainHoverPosition(props: TrainHoverPositionProps) {
     return (
       <>
         <Marker
-          className="map-search-marker"
           longitude={
             point.headPosition.geometry.coordinates[0] + zoomLengthFactor * labelShiftFactor.long
           }

@@ -4,7 +4,6 @@ import { unstable_HistoryRouter as HistoryRouter, Route, Routes } from 'react-ro
 import React, { Suspense, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import history from '../history';
 import Home from 'main/Home';
 import HomeCarto from 'applications/carto/Home';
 import HomeEditor from 'applications/editor/Home';
@@ -15,6 +14,7 @@ import Loader from 'common/Loader';
 import { attemptLoginOnLaunch } from 'reducers/user';
 import { bootstrapOSRDConf } from 'reducers/osrdconf';
 import { getInfraID } from 'reducers/osrdconf/selectors';
+import history from '../history';
 
 export default function App() {
   const user = useSelector((state) => state.user);

@@ -1,14 +1,9 @@
 import React, { FC, useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import ReactMapGL, {
-  AttributionControl,
-  FlyToInterpolator,
-  ScaleControl,
-  WebMercatorViewport,
-  MapRef,
-  MapEvent,
-} from 'react-map-gl';
+import maplibregl from 'maplibre-gl';
+import WebMercatorViewport from 'viewport-mercator-project';
+import ReactMapGL, { AttributionControl, ScaleControl, MapRef } from 'react-map-gl';
 import { Feature, LineString } from 'geojson';
 import { lineString, point, BBox } from '@turf/helpers';
 import along from '@turf/along';
@@ -63,6 +58,7 @@ import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import 'common/Map/Map.scss';
 import SNCF_LPV from 'common/Map/Layers/extensions/SNCF/SNCF_LPV';
 import OrthoPhoto from 'common/Map/Layers/OrthoPhoto';
+import { MapLayerMouseEvent } from '../../../../types';
 
 const PATHFINDING_URI = '/pathfinding/';
 
@@ -84,8 +80,9 @@ interface MapProps {
 
 const Map: FC<MapProps> = ({ setExtViewport }) => {
   const [mapLoaded, setMapLoaded] = useState(false);
-  const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM, layersSettings } =
-    useSelector((state: RootState) => state.map);
+  const { viewport, mapSearchMarker, mapStyle, mapTrackSources, showOSM } = useSelector(
+    (state: RootState) => state.map
+  );
   const { isPlaying, selectedTrain, positionValues, timePosition, allowancesSettings } =
     useSelector((state: RootState) => state.osrdsimulation);
   const simulation = useSelector((state: RootState) => state.osrdsimulation.simulation.present);
@@ -95,8 +92,9 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
   const [idHover, setIdHover] = useState<string | undefined>(undefined);
   const { urlLat = '', urlLon = '', urlZoom = '', urlBearing = '', urlPitch = '' } = useParams();
   const dispatch = useDispatch();
+
   const updateViewportChange = useCallback(
-    (value) => dispatch(updateViewport(value, undefined)),
+    (value: Partial<Viewport>) => dispatch(updateViewport(value, undefined)),
     [dispatch]
   );
   const mapRef = React.useRef<MapRef>(null);
@@ -233,15 +231,13 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
       ...viewport,
       bearing: 0,
       pitch: 0,
-      transitionDuration: 1000,
-      transitionInterpolator: new FlyToInterpolator(),
     });
   };
 
-  const onFeatureHover = (e: MapEvent) => {
+  const onFeatureHover = (e: MapLayerMouseEvent) => {
     if (mapLoaded && !isPlaying && e && geojsonPath?.geometry?.coordinates) {
       const line = lineString(geojsonPath.geometry.coordinates);
-      const cursorPoint = point(e.lngLat);
+      const cursorPoint = point(e.lngLat.toArray());
       const key = getRegimeKey(simulation.trains[selectedTrain].id);
       const startCoordinates = getDirection(simulation.trains[selectedTrain][key].head_positions)
         ? [geojsonPath.geometry.coordinates[0][0], geojsonPath.geometry.coordinates[0][1]]
@@ -259,17 +255,10 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
       );
       dispatch(updateTimePositionValues(timePositionLocal));
     }
-    if (e?.features?.[0]) {
+    if (e?.features?.[0] && e.features[0].properties) {
       setIdHover(e.features[0].properties.id);
     } else {
       setIdHover(undefined);
-    }
-  };
-
-  const onClick = (e: MapEvent) => {
-    if (mapRef.current) {
-      console.info('Click on map');
-      console.info(mapRef.current.queryRenderedFeatures(e.point));
     }
   };
 
@@ -329,26 +318,27 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
       <MapButtons resetPitchBearing={resetPitchBearing} />
       <ReactMapGL
         {...viewport}
-        style={{ cursor: 'pointer' }}
+        mapLib={maplibregl}
+        cursor="pointer"
         ref={mapRef}
-        width="100%"
-        height="100%"
+        style={{ width: '100%', height: '100%' }}
         mapStyle={osmBlankStyle}
-        onViewportChange={updateViewportChange}
-        clickRadius={10}
+        onMove={(e) => updateViewportChange(e.viewState)}
         attributionControl={false} // Defined below
-        onHover={onFeatureHover}
-        onClick={onClick}
+        onMouseEnter={onFeatureHover}
+        onMouseLeave={() => setIdHover(undefined)}
+        onResize={(e) => {
+          updateViewportChange({
+            width: e.target.getContainer().offsetWidth,
+            height: e.target.getContainer().offsetHeight,
+          });
+        }}
         interactiveLayerIds={interactiveLayerIds}
-        touchRotate
-        asyncRender
+        touchZoomRotate
         onLoad={handleLoadFinished}
       >
         <VirtualLayers />
-        <AttributionControl
-          className="attribution-control"
-          customAttribution="©SNCF/DGEX Solutions"
-        />
+        <AttributionControl position="bottom-right" customAttribution="©SNCF/DGEX Solutions" />
         <ScaleControl maxWidth={100} unit="metric" style={scaleControlStyle} />
 
         <Background

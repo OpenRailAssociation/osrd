@@ -3,10 +3,11 @@ import { AnyAction, Dispatch } from 'redux';
 
 import {
   DEFAULT_MODE,
-  DEFAULT_STDCM_MODE, OsrdConfState, PointOnMap
+  DEFAULT_STDCM_MODE,
+  OsrdConfState,
+  PointOnMap,
 } from 'applications/osrd/consts';
 import { formatIsoDate } from 'utils/date';
-import { boundedValue } from 'utils/numbers';
 import { sec2time, time2sec } from 'utils/timeManipulation';
 
 import { getSwitchTypes } from 'applications/editor/data/api';
@@ -76,7 +77,6 @@ export const initialState: OsrdConfState = {
 };
 
 const ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE = 7200;
-const MAX_UPPER_BOUND_TIME = 24 * 3600 - 1;
 
 export default function reducer(inputState: OsrdConfState | undefined, action: AnyAction) {
   const state = inputState || initialState;
@@ -457,7 +457,7 @@ export function updateItinerary(geojson: any) {
     });
   };
 }
-export function updateFeatureInfoClickOSRD(featureInfoClick: any) {
+export function updateFeatureInfoClickOSRD(featureInfoClick: OsrdConfState['featureInfoClick']) {
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_FEATURE_INFO_CLICK_OSRD,

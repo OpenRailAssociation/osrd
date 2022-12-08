@@ -1,5 +1,5 @@
 import produce from 'immer';
-import { flatten, keyBy, mapValues } from 'lodash';
+import { flatten, mapValues } from 'lodash';
 import { createSelector } from 'reselect';
 import { Feature } from 'geojson';
 
@@ -233,7 +233,8 @@ export default function reducer(inputState: EditorState | undefined, action: Edi
         // The schema is preserved, because it never changes at the moment.
         break;
       default:
-      // Nothing to do here
+        // Nothing to do here
+        break;
     }
   });
 }
