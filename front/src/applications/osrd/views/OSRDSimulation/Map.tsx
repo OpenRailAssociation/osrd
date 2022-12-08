@@ -262,13 +262,6 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
     }
   };
 
-  const onClick = (e: MapLayerMouseEvent) => {
-    if (mapRef.current) {
-      console.info('Click on map');
-      console.info(mapRef.current.queryRenderedFeatures(e.point));
-    }
-  };
-
   const displayPath = () => {
     if (simulation.trains.length > 0) {
       getGeoJSONPath(simulation.trains[selectedTrain].path);
@@ -334,7 +327,6 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
         attributionControl={false} // Defined below
         onMouseEnter={onFeatureHover}
         onMouseLeave={() => setIdHover(undefined)}
-        onClick={onClick}
         onResize={(e) => {
           updateViewportChange({
             width: e.target.getContainer().offsetWidth,
