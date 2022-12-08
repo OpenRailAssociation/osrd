@@ -1,7 +1,8 @@
-use super::generate_id;
 use super::ApplicableDirectionsTrackRange;
 use super::OSRDIdentified;
 
+use super::utils::Identifier;
+use super::utils::NonBlankString;
 use super::OSRDTyped;
 use super::ObjectType;
 use super::Panel;
@@ -20,11 +21,10 @@ use std::collections::HashMap;
 #[model(table = "crate::tables::osrd_infra_speedsectionmodel")]
 #[derivative(Default)]
 pub struct SpeedSection {
-    #[derivative(Default(value = r#"generate_id("speed_section")"#))]
-    pub id: String,
+    pub id: Identifier,
     #[derivative(Default(value = "Some(80.)"))]
     pub speed_limit: Option<f64>,
-    pub speed_limit_by_tag: HashMap<String, f64>,
+    pub speed_limit_by_tag: HashMap<NonBlankString, f64>,
     pub track_ranges: Vec<ApplicableDirectionsTrackRange>,
     #[serde(default)]
     pub extensions: SpeedSectionExtensions,
@@ -58,11 +58,11 @@ impl OSRDIdentified for SpeedSection {
 
 impl Cache for SpeedSection {
     fn get_track_referenced_id(&self) -> Vec<&String> {
-        let mut res: Vec<_> = self.track_ranges.iter().map(|tr| &tr.track).collect();
+        let mut res: Vec<_> = self.track_ranges.iter().map(|tr| &*tr.track).collect();
         if let Some(lpv) = &self.extensions.lpv_sncf {
-            res.extend(lpv.announcement.iter().map(|panel| &panel.track));
-            res.extend(lpv.r.iter().map(|panel| &panel.track));
-            res.push(&lpv.z.track);
+            res.extend(lpv.announcement.iter().map(|panel| &*panel.track));
+            res.extend(lpv.r.iter().map(|panel| &*panel.track));
+            res.push(&*lpv.z.track);
         }
         res
     }

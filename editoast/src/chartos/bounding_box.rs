@@ -73,7 +73,7 @@ impl InvalidationZone {
                 OperationResult::Update(RailjsonObject::Signal { railjson })
                 | OperationResult::Create(RailjsonObject::Signal { railjson }) => {
                     if let Some(ObjectCache::Signal(signal)) =
-                        infra_cache.signals().get(&railjson.id)
+                        infra_cache.signals().get::<String>(&railjson.id)
                     {
                         Self::merge_bbox(&mut geo, &mut sch, infra_cache, &signal.track);
                     };
@@ -82,7 +82,7 @@ impl InvalidationZone {
                 OperationResult::Update(RailjsonObject::SpeedSection { railjson })
                 | OperationResult::Create(RailjsonObject::SpeedSection { railjson }) => {
                     if let Some(ObjectCache::SpeedSection(speed_section)) =
-                        infra_cache.speed_sections().get(&railjson.id)
+                        infra_cache.speed_sections().get::<String>(&railjson.id)
                     {
                         for track_id in speed_section.track_ranges.iter().map(|r| &r.track) {
                             Self::merge_bbox(&mut geo, &mut sch, infra_cache, track_id);
@@ -94,7 +94,8 @@ impl InvalidationZone {
                 }
                 OperationResult::Update(RailjsonObject::Route { railjson })
                 | OperationResult::Create(RailjsonObject::Route { railjson }) => {
-                    if let Some(ObjectCache::Route(route)) = infra_cache.routes().get(&railjson.id)
+                    if let Some(ObjectCache::Route(route)) =
+                        infra_cache.routes().get::<String>(&railjson.id)
                     {
                         for track_id in route.path.iter().map(|r| &r.track) {
                             Self::merge_bbox(&mut geo, &mut sch, infra_cache, track_id);
@@ -107,7 +108,7 @@ impl InvalidationZone {
                 OperationResult::Update(RailjsonObject::OperationalPoint { railjson })
                 | OperationResult::Create(RailjsonObject::OperationalPoint { railjson }) => {
                     if let Some(ObjectCache::OperationalPoint(op)) =
-                        infra_cache.operational_points().get(&railjson.id)
+                        infra_cache.operational_points().get::<String>(&railjson.id)
                     {
                         for track_id in op.parts.iter().map(|r| &r.track) {
                             Self::merge_bbox(&mut geo, &mut sch, infra_cache, track_id);
@@ -119,8 +120,9 @@ impl InvalidationZone {
                 }
                 OperationResult::Update(RailjsonObject::TrackSectionLink { railjson })
                 | OperationResult::Create(RailjsonObject::TrackSectionLink { railjson }) => {
-                    if let Some(ObjectCache::TrackSectionLink(link)) =
-                        infra_cache.track_section_links().get(&railjson.id)
+                    if let Some(ObjectCache::TrackSectionLink(link)) = infra_cache
+                        .track_section_links()
+                        .get::<String>(&railjson.id)
                     {
                         Self::merge_bbox(&mut geo, &mut sch, infra_cache, &link.src.track);
                     };
@@ -130,7 +132,7 @@ impl InvalidationZone {
                 OperationResult::Update(RailjsonObject::Switch { railjson })
                 | OperationResult::Create(RailjsonObject::Switch { railjson }) => {
                     if let Some(ObjectCache::Switch(switch)) =
-                        infra_cache.switches().get(&railjson.id)
+                        infra_cache.switches().get::<String>(&railjson.id)
                     {
                         for endpoint in switch.ports.values() {
                             let track_id = &endpoint.track;
@@ -147,7 +149,7 @@ impl InvalidationZone {
                 OperationResult::Update(RailjsonObject::Detector { railjson })
                 | OperationResult::Create(RailjsonObject::Detector { railjson }) => {
                     if let Some(ObjectCache::Detector(detector)) =
-                        infra_cache.detectors().get(&railjson.id)
+                        infra_cache.detectors().get::<String>(&railjson.id)
                     {
                         Self::merge_bbox(&mut geo, &mut sch, infra_cache, &detector.track);
                     };
@@ -156,7 +158,7 @@ impl InvalidationZone {
                 OperationResult::Update(RailjsonObject::BufferStop { railjson })
                 | OperationResult::Create(RailjsonObject::BufferStop { railjson }) => {
                     if let Some(ObjectCache::BufferStop(buffer_stop)) =
-                        infra_cache.buffer_stops().get(&railjson.id)
+                        infra_cache.buffer_stops().get::<String>(&railjson.id)
                     {
                         Self::merge_bbox(&mut geo, &mut sch, infra_cache, &buffer_stop.track);
                     };
@@ -165,7 +167,7 @@ impl InvalidationZone {
                 OperationResult::Update(RailjsonObject::Catenary { railjson })
                 | OperationResult::Create(RailjsonObject::Catenary { railjson }) => {
                     if let Some(ObjectCache::Catenary(catenary)) =
-                        infra_cache.catenaries().get(&railjson.id)
+                        infra_cache.catenaries().get::<String>(&railjson.id)
                     {
                         for track_id in catenary.track_ranges.iter().map(|r| &r.track) {
                             Self::merge_bbox(&mut geo, &mut sch, infra_cache, track_id);

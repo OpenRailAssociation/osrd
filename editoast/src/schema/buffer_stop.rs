@@ -1,7 +1,7 @@
-use super::generate_id;
 use super::ApplicableDirections;
 use super::OSRDIdentified;
 
+use super::utils::Identifier;
 use super::OSRDTyped;
 use super::ObjectType;
 use crate::infra_cache::{Cache, ObjectCache};
@@ -15,10 +15,9 @@ use serde::{Deserialize, Serialize};
 #[model(table = "crate::tables::osrd_infra_bufferstopmodel")]
 #[derivative(Default)]
 pub struct BufferStop {
-    #[derivative(Default(value = r#"generate_id("buffer_stop")"#))]
-    pub id: String,
+    pub id: Identifier,
     #[derivative(Default(value = r#""InvalidRef".into()"#))]
-    pub track: String,
+    pub track: Identifier,
     pub position: f64,
     pub applicable_directions: ApplicableDirections,
 }
@@ -82,7 +81,7 @@ impl BufferStopCache {
 
 impl From<BufferStop> for BufferStopCache {
     fn from(stop: BufferStop) -> Self {
-        Self::new(stop.id, stop.track, stop.position)
+        Self::new(stop.id.0, stop.track.0, stop.position)
     }
 }
 

@@ -1,6 +1,6 @@
-use super::generate_id;
 use super::OSRDIdentified;
 
+use super::utils::Identifier;
 use super::OSRDTyped;
 use super::ObjectType;
 
@@ -18,10 +18,9 @@ use std::collections::HashMap;
 #[model(table = "crate::tables::osrd_infra_switchtypemodel")]
 #[derivative(Default)]
 pub struct SwitchType {
-    #[derivative(Default(value = r#"generate_id("switchtype")"#))]
-    pub id: String,
-    pub ports: Vec<String>,
-    pub groups: HashMap<String, Vec<SwitchPortConnection>>,
+    pub id: Identifier,
+    pub ports: Vec<Identifier>,
+    pub groups: HashMap<Identifier, Vec<SwitchPortConnection>>,
 }
 
 impl OSRDTyped for SwitchType {
@@ -40,8 +39,8 @@ impl OSRDIdentified for SwitchType {
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
 pub struct SwitchPortConnection {
-    pub src: String,
-    pub dst: String,
+    pub src: Identifier,
+    pub dst: Identifier,
 }
 
 impl Cache for SwitchType {

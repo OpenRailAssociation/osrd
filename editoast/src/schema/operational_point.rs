@@ -1,6 +1,7 @@
-use super::generate_id;
 use super::OSRDIdentified;
 
+use super::utils::Identifier;
+use super::utils::NonBlankString;
 use super::OSRDTyped;
 use super::ObjectType;
 
@@ -16,11 +17,19 @@ use serde::{Deserialize, Serialize};
 #[model(table = "crate::tables::osrd_infra_operationalpointmodel")]
 #[derivative(Default)]
 pub struct OperationalPoint {
-    #[derivative(Default(value = r#"generate_id("operational_point")"#))]
-    pub id: String,
+    pub id: Identifier,
     pub parts: Vec<OperationalPointPart>,
     #[serde(default)]
     pub extensions: OperationalPointExtensions,
+}
+
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+#[derivative(Default, PartialEq)]
+pub struct OperationalPointPart {
+    #[derivative(Default(value = r#""InvalidRef".into()"#))]
+    pub track: Identifier,
+    pub position: f64,
 }
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq)]
@@ -35,15 +44,15 @@ pub struct OperationalPointExtensions {
 pub struct OperationalPointSncfExtension {
     pub ci: i64,
     pub ch: String,
-    pub ch_short_label: String,
-    pub ch_long_label: String,
+    pub ch_short_label: NonBlankString,
+    pub ch_long_label: NonBlankString,
     pub trigram: String,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct OperationalPointIdentifierExtension {
-    name: String,
+    name: NonBlankString,
     uic: i64,
 }
 
@@ -57,15 +66,6 @@ impl OSRDIdentified for OperationalPoint {
     fn get_id(&self) -> &String {
         &self.id
     }
-}
-
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize)]
-#[serde(deny_unknown_fields)]
-#[derivative(Default, PartialEq)]
-pub struct OperationalPointPart {
-    #[derivative(Default(value = r#""InvalidRef".into()"#))]
-    pub track: String,
-    pub position: f64,
 }
 
 #[derive(Debug, Clone, Derivative)]
@@ -84,7 +84,7 @@ impl OperationalPointCache {
 
 impl From<OperationalPoint> for OperationalPointCache {
     fn from(op: OperationalPoint) -> Self {
-        Self::new(op.id, op.parts)
+        Self::new(op.id.0, op.parts)
     }
 }
 
@@ -102,7 +102,7 @@ impl OSRDIdentified for OperationalPointCache {
 
 impl Cache for OperationalPointCache {
     fn get_track_referenced_id(&self) -> Vec<&String> {
-        self.parts.iter().map(|tr| &tr.track).collect()
+        self.parts.iter().map(|tr| &*tr.track).collect()
     }
 
     fn get_object_cache(&self) -> ObjectCache {
