@@ -1,4 +1,4 @@
-import React, { FC, useContext } from 'react';
+import React, { FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import { flatMap, uniq } from 'lodash';
 import cx from 'classnames';
@@ -11,8 +11,6 @@ import {
   SwitchEntity,
   TrackSectionEntity,
 } from '../../../types';
-import EditorContext from '../context';
-import { ExtendedEditorContextType } from '../tools/types';
 
 function prettifyStringsArray(strings: string[], finalSeparator: string): string {
   switch (strings.length) {
@@ -42,7 +40,7 @@ const EntitySumUp: FC<{
   status?: string;
 }> = ({ entity, classes: classesOverride, status }) => {
   const { t } = useTranslation();
-  const { editorState } = useContext(EditorContext) as ExtendedEditorContextType<unknown>;
+  // const { editorState } = useContext(EditorContext) as ExtendedEditorContextType<unknown>;
   const classes = { ...DEFAULT_CLASSES, ...(classesOverride || {}) };
 
   let type = t(`Editor.obj-types.${entity.objType}`);
@@ -75,20 +73,23 @@ const EntitySumUp: FC<{
       // This cast is OK since both buffer stops and detectors have same
       // properties:
       const typedEntity = entity as BufferStopEntity;
-      const track = (typedEntity.properties.track &&
-        editorState.entitiesIndex[typedEntity.properties.track]) as TrackSectionEntity | undefined;
+      // const track = (typedEntity.properties.track &&
+      //   editorState.entitiesIndex[typedEntity.properties.track]) as TrackSectionEntity | undefined;
+
+      // TODO:
+      // Add Track name as subtitle
 
       text = typedEntity.properties.id;
-      if (track) {
-        subtexts.push(
-          <>
-            <span className={classes.muted}>
-              {t('Editor.tools.select-items.linked-to-line', { count: 1 })}
-            </span>{' '}
-            <span>{track.properties?.extensions?.sncf?.line_name || track.properties.id}</span>
-          </>
-        );
-      }
+      // if (track) {
+      //   subtexts.push(
+      //     <>
+      //       <span className={classes.muted}>
+      //         {t('Editor.tools.select-items.linked-to-line', { count: 1 })}
+      //       </span>{' '}
+      //       <span>{track.properties?.extensions?.sncf?.line_name || track.properties.id}</span>
+      //     </>
+      //   );
+      // }
 
       break;
     }
@@ -96,10 +97,13 @@ const EntitySumUp: FC<{
       const switchEntity = entity as SwitchEntity;
       const label = switchEntity.properties?.extensions?.sncf?.label;
       const trackNames = uniq(
-        flatMap(switchEntity.properties.ports, (port) => {
-          const track = editorState.entitiesIndex[port.track] as TrackSectionEntity | undefined;
-          const trackLabel = track?.properties?.extensions?.sncf?.line_name;
-          return trackLabel ? [trackLabel] : [];
+        flatMap(switchEntity.properties.ports, (_port) => {
+          // const track = editorState.entitiesIndex[port.track] as TrackSectionEntity | undefined;
+          // const trackLabel = track?.properties?.extensions?.sncf?.line_name;
+          // return trackLabel ? [trackLabel] : [];
+          // TODO:
+          // Add Track name as subtitle
+          return [];
         })
       );
       if (label) {

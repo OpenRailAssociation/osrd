@@ -3,7 +3,6 @@ import { isEqual } from 'lodash';
 
 import { DEFAULT_COMMON_TOOL_STATE, Tool } from '../types';
 import { save } from '../../../../reducers/editor';
-import { selectInZone } from '../../../../utils/mapboxHelper';
 import { SelectionState } from './types';
 import { SelectionLayers, SelectionMessages, SelectionLeftPanel } from './components';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -15,21 +14,18 @@ import {
   SwitchEntity,
   TrackSectionEntity,
 } from '../../../../types';
-import { getSymbolsList } from '../../data/utils';
 import {
   BufferStopEditionTool,
   DetectorEditionTool,
   SignalEditionTool,
 } from '../pointEdition/tools';
 import SwitchEditionTool from '../switchEdition/tool';
+import { ALL_SIGNAL_LAYERS } from '../../../../common/Map/Consts/SignalsNames';
 
 const SelectionTool: Tool<SelectionState> = {
   id: 'select-items',
   icon: BsCursor,
   labelTranslationKey: 'Editor.tools.select-items.label',
-  isDisabled(context) {
-    return !context.editorState.editorZone;
-  },
   getInitialState() {
     return {
       ...DEFAULT_COMMON_TOOL_STATE,
@@ -188,7 +184,7 @@ const SelectionTool: Tool<SelectionState> = {
   ],
 
   // Interactions:
-  onClickFeature(feature, e, { setState, state, editorState }) {
+  onClickFeature(feature, e, { setState, state }) {
     if (state.selectionState.type !== 'single') return;
 
     let { selection } = state;
@@ -196,7 +192,7 @@ const SelectionTool: Tool<SelectionState> = {
       (item) => item.properties.id === feature.properties.id
     );
 
-    const current = editorState.entitiesIndex[feature.properties.id];
+    const current = feature;
 
     if (current) {
       if (!isAlreadySelected) {
@@ -219,7 +215,7 @@ const SelectionTool: Tool<SelectionState> = {
       selection,
     });
   },
-  onClickMap(e, { setState, state, editorState }) {
+  onClickMap(e, { setState, state }) {
     const position = e.lngLat;
 
     if (state.selectionState.type === 'rectangle') {
@@ -230,14 +226,15 @@ const SelectionTool: Tool<SelectionState> = {
             selectionState: { ...state.selectionState, rectangleTopLeft: null },
           });
         } else {
-          setState({
-            ...state,
-            selectionState: { ...state.selectionState, rectangleTopLeft: null },
-            selection: selectInZone(editorState.entitiesArray, {
-              type: 'rectangle',
-              points: [state.selectionState.rectangleTopLeft, position.toArray()],
-            }),
-          });
+          // TODO
+          // setState({
+          //   ...state,
+          //   selectionState: { ...state.selectionState, rectangleTopLeft: null },
+          //   selection: selectInZone(editorState.entitiesArray, {
+          //     type: 'rectangle',
+          //     points: [state.selectionState.rectangleTopLeft, position.toArray()],
+          //   }),
+          // });
         }
       } else {
         setState({
@@ -255,17 +252,18 @@ const SelectionTool: Tool<SelectionState> = {
       if (isEqual(lastPoint, position)) {
         if (points.length >= 3) {
           // TODO remove the layer static variable
-          setState({
-            ...state,
-            selectionState: {
-              ...state.selectionState,
-              polygonPoints: [],
-            },
-            selection: selectInZone(editorState.entitiesArray, {
-              type: 'polygon',
-              points,
-            }),
-          });
+          // TODO
+          // setState({
+          //   ...state,
+          //   selectionState: {
+          //     ...state.selectionState,
+          //     polygonPoints: [],
+          //   },
+          //   selection: selectInZone(editorState.entitiesArray, {
+          //     type: 'polygon',
+          //     points,
+          //   }),
+          // });
         }
       } else {
         setState({
@@ -280,10 +278,8 @@ const SelectionTool: Tool<SelectionState> = {
   },
 
   // Layers:
-  getInteractiveLayers({ editorState: { flatEntitiesByTypes } }) {
-    const symbolTypes = getSymbolsList(flatEntitiesByTypes.signals || []);
-    return symbolTypes
-      .map((type) => `editor/geo/signal-${type}`)
+  getInteractiveLayers() {
+    return ALL_SIGNAL_LAYERS.map((type) => `editor/geo/signal-${type}`)
       .concat([
         'editor/geo/track-main',
         'editor/geo/buffer-stop-main',
