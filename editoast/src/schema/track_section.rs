@@ -1,7 +1,7 @@
-use super::generate_id;
+use super::utils::Identifier;
+use super::utils::NonBlankString;
 use super::Endpoint;
 use super::OSRDIdentified;
-
 use super::OSRDTyped;
 use super::ObjectType;
 use super::TrackEndpoint;
@@ -11,7 +11,6 @@ use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
 
 use derivative::Derivative;
-
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 
@@ -20,11 +19,11 @@ use serde::{Deserialize, Serialize};
 #[model(table = "crate::tables::osrd_infra_tracksectionmodel")]
 #[derivative(Default)]
 pub struct TrackSection {
-    #[derivative(Default(value = r#"generate_id("track_section")"#))]
-    pub id: String,
+    pub id: Identifier,
     pub length: f64,
     pub slopes: Vec<Slope>,
     pub curves: Vec<Curve>,
+    #[serde(default)]
     pub loading_gauge_limits: Vec<LoadingGaugeLimit>,
     pub geo: LineString,
     pub sch: LineString,
@@ -43,11 +42,11 @@ pub struct TrackSectionExtensions {
 #[derivative(Default)]
 pub struct TrackSectionSncfExtension {
     pub line_code: i32,
-    #[derivative(Default(value = r#""line_test".to_string()"#))]
-    pub line_name: String,
+    #[derivative(Default(value = r#""line_test".into()"#))]
+    pub line_name: NonBlankString,
     pub track_number: i32,
-    #[derivative(Default(value = r#""track_test".to_string()"#))]
-    pub track_name: String,
+    #[derivative(Default(value = r#""track_test".into()"#))]
+    pub track_name: NonBlankString,
 }
 
 impl OSRDTyped for TrackSection {
@@ -159,14 +158,14 @@ impl TrackSectionCache {
     pub fn get_begin(&self) -> TrackEndpoint {
         TrackEndpoint {
             endpoint: Endpoint::Begin,
-            track: self.obj_id.clone(),
+            track: self.obj_id.clone().into(),
         }
     }
 
     pub fn get_end(&self) -> TrackEndpoint {
         TrackEndpoint {
             endpoint: Endpoint::End,
-            track: self.obj_id.clone(),
+            track: self.obj_id.clone().into(),
         }
     }
 }
@@ -174,7 +173,7 @@ impl TrackSectionCache {
 impl From<TrackSection> for TrackSectionCache {
     fn from(track: TrackSection) -> Self {
         TrackSectionCache {
-            obj_id: track.id,
+            obj_id: track.id.0,
             length: track.length,
             bbox_geo: track.geo.get_bbox(),
             bbox_sch: track.sch.get_bbox(),

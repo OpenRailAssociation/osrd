@@ -33,8 +33,8 @@ impl<'a> Graph<'a> {
                 .unwrap_switch_type();
             for group in switch_type.groups.values() {
                 for connection in group {
-                    let src = switch.ports.get(&connection.src).unwrap();
-                    let dst = switch.ports.get(&connection.dst).unwrap();
+                    let src = switch.ports.get::<String>(&connection.src).unwrap();
+                    let dst = switch.ports.get::<String>(&connection.dst).unwrap();
                     graph.link(src, dst);
                     graph.link(dst, src);
                 }

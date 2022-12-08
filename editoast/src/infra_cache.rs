@@ -525,6 +525,7 @@ pub mod tests {
         create_buffer_stop, create_catenary, create_detector, create_link, create_op, create_route,
         create_signal, create_speed, create_switch, create_switch_type, create_track,
     };
+    use crate::schema::utils::Identifier;
     use crate::schema::{
         ApplicableDirections, ApplicableDirectionsTrackRange, Catenary, Direction,
         DirectionalTrackRange, Endpoint, OSRDIdentified, OperationalPoint, OperationalPointPart,
@@ -834,7 +835,7 @@ pub mod tests {
         id: T,
         entry_point: Waypoint,
         exit_point: Waypoint,
-        release_detectors: Vec<String>,
+        release_detectors: Vec<Identifier>,
         path_list: Vec<(T, f64, f64, Direction)>,
     ) -> Route {
         let mut path = vec![];
@@ -867,14 +868,17 @@ pub mod tests {
         }
     }
 
-    pub fn create_switch_connection(src: String, dst: String) -> SwitchPortConnection {
-        SwitchPortConnection { src, dst }
+    pub fn create_switch_connection<T: AsRef<str>>(src: T, dst: T) -> SwitchPortConnection {
+        SwitchPortConnection {
+            src: src.as_ref().into(),
+            dst: dst.as_ref().into(),
+        }
     }
 
     pub fn create_switch_type_cache<T: AsRef<str>>(
         id: T,
-        ports: Vec<String>,
-        groups: HashMap<String, Vec<SwitchPortConnection>>,
+        ports: Vec<Identifier>,
+        groups: HashMap<Identifier, Vec<SwitchPortConnection>>,
     ) -> SwitchType {
         SwitchType {
             id: id.as_ref().into(),
@@ -970,11 +974,11 @@ pub mod tests {
             HashMap::from([
                 (
                     "LEFT".into(),
-                    vec![create_switch_connection("BASE".into(), "LEFT".into())],
+                    vec![create_switch_connection("BASE", "LEFT")],
                 ),
                 (
                     "RIGHT".into(),
-                    vec![create_switch_connection("BASE".into(), "RIGHT".into())],
+                    vec![create_switch_connection("BASE", "RIGHT")],
                 ),
             ]),
         ));

@@ -168,11 +168,12 @@ impl InfraError {
         }
     }
 
-    pub fn new_unknown_port_name<T: AsRef<str>, O: OSRDObject>(
+    pub fn new_unknown_port_name<T: AsRef<str>, TT: AsRef<str>, O: OSRDObject>(
         obj: &O,
         field: T,
-        port_name: String,
+        port_name: TT,
     ) -> Self {
+        let port_name = port_name.as_ref().into();
         Self {
             obj_id: obj.get_id().clone(),
             obj_type: obj.get_type(),
@@ -280,7 +281,7 @@ impl PathEndpointField {
             (PathEndpointField::ExitPoint, Direction::StopToStart) => track_range.begin,
         };
 
-        (track_range.track.clone(), pos)
+        (track_range.track.clone().0, pos)
     }
 
     pub fn get_route_endpoint<'a>(&self, route: &'a Route) -> &'a Waypoint {
