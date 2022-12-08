@@ -16,7 +16,7 @@ public class UnavailableSpaceBuilderTests {
     @Test
     public void testNoOccupancy() throws Exception {
         var infra = Helpers.infraFromRJS(Helpers.getExampleInfra("tiny_infra/infra.json"));
-        var res = computeUnavailableSpace(infra, Set.of(), REALISTIC_FAST_TRAIN);
+        var res = computeUnavailableSpace(infra, Set.of(), REALISTIC_FAST_TRAIN, 0, 0);
         assertTrue(res.isEmpty());
     }
 
@@ -29,7 +29,9 @@ public class UnavailableSpaceBuilderTests {
         var res = computeUnavailableSpace(
                 infra,
                 Set.of(new STDCMRequest.RouteOccupancy("a->b", 0, 100)),
-                REALISTIC_FAST_TRAIN
+                REALISTIC_FAST_TRAIN,
+                0,
+                0
         );
         assertEquals(
                 Set.of(
@@ -59,7 +61,9 @@ public class UnavailableSpaceBuilderTests {
         var res = computeUnavailableSpace(
                 infra,
                 Set.of(new STDCMRequest.RouteOccupancy("b->c", 0, 100)),
-                REALISTIC_FAST_TRAIN
+                REALISTIC_FAST_TRAIN,
+                0,
+                0
         );
         assertEquals(
                 Set.of(
@@ -96,7 +100,9 @@ public class UnavailableSpaceBuilderTests {
         final var res = computeUnavailableSpace(
                 infra,
                 Set.of(new STDCMRequest.RouteOccupancy("a1->center", 0, 100)),
-                REALISTIC_FAST_TRAIN
+                REALISTIC_FAST_TRAIN,
+                0,
+                0
         );
         assertEquals(
                 Set.of(
@@ -132,7 +138,9 @@ public class UnavailableSpaceBuilderTests {
         var res = computeUnavailableSpace(
                 infra,
                 Set.of(new STDCMRequest.RouteOccupancy("a->b", 0, 100)),
-                REALISTIC_FAST_TRAIN
+                REALISTIC_FAST_TRAIN,
+                0,
+                0
         );
         assertEquals(
                 Set.of(

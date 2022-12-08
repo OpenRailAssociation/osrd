@@ -20,7 +20,9 @@ def run(*args, **kwargs):
         "end_points": [{
             "track_section": "TE0",
             "offset": 0
-        }]
+        }],
+        "margin_before": 0,
+        "margin_after": 0
     }
     r = requests.post(base_url + f"stdcm/", json=payload)
     delete_timetable(base_url, timetable)
