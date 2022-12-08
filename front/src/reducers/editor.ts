@@ -1,14 +1,10 @@
 import produce from 'immer';
-import { flatten, mapValues } from 'lodash';
-import { createSelector } from 'reselect';
 import { Feature } from 'geojson';
 
-import { ThunkAction, Zone, EditorSchema, EditorEntity } from '../types';
+import { ThunkAction, EditorSchema, EditorEntity } from '../types';
 import { setLoading, setSuccess, setFailure } from './main';
-import { getEditorSchema, getEditorData, editorSave } from '../applications/editor/data/api';
-import { clip } from '../utils/mapboxHelper';
+import { getEditorSchema, editorSave } from '../applications/editor/data/api';
 import { EditorState, LAYERS, LayerType } from '../applications/editor/tools/types';
-import { flattenEntity } from '../applications/editor/data/utils';
 
 //
 // Actions
@@ -16,46 +12,6 @@ import { flattenEntity } from '../applications/editor/data/utils';
 //
 // When the selected data are loaded, we store them in the state
 //
-const SET_DATA = 'editor/SET_DATA';
-type ActionSetData = {
-  type: typeof SET_DATA;
-  entitiesByType: Partial<Record<LayerType, EditorEntity[]>>;
-};
-export function setEditorData(data: ActionSetData['entitiesByType']): ThunkAction<ActionSetData> {
-  return (dispatch) => {
-    dispatch({
-      type: SET_DATA,
-      entitiesByType: data,
-    });
-  };
-}
-
-const RELOAD_DATA = 'editor/RELOAD_DATA';
-type ActionReloadData = {
-  type: typeof RELOAD_DATA;
-};
-export function reloadData(): ThunkAction<ActionReloadData> {
-  return async (dispatch, getState) => {
-    const {
-      editor,
-      osrdconf: { infraID },
-    } = getState();
-    const { editorSchema, editorLayers, editorZone } = editor as EditorState;
-
-    if (!editorZone || !editorSchema || !editorLayers) {
-      dispatch(setEditorData({}));
-    } else {
-      dispatch(setLoading());
-      try {
-        const data = await getEditorData(editorSchema, infraID, editorLayers, editorZone);
-        dispatch(setSuccess());
-        dispatch(setEditorData(data));
-      } catch (e) {
-        dispatch(setFailure(e as Error));
-      }
-    }
-  };
-}
 
 const RESET = 'editor/RESET';
 type ActionReset = {
@@ -66,22 +22,6 @@ export function reset(): ThunkAction<ActionReset> {
     dispatch({
       type: RESET,
     });
-  };
-}
-
-const SELECT_ZONE = 'editor/SELECT_ZONE';
-type ActionSelectZone = {
-  type: typeof SELECT_ZONE;
-  zone: Zone | null;
-};
-export function selectZone(zone: ActionSelectZone['zone']): ThunkAction<ActionSelectZone> {
-  return (dispatch) => {
-    dispatch({
-      type: SELECT_ZONE,
-      zone,
-    });
-
-    dispatch(reloadData());
   };
 }
 
@@ -98,8 +38,6 @@ export function selectLayers(
       type: SELECT_LAYERS,
       layers,
     });
-
-    dispatch(reloadData());
   };
 }
 
@@ -154,8 +92,6 @@ export function save(operations: {
     try {
       // saving the data
       const savedFeatures = await editorSave(state.osrdconf.infraID, operations);
-      // reload the zone
-      dispatch(selectZone(state.editor.editorZone));
       // success message
       dispatch(
         setSuccess({
@@ -172,13 +108,7 @@ export function save(operations: {
   };
 }
 
-export type EditorActions =
-  | ActionSelectZone
-  | ActionLoadDataModel
-  | ActionSave
-  | ActionSetData
-  | ActionReset
-  | ActionSelectLayers;
+export type EditorActions = ActionLoadDataModel | ActionSave | ActionReset | ActionSelectLayers;
 
 //
 // State definition
@@ -188,12 +118,6 @@ export const initialState: EditorState = {
   editorSchema: [],
   // ID of selected layers on which we are working
   editorLayers: new Set(LAYERS),
-  // Edition zone:
-  editorZone: null,
-  // Editor entities:
-  flatEntitiesByTypes: {},
-  entitiesArray: [],
-  entitiesIndex: {},
 };
 
 //
@@ -204,32 +128,14 @@ export default function reducer(inputState: EditorState | undefined, action: Edi
 
   return produce(state, (draft) => {
     switch (action.type) {
-      case SELECT_ZONE:
-        draft.editorZone = action.zone;
-        break;
       case SELECT_LAYERS:
         draft.editorLayers = action.layers;
         break;
       case LOAD_DATA_MODEL:
         draft.editorSchema = action.schema;
         break;
-      case SET_DATA:
-        draft.flatEntitiesByTypes = mapValues(
-          action.entitiesByType,
-          (entitiesArray: EditorEntity[]) => entitiesArray.map(flattenEntity)
-        );
-        draft.entitiesArray = flatten(Object.values(action.entitiesByType));
-        draft.entitiesIndex = draft.entitiesArray.reduce(
-          (iter, entity) => ({ ...iter, [entity.properties.id]: entity }),
-          {}
-        );
-        break;
       case RESET:
         draft.editorLayers = initialState.editorLayers;
-        draft.editorZone = initialState.editorZone;
-        draft.flatEntitiesByTypes = initialState.flatEntitiesByTypes;
-        draft.entitiesArray = initialState.entitiesArray;
-        draft.entitiesIndex = initialState.entitiesIndex;
         // The schema is preserved, because it never changes at the moment.
         break;
       default:
@@ -238,19 +144,3 @@ export default function reducer(inputState: EditorState | undefined, action: Edi
     }
   });
 }
-
-//
-// Derived data selector
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-export const flatEntitiesSelector = (state: EditorState) => state.flatEntitiesByTypes;
-export const dataArraySelector = (state: EditorState) => state.entitiesArray;
-export const zoneSelector = (state: EditorState) => state.editorZone;
-export const clippedDataSelector = createSelector(dataArraySelector, zoneSelector, (data, zone) => {
-  let result: Array<EditorEntity> = [];
-  if (zone && data)
-    result = data.map((f) => {
-      const clippedFeature = clip(f, zone);
-      return clippedFeature ? { ...f, geometry: clippedFeature.geometry } : f;
-    });
-  return result;
-});

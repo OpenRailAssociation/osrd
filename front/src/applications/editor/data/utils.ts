@@ -107,3 +107,28 @@ export function flattenEntity(entity: EditorEntity): EditorEntity {
     properties: flatten(entity.properties, '_', {}, '') as EditorEntity['properties'],
   };
 }
+
+/**
+ * This function nests an object, splitting paths with a given separator.
+ */
+export function nestEntity(entity: EditorEntity): EditorEntity {
+  const oldProperties = entity.properties;
+  const newProperties = {} as EditorEntity['properties'];
+  const separator = '_';
+
+  Object.keys(oldProperties).forEach((key) => {
+    const path = key.split(separator);
+    path.reduce((props, k, i, a) => {
+      const isLast = i === a.length - 1;
+
+      if (isLast) props[k] = oldProperties[key];
+      else props[k] = props[k] || {};
+      return props[k];
+    }, newProperties);
+  });
+
+  return {
+    ...entity,
+    properties: newProperties,
+  };
+}

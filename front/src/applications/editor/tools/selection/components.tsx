@@ -11,7 +11,6 @@ import { SelectionState } from './types';
 import { Zone } from '../../../../types';
 import GeoJSONs from '../../../../common/Map/Layers/GeoJSONs';
 import colors from '../../../../common/Map/Consts/colors';
-import EditorZone from '../../../../common/Map/Layers/EditorZone';
 import EditorForm from '../../components/EditorForm';
 import { save } from '../../../../reducers/editor';
 import { EditorContextType, ExtendedEditorContextType } from '../types';
@@ -53,7 +52,6 @@ export const SelectionLayers: FC = () => {
   return (
     <>
       <GeoJSONs colors={colors[mapStyle]} selection={state.selection.map((e) => e.properties.id)} />
-      <EditorZone newZone={selectionZone} />
       {state.mousePosition && state.selectionState.type === 'single' && state.hovered && (
         <Popup
           className="popup"
@@ -78,7 +76,7 @@ export const SelectionLayers: FC = () => {
 export const SelectionLeftPanel: FC = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const { state, setState, editorState } = useContext(
+  const { state, setState } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<SelectionState>;
   const { selection, selectionState } = state;
@@ -96,7 +94,8 @@ export const SelectionLeftPanel: FC = () => {
               save({
                 update: [
                   {
-                    source: editorState.entitiesIndex[savedEntity.properties.id],
+                    // TODO
+                    source: savedEntity, // editorState.entitiesIndex[savedEntity.properties.id],
                     target: savedEntity,
                   },
                 ],

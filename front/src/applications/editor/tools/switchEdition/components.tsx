@@ -23,7 +23,6 @@ import {
   TrackSectionEntity,
 } from '../../../../types';
 import colors from '../../../../common/Map/Consts/colors';
-import EditorZone from '../../../../common/Map/Layers/EditorZone';
 import GeoJSONs from '../../../../common/Map/Layers/GeoJSONs';
 import { SwitchEditionState } from './types';
 import EditorForm from '../../components/EditorForm';
@@ -54,17 +53,17 @@ export const TrackSectionEndpointSelector: FC<FieldProps> = ({
   onChange,
   name,
 }) => {
-  const {
-    editorState: { entitiesIndex },
-    state,
-    setState,
-  } = useContext(EditorContext) as ExtendedEditorContextType<SwitchEditionState>;
+  const { state, setState } = useContext(
+    EditorContext
+  ) as ExtendedEditorContextType<SwitchEditionState>;
   const { t } = useTranslation();
 
   const portId = name.replace(FLAT_SWITCH_PORTS_PREFIX, '');
   const endpoint = ENDPOINTS_SET.has(formData?.endpoint) ? formData.endpoint : DEFAULT_ENDPOINT;
   const trackSection =
-    typeof formData?.track === 'string' ? entitiesIndex[formData.track] : undefined;
+    typeof formData?.track === 'string'
+      ? /*entitiesIndex[formData.track]*/ ({} as TrackSectionEntity)
+      : undefined;
 
   const isPicking =
     state.portEditionState.type === 'selection' && state.portEditionState.portId === portId;
@@ -89,25 +88,26 @@ export const TrackSectionEndpointSelector: FC<FieldProps> = ({
           type: 'selection',
           portId,
           hoveredPoint: null,
-          onSelect: (trackId: string, position: [number, number]) => {
-            const track = entitiesIndex[trackId] as TrackSectionEntity;
-            const closest = nearestPoint(
-              position,
-              featureCollection([
-                point(first(track.geometry.coordinates) as [number, number]),
-                point(last(track.geometry.coordinates) as [number, number]),
-              ])
-            );
-            setState({ ...state, portEditionState: { type: 'idle' } });
-            onChange({
-              endpoint: closest.properties.featureIndex === 0 ? 'BEGIN' : 'END',
-              track: trackId,
-            });
+          onSelect: (_trackId: string, _position: [number, number]) => {
+            // TODO
+            // const track = entitiesIndex[trackId] as TrackSectionEntity;
+            // const closest = nearestPoint(
+            //   position,
+            //   featureCollection([
+            //     point(first(track.geometry.coordinates) as [number, number]),
+            //     point(last(track.geometry.coordinates) as [number, number]),
+            //   ])
+            // );
+            // setState({ ...state, portEditionState: { type: 'idle' } });
+            // onChange({
+            //   endpoint: closest.properties.featureIndex === 0 ? 'BEGIN' : 'END',
+            //   track: trackId,
+            // });
           },
         },
       });
     }
-  }, [entitiesIndex, isDisabled, isPicking, onChange, portId, setState, state]);
+  }, [isDisabled, isPicking, onChange, portId, setState, state]);
 
   return (
     <div className="mb-4">
@@ -182,7 +182,7 @@ export const SwitchEditionLeftPanel: FC = () => {
   const baseSchema = editorState.editorSchema.find((e) => e.objType === 'Switch')?.schema;
 
   // Retrieve proper data
-  const tracksIndex = editorState.entitiesIndex as Record<string, TrackSectionEntity>;
+  const tracksIndex = {} /*editorState.entitiesIndex*/ as Record<string, TrackSectionEntity>;
   const { switchTypes } = useSelector(({ osrdconf }: { osrdconf: OSRDConf }) => osrdconf);
   const switchTypesDict = useMemo(() => keyBy(switchTypes, 'id'), [switchTypes]);
   const switchTypeOptions = useMemo(
@@ -253,7 +253,8 @@ export const SwitchEditionLeftPanel: FC = () => {
                 ? {
                     update: [
                       {
-                        source: editorState.entitiesIndex[entityToSave.properties.id],
+                        // TODO
+                        source: entityToSave, // editorState.entitiesIndex[entityToSave.properties.id],
                         target: entityToSave,
                       },
                     ],
@@ -304,7 +305,6 @@ export const SwitchEditionLayers: FC = () => {
   const [showPopup, setShowPopup] = useState(true);
   const {
     state: { entity, hovered, portEditionState, mousePosition },
-    editorState: { entitiesIndex },
   } = useContext(EditorContext) as ExtendedEditorContextType<SwitchEditionState>;
   const { mapStyle } = useSelector((s: { map: { mapStyle: string } }) => s.map) as {
     mapStyle: string;
@@ -315,9 +315,10 @@ export const SwitchEditionLayers: FC = () => {
   const nameLayerProps = getSwitchesNameLayerProps({
     colors: colors[mapStyle],
   });
+  // TODO
   const hoveredTrack =
-    hovered && hovered.objType === 'TrackSection'
-      ? (entitiesIndex[hovered.properties.id] as TrackSectionEntity)
+    hovered && hovered.objType === 'TrackSection' && false
+      ? /*entitiesIndex[hovered.properties.id]*/ ({} as TrackSectionEntity)
       : null;
 
   const closest =
@@ -338,9 +339,6 @@ export const SwitchEditionLayers: FC = () => {
 
   return (
     <>
-      {/* Zone display */}
-      <EditorZone />
-
       {/* Editor data layer */}
       <GeoJSONs
         colors={colors[mapStyle]}
