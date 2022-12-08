@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { WidgetProps } from '@rjsf/core';
 import { useTranslation } from 'react-i18next';
 
@@ -8,10 +8,14 @@ export const FormLineStringLength: React.FC<WidgetProps> = (props) => {
   const { t } = useTranslation();
   const { id, value, required, readonly, onChange, formContext } = props;
 
-  const [length, setLength] = useState<number>(value);
+  const [length, setLength] = useState<number>(value || 0);
   const [min, setMin] = useState<number>(-Infinity);
   const [max, setMax] = useState<number>(Infinity);
   const [geoLength, setGeoLength] = useState<number>(0);
+
+  useEffect(() => {
+    setLength(value || 0);
+  }, [value]);
 
   /**
    * When the geometry changes
@@ -19,19 +23,14 @@ export const FormLineStringLength: React.FC<WidgetProps> = (props) => {
    */
   useEffect(() => {
     const distance = getLineStringDistance(formContext.geometry);
-    setMin(Math.round(distance - distance * DISTANCE_ERROR_RANGE));
-    setMax(Math.round(distance + distance * DISTANCE_ERROR_RANGE));
-    setGeoLength(distance);
-  }, [formContext.geometry]);
-
-  /**
-   * When the input value change
-   * => if it is valid, we call the onChange
-   */
-  useEffect(() => {
-    if (value !== undefined) setLength(value);
-    else setLength(geoLength);
-  }, [value, geoLength]);
+    if (formContext.isCreation) {
+      setTimeout(() => onChange(distance), 0);
+    } else {
+      setMin(Math.round(distance - distance * DISTANCE_ERROR_RANGE));
+      setMax(Math.round(distance + distance * DISTANCE_ERROR_RANGE));
+      setGeoLength(distance);
+    }
+  }, [formContext.geometry, formContext.isCreation, onChange]);
 
   return (
     <div>
@@ -43,19 +42,15 @@ export const FormLineStringLength: React.FC<WidgetProps> = (props) => {
           id={id}
           required={required}
           type="number"
-          min={min}
-          max={max}
-          step="any"
           value={length}
           onChange={(e) => {
             const nValue = parseFloat(e.target.value);
-            if (nValue >= min && nValue <= max) onChange(nValue);
-            else setLength(nValue);
+            onChange(nValue);
           }}
         />
       )}
-      {(length === undefined || length < min || length > max) && (
-        <p className="text-danger">
+      {geoLength && (length === undefined || length < min || length > max) && (
+        <p className="text-warning">
           {t('Editor.errors.length-out-of-sync-with-geometry', { min, max })}.{' '}
           <button
             type="button"
