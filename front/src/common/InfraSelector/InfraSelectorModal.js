@@ -10,16 +10,21 @@ import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import icon from 'assets/pictures/tracks.svg';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import { get } from 'common/requests';
 import { FaLock, FaLockOpen, FaTrash } from 'react-icons/fa';
 import { lowerCase } from 'lodash';
 import { useDebounce } from 'utils/helpers';
 
+const infraURL = '/editoast/infra/';
+
 export default function InfraSelectorModal(props) {
   const dispatch = useDispatch();
-  const { infrasList, modalID } = props;
+  const { modalID } = props;
+  const [infrasList, setInfrasList] = useState(undefined);
   const { t } = useTranslation(['translation', 'infraManagement']);
   const [filter, setFilter] = useState();
   const [filteredInfrasList, setFilteredInfrasList] = useState();
+  const [editionMode, setEditionMode] = useState(false);
 
   const debouncedFilter = useDebounce(filter, 500);
 
@@ -33,6 +38,16 @@ export default function InfraSelectorModal(props) {
     setFilteredInfrasList(filteredInfrasListLocal);
   }
 
+  const getInfrasList = async () => {
+    try {
+      const infrasListQuery = await get(infraURL, {});
+      setInfrasList(infrasListQuery);
+      filterInfras(infrasListQuery);
+    } catch (e) {
+      console.log('ERROR', e);
+    }
+  };
+
   const setInfraID = (id) => {
     dispatch(updateInfraID(id));
     dispatch(updateTimetableID(undefined));
@@ -40,14 +55,18 @@ export default function InfraSelectorModal(props) {
   };
 
   useEffect(() => {
-    if (infrasList !== undefined) {
+    if (infrasList) {
       filterInfras(infrasList);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedFilter]);
 
+  useEffect(() => {
+    getInfrasList();
+  }, []);
+
   return (
-    <ModalSNCF htmlID={modalID} size="lg">
+    <ModalSNCF htmlID={modalID} size={editionMode ? 'lg' : 'sm'}>
       <ModalHeaderSNCF>
         <div className="d-flex align-items-center h1">
           <img className="mr-3" src={icon} alt="infra schema" width="48px" />
@@ -117,9 +136,5 @@ export default function InfraSelectorModal(props) {
 }
 
 InfraSelectorModal.propTypes = {
-  infrasList: PropTypes.array,
   modalID: PropTypes.string.isRequired,
-};
-InfraSelectorModal.defaultProps = {
-  infrasList: undefined,
 };

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { PropTypes } from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { updateInfraID } from 'reducers/osrdconf';
 import { setFailure } from 'reducers/main';
 import { get } from 'common/requests';
 import icon from 'assets/pictures/tracks.svg';
@@ -17,7 +16,6 @@ const infraURL = '/editoast/infra/';
 export default function InfraSelector(props) {
   const { modalOnly, modalID } = props;
   const dispatch = useDispatch();
-  const [infrasList, setInfrasList] = useState(undefined);
   const [selectedInfra, setSelectedInfra] = useState(undefined);
   const infraID = useSelector(getInfraID);
 
@@ -38,55 +36,15 @@ export default function InfraSelector(props) {
     }
   };
 
-  const getInfrasList = async () => {
-    try {
-      const infrasListQuery = await get(infraURL, {});
-      setInfrasList(infrasListQuery);
-    } catch (e) {
-      dispatch(
-        setFailure({
-          name: t('errorMessages.unableToRetrieveInfraList'),
-          message: e.message,
-        })
-      );
-      console.log('ERROR', e);
-    }
-  };
-
-  const setInitialInfra = () => {
+  useEffect(() => {
     if (infraID !== undefined) {
       getInfra(infraID);
-    } else if (infrasList !== undefined) {
-      if (infrasList[0] !== undefined) {
-        setSelectedInfra(infrasList[0]);
-        dispatch(updateInfraID(infrasList[0].id));
-      } else {
-        dispatch(
-          setFailure({
-            name: t('errorMessages.noExistingInfra'),
-            message: '',
-          })
-        );
-      }
-    } else {
-      getInfrasList();
-    }
-  };
-
-  useEffect(() => {
-    setInitialInfra();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [infrasList, infraID]);
-
-  useEffect(() => {
-    if (!infrasList) {
-      getInfrasList();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return modalOnly ? (
-    <InfraSelectorModal infrasList={infrasList} modalID={modalID} />
+    <InfraSelectorModal modalID={modalID} />
   ) : (
     <>
       <div className="osrd-config-item mb-2">
@@ -94,7 +52,6 @@ export default function InfraSelector(props) {
           className="osrd-config-item-container osrd-config-item-clickable"
           role="button"
           tabIndex="-1"
-          onClick={getInfrasList}
           data-toggle="modal"
           data-target={`#${modalID}`}
         >
@@ -114,7 +71,7 @@ export default function InfraSelector(props) {
           </div>
         </div>
       </div>
-      <InfraSelectorModal infrasList={infrasList} modalID={modalID} />
+      <InfraSelectorModal modalID={modalID} />
     </>
   );
 }
