@@ -23,7 +23,9 @@ public class UnavailableSpaceBuilder {
     public static Multimap<SignalingRoute, OccupancyBlock> computeUnavailableSpace(
             SignalingInfra infra,
             Collection<STDCMRequest.RouteOccupancy> occupancies,
-            RollingStock rollingStock
+            RollingStock rollingStock,
+            double marginBefore,
+            double marginAfter
     ) {
 
         Multimap<SignalingRoute, OccupancyBlock> res = HashMultimap.create();
@@ -35,8 +37,8 @@ public class UnavailableSpaceBuilder {
             var startRouteNode = routeGraph.incidentNodes(currentRoute).nodeU();
             var endRouteNode = routeGraph.incidentNodes(currentRoute).nodeV();
             var length = currentRoute.getInfraRoute().getLength();
-            var timeStart = occupancy.startOccupancyTime;
-            var timeEnd = occupancy.endOccupancyTime;
+            var timeStart = occupancy.startOccupancyTime - marginBefore;
+            var timeEnd = occupancy.endOccupancyTime + marginAfter;
 
             //Generating current block occupancy
             var block = new OccupancyBlock(timeStart, timeEnd, 0, length);
