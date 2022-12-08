@@ -173,3 +173,5 @@ class STDCMInputSerializer(Serializer):
     maximum_departure_delay = serializers.FloatField(required=False, allow_null=True)
     maximum_relative_run_time = serializers.FloatField(required=False, allow_null=True)
     speed_limit_composition = serializers.CharField(max_length=255, required=False, allow_null=True)
+    margin_before = serializers.FloatField(required=False, allow_null=True)
+    margin_after = serializers.FloatField(required=False, allow_null=True)

@@ -36,7 +36,9 @@ public class STDCMEndpointTest extends ApiTest {
                 )),
                 0,
                 0,
-                "foo"
+                "foo",
+                0,
+                0
         ));
 
         var result = readBodyResponse(

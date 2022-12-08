@@ -54,7 +54,9 @@ public class STDCMHelpers {
         return UnavailableSpaceBuilder.computeUnavailableSpace(
                 infra,
                 occupancies,
-                REALISTIC_FAST_TRAIN
+                REALISTIC_FAST_TRAIN,
+                0,
+                0
         );
     }
 
