@@ -6,7 +6,7 @@
   position: relative;
   margin: 0;
   &.mini {
-    margin: -.5rem 0 -.5rem 2rem;
+    margin: -0.5rem 0 -0.5rem 2rem;
   }
 }
 
@@ -23,11 +23,11 @@
 
 .osrd-config-item-container {
   background-color: white;
-  padding: .5rem;
+  padding: 0.5rem;
   border-radius: 4px;
   &.osrd-config-item-clickable {
     cursor: pointer;
-    transition: .2s;
+    transition: 0.2s;
     &:hover {
       background-color: #d7d7d7;
     }
@@ -35,7 +35,7 @@
 }
 
 .osrd-config-centered-item {
-  text-align:center
+  text-align: center;
 }
 
 .osrd-config-item-container-map {
@@ -46,12 +46,12 @@
     right: 1.5rem;
   }
   .map-modal {
-    top: .5rem;
+    top: 0.5rem;
     min-width: calc(100% - 6rem);
   }
   .options-btn {
-    padding: .2rem .8rem .2rem;
-    font-size: .8rem;
+    padding: 0.2rem 0.8rem 0.2rem;
+    font-size: 0.8rem;
   }
   .mapboxgl-popup {
     z-index: 1;
@@ -82,7 +82,7 @@
     padding: 1rem;
     background-color: #fff;
     width: calc(100% - 4rem);
-    transition: .4s;
+    transition: 0.4s;
     margin: 1rem;
     border-radius: 4px;
     border: 1px solid #d7d7d7;
@@ -95,9 +95,7 @@
     font-weight: bold;
     color: white;
     position: absolute;
-    font-size: .7rem;
-    left: .5rem;
-    top: .25rem;
+    font-size: 0.7rem;
   }
 }
 
@@ -111,19 +109,20 @@
     z-index: 1;
   }
   .hover {
-    transition: .2s;
+    transition: 0.2s;
     border-radius: 4px;
     &:hover {
       background-color: #f2f2f2;
     }
     cursor: pointer;
   }
-  .btn, .btn:hover {
+  .btn,
+  .btn:hover {
     border: none;
     background-color: transparent;
   }
   &.osrd-config-place-via {
-    margin-bottom: .5rem;
+    margin-bottom: 0.5rem;
   }
   &:not(.osrd-config-place-via):last-child::after {
     position: absolute;
@@ -132,7 +131,7 @@
     display: block;
     width: 1rem;
     height: 2.5rem;
-    content: "";
+    content: '';
     background-color: #fff;
   }
 }
@@ -163,16 +162,16 @@
     display: block;
     width: 1rem;
     height: 2.8rem;
-    content: "";
+    content: '';
     background-color: #fff;
   }
 }
 
 .select-osrd-sm select {
   min-height: 1.875rem;
-  padding: .40625rem 1.25rem;
-  line-height: .9rem;
-  font-size: .9rem;
+  padding: 0.40625rem 1.25rem;
+  line-height: 0.9rem;
+  font-size: 0.9rem;
 }
 
 .osrd-config-infraselector {
@@ -181,9 +180,9 @@
   .osrd-config-infraselector-item {
     background-color: #f2f2f2;
     cursor: pointer;
-    padding: 0 .5rem;
+    padding: 0 0.5rem;
     border-radius: 4px;
-    transition: .2s;
+    transition: 0.2s;
     &:hover {
       background-color: #d7d7d7;
     }
@@ -206,7 +205,7 @@
     background-color: rgba(242, 242, 242, 0.75);
   }
   .suggerred-via-clickable {
-    transition: .2s;
+    transition: 0.2s;
     cursor: pointer;
     border-radius: 4px;
     &:hover {
@@ -217,12 +216,12 @@
 
 .timetable-trainlist {
   max-height: 10rem;
-  font-size: .9rem;
+  font-size: 0.9rem;
   overflow-y: auto;
   overflow-x: hidden;
   padding-left: 1rem;
   .timetable-trainlist-train {
-    transition: .2s;
+    transition: 0.2s;
     &:hover {
       background-color: #f2f2f2;
     }
