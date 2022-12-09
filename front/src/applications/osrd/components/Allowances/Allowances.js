@@ -18,7 +18,7 @@ import nextId from 'react-id-generator';
 import { useTranslation } from 'react-i18next';
 import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
 import { type } from '@testing-library/user-event/dist/type';
-import Allowances from 'applications/osrd/views/OSRDSimulation/Allowances';
+
 import { dispatch } from 'd3';
 import { t } from 'i18next';
 import { values, result } from 'lodash';
@@ -226,10 +226,9 @@ function EmptyLine(props) {
 }
 
 function Allowance(props) {
-  const { data, delAllowance, idx } = props;
+  const { data, delAllowance, idx, selectedTrain, simulation } = props;
   const { t } = useTranslation(['allowances']);
-  const { selectedTrain } = useSelector((state) => state.osrdsimulation);
-  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
+
 
   const position2name = (position) => {
     const place = simulation.trains[selectedTrain].base.stops.find(
@@ -271,18 +270,14 @@ function Allowance(props) {
 }
 
 export default function Allowances(props) {
-  const { toggleAllowancesDisplay } = props;
-  const { allowancesSettings, selectedProjection, selectedTrain } = useSelector(
-    (state) => state.osrdsimulation
-  );
-  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
+  const { toggleAllowancesDisplay, t, dispatch, simulation, allowancesSettings, selectedProjection, selectedTrain } = props;
   const [trainDetail, setTrainDetail] = useState(undefined);
   const [allowances, setAllowances] = useState([]);
   const [rawExtensions] = useState([]);
   const [updateAllowances, setUpdateAllowances] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
-  const dispatch = useDispatch();
-  const { t } = useTranslation(['allowances']);
+
+
 
   const allowanceTypes = [
     {
@@ -451,7 +446,7 @@ export default function Allowances(props) {
           {trainDetail.allowances
             .find((a) => a.ranges)
             ?.ranges?.map((allowance, idx) => (
-              <Allowance data={allowance} delAllowance={delAllowance} idx={idx} key={nextId()} />
+              <Allowance data={allowance} delAllowance={delAllowance} idx={idx} key={nextId()} selectedTrain = {selectedTrain } simulation = { simulation } />
             ))}
 
           {trainDetail.allowances.find((a) => a.ranges) && (
@@ -478,7 +473,7 @@ export default function Allowances(props) {
           {trainDetail.allowances.map((allowance, idx) => {
             if (allowance.allowance_type === 'engineering') {
               return (
-                <Allowance data={allowance} delAllowance={delAllowance} idx={idx} key={nextId()} />
+                <Allowance data={allowance} delAllowance={delAllowance} idx={idx} key={nextId()} selectedTrain = {selectedTrain } simulation = { simulation }/>
               );
             }
             return null;
@@ -518,6 +513,8 @@ Allowance.propTypes = {
   data: PropTypes.object.isRequired,
   delAllowance: PropTypes.func.isRequired,
   idx: PropTypes.number.isRequired,
+  t: PropTypes.func,
+  dispatch: PropTypes.func
 };
 
 EmptyLine.propTypes = {
@@ -537,3 +534,8 @@ EmptyLine.defaultProps = {
   allowanceType: 'construction',
   marecoBeginPosition: 0,
 };
+
+Allowance.defaultProps = {
+  t:(key) => key,
+  dispatch:() => {}
+}
