@@ -9,6 +9,7 @@ import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.api.pathfinding.response.NoPathFoundError;
 import fr.sncf.osrd.api.pathfinding.response.PathfindingResult;
 import fr.sncf.osrd.infra.api.Direction;
+import fr.sncf.osrd.infra.api.reservation.DiDetector;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
@@ -21,6 +22,7 @@ import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.GraphAdapter;
 import fr.sncf.osrd.utils.graph.Pathfinding;
+import org.jetbrains.annotations.Nullable;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;
@@ -29,6 +31,7 @@ import org.takes.rs.RsJson;
 import org.takes.rs.RsText;
 import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -78,7 +81,9 @@ public class PathfindingRoutesEndpoint implements Take {
         }
     }
 
-    /** Runs the pathfinding with the infra and rolling stocks already parsed */
+    /**
+     * Runs the pathfinding with the infra and rolling stocks already parsed
+     */
     public static Pathfinding.Result<SignalingRoute> runPathfinding(
             SignalingInfra infra,
             PathfindingWaypoint[][] reqWaypoints,
@@ -102,16 +107,34 @@ public class PathfindingRoutesEndpoint implements Take {
             remainingDistanceEstimator = new RemainingDistanceEstimator(waypoints.get(1));
         }
 
+        Pathfinding.Result<SignalingRoute> pathfinding = computePaths(infra, waypoints, loadingGaugeConstraints, electrificationConstraints, remainingDistanceEstimator);
         // Compute the paths from the entry waypoint to the exit waypoint
-        return new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
-                .setEdgeToLength(route -> route.getInfraRoute().getLength())
-                .addBlockedRangeOnEdges(loadingGaugeConstraints)
-                .addBlockedRangeOnEdges(electrificationConstraints)
-                .setRemainingDistanceEstimator(remainingDistanceEstimator)
-                .runPathfinding(waypoints);
+        return pathfinding;
     }
 
-    /** Checks that the results make sense */
+    private static Pathfinding.Result<SignalingRoute> computePaths(SignalingInfra infra, ArrayList<Collection<Pathfinding.EdgeLocation<SignalingRoute>>> waypoints, LoadingGaugeConstraints loadingGaugeConstraints, ElectrificationConstraints electrificationConstraints, RemainingDistanceEstimator remainingDistanceEstimator) {
+        var path = new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
+                .setEdgeToLength(route -> route.getInfraRoute().getLength())
+                .setRemainingDistanceEstimator(remainingDistanceEstimator);
+        var pathfinding = path.addBlockedRangeOnEdges(loadingGaugeConstraints).addBlockedRangeOnEdges(electrificationConstraints).runPathfinding(waypoints);
+        // handling errors
+        if (pathfinding == null) {
+            var pathError = path.addBlockedRangeOnEdges(loadingGaugeConstraints).runPathfinding(waypoints);
+            if (pathError != null) {
+                throw new NoPathFoundError("No path could be found due to Gauge");
+            } else {
+                pathError = path.addBlockedRangeOnEdges(electrificationConstraints).runPathfinding(waypoints);
+                if (pathError != null) {
+                    throw new NoPathFoundError("No path could be found due to Electrification");
+                }
+            }
+        }
+        return pathfinding;
+    }
+
+    /**
+     * Checks that the results make sense
+     */
     private void validate(SignalingInfra infra, PathfindingResult res, PathfindingWaypoint[][] reqWaypoints) {
         var start = res.pathWaypoints.get(0);
         var end = res.pathWaypoints.get(res.pathWaypoints.size() - 1);
@@ -143,7 +166,9 @@ public class PathfindingRoutesEndpoint implements Take {
         }
     }
 
-    /** Returns all the EdgeLocations matching the given waypoint */
+    /**
+     * Returns all the EdgeLocations matching the given waypoint
+     */
     public static Set<Pathfinding.EdgeLocation<SignalingRoute>> findRoutes(
             SignalingInfra infra,
             PathfindingWaypoint waypoint
