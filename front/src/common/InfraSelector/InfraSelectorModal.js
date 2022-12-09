@@ -22,6 +22,7 @@ export default function InfraSelectorModal(props) {
   const [filter, setFilter] = useState('');
   const [filteredInfrasList, setFilteredInfrasList] = useState([]);
   const [editionMode, setEditionMode] = useState(false);
+  const [mustRefresh, setMustRefresh] = useState(true);
 
   const debouncedFilter = useDebounce(filter, 500);
 
@@ -53,21 +54,21 @@ export default function InfraSelectorModal(props) {
   }, [debouncedFilter]);
 
   useEffect(() => {
-    getInfrasList();
+    if (mustRefresh) {
+      getInfrasList();
+      setMustRefresh(false);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [mustRefresh]);
 
   return (
     <ModalSNCF htmlID={modalID} size={editionMode ? 'lg' : 'sm'}>
       <ModalHeaderSNCF>
-        <div className="d-flex align-items-center h1">
-          <img
-            className="mr-3"
-            src={editionMode ? iconEdition : icon}
-            alt="infra schema"
-            width="32px"
-          />
-          {editionMode ? t('infraManagement:infraManagement') : t('infraManagement:infraChoice')}
+        <div className="d-flex align-items-center h1 w-100">
+          <img src={editionMode ? iconEdition : icon} alt="infra schema" width="32px" />
+          <span className="w-100 text-center">
+            {editionMode ? t('infraManagement:infraManagement') : t('infraManagement:infraChoice')}
+          </span>
         </div>
       </ModalHeaderSNCF>
       <ModalBodySNCF>
@@ -76,6 +77,7 @@ export default function InfraSelectorModal(props) {
             infrasList={filteredInfrasList}
             setFilter={setFilter}
             filter={filter}
+            setMustRefresh={setMustRefresh}
           />
         ) : (
           <InfraSelectorModalBodyStandard
@@ -95,7 +97,7 @@ export default function InfraSelectorModal(props) {
             {t('translation:common.cancel')}
           </button>
           <button
-            className="btn btn-warning btn-sm flex-grow-1 ml-1"
+            className="btn btn-primary btn-sm flex-grow-1 ml-1"
             type="button"
             onClick={() => setEditionMode(!editionMode)}
           >

@@ -11,5 +11,13 @@
   "infrasFound": "insfrastructure(s) trouvée(s)",
   "goToStandardMode": "Sélection",
   "goToEditionMode": "Édition",
-  "chooseInfrastructure": "Choisissez une infrastructure"
+  "chooseInfrastructure": "Choisissez une infrastructure",
+  "locked": "Verrouillée",
+  "actions": {
+    "lock": "Verrouiller",
+    "unlock": "Déverrouiller",
+    "rename": "Renommer",
+    "delete": "Supprimer",
+    "copy": "Dupliquer"
+  }
 }

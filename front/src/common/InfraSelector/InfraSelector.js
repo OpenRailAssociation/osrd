@@ -8,7 +8,7 @@ import icon from 'assets/pictures/tracks.png';
 import InfraSelectorModal from 'common/InfraSelector/InfraSelectorModal';
 import nextId from 'react-id-generator';
 import { getInfraID } from 'reducers/osrdconf/selectors';
-import { FaLock, FaLockOpen } from 'react-icons/fa';
+import { FaLock } from 'react-icons/fa';
 import './InfraSelector.scss';
 
 const infraURL = '/editoast/infra/';
@@ -61,9 +61,11 @@ export default function InfraSelector(props) {
               <>
                 <span className="">{selectedInfra.name.replace(' (lock)', '')}</span>
                 <span className="ml-1 small align-self-center">({selectedInfra.id})</span>
-                <span className="infra-lock ml-auto mr-1">
-                  {selectedInfra.locked ? <FaLock /> : <FaLockOpen />}
-                </span>
+                {selectedInfra.locked ? (
+                  <span className="infra-lock ml-auto">
+                    <FaLock />
+                  </span>
+                ) : null}
               </>
             ) : (
               t('infraManagement:chooseInfrastructure')

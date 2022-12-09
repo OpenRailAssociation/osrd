@@ -8,6 +8,11 @@ import { getInfraID } from 'reducers/osrdconf/selectors';
 import { updateInfraID, updateTimetableID, deleteItinerary } from 'reducers/osrdconf';
 import { useTranslation } from 'react-i18next';
 
+// Test coherence between actual & generated version, eg. if editoast is up to date with data
+export function editoastUpToDateIndicator(v, genv) {
+  return <span className={`ml-1 text-${v === genv ? 'success' : 'danger'}`}>●</span>;
+}
+
 export default function InfraSelectorModalBodyStandard(props) {
   const { infrasList, filter, setFilter } = props;
   const { t } = useTranslation(['translation', 'infraManagement']);
@@ -48,14 +53,23 @@ export default function InfraSelectorModalBodyStandard(props) {
             key={nextId()}
           >
             <div className="infraslist-item-choice-main">
-              <span className="flex-grow-1">{infra.name.replace(' (lock)', '')}</span>
-              <span className="infra-lock">{infra.locked ? <FaLock /> : <FaLockOpen />}</span>
+              <span className="infraslist-item-choice-name">
+                {infra.name.replace(' (lock)', '')}
+              </span>
+              {infra.locked ? (
+                <span className="infra-lock">
+                  <small>{t('infraManagement:locked')}</small>
+                  <FaLock />
+                </span>
+              ) : null}
             </div>
             <div className="infraslist-item-choice-footer">
               <span className="">ID {infra.id}</span>
               <span className="">RAILJSON V{infra.railjson_version}</span>
-              <span className="">GEN.V{infra.generated_version}</span>
-              <span className="">V{infra.version}</span>
+              <span className="">
+                V{infra.version}
+                {editoastUpToDateIndicator(infra.version, infra.generated_version)}
+              </span>
             </div>
           </button>
         ))}
