@@ -12,6 +12,7 @@ import {
 } from 'mapbox-gl';
 
 export type {
+  MapboxGeoJSONFeature,
   MapLayerMouseEvent,
   AnyPaint,
   CirclePaint,

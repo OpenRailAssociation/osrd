@@ -5,13 +5,13 @@ import { useTranslation } from 'react-i18next';
 import { featureCollection } from '@turf/helpers';
 import along from '@turf/along';
 import { Feature, LineString } from 'geojson';
-import { merge } from 'lodash';
+import { merge, isEqual } from 'lodash';
 
 import GeoJSONs, { EditorSource, SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
 import colors from 'common/Map/Consts/colors';
 import EditorZone from 'common/Map/Layers/EditorZone';
 import { save } from 'reducers/editor';
-import { CreateEntityOperation, EditorEntity } from 'types';
+import { NULL_GEOMETRY, CreateEntityOperation, EditorEntity } from 'types';
 import { SIGNALS_TO_SYMBOLS } from 'common/Map/Consts/SignalsNames';
 import { PointEditionState } from './types';
 import EditorForm from '../../components/EditorForm';
@@ -112,11 +112,12 @@ export const BasePointEditionLayers: FC<{
   const { mapStyle } = useSelector((s: { map: { mapStyle: string } }) => s.map) as {
     mapStyle: string;
   };
+
   const [showPopup, setShowPopup] = useState(true);
 
   const renderedEntity = useMemo(() => {
     let res: EditorEntity | null = null;
-    if (entity.geometry) {
+    if (entity.geometry && !isEqual(entity.geometry, NULL_GEOMETRY)) {
       res = entity as EditorEntity;
     } else if (nearestPoint) {
       if (mergeEntityWithNearestPoint) {
@@ -216,7 +217,7 @@ export const PointEditionMessages: FC = () => {
     PointEditionState<EditorEntity>
   >;
 
-  if (!state.entity.geometry) {
+  if (!state.entity.geometry || isEqual(state.entity.geometry, NULL_GEOMETRY)) {
     return state.nearestPoint
       ? t(`Editor.tools.point-edition.help.stop-dragging-on-line`)
       : t(`Editor.tools.point-edition.help.stop-dragging-no-line`);

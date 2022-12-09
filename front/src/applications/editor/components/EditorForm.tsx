@@ -3,11 +3,12 @@ import Form, { Field, UiSchema } from '@rjsf/core';
 import { useSelector } from 'react-redux';
 import { GeoJsonProperties } from 'geojson';
 import { JSONSchema7 } from 'json-schema';
+import { isNil, omitBy } from 'lodash';
 
 import './EditorForm.scss';
 import { EditorEntity } from '../../../types';
 import { FormComponent, FormLineStringLength } from './LinearMetadata';
-import { getJsonSchemaForLayer, getLayerForObjectType } from '../data/utils';
+import { getJsonSchemaForLayer, getLayerForObjectType, NEW_ENTITY_ID } from '../data/utils';
 import { EditorState } from '../tools/types';
 
 const fields = {
@@ -57,7 +58,7 @@ const EditorForm: React.FC<PropsWithChildren<EditorFormProps>> = ({
    * => recompute formData by fixing LM
    */
   useEffect(() => {
-    setFormData(data.properties);
+    setFormData(omitBy(data.properties, isNil));
   }, [data, schema]);
 
   /**
@@ -91,13 +92,16 @@ const EditorForm: React.FC<PropsWithChildren<EditorFormProps>> = ({
           ...(overrideUiSchema || {}),
         }}
         formData={formData}
-        formContext={{ geometry: data.geometry, length: data.properties?.length }}
+        formContext={{
+          geometry: data.geometry,
+          length: data.properties?.length,
+          isCreation: isNil(formData?.id) || formData?.id === NEW_ENTITY_ID,
+        }}
         onError={() => setSubmited(true)}
-        onSubmit={async (event) => {
+        onSubmit={async () => {
           try {
             setError(null);
-            setFormData(event.formData);
-            await onSubmit({ ...data, properties: { ...data.properties, ...event.formData } });
+            await onSubmit({ ...data, properties: { ...data.properties, ...formData } });
           } catch (e) {
             if (e instanceof Error) setError(e.message);
             else setError(JSON.stringify(e));
