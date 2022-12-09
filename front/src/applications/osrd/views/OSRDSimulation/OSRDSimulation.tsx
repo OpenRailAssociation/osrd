@@ -15,7 +15,8 @@ import {
 } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
-import Allowances from 'applications/osrd/views/OSRDSimulation/Allowances';
+import Allowances from 'applications/osrd/components/Allowances/withOSRDData';
+
 import ButtonFullscreen from 'common/ButtonFullscreen';
 import CenterLoader from 'common/CenterLoader/CenterLoader';
 import ContextMenu from 'applications/osrd/components/Simulation/ContextMenu';
