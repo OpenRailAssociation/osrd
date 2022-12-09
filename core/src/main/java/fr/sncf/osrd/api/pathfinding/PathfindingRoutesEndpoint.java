@@ -113,10 +113,10 @@ public class PathfindingRoutesEndpoint implements Take {
     }
 
     private static Pathfinding.Result<SignalingRoute> computePaths(SignalingInfra infra,
-           ArrayList<Collection<Pathfinding.EdgeLocation<SignalingRoute>>> waypoints,
-           LoadingGaugeConstraints loadingGaugeConstraints,
-           ElectrificationConstraints electrificationConstraints,
-           RemainingDistanceEstimator remainingDistanceEstimator) {
+             ArrayList<Collection<Pathfinding.EdgeLocation<SignalingRoute>>> waypoints,
+             LoadingGaugeConstraints loadingGaugeConstraints,
+             ElectrificationConstraints electrificationConstraints,
+             RemainingDistanceEstimator remainingDistanceEstimator) {
 
         var path = new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
                 .setEdgeToLength(route -> route.getInfraRoute().getLength())
