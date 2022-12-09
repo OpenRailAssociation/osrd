@@ -217,7 +217,7 @@ export const PointEditionMessages: FC = () => {
     PointEditionState<EditorEntity>
   >;
 
-  if (!state.entity.geometry) {
+  if (!state.entity.geometry || isEqual(state.entity.geometry, NULL_GEOMETRY)) {
     return state.nearestPoint
       ? t(`Editor.tools.point-edition.help.stop-dragging-on-line`)
       : t(`Editor.tools.point-edition.help.stop-dragging-no-line`);
