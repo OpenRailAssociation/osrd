@@ -189,7 +189,8 @@ The entity ${entity.properties.id} position computed by Turf.js does not match t
       return ['editor/geo/track-main', POINT_LAYER_ID];
     },
     getCursor({ state }, { isDragging }) {
-      if (isDragging || !state.entity.geometry) return 'move';
+      if (isDragging || !state.entity.geometry || isEqual(state.entity.geometry, NULL_GEOMETRY))
+        return 'move';
       if (state.isHoveringTarget) return 'pointer';
       return 'default';
     },

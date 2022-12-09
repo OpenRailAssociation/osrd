@@ -4,7 +4,6 @@ import maplibregl from 'maplibre-gl';
 import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl';
 import { withTranslation } from 'react-i18next';
 import { TFunction } from 'i18next';
-
 import VirtualLayers from 'applications/osrd/views/OSRDSimulation/VirtualLayers';
 import colors from 'common/Map/Consts/colors';
 import 'common/Map/Map.scss';
@@ -17,6 +16,7 @@ import Platforms from '../../common/Map/Layers/Platforms';
 import osmBlankStyle from '../../common/Map/Layers/osmBlankStyle';
 import OrthoPhoto from '../../common/Map/Layers/OrthoPhoto';
 import { Viewport } from '../../reducers/map';
+import { getMapMouseEventNearestFeature } from '../../utils/mapboxHelper';
 import EditorContext from './context';
 import {
   CommonToolState,
@@ -99,26 +99,39 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
           onMove={(e) => setViewport(e.viewState)}
           onMoveStart={() => setMapState((prev) => ({ ...prev, isDragging: true }))}
           onMoveEnd={() => setMapState((prev) => ({ ...prev, isDragging: false }))}
-          onMouseEnter={(e) => {
-            setMapState((prev) => ({ ...prev, isHovering: true }));
-            const feature = (e.features || [])[0];
-            if (activeTool.onHover) {
-              activeTool.onHover(e, extendedContext);
-            } else if (feature && feature.properties) {
-              const entity = feature?.properties?.id
-                ? editorState.entitiesIndex[feature.properties.id]
-                : undefined;
-              setToolState({
-                ...toolState,
-                hovered: entity || null,
-              });
+          onMouseMove={(e) => {
+            const nearestResult = getMapMouseEventNearestFeature(e);
+            const partialToolState: Partial<CommonToolState> = {
+              hovered: null,
+              mousePosition: [e.lngLat.lng, e.lngLat.lat],
+            };
+            const partialMapState: Partial<MapState> = { isHovering: false };
+
+            // if we hover something
+            if (nearestResult) {
+              const { feature } = nearestResult;
+              const eventWithFeature = {
+                ...e,
+                preventDefault: e.preventDefault,
+                features: [feature],
+              };
+              partialMapState.isHovering = true;
+              if (activeTool.onHover) {
+                activeTool.onHover(eventWithFeature, extendedContext);
+              } else if (feature && feature.properties) {
+                const entity = feature?.properties?.id
+                  ? editorState.entitiesIndex[feature.properties.id]
+                  : undefined;
+                partialToolState.hovered = entity || null;
+              }
             } else {
-              setToolState({ ...toolState, hovered: null });
+              if (activeTool.onMove) {
+                activeTool.onMove(e, extendedContext);
+              }
             }
-          }}
-          onMouseLeave={() => {
-            setMapState((prev) => ({ ...prev, isHovering: false }));
-            setToolState({ ...toolState, mousePosition: null, hovered: null });
+
+            setToolState({ ...toolState, ...partialToolState });
+            setMapState((prev) => ({ ...prev, ...partialMapState }));
           }}
           onLoad={(e) => {
             // need to call resize, otherwise sometime the canvas doesn't take 100%
@@ -140,17 +153,19 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
           }
           cursor={cursor}
           onClick={(e) => {
+            const nearestResult = getMapMouseEventNearestFeature(e);
+            const eventWithFeature = nearestResult
+              ? {
+                  ...e,
+                  preventDefault: e.preventDefault,
+                  features: [nearestResult.feature],
+                }
+              : e;
             if (toolState.hovered && activeTool.onClickFeature) {
-              activeTool.onClickFeature(toolState.hovered, e, extendedContext);
+              activeTool.onClickFeature(toolState.hovered, eventWithFeature, extendedContext);
             }
             if (activeTool.onClickMap) {
-              activeTool.onClickMap(e, extendedContext);
-            }
-          }}
-          onMouseMove={(e) => {
-            setToolState({ ...toolState, mousePosition: [e.lngLat.lng, e.lngLat.lat] });
-            if (activeTool.onMove) {
-              activeTool.onMove(e, extendedContext);
+              activeTool.onClickMap(eventWithFeature, extendedContext);
             }
           }}
         >

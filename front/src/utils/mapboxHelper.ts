@@ -22,7 +22,7 @@ import nearestPointOnLine from '@turf/nearest-point-on-line';
 import nearestPoint, { NearestPoint } from '@turf/nearest-point';
 import fnDistance from '@turf/distance';
 import fnExplode from '@turf/explode';
-import { Zone, MapLayerMouseEvent } from '../types';
+import { Zone, MapLayerMouseEvent, MapboxGeoJSONFeature } from '../types';
 import { getAngle } from '../applications/editor/data/utils';
 
 /**
@@ -290,30 +290,35 @@ export function getNearestPoint(lines: Feature<LineString>[], coord: Coord): Nea
  */
 export function getMapMouseEventNearestFeature(
   e: MapLayerMouseEvent,
-  opts?: { layersId?: string[]; tolerance: number }
-): { feature: Feature; nearest: number[]; distance: number } | null {
+  opts?: { layersId?: string[]; tolerance: number; excludeOsm: boolean }
+): { feature: MapboxGeoJSONFeature; nearest: number[]; distance: number } | null {
   const layers = opts?.layersId;
-  const tolerance = opts?.tolerance || 30;
+  const tolerance = opts?.tolerance || 15;
+  const excludeOsm = opts?.excludeOsm || true;
   const { target: map, point } = e;
   const coord = e.lngLat.toArray();
 
-  const features = map.queryRenderedFeatures(
-    [
-      [point.x - tolerance / 2, point.y - tolerance / 2],
-      [point.x + tolerance / 2, point.y + tolerance / 2],
-    ],
-    { layers }
-  );
+  const features = map
+    .queryRenderedFeatures(
+      [
+        [point.x - tolerance / 2, point.y - tolerance / 2],
+        [point.x + tolerance / 2, point.y + tolerance / 2],
+      ],
+      { layers }
+    )
+    .filter((f) => (excludeOsm ? !f.layer.id.startsWith('osm') : true));
 
   const result = head(
     sortBy(
-      features.map((feature: Feature) => {
+      features.map((feature) => {
         let distance = Infinity;
         let nearestFeaturePoint: Feature<Point> | null = null;
         switch (feature.geometry.type) {
           case 'Point': {
             nearestFeaturePoint = feature as Feature<Point>;
-            distance = fnDistance(coord, nearestFeaturePoint.geometry.coordinates);
+            // we boost point, otherwise when a point is on line,
+            // it's too easy to find a point of line closest
+            distance = 0.7 * fnDistance(coord, nearestFeaturePoint.geometry.coordinates);
             break;
           }
           case 'LineString': {
