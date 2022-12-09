@@ -31,7 +31,6 @@ import org.takes.rs.RsJson;
 import org.takes.rs.RsText;
 import org.takes.rs.RsWithBody;
 import org.takes.rs.RsWithStatus;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -114,15 +113,16 @@ public class PathfindingRoutesEndpoint implements Take {
     }
 
     private static Pathfinding.Result<SignalingRoute> computePaths(SignalingInfra infra,
-                                                                   ArrayList<Collection<Pathfinding.
-                                                                           EdgeLocation<SignalingRoute>>> waypoints,
-                                                                   LoadingGaugeConstraints loadingGaugeConstraints,
-                                                               ElectrificationConstraints electrificationConstraints,
-                                                               RemainingDistanceEstimator remainingDistanceEstimator) {
+           ArrayList<Collection<Pathfinding.EdgeLocation<SignalingRoute>>> waypoints,
+           LoadingGaugeConstraints loadingGaugeConstraints,
+           ElectrificationConstraints electrificationConstraints,
+           RemainingDistanceEstimator remainingDistanceEstimator) {
+
         var path = new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
                 .setEdgeToLength(route -> route.getInfraRoute().getLength())
                 .setRemainingDistanceEstimator(remainingDistanceEstimator);
-        var pathfinding = path.addBlockedRangeOnEdges(loadingGaugeConstraints).addBlockedRangeOnEdges(electrificationConstraints)
+        var pathfinding = path.addBlockedRangeOnEdges(loadingGaugeConstraints)
+                .addBlockedRangeOnEdges(electrificationConstraints)
                 .runPathfinding(waypoints);
         // handling errors
         if (pathfinding == null) {
