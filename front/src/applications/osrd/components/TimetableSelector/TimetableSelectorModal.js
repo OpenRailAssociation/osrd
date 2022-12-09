@@ -9,7 +9,7 @@ import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { setSuccess, setFailure } from 'reducers/main';
-import icon from 'assets/pictures/timetable.svg';
+import icon from 'assets/pictures/trains_timetable.png';
 
 const timetableURL = '/timetable/';
 

@@ -4,11 +4,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { setFailure } from 'reducers/main';
 import { get } from 'common/requests';
-import icon from 'assets/pictures/tracks.svg';
+import icon from 'assets/pictures/tracks.png';
 import InfraSelectorModal from 'common/InfraSelector/InfraSelectorModal';
-import DotsLoader from 'common/DotsLoader/DotsLoader';
 import nextId from 'react-id-generator';
 import { getInfraID } from 'reducers/osrdconf/selectors';
+import { FaLock, FaLockOpen } from 'react-icons/fa';
 import './InfraSelector.scss';
 
 const infraURL = '/editoast/infra/';
@@ -41,11 +41,11 @@ export default function InfraSelector(props) {
       getInfra(infraID);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [infraID]);
 
-  return modalOnly ? (
-    <InfraSelectorModal modalID={modalID} />
-  ) : (
+  if (modalOnly) return <InfraSelectorModal modalID={modalID} />;
+
+  return (
     <>
       <div className="osrd-config-item mb-2">
         <div
@@ -55,18 +55,18 @@ export default function InfraSelector(props) {
           data-toggle="modal"
           data-target={`#${modalID}`}
         >
-          <div className="h2 mb-0">
+          <div className="infraselector-button">
             <img width="32px" className="mr-2" src={icon} alt="infraIcon" />
-            <span className="text-muted">{t('infrastructure')}</span>
             {selectedInfra !== undefined ? (
               <>
-                <span className="ml-1">{selectedInfra.name}</span>
-                <small className="ml-1 text-primary">{selectedInfra.id}</small>
+                <span className="">{selectedInfra.name.replace(' (lock)', '')}</span>
+                <span className="ml-1 small align-self-center">({selectedInfra.id})</span>
+                <span className="infra-lock ml-auto mr-1">
+                  {selectedInfra.locked ? <FaLock /> : <FaLockOpen />}
+                </span>
               </>
             ) : (
-              <span className="ml-3">
-                <DotsLoader />
-              </span>
+              t('infraManagement:chooseInfrastructure')
             )}
           </div>
         </div>

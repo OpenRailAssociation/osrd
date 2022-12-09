@@ -6,6 +6,10 @@
   },
   "noInfra": "Veuillez choisir une insfrastructure",
   "infraManagement": "Gestion des infrastructures",
+  "infraChoice": "Infrastructures",
   "infrastructure": "Infrastructure",
-  "infrasFound": "insfrastructure(s) trouvée(s)"
+  "infrasFound": "insfrastructure(s) trouvée(s)",
+  "goToStandardMode": "Sélection",
+  "goToEditionMode": "Édition",
+  "chooseInfrastructure": "Choisissez une infrastructure"
 }
