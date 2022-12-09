@@ -216,6 +216,19 @@
     border: none;
   }
 }
+.osrd-config-timetableselector {
+  .osrd-config-timetableselector-item {
+    border-radius: 4px;
+    padding: .25rem;
+    background-color: var(--coolgray1);
+    cursor: pointer;
+    transition: .2s;
+    margin-bottom: .25rem;
+    &:hover {
+      background-color: var(--coolgray3);
+    }
+  }
+}
 
 .osrd-config-stdcm-apply {
   text-align: right;

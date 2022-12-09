@@ -37,6 +37,7 @@ export default function TimetableSelectorModal() {
 
   useEffect(() => {
     getTimetablesList();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [infraID]);
 
   const deleteTimetable = async (timetable) => {
@@ -92,7 +93,7 @@ export default function TimetableSelectorModal() {
             }}
             sm
           />
-          <div className="mb-3 osrd-config-infraselector">
+          <div className="mb-3 osrd-config-timetableselector">
             {timetablesList !== undefined
               ? timetablesList.results.map((timetable) => (
                   <div className="d-flex align-items-center" key={nextId()}>
@@ -101,7 +102,7 @@ export default function TimetableSelectorModal() {
                       tabIndex="-1"
                       onClick={() => dispatch(updateTimetableID(timetable.id))}
                       data-dismiss="modal"
-                      className="flex-grow-1 osrd-config-infraselector-item"
+                      className="flex-grow-1 osrd-config-timetableselector-item"
                     >
                       <div className="d-flex align-items-center">
                         <div className="text-primary small mr-2">{timetable.id}</div>
@@ -120,7 +121,7 @@ export default function TimetableSelectorModal() {
               : null}
           </div>
           <div className="d-flex">
-            <button className="btn btn-secondary flex-fill mr-2" type="button" data-dismiss="modal">
+            <button className="btn btn-secondary flex-fill btn-sm" type="button" data-dismiss="modal">
               {t('translation:common.close')}
             </button>
           </div>
