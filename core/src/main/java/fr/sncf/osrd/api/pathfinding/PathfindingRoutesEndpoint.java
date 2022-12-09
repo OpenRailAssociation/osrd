@@ -107,16 +107,23 @@ public class PathfindingRoutesEndpoint implements Take {
             remainingDistanceEstimator = new RemainingDistanceEstimator(waypoints.get(1));
         }
 
-        Pathfinding.Result<SignalingRoute> pathfinding = computePaths(infra, waypoints, loadingGaugeConstraints, electrificationConstraints, remainingDistanceEstimator);
+        Pathfinding.Result<SignalingRoute> pathfinding = computePaths(infra, waypoints, loadingGaugeConstraints,
+                electrificationConstraints, remainingDistanceEstimator);
         // Compute the paths from the entry waypoint to the exit waypoint
         return pathfinding;
     }
 
-    private static Pathfinding.Result<SignalingRoute> computePaths(SignalingInfra infra, ArrayList<Collection<Pathfinding.EdgeLocation<SignalingRoute>>> waypoints, LoadingGaugeConstraints loadingGaugeConstraints, ElectrificationConstraints electrificationConstraints, RemainingDistanceEstimator remainingDistanceEstimator) {
+    private static Pathfinding.Result<SignalingRoute> computePaths(SignalingInfra infra,
+                                                                   ArrayList<Collection<Pathfinding.
+                                                                           EdgeLocation<SignalingRoute>>> waypoints,
+                                                                   LoadingGaugeConstraints loadingGaugeConstraints,
+                                                               ElectrificationConstraints electrificationConstraints,
+                                                               RemainingDistanceEstimator remainingDistanceEstimator) {
         var path = new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
                 .setEdgeToLength(route -> route.getInfraRoute().getLength())
                 .setRemainingDistanceEstimator(remainingDistanceEstimator);
-        var pathfinding = path.addBlockedRangeOnEdges(loadingGaugeConstraints).addBlockedRangeOnEdges(electrificationConstraints).runPathfinding(waypoints);
+        var pathfinding = path.addBlockedRangeOnEdges(loadingGaugeConstraints).addBlockedRangeOnEdges(electrificationConstraints)
+                .runPathfinding(waypoints);
         // handling errors
         if (pathfinding == null) {
             var pathError = path.addBlockedRangeOnEdges(loadingGaugeConstraints).runPathfinding(waypoints);
@@ -128,6 +135,7 @@ public class PathfindingRoutesEndpoint implements Take {
                     throw new NoPathFoundError("No path could be found due to Electrification");
                 }
             }
+            pathfinding = null;
         }
         return pathfinding;
     }
