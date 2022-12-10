@@ -155,6 +155,28 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Path"
+  /pathfinding/op/:
+    post:
+      tags:
+        - pathfinding
+      summary: |
+        Create a Path given a list of operational points trigram. 
+        Note: This endpoint is used for a proof of concept and shouldn't be used in production.
+      requestBody:
+        description: Steps of the path
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PathOPQuery"
+      responses:
+        201:
+          description: The path
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Path"
   /pathfinding/{id}/:
     get:
       tags:
@@ -962,6 +984,28 @@ components:
             items: { type: number, format: float }
             minItems: 2
             maxItems: 2
+    PathOPQuery:
+      properties:
+        infra:
+          type: integer
+        rolling_stocks:
+          type: array
+          items:
+            type: integer
+        steps:
+          type: array
+          minItems: 2
+          items:
+            type: object
+            properties:
+              duration:
+                type: number
+                format: float
+              op_trigram:
+                type: string
+                minLength: 1
+                maxLength: 3
+                example: "PLY"
     STDCMRequest:
       properties:
         infra:

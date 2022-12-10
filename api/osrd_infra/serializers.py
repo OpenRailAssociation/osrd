@@ -70,10 +70,20 @@ class PathInputSerializer(Serializer):
         waypoints = serializers.ListField(child=WaypointInputSerializer(), allow_empty=False)
 
     infra = serializers.PrimaryKeyRelatedField(queryset=Infra.objects.all())
-    steps = serializers.ListField(
-        min_length=2,
-        child=StepInputSerializer(),
+    steps = serializers.ListField(min_length=2, child=StepInputSerializer())
+    rolling_stocks = serializers.ListField(
+        child=serializers.PrimaryKeyRelatedField(queryset=RollingStock.objects.all()),
+        required=False,
     )
+
+
+class PathOPInputSerializer(Serializer):
+    class StepInputSerializer(Serializer):
+        duration = serializers.FloatField()
+        op_trigram = serializers.CharField(min_length=1, max_length=3)
+
+    infra = serializers.PrimaryKeyRelatedField(queryset=Infra.objects.all())
+    steps = serializers.ListField(min_length=2, child=StepInputSerializer())
     rolling_stocks = serializers.ListField(
         child=serializers.PrimaryKeyRelatedField(queryset=RollingStock.objects.all()),
         required=False,

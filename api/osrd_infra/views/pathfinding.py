@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib.gis.geos import LineString, Point
 from intervaltree import IntervalTree
 from rest_framework import mixins
+from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
@@ -15,7 +16,11 @@ from rest_framework.viewsets import GenericViewSet
 from osrd_infra.models import OperationalPointModel, PathModel, TrackSectionModel
 from osrd_infra.schemas.infra import Direction, TrackSection
 from osrd_infra.schemas.path import PathPayload
-from osrd_infra.serializers import PathInputSerializer, PathSerializer
+from osrd_infra.serializers import (
+    PathInputSerializer,
+    PathOPInputSerializer,
+    PathSerializer,
+)
 from osrd_infra.utils import make_exception_from_error
 
 
@@ -103,6 +108,31 @@ def parse_steps_input(steps, infra):
         for waypoint in step["waypoints"]:
             step_result += parse_waypoint(waypoint, track_map)
         waypoints.append(step_result)
+
+    return waypoints, step_durations
+
+
+def parse_steps_op_input(steps, infra):
+    # Fetch operational points
+    ops = {}
+    for op in OperationalPointModel.objects.filter(infra=infra):
+        if "extensions" in op.data and "sncf" in op.data["extensions"]:
+            ops[op.data["extensions"]["sncf"]["trigram"]] = op
+
+    waypoints = []
+    step_durations = []
+    for step in steps:
+        step_durations.append(step["duration"])
+        step_result = []
+        waypoints.append(step_result)
+        if step["op_trigram"] not in ops:
+            continue
+        for part in ops[step["op_trigram"]].data["parts"]:
+            waypoint = {"track_section": part["track"], "offset": part["position"]}
+            step_result += [
+                {**waypoint, "direction": Direction.START_TO_STOP.value},
+                {**waypoint, "direction": Direction.STOP_TO_START.value},
+            ]
 
     return waypoints, step_durations
 
@@ -213,6 +243,22 @@ def compute_path(path, request_data, owner):
     postprocess_path(path, payload, infra, owner, step_durations)
 
 
+def compute_path_op(path, request_data, owner):
+    infra = request_data["infra"]
+    rolling_stocks = request_data.get("rolling_stocks", [])
+
+    waypoints, step_durations = parse_steps_op_input(request_data["steps"], infra)
+    payload = request_pathfinding(
+        {
+            "infra": infra.pk,
+            "expected_version": infra.version,
+            "waypoints": waypoints,
+            "rolling_stocks": [rs.to_schema().dict() for rs in rolling_stocks],
+        }
+    )
+    postprocess_path(path, payload, infra, owner, step_durations)
+
+
 class PathfindingView(
     mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
@@ -252,4 +298,18 @@ class PathfindingView(
 
         path = PathModel()
         compute_path(path, request_data, self.request.user.sub)
+        return Response(self.format_response(path), status=201)
+
+    @action(detail=False, methods=["post"])
+    def op(self, request):
+        """
+        This endpoint is a used for a proof of concept and shouldn't be used in production.
+        Create a pathfinding given a list of operational points trigram
+        """
+        input_serializer = PathOPInputSerializer(data=request.data)
+        input_serializer.is_valid(raise_exception=True)
+        request_data = input_serializer.validated_data
+
+        path = PathModel()
+        compute_path_op(path, request_data, self.request.user.sub)
         return Response(self.format_response(path), status=201)
