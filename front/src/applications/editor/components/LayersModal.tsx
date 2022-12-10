@@ -9,7 +9,7 @@ import trackSectionsIcon from 'assets/pictures/layersicons/layer_adv.svg';
 import signalsIcon from 'assets/pictures/layersicons/layer_signal.svg';
 
 import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
-import MapSettingsShowOrthoPhoto from 'common/Map/Settings/MapSettingsShowOrthoPhoto';
+import MapSettingsBackgroundSwitches from 'common/Map/Settings/MapSettingsBackgroundSwitches';
 import EditorContext from '../context';
 import Modal from './Modal';
 import { LayerType, ModalProps, OBJTYPE_TO_LAYER_DICT } from '../tools/types';
@@ -98,10 +98,9 @@ const LayersModal: FC<
               </div>
             </div>
           ))}
-          <div className="col-lg-6 mt-2">
-            <MapSettingsShowOrthoPhoto />
-          </div>
         </div>
+        <hr />
+        <MapSettingsBackgroundSwitches />
       </div>
 
       <div className="text-right">
