@@ -9,17 +9,22 @@
     "waiting": "Veuillez patienter"
   },
   "chooseInfrastructure": "Choisissez une infrastructure",
+  "deleteConfirm": "Voulez-vous supprimer l'infrastructure ?",
   "errorMessages": {
     "noExistingInfra": "Aucune intrastructure disponible",
     "unableToRetrieveInfra": "Récupération infra impossible",
-    "unableToRetrieveInfraList": "Récupération liste d'infra impossible"
+    "unableToRetrieveInfraList": "Récupération liste d'infra impossible",
+    "noEmptyName": "Veuillez renseigner un nom"
   },
   "goToEditionMode": "Édition",
   "goToStandardMode": "Sélection",
   "infraChoice": "Infrastructures",
   "infraManagement": "Gestion des infrastructures",
+  "infraName": "Nom de l'infrastructure",
   "infrasFound": "insfrastructure(s) trouvée(s)",
   "infrastructure": "Infrastructure",
   "locked": "Verrouillée",
-  "noInfra": "Veuillez choisir une insfrastructure"
+  "no": "Non",
+  "noInfra": "Veuillez choisir une insfrastructure",
+  "yes": "Oui"
 }

@@ -5,9 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { post, get } from 'common/requests';
 import { MdCancel, MdCheck } from 'react-icons/md';
 import fileDownload from 'js-file-download';
-
-const infraURL = '/editoast/infra';
-const infraURLOLD = '/infra';
+import { INFRA_URL, INFRA_URL_OLD } from './Consts';
 
 export default function ActionsBar(props) {
   const { infra, isFocused, setIsFocused, setMustRefresh, inputValue } = props;
@@ -18,7 +16,7 @@ export default function ActionsBar(props) {
     if (!isWaiting) {
       setIsWaiting(true);
       try {
-        await post(`${infraURL}/${infra.id}/${action}/`, {});
+        await post(`${INFRA_URL}/${infra.id}/${action}/`, {});
         setMustRefresh(true);
         setIsWaiting(false);
       } catch (e) {
@@ -32,7 +30,7 @@ export default function ActionsBar(props) {
     if (!isWaiting) {
       setIsWaiting(true);
       try {
-        const railjson = await get(`${infraURLOLD}/${infra.id}/railjson/`);
+        const railjson = await get(`${INFRA_URL_OLD}/${infra.id}/railjson/`);
         fileDownload(JSON.stringify(railjson), `${infra.name}.id${infra.id}.railjson.json`);
         setIsWaiting(false);
       } catch (e) {
@@ -48,6 +46,7 @@ export default function ActionsBar(props) {
       try {
         // await duplicate infra
         console.log('duplicate', infra.id);
+        setMustRefresh(true);
         setIsWaiting(false);
       } catch (e) {
         console.log(e);
@@ -62,6 +61,7 @@ export default function ActionsBar(props) {
       try {
         // await rename infra with inputValue
         console.log('rename', infra.id, inputValue);
+        setMustRefresh(true);
         setIsFocused(undefined);
         setIsWaiting(false);
       } catch (e) {
@@ -96,7 +96,7 @@ export default function ActionsBar(props) {
   if (isWaiting) {
     return (
       <button
-        className="infraslist-item-action disabled"
+        className="infraslist-item-action waiting disabled"
         type="button"
         title={t('infraManagement:actions.waiting')}
       >

@@ -1,35 +1,45 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import nextId from 'react-id-generator';
 import { FaLock, FaTrash } from 'react-icons/fa';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useTranslation } from 'react-i18next';
-import { post } from 'common/requests';
 import { editoastUpToDateIndicator } from './InfraSelectorModalBodyStandard';
 import ActionsBar from './InfraSelectorEditionActionsBar';
+import InfraSelectorEditionActionsBarDelete from './InfraSelectorEditionActionsBarDelete';
 
 export default function InfraSelectorEditionItem(props) {
-  const { infra, isFocused, setIsFocused, setMustRefresh } = props;
+  const { infra, isFocused, setIsFocused, runningDelete, setRunningDelete, setMustRefresh } = props;
   const [value, setValue] = useState(infra.name);
   const { t } = useTranslation('infraManagement');
 
-  const handleChangeName = (e) => {
-    setValue(e.target.value);
+  const handleRunningDelete = () => {
+    setRunningDelete(infra.id);
   };
 
   return (
-    <div
-      className={`infraslist-item-edition ${
-        isFocused !== undefined && isFocused !== infra.id ? 'disabled' : ''
-      }`}
-    >
-      <button
-        className="infraslist-item-action delete"
-        type="button"
-        title={t('infraManagement:actions.delete')}
-      >
-        <FaTrash />
-      </button>
+    <div className="infraslist-item-edition">
+      {(isFocused !== undefined && isFocused !== infra.id) ||
+      (runningDelete !== undefined && runningDelete !== infra.id) ? (
+        <div className="infralist-item-edition-disabled" />
+      ) : null}
+      {runningDelete === infra.id ? (
+        <InfraSelectorEditionActionsBarDelete
+          setRunningDelete={setRunningDelete}
+          infra={infra}
+          setMustRefresh={setMustRefresh}
+        />
+      ) : null}
+      {isFocused === infra.id ? null : (
+        <button
+          className="infraslist-item-action delete"
+          type="button"
+          title={t('infraManagement:actions.delete')}
+          onClick={handleRunningDelete}
+        >
+          <FaTrash />
+        </button>
+      )}
       <div className="infraslist-item-edition-block">
         <div className="infraslist-item-edition-main">
           {isFocused === infra.id ? (
@@ -38,7 +48,7 @@ export default function InfraSelectorEditionItem(props) {
                 id={nextId()}
                 type="text"
                 sm
-                onChange={handleChangeName}
+                onChange={(e) => setValue(e.target.value)}
                 value={value}
                 focus
                 selectAllOnFocus
@@ -81,11 +91,14 @@ export default function InfraSelectorEditionItem(props) {
 
 InfraSelectorEditionItem.defaultProps = {
   isFocused: undefined,
+  runningDelete: undefined,
 };
 
 InfraSelectorEditionItem.propTypes = {
   infra: PropTypes.object.isRequired,
   isFocused: PropTypes.number,
   setIsFocused: PropTypes.func.isRequired,
+  runningDelete: PropTypes.number,
+  setRunningDelete: PropTypes.func.isRequired,
   setMustRefresh: PropTypes.func.isRequired,
 };

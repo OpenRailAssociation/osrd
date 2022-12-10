@@ -1,3 +1,19 @@
+.infra-loader-absolute {
+  display: block;
+  height: calc(100% - 3.5rem);
+  width: 100%;
+  left: 0;
+  top: 0;
+  position: absolute;
+  background-color: rgba(white, .75);
+  z-index: 2;
+}
+
+.infra-input-filter {
+  margin-bottom: .5rem;
+  margin-right: .5rem; // to align to content when keep scroll is outside content
+}
+
 .infraselector-button {
   display: flex;
   align-items: center;
@@ -12,6 +28,7 @@
 .infraslist {
   overflow: auto;
   height: 40vh;
+  padding-right: .5rem; // to keep scroll outside content
 
   /* STANDARD MODE */
   .infraslist-item-choice {
@@ -102,6 +119,61 @@
     &.disabled {
       opacity: .25;
     }
+    .infralist-item-edition-disabled {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(white, .75);
+    }
+    .infraslist-item-edition-delete {
+      display: flex;
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 4px;
+      background-color: var(--coolgray3);
+      .infraslist-item-edition-delete-main {
+        display: flex;
+        align-items: center;
+        flex-grow: 1;
+        overflow: hidden;
+        padding-left: .5rem;
+      }
+      .infraslist-item-edition-delete-buttons {
+        display: flex;
+        align-items: center;
+        border: none;
+        justify-content: center;
+        width: 4rem;
+        cursor: pointer;
+        transition: .2s;
+        font-weight: 400;
+        &:hover {
+          opacity: .5;
+        }
+        &.no {
+          color: var(--white);
+          background-color: var(--coolgray11);
+        }
+        &.almost-yes {
+          cursor: not-allowed;
+          color: var(--white);
+          background-color: var(--red);
+          opacity: .5;
+        }
+        &.yes {
+          color: var(--white);
+          background-color: var(--red);
+        }
+        &:last-child {
+          border-radius: 0 4px 4px 0;
+        }
+      }
+    }
     .infraslist-item-edition-block {
       display: block;
       border: 2px solid var(--coolgray3);
@@ -112,11 +184,16 @@
       text-align: left;
       font-weight: 100;
       color: var(--secondary);
+      &:first-child {
+        border-radius: 4px 0 0 4px;
+      }
       .infraslist-item-edition-main {
         padding: 0 .25rem;
         display: flex;
         align-items: center;
+        font-size: .9rem;
         height: 2rem;
+        line-height: 1rem;
         input {
           background: none;
         }
@@ -150,7 +227,7 @@
     .infraslist-item-actionsbar {
       display: flex;
       justify-content: around;
-      width: 16rem;
+      width: 8rem;
     }
     .infraslist-item-action {
       display: flex;
@@ -161,7 +238,8 @@
       flex-grow: 1;
       border: none;
       height: 3.25rem;
-      transition: .2s;
+      transition: background-color .4s, color .4s;
+      width: 2rem;
       .spinner-border {
         color: var(--coolgray7);
         width: 1em;
@@ -177,6 +255,9 @@
       &:active {
         background-color: var(--coolgray3);
       }
+      &.waiting {
+        width: 8rem;
+      }
       &.unlock {
         color: var(--green);
         &:hover {
@@ -185,12 +266,14 @@
         }
       }
       &.cancel {
+        width: 4rem;
         &:hover {
           background-color: var(--coolgray11);
           color: var(--white);
         }
       }
       &.check {
+        width: 4rem;
         color: var(--green);
         &:hover {
           background-color: var(--green);
@@ -207,9 +290,11 @@
       &.delete {
         margin-left: 0;
         margin-right: 0;
-        border-radius: 4px 0 0 4px;
         width: 4rem;
         color: var(--red);
+        &:first-child {
+          border-radius: 4px 0 0 4px;
+        }
         &:hover {
           background-color: var(--red);
           color: var(--light);
@@ -223,5 +308,17 @@
         }
       }
     }
+  }
+}
+
+.infra-add {
+  padding: .5rem;
+  border: 2px solid var(--green);
+  border-radius: 4px;
+  .infra-add-error {
+    height: 1rem;
+    margin: .5rem 0;
+    text-align: center;
+    color: var(--red);
   }
 }

@@ -10,8 +10,7 @@ import nextId from 'react-id-generator';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { FaLock } from 'react-icons/fa';
 import './InfraSelector.scss';
-
-const infraURL = '/editoast/infra/';
+import { INFRA_URL } from './Consts';
 
 export default function InfraSelector(props) {
   const { modalOnly, modalID } = props;
@@ -23,7 +22,7 @@ export default function InfraSelector(props) {
 
   const getInfra = async (id) => {
     try {
-      const infraQuery = await get(`${infraURL}${id}/`, {});
+      const infraQuery = await get(`${INFRA_URL}${id}/`, {});
       setSelectedInfra(infraQuery);
     } catch (e) {
       dispatch(

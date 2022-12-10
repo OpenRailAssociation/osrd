@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import nextId from 'react-id-generator';
-import { FaLock, FaLockOpen } from 'react-icons/fa';
+import { FaLock } from 'react-icons/fa';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useDispatch, useSelector } from 'react-redux';
 import { getInfraID } from 'reducers/osrdconf/selectors';
@@ -27,7 +27,7 @@ export default function InfraSelectorModalBodyStandard(props) {
 
   return (
     <>
-      <div className="mb-2">
+      <div className="infra-input-filter">
         <InputSNCF
           id="infralist-filter-choice"
           sm
