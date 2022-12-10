@@ -94,7 +94,7 @@ export default function InfraSelectorModal(props) {
             type="button"
             data-dismiss="modal"
           >
-            {t('translation:common.cancel')}
+            {t('translation:common.close')}
           </button>
           <button
             className="btn btn-primary btn-sm flex-grow-1 ml-1"

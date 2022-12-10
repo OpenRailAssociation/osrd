@@ -47,7 +47,7 @@ export default function InfraSelectorEditionItem(props) {
             </span>
           ) : (
             <>
-              <span className="flex-grow-1">{infra.name.replace(' (lock)', '')}</span>
+              <span className="flex-grow-1">{infra.name}</span>
               {infra.locked ? (
                 <span className="infra-lock">
                   <small>{t('infraManagement:locked')}</small>
@@ -72,6 +72,7 @@ export default function InfraSelectorEditionItem(props) {
           isFocused={isFocused}
           setIsFocused={setIsFocused}
           setMustRefresh={setMustRefresh}
+          inputValue={value}
         />
       </div>
     </div>

@@ -121,7 +121,11 @@ export default function TimetableSelectorModal() {
               : null}
           </div>
           <div className="d-flex">
-            <button className="btn btn-secondary flex-fill btn-sm" type="button" data-dismiss="modal">
+            <button
+              className="btn btn-secondary flex-fill btn-sm"
+              type="button"
+              data-dismiss="modal"
+            >
               {t('translation:common.close')}
             </button>
           </div>

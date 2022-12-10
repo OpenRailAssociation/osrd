@@ -100,7 +100,7 @@
     position: relative;
     margin-bottom: .5rem;
     &.disabled {
-      opacity: .5;
+      opacity: .25;
     }
     .infraslist-item-edition-block {
       display: block;
@@ -150,7 +150,7 @@
     .infraslist-item-actionsbar {
       display: flex;
       justify-content: around;
-      width: 12rem;
+      width: 16rem;
     }
     .infraslist-item-action {
       display: flex;
@@ -162,6 +162,12 @@
       border: none;
       height: 3.25rem;
       transition: .2s;
+      .spinner-border {
+        color: var(--coolgray7);
+        width: 1em;
+        height: 1em;
+        border-width: .15rem;
+      }
       &:last-child {
         border-radius: 0 4px 4px 0;
       }
@@ -191,6 +197,13 @@
           color: var(--white);
         }
       }
+      &.export {
+        color: var(--purple);
+        &:hover {
+          background-color: var(--purple);
+          color: var(--white);
+        }
+      }
       &.delete {
         margin-left: 0;
         margin-right: 0;
@@ -200,6 +213,13 @@
         &:hover {
           background-color: var(--red);
           color: var(--light);
+        }
+      }
+      &.disabled {
+        cursor: not-allowed;
+        &:hover {
+          color: var(--secondary);
+          background-color: var(--coolgray1);
         }
       }
     }

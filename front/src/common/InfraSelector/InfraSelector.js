@@ -59,7 +59,7 @@ export default function InfraSelector(props) {
             <img width="32px" className="mr-2" src={icon} alt="infraIcon" />
             {selectedInfra !== undefined ? (
               <>
-                <span className="">{selectedInfra.name.replace(' (lock)', '')}</span>
+                <span className="">{selectedInfra.name}</span>
                 <span className="ml-1 small align-self-center">({selectedInfra.id})</span>
                 {selectedInfra.locked ? (
                   <span className="infra-lock ml-auto">

@@ -1,23 +1,25 @@
 {
+  "actions": {
+    "copy": "Dupliquer",
+    "delete": "Supprimer",
+    "export": "Exporter au format RailJSON",
+    "lock": "Verrouiller",
+    "rename": "Renommer",
+    "unlock": "Déverrouiller",
+    "waiting": "Veuillez patienter"
+  },
+  "chooseInfrastructure": "Choisissez une infrastructure",
   "errorMessages": {
     "noExistingInfra": "Aucune intrastructure disponible",
     "unableToRetrieveInfra": "Récupération infra impossible",
     "unableToRetrieveInfraList": "Récupération liste d'infra impossible"
   },
-  "noInfra": "Veuillez choisir une insfrastructure",
-  "infraManagement": "Gestion des infrastructures",
-  "infraChoice": "Infrastructures",
-  "infrastructure": "Infrastructure",
-  "infrasFound": "insfrastructure(s) trouvée(s)",
-  "goToStandardMode": "Sélection",
   "goToEditionMode": "Édition",
-  "chooseInfrastructure": "Choisissez une infrastructure",
+  "goToStandardMode": "Sélection",
+  "infraChoice": "Infrastructures",
+  "infraManagement": "Gestion des infrastructures",
+  "infrasFound": "insfrastructure(s) trouvée(s)",
+  "infrastructure": "Infrastructure",
   "locked": "Verrouillée",
-  "actions": {
-    "lock": "Verrouiller",
-    "unlock": "Déverrouiller",
-    "rename": "Renommer",
-    "delete": "Supprimer",
-    "copy": "Dupliquer"
-  }
+  "noInfra": "Veuillez choisir une insfrastructure"
 }
