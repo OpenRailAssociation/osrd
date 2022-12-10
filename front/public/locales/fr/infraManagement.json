@@ -8,7 +8,12 @@
     "unlock": "Déverrouiller",
     "waiting": "Veuillez patienter"
   },
+  "addInfra": "Créer une infrastructure",
+  "addInfraJSON": "Créer une infrastructure, à partir d'un fichier RailJSON",
+  "addInfraJSONFile": "Ajouter un fichier RailJSON",
+  "addInfraJSONFileRemove": "Annuler l'import RailJSON",
   "chooseInfrastructure": "Choisissez une infrastructure",
+  "createInfra": "Création",
   "deleteConfirm": "Voulez-vous supprimer l'infrastructure ?",
   "errorMessages": {
     "noExistingInfra": "Aucune intrastructure disponible",

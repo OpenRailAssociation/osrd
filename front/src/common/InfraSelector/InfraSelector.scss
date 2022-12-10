@@ -321,4 +321,26 @@
     text-align: center;
     color: var(--red);
   }
+  .infra-add-import-input-file {
+    display: flex;
+    align-items: center;
+    color: var(--coolgray9);
+    padding: .5rem;
+    border: 2px dashed var(--coolgray3);
+    border-radius: 4px;
+    width: 100%;
+    cursor: pointer;
+    transition: .2s;
+    font-weight: 100;
+    &.with-file {
+      border-style: solid;
+    }
+    &:hover {
+      background-color: var(--coolgray1);
+      border-color: var(--coolgray7);
+    }
+    input {
+      display: none;
+    }
+  }
 }

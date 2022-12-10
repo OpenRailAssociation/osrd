@@ -9,6 +9,7 @@ import iconEdition from 'assets/pictures/tracks_edit.png';
 import { get } from 'common/requests';
 import { useDebounce } from 'utils/helpers';
 import Loader from 'common/Loader';
+import { MdClose, MdEditNote, MdList } from 'react-icons/md';
 import InfraSelectorModalBodyEdition from './InfraSelectorModalBodyEdition';
 import InfraSelectorModalBodyStandard from './InfraSelectorModalBodyStandard';
 import { INFRA_URL } from './Consts';
@@ -97,18 +98,27 @@ export default function InfraSelectorModal(props) {
               type="button"
               data-dismiss="modal"
             >
-              {t('translation:common.close')}
+              <MdClose />
+              <span className="ml-2">{t('translation:common.close')}</span>
             </button>
           </div>
           <div className="col-md-6">
             <button
-              className="btn btn-primary btn-sm btn-block"
+              className="btn btn-primary btn-sm btn-block "
               type="button"
               onClick={() => setEditionMode(!editionMode)}
             >
-              {editionMode
-                ? t('infraManagement:goToStandardMode')
-                : t('infraManagement:goToEditionMode')}
+              {editionMode ? (
+                <>
+                  <MdList />
+                  <span className="ml-2">{t('infraManagement:goToStandardMode')}</span>
+                </>
+              ) : (
+                <>
+                  <MdEditNote />
+                  <span className="ml-2">{t('infraManagement:goToEditionMode')}</span>
+                </>
+              )}
             </button>
           </div>
         </div>
