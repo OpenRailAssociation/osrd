@@ -359,7 +359,7 @@ function OSRDSimulation() {
                   className="osrd-simulation-map"
                   style={{ height: `${heightOfSimulationMap}px` }}
                 >
-                  <Rnd
+                  {/* <Rnd
                     className="map-resizer"
                     default={{
                       x: 0,
@@ -385,7 +385,8 @@ function OSRDSimulation() {
                     }}
                   >
                     <Map setExtViewport={setExtViewport} />
-                  </Rnd>
+                  </Rnd> */}
+                  <Map setExtViewport={setExtViewport} />
                 </div>
               </div>
             </div>
