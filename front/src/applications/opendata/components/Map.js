@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
+import maplibregl from 'maplibre-gl';
 import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl';
-import { point as turfPoint, featureCollection } from '@turf/helpers';
+import { point as turfPoint } from '@turf/helpers';
 import { useSelector } from 'react-redux';
 import turfNearestPointOnLine from '@turf/nearest-point-on-line';
-import combine from '@turf/combine';
 
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
@@ -19,11 +19,11 @@ import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import 'common/Map/Map.scss';
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
 import Platforms from 'common/Map/Layers/Platforms';
+import { getMapMouseEventNearestFeature } from 'utils/mapboxHelper';
 
 export default function Map(props) {
   const { viewport, setViewport, setClickedFeature } = props;
   const { mapStyle } = useSelector((state) => state.map);
-  const [idHover, setIdHover] = useState();
   const [lngLatHover, setLngLatHover] = useState();
   const [trackSectionGeoJSON, setTrackSectionGeoJSON] = useState();
   const [snappedPoint, setSnappedPoint] = useState();
@@ -34,25 +34,28 @@ export default function Map(props) {
   };
 
   const onFeatureClick = (e) => {
-    if (e.features && e.features.length > 0 && e.features[0].properties.id !== undefined) {
-      setClickedFeature(e.features[0]);
+    const result = getMapMouseEventNearestFeature(e);
+    if (
+      result &&
+      result.feature.properties &&
+      result.feature.properties.id &&
+      result.feature.geometry.type === 'LineString'
+    ) {
+      setClickedFeature(result.feature);
     }
   };
 
-  const getGeoJSONFeature = (e) => {
-    if (e.features && e.features[0] !== undefined) {
-      const mergedFeatures = combine(featureCollection(e.features));
-      setTrackSectionGeoJSON(mergedFeatures.features[0].geometry);
-    }
-  };
-
-  const onFeatureHover = (e) => {
-    if (e.features !== null && e?.features?.[0] !== undefined) {
-      getGeoJSONFeature(e);
-      setIdHover(e.features[0].properties.id);
-      setLngLatHover(e?.lngLat);
+  const onMoveGetFeature = (e) => {
+    const result = getMapMouseEventNearestFeature(e);
+    if (
+      result &&
+      result.feature.properties &&
+      result.feature.properties.id &&
+      result.feature.geometry.type === 'LineString'
+    ) {
+      setTrackSectionGeoJSON(result.feature.geometry);
+      setLngLatHover(result.nearest);
     } else {
-      setIdHover(undefined);
       setSnappedPoint(undefined);
     }
   };
@@ -75,15 +78,14 @@ export default function Map(props) {
       style={{ cursor: 'pointer' }}
       width="100%"
       height="100%"
+      mapLib={maplibregl}
       mapStyle={osmBlankStyle}
-      onViewportChange={setViewport}
-      clickRadius={10}
+      onMove={(e) => setViewport(e.viewState)}
+      onMouseMove={(e) => onMoveGetFeature(e)}
       attributionControl={false} // Defined below
       onClick={onFeatureClick}
-      onHover={onFeatureHover}
       interactiveLayerIds={['chartis/tracks-geo/main']}
-      touchRotate
-      asyncRender
+      touchZoomRotate
     >
       <VirtualLayers />
       <AttributionControl
