@@ -15,6 +15,8 @@
   "from": "Origine",
   "generatePaths": "Générer les pathfinding",
   "generateTrainSchedules": "Générer les calculs de marche",
+  "goToSimulation": "Résultats de simulation",
+  "goToSTDCM": "Sillon de dernière minute",
   "import": "Importation",
   "inputPlaceholder": "Nom, trigramme",
   "launchImport": "Démarrer l'importation",
@@ -24,6 +26,7 @@
   "status": {
     "calculatingTrainSchedule": "Calcul de marche en cours...",
     "calculatingTrainScheduleComplete": "Calcul de marche terminé",
+    "calculatingTrainScheduleCompleteAll": "Tous les calculs de marche sont terminé.",
     "calculatingTrainScheduleError": "Le calcul de marche a échoué",
     "complete": "positionnez",
     "missingInfra": "Vous devez renseigner une infrastructure",

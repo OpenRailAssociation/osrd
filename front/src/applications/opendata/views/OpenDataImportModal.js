@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import Map from 'applications/opendata/components/Map';
-import rollingstockOpenData2OSRD from 'applications/opendata/components/rollingstock_opendata2osrd.json';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { getRollingStockID, getInfraID, getTimetableID } from 'reducers/osrdconf/selectors';
@@ -11,54 +10,9 @@ import generatePathfindingPayload from 'applications/opendata/components/generat
 import generateTrainSchedulesPayload from 'applications/opendata/components/generateTrainSchedulesPayload';
 import { post } from 'common/requests';
 import { scheduleURL } from 'applications/osrd/components/Simulation/consts';
-import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
-
-const itineraryURI = '/pathfinding/';
-
-const initialStatus = {
-  uicComplete: false,
-  pathFindingDone: false,
-  trainSchedulesDone: false,
-};
-
-// Look for unique pathways by concatenation of duration & coordinates
-// Compare them & create dictionnary, associate reference of unique path to each train
-function refactorUniquePaths(
-  trains,
-  setTrainsWithPathRef,
-  setPathsDictionnary,
-  setPointsDictionnary
-) {
-  const pathsDictionnary = [];
-  const trainsWithPathRef = [];
-  const pointsList = {};
-  trains.forEach((train) => {
-    const pathString =
-      train.etapes
-        .map((step, idx) =>
-          idx === 0 || idx === step.length - 1
-            ? `${step.duree}${step.lat}${step.lon}`
-            : `0${step.lat}${step.lon}`
-        )
-        .join() + rollingstockOpenData2OSRD[train.type_em];
-    const pathRef = pathsDictionnary.find((entry) => entry.pathString === pathString);
-    if (pathRef === undefined) {
-      pathsDictionnary.push({
-        num: train.num,
-        pathString,
-      });
-      trainsWithPathRef.push({ ...train, pathRef: train.num });
-    } else {
-      trainsWithPathRef.push({ ...train, pathRef: pathRef.num });
-    }
-    train.etapes.forEach((step) => {
-      pointsList[step.uic] = { lng: step.lon, lat: step.lat, name: step.gare };
-    });
-  });
-  setTrainsWithPathRef(trainsWithPathRef);
-  setPathsDictionnary(pathsDictionnary);
-  setPointsDictionnary(pointsList);
-}
+import { initialViewport, initialStatus, itineraryURI } from 'applications/opendata/consts';
+import OpenDataImportModalFooter from './OpenDataImportModalFooter';
+import { refactorUniquePaths } from '../components/OpenDataHelpers';
 
 export default function OpenDataImportModal(props) {
   const { rollingStockDB, setMustUpdateTimetable, trains } = props;
@@ -79,21 +33,7 @@ export default function OpenDataImportModal(props) {
 
   const [whatIAmDoingNow, setWhatIAmDoingNow] = useState(t('opendata:status.ready'));
 
-  const [viewport, setViewport] = useState({
-    latitude: 48.86521728735368,
-    longitude: 2.341549498045856,
-    zoom: 10.257506947953921,
-    bearing: 0,
-    pitch: 0,
-    width: 420,
-    height: 320,
-    altitude: 1.5,
-    maxZoom: 24,
-    minZoom: 0,
-    maxPitch: 60,
-    minPitch: 0,
-    transitionDuration: 100,
-  });
+  const [viewport, setViewport] = useState(initialViewport);
   const [status, setStatus] = useState(initialStatus);
 
   function testMissingInfos() {
@@ -222,13 +162,20 @@ export default function OpenDataImportModal(props) {
     const payload = generateTrainSchedulesPayload(trainsWithPathRef, infraID, timetableID);
     setWhatIAmDoingNow(`${t('opendata:status.calculatingTrainSchedule')}`);
     const messages = [];
+    const promisesList = [];
     // eslint-disable-next-line no-restricted-syntax
     for (const [idx, params] of Object.values(payload).entries()) {
       // eslint-disable-next-line no-await-in-loop
-      messages.push(`${await launchTrainSchedules(params)} ${idx + 1}/${payload.length}`);
+      const message = await launchTrainSchedules(params);
+      promisesList.push(message);
+      messages.push(`${message} ${idx + 1}/${Object.values(payload).length}`);
       setWhatIAmDoingNow(messages.join('\n'));
     }
-    setMustUpdateTimetable(true);
+    Promise.all(promisesList).then(() => {
+      setStatus({ ...status, trainSchedulesDone: true });
+      setMustUpdateTimetable(true);
+      setWhatIAmDoingNow(t('opandata:status.calculatingTrainScheduleCompleteAll'));
+    });
   }
 
   useEffect(() => {
@@ -314,11 +261,7 @@ export default function OpenDataImportModal(props) {
       ) : (
         ''
       )}
-      <ModalFooterSNCF>
-        <button data-dismiss="modal" type="button" className="btn btn-sm btn-secondary btn-block">
-          {t('translation:common.close')}
-        </button>
-      </ModalFooterSNCF>
+      <OpenDataImportModalFooter status={status} />
     </ModalSNCF>
   );
 }
