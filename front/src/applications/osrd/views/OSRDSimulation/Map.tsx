@@ -57,7 +57,9 @@ import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 
 import 'common/Map/Map.scss';
 import SNCF_LPV from 'common/Map/Layers/extensions/SNCF/SNCF_LPV';
-import OrthoPhoto from 'common/Map/Layers/OrthoPhoto';
+import IGN_BD_ORTHO from 'common/Map/Layers/IGN_BD_ORTHO';
+import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
+import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
 import { MapLayerMouseEvent } from '../../../../types';
 
 const PATHFINDING_URI = '/pathfinding/';
@@ -282,6 +284,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
   const [interactiveLayerIds, setInteractiveLayerIds] = useState<string[]>([]);
   useEffect(() => {
     setInteractiveLayerIds(defineInteractiveLayers());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [geojsonPath, otherTrainsHoverPosition.length]);
 
   useEffect(() => {
@@ -297,16 +300,19 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
         });
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     displayPath();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTrain]);
 
   useEffect(() => {
     if (timePosition && geojsonPath) {
       getSimulationHoverPositions();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timePosition]);
 
   const handleLoadFinished = () => {
@@ -346,7 +352,9 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
         />
 
-        <OrthoPhoto layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
+        <IGN_BD_ORTHO layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
+        <IGN_SCAN25 layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
+        <IGN_CADASTRE layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
 
         {!showOSM ? null : (
           <>

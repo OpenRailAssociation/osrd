@@ -16,7 +16,7 @@ import OSM from '../../common/Map/Layers/OSM';
 import Hillshade from '../../common/Map/Layers/Hillshade';
 import Platforms from '../../common/Map/Layers/Platforms';
 import osmBlankStyle from '../../common/Map/Layers/osmBlankStyle';
-import OrthoPhoto from '../../common/Map/Layers/OrthoPhoto';
+import IGN_BD_ORTHO from '../../common/Map/Layers/IGN_BD_ORTHO';
 import { Viewport } from '../../reducers/map';
 import { getMapMouseEventNearestFeature } from '../../utils/mapboxHelper';
 import EditorContext from './context';
@@ -190,7 +190,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
             colors={colors[mapStyle]}
             layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACKS_OSM.GROUP]}
           />
-          <OrthoPhoto layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
+          <IGN_BD_ORTHO layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
           {!showOSM ? null : (
             <>
               <OSM mapStyle={mapStyle} layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
