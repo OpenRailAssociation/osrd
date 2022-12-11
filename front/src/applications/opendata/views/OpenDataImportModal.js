@@ -14,6 +14,16 @@ import { initialViewport, initialStatus, itineraryURI } from 'applications/opend
 import OpenDataImportModalFooter from './OpenDataImportModalFooter';
 import { refactorUniquePaths } from '../components/OpenDataHelpers';
 
+/* METHOD
+ *
+ * 1: complete data in interactive way, proposing user to select position of each point/OP
+ *   OR automatically use pathfindin/op endpoint to choose a path
+ * 2: generate missing paths with new datas (or skipped part if automatically generated in phase 1)
+ * 3: calculate trainSchedules and add them to the selected timetable
+ * 4: two links come visible: stdcm or simulation
+ *
+ */
+
 export default function OpenDataImportModal(props) {
   const { rollingStockDB, setMustUpdateTimetable, trains } = props;
   const { t } = useTranslation('translation', 'opendata');
@@ -63,6 +73,10 @@ export default function OpenDataImportModal(props) {
     });
   }
 
+  //
+  // 1 COMPLETE DATA INTERACTIVE WAY
+  //
+
   function completePaths(init = false) {
     if (init) {
       setStatus(initialStatus);
@@ -89,19 +103,30 @@ export default function OpenDataImportModal(props) {
     }
   }
 
+  //
+  // 2 GENERATE PATHS (autocomplete to automatically look for OPs)
+  //
+
   async function launchPathfinding(
     params,
     pathRefNum,
     pathNumberToComplete,
     pathsIDs,
-    continuePath
+    continuePath,
+    autoComplete
   ) {
     try {
-      const itineraryCreated = await post(itineraryURI, params, {}, true);
-      continuePath(pathNumberToComplete + 1, {
-        ...pathsIDs,
-        [pathRefNum]: { pathId: itineraryCreated.id, rollingStockId: params.rolling_stocks[0] },
-      });
+      const itineraryCreated = autoComplete
+        ? await post(`${itineraryURI}op/`, params, {}, true)
+        : await post(itineraryURI, params, {}, true);
+      continuePath(
+        pathNumberToComplete + 1,
+        {
+          ...pathsIDs,
+          [pathRefNum]: { pathId: itineraryCreated.id, rollingStockId: params.rolling_stocks[0] },
+        },
+        autoComplete
+      );
     } catch (e) {
       setWhatIAmDoingNow(
         <span className="text-danger">
@@ -113,15 +138,20 @@ export default function OpenDataImportModal(props) {
     }
   }
 
-  function generatePaths(pathNumberToComplete = 0, pathsIDs = {}) {
+  function generatePaths(pathNumberToComplete = 0, pathsIDs = {}, autoComplete = false) {
+    if (autoComplete && pathNumberToComplete === 0)
+      setStatus({ ...initialStatus, uicComplete: true });
+
     const pathfindingPayloads = generatePathfindingPayload(
       infraID,
       rollingStockID,
       trainsWithPathRef,
       pathsDictionnary,
       pointsDictionnary,
-      rollingStockDB
+      rollingStockDB,
+      autoComplete
     );
+
     const path2complete = Object.keys(pathfindingPayloads);
     if (pathNumberToComplete < path2complete.length) {
       setWhatIAmDoingNow(
@@ -134,7 +164,8 @@ export default function OpenDataImportModal(props) {
         path2complete[pathNumberToComplete],
         pathNumberToComplete,
         pathsIDs,
-        generatePaths
+        generatePaths,
+        autoComplete
       );
     } else {
       setWhatIAmDoingNow(t('opendata:status.pathComplete'));
@@ -148,6 +179,10 @@ export default function OpenDataImportModal(props) {
       setStatus({ ...status, pathFindingDone: true });
     }
   }
+
+  //
+  // 3 CALCULATE TRAINS SCHEDULES
+  //
 
   async function launchTrainSchedules(params) {
     try {
@@ -174,7 +209,7 @@ export default function OpenDataImportModal(props) {
     Promise.all(promisesList).then(() => {
       setStatus({ ...status, trainSchedulesDone: true });
       setMustUpdateTimetable(true);
-      setWhatIAmDoingNow(t('opandata:status.calculatingTrainScheduleCompleteAll'));
+      setWhatIAmDoingNow(t('opendata:status.calculatingTrainScheduleCompleteAll'));
     });
   }
 
@@ -220,6 +255,17 @@ export default function OpenDataImportModal(props) {
               >
                 <span>1 — {t('opendata:completeTrackSectionID')}</span>
                 <span>{Object.keys(pointsDictionnary).length}</span>
+              </button>
+              <div className="my-1 text-center">{t('opendata:or')}</div>
+              <button
+                className={`btn btn-sm btn-block d-flex justify-content-between text-wrap text-left ${
+                  status.uicComplete ? 'btn-outline-success' : 'btn-primary'
+                }`}
+                type="button"
+                onClick={() => generatePaths(0, {}, true)}
+              >
+                <span>1 — {t('opendata:generatePathsAuto')}</span>
+                <span>{pathsDictionnary.length}</span>
               </button>
               <button
                 className={`btn btn-sm btn-block d-flex justify-content-between ${

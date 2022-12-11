@@ -14,6 +14,7 @@
   },
   "from": "Origine",
   "generatePaths": "Générer les pathfinding",
+  "generatePathsAuto": "Compléter et générer les pathfinding automatiquement",
   "generateTrainSchedules": "Générer les calculs de marche",
   "goToSimulation": "Résultats de simulation",
   "goToSTDCM": "Sillon de dernière minute",

@@ -1,12 +1,31 @@
 import rollingstockOpenData2OSRD from 'applications/opendata/components/rollingstock_opendata2osrd.json';
 
+function formatSteps(pointsDictionnary, trainFromPathRef, autoComplete) {
+  if (autoComplete) {
+    return trainFromPathRef.etapes.map((step, idx) => ({
+      duration: idx === 0 || idx === trainFromPathRef.etapes.length - 1 ? 0 : step.duree,
+      op_trigram: step.code,
+    }));
+  }
+  return trainFromPathRef.etapes.map((step, idx) => ({
+    duration: idx === 0 || idx === trainFromPathRef.etapes.length - 1 ? 0 : step.duree,
+    waypoints: [
+      {
+        track_section: pointsDictionnary[step.uic].trackSectionId,
+        geo_coordinate: [Number(step.lon), Number(step.lat)],
+      },
+    ],
+  }));
+}
+
 export default function generatePathfindingPayload(
   infraID,
   rollingStockID,
   trainsWithPathRef,
   pathsDictionnary,
   pointsDictionnary,
-  rollingStockDB
+  rollingStockDB,
+  autoComplete
 ) {
   const pathsToGenerate = {};
   pathsDictionnary.forEach((pathRef) => {
@@ -17,15 +36,7 @@ export default function generatePathfindingPayload(
     pathsToGenerate[pathRef.num] = {
       infra: infraID,
       rolling_stocks: [rollingStockFound ? rollingStockFound.id : rollingStockID],
-      steps: trainFromPathRef.etapes.map((step, idx) => ({
-        duration: idx === 0 || idx === trainFromPathRef.etapes.length - 1 ? 0 : step.duree,
-        waypoints: [
-          {
-            track_section: pointsDictionnary[step.uic].trackSectionId,
-            geo_coordinate: [Number(step.lon), Number(step.lat)],
-          },
-        ],
-      })),
+      steps: formatSteps(pointsDictionnary, trainFromPathRef, autoComplete),
     };
   });
   return pathsToGenerate;
