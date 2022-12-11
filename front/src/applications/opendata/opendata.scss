@@ -13,7 +13,7 @@
     .opendata-import-global-settings-bar {
       display: flex;
       align-items: center;
-      justify-content: end;
+      justify-content: flex-end;
       cursor: pointer;
       color: var(--light);
       padding: 0 0 .25rem;
@@ -31,8 +31,6 @@
   }
   .osrd-config-item-to {
     background-color: var(--yellow);
-  }
-  .osrd-config-item-datetime {
   }
 
   .results-stations {

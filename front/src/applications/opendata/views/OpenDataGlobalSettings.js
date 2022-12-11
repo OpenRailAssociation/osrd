@@ -1,12 +1,20 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import InfraSelector from 'applications/osrd/views/OSRDConfig/InfraSelector';
 import RollingStockSelector from 'applications/osrd/views/OSRDConfig/RollingStockSelector';
 import TimetableSelector from 'applications/osrd/views/OSRDConfig/TimetableSelector';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+import { getInfraID, getRollingStockID, getTimetableID } from 'reducers/osrdconf/selectors';
 
-function OpenDataGlobalSettings() {
-  const [mustUpdateTimetable, setMustUpdateTimetable] = useState(true);
-  const [showGlobalSettings, setShowGlobalSettings] = useState(false);
+function OpenDataGlobalSettings(props) {
+  const { mustUpdateTimetable, setMustUpdateTimetable } = props;
+  const infraID = useSelector(getInfraID);
+  const rollingStockID = useSelector(getRollingStockID);
+  const timetableID = useSelector(getTimetableID);
+  const [showGlobalSettings, setShowGlobalSettings] = useState(
+    !infraID || !timetableID || !rollingStockID
+  );
   const { t } = useTranslation(['opendata']);
 
   return (
@@ -29,7 +37,9 @@ function OpenDataGlobalSettings() {
           </>
         )}
       </div>
-      <div className={`opendata-import-global-settings-items ${showGlobalSettings ? 'active' : ''}`}>
+      <div
+        className={`opendata-import-global-settings-items ${showGlobalSettings ? 'active' : ''}`}
+      >
         <div className="row">
           <div className="col-6">
             <InfraSelector />
@@ -47,3 +57,8 @@ function OpenDataGlobalSettings() {
   );
 }
 export default React.memo(OpenDataGlobalSettings);
+
+OpenDataGlobalSettings.propTypes = {
+  mustUpdateTimetable: PropTypes.bool.isRequired,
+  setMustUpdateTimetable: PropTypes.func.isRequired,
+};

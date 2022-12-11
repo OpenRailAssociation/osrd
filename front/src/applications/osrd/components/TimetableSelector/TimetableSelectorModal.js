@@ -65,7 +65,8 @@ export default function TimetableSelectorModal() {
     };
 
     try {
-      await post(timetableURL, params, {});
+      const result = await post(timetableURL, params, {});
+      dispatch(updateTimetableID(result.id));
     } catch (e) {
       console.log('ERROR', e);
     }

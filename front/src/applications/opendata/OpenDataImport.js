@@ -10,6 +10,7 @@ const ROLLING_STOCK_URL = '/light_rolling_stock/';
 export default function OpenDataImport() {
   const [config, setConfig] = useState();
   const [rollingStockDB, setRollingStockDB] = useState();
+  const [mustUpdateTimetable, setMustUpdateTimetable] = useState(true);
 
   async function getRollingStockDB() {
     try {
@@ -31,8 +32,15 @@ export default function OpenDataImport() {
     <main className="osrd-config-mastcontainer mastcontainer opendata-import">
       <div className="p-3">
         <OpenDataImportConfig setConfig={setConfig} />
-        <OpenDataGlobalSettings />
-        <OpenDataTrainsList config={config} rollingStockDB={rollingStockDB} />
+        <OpenDataGlobalSettings
+          mustUpdateTimetable={mustUpdateTimetable}
+          setMustUpdateTimetable={setMustUpdateTimetable}
+        />
+        <OpenDataTrainsList
+          config={config}
+          rollingStockDB={rollingStockDB}
+          setMustUpdateTimetable={setMustUpdateTimetable}
+        />
       </div>
     </main>
   ) : (

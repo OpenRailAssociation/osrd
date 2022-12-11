@@ -11,6 +11,7 @@ import generatePathfindingPayload from 'applications/opendata/components/generat
 import generateTrainSchedulesPayload from 'applications/opendata/components/generateTrainSchedulesPayload';
 import { post } from 'common/requests';
 import { scheduleURL } from 'applications/osrd/components/Simulation/consts';
+import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 
 const itineraryURI = '/pathfinding/';
 
@@ -60,8 +61,8 @@ function refactorUniquePaths(
 }
 
 export default function OpenDataImportModal(props) {
-  const { rollingStockDB, trains } = props;
-  const { t } = useTranslation('opendata');
+  const { rollingStockDB, setMustUpdateTimetable, trains } = props;
+  const { t } = useTranslation('translation', 'opendata');
   const infraID = useSelector(getInfraID);
   const rollingStockID = useSelector(getRollingStockID);
   const timetableID = useSelector(getTimetableID);
@@ -76,7 +77,7 @@ export default function OpenDataImportModal(props) {
   // Path to compute
   const [pathsDictionnary, setPathsDictionnary] = useState();
 
-  const [whatIAmDoingNow, setWhatIAmDoingNow] = useState(t('status.ready'));
+  const [whatIAmDoingNow, setWhatIAmDoingNow] = useState(t('opendata:status.ready'));
 
   const [viewport, setViewport] = useState({
     latitude: 48.86521728735368,
@@ -94,6 +95,22 @@ export default function OpenDataImportModal(props) {
     transitionDuration: 100,
   });
   const [status, setStatus] = useState(initialStatus);
+
+  function testMissingInfos() {
+    const messages = [];
+    if (!infraID) messages.push(t('opendata:status.missingInfra'));
+    if (!rollingStockID) messages.push(t('opendata:status.missingRollingStock'));
+    if (!timetableID) messages.push(t('opendata:status.missingTimetable'));
+    if (messages.length > 0) {
+      setWhatIAmDoingNow(
+        <span className="text-danger">
+          {[t('opendata:status.noImportationPossible'), ''].concat(messages).join('\n')}
+        </span>
+      );
+    } else {
+      setWhatIAmDoingNow(t('opendata:status.ready'));
+    }
+  }
 
   function getTrackSectionID(lat, lng) {
     setViewport({
@@ -121,12 +138,12 @@ export default function OpenDataImportModal(props) {
         pointsDictionnary[uic2complete[uicNumberToCompleteLocal]].lng
       );
       setWhatIAmDoingNow(
-        `${uicNumberToCompleteLocal}/${uic2complete.length} ${t('status.complete')} ${
+        `${uicNumberToCompleteLocal}/${uic2complete.length} ${t('opendata:status.complete')} ${
           pointsDictionnary[uic2complete[uicNumberToCompleteLocal]].name
         }`
       );
     } else {
-      setWhatIAmDoingNow(t('status.uicComplete'));
+      setWhatIAmDoingNow(t('opendata:status.uicComplete'));
       setUicNumberToComplete(undefined);
       setStatus({ ...status, uicComplete: true });
     }
@@ -147,7 +164,9 @@ export default function OpenDataImportModal(props) {
       });
     } catch (e) {
       setWhatIAmDoingNow(
-        <span className="text-danger">{t('errorMessages.unableToRetrievePathfinding')}</span>
+        <span className="text-danger">
+          {t('opendata:errorMessages.unableToRetrievePathfinding')}
+        </span>
       );
       setStatus(initialStatus);
       console.log('ERROR', e);
@@ -166,7 +185,7 @@ export default function OpenDataImportModal(props) {
     const path2complete = Object.keys(pathfindingPayloads);
     if (pathNumberToComplete < path2complete.length) {
       setWhatIAmDoingNow(
-        `${pathNumberToComplete}/${path2complete.length} ${t('status.searchingPath')} ${
+        `${pathNumberToComplete}/${path2complete.length} ${t('opendata:status.searchingPath')} ${
           path2complete[pathNumberToComplete]
         }`
       );
@@ -178,7 +197,7 @@ export default function OpenDataImportModal(props) {
         generatePaths
       );
     } else {
-      setWhatIAmDoingNow(t('status.pathComplete'));
+      setWhatIAmDoingNow(t('opendata:status.pathComplete'));
       setTrainsWithPathRef(
         trainsWithPathRef.map((train) => ({
           ...train,
@@ -191,19 +210,25 @@ export default function OpenDataImportModal(props) {
   }
 
   async function launchTrainSchedules(params) {
-    setWhatIAmDoingNow(`${t('status.calculatingTrainSchedule')}${params.path}`);
     try {
       await post(scheduleURL, params, {});
-      setWhatIAmDoingNow(`${t('status.calculatingTrainScheduleComplete')}${params.path}`);
+      return `${t('opendata:status.calculatingTrainScheduleComplete')} (${params.path})`;
     } catch (error) {
       console.log(error);
     }
+    return `${t('opendata:status.calculatingTrainScheduleError')} (${params.path})`;
   }
-  function generateTrainSchedules() {
+  async function generateTrainSchedules() {
     const payload = generateTrainSchedulesPayload(trainsWithPathRef, infraID, timetableID);
-    Object.values(payload).forEach((params) => {
-      launchTrainSchedules(params);
-    });
+    setWhatIAmDoingNow(`${t('opendata:status.calculatingTrainSchedule')}`);
+    const messages = [];
+    // eslint-disable-next-line no-restricted-syntax
+    for (const [idx, params] of Object.values(payload).entries()) {
+      // eslint-disable-next-line no-await-in-loop
+      messages.push(`${await launchTrainSchedules(params)} ${idx + 1}/${payload.length}`);
+      setWhatIAmDoingNow(messages.join('\n'));
+    }
+    setMustUpdateTimetable(true);
   }
 
   useEffect(() => {
@@ -228,44 +253,54 @@ export default function OpenDataImportModal(props) {
     }
   }, [trains, rollingStockDB]);
 
+  useEffect(() => {
+    testMissingInfos();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [infraID, rollingStockID, timetableID]);
+
   return (
     <ModalSNCF htmlID="OpenDataImportModal">
       {pathsDictionnary && trainsWithPathRef ? (
         <ModalBodySNCF>
-          <button
-            className={`btn btn-sm btn-block d-flex justify-content-between ${
-              status.uicComplete ? 'btn-outline-success' : 'btn-primary'
-            }`}
-            type="button"
-            onClick={() => completePaths(true)}
-          >
-            <span>1 — {t('completeTrackSectionID')}</span>
-            <span>{Object.keys(pointsDictionnary).length}</span>
-          </button>
-          <button
-            className={`btn btn-sm btn-block d-flex justify-content-between ${
-              status.pathFindingDone ? 'btn-outline-success' : 'btn-primary'
-            } ${status.uicComplete ? '' : 'disabled'}`}
-            type="button"
-            onClick={() => generatePaths(0)}
-          >
-            <span>2 — {t('generatePaths')}</span>
-            <span>{pathsDictionnary.length}</span>
-          </button>
-          <button
-            className={`btn btn-primary btn-sm btn-block d-flex justify-content-between ${
-              status.pathFindingDone ? '' : 'disabled'
-            }`}
-            type="button"
-            onClick={generateTrainSchedules}
-          >
-            <span>3 — {t('generateTrainSchedules')}</span>
-            <span>{trains.length}</span>
-          </button>
+          {!infraID || !timetableID || !rollingStockID ? null : (
+            <>
+              <button
+                className={`btn btn-sm btn-block d-flex justify-content-between ${
+                  status.uicComplete ? 'btn-outline-success' : 'btn-primary'
+                }`}
+                type="button"
+                onClick={() => completePaths(true)}
+              >
+                <span>1 — {t('opendata:completeTrackSectionID')}</span>
+                <span>{Object.keys(pointsDictionnary).length}</span>
+              </button>
+              <button
+                className={`btn btn-sm btn-block d-flex justify-content-between ${
+                  status.pathFindingDone ? 'btn-outline-success' : 'btn-primary'
+                } ${status.uicComplete ? '' : 'disabled'}`}
+                type="button"
+                onClick={() => generatePaths(0)}
+              >
+                <span>2 — {t('opendata:generatePaths')}</span>
+                <span>{pathsDictionnary.length}</span>
+              </button>
+              <button
+                className={`btn btn-primary btn-sm btn-block d-flex justify-content-between ${
+                  status.pathFindingDone ? '' : 'disabled'
+                }`}
+                type="button"
+                onClick={generateTrainSchedules}
+              >
+                <span>3 — {t('opendata:generateTrainSchedules')}</span>
+                <span>{trains.length}</span>
+              </button>
 
-          <hr />
+              <hr />
+            </>
+          )}
 
           <pre>{whatIAmDoingNow}</pre>
+
           {uicNumberToComplete !== undefined ? (
             <div className="automated-map">
               <Map
@@ -279,6 +314,11 @@ export default function OpenDataImportModal(props) {
       ) : (
         ''
       )}
+      <ModalFooterSNCF>
+        <button data-dismiss="modal" type="button" className="btn btn-sm btn-secondary btn-block">
+          {t('translation:common.close')}
+        </button>
+      </ModalFooterSNCF>
     </ModalSNCF>
   );
 }
@@ -286,4 +326,5 @@ export default function OpenDataImportModal(props) {
 OpenDataImportModal.propTypes = {
   trains: PropTypes.array.isRequired,
   rollingStockDB: PropTypes.array.isRequired,
+  setMustUpdateTimetable: PropTypes.func.isRequired,
 };

@@ -21,7 +21,7 @@ function LoadingIfSearching(props) {
 
 export default function OpenDataTrainsList(props) {
   const { t } = useTranslation(['opendata']);
-  const { config, rollingStockDB } = props;
+  const { config, rollingStockDB, setMustUpdateTimetable } = props;
   const [trainsList, setTrainList] = useState();
   const [isSearching, setIsSearching] = useState(false);
 
@@ -74,7 +74,11 @@ export default function OpenDataTrainsList(props) {
           ))}
         </div>
       </div>
-      <OpenDataImportModal rollingStockDB={rollingStockDB} trains={trainsList} />
+      <OpenDataImportModal
+        rollingStockDB={rollingStockDB}
+        trains={trainsList}
+        setMustUpdateTimetable={setMustUpdateTimetable}
+      />
     </div>
   ) : (
     <div className="osrd-config-item mb-2">
@@ -96,4 +100,5 @@ LoadingIfSearching.propTypes = {
 OpenDataTrainsList.propTypes = {
   config: PropTypes.object,
   rollingStockDB: PropTypes.array.isRequired,
+  setMustUpdateTimetable: PropTypes.func.isRequired,
 };
