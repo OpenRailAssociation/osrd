@@ -12,6 +12,7 @@ import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.api.pathfinding.PathfindingResultConverter;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingRequest;
+import fr.sncf.osrd.api.pathfinding.response.NoPathFoundError;
 import fr.sncf.osrd.api.pathfinding.response.PathfindingResult;
 import fr.sncf.osrd.api.pathfinding.PathfindingRoutesEndpoint;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
@@ -214,6 +215,11 @@ public class PathfindingTest extends ApiTest {
         assertNull(
                 PathfindingRoutesEndpoint.runPathfinding(infra, waypoints, List.of(TestTrains.FAST_TRAIN_LARGE_GAUGE))
         );
+        assertThrows(
+                NoPathFoundError.class,
+                () -> PathfindingRoutesEndpoint.runPathfinding(infra, waypoints, List.of(TestTrains.FAST_TRAIN_LARGE_GAUGE)),
+                PathfindingRoutesEndpoint.PATH_FINDING_GAUGE_ERROR
+        );
 
         // Check that we can go until right before the blocked section with a large train
         waypoints[1][0] = new PathfindingWaypoint(
@@ -243,6 +249,11 @@ public class PathfindingTest extends ApiTest {
         waypoints[1][0] = waypointEnd;
         var infra = Helpers.infraFromRJS(Helpers.getExampleInfra("small_infra/infra.json"));
 
+        // Run a pathfinding with a non-electric train
+        var normalPath = PathfindingRoutesEndpoint.runPathfinding(
+                infra, waypoints, List.of(TestTrains.REALISTIC_FAST_TRAIN)
+        );
+
         // Put catenary everywhere
         assert TestTrains.FAST_ELECTRIC_TRAIN.getModeNames().contains("25000");
         for (var track : infra.getTrackGraph().edges()) {
@@ -252,11 +263,6 @@ public class PathfindingTest extends ApiTest {
                         "25000"
                 );
         }
-
-        // Run a pathfinding with a non-electric train
-        var normalPath = PathfindingRoutesEndpoint.runPathfinding(
-                infra, waypoints, List.of(TestTrains.REALISTIC_FAST_TRAIN)
-        );
 
         // Removes catenary in the middle of the path
         var middleRoute = normalPath.ranges().get(normalPath.ranges().size() / 2);
@@ -279,6 +285,17 @@ public class PathfindingTest extends ApiTest {
                 .map(range -> range.edge().getInfraRoute().getID())
                 .toList();
         assertNotEquals(normalRoutes, electrifiedRoutes);
+
+        // Remove all electrification
+        for (var track : infra.getTrackGraph().edges()) {
+            if (track instanceof TrackSection)
+                track.getVoltages().put(Range.closed(0., middleTrack.getLength()), "");
+        }
+        assertThrows(
+                NoPathFoundError.class,
+                () -> PathfindingRoutesEndpoint.runPathfinding(infra, waypoints, List.of(TestTrains.FAST_ELECTRIC_TRAIN)),
+                PathfindingRoutesEndpoint.PATH_FINDING_ELECTRIFICATION_ERROR
+        );
     }
 
     @Test

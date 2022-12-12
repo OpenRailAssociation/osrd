@@ -9,11 +9,9 @@ import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.api.pathfinding.response.NoPathFoundError;
 import fr.sncf.osrd.api.pathfinding.response.PathfindingResult;
 import fr.sncf.osrd.infra.api.Direction;
-import fr.sncf.osrd.infra.api.reservation.DiDetector;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.api.tracks.undirected.TrackLocation;
-import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
@@ -22,7 +20,6 @@ import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.GraphAdapter;
 import fr.sncf.osrd.utils.graph.Pathfinding;
-import org.jetbrains.annotations.Nullable;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;
@@ -36,6 +33,8 @@ import java.util.stream.Collectors;
 
 public class PathfindingRoutesEndpoint implements Take {
     private final InfraManager infraManager;
+    public static final String PATH_FINDING_GAUGE_ERROR = "No path could be found due to Gauge";
+    public static final String PATH_FINDING_ELECTRIFICATION_ERROR = "No path could be found due to Electrification";
 
     public PathfindingRoutesEndpoint(InfraManager infraHandler) {
         this.infraManager = infraHandler;
@@ -128,11 +127,11 @@ public class PathfindingRoutesEndpoint implements Take {
         if (pathfinding == null) {
             var pathError = path.addBlockedRangeOnEdges(loadingGaugeConstraints).runPathfinding(waypoints);
             if (pathError != null) {
-                throw new NoPathFoundError("No path could be found due to Gauge");
+                throw new NoPathFoundError(PATH_FINDING_GAUGE_ERROR);
             } else {
                 pathError = path.addBlockedRangeOnEdges(electrificationConstraints).runPathfinding(waypoints);
                 if (pathError != null) {
-                    throw new NoPathFoundError("No path could be found due to Electrification");
+                    throw new NoPathFoundError(PATH_FINDING_ELECTRIFICATION_ERROR);
                 }
             }
             pathfinding = null;
