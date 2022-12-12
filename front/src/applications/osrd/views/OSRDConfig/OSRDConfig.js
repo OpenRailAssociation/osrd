@@ -18,6 +18,8 @@ import RollingStockSelector from 'applications/osrd/views/OSRDConfig/RollingStoc
 import SpeedLimitByTagSelector from 'applications/osrd/views/OSRDConfig/SpeedLimitByTagSelector';
 import TimetableSelector from 'applications/osrd/views/OSRDConfig/TimetableSelector';
 
+import StdcmSingleAllowance from 'applications/osrd/components/Simulation/Allowances/withOSRDStdcmParams';
+
 export default function OSRDConfig(props) {
   const { fullscreen, darkmode } = useSelector((state) => state.main);
   const mode = useSelector((state) => state.osrdconf.mode);
@@ -62,6 +64,11 @@ export default function OSRDConfig(props) {
             </div>
           </div>
           <Itinerary title={t('translation:common.itinerary')} updateExtViewport={setExtViewport} />
+          {isStdcm && (
+            <div className="row">
+              <div className="col-xl-12"><StdcmSingleAllowance /></div>
+            </div>
+          )}
           <AddTrainLabels />
           {isSimulation && (
             <AddTrainSchedule

@@ -16,6 +16,7 @@ import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import StandardAllowanceDefault from 'applications/osrd/components/Simulation/Allowances/StandardAllowanceDefault';
 import nextId from 'react-id-generator';
 import { useTranslation } from 'react-i18next';
+import { TYPES_UNITS, ALLOWANCE_UNITS_KEYS } from './consts';
 import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
 import { type } from '@testing-library/user-event/dist/type';
 
@@ -24,17 +25,7 @@ import { t } from 'i18next';
 import { values, result } from 'lodash';
 import simulation from 'reducers/osrdsimulation/simulation';
 
-const TYPEUNITS = {
-  time: 's',
-  percentage: '%',
-  time_per_distance: 'min/100km',
-};
 
-const TYPES_UNITS = {
-  time: 'seconds',
-  percentage: 'percentage',
-  time_per_distance: 'minutes',
-};
 
 function EmptyLine(props) {
   const {
@@ -253,7 +244,7 @@ function Allowance(props) {
         <div className="col-md-3 text-left">
           {t(`allowanceTypes.${data.value.value_type}`)} /
           {data.value[TYPES_UNITS[data.value.value_type]]}
-          {TYPEUNITS[data.value.value_type]}
+          {ALLOWANCE_UNITS_KEYS[data.value.value_type]}
         </div>
         <div className="col-md-1 d-flex align-items-right">
           <button
@@ -270,8 +261,8 @@ function Allowance(props) {
 }
 
 export default function Allowances(props) {
-  const { toggleAllowancesDisplay, t, dispatch, simulation, allowancesSettings, selectedProjection, selectedTrain } = props;
-  const [trainDetail, setTrainDetail] = useState(undefined);
+  const { toggleAllowancesDisplay, t, dispatch, simulation, allowancesSettings, selectedProjection, selectedTrain, persistentAllowances, syncInProgress, mutateAllowances, getAllowances, trainDetail } = props;
+  //const [trainDetail, setTrainDetail] = useState(undefined);
   const [allowances, setAllowances] = useState([]);
   const [rawExtensions] = useState([]);
   const [updateAllowances, setUpdateAllowances] = useState(false);
@@ -283,17 +274,17 @@ export default function Allowances(props) {
     {
       id: 'time',
       label: t('allowanceTypes.time'),
-      unit: TYPEUNITS.time,
+      unit: ALLOWANCE_UNITS_KEYS.time,
     },
     {
       id: 'percentage',
       label: t('allowanceTypes.percentage'),
-      unit: TYPEUNITS.percentage,
+      unit: ALLOWANCE_UNITS_KEYS.percentage,
     },
     {
       id: 'time_per_distance',
       label: t('allowanceTypes.time_per_distance'),
-      unit: TYPEUNITS.time_per_distance,
+      unit: ALLOWANCE_UNITS_KEYS.time_per_distance,
     },
   ];
 
@@ -309,6 +300,7 @@ export default function Allowances(props) {
     },
   ];
 
+  /*
   const getAllowances = async () => {
     try {
       setIsUpdating(true);
@@ -327,7 +319,13 @@ export default function Allowances(props) {
     }
   };
 
+  const handeChangeAllowances = (newAllowances) => {
+    mutateAllowances(newAllowances)
+  }
+  */
+
   // Change this to adapt to MARECO SPEC
+  /*
   const changeAllowances = async (newAllowances) => {
     try {
       setIsUpdating(true);
@@ -365,6 +363,11 @@ export default function Allowances(props) {
       );
     }
   };
+*/
+
+const handleChangeAllowances = (newAllowances) => {
+  mutateAllowances(newAllowances)
+}
 
   const delAllowance = (idx, allowanceType) => {
     // change to take into considerations Mareco Ones
@@ -395,16 +398,21 @@ export default function Allowances(props) {
 
   useEffect(() => {
     if (updateAllowances) {
-      changeAllowances(allowances);
+      handleChangeAllowances(allowances);
       setUpdateAllowances(false);
     }
   }, [allowances]);
 
   useEffect(() => {
-    getAllowances();
-  }, [selectedTrain]);
+    setAllowances(persistentAllowances)
+  }, [persistentAllowances]);
 
-  const standardAllowance = allowances.find(
+  useEffect(() => {
+    setIsUpdating(syncInProgress)
+  }, [syncInProgress]);
+
+
+  const standardAllowance = allowances && allowances.find(
     (allowance) => allowance.allowance_type === 'standard' && allowance.ranges
   );
 
@@ -420,7 +428,7 @@ export default function Allowances(props) {
           <DotsLoader />
         </div>
       )}
-      {trainDetail && trainDetail.allowances && (
+      {allowances && (
         <>
           <div className="h2 d-flex">
             <StandardAllowanceDefault
@@ -430,6 +438,11 @@ export default function Allowances(props) {
               setIsUpdating={setIsUpdating}
               trainDetail={trainDetail}
               TYPES_UNITS={TYPES_UNITS}
+              selectedTrain = {selectedTrain}
+              selectedProjection = {selectedProjection}
+              simulation = {simulation}
+              t={t}
+              dispatch={dispatch}
             />
             <button
               type="button"
@@ -439,11 +452,11 @@ export default function Allowances(props) {
               <i className="icons-arrow-up" />
             </button>
           </div>
-          {trainDetail.allowances.find((a) => a.ranges) && (
+          {allowances.find((a) => a.ranges) && (
             <div className="text-normal">{t('specificValuesOnIntervals')}</div>
           )}
 
-          {trainDetail.allowances
+          {allowances
             .find((a) => a.ranges)
             ?.ranges?.map((allowance, idx) => (
               <Allowance data={allowance} delAllowance={delAllowance} idx={idx} key={nextId()} selectedTrain = {selectedTrain } simulation = { simulation } />
@@ -458,6 +471,7 @@ export default function Allowances(props) {
               allowances={allowances}
               distribution="mareco"
               allowanceTypes={allowanceTypes}
+
             />
           )}
 
@@ -505,16 +519,17 @@ export default function Allowances(props) {
   );
 }
 
-Allowances.propTypes = {
-  toggleAllowancesDisplay: PropTypes.func.isRequired,
-};
+
 
 Allowance.propTypes = {
   data: PropTypes.object.isRequired,
   delAllowance: PropTypes.func.isRequired,
   idx: PropTypes.number.isRequired,
   t: PropTypes.func,
-  dispatch: PropTypes.func
+  dispatch: PropTypes.func,
+  toggleAllowancesDisplay: PropTypes.func.isRequired,
+  mutateAllowances: PropTypes.func,
+  getAllowances: PropTypes.func
 };
 
 EmptyLine.propTypes = {
@@ -537,5 +552,7 @@ EmptyLine.defaultProps = {
 
 Allowance.defaultProps = {
   t:(key) => key,
-  dispatch:() => {}
+  dispatch:() => {},
+  getAllowances:() => {},
+  mutateAllowances:() => {},
 }
