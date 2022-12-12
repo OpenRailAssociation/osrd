@@ -4,18 +4,17 @@ mod objects;
 
 use std::sync::Arc;
 
-use errors::get_paginated_infra_errors;
-
 use super::params::List;
 use crate::api_error::ApiResult;
 use crate::chartos;
 use crate::client::ChartosConfig;
 use crate::db_connection::DBConnection;
-use crate::infra::{CreateInfra, Infra};
+use crate::infra::{Infra, InfraName};
 use crate::infra_cache::{InfraCache, ObjectCache};
 use crate::schema::operation::{Operation, OperationResult};
 use crate::schema::SwitchType;
 use chashmap::CHashMap;
+use errors::get_paginated_infra_errors;
 use objects::get_objects;
 use rocket::http::Status;
 use rocket::response::status::Custom;
@@ -33,6 +32,7 @@ pub fn routes() -> Vec<Route> {
         list_errors,
         get_switch_types,
         get_objects,
+        rename,
         lock,
         unlock
     ]
@@ -102,7 +102,7 @@ async fn get(conn: DBConnection, infra: i32) -> ApiResult<Custom<Json<Infra>>> {
 /// Create an infra
 #[post("/", data = "<data>")]
 async fn create(
-    data: Result<Json<CreateInfra>, JsonError<'_>>,
+    data: Result<Json<InfraName>, JsonError<'_>>,
     conn: DBConnection,
 ) -> ApiResult<Custom<Json<Infra>>> {
     let data = data?;
@@ -125,6 +125,21 @@ async fn delete(
         Infra::delete(infra, conn)?;
         infra_caches.remove(&infra);
         Ok(Custom(Status::NoContent, ()))
+    })
+    .await
+}
+
+/// Update an infra name
+#[put("/<infra>", data = "<new_name>")]
+async fn rename(
+    infra: i32,
+    new_name: Result<Json<InfraName>, JsonError<'_>>,
+    conn: DBConnection,
+) -> ApiResult<Custom<Json<Infra>>> {
+    let new_name = new_name?.0.name;
+    conn.run(move |conn| {
+        let infra = Infra::rename(conn, infra, new_name)?;
+        Ok(Custom(Status::Ok, Json(infra)))
     })
     .await
 }
@@ -298,6 +313,26 @@ mod tests {
 
         let delete_infra_response = client.get(format!("/infra/{}", infra.id)).dispatch();
         assert_eq!(delete_infra_response.status(), Status::NotFound);
+    }
+
+    #[test]
+    fn infra_rename() {
+        let rocket = create_server(&Default::default(), &Default::default(), Default::default());
+        let client = Client::tracked(rocket).expect("valid rocket instance");
+        let create_infra = client
+            .post("/infra")
+            .header(ContentType::JSON)
+            .body(r#"{"name":"test"}"#)
+            .dispatch();
+        assert_eq!(create_infra.status(), Status::Created);
+        let body = create_infra.into_string().unwrap();
+        let infra: Infra = serde_json::from_str(body.as_str()).unwrap();
+        assert_eq!(infra.name, "test");
+        let put_infra_response = client
+            .put(format!("/infra/{}", infra.id))
+            .body(r#"{"name":"rename_test"}"#)
+            .dispatch();
+        assert_eq!(put_infra_response.status(), Status::Ok);
     }
 
     #[derive(Deserialize)]
