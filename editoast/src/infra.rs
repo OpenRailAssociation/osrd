@@ -28,7 +28,7 @@ pub struct Infra {
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
-pub struct CreateInfra {
+pub struct InfraName {
     pub name: String,
 }
 
@@ -85,6 +85,21 @@ impl Infra {
             Ok(infra) => Ok(infra),
             Err(DieselError::NotFound) => Err(Box::new(InfraApiError::NotFound(infra_id))),
             Err(e) => Err(Box::new(InfraApiError::DieselError(e))),
+        }
+    }
+
+    pub fn rename(
+        conn: &PgConnection,
+        infra_id: i32,
+        new_name: String,
+    ) -> Result<Infra, Box<dyn ApiError>> {
+        match update(osrd_infra_infra.filter(id.eq(infra_id)))
+            .set(name.eq(new_name))
+            .get_result::<Infra>(conn)
+        {
+            Ok(infra) => Ok(infra),
+            Err(DieselError::NotFound) => Err(Box::new(InfraApiError::NotFound(infra_id))),
+            Err(err) => Err(Box::new(InfraApiError::DieselError(err))),
         }
     }
 
@@ -246,6 +261,15 @@ pub mod tests {
             assert!(Infra::delete(infra.id, conn).is_ok());
             let err = Infra::delete(infra.id, conn).unwrap_err();
             assert_eq!(err.get_status(), Status::NotFound);
+        });
+    }
+
+    #[test]
+    fn update_infra_name() {
+        test_infra_transaction(|conn, infra| {
+            let new_name = "new_name";
+            let updated_infra = Infra::rename(conn, infra.id, new_name.into()).unwrap();
+            assert_eq!(new_name, updated_infra.name);
         });
     }
 

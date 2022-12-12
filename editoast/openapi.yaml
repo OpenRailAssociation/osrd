@@ -113,6 +113,34 @@ paths:
                 items:
                   $ref: "#/components/schemas/OperationResult"
 
+    put:
+      tags:
+        - infra
+      summary: Update an infrastructure name
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: infra id
+          required: true
+      requestBody:
+        description: the name we want to give to the infra
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        200:
+          description: The updated infra
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Infra"
+
   /infra/{id}/errors/:
     get:
       tags:
