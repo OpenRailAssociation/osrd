@@ -89,6 +89,7 @@ function withOSRDStdcmParams<T>(Component: ComponentType<T>) {
         distributionsTypes={distributionsTypes}
         getAllowances={() => {}}
         setIsUpdating={setSyncInProgress}
+        config={{ immediateMutation: true, setDistribution: false }}
       />
     );
   };

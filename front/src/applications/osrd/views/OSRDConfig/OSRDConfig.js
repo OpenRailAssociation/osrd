@@ -65,8 +65,9 @@ export default function OSRDConfig(props) {
           </div>
           <Itinerary title={t('translation:common.itinerary')} updateExtViewport={setExtViewport} />
           {isStdcm && (
-            <div className="row">
-              <div className="col-xl-12"><StdcmSingleAllowance /></div>
+            <div className="osrd-config-item">
+              <div className="osrd-config-item-container mb-2"><StdcmSingleAllowance title={'Marge grille avant'}/></div>
+              <div className="osrd-config-item-container mb-2"><StdcmSingleAllowance title={'Marge grille arrière'}/></div>
             </div>
           )}
           <AddTrainLabels />

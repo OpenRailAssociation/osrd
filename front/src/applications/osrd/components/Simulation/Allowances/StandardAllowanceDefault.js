@@ -23,10 +23,10 @@ export default function StandardAllowanceDefault(props) {
     selectedTrain,
     selectedProjection,
     t,
-    dispatch
+    dispatch,
+    config,
+    title
   } = props;
-
-  console.log("INIT ", props)
 
   /*
   const { selectedProjection, selectedTrain } = useSelector((state) => state.osrdsimulation);
@@ -172,49 +172,62 @@ export default function StandardAllowanceDefault(props) {
     }
   }, [trainDetail]);
 
-  console.log("DISTR", distributionsTypes)
-  console.log("ALO", allowanceTypes)
+  console.log('allowanceTypes', allowanceTypes)
 
   return (
     <div className="row w-100 mareco">
-      <div className="col-md-2 text-normal">{t('sandardAllowancesWholePath')}</div>
-      <div className="col-md-1 text-normal">{t('Valeur par défault')}</div>
-      <div className="col-md-3">
-        <SelectSNCF
-          id="distributionTypeSelector"
-          options={distributionsTypes}
-          labelKey="label"
-          onChange={handleDistribution}
-          sm
-          value={distribution}
-        />
+      <div className="col-md-2 text-normal">{title || t('sandardAllowancesWholePath')}</div>
+
+      <div className="col-md-6">
+
+          {config.setDistribution && (
+             <div className="row">
+            <div className="col-md-1 text-normal">{t('Valeur par défault')}</div>
+            <div className="col-md-3">
+              <SelectSNCF
+                id="distributionTypeSelector"
+                options={distributionsTypes}
+                labelKey="label"
+                onChange={handleDistribution}
+                sm
+                value={distribution}
+              />
+            </div>
+            </div>
+             )
+            }
+            <div className="col">
+              <InputGroupSNCF
+                id="standardAllowanceTypeSelect"
+                options={allowanceTypes}
+                handleType={handleType}
+                value={value.value}
+                type={value.type}
+                sm
+              />
+            </div>
       </div>
-      <div className="col-md-3">
-        <InputGroupSNCF
-          id="standardAllowanceTypeSelect"
-          options={allowanceTypes}
-          handleType={handleType}
-          value={value.value}
-          type={value.type}
-          sm
-        />
-      </div>
-      <div className="col-md-3">
-        <button
-          type="button"
-          onClick={mutateSingleAllowance || addStandard}
-          className={`btn btn-success btn-sm mr-1 ${value.value === 0 ? 'disabled' : null}`}
-        >
-          {t('apply')}
-        </button>
-        <button
-          type="button"
-          onClick={() => delStandard(value)}
-          className={`btn btn-danger btn-sm ${value.value === 0 ? 'disabled' : null}`}
-        >
-          <FaTrash />
-        </button>
-      </div>
+      {
+        !config.immediateMutation && (
+          <div className="col">
+            <button
+              type="button"
+              onClick={mutateSingleAllowance || addStandard}
+              className={`btn btn-success btn-sm mr-1 ${value.value === 0 ? 'disabled' : null}`}
+            >
+              {t('apply')}
+            </button>
+            <button
+              type="button"
+              onClick={() => delStandard(value)}
+              className={`btn btn-danger btn-sm ${value.value === 0 ? 'disabled' : null}`}
+            >
+              <FaTrash />
+            </button>
+          </div>
+        )
+      }
+
     </div>
   );
 }
@@ -226,5 +239,14 @@ StandardAllowanceDefault.propTypes = {
   getAllowances: PropTypes.func.isRequired,
   setIsUpdating: PropTypes.func.isRequired,
   trainDetail: PropTypes.object.isRequired,
-  mutateSingleAllowance: PropTypes.func
+  mutateSingleAllowance: PropTypes.func,
+  config:PropTypes.object,
+  title: PropTypes.string
 };
+
+StandardAllowanceDefault.defaultProps = {
+  config:{
+    immediateMutation: false,
+    setDistribution: true
+  }
+}
