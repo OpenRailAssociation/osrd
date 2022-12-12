@@ -1,6 +1,7 @@
-import { Position } from 'geojson';
+import { Feature, Position } from 'geojson';
 import { JSONSchema7 } from 'json-schema';
 import { isArray, isNil, isObject, uniq } from 'lodash';
+import maplibregl from 'maplibre-gl';
 
 import { EditorEntity, EditorSchema } from '../../../types';
 import {
@@ -8,6 +9,13 @@ import {
   SIGNALS_TO_SYMBOLS,
   SignalType,
 } from '../../../common/Map/Consts/SignalsNames';
+
+// Quick helper to get a "promised" setTimeout:
+export function setTimeoutPromise(ms: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
 
 export const NEW_ENTITY_ID = 'osrd/editor/new-signal-id';
 
@@ -105,30 +113,5 @@ export function flattenEntity(entity: EditorEntity): EditorEntity {
   return {
     ...entity,
     properties: flatten(entity.properties, '_', {}, '') as EditorEntity['properties'],
-  };
-}
-
-/**
- * This function nests an object, splitting paths with a given separator.
- */
-export function nestEntity(entity: EditorEntity): EditorEntity {
-  const oldProperties = entity.properties;
-  const newProperties = {} as EditorEntity['properties'];
-  const separator = '_';
-
-  Object.keys(oldProperties).forEach((key) => {
-    const path = key.split(separator);
-    path.reduce((props, k, i, a) => {
-      const isLast = i === a.length - 1;
-
-      if (isLast) props[k] = oldProperties[key];
-      else props[k] = props[k] || {};
-      return props[k];
-    }, newProperties);
-  });
-
-  return {
-    ...entity,
-    properties: newProperties,
   };
 }
