@@ -98,6 +98,12 @@ public class Pathfinding<NodeT, EdgeT> {
         return this;
     }
 
+        /** Sets the functor used to determine which ranges are blocked on an edge */
+    public Pathfinding<NodeT, EdgeT> addBlockedRangeOnEdges(Collection<EdgeToRanges<EdgeT>> f) {
+        this.blockedRangesOnEdge.functions.addAll(f);
+        return this;
+    }
+
     /** Runs the pathfinding, returning a path as a list of (edge, start offset, end offset).
      * Each target is given as a collection of location.
      * It finds the shortest path from start to end,
