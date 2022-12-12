@@ -35,8 +35,8 @@ import java.util.stream.Collectors;
 public class PathfindingRoutesEndpoint implements Take {
     private final InfraManager infraManager;
     public static final String PATH_FINDING_GAUGE_ERROR = "No path could be found after loading Gauge constraints";
-    public static final String PATH_FINDING_ELECTRIFICATION_ERROR = "No path could be found after loading " +
-            "Electrification constraints";
+    public static final String PATH_FINDING_ELECTRIFICATION_ERROR = "No path could be found after loading "
+            + "Electrification constraints";
 
     public PathfindingRoutesEndpoint(InfraManager infraHandler) {
         this.infraManager = infraHandler;
@@ -107,7 +107,7 @@ public class PathfindingRoutesEndpoint implements Take {
             remainingDistanceEstimator = new RemainingDistanceEstimator(waypoints.get(1));
         }
         List<EdgeToRanges<SignalingRoute>> constraintsList =
-                List.of(loadingGaugeConstraints,electrificationConstraints);
+                List.of(loadingGaugeConstraints, electrificationConstraints);
         // Compute the paths from the entry waypoint to the exit waypoint
         Pathfinding.Result<SignalingRoute> pathfinding = computePaths(infra, waypoints, constraintsList,
                 remainingDistanceEstimator);
@@ -135,11 +135,11 @@ public class PathfindingRoutesEndpoint implements Take {
                         .addBlockedRangeOnEdges(constraint)
                         .setRemainingDistanceEstimator(remainingDistanceEstimator)
                         .runPathfinding(waypoints);
-                if(possiblePathWithoutError != null) {
-                    if(constraint instanceof LoadingGaugeConstraints) {
+                if (possiblePathWithoutError != null) {
+                    if (constraint instanceof LoadingGaugeConstraints) {
                         throw new NoPathFoundError(PATH_FINDING_GAUGE_ERROR);
                     }
-                    if(constraint instanceof ElectrificationConstraints) {
+                    if (constraint instanceof ElectrificationConstraints) {
                         throw new NoPathFoundError(PATH_FINDING_ELECTRIFICATION_ERROR);
                     }
                 }
