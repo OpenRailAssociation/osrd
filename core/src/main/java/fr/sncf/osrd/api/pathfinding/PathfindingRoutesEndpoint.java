@@ -65,11 +65,6 @@ public class PathfindingRoutesEndpoint implements Take {
 
             var path = runPathfinding(infra, reqWaypoints, rollingStocks);
 
-            if (path == null) {
-                var error = new NoPathFoundError("No path could be found");
-                return ExceptionHandler.toResponse(error);
-            }
-
             var res = PathfindingResultConverter.convert(path, infra, recorder);
 
             validate(infra, res, reqWaypoints);
@@ -136,6 +131,7 @@ public class PathfindingRoutesEndpoint implements Take {
         // handling errors
         if (pathfinding == null) {
             for (EdgeToRanges<SignalingRoute> constraint: constraintsList) {
+
                 var possiblePathWithoutError = new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
                         .setEdgeToLength(route -> route.getInfraRoute().getLength())
                         .addBlockedRangeOnEdges(constraint)
