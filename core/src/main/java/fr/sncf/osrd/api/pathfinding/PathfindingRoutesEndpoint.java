@@ -22,6 +22,7 @@ import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.GraphAdapter;
 import fr.sncf.osrd.utils.graph.Pathfinding;
+import fr.sncf.osrd.utils.graph.functional_interfaces.EdgeToRanges;
 import org.jetbrains.annotations.Nullable;
 import org.takes.Request;
 import org.takes.Response;
@@ -105,37 +106,44 @@ public class PathfindingRoutesEndpoint implements Take {
             // The current implementation of A* only works well if there are no intermediate steps
             remainingDistanceEstimator = new RemainingDistanceEstimator(waypoints.get(1));
         }
-
-        Pathfinding.Result<SignalingRoute> pathfinding = computePaths(infra, waypoints, loadingGaugeConstraints,
-                electrificationConstraints, remainingDistanceEstimator);
+        List constraintsList = List.of(loadingGaugeConstraints,electrificationConstraints);
         // Compute the paths from the entry waypoint to the exit waypoint
+        Pathfinding.Result<SignalingRoute> pathfinding = computePaths(infra, waypoints, constraintsList,
+                remainingDistanceEstimator);
+
         return pathfinding;
     }
 
     private static Pathfinding.Result<SignalingRoute> computePaths(SignalingInfra infra,
              ArrayList<Collection<Pathfinding.EdgeLocation<SignalingRoute>>> waypoints,
-             LoadingGaugeConstraints loadingGaugeConstraints,
-             ElectrificationConstraints electrificationConstraints,
+             List constraintsList,
              RemainingDistanceEstimator remainingDistanceEstimator) {
 
         var path = new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
                 .setEdgeToLength(route -> route.getInfraRoute().getLength())
                 .setRemainingDistanceEstimator(remainingDistanceEstimator);
-        var pathfinding = path.addBlockedRangeOnEdges(loadingGaugeConstraints)
-                .addBlockedRangeOnEdges(electrificationConstraints)
-                .runPathfinding(waypoints);
+        for (Object constraint: constraintsList) {
+            path.addBlockedRangeOnEdges((EdgeToRanges<SignalingRoute>) constraint);
+        }
+        var pathfinding = path.runPathfinding(waypoints);
+
         // handling errors
         if (pathfinding == null) {
-            var pathError = path.addBlockedRangeOnEdges(loadingGaugeConstraints).runPathfinding(waypoints);
-            if (pathError != null) {
-                throw new NoPathFoundError("No path could be found due to Gauge");
-            } else {
-                pathError = path.addBlockedRangeOnEdges(electrificationConstraints).runPathfinding(waypoints);
-                if (pathError != null) {
-                    throw new NoPathFoundError("No path could be found due to Electrification");
+            for (Object constraint: constraintsList) {
+                var possiblePathWithoutError = new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
+                        .setEdgeToLength(route -> route.getInfraRoute().getLength())
+                        .addBlockedRangeOnEdges((EdgeToRanges<SignalingRoute>) constraint)
+                        .setRemainingDistanceEstimator(remainingDistanceEstimator)
+                        .runPathfinding(waypoints);
+                if(possiblePathWithoutError != null) {
+                    if(constraint instanceof LoadingGaugeConstraints) {
+                        throw new NoPathFoundError("No path could be found after loading Gauge constraints");
+                    }
+                    if(constraint instanceof ElectrificationConstraints) {
+                        throw new NoPathFoundError("No path could be found after loading Electrification constraints");
+                    }
                 }
             }
-            pathfinding = null;
         }
         return pathfinding;
     }
