@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 
 public class PathfindingRoutesEndpoint implements Take {
     private final InfraManager infraManager;
+    public static final HashMap<Class<?>, String> constraints = new HashMap<>();
     public static final String PATH_FINDING_GENERIC_ERROR = "No path could be found";
     public static final String PATH_FINDING_GAUGE_ERROR = "No path could be found after loading Gauge constraints";
     public static final String PATH_FINDING_ELECTRIFICATION_ERROR = "No path could be found after loading "
@@ -41,6 +42,8 @@ public class PathfindingRoutesEndpoint implements Take {
 
     public PathfindingRoutesEndpoint(InfraManager infraHandler) {
         this.infraManager = infraHandler;
+        constraints.put(LoadingGaugeConstraints.class, PATH_FINDING_GAUGE_ERROR);
+        constraints.put(ElectrificationConstraints.class, PATH_FINDING_ELECTRIFICATION_ERROR);
     }
 
     @Override
@@ -97,9 +100,8 @@ public class PathfindingRoutesEndpoint implements Take {
         // Initializes the constraints
         var loadingGaugeConstraints = new LoadingGaugeConstraints(rollingStocks);
         var electrificationConstraints = new ElectrificationConstraints(rollingStocks);
-        var constraints = new HashMap<EdgeToRanges<SignalingRoute>, String>();
-        constraints.put(loadingGaugeConstraints, PATH_FINDING_GAUGE_ERROR);
-        constraints.put(electrificationConstraints, PATH_FINDING_ELECTRIFICATION_ERROR);
+        List<EdgeToRanges<SignalingRoute>> constraintsList =
+                List.of(loadingGaugeConstraints, electrificationConstraints);
         RemainingDistanceEstimator remainingDistanceEstimator = null;
 
         if (waypoints.size() == 2) {
@@ -107,22 +109,20 @@ public class PathfindingRoutesEndpoint implements Take {
             remainingDistanceEstimator = new RemainingDistanceEstimator(waypoints.get(1));
         }
         // Compute the paths from the entry waypoint to the exit waypoint
-        Pathfinding.Result<SignalingRoute> pathfinding = computePaths(
+        return computePaths(
                 infra,
                 waypoints,
-                constraints,
+                constraintsList,
                 remainingDistanceEstimator
         );
-        return pathfinding;
     }
 
     private static Pathfinding.Result<SignalingRoute> computePaths(
             SignalingInfra infra,
             ArrayList<Collection<Pathfinding.EdgeLocation<SignalingRoute>>> waypoints,
-            HashMap<EdgeToRanges<SignalingRoute>, String> constraints,
+            List<EdgeToRanges<SignalingRoute>> constraintsList,
             RemainingDistanceEstimator remainingDistanceEstimator
     ) throws NoPathFoundError {
-        var constraintsList = constraints.keySet();
         var pathFound = new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
                 .setEdgeToLength(route -> route.getInfraRoute().getLength())
                 .setRemainingDistanceEstimator(remainingDistanceEstimator)
@@ -132,7 +132,7 @@ public class PathfindingRoutesEndpoint implements Take {
         // handling errors
         if (pathFound == null) {
             for (EdgeToRanges<SignalingRoute> currentConstraint: constraintsList) {
-                List<EdgeToRanges<SignalingRoute>> constraintsListWithoutCurrent = new ArrayList<>(constraintsList);
+                var constraintsListWithoutCurrent = new ArrayList<>(constraintsList);
                 constraintsListWithoutCurrent.remove(currentConstraint);
                 var possiblePathWithoutError = new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
                         .setEdgeToLength(route -> route.getInfraRoute().getLength())
@@ -140,7 +140,7 @@ public class PathfindingRoutesEndpoint implements Take {
                         .setRemainingDistanceEstimator(remainingDistanceEstimator)
                         .runPathfinding(waypoints);
                 if (possiblePathWithoutError != null) {
-                    throw new NoPathFoundError(constraints.get(currentConstraint));
+                    throw new NoPathFoundError(constraints.get(currentConstraint.getClass()));
                 }
             }
             throw new NoPathFoundError(PATH_FINDING_GENERIC_ERROR);
