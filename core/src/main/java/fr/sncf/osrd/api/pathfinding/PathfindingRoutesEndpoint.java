@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 
 public class PathfindingRoutesEndpoint implements Take {
     private final InfraManager infraManager;
-    public static final HashMap<Class<?>, String> constraints = new HashMap<>();
+    private static final HashMap<Class<?>, String> constraints = new HashMap<>();
     public static final String PATH_FINDING_GENERIC_ERROR = "No path could be found";
     public static final String PATH_FINDING_GAUGE_ERROR = "No path could be found after loading Gauge constraints";
     public static final String PATH_FINDING_ELECTRIFICATION_ERROR = "No path could be found after loading "
