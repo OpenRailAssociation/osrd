@@ -135,7 +135,7 @@ public class PathfindingRoutesEndpoint implements Take {
                         .addBlockedRangeOnEdges(constraint)
                         .setRemainingDistanceEstimator(remainingDistanceEstimator)
                         .runPathfinding(waypoints);
-                if (possiblePathWithoutError != null) {
+                if (possiblePathWithoutError == null) {
                     if (constraint instanceof LoadingGaugeConstraints) {
                         throw new NoPathFoundError(PATH_FINDING_GAUGE_ERROR);
                     }
