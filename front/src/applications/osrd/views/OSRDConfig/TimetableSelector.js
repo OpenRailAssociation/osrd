@@ -123,7 +123,7 @@ export default function TimetableSelector(props) {
         >
           <div className="d-flex align-items-center">
             <img width="32px" className="mr-2" src={icon} alt="timetableIcon" />
-            {timeTable}
+            {timeTable()}
           </div>
         </div>
         {timetableID !== undefined && trainList !== undefined && trainList.length > 0 ? (

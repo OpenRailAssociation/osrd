@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import InfraSelector from 'applications/osrd/views/OSRDConfig/InfraSelector';
+import InfraSelector from 'common/InfraSelector/InfraSelector';
 import RollingStockSelector from 'applications/osrd/views/OSRDConfig/RollingStockSelector';
 import TimetableSelector from 'applications/osrd/views/OSRDConfig/TimetableSelector';
 import { useTranslation } from 'react-i18next';
