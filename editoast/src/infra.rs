@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
 use thiserror::Error;
 
-pub const RAILJSON_VERSION: &str = "3.0.1";
+pub const RAILJSON_VERSION: &str = "3.1.0";
 
 #[derive(Clone, QueryableByName, Queryable, Debug, Serialize, Deserialize, Identifiable)]
 #[table_name = "osrd_infra_infra"]
