@@ -88,10 +88,7 @@ export default function Map(props) {
       touchZoomRotate
     >
       <VirtualLayers />
-      <AttributionControl
-        className="attribution-control"
-        customAttribution="©SNCF/DGEX Solutions"
-      />
+      <AttributionControl className="attribution-control" customAttribution="©SNCF Réseau" />
       <ScaleControl maxWidth={100} unit="metric" style={scaleControlStyle} />
 
       <Background

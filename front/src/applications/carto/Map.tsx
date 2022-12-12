@@ -125,7 +125,7 @@ function Map() {
         touchZoomRotate
       >
         <VirtualLayers />
-        <AttributionControl customAttribution="©SNCF/DGEX Solutions" />
+        <AttributionControl customAttribution="©SNCF Réseau" />
         <ScaleControl maxWidth={100} unit="metric" style={scaleControlStyle} />
 
         <Background
