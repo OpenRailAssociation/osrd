@@ -136,7 +136,7 @@ public class STDCMPathfinding {
         res.add(firstRange);
         for (var edge : orderedEdges)
             res.add(new EdgeRange<>(edge, 0, edge.route().getInfraRoute().getLength()));
-        if (firstRange != lastRange)
+        if (firstRange.edge() != lastRange.edge())
             res.add(lastRange);
         return res;
     }
