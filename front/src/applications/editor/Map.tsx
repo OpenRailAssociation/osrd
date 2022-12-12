@@ -4,6 +4,8 @@ import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl';
 import { withTranslation } from 'react-i18next';
 import { TFunction } from 'i18next';
 import maplibregl from 'maplibre-gl';
+import { isEqual } from 'lodash';
+
 import VirtualLayers from 'applications/osrd/views/OSRDSimulation/VirtualLayers';
 import colors from 'common/Map/Consts/colors';
 import 'common/Map/Map.scss';
@@ -28,15 +30,18 @@ import {
   EditorContextType,
   EditorState,
   ExtendedEditorContextType,
+  LAYER_TO_EDITOAST_DICT,
+  LAYERS_SET,
+  LayerType,
   OSRDConf,
   Tool,
 } from './tools/types';
-import { EditorEntity } from '../../types';
+import { getEntity } from './data/api';
 
 interface MapProps<S extends CommonToolState = CommonToolState> {
   t: TFunction;
   toolState: S;
-  setToolState: (newState: S) => void;
+  setToolState: (stateOrReducer: S | ((oldState: S) => S)) => void;
   activeTool: Tool<S>;
   mapStyle: string;
   viewport: Viewport;
@@ -110,10 +115,12 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
           onMove={(e) => setViewport(e.viewState)}
           onMoveStart={() => setMapState((prev) => ({ ...prev, isDragging: true }))}
           onMoveEnd={() => setMapState((prev) => ({ ...prev, isDragging: false }))}
+          onMouseOut={() => {
+            setToolState((state) => ({ ...state, hovered: null }));
+          }}
           onMouseMove={(e) => {
             const nearestResult = getMapMouseEventNearestFeature(e);
             const partialToolState: Partial<CommonToolState> = {
-              hovered: null,
               mousePosition: [e.lngLat.lng, e.lngLat.lat],
             };
             const partialMapState: Partial<MapState> = { isHovering: false };
@@ -121,23 +128,43 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
             // if we hover something
             if (nearestResult) {
               const { feature } = nearestResult;
-              const eventWithFeature = {
-                ...e,
-                preventDefault: e.preventDefault,
-                features: [feature],
-              };
+
               partialMapState.isHovering = true;
               if (activeTool.onHover) {
-                activeTool.onHover(eventWithFeature, extendedContext);
-              } else if (feature && feature.properties) {
-                const entity = feature as any as EditorEntity;
-                partialToolState.hovered = entity || null;
-                setToolState({ ...toolState, ...partialToolState });
+                activeTool.onHover(
+                  {
+                    ...e,
+                    // (don't remove this or TypeScript won't be happy)
+                    preventDefault: e.preventDefault,
+                    // Ensure there is a feature, and the good one:
+                    features: [feature],
+                  },
+                  extendedContext
+                );
+              } else if (
+                feature &&
+                LAYERS_SET.has(feature.sourceLayer) &&
+                feature.properties &&
+                feature.properties.id !== toolState.hovered?.id
+              ) {
+                partialToolState.hovered = {
+                  id: feature.properties?.id as string,
+                  type: LAYER_TO_EDITOAST_DICT[feature.sourceLayer as LayerType],
+                };
               }
-            } else if (activeTool.onMove) {
-              activeTool.onMove(e, extendedContext);
+            } else {
+              partialToolState.hovered = null;
+
+              if (activeTool.onMove) {
+                activeTool.onMove(e, extendedContext);
+              }
             }
-            setMapState((prev) => ({ ...prev, ...partialMapState }));
+
+            const newToolState = { ...toolState, ...partialToolState };
+            if (!isEqual(toolState, newToolState)) setToolState(newToolState);
+
+            const newMapState = { ...mapState, ...partialMapState };
+            if (!isEqual(mapState, newMapState)) setMapState(newMapState);
           }}
           onLoad={(e) => {
             // need to call resize, otherwise sometimes the canvas doesn't take 100%
@@ -165,8 +192,15 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
                   features: [nearestResult.feature],
                 }
               : e;
-            if (toolState.hovered && activeTool.onClickFeature) {
-              activeTool.onClickFeature(toolState.hovered, eventWithFeature, extendedContext);
+            if (toolState.hovered && activeTool.onClickEntity) {
+              getEntity(
+                osrdConf.infraID as string,
+                toolState.hovered.id,
+                toolState.hovered.type
+              ).then((entity) => {
+                if (activeTool.onClickEntity)
+                  activeTool.onClickEntity(entity, eventWithFeature, extendedContext);
+              });
             }
             if (activeTool.onClickMap) {
               activeTool.onClickMap(eventWithFeature, extendedContext);

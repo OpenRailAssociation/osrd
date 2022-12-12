@@ -61,10 +61,12 @@ export const SelectionLayers: FC = () => {
           closeButton={false}
         >
           <EntitySumUp
-            entity={state.hovered}
+            id={state.hovered.id}
+            objType={state.hovered.type}
             status={
-              state.selection.find((item) => item.properties.id === state.hovered?.properties.id) &&
-              'selected'
+              state.selection.find(
+                (item) => item.properties.id === (state.hovered?.id as string)
+              ) && 'selected'
             }
           />
         </Popup>

@@ -31,6 +31,7 @@ import {
   Tool,
 } from './tools/types';
 import TOOLS from './tools/list';
+import { isFunction } from 'lodash';
 
 const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   const dispatch = useDispatch();
@@ -64,10 +65,10 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
     [osrdConf, setToolAndState]
   );
   const setToolState = useCallback(
-    <S extends CommonToolState>(state?: S) => {
+    <S extends CommonToolState>(state?: S | ((prev: S) => S)) => {
       setToolAndState((s) => ({
         ...s,
-        state,
+        state: isFunction(state) ? state(s.state) : state,
       }));
     },
     [setToolAndState]

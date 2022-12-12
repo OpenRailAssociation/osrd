@@ -12,7 +12,7 @@ import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 import MapSettingsBackgroundSwitches from 'common/Map/Settings/MapSettingsBackgroundSwitches';
 import EditorContext from '../context';
 import Modal from './Modal';
-import { LayerType, ModalProps, OBJTYPE_TO_LAYER_DICT } from '../tools/types';
+import { LayerType, ModalProps, EDITOAST_TO_LAYER_DICT, EditoastType } from '../tools/types';
 import { selectLayers } from '../../../reducers/editor';
 import { EditorEntity } from '../../../types';
 
@@ -42,7 +42,7 @@ const LayersModal: FC<
       selection
         ? mapKeys(
             mapValues(groupBy(selection, 'objType'), (values) => values.length),
-            (_values, key) => OBJTYPE_TO_LAYER_DICT[key]
+            (_values, key) => EDITOAST_TO_LAYER_DICT[key as EditoastType]
           )
         : {},
     [selection]
