@@ -106,7 +106,8 @@ public class PathfindingRoutesEndpoint implements Take {
             // The current implementation of A* only works well if there are no intermediate steps
             remainingDistanceEstimator = new RemainingDistanceEstimator(waypoints.get(1));
         }
-        List constraintsList = List.of(loadingGaugeConstraints,electrificationConstraints);
+        List<EdgeToRanges<SignalingRoute>> constraintsList =
+                List.of(loadingGaugeConstraints,electrificationConstraints);
         // Compute the paths from the entry waypoint to the exit waypoint
         Pathfinding.Result<SignalingRoute> pathfinding = computePaths(infra, waypoints, constraintsList,
                 remainingDistanceEstimator);
@@ -115,23 +116,23 @@ public class PathfindingRoutesEndpoint implements Take {
 
     private static Pathfinding.Result<SignalingRoute> computePaths(SignalingInfra infra,
                    ArrayList<Collection<Pathfinding.EdgeLocation<SignalingRoute>>> waypoints,
-                   List constraintsList,
+                   List<EdgeToRanges<SignalingRoute>> constraintsList,
                    RemainingDistanceEstimator remainingDistanceEstimator) {
 
         var path = new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
                 .setEdgeToLength(route -> route.getInfraRoute().getLength())
                 .setRemainingDistanceEstimator(remainingDistanceEstimator);
-        for (Object constraint: constraintsList) {
-            path.addBlockedRangeOnEdges((EdgeToRanges<SignalingRoute>) constraint);
+        for (EdgeToRanges<SignalingRoute> constraint: constraintsList) {
+            path.addBlockedRangeOnEdges(constraint);
         }
         var pathfinding = path.runPathfinding(waypoints);
 
         // handling errors
         if (pathfinding == null) {
-            for (Object constraint: constraintsList) {
+            for (EdgeToRanges<SignalingRoute> constraint: constraintsList) {
                 var possiblePathWithoutError = new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
                         .setEdgeToLength(route -> route.getInfraRoute().getLength())
-                        .addBlockedRangeOnEdges((EdgeToRanges<SignalingRoute>) constraint)
+                        .addBlockedRangeOnEdges(constraint)
                         .setRemainingDistanceEstimator(remainingDistanceEstimator)
                         .runPathfinding(waypoints);
                 if(possiblePathWithoutError != null) {
