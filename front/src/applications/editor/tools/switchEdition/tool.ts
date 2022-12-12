@@ -81,7 +81,7 @@ const SwitchEditionTool: Tool<SwitchEditionState> = {
       });
     }
   },
-  onClickFeature(feature, e, { state }) {
+  onClickEntity(feature, e, { state }) {
     if (state.portEditionState.type === 'selection') {
       state.portEditionState.onSelect(feature.properties.id, [e.point.x, e.point.y]);
     }

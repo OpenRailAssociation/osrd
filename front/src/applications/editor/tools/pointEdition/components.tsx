@@ -183,7 +183,7 @@ export const BasePointEditionLayers: FC<{
           latitude={renderedEntity.geometry.coordinates[1]}
           onClose={() => setShowPopup(false)}
         >
-          <EntitySumUp entity={renderedEntity} status="edited" />
+          {/*<EntitySumUp id={} objType={} entity={renderedEntity} status="edited" />*/}
         </Popup>
       )}
     </>
