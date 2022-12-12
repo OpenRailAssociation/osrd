@@ -40,6 +40,9 @@ public class PathfindingRoutesEndpoint implements Take {
     public static final String PATH_FINDING_ELECTRIFICATION_ERROR = "No path could be found after loading "
             + "Electrification constraints";
 
+    /**
+     * constructor
+     */
     public PathfindingRoutesEndpoint(InfraManager infraHandler) {
         this.infraManager = infraHandler;
         constraints.put(LoadingGaugeConstraints.class, PATH_FINDING_GAUGE_ERROR);
