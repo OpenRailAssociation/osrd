@@ -1,13 +1,18 @@
 import './Home.scss';
+
+import Card from 'common/BootstrapSNCF/CardSNCF/CardSNCF';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import React from 'react';
+import mapImg from 'assets/pictures/home/map.png';
+import editorImg from 'assets/pictures/home/editor.png';
+import stdcmImg from 'assets/pictures/home/stdcm.png';
+import timetableImg from 'assets/pictures/home/timetable.png';
+import customgetImg from 'assets/pictures/home/customget.png';
+import opendataImg from 'assets/pictures/home/opendata.png';
 import logo from 'assets/logo_osrd_seul_blanc.svg';
 import osrdLogo from 'assets/pictures/osrd.png';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
-import { MdMoreTime, MdOutlineRailwayAlert, MdOutlineTimeline, MdShowChart } from 'react-icons/md';
-import { FaMap, FaMapMarked } from 'react-icons/fa';
 
 export default function Home() {
   const user = useSelector((state) => state.user);
@@ -17,49 +22,29 @@ export default function Home() {
     <>
       <NavBarSNCF appName="OSRD" username={user.username} logo={logo} />
       <main className="mastcontainer mastcontainer-no-mastnav">
-        <div className="">
-          <div className="my-4 d-flex align-items-center justify-content-center">
-            <img src={osrdLogo} alt="OSRD logo" width="92px" />
-            <h1 className="font-weight-bold">Open Source Railway Designer</h1>
-          </div>
-          <div className="my-4 d-flex align-items-center justify-content-center">
-            <div className="">
-              <Link to="/osrd">
-                <div className="title-page-link">
-                  <MdShowChart />
-                  <span className="ml-2">{t('timetable')}</span>
-                </div>
-              </Link>
-              <Link to="/carto">
-                <div className="title-page-link">
-                  <FaMap />
-                  <span className="ml-2">{t('map')}</span>
-                </div>
-              </Link>
-              <Link to="/editor">
-                <div className="title-page-link">
-                  <FaMapMarked />
-                  <span className="ml-2">{t('editor')}</span>
-                </div>
-              </Link>
-              <Link to="/stdcm">
-                <div className="title-page-link">
-                  <MdOutlineRailwayAlert />
-                  <span className="ml-2">{t('stdcm')}</span>
-                </div>
-              </Link>
-              <Link to="/opendata">
-                <div className="title-page-link">
-                  <MdMoreTime />
-                  <span className="ml-2">{t('opendataimport')}</span>
-                </div>
-              </Link>
-              <Link to="/customget">
-                <div className="title-page-link">
-                  <MdOutlineTimeline />
-                  <span className="ml-2">{t('customget')}</span>
-                </div>
-              </Link>
+        <div className="application-title">
+          <img src={osrdLogo} alt="OSRD logo" />
+          <h1>Open-Source Railway Designer</h1>
+        </div>
+        <div className="cardscontainer">
+          <div className="row">
+            <div className="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
+              <Card img={timetableImg} title={t('timetable')} link="/osrd" />
+            </div>
+            <div className="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
+              <Card img={mapImg} title={t('map')} link="/carto" />
+            </div>
+            <div className="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
+              <Card img={editorImg} title={t('editor')} link="/editor" />
+            </div>
+            <div className="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
+              <Card img={stdcmImg} title={t('stdcm')} link="/stdcm" />
+            </div>
+            <div className="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
+              <Card img={opendataImg} title={t('opendataimport')} link="/opendata" />
+            </div>
+            <div className="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
+              <Card img={customgetImg} title={t('customget')} link="/customget" />
             </div>
           </div>
         </div>
