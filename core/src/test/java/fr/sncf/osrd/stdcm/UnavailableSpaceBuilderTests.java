@@ -152,4 +152,33 @@ public class UnavailableSpaceBuilderTests {
                 res.get(thirdRoute)
         );
     }
+
+    @Test
+    public void testMargins() {
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var firstRoute = infraBuilder.addRoute("a", "b", 1000);
+        var secondRoute = infraBuilder.addRoute("b", "c", 1000);
+        var infra = infraBuilder.build();
+        var res = computeUnavailableSpace(
+                infra,
+                Set.of(new STDCMRequest.RouteOccupancy("a->b", 100, 200)),
+                REALISTIC_FAST_TRAIN,
+                20,
+                60
+        );
+        // TimeStart and TimeEnd should be adjusted because of the margins
+        // (20s before and 60s after)
+        assertEquals(
+                Set.of(
+                        new OccupancyBlock(80, 260, 0, 1000)
+                ),
+                res.get(firstRoute)
+        );
+        assertEquals(
+                Set.of(
+                        new OccupancyBlock(80, 260, 0, 1000)
+                ),
+                res.get(secondRoute)
+        );
+    }
 }
