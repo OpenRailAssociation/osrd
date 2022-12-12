@@ -212,12 +212,10 @@ public class PathfindingTest extends ApiTest {
         );
 
         // Check that we can't go through the infra with a large train
-        assertNull(
-                PathfindingRoutesEndpoint.runPathfinding(infra, waypoints, List.of(TestTrains.FAST_TRAIN_LARGE_GAUGE))
-        );
         assertThrows(
                 NoPathFoundError.class,
-                () -> PathfindingRoutesEndpoint.runPathfinding(infra, waypoints, List.of(TestTrains.FAST_TRAIN_LARGE_GAUGE)),
+                () -> PathfindingRoutesEndpoint.runPathfinding(infra, waypoints,
+                        List.of(TestTrains.FAST_TRAIN_LARGE_GAUGE)),
                 PathfindingRoutesEndpoint.PATH_FINDING_GAUGE_ERROR
         );
 
@@ -293,7 +291,8 @@ public class PathfindingTest extends ApiTest {
         }
         assertThrows(
                 NoPathFoundError.class,
-                () -> PathfindingRoutesEndpoint.runPathfinding(infra, waypoints, List.of(TestTrains.FAST_ELECTRIC_TRAIN)),
+                () -> PathfindingRoutesEndpoint.runPathfinding(infra, waypoints,
+                        List.of(TestTrains.FAST_ELECTRIC_TRAIN)),
                 PathfindingRoutesEndpoint.PATH_FINDING_ELECTRIFICATION_ERROR
         );
     }
