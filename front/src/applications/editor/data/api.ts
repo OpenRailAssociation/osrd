@@ -17,6 +17,7 @@ import {
 } from '../../../types';
 import { zoneToBBox } from '../../../utils/mapboxHelper';
 import { getObjectTypeForLayer } from './utils';
+import { EditoastType } from '../tools/types';
 
 /**
  * Call the API to get an infra
@@ -93,6 +94,42 @@ export async function getEditorData(
     (iter, layer, i) => ({
       ...iter,
       [layer]: responses[i],
+    }),
+    {}
+  );
+}
+
+/**
+ * Returns an entity from editoast:
+ */
+export async function getEntity<T extends EditorEntity = EditorEntity>(
+  infra: number | string,
+  id: string,
+  type: EditoastType
+): Promise<T> {
+  const res = await post<
+    string[],
+    { railjson: T['properties']; geographic: T['geometry']; schematic: T['geometry'] }[]
+  >(`/editoast/infra/${infra}/objects/${type}/`, [id]);
+
+  if (res.length < 1) throw new Error(`getEntity: No entity found for type ${type} and id ${id}`);
+
+  return { properties: res[0].railjson, objType: type, geometry: res[0].geographic } as T;
+}
+export async function getEntities<T extends EditorEntity = EditorEntity>(
+  infra: number | string,
+  ids: string[],
+  type: EditoastType
+): Promise<Record<string, T>> {
+  const res = await post<
+    string[],
+    { railjson: T['properties']; geographic: T['geometry']; schematic: T['geometry'] }[]
+  >(`/editoast/infra/${infra}/objects/${type}/`, ids);
+
+  return res.reduce(
+    (iter, entry, i) => ({
+      ...iter,
+      [ids[i]]: { properties: entry.railjson, objType: type, geometry: entry.geographic } as T,
     }),
     {}
   );

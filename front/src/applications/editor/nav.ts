@@ -6,7 +6,13 @@ import { FiLayers, FiZoomIn, FiZoomOut } from 'react-icons/fi';
 import { FaCompass } from 'react-icons/fa';
 
 import { Viewport } from 'reducers/map';
-import { EditorState, ModalRequest, OBJTYPE_TO_LAYER_DICT, Tool } from './tools/types';
+import {
+  EditorState,
+  ModalRequest,
+  EDITOAST_TO_LAYER_DICT,
+  Tool,
+  EditoastType,
+} from './tools/types';
 import InfraSelectionModal from './components/InfraSelectionModal';
 import LayersModal from './components/LayersModal';
 import { SelectionState } from './tools/selection/types';
@@ -118,7 +124,7 @@ const NavButtons: NavButton[][] = [
               (setToolState as unknown as (newState: SelectionState) => void)({
                 ...currentState,
                 selection: currentState.selection.filter((entity) =>
-                  newLayers.has(OBJTYPE_TO_LAYER_DICT[entity.objType])
+                  newLayers.has(EDITOAST_TO_LAYER_DICT[entity.objType as EditoastType])
                 ),
               } as SelectionState);
             }

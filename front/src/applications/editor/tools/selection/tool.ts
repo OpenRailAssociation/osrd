@@ -184,7 +184,7 @@ const SelectionTool: Tool<SelectionState> = {
   ],
 
   // Interactions:
-  onClickFeature(feature, e, { setState, state }) {
+  onClickEntity(feature, e, { setState, state }) {
     if (state.selectionState.type !== 'single') return;
 
     let { selection } = state;

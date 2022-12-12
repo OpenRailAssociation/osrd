@@ -1,6 +1,8 @@
-import React, { FC } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { flatMap, uniq } from 'lodash';
+import { flatMap, map, uniq } from 'lodash';
+import { useSelector } from 'react-redux';
+import { TFunction } from 'i18next';
 import cx from 'classnames';
 
 import { NEW_ENTITY_ID } from '../data/utils';
@@ -11,6 +13,8 @@ import {
   SwitchEntity,
   TrackSectionEntity,
 } from '../../../types';
+import { EditoastType, OSRDConf } from '../tools/types';
+import { getEntities, getEntity } from '../data/api';
 
 function prettifyStringsArray(strings: string[], finalSeparator: string): string {
   switch (strings.length) {
@@ -34,18 +38,38 @@ const DEFAULT_CLASSES = {
   strong: 'strong',
 };
 
-const EntitySumUp: FC<{
-  entity: EditorEntity;
-  classes?: Partial<typeof DEFAULT_CLASSES>;
-  status?: string;
-}> = ({ entity, classes: classesOverride, status }) => {
-  const { t } = useTranslation();
-  // const { editorState } = useContext(EditorContext) as ExtendedEditorContextType<unknown>;
-  const classes = { ...DEFAULT_CLASSES, ...(classesOverride || {}) };
+async function getAdditionalEntities(
+  infra: string,
+  entity: EditorEntity
+): Promise<Record<string, EditorEntity>> {
+  switch (entity.objType) {
+    case 'Signal':
+    case 'BufferStop':
+    case 'Detector': {
+      const trackId = (entity as SignalEntity).properties.track;
+      if (trackId) return { [trackId]: await getEntity(infra, trackId, 'TrackSection') };
+      return {};
+    }
+    case 'Switch': {
+      const trackIDs = map((entity as SwitchEntity).properties.ports, (port) => port.track);
+      return await getEntities<TrackSectionEntity>(infra, trackIDs, 'TrackSection');
+    }
+    default:
+      return {};
+  }
+}
 
+function getSumUpContent(
+  entity: EditorEntity,
+  additionalEntities: Record<string, EditorEntity>,
+  t: TFunction,
+  classesOverride: Partial<typeof DEFAULT_CLASSES> | undefined,
+  status: string | undefined
+): JSX.Element {
   let type = t(`Editor.obj-types.${entity.objType}`);
   let text = '';
   const subtexts: (string | JSX.Element)[] = [];
+  const classes = { ...DEFAULT_CLASSES, ...(classesOverride || {}) };
 
   switch (entity.objType) {
     case 'TrackSection': {
@@ -73,23 +97,21 @@ const EntitySumUp: FC<{
       // This cast is OK since both buffer stops and detectors have same
       // properties:
       const typedEntity = entity as BufferStopEntity;
-      // const track = (typedEntity.properties.track &&
-      //   editorState.entitiesIndex[typedEntity.properties.track]) as TrackSectionEntity | undefined;
-
-      // TODO:
-      // Add Track name as subtitle
+      const track = typedEntity.properties.track
+        ? additionalEntities[typedEntity.properties.track]
+        : undefined;
 
       text = typedEntity.properties.id;
-      // if (track) {
-      //   subtexts.push(
-      //     <>
-      //       <span className={classes.muted}>
-      //         {t('Editor.tools.select-items.linked-to-line', { count: 1 })}
-      //       </span>{' '}
-      //       <span>{track.properties?.extensions?.sncf?.line_name || track.properties.id}</span>
-      //     </>
-      //   );
-      // }
+      if (track) {
+        subtexts.push(
+          <>
+            <span className={classes.muted}>
+              {t('Editor.tools.select-items.linked-to-line', { count: 1 })}
+            </span>{' '}
+            <span>{track.properties?.extensions?.sncf?.line_name || track.properties.id}</span>
+          </>
+        );
+      }
 
       break;
     }
@@ -97,13 +119,10 @@ const EntitySumUp: FC<{
       const switchEntity = entity as SwitchEntity;
       const label = switchEntity.properties?.extensions?.sncf?.label;
       const trackNames = uniq(
-        flatMap(switchEntity.properties.ports, (_port) => {
-          // const track = editorState.entitiesIndex[port.track] as TrackSectionEntity | undefined;
-          // const trackLabel = track?.properties?.extensions?.sncf?.line_name;
-          // return trackLabel ? [trackLabel] : [];
-          // TODO:
-          // Add Track name as subtitle
-          return [];
+        flatMap(switchEntity.properties.ports, (port) => {
+          const track = additionalEntities[port.track] as TrackSectionEntity | undefined;
+          const trackLabel = track?.properties?.extensions?.sncf?.line_name;
+          return trackLabel ? [trackLabel] : [];
         })
       );
       if (label) {
@@ -143,6 +162,71 @@ const EntitySumUp: FC<{
       ))}
     </div>
   );
+}
+
+const EntitySumUp: FC<
+  {
+    classes?: Partial<typeof DEFAULT_CLASSES>;
+    status?: string;
+  } & (
+    | { entity: EditorEntity; id?: undefined; objType?: undefined }
+    | { id: string; objType: EditoastType; entity?: undefined }
+  )
+> = ({ entity, id, objType, classes, status }) => {
+  const { t } = useTranslation();
+  const osrdConf = useSelector((state: { osrdconf: OSRDConf }) => state.osrdconf);
+  const [state, setState] = useState<
+    | { type: 'idle' }
+    | { type: 'loading' }
+    | { type: 'error'; message?: string }
+    | { type: 'ready'; entity: EditorEntity; additionalEntities: Record<string, EditorEntity> }
+  >({ type: 'idle' });
+
+  useEffect(() => {
+    if (state.type === 'idle') {
+      setState({ type: 'loading' });
+
+      if (entity) {
+        getAdditionalEntities(osrdConf.infraID as string, entity).then((additionalEntities) => {
+          setState({
+            type: 'ready',
+            entity,
+            additionalEntities,
+          });
+        });
+      } else {
+        getEntity(osrdConf.infraID as string, id as string, objType as EditoastType).then(
+          (fetchedEntity) => {
+            getAdditionalEntities(osrdConf.infraID as string, fetchedEntity).then(
+              (additionalEntities) => {
+                setState({
+                  type: 'ready',
+                  entity: fetchedEntity,
+                  additionalEntities,
+                });
+              }
+            );
+          }
+        );
+      }
+    }
+  }, [entity, id, objType, osrdConf.infraID, state.type]);
+
+  if (state.type === 'loading' || state.type === 'idle')
+    return (
+      <div className="spinner-border" role="status">
+        <span className="sr-only">Loading...</span>
+      </div>
+    );
+
+  if (state.type === 'error')
+    return (
+      <div className="text-danger">
+        {state.message || `An error occurred while trying to load ${objType} entity "${id}".`}
+      </div>
+    );
+
+  return getSumUpContent(entity || state.entity, state.additionalEntities, t, classes, status);
 };
 
 export default EntitySumUp;
