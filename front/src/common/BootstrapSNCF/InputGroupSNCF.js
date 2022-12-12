@@ -12,7 +12,17 @@ export default function InputGroupSNCF(props) {
         }
       : { id: options[0].id, label: options[0].label, unit: options[0].unit }
   );
+/*
+  useEffect(() => {
+    const selectedOption = value
+    ? {
+        label: title,
+      }
+    : { id: options[0].id, label: options[0].label, unit: options[0].unit }
 
+    setSelected(selectedOption);
+  }, [options]);
+*/
   useEffect(() => {
     const selectedOption = options?.find((option) => option.id === type);
 
