@@ -456,7 +456,7 @@ def make_payload_schedule(base_url: str, infra: int, path: int, rolling_stock: i
             {
                 "train_name": "foo",
                 "labels": [],
-                "departure_time": 0,
+                "departure_time": random.randint(0, 3600 * 24),
                 "allowances": make_random_allowances(path_length),
                 "initial_speed": 0,
                 "rolling_stock": rolling_stock,
