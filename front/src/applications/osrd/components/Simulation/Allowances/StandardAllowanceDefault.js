@@ -10,6 +10,7 @@ import PropTypes from 'prop-types';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import { useTranslation } from 'react-i18next';
 import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
+import { TYPES_UNITS } from './consts';
 
 export default function StandardAllowanceDefault(props) {
   const {
@@ -18,17 +19,26 @@ export default function StandardAllowanceDefault(props) {
     getAllowances,
     setIsUpdating,
     trainDetail,
-    TYPES_UNITS,
+    mutateSingleAllowance,
+    selectedTrain,
+    selectedProjection,
+    t,
+    dispatch
   } = props;
+
+  console.log("INIT ", props)
+
+  /*
   const { selectedProjection, selectedTrain } = useSelector((state) => state.osrdsimulation);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
-  const { t } = useTranslation(['allowances']);
-  const dispatch = useDispatch();
+  */
+  //const { t } = useTranslation(['allowances']);
+  //const dispatch = useDispatch();
   const [value, setValue] = useState({
     type: 'time',
     value: 0,
   });
-  const [distribution, setDistribution] = useState(distributionsTypes[0]);
+  const [distribution, setDistribution] = useState([]);
 
   const handleType = (type) => {
     setValue({
@@ -162,6 +172,9 @@ export default function StandardAllowanceDefault(props) {
     }
   }, [trainDetail]);
 
+  console.log("DISTR", distributionsTypes)
+  console.log("ALO", allowanceTypes)
+
   return (
     <div className="row w-100 mareco">
       <div className="col-md-2 text-normal">{t('sandardAllowancesWholePath')}</div>
@@ -189,7 +202,7 @@ export default function StandardAllowanceDefault(props) {
       <div className="col-md-3">
         <button
           type="button"
-          onClick={addStandard}
+          onClick={mutateSingleAllowance || addStandard}
           className={`btn btn-success btn-sm mr-1 ${value.value === 0 ? 'disabled' : null}`}
         >
           {t('apply')}
@@ -207,11 +220,11 @@ export default function StandardAllowanceDefault(props) {
 }
 
 StandardAllowanceDefault.propTypes = {
-  TYPES_UNITS: PropTypes.object.isRequired,
   // distributions: PropTypes.array.isRequired,
   distributionsTypes: PropTypes.array.isRequired,
   allowanceTypes: PropTypes.array.isRequired,
   getAllowances: PropTypes.func.isRequired,
   setIsUpdating: PropTypes.func.isRequired,
   trainDetail: PropTypes.object.isRequired,
+  mutateSingleAllowance: PropTypes.func
 };
