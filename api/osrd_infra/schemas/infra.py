@@ -14,7 +14,7 @@ from pydantic import (
 from pydantic.fields import ModelField
 
 ALL_OBJECT_TYPES = []
-RAILJSON_INFRA_VERSION = "3.0.1"
+RAILJSON_INFRA_VERSION = "3.1.0"
 
 
 # Traits
@@ -215,11 +215,12 @@ class Route(BaseObjectTrait):
     """
 
     entry_point: Waypoint
+    entry_point_direction: Direction = Field(description="Direction of the route at the entry point")
     exit_point: Waypoint
     release_detectors: List[Identifier] = Field(
         description="Detector allowing the release of resources reserved from the beginning of the route until this one"
     )
-    path: List[DirectionalTrackRange] = Field(description="List of the path corresponding to the routes")
+    switches_directions: Mapping[Identifier, Identifier] = Field(description="Switches position part of the route")
 
 
 class SwitchPortConnection(BaseModel):
