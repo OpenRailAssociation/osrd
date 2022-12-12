@@ -176,7 +176,7 @@ export default function OpenDataImportModal(props) {
           rollingStockId: pathsIDs[train.pathRef].rollingStockId,
         }))
       );
-      setStatus({ ...status, pathFindingDone: true });
+      setStatus({ ...status, uicComplete: true, pathFindingDone: true });
     }
   }
 
@@ -259,7 +259,9 @@ export default function OpenDataImportModal(props) {
               <div className="my-1 text-center">{t('opendata:or')}</div>
               <button
                 className={`btn btn-sm btn-block d-flex justify-content-between text-wrap text-left ${
-                  status.uicComplete ? 'btn-outline-success' : 'btn-primary'
+                  status.uicComplete || status.pathFindingDone
+                    ? 'btn-outline-success'
+                    : 'btn-primary'
                 }`}
                 type="button"
                 onClick={() => generatePaths(0, {}, true)}
