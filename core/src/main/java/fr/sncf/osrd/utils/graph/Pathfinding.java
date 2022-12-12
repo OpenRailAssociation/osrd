@@ -98,7 +98,7 @@ public class Pathfinding<NodeT, EdgeT> {
         return this;
     }
 
-        /** Sets the functor used to determine which ranges are blocked on an edge */
+    /** Sets the functor used to determine which ranges are blocked on an edge */
     public Pathfinding<NodeT, EdgeT> addBlockedRangeOnEdges(Collection<EdgeToRanges<EdgeT>> f) {
         this.blockedRangesOnEdge.functions.addAll(f);
         return this;
