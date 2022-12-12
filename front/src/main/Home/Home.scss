@@ -1,0 +1,33 @@
+.mastcontainer-no-mastnav {
+  padding-left: 0 !important;
+}
+.cardscontainer {
+  margin: 2rem;
+}
+.card {
+  cursor: pointer;
+  transition: .2s ease-in-out;
+}
+.card:hover {
+  opacity: .5;
+}
+
+.disabled-link {
+  pointer-events: none;
+}
+
+.title-page-link {
+  display: flex;
+  align-items: center;
+  text-align: left;
+  font-size: 1.5rem;
+  font-weight: 400;
+  transition: .4s;
+  color: var(--coolgray11);
+  border-radius: 4px;
+  padding: .5rem;
+  margin-bottom: .5rem;
+  &:hover {
+    color: var(--primary);
+  }
+}

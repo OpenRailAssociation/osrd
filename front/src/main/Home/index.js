@@ -1,49 +1,65 @@
-import './Home.css';
-
-import Card from 'common/BootstrapSNCF/CardSNCF/CardSNCF';
+import './Home.scss';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import React from 'react';
-import cartoPic from 'assets/pictures/carto.png';
-import editorPic from 'assets/pictures/editor.png';
 import logo from 'assets/logo_osrd_seul_blanc.svg';
 import osrdLogo from 'assets/pictures/osrd.png';
-import timetablePic from 'assets/pictures/timetable.png';
-import customget from 'assets/pictures/customget.png';
-import opendata from 'assets/pictures/customget.png';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
+import { MdMoreTime, MdOutlineRailwayAlert, MdOutlineTimeline, MdShowChart } from 'react-icons/md';
+import { FaMap, FaMapMarked } from 'react-icons/fa';
 
 export default function Home() {
   const user = useSelector((state) => state.user);
-  const { t } = useTranslation();
+  const { t } = useTranslation('home');
 
   return (
     <>
       <NavBarSNCF appName="OSRD" username={user.username} logo={logo} />
       <main className="mastcontainer mastcontainer-no-mastnav">
-        <div className="mt-3 d-flex align-items-center justify-content-center">
-          <img src={osrdLogo} alt="OSRD logo" width="128px" />
-          <h1>Open-Source Railway Designer</h1>
-        </div>
-        <div className="cardscontainer">
-          <div className="row">
-            <div className="col-sm-6 col-md-3 col-lg-2 mb-2">
-              <Card img={timetablePic} title={t('Home.timetable')} link="/osrd" />
-            </div>
-            <div className="col-sm-6 col-md-3 col-lg-2 mb-2">
-              <Card img={cartoPic} title={t('Home.map')} link="/carto" />
-            </div>
-            <div className="col-sm-6 col-md-3 col-lg-2 mb-2">
-              <Card img={editorPic} title={t('Home.editor')} link="/editor" />
-            </div>
-            <div className="col-sm-6 col-md-3 col-lg-2 mb-2">
-              <Card img={timetablePic} title={t('Home.stdcm')} link="/stdcm" />
-            </div>
-            <div className="col-sm-6 col-md-3 col-lg-2 mb-2">
-              <Card img={opendata} title="OpenData" link="/opendata" />
-            </div>
-            <div className="col-sm-6 col-md-3 col-lg-2 mb-2">
-              <Card img={customget} title={t('Home.customget')} link="/customget" />
+        <div className="">
+          <div className="my-4 d-flex align-items-center justify-content-center">
+            <img src={osrdLogo} alt="OSRD logo" width="92px" />
+            <h1 className="font-weight-bold">Open Source Railway Designer</h1>
+          </div>
+          <div className="my-4 d-flex align-items-center justify-content-center">
+            <div className="">
+              <Link to="/osrd">
+                <div className="title-page-link">
+                  <MdShowChart />
+                  <span className="ml-2">{t('timetable')}</span>
+                </div>
+              </Link>
+              <Link to="/carto">
+                <div className="title-page-link">
+                  <FaMap />
+                  <span className="ml-2">{t('map')}</span>
+                </div>
+              </Link>
+              <Link to="/editor">
+                <div className="title-page-link">
+                  <FaMapMarked />
+                  <span className="ml-2">{t('editor')}</span>
+                </div>
+              </Link>
+              <Link to="/stdcm">
+                <div className="title-page-link">
+                  <MdOutlineRailwayAlert />
+                  <span className="ml-2">{t('stdcm')}</span>
+                </div>
+              </Link>
+              <Link to="/opendata">
+                <div className="title-page-link">
+                  <MdMoreTime />
+                  <span className="ml-2">{t('opendataimport')}</span>
+                </div>
+              </Link>
+              <Link to="/customget">
+                <div className="title-page-link">
+                  <MdOutlineTimeline />
+                  <span className="ml-2">{t('customget')}</span>
+                </div>
+              </Link>
             </div>
           </div>
         </div>

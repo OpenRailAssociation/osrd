@@ -194,13 +194,6 @@
       "track_section-length": "Taille"
     }
   },
-  "Home": {
-    "customget": "Visualisation JSON GET",
-    "map": "Cartographie",
-    "editor": "Éditeur d'infrastructure",
-    "timetable": "Grilles horaires",
-    "stdcm": "Sillons de dernière minute (en travaux)"
-  },
   "Login": {
     "connect": "Se connecter",
     "englishFlag": "drapeau anglais",
