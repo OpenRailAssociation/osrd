@@ -167,8 +167,6 @@ def make_stdcm_payload(base_url: str, infra_id: int, path: List[Tuple[str, float
             "track_section": last_edge,
             "offset": last_offset,
         }],
-        "margin_before": 0,
-        "margin_after": 0,
     }
 
 

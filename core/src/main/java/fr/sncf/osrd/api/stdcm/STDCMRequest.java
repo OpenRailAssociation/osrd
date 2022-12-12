@@ -75,7 +75,7 @@ public final class STDCMRequest {
     public double endTime;
 
     /**
-     * Time step used in simulations
+     * Time step used in simulations (defaults to 2)
      */
     @Json(name = "time_step")
     public double timeStep = 2.;
@@ -102,7 +102,7 @@ public final class STDCMRequest {
     public String speedLimitComposition = null;
 
     /**
-     * Margin of x seconds before the train passage,
+     * Grid margin of x seconds before the train passage,
      * which means that the path used by the train should be free and available
      * at least x seconds before its passage.
      */
@@ -110,7 +110,7 @@ public final class STDCMRequest {
     public double marginBefore = 0;
 
     /**
-     * Margin of y seconds after the train passage,
+     * Grid margin of y seconds after the train passage,
      * which means that the path used by the train should be free and available
      * at least y seconds after its passage.
      */
@@ -131,8 +131,8 @@ public final class STDCMRequest {
                 Double.NaN,
                 Double.NaN,
                 null,
-                Double.NaN,
-                Double.NaN
+                0,
+                0
         );
     }
 
