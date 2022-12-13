@@ -8,7 +8,7 @@ import fileDownload from 'js-file-download';
 import { INFRA_URL, INFRA_URL_OLD } from './Consts';
 
 export default function ActionsBar(props) {
-  const { infra, isFocused, setIsFocused, setMustRefresh, inputValue } = props;
+  const { infra, isFocused, setIsFocused, getInfrasList, inputValue } = props;
   const { t } = useTranslation('infraManagement');
   const [isWaiting, setIsWaiting] = useState(false);
 
@@ -17,7 +17,7 @@ export default function ActionsBar(props) {
       setIsWaiting(true);
       try {
         await post(`${INFRA_URL}${infra.id}/${action}/`, {});
-        setMustRefresh(true);
+        getInfrasList();
         setIsWaiting(false);
       } catch (e) {
         console.log(e);
@@ -46,7 +46,7 @@ export default function ActionsBar(props) {
       try {
         // await duplicate infra
         console.log('duplicate', infra.id);
-        setMustRefresh(true);
+        getInfrasList();
         setIsWaiting(false);
       } catch (e) {
         console.log(e);
@@ -61,7 +61,7 @@ export default function ActionsBar(props) {
       try {
         // await rename infra with inputValue
         console.log('rename', infra.id, inputValue);
-        setMustRefresh(true);
+        getInfrasList();
         setIsFocused(undefined);
         setIsWaiting(false);
       } catch (e) {
@@ -162,6 +162,6 @@ ActionsBar.propTypes = {
   infra: PropTypes.object.isRequired,
   isFocused: PropTypes.number,
   setIsFocused: PropTypes.func.isRequired,
-  setMustRefresh: PropTypes.func.isRequired,
+  getInfrasList: PropTypes.func.isRequired,
   inputValue: PropTypes.string.isRequired,
 };

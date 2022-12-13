@@ -21,7 +21,7 @@ export default function InfraSelectorModal(props) {
   const [filter, setFilter] = useState('');
   const [filteredInfrasList, setFilteredInfrasList] = useState([]);
   const [editionMode, setEditionMode] = useState(false);
-  const [mustRefresh, setMustRefresh] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
 
   const debouncedFilter = useDebounce(filter, 250);
 
@@ -36,14 +36,15 @@ export default function InfraSelectorModal(props) {
   }
 
   const getInfrasList = async () => {
+    setIsFetching(true);
     try {
       const infrasListQuery = await get(INFRA_URL, {});
       setInfrasList(infrasListQuery);
       filterInfras(infrasListQuery);
-      setMustRefresh(false);
+      setIsFetching(false);
     } catch (e) {
       console.log('ERROR', e);
-      setMustRefresh(false);
+      setIsFetching(false);
     }
   };
 
@@ -55,11 +56,9 @@ export default function InfraSelectorModal(props) {
   }, [debouncedFilter]);
 
   useEffect(() => {
-    if (mustRefresh) {
-      getInfrasList();
-    }
+    getInfrasList();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mustRefresh]);
+  }, []);
 
   return (
     <ModalSNCF htmlID={modalID} size={editionMode ? 'lg' : 'md'}>
@@ -72,7 +71,7 @@ export default function InfraSelectorModal(props) {
         </div>
       </ModalHeaderSNCF>
       <ModalBodySNCF>
-        {mustRefresh ? (
+        {isFetching ? (
           <div className="infra-loader-absolute">
             <Loader position="center" />
           </div>
@@ -82,7 +81,7 @@ export default function InfraSelectorModal(props) {
             infrasList={filteredInfrasList}
             setFilter={setFilter}
             filter={filter}
-            setMustRefresh={setMustRefresh}
+            getInfrasList={getInfrasList}
           />
         ) : (
           <InfraSelectorModalBodyStandard

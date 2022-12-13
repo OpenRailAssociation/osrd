@@ -6,14 +6,14 @@ import Countdown from 'react-countdown';
 import { INFRA_URL } from './Consts';
 
 export default function InfraSelectorEditionActionsBarDelete(props) {
-  const { setMustRefresh, setRunningDelete, infra } = props;
+  const { getInfrasList, setRunningDelete, infra } = props;
   const { t } = useTranslation('infraManagement');
 
   async function deleteInfra() {
     try {
       await deleteRequest(`${INFRA_URL}${infra.id}/`);
       setRunningDelete(undefined);
-      setMustRefresh(true);
+      getInfrasList();
     } catch (e) {
       console.log(e);
     }
@@ -61,7 +61,7 @@ export default function InfraSelectorEditionActionsBarDelete(props) {
 }
 
 InfraSelectorEditionActionsBarDelete.propTypes = {
-  setMustRefresh: PropTypes.func.isRequired,
+  getInfrasList: PropTypes.func.isRequired,
   infra: PropTypes.object.isRequired,
   setRunningDelete: PropTypes.func.isRequired,
 };

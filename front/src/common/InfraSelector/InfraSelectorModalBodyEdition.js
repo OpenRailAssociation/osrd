@@ -9,7 +9,7 @@ import InfraSelectorEditionItem from './InfraSelectorEditionItem';
 import { INFRA_URL, INFRA_URL_OLD } from './Consts';
 
 export default function InfraSelectorModalBodyEdition(props) {
-  const { infrasList, setFilter, filter, setMustRefresh } = props;
+  const { infrasList, setFilter, filter, getInfrasList } = props;
   const [isFocused, setIsFocused] = useState();
   const [runningDelete, setRunningDelete] = useState();
   const [nameNewInfra, setNameNewInfra] = useState('');
@@ -52,7 +52,7 @@ export default function InfraSelectorModalBodyEdition(props) {
         } else {
           await post(`${INFRA_URL}`, { name: nameNewInfra });
         }
-        setMustRefresh(true);
+        getInfrasList();
         setErrorMessage(undefined);
       } catch (e) {
         console.log(e);
@@ -88,7 +88,7 @@ export default function InfraSelectorModalBodyEdition(props) {
               runningDelete={runningDelete}
               setRunningDelete={setRunningDelete}
               setIsFocused={setIsFocused}
-              setMustRefresh={setMustRefresh}
+              getInfrasList={getInfrasList}
             />
           ))}
         </div>
@@ -157,5 +157,5 @@ InfraSelectorModalBodyEdition.propTypes = {
   filter: PropTypes.string,
   infrasList: PropTypes.array.isRequired,
   setFilter: PropTypes.func.isRequired,
-  setMustRefresh: PropTypes.func.isRequired,
+  getInfrasList: PropTypes.func.isRequired,
 };
