@@ -212,15 +212,16 @@ public class PathfindingTest extends ApiTest {
         );
 
         // Check that we can't go through the infra with a large train
-        assertThrows(
+        var exception = assertThrows(
                 NoPathFoundError.class,
                 () -> PathfindingRoutesEndpoint.runPathfinding(
                         infra,
                         waypoints,
                         List.of(TestTrains.FAST_TRAIN_LARGE_GAUGE)
-                ),
-                PathfindingRoutesEndpoint.PATH_FINDING_GAUGE_ERROR
+                )
         );
+
+        assertEquals(PathfindingRoutesEndpoint.PATH_FINDING_GAUGE_ERROR,exception.message);
 
         // Check that we can go until right before the blocked section with a large train
         waypoints[1][0] = new PathfindingWaypoint(
@@ -294,15 +295,16 @@ public class PathfindingTest extends ApiTest {
             if (track instanceof TrackSection)
                 track.getVoltages().put(Range.closed(0., middleTrack.getLength()), "");
         }
-        assertThrows(
+
+        var exception = assertThrows(
                 NoPathFoundError.class,
                 () -> PathfindingRoutesEndpoint.runPathfinding(
                         infra,
                         waypoints,
                         List.of(TestTrains.FAST_ELECTRIC_TRAIN)
-                ),
-                PathfindingRoutesEndpoint.PATH_FINDING_ELECTRIFICATION_ERROR
+                )
         );
+        assertEquals(PathfindingRoutesEndpoint.PATH_FINDING_ELECTRIFICATION_ERROR,exception.message);
     }
 
     @Test
