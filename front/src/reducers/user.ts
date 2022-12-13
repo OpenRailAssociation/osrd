@@ -46,22 +46,21 @@ export default function reducer(inputState: UserState | undefined, action: AnyAc
         if (action.username !== undefined) {
           draft.username = action.username;
         }
-        break;
+        return draft;
       case LOGIN_ERROR:
         draft.loginError = action.withErrorMessage;
         draft.toLogin = true;
-        break;
+        return draft;
       case LOGOUT:
-        draft = initialState;
-        break;
+        return initialState;
       case SERVER_ERROR:
         draft.serverError = true;
-        break;
+        return draft;
       case UPDATE_ACCOUNT:
         draft.account = action.account;
-        break;
+        return draft;
       default:
-        break;
+        return draft;
     }
   });
 }
