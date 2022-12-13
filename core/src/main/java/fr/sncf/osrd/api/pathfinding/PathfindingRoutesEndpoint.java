@@ -132,23 +132,23 @@ public class PathfindingRoutesEndpoint implements Take {
                 .addBlockedRangeOnEdges(constraintsList)
                 .runPathfinding(waypoints);
 
-        // handling errors
-        if (pathFound == null) {
-            for (EdgeToRanges<SignalingRoute> currentConstraint: constraintsList) {
-                var constraintsListWithoutCurrent = new ArrayList<>(constraintsList);
-                constraintsListWithoutCurrent.remove(currentConstraint);
-                var possiblePathWithoutError = new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
-                        .setEdgeToLength(route -> route.getInfraRoute().getLength())
-                        .addBlockedRangeOnEdges(constraintsListWithoutCurrent)
-                        .setRemainingDistanceEstimator(remainingDistanceEstimator)
-                        .runPathfinding(waypoints);
-                if (possiblePathWithoutError != null) {
-                    throw new NoPathFoundError(constraints.get(currentConstraint.getClass()));
-                }
-            }
-            throw new NoPathFoundError(PATH_FINDING_GENERIC_ERROR);
+        if (pathFound != null) {
+            return pathFound;
         }
-        return pathFound;
+        // handling errors
+        for (EdgeToRanges<SignalingRoute> currentConstraint: constraintsList) {
+            var constraintsListWithoutCurrent = new ArrayList<>(constraintsList);
+            constraintsListWithoutCurrent.remove(currentConstraint);
+            var possiblePathWithoutError = new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
+                    .setEdgeToLength(route -> route.getInfraRoute().getLength())
+                    .addBlockedRangeOnEdges(constraintsListWithoutCurrent)
+                    .setRemainingDistanceEstimator(remainingDistanceEstimator)
+                    .runPathfinding(waypoints);
+            if (possiblePathWithoutError != null) {
+                throw new NoPathFoundError(constraints.get(currentConstraint.getClass()));
+            }
+        }
+        throw new NoPathFoundError(PATH_FINDING_GENERIC_ERROR);
     }
 
     /**
