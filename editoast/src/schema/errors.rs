@@ -3,6 +3,7 @@ use crate::schema::ObjectRef;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use strum_macros::EnumIter;
+use strum_macros::EnumVariantNames;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 #[serde(deny_unknown_fields)]
@@ -15,46 +16,47 @@ pub struct InfraError {
     sub_type: InfraErrorType,
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug)]
-#[serde(tag = "error_type", deny_unknown_fields)]
-enum InfraErrorType {
-    #[serde(rename = "invalid_reference")]
-    InvalidReference { reference: ObjectRef },
-    #[serde(rename = "out_of_range")]
+#[derive(Serialize, Deserialize, PartialEq, Debug, EnumVariantNames)]
+#[strum(serialize_all = "snake_case")]
+#[serde(tag = "error_type", rename_all = "snake_case", deny_unknown_fields)]
+pub enum InfraErrorType {
+    InvalidReference {
+        reference: ObjectRef,
+    },
     OutOfRange {
         position: f64,
         expected_range: [f64; 2],
     },
-    #[serde(rename = "empty_path")]
     EmptyPath,
-    #[serde(rename = "path_does_not_match_endpoints")]
     PathDoesNotMatchEndpoints {
         expected_track: String,
         expected_position: f64,
         endpoint_field: PathEndpointField,
     },
-    #[serde(rename = "unknown_port_name")]
-    UnknownPortName { port_name: String },
-    #[serde(rename = "invalid_switch_ports")]
+    UnknownPortName {
+        port_name: String,
+    },
     InvalidSwitchPorts,
-    #[serde(rename = "empty_object")]
     EmptyObject,
-    #[serde(rename = "object_out_of_path")]
-    ObjectOutOfPath { position: f64, track: String },
-    #[serde(rename = "missing_route")]
+    ObjectOutOfPath {
+        position: f64,
+        track: String,
+    },
     MissingRoute,
-    #[serde(rename = "unused_port")]
-    UnusedPort { port_name: String },
-    #[serde(rename = "duplicated_group")]
-    DuplicatedGroup { original_group_path: String },
-    #[serde(rename = "no_buffer_stop")]
+    UnusedPort {
+        port_name: String,
+    },
+    DuplicatedGroup {
+        original_group_path: String,
+    },
     NoBufferStop,
-    #[serde(rename = "path_is_not_continuous")]
     PathIsNotContinuous,
-    #[serde(rename = "overlapping_switches")]
-    OverlappingSwitches { reference: ObjectRef },
-    #[serde(rename = "overlapping_track_links")]
-    OverlappingTrackLinks { reference: ObjectRef },
+    OverlappingSwitches {
+        reference: ObjectRef,
+    },
+    OverlappingTrackLinks {
+        reference: ObjectRef,
+    },
 }
 
 /// Represent the entry or exit point of a path
