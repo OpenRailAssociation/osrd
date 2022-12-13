@@ -46,6 +46,7 @@ dependencies {
     implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-test', version: '1.6.+'  // Apache 2.0
     testImplementation group: 'org.jetbrains.kotlin', name: 'kotlin-test', version: kotlin_version  // Apache 2.0
 
+    implementation project(':kt-osrd-signaling')
     implementation project(":kt-osrd-sim-interlocking")
     implementation project(":kt-osrd-sim-infra")
 

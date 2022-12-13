@@ -59,16 +59,40 @@ value class DirDetectorId private constructor(private val data: UInt) : NumIdx {
 val DetectorId.normal get() = DirDetectorId(this, Direction.NORMAL)
 val DetectorId.reverse get() = DirDetectorId(this, Direction.REVERSE)
 
-interface LocationInfra {
+interface LocationInfra : MovableElementsInfra {
     val zones: StaticIdxSpace<Zone>
     fun getMovableElements(zone: ZoneId): StaticIdxSortedSet<MovableElement>
     fun getZoneBounds(zone: ZoneId): List<DirDetectorId>
 
     val detectors: StaticIdxSpace<Detector>
-
     fun getNextZone(dirDet: DirDetectorId): ZoneId?
     fun getPreviousZone(dirDet: DirDetectorId): ZoneId?
 }
+
+fun LocationInfra.isBufferStop(detector: StaticIdx<Detector>): Boolean {
+    return getNextZone(detector.normal) == null || getNextZone(detector.reverse) == null
+}
+
+
+interface ReservationInfra : LocationInfra {
+    val zonePaths: StaticIdxSpace<ZonePath>
+    fun findZonePath(entry: DirDetectorId, exit: DirDetectorId,
+                     movableElements: StaticIdxList<MovableElement>,
+                     movableElementConfigs: StaticIdxList<MovableElementConfig>): ZonePathId?
+    fun getZonePathEntry(zonePath: ZonePathId): DirDetectorId
+    fun getZonePathExit(zonePath: ZonePathId): DirDetectorId
+    fun getZonePathLength(zonePath: ZonePathId): Distance
+    /** The movable elements in the order encountered when traversing the zone from entry to exit */
+    fun getZonePathMovableElements(zonePath: ZonePathId): StaticIdxList<MovableElement>
+    /** The movable element configs in the same order as movable elements */
+    fun getZonePathMovableElementsConfigs(zonePath: ZonePathId): StaticIdxList<MovableElementConfig>
+    /** The distances from the beginning of the zone path to its switches, in encounter order */
+    fun getZonePathMovableElementsDistances(zonePath: ZonePathId): DistanceList
+}
+
+/** A zone path is a path inside a zone */
+sealed interface ZonePath
+typealias ZonePathId = StaticIdx<ZonePath>
 
 
 /** A route is a path from detector to detector */
@@ -76,56 +100,24 @@ sealed interface Route
 typealias RouteId = StaticIdx<Route>
 
 
-/** Encodes a path inside a zone */
-data class ZonePath(
-    val entry: DirDetectorId,
-    val exit: DirDetectorId,
-    /** The movable elements in the order encountered when traversing the zone from entry to exit */
-    val movableElements: StaticIdxList<MovableElement>,
-    /** The movable element configs in the same order as movable elements */
-    val movableElementConfigs: StaticIdxList<MovableElementConfig>,
-)
-
-fun ZonePath(entry: DirDetectorId, exit: DirDetectorId): ZonePath {
-    return ZonePath(entry, exit, MutableStaticIdxArrayList(), MutableStaticIdxArrayList())
-}
-
-interface RoutingInfra {
+interface RoutingInfra : ReservationInfra {
     val routes: StaticIdxSpace<Route>
-
-    fun getRoutePath(route: RouteId): List<ZonePath>
+    fun getRoutePath(route: RouteId): StaticIdxList<ZonePath>
 
     /** Returns a list of indices of zones in the train path at which the reservations shall be released. */
     fun getRouteReleaseZones(route: RouteId): IntArray
 }
 
-val List<ZonePath>.entry get() = this[0].entry
-val List<ZonePath>.exit get() = this[size - 1].exit
-
-/** A fixed size signaling block */
-sealed interface Block
-typealias BlockId = StaticIdx<Block>
-
-/** A type of signaling block */
-sealed interface BlockType
-typealias BlockTypeId = StaticIdx<BlockType>
-
-
-interface SpacingInfra {
-    val blocks: StaticIdxSpace<Block>
-    val blockTypes: StaticIdxSpace<BlockType>
-    fun getBlockPath(block: BlockId): List<ZonePath>
-    fun getBlockType(block: BlockId): BlockTypeId
-    fun getBlocksAt(detector: DirDetectorId, type: BlockTypeId): StaticIdxList<Block>
+fun ReservationInfra.findZonePath(entry: DirDetectorId, exit: DirDetectorId): ZonePathId? {
+    return findZonePath(entry, exit, mutableStaticIdxArrayListOf(), mutableStaticIdxArrayListOf())
 }
 
-/** A railway signal */
-sealed interface Signal
-typealias SignalId = StaticIdx<Signal>
-
-
-interface SignalingInfra {
-    /** TODO */
+fun RoutingInfra.getRouteEntry(route: RouteId): DirDetectorId {
+    return getZonePathEntry(getRoutePath(route).first())
 }
 
-interface SimInfra : MovableElementsInfra, LocationInfra, RoutingInfra, SpacingInfra, SignalingInfra
+fun RoutingInfra.getRouteExit(route: RouteId): DirDetectorId {
+    return getZonePathExit(getRoutePath(route).last())
+}
+
+typealias InterlockingInfra = RoutingInfra

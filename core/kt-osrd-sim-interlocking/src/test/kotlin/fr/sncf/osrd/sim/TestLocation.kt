@@ -5,7 +5,7 @@ import fr.sncf.osrd.sim.interlocking.api.Train
 import fr.sncf.osrd.sim.interlocking.api.ZoneOccupation
 import fr.sncf.osrd.sim.interlocking.impl.locationSim
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.impl.simInfra
+import fr.sncf.osrd.sim_infra.impl.rawInfra
 import fr.sncf.osrd.utils.indexing.MutableArena
 import fr.sncf.osrd.utils.indexing.dynIdxArraySetOf
 import kotlinx.coroutines.*
@@ -17,7 +17,7 @@ class TestLocation {
     @Test
     fun lockOccupyLeave() = runBlocking {
         // setup test data
-        val infra = simInfra {
+        val infra = rawInfra {
             // create a test switch
             val switchA = movableElement(delay = 42L.milliseconds) {
                 config("a")
