@@ -28,6 +28,8 @@ import {
   OSRDConf,
   Tool,
 } from './tools/types';
+import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
+import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
 
 interface MapProps<S extends CommonToolState = CommonToolState> {
   t: TFunction;
@@ -190,7 +192,11 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
             colors={colors[mapStyle]}
             layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACKS_OSM.GROUP]}
           />
+
           <IGN_BD_ORTHO layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
+          <IGN_SCAN25 layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
+          <IGN_CADASTRE layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
+
           {!showOSM ? null : (
             <>
               <OSM mapStyle={mapStyle} layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
