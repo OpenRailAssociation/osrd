@@ -18,7 +18,7 @@ pub use catenary::Catenary;
 use derivative::Derivative;
 pub use detector::{Detector, DetectorCache};
 use enum_map::Enum;
-pub use errors::{InfraError, PathEndpointField};
+pub use errors::{InfraError, InfraErrorType, PathEndpointField};
 pub use operational_point::{OperationalPoint, OperationalPointCache, OperationalPointPart};
 pub use railjson::{find_objects, RailJson, RailjsonError};
 pub use route::Route;
