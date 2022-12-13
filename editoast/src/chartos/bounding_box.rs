@@ -92,19 +92,6 @@ impl InvalidationZone {
                         Self::merge_bbox(&mut geo, &mut sch, infra_cache, track_id);
                     }
                 }
-                OperationResult::Update(RailjsonObject::Route { railjson })
-                | OperationResult::Create(RailjsonObject::Route { railjson }) => {
-                    if let Some(ObjectCache::Route(route)) =
-                        infra_cache.routes().get::<String>(&railjson.id)
-                    {
-                        for track_id in route.path.iter().map(|r| &r.track) {
-                            Self::merge_bbox(&mut geo, &mut sch, infra_cache, track_id);
-                        }
-                    }
-                    for track_id in railjson.path.iter().map(|r| &r.track) {
-                        Self::merge_bbox(&mut geo, &mut sch, infra_cache, track_id);
-                    }
-                }
                 OperationResult::Update(RailjsonObject::OperationalPoint { railjson })
                 | OperationResult::Create(RailjsonObject::OperationalPoint { railjson }) => {
                     if let Some(ObjectCache::OperationalPoint(op)) =
@@ -202,16 +189,6 @@ impl InvalidationZone {
                     }
                 }
                 OperationResult::Delete(ObjectRef {
-                    obj_type: ObjectType::Route,
-                    obj_id,
-                }) => {
-                    if let Some(ObjectCache::Route(route)) = infra_cache.routes().get(obj_id) {
-                        for track_id in route.path.iter().map(|r| &r.track) {
-                            Self::merge_bbox(&mut geo, &mut sch, infra_cache, track_id);
-                        }
-                    }
-                }
-                OperationResult::Delete(ObjectRef {
                     obj_type: ObjectType::OperationalPoint,
                     obj_id,
                 }) => {
@@ -279,6 +256,13 @@ impl InvalidationZone {
                         }
                     }
                 }
+                // Route doesn't have a geometry layer. So we don't need to comute their bbox
+                OperationResult::Update(RailjsonObject::Route { .. })
+                | OperationResult::Create(RailjsonObject::Route { .. }) => {}
+                OperationResult::Delete(ObjectRef {
+                    obj_type: ObjectType::Route,
+                    ..
+                }) => {}
             }
         }
         assert_eq!(geo.is_valid(), sch.is_valid());

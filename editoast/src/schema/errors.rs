@@ -1,8 +1,6 @@
-use super::{Direction, DirectionalTrackRange, OSRDObject, ObjectType, Route, Waypoint};
+use super::{OSRDObject, ObjectType};
 use crate::schema::ObjectRef;
 use serde::{Deserialize, Serialize};
-use std::fmt;
-use strum_macros::EnumIter;
 use strum_macros::EnumVariantNames;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
@@ -20,53 +18,41 @@ pub struct InfraError {
 #[strum(serialize_all = "snake_case")]
 #[serde(tag = "error_type", rename_all = "snake_case", deny_unknown_fields)]
 pub enum InfraErrorType {
+    DuplicatedGroup {
+        original_group_path: String,
+    },
+    EmptyObject,
+    InvalidGroup {
+        group: String,
+        switch_type: String,
+    },
     InvalidReference {
         reference: ObjectRef,
+    },
+    InvalidRoute,
+    InvalidSwitchPorts,
+    MissingRoute,
+    NoBufferStop,
+    ObjectOutOfPath {
+        position: f64,
+        track: String,
     },
     OutOfRange {
         position: f64,
         expected_range: [f64; 2],
     },
-    EmptyPath,
-    PathDoesNotMatchEndpoints {
-        expected_track: String,
-        expected_position: f64,
-        endpoint_field: PathEndpointField,
-    },
-    UnknownPortName {
-        port_name: String,
-    },
-    InvalidSwitchPorts,
-    EmptyObject,
-    ObjectOutOfPath {
-        position: f64,
-        track: String,
-    },
-    MissingRoute,
-    UnusedPort {
-        port_name: String,
-    },
-    DuplicatedGroup {
-        original_group_path: String,
-    },
-    NoBufferStop,
-    PathIsNotContinuous,
     OverlappingSwitches {
         reference: ObjectRef,
     },
     OverlappingTrackLinks {
         reference: ObjectRef,
     },
-}
-
-/// Represent the entry or exit point of a path
-#[derive(Serialize, Deserialize, Debug, Clone, Copy, EnumIter, PartialEq, Eq)]
-#[serde(deny_unknown_fields)]
-pub enum PathEndpointField {
-    #[serde(rename = "entry_point")]
-    EntryPoint,
-    #[serde(rename = "exit_point")]
-    ExitPoint,
+    UnknownPortName {
+        port_name: String,
+    },
+    UnusedPort {
+        port_name: String,
+    },
 }
 
 impl InfraError {
@@ -102,33 +88,13 @@ impl InfraError {
         }
     }
 
-    pub fn new_empty_path<T: AsRef<str>, O: OSRDObject>(obj: &O, field: T) -> Self {
+    pub fn new_invalid_path<O: OSRDObject>(obj: &O) -> Self {
         Self {
             obj_id: obj.get_id().clone(),
             obj_type: obj.get_type(),
-            field: field.as_ref().into(),
+            field: "".into(), // This error concern the whole object consistency
             is_warning: false,
-            sub_type: InfraErrorType::EmptyPath,
-        }
-    }
-
-    pub fn new_path_does_not_match_endpoints<T: AsRef<str>, O: OSRDObject>(
-        obj: &O,
-        field: T,
-        expected_track: String,
-        expected_position: f64,
-        endpoint_field: PathEndpointField,
-    ) -> Self {
-        Self {
-            obj_id: obj.get_id().clone(),
-            obj_type: obj.get_type(),
-            field: field.as_ref().into(),
-            is_warning: false,
-            sub_type: InfraErrorType::PathDoesNotMatchEndpoints {
-                expected_track,
-                expected_position,
-                endpoint_field,
-            },
+            sub_type: InfraErrorType::InvalidRoute,
         }
     }
 
@@ -142,7 +108,7 @@ impl InfraError {
         }
     }
 
-    pub fn new_object_out_of_path<T: AsRef<str>, U: AsRef<str>, O: OSRDObject>(
+    pub fn _new_object_out_of_path<T: AsRef<str>, U: AsRef<str>, O: OSRDObject>(
         obj: &O,
         field: T,
         position: f64,
@@ -160,7 +126,7 @@ impl InfraError {
         }
     }
 
-    pub fn new_missing_route<O: OSRDObject>(obj: &O) -> Self {
+    pub fn _new_missing_route<O: OSRDObject>(obj: &O) -> Self {
         Self {
             obj_id: obj.get_id().clone(),
             obj_type: obj.get_type(),
@@ -227,6 +193,24 @@ impl InfraError {
         }
     }
 
+    pub fn new_invalid_group<T: AsRef<str>, TT: AsRef<str>, TTT: AsRef<str>, O: OSRDObject>(
+        obj: &O,
+        field: T,
+        group: TT,
+        switch_type: TTT,
+    ) -> Self {
+        Self {
+            obj_id: obj.get_id().clone(),
+            obj_type: obj.get_type(),
+            field: field.as_ref().into(),
+            is_warning: false,
+            sub_type: InfraErrorType::InvalidGroup {
+                group: group.as_ref().into(),
+                switch_type: switch_type.as_ref().into(),
+            },
+        }
+    }
+
     pub fn new_no_buffer_stop<T: AsRef<str>, O: OSRDObject>(obj: &O, field: T) -> Self {
         Self {
             obj_id: obj.get_id().clone(),
@@ -234,16 +218,6 @@ impl InfraError {
             field: field.as_ref().into(),
             is_warning: true,
             sub_type: InfraErrorType::NoBufferStop,
-        }
-    }
-
-    pub fn new_path_is_not_continuous<T: AsRef<str>, O: OSRDObject>(obj: &O, field: T) -> Self {
-        Self {
-            obj_id: obj.get_id().clone(),
-            obj_type: obj.get_type(),
-            field: field.as_ref().into(),
-            is_warning: false,
-            sub_type: InfraErrorType::PathIsNotContinuous,
         }
     }
 
@@ -265,37 +239,5 @@ impl InfraError {
             is_warning: true,
             sub_type: InfraErrorType::OverlappingTrackLinks { reference },
         }
-    }
-}
-
-impl PathEndpointField {
-    /// Given a path, retrieve track id and position offset of the path endpoint location
-    pub fn get_path_location(&self, path: &[DirectionalTrackRange]) -> (String, f64) {
-        let track_range = match self {
-            PathEndpointField::EntryPoint => path.first().unwrap(),
-            PathEndpointField::ExitPoint => path.last().unwrap(),
-        };
-
-        let pos = match (self, &track_range.direction) {
-            (PathEndpointField::EntryPoint, Direction::StartToStop) => track_range.begin,
-            (PathEndpointField::EntryPoint, Direction::StopToStart) => track_range.end,
-            (PathEndpointField::ExitPoint, Direction::StartToStop) => track_range.end,
-            (PathEndpointField::ExitPoint, Direction::StopToStart) => track_range.begin,
-        };
-
-        (track_range.track.clone().0, pos)
-    }
-
-    pub fn get_route_endpoint<'a>(&self, route: &'a Route) -> &'a Waypoint {
-        match self {
-            PathEndpointField::EntryPoint => &route.entry_point,
-            PathEndpointField::ExitPoint => &route.exit_point,
-        }
-    }
-}
-
-impl fmt::Display for PathEndpointField {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", serde_json::to_string(self).unwrap())
     }
 }
