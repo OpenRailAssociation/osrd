@@ -115,6 +115,8 @@ export default function formatStdcmConf(
       maximum_departure_delay: maximumDepartureDelay,
       maximum_relative_run_time: 2,
       speed_limit_composition: osrdconf.speedLimitByTag,
+      //margin_before: osrdconf.gridMarginBefore,
+      //margin_after: osrdconf.gridMarginAfter,
     };
     return osrdConfStdcm;
   }

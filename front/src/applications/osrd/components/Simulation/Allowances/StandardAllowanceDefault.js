@@ -31,7 +31,8 @@ export default function StandardAllowanceDefault(props) {
     options,
     title,
     changeType,
-    typeKey
+    typeKey,
+    providedType
   } = props;
 
 
@@ -190,6 +191,10 @@ export default function StandardAllowanceDefault(props) {
     }
   }, [trainDetail]);
 
+  useEffect(() => {
+    if(providedType) setValue(providedType)
+  }, [providedType]);
+
   return (
     <div className="row w-100 mareco">
       <div className="col-md-2 text-normal">{title || t('sandardAllowancesWholePath')}</div>
@@ -259,7 +264,8 @@ StandardAllowanceDefault.propTypes = {
   mutateSingleAllowance: PropTypes.func,
   changeType: PropTypes.func,
   options: PropTypes.object,
-  title: PropTypes.string
+  title: PropTypes.string,
+  providedType: PropTypes.object
 };
 
 StandardAllowanceDefault.defaultProps = {
@@ -267,5 +273,6 @@ StandardAllowanceDefault.defaultProps = {
     immediateMutation: false,
     setDistribution: true
   },
-  changeType: () => {console.log('default changeType')}
+  changeType: () => {console.log('default changeType')},
+
 }

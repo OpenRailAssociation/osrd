@@ -23,6 +23,8 @@ import StdcmSingleAllowance from 'applications/osrd/components/Simulation/Allowa
 export default function OSRDConfig(props) {
   const { fullscreen, darkmode } = useSelector((state) => state.main);
   const mode = useSelector((state) => state.osrdconf.mode);
+  const gridMarginBefore = useSelector((state) => state.osrdconf.gridMarginBefore);
+  const gridMarginAfter = useSelector((state) => state.osrdconf.gridMarginAfter);
   const dispatch = useDispatch();
   const { t } = useTranslation(['translation', 'osrdconf', 'allowances']);
   const [extViewport, setExtViewport] = useState(undefined);
@@ -68,12 +70,12 @@ export default function OSRDConfig(props) {
             <div className="row">
               <div className="col-xl-6">
                 <div className = "osrd-config-item mb-2 osrd-config-item-container">
-                <StdcmSingleAllowance title={t('allowances:gridMarginBefore')} typeKey='gridMarginBefore' />
+                <StdcmSingleAllowance title={t('allowances:gridMarginBefore')} typeKey='gridMarginBefore' providedType={{type:'time', value:gridMarginBefore}}/>
                 </div>
               </div>
               <div className="col-xl-6">
-                <div className = "osrd-config-item mb-2 osrd-config-item-container">
-                <StdcmSingleAllowance title={t('allowances:gridMarginAfter')} typeKey='gridMarginAfter'/>
+                <div className = "osrd-config-item mb-2 osrd-config-item-container"  >
+                <StdcmSingleAllowance title={t('allowances:gridMarginAfter')} typeKey='gridMarginAfter' providedType={{type:'time', value:gridMarginAfter}}/>
                 </div>
               </div>
             </div>

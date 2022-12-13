@@ -11,10 +11,6 @@ function withOSRDStdcmParams<T>(Component: ComponentType<T>) {
   return (hocProps: T) => {
     const { t } = useTranslation(['allowances']);
     const dispatch = useDispatch();
-    const simulation = useSelector((state: any) => state.osrdsimulation.simulation.present);
-    const allowancesSettings = useSelector((state: any) => state.osrdsimulation.allowancesSettings);
-    const selectedProjection = useSelector((state: any) => state.osrdsimulation.selectedProjection);
-    const selectedTrain = useSelector((state: any) => state.osrdsimulation.selectedTrain);
 
     const allowanceTypes = [
       {
@@ -36,7 +32,6 @@ function withOSRDStdcmParams<T>(Component: ComponentType<T>) {
       },
     ];
 
-    const [syncInProgress, setSyncInProgress] = useState(false);
     const [trainDetail, setTrainDetail] = useState<any>({ allowances: [] });
 
     // Alowance mutation in REST strat
@@ -62,7 +57,6 @@ function withOSRDStdcmParams<T>(Component: ComponentType<T>) {
         allowanceTypes={allowanceTypes}
         distributionsTypes={distributionsTypes}
         getAllowances={() => {}}
-        setIsUpdating={setSyncInProgress}
         changeType={changeType}
         options={{ immediateMutation: true, setDistribution: false }}
       />
