@@ -68,14 +68,6 @@ table! {
 }
 
 table! {
-    osrd_infra_routelayer {
-        id -> Integer,
-        obj_id -> Text,
-        infra_id -> Integer,
-    }
-}
-
-table! {
     osrd_infra_operationalpointlayer {
         id -> Integer,
         obj_id -> Text,
