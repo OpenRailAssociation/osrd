@@ -235,7 +235,7 @@ public class PathfindingTest extends ApiTest {
                 )
         );
 
-        assertEquals(PathfindingRoutesEndpoint.PATH_FINDING_GAUGE_ERROR,exception.message);
+        assertEquals(PathfindingRoutesEndpoint.PATH_FINDING_GAUGE_ERROR, exception.message);
 
         // Check that we can go until right before the blocked section with a large train
         waypoints[1][0] = new PathfindingWaypoint(
@@ -318,7 +318,7 @@ public class PathfindingTest extends ApiTest {
                         List.of(TestTrains.FAST_ELECTRIC_TRAIN)
                 )
         );
-        assertEquals(PathfindingRoutesEndpoint.PATH_FINDING_ELECTRIFICATION_ERROR,exception.message);
+        assertEquals(PathfindingRoutesEndpoint.PATH_FINDING_ELECTRIFICATION_ERROR, exception.message);
     }
 
     @Test
