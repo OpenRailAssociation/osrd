@@ -33,7 +33,7 @@ Many of these goals currently aren't _yet_ fulfilled: the simulation is pretty s
 
 You'll need:
  - Java 17
- - Python >= 3.8 (For generating example / test files)
+ - Python >= 3.9 (For generating example / test files)
  - Install python requirements here: [examples/generated/lib/requirements.txt](examples/generated/lib/requirements.txt)
 
 ```sh
@@ -44,7 +44,7 @@ You'll need:
 gradlew.bat processTestResources shadowJar
 
 # Run as service
-java -jar build/libs/osrd-all.jar api -p 8080
+java -jar build/libs/osrd-all.jar api --url http://localhost:8000/ -p 8080
 
 # Check that an infra can be loaded
 java -jar build/libs/osrd-all.jar load-infra --path RAILJSON_INFRA
