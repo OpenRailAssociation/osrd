@@ -18,7 +18,7 @@ pub use catenary::Catenary;
 use derivative::Derivative;
 pub use detector::{Detector, DetectorCache};
 use enum_map::Enum;
-pub use errors::{InfraError, InfraErrorType, PathEndpointField};
+pub use errors::{InfraError, InfraErrorType};
 pub use operational_point::{OperationalPoint, OperationalPointCache, OperationalPointPart};
 pub use railjson::{find_objects, RailJson, RailjsonError};
 pub use route::Route;
@@ -134,15 +134,28 @@ pub enum Waypoint {
 }
 
 impl Waypoint {
+    /// Create a new detector stop waypoint
     pub fn new_detector<T: AsRef<str>>(detector: T) -> Self {
         Self::Detector {
             id: detector.as_ref().into(),
         }
     }
+
+    /// Create a new buffer stop waypoint
     pub fn new_buffer_stop<T: AsRef<str>>(bf: T) -> Self {
         Self::BufferStop {
             id: bf.as_ref().into(),
         }
+    }
+
+    /// Return whether the waypoint is a detector
+    pub fn is_detector(&self) -> bool {
+        matches!(self, Waypoint::Detector { .. })
+    }
+
+    // Return whether the waypoint is a buffer stop
+    pub fn is_buffer_stop(&self) -> bool {
+        matches!(self, Waypoint::BufferStop { .. })
     }
 }
 
@@ -184,49 +197,14 @@ pub struct ApplicableDirectionsTrackRange {
     pub applicable_directions: ApplicableDirections,
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
-#[serde(deny_unknown_fields)]
-#[derivative(Default)]
-pub struct DirectionalTrackRange {
-    #[derivative(Default(value = r#""InvalidRef".into()"#))]
-    pub track: Identifier,
-    pub begin: f64,
-    #[derivative(Default(value = "100."))]
-    pub end: f64,
-    #[derivative(Default(value = "Direction::StartToStop"))]
-    pub direction: Direction,
-}
-
-impl DirectionalTrackRange {
-    pub fn get_begin(&self) -> TrackEndpoint {
-        TrackEndpoint {
-            endpoint: match self.direction {
-                Direction::StartToStop => Endpoint::Begin,
-                Direction::StopToStart => Endpoint::End,
-            },
-            track: self.track.clone(),
-        }
-    }
-
-    pub fn get_end(&self) -> TrackEndpoint {
-        TrackEndpoint {
-            endpoint: match self.direction {
-                Direction::StartToStop => Endpoint::End,
-                Direction::StopToStart => Endpoint::Begin,
-            },
-            track: self.track.clone(),
-        }
-    }
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields, rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Direction {
     StartToStop,
     StopToStart,
 }
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Derivative, Copy, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[derivative(Default)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ApplicableDirections {
@@ -236,7 +214,7 @@ pub enum ApplicableDirections {
     Both,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Hash)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum Endpoint {
     Begin,

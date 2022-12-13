@@ -1,8 +1,8 @@
 use diesel::sql_types::{Array, Integer, Json};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
 
-use super::graph::Graph;
 use crate::generated_data::error::ErrGenerator;
+use crate::infra_cache::Graph;
 use crate::infra_cache::{InfraCache, ObjectCache};
 use crate::schema::{InfraError, ObjectRef, ObjectType};
 use diesel::result::Error as DieselError;
@@ -83,13 +83,12 @@ pub fn check_speed_section_track_ranges(
 
 #[cfg(test)]
 mod tests {
-    use crate::infra_cache::tests::{create_small_infra_cache, create_speed_section_cache};
-    use crate::infra_cache::ObjectCache;
-    use crate::schema::{ObjectRef, ObjectType};
-
     use super::check_speed_section_track_ranges;
     use super::InfraError;
-    use crate::generated_data::error::graph::Graph;
+    use crate::infra_cache::tests::{create_small_infra_cache, create_speed_section_cache};
+    use crate::infra_cache::Graph;
+    use crate::infra_cache::ObjectCache;
+    use crate::schema::{ObjectRef, ObjectType};
 
     #[test]
     fn invalid_ref() {
