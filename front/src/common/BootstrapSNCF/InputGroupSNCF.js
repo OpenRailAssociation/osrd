@@ -31,7 +31,7 @@ export default function InputGroupSNCF(props) {
       id: selectedOption?.id || options[0].id,
       unit: selectedOption?.unit || options[0].unit,
     });
-  }, [type]);
+  }, [type, options]);
 
   return (
     <div className={`input-group ${sm && 'input-group-sm'}`}>
