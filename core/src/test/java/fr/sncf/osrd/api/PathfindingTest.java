@@ -27,6 +27,7 @@ import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.train.TestTrains;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -138,7 +139,8 @@ public class PathfindingTest extends ApiTest {
     }
 
     @Test
-    public void noPathTest() throws IOException {
+    @DisplayName("If no path exists, throws a generic error message")
+    public void noPathTest() throws Exception {
         var waypointStart = new PathfindingWaypoint(
                 "ne.micro.foo_b",
                 12,
@@ -159,6 +161,18 @@ public class PathfindingTest extends ApiTest {
                 new RqFake("POST", "/pathfinding/routes", requestBody)
         ));
         assert contains400(res);
+
+        var infra = Helpers.infraFromRJS(Helpers.getExampleInfra("tiny_infra/infra.json"));
+
+        var exception = assertThrows(
+                NoPathFoundError.class,
+                () -> PathfindingRoutesEndpoint.runPathfinding(
+                        infra,
+                        waypoints,
+                        List.of(TestTrains.REALISTIC_FAST_TRAIN)
+                )
+        );
+        assertEquals(PathfindingRoutesEndpoint.PATH_FINDING_GENERIC_ERROR, exception.message);
     }
 
     @Test

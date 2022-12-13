@@ -137,12 +137,14 @@ public class PathfindingRoutesEndpoint implements Take {
         }
         // handling errors
         for (EdgeToRanges<SignalingRoute> currentConstraint: constraintsList) {
+            var constraintsListWithoutCurrent = new ArrayList<>(constraintsList);
+            constraintsListWithoutCurrent.remove(currentConstraint);
             var possiblePathWithoutError = new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
                     .setEdgeToLength(route -> route.getInfraRoute().getLength())
-                    .addBlockedRangeOnEdges(currentConstraint)
+                    .addBlockedRangeOnEdges(constraintsListWithoutCurrent)
                     .setRemainingDistanceEstimator(remainingDistanceEstimator)
                     .runPathfinding(waypoints);
-            if (possiblePathWithoutError == null) {
+            if (possiblePathWithoutError != null) {
                 throw new NoPathFoundError(constraints.get(currentConstraint.getClass()));
             }
         }
