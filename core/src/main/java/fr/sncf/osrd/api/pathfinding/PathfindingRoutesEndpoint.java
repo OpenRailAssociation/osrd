@@ -37,8 +37,8 @@ public class PathfindingRoutesEndpoint implements Take {
     private static final HashMap<Class<?>, String> constraints = new HashMap<>();
     public static final String PATH_FINDING_GENERIC_ERROR = "No path could be found";
     public static final String PATH_FINDING_GAUGE_ERROR = "No path could be found after loading Gauge constraints";
-    public static final String PATH_FINDING_ELECTRIFICATION_ERROR = "No path could be found after loading "
-            + "Electrification constraints";
+    public static final String PATH_FINDING_ELECTRIFICATION_ERROR =
+            "No path could be found after loading Electrification constraints";
 
     /**
      * constructor
