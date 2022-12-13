@@ -34,7 +34,7 @@ jobs:
           reviewdog_version: latest
 
       - name: Build with Gradle Wrapper
-        run: ./core/gradlew check -p core -Pspotbugs_report_xml --stacktrace --continue
+        run: ./core/gradlew check -p core --stacktrace
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
