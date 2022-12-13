@@ -170,6 +170,10 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
                     return this.unsafeCompareTo(other) == 0
                 }
             }
+
+            fun ${paramsDecl} mutable${simpleName}ArrayListOf(): Mutable${simpleName}ArrayList${paramsUse} {
+                return Mutable${simpleName}ArrayList${paramsUse}()
+            }
             
             fun ${paramsDecl} mutable${simpleName}ArrayListOf(a: $type): Mutable${simpleName}ArrayList${paramsUse} {
                 val res = Mutable${simpleName}ArrayList${paramsUse}(1)

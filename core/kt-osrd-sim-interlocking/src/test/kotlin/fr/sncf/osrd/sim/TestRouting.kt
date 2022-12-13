@@ -6,13 +6,12 @@ import fr.sncf.osrd.sim.interlocking.impl.LocationSimImpl
 import fr.sncf.osrd.sim.interlocking.impl.movableElementSim
 import fr.sncf.osrd.sim.interlocking.impl.reservationSim
 import fr.sncf.osrd.sim.interlocking.impl.routingSim
-import fr.sncf.osrd.sim_infra.api.ZonePath
+import fr.sncf.osrd.sim_infra.api.meters
 import fr.sncf.osrd.sim_infra.api.normal
 import fr.sncf.osrd.sim_infra.api.reverse
-import fr.sncf.osrd.sim_infra.impl.SimInfraBuilder
+import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
 import fr.sncf.osrd.utils.indexing.MutableArena
 import fr.sncf.osrd.utils.indexing.StaticIdx
-import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runTest
@@ -40,7 +39,7 @@ class TestRouting {
         //  <-- reverse     normal -->
 
         // region build the test infrastructure
-        val builder = SimInfraBuilder()
+        val builder = RawInfraBuilder()
         // region switches
         val switch = builder.movableElement(delay = 10L.milliseconds) {
             config("xy")
@@ -70,32 +69,34 @@ class TestRouting {
         builder.setNextZone(detectorY.reverse, zoneC)
         val detectorZ = builder.detector()
         builder.setNextZone(detectorZ.reverse, zoneD)
-        val infra = builder.build()
         // endregion
 
         // region routes
         // create a route from W to Z, releasing at Y and Z
-        val routeWZ = builder.route(
-            listOf(
-                ZonePath(detectorW.normal, detectorX.normal), // zone B
-                ZonePath(detectorX.normal, detectorY.normal, mutableStaticIdxArrayListOf(switch), mutableStaticIdxArrayListOf(StaticIdx(0u))), // zone C
-                ZonePath(detectorY.normal, detectorZ.normal), // zone D
-            ),
+        val routeWZ = builder.route {
+            zonePath(builder.zonePath(detectorW.normal, detectorX.normal, 10.meters)) // zone B
+            zonePath(builder.zonePath(detectorX.normal, detectorY.normal, 10.meters) {
+                movableElement(switch, StaticIdx(0u), 5.meters)
+            }) // zone C
+            zonePath(builder.zonePath(detectorY.normal, detectorZ.normal, 10.meters)) // zone D
             // release at zone C and D
-            intArrayOf(1, 2),
-        )
+            releaseZone(1)
+            releaseZone(2)
+        }
 
-        val routeUZ = builder.route(
-            listOf(
-                ZonePath(detectorU.normal, detectorV.normal), // zone A
-                ZonePath(detectorV.normal, detectorY.normal, mutableStaticIdxArrayListOf(switch), mutableStaticIdxArrayListOf(StaticIdx(1u))), // zone C
-                ZonePath(detectorY.normal, detectorZ.normal), // zone D
-            ),
+        val routeUZ = builder.route {
+            zonePath(builder.zonePath(detectorU.normal, detectorV.normal, 10.meters)) // zone A
+            zonePath(builder.zonePath(detectorV.normal, detectorY.normal, 10.meters) {
+                movableElement(switch, StaticIdx(1u), 5.meters)
+            }) // zone C
+            zonePath(builder.zonePath(detectorY.normal, detectorZ.normal, 10.meters)) // zone D
             // release at zone D
-            intArrayOf(2),
-        )
+            releaseZone(2)
+        }
         // endregion
+        val infra = builder.build()
         // endregion
+
 
         // allocate train IDs
         val trainArena = MutableArena<Train>(2)

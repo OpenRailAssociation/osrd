@@ -50,7 +50,7 @@ internal class RoutingSimImpl<InfraT>(
     override suspend fun call(route: RouteId, train: TrainId): DynIdx<RouteCallHandle> {
         val path = infra.getRoutePath(route)
         // the zones as encountered by the route
-        val pathZones = Array(path.size) { i -> infra.getNextZone(path[i].entry)!! }
+        val pathZones = Array(path.size) { i -> infra.getNextZone(infra.getZonePathEntry(path[i]))!! }
         // a lookup table sorted by zone lock order
         val zoneLockOrder = IntArray(path.size) { it }.sortedBy { pathZones[it].index }
 
@@ -64,17 +64,19 @@ internal class RoutingSimImpl<InfraT>(
             scope.async {
                 val zone = pathZones[zoneIndex]
                 val zonePath = path[zoneIndex]
+                val movableElements = infra.getZonePathMovableElements(zonePath)
+                val movableElementsConfigs = infra.getZonePathMovableElementsConfigs(zonePath)
                 // wait for the current reservations to be compatible
                 logger.debug { "waiting for zone $zone to be compatible with route $route" }
-                val newRequirements = zonePath.toRequirements()
+                val newRequirements = infra.getRequirements(zonePath)
                 reservationSim.watchZoneConfig(zone).filter {
                     // this function returns whether we found a compatible configuration
                     it.requirements()?.compatibleWith(newRequirements) ?: true
                 }.first()
 
-                for (i in 0 until zonePath.movableElements.size) {
-                    val movableElement = zonePath.movableElements[i]
-                    val movableElementConfig = zonePath.movableElementConfigs[i]
+                for (i in 0 until movableElements.size) {
+                    val movableElement = movableElements[i]
+                    val movableElementConfig = movableElementsConfigs[i]
                     movableElementSim.withLock(movableElement) {
                         movableElementSim.move(movableElement, movableElementConfig)
                     }

@@ -124,7 +124,7 @@ interface ReservationSim {
 
     /** Release the action lock */
     suspend fun unlockZone(zone: ZoneId)
-    fun preReserve(zone: ZoneId, zonePath: ZonePath, train: TrainId): ZoneReservationId
+    fun preReserve(zone: ZoneId, zonePath: ZonePathId, train: TrainId): ZoneReservationId
     fun confirm(zone: ZoneId, reservation: ZoneReservationId)
     suspend fun awaitPendingRelease(zone: ZoneId, reservation: ZoneReservationId)
     fun release(zone: ZoneId, reservation: ZoneReservationId)
