@@ -3,7 +3,7 @@ package fr.sncf.osrd.sim
 import fr.sncf.osrd.sim.interlocking.api.MovableElementInitPolicy
 import fr.sncf.osrd.sim.interlocking.impl.MovableElementSimImpl
 import fr.sncf.osrd.sim.interlocking.api.withLock
-import fr.sncf.osrd.sim_infra.impl.simInfra
+import fr.sncf.osrd.sim_infra.impl.rawInfra
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.currentTime
@@ -16,7 +16,7 @@ class TestMovableElements {
     @Test
     fun lockMoveTest() = runTest {
         // setup test data
-        val infra = simInfra {
+        val infra = rawInfra {
             movableElement(delay = 42L.milliseconds) {
                 config("a")
                 config("b")
