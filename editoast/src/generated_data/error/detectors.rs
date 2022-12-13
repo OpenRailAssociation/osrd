@@ -2,8 +2,8 @@ use diesel::sql_types::{Array, Integer, Json};
 use diesel::PgConnection;
 use diesel::{sql_query, RunQueryDsl};
 
-use super::graph::Graph;
 use crate::generated_data::error::ErrGenerator;
+use crate::infra_cache::Graph;
 use crate::infra_cache::{InfraCache, ObjectCache};
 use crate::schema::{InfraError, ObjectRef, ObjectType};
 use diesel::result::Error as DieselError;
@@ -81,7 +81,7 @@ mod tests {
     use super::check_invalid_ref;
     use super::check_out_of_range;
     use super::InfraError;
-    use crate::generated_data::error::graph::Graph;
+    use crate::infra_cache::Graph;
 
     #[test]
     fn invalid_ref() {

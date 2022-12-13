@@ -4,8 +4,8 @@ use std::collections::{HashMap, HashSet};
 use diesel::sql_types::{Array, Integer, Json};
 use diesel::{sql_query, RunQueryDsl};
 
-use super::graph::Graph;
 use crate::generated_data::error::ErrGenerator;
+use crate::infra_cache::Graph;
 use crate::infra_cache::{InfraCache, ObjectCache};
 use crate::schema::InfraError;
 use diesel::result::Error as DieselError;
@@ -79,12 +79,11 @@ pub fn check_switch_types(switch_type: &ObjectCache, _: &InfraCache, _: &Graph) 
 mod tests {
     use std::collections::HashMap;
 
-    use crate::generated_data::error::graph::Graph;
-    use crate::infra_cache;
-    use crate::infra_cache::tests::{create_switch_connection, create_switch_type_cache};
-
     use super::check_switch_types;
     use super::InfraError;
+    use crate::infra_cache;
+    use crate::infra_cache::tests::{create_switch_connection, create_switch_type_cache};
+    use crate::infra_cache::Graph;
 
     #[test]
     fn unknown_port_name() {
