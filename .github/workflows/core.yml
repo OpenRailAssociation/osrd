@@ -36,7 +36,7 @@ jobs:
       - uses: gradle/gradle-build-action@v2
         with:
           gradle-version: 7.5
-          arguments: -p core -Pspotbugs_report_xml --continue check
+          arguments: check -p core -Pspotbugs_report_xml --stacktrace --continue
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
