@@ -8,6 +8,13 @@ class RawInfraAdapterTest {
     fun smokeAdaptTinyInfra() {
         val rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json")
         val oldInfra = Helpers.infraFromRJS(rjsInfra)
-        adaptSimInfra(oldInfra)
+        adaptRawInfra(oldInfra)
+    }
+
+    @Test
+    fun smokeAdaptSmallInfra() {
+        val rjsInfra = Helpers.getExampleInfra("small_infra/infra.json")
+        val oldInfra = Helpers.infraFromRJS(rjsInfra)
+        adaptRawInfra(oldInfra)
     }
 }

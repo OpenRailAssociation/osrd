@@ -19,7 +19,7 @@ internal class MovableElementSimImpl(
     private val infra: MovableElementsInfra,
     private val initPolicy: MovableElementInitPolicy,
 ) : MovableElementSim {
-    private val states: List<MutableStateFlow<MovableElementConfigId?>> = infra.movableElements.map { id ->
+    private val states: List<MutableStateFlow<MovableElementConfigId?>> = infra.movableElements.map {
         MutableStateFlow(null)
     }
 

@@ -46,10 +46,14 @@ fun zoneState(reservations: ArenaMap<ZoneReservation, ZoneReservation>): ZoneSta
     return ZoneStateImpl(reservations)
 }
 
-fun ZonePath.toRequirements(): ZoneRequirements {
+fun ReservationInfra.getRequirements(zonePath: ZonePathId): ZoneRequirements {
+    val entry = getZonePathEntry(zonePath)
+    val exit = getZonePathExit(zonePath)
+    val movableElements = getZonePathMovableElements(zonePath)
+    val movableElementsConfigs = getZonePathMovableElementsConfigs(zonePath)
     val movableElementRequirements = HashMap<MovableElementId, MovableElementConfigId>(movableElements.size)
     for (i in 0 until movableElements.size)
-        movableElementRequirements[movableElements[i]] = movableElementConfigs[i]
+        movableElementRequirements[movableElements[i]] = movableElementsConfigs[i]
     return ZoneRequirementsImpl(
         entry,
         exit,
@@ -84,7 +88,7 @@ fun zoneRequirements(
 }
 
 fun reservationSim(
-    infra: LocationInfra,
+    infra: ReservationInfra,
     location: LocationSim,
     scope: CoroutineScope,
 ): ReservationSim {
@@ -92,7 +96,7 @@ fun reservationSim(
 }
 
 internal class ReservationSimImpl(
-    infra: LocationInfra,
+    private val infra: ReservationInfra,
     private val location: LocationSim,
     private val scope: CoroutineScope,
 ) : ReservationSim {
@@ -115,7 +119,7 @@ internal class ReservationSimImpl(
      * This job starts when the reservation is confirmed,
      * and makes the reservation go occupied, then pending release.
      */
-    fun startReservationStatusUpdater(zone: ZoneId, reservation: ZoneReservationId, train: TrainId) {
+    private fun startReservationStatusUpdater(zone: ZoneId, reservation: ZoneReservationId, train: TrainId) {
         scope.launch(Dispatchers.Unconfined + CoroutineName("status updater")) {
             // wait for the train to enter the zone
             logger.debug {"waiting for train $train to occupy zone $zone" }
@@ -145,14 +149,14 @@ internal class ReservationSimImpl(
         }
     }
 
-    override fun preReserve(zone: ZoneId, zonePath: ZonePath, train: TrainId): ZoneReservationId {
+    override fun preReserve(zone: ZoneId, zonePath: ZonePathId, train: TrainId): ZoneReservationId {
         if (!locks[zone.index].isLocked)
             throw ActionLockRequired()
 
         var reservationIndex: ZoneReservationId? = null
         states[zone.index].update { prevState ->
             val curRequirements = prevState.requirements()
-            val newRequirements = zonePath.toRequirements()
+            val newRequirements = infra.getRequirements(zonePath)
             if (curRequirements != null && !curRequirements.compatibleWith(newRequirements))
                 throw IncompatibleZoneRequirements(curRequirements, newRequirements)
 
