@@ -10,21 +10,13 @@ repositories {
 def kotlin_version = '1.7.10'
 
 dependencies {
-    implementation project(':kt-fast-collections')
-    ksp project(':kt-fast-collections-generator')
-
     api project(":kt-osrd-utils")
+    api project(':kt-osrd-sim-infra')
     api project(":osrd-railjson")
+
+    implementation group: 'io.github.microutils', name: 'kotlin-logging', version: '3.0.4'  // Apache 2.0
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: kotlin_version  // Apache 2.0
     testImplementation group: 'org.jetbrains.kotlin', name: 'kotlin-test', version: kotlin_version  // Apache 2.0
-}
-
-// to get KSP generated-stuff to be recognised
-kotlin {
-    sourceSets {
-        main.kotlin.srcDirs += 'build/generated/ksp/main/kotlin'
-        test.kotlin.srcDirs += 'build/generated/ksp/test/kotlin'
-    }
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {

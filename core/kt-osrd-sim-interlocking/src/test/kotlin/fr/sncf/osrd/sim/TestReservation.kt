@@ -5,10 +5,8 @@ import fr.sncf.osrd.sim.interlocking.api.ZoneReservation
 import fr.sncf.osrd.sim.interlocking.api.ZoneReservationStatus.*
 import fr.sncf.osrd.sim.interlocking.api.ZoneState
 import fr.sncf.osrd.sim.interlocking.impl.*
-import fr.sncf.osrd.sim_infra.api.ZonePath
-import fr.sncf.osrd.sim_infra.api.normal
-import fr.sncf.osrd.sim_infra.api.reverse
-import fr.sncf.osrd.sim_infra.impl.SimInfraBuilder
+import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
 import fr.sncf.osrd.utils.indexing.MutableArena
 import fr.sncf.osrd.utils.indexing.mutableArenaMap
 import kotlinx.coroutines.*
@@ -37,7 +35,7 @@ class TestReservation {
         //  <-- reverse     normal -->
 
         // region build the test infrastructure
-        val builder = SimInfraBuilder()
+        val builder = RawInfraBuilder()
         val switch = builder.movableElement(delay = 42L.milliseconds) {
             config("a")
             config("b")
@@ -63,6 +61,9 @@ class TestReservation {
         builder.setNextZone(detectorY.reverse, zoneC)
         val detectorZ = builder.detector()
         builder.setNextZone(detectorZ.reverse, zoneD)
+
+        val testZonePath = builder.zonePath(detectorU.normal, detectorV.normal, 42.meters) {}
+
         val infra = builder.build()
         // endregion
 
@@ -89,7 +90,7 @@ class TestReservation {
         val routingProcess = launch(CoroutineName("routing")) {
             reservationSim.lockZone(zoneA)
             routingLogger.info(" pre-reserve")
-            val resHandle = reservationSim.preReserve(zoneA, ZonePath(detectorU.normal, detectorV.normal), trainA)
+            val resHandle = reservationSim.preReserve(zoneA, testZonePath, trainA)
             reservationSim.unlockZone(zoneA)
             routingLogger.info("confirm")
             reservationSim.confirm(zoneA, resHandle)
