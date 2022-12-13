@@ -24,7 +24,7 @@ export default function OSRDConfig(props) {
   const { fullscreen, darkmode } = useSelector((state) => state.main);
   const mode = useSelector((state) => state.osrdconf.mode);
   const dispatch = useDispatch();
-  const { t } = useTranslation(['translation', 'osrdconf']);
+  const { t } = useTranslation(['translation', 'osrdconf', 'allowances']);
   const [extViewport, setExtViewport] = useState(undefined);
   const [mustUpdateTimetable, setMustUpdateTimetable] = useState(true);
   const { setCurrentStdcmRequestStatus } = props;
@@ -65,17 +65,28 @@ export default function OSRDConfig(props) {
           </div>
           <Itinerary title={t('translation:common.itinerary')} updateExtViewport={setExtViewport} />
           {isStdcm && (
-            <div className="osrd-config-item">
-              <div className="osrd-config-item-container mb-2"><StdcmSingleAllowance title={'Marge grille avant'}/></div>
-              <div className="osrd-config-item-container mb-2"><StdcmSingleAllowance title={'Marge grille arrière'}/></div>
+            <div className="row">
+              <div className="col-xl-6">
+                <div className = "osrd-config-item mb-2 osrd-config-item-container">
+                <StdcmSingleAllowance title={t('allowances:gridMarginBefore')} typeKey='gridMarginBefore' />
+                </div>
+              </div>
+              <div className="col-xl-6">
+                <div className = "osrd-config-item mb-2 osrd-config-item-container">
+                <StdcmSingleAllowance title={t('allowances:gridMarginAfter')} typeKey='gridMarginAfter'/>
+                </div>
+              </div>
             </div>
           )}
-          <AddTrainLabels />
+
           {isSimulation && (
-            <AddTrainSchedule
-              mustUpdateTimetable={mustUpdateTimetable}
-              setMustUpdateTimetable={setMustUpdateTimetable}
-            />
+            <React.Fragment>
+              <AddTrainLabels />
+              <AddTrainSchedule
+                mustUpdateTimetable={mustUpdateTimetable}
+                setMustUpdateTimetable={setMustUpdateTimetable}
+              />
+            </React.Fragment>
           )}
           {isStdcm && (
             <div className="osrd-config-stdcm-apply">

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { get, patch } from 'common/requests';
 import { setFailure, setSuccess } from 'reducers/main';
 import { updateMustRedraw, updateSimulation } from 'reducers/osrdsimulation/actions';
@@ -11,6 +11,9 @@ import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import { useTranslation } from 'react-i18next';
 import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
 import { TYPES_UNITS } from './consts';
+import debounce from 'lodash/debounce';
+
+
 
 export default function StandardAllowanceDefault(props) {
   const {
@@ -22,11 +25,15 @@ export default function StandardAllowanceDefault(props) {
     mutateSingleAllowance,
     selectedTrain,
     selectedProjection,
+    simulation,
     t,
     dispatch,
-    config,
-    title
+    options,
+    title,
+    changeType,
+    typeKey
   } = props;
+
 
   /*
   const { selectedProjection, selectedTrain } = useSelector((state) => state.osrdsimulation);
@@ -40,17 +47,27 @@ export default function StandardAllowanceDefault(props) {
   });
   const [distribution, setDistribution] = useState([]);
 
-  const handleType = (type) => {
-    setValue({
-      type: type.type,
-      value: type.value === '' ? '' : parseInt(type.value, 10),
-    });
-  };
+  const debouncedChangeType = debounce((type, typeKey) => {
+    changeType(type, typeKey)
+  }, 500, {
+    'leading': false,
+    'trailing': true
+  });
+
+  const handleType =  useCallback(({type, value}) => {
+    const processedType = {
+      type,
+      value: value === '' ? '' : parseInt(value, 10),
+    }
+    setValue(processedType);
+    debouncedChangeType(processedType, typeKey)
+  }, [])
 
   const handleDistribution = (e) => {
     setDistribution(JSON.parse(e.target.value));
   };
 
+  // To be moved to HOC, use mutateSigleAllowance
   const updateTrain = async () => {
     const newSimulationTrains = Array.from(simulation.trains);
     newSimulationTrains[selectedTrain] = await get(
@@ -65,7 +82,7 @@ export default function StandardAllowanceDefault(props) {
     dispatch(updateMustRedraw(true));
   };
 
-  // In fact it is Create/Update
+  // In fact it is Create/Update  // To be moved to HOC, use mutateSigleAllowance
   const addStandard = async () => {
     const marecoConf = {
       allowance_type: 'standard',
@@ -111,6 +128,7 @@ export default function StandardAllowanceDefault(props) {
     setIsUpdating(false);
   };
 
+   // To be moved to HOC
   const delStandard = async () => {
     const newAllowances = [];
     trainDetail.allowances.forEach((allowance) => {
@@ -172,28 +190,26 @@ export default function StandardAllowanceDefault(props) {
     }
   }, [trainDetail]);
 
-  console.log('allowanceTypes', allowanceTypes)
-
   return (
     <div className="row w-100 mareco">
       <div className="col-md-2 text-normal">{title || t('sandardAllowancesWholePath')}</div>
 
-      <div className="col-md-6">
-
-          {config.setDistribution && (
-             <div className="row">
-            <div className="col-md-1 text-normal">{t('Valeur par défault')}</div>
-            <div className="col-md-3">
+      <div className="col">
+      <div className="row">
+          {options.setDistribution && (
+            <React.Fragment>
+            <div className="col-md-2 text-normal">{t('Valeur par défault')}</div>
+            <div className="col-md-4">
               <SelectSNCF
                 id="distributionTypeSelector"
                 options={distributionsTypes}
                 labelKey="label"
                 onChange={handleDistribution}
                 sm
-                value={distribution}
+                value={distribution || ''}
               />
             </div>
-            </div>
+            </React.Fragment>
              )
             }
             <div className="col">
@@ -206,10 +222,11 @@ export default function StandardAllowanceDefault(props) {
                 sm
               />
             </div>
+            </div>
       </div>
       {
-        !config.immediateMutation && (
-          <div className="col">
+        !options.immediateMutation && (
+          <div className="col-md-3">
             <button
               type="button"
               onClick={mutateSingleAllowance || addStandard}
@@ -240,13 +257,15 @@ StandardAllowanceDefault.propTypes = {
   setIsUpdating: PropTypes.func.isRequired,
   trainDetail: PropTypes.object.isRequired,
   mutateSingleAllowance: PropTypes.func,
-  config:PropTypes.object,
+  changeType: PropTypes.func,
+  options: PropTypes.object,
   title: PropTypes.string
 };
 
 StandardAllowanceDefault.defaultProps = {
-  config:{
+  options:{
     immediateMutation: false,
     setDistribution: true
-  }
+  },
+  changeType: () => {console.log('default changeType')}
 }

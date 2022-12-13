@@ -17,13 +17,7 @@ import StandardAllowanceDefault from 'applications/osrd/components/Simulation/Al
 import nextId from 'react-id-generator';
 import { useTranslation } from 'react-i18next';
 import { TYPES_UNITS, ALLOWANCE_UNITS_KEYS } from './consts';
-import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
-import { type } from '@testing-library/user-event/dist/type';
 
-import { dispatch } from 'd3';
-import { t } from 'i18next';
-import { values, result } from 'lodash';
-import simulation from 'reducers/osrdsimulation/simulation';
 
 
 
@@ -300,70 +294,7 @@ export default function Allowances(props) {
     },
   ];
 
-  /*
-  const getAllowances = async () => {
-    try {
-      setIsUpdating(true);
-      const result = await get(`${trainscheduleURI}${simulation.trains[selectedTrain].id}/`);
-      setTrainDetail(result);
-      setAllowances(result.allowances);
-      setIsUpdating(false);
-    } catch (e) {
-      console.log('ERROR', e);
-      dispatch(
-        setFailure({
-          name: e.name,
-          message: e.message,
-        })
-      );
-    }
-  };
 
-  const handeChangeAllowances = (newAllowances) => {
-    mutateAllowances(newAllowances)
-  }
-  */
-
-  // Change this to adapt to MARECO SPEC
-  /*
-  const changeAllowances = async (newAllowances) => {
-    try {
-      setIsUpdating(true);
-      await patch(`${trainscheduleURI}${simulation.trains[selectedTrain].id}/`, {
-        ...trainDetail,
-        allowances: newAllowances,
-      });
-      const newSimulationTrains = Array.from(simulation.trains);
-      newSimulationTrains[selectedTrain] = await get(
-        `${trainscheduleURI}${simulation.trains[selectedTrain].id}/result/`,
-        {
-          id: simulation.trains[selectedTrain].id,
-          path: selectedProjection.path,
-        }
-      );
-
-      getAllowances();
-      dispatch(updateSimulation({ ...simulation, trains: newSimulationTrains }));
-      dispatch(updateMustRedraw(true));
-      dispatch(
-        setSuccess({
-          title: t('allowanceModified.anyAllowanceModified'),
-          text: '',
-        })
-      );
-      setIsUpdating(false);
-    } catch (e) {
-      setIsUpdating(false);
-      console.log('ERROR', e);
-      dispatch(
-        setFailure({
-          name: e.name,
-          message: t('allowanceModified.anyAllowanceModificationError'),
-        })
-      );
-    }
-  };
-*/
 
 const handleChangeAllowances = (newAllowances) => {
   mutateAllowances(newAllowances)
@@ -527,7 +458,6 @@ Allowance.propTypes = {
   idx: PropTypes.number.isRequired,
   t: PropTypes.func,
   dispatch: PropTypes.func,
-  toggleAllowancesDisplay: PropTypes.func.isRequired,
   mutateAllowances: PropTypes.func,
   getAllowances: PropTypes.func
 };
