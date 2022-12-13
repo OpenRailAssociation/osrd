@@ -27,7 +27,6 @@ use rocket::serde::json::{json, Error as JsonError, Json, Value as JsonValue};
 use rocket::{routes, Route, State};
 use serde::{Deserialize, Serialize};
 use strum::VariantNames;
-
 use thiserror::Error;
 
 #[derive(Debug, Error)]

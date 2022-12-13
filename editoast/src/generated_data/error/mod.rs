@@ -1,6 +1,5 @@
 pub mod buffer_stops;
 pub mod detectors;
-pub mod graph;
 pub mod operational_points;
 pub mod routes;
 pub mod signals;
@@ -14,9 +13,9 @@ use diesel::result::Error as DieselError;
 use diesel::PgConnection;
 
 use super::GeneratedData;
+use crate::infra_cache::Graph;
 use crate::infra_cache::{InfraCache, ObjectCache};
 use crate::schema::{InfraError, ObjectType};
-use graph::Graph;
 
 type ErrGenerators<'a> = [ErrGenerator];
 type FnErrGenerator = fn(&ObjectCache, &InfraCache, &Graph) -> Vec<InfraError>;
