@@ -9,12 +9,14 @@ import colors from 'common/Map/Consts/colors';
 import 'common/Map/Map.scss';
 /* Main data & layers */
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
+import TracksOSM from 'common/Map/Layers/TracksOSM';
+import { RootState } from 'reducers';
 import Background from '../../common/Map/Layers/Background';
 import OSM from '../../common/Map/Layers/OSM';
 import Hillshade from '../../common/Map/Layers/Hillshade';
 import Platforms from '../../common/Map/Layers/Platforms';
 import osmBlankStyle from '../../common/Map/Layers/osmBlankStyle';
-import OrthoPhoto from '../../common/Map/Layers/OrthoPhoto';
+import IGN_BD_ORTHO from '../../common/Map/Layers/IGN_BD_ORTHO';
 import { Viewport } from '../../reducers/map';
 import { getMapMouseEventNearestFeature } from '../../utils/mapboxHelper';
 import EditorContext from './context';
@@ -26,6 +28,8 @@ import {
   OSRDConf,
   Tool,
 } from './tools/types';
+import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
+import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
 
 interface MapProps<S extends CommonToolState = CommonToolState> {
   t: TFunction;
@@ -61,6 +65,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
   const context = useContext(EditorContext) as EditorContextType<CommonToolState>;
   const osrdConf = useSelector((state: { osrdconf: OSRDConf }) => state.osrdconf);
   const editorState = useSelector((state: { editor: EditorState }) => state.editor);
+  const { showOSM } = useSelector((state: RootState) => state.map);
   const extendedContext = useMemo<ExtendedEditorContextType<CommonToolState>>(
     () => ({
       ...context,
@@ -124,10 +129,8 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
                   : undefined;
                 partialToolState.hovered = entity || null;
               }
-            } else {
-              if (activeTool.onMove) {
-                activeTool.onMove(e, extendedContext);
-              }
+            } else if (activeTool.onMove) {
+              activeTool.onMove(e, extendedContext);
             }
 
             setToolState({ ...toolState, ...partialToolState });
@@ -169,6 +172,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
             }
           }}
         >
+          <VirtualLayers />
           <AttributionControl position="bottom-right" customAttribution="©SNCF/DGEX Solutions" />
           <ScaleControl
             maxWidth={100}
@@ -180,12 +184,32 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
           />
 
           {/* Common layers */}
-          <Background colors={colors[mapStyle]} />
-          <OrthoPhoto layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORMS.GROUP]} />
-          <OSM mapStyle={mapStyle} />
-          <Hillshade mapStyle={mapStyle} />
-          <VirtualLayers />
-          <Platforms colors={colors[mapStyle]} />
+          <Background
+            colors={colors[mapStyle]}
+            layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
+          />
+          <TracksOSM
+            colors={colors[mapStyle]}
+            layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACKS_OSM.GROUP]}
+          />
+
+          <IGN_BD_ORTHO layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
+          <IGN_SCAN25 layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
+          <IGN_CADASTRE layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
+
+          {!showOSM ? null : (
+            <>
+              <OSM mapStyle={mapStyle} layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
+              <Hillshade
+                mapStyle={mapStyle}
+                layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
+              />
+            </>
+          )}
+          <Platforms
+            colors={colors[mapStyle]}
+            layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORMS.GROUP]}
+          />
 
           {/* Tool specific layers */}
           {activeTool.layersComponent && <activeTool.layersComponent />}
