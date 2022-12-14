@@ -443,6 +443,11 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
             />
+            <Catenaries
+              geomType="sch"
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.CATENARIES.GROUP]}
+            />
             <BufferStops
               geomType="sch"
               colors={colors[mapStyle]}
