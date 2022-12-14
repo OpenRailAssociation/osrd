@@ -139,8 +139,10 @@ export default function OpenDataImportModal(props) {
   }
 
   function generatePaths(pathNumberToComplete = 0, pathsIDs = {}, autoComplete = false) {
-    if (autoComplete && pathNumberToComplete === 0)
+    if (autoComplete && pathNumberToComplete === 0) {
       setStatus({ ...initialStatus, uicComplete: true });
+      setUicNumberToComplete(undefined);
+    }
 
     const pathfindingPayloads = generatePathfindingPayload(
       infraID,
