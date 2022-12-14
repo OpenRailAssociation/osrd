@@ -151,15 +151,23 @@ export default function formatStops(stop, idx, data) {
         <div className="drivertrainschedule-pk">{Number.isInteger(pk) ? `${pk}.0` : pk}</div>
       </td>
       <td>{stop.name || 'Unknown'}</td>
-      <td className="text-center drivertrainschedule-stop-time">
-        {stop.duration > 0 ? (
-          <>
-            <span>{stopTime}</span>
-            <span className="ml-2">{stop.duration > 0 && getTime(stop.time + stop.duration)}</span>
-          </>
-        ) : (
-          stopTime
-        )}
+      <td>
+        <div
+          className={`${idx === 0 ? 'text-right' : 'text-center drivertrainschedule-stop-time'}`}
+        >
+          <div className={`${idx === data.base.stops.length - 1 ? 'text-left triple-time' : ''}`}>
+            {stop.duration > 0 ? (
+              <>
+                <span>{stopTime}</span>
+                <span className="ml-2">
+                  {stop.duration > 0 && getTime(stop.time + stop.duration)}
+                </span>
+              </>
+            ) : (
+              stopTime
+            )}
+          </div>
+        </div>
       </td>
       <td>
         <div
