@@ -18,6 +18,7 @@ interface TracksGeographicProps {
 function TracksGeographic(props: TracksGeographicProps) {
   const { colors, layerOrder } = props;
   const { infraID } = useSelector((state: RootState) => state.osrdconf);
+  const { showIGNBDORTHO, showIGNSCAN25 } = useSelector((state: RootState) => state.map);
   const infraVersion = infraID !== undefined ? `?infra=${infraID}` : null;
 
   return (
@@ -28,7 +29,7 @@ function TracksGeographic(props: TracksGeographicProps) {
       source-layer={MAP_TRACK_SOURCES.geographic}
     >
       <OrderedLayer
-        {...geoMainLayer(colors)}
+        {...geoMainLayer(colors, showIGNBDORTHO || showIGNSCAN25)}
         id="chartis/tracks-geo/main"
         source-layer={MAP_TRACK_SOURCES.geographic}
         layerOrder={layerOrder}

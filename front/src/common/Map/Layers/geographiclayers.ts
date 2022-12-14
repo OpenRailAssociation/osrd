@@ -1,7 +1,7 @@
 import { Theme, AnyLayer } from '../../../types';
 
-function definePaint(theme: Theme, showOrthoPhoto: boolean) {
-  return showOrthoPhoto
+function definePaint(theme: Theme, bigger: boolean) {
+  return bigger
     ? {
         'line-color': theme.track.major,
         'line-width': 4,
@@ -12,11 +12,11 @@ function definePaint(theme: Theme, showOrthoPhoto: boolean) {
       };
 }
 
-export function geoMainLayer(theme: Theme, showOrthoPhoto = false): AnyLayer {
+export function geoMainLayer(theme: Theme, bigger = false): AnyLayer {
   return {
     id: 'geoMainLayer',
     type: 'line',
-    paint: definePaint(theme, showOrthoPhoto),
+    paint: definePaint(theme, bigger),
   };
 }
 
