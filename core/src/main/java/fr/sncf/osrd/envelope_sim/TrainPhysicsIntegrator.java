@@ -76,14 +76,14 @@ public final class TrainPhysicsIntegrator {
                 + step4.acceleration
         ) / 6.;
 
-        var meanEnergy = (
-                step1.energyConsumed
-                + 2 * step2.energyConsumed
-                + 2 * step3.energyConsumed
-                + step4.energyConsumed
+        var meanPower = (
+                step1.power
+                + 2 * step2.power
+                + 2 * step3.power
+                + step4.power
         ) / 6.;
 
-        return newtonStep(timeStep, initialSpeed, meanAcceleration, directionSign, meanEnergy);
+        return newtonStep(timeStep, initialSpeed, meanAcceleration, directionSign, meanPower);
     }
 
     private IntegrationStep step(double timeStep, double position, double speed) {
@@ -104,9 +104,9 @@ public final class TrainPhysicsIntegrator {
         double acceleration = computeAcceleration(rollingStock, rollingResistance,
                 weightForce, speed, tractionForce, brakingForce, directionSign);
 
-        double energyConsumed = tractionForce * speed * timeStep;
+        double power = tractionForce * speed;
 
-        return newtonStep(timeStep, speed, acceleration, directionSign, energyConsumed);
+        return newtonStep(timeStep, speed, acceleration, directionSign, power);
     }
 
     /** Compute the weight force of a rolling stock at a given position on a given path */
@@ -163,7 +163,7 @@ public final class TrainPhysicsIntegrator {
             double currentSpeed,
             double acceleration,
             double directionSign,
-            double energyConsumed
+            double power
     ) {
         var signedTimeStep = Math.copySign(timeStep, directionSign);
         var newSpeed = currentSpeed + acceleration * signedTimeStep;
@@ -178,7 +178,7 @@ public final class TrainPhysicsIntegrator {
         return IntegrationStep.fromNaiveStep(
                 timeStep, positionDelta,
                 currentSpeed, newSpeed,
-                acceleration, directionSign, energyConsumed
+                acceleration, directionSign, power
         );
     }
 }

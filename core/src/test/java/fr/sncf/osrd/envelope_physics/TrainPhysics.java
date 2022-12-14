@@ -106,8 +106,8 @@ public class TrainPhysics {
         var tractionForce = 500000.0;
         var acceleration = TrainPhysicsIntegrator.computeAcceleration(TEST_ROLLING_STOCK,
                 rollingResistance, weightForce, speed, tractionForce, 0, +1);
-        var energyConsumed = tractionForce * speed * TIME_STEP;
-        var step = newtonStep(TIME_STEP, speed, acceleration, +1, energyConsumed);
+        var power = tractionForce * speed;
+        var step = newtonStep(TIME_STEP, speed, acceleration, +1, power);
         position += step.positionDelta;
         speed = step.endSpeed;
         assertTrue(speed > 0.5);
