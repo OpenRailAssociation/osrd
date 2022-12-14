@@ -9,11 +9,11 @@ import {
   updateShowOSMtracksections,
 } from 'reducers/map';
 import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
-import iconIGNBDORTHO from 'assets/pictures/mapstyle-ortho.jpg';
-import iconIGNSCAN25 from 'assets/pictures/mapstyle-scan25.jpg';
-import iconIGNCadastre from 'assets/pictures/mapstyle-cadastre.jpg';
-import iconOSM from 'assets/pictures/mapstyle-normal.jpg';
-import iconOSMTracks from 'assets/pictures/mapstyle-osm-tracks.jpg';
+import iconIGNBDORTHO from 'assets/pictures/mapbuttons/mapstyle-ortho.jpg';
+import iconIGNSCAN25 from 'assets/pictures/mapbuttons/mapstyle-scan25.jpg';
+import iconIGNCadastre from 'assets/pictures/mapbuttons/mapstyle-cadastre.jpg';
+import iconOSM from 'assets/pictures/mapbuttons/mapstyle-normal.jpg';
+import iconOSMTracks from 'assets/pictures/mapbuttons/mapstyle-osm-tracks.jpg';
 
 export default function MapSettingsBackgroundSwitches() {
   const { t } = useTranslation(['map-settings']);

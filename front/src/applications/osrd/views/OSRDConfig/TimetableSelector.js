@@ -6,7 +6,7 @@ import { setFailure } from 'reducers/main';
 import { useTranslation } from 'react-i18next';
 import { get, deleteRequest } from 'common/requests';
 import TimetableSelectorModal from 'applications/osrd/components/TimetableSelector/TimetableSelectorModal';
-import icon from 'assets/pictures/trains_timetable.png';
+import icon from 'assets/pictures/components/trains_timetable.svg';
 import { sec2time } from 'utils/timeManipulation';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
