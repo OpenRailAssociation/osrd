@@ -136,7 +136,8 @@ public class PathfindingRoutesEndpoint implements Take {
             return pathFound;
         }
         // check there is no path without adding constraints
-        var possiblePathWithoutErrorNoConstraints = new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
+        var possiblePathWithoutErrorNoConstraints =
+                new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
                 .setEdgeToLength(route -> route.getInfraRoute().getLength())
                 .setRemainingDistanceEstimator(remainingDistanceEstimator)
                 .runPathfinding(waypoints);
@@ -145,7 +146,6 @@ public class PathfindingRoutesEndpoint implements Take {
         }
         // handling errors
         for (EdgeToRanges<SignalingRoute> currentConstraint: constraintsList) {
-            var constraintsListWithoutCurrent = new ArrayList<>(constraintsList);
             var possiblePathWithoutError = new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
                     .setEdgeToLength(route -> route.getInfraRoute().getLength())
                     .addBlockedRangeOnEdges(currentConstraint)
