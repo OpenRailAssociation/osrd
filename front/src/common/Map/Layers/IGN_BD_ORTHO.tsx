@@ -5,15 +5,15 @@ import { Source, LayerProps } from 'react-map-gl';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 import { RootState } from 'reducers';
 
-interface OrthoPhotoProps {
+interface IGN_BD_ORTHO_Props {
   layerOrder?: number;
 }
 
-export default function OrthoPhoto(props: OrthoPhotoProps) {
+export default function IGN_BD_ORTHO(props: IGN_BD_ORTHO_Props) {
   const { layerOrder } = props;
-  const { showOrthoPhoto } = useSelector((state: RootState) => state.map);
+  const { showIGNBDORTHO } = useSelector((state: RootState) => state.map);
 
-  const orthoPhotoParams: LayerProps = {
+  const IGN_BD_ORTHO_Params: LayerProps = {
     source: 'orthophoto',
     type: 'raster',
     paint: {
@@ -27,16 +27,16 @@ export default function OrthoPhoto(props: OrthoPhotoProps) {
     },
   };
 
-  return showOrthoPhoto ? (
+  return showIGNBDORTHO ? (
     <Source
-      id="orthophoto"
+      id="ignbdortho"
       type="raster"
       tiles={[
         'https://wxs.ign.fr/essentiels/geoportail/r/wms?bbox={bbox-epsg-3857}&styles=normal&SERVICE=WMS&VERSION=1.3.0&format=image/jpeg&service=WMS&REQUEST=GetMap&CRS=EPSG:3857&width=256&height=256&layers=ORTHOIMAGERY.ORTHOPHOTOS',
       ]}
       tileSize={256}
     >
-      <OrderedLayer {...orthoPhotoParams} layerOrder={layerOrder} />
+      <OrderedLayer {...IGN_BD_ORTHO_Params} layerOrder={layerOrder} />
     </Source>
   ) : null;
 }

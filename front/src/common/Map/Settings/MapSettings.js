@@ -2,9 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import MapSettingsLayers from 'common/Map/Settings/MapSettingsLayers';
 import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
-import MapSettingsShowOrthoPhoto from 'common/Map/Settings/MapSettingsShowOrthoPhoto';
-import MapSettingsShowOSM from 'common/Map/Settings/MapSettingsShowOSM';
-import MapSettingsShowOSMtracksections from 'common/Map/Settings/MapSettingsShowOSMtracksections';
+import MapSettingsBackgroundSwitches from 'common/Map/Settings/MapSettingsBackgroundSwitches';
 import MapSettingsSignals from 'common/Map/Settings/MapSettingsSignals';
 import MapSettingsSpeedLimits from 'common/Map/Settings/MapSettingsSpeedLimits';
 import MapSettingsTrackSources from 'common/Map/Settings/MapSettingsTrackSources';
@@ -17,20 +15,11 @@ export default function MapSettings(props) {
     return (
       <div className={`map-modal${active ? ' active' : ''}`}>
         <div className="h2">{t('map-settings:mapSettings')}</div>
-        <MapSettingsMapStyle />
-        <div className="my-2" />
         <MapSettingsTrackSources />
-        <div className="my-2" />
-        <div className="row">
-          <div className="col-lg-6">
-            <MapSettingsShowOSM />
-            <div className="my-1" />
-            <MapSettingsShowOSMtracksections />
-          </div>
-          <div className="col-lg-6">
-            <MapSettingsShowOrthoPhoto />
-          </div>
-        </div>
+        <div className="my-1" />
+        <MapSettingsMapStyle />
+        <div className="my-1" />
+        <MapSettingsBackgroundSwitches />
         <div className="mb-1 mt-3 border-bottom">{t('map-settings:signalisation')}</div>
         <MapSettingsSignals />
         <div className="mb-1 mt-3 border-bottom">{t('map-settings:layers')}</div>
