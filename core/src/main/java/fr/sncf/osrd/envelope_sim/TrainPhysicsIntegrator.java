@@ -75,7 +75,15 @@ public final class TrainPhysicsIntegrator {
                 + 2 * step3.acceleration
                 + step4.acceleration
         ) / 6.;
-        return newtonStep(timeStep, initialSpeed, meanAcceleration, directionSign);
+
+        var meanEnergy = (
+                step1.energyConsumed
+                + 2 * step2.energyConsumed
+                + 2 * step3.energyConsumed
+                + step4.energyConsumed
+        ) / 6.;
+
+        return newtonStep(timeStep, initialSpeed, meanAcceleration, directionSign, meanEnergy);
     }
 
     private IntegrationStep step(double timeStep, double position, double speed) {
@@ -95,7 +103,10 @@ public final class TrainPhysicsIntegrator {
 
         double acceleration = computeAcceleration(rollingStock, rollingResistance,
                 weightForce, speed, tractionForce, brakingForce, directionSign);
-        return newtonStep(timeStep, speed, acceleration, directionSign);
+
+        double energyConsumed = tractionForce * speed * timeStep;
+
+        return newtonStep(timeStep, speed, acceleration, directionSign, energyConsumed);
     }
 
     /** Compute the weight force of a rolling stock at a given position on a given path */
@@ -151,7 +162,8 @@ public final class TrainPhysicsIntegrator {
             double timeStep,
             double currentSpeed,
             double acceleration,
-            double directionSign
+            double directionSign,
+            double energyConsumed
     ) {
         var signedTimeStep = Math.copySign(timeStep, directionSign);
         var newSpeed = currentSpeed + acceleration * signedTimeStep;
@@ -166,7 +178,7 @@ public final class TrainPhysicsIntegrator {
         return IntegrationStep.fromNaiveStep(
                 timeStep, positionDelta,
                 currentSpeed, newSpeed,
-                acceleration, directionSign
+                acceleration, directionSign, energyConsumed
         );
     }
 }

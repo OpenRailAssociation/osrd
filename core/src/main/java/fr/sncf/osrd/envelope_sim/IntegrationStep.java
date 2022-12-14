@@ -9,19 +9,22 @@ public class IntegrationStep {
     public final double endSpeed;
     public final double acceleration;
     public final double directionSign;
+    public final double energyConsumed;
 
     private IntegrationStep(double timeDelta,
                             double positionDelta,
                             double startSpeed,
                             double endSpeed,
                             double acceleration,
-                            double directionSign) {
+                            double directionSign,
+                            double energyConsumed) {
         this.timeDelta = timeDelta;
         this.positionDelta = positionDelta;
         this.startSpeed = startSpeed;
         this.endSpeed = endSpeed;
         this.acceleration = acceleration;
         this.directionSign = directionSign;
+        this.energyConsumed = energyConsumed;
     }
 
     /** Create a new integration step which always keeps positive speeds, from a step which may not */
@@ -31,9 +34,11 @@ public class IntegrationStep {
             double startSpeed,
             double endSpeed,
             double acceleration,
-            double directionSign
+            double directionSign,
+            double energyConsumed
     ) {
-        // if the end of the step dips below 0, cut the step in half
+        var initialTimeDelta = timeDelta;
+        // if the end of the step dips below 0 m/s, cut the step in half
         if (endSpeed < 0.0) {
             assert directionSign * acceleration < 0.0;
             endSpeed = 0.0;
@@ -41,9 +46,12 @@ public class IntegrationStep {
             timeDelta =  - startSpeed / (directionSign * acceleration);
             positionDelta = startSpeed * timeDelta + 0.5 * acceleration * timeDelta * timeDelta;
             positionDelta = Math.copySign(positionDelta, directionSign);
+            energyConsumed *= timeDelta / initialTimeDelta;
         }
         assert Math.abs(endSpeed - (startSpeed + directionSign * acceleration * timeDelta)) < SPEED_EPSILON;
-        return new IntegrationStep(timeDelta, positionDelta, startSpeed, endSpeed, acceleration, directionSign);
+        return new IntegrationStep(
+                timeDelta, positionDelta, startSpeed, endSpeed, acceleration, directionSign, energyConsumed
+        );
     }
 
 

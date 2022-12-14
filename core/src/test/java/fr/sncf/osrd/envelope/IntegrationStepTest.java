@@ -17,7 +17,7 @@ public class IntegrationStepTest {
         var initialPositionDelta = directionSign * (startSpeed * initialTimeDelta
                 + 0.5 * acceleration * initialTimeDelta * initialTimeDelta);
         var step = IntegrationStep.fromNaiveStep(initialTimeDelta, initialPositionDelta, startSpeed,
-                endSpeed, acceleration, directionSign);
+                endSpeed, acceleration, directionSign, 0);
         assertEquals(0, step.endSpeed);
         var expectedEndSpeed =
                 step.startSpeed + step.timeDelta * step.acceleration * step.directionSign;
@@ -36,7 +36,7 @@ public class IntegrationStepTest {
         var initialPositionDelta = directionSign * (startSpeed * initialTimeDelta
                 + 0.5 * acceleration * initialTimeDelta * initialTimeDelta);
         var step = IntegrationStep.fromNaiveStep(initialTimeDelta, initialPositionDelta, startSpeed,
-                endSpeed, acceleration, directionSign);
+                endSpeed, acceleration, directionSign, 0);
         assertEquals(0, step.endSpeed);
         var expectedEndSpeed =
                 step.startSpeed + step.timeDelta * step.acceleration * step.directionSign;

@@ -103,9 +103,11 @@ public class TrainPhysics {
         // make a huge traction effort
         double rollingResistance = TEST_ROLLING_STOCK.getRollingResistance(speed);
         double weightForce = getWeightForce(TEST_ROLLING_STOCK, testPath, position);
+        var tractionForce = 500000.0;
         var acceleration = TrainPhysicsIntegrator.computeAcceleration(TEST_ROLLING_STOCK,
-                rollingResistance, weightForce, speed, 500000.0, 0, +1);
-        var step = newtonStep(TIME_STEP, speed, acceleration, +1);
+                rollingResistance, weightForce, speed, tractionForce, 0, +1);
+        var energyConsumed = tractionForce * speed * TIME_STEP;
+        var step = newtonStep(TIME_STEP, speed, acceleration, +1, energyConsumed);
         position += step.positionDelta;
         speed = step.endSpeed;
         assertTrue(speed > 0.5);
