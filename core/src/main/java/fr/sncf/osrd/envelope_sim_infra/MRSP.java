@@ -46,13 +46,16 @@ public class MRSP {
         var builder = new MRSPEnvelopeBuilder();
         var pathLength = 0.;
         for (var r : ranges)
+            r.getGradients()
             pathLength += r.getLength();
+
 
         // add a limit for the maximum speed the hardware is rated for
         builder.addPart(EnvelopePart.generateTimes(
                 List.of(EnvelopeProfile.CONSTANT_SPEED, LimitKind.TRAIN_LIMIT),
                 new double[] { 0, pathLength },
-                new double[] { rollingStock.maxSpeed, rollingStock.maxSpeed }
+                new double[] { rollingStock.maxSpeed, rollingStock.maxSpeed },
+                new double[] {}
         ));
 
         var offset = 0.;

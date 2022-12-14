@@ -36,10 +36,12 @@ public class ScheduleMetadataExtractor {
         final var trainLength = schedule.rollingStock.length;
         var speeds = new ArrayList<ResultSpeed>();
         var headPositions = new ArrayList<ResultPosition>();
+        var energies = new ArrayList<Double>();
 
         for (var point : envelopeWithStops.iterateCurve()) {
             speeds.add(new ResultSpeed(point.time(), point.speed(), point.position()));
             headPositions.add(ResultPosition.from(point.time(), point.position(), trainPath));
+            energies.add(point.energy());
         }
 
         // Simplify data
@@ -61,7 +63,8 @@ public class ScheduleMetadataExtractor {
                 headPositions,
                 stops,
                 makeRouteOccupancy(infra, envelopeWithStops, trainPath, trainLength, events),
-                makeSignalUpdates(envelopeWithStops, trainPath, events)
+                makeSignalUpdates(envelopeWithStops, trainPath, events),
+                energies
         );
     }
 

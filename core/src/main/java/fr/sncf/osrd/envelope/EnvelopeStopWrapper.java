@@ -35,20 +35,22 @@ public class EnvelopeStopWrapper implements EnvelopeTimeInterpolate {
         return envelope.getEndPos();
     }
 
-    public record CurvePoint(double time, double speed, double position){}
+    public record CurvePoint(double time, double speed, double position, double energy){}
 
     /** Returns all the points as (time, speed, position), with time adjusted for stop duration */
     public List<CurvePoint> iterateCurve() {
         var res = new ArrayList<CurvePoint>();
         double time = 0;
+        var energy = 0;
         for (var part : envelope) {
             // Add head position points
             for (int i = 0; i < part.pointCount(); i++) {
                 var pos = part.getPointPos(i);
                 var speed = part.getPointSpeed(i);
-                res.add(new CurvePoint(time, speed, pos));
+                res.add(new CurvePoint(time, speed, pos, energy));
                 if (i < part.stepCount())
                     time += part.getStepTime(i);
+                    energy += part.getPower(i) * part.getStepTime(i);
             }
 
             if (part.getEndSpeed() > 0)
@@ -61,7 +63,7 @@ public class EnvelopeStopWrapper implements EnvelopeTimeInterpolate {
                 if (stop.position > part.getEndPos())
                     break;
                 time += stop.duration;
-                res.add(new CurvePoint(time, 0, part.getEndPos()));
+                res.add(new CurvePoint(time, 0, part.getEndPos(),0));
             }
         }
         return res;

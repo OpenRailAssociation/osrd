@@ -37,6 +37,9 @@ public final class EnvelopePart implements SearchableEnvelope {
     /** A list of N - 1 time deltas between positions */
     private final double[] timeDeltas;
 
+    /** A list of N - 1 powers used by the train between positions */
+    private final double[] powers;
+
     // endregion
 
     // region CACHE FIELDS
@@ -69,7 +72,8 @@ public final class EnvelopePart implements SearchableEnvelope {
             Map<Class<? extends EnvelopeAttr>, EnvelopeAttr> attrs,
             double[] positions,
             double[] speeds,
-            double[] timeDeltas
+            double[] timeDeltas,
+            double[] powers
     ) {
         assert attrs != null : "missing attributes";
         assert positions.length >= 2 : "attempted to create a single point EnvelopePart";
@@ -78,6 +82,7 @@ public final class EnvelopePart implements SearchableEnvelope {
         assert checkNaNFree(positions) : "NaNs in positions";
         assert checkNaNFree(speeds) : "NaNs in speeds";
         assert checkNaNFree(timeDeltas) : "NaNs in timeDeltas";
+        assert checkNaNFree(powers) : "NaNs in powers";
         assert checkStrictlyMonotonicIncreasing(positions) : "non monotonously increasing positions";
         assert checkPositive(speeds) : "negative speeds";
         assert checkPositive(timeDeltas) : "negative timeDeltas";
@@ -87,6 +92,7 @@ public final class EnvelopePart implements SearchableEnvelope {
         this.speeds = speeds;
         this.timeDeltas = timeDeltas;
         this.strictlyMonotonicSpeeds = checkStrictlyMonotonic(speeds);
+        this.powers = powers;
     }
 
     /** Creates an EnvelopePart */
@@ -96,35 +102,40 @@ public final class EnvelopePart implements SearchableEnvelope {
             Iterable<EnvelopeAttr> attrs,
             double[] positions,
             double[] speeds,
-            double[] timeDeltas
+            double[] timeDeltas,
+            double[] powers
     ) {
-        this(makeAttrs(attrs), positions, speeds, timeDeltas);
+        this(makeAttrs(attrs), positions, speeds, timeDeltas, powers);
     }
 
-    /** Creates an envelope part by generating step times from speeds and positions */
+    /** Creates an envelope part by generating step times from speeds and positions and powers*/
     public static EnvelopePart generateTimes(
             Iterable<EnvelopeAttr> attrs,
             double[] positions,
-            double[] speeds
+            double[] speeds,
+            double[] powers
     ) {
         return new EnvelopePart(
                 attrs,
                 positions,
                 speeds,
-                computeTimes(positions, speeds)
+                computeTimes(positions, speeds),
+                powers
         );
     }
 
-    /** Creates an envelope part by generating step times from speeds and positions */
+    /** Creates an envelope part by generating step times from speeds and positions and powers*/
     public static EnvelopePart generateTimes(
             double[] positions,
-            double[] speeds
+            double[] speeds,
+            double[] powers
     ) {
         return new EnvelopePart(
                 new HashMap<>(),
                 positions,
                 speeds,
-                computeTimes(positions, speeds)
+                computeTimes(positions, speeds),
+                powers
         );
     }
 
@@ -293,6 +304,10 @@ public final class EnvelopePart implements SearchableEnvelope {
 
     public double getStepTime(int stepIndex) {
         return timeDeltas[stepIndex];
+    }
+
+    public double getPower(int stepIndex) {
+        return powers[stepIndex];
     }
 
     // endregion
@@ -502,11 +517,13 @@ public final class EnvelopePart implements SearchableEnvelope {
         var slicePos = Arrays.copyOfRange(positions, beginStepIndex, endStepIndex + 1);
         var sliceSpeeds = Arrays.copyOfRange(speeds, beginStepIndex, endStepIndex + 1);
         var sliceTimes = Arrays.copyOfRange(timeDeltas, beginStepIndex, endStepIndex);
+        var slicePowers = Arrays.copyOfRange(powers, beginStepIndex, endStepIndex);
         return new EnvelopePart(
                 attrs,
                 slicePos,
                 sliceSpeeds,
-                sliceTimes
+                sliceTimes,
+                slicePowers
         );
     }
 
@@ -636,7 +653,7 @@ public final class EnvelopePart implements SearchableEnvelope {
         var newPositions = new double[positions.length];
         for (int i = 0; i < positions.length; i++)
             newPositions[i] = positions[i] + positionDelta;
-        return new EnvelopePart(new HashMap<>(attrs), newPositions, speeds, timeDeltas);
+        return new EnvelopePart(new HashMap<>(attrs), newPositions, speeds, timeDeltas, powers);
     }
 
     // endregion
