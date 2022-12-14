@@ -42,14 +42,18 @@ tracks[0].add_buffer_stop(position=100, label="Custom Buffer Stop")
 for i in (2, 3, 4, 5, 6):
     track = tracks[i]
     detector = track.add_detector(position=200)
-    track.add_signal(detector.position - 25, Direction.START_TO_STOP, detector)
-    track.add_signal(detector.position + 25, Direction.STOP_TO_START, detector)
+    signal = track.add_signal(detector.position - 25, Direction.START_TO_STOP, detector)
+    signal.add_logical_signal("BAL", settings={"Nf": "true"})
+    signal = track.add_signal(detector.position + 25, Direction.STOP_TO_START, detector).add_logical_signal("BAL")
+    signal.add_logical_signal("BAL", settings={"Nf": "true"})
 
 for i in (0, 1, 2, 4):
     track = tracks[i]
     detector = track.add_detector(position=800)
-    track.add_signal(detector.position - 25, Direction.START_TO_STOP, detector)
-    track.add_signal(detector.position + 25, Direction.STOP_TO_START, detector)
+    signal = track.add_signal(detector.position - 25, Direction.START_TO_STOP, detector)
+    signal.add_logical_signal("BAL", settings={"Nf": "true"})
+    signal = track.add_signal(detector.position + 25, Direction.STOP_TO_START, detector)
+    signal.add_logical_signal("BAL", settings={"Nf": "true"})
 
 
 # Add operational points
