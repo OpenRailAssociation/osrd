@@ -27,8 +27,9 @@ ne_micro_foo_a.add_curve(0, 200, 2000)
 station_foo.add_part(ne_micro_foo_a, 100)
 ne_micro_foo_a.add_buffer_stop(label="buffer_stop_a", position=0)
 tde_foo_a_switch_foo = ne_micro_foo_a.add_detector(label="tde.foo_a-switch_foo", position=175)
-ne_micro_foo_a.add_signal(label="il.sig.C1", position=150, direction=Direction.START_TO_STOP,
+signal = ne_micro_foo_a.add_signal(label="il.sig.C1", position=150, direction=Direction.START_TO_STOP,
                           linked_detector=tde_foo_a_switch_foo)
+signal.add_logical_signal("BAL", settings={"Nf": "true"})
 
 ne_micro_foo_b = builder.add_track_section(length=200, label="ne.micro.foo_b")
 ne_micro_foo_b.add_slope(0, 200, 10)
@@ -36,24 +37,28 @@ ne_micro_foo_b.add_curve(0, 200, 2000)
 station_foo.add_part(ne_micro_foo_b, 100)
 ne_micro_foo_b.add_buffer_stop(label="buffer_stop_b", position=0)
 tde_foo_b_switch_foo = ne_micro_foo_b.add_detector(label="tde.foo_b-switch_foo", position=175)
-ne_micro_foo_b.add_signal(label="il.sig.C3", position=150, direction=Direction.START_TO_STOP,
+signal = ne_micro_foo_b.add_signal(label="il.sig.C3", position=150, direction=Direction.START_TO_STOP,
                           linked_detector=tde_foo_b_switch_foo)
+signal.add_logical_signal("BAL", settings={"Nf": "true"})
 
 ne_micro_bar_a = builder.add_track_section(length=200, label="ne.micro.bar_a")
 station_bar.add_part(ne_micro_bar_a, 100)
 ne_micro_bar_a.add_buffer_stop(label="buffer_stop_c", position=200)
 tde_track_bar = ne_micro_bar_a.add_detector(label="tde.track-bar", position=25)
-ne_micro_bar_a.add_signal(label="il.sig.C2", position=50, direction=Direction.STOP_TO_START,
+signal = ne_micro_bar_a.add_signal(label="il.sig.C2", position=50, direction=Direction.STOP_TO_START,
                           linked_detector=tde_track_bar)
-ne_micro_bar_a.add_signal(label="il.sig.S7", position=0, direction=Direction.START_TO_STOP,
+signal.add_logical_signal("BAL", settings={"Nf": "true"})
+signal = ne_micro_bar_a.add_signal(label="il.sig.S7", position=0, direction=Direction.START_TO_STOP,
                                linked_detector=tde_track_bar)
+signal.add_logical_signal("BAL", settings={"Nf": "false"})
 
 ne_micro_foo_to_bar = builder.add_track_section(length=10000, label="ne.micro.foo_to_bar")
 ne_micro_foo_to_bar.add_slope(0, 5000, 10)
 ne_micro_foo_to_bar.add_slope(5000, 10000, -10)
 tde_switch_foo_track = ne_micro_foo_to_bar.add_detector(label="tde.switch_foo-track", position=25)
-ne_micro_foo_to_bar.add_signal(label="il.sig.C6", position=50, direction=Direction.STOP_TO_START,
+signal = ne_micro_foo_to_bar.add_signal(label="il.sig.C6", position=50, direction=Direction.STOP_TO_START,
                                linked_detector=tde_switch_foo_track)
+signal.add_logical_signal("BAL", settings={"Nf": "true"})
 
 speed_section = builder.add_speed_section(60.0 / 3.6)
 speed_section.add_track_range(ne_micro_foo_to_bar, 2_000, 6_000, ApplicableDirection.BOTH)

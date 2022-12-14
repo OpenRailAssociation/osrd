@@ -372,6 +372,16 @@ class TrackSection(BaseObjectTrait, GeometryLineTrait):
     )
 
 
+class LogicalSignal(BaseModel):
+    """A logical signal is what displays something, whereas a physical signal is a group of logical signals"""
+
+    signaling_system: str = Field(description="The signal's output signaling system")
+    next_signaling_systems: List[str] = Field(description="The list of allowed input signaling systems")
+    settings: Mapping[NonBlankStr, NonBlankStr] = Field(
+        description="A list of key value parameters, which are defined per signaling system"
+    )
+
+
 class Signal(BaseObjectTrait, TrackLocationTrait):
     """This class is used to describe the signal.
     A signal is characterized by its id and its corresponding track.
@@ -381,6 +391,9 @@ class Signal(BaseObjectTrait, TrackLocationTrait):
     direction: Direction = Field(description="Direction of use of the signal")
     sight_distance: float = Field(description="Visibility distance of the signal in meters", gt=0)
     linked_detector: Optional[Identifier] = Field(description="Identifier of the detector linked to the signal")
+    logical_signals: Optional[List[LogicalSignal]] = Field(
+        description="Logical signals bundled into this physical signal"
+    )
 
 
 class BufferStop(BaseObjectTrait, TrackLocationTrait):
