@@ -7,6 +7,7 @@ from railjson_generator import (
 from railjson_generator.schema.infra.catenary import Catenary
 from railjson_generator.schema.infra.direction import Direction
 from railjson_generator import get_output_dir
+from typing import Mapping, Tuple
 
 
 OUTPUT_DIR = get_output_dir()
@@ -49,13 +50,31 @@ def place_regular_signals_detectors(
         for d, direction in enumerate(Direction):
             if not is_prefered[d] and i % 3 != 2:
                 continue
-            track_section.add_signal(
+            signal = track_section.add_signal(
                 label=f"S{label_suffix}_{i}" + "r" * is_reverse[d],
                 linked_detector=detector,
                 direction=direction,
                 position=min_offset + i * detector_step - 20 + 40 * d,
                 installation_type="S",
             )
+            signal.add_logical_signal("BAL", settings={"Nf": "false"})
+
+
+
+
+def add_signal_on_ports(switch, ports: Mapping[str, Tuple[str, str]]):
+    """Add signals and detectors to given ports.
+    Args:
+        ports: A dictionary of port names to (detector_label, signal_label) pairs.
+    """
+    # Reference distances, in meters
+    SIGNAL_TO_SWITCH = 200
+    DETECTOR_TO_SWITCH = 180
+
+    for port, (det_label, sig_label) in ports.items():
+        detector = switch.add_detector_on_port(port, DETECTOR_TO_SWITCH, label=det_label)
+        signal = switch.add_signal_on_port(port, SIGNAL_TO_SWITCH, label=sig_label, linked_detector=detector)
+        signal.add_logical_signal(signaling_system="BAL", settings={"Nf": "true"})
 
 
 # Reference latitudes and longitudes
@@ -118,32 +137,32 @@ pa0 = builder.add_point_switch(
     base=ta1.end(),
     left=ta3.begin(),
     right=ta4.begin(),
-    signal_on_ports={"base": ("DA0", "SA0")},
 )
+add_signal_on_ports(pa0, {"base": ("DA0", "SA0")})
 pa0.set_coords(-0.37, LAT_1)
 pa1 = builder.add_point_switch(
     label="PA1",
     base=ta5.begin(),
     left=tb0.end(),
     right=ta2.end(),
-    signal_on_ports={"left": ("DB0", "SB0"), "right": ("DA1", "SA1")},
 )
+add_signal_on_ports(pa1, {"left": ("DB0", "SB0"), "right": ("DA1", "SA1")})
 pa1.set_coords(-0.37, LAT_1 - LAT_LINE_SPACE)
 pa2 = builder.add_point_switch(
     label="PA2",
     base=ta6.begin(),
     left=ta3.end(),
     right=ta0.end(),
-    signal_on_ports={"base": ("DA3", "SA3"), "right": ("DA2", "SA2")},
 )
+add_signal_on_ports(pa2, {"base": ("DA3", "SA3"), "right": ("DA2", "SA2")})
 pa2.set_coords(-0.365, LAT_0)
 pa3 = builder.add_point_switch(
     label="PA3",
     base=ta7.begin(),
     left=ta5.end(),
     right=ta4.end(),
-    signal_on_ports={"base": ("DA4", "SA4")},
 )
+add_signal_on_ports(pa3, {"base": ("DA4", "SA4")})
 pa3.set_coords(-0.365, LAT_1)
 
 ta0.set_remaining_coords([[-0.4, LAT_0]])
@@ -214,48 +233,50 @@ pc0 = builder.add_point_switch(
     base=ta6.end(),
     left=tc0.begin(),
     right=tc1.begin(),
-    signal_on_ports={
-        "base": ("DA5", "SA5"),
-        "left": ("DC0", "SC0"),
-        "right": ("DC1", "SC1"),
-    },
 )
+add_signal_on_ports(pc0, {
+    "base": ("DA5", "SA5"),
+    "left": ("DC0", "SC0"),
+    "right": ("DC1", "SC1"),
+})
+
 pc0.set_coords(-0.31, LAT_0)
 pc1 = builder.add_point_switch(
     label="PC1",
     base=ta7.end(),
     left=tc2.begin(),
     right=tc3.begin(),
-    signal_on_ports={
-        "base": ("DA6", "SA6"),
-        "left": ("DC2", "SC2"),
-        "right": ("DC3", "SC3"),
-    },
 )
+add_signal_on_ports(pc1, {
+    "base": ("DA6", "SA6"),
+    "left": ("DC2", "SC2"),
+    "right": ("DC3", "SC3"),
+})
+
 pc1.set_coords(-0.31, LAT_1)
 pc2 = builder.add_point_switch(
     label="PC2",
     base=td0.begin(),
     left=tc1.end(),
     right=tc0.end(),
-    signal_on_ports={
-        "base": ("DD0", "SD0"),
-        "left": ("DC5", "SC5"),
-        "right": ("DC4", "SC4"),
-    },
 )
+add_signal_on_ports(pc2, {
+    "base": ("DD0", "SD0"),
+    "left": ("DC5", "SC5"),
+    "right": ("DC4", "SC4"),
+})
 pc2.set_coords(-0.296, LAT_0)
 pc3 = builder.add_point_switch(
     label="PC3",
     base=td1.begin(),
     left=tc3.end(),
     right=tc2.end(),
-    signal_on_ports={
-        "base": ("DD1", "SD1"),
-        "left": ("DC7", "SC7"),
-        "right": ("DC6", "SC6"),
-    },
 )
+add_signal_on_ports(pc3, {
+    "base": ("DD1", "SD1"),
+    "left": ("DC7", "SC7"),
+    "right": ("DC6", "SC6"),
+})
 pc3.set_coords(-0.296, LAT_1)
 
 
@@ -291,12 +312,12 @@ pd0 = builder.add_cross_switch(
     south=tf0.begin(),
     east=td2.begin(),
     west=td0.end(),
-    signal_on_ports={
-        "north": ("DE0", "SE0"),
-        "east": ("DD4", "SD4"),
-        "west": ("DD2", "SD2"),
-    },
 )
+add_signal_on_ports(pd0, {
+    "north": ("DE0", "SE0"),
+    "east": ("DD4", "SD4"),
+    "west": ("DD2", "SD2"),
+})
 pd0.set_coords(-0.172, LAT_0)
 pd1 = builder.add_cross_switch(
     label="PD1",
@@ -304,12 +325,12 @@ pd1 = builder.add_cross_switch(
     south=tf1.begin(),
     east=td3.begin(),
     west=td1.end(),
-    signal_on_ports={
-        "south": ("DF0", "SF0"),
-        "east": ("DD5", "SD5"),
-        "west": ("DD3", "SD3"),
-    },
 )
+add_signal_on_ports(pd1, {
+    "south": ("DF0", "SF0"),
+    "east": ("DD5", "SD5"),
+    "west": ("DD3", "SD3"),
+})
 pd1.set_coords(-0.172, LAT_1)
 
 place_regular_signals_detectors(td0, "D0", Direction.START_TO_STOP, 200, -200)
@@ -353,36 +374,36 @@ pe0 = builder.add_point_switch(
     base=te0.begin(),
     left=te1.end(),
     right=te2.end(),
-    signal_on_ports={
-        "base": ("DE1", "SE1"),
-        "left": ("DE2", "SE2"),
-        "right": ("DE3", "SE3"),
-    },
 )
+add_signal_on_ports(pe0, {
+    "base": ("DE1", "SE1"),
+    "left": ("DE2", "SE2"),
+    "right": ("DE3", "SE3"),
+})
 pe0.set_coords(-0.165, LAT_3)
 pe1 = builder.add_point_switch(
     label="PE1",
     base=te3.end(),
     left=te2.begin(),
     right=te1.begin(),
-    signal_on_ports={
-        "base": ("DE6", "SE6"),
-        "left": ("DE5", "SE5"),
-        "right": ("DE4", "SE4"),
-    },
 )
+add_signal_on_ports(pe1, {
+    "base": ("DE6", "SE6"),
+    "left": ("DE5", "SE5"),
+    "right": ("DE4", "SE4"),
+})
 pe1.set_coords(-0.15, LAT_3)
 pe2 = builder.add_point_switch(
     label="PE2",
     base=td2.end(),
     left=te3.begin(),
     right=tg0.begin(),
-    signal_on_ports={
-        "base": ("DD6", "SD6"),
-        "left": ("DE7", "SE7"),
-        "right": ("DD7", "SD7"),
-    },
 )
+add_signal_on_ports(pe2, {
+    "base": ("DD6", "SD6"),
+    "left": ("DE7", "SE7"),
+    "right": ("DD7", "SD7"),
+})
 pe2.set_coords(-0.15, LAT_0)
 
 te0.set_remaining_coords([[-0.172, LAT_3 - 0.002]])
@@ -442,16 +463,16 @@ pg0 = builder.add_point_switch(
     base=tg1.end(),
     left=tg4.begin(),
     right=tg3.begin(),
-    signal_on_ports={"base": ("DG3", "SG3"), "left": ("DG5", "SG5")},
 )
+add_signal_on_ports(pg0, {"base": ("DG3", "SG3"), "left": ("DG5", "SG5")})
 pg0.set_coords(-0.1082, LAT_4)
 pg1 = builder.add_point_switch(
     label="PG1",
     base=tg5.begin(),
     left=tg2.end(),
     right=tg3.end(),
-    signal_on_ports={"base": ("DG6", "SG6"), "left": ("DG4", "SG4")},
 )
+add_signal_on_ports(pg1, {"base": ("DG6", "SG6"), "left": ("DG4", "SG4")})
 pg1.set_coords(-0.108, LAT_4 - LAT_LINE_SPACE)
 
 tg4.set_remaining_coords([[-0.09, LAT_4]])
@@ -481,25 +502,25 @@ ph0 = builder.add_double_cross_switch(
     north_2=th0.begin(),
     south_1=tg0.end(),
     south_2=td3.end(),
-    signal_on_ports={
-        "north_1": ("DG1", "SG1"),
-        "north_2": ("DH1", "SH1"),
-        "south_1": ("DG0", "SG0"),
-        "south_2": ("DH0", "SH0"),
-    },
 )
+add_signal_on_ports(ph0, {
+    "north_1": ("DG1", "SG1"),
+    "north_2": ("DH1", "SH1"),
+    "south_1": ("DG0", "SG0"),
+    "south_2": ("DH0", "SH0"),
+})
 ph0.set_coords(-0.135, LAT_0 - LAT_LINE_SPACE / 2)
 ph1 = builder.add_point_switch(
     label="PH1",
     base=th0.end(),
     left=tg2.begin(),
     right=th1.begin(),
-    signal_on_ports={
-        "base": ("DH2", "SH2"),
-        "left": ("DG2", "SG2"),
-        "right": ("DH3", "SH3"),
-    },
 )
+add_signal_on_ports(ph1, {
+    "base": ("DH2", "SH2"),
+    "left": ("DG2", "SG2"),
+    "right": ("DH3", "SH3"),
+})
 ph1.set_coords(-0.12, LAT_1)
 
 td3.set_remaining_coords([[-0.1354, LAT_1]])
