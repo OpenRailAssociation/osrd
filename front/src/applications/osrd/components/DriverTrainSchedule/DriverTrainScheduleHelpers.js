@@ -155,7 +155,7 @@ export default function formatStops(stop, idx, data) {
         <div
           className={`${idx === 0 ? 'text-right' : 'text-center drivertrainschedule-stop-time'}`}
         >
-          <div className={`${idx === data.base.stops.length - 1 ? 'text-left triple-time' : ''}`}>
+          <div className={`${idx === data.base.stops.length - 1 ? 'text-left' : ''}`}>
             {stop.duration > 0 ? (
               <>
                 <span>{stopTime}</span>
