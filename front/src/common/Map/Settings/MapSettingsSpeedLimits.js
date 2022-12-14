@@ -62,6 +62,7 @@ function FormatSwitch(props) {
   useEffect(() => {
     setSpeedLimitsTags(undefined);
     getTagsList();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [infraID]);
 
   return (
@@ -103,7 +104,9 @@ export default function MapSettingsLayers() {
   return (
     <div className="row">
       <FormatSwitch name="speedlimits" icon={<IoMdSpeedometer />} />
-      <SimpleFormatSwitch name="sncf_lpv" icon={Icon2SVG(TIVsSVGFile, 'SNCF LPV TIV icon svg')} />
+      <div className="col-lg-6">
+        <SimpleFormatSwitch name="sncf_lpv" icon={Icon2SVG(TIVsSVGFile, 'SNCF LPV TIV icon svg')} />
+      </div>
     </div>
   );
 }

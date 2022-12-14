@@ -29,7 +29,7 @@ export default function MapSettingsSignals() {
     <div className="row">
       {CONSTS_SETTINGS.map((setting) => (
         <div className="col-lg-6" key={setting}>
-          <div className="d-flex align-items-center mt-2">
+          <div className="d-flex align-items-center mt-1">
             <SwitchSNCF
               type="switch"
               onChange={() => setSignalsList(setting)}

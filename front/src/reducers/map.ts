@@ -12,7 +12,9 @@ export const UPDATE_TRANSFORM_REQUEST = 'map/UPDATE_TRANSFORM_REQUEST';
 export const UPDATE_MAPSTYLE = 'map/UPDATE_MAPSTYLE';
 export const UPDATE_MAP_TRACK_SOURCES = 'map/UPDATE_MAP_TRACK_SOURCES';
 export const UPDATE_MAP_SEARCH_MARKER = 'map/UPDATE_MAP_SEARCH_MARKER';
-export const UPDATE_SHOW_ORTHOPHOTO = 'map/UPDATE_SHOW_ORTHOPHOTO';
+export const UPDATE_SHOW_IGN_BD_ORTHO = 'map/UPDATE_SHOW_IGN_BD_ORTHO';
+export const UPDATE_SHOW_IGN_SCAN25 = 'map/UPDATE_SHOW_IGN_SCAN25';
+export const UPDATE_SHOW_IGN_CADASTRE = 'map/UPDATE_SHOW_IGN_CADASTRE';
 export const UPDATE_SHOW_OSM = 'map/UPDATE_SHOW_OSM';
 export const UPDATE_SHOW_OSM_TRACKSECTIONS = 'map/UPDATE_SHOW_OSM_TRACKSECTIONS';
 export const UPDATE_FEATURE_INFO_HOVER = 'map/UPDATE_FEATURE_INFO_HOVER';
@@ -39,7 +41,9 @@ export interface MapState {
   url: typeof MAP_URL;
   mapStyle: string;
   mapTrackSources: string;
-  showOrthoPhoto: boolean;
+  showIGNBDORTHO: boolean;
+  showIGNSCAN25: boolean;
+  showIGNCadastre: boolean;
   showOSM: boolean;
   showOSMtracksections: boolean;
   viewport: Viewport;
@@ -73,7 +77,9 @@ export const initialState: MapState = {
   url: MAP_URL,
   mapStyle: 'normal',
   mapTrackSources: 'geographic',
-  showOrthoPhoto: false,
+  showIGNBDORTHO: false,
+  showIGNSCAN25: false,
+  showIGNCadastre: false,
   showOSM: true,
   showOSMtracksections: false,
   viewport: {
@@ -132,8 +138,14 @@ export default function reducer(inputState: MapState | undefined, action: AnyAct
       case UPDATE_MAP_SEARCH_MARKER:
         draft.mapSearchMarker = action.mapSearchMarker;
         break;
-      case UPDATE_SHOW_ORTHOPHOTO:
-        draft.showOrthoPhoto = action.showOrthoPhoto;
+      case UPDATE_SHOW_IGN_BD_ORTHO:
+        draft.showIGNBDORTHO = action.showIGNBDORTHO;
+        break;
+      case UPDATE_SHOW_IGN_SCAN25:
+        draft.showIGNSCAN25 = action.showIGNSCAN25;
+        break;
+      case UPDATE_SHOW_IGN_CADASTRE:
+        draft.showIGNCadastre = action.showIGNCadastre;
         break;
       case UPDATE_SHOW_OSM:
         draft.showOSM = action.showOSM;
@@ -208,11 +220,29 @@ export function updateMapSearchMarker(mapSearchMarker: MapState['mapSearchMarker
   };
 }
 
-export function updateShowOrthoPhoto(showOrthoPhoto: MapState['showOrthoPhoto']) {
+export function updateShowIGNBDORTHO(showIGNBDORTHO: MapState['showIGNBDORTHO']) {
   return (dispatch: Dispatch) => {
     dispatch({
-      type: UPDATE_SHOW_ORTHOPHOTO,
-      showOrthoPhoto,
+      type: UPDATE_SHOW_IGN_BD_ORTHO,
+      showIGNBDORTHO,
+    });
+  };
+}
+
+export function updateShowIGNSCAN25(showIGNSCAN25: MapState['showIGNSCAN25']) {
+  return (dispatch: Dispatch) => {
+    dispatch({
+      type: UPDATE_SHOW_IGN_SCAN25,
+      showIGNSCAN25,
+    });
+  };
+}
+
+export function updateShowIGNCadastre(showIGNCadastre: MapState['showIGNCadastre']) {
+  return (dispatch: Dispatch) => {
+    dispatch({
+      type: UPDATE_SHOW_IGN_CADASTRE,
+      showIGNCadastre,
     });
   };
 }

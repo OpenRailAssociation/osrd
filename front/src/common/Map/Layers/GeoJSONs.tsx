@@ -34,7 +34,7 @@ const NULL_FEATURE: FeatureCollection = {
 interface LayerContext extends SignalContext {
   symbolsList: string[];
   isEmphasized: boolean;
-  showOrthoPhoto: boolean;
+  showIGNBDORTHO: boolean;
 }
 
 /**
@@ -75,7 +75,7 @@ function adaptFilter(layer: AnyLayer, blackList: string[], whiteList: string[]):
  */
 function getTrackSectionLayers(context: LayerContext, prefix: string): AnyLayer[] {
   return [
-    { ...geoMainLayer(context.colors, context.showOrthoPhoto), id: `${prefix}geo/track-main` },
+    { ...geoMainLayer(context.colors, context.showIGNBDORTHO), id: `${prefix}geo/track-main` },
     { ...geoServiceLayer(context.colors), id: `${prefix}geo/track-service` },
     {
       ...trackNameLayer(context.colors),
@@ -184,7 +184,7 @@ const GeoJSONs: FC<{
     [colors]
   );
 
-  const { mapStyle, showOrthoPhoto } = useSelector((s: RootState) => s.map);
+  const { mapStyle, showIGNBDORTHO } = useSelector((s: RootState) => s.map);
   const flatEntitiesByType = useSelector(
     (state: { editor: EditorState }) => state.editor.flatEntitiesByTypes
   );
@@ -218,9 +218,9 @@ const GeoJSONs: FC<{
       sourceLayer: 'geo',
       prefix: mapStyle === 'blueprint' ? 'SCHB ' : '',
       isEmphasized: true,
-      showOrthoPhoto,
+      showIGNBDORTHO,
     }),
-    [colors, mapStyle, signalsList, symbolsList, showOrthoPhoto]
+    [colors, mapStyle, signalsList, symbolsList, showIGNBDORTHO]
   );
   const hiddenLayerContext: LayerContext = useMemo(
     () => ({
