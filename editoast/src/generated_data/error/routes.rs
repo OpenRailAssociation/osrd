@@ -1,41 +1,30 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
-use crate::generated_data::error::ErrGenerator;
-use crate::infra_cache::Graph;
-use crate::infra_cache::{InfraCache, ObjectCache};
+use crate::generated_data::error::ObjectErrorGenerator;
+use crate::infra_cache::{Graph, InfraCache, ObjectCache};
 use crate::schema::{
     Direction, Endpoint, InfraError, OSRDIdentified, OSRDObject, ObjectRef, ObjectType,
     TrackEndpoint, Waypoint,
 };
-use diesel::result::Error as DieselError;
-use diesel::sql_types::{Array, Integer, Json};
-use diesel::{sql_query, PgConnection, RunQueryDsl};
-use serde_json::{to_value, Value};
 
-pub const ROUTE_ERRORS: [ErrGenerator; 5] = [
-    ErrGenerator::new(1, check_entry_point_ref),
-    ErrGenerator::new(1, check_exit_point_ref),
-    ErrGenerator::new(1, check_release_detectors_ref),
-    ErrGenerator::new(1, check_switches_directions_ref),
-    ErrGenerator::new(2, check_path),
+use super::GlobalErrorGenerator;
+
+pub const OBJECT_GENERATORS: [ObjectErrorGenerator<Context>; 5] = [
+    ObjectErrorGenerator::new(1, check_entry_point_ref),
+    ObjectErrorGenerator::new(1, check_exit_point_ref),
+    ObjectErrorGenerator::new(1, check_release_detectors_ref),
+    ObjectErrorGenerator::new(1, check_switches_directions_ref),
+    ObjectErrorGenerator::new_ctx(2, check_path),
 ];
 
-pub fn insert_errors(
-    infra_errors: Vec<InfraError>,
-    conn: &PgConnection,
-    infra_id: i32,
-) -> Result<(), DieselError> {
-    let errors: Vec<Value> = infra_errors
-        .iter()
-        .map(|error| to_value(error).unwrap())
-        .collect();
-    let count = sql_query(include_str!("sql/routes_insert_errors.sql"))
-        .bind::<Integer, _>(infra_id)
-        .bind::<Array<Json>, _>(&errors)
-        .execute(conn)?;
-    assert_eq!(count, infra_errors.len());
+pub const GLOBAL_GENERATORS: [GlobalErrorGenerator<Context>; 1] =
+    [GlobalErrorGenerator::new_ctx(check_missing)];
 
-    Ok(())
+/// Context for the route error generators
+#[derive(Debug, Default)]
+pub struct Context {
+    /// Tracks that are on a route (used to retrieve missing routes)
+    tracks_on_routes: HashSet<String>,
 }
 
 /// Check if a waypoint ref exists in the infra cache
@@ -53,18 +42,12 @@ fn get_waypoint_location<'a>(
     infra_cache: &'a InfraCache,
 ) -> (&'a String, f64) {
     if waypoint.is_detector() {
-        let detector = infra_cache
-            .detectors()
-            .get(waypoint.get_id())
-            .unwrap()
-            .unwrap_detector();
+        let detector = infra_cache.detectors().get(waypoint.get_id()).unwrap();
+        let detector = detector.unwrap_detector();
         (&detector.track, detector.position)
     } else {
-        let bs = infra_cache
-            .buffer_stops()
-            .get(waypoint.get_id())
-            .unwrap()
-            .unwrap_buffer_stop();
+        let bs = infra_cache.buffer_stops().get(waypoint.get_id()).unwrap();
+        let bs = bs.unwrap_buffer_stop();
         (&bs.track, bs.position)
     }
 }
@@ -161,29 +144,54 @@ fn check_switches_directions_ref(
     res
 }
 
-/// Check for all routes if they have a consistent path
-/// We also retrieve track sections that are not used by any route
-fn check_path(route: &ObjectCache, infra_cache: &InfraCache, graph: &Graph) -> Vec<InfraError> {
+/// Check for all routes if they have a consistent path.
+/// We also retrieve track sections that are not used by any route.
+fn check_path(
+    route: &ObjectCache,
+    infra_cache: &InfraCache,
+    graph: &Graph,
+    mut context: Context,
+) -> (Vec<InfraError>, Context) {
     let route = route.unwrap_route();
+
+    // Check if entry and exit points are the same
+    if route.entry_point == route.exit_point {
+        return (vec![InfraError::new_invalid_path(route)], context);
+    }
+
     let mut cur_dir = route.entry_point_direction;
     let (mut cur_track, mut cur_offset) = get_waypoint_location(&route.entry_point, infra_cache);
     let (exit_track, exit_offset) = get_waypoint_location(&route.exit_point, infra_cache);
 
-    // Save all detectors on the route
-    let mut _detectors = HashSet::<&String>::new();
+    // Save track ranges and used switches
+    let mut track_ranges = HashMap::new();
+    let mut used_switches = HashSet::new();
 
     // Check path validity
     loop {
         if !infra_cache.track_sections().contains_key(cur_track) {
-            return vec![InfraError::new_invalid_path(route)];
+            return (vec![InfraError::new_invalid_path(route)], context);
         }
+
+        // Add track range
+        let end_offset = if cur_track == exit_track {
+            exit_offset
+        } else if cur_dir == Direction::StartToStop {
+            f64::INFINITY
+        } else {
+            0.
+        };
+        track_ranges.insert(
+            cur_track,
+            (cur_offset.min(end_offset), cur_offset.max(end_offset)),
+        );
 
         // Search for the exit_point
         if cur_track == exit_track {
             if (cur_dir == Direction::StartToStop && cur_offset > exit_offset)
                 || (cur_dir == Direction::StopToStart && cur_offset < exit_offset)
             {
-                return vec![InfraError::new_invalid_path(route)];
+                return (vec![InfraError::new_invalid_path(route)], context);
             }
             break;
         }
@@ -192,7 +200,7 @@ fn check_path(route: &ObjectCache, infra_cache: &InfraCache, graph: &Graph) -> V
         let endpoint = create_endpoint_from_track_and_direction(cur_track, cur_dir);
         // No neighbour found
         if !graph.has_neighbour(&endpoint) {
-            return vec![InfraError::new_invalid_path(route)];
+            return (vec![InfraError::new_invalid_path(route)], context);
         }
         let switch = graph.get_switch(&endpoint);
         let next_endpoint = match switch {
@@ -201,15 +209,16 @@ fn check_path(route: &ObjectCache, infra_cache: &InfraCache, graph: &Graph) -> V
                 let group = route.switches_directions.get(&switch.obj_id.clone().into());
                 if group.is_none() {
                     // Switch not found in the route
-                    return vec![InfraError::new_invalid_path(route)];
+                    return (vec![InfraError::new_invalid_path(route)], context);
                 }
+                used_switches.insert(&switch.obj_id);
                 graph.get_neighbour(&endpoint, group)
             }
         };
 
         // The switch could contains errors (invalid ref on ports).
         if next_endpoint.is_none() {
-            return vec![InfraError::new_invalid_path(route)];
+            return (vec![InfraError::new_invalid_path(route)], context);
         }
 
         let next_endpoint = next_endpoint.unwrap();
@@ -219,7 +228,60 @@ fn check_path(route: &ObjectCache, infra_cache: &InfraCache, graph: &Graph) -> V
             Endpoint::End => (Direction::StopToStart, f64::INFINITY),
         };
     }
-    vec![]
+
+    // Add tracks on the route to the context
+    let tracks_on_route = track_ranges.keys().map(|track| (*track).clone());
+    context.tracks_on_routes.extend(tracks_on_route);
+
+    // Search for switches out of the path
+    let mut res = vec![];
+    for switch in route.switches_directions.keys() {
+        if !used_switches.contains(&switch.0) {
+            res.push(InfraError::new_object_out_of_path(
+                route,
+                format!("switches_directions.{switch}"),
+                ObjectRef::new(ObjectType::Switch, switch),
+            ));
+        }
+    }
+
+    // Search for detectors out of the path
+    for (index, detector) in route.release_detectors.iter().enumerate() {
+        let detector = infra_cache.detectors().get::<String>(detector).unwrap();
+        let detector = detector.unwrap_detector();
+        let track_range = track_ranges.get(&detector.track);
+        if let Some(track_range) = track_range {
+            if (track_range.0..=track_range.1).contains(&detector.position) {
+                continue;
+            }
+        }
+
+        res.push(InfraError::new_object_out_of_path(
+            route,
+            format!("release_detectors.{index}"),
+            detector.get_ref(),
+        ));
+    }
+
+    (res, context)
+}
+
+/// Check that all track sections are covered by a route
+fn check_missing(
+    infra_cache: &InfraCache,
+    _: &Graph,
+    context: Context,
+) -> (Vec<InfraError>, Context) {
+    let mut res = vec![];
+    for track in infra_cache
+        .track_sections()
+        .keys()
+        .filter(|e| !context.tracks_on_routes.contains(*e))
+    {
+        res.push(InfraError::new_missing_route(track));
+    }
+
+    (res, context)
 }
 
 fn create_endpoint_from_track_and_direction<T: AsRef<str>>(
@@ -239,14 +301,14 @@ fn create_endpoint_from_track_and_direction<T: AsRef<str>>(
 #[cfg(test)]
 mod tests {
     use crate::generated_data::error::routes::{
-        check_entry_point_ref, check_exit_point_ref, check_path, check_release_detectors_ref,
-        check_switches_directions_ref,
+        check_entry_point_ref, check_exit_point_ref, check_missing, check_path,
+        check_release_detectors_ref, check_switches_directions_ref,
     };
     use crate::infra_cache::tests::{
         create_detector_cache, create_route_cache, create_small_infra_cache,
     };
     use crate::infra_cache::Graph;
-    use crate::schema::{Direction, ObjectRef, ObjectType, Waypoint};
+    use crate::schema::{Direction, OSRDObject, ObjectRef, ObjectType, Waypoint};
 
     use super::InfraError;
 
@@ -368,7 +430,8 @@ mod tests {
         );
         infra_cache.add(route.clone());
         let graph = Graph::load(&infra_cache);
-        let errors = check_path(&route.clone().into(), &infra_cache, &graph);
+        let ctx = Default::default();
+        let (errors, _) = check_path(&route.clone().into(), &infra_cache, &graph, ctx);
         assert_eq!(1, errors.len());
         let infra_error = InfraError::new_invalid_path(&route);
         assert_eq!(infra_error, errors[0]);
@@ -387,7 +450,8 @@ mod tests {
         );
         infra_cache.add(route.clone());
         let graph = Graph::load(&infra_cache);
-        let errors = check_path(&route.clone().into(), &infra_cache, &graph);
+        let ctx = Default::default();
+        let (errors, _) = check_path(&route.clone().into(), &infra_cache, &graph, ctx);
         assert_eq!(1, errors.len());
         let infra_error = InfraError::new_invalid_path(&route);
         assert_eq!(infra_error, errors[0]);
@@ -406,7 +470,28 @@ mod tests {
         );
         infra_cache.add(route.clone());
         let graph = Graph::load(&infra_cache);
-        let errors = check_path(&route.clone().into(), &infra_cache, &graph);
+        let ctx = Default::default();
+        let (errors, _) = check_path(&route.clone().into(), &infra_cache, &graph, ctx);
+        assert_eq!(1, errors.len());
+        let infra_error = InfraError::new_invalid_path(&route);
+        assert_eq!(infra_error, errors[0]);
+    }
+
+    #[test]
+    fn invalid_path_4() {
+        let mut infra_cache = create_small_infra_cache();
+        let route = create_route_cache(
+            "ErrorRoute",
+            Waypoint::new_detector("D1"),
+            Direction::StartToStop,
+            Waypoint::new_detector("D1"),
+            vec![],
+            Default::default(),
+        );
+        infra_cache.add(route.clone());
+        let graph = Graph::load(&infra_cache);
+        let ctx = Default::default();
+        let (errors, _) = check_path(&route.clone().into(), &infra_cache, &graph, ctx);
         assert_eq!(1, errors.len());
         let infra_error = InfraError::new_invalid_path(&route);
         assert_eq!(infra_error, errors[0]);
@@ -415,7 +500,8 @@ mod tests {
     #[test]
     fn release_detector_out_of_path() {
         let mut infra_cache = create_small_infra_cache();
-        infra_cache.add(create_detector_cache("D2", "B", 255.));
+        let detector = create_detector_cache("D2", "B", 255.);
+        infra_cache.add(detector.clone());
         let route = create_route_cache(
             "ErrorRoute",
             Waypoint::new_buffer_stop("BF1"),
@@ -426,7 +512,45 @@ mod tests {
         );
         infra_cache.add(route.clone());
         let graph = Graph::load(&infra_cache);
-        let errors = check_path(&route.into(), &infra_cache, &graph);
+        let ctx = Default::default();
+        let (errors, _) = check_path(&route.clone().into(), &infra_cache, &graph, ctx);
         assert_eq!(1, errors.len());
+        let infra_error =
+            InfraError::new_object_out_of_path(&route, "release_detectors.0", detector.get_ref());
+        assert_eq!(infra_error, errors[0]);
+    }
+
+    #[test]
+    fn switch_out_of_path() {
+        let mut infra_cache = create_small_infra_cache();
+        let route = create_route_cache(
+            "ErrorRoute",
+            Waypoint::new_buffer_stop("BF1"),
+            Direction::StartToStop,
+            Waypoint::new_detector("D1"),
+            vec![],
+            [("switch".into(), "RIGHT".into())].into(),
+        );
+        infra_cache.add(route.clone());
+        let graph = Graph::load(&infra_cache);
+        let ctx = Default::default();
+        let (errors, _) = check_path(&route.clone().into(), &infra_cache, &graph, ctx);
+        assert_eq!(1, errors.len());
+        let infra_error = InfraError::new_object_out_of_path(
+            &route,
+            "switches_directions.switch",
+            ObjectRef::new(ObjectType::Switch, "switch"),
+        );
+        assert_eq!(infra_error, errors[0]);
+    }
+
+    #[test]
+    fn missing_routes() {
+        let infra_cache = create_small_infra_cache();
+        let graph = Graph::load(&infra_cache);
+        let ctx = Default::default();
+        // Based on context the function should return an error for each track section
+        let (errors, _) = check_missing(&infra_cache, &graph, ctx);
+        assert_eq!(4, errors.len());
     }
 }

@@ -47,6 +47,12 @@ pub enum ObjectCache {
     Catenary(Catenary),
 }
 
+impl<T: Cache> From<T> for ObjectCache {
+    fn from(cache: T) -> Self {
+        cache.get_object_cache()
+    }
+}
+
 impl OSRDIdentified for ObjectCache {
     fn get_id(&self) -> &String {
         match self {
@@ -83,7 +89,7 @@ impl OSRDObject for ObjectCache {
     }
 }
 
-impl Cache for ObjectCache {
+impl ObjectCache {
     fn get_track_referenced_id(&self) -> Vec<&String> {
         match self {
             ObjectCache::TrackSection(track) => track.get_track_referenced_id(),
@@ -100,12 +106,6 @@ impl Cache for ObjectCache {
         }
     }
 
-    fn get_object_cache(&self) -> ObjectCache {
-        self.clone()
-    }
-}
-
-impl ObjectCache {
     /// Unwrap a track section from the object cache
     pub fn unwrap_track_section(&self) -> &TrackSectionCache {
         match self {
@@ -537,8 +537,7 @@ pub mod tests {
     };
 
     use super::{
-        BufferStopCache, DetectorCache, ObjectCache, OperationalPointCache, SignalCache,
-        TrackSectionCache,
+        BufferStopCache, DetectorCache, OperationalPointCache, SignalCache, TrackSectionCache,
     };
 
     #[test]
@@ -689,54 +688,6 @@ pub mod tests {
             let refs = infra_cache.track_sections_refs;
             assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
         })
-    }
-
-    impl From<TrackSectionCache> for ObjectCache {
-        fn from(track_section: TrackSectionCache) -> Self {
-            ObjectCache::TrackSection(track_section)
-        }
-    }
-
-    impl From<DetectorCache> for ObjectCache {
-        fn from(detector: DetectorCache) -> Self {
-            ObjectCache::Detector(detector)
-        }
-    }
-
-    impl From<BufferStopCache> for ObjectCache {
-        fn from(buffer_stop: BufferStopCache) -> Self {
-            ObjectCache::BufferStop(buffer_stop)
-        }
-    }
-
-    impl From<SpeedSection> for ObjectCache {
-        fn from(speed_section: SpeedSection) -> Self {
-            ObjectCache::SpeedSection(speed_section)
-        }
-    }
-
-    impl From<SignalCache> for ObjectCache {
-        fn from(signal: SignalCache) -> Self {
-            ObjectCache::Signal(signal)
-        }
-    }
-
-    impl From<SwitchType> for ObjectCache {
-        fn from(switch: SwitchType) -> Self {
-            ObjectCache::SwitchType(switch)
-        }
-    }
-
-    impl From<OperationalPointCache> for ObjectCache {
-        fn from(op: OperationalPointCache) -> Self {
-            ObjectCache::OperationalPoint(op)
-        }
-    }
-
-    impl From<Route> for ObjectCache {
-        fn from(route: Route) -> Self {
-            ObjectCache::Route(route)
-        }
     }
 
     pub fn create_track_section_cache<T: AsRef<str>>(obj_id: T, length: f64) -> TrackSectionCache {
