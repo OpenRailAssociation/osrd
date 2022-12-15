@@ -28,7 +28,7 @@ export default function StandardAllowanceDefault(props) {
     title,
     changeType,
     typeKey,
-    getBaseValue
+    getBaseValue,
   } = props;
 
   const [value, setValue] = useState({
@@ -36,8 +36,6 @@ export default function StandardAllowanceDefault(props) {
     value: 0,
   });
   const [distribution, setDistribution] = useState(distributionsTypes[0]);
-
-
 
   const debouncedChangeType = useMemo(
     () =>
@@ -198,14 +196,16 @@ export default function StandardAllowanceDefault(props) {
   }, [getBaseValue, typeKey]);
 
   return (
-    <div className="row w-100 mareco">
-      <div className="col-md-2 text-normal">{title || t('sandardAllowancesWholePath')}</div>
+    <div className={`${options.immediateMutation ? 'mareco' : 'row w-100 mareco'}`}>
+      <div className={`${options.immediateMutation ? 'text-normal' : 'col-md-2 text-normal'}`}>
+        {title || t('sandardAllowancesWholePath')}
+      </div>
 
       <div className="col">
         <div className="row">
           {options.setDistribution && (
             <>
-              <div className="col-md-2 text-normal">{t('Valeur par défault')}</div>
+              <div className="col-md-2 text-normal">{t('perDefaultValue')}</div>
               <div className="col-md-4">
                 <SelectSNCF
                   id="distributionTypeSelector"
