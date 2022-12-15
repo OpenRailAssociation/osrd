@@ -107,7 +107,7 @@ public final class STDCMRequest {
      * at least x seconds before its passage.
      */
     @Json(name = "margin_before")
-    public double marginBefore = 0;
+    public double gridMarginBeforeSTDCM = 0;
 
     /**
      * Grid margin of y seconds after the train passage,
@@ -115,7 +115,7 @@ public final class STDCMRequest {
      * at least y seconds after its passage.
      */
     @Json(name = "margin_after")
-    public double marginAfter = 0;
+    public double gridMarginAfterSTDCM = 0;
 
     /**
      * Create a default STDCMRequest
@@ -161,8 +161,8 @@ public final class STDCMRequest {
         this.startTime = startTime;
         this.endTime = endTime;
         this.speedLimitComposition = speedLimitComposition;
-        this.marginBefore = marginBefore;
-        this.marginAfter = marginAfter;
+        this.gridMarginBeforeSTDCM = marginBefore;
+        this.gridMarginAfterSTDCM = marginAfter;
     }
 
     public static class RouteOccupancy {
