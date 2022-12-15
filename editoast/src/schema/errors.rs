@@ -1,4 +1,4 @@
-use super::{OSRDObject, ObjectType};
+use super::{OSRDIdentified, OSRDObject, ObjectType};
 use crate::schema::ObjectRef;
 use serde::{Deserialize, Serialize};
 use strum_macros::EnumVariantNames;
@@ -34,8 +34,7 @@ pub enum InfraErrorType {
     MissingRoute,
     NoBufferStop,
     ObjectOutOfPath {
-        position: f64,
-        track: String,
+        reference: ObjectRef,
     },
     OutOfRange {
         position: f64,
@@ -108,28 +107,24 @@ impl InfraError {
         }
     }
 
-    pub fn _new_object_out_of_path<T: AsRef<str>, U: AsRef<str>, O: OSRDObject>(
-        obj: &O,
+    pub fn new_object_out_of_path<T: AsRef<str>, O: OSRDObject>(
+        route: &O,
         field: T,
-        position: f64,
-        track: U,
+        reference: ObjectRef,
     ) -> Self {
         Self {
-            obj_id: obj.get_id().clone(),
-            obj_type: obj.get_type(),
+            obj_id: route.get_id().clone(),
+            obj_type: route.get_type(),
             field: field.as_ref().into(),
             is_warning: false,
-            sub_type: InfraErrorType::ObjectOutOfPath {
-                position,
-                track: track.as_ref().into(),
-            },
+            sub_type: InfraErrorType::ObjectOutOfPath { reference },
         }
     }
 
-    pub fn _new_missing_route<O: OSRDObject>(obj: &O) -> Self {
+    pub fn new_missing_route<T: AsRef<str>>(track_id: &T) -> Self {
         Self {
-            obj_id: obj.get_id().clone(),
-            obj_type: obj.get_type(),
+            obj_id: track_id.as_ref().into(),
+            obj_type: ObjectType::TrackSection,
             field: Default::default(),
             is_warning: true,
             sub_type: InfraErrorType::MissingRoute,
@@ -221,7 +216,8 @@ impl InfraError {
         }
     }
 
-    pub fn new_overlapping_switches<O: OSRDObject>(obj: &O, reference: ObjectRef) -> Self {
+    pub fn new_overlapping_switches<O: OSRDObject, T: AsRef<str>>(obj: &O, other: T) -> Self {
+        let reference = ObjectRef::new(ObjectType::Switch, other);
         Self {
             obj_id: obj.get_id().clone(),
             obj_type: obj.get_type(),
@@ -239,5 +235,17 @@ impl InfraError {
             is_warning: true,
             sub_type: InfraErrorType::OverlappingTrackLinks { reference },
         }
+    }
+}
+
+impl OSRDIdentified for InfraError {
+    fn get_id(&self) -> &String {
+        &self.obj_id
+    }
+}
+
+impl OSRDObject for InfraError {
+    fn get_type(&self) -> ObjectType {
+        self.obj_type
     }
 }
