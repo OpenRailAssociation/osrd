@@ -93,8 +93,8 @@ public class STDCMEndpoint implements Take {
                     infra,
                     occupancies,
                     rollingStock,
-                    request.marginBefore,
-                    request.marginAfter
+                    request.gridMarginAfterSTDCM,
+                    request.gridMarginBeforeSTDCM
             );
             double minRunTime = getMinRunTime(
                     infra, rollingStock, comfort, startLocations, endLocations, request.timeStep);
