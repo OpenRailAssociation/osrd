@@ -1,0 +1,35 @@
+{
+  "actions": {
+    "copy": "Dupliquer",
+    "delete": "Supprimer",
+    "export": "Exporter au format RailJSON",
+    "lock": "Verrouiller",
+    "rename": "Renommer",
+    "unlock": "Déverrouiller",
+    "waiting": "Veuillez patienter"
+  },
+  "addInfra": "Créer une infrastructure",
+  "addInfraJSON": "Créer une infrastructure, à partir d'un fichier RailJSON",
+  "addInfraJSONFile": "Ajouter un fichier RailJSON",
+  "addInfraJSONFileRemove": "Annuler l'import RailJSON",
+  "chooseInfrastructure": "Choisissez une infrastructure",
+  "createInfra": "Création",
+  "deleteConfirm": "Voulez-vous supprimer l'infrastructure ?",
+  "errorMessages": {
+    "noExistingInfra": "Aucune intrastructure disponible",
+    "unableToRetrieveInfra": "Récupération infra impossible",
+    "unableToRetrieveInfraList": "Récupération liste d'infra impossible",
+    "noEmptyName": "Veuillez renseigner un nom"
+  },
+  "goToEditionMode": "Édition",
+  "goToStandardMode": "Sélection",
+  "infraChoice": "Infrastructures",
+  "infraManagement": "Gestion des infrastructures",
+  "infraName": "Nom de l'infrastructure",
+  "infrasFound": "insfrastructure(s) trouvée(s)",
+  "infrastructure": "Infrastructure",
+  "locked": "Verrouillée",
+  "no": "Non",
+  "noInfra": "Veuillez choisir une insfrastructure",
+  "yes": "Oui"
+}
