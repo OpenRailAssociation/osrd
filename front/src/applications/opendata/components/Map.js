@@ -23,7 +23,7 @@ import { getMapMouseEventNearestFeature } from 'utils/mapboxHelper';
 
 export default function Map(props) {
   const { viewport, setViewport, setClickedFeature } = props;
-  const { mapStyle } = useSelector((state) => state.map);
+  const mapStyle = useSelector((state) => state.map.mapStyle);
   const [lngLatHover, setLngLatHover] = useState();
   const [trackSectionGeoJSON, setTrackSectionGeoJSON] = useState();
   const [snappedPoint, setSnappedPoint] = useState();
