@@ -6,7 +6,7 @@ import { setFailure } from 'reducers/main';
 import { useTranslation } from 'react-i18next';
 import { get, deleteRequest } from 'common/requests';
 import TimetableSelectorModal from 'applications/osrd/components/TimetableSelector/TimetableSelectorModal';
-import icon from 'assets/pictures/timetable.svg';
+import icon from 'assets/pictures/trains_timetable.png';
 import { sec2time } from 'utils/timeManipulation';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
@@ -71,6 +71,7 @@ export default function TimetableSelector(props) {
     } else {
       setselectedTimetable(undefined);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timetableID, mustUpdateTimetable]);
 
   let timeTable = <span className="ml-1">{t('osrdconf:noTimetable')}</span>;
@@ -101,9 +102,8 @@ export default function TimetableSelector(props) {
           data-toggle="modal"
           data-target="#timetable-selector-modal"
         >
-          <div className="h2 mb-0 d-flex align-items-center">
+          <div className="d-flex align-items-center">
             <img width="32px" className="mr-2" src={icon} alt="timetableIcon" />
-            <span className="text-muted">{t('osrdconf:timetable')}</span>
             {timeTable}
           </div>
         </div>
