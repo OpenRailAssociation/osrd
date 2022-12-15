@@ -31,7 +31,7 @@ export default function OpenDataImportModal(props) {
   const rollingStockID = useSelector(getRollingStockID);
   const timetableID = useSelector(getTimetableID);
 
-  const [trainsWithPathRef, setTrainsWithPathRef] = useState();
+  const [trainsWithPathRef, setTrainsWithPathRef] = useState([]);
 
   // Places, points, OPs to add track section id
   const [pointsDictionnary, setPointsDictionnary] = useState();
@@ -244,7 +244,7 @@ export default function OpenDataImportModal(props) {
 
   return (
     <ModalSNCF htmlID="OpenDataImportModal">
-      {pathsDictionnary && trainsWithPathRef ? (
+      {pathsDictionnary && trainsWithPathRef.length > 0 ? (
         <ModalBodySNCF>
           {!infraID || !timetableID || !rollingStockID ? null : (
             <>
@@ -316,8 +316,12 @@ export default function OpenDataImportModal(props) {
   );
 }
 
+OpenDataImportModal.defaultProps = {
+  rollingStockDB: [],
+};
+
 OpenDataImportModal.propTypes = {
   trains: PropTypes.array.isRequired,
-  rollingStockDB: PropTypes.array.isRequired,
+  rollingStockDB: PropTypes.array,
   setMustUpdateTimetable: PropTypes.func.isRequired,
 };
