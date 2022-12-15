@@ -1,6 +1,8 @@
 package fr.sncf.osrd.envelope.part;
 
 import static fr.sncf.osrd.envelope.EnvelopePhysics.intersectStepWithSpeed;
+import static java.lang.Math.abs;
+import static java.lang.Math.max;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.EnvelopeAttr;
@@ -342,34 +344,35 @@ public final class EnvelopePart implements SearchableEnvelope {
             PhysicsPath path,
             PhysicsRollingStock rollingStock
     ) {
-        // If the train is braking or coasting, no energy is consumed
-        if (hasAttr(EnvelopeProfile.BRAKING) || hasAttr(EnvelopeProfile.COASTING))
-            return 0;
-        // Else, the energy consumed by the train corresponds to the kinetic energy delta, subtracting the work by
+        // The energy consumed by the train corresponds to the kinetic energy delta, subtracting the work by
         // gravity and drag / friction
-        else {
-            var length = positions.length;
-            var mass = rollingStock.getMass();
-            var partBeginPos = getBeginPos();
-            var partEndPos = getEndPos();
-            var meanGrade = path.getAverageGrade(partBeginPos, partEndPos);
-            var altitudeDelta = meanGrade * (partEndPos - partBeginPos);
+        var length = positions.length;
+        var mass = rollingStock.getMass();
+        var partBeginPos = getBeginPos();
+        var partEndPos = getEndPos();
+        var meanGrade = path.getAverageGrade(partBeginPos, partEndPos);
+        var altitudeDelta = meanGrade * (partEndPos - partBeginPos);
 
-            var workGravity = - mass * 9.81 * altitudeDelta;
+        var workGravity = - mass * 9.81 * altitudeDelta;
 
-            var kineticEnergyDelta = 0.5 * mass * (speeds[length] * speeds[length] - speeds[0] * speeds[0]);
+        var kineticEnergyDelta = 0.5 * mass * (speeds[length] * speeds[length] - speeds[0] * speeds[0]);
 
-            var workDrag = 0;
-            for (var i = 0 ; i < length ; i++) {
-                var speed = speeds[i];
-                var pos = positions[i];
-                var nextPos = positions[i + 1];
-                var positionDelta = nextPos - pos;
-                workDrag -= rollingStock.getRollingResistance(speed) * positionDelta;
-            }
-
-            return kineticEnergyDelta - workGravity - workDrag;
+        var workDrag = 0;
+        for (var i = 0 ; i < length ; i++) {
+            var speed = speeds[i];
+            var pos = positions[i];
+            var nextPos = positions[i + 1];
+            var positionDelta = nextPos - pos;
+            workDrag -= rollingStock.getRollingResistance(speed) * positionDelta;
         }
+
+        var totalEnergyConsumed = kineticEnergyDelta - workGravity - workDrag;
+
+        // If the train is braking the result should be negative
+        if (hasAttr(EnvelopeProfile.BRAKING))
+            assert totalEnergyConsumed <= 0;
+
+        return max(0., totalEnergyConsumed);
     }
 
     // endregion
@@ -520,7 +523,7 @@ public final class EnvelopePart implements SearchableEnvelope {
     /** Check if a is in the interval [b, c] or [c, b]*/
     private static boolean isBetween(double a, double b, double c) {
         var min = Math.min(b, c);
-        var max = Math.max(b, c);
+        var max = max(b, c);
         return min <= a && a <= max;
     }
 
