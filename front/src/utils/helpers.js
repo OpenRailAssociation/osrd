@@ -25,6 +25,22 @@ export const useDebounce = (value, delay) => {
 };
 
 /**
+ * Debounce input fields
+ */
+ export const useDebouncedFunc = (value, delay, func) => {
+  //const [debouncedValue, setDebouncedValue] = useState(value);
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      func(value);
+    }, delay);
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+};
+
+/**
  * Donne le bon type de curseur au survol
  * @param {boolean} isHovering - S'il est à True, retourne le bon type de pointeur
  * @returns {string} La classe correspondant au pointeur

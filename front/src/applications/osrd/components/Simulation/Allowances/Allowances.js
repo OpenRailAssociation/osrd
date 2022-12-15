@@ -1,9 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
-import { get, patch } from 'common/requests';
-import { setFailure, setSuccess } from 'reducers/main';
-import { updateAllowancesSettings, updateMustRedraw, updateSimulation } from 'reducers/osrdsimulation/actions';
-import { useDispatch, useSelector } from 'react-redux';
+import { updateAllowancesSettings } from 'reducers/osrdsimulation/actions';
+import { useSelector } from 'react-redux';
 
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import { FaTrash } from 'react-icons/fa';
@@ -16,19 +14,7 @@ import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import StandardAllowanceDefault from 'applications/osrd/components/Simulation/Allowances/StandardAllowanceDefault';
 import nextId from 'react-id-generator';
 import { useTranslation } from 'react-i18next';
-import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
-
-const TYPEUNITS = {
-  time: 's',
-  percentage: '%',
-  time_per_distance: 'min/100km',
-};
-
-const TYPES_UNITS = {
-  time: 'seconds',
-  percentage: 'percentage',
-  time_per_distance: 'minutes',
-};
+import { TYPES_UNITS, ALLOWANCE_UNITS_KEYS } from './consts';
 
 function EmptyLine(props) {
   const {
@@ -42,7 +28,7 @@ function EmptyLine(props) {
     marecoEndPosition,
     defaultDistributionId,
   } = props;
-  // console.log("Display EmptyLine", allowances)
+
   const { selectedTrain } = useSelector((state) => state.osrdsimulation);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const allowanceNewDatas =
@@ -220,10 +206,8 @@ function EmptyLine(props) {
 }
 
 function Allowance(props) {
-  const { data, delAllowance, idx } = props;
+  const { data, delAllowance, idx, selectedTrain, simulation } = props;
   const { t } = useTranslation(['allowances']);
-  const { selectedTrain } = useSelector((state) => state.osrdsimulation);
-  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
 
   const position2name = (position) => {
     const place = simulation.trains[selectedTrain].base.stops.find(
@@ -248,7 +232,7 @@ function Allowance(props) {
         <div className="col-md-3 text-left">
           {t(`allowanceTypes.${data.value.value_type}`)} /
           {data.value[TYPES_UNITS[data.value.value_type]]}
-          {TYPEUNITS[data.value.value_type]}
+          {ALLOWANCE_UNITS_KEYS[data.value.value_type]}
         </div>
         <div className="col-md-1 d-flex align-items-right">
           <button
@@ -265,34 +249,41 @@ function Allowance(props) {
 }
 
 export default function Allowances(props) {
-  const { toggleAllowancesDisplay } = props;
-  const { allowancesSettings, selectedProjection, selectedTrain } = useSelector(
-    (state) => state.osrdsimulation
-  );
-  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
-  const [trainDetail, setTrainDetail] = useState(undefined);
+  const {
+    toggleAllowancesDisplay,
+    t,
+    dispatch,
+    simulation,
+    allowancesSettings,
+    selectedProjection,
+    selectedTrain,
+    persistentAllowances,
+    syncInProgress,
+    mutateAllowances,
+    getAllowances,
+    trainDetail,
+  } = props;
+
   const [allowances, setAllowances] = useState([]);
   const [rawExtensions] = useState([]);
   const [updateAllowances, setUpdateAllowances] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
-  const dispatch = useDispatch();
-  const { t } = useTranslation(['allowances']);
 
   const allowanceTypes = [
     {
       id: 'time',
       label: t('allowanceTypes.time'),
-      unit: TYPEUNITS.time,
+      unit: ALLOWANCE_UNITS_KEYS.time,
     },
     {
       id: 'percentage',
       label: t('allowanceTypes.percentage'),
-      unit: TYPEUNITS.percentage,
+      unit: ALLOWANCE_UNITS_KEYS.percentage,
     },
     {
       id: 'time_per_distance',
       label: t('allowanceTypes.time_per_distance'),
-      unit: TYPEUNITS.time_per_distance,
+      unit: ALLOWANCE_UNITS_KEYS.time_per_distance,
     },
   ];
 
@@ -308,61 +299,8 @@ export default function Allowances(props) {
     },
   ];
 
-  const getAllowances = async () => {
-    try {
-      setIsUpdating(true);
-      const result = await get(`${trainscheduleURI}${simulation.trains[selectedTrain].id}/`);
-      setTrainDetail(result);
-      setAllowances(result.allowances);
-      setIsUpdating(false);
-    } catch (e) {
-      console.log('ERROR', e);
-      dispatch(
-        setFailure({
-          name: e.name,
-          message: e.message,
-        })
-      );
-    }
-  };
-
-  // Change this to adapt to MARECO SPEC
-  const changeAllowances = async (newAllowances) => {
-    try {
-      setIsUpdating(true);
-      await patch(`${trainscheduleURI}${simulation.trains[selectedTrain].id}/`, {
-        ...trainDetail,
-        allowances: newAllowances,
-      });
-      const newSimulationTrains = Array.from(simulation.trains);
-      newSimulationTrains[selectedTrain] = await get(
-        `${trainscheduleURI}${simulation.trains[selectedTrain].id}/result/`,
-        {
-          id: simulation.trains[selectedTrain].id,
-          path: selectedProjection.path,
-        }
-      );
-
-      getAllowances();
-      dispatch(updateSimulation({ ...simulation, trains: newSimulationTrains }));
-      dispatch(updateMustRedraw(true));
-      dispatch(
-        setSuccess({
-          title: t('allowanceModified.anyAllowanceModified'),
-          text: '',
-        })
-      );
-      setIsUpdating(false);
-    } catch (e) {
-      setIsUpdating(false);
-      console.log('ERROR', e);
-      dispatch(
-        setFailure({
-          name: e.name,
-          message: t('allowanceModified.anyAllowanceModificationError'),
-        })
-      );
-    }
+  const handleChangeAllowances = (newAllowances) => {
+    mutateAllowances(newAllowances);
   };
 
   const delAllowance = (idx, allowanceType) => {
@@ -394,18 +332,22 @@ export default function Allowances(props) {
 
   useEffect(() => {
     if (updateAllowances) {
-      changeAllowances(allowances);
+      handleChangeAllowances(allowances);
       setUpdateAllowances(false);
     }
   }, [allowances]);
 
   useEffect(() => {
-    getAllowances();
-  }, [selectedTrain]);
+    setAllowances(persistentAllowances);
+  }, [persistentAllowances]);
 
-  const standardAllowance = allowances.find(
-    (allowance) => allowance.allowance_type === 'standard' && allowance.ranges
-  );
+  useEffect(() => {
+    setIsUpdating(syncInProgress);
+  }, [syncInProgress]);
+
+  const standardAllowance =
+    allowances &&
+    allowances.find((allowance) => allowance.allowance_type === 'standard' && allowance.ranges);
 
   // Engineergin can be defined alone, yet its default distribution depends on eventuel defined standard margin
 
@@ -419,7 +361,7 @@ export default function Allowances(props) {
           <DotsLoader />
         </div>
       )}
-      {trainDetail && trainDetail.allowances && (
+      {allowances && (
         <>
           <div className="h2 d-flex">
             <StandardAllowanceDefault
@@ -429,6 +371,11 @@ export default function Allowances(props) {
               setIsUpdating={setIsUpdating}
               trainDetail={trainDetail}
               TYPES_UNITS={TYPES_UNITS}
+              selectedTrain={selectedTrain}
+              selectedProjection={selectedProjection}
+              simulation={simulation}
+              t={t}
+              dispatch={dispatch}
             />
             <button
               type="button"
@@ -438,14 +385,21 @@ export default function Allowances(props) {
               <i className="icons-arrow-up" />
             </button>
           </div>
-          {trainDetail.allowances.find((a) => a.ranges) && (
+          {allowances.find((a) => a.ranges) && (
             <div className="text-normal">{t('specificValuesOnIntervals')}</div>
           )}
 
-          {trainDetail.allowances
+          {allowances
             .find((a) => a.ranges)
             ?.ranges?.map((allowance, idx) => (
-              <Allowance data={allowance} delAllowance={delAllowance} idx={idx} key={nextId()} />
+              <Allowance
+                data={allowance}
+                delAllowance={delAllowance}
+                idx={idx}
+                key={nextId()}
+                selectedTrain={selectedTrain}
+                simulation={simulation}
+              />
             ))}
 
           {trainDetail.allowances.find((a) => a.ranges) && (
@@ -472,7 +426,14 @@ export default function Allowances(props) {
           {trainDetail.allowances.map((allowance, idx) => {
             if (allowance.allowance_type === 'engineering') {
               return (
-                <Allowance data={allowance} delAllowance={delAllowance} idx={idx} key={nextId()} />
+                <Allowance
+                  data={allowance}
+                  delAllowance={delAllowance}
+                  idx={idx}
+                  key={nextId()}
+                  selectedTrain={selectedTrain}
+                  simulation={simulation}
+                />
               );
             }
             return null;
@@ -504,14 +465,14 @@ export default function Allowances(props) {
   );
 }
 
-Allowances.propTypes = {
-  toggleAllowancesDisplay: PropTypes.func.isRequired,
-};
-
 Allowance.propTypes = {
   data: PropTypes.object.isRequired,
   delAllowance: PropTypes.func.isRequired,
   idx: PropTypes.number.isRequired,
+  t: PropTypes.func,
+  dispatch: PropTypes.func,
+  mutateAllowances: PropTypes.func,
+  getAllowances: PropTypes.func,
 };
 
 EmptyLine.propTypes = {
@@ -530,4 +491,11 @@ EmptyLine.defaultProps = {
   allowances: [],
   allowanceType: 'construction',
   marecoBeginPosition: 0,
+};
+
+Allowance.defaultProps = {
+  t: (key) => key,
+  dispatch: () => {},
+  getAllowances: () => {},
+  mutateAllowances: () => {},
 };
