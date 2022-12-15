@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.Helpers;
-import fr.sncf.osrd.api.stdcm.STDCMEndpoint;
 import fr.sncf.osrd.api.stdcm.OccupancyBlock;
 import fr.sncf.osrd.api.stdcm.STDCMRequest;
 import org.junit.jupiter.api.Test;
@@ -154,7 +153,7 @@ public class UnavailableSpaceBuilderTests {
     }
 
     @Test
-    public void testMargins() {
+    public void testGridMargins() {
         var infraBuilder = new DummyRouteGraphBuilder();
         var firstRoute = infraBuilder.addRoute("a", "b", 1000);
         var secondRoute = infraBuilder.addRoute("b", "c", 1000);
