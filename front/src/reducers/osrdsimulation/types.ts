@@ -126,6 +126,7 @@ export interface SimulationTrain {
   isStdcm: boolean;
   name: string;
   trainNumber: number;
+<<<<<<< HEAD
   headPosition: ConsolidatedPosition[][];
   tailPosition: ConsolidatedPosition[][];
   routeAspects: ConsolidatedRouteAspect[];
@@ -138,6 +139,24 @@ export interface SimulationTrain {
   eco_signalAspects?: ConsolidatedSignalAspect[];
   eco_areaBlock?: ConsolidatedMergeDataPoint[][];
   eco_speed?: ConsolidatePositionSpeed[];
+=======
+  headPosition: Position<Date | null>[][];
+  tailPosition: Position<Date | null>[][];
+  routeEndOccupancy: Position<Date | null>[][];
+  routeBeginOccupancy: Position<Date | null>[][];
+  routeAspects: RouteAspect<Date | null, string>[];
+  signalAspects: SignalAspect<Date | null, string>[];
+  areaBlock?: MergedDataPoint<Date | null>[][];
+  speed: PositionSpeed<Date | null>[];
+  eco_headPosition?: Position<Date | null>[][];
+  eco_tailPosition?: Position<Date | null>[][];
+  eco_routeEndOccupancy?: Position<Date | null>[][];
+  eco_routeBeginOccupancy?: Position<Date | null>[][];
+  eco_routeAspects?: RouteAspect<Date | null, string>[];
+  eco_signalAspects?: SignalAspect<Date | null, string>[];
+  eco_areaBlock?: MergedDataPoint<Date | null>[][];
+  eco_speed?: PositionSpeed<Date | null>[];
+>>>>>>> df11f495 (first study)
 }
 
 export interface OsrdSimulationState {

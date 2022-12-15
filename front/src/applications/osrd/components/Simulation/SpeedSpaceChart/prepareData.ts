@@ -55,6 +55,8 @@ function prepareData(
     position: step.position,
   }));
 
+  console.log('prepareData', dataSimulation.areaBlock)
+
   // Slopes
   dataSimulation.slopesCurve = createSlopeCurve(
     simulation.trains[selectedTrain].slopes,
