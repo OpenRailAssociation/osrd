@@ -57,8 +57,6 @@ public class BacktrackingManager {
 
         // Create the new edge
         var newNode = newPreviousEdge.getEdgeEnd(graph);
-        if (newNode == null)
-            return null;
         return STDCMEdgeBuilder.fromNode(graph, newNode, e.route())
                 .setStartOffset(e.envelopeStartOffset())
                 .setEnvelope(e.envelope())

@@ -152,8 +152,6 @@ public class Pathfinding<NodeT, EdgeT> {
             if (step == null)
                 return null;
             final var endNode = graph.getEdgeEnd(step.range.edge);
-            if (endNode == null)
-                continue;
             if (!(seen.getOrDefault(step.range, -1) < step.nReachedTargets))
                 continue;
             seen.put(step.range, step.nReachedTargets);
@@ -292,7 +290,11 @@ public class Pathfinding<NodeT, EdgeT> {
         range = filterRange(range);
         if (range == null)
             return;
-        double totalDistance = prevDistance + edgeRangeCost.apply(range);
+        double totalDistance = 0;
+        if (edgeRangeCost != null)
+            totalDistance = prevDistance + edgeRangeCost.apply(range);
+        else
+            totalDistance = getTotalDistanceUntilEdgeLocation.apply(new EdgeLocation<>(range.edge, range.end));
         double distanceLeftEstimation = estimateRemainingDistance.apply(range.edge, range.start);
         queue.add(new Step<>(
                 range,
