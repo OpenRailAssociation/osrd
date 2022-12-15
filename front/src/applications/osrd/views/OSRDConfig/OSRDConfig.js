@@ -11,7 +11,7 @@ import { makeEnumBooleans } from 'utils/constants';
 
 import AddTrainLabels from 'applications/osrd/views/OSRDConfig/AddTrainLabels';
 import AddTrainSchedule from 'applications/osrd/views/OSRDConfig/AddTrainSchedule';
-import InfraSelector from 'applications/osrd/views/OSRDConfig/InfraSelector';
+import InfraSelector from 'common/InfraSelector/InfraSelector';
 import Itinerary from 'applications/osrd/views/OSRDConfig/Itinerary';
 import Map from 'applications/osrd/views/OSRDConfig/Map';
 import RollingStockSelector from 'applications/osrd/views/OSRDConfig/RollingStockSelector';

@@ -44,6 +44,7 @@ function CustomGET() {
       dispatch(updateSelectedProjection(undefined));
       dispatch(updateSimulation({ trains: [] }));
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // With this hook we update and store
