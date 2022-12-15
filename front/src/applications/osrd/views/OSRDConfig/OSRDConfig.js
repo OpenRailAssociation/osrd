@@ -18,11 +18,14 @@ import RollingStockSelector from 'applications/osrd/views/OSRDConfig/RollingStoc
 import SpeedLimitByTagSelector from 'applications/osrd/views/OSRDConfig/SpeedLimitByTagSelector';
 import TimetableSelector from 'applications/osrd/views/OSRDConfig/TimetableSelector';
 
+import StdcmSingleAllowance from 'applications/osrd/components/Simulation/Allowances/withOSRDStdcmParams';
+
 export default function OSRDConfig(props) {
   const { fullscreen, darkmode } = useSelector((state) => state.main);
   const mode = useSelector((state) => state.osrdconf.mode);
+
   const dispatch = useDispatch();
-  const { t } = useTranslation(['translation', 'osrdconf']);
+  const { t } = useTranslation(['translation', 'osrdconf', 'allowances']);
   const [extViewport, setExtViewport] = useState(undefined);
   const [mustUpdateTimetable, setMustUpdateTimetable] = useState(true);
   const { setCurrentStdcmRequestStatus } = props;
@@ -62,12 +65,35 @@ export default function OSRDConfig(props) {
             </div>
           </div>
           <Itinerary title={t('translation:common.itinerary')} updateExtViewport={setExtViewport} />
-          <AddTrainLabels />
+          {isStdcm && (
+            <div className="row">
+              <div className="col-xl-6">
+                <div className="osrd-config-item mb-2 osrd-config-item-container">
+                  <StdcmSingleAllowance
+                    title={t('allowances:gridMarginBefore')}
+                    typeKey="gridMarginBefore"
+                  />
+                </div>
+              </div>
+              <div className="col-xl-6">
+                <div className="osrd-config-item mb-2 osrd-config-item-container">
+                  <StdcmSingleAllowance
+                    title={t('allowances:gridMarginAfter')}
+                    typeKey="gridMarginAfter"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
           {isSimulation && (
-            <AddTrainSchedule
-              mustUpdateTimetable={mustUpdateTimetable}
-              setMustUpdateTimetable={setMustUpdateTimetable}
-            />
+            <>
+              <AddTrainLabels />
+              <AddTrainSchedule
+                mustUpdateTimetable={mustUpdateTimetable}
+                setMustUpdateTimetable={setMustUpdateTimetable}
+              />
+            </>
           )}
           {isStdcm && (
             <div className="osrd-config-stdcm-apply">

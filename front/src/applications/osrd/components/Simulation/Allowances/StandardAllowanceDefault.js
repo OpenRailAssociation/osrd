@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { get, patch } from 'common/requests';
 import { setFailure, setSuccess } from 'reducers/main';
 import { updateMustRedraw, updateSimulation } from 'reducers/osrdsimulation/actions';
-import { useDispatch, useSelector } from 'react-redux';
 
 import { FaTrash } from 'react-icons/fa';
 import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
 import PropTypes from 'prop-types';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
-import { useTranslation } from 'react-i18next';
 import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
+import debounce from 'lodash/debounce';
+import { TYPES_UNITS } from './consts';
 
 export default function StandardAllowanceDefault(props) {
   const {
@@ -18,29 +18,57 @@ export default function StandardAllowanceDefault(props) {
     getAllowances,
     setIsUpdating,
     trainDetail,
-    TYPES_UNITS,
+    mutateSingleAllowance,
+    selectedTrain,
+    selectedProjection,
+    simulation,
+    t,
+    dispatch,
+    options,
+    title,
+    changeType,
+    typeKey,
+    getBaseValue,
   } = props;
-  const { selectedProjection, selectedTrain } = useSelector((state) => state.osrdsimulation);
-  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
-  const { t } = useTranslation(['allowances']);
-  const dispatch = useDispatch();
+
   const [value, setValue] = useState({
     type: 'time',
     value: 0,
   });
   const [distribution, setDistribution] = useState(distributionsTypes[0]);
 
-  const handleType = (type) => {
-    setValue({
-      type: type.type,
-      value: type.value === '' ? '' : parseInt(type.value, 10),
-    });
-  };
+  const debouncedChangeType = useMemo(
+    () =>
+      debounce(
+        (type) => {
+          changeType(type, typeKey);
+        },
+        500,
+        {
+          leading: false,
+          trailing: true,
+        }
+      ),
+    [typeKey, changeType]
+  );
+
+  const handleType = useCallback(
+    (newTypeValue) => {
+      const processedType = {
+        type: newTypeValue.type,
+        value: newTypeValue.value === '' ? '' : parseInt(newTypeValue.value, 10),
+      };
+      setValue(processedType);
+      debouncedChangeType(processedType);
+    },
+    [debouncedChangeType]
+  );
 
   const handleDistribution = (e) => {
     setDistribution(JSON.parse(e.target.value));
   };
 
+  // To be moved to HOC, use mutateSigleAllowance
   const updateTrain = async () => {
     const newSimulationTrains = Array.from(simulation.trains);
     newSimulationTrains[selectedTrain] = await get(
@@ -55,7 +83,7 @@ export default function StandardAllowanceDefault(props) {
     dispatch(updateMustRedraw(true));
   };
 
-  // In fact it is Create/Update
+  // In fact it is Create/Update  // To be moved to HOC, use mutateSigleAllowance
   const addStandard = async () => {
     const marecoConf = {
       allowance_type: 'standard',
@@ -101,6 +129,7 @@ export default function StandardAllowanceDefault(props) {
     setIsUpdating(false);
   };
 
+  // To be moved to HOC
   const delStandard = async () => {
     const newAllowances = [];
     trainDetail.allowances.forEach((allowance) => {
@@ -160,58 +189,92 @@ export default function StandardAllowanceDefault(props) {
         value: 0,
       });
     }
-  }, [trainDetail]);
+  }, [trainDetail, t]);
+
+  useEffect(() => {
+    if (getBaseValue) setValue(getBaseValue(typeKey));
+  }, [getBaseValue, typeKey]);
 
   return (
-    <div className="row w-100 mareco">
-      <div className="col-md-2 text-normal">{t('sandardAllowancesWholePath')}</div>
-      <div className="col-md-1 text-normal">{t('Valeur par défault')}</div>
-      <div className="col-md-3">
-        <SelectSNCF
-          id="distributionTypeSelector"
-          options={distributionsTypes}
-          labelKey="label"
-          onChange={handleDistribution}
-          sm
-          value={distribution}
-        />
+    <div className={`${options.immediateMutation ? 'mareco' : 'row w-100 mareco'}`}>
+      <div className={`${options.immediateMutation ? 'text-normal' : 'col-md-2 text-normal'}`}>
+        {title || t('sandardAllowancesWholePath')}
       </div>
-      <div className="col-md-3">
-        <InputGroupSNCF
-          id="standardAllowanceTypeSelect"
-          options={allowanceTypes}
-          handleType={handleType}
-          value={value.value}
-          type={value.type}
-          sm
-        />
+
+      <div className="col">
+        <div className="row">
+          {options.setDistribution && (
+            <>
+              <div className="col-md-2 text-normal">{t('perDefaultValue')}</div>
+              <div className="col-md-4">
+                <SelectSNCF
+                  id="distributionTypeSelector"
+                  options={distributionsTypes}
+                  labelKey="label"
+                  onChange={handleDistribution}
+                  sm
+                  value={distribution || ''}
+                />
+              </div>
+            </>
+          )}
+          <div className="col">
+            <InputGroupSNCF
+              id="standardAllowanceTypeSelect"
+              options={allowanceTypes}
+              handleType={handleType}
+              value={value.value}
+              type={value.type}
+              sm
+            />
+          </div>
+        </div>
       </div>
-      <div className="col-md-3">
-        <button
-          type="button"
-          onClick={addStandard}
-          className={`btn btn-success btn-sm mr-1 ${value.value === 0 ? 'disabled' : null}`}
-        >
-          {t('apply')}
-        </button>
-        <button
-          type="button"
-          onClick={() => delStandard(value)}
-          className={`btn btn-danger btn-sm ${value.value === 0 ? 'disabled' : null}`}
-        >
-          <FaTrash />
-        </button>
-      </div>
+      {!options.immediateMutation && (
+        <div className="col-md-3">
+          <button
+            type="button"
+            onClick={mutateSingleAllowance || addStandard}
+            className={`btn btn-success btn-sm mr-1 ${value.value === 0 ? 'disabled' : null}`}
+          >
+            {t('apply')}
+          </button>
+          <button
+            type="button"
+            onClick={() => delStandard(value)}
+            className={`btn btn-danger btn-sm ${value.value === 0 ? 'disabled' : null}`}
+          >
+            <FaTrash />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
 
 StandardAllowanceDefault.propTypes = {
-  TYPES_UNITS: PropTypes.object.isRequired,
   // distributions: PropTypes.array.isRequired,
   distributionsTypes: PropTypes.array.isRequired,
   allowanceTypes: PropTypes.array.isRequired,
   getAllowances: PropTypes.func.isRequired,
   setIsUpdating: PropTypes.func.isRequired,
   trainDetail: PropTypes.object.isRequired,
+  selectedTrain: PropTypes.number,
+  mutateSingleAllowance: PropTypes.func,
+  changeType: PropTypes.func,
+  options: PropTypes.object,
+  title: PropTypes.string,
+};
+
+StandardAllowanceDefault.defaultProps = {
+  options: {
+    immediateMutation: false,
+    setDistribution: true,
+  },
+  changeType: () => {
+    console.log('default changeType');
+  },
+  mutateSingleAllowance: undefined,
+  title: '',
+  selectedTrain: 0,
 };
