@@ -158,7 +158,7 @@ public class STDCMEdgeBuilder {
                 graph.delayManager.findMaximumAddedDelay(route, startTime + delayNeeded, envelope)
         );
         var actualStartTime = startTime + delayNeeded;
-        return new STDCMEdge(
+        var res = new STDCMEdge(
                 route,
                 envelope,
                 actualStartTime,
@@ -170,6 +170,14 @@ public class STDCMEdgeBuilder {
                 route.getInfraRoute().getLength() - envelope.getEndPos(),
                 (int) (actualStartTime / 60)
         );
+        if (res.maximumAddedDelayAfter() < 0)
+            res = graph.allowanceManager.tryEngineeringAllowance(res);
+        if (res == null)
+            return null;
+        res = graph.backtrackingManager.backtrack(res);
+        if (res == null || graph.delayManager.isRunTimeTooLong(res))
+            return null;
+        return res;
     }
 
     /** Creates all the edges in the given settings, then look for one that shares the given time of next occupancy.
