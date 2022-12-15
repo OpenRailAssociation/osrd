@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { flatMap, uniq } from 'lodash';
 import cx from 'classnames';
 
+import { NEW_ENTITY_ID } from '../data/utils';
 import {
   BufferStopEntity,
   EditorEntity,
@@ -128,7 +129,7 @@ const EntitySumUp: FC<{
     <div>
       <div className={cx(classes.muted, classes.small)}>{type}</div>
       <div>
-        <span className={classes.strong}>{text}</span>
+        {text !== NEW_ENTITY_ID && <span className={classes.strong}>{text}</span>}
         {status && ` (${t(`Editor.item-statuses.${status}`)})`}
       </div>
       {subtexts.map((s, i) => (
