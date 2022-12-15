@@ -86,9 +86,9 @@ export default function RollingStockSelector() {
               </div>
             </div>
           ) : (
-            <div className="h2 d-flex align-items-center">
+            <div className="d-flex align-items-center">
               <img width="32px" className="mr-2" src={icon} alt="infraIcon" />
-              <span className="mr-2 text-muted">{t('rollingstock:rollingstockChoice')}</span>
+              {t('rollingstock:rollingstockChoice')}
             </div>
           )}
         </div>

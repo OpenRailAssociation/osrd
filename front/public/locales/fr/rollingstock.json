@@ -39,7 +39,7 @@
   "rollingResistanceB": "Frottements visqueux",
   "rollingResistanceC": "Résistance aérodynamique",
   "rollingResistanceFormula": "(selon la formule de Davis, R(v) = a + bv + cv²)",
-  "rollingstockChoice": "Choix du matériel roulant",
+  "rollingstockChoice": "Choisissez un matériel roulant",
   "selectRollingStock": "Sélectionner",
   "size": "Longueur",
   "source": "Source",

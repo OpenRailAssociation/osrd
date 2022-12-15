@@ -56,6 +56,8 @@ class InputSNCF extends React.Component {
     whiteBG: PropTypes.bool,
     noMargin: PropTypes.bool,
     focus: PropTypes.bool,
+    selectAllOnFocus: PropTypes.bool,
+    step: PropTypes.number,
   };
 
   static defaultProps = {
@@ -82,6 +84,8 @@ class InputSNCF extends React.Component {
     whiteBG: false,
     noMargin: false,
     focus: false,
+    selectAllOnFocus: false,
+    step: 1,
   };
 
   // Appends a icon button right next to the input field
@@ -144,6 +148,8 @@ class InputSNCF extends React.Component {
       inputProps,
       min,
       max,
+      selectAllOnFocus,
+      step,
     } = this.props;
 
     // Build custom classes
@@ -186,7 +192,8 @@ class InputSNCF extends React.Component {
               min={min || null}
               max={max || null}
               {...inputProps}
-              step={1}
+              step={step}
+              onFocus={(e) => selectAllOnFocus && e.target.select()}
             />
             <span className="form-control-state" />
             {unit ? <span className="form-control-icon small">{unit}</span> : null}
