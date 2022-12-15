@@ -28,6 +28,8 @@ export default function createTrain(
 ): SimulationTrain[] {
   // Prepare data
   const dataSimulation = simulationTrains.map((train: Train, trainNumber: number) => {
+
+    console.log("Prepare data for Train", train.base)
     const routeEndOccupancy = formatStepsWithTimeMulti(train.base.route_end_occupancy);
     const routeBeginOccupancy = formatStepsWithTimeMulti(train.base.route_begin_occupancy);
     const dataSimulationTrain: SimulationTrain = {
@@ -41,7 +43,7 @@ export default function createTrain(
       routeBeginOccupancy,
       routeAspects: formatRouteAspects(train.base.route_aspects),
       signalAspects: formatSignalAspects(train.base.signal_aspects),
-      areaBlock: mergeDatasArea<Date | null>(routeEndOccupancy, routeBeginOccupancy, keyValues),
+      //areaBlock: //mergeDatasArea<Date | null>(routeEndOccupancy, routeBeginOccupancy, keyValues),
       speed: formatStepsWithTime(train.base.speeds),
     };
 

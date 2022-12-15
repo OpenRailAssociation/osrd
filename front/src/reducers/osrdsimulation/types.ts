@@ -127,7 +127,7 @@ export interface SimulationTrain {
   routeBeginOccupancy: Position<Date | null>[][];
   routeAspects: RouteAspect<Date | null, string>[];
   signalAspects: SignalAspect<Date | null, string>[];
-  areaBlock: MergedDataPoint<Date | null>[][];
+  areaBlock?: MergedDataPoint<Date | null>[][];
   speed: PositionSpeed<Date | null>[];
   eco_headPosition?: Position<Date | null>[][];
   eco_tailPosition?: Position<Date | null>[][];

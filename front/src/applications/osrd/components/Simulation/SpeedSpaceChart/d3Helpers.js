@@ -108,6 +108,7 @@ function drawTrain(
       */
     chartLocal.drawZone.append('g').attr('id', 'speedSpaceChart').attr('class', 'chartTrain');
     drawAxisTitle(chartLocal, rotate);
+
     drawArea(
       chartLocal,
       'area speed',
@@ -117,6 +118,7 @@ function drawTrain(
       keyValues,
       rotate
     );
+
     drawCurve(
       chartLocal,
       'speed',
