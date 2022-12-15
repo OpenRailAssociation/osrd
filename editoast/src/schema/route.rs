@@ -16,7 +16,7 @@ use derivative::Derivative;
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Model)]
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, Model)]
 #[serde(deny_unknown_fields)]
 #[model(table = "crate::tables::osrd_infra_routemodel")]
 #[derivative(Default)]
