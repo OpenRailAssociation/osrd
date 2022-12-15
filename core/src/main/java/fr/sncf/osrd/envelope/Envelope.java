@@ -2,6 +2,9 @@ package fr.sncf.osrd.envelope;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
+import fr.sncf.osrd.envelope_sim.PhysicsPath;
+import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
+import fr.sncf.osrd.infra_state.api.TrainPath;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -115,6 +118,18 @@ public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelop
     /** Returns the minimum speed of the envelope */
     public double getMinSpeed() {
         return minSpeed;
+    }
+
+    /** Returns the cumulative energy consumed at the wheels of the train, given a certain path and rolling stock */
+    public double getEnergyConsumed(
+            PhysicsPath path,
+            PhysicsRollingStock rollingStock
+    ) {
+        var cumulativeEnergy = 0;
+        for (var part : parts) {
+            cumulativeEnergy += part.getEnergyConsumed(path, rollingStock);
+        }
+        return cumulativeEnergy;
     }
 
     // endregion
