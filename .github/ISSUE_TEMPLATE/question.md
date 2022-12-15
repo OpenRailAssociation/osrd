@@ -1,6 +1,6 @@
 ---
 name: Question
-about: Ask a question about how the software works, or how to use it
+about: Ask for help with using, understanding, or anything related to OSRD
 labels: 'kind:question'
 ---
 
