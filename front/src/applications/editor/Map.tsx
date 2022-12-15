@@ -128,12 +128,11 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
                   ? editorState.entitiesIndex[feature.properties.id]
                   : undefined;
                 partialToolState.hovered = entity || null;
+                setToolState({ ...toolState, ...partialToolState });
               }
             } else if (activeTool.onMove) {
               activeTool.onMove(e, extendedContext);
             }
-
-            setToolState({ ...toolState, ...partialToolState });
             setMapState((prev) => ({ ...prev, ...partialMapState }));
           }}
           onLoad={(e) => {
