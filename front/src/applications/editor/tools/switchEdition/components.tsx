@@ -315,9 +315,10 @@ export const SwitchEditionLayers: FC = () => {
   const nameLayerProps = getSwitchesNameLayerProps({
     colors: colors[mapStyle],
   });
-  const hoveredTrack = hovered
-    ? (entitiesIndex[hovered.properties.id] as TrackSectionEntity)
-    : null;
+  const hoveredTrack =
+    hovered && hovered.objType === 'TrackSection'
+      ? (entitiesIndex[hovered.properties.id] as TrackSectionEntity)
+      : null;
 
   const closest =
     portEditionState.type === 'selection' && hoveredTrack && mousePosition
