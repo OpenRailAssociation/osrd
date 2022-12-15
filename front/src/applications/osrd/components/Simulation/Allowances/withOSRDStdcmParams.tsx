@@ -1,7 +1,6 @@
-import { ComponentType, useCallback, useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { ComponentType, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { get, patch } from 'common/requests';
 import { updateGridMarginBefore, updateGridMarginAfter } from 'reducers/osrdconf';
 import SingleAllowance from './StandardAllowanceDefault';
 
@@ -32,7 +31,7 @@ function withOSRDStdcmParams<T>(Component: ComponentType<T>) {
       },
     ];
 
-    const [trainDetail, setTrainDetail] = useState<any>({ allowances: [] });
+    const [trainDetail] = useState<any>({ allowances: [] });
 
     // Alowance mutation in REST strat
     const mutateSingleAllowances = (newAllowances: any) => {

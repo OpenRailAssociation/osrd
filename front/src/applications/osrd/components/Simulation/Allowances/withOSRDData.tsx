@@ -1,17 +1,12 @@
-import { ComponentType, useCallback, useState, useEffect } from 'react';
+import React, { ComponentType, useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { get, patch } from 'common/requests';
-import {
-  updateMustRedraw,
-  updateSimulation,
-  updateSpeedSpaceSettings,
-} from 'reducers/osrdsimulation/actions';
-import Allowances from './Allowances';
-import { AnyAction } from 'redux';
+import { updateMustRedraw, updateSimulation } from 'reducers/osrdsimulation/actions';
 
 import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
 import { setFailure, setSuccess } from 'reducers/main';
+import Allowances from './Allowances';
 
 // Initialy try to implement https://react-typescript-cheatsheet.netlify.app/docs/hoc/, no success
 
@@ -24,7 +19,7 @@ function withOSRDData<T>(Component: ComponentType<T>) {
     const selectedProjection = useSelector((state: any) => state.osrdsimulation.selectedProjection);
     const selectedTrain = useSelector((state: any) => state.osrdsimulation.selectedTrain);
 
-    const [syncInProgress, setSyncInProgress] = useState(false);
+    const [, setSyncInProgress] = useState(false);
     const [trainDetail, setTrainDetail] = useState<any>({ allowances: [] });
 
     const getAllowances = async () => {
@@ -33,8 +28,6 @@ function withOSRDData<T>(Component: ComponentType<T>) {
         const result = await get(`${trainscheduleURI}${simulation.trains[selectedTrain].id}/`);
         setTrainDetail(result);
         setSyncInProgress(false);
-        //setAllowances(result.allowances);
-        //setIsUpdating(false);
       } catch (e: any) {
         console.log('ERROR', e);
         dispatch(
@@ -88,11 +81,7 @@ function withOSRDData<T>(Component: ComponentType<T>) {
     useEffect(() => {
       getAllowances();
     }, [selectedTrain]);
-    /*
-    useEffect(() => {
-      getAllowances();
-    }, [trainDetail]);
-*/
+
     return (
       <Component
         {...(hocProps as T)}

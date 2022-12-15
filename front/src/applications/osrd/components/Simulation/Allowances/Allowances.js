@@ -1,9 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
-import { get, patch } from 'common/requests';
-import { setFailure, setSuccess } from 'reducers/main';
-import { updateAllowancesSettings, updateMustRedraw, updateSimulation } from 'reducers/osrdsimulation/actions';
-import { useDispatch, useSelector } from 'react-redux';
+import { updateAllowancesSettings } from 'reducers/osrdsimulation/actions';
+import { useSelector } from 'react-redux';
 
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import { FaTrash } from 'react-icons/fa';
@@ -18,9 +16,6 @@ import nextId from 'react-id-generator';
 import { useTranslation } from 'react-i18next';
 import { TYPES_UNITS, ALLOWANCE_UNITS_KEYS } from './consts';
 
-
-
-
 function EmptyLine(props) {
   const {
     allowanceTypes,
@@ -33,7 +28,7 @@ function EmptyLine(props) {
     marecoEndPosition,
     defaultDistributionId,
   } = props;
-  // console.log("Display EmptyLine", allowances)
+
   const { selectedTrain } = useSelector((state) => state.osrdsimulation);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const allowanceNewDatas =
@@ -214,7 +209,6 @@ function Allowance(props) {
   const { data, delAllowance, idx, selectedTrain, simulation } = props;
   const { t } = useTranslation(['allowances']);
 
-
   const position2name = (position) => {
     const place = simulation.trains[selectedTrain].base.stops.find(
       (element) => element.position === position
@@ -255,14 +249,25 @@ function Allowance(props) {
 }
 
 export default function Allowances(props) {
-  const { toggleAllowancesDisplay, t, dispatch, simulation, allowancesSettings, selectedProjection, selectedTrain, persistentAllowances, syncInProgress, mutateAllowances, getAllowances, trainDetail } = props;
-  //const [trainDetail, setTrainDetail] = useState(undefined);
+  const {
+    toggleAllowancesDisplay,
+    t,
+    dispatch,
+    simulation,
+    allowancesSettings,
+    selectedProjection,
+    selectedTrain,
+    persistentAllowances,
+    syncInProgress,
+    mutateAllowances,
+    getAllowances,
+    trainDetail,
+  } = props;
+
   const [allowances, setAllowances] = useState([]);
   const [rawExtensions] = useState([]);
   const [updateAllowances, setUpdateAllowances] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
-
-
 
   const allowanceTypes = [
     {
@@ -294,11 +299,9 @@ export default function Allowances(props) {
     },
   ];
 
-
-
-const handleChangeAllowances = (newAllowances) => {
-  mutateAllowances(newAllowances)
-}
+  const handleChangeAllowances = (newAllowances) => {
+    mutateAllowances(newAllowances);
+  };
 
   const delAllowance = (idx, allowanceType) => {
     // change to take into considerations Mareco Ones
@@ -335,17 +338,16 @@ const handleChangeAllowances = (newAllowances) => {
   }, [allowances]);
 
   useEffect(() => {
-    setAllowances(persistentAllowances)
+    setAllowances(persistentAllowances);
   }, [persistentAllowances]);
 
   useEffect(() => {
-    setIsUpdating(syncInProgress)
+    setIsUpdating(syncInProgress);
   }, [syncInProgress]);
 
-
-  const standardAllowance = allowances && allowances.find(
-    (allowance) => allowance.allowance_type === 'standard' && allowance.ranges
-  );
+  const standardAllowance =
+    allowances &&
+    allowances.find((allowance) => allowance.allowance_type === 'standard' && allowance.ranges);
 
   // Engineergin can be defined alone, yet its default distribution depends on eventuel defined standard margin
 
@@ -369,9 +371,9 @@ const handleChangeAllowances = (newAllowances) => {
               setIsUpdating={setIsUpdating}
               trainDetail={trainDetail}
               TYPES_UNITS={TYPES_UNITS}
-              selectedTrain = {selectedTrain}
-              selectedProjection = {selectedProjection}
-              simulation = {simulation}
+              selectedTrain={selectedTrain}
+              selectedProjection={selectedProjection}
+              simulation={simulation}
               t={t}
               dispatch={dispatch}
             />
@@ -390,7 +392,14 @@ const handleChangeAllowances = (newAllowances) => {
           {allowances
             .find((a) => a.ranges)
             ?.ranges?.map((allowance, idx) => (
-              <Allowance data={allowance} delAllowance={delAllowance} idx={idx} key={nextId()} selectedTrain = {selectedTrain } simulation = { simulation } />
+              <Allowance
+                data={allowance}
+                delAllowance={delAllowance}
+                idx={idx}
+                key={nextId()}
+                selectedTrain={selectedTrain}
+                simulation={simulation}
+              />
             ))}
 
           {trainDetail.allowances.find((a) => a.ranges) && (
@@ -402,7 +411,6 @@ const handleChangeAllowances = (newAllowances) => {
               allowances={allowances}
               distribution="mareco"
               allowanceTypes={allowanceTypes}
-
             />
           )}
 
@@ -418,7 +426,14 @@ const handleChangeAllowances = (newAllowances) => {
           {trainDetail.allowances.map((allowance, idx) => {
             if (allowance.allowance_type === 'engineering') {
               return (
-                <Allowance data={allowance} delAllowance={delAllowance} idx={idx} key={nextId()} selectedTrain = {selectedTrain } simulation = { simulation }/>
+                <Allowance
+                  data={allowance}
+                  delAllowance={delAllowance}
+                  idx={idx}
+                  key={nextId()}
+                  selectedTrain={selectedTrain}
+                  simulation={simulation}
+                />
               );
             }
             return null;
@@ -450,8 +465,6 @@ const handleChangeAllowances = (newAllowances) => {
   );
 }
 
-
-
 Allowance.propTypes = {
   data: PropTypes.object.isRequired,
   delAllowance: PropTypes.func.isRequired,
@@ -459,7 +472,7 @@ Allowance.propTypes = {
   t: PropTypes.func,
   dispatch: PropTypes.func,
   mutateAllowances: PropTypes.func,
-  getAllowances: PropTypes.func
+  getAllowances: PropTypes.func,
 };
 
 EmptyLine.propTypes = {
@@ -481,8 +494,8 @@ EmptyLine.defaultProps = {
 };
 
 Allowance.defaultProps = {
-  t:(key) => key,
-  dispatch:() => {},
-  getAllowances:() => {},
-  mutateAllowances:() => {},
-}
+  t: (key) => key,
+  dispatch: () => {},
+  getAllowances: () => {},
+  mutateAllowances: () => {},
+};
