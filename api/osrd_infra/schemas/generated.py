@@ -43,10 +43,9 @@ class OutOfRange(InfraErrorTrait):
     expected_range: Tuple[float, float]
 
 
-class ObjectOutsideOfPath(InfraErrorTrait):
-    error_type: Literal["object_outside_of_path"] = Field(default="object_outside_of_path")
-    position: float
-    track: str
+class ObjectOutOfPath(InfraErrorTrait):
+    error_type: Literal["object_out_of_path"] = Field(default="object_outside_of_path")
+    reference: ObjectReference
 
 
 class InvalidRoute(InfraErrorTrait):
@@ -112,7 +111,7 @@ InfraError = Annotated[
         InvalidSwitchPorts,
         MissingRoute,
         NoBufferStop,
-        ObjectOutsideOfPath,
+        ObjectOutOfPath,
         OutOfRange,
         OverlappingSwitches,
         OverlappingTrackLinks,
