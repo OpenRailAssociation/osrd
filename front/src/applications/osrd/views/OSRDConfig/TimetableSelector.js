@@ -19,7 +19,7 @@ export default function TimetableSelector(props) {
   const [selectedTimetable, setSelectedTimetable] = useState(undefined);
   const [isWorking, setIsWorking] = useState(false);
   const [trainList, setTrainList] = useState(undefined);
-  const { timetableID } = useSelector((state) => state.osrdconf);
+  const timetableID = useSelector((state) => state.osrdconf.timetableID);
   const dispatch = useDispatch();
   const { t } = useTranslation();
 
