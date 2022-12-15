@@ -1,5 +1,5 @@
 import React, { ComponentType, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { updateGridMarginBefore, updateGridMarginAfter } from 'reducers/osrdconf';
 import SingleAllowance from './StandardAllowanceDefault';
@@ -10,6 +10,8 @@ function withOSRDStdcmParams<T>(Component: ComponentType<T>) {
   return (hocProps: T) => {
     const { t } = useTranslation(['allowances']);
     const dispatch = useDispatch();
+    const gridMarginBefore = useSelector((state: any) => state.osrdconf.gridMarginBefore);
+    const gridMarginAfter = useSelector((state: any) => state.osrdconf.gridMarginAfter);
 
     const allowanceTypes = [
       {
@@ -46,6 +48,16 @@ function withOSRDStdcmParams<T>(Component: ComponentType<T>) {
       }
     };
 
+    const getBaseValue = (typeKey: string) => {
+      if (typeKey === 'gridMarginBefore') {
+        return { type: 'time', value: gridMarginBefore };
+      }
+      if (typeKey === 'gridMarginAfter') {
+        return { type: 'time', value: gridMarginAfter };
+      }
+      return { type: 'time', value: 0 };
+    };
+
     return (
       <Component
         {...(hocProps as T)}
@@ -57,6 +69,7 @@ function withOSRDStdcmParams<T>(Component: ComponentType<T>) {
         distributionsTypes={distributionsTypes}
         getAllowances={() => {}}
         changeType={changeType}
+        getBaseValue={getBaseValue}
         options={{ immediateMutation: true, setDistribution: false }}
       />
     );

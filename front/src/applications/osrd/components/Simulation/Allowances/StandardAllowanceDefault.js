@@ -28,7 +28,7 @@ export default function StandardAllowanceDefault(props) {
     title,
     changeType,
     typeKey,
-    providedType,
+    getBaseValue
   } = props;
 
   const [value, setValue] = useState({
@@ -36,6 +36,8 @@ export default function StandardAllowanceDefault(props) {
     value: 0,
   });
   const [distribution, setDistribution] = useState(distributionsTypes[0]);
+
+
 
   const debouncedChangeType = useMemo(
     () =>
@@ -192,8 +194,8 @@ export default function StandardAllowanceDefault(props) {
   }, [trainDetail, t]);
 
   useEffect(() => {
-    if (providedType) setValue(providedType);
-  }, [providedType]);
+    if (getBaseValue) setValue(getBaseValue(typeKey));
+  }, [getBaseValue, typeKey]);
 
   return (
     <div className="row w-100 mareco">

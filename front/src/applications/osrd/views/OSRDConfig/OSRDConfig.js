@@ -23,8 +23,7 @@ import StdcmSingleAllowance from 'applications/osrd/components/Simulation/Allowa
 export default function OSRDConfig(props) {
   const { fullscreen, darkmode } = useSelector((state) => state.main);
   const mode = useSelector((state) => state.osrdconf.mode);
-  const gridMarginBefore = useSelector((state) => state.osrdconf.gridMarginBefore);
-  const gridMarginAfter = useSelector((state) => state.osrdconf.gridMarginAfter);
+
   const dispatch = useDispatch();
   const { t } = useTranslation(['translation', 'osrdconf', 'allowances']);
   const [extViewport, setExtViewport] = useState(undefined);
@@ -69,26 +68,32 @@ export default function OSRDConfig(props) {
           {isStdcm && (
             <div className="row">
               <div className="col-xl-6">
-                <div className = "osrd-config-item mb-2 osrd-config-item-container">
-                <StdcmSingleAllowance title={t('allowances:gridMarginBefore')} typeKey='gridMarginBefore' providedType={{type:'time', value:gridMarginBefore}}/>
+                <div className="osrd-config-item mb-2 osrd-config-item-container">
+                  <StdcmSingleAllowance
+                    title={t('allowances:gridMarginBefore')}
+                    typeKey="gridMarginBefore"
+                  />
                 </div>
               </div>
               <div className="col-xl-6">
-                <div className = "osrd-config-item mb-2 osrd-config-item-container"  >
-                <StdcmSingleAllowance title={t('allowances:gridMarginAfter')} typeKey='gridMarginAfter' providedType={{type:'time', value:gridMarginAfter}}/>
+                <div className="osrd-config-item mb-2 osrd-config-item-container">
+                  <StdcmSingleAllowance
+                    title={t('allowances:gridMarginAfter')}
+                    typeKey="gridMarginAfter"
+                  />
                 </div>
               </div>
             </div>
           )}
 
           {isSimulation && (
-            <React.Fragment>
+            <>
               <AddTrainLabels />
               <AddTrainSchedule
                 mustUpdateTimetable={mustUpdateTimetable}
                 setMustUpdateTimetable={setMustUpdateTimetable}
               />
-            </React.Fragment>
+            </>
           )}
           {isStdcm && (
             <div className="osrd-config-stdcm-apply">
