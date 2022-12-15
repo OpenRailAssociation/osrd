@@ -11,6 +11,7 @@ import { featureCollection, point } from '@turf/helpers';
 import nearestPoint from '@turf/nearest-point';
 
 import EditorContext from '../../context';
+import Tipped from '../../components/Tipped';
 import { ExtendedEditorContextType, OSRDConf } from '../types';
 import {
   CreateEntityOperation,
@@ -141,14 +142,23 @@ export const TrackSectionEndpointSelector: FC<FieldProps> = ({
             </div>
           )}
         </div>
-        <button
-          type="button"
-          className="btn btn-primary px-3"
-          onClick={startPickingPort}
-          disabled={isDisabled}
-        >
-          {isPicking ? <FaTimesCircle /> : <FaMapMarkedAlt />}
-        </button>
+        <Tipped mode="left">
+          <button
+            type="button"
+            className="btn btn-primary px-3"
+            onClick={startPickingPort}
+            disabled={isDisabled}
+          >
+            {isPicking ? <FaTimesCircle /> : <FaMapMarkedAlt />}
+          </button>
+          <span>
+            {t(
+              `Editor.tools.switch-edition.actions.${
+                isPicking ? 'pick-track-cancel' : 'pick-track'
+              }`
+            )}
+          </span>
+        </Tipped>
       </div>
     </div>
   );
@@ -305,9 +315,10 @@ export const SwitchEditionLayers: FC = () => {
   const nameLayerProps = getSwitchesNameLayerProps({
     colors: colors[mapStyle],
   });
-  const hoveredTrack = hovered
-    ? (entitiesIndex[hovered.properties.id] as TrackSectionEntity)
-    : null;
+  const hoveredTrack =
+    hovered && hovered.objType === 'TrackSection'
+      ? (entitiesIndex[hovered.properties.id] as TrackSectionEntity)
+      : null;
 
   const closest =
     portEditionState.type === 'selection' && hoveredTrack && mousePosition
