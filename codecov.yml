@@ -10,6 +10,10 @@ coverage:
         target: auto
         flags:
           - editoast
+      front:
+        target: auto
+        flags:
+          - front
     patch:
       default: off
 
@@ -21,4 +25,8 @@ flags:
   editoast:
     paths:
       - editoast/
+    carryforward: true
+  front:
+    paths:
+      - front/
     carryforward: true
