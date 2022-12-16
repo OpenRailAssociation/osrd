@@ -6,7 +6,7 @@ import { RootState } from 'reducers';
 import { Theme } from 'types';
 
 import { MAP_TRACK_SOURCES, MAP_URL } from 'common/Map/const';
-import { geoMainLayer, geoServiceLayer } from 'common/Map/Layers/geographiclayers';
+import { geoMainLayer } from 'common/Map/Layers/geographiclayers';
 import { lineNameLayer, lineNumberLayer, trackNameLayer } from 'common/Map/Layers/commonLayers';
 import OrderedLayer from 'common/Map/Layers/OrderedLayer';
 
@@ -31,12 +31,6 @@ function TracksGeographic(props: TracksGeographicProps) {
       <OrderedLayer
         {...geoMainLayer(colors, showIGNBDORTHO || showIGNSCAN25)}
         id="chartis/tracks-geo/main"
-        source-layer={MAP_TRACK_SOURCES.geographic}
-        layerOrder={layerOrder}
-      />
-      <OrderedLayer
-        {...geoServiceLayer(colors)}
-        id="chartis/tracks-geo/service"
         source-layer={MAP_TRACK_SOURCES.geographic}
         layerOrder={layerOrder}
       />
