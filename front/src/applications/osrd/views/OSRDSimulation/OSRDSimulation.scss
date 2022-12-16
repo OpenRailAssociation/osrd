@@ -147,6 +147,19 @@ select.sm {
     width: 2rem;
   }
   
+  .stoptime-container .box {
+    width:100%;
+    display:table;
+  }
+  .stoptime-container .box .box-row {
+    display:table-row;
+  }
+  .stoptime-container .box .box-cell {
+    display:table-cell;
+    width:calc(100% / 3);
+    text-align:center;
+  }
+
   .drivertrainschedule-stop {
     font-weight: bold;
     small {
