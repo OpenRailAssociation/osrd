@@ -153,6 +153,7 @@ select.sm {
   .stoptime-container .box {
     width:100%;
     display:table;
+
   }
   .stoptime-container .box .box-row {
     display:table-row;
@@ -160,7 +161,13 @@ select.sm {
   .stoptime-container .box .box-cell {
     display:table-cell;
     width:calc(100% / 3);
-    text-align:center;
+    text-align:left;
+    position: relative;
+
+    .box-cell::after {
+      content: '+';
+      position: absolute;
+    }
   }
 
   .drivertrainschedule-stop {
@@ -168,21 +175,7 @@ select.sm {
     small {
       font-weight: bold;
     }
-    .timeWithPlus::after {
-      content: '+';
-    }
   }
-  .drivertrainschedule-stop-time{
-    position: relative;
-
-    .timeWithPlus::after :not(.drivertrainschedule-stop) {
-      content: '+';
-      display: inline;
-      position: absolute;
-      bottom: 0;
-    }
-  }
-  
 }
 
 .table-drivertrainschedule th, thead {
