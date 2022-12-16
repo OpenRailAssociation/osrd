@@ -17,7 +17,7 @@ django-redis = "5.2.0"
 requests = "2.28.1"
 pillow = "^9"
 pydantic = "1.10.2"
-geojson-pydantic = "0.4.3"
+geojson-pydantic = "0.5.0"
 
 # production
 gunicorn = { version = "20.1.0", optional = true }
