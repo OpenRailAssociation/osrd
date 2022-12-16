@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import nextId from 'react-id-generator';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
@@ -33,7 +34,7 @@ export default function ModalSugerredVias(props) {
 
   const formatVia = (via, idx, idxTrueVia) => (
     <div
-      key={via.position}
+      key={nextId()}
       className={`d-flex align-items-center p-1 ${via.suggestion && 'suggerred-via-clickable'}`}
     >
       {!via.suggestion && <small className="pr-2">{idxTrueVia}</small>}

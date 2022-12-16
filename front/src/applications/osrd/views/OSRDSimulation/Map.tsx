@@ -344,7 +344,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
         onLoad={handleLoadFinished}
       >
         <VirtualLayers />
-        <AttributionControl position="bottom-right" customAttribution="©SNCF/DGEX Solutions" />
+        <AttributionControl position="bottom-right" customAttribution="©SNCF Réseau" />
         <ScaleControl maxWidth={100} unit="metric" style={scaleControlStyle} />
 
         <Background

@@ -172,7 +172,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
           }}
         >
           <VirtualLayers />
-          <AttributionControl position="bottom-right" customAttribution="©SNCF/DGEX Solutions" />
+          <AttributionControl position="bottom-right" customAttribution="©SNCF Réseau" />
           <ScaleControl
             maxWidth={100}
             unit="metric"

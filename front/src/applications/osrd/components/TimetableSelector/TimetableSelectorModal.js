@@ -9,7 +9,7 @@ import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { setSuccess, setFailure } from 'reducers/main';
-import icon from 'assets/pictures/trains_timetable.png';
+import icon from 'assets/pictures/components/trains_timetable.svg';
 
 const timetableURL = '/timetable/';
 
@@ -65,7 +65,8 @@ export default function TimetableSelectorModal() {
     };
 
     try {
-      await post(timetableURL, params, {});
+      const result = await post(timetableURL, params, {});
+      dispatch(updateTimetableID(result.id));
     } catch (e) {
       console.log('ERROR', e);
     }
