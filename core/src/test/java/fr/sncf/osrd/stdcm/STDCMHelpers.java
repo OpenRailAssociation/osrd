@@ -1,11 +1,15 @@
 package fr.sncf.osrd.stdcm;
 
 import static fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import fr.sncf.osrd.api.stdcm.OccupancyBlock;
 import fr.sncf.osrd.api.stdcm.STDCMRequest;
+import fr.sncf.osrd.api.stdcm.STDCMResult;
 import fr.sncf.osrd.api.stdcm.UnavailableSpaceBuilder;
+import fr.sncf.osrd.api.stdcm.graph.STDCMUtils;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra_state.api.TrainPath;
@@ -100,5 +104,38 @@ public class STDCMHelpers {
             maxOccupancyLength = Math.max(maxOccupancyLength, endTime - startTime);
         }
         return maxOccupancyLength;
+    }
+
+    /** Returns the time it takes to reach the end of the last routes,
+     * starting at speed 0 at the start of the first route*/
+    static double getRoutesRunTime(List<SignalingRoute> routes) {
+        double time = 0;
+        double speed = 0;
+        for (var route : routes) {
+            var envelope = STDCMUtils.simulateRoute(route, speed, 0,
+                    REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, null);
+            assert envelope != null;
+            time += envelope.getTotalTime();
+            speed = envelope.getEndSpeed();
+        }
+        return time;
+    }
+
+    /** Checks that the result don't cross in an occupied section */
+    static void occupancyTest(STDCMResult res, ImmutableMultimap<SignalingRoute, OccupancyBlock> occupancyGraph) {
+        var routes = res.trainPath().routePath();
+        for (var index = 0; index < routes.size(); index++) {
+            var startRoutePosition = routes.get(index).pathOffset();
+            var routeOccupancies = occupancyGraph.get(routes.get(index).element());
+            for (var occupancy : routeOccupancies) {
+                var enterTime = res.departureTime() + res.envelope().interpolateTotalTimeClamp(
+                        startRoutePosition + occupancy.distanceStart()
+                );
+                var exitTime = res.departureTime() + res.envelope().interpolateTotalTimeClamp(
+                        startRoutePosition + occupancy.distanceEnd()
+                );
+                assertTrue(enterTime >= occupancy.timeEnd() || exitTime <= occupancy.timeStart());
+            }
+        }
     }
 }
