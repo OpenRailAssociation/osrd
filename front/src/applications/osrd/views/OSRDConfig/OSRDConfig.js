@@ -14,7 +14,7 @@ import AddTrainSchedule from 'applications/osrd/views/OSRDConfig/AddTrainSchedul
 import InfraSelector from 'common/InfraSelector/InfraSelector';
 import Itinerary from 'applications/osrd/views/OSRDConfig/Itinerary';
 import Map from 'applications/osrd/views/OSRDConfig/Map';
-import RollingStockSelector from 'applications/osrd/views/OSRDConfig/RollingStockSelector';
+import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelector';
 import SpeedLimitByTagSelector from 'applications/osrd/views/OSRDConfig/SpeedLimitByTagSelector';
 import TimetableSelector from 'applications/osrd/views/OSRDConfig/TimetableSelector';
 
