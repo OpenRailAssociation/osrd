@@ -2,9 +2,9 @@ import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { updateMapStyle } from 'reducers/map';
-import picNormalMode from 'assets/pictures/mapstyle-normal.jpg';
-import picDarkMode from 'assets/pictures/mapstyle-dark.jpg';
-import picBlueprint from 'assets/pictures/mapstyle-blueprint.jpg';
+import picNormalMode from 'assets/pictures/mapbuttons/mapstyle-normal.jpg';
+import picDarkMode from 'assets/pictures/mapbuttons/mapstyle-dark.jpg';
+import picBlueprint from 'assets/pictures/mapbuttons/mapstyle-blueprint.jpg';
 
 export default function MapSettingsMapStyle() {
   const { t } = useTranslation(['map-settings']);

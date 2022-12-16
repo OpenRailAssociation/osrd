@@ -18,7 +18,7 @@ import { enhanceData } from './RollingStockHelpers';
 
 const ROLLING_STOCK_URL = '/light_rolling_stock/';
 
-export default function RollingStock(props) {
+function RollingStock(props) {
   const { ref2scroll } = props;
   const dispatch = useDispatch();
   const { darkmode } = useSelector((state) => state.main);
@@ -211,3 +211,6 @@ export default function RollingStock(props) {
 RollingStock.propTypes = {
   ref2scroll: PropTypes.object.isRequired,
 };
+
+const MemoizedRollingStock = React.memo(RollingStock);
+export default MemoizedRollingStock;
