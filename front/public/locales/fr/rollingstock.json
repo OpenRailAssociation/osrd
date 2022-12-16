@@ -12,7 +12,7 @@
     "default": "Courbe par défaut"
   },
   "electric": "Électrique",
-  "electricOnly": "Uniquement Eléctrique",
+  "electricOnly": "Uniquement éléctrique",
   "equipement": "Équipement",
   "family": "Famille",
   "intertiaCoefficient": "Coefficient d'inertie",
@@ -46,7 +46,7 @@
   "timetableGamma": "Décélération horaire",
   "title": "Générateur de composition matériel train",
   "tractionMode": "Mode de traction",
-  "waitingLoader": "Veuillez patienter, chargement de la base de données matériel...",
+  "waitingLoader": "Veuillez patienter, chargement de la base de données matériel…",
   "weight": "Masse",
   "yes": "Oui"
 }
