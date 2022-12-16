@@ -1,0 +1,19 @@
+name: "⚙️ Development task"
+description: Track and plan development work
+labels: kind:dev-task
+body:
+  - type: textarea
+    id: abilities
+    attributes:
+      label: Description and goal
+      value: What's this task about, and what is it for?
+    validations:
+      required: true
+
+  - type: textarea
+    id: value
+    attributes:
+      label: Acceptance criteria
+      value: A list of conditions which define when this task shall be considered complete
+    validations:
+      required: true
