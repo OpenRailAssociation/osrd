@@ -9,7 +9,7 @@
     "unableToRetrieveTrainSchedule": "Calcul de marche impossible"
   },
   "isWorking": "Calcul de la simulation en cours...",
-  "labels": "Etiquettes",
+  "labels": "Étiquettes",
   "loadingTrain": "Chargement du train",
   "ManualOffset": "Ajout de secondes au train",
   "ModalEdit": "Edition d'un train",

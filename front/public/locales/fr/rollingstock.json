@@ -11,12 +11,8 @@
     "all": "Toutes les courbes",
     "default": "Courbe par défaut"
   },
-  "dualMode": "Bimode",
-  "dureeminfermportes": "Durée de fermeture des portes",
-  "dureeminouvportes": "Durée d'ouverture des portes",
   "electric": "Électrique",
   "electricOnly": "Uniquement Eléctrique",
-  "emCount": "Nombre d'éléments",
   "equipement": "Équipement",
   "family": "Famille",
   "intertiaCoefficient": "Coefficient d'inertie",
