@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { FaCopy, FaDownload, FaLock, FaLockOpen, FaPencilAlt } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
-import { post, get } from 'common/requests';
+import { post, get, put } from 'common/requests';
 import { MdCancel, MdCheck } from 'react-icons/md';
 import fileDownload from 'js-file-download';
 import { INFRA_URL, INFRA_URL_OLD } from './Consts';
@@ -59,8 +59,7 @@ export default function ActionsBar(props) {
     if (!isWaiting) {
       setIsWaiting(true);
       try {
-        // await rename infra with inputValue
-        console.log('rename', infra.id, inputValue);
+        await put(`${INFRA_URL}${infra.id}/`, { name: inputValue });
         getInfrasList();
         setIsFocused(undefined);
         setIsWaiting(false);
