@@ -215,6 +215,7 @@ export default function TrainsList(props) {
       changeTrain({ train_name: debouncedInputName }, simulation.trains[trainNameClickedIDX].id);
       dispatch(updateMustRedraw(true));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedInputName]);
 
   useEffect(() => {
@@ -226,12 +227,14 @@ export default function TrainsList(props) {
       );
       dispatch(updateMustRedraw(true));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedInputTime]);
 
   useEffect(() => {
     if (!onInput) {
       setFormattedList(formatTrainsList());
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTrain, departureArrivalTimes, filter, trainNameClickedIDX, typeOfInputFocused]);
 
   return (

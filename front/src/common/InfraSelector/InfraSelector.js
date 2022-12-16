@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { setFailure } from 'reducers/main';
 import { get } from 'common/requests';
-import icon from 'assets/pictures/tracks.png';
+import icon from 'assets/pictures/components/tracks.svg';
 import InfraSelectorModal from 'common/InfraSelector/InfraSelectorModal';
 import nextId from 'react-id-generator';
 import { getInfraID } from 'reducers/osrdconf/selectors';

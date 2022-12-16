@@ -45,6 +45,7 @@ select.sm {
 }
 
 .osrd-simulation-map {
+  position: relative;
   width: 100%;
   height: 50vh;
   .btn-map-container {
@@ -53,7 +54,7 @@ select.sm {
   }
   .map-modal {
     top: .5rem;
-    min-width: calc(100% - 7rem);
+    max-height: 40vh;
   }
   .map-resizer {
     min-width: calc(100% - 2rem);
@@ -116,9 +117,6 @@ select.sm {
   background-color: var(--primary);
   color: white;
   padding: .5rem 1rem;
-  &:hover {
-  }
-
 }
 .simulation-trainlist {
   max-height: 17rem;

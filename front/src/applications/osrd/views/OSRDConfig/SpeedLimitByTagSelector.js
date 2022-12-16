@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { updateSpeedLimitByTag } from 'reducers/osrdconf';
 import { setFailure } from 'reducers/main';
 import { get } from 'common/requests';
-import icon from 'assets/pictures/speedometer.svg';
+import icon from 'assets/pictures/components/speedometer.svg';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import { getInfraID, getSpeedLimitByTag } from 'reducers/osrdconf/selectors';
 

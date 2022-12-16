@@ -51,7 +51,7 @@ class InputSNCF extends React.Component {
       name: PropTypes.string.isRequired,
     }),
     // Styling props
-    unit: PropTypes.string,
+    unit: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
     sm: PropTypes.bool,
     whiteBG: PropTypes.bool,
     noMargin: PropTypes.bool,

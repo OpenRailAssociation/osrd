@@ -9,6 +9,7 @@ import HomeCarto from 'applications/carto/Home';
 import HomeEditor from 'applications/editor/Home';
 import HomeOSRD from 'applications/osrd/Home';
 import HomeStdcm from 'applications/stdcm/Home';
+import HomeOpenData from 'applications/opendata/Home';
 import HomeCustomGET from 'applications/customget/Home';
 import Loader from 'common/Loader';
 import { attemptLoginOnLaunch } from 'reducers/user';
@@ -29,6 +30,7 @@ export default function App() {
     } else {
       dispatch(attemptLoginOnLaunch());
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Conditionnal theming
@@ -43,6 +45,7 @@ export default function App() {
   // Loading initial data
   useEffect(() => {
     dispatch(bootstrapOSRDConf(infraID));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -54,6 +57,7 @@ export default function App() {
             <Route path="/carto/*" element={<HomeCarto />} />
             <Route path="/editor/*" element={<HomeEditor />} />
             <Route path="/stdcm/*" element={<HomeStdcm />} />
+            <Route path="/opendata/*" element={<HomeOpenData />} />
             <Route path="/customget/*" element={<HomeCustomGET />} />
             <Route path="/*" element={<Home />} />
           </Routes>
