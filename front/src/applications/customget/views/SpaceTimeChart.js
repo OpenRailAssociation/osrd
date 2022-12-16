@@ -179,11 +179,13 @@ export default function SpaceTimeChart(props) {
     setTimeout(() => {
       dispatch(updateMustRedraw(true));
     }, 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     // ADN, entire fonction operation is subject to one condition, so aopply this condition before OR write clear and first condition to return (do nothing)
     offsetTimeByDragging(dragOffset);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dragOffset]);
 
   useEffect(() => {
@@ -196,6 +198,7 @@ export default function SpaceTimeChart(props) {
       drawAllTrains(resetChart);
       handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mustRedraw, rotate, selectedTrain, consolidatedSimulation]);
 
   // ADN: trigger a redraw on every simulation change. This is the right pattern.
@@ -208,6 +211,7 @@ export default function SpaceTimeChart(props) {
       drawAllTrains(resetChart, true, newDataSimulation);
       handleWindowResize(CHART_ID, dispatch, drawAllTrains, isResizeActive, setResizeActive);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [simulation.trains]);
 
   useEffect(() => {
@@ -221,6 +225,7 @@ export default function SpaceTimeChart(props) {
       );
       dispatch(updatePositionValues(newPositionValues));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chart, mustRedraw]);
 
   useEffect(() => {
@@ -236,6 +241,7 @@ export default function SpaceTimeChart(props) {
         timePosition
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [positionValues]);
 
   useEffect(() => {

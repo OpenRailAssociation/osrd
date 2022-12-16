@@ -6,7 +6,7 @@ import { setFailure } from 'reducers/main';
 import { useTranslation } from 'react-i18next';
 import { get, deleteRequest } from 'common/requests';
 import TimetableSelectorModal from 'applications/osrd/components/TimetableSelector/TimetableSelectorModal';
-import icon from 'assets/pictures/trains_timetable.png';
+import icon from 'assets/pictures/components/trains_timetable.svg';
 import { sec2time } from 'utils/timeManipulation';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
@@ -15,19 +15,22 @@ import { updateTimetableID } from 'reducers/osrdconf';
 const timetableURL = '/timetable/';
 
 export default function TimetableSelector(props) {
-  const { mustUpdateTimetable } = props;
-  const [selectedTimetable, setselectedTimetable] = useState(undefined);
+  const { mustUpdateTimetable, setMustUpdateTimetable } = props;
+  const [selectedTimetable, setSelectedTimetable] = useState(undefined);
+  const [isWorking, setIsWorking] = useState(false);
   const [trainList, setTrainList] = useState(undefined);
-  const { timetableID } = useSelector((state) => state.osrdconf);
+  const timetableID = useSelector((state) => state.osrdconf.timetableID);
   const dispatch = useDispatch();
   const { t } = useTranslation();
 
   const getTimetable = async (id) => {
+    setIsWorking(true);
     try {
       const timetableQuery = await get(`${timetableURL}${id}/`, {});
       timetableQuery.train_schedules.sort((a, b) => a.departure_time > b.departure_time);
-      setselectedTimetable(timetableQuery);
+      setSelectedTimetable(timetableQuery);
       setTrainList(timetableQuery.train_schedules);
+      setIsWorking(false);
     } catch (e) {
       dispatch(updateTimetableID(undefined));
       dispatch(
@@ -37,6 +40,7 @@ export default function TimetableSelector(props) {
         })
       );
       console.log('ERROR', e);
+      setIsWorking(false);
     }
   };
 
@@ -66,32 +70,47 @@ export default function TimetableSelector(props) {
     ));
 
   useEffect(() => {
+    if (timetableID !== undefined && mustUpdateTimetable) {
+      getTimetable(timetableID);
+      setMustUpdateTimetable(false);
+    } else {
+      setSelectedTimetable(undefined);
+      setMustUpdateTimetable(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mustUpdateTimetable]);
+
+  useEffect(() => {
     if (timetableID !== undefined) {
       getTimetable(timetableID);
     } else {
-      setselectedTimetable(undefined);
+      setSelectedTimetable(undefined);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timetableID, mustUpdateTimetable]);
 
-  let timeTable = <span className="ml-1">{t('osrdconf:noTimetable')}</span>;
-  if (timetableID !== undefined && selectedTimetable === undefined) {
-    timeTable = (
-      <span className="ml-3">
-        <DotsLoader />
-      </span>
-    );
-  } else if (selectedTimetable !== undefined) {
-    timeTable = (
-      <>
-        <span className="ml-1">{selectedTimetable.name}</span>
-        <small className="ml-1 text-primary flex-grow-1">{selectedTimetable.id}</small>
-        <span className="ml-2 badge badge-secondary">
-          {`${selectedTimetable.train_schedules.length} ${t('translation:common.train(s)')}`}
+  const timeTable = () => {
+    if (isWorking) {
+      return (
+        <span className="ml-3">
+          <DotsLoader />
         </span>
-      </>
-    );
-  }
+      );
+    }
+    if (selectedTimetable !== undefined) {
+      return (
+        <>
+          <span className="ml-1">{selectedTimetable.name}</span>
+          <small className="ml-1 text-primary flex-grow-1">{selectedTimetable.id}</small>
+          <span className="ml-2 badge badge-secondary">
+            {`${selectedTimetable.train_schedules.length} ${t('translation:common.train(s)')}`}
+          </span>
+        </>
+      );
+    }
+    return <span className="ml-1">{t('osrdconf:noTimetable')}</span>;
+  };
+
   return (
     <>
       <div className="osrd-config-item mb-2">
@@ -104,7 +123,7 @@ export default function TimetableSelector(props) {
         >
           <div className="d-flex align-items-center">
             <img width="32px" className="mr-2" src={icon} alt="timetableIcon" />
-            {timeTable}
+            {timeTable()}
           </div>
         </div>
         {timetableID !== undefined && trainList !== undefined && trainList.length > 0 ? (
@@ -120,4 +139,5 @@ export default function TimetableSelector(props) {
 
 TimetableSelector.propTypes = {
   mustUpdateTimetable: PropTypes.bool.isRequired,
+  setMustUpdateTimetable: PropTypes.func.isRequired,
 };

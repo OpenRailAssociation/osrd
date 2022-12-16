@@ -15,7 +15,7 @@ import trainNameWithNum from 'applications/osrd/components/AddTrainSchedule/trai
 import { scheduleURL } from 'applications/osrd/components/Simulation/consts';
 
 export default function AddTrainSchedule(props) {
-  const { mustUpdateTimetable, setMustUpdateTimetable } = props;
+  const { setMustUpdateTimetable } = props;
   const [name, setName] = useState(undefined);
   const [isWorking, setIsWorking] = useState(false);
   const [trainCount, setTrainCount] = useState(1);
@@ -68,7 +68,7 @@ export default function AddTrainSchedule(props) {
           })
         );
       }
-      setMustUpdateTimetable(!mustUpdateTimetable);
+      setMustUpdateTimetable(true);
     }
   };
 
@@ -79,6 +79,7 @@ export default function AddTrainSchedule(props) {
   const handleNameChange = useCallback((newName) => {
     setName(newName);
     debouncedUpdateName(newName);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -148,6 +149,5 @@ export default function AddTrainSchedule(props) {
 }
 
 AddTrainSchedule.propTypes = {
-  mustUpdateTimetable: PropTypes.bool.isRequired,
   setMustUpdateTimetable: PropTypes.func.isRequired,
 };

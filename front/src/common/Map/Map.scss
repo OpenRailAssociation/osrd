@@ -24,7 +24,7 @@
   position: absolute;
   z-index: 0;
   min-height: 5rem;
-  max-height: 75vh;
+  max-height: calc(100% - 25vh);
   overflow: auto;
   top: 4rem;
   right: 3.5rem;

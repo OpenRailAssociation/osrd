@@ -163,6 +163,7 @@ export default function TrainsList() {
       setOnInput(false);
       dispatch(updateMustRedraw(true));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedInputName]);
 
   useEffect(() => {
@@ -170,12 +171,14 @@ export default function TrainsList() {
       setOnInput(false);
       dispatch(updateMustRedraw(true));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedInputTime]);
 
   useEffect(() => {
     if (!onInput) {
       setFormattedList(formatTrainsList());
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTrain, departureArrivalTimes, trainNameClickedIDX, typeOfInputFocused]);
 
   return (

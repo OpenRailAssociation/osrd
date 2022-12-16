@@ -226,18 +226,21 @@ function Itinerary(props) {
       zoomToFeature(bbox(osrdconf.geojson[map.mapTrackSources]));
     }
     setLaunchPathfinding(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (launchPathfinding) {
       mapItinerary();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [osrdconf.origin, osrdconf.destination, map.mapTrackSources, osrdconf.rollingStockID]);
 
   useEffect(() => {
     if (launchPathfinding) {
       mapItinerary(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [osrdconf.vias]);
 
   return (
