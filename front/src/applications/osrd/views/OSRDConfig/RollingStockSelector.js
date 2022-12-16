@@ -4,7 +4,6 @@ import { get } from 'common/requests';
 import { useTranslation } from 'react-i18next';
 import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
-import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import RollingStock from 'applications/osrd/components/RollingStock/RollingStock';
 import icon from 'assets/pictures/components/train.svg';
 import RollingStock2Img from 'applications/osrd/components/RollingStock/RollingStock2Img';
@@ -97,13 +96,6 @@ export default function RollingStockSelector() {
         <ModalBodySNCF>
           <RollingStock ref2scroll={ref2scroll} />
         </ModalBodySNCF>
-        <ModalFooterSNCF>
-          <div className="d-flex flex-row-reverse w-100">
-            <button className="btn btn-secondary btn-sm" type="button" data-dismiss="modal">
-              {t('translation:common.close')}
-            </button>
-          </div>
-        </ModalFooterSNCF>
       </ModalSNCF>
     </>
   );

@@ -139,28 +139,23 @@ function RollingStock(props) {
   return (
     <div className="rollingstock-search p-2">
       <div className="rollingstock-search-filters">
-        <h2 className="d-flex">
-          {t('translation:common.filter')}
-          <small className="ml-auto">
-            {filteredRollingStockList !== undefined && filteredRollingStockList.length > 0
-              ? `${filteredRollingStockList.length} ${t('rollingstock:resultsFound')}`
-              : t('rollingstock:noResultFound')}
-          </small>
-        </h2>
-        <div className="row">
-          <div className="col-md-6 mb-3">
+        <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <div className="row no-gutters">
+          <div className="col-md-4 mb-3">
             <InputSNCF
               id="searchfilter"
               type="text"
               onChange={searchMateriel}
               placeholder={t('translation:common.search')}
               noMargin
-              clearButton
+              unit={<i className="icons-search" />}
               sm
             />
           </div>
-          <div className="col-md-6 mb-3 d-flex align-items-end">
-            <div className="mr-5">
+          <div className="col-md-5 ml-2 mb-3 d-flex align-items-center">
+            <div className="mr-4">
               <CheckboxRadioSNCF
                 onChange={toggleFilter}
                 name="elec"
@@ -194,6 +189,13 @@ function RollingStock(props) {
                 checked={filters.thermal}
               />
             </div>
+          </div>
+          <div className="col-md-2 mt-1 ml-auto">
+            <small className="">
+              {filteredRollingStockList !== undefined && filteredRollingStockList.length > 0
+                ? `${filteredRollingStockList.length} ${t('rollingstock:resultsFound')}`
+                : t('rollingstock:noResultFound')}
+            </small>
           </div>
         </div>
       </div>
