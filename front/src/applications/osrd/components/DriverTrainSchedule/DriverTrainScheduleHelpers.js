@@ -170,7 +170,9 @@ export default function formatStops(stop, idx, data) {
             <div className="box-cell">
               {stop.duration > 0 || idx === data.base.stops.length - 1 ? stopTime : ''}
             </div>
-            <div className="box-cell px-2">{stop.duration > 0 || idx === 0 ? '' : stopTime}</div>
+            <div className="box-cell px-2 px-md-0">
+              {stop.duration > 0 || idx === 0 || idx === data.base.stops.length - 1 ? '' : stopTime}
+            </div>
             <div className="box-cell">
               {(stop.duration > 0 && idx < data.base.stops.length - 1) || idx === 0
                 ? departureTime
