@@ -6,6 +6,7 @@ import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import DriverTrainScheduleModal from 'applications/osrd/components/DriverTrainSchedule/DriverTrainScheduleModal';
+import 'applications/osrd/components/DriverTrainSchedule/DriverTrainSchedule.scss';
 
 const TRAINSCHEDULE_URL = '/train_schedule';
 const ROLLINGSTOCK_URL = '/rolling_stock';
