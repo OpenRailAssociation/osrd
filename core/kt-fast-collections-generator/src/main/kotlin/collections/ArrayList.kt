@@ -136,6 +136,10 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
                     return oldValue
                 }
 
+                override fun clone() : Mutable${simpleName}ArrayList${paramsUse} {
+                    return Mutable${simpleName}ArrayList${paramsUse}(usedElements, buffer.copyOf())
+                }
+
                 private fun unsafeCompareTo(other: ${simpleName}List${paramsStar}): Int {
                     val sizeCmp = size.compareTo(other.size)
                     if (sizeCmp != 0)
