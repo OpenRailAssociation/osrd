@@ -1,4 +1,4 @@
-import { omit } from 'lodash';
+import { groupBy, omit, uniq } from 'lodash';
 import { v4 as uuid } from 'uuid';
 import { compare } from 'fast-json-patch';
 import { FeatureCollection } from 'geojson';
@@ -133,6 +133,23 @@ export async function getEntities<T extends EditorEntity = EditorEntity>(
     }),
     {}
   );
+}
+export async function getMixedEntities(
+  infra: number | string,
+  defs: { id: string; type: EditoastType }[]
+): Promise<Record<string, EditorEntity>> {
+  const groupedDefs = groupBy(defs, 'type');
+  let res: Record<string, EditorEntity> = {};
+
+  // eslint-disable-next-line guard-for-in
+  for (const type in groupedDefs) {
+    const ids = groupedDefs[type].map(({ id }) => id);
+    // eslint-disable-next-line no-await-in-loop
+    const entities = await getEntities(infra, uniq(ids), type as EditoastType);
+    res = { ...res, ...entities };
+  }
+
+  return res;
 }
 
 /**
