@@ -1,25 +1,20 @@
 # --- CI - CODEOWNERS - Dependabot - Template ---
-/.github                                                 @DGEXSolutions/osrd-backend-maintainers
+/.github                                                 @flomonster @multun
 
 # --- FRONT ---
-/front                                                   @DGEXSolutions/osrd-front-maintainers
-
-# --- API ---
-/api                                                     @flomonster @multun @eckter
+/front                                                   @DGEXSolutions/front-maintainers
 
 # --- EDITOAST ---
-/editoast                                                @Tguisnet @flomonster
-
-# --- CHARTOS ---
-/chartos                                                 @flomonster @multun
+/editoast                                                @DGEXSolutions/editoast-maintainers
+/chartos                                                 @DGEXSolutions/editoast-maintainers
+/api                                                     @DGEXSolutions/editoast-maintainers
 
 # --- INTEGRATION TESTS  ---
 /tests                                                   @eckter
 
 # --- CORE ---
-/core                                                    @DGEXSolutions/osrd-backend-maintainers
-*Physics*.java                                           @DGEXSolutions/osrd-physics
-*Integration*.java                                       @DGEXSolutions/osrd-physics
+/core                                                    @DGEXSolutions/core-maintainers
 
-# Python Interactive Client
-/core/src/python_interactive_client                      @flomonster @multun
+# --- CORE PHYSICS ---
+*Physics*.java                                           @DGEXSolutions/physics
+*Integration*.java                                       @DGEXSolutions/physics
