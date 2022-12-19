@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import InfraSelector from 'common/InfraSelector/InfraSelector';
-import RollingStockSelector from 'applications/osrd/views/OSRDConfig/RollingStockSelector';
+import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelector';
 import TimetableSelector from 'applications/osrd/views/OSRDConfig/TimetableSelector';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';

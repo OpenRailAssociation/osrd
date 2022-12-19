@@ -152,7 +152,7 @@ body {
 .custom-control {
   padding-left: 1.625rem !important;
   .custom-control-label {
-    &::before {
+    &::before, &::after {
       left: -1.625rem;
     }
   }
