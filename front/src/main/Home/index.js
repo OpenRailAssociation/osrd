@@ -24,7 +24,7 @@ export default function Home() {
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="application-title">
           <img src={osrdLogo} alt="OSRD logo" />
-          <h1>Open-Source Railway Designer</h1>
+          <h1>Open Source Railway Designer</h1>
         </div>
         <div className="cardscontainer">
           <div className="row">

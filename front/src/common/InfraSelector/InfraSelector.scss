@@ -11,7 +11,6 @@
 
 .infra-input-filter {
   margin-bottom: .5rem;
-  margin-right: .5rem; // to align to content when keep scroll is outside content
 }
 
 .infraselector-button {
@@ -25,10 +24,30 @@
   }
 }
 
+.infra-switch-mode {
+  display: flex;
+  align-items: baseline;
+  padding: 0;
+  margin: 0;
+  border: none;
+  font-size: .9rem;
+  line-height: 2.2rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  background: none;
+  color: var(--coolgray9);
+  transition: .2s;
+  span {
+    font-size: .9rem;
+  }
+  &:hover {
+    color: var(--coolgray13);
+  }
+}
+
 .infraslist {
   overflow: auto;
   height: 40vh;
-  padding-right: .5rem; // to keep scroll outside content
 
   /* STANDARD MODE */
   .infraslist-item-choice {

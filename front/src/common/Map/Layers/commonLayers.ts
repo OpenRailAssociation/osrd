@@ -7,7 +7,7 @@ export function trackNameLayer(colors: Theme): Omit<SymbolLayer, 'id'> {
     layout: {
       'text-font': ['Roboto Condensed'],
       'symbol-placement': 'line',
-      'text-size': 14,
+      'text-size': 12,
       // [jacomyal]
       // According to TS types, 'text-allow-overlap' should be a boolean or
       // nothing. But I don't dare yet to switch it.
@@ -37,7 +37,7 @@ export function lineNameLayer(colors: Theme): Omit<SymbolLayer, 'id'> {
       'symbol-placement': 'line-center',
       'text-field': '{line_name}',
       'text-size': 10,
-      'text-offset': [0, 1],
+      'text-offset': [0, 0.75],
     },
     paint: {
       'text-color': colors.linename.text,
@@ -56,7 +56,7 @@ export function lineNumberLayer(colors: Theme): Omit<SymbolLayer, 'id'> {
       'text-font': ['Roboto Condensed'],
       'symbol-placement': 'line',
       'text-size': 10,
-      'text-offset': [0, 1],
+      'text-offset': [0, 0.5],
     },
     paint: {
       'text-color': colors.line.text,
