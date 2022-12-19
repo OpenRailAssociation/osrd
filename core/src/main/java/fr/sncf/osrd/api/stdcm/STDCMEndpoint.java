@@ -9,12 +9,14 @@ import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.api.pathfinding.response.NoPathFoundError;
 import fr.sncf.osrd.api.stdcm.graph.STDCMPathfinding;
 import fr.sncf.osrd.envelope.Envelope;
+import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim_infra.MRSP;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
+import fr.sncf.osrd.railjson.parser.RJSStandaloneTrainScheduleParser;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
@@ -86,6 +88,11 @@ public class STDCMEndpoint implements Take {
             var startLocations = findRoutes(infra, request.startPoints);
             var endLocations = findRoutes(infra, request.endPoints);
             String tag = request.speedLimitComposition;
+            AllowanceValue standardAllowance = null;
+            if (request.standardAllowance != null)
+                standardAllowance = RJSStandaloneTrainScheduleParser.parseAllowanceValue(
+                        request.standardAllowance
+                );
 
             assert Double.isFinite(startTime);
 
@@ -113,7 +120,8 @@ public class STDCMEndpoint implements Take {
                     request.timeStep,
                     request.maximumDepartureDelay,
                     request.maximumRelativeRunTime * minRunTime,
-                    tag
+                    tag,
+                    standardAllowance
             );
             if (res == null) {
                 var error = new NoPathFoundError("No path could be found");

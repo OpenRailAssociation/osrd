@@ -144,8 +144,9 @@ public class RJSStandaloneTrainScheduleParser {
         return new AllowanceRange(range.beginPos, range.endPos, parseAllowanceValue(range.value));
     }
 
+    /** Parses the RJSAllowanceValue into an AllowanceValue */
     @SuppressFBWarnings({"BC_UNCONFIRMED_CAST"})
-    private static AllowanceValue parseAllowanceValue(RJSAllowanceValue rjsValue) throws InvalidSchedule {
+    public static AllowanceValue parseAllowanceValue(RJSAllowanceValue rjsValue) throws InvalidSchedule {
         if (rjsValue.getClass() == RJSAllowanceValue.TimePerDistance.class) {
             var rjsTimePerDist = (RJSAllowanceValue.TimePerDistance) rjsValue;
             if (Double.isNaN(rjsTimePerDist.minutes))

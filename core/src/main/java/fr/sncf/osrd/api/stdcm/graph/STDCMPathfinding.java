@@ -7,6 +7,7 @@ import fr.sncf.osrd.api.stdcm.STDCMResult;
 import fr.sncf.osrd.api.pathfinding.constraints.ElectrificationConstraints;
 import fr.sncf.osrd.api.pathfinding.constraints.LoadingGaugeConstraints;
 import fr.sncf.osrd.envelope_sim.PhysicsPath;
+import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
@@ -40,7 +41,8 @@ public class STDCMPathfinding {
             double timeStep,
             double maxDepartureDelay,
             double maxRunTime,
-            String tag
+            String tag,
+            AllowanceValue standardAllowance
     ) {
         var graph = new STDCMGraph(
                 infra,
@@ -51,7 +53,8 @@ public class STDCMPathfinding {
                 maxRunTime,
                 startTime,
                 endLocations,
-                tag
+                tag,
+                standardAllowance
         );
 
         // Initializes the constraints

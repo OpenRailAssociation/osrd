@@ -91,7 +91,8 @@ def make_stdcm_core_payload(request):
         "maximum_relative_run_time",
         "speed_limit_composition",
         "margin_before",
-        "margin_after"
+        "margin_after",
+        "standard_allowance"
         # Don't forget to add these fields to the serializer
     ]
     for parameter in optional_forwarded_parameters:

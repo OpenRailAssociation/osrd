@@ -175,3 +175,4 @@ class STDCMInputSerializer(Serializer):
     speed_limit_composition = serializers.CharField(max_length=255, required=False, allow_null=True)
     margin_before = serializers.FloatField(required=False, allow_null=True)
     margin_after = serializers.FloatField(required=False, allow_null=True)
+    standard_allowance = serializers.JSONField(required=False, allow_null=True)
