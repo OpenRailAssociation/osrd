@@ -9,7 +9,7 @@ import fr.sncf.osrd.api.stdcm.OccupancyBlock;
 import fr.sncf.osrd.api.stdcm.STDCMRequest;
 import fr.sncf.osrd.api.stdcm.STDCMResult;
 import fr.sncf.osrd.api.stdcm.UnavailableSpaceBuilder;
-import fr.sncf.osrd.api.stdcm.graph.STDCMUtils;
+import fr.sncf.osrd.api.stdcm.graph.STDCMSimulations;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra_state.api.TrainPath;
@@ -112,7 +112,7 @@ public class STDCMHelpers {
         double time = 0;
         double speed = 0;
         for (var route : routes) {
-            var envelope = STDCMUtils.simulateRoute(route, speed, 0,
+            var envelope = STDCMSimulations.simulateRoute(route, speed, 0,
                     REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, null);
             assert envelope != null;
             time += envelope.getTotalTime();

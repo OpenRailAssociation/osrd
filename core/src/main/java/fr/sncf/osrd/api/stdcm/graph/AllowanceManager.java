@@ -2,10 +2,6 @@ package fr.sncf.osrd.api.stdcm.graph;
 
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
-import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceConvergenceException;
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -38,7 +34,7 @@ public class AllowanceManager {
             return null; // No space to try the allowance
         var context = makeAllowanceContext(affectedEdges);
         var oldEnvelope = STDCMUtils.mergeEnvelopes(affectedEdges);
-        var newEnvelope = findAllowance(context, oldEnvelope, neededDelay);
+        var newEnvelope = STDCMSimulations.findEngineeringAllowance(context, oldEnvelope, neededDelay);
         if (newEnvelope == null)
             return null; // We couldn't find an envelope
         var newPreviousEdge = makeNewEdges(affectedEdges, newEnvelope);
@@ -87,29 +83,13 @@ public class AllowanceManager {
         return Envelope.make(parts);
     }
 
-    /** Try to apply an allowance on the given envelope to add the given delay */
-    private Envelope findAllowance(EnvelopeSimContext context, Envelope oldEnvelope, double neededDelay) {
-        neededDelay += context.timeStep; // error margin for the dichotomy
-        var ranges = List.of(
-                new AllowanceRange(0, oldEnvelope.getEndPos(), new AllowanceValue.FixedTime(neededDelay))
-        );
-        var capacitySpeedLimit = 1; // We set a minimum because generating curves at very low speed can cause issues
-        // TODO: add a parameter and set a higher default value once we can handle proper stops
-        var allowance = new MarecoAllowance(context, 0, oldEnvelope.getEndPos(), capacitySpeedLimit, ranges);
-        try {
-            return allowance.apply(oldEnvelope);
-        } catch (AllowanceConvergenceException e) {
-            return null;
-        }
-    }
-
     /** Creates the EnvelopeSimContext to run an allowance on the given edges */
     private EnvelopeSimContext makeAllowanceContext(List<STDCMEdge> edges) {
         var routes = new ArrayList<SignalingRoute>();
         var firstOffset = edges.get(0).route().getInfraRoute().getLength() - edges.get(0).envelope().getEndPos();
         for (var edge : edges)
             routes.add(edge.route());
-        return STDCMUtils.makeSimContext(routes, firstOffset, graph.rollingStock, graph.comfort, graph.timeStep);
+        return STDCMSimulations.makeSimContext(routes, firstOffset, graph.rollingStock, graph.comfort, graph.timeStep);
     }
 
     /** Find on which edges to run the allowance */
