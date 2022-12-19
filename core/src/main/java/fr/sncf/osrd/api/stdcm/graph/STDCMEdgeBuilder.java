@@ -168,7 +168,8 @@ public class STDCMEdgeBuilder {
                 prevAddedDelay + delayNeeded,
                 prevNode,
                 route.getInfraRoute().getLength() - envelope.getEndPos(),
-                (int) (actualStartTime / 60)
+                (int) (actualStartTime / 60),
+                graph.standardAllowanceSpeedRatio
         );
         if (res.maximumAddedDelayAfter() < 0)
             res = graph.allowanceManager.tryEngineeringAllowance(res);

@@ -7,7 +7,7 @@ import java.util.Objects;
 public record STDCMEdge(
         // Route considered for this edge
         SignalingRoute route,
-        // Envelope of the train going through the route (starts at t=0)
+        // Envelope of the train going through the route (starts at t=0). Does not account for allowances.
         Envelope envelope,
         // Time at which the train enters the route
         double timeStart,
@@ -25,7 +25,10 @@ public record STDCMEdge(
         double envelopeStartOffset,
         // Time at which the train enters the route, discretized by only considering the minutes.
         // Used to identify visited edges
-        int minuteTimeStart
+        int minuteTimeStart,
+        // Speed factor used to account for standard allowance.
+        // e.g. if we have a 5% standard allowance, this value is 1/1.05
+        double standardAllowanceSpeedFactor
 ) {
     @Override
     public boolean equals(Object other) {
@@ -53,12 +56,17 @@ public record STDCMEdge(
     /** Returns the node at the end of this edge */
     STDCMNode getEdgeEnd(STDCMGraph graph) {
         return new STDCMNode(
-                envelope().getTotalTime() + timeStart(),
+                getTotalTime() + timeStart(),
                 envelope().getEndSpeed(),
                 graph.infra.getSignalingRouteGraph().incidentNodes(route()).nodeV(),
                 totalDepartureTimeShift(),
                 maximumAddedDelayAfter(),
                 this
         );
+    }
+
+    /** Returns how long it takes to go from the start to the end of the route, accounting standard allowance. */
+    public double getTotalTime() {
+        return envelope.getTotalTime() / standardAllowanceSpeedFactor;
     }
 }

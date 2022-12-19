@@ -22,8 +22,7 @@ public class AllowanceManager {
     public STDCMEdge tryEngineeringAllowance(
             STDCMEdge oldEdge
     ) {
-        var neededDelay = -oldEdge.maximumAddedDelayAfter();
-        assert neededDelay > 0;
+        var neededDelay = getNeededDelay(oldEdge);
         if (oldEdge.previousNode() == null)
             return null; // The conflict happens on the first route, we can't add delay here
         var affectedEdges = findAffectedEdges(
@@ -43,6 +42,18 @@ public class AllowanceManager {
         var newPreviousNode = newPreviousEdge.getEdgeEnd(graph);
         return STDCMEdgeBuilder.fromNode(graph, newPreviousNode, oldEdge.route())
                 .findEdgeSameNextOccupancy(oldEdge.timeNextOccupancy());
+    }
+
+    /** Computes the delay we need to add */
+    private double getNeededDelay(STDCMEdge oldEdge) {
+        var neededDelay = -oldEdge.maximumAddedDelayAfter();
+        assert neededDelay > 0;
+        var targetRunTime = oldEdge.getTotalTime() + neededDelay;
+
+        // As the standard allowance is first applied as a linear allowance over the whole path,
+        // we need to compensate it by going faster here
+        var targetRunTimePreStandardAllowance = targetRunTime * oldEdge.standardAllowanceSpeedFactor();
+        return targetRunTimePreStandardAllowance - oldEdge.envelope().getTotalTime();
     }
 
     /** Re-create the edges in order, following the given envelope. */
@@ -96,7 +107,7 @@ public class AllowanceManager {
     private List<STDCMEdge> findAffectedEdges(STDCMEdge edge, double delayNeeded) {
         var res = new ArrayDeque<STDCMEdge>();
         while (true) {
-            var endTime = edge.timeStart() + edge.envelope().getTotalTime();
+            var endTime = edge.timeStart() + edge.getTotalTime();
             var maxDelayAddedOnEdge = edge.timeNextOccupancy() - endTime;
             if (delayNeeded > maxDelayAddedOnEdge) {
                 // We can't add delay in this route, the allowance range ends here (excluded)

@@ -31,7 +31,7 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
     final AllowanceManager allowanceManager;
     final BacktrackingManager backtrackingManager;
     final String tag;
-    final AllowanceValue standardAllowance;
+    final double standardAllowanceSpeedRatio;
 
     /** Constructor */
     public STDCMGraph(
@@ -51,11 +51,25 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
         this.comfort = comfort;
         this.timeStep = timeStep;
         this.endLocations = endLocations;
-        this.standardAllowance = standardAllowance;
-        this.delayManager = new DelayManager(minScheduleTimeStart, maxRunTime, unavailableTimes);
+        this.delayManager = new DelayManager(minScheduleTimeStart, maxRunTime, unavailableTimes, this);
         this.allowanceManager = new AllowanceManager(this);
         this.backtrackingManager = new BacktrackingManager(this);
         this.tag = tag;
+        this.standardAllowanceSpeedRatio = makeStandardAllowanceSpeedRatio(standardAllowance);
+    }
+
+    /** Returns the speed ratio we need to apply to the envelope to apply the given standard allowance */
+    private static double makeStandardAllowanceSpeedRatio(AllowanceValue allowanceValue) {
+        if (allowanceValue == null)
+            return 1;
+
+        // For now only percentage value is supported. Flat time duration can't be supported.
+        // Time per distance could eventually be supported as well but the speed factor would be irregular
+        assert allowanceValue instanceof AllowanceValue.Percentage
+                : "Standard allowance can only be a percentage allowance for STDCM trains";
+
+        var percentAllowance = (AllowanceValue.Percentage) allowanceValue;
+        return 1 / (1 + percentAllowance.percentage / 100);
     }
 
     @Override
