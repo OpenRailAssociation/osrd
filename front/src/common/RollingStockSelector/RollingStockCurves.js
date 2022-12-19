@@ -145,7 +145,7 @@ export default function RollingStockCurve(props) {
   }, [curves, curvesState]);
 
   return curves && curvesState && curvesToDisplay && comfortsStates ? (
-    <div className="curves-container py-3">
+    <div className="curves-container pt-1 pb-3">
       <div className="curves-chart-legend mr-2 mb-1">
         <LegendComfortSwitches
           curvesComfortList={curvesComfortList}

@@ -11,12 +11,8 @@
     "all": "Toutes les courbes",
     "default": "Courbe par défaut"
   },
-  "dualMode": "Bimode",
-  "dureeminfermportes": "Durée de fermeture des portes",
-  "dureeminouvportes": "Durée d'ouverture des portes",
   "electric": "Électrique",
-  "electricOnly": "Uniquement Eléctrique",
-  "emCount": "Nombre d'éléments",
+  "electricOnly": "Uniquement éléctrique",
   "equipement": "Équipement",
   "family": "Famille",
   "intertiaCoefficient": "Coefficient d'inertie",
@@ -50,7 +46,7 @@
   "timetableGamma": "Décélération horaire",
   "title": "Générateur de composition matériel train",
   "tractionMode": "Mode de traction",
-  "waitingLoader": "Veuillez patienter, chargement de la base de données matériel...",
+  "waitingLoader": "Veuillez patienter, chargement de la base de données matériel…",
   "weight": "Masse",
   "yes": "Oui"
 }

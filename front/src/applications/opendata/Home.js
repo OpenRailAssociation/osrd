@@ -6,20 +6,24 @@ import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { NotificationsState } from 'common/Notifications';
 import { useTranslation } from 'react-i18next';
 import { MdMoreTime } from 'react-icons/md';
-import logo from 'assets/logo_osrd_seul_blanc.svg';
+import logo from 'assets/pictures/home/opendata.svg';
 import './opendata.scss';
 import OpenDataImport from './OpenDataImport';
 
 export default function HomeOpenData() {
-  const { t } = useTranslation(['opendata']);
+  const { t } = useTranslation(['opendata', 'home']);
   return (
     <>
       <MastNavSNCF
         items={
-          <MastNavItemSNCF link="/opendata/import" linkname={t('import')} icon={<MdMoreTime />} />
+          <MastNavItemSNCF
+            link="/opendata/import"
+            linkname={t('opendata:import')}
+            icon={<MdMoreTime />}
+          />
         }
       />
-      <NavBarSNCF appName="OSRD / Open data" logo={logo} />
+      <NavBarSNCF appName={t('home:opendataimport')} logo={logo} />
       <Routes>
         <Route path="/import" element={<OpenDataImport />} />
         <Route path="" element={<Navigate to="/opendata/import" replace />} />
