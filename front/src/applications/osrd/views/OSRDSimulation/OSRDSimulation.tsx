@@ -1,4 +1,5 @@
 import './OSRDSimulation.scss';
+import 'applications/osrd/components/DriverTrainSchedule/DriverTrainSchedule.scss';
 
 import React, { useEffect, useState, useRef } from 'react';
 import {
