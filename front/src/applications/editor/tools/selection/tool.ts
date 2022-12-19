@@ -1,7 +1,8 @@
 import { BiLoader, BiSelection, BsCursor, BsTrash, FaDrawPolygon, FiEdit } from 'react-icons/all';
-import { isEqual } from 'lodash';
+import { PointLike } from 'mapbox-gl';
+import { isEqual, max, min } from 'lodash';
 
-import { DEFAULT_COMMON_TOOL_STATE, Tool } from '../types';
+import { DEFAULT_COMMON_TOOL_STATE, LAYER_TO_EDITOAST_DICT, LayerType, Tool } from '../types';
 import { save } from '../../../../reducers/editor';
 import { SelectionState } from './types';
 import { SelectionLayers, SelectionMessages, SelectionLeftPanel } from './components';
@@ -21,6 +22,17 @@ import {
 } from '../pointEdition/tools';
 import SwitchEditionTool from '../switchEdition/tool';
 import { ALL_SIGNAL_LAYERS } from '../../../../common/Map/Consts/SignalsNames';
+import { getMixedEntities } from '../../data/api';
+import { selectInZone } from '../../../../utils/mapboxHelper';
+
+const INTERACTIVE_LAYERS = ALL_SIGNAL_LAYERS.map((type) => `editor/geo/signal-${type}`)
+  .concat([
+    'editor/geo/track-main',
+    'editor/geo/buffer-stop-main',
+    'editor/geo/detector-main',
+    'editor/geo/switch-main',
+  ])
+  .flatMap((s) => [s, s.replace(/^editor/, 'editor/selected')]);
 
 const SelectionTool: Tool<SelectionState> = {
   id: 'select-items',
@@ -32,6 +44,7 @@ const SelectionTool: Tool<SelectionState> = {
       selectionState: { type: 'single' },
       selection: [],
       showModal: null,
+      isLoading: false,
     };
   },
   actions: [
@@ -83,15 +96,12 @@ const SelectionTool: Tool<SelectionState> = {
         id: 'mode-edition',
         icon: FiEdit,
         labelTranslationKey: 'Editor.tools.select-items.actions.edit-info',
-        isActive({ state }) {
-          return state.selectionState.type === 'edition';
-        },
         isDisabled({ state }) {
           const types = new Set<string>();
           state.selection.forEach((item) => types.add(item.objType));
           return types.size !== 1;
         },
-        onClick({ setState, state, switchTool }) {
+        onClick({ state, switchTool }) {
           if (state.selection.length === 1) {
             const selectedElement = state.selection[0];
             switch (selectedElement.objType) {
@@ -102,44 +112,35 @@ const SelectionTool: Tool<SelectionState> = {
                     type: 'movePoint',
                   },
                 });
-                return;
+                break;
               case 'Signal':
                 switchTool(SignalEditionTool, {
                   initialEntity: selectedElement as SignalEntity,
                   entity: selectedElement as SignalEntity,
                 });
-                return;
+                break;
               case 'BufferStop':
                 switchTool(BufferStopEditionTool, {
                   initialEntity: selectedElement as BufferStopEntity,
                   entity: selectedElement as BufferStopEntity,
                 });
-                return;
+                break;
               case 'Detector':
                 switchTool(DetectorEditionTool, {
                   initialEntity: selectedElement as DetectorEntity,
                   entity: selectedElement as DetectorEntity,
                 });
-                return;
+                break;
               case 'Switch':
                 switchTool(SwitchEditionTool, {
                   initialEntity: selectedElement as SwitchEntity,
                   entity: selectedElement as SwitchEntity,
                 });
-                return;
+                break;
               default:
-                return;
+                break;
             }
           }
-
-          if (state.selectionState.type !== 'edition')
-            setState({
-              ...state,
-              selectionState: {
-                type: 'edition',
-                previousState: state.selectionState,
-              },
-            });
         },
       },
     ],
@@ -185,6 +186,8 @@ const SelectionTool: Tool<SelectionState> = {
 
   // Interactions:
   onClickEntity(feature, e, { setState, state }) {
+    if (state.isLoading) return;
+
     if (state.selectionState.type !== 'single') return;
 
     let { selection } = state;
@@ -215,8 +218,11 @@ const SelectionTool: Tool<SelectionState> = {
       selection,
     });
   },
-  onClickMap(e, { setState, state }) {
+  onClickMap(e, { setState, state, osrdConf }) {
     const position = e.lngLat;
+    const map = e.target;
+
+    if (state.isLoading) return;
 
     if (state.selectionState.type === 'rectangle') {
       if (state.selectionState.rectangleTopLeft) {
@@ -226,15 +232,39 @@ const SelectionTool: Tool<SelectionState> = {
             selectionState: { ...state.selectionState, rectangleTopLeft: null },
           });
         } else {
-          // TODO
-          // setState({
-          //   ...state,
-          //   selectionState: { ...state.selectionState, rectangleTopLeft: null },
-          //   selection: selectInZone(editorState.entitiesArray, {
-          //     type: 'rectangle',
-          //     points: [state.selectionState.rectangleTopLeft, position.toArray()],
-          //   }),
-          // });
+          const selection = map
+            .queryRenderedFeatures(
+              [
+                map.project(state.selectionState.rectangleTopLeft),
+                map.project(position.toArray() as [number, number]),
+              ],
+              {
+                layers: INTERACTIVE_LAYERS,
+              }
+            )
+            .filter((f) => !f.layer.id.startsWith('osm'));
+
+          setState((s) => ({ ...s, isLoading: true }));
+          getMixedEntities(
+            osrdConf.infraID as string,
+            selection.flatMap((entity) =>
+              entity.properties?.id
+                ? [
+                    {
+                      id: entity.properties.id as string,
+                      type: LAYER_TO_EDITOAST_DICT[entity.sourceLayer as LayerType],
+                    },
+                  ]
+                : []
+            )
+          ).then((entities) => {
+            setState((s) => ({
+              ...s,
+              isLoading: false,
+              selectionState: { ...state.selectionState, rectangleTopLeft: null },
+              selection: Object.values(entities),
+            }));
+          });
         }
       } else {
         setState({
@@ -248,22 +278,51 @@ const SelectionTool: Tool<SelectionState> = {
     } else if (state.selectionState.type === 'polygon') {
       const points = state.selectionState.polygonPoints;
       const lastPoint = points[points.length - 1];
+      const positionPoint = [position.lng, position.lat];
 
-      if (isEqual(lastPoint, position)) {
+      if (isEqual(lastPoint, positionPoint)) {
         if (points.length >= 3) {
-          // TODO remove the layer static variable
-          // TODO
-          // setState({
-          //   ...state,
-          //   selectionState: {
-          //     ...state.selectionState,
-          //     polygonPoints: [],
-          //   },
-          //   selection: selectInZone(editorState.entitiesArray, {
-          //     type: 'polygon',
-          //     points,
-          //   }),
-          // });
+          const lngs = points.map((point) => point[0]);
+          const lats = points.map((point) => point[1]);
+          const selection = selectInZone(
+            map
+              .queryRenderedFeatures(
+                [
+                  map.project([min(lngs) as number, min(lats) as number]),
+                  map.project([max(lngs) as number, max(lats) as number]),
+                ] as [PointLike, PointLike],
+                {
+                  layers: INTERACTIVE_LAYERS,
+                }
+              )
+              .filter((f) => !f.layer.id.startsWith('osm')),
+            {
+              type: 'polygon',
+              points,
+            }
+          );
+
+          setState((s) => ({ ...s, isLoading: true }));
+          getMixedEntities(
+            osrdConf.infraID as string,
+            selection.flatMap((entity) =>
+              entity.properties?.id
+                ? [
+                    {
+                      id: entity.properties.id as string,
+                      type: LAYER_TO_EDITOAST_DICT[entity.sourceLayer as LayerType],
+                    },
+                  ]
+                : []
+            )
+          ).then((entities) => {
+            setState((s) => ({
+              ...s,
+              isLoading: false,
+              selectionState: { ...state.selectionState, polygonPoints: [] },
+              selection: Object.values(entities),
+            }));
+          });
         }
       } else {
         setState({
@@ -279,14 +338,7 @@ const SelectionTool: Tool<SelectionState> = {
 
   // Layers:
   getInteractiveLayers() {
-    return ALL_SIGNAL_LAYERS.map((type) => `editor/geo/signal-${type}`)
-      .concat([
-        'editor/geo/track-main',
-        'editor/geo/buffer-stop-main',
-        'editor/geo/detector-main',
-        'editor/geo/switch-main',
-      ])
-      .flatMap((s) => [s, s.replace(/^editor/, 'editor/selected')]);
+    return INTERACTIVE_LAYERS;
   },
   getCursor({ state }, { isDragging }) {
     if (isDragging) return 'move';

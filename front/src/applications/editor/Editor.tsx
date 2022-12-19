@@ -76,7 +76,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   const resetState = useCallback(() => {
     switchTool(TOOLS[0]);
     dispatch(reset());
-  }, []);
+  }, [dispatch, switchTool]);
 
   const { infra } = useParams<{ infra?: string }>();
   const { mapStyle, viewport } = useSelector(
