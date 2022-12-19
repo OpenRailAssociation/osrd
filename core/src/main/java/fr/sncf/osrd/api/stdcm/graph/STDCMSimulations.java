@@ -1,12 +1,23 @@
 package fr.sncf.osrd.api.stdcm.graph;
 
+import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
+import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
+
+import fr.sncf.osrd.api.stdcm.BacktrackingEnvelopeAttr;
 import fr.sncf.osrd.envelope.Envelope;
+import fr.sncf.osrd.envelope.OverlayEnvelopeBuilder;
+import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
+import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
+import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
+import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
+import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.ImpossibleSimulationError;
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceConvergenceException;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
+import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxEffortEnvelope;
 import fr.sncf.osrd.envelope_sim.pipelines.MaxSpeedEnvelope;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
@@ -77,13 +88,14 @@ public class STDCMSimulations {
             Envelope envelope,
             SignalingRoute route,
             double routeOffset,
-            double startTime
+            double startTime,
+            double speedRatio
     ) {
         var routeLength = route.getInfraRoute().getLength();
         var envelopeStartOffset = routeLength - envelope.getEndPos();
         var envelopeOffset = Math.max(0, routeOffset - envelopeStartOffset);
         assert envelopeOffset <= envelope.getEndPos();
-        return startTime + envelope.interpolateTotalTime(envelopeOffset);
+        return startTime + (envelope.interpolateTotalTime(envelopeOffset) / speedRatio);
     }
 
     /** Try to apply an allowance on the given envelope to add the given delay */
@@ -100,5 +112,40 @@ public class STDCMSimulations {
         } catch (AllowanceConvergenceException e) {
             return null;
         }
+    }
+
+    /** Simulates a route that already has an envelope, but with a different end speed */
+    static Envelope simulateBackwards(
+            SignalingRoute route,
+            double endSpeed,
+            double start,
+            Envelope oldEnvelope,
+            STDCMGraph graph
+    ) {
+        var context = makeSimContext(
+                List.of(route),
+                start,
+                graph.rollingStock,
+                graph.comfort,
+                graph.timeStep
+        );
+        var partBuilder = new EnvelopePartBuilder();
+        partBuilder.setAttr(EnvelopeProfile.BRAKING);
+        partBuilder.setAttr(new BacktrackingEnvelopeAttr());
+        var overlayBuilder = new ConstrainedEnvelopePartBuilder(
+                partBuilder,
+                new SpeedConstraint(0, FLOOR),
+                new EnvelopeConstraint(oldEnvelope, CEILING)
+        );
+        EnvelopeDeceleration.decelerate(
+                context,
+                oldEnvelope.getEndPos(),
+                endSpeed,
+                overlayBuilder,
+                -1
+        );
+        var builder = OverlayEnvelopeBuilder.backward(oldEnvelope);
+        builder.addPart(partBuilder.build());
+        return builder.build();
     }
 }
