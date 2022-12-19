@@ -35,7 +35,7 @@ production = ["gunicorn", "sentry-sdk", "uvloop", "httptools", "uvicorn"]
 [tool.poetry.dev-dependencies]
 django-debug-toolbar = "3.7.0"
 black = "22.10.0"
-isort = "5.10.1"
+isort = "5.11.3"
 pyproject-flake8 = "5.0.4"
 django-cors-headers = "3.13.0"
 
