@@ -71,7 +71,13 @@ public class BacktrackingManager {
      * The start time and any data related to delays will be updated accordingly.
      * */
     private STDCMEdge rebuildEdgeBackward(STDCMEdge old, double endSpeed) {
-        var newEnvelope = simulateBackwards(old.route(), endSpeed, old.envelopeStartOffset(), old.envelope());
+        var newEnvelope = simulateBackwards(
+                old.route(),
+                endSpeed,
+                old.envelopeStartOffset(),
+                old.envelope(),
+                graph
+        );
         var prevNode = old.previousNode();
         return new STDCMEdgeBuilder(old.route(), graph)
                 .setStartTime(old.timeStart() - old.addedDelay())
@@ -84,13 +90,14 @@ public class BacktrackingManager {
     }
 
     /** Simulates a route that already has an envelope, but with a different end speed */
-    private Envelope simulateBackwards(
+    private static Envelope simulateBackwards(
             SignalingRoute route,
             double endSpeed,
             double start,
-            Envelope oldEnvelope
+            Envelope oldEnvelope,
+            STDCMGraph graph
     ) {
-        var context = STDCMUtils.makeSimContext(
+        var context = STDCMSimulations.makeSimContext(
                 List.of(route),
                 start,
                 graph.rollingStock,
