@@ -1,7 +1,9 @@
 package fr.sncf.osrd.infra.implementation.signaling;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.graph.ImmutableNetwork;
+import fr.sncf.osrd.infra.api.reservation.DetectionSection;
 import fr.sncf.osrd.infra.api.reservation.DiDetector;
 import fr.sncf.osrd.infra.api.reservation.ReservationInfra;
 import fr.sncf.osrd.infra.api.reservation.ReservationRoute;
@@ -30,8 +32,8 @@ public class SignalingInfraImpl extends ReservationInfraImpl implements Signalin
                 reservationInfra.getSectionMap(),
                 reservationInfra.getInfraRouteGraph(),
                 reservationInfra.getReservationRouteMap(),
-                reservationInfra.getRoutesOnEdges()
-        );
+                reservationInfra.getRoutesOnEdges(),
+                reservationInfra.getDetectionSections());
         this.signalMap = signalMap;
         this.routeMap = routeMap;
         this.signalingRouteGraph = signalingRouteGraph;

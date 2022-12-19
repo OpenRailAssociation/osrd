@@ -1,60 +1,22 @@
 ---
 name: User story
-title: My user story
-about: An user story is a feature from the point of view of the end user
+about: A user story is an end-user feature
 ---
-
-<!-- This issue should be part of a PI board project -->
-
-## User
-
-<!-- Please keep the right users, and write a specific user if that's relevant. Who's that story for ? -->
-
-Study officer / Manager / Other
 
 ## Description
 
-<!-- Please give a brief description of the User Story. What must the user be able to do ? -->
+**Who is this feature for?**
 
-<!-- Is there an existing mockup or wireframe for this US ? If so, please link it here. -->
+**What should the user be able to achieve?**
 
-## Goal
+**Why do you think this feature would be valuable?**
 
-<!-- What is the point of this user story ? Why is it necessary ? -->
+<!-- If you have a mockup or wireframe, link it here. -->
 
 ## Acceptance criteria
 
-<!-- These conditions must be fulfilled for the user story to be completed -->
+<!-- These conditions must be fulfilled for the task to be deemed complete -->
 
 - [ ] Criteria 1
 - [ ] Criteria 2
 - [ ] Criteria 3
-
-## Definition of ready
-
-<!-- DO NOT CHECK THESE YOURSELF -->
-<!-- These boxes are checked by an implementation team before it begins work -->
-
-- [ ] The user story is well defined
-- [ ] Acceptance criterias are defined
-- [ ] The individual responsible for validating the user story is assigned
-- [ ] The team should understand how to demonstrate the features
-- [ ] Does not depend on an missing feature
-- [ ] Negociable with the implementation team
-- [ ] Valuable to the end users
-- [ ] Estimable by the implementation team
-- [ ] As small as it can be
-- [ ] Testable by the implementation team
-
-## Definition of done
-
-<!-- DO NOT CHECK THESE YOURSELF -->
-<!-- This is an agreed-upon set of items that must be completed
-before a user story can be considered complete. It is check whether a task
-can be moved from “in progress” to “done.” -->
-
-- [ ] Acceptance criteria are met
-- [ ] Automated tests are written against acceptance criteria
-- [ ] Project deployed to the testing environment
-- [ ] Story ok-ed by Product Owner
-- [ ] Documentation updated

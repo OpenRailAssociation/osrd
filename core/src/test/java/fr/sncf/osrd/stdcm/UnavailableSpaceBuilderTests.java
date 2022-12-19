@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.Helpers;
-import fr.sncf.osrd.api.stdcm.STDCMEndpoint;
 import fr.sncf.osrd.api.stdcm.OccupancyBlock;
 import fr.sncf.osrd.api.stdcm.STDCMRequest;
 import org.junit.jupiter.api.Test;
@@ -16,7 +15,7 @@ public class UnavailableSpaceBuilderTests {
     @Test
     public void testNoOccupancy() throws Exception {
         var infra = Helpers.infraFromRJS(Helpers.getExampleInfra("tiny_infra/infra.json"));
-        var res = computeUnavailableSpace(infra, Set.of(), REALISTIC_FAST_TRAIN);
+        var res = computeUnavailableSpace(infra, Set.of(), REALISTIC_FAST_TRAIN, 0, 0);
         assertTrue(res.isEmpty());
     }
 
@@ -29,7 +28,9 @@ public class UnavailableSpaceBuilderTests {
         var res = computeUnavailableSpace(
                 infra,
                 Set.of(new STDCMRequest.RouteOccupancy("a->b", 0, 100)),
-                REALISTIC_FAST_TRAIN
+                REALISTIC_FAST_TRAIN,
+                0,
+                0
         );
         assertEquals(
                 Set.of(
@@ -59,7 +60,9 @@ public class UnavailableSpaceBuilderTests {
         var res = computeUnavailableSpace(
                 infra,
                 Set.of(new STDCMRequest.RouteOccupancy("b->c", 0, 100)),
-                REALISTIC_FAST_TRAIN
+                REALISTIC_FAST_TRAIN,
+                0,
+                0
         );
         assertEquals(
                 Set.of(
@@ -96,7 +99,9 @@ public class UnavailableSpaceBuilderTests {
         final var res = computeUnavailableSpace(
                 infra,
                 Set.of(new STDCMRequest.RouteOccupancy("a1->center", 0, 100)),
-                REALISTIC_FAST_TRAIN
+                REALISTIC_FAST_TRAIN,
+                0,
+                0
         );
         assertEquals(
                 Set.of(
@@ -132,7 +137,9 @@ public class UnavailableSpaceBuilderTests {
         var res = computeUnavailableSpace(
                 infra,
                 Set.of(new STDCMRequest.RouteOccupancy("a->b", 0, 100)),
-                REALISTIC_FAST_TRAIN
+                REALISTIC_FAST_TRAIN,
+                0,
+                0
         );
         assertEquals(
                 Set.of(
@@ -142,6 +149,35 @@ public class UnavailableSpaceBuilderTests {
                         new OccupancyBlock(0, 100, 0, REALISTIC_FAST_TRAIN.getLength())
                 ),
                 res.get(thirdRoute)
+        );
+    }
+
+    @Test
+    public void testGridMargins() {
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var firstRoute = infraBuilder.addRoute("a", "b", 1000);
+        var secondRoute = infraBuilder.addRoute("b", "c", 1000);
+        var infra = infraBuilder.build();
+        var res = computeUnavailableSpace(
+                infra,
+                Set.of(new STDCMRequest.RouteOccupancy("a->b", 100, 200)),
+                REALISTIC_FAST_TRAIN,
+                20,
+                60
+        );
+        // TimeStart and TimeEnd should be adjusted because of the margins
+        // (20s before and 60s after)
+        assertEquals(
+                Set.of(
+                        new OccupancyBlock(80, 260, 0, 1000)
+                ),
+                res.get(firstRoute)
+        );
+        assertEquals(
+                Set.of(
+                        new OccupancyBlock(80, 260, 0, 1000)
+                ),
+                res.get(secondRoute)
         );
     }
 }

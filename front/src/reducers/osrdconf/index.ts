@@ -45,6 +45,8 @@ export const UPDATE_DESTINATION_DATE = 'osrdconf/UPDATE_UPDATE_DESTINATION_DATE'
 export const UPDATE_TRAINCOMPO = 'osrdconf/UPDATE_TRAINCOMPO';
 export const UPDATE_ITINERARY = 'osrdconf/UPDATE_ITINERARY';
 export const UPDATE_FEATURE_INFO_CLICK_OSRD = 'osrdconf/UPDATE_FEATURE_INFO_CLICK_OSRD';
+export const UPDATE_GRID_MARGIN_BEFORE = 'osrdconf/UPDATE_GRID_MARGIN_BEFORE';
+export const UPDATE_GRID_MARGIN_AFTER = 'osrdconf/UPDATE_GRID_MARGIN_AFTER';
 
 // Reducer
 export const initialState: OsrdConfState = {
@@ -74,6 +76,8 @@ export const initialState: OsrdConfState = {
   trainCompo: undefined,
   geojson: [],
   featureInfoClick: { displayPopup: false },
+  gridMarginBefore: 0,
+  gridMarginAfter: 0
 };
 
 const ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE = 7200;
@@ -211,6 +215,12 @@ export default function reducer(inputState: OsrdConfState | undefined, action: A
         break;
       case UPDATE_FEATURE_INFO_CLICK_OSRD:
         draft.featureInfoClick = action.featureInfoClick;
+        break;
+      case UPDATE_GRID_MARGIN_BEFORE:
+        draft.gridMarginBefore = action.gridMarginBefore;
+        break;
+      case UPDATE_GRID_MARGIN_AFTER:
+        draft.gridMarginAfter = action.gridMarginAfter;
         break;
     }
   });
@@ -462,6 +472,22 @@ export function updateFeatureInfoClickOSRD(featureInfoClick: OsrdConfState['feat
     dispatch({
       type: UPDATE_FEATURE_INFO_CLICK_OSRD,
       featureInfoClick,
+    });
+  };
+}
+export function updateGridMarginBefore(gridMarginBefore: OsrdConfState['gridMarginBefore']) {
+  return (dispatch: Dispatch) => {
+    dispatch({
+      type: UPDATE_GRID_MARGIN_BEFORE,
+      gridMarginBefore,
+    });
+  };
+}
+export function updateGridMarginAfter(gridMarginAfter: OsrdConfState['gridMarginAfter']) {
+  return (dispatch: Dispatch) => {
+    dispatch({
+      type: UPDATE_GRID_MARGIN_AFTER,
+      gridMarginAfter,
     });
   };
 }

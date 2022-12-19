@@ -12,6 +12,7 @@ import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.api.pathfinding.PathfindingResultConverter;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingWaypoint;
 import fr.sncf.osrd.api.pathfinding.request.PathfindingRequest;
+import fr.sncf.osrd.api.pathfinding.response.NoPathFoundError;
 import fr.sncf.osrd.api.pathfinding.response.PathfindingResult;
 import fr.sncf.osrd.api.pathfinding.PathfindingRoutesEndpoint;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
@@ -26,6 +27,7 @@ import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.train.TestTrains;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import fr.sncf.osrd.utils.moshi.MoshiUtils;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -137,7 +139,8 @@ public class PathfindingTest extends ApiTest {
     }
 
     @Test
-    public void noPathTest() throws IOException {
+    @DisplayName("If no path exists, throws a generic error message")
+    public void noPathTest() throws Exception {
         var waypointStart = new PathfindingWaypoint(
                 "ne.micro.foo_b",
                 12,
@@ -158,6 +161,18 @@ public class PathfindingTest extends ApiTest {
                 new RqFake("POST", "/pathfinding/routes", requestBody)
         ));
         assert contains400(res);
+
+        var infra = Helpers.infraFromRJS(Helpers.getExampleInfra("tiny_infra/infra.json"));
+
+        var exception = assertThrows(
+                NoPathFoundError.class,
+                () -> PathfindingRoutesEndpoint.runPathfinding(
+                        infra,
+                        waypoints,
+                        List.of(TestTrains.REALISTIC_FAST_TRAIN)
+                )
+        );
+        assertEquals(PathfindingRoutesEndpoint.PATH_FINDING_GENERIC_ERROR, exception.message);
     }
 
     @Test
@@ -211,9 +226,16 @@ public class PathfindingTest extends ApiTest {
         );
 
         // Check that we can't go through the infra with a large train
-        assertNull(
-                PathfindingRoutesEndpoint.runPathfinding(infra, waypoints, List.of(TestTrains.FAST_TRAIN_LARGE_GAUGE))
+        var exception = assertThrows(
+                NoPathFoundError.class,
+                () -> PathfindingRoutesEndpoint.runPathfinding(
+                        infra,
+                        waypoints,
+                        List.of(TestTrains.FAST_TRAIN_LARGE_GAUGE)
+                )
         );
+
+        assertEquals(PathfindingRoutesEndpoint.PATH_FINDING_GAUGE_ERROR, exception.message);
 
         // Check that we can go until right before the blocked section with a large train
         waypoints[1][0] = new PathfindingWaypoint(
@@ -243,6 +265,11 @@ public class PathfindingTest extends ApiTest {
         waypoints[1][0] = waypointEnd;
         var infra = Helpers.infraFromRJS(Helpers.getExampleInfra("small_infra/infra.json"));
 
+        // Run a pathfinding with a non-electric train
+        var normalPath = PathfindingRoutesEndpoint.runPathfinding(
+                infra, waypoints, List.of(TestTrains.REALISTIC_FAST_TRAIN)
+        );
+
         // Put catenary everywhere
         assert TestTrains.FAST_ELECTRIC_TRAIN.getModeNames().contains("25000");
         for (var track : infra.getTrackGraph().edges()) {
@@ -253,11 +280,6 @@ public class PathfindingTest extends ApiTest {
                 );
         }
 
-        // Run a pathfinding with a non-electric train
-        var normalPath = PathfindingRoutesEndpoint.runPathfinding(
-                infra, waypoints, List.of(TestTrains.REALISTIC_FAST_TRAIN)
-        );
-
         // Removes catenary in the middle of the path
         var middleRoute = normalPath.ranges().get(normalPath.ranges().size() / 2);
         var tracks = middleRoute.edge().getInfraRoute().getTrackRanges();
@@ -266,7 +288,9 @@ public class PathfindingTest extends ApiTest {
 
         // Run another pathfinding with an electric train
         var electricPath = PathfindingRoutesEndpoint.runPathfinding(
-                infra, waypoints, List.of(TestTrains.FAST_ELECTRIC_TRAIN)
+                infra,
+                waypoints,
+                List.of(TestTrains.FAST_ELECTRIC_TRAIN)
         );
         assertNotNull(normalPath);
         assertNotNull(electricPath);
@@ -279,6 +303,22 @@ public class PathfindingTest extends ApiTest {
                 .map(range -> range.edge().getInfraRoute().getID())
                 .toList();
         assertNotEquals(normalRoutes, electrifiedRoutes);
+
+        // Remove all electrification
+        for (var track : infra.getTrackGraph().edges()) {
+            if (track instanceof TrackSection)
+                track.getVoltages().put(Range.closed(0., middleTrack.getLength()), "");
+        }
+
+        var exception = assertThrows(
+                NoPathFoundError.class,
+                () -> PathfindingRoutesEndpoint.runPathfinding(
+                        infra,
+                        waypoints,
+                        List.of(TestTrains.FAST_ELECTRIC_TRAIN)
+                )
+        );
+        assertEquals(PathfindingRoutesEndpoint.PATH_FINDING_ELECTRIFICATION_ERROR, exception.message);
     }
 
     @Test

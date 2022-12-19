@@ -71,7 +71,7 @@ export const PointEditionLeftPanel: FC = <Entity extends EditorEntity>() => {
 
         const newPosition = entity.properties?.position;
         const oldPosition = state.entity.properties?.position;
-        const trackId = entity.properties?.track?.id;
+        const trackId = entity.properties?.track;
         if (
           typeof trackId === 'string' &&
           typeof newPosition === 'number' &&
@@ -152,7 +152,7 @@ export const BasePointEditionLayers: FC<{
           symbolsList: SIGNALS_TO_SYMBOLS[type] || [],
           sourceLayer: 'geo',
           isEmphasized: true,
-          showOrthoPhoto: false,
+          showIGNBDORTHO: false,
         },
         `editor/${objType}/`
       ).map((layer) =>

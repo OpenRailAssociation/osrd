@@ -99,7 +99,9 @@
         "label": "Outil \"Aiguillage\",",
         "actions": {
           "delete-switch": "Supprimer l'aiguillage",
-          "new-switch": "Créer un nouvel aiguillage"
+          "new-switch": "Créer un nouvel aiguillage",
+          "pick-track": "Outil de sélection d'une ligne sur la carte",
+          "pick-track-cancel": "Annuler la sélection d'une ligne"
         },
         "help": {
           "no-move": "Les aiguillages ne peuvent pas être déplacer, et sont automatiquement placés sur leur premier port.",
@@ -191,13 +193,6 @@
       "track_section": "Track section",
       "track_section-length": "Taille"
     }
-  },
-  "Home": {
-    "customget": "Visualisation JSON GET",
-    "map": "Cartographie",
-    "editor": "Éditeur d'infrastructure",
-    "timetable": "Grilles horaires",
-    "stdcm": "Sillons de dernière minute (en travaux)"
   },
   "Login": {
     "connect": "Se connecter",

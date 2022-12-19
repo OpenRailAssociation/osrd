@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaQuestion } from 'react-icons/fa';
-import icon from 'assets/pictures/train.svg';
+import icon from 'assets/pictures/components/train.svg';
 
 export default function RollingStockEmpty() {
   return (

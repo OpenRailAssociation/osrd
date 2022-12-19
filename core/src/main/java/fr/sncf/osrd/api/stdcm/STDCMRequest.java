@@ -75,7 +75,7 @@ public final class STDCMRequest {
     public double endTime;
 
     /**
-     * Time step used in simulations
+     * Time step used in simulations (defaults to 2)
      */
     @Json(name = "time_step")
     public double timeStep = 2.;
@@ -102,6 +102,22 @@ public final class STDCMRequest {
     public String speedLimitComposition = null;
 
     /**
+     * Grid margin of x seconds before the train passage,
+     * which means that the path used by the train should be free and available
+     * at least x seconds before its passage.
+     */
+    @Json(name = "margin_before")
+    public double gridMarginBeforeSTDCM = 0;
+
+    /**
+     * Grid margin of y seconds after the train passage,
+     * which means that the path used by the train should be free and available
+     * at least y seconds after its passage.
+     */
+    @Json(name = "margin_after")
+    public double gridMarginAfterSTDCM = 0;
+
+    /**
      * Create a default STDCMRequest
      */
     public STDCMRequest() {
@@ -114,7 +130,9 @@ public final class STDCMRequest {
                 null,
                 Double.NaN,
                 Double.NaN,
-                null
+                null,
+                0,
+                0
         );
     }
 
@@ -130,7 +148,9 @@ public final class STDCMRequest {
             Collection<PathfindingWaypoint> endPoints,
             double startTime,
             double endTime,
-            String speedLimitComposition
+            String speedLimitComposition,
+            double marginBefore,
+            double marginAfter
     ) {
         this.infra = infra;
         this.expectedVersion = expectedVersion;
@@ -141,6 +161,8 @@ public final class STDCMRequest {
         this.startTime = startTime;
         this.endTime = endTime;
         this.speedLimitComposition = speedLimitComposition;
+        this.gridMarginBeforeSTDCM = marginBefore;
+        this.gridMarginAfterSTDCM = marginAfter;
     }
 
     public static class RouteOccupancy {

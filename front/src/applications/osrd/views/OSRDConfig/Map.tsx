@@ -42,7 +42,9 @@ import osmBlankStyle from 'common/Map/Layers/osmBlankStyle';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import 'common/Map/Map.scss';
 import SNCF_LPV from 'common/Map/Layers/extensions/SNCF/SNCF_LPV';
-import OrthoPhoto from 'common/Map/Layers/OrthoPhoto';
+import IGN_BD_ORTHO from 'common/Map/Layers/IGN_BD_ORTHO';
+import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
+import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
 import { MapLayerMouseEvent } from '../../../../types';
 import { getMapMouseEventNearestFeature } from '../../../../utils/mapboxHelper';
 
@@ -158,6 +160,7 @@ function Map() {
         pitch: parseFloat(urlPitch),
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -184,7 +187,7 @@ function Map() {
         touchZoomRotate
       >
         <VirtualLayers />
-        <AttributionControl position="bottom-right" customAttribution="©SNCF/DGEX Solutions" />
+        <AttributionControl position="bottom-right" customAttribution="©SNCF Réseau" />
         <ScaleControl maxWidth={100} unit="metric" style={scaleControlStyle} />
 
         <Background
@@ -192,7 +195,9 @@ function Map() {
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
         />
 
-        <OrthoPhoto layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
+        <IGN_BD_ORTHO layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
+        <IGN_SCAN25 layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
+        <IGN_CADASTRE layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
 
         {!showOSM ? null : (
           <>
@@ -287,6 +292,11 @@ function Map() {
               geomType="sch"
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
+            />
+            <Catenaries
+              geomType="sch"
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.CATENARIES.GROUP]}
             />
             <BufferStops
               geomType="sch"

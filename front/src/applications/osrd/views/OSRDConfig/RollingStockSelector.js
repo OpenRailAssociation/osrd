@@ -6,7 +6,7 @@ import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import RollingStock from 'applications/osrd/components/RollingStock/RollingStock';
-import icon from 'assets/pictures/train.svg';
+import icon from 'assets/pictures/components/train.svg';
 import RollingStock2Img from 'applications/osrd/components/RollingStock/RollingStock2Img';
 import {
   comfort2pictogram,
@@ -86,9 +86,9 @@ export default function RollingStockSelector() {
               </div>
             </div>
           ) : (
-            <div className="h2 d-flex align-items-center">
+            <div className="d-flex align-items-center">
               <img width="32px" className="mr-2" src={icon} alt="infraIcon" />
-              <span className="mr-2 text-muted">{t('rollingstock:rollingstockChoice')}</span>
+              {t('rollingstock:rollingstockChoice')}
             </div>
           )}
         </div>

@@ -4,8 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { updateSpeedLimitByTag } from 'reducers/osrdconf';
 import { setFailure } from 'reducers/main';
 import { get } from 'common/requests';
-import icon from 'assets/pictures/speedometer.svg';
-import DotsLoader from 'common/DotsLoader/DotsLoader';
+import icon from 'assets/pictures/components/speedometer.svg';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import { getInfraID, getSpeedLimitByTag } from 'reducers/osrdconf/selectors';
 
@@ -48,27 +47,19 @@ export default function SpeedLimitByTagSelector() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [infraID]);
 
-  return (
+  return speedLimitsTags ? (
     <div className="osrd-config-item mb-2">
       <div className="osrd-config-item-container">
-        <div className="h2 mb-0">
-          <img width="32px" className="mr-2" src={icon} alt="infraIcon" />
-          <span className="text-muted">{t('speedLimitByTag')}</span>
-          {speedLimitsTags !== undefined ? (
-            <SelectImprovedSNCF
-              options={speedLimitsTags}
-              onChange={(e) => dispatch(updateSpeedLimitByTag(e))}
-              selectedValue={speedLimitByTag}
-              sm
-              withSearch
-            />
-          ) : (
-            <span className="ml-3">
-              <DotsLoader />
-            </span>
-          )}
-        </div>
+        <img width="32px" className="mr-2" src={icon} alt="infraIcon" />
+        <span className="text-muted">{t('speedLimitByTag')}</span>
+        <SelectImprovedSNCF
+          options={speedLimitsTags}
+          onChange={(e) => dispatch(updateSpeedLimitByTag(e))}
+          selectedValue={speedLimitByTag}
+          sm
+          withSearch
+        />
       </div>
     </div>
-  );
+  ) : null;
 }

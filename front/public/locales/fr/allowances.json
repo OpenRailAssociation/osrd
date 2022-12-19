@@ -39,6 +39,8 @@
     "percentage": "Pourcentage",
     "time_per_distance": "Distance"
   },
+  "gridMarginBefore": "Marge grille avant",
+  "gridMarginAfter": "Marge grille après",
   "op": "pr",
   "to": "à",
   "trainSchedules": "Type de marche"

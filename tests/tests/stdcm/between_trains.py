@@ -26,7 +26,7 @@ def run(*args, **kwargs):
         "start_time": 5000,
         "name": "foo",
         "start_points": [start],
-        "end_points": [stop]
+        "end_points": [stop],
     }
     r = requests.post(base_url + f"stdcm/", json=payload)
     delete_timetable(base_url, timetable)

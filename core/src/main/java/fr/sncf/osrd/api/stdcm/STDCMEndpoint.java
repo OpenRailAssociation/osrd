@@ -92,7 +92,9 @@ public class STDCMEndpoint implements Take {
             var unavailableSpace = UnavailableSpaceBuilder.computeUnavailableSpace(
                     infra,
                     occupancies,
-                    rollingStock
+                    rollingStock,
+                    request.gridMarginAfterSTDCM,
+                    request.gridMarginBeforeSTDCM
             );
             double minRunTime = getMinRunTime(
                     infra, rollingStock, comfort, startLocations, endLocations, request.timeStep);

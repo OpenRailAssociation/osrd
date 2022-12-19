@@ -15,7 +15,8 @@ import {
 } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
-import Allowances from 'applications/osrd/views/OSRDSimulation/Allowances';
+import Allowances from 'applications/osrd/components/Simulation/Allowances/withOSRDData';
+
 import ButtonFullscreen from 'common/ButtonFullscreen';
 import CenterLoader from 'common/CenterLoader/CenterLoader';
 import ContextMenu from 'applications/osrd/components/Simulation/ContextMenu';
@@ -359,7 +360,7 @@ function OSRDSimulation() {
                   className="osrd-simulation-map"
                   style={{ height: `${heightOfSimulationMap}px` }}
                 >
-                  <Rnd
+                  {/* <Rnd
                     className="map-resizer"
                     default={{
                       x: 0,
@@ -385,7 +386,8 @@ function OSRDSimulation() {
                     }}
                   >
                     <Map setExtViewport={setExtViewport} />
-                  </Rnd>
+                  </Rnd> */}
+                  <Map setExtViewport={setExtViewport} />
                 </div>
               </div>
             </div>
