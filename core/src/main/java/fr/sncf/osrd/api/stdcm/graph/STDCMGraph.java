@@ -3,6 +3,7 @@ package fr.sncf.osrd.api.stdcm.graph;
 import com.google.common.collect.Multimap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.api.stdcm.OccupancyBlock;
+import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.train.RollingStock;
@@ -30,6 +31,7 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
     final AllowanceManager allowanceManager;
     final BacktrackingManager backtrackingManager;
     final String tag;
+    final AllowanceValue standardAllowance;
 
     /** Constructor */
     public STDCMGraph(
@@ -41,13 +43,15 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
             double maxRunTime,
             double minScheduleTimeStart,
             Set<Pathfinding.EdgeLocation<SignalingRoute>> endLocations,
-            String tag
+            String tag,
+            AllowanceValue standardAllowance
     ) {
         this.infra = infra;
         this.rollingStock = rollingStock;
         this.comfort = comfort;
         this.timeStep = timeStep;
         this.endLocations = endLocations;
+        this.standardAllowance = standardAllowance;
         this.delayManager = new DelayManager(minScheduleTimeStart, maxRunTime, unavailableTimes);
         this.allowanceManager = new AllowanceManager(this);
         this.backtrackingManager = new BacktrackingManager(this);

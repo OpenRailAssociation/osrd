@@ -25,19 +25,14 @@ public class FullSTDCMTests {
         var infra = Helpers.infraFromRJS(Helpers.getExampleInfra("tiny_infra/infra.json"));
         var firstRoute = infra.findSignalingRoute("rt.buffer_stop_b->tde.foo_b-switch_foo", "BAL3");
         var secondRoute = infra.findSignalingRoute("rt.tde.foo_b-switch_foo->buffer_stop_c", "BAL3");
-        var res = STDCMPathfinding.findPath(
-                infra,
-                RJSRollingStockParser.parse(parseRollingStockDir(getResourcePath("rolling_stocks/")).get(0)),
-                RollingStock.Comfort.STANDARD,
-                0,
-                0,
-                Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 100)),
-                Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 10125)),
-                ImmutableMultimap.of(),
-                2.,
-                Double.POSITIVE_INFINITY,
-                Double.POSITIVE_INFINITY,
-                null);
+        var res = new STDCMPathfindingBuilder()
+                .setInfra(infra)
+                .setRollingStock(
+                        RJSRollingStockParser.parse(parseRollingStockDir(getResourcePath("rolling_stocks/")).get(0))
+                )
+                .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 100)))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 10125)))
+                .run();
         assertNotNull(res);
     }
 
@@ -54,19 +49,13 @@ public class FullSTDCMTests {
         var occupancies = STDCMHelpers.makeOccupancyFromPath(infra, start, end, 0);
         double minDelay = STDCMHelpers.getMaxOccupancyLength(occupancies); // Eventually we may need to add a % margin
         occupancies.putAll(STDCMHelpers.makeOccupancyFromPath(infra, start, end, minDelay * 2));
-        var res = STDCMPathfinding.findPath(
-                infra,
-                REALISTIC_FAST_TRAIN,
-                RollingStock.Comfort.STANDARD,
-                minDelay,
-                0,
-                start,
-                end,
-                occupancies,
-                2.,
-                3600 * 24,
-                Double.POSITIVE_INFINITY,
-                null);
+        var res = new STDCMPathfindingBuilder()
+                .setInfra(infra)
+                .setStartTime(minDelay)
+                .setStartLocations(start)
+                .setEndLocations(end)
+                .setUnavailableTimes(occupancies)
+                .run();
         assertNotNull(res);
     }
 
@@ -80,19 +69,13 @@ public class FullSTDCMTests {
         var end = Set.of(new Pathfinding.EdgeLocation<>(secondRoute, 1137));
         var occupancies = STDCMHelpers.makeOccupancyFromPath(infra, start, end, 0);
         occupancies.putAll(STDCMHelpers.makeOccupancyFromPath(infra, start, end, 600));
-        var res = STDCMPathfinding.findPath(
-                infra,
-                REALISTIC_FAST_TRAIN,
-                RollingStock.Comfort.STANDARD,
-                300,
-                0,
-                start,
-                end,
-                occupancies,
-                2.,
-                7200,
-                Double.POSITIVE_INFINITY,
-                null);
+        var res = new STDCMPathfindingBuilder()
+                .setInfra(infra)
+                .setStartTime(300)
+                .setStartLocations(start)
+                .setEndLocations(end)
+                .setUnavailableTimes(occupancies)
+                .run();
         assertNotNull(res);
     }
 }
