@@ -5,6 +5,7 @@ import com.google.common.collect.Multimap;
 import fr.sncf.osrd.api.stdcm.OccupancyBlock;
 import fr.sncf.osrd.api.stdcm.STDCMResult;
 import fr.sncf.osrd.api.stdcm.graph.STDCMPathfinding;
+import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.train.RollingStock;
@@ -36,6 +37,7 @@ public class STDCMPathfindingBuilder {
     double maxDepartureDelay = 3600 * 2;
     double maxRunTime = Double.POSITIVE_INFINITY;
     String tag = "";
+    AllowanceValue standardAllowance;
     // endregion OPTIONAL
 
     // region SETTERS
@@ -77,7 +79,7 @@ public class STDCMPathfindingBuilder {
 
     /** Sets at which times each section of routes are unavailable. By default, everything is available */
     public STDCMPathfindingBuilder setUnavailableTimes(
-            ImmutableMultimap<SignalingRoute, OccupancyBlock> unavailableTimes
+            Multimap<SignalingRoute, OccupancyBlock> unavailableTimes
     ) {
         this.unavailableTimes = unavailableTimes;
         return this;
@@ -107,6 +109,12 @@ public class STDCMPathfindingBuilder {
         return this;
     }
 
+    /** Sets the standard allowance used for the new train. Defaults to null (no allowance) */
+    public STDCMPathfindingBuilder setStandardAllowance(AllowanceValue allowance) {
+        this.standardAllowance = allowance;
+        return this;
+    }
+
     // endregion SETTERS
 
     /** Runs the pathfinding request with the given parameters */
@@ -127,7 +135,8 @@ public class STDCMPathfindingBuilder {
                 timeStep,
                 maxDepartureDelay,
                 maxRunTime,
-                tag
+                tag,
+                standardAllowance
         );
     }
 }

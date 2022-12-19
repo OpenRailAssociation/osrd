@@ -584,6 +584,8 @@ components:
           description: |
             Margin of y seconds after the train passage, which means that the path used by the train should
             be free and available at least y seconds after its passage.
+        standard_allowance:
+          $ref: "#/components/schemas/AllowanceValue"
     SimulationRequest:
       required:
         - infra
@@ -603,3 +605,37 @@ components:
           minItems: 1
           items:
             $ref: "#/components/schemas/TrainSchedule"
+    AllowanceValue:
+      oneOf:
+        - $ref: "#/components/schemas/TimePerDistanceAllowanceValue"
+        - $ref: "#/components/schemas/TimeAllowanceValue"
+        - $ref: "#/components/schemas/PercentageAllowanceValue"
+      discriminator:
+        propertyName: value_type
+    TimePerDistanceAllowanceValue:
+      properties:
+        value_type:
+          type: string
+          enum: ["time_per_distance"]
+        minutes:
+          type: number
+          format: double
+          description: time to add per 100km in minutes
+    TimeAllowanceValue:
+      properties:
+        value_type:
+          type: string
+          enum: ["time"]
+        seconds:
+          type: number
+          format: double
+          description: time to add over the whole range in seconds
+    PercentageAllowanceValue:
+      properties:
+        value_type:
+          type: string
+          enum: ["percentage"]
+        percentage:
+          type: number
+          format: double
+          description: in %, how much time do we add compared to the fastest run time
