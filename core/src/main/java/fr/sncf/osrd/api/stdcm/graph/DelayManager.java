@@ -32,7 +32,7 @@ public class DelayManager {
         var res = new HashSet<Double>();
         res.add(findMinimumAddedDelay(route, startTime, envelope));
         for (var block : unavailableTimes.get(route)) {
-            var enterTime = STDCMUtils.interpolateTime(envelope, route, block.distanceStart(), startTime);
+            var enterTime = STDCMSimulations.interpolateTime(envelope, route, block.distanceStart(), startTime);
             var diff = block.timeEnd() - enterTime;
             if (diff < 0)
                 continue;
@@ -71,7 +71,7 @@ public class DelayManager {
         var minValue = Double.POSITIVE_INFINITY;
         for (var occupancy : unavailableTimes.get(route)) {
             // This loop has a poor complexity, we need to optimize it by the time we handle full timetables
-            var exitTime = STDCMUtils.interpolateTime(envelope, route, occupancy.distanceEnd(), startTime);
+            var exitTime = STDCMSimulations.interpolateTime(envelope, route, occupancy.distanceEnd(), startTime);
             var margin = occupancy.timeStart() - exitTime;
             if (margin < 0) {
                 // This occupancy block was before the train passage, we can ignore it
@@ -92,8 +92,8 @@ public class DelayManager {
             return 0;
         for (var occupancy : unavailableTimes.get(route)) {
             // This loop has a poor complexity, we need to optimize it by the time we handle full timetables
-            var enterTime = STDCMUtils.interpolateTime(envelope, route, occupancy.distanceStart(), startTime);
-            var exitTime = STDCMUtils.interpolateTime(envelope, route, occupancy.distanceEnd(), startTime);
+            var enterTime = STDCMSimulations.interpolateTime(envelope, route, occupancy.distanceStart(), startTime);
+            var exitTime = STDCMSimulations.interpolateTime(envelope, route, occupancy.distanceEnd(), startTime);
             if (enterTime >= occupancy.timeEnd() || exitTime <= occupancy.timeStart())
                 continue;
             var diff = occupancy.timeEnd() - enterTime;
