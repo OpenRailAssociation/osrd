@@ -1057,6 +1057,8 @@ components:
           description: |
             Margin of y seconds after the train passage, which means that the path used by the train should
             be free and available at least y seconds after its passage.
+        standard_allowance:
+          $ref: "#/components/schemas/AllowanceValue"
     Path:
       properties:
         id:
