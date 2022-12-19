@@ -123,6 +123,15 @@ public class STDCMHelpers {
 
     /** Checks that the result don't cross in an occupied section */
     static void occupancyTest(STDCMResult res, ImmutableMultimap<SignalingRoute, OccupancyBlock> occupancyGraph) {
+        occupancyTest(res, occupancyGraph, 0);
+    }
+
+    /** Checks that the result don't cross in an occupied section, with a certain tolerance for float inaccuracies */
+    static void occupancyTest(
+            STDCMResult res,
+            ImmutableMultimap<SignalingRoute, OccupancyBlock> occupancyGraph,
+            double tolerance
+    ) {
         var routes = res.trainPath().routePath();
         for (var index = 0; index < routes.size(); index++) {
             var startRoutePosition = routes.get(index).pathOffset();
@@ -134,7 +143,9 @@ public class STDCMHelpers {
                 var exitTime = res.departureTime() + res.envelope().interpolateTotalTimeClamp(
                         startRoutePosition + occupancy.distanceEnd()
                 );
-                assertTrue(enterTime >= occupancy.timeEnd() || exitTime <= occupancy.timeStart());
+                assertTrue(
+                        enterTime + tolerance >= occupancy.timeEnd() || exitTime - tolerance <= occupancy.timeStart()
+                );
             }
         }
     }

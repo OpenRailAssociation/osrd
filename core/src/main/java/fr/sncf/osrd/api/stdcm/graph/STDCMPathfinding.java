@@ -6,7 +6,9 @@ import fr.sncf.osrd.api.stdcm.OccupancyBlock;
 import fr.sncf.osrd.api.stdcm.STDCMResult;
 import fr.sncf.osrd.api.pathfinding.constraints.ElectrificationConstraints;
 import fr.sncf.osrd.api.pathfinding.constraints.LoadingGaugeConstraints;
+import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.PhysicsPath;
+import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
@@ -73,7 +75,11 @@ public class STDCMPathfinding {
                 );
         if (path == null)
             return null;
-        var res = makeResult(path, startTime);
+        var res = makeResult(
+                path,
+                startTime,
+                graph.standardAllowanceSpeedRatio
+        );
         if (res.envelope().getTotalTime() > maxRunTime) {
             // This can happen if the destination is one edge away from being reachable in time,
             // as we only check the time at the start of an edge when exploring the graph
@@ -115,7 +121,11 @@ public class STDCMPathfinding {
     ) {
         var envelope = range.edge().envelope();
         var timeEnd = STDCMSimulations.interpolateTime(
-                envelope, range.edge().route(), range.offset(), range.edge().timeStart()
+                envelope,
+                range.edge().route(),
+                range.offset(),
+                range.edge().timeStart(),
+                range.edge().standardAllowanceSpeedFactor()
         );
         var pathDuration = timeEnd - range.edge().totalDepartureTimeShift();
         assert pathDuration >= 0;
@@ -163,7 +173,8 @@ public class STDCMPathfinding {
     /** Builds the STDCM result object from the raw pathfinding result */
     private static STDCMResult makeResult(
             Pathfinding.Result<STDCMEdge> path,
-            double startTime
+            double startTime,
+            double standardAllowanceSpeedRatio
     ) {
         var ranges = makeEdgeRange(path);
         var routeRanges = ranges.stream()
@@ -173,13 +184,21 @@ public class STDCMPathfinding {
                 .map(x -> new Pathfinding.EdgeLocation<>(x.edge().route(), x.offset()))
                 .toList();
         var physicsPath = makePhysicsPath(ranges);
+        var mergedEnvelopes = STDCMUtils.mergeEnvelopeRanges(ranges);
         return new STDCMResult(
                 new Pathfinding.Result<>(routeRanges, routeWaypoints),
-                STDCMUtils.mergeEnvelopeRanges(ranges),
+                applyAllowance(mergedEnvelopes, standardAllowanceSpeedRatio),
                 makeTrainPath(ranges),
                 physicsPath,
                 computeDepartureTime(ranges, startTime)
         );
+    }
+
+    /** Applies the allowance to the final envelope */
+    private static Envelope applyAllowance(Envelope envelope, double standardAllowanceSpeedRatio) {
+        if (standardAllowanceSpeedRatio == 1)
+            return envelope; // This isn't just an optimization, it avoids float inaccuracies
+        return LinearAllowance.scaleEnvelope(envelope, standardAllowanceSpeedRatio);
     }
 
     /** Converts the list of pathfinding edges into a list of TrackRangeView that covers the path exactly */
