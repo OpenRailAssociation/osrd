@@ -4,7 +4,7 @@ import { Source } from 'react-map-gl';
 
 import { MAP_TRACK_SOURCES, MAP_URL } from 'common/Map/const';
 import { lineNameLayer, lineNumberLayer, trackNameLayer } from 'common/Map/Layers/commonLayers';
-import { schematicMainLayer, schematicServiceLayer } from 'common/Map/Layers/schematiclayers';
+import { schematicMainLayer } from 'common/Map/Layers/schematiclayers';
 import { Theme } from 'types';
 import { RootState } from 'reducers';
 
@@ -28,12 +28,6 @@ function TracksSchematic(props: TracksSchematicProps) {
       source-layer={MAP_TRACK_SOURCES.schematic}
     >
       <OrderedLayer
-        {...schematicServiceLayer(colors)}
-        id="chartis/tracks-sch/service"
-        source-layer={MAP_TRACK_SOURCES.schematic}
-        layerOrder={layerOrder}
-      />
-      <OrderedLayer
         {...schematicMainLayer(colors)}
         id="chartis/tracks-sch/main"
         source-layer={MAP_TRACK_SOURCES.schematic}
@@ -45,7 +39,7 @@ function TracksSchematic(props: TracksSchematicProps) {
           layout: {
             ...trackNameLayer(colors).layout,
             'text-field': '{extensions_sncf_track_name}',
-            'text-size': 12,
+            'text-size': 10,
           },
         }}
         source-layer={MAP_TRACK_SOURCES.schematic}

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import nextId from 'react-id-generator';
 import { seconds2hhmmss } from 'applications/opendata/components/OpenDataHelpers';
-import RollingStock2Img from 'applications/osrd/components/RollingStock/RollingStock2Img';
+import RollingStock2Img from 'common/RollingStockSelector/RollingStock2Img';
 import rollingstockOpenData2OSRD from './rollingstock_opendata2osrd.json';
 
 export default function TrainDetail(props) {

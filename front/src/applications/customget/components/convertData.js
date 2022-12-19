@@ -26,13 +26,14 @@ const convertStops = (steps) => {
         duration: step.time - beforeStepTime,
         name: step.label,
         position: step.position,
-        time: step.time,
+        time: beforeStepTime,
         type: step.type,
       });
     }
-    beforeStepName = step.label;
     beforeStepTime = step.time;
+    beforeStepName = step.label;
   });
+  console.log(newStepList);
   return newStepList;
 };
 
@@ -49,23 +50,23 @@ const convertData = (trains) => {
     speeds: [],
     base: {
       head_positions: [
-        train.space_time_curves.time_table
-          ? train.space_time_curves.time_table.map((step) => ({
-              time: step.time,
-              position: step.position,
-            }))
-          : train.space_time_curves[1].points.map((step) => ({
-              time: step.time,
-              position: step.position,
-            })),
-      ],
-      tail_positions: [
         train.space_time_curves.actual
           ? train.space_time_curves.actual.map((step) => ({
               time: step.time,
               position: step.position,
             }))
           : train.space_time_curves[0].points.map((step) => ({
+              time: step.time,
+              position: step.position,
+            })),
+      ],
+      tail_positions: [
+        train.space_time_curves.time_table
+          ? train.space_time_curves.time_table.map((step) => ({
+              time: step.time,
+              position: step.position,
+            }))
+          : train.space_time_curves[1].points.map((step) => ({
               time: step.time,
               position: step.position,
             })),

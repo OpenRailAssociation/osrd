@@ -8,11 +8,11 @@
   "errorMessages": {
     "unableToRetrieveTrainSchedule": "Calcul de marche impossible"
   },
-  "isWorking": "Calcul de la simulation en cours...",
-  "labels": "Etiquettes",
+  "isWorking": "Calcul de la simulation en cours…",
+  "labels": "Étiquettes",
   "loadingTrain": "Chargement du train",
   "ManualOffset": "Ajout de secondes au train",
-  "ModalEdit": "Edition d'un train",
+  "ModalEdit": "Édition d'un train",
   "name": "Nom",
   "noData": "Aucune donnée disponible",
   "null": "Lieu non renseigné",
@@ -43,5 +43,5 @@
   },
   "trainList": "Liste des trains",
   "speedLimitComposition": "Composition",
-  "waiting": "Chargement en cours..."
+  "waiting": "Chargement en cours…"
 }

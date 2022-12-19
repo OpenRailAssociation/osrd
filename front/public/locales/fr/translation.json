@@ -15,7 +15,7 @@
     "itinerary": "Itinéraire",
     "help": "Aide",
     "help-display": "Afficher l'aide",
-    "loading": "Chargement...",
+    "loading": "Chargement…",
     "save": "Sauvegarder",
     "search": "Rechercher",
     "settings": "Paramètres",
@@ -202,7 +202,7 @@
     "passwordErrorMsg": "Le mot de passe est probablement incorrect.",
     "pleaseconnect": "Veuillez vous connecter",
     "serverError": "Erreur de connexion au serveur",
-    "trying": "Tentative de reconnexion...",
+    "trying": "Tentative de reconnexion…",
     "username": "Nom d'utilisateur",
     "usernameErrorMsg": "Le nom d'utilisateur est probalement incorrect."
   },
