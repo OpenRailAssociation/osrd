@@ -27,6 +27,7 @@ private fun CollectionItemType.generateInterfaces(context: GeneratorContext, cur
 
             interface ${simpleName}List${paramsDecl} : ${simpleName}Collection${paramsUse} {
                 operator fun get(index: Int): $type
+                fun clone(): Mutable${simpleName}List${paramsUse}
             }
 
             interface Mutable${simpleName}List${paramsDecl} : ${simpleName}List${paramsUse} {
