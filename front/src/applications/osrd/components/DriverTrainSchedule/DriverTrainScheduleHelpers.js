@@ -132,15 +132,28 @@ export default function formatStops(stop, idx, data) {
     stop.position,
     data.base.speeds
   );
+  const pk = Math.round(stop.position / 100) / 10;
   const stopTime =
     getTime(stop.time).at(-1) === '+' ? (
-      <span className="timeWithPlus">{getTime(stop.time).slice(0, -1)}</span>
+      <span className="box-cell">{getTime(stop.time).slice(0, -1)}</span>
     ) : (
       getTime(stop.time)
     );
-  const pk = Math.round(stop.position / 100) / 10;
+  const departureTime =
+    getTime(stop.time + stop.duration).at(-1) === '+' ? (
+      <span className="box-cell">{getTime(stop.time + stop.duration).slice(0, -1)}</span>
+    ) : (
+      getTime(stop.time + stop.duration)
+    );
   return (
-    <tr key={nextId()} className={`${stop.duration > 0 ? 'drivertrainschedule-stop' : ''}`}>
+    <tr
+      key={nextId()}
+      className={`${
+        stop.duration > 0 || idx === 0 || idx === data.base.stops.length - 1
+          ? 'drivertrainschedule-stop'
+          : ''
+      }`}
+    >
       <td className="text-center">
         <small>{idx + 1}</small>
       </td>
@@ -151,15 +164,22 @@ export default function formatStops(stop, idx, data) {
         <div className="drivertrainschedule-pk">{Number.isInteger(pk) ? `${pk}.0` : pk}</div>
       </td>
       <td>{stop.name || 'Unknown'}</td>
-      <td className="text-center drivertrainschedule-stop-time">
-        {stop.duration > 0 ? (
-          <>
-            <span>{stopTime}</span>
-            <span className="ml-2">{stop.duration > 0 && getTime(stop.time + stop.duration)}</span>
-          </>
-        ) : (
-          stopTime
-        )}
+      <td className="stoptime-container">
+        <div className="box">
+          <div className="box-row">
+            <div className="box-cell">
+              {stop.duration > 0 || idx === data.base.stops.length - 1 ? stopTime : ''}
+            </div>
+            <div className="box-cell px-2 px-md-0">
+              {stop.duration > 0 || idx === 0 || idx === data.base.stops.length - 1 ? '' : stopTime}
+            </div>
+            <div className="box-cell">
+              {(stop.duration > 0 && idx < data.base.stops.length - 1) || idx === 0
+                ? departureTime
+                : ''}
+            </div>
+          </div>
+        </div>
       </td>
       <td>
         <div
