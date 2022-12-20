@@ -1,0 +1,28 @@
+{
+    "actions": {
+      "copy": "Dupliquer",
+      "delete": "Supprimer",
+      "rename": "Renommer",
+      "waiting": "Veuillez patienter"
+    },
+    "addTimetable": "Créer une grille horaire",
+    "chooseTimetable": "Choisissez une grille horaire",
+    "createTimetable": "Création",
+    "deleteConfirm": "Voulez-vous supprimer la grille horaire ?",
+    "errorMessages": {
+      "noExistingTimetable": "Aucune grille horaire disponible",
+      "unableToRetrieveTimetable": "Récupération grille horaire impossible",
+      "unableToRetrieveTimetableList": "Récupération liste de grille horaire impossible",
+      "noEmptyName": "Veuillez renseigner un nom"
+    },
+    "goToEditionMode": "Édition",
+    "goToStandardMode": "Sélection",
+    "timetableChoice": "Grilles horaires",
+    "timetableManagement": "Gestion des grilles horaires",
+    "timetableName": "Nom de la grille horaire",
+    "timetablesFound": "grille(s) horaire(s) trouvée(s)",
+    "timetable": "Grille horaire",
+    "no": "Non",
+    "noTimetable": "Veuillez choisir une grille horaire",
+    "yes": "Oui"
+  }

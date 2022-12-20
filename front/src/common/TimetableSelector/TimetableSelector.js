@@ -5,42 +5,38 @@ import { useSelector, useDispatch } from 'react-redux';
 import { setFailure } from 'reducers/main';
 import { useTranslation } from 'react-i18next';
 import { get, deleteRequest } from 'common/requests';
-import TimetableSelectorModal from 'applications/osrd/components/TimetableSelector/TimetableSelectorModal';
-import icon from 'assets/pictures/components/trains_timetable.svg';
-import { sec2time } from 'utils/timeManipulation';
-import DotsLoader from 'common/DotsLoader/DotsLoader';
+import { getTimetableID } from 'reducers/osrdconf/selectors';
 import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
-import { updateTimetableID } from 'reducers/osrdconf';
+import { sec2time } from 'utils/timeManipulation';
+import icon from 'assets/pictures/components/trains_timetable.svg';
+import TimetableSelectorModal from './TimetableSelectorModal';
+import './TimetableSelector.scss';
 
-const timetableURL = '/timetable/';
+const TIMETABLE_URL = '/timetable/';
 
 export default function TimetableSelector(props) {
-  const { mustUpdateTimetable, setMustUpdateTimetable } = props;
-  const [selectedTimetable, setSelectedTimetable] = useState(undefined);
-  const [isWorking, setIsWorking] = useState(false);
-  const [trainList, setTrainList] = useState(undefined);
-  const timetableID = useSelector((state) => state.osrdconf.timetableID);
+  const { modalOnly, modalID } = props;
   const dispatch = useDispatch();
-  const { t } = useTranslation();
+  const [selectedTimetable, setSelectedTimetable] = useState(undefined);
+  const [trainList, setTrainList] = useState(undefined);
+  const timetableID = useSelector(getTimetableID);
+
+  const { t } = useTranslation(['timetableManagement']);
 
   const getTimetable = async (id) => {
-    setIsWorking(true);
     try {
-      const timetableQuery = await get(`${timetableURL}${id}/`, {});
+      const timetableQuery = await get(`${TIMETABLE_URL}${id}/`, {});
       timetableQuery.train_schedules.sort((a, b) => a.departure_time > b.departure_time);
       setSelectedTimetable(timetableQuery);
       setTrainList(timetableQuery.train_schedules);
-      setIsWorking(false);
     } catch (e) {
-      dispatch(updateTimetableID(undefined));
       dispatch(
         setFailure({
-          name: t('osrdconf:errorMessages.unableToRetrieveTimetable'),
+          name: t('timetableManagement:errorMessages.unableToRetrieveTimetable'),
           message: e.message,
         })
       );
       console.log('ERROR', e);
-      setIsWorking(false);
     }
   };
 
@@ -70,46 +66,13 @@ export default function TimetableSelector(props) {
     ));
 
   useEffect(() => {
-    if (timetableID !== undefined && mustUpdateTimetable) {
-      getTimetable(timetableID);
-      setMustUpdateTimetable(false);
-    } else {
-      setSelectedTimetable(undefined);
-      setMustUpdateTimetable(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mustUpdateTimetable]);
-
-  useEffect(() => {
     if (timetableID !== undefined) {
       getTimetable(timetableID);
-    } else {
-      setSelectedTimetable(undefined);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timetableID, mustUpdateTimetable]);
+  }, [timetableID]);
 
-  const timeTable = () => {
-    if (isWorking) {
-      return (
-        <span className="ml-3">
-          <DotsLoader />
-        </span>
-      );
-    }
-    if (selectedTimetable !== undefined) {
-      return (
-        <>
-          <span className="ml-1">{selectedTimetable.name}</span>
-          <small className="ml-1 text-primary flex-grow-1">{selectedTimetable.id}</small>
-          <span className="ml-2 badge badge-secondary">
-            {`${selectedTimetable.train_schedules.length} ${t('translation:common.train(s)')}`}
-          </span>
-        </>
-      );
-    }
-    return <span className="ml-1">{t('osrdconf:noTimetable')}</span>;
-  };
+  if (modalOnly) return <TimetableSelectorModal modalID={modalID} />;
 
   return (
     <>
@@ -119,11 +82,18 @@ export default function TimetableSelector(props) {
           role="button"
           tabIndex="-1"
           data-toggle="modal"
-          data-target="#timetable-selector-modal"
+          data-target={`#${modalID}`}
         >
-          <div className="d-flex align-items-center">
-            <img width="32px" className="mr-2" src={icon} alt="timetableIcon" />
-            {timeTable()}
+          <div className="infraselector-button">
+            <img width="32px" className="mr-2" src={icon} alt="infraIcon" />
+            {selectedTimetable !== undefined ? (
+              <>
+                <span className="">{selectedTimetable.name}</span>
+                <span className="ml-1 small align-self-center">({selectedTimetable.id})</span>
+              </>
+            ) : (
+              t('timetableManagement:chooseTimetable')
+            )}
           </div>
         </div>
         {timetableID !== undefined && trainList !== undefined && trainList.length > 0 ? (
@@ -132,12 +102,16 @@ export default function TimetableSelector(props) {
           </div>
         ) : null}
       </div>
-      <TimetableSelectorModal />
+      <TimetableSelectorModal modalID={modalID} />
     </>
   );
 }
 
+TimetableSelector.defaultProps = {
+  modalOnly: false,
+  modalID: `timetable-selector-modal-${nextId()}`,
+};
 TimetableSelector.propTypes = {
-  mustUpdateTimetable: PropTypes.bool.isRequired,
-  setMustUpdateTimetable: PropTypes.func.isRequired,
+  modalOnly: PropTypes.bool,
+  modalID: PropTypes.string,
 };

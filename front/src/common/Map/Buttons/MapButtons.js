@@ -13,7 +13,9 @@ import MapSearch from 'common/Map/Search/MapSearch';
 import MapSettings from 'common/Map/Settings/MapSettings';
 import MapKey from 'common/Map/MapKey';
 import InfraSelector from 'common/InfraSelector/InfraSelector';
+import TimetableSelector from 'common/TimetableSelector/TimetableSelector';
 import ButtonMapInfras from './ButtonMapInfras';
+import ButtonMapTimetables from './ButtonMapTimetables';
 
 export default function MapButtons(props) {
   const { resetPitchBearing } = props;
@@ -30,11 +32,13 @@ export default function MapButtons(props) {
         <ButtonResetViewport updateLocalViewport={resetPitchBearing} />
         <ButtonFullscreen />
         <ButtonMapInfras modalID="infra-selector-modal-map" />
+        <ButtonMapTimetables modalID="timetable-selector-modal-map" />
       </div>
       <MapSearch active={showSearch} toggleMapSearch={() => setShowSearch(!showSearch)} />
       <MapSettings active={showSettings} toggleMapSettings={() => setShowSettings(!showSettings)} />
       <MapKey active={showMapKey} toggleMapKey={() => setShowMapKey(!showMapKey)} />
       <InfraSelector modalOnly modalID="infra-selector-modal-map" />
+      <TimetableSelector modalOnly modalID="timetable-selector-modal-map" />
     </>
   );
 }

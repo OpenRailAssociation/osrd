@@ -16,7 +16,7 @@ import Itinerary from 'applications/osrd/views/OSRDConfig/Itinerary';
 import Map from 'applications/osrd/views/OSRDConfig/Map';
 import RollingStockSelector from 'applications/osrd/views/OSRDConfig/RollingStockSelector';
 import SpeedLimitByTagSelector from 'applications/osrd/views/OSRDConfig/SpeedLimitByTagSelector';
-import TimetableSelector from 'applications/osrd/views/OSRDConfig/TimetableSelector';
+import TimetableSelector from 'common/TimetableSelector/TimetableSelector';
 
 import StdcmSingleAllowance from 'applications/osrd/components/Simulation/Allowances/withOSRDStdcmParams';
 
