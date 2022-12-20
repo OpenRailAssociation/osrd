@@ -1,15 +1,12 @@
 package fr.sncf.osrd.stdcm;
 
-import static fr.sncf.osrd.train.TestTrains.*;
 import static java.lang.Double.POSITIVE_INFINITY;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.common.collect.*;
 import fr.sncf.osrd.api.stdcm.OccupancyBlock;
-import fr.sncf.osrd.api.stdcm.graph.STDCMUtils;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
-import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -443,4 +440,36 @@ public class STDCMPathfindingTests {
         assertNotNull(res);
         STDCMHelpers.occupancyTest(res, occupancyGraph);
     }
+
+    /** Test that we return the earliest path among the fastest ones*/
+    @Test
+    public void testReturnTheEarliestOfTheFastestPaths() {
+        /*
+        a --> b
+
+        space
+          ^     end     end
+          |    /       /
+        b |   /       /
+          |  / ##### /  
+        a |_/_ #####/________> time
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var routes = List.of(infraBuilder.addRoute("a", "b"));
+        var infra = infraBuilder.build();
+        var occupancyGraph = ImmutableMultimap.of(
+                routes.get(0), new OccupancyBlock(300, 3600, 0, 1)
+        );
+        var res = new STDCMPathfindingBuilder()
+                .setInfra(infra)
+                .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(routes.get(0), 0)))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(routes.get(0), 100)))
+                .setUnavailableTimes(occupancyGraph)
+                .run();
+
+        assertNotNull(res);
+        STDCMHelpers.occupancyTest(res, occupancyGraph);
+        assertTrue(res.departureTime() < 300);
+    }
+  
 }
