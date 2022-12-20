@@ -5,6 +5,7 @@ import { TrackSectionEntity } from '../../../../types';
 
 export type TrackEditionState = CommonToolState & {
   track: TrackSectionEntity;
+  initialTrack: TrackSectionEntity;
 
   editionState:
     | { type: 'addPoint' }

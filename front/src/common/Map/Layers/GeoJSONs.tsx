@@ -83,42 +83,45 @@ function getTrackSectionLayers(context: LayerContext, prefix: string): AnyLayer[
       'source-layer': MAP_TRACK_SOURCE,
       id: `${prefix}geo/track-service`,
     },
-    {
-      ...trackNameLayer(context.colors),
-      'source-layer': MAP_TRACK_SOURCE,
-      filter: ['==', 'type_voie', 'VP'],
-      layout: {
-        ...trackNameLayer(context.colors).layout,
-        'text-field': '{extensions_sncf_track_name}',
-        'text-size': 11,
-      },
-      id: `${prefix}geo/track-vp-names`,
-    },
-    {
-      ...trackNameLayer(context.colors),
-      'source-layer': MAP_TRACK_SOURCE,
-      filter: ['!=', 'type_voie', 'VP'],
-      layout: {
-        ...trackNameLayer(context.colors).layout,
-        'text-field': '{extensions_sncf_track_name}',
-        'text-size': 10,
-      },
-      id: `${prefix}geo/track-other-names`,
-    },
-    {
-      ...lineNumberLayer(context.colors),
-      'source-layer': MAP_TRACK_SOURCE,
-      layout: {
-        ...lineNumberLayer(context.colors).layout,
-        'text-field': '{extensions_sncf_line_code}',
-      },
-      id: `${prefix}geo/track-numbers`,
-    },
-    {
-      ...lineNameLayer(context.colors),
-      'source-layer': MAP_TRACK_SOURCE,
-      id: `${prefix}geo/line-names`,
-    },
+    // TODO:
+    // Find why those layers make MapLibre break when using the TrackSection
+    // tool (ie. when there are hidden values?):
+    // {
+    //   ...trackNameLayer(context.colors),
+    //   'source-layer': MAP_TRACK_SOURCE,
+    //   filter: ['==', 'type_voie', 'VP'],
+    //   layout: {
+    //     ...trackNameLayer(context.colors).layout,
+    //     'text-field': '{extensions_sncf_track_name}',
+    //     'text-size': 11,
+    //   },
+    //   id: `${prefix}geo/track-vp-names`,
+    // },
+    // {
+    //   ...trackNameLayer(context.colors),
+    //   'source-layer': MAP_TRACK_SOURCE,
+    //   filter: ['!=', 'type_voie', 'VP'],
+    //   layout: {
+    //     ...trackNameLayer(context.colors).layout,
+    //     'text-field': '{extensions_sncf_track_name}',
+    //     'text-size': 10,
+    //   },
+    //   id: `${prefix}geo/track-other-names`,
+    // },
+    // {
+    //   ...lineNumberLayer(context.colors),
+    //   'source-layer': MAP_TRACK_SOURCE,
+    //   layout: {
+    //     ...lineNumberLayer(context.colors).layout,
+    //     'text-field': '{extensions_sncf_line_code}',
+    //   },
+    //   id: `${prefix}geo/track-numbers`,
+    // },
+    // {
+    //   ...lineNameLayer(context.colors),
+    //   'source-layer': MAP_TRACK_SOURCE,
+    //   id: `${prefix}geo/line-names`,
+    // },
   ];
 }
 function getSignalLayers(context: LayerContext, prefix: string): AnyLayer[] {
@@ -211,9 +214,10 @@ const GeoJSONs: FC<{
   hidden?: string[];
   selection?: string[];
   prefix?: string;
+  layers?: Set<LayerType>;
 }> = (props) => {
   const osrdConf = useSelector((state: { osrdconf: OSRDConf }) => state.osrdconf);
-  const { colors, hidden, selection, prefix = 'editor/' } = props;
+  const { colors, hidden, selection, layers, prefix = 'editor/' } = props;
   const selectedPrefix = `${prefix}selected/`;
   const hiddenColors = useMemo(
     () => transformTheme(colors, (color) => chroma(color).desaturate(50).brighten(1).hex()),
@@ -246,23 +250,36 @@ const GeoJSONs: FC<{
 
   const sources: { id: string; url: string; layers: AnyLayer[] }[] = useMemo(
     () =>
-      SOURCES_DEFINITION.flatMap((source) => [
-        {
-          id: `${prefix}geo/${source.entityType}`,
-          url: `${MAP_URL}/layer/${source.entityType}/mvt/geo/?infra=${osrdConf.infraID}`,
-          layers: source
-            .getLayers({ ...hiddenLayerContext, sourceTable: source.entityType }, prefix)
-            .map((layer) => adaptFilter(layer, (hidden || []).concat(selection || []), [])),
-        },
-        {
-          id: `${selectedPrefix}geo/${source.entityType}`,
-          url: `${MAP_URL}/layer/${source.entityType}/mvt/geo/?infra=${osrdConf.infraID}`,
-          layers: source
-            .getLayers({ ...layerContext, sourceTable: source.entityType }, selectedPrefix)
-            .map((layer) => adaptFilter(layer, hidden || [], selection || [])),
-        },
-      ]),
-    [hidden, hiddenLayerContext, layerContext, osrdConf.infraID, prefix, selectedPrefix, selection]
+      SOURCES_DEFINITION.flatMap((source) =>
+        !layers || layers.has(source.entityType)
+          ? [
+              {
+                id: `${prefix}geo/${source.entityType}`,
+                url: `${MAP_URL}/layer/${source.entityType}/mvt/geo/?infra=${osrdConf.infraID}`,
+                layers: source
+                  .getLayers({ ...hiddenLayerContext, sourceTable: source.entityType }, prefix)
+                  .map((layer) => adaptFilter(layer, (hidden || []).concat(selection || []), [])),
+              },
+              {
+                id: `${selectedPrefix}geo/${source.entityType}`,
+                url: `${MAP_URL}/layer/${source.entityType}/mvt/geo/?infra=${osrdConf.infraID}`,
+                layers: source
+                  .getLayers({ ...layerContext, sourceTable: source.entityType }, selectedPrefix)
+                  .map((layer) => adaptFilter(layer, hidden || [], selection || [])),
+              },
+            ]
+          : []
+      ),
+    [
+      hidden,
+      hiddenLayerContext,
+      layerContext,
+      layers,
+      osrdConf.infraID,
+      prefix,
+      selectedPrefix,
+      selection,
+    ]
   );
 
   return (

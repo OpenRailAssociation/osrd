@@ -39,8 +39,7 @@ export const PointEditionLeftPanel: FC = <Entity extends EditorEntity>() => {
               ? {
                   update: [
                     {
-                      // TODO: Find original entity
-                      source: savedEntity, // editorState.entitiesIndex[state.entity.properties.id],
+                      source: state.initialEntity,
                       target: savedEntity,
                     },
                   ],
@@ -107,7 +106,8 @@ export const BasePointEditionLayers: FC<{
 }> = ({ mergeEntityWithNearestPoint, interactiveLayerIDRegex }) => {
   const {
     state: { nearestPoint, mousePosition, entity, objType },
-  } = useContext(EditorContext) as EditorContextType<PointEditionState<EditorEntity>>;
+    editorState: { editorLayers },
+  } = useContext(EditorContext) as ExtendedEditorContextType<PointEditionState<EditorEntity>>;
   const { mapStyle } = useSelector((s: { map: { mapStyle: string } }) => s.map) as {
     mapStyle: string;
   };
@@ -171,6 +171,7 @@ export const BasePointEditionLayers: FC<{
         colors={colors[mapStyle]}
         hidden={entity.properties.id !== NEW_ENTITY_ID ? [entity.properties.id] : undefined}
         selection={[entity.properties.id]}
+        layers={editorLayers}
       />
 
       {/* Edited entity */}
@@ -183,7 +184,7 @@ export const BasePointEditionLayers: FC<{
           latitude={renderedEntity.geometry.coordinates[1]}
           onClose={() => setShowPopup(false)}
         >
-          {/*<EntitySumUp id={} objType={} entity={renderedEntity} status="edited" />*/}
+          <EntitySumUp entity={renderedEntity} status="edited" />
         </Popup>
       )}
     </>

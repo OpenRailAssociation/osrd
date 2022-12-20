@@ -12,7 +12,7 @@ import { TrackEditionState } from './types';
 import EditorForm from '../../components/EditorForm';
 import { save } from '../../../../reducers/editor';
 import { CreateEntityOperation, TrackSectionEntity } from '../../../../types';
-import { EditorContextType, ExtendedEditorContextType } from '../types';
+import { ExtendedEditorContextType } from '../types';
 import { injectGeometry } from './utils';
 import { NEW_ENTITY_ID } from '../../data/utils';
 
@@ -23,7 +23,10 @@ const TRACK_COLOR = '#666';
 const TRACK_STYLE = { 'line-color': TRACK_COLOR, 'line-dasharray': [2, 1], 'line-width': 2 };
 
 export const TrackEditionLayers: FC = () => {
-  const { state } = useContext(EditorContext) as EditorContextType<TrackEditionState>;
+  const {
+    state,
+    editorState: { editorLayers },
+  } = useContext(EditorContext) as ExtendedEditorContextType<TrackEditionState>;
   const { mapStyle } = useSelector((s: { map: { mapStyle: string } }) => s.map) as {
     mapStyle: string;
   };
@@ -71,7 +74,7 @@ export const TrackEditionLayers: FC = () => {
       <GeoJSONs
         colors={colors[mapStyle]}
         hidden={state.track.properties.id ? [state.track.properties.id] : undefined}
-        selection={state.track.properties.id ? [state.track.properties.id] : undefined}
+        layers={editorLayers}
       />
 
       {/* Track path */}
@@ -182,7 +185,7 @@ export const TrackEditionLayers: FC = () => {
 export const TrackEditionLeftPanel: FC = () => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const { state, setState, editorState } = useContext(
+  const { state, setState } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<TrackEditionState>;
   const { track } = state;
@@ -197,8 +200,7 @@ export const TrackEditionLeftPanel: FC = () => {
               ? {
                   update: [
                     {
-                      // TODO
-                      source: injectGeometry(savedEntity), // injectGeometry(editorState.entitiesIndex[track.properties.id]),
+                      source: injectGeometry(state.initialTrack),
                       target: injectGeometry(savedEntity),
                     },
                   ],

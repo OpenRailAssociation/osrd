@@ -21,18 +21,8 @@ import {
   SignalEditionTool,
 } from '../pointEdition/tools';
 import SwitchEditionTool from '../switchEdition/tool';
-import { ALL_SIGNAL_LAYERS } from '../../../../common/Map/Consts/SignalsNames';
 import { getMixedEntities } from '../../data/api';
 import { selectInZone } from '../../../../utils/mapboxHelper';
-
-const INTERACTIVE_LAYERS = ALL_SIGNAL_LAYERS.map((type) => `editor/geo/signal-${type}`)
-  .concat([
-    'editor/geo/track-main',
-    'editor/geo/buffer-stop-main',
-    'editor/geo/detector-main',
-    'editor/geo/switch-main',
-  ])
-  .flatMap((s) => [s, s.replace(/^editor/, 'editor/selected')]);
 
 const SelectionTool: Tool<SelectionState> = {
   id: 'select-items',
@@ -107,6 +97,7 @@ const SelectionTool: Tool<SelectionState> = {
             switch (selectedElement.objType) {
               case 'TrackSection':
                 switchTool(TrackEditionTool, {
+                  initialTrack: selectedElement as TrackSectionEntity,
                   track: selectedElement as TrackSectionEntity,
                   editionState: {
                     type: 'movePoint',
@@ -233,18 +224,13 @@ const SelectionTool: Tool<SelectionState> = {
           });
         } else {
           const selection = map
-            .queryRenderedFeatures(
-              [
-                map.project(state.selectionState.rectangleTopLeft),
-                map.project(position.toArray() as [number, number]),
-              ],
-              {
-                layers: INTERACTIVE_LAYERS,
-              }
-            )
+            .queryRenderedFeatures([
+              map.project(state.selectionState.rectangleTopLeft),
+              map.project(position.toArray() as [number, number]),
+            ])
             .filter((f) => !f.layer.id.startsWith('osm'));
 
-          setState((s) => ({ ...s, isLoading: true }));
+          setState({ isLoading: true });
           getMixedEntities(
             osrdConf.infraID as string,
             selection.flatMap((entity) =>
@@ -258,12 +244,15 @@ const SelectionTool: Tool<SelectionState> = {
                 : []
             )
           ).then((entities) => {
-            setState((s) => ({
-              ...s,
+            setState({
               isLoading: false,
-              selectionState: { ...state.selectionState, rectangleTopLeft: null },
+              selectionState: {
+                ...state.selectionState,
+                type: 'rectangle',
+                rectangleTopLeft: null,
+              },
               selection: Object.values(entities),
-            }));
+            });
           });
         }
       } else {
@@ -286,15 +275,10 @@ const SelectionTool: Tool<SelectionState> = {
           const lats = points.map((point) => point[1]);
           const selection = selectInZone(
             map
-              .queryRenderedFeatures(
-                [
-                  map.project([min(lngs) as number, min(lats) as number]),
-                  map.project([max(lngs) as number, max(lats) as number]),
-                ] as [PointLike, PointLike],
-                {
-                  layers: INTERACTIVE_LAYERS,
-                }
-              )
+              .queryRenderedFeatures([
+                map.project([min(lngs) as number, min(lats) as number]),
+                map.project([max(lngs) as number, max(lats) as number]),
+              ] as [PointLike, PointLike])
               .filter((f) => !f.layer.id.startsWith('osm')),
             {
               type: 'polygon',
@@ -302,7 +286,7 @@ const SelectionTool: Tool<SelectionState> = {
             }
           );
 
-          setState((s) => ({ ...s, isLoading: true }));
+          setState({ isLoading: true });
           getMixedEntities(
             osrdConf.infraID as string,
             selection.flatMap((entity) =>
@@ -316,12 +300,11 @@ const SelectionTool: Tool<SelectionState> = {
                 : []
             )
           ).then((entities) => {
-            setState((s) => ({
-              ...s,
+            setState({
               isLoading: false,
-              selectionState: { ...state.selectionState, polygonPoints: [] },
+              selectionState: { ...state.selectionState, type: 'polygon', polygonPoints: [] },
               selection: Object.values(entities),
-            }));
+            });
           });
         }
       } else {
@@ -337,9 +320,6 @@ const SelectionTool: Tool<SelectionState> = {
   },
 
   // Layers:
-  getInteractiveLayers() {
-    return INTERACTIVE_LAYERS;
-  },
   getCursor({ state }, { isDragging }) {
     if (isDragging) return 'move';
     if (state.selectionState.type === 'single' && state.hovered) return 'pointer';
