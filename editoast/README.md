@@ -30,7 +30,6 @@ $ cargo run -- runserver
 
 ```sh
 # limit threads to avoid test errors with database connections
-export RUST_TEST_THREADS=2
 cargo test
 ```
 
