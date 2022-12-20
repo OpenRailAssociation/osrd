@@ -10,6 +10,7 @@ import { getNearestPoint } from '../../../../utils/mapboxHelper';
 import { POINT_LAYER_ID, PointEditionLeftPanel, PointEditionMessages } from './components';
 import { PointEditionState } from './types';
 import { NULL_GEOMETRY, BufferStopEntity, DetectorEntity, SignalEntity } from '../../../../types';
+import { getEntity } from '../../data/api';
 
 type EditorPoint = BufferStopEntity | DetectorEntity | SignalEntity;
 interface PointEditionToolParams<T extends EditorPoint> {
@@ -115,10 +116,19 @@ function getPointEditionTool<T extends EditorPoint>({
       const hoveredTarget = (e.features || []).find((f) => f.layer.id === POINT_LAYER_ID);
       const hoveredTracks = (e.features || []).flatMap((f) => {
         if (f.layer.id !== 'editor/geo/track-main') return [];
-        // TODO
-        // const trackEntity = entitiesIndex[(f.properties ?? {}).id];
-        // return trackEntity && trackEntity.objType === 'TrackSection' ? [trackEntity] : [];
-        return [];
+        const trackId = f.properties?.id as string;
+        const { point, target: map } = e;
+        const TOLERANCE = 20;
+        const results = map.queryRenderedFeatures(
+          [
+            [point.x - TOLERANCE / 2, point.y - TOLERANCE / 2],
+            [point.x + TOLERANCE / 2, point.y + TOLERANCE / 2],
+          ],
+          {
+            filter: ['in', 'id', trackId],
+          }
+        );
+        return results.slice(0, 1);
       }) as Feature<LineString>[];
 
       if (!entity.geometry || isEqual(entity.geometry, NULL_GEOMETRY)) {
@@ -155,40 +165,34 @@ function getPointEditionTool<T extends EditorPoint>({
     },
 
     // Lifecycle:
-    onMount(
-      {
-        /*state: { entity }, editorState*/
-      }
-    ) {
-      // TODO
-      //
-      //       const trackId = entity.properties?.track;
-      //
-      //       if (trackId && editorState.entitiesIndex[trackId]) {
-      //         const line = editorState.entitiesIndex[trackId];
-      //
-      //         const dbPosition = entity.properties.position;
-      //         const computedPosition = nearestPointOnLine(
-      //           line as Feature<LineString>,
-      //           entity as Feature<Point>,
-      //           { units: 'meters' }
-      //         ).properties?.location;
-      //
-      //         if (
-      //           typeof dbPosition === 'number' &&
-      //           typeof computedPosition === 'number' &&
-      //           Math.abs(dbPosition - computedPosition) >= 1
-      //         ) {
-      //           // eslint-disable-next-line no-console
-      //           console.warn(
-      //             `
-      // The entity ${entity.properties.id} position computed by Turf.js does not match the one from the database:
-      //   -> Database position: ${dbPosition}
-      //   -> Turf.js position: ${computedPosition}
-      // `
-      //           );
-      //         }
-      //       }
+    onMount({ state: { entity }, osrdConf: { infraID } }) {
+      const trackId = entity.properties?.track;
+
+      if (typeof trackId !== 'string') return;
+
+      getEntity(infraID as string, trackId, 'TrackSection').then((track) => {
+        const dbPosition = entity.properties.position;
+        const computedPosition = nearestPointOnLine(
+          track as Feature<LineString>,
+          entity as Feature<Point>,
+          { units: 'meters' }
+        ).properties?.location;
+
+        if (
+          typeof dbPosition === 'number' &&
+          typeof computedPosition === 'number' &&
+          Math.abs(dbPosition - computedPosition) >= 1
+        ) {
+          // eslint-disable-next-line no-console
+          console.warn(
+            `
+      The entity ${entity.properties.id} position computed by Turf.js does not match the one from the database:
+        -> Database position: ${dbPosition}
+        -> Turf.js position: ${computedPosition}
+      `
+          );
+        }
+      });
     },
 
     getInteractiveLayers() {
