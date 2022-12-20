@@ -63,7 +63,7 @@ public class STDCMPathfinding {
                 .setRemainingDistanceEstimator(makeAStarHeuristic(endLocations, rollingStock))
                 .addBlockedRangeOnEdges(edge -> loadingGaugeConstraints.apply(edge.route()))
                 .addBlockedRangeOnEdges(edge -> electrificationConstraints.apply(edge.route()))
-                .setEdgeRangeCost(STDCMPathfinding::edgeRangeCost)
+                .setTotalDistanceUntilEdgeLocation(range -> totalDistanceUntilEdgeLocation(range, maxDepartureDelay))
                 .runPathfinding(
                         convertLocations(graph, startLocations, startTime, maxDepartureDelay),
                         makeObjectiveFunction(endLocations)
@@ -92,11 +92,31 @@ public class STDCMPathfinding {
         });
     }
 
-    private static double edgeRangeCost(EdgeRange<STDCMEdge> range) {
+    /** Compute the total distance of a path (in s) to an edge location
+     * This estimation of the total distance is used to compare paths in the pathfinding algorithm.
+     * We select the shortest path (in duration), and for 2 paths with the same duration, we select the earliest one.
+     * The path weight which takes into account the total duration of the path and the time shift at the departure
+     * (with different weights): path_duration * searchTimeRange + departure_time_shift.
+     * 
+     * <br/>
+     * EXAMPLE
+     * Let's assume we are trying to find a train between 9am and 10am. The searchTimeRange is 1 hour (3600s).
+     * Let's assume we have found two possible trains:
+     * - the first one leaves at 9:59 and lasts for 20:00 min.
+     * - the second one leaves at 9:00 and lasts for 20:01 min.
+     * As we are looking for the fastest train, the first train should have the lightest weight, which is the case with
+     * the formula above.*/
+    private static double totalDistanceUntilEdgeLocation(
+            Pathfinding.EdgeLocation<STDCMEdge> range,
+            double searchTimeRange
+    ) {
         var envelope = range.edge().envelope();
-        var timeStart = STDCMUtils.interpolateTime(envelope, range.edge().route(), range.start(), 0);
-        var timeEnd = STDCMUtils.interpolateTime(envelope, range.edge().route(), range.end(), 0);
-        return timeEnd - timeStart + range.edge().addedDelay();
+        var timeEnd = STDCMUtils.interpolateTime(
+                envelope, range.edge().route(), range.offset(), range.edge().timeStart()
+        );
+        var pathDuration = timeEnd - range.edge().totalDepartureTimeShift();
+        assert pathDuration >= 0;
+        return pathDuration * searchTimeRange + range.edge().totalDepartureTimeShift();
     }
 
     private static AStarHeuristic<STDCMEdge> makeAStarHeuristic(

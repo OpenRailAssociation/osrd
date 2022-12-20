@@ -57,7 +57,7 @@ public final class STDCMRequest {
     public Collection<PathfindingWaypoint> startPoints;
 
     /**
-     * List of possible start points for the train
+     * List of possible end points for the train
      */
     @Json(name = "end_points")
     public Collection<PathfindingWaypoint> endPoints;
