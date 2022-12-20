@@ -305,6 +305,7 @@ export const SwitchEditionLayers: FC = () => {
   const [showPopup, setShowPopup] = useState(true);
   const {
     state: { entity, hovered, portEditionState, mousePosition },
+    editorState: { editorLayers },
   } = useContext(EditorContext) as ExtendedEditorContextType<SwitchEditionState>;
   const { mapStyle } = useSelector((s: { map: { mapStyle: string } }) => s.map) as {
     mapStyle: string;
@@ -344,6 +345,7 @@ export const SwitchEditionLayers: FC = () => {
         colors={colors[mapStyle]}
         hidden={entity?.properties?.id ? [entity.properties.id] : undefined}
         selection={entity?.properties?.id ? [entity.properties.id] : undefined}
+        layers={editorLayers}
       />
 
       {/* Edited switch */}

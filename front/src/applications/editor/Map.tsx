@@ -4,7 +4,7 @@ import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl';
 import { withTranslation } from 'react-i18next';
 import { TFunction } from 'i18next';
 import maplibregl from 'maplibre-gl';
-import { isEqual } from 'lodash';
+import { isEmpty, isEqual } from 'lodash';
 
 import VirtualLayers from 'applications/osrd/views/OSRDSimulation/VirtualLayers';
 import colors from 'common/Map/Consts/colors';
@@ -41,7 +41,7 @@ import { getEntity } from './data/api';
 interface MapProps<S extends CommonToolState = CommonToolState> {
   t: TFunction;
   toolState: S;
-  setToolState: (stateOrReducer: S | ((oldState: S) => S)) => void;
+  setToolState: (state: Partial<S>) => void;
   activeTool: Tool<S>;
   mapStyle: string;
   viewport: Viewport;
@@ -116,7 +116,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
           onMoveStart={() => setMapState((prev) => ({ ...prev, isDragging: true }))}
           onMoveEnd={() => setMapState((prev) => ({ ...prev, isDragging: false }))}
           onMouseOut={() => {
-            setToolState((state) => ({ ...state, hovered: null }));
+            setToolState({ hovered: null });
           }}
           onMouseMove={(e) => {
             const nearestResult = getMapMouseEventNearestFeature(e);
@@ -154,14 +154,13 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
               }
             } else {
               partialToolState.hovered = null;
-
-              if (activeTool.onMove) {
-                activeTool.onMove(e, extendedContext);
-              }
             }
 
-            const newToolState = { ...toolState, ...partialToolState };
-            if (!isEqual(toolState, newToolState)) setToolState(newToolState);
+            if (activeTool.onMove && (!nearestResult || !activeTool.onHover)) {
+              activeTool.onMove(e, extendedContext);
+            }
+
+            if (!isEmpty(partialToolState)) setToolState(partialToolState);
 
             const newMapState = { ...mapState, ...partialMapState };
             if (!isEqual(mapState, newMapState)) setMapState(newMapState);
