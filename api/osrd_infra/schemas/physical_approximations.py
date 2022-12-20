@@ -1,8 +1,9 @@
 from enum import Enum
 from typing import List
-from pydantic import Field
 
-from osrd_infra.schemas.infra import BaseObjectTrait, TrackRange
+from pydantic import BaseModel, Field
+
+from .infra import TrackRange
 
 
 class ElectricProfileValue(str, Enum):
@@ -40,13 +41,18 @@ class PowerClass(int, Enum):
     PRECL5 = 5
 
 
-class ElectricProfile(BaseObjectTrait):
+class ElectricProfile(BaseModel):
     """This class is used to define the electric profile of a track section.
     There should be one value per power class, on every electrified track."""
 
     value: ElectricProfileValue = Field(description="Category of power loss along the range")
     power_class: PowerClass = Field(description="Category of rolling this profile applies to")
     track_ranges: List[TrackRange] = Field(description="List of locations where this profile is applied")
+
+
+class ElectricProfilesList(BaseModel):
+    """This class is used for storage schema validation."""
+    __root__: List[ElectricProfile]
 
 
 if __name__ == "__main__":
