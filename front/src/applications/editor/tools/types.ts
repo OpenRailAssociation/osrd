@@ -6,7 +6,6 @@ import { TFunction } from 'i18next';
 import { reduce } from 'lodash';
 
 import { EditorEntity, EditorSchema, SwitchType, MapLayerMouseEvent } from '../../../types';
-import { ValueOrReducer } from "./switchEdition/utils";
 
 export interface EditorState {
   editorSchema: EditorSchema;
@@ -91,7 +90,7 @@ export interface EditorContextType<S = any> {
   // Tool logic:
   activeTool: Tool<S>;
   state: S;
-  setState: (state: ValueOrReducer<S>) => void;
+  setState: (state: Partial<S>) => void;
 
   // Switching tool:
   switchTool: <NewToolState extends CommonToolState>(
