@@ -1,4 +1,7 @@
 .DS_Store
 *.nix
 *.backup
+*.tar
+*.tar.gz
+*.zip
 /yarn.lock
