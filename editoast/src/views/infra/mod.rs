@@ -247,28 +247,23 @@ async fn unlock(infra: i32, conn: DBConnection) -> ApiResult<Custom<JsonValue>> 
 
 #[cfg(test)]
 mod tests {
-    use crate::create_server;
     use crate::infra::Infra;
     use crate::schema::operation::{Operation, RailjsonObject};
     use crate::schema::SwitchType;
+    use crate::views::tests::create_test_client;
     use rocket::http::{ContentType, Status};
-    use rocket::local::blocking::Client;
     use serde::Deserialize;
 
     #[test]
     fn infra_list() {
-        let rocket = create_server(&Default::default(), &Default::default(), Default::default());
-
-        let client = Client::tracked(rocket).expect("valid rocket instance");
+        let client = create_test_client();
         let response = client.get("/infra").dispatch();
         assert_eq!(response.status(), Status::Ok);
     }
 
     #[test]
     fn infra_create_delete() {
-        let rocket = create_server(&Default::default(), &Default::default(), Default::default());
-
-        let client = Client::tracked(rocket).expect("valid rocket instance");
+        let client = create_test_client();
         let create_infra_response = client
             .post("/infra")
             .header(ContentType::JSON)
@@ -289,9 +284,7 @@ mod tests {
 
     #[test]
     fn infra_get() {
-        let rocket = create_server(&Default::default(), &Default::default(), Default::default());
-
-        let client = Client::tracked(rocket).expect("valid rocket instance");
+        let client = create_test_client();
         let create_infra_response = client
             .post("/infra")
             .header(ContentType::JSON)
@@ -317,8 +310,7 @@ mod tests {
 
     #[test]
     fn infra_rename() {
-        let rocket = create_server(&Default::default(), &Default::default(), Default::default());
-        let client = Client::tracked(rocket).expect("valid rocket instance");
+        let client = create_test_client();
         let create_infra = client
             .post("/infra")
             .header(ContentType::JSON)
@@ -342,10 +334,7 @@ mod tests {
 
     #[test]
     fn infra_refresh() {
-        let rocket = create_server(&Default::default(), &Default::default(), Default::default());
-
-        let client = Client::tracked(rocket).expect("valid rocket instance");
-
+        let client = create_test_client();
         let create_infra_response = client
             .post("/infra")
             .header(ContentType::JSON)
@@ -378,10 +367,7 @@ mod tests {
 
     #[test]
     fn infra_refresh_force() {
-        let rocket = create_server(&Default::default(), &Default::default(), Default::default());
-
-        let client = Client::tracked(rocket).expect("valid rocket instance");
-
+        let client = create_test_client();
         let create_infra = client
             .post("/infra")
             .header(ContentType::JSON)
@@ -413,10 +399,7 @@ mod tests {
 
     #[test]
     fn infra_get_switch_types() {
-        let rocket = create_server(&Default::default(), &Default::default(), Default::default());
-
-        let client = Client::tracked(rocket).expect("valid rocket instance");
-
+        let client = create_test_client();
         let create_infra = client
             .post("/infra")
             .header(ContentType::JSON)
@@ -459,10 +442,7 @@ mod tests {
 
     #[test]
     fn infra_lock() {
-        let rocket = create_server(&Default::default(), &Default::default(), Default::default());
-
-        let client = Client::tracked(rocket).expect("valid rocket instance");
-
+        let client = create_test_client();
         let create_infra = client
             .post("/infra")
             .header(ContentType::JSON)

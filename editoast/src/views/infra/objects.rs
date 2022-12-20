@@ -129,25 +129,16 @@ pub async fn get_objects(
 
 #[cfg(test)]
 mod tests {
-    use rocket::{
-        http::{ContentType, Status},
-        local::blocking::Client,
-    };
+    use rocket::http::{ContentType, Status};
 
-    use crate::{
-        create_server,
-        infra::Infra,
-        schema::{
-            operation::{Operation, RailjsonObject},
-            SwitchType,
-        },
-    };
+    use crate::infra::Infra;
+    use crate::schema::operation::{Operation, RailjsonObject};
+    use crate::schema::SwitchType;
+    use crate::views::tests::create_test_client;
+
     #[test]
     fn check_invalid_ids() {
-        let rocket = create_server(&Default::default(), &Default::default(), Default::default());
-
-        let client = Client::tracked(rocket).expect("valid rocket instance");
-
+        let client = create_test_client();
         let create_infra = client
             .post("/infra")
             .header(ContentType::JSON)
@@ -167,10 +158,7 @@ mod tests {
     }
     #[test]
     fn get_objects_no_ids() {
-        let rocket = create_server(&Default::default(), &Default::default(), Default::default());
-
-        let client = Client::tracked(rocket).expect("valid rocket instance");
-
+        let client = create_test_client();
         let create_infra = client
             .post("/infra")
             .header(ContentType::JSON)
@@ -191,10 +179,7 @@ mod tests {
 
     #[test]
     fn get_objects_duplicate_ids() {
-        let rocket = create_server(&Default::default(), &Default::default(), Default::default());
-
-        let client = Client::tracked(rocket).expect("valid rocket instance");
-
+        let client = create_test_client();
         let create_infra = client
             .post("/infra")
             .header(ContentType::JSON)
@@ -215,10 +200,7 @@ mod tests {
 
     #[test]
     fn get_switch_types() {
-        let rocket = create_server(&Default::default(), &Default::default(), Default::default());
-
-        let client = Client::tracked(rocket).expect("valid rocket instance");
-
+        let client = create_test_client();
         let create_infra = client
             .post("/infra")
             .header(ContentType::JSON)

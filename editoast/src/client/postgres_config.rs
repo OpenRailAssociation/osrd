@@ -20,6 +20,9 @@ pub struct PostgresConfig {
     #[derivative(Default(value = "5432"))]
     #[clap(long, env, default_value_t = 5432)]
     pub psql_port: u16,
+    #[derivative(Default(value = "32"))]
+    #[clap(long, env, default_value_t = 32)]
+    pub pool_size: u16,
 }
 
 impl PostgresConfig {
