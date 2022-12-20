@@ -31,7 +31,6 @@ import {
   Tool,
 } from './tools/types';
 import TOOLS from './tools/list';
-import { isFunction } from 'lodash';
 
 const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   const dispatch = useDispatch();
@@ -65,10 +64,13 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
     [osrdConf, setToolAndState]
   );
   const setToolState = useCallback(
-    <S extends CommonToolState>(state?: S | ((prev: S) => S)) => {
+    <S extends CommonToolState>(state: Partial<S>) => {
       setToolAndState((s) => ({
         ...s,
-        state: isFunction(state) ? state(s.state) : state,
+        state: {
+          ...s.state,
+          ...state,
+        },
       }));
     },
     [setToolAndState]
@@ -102,7 +104,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
       setState: setToolState,
       switchTool,
     }),
-    [toolAndState, modal, osrdConf, t]
+    [setToolState, toolAndState, modal, osrdConf, t]
   );
   const extendedContext = useMemo<ExtendedEditorContextType<CommonToolState>>(
     () => ({

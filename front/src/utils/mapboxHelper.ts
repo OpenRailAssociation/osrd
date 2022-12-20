@@ -282,7 +282,7 @@ export function getNearestPoint(lines: Feature<LineString>[], coord: Coord): Nea
 }
 
 /**
- * Given a Map MouseEvent, findthe nearest feature from the position of the mouse.
+ * Given a Map MouseEvent, find the nearest feature from the position of the mouse.
  * @param e The MouseEvent
  * @param opts Option object where
  *   - layerIds ->  list of layer's id on which we search element
@@ -290,7 +290,7 @@ export function getNearestPoint(lines: Feature<LineString>[], coord: Coord): Nea
  */
 export function getMapMouseEventNearestFeature(
   e: MapLayerMouseEvent,
-  opts?: { layersId?: string[]; tolerance: number; excludeOsm: boolean }
+  opts?: { layersId?: string[]; tolerance?: number; excludeOsm?: boolean }
 ): { feature: MapboxGeoJSONFeature; nearest: number[]; distance: number } | null {
   const layers = opts?.layersId;
   const tolerance = opts?.tolerance || 15;
@@ -311,6 +311,14 @@ export function getMapMouseEventNearestFeature(
   const result = head(
     sortBy(
       features.map((feature) => {
+        // Those features lack a proper "geometry", and have a "_geometry"
+        // instead. This fixes it:
+        feature = {
+          ...feature,
+          // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/no-explicit-any
+          geometry: feature.geometry || (feature as any)._geometry,
+        };
+
         let distance = Infinity;
         let nearestFeaturePoint: Feature<Point> | null = null;
         switch (feature.geometry.type) {
