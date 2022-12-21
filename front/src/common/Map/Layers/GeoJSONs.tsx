@@ -83,45 +83,42 @@ function getTrackSectionLayers(context: LayerContext, prefix: string): AnyLayer[
       'source-layer': MAP_TRACK_SOURCE,
       id: `${prefix}geo/track-service`,
     },
-    // TODO:
-    // Find why those layers make MapLibre break when using the TrackSection
-    // tool (ie. when there are hidden values?):
-    // {
-    //   ...trackNameLayer(context.colors),
-    //   'source-layer': MAP_TRACK_SOURCE,
-    //   filter: ['==', 'type_voie', 'VP'],
-    //   layout: {
-    //     ...trackNameLayer(context.colors).layout,
-    //     'text-field': '{extensions_sncf_track_name}',
-    //     'text-size': 11,
-    //   },
-    //   id: `${prefix}geo/track-vp-names`,
-    // },
-    // {
-    //   ...trackNameLayer(context.colors),
-    //   'source-layer': MAP_TRACK_SOURCE,
-    //   filter: ['!=', 'type_voie', 'VP'],
-    //   layout: {
-    //     ...trackNameLayer(context.colors).layout,
-    //     'text-field': '{extensions_sncf_track_name}',
-    //     'text-size': 10,
-    //   },
-    //   id: `${prefix}geo/track-other-names`,
-    // },
-    // {
-    //   ...lineNumberLayer(context.colors),
-    //   'source-layer': MAP_TRACK_SOURCE,
-    //   layout: {
-    //     ...lineNumberLayer(context.colors).layout,
-    //     'text-field': '{extensions_sncf_line_code}',
-    //   },
-    //   id: `${prefix}geo/track-numbers`,
-    // },
-    // {
-    //   ...lineNameLayer(context.colors),
-    //   'source-layer': MAP_TRACK_SOURCE,
-    //   id: `${prefix}geo/line-names`,
-    // },
+    {
+      ...trackNameLayer(context.colors),
+      'source-layer': MAP_TRACK_SOURCE,
+      filter: ['==', 'type_voie', 'VP'],
+      layout: {
+        ...trackNameLayer(context.colors).layout,
+        'text-field': '{extensions_sncf_track_name}',
+        'text-size': 11,
+      },
+      id: `${prefix}geo/track-vp-names`,
+    },
+    {
+      ...trackNameLayer(context.colors),
+      'source-layer': MAP_TRACK_SOURCE,
+      filter: ['!=', 'type_voie', 'VP'],
+      layout: {
+        ...trackNameLayer(context.colors).layout,
+        'text-field': '{extensions_sncf_track_name}',
+        'text-size': 10,
+      },
+      id: `${prefix}geo/track-other-names`,
+    },
+    {
+      ...lineNumberLayer(context.colors),
+      'source-layer': MAP_TRACK_SOURCE,
+      layout: {
+        ...lineNumberLayer(context.colors).layout,
+        'text-field': '{extensions_sncf_line_code}',
+      },
+      id: `${prefix}geo/track-numbers`,
+    },
+    {
+      ...lineNameLayer(context.colors),
+      'source-layer': MAP_TRACK_SOURCE,
+      id: `${prefix}geo/line-names`,
+    },
   ];
 }
 function getSignalLayers(context: LayerContext, prefix: string): AnyLayer[] {
