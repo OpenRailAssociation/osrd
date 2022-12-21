@@ -1151,7 +1151,7 @@ components:
     Comfort:
       description: Train comfort that will be used for the simulation
       type: string
-      enum: [ "AC", "HEATING", "STANDARD"]
+      enum: ["AC", "HEATING", "STANDARD"]
       default: "STANDARD"
     EffortCurve:
       type: object

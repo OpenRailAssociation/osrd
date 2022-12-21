@@ -12,8 +12,9 @@ license = "LGPL-3.0"
 chashmap = "2.2.2"
 clap = { version = "~4.0.26", features = ["derive", "env"] }
 colored = "2.0.0"
+chrono = { version = "0.4.23", features = ["serde"] }
 derivative = "2.2.0"
-diesel = { version = "1.4.8", features = ["postgres", "uuidv07", "serde_json"] }
+diesel = { version = "1.4.8", features = ["postgres", "uuidv07", "serde_json", "chrono"] }
 json-patch = "0.3.0"
 rand = "0.8.5"
 reqwest = { version = "~0.11.13", features = ["json"] }

@@ -6,6 +6,8 @@ table! {
         version -> Text,
         generated_version -> Nullable<Text>,
         locked -> Bool,
+        created -> Timestamp,
+        modified -> Timestamp,
     }
 }
 
