@@ -30,30 +30,6 @@ export function isSwitchValid(entity: Partial<SwitchEntity>, type: SwitchType): 
   return type.ports.every((port) => !!entity.properties?.ports[port]);
 }
 
-export function injectGeometry(
-  switchEntity: SwitchEntity,
-  switchType: SwitchType,
-  trackSections: Record<string, TrackSectionEntity>
-): Partial<SwitchEntity> {
-  const port = switchEntity.properties.ports[switchType.ports[0]];
-  if (!port) return omit(switchEntity, 'geometry');
-
-  const track = trackSections[port.track];
-  if (!track || !track.geometry.coordinates.length) return omit(switchEntity, 'geometry');
-
-  const coordinates =
-    port.endpoint === 'BEGIN'
-      ? first(track.geometry.coordinates)
-      : last(track.geometry.coordinates);
-  return {
-    ...switchEntity,
-    geometry: {
-      type: 'Point',
-      coordinates: coordinates as [number, number],
-    },
-  };
-}
-
 /**
  * "Flat switch" management:
  */
