@@ -379,6 +379,12 @@ components:
           type: string
           nullable: true
           example: "1"
+        created:
+          type: string
+          format: date
+        modified:
+          type: string
+          format: date
         locked:
           type: boolean
 
