@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useContext, useMemo, useState } from 'react';
+import React, { FC, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { FieldProps } from '@rjsf/core';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -16,6 +16,7 @@ import { ExtendedEditorContextType, OSRDConf } from '../types';
 import {
   CreateEntityOperation,
   DEFAULT_ENDPOINT,
+  EditorEntity,
   ENDPOINTS,
   ENDPOINTS_SET,
   SwitchEntity,
@@ -33,7 +34,6 @@ import {
   flatSwitchToSwitch,
   getNewSwitch,
   getSwitchTypeJSONSchema,
-  injectGeometry,
   isSwitchValid,
   switchToFlatSwitch,
 } from './utils';
@@ -41,8 +41,9 @@ import {
   getSwitchesLayerProps,
   getSwitchesNameLayerProps,
 } from '../../../../common/Map/Layers/Switches';
-import { NEW_ENTITY_ID } from '../../data/utils';
+import { flattenEntity, nestEntity, NEW_ENTITY_ID } from '../../data/utils';
 import EntitySumUp from '../../components/EntitySumUp';
+import { getEntity } from '../../data/api';
 
 const ENDPOINT_OPTIONS = ENDPOINTS.map((s) => ({ value: s, label: s }));
 const ENDPOINT_OPTIONS_DICT = keyBy(ENDPOINT_OPTIONS, 'value');
@@ -57,13 +58,11 @@ export const TrackSectionEndpointSelector: FC<FieldProps> = ({
     EditorContext
   ) as ExtendedEditorContextType<SwitchEditionState>;
   const { t } = useTranslation();
+  const osrdConf = useSelector(({ osrdconf }: { osrdconf: OSRDConf }) => osrdconf);
 
   const portId = name.replace(FLAT_SWITCH_PORTS_PREFIX, '');
   const endpoint = ENDPOINTS_SET.has(formData?.endpoint) ? formData.endpoint : DEFAULT_ENDPOINT;
-  const trackSection =
-    typeof formData?.track === 'string'
-      ? /*entitiesIndex[formData.track]*/ ({} as TrackSectionEntity)
-      : undefined;
+  const [trackSection, setTrackSection] = useState<TrackSectionEntity | null>(null);
 
   const isPicking =
     state.portEditionState.type === 'selection' && state.portEditionState.portId === portId;
@@ -88,26 +87,38 @@ export const TrackSectionEndpointSelector: FC<FieldProps> = ({
           type: 'selection',
           portId,
           hoveredPoint: null,
-          onSelect: (_trackId: string, _position: [number, number]) => {
-            // TODO
-            // const track = entitiesIndex[trackId] as TrackSectionEntity;
-            // const closest = nearestPoint(
-            //   position,
-            //   featureCollection([
-            //     point(first(track.geometry.coordinates) as [number, number]),
-            //     point(last(track.geometry.coordinates) as [number, number]),
-            //   ])
-            // );
-            // setState({ ...state, portEditionState: { type: 'idle' } });
-            // onChange({
-            //   endpoint: closest.properties.featureIndex === 0 ? 'BEGIN' : 'END',
-            //   track: trackId,
-            // });
+          onSelect: (track: TrackSectionEntity, position: [number, number]) => {
+            const closest = nearestPoint(
+              position,
+              featureCollection([
+                point(first(track.geometry.coordinates) as [number, number]),
+                point(last(track.geometry.coordinates) as [number, number]),
+              ])
+            );
+            setState({ ...state, portEditionState: { type: 'idle' } });
+            onChange({
+              endpoint: closest.properties.featureIndex === 0 ? 'BEGIN' : 'END',
+              track: track.properties.id as string,
+            });
           },
         },
       });
     }
   }, [isDisabled, isPicking, onChange, portId, setState, state]);
+
+  useEffect(() => {
+    if (typeof formData?.track === 'string') {
+      getEntity<TrackSectionEntity>(
+        osrdConf.infraID as string,
+        formData.track,
+        'TrackSection'
+      ).then((track) => {
+        setTrackSection(track);
+      });
+    } else {
+      setTrackSection(null);
+    }
+  }, [formData.track, osrdConf.infraID]);
 
   return (
     <div className="mb-4">
@@ -182,7 +193,6 @@ export const SwitchEditionLeftPanel: FC = () => {
   const baseSchema = editorState.editorSchema.find((e) => e.objType === 'Switch')?.schema;
 
   // Retrieve proper data
-  const tracksIndex = {} /*editorState.entitiesIndex*/ as Record<string, TrackSectionEntity>;
   const { switchTypes } = useSelector(({ osrdconf }: { osrdconf: OSRDConf }) => osrdconf);
   const switchTypesDict = useMemo(() => keyBy(switchTypes, 'id'), [switchTypes]);
   const switchTypeOptions = useMemo(
@@ -241,11 +251,7 @@ export const SwitchEditionLeftPanel: FC = () => {
           SchemaField: CustomSchemaField,
         }}
         onSubmit={async (flatSwitch) => {
-          const entityToSave = injectGeometry(
-            flatSwitchToSwitch(switchType, flatSwitch as FlatSwitchEntity),
-            switchType,
-            tracksIndex
-          ) as SwitchEntity;
+          const entityToSave = flatSwitchToSwitch(switchType, flatSwitch as FlatSwitchEntity);
 
           const res: any = await dispatch(
             save(
@@ -253,8 +259,7 @@ export const SwitchEditionLeftPanel: FC = () => {
                 ? {
                     update: [
                       {
-                        // TODO
-                        source: entityToSave, // editorState.entitiesIndex[entityToSave.properties.id],
+                        source: state.initialEntity as SwitchEntity,
                         target: entityToSave,
                       },
                     ],
@@ -271,14 +276,14 @@ export const SwitchEditionLeftPanel: FC = () => {
               entity: { ...entityToSave, properties: { ...entityToSave.properties, id: `${id}` } },
             });
         }}
-        onChange={(flatSwitch) => {
+        onChange={(entity) => {
+          const flatSwitch = entity as FlatSwitchEntity;
           setState({
             ...state,
-            entity: injectGeometry(
-              flatSwitchToSwitch(switchType, flatSwitch as FlatSwitchEntity),
-              switchType,
-              tracksIndex
-            ),
+            entity: {
+              ...flatSwitchToSwitch(switchType, flatSwitch),
+              geometry: flatSwitch.geometry,
+            },
           });
         }}
       >
@@ -303,32 +308,62 @@ export const SwitchEditionLeftPanel: FC = () => {
 export const SwitchEditionLayers: FC = () => {
   const { t } = useTranslation();
   const [showPopup, setShowPopup] = useState(true);
+  const osrdConf = useSelector(({ osrdconf }: { osrdconf: OSRDConf }) => osrdconf);
   const {
     state: { entity, hovered, portEditionState, mousePosition },
     editorState: { editorLayers },
   } = useContext(EditorContext) as ExtendedEditorContextType<SwitchEditionState>;
+  const { switchTypes } = useSelector(({ osrdconf }: { osrdconf: OSRDConf }) => osrdconf);
+  const switchTypesDict = useMemo(() => keyBy(switchTypes, 'id'), [switchTypes]);
+  const switchType = useMemo(
+    () => (entity.properties?.switch_type ? switchTypesDict[entity.properties.switch_type] : null),
+    [entity.properties?.switch_type, switchTypesDict]
+  );
   const { mapStyle } = useSelector((s: { map: { mapStyle: string } }) => s.map) as {
     mapStyle: string;
   };
-  const layerProps = getSwitchesLayerProps({
-    colors: colors[mapStyle],
-  });
-  const nameLayerProps = getSwitchesNameLayerProps({
-    colors: colors[mapStyle],
-  });
-  // TODO
-  const hoveredTrack =
-    hovered && hovered.objType === 'TrackSection' && false
-      ? /*entitiesIndex[hovered.properties.id]*/ ({} as TrackSectionEntity)
-      : null;
+  const layerProps = useMemo(
+    () =>
+      getSwitchesLayerProps({
+        colors: colors[mapStyle],
+      }),
+    [mapStyle]
+  );
+  const nameLayerProps = useMemo(
+    () =>
+      getSwitchesNameLayerProps({
+        colors: colors[mapStyle],
+      }),
+    [mapStyle]
+  );
+  const hoveredTrack = useMemo(
+    () =>
+      hovered?.type === 'TrackSection'
+        ? (nestEntity(hovered.renderedEntity as EditorEntity) as TrackSectionEntity)
+        : null,
+    [hovered?.renderedEntity, hovered?.type]
+  );
 
   const closest =
-    portEditionState.type === 'selection' && hoveredTrack && mousePosition
+    portEditionState.type === 'selection' &&
+    hovered?.renderedEntity &&
+    hovered.type === 'TrackSection' &&
+    mousePosition
       ? nearestPoint(
           mousePosition,
           featureCollection([
-            point(first(hoveredTrack.geometry.coordinates) as [number, number]),
-            point(last(hoveredTrack.geometry.coordinates) as [number, number]),
+            point(
+              first((hovered.renderedEntity as TrackSectionEntity).geometry.coordinates) as [
+                number,
+                number
+              ]
+            ),
+            point(
+              last((hovered.renderedEntity as TrackSectionEntity).geometry.coordinates) as [
+                number,
+                number
+              ]
+            ),
           ])
         )
       : null;
@@ -337,6 +372,43 @@ export const SwitchEditionLayers: FC = () => {
         name: closest.properties.featureIndex === 0 ? 'BEGIN' : 'END',
       })
     : null;
+  const [geometryState, setGeometryState] = useState<
+    { type: 'loading'; entity?: undefined } | { type: 'ready'; entity?: SwitchEntity }
+  >({ type: 'ready' });
+
+  useEffect(() => {
+    const port =
+      entity.properties?.ports && switchType
+        ? entity.properties.ports[switchType.ports[0]]
+        : undefined;
+
+    if (!port?.track) {
+      setGeometryState({ type: 'ready' });
+    } else {
+      setGeometryState({ type: 'loading' });
+      getEntity<TrackSectionEntity>(osrdConf.infraID as string, port.track, 'TrackSection').then(
+        (track) => {
+          if (!track || !track.geometry.coordinates.length) setGeometryState({ type: 'ready' });
+
+          const coordinates =
+            port.endpoint === 'BEGIN'
+              ? first(track.geometry.coordinates)
+              : last(track.geometry.coordinates);
+          setGeometryState({
+            type: 'ready',
+            entity: {
+              ...(entity as SwitchEntity),
+              type: 'Feature',
+              geometry: {
+                type: 'Point',
+                coordinates: coordinates as [number, number],
+              },
+            },
+          });
+        }
+      );
+    }
+  }, [entity?.properties?.ports, osrdConf.infraID]);
 
   return (
     <>
@@ -344,21 +416,23 @@ export const SwitchEditionLayers: FC = () => {
       <GeoJSONs
         colors={colors[mapStyle]}
         hidden={entity?.properties?.id ? [entity.properties.id] : undefined}
-        selection={entity?.properties?.id ? [entity.properties.id] : undefined}
         layers={editorLayers}
       />
 
       {/* Edited switch */}
-      <Source type="geojson" data={(entity as SwitchEntity) || featureCollection([])}>
+      <Source
+        type="geojson"
+        data={geometryState.entity ? flattenEntity(geometryState.entity) : featureCollection([])}
+      >
         <Layer {...layerProps} />
         <Layer {...nameLayerProps} />
       </Source>
-      {showPopup && entity && entity.geometry?.type === 'Point' && (
+      {showPopup && geometryState.entity && (
         <Popup
           className="popup py-2"
           anchor="bottom"
-          longitude={entity.geometry.coordinates[0]}
-          latitude={entity.geometry.coordinates[1]}
+          longitude={geometryState.entity.geometry.coordinates[0]}
+          latitude={geometryState.entity.geometry.coordinates[1]}
           onClose={() => setShowPopup(false)}
         >
           <EntitySumUp entity={entity as SwitchEntity} status="edited" />
