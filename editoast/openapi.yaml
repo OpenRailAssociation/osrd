@@ -321,7 +321,7 @@ paths:
     post:
       tags:
         - infra
-      summary: ""
+      summary: "Retrieve a list of specific objects in railjson format"
       parameters:
         - in: path
           name: id
@@ -379,6 +379,8 @@ components:
           type: string
           nullable: true
           example: "1"
+        locked:
+          type: boolean
 
     ObjectType:
       type: string
