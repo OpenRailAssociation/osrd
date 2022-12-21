@@ -1,21 +1,24 @@
-import React, { FC, useContext, useMemo, useState } from 'react';
+import mapboxgl from 'mapbox-gl';
+import React, { FC, useContext, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Popup } from 'react-map-gl';
 import { useTranslation } from 'react-i18next';
 import { featureCollection } from '@turf/helpers';
 import { merge, isEqual } from 'lodash';
+import along from '@turf/along';
 
 import GeoJSONs, { EditorSource, SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
 import colors from 'common/Map/Consts/colors';
 import { save } from 'reducers/editor';
-import { NULL_GEOMETRY, CreateEntityOperation, EditorEntity } from 'types';
+import { NULL_GEOMETRY, CreateEntityOperation, EditorEntity, TrackSectionEntity } from 'types';
 import { SIGNALS_TO_SYMBOLS } from 'common/Map/Consts/SignalsNames';
 import { PointEditionState } from './types';
 import EditorForm from '../../components/EditorForm';
 import { cleanSymbolType, flattenEntity, NEW_ENTITY_ID } from '../../data/utils';
-import { EditorContextType, ExtendedEditorContextType } from '../types';
+import { EditorContextType, ExtendedEditorContextType, OSRDConf } from '../types';
 import EditorContext from '../../context';
 import EntitySumUp from '../../components/EntitySumUp';
+import { getEntity } from '../../data/api';
 
 export const POINT_LAYER_ID = 'pointEditionTool/new-entity';
 
@@ -25,9 +28,44 @@ export const POINT_LAYER_ID = 'pointEditionTool/new-entity';
 export const PointEditionLeftPanel: FC = <Entity extends EditorEntity>() => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
+  const osrdConf = useSelector(({ osrdconf }: { osrdconf: OSRDConf }) => osrdconf);
   const { state, setState } = useContext(EditorContext) as ExtendedEditorContextType<
     PointEditionState<Entity>
   >;
+
+  const [trackState, setTrackState] = useState<
+    | { type: 'idle'; id?: undefined; track?: undefined }
+    | { type: 'isLoading'; id: string; track?: undefined }
+    | { type: 'ready'; id: string; track: TrackSectionEntity }
+  >({ type: 'idle' });
+
+  useEffect(() => {
+    const firstLoading = trackState.type === 'idle';
+    const trackId = state.entity.properties.track as string | undefined;
+
+    if (trackId && trackState.id !== trackId) {
+      setTrackState({ type: 'isLoading', id: trackId });
+      getEntity<TrackSectionEntity>(osrdConf.infraID as string, trackId, 'TrackSection').then(
+        (track) => {
+          setTrackState({ type: 'ready', id: trackId, track });
+
+          if (!firstLoading) {
+            const { position } = state.entity.properties;
+            const point = along(track, position, { units: 'meters' });
+
+            setState({ ...state, entity: { ...state.entity, geometry: point.geometry } });
+          }
+        }
+      );
+    }
+  }, [
+    osrdConf.infraID,
+    setState,
+    state,
+    state.entity.properties.track,
+    trackState.id,
+    trackState.type,
+  ]);
 
   return (
     <EditorForm
@@ -71,14 +109,14 @@ export const PointEditionLeftPanel: FC = <Entity extends EditorEntity>() => {
         const trackId = entity.properties?.track;
         if (
           typeof trackId === 'string' &&
+          trackId === trackState.id &&
+          trackState.type === 'ready' &&
           typeof newPosition === 'number' &&
           typeof oldPosition === 'number' &&
           newPosition !== oldPosition
         ) {
-          // TODO
-          // const line = editorState.entitiesIndex[trackId];
-          // const point = along(line as Feature<LineString>, newPosition, { units: 'meters' });
-          // additionalUpdate.geometry = point.geometry;
+          const point = along(trackState.track, newPosition, { units: 'meters' });
+          additionalUpdate.geometry = point.geometry;
         }
 
         setState({ ...state, entity: { ...(entity as Entity), ...additionalUpdate } });
@@ -98,6 +136,7 @@ export const PointEditionLeftPanel: FC = <Entity extends EditorEntity>() => {
 };
 
 export const BasePointEditionLayers: FC<{
+  map: mapboxgl.Map;
   mergeEntityWithNearestPoint?: (
     entity: EditorEntity,
     nearestPoint: NonNullable<PointEditionState<EditorEntity>['nearestPoint']>
@@ -152,7 +191,6 @@ export const BasePointEditionLayers: FC<{
           sourceLayer: 'geo',
           isEmphasized: true,
           showIGNBDORTHO: false,
-          sourceTable: objType,
         },
         `editor/${objType}/`
       ).map((layer) =>
@@ -170,7 +208,6 @@ export const BasePointEditionLayers: FC<{
       <GeoJSONs
         colors={colors[mapStyle]}
         hidden={entity.properties.id !== NEW_ENTITY_ID ? [entity.properties.id] : undefined}
-        selection={[entity.properties.id]}
         layers={editorLayers}
       />
 
@@ -191,8 +228,9 @@ export const BasePointEditionLayers: FC<{
   );
 };
 
-export const SignalEditionLayers: FC = () => (
+export const SignalEditionLayers: FC<{ map: mapboxgl.Map }> = ({ map }) => (
   <BasePointEditionLayers
+    map={map}
     interactiveLayerIDRegex={/signal-point$/}
     mergeEntityWithNearestPoint={(entity, nearestPoint) => ({
       ...entity,

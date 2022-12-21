@@ -1,7 +1,7 @@
-import { Feature, Position } from 'geojson';
+import { Position } from 'geojson';
 import { JSONSchema7 } from 'json-schema';
 import { isArray, isNil, isObject, uniq } from 'lodash';
-import maplibregl from 'maplibre-gl';
+import bearing from '@turf/bearing';
 
 import { EditorEntity, EditorSchema } from '../../../types';
 import {
@@ -78,9 +78,7 @@ export function getSymbolsList(editorData: EditorEntity[]): SignalType[] {
 
 export function getAngle(p1: Position | undefined, p2: Position | undefined): number {
   if (!Array.isArray(p1) || !Array.isArray(p2)) return 0;
-  const [x1, y1] = p1;
-  const [x2, y2] = p2;
-  return (Math.atan((x2 - x1) / (y2 - y1)) * 180) / Math.PI;
+  return bearing(p1, p2);
 }
 
 /**
