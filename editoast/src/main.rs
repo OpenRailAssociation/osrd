@@ -70,6 +70,7 @@ pub fn create_server(
         .merge(("address", runserver_config.address.clone()))
         .merge(("databases.postgres.url", pg_config.url()))
         .merge(("databases.postgres.pool_size", pg_config.pool_size))
+        .merge(("databases.postgres.timeout",10))
         .merge(("limits.json", 250 * 1024 * 1024)) // Set limits to 250MiB
     ;
 
