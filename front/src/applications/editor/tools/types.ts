@@ -6,7 +6,7 @@ import { TFunction } from 'i18next';
 import { reduce } from 'lodash';
 
 import { EditorEntity, EditorSchema, SwitchType, MapLayerMouseEvent } from '../../../types';
-import { Feature } from "geojson";
+import { Feature } from 'geojson';
 
 export interface EditorState {
   editorSchema: EditorSchema;
@@ -120,7 +120,7 @@ export type MakeOptional<Type, Key extends keyof Type> = Omit<Type, Key> & Parti
 
 export interface CommonToolState {
   mousePosition: [number, number] | null;
-  hovered: { type: EditoastType; id: string, renderedEntity: Feature } | null;
+  hovered: { type: EditoastType; id: string; renderedEntity: Feature } | null;
 }
 
 export const DEFAULT_COMMON_TOOL_STATE: CommonToolState = {
@@ -168,7 +168,7 @@ export interface Tool<S> {
 
   // Display:
   getInteractiveLayers?: (context: ReadOnlyEditorContextType<S>) => string[];
-  layersComponent?: ComponentType;
+  layersComponent?: ComponentType<{ map: mapboxgl.Map }>;
   leftPanelComponent?: ComponentType;
   messagesComponent?: ComponentType;
 }

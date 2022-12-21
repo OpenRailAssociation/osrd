@@ -4,6 +4,7 @@ import { Feature, LineString, Point } from 'geojson';
 import { BiReset, AiOutlinePlus } from 'react-icons/all';
 import { IconType } from 'react-icons';
 import nearestPointOnLine from '@turf/nearest-point-on-line';
+import mapboxgl from "mapbox-gl";
 
 import { DEFAULT_COMMON_TOOL_STATE, LayerType, Tool } from '../types';
 import { getNearestPoint } from '../../../../utils/mapboxHelper';
@@ -17,7 +18,7 @@ interface PointEditionToolParams<T extends EditorPoint> {
   layer: LayerType;
   icon: IconType;
   getNewEntity: (point?: [number, number]) => T;
-  layersComponent: ComponentType;
+  layersComponent: ComponentType<{ map: mapboxgl.Map }>;
   requiresAngle?: boolean;
 }
 
@@ -111,25 +112,29 @@ function getPointEditionTool<T extends EditorPoint>({
         });
       }
     },
-    onHover(e, { setState, state }) {
+    onMove(e, { setState, state }) {
       const { entity } = state;
-      const hoveredTarget = (e.features || []).find((f) => f.layer.id === POINT_LAYER_ID);
-      const hoveredTracks = (e.features || []).flatMap((f) => {
-        if (f.layer.id !== 'editor/geo/track-main') return [];
-        const trackId = f.properties?.id as string;
-        const { point, target: map } = e;
-        const TOLERANCE = 20;
-        const results = map.queryRenderedFeatures(
-          [
-            [point.x - TOLERANCE / 2, point.y - TOLERANCE / 2],
-            [point.x + TOLERANCE / 2, point.y + TOLERANCE / 2],
-          ],
-          {
-            filter: ['in', 'id', trackId],
-          }
-        );
-        return results.slice(0, 1);
-      }) as Feature<LineString>[];
+      const { point, target: map } = e;
+      const TOLERANCE = 20;
+
+      const hoveredTracks = map.queryRenderedFeatures(
+        [
+          [point.x - TOLERANCE / 2, point.y - TOLERANCE / 2],
+          [point.x + TOLERANCE / 2, point.y + TOLERANCE / 2],
+        ],
+        {
+          layers: ['editor/geo/track-main'],
+        }
+      ) as Feature<LineString>[];
+      const hoveredTarget = map.queryRenderedFeatures(
+        [
+          [point.x - TOLERANCE / 2, point.y - TOLERANCE / 2],
+          [point.x + TOLERANCE / 2, point.y + TOLERANCE / 2],
+        ],
+        {
+          layers: [POINT_LAYER_ID],
+        }
+      );
 
       if (!entity.geometry || isEqual(entity.geometry, NULL_GEOMETRY)) {
         if (hoveredTracks.length) {
@@ -173,8 +178,8 @@ function getPointEditionTool<T extends EditorPoint>({
       getEntity(infraID as string, trackId, 'TrackSection').then((track) => {
         const dbPosition = entity.properties.position;
         const computedPosition = nearestPointOnLine(
-          track as Feature<LineString>,
-          entity as Feature<Point>,
+          (track as Feature<LineString>).geometry,
+          (entity as Feature<Point>).geometry,
           { units: 'meters' }
         ).properties?.location;
 
