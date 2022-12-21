@@ -1,5 +1,6 @@
 package fr.sncf.osrd.infra.implementation.reservation;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.graph.ImmutableNetwork;
@@ -17,6 +18,7 @@ public class ReservationInfraImpl extends DiTrackInfraImpl implements Reservatio
     private final ImmutableNetwork<DiDetector, ReservationRoute> infraRouteGraph;
     private final ImmutableMap<String, ReservationRoute> reservationRouteMap;
     private final ImmutableMultimap<DiTrackEdge, RouteEntry> routesOnEdges;
+    private final ImmutableList<DetectionSection> detectionSections;
 
     /** Constructor */
     public ReservationInfraImpl(
@@ -24,17 +26,25 @@ public class ReservationInfraImpl extends DiTrackInfraImpl implements Reservatio
             ImmutableMap<DiDetector, DetectionSection> sectionMap,
             ImmutableNetwork<DiDetector, ReservationRoute> infraRouteGraph,
             ImmutableMap<String, ReservationRoute> reservationRouteMap,
-            ImmutableMultimap<DiTrackEdge, RouteEntry> routesOnEdges) {
+            ImmutableMultimap<DiTrackEdge, RouteEntry> routesOnEdges,
+            ImmutableList<DetectionSection> detectionSections
+    ) {
         super(infra, infra.getDiTrackGraph());
         this.sectionMap = sectionMap;
         this.infraRouteGraph = infraRouteGraph;
         this.reservationRouteMap = reservationRouteMap;
         this.routesOnEdges = routesOnEdges;
+        this.detectionSections = detectionSections;
     }
 
     @Override
     public ImmutableMap<DiDetector, DetectionSection> getSectionMap() {
         return sectionMap;
+    }
+
+    @Override
+    public ImmutableList<DetectionSection> getDetectionSections() {
+        return detectionSections;
     }
 
     @Override

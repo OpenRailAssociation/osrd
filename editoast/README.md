@@ -17,7 +17,7 @@ It will apply modification and update generated data such as object geometry.
 ## Steps
 
 ```sh
-# Install nightly rust toolchain
+# We recommend to develop using nightly rust toolchain
 $ rustup toolchain install nightly
 # Set nightly as default for the project
 $ rustup override set nightly
@@ -30,7 +30,6 @@ $ cargo run -- runserver
 
 ```sh
 # limit threads to avoid test errors with database connections
-export RUST_TEST_THREADS=2
 cargo test
 ```
 

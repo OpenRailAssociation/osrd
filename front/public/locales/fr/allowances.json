@@ -15,14 +15,14 @@
   "engineeringAllowances": "Marges de construction",
   "margedTrainSchedule": "Avec marges",
   "allowanceByInterval": "Marges par intervalles",
-  "ecoAllowanceByInterval": "Marches Economiques par intervalles",
+  "ecoAllowanceByInterval": "Marches économiques par intervalles",
   "allowanceModified": {
     "standardAllowanceAdd": "Marge de régularité ajoutée / modifiée",
     "standardAllowanceDel": "Marge de régularité supprimée",
     "anyAllowanceModified": "Marge modifiée",
     "anyAllowanceModificationError": "Erreur à la modification de marge"
   },
-  "specificValuesOnIntervals" : "Valeurs spécifiques sur intervales",
+  "specificValuesOnIntervals" : "Valeurs spécifiques sur intervalles",
   "allowanceGlobalType": {
     "standard": "Standard",
     "engineering": "Construction"
@@ -39,6 +39,8 @@
     "percentage": "Pourcentage",
     "time_per_distance": "Distance"
   },
+  "gridMarginBefore": "Marge grille avant",
+  "gridMarginAfter": "Marge grille après",
   "op": "pr",
   "to": "à",
   "trainSchedules": "Type de marche"

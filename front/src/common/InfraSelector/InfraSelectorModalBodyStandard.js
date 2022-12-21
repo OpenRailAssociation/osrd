@@ -53,9 +53,7 @@ export default function InfraSelectorModalBodyStandard(props) {
             key={nextId()}
           >
             <div className="infraslist-item-choice-main">
-              <span className="infraslist-item-choice-name">
-                {infra.name.replace(' (lock)', '')}
-              </span>
+              <span className="infraslist-item-choice-name">{infra.name}</span>
               {infra.locked ? (
                 <span className="infra-lock">
                   <small>{t('infraManagement:locked')}</small>

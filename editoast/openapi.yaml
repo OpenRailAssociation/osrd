@@ -167,11 +167,38 @@ paths:
             minimum: 10
           description: The number of item per page
         - in: query
-          name: exclude_warnings
+          name: error_type
           schema:
-            type: boolean
-            default: false
-          description: Whether the response should include warnings or not
+            type: string
+            enum:
+              - invalid_reference
+              - out_of_range
+              - empty_path
+              - path_does_not_match_endpoints
+              - unknown_port_name
+              - invalid_switch_ports
+              - empty_object
+              - object_out_of_path
+              - missing_route
+              - unused_port
+              - duplicated_group
+              - no_buffer_stop
+              - path_is_not_continuous
+              - overlapping_switches
+              - overlapping_track_links
+          description: The type of error to filter on
+        - in: query
+          name: object_id
+          schema:
+            type: string
+          description: errors and warnings that only part of a given object
+        - in: query
+          name: level
+          schema:
+            type: string
+            enum: [errors, warnings, all]
+            default: all
+          description: Whether the response should include errors or warnings
       responses:
         200:
           description: A paginated list of errors

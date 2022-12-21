@@ -58,6 +58,7 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
         Commands::ImportRailjson(args) => import_railjson(args, pg_config),
     }
 }
+/// Create a rocket server given the config
 pub fn create_server(
     runserver_config: &RunserverArgs,
     pg_config: &PostgresConfig,
@@ -68,6 +69,7 @@ pub fn create_server(
         .merge(("port", runserver_config.port))
         .merge(("address", runserver_config.address.clone()))
         .merge(("databases.postgres.url", pg_config.url()))
+        .merge(("databases.postgres.pool_size", pg_config.pool_size))
         .merge(("limits.json", 250 * 1024 * 1024)) // Set limits to 250MiB
     ;
 
@@ -98,6 +100,7 @@ pub fn create_server(
     rocket
 }
 
+/// Create and run the server
 async fn runserver(
     args: RunserverArgs,
     pg_config: PostgresConfig,

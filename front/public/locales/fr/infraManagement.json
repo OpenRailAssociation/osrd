@@ -21,8 +21,8 @@
     "unableToRetrieveInfraList": "Récupération liste d'infra impossible",
     "noEmptyName": "Veuillez renseigner un nom"
   },
-  "goToEditionMode": "Édition",
-  "goToStandardMode": "Sélection",
+  "goToEditionMode": "Éditer",
+  "goToStandardMode": "Retour à la sélection",
   "infraChoice": "Infrastructures",
   "infraManagement": "Gestion des infrastructures",
   "infraName": "Nom de l'infrastructure",

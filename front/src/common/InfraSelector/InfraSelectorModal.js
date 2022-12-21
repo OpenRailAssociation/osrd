@@ -4,12 +4,12 @@ import { useTranslation } from 'react-i18next';
 import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
-import icon from 'assets/pictures/tracks.png';
-import iconEdition from 'assets/pictures/tracks_edit.png';
+import icon from 'assets/pictures/components/tracks.svg';
+import iconEdition from 'assets/pictures/components/tracks_edit.svg';
 import { get } from 'common/requests';
 import { useDebounce } from 'utils/helpers';
 import Loader from 'common/Loader';
-import { MdClose, MdEditNote, MdList } from 'react-icons/md';
+import { MdEditNote, MdList } from 'react-icons/md';
 import InfraSelectorModalBodyEdition from './InfraSelectorModalBodyEdition';
 import InfraSelectorModalBodyStandard from './InfraSelectorModalBodyStandard';
 import { INFRA_URL } from './Consts';
@@ -65,10 +65,34 @@ export default function InfraSelectorModal(props) {
       <ModalHeaderSNCF>
         <div className="d-flex align-items-center h1 w-100">
           <img src={editionMode ? iconEdition : icon} alt="infra schema" width="32px" />
-          <span className="w-100 text-center">
-            {editionMode ? t('infraManagement:infraManagement') : t('infraManagement:infraChoice')}
-          </span>
+          <div className="w-100 text-center d-flex">
+            <span className="flex-grow-1">
+              {editionMode
+                ? t('infraManagement:infraManagement')
+                : t('infraManagement:infraChoice')}
+            </span>
+            <button
+              className="infra-switch-mode"
+              type="button"
+              onClick={() => setEditionMode(!editionMode)}
+            >
+              {editionMode ? (
+                <>
+                  <MdList />
+                  <span className="ml-1">{t('infraManagement:goToStandardMode')}</span>
+                </>
+              ) : (
+                <>
+                  <MdEditNote />
+                  <span className="ml-1">{t('infraManagement:goToEditionMode')}</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
+        <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
       </ModalHeaderSNCF>
       <ModalBodySNCF>
         {isFetching ? (
@@ -90,37 +114,6 @@ export default function InfraSelectorModal(props) {
             filter={filter}
           />
         )}
-        <div className="row mt-3">
-          <div className="col-md-6">
-            <button
-              className="btn btn-secondary btn-sm btn-block"
-              type="button"
-              data-dismiss="modal"
-            >
-              <MdClose />
-              <span className="ml-2">{t('translation:common.close')}</span>
-            </button>
-          </div>
-          <div className="col-md-6">
-            <button
-              className="btn btn-primary btn-sm btn-block "
-              type="button"
-              onClick={() => setEditionMode(!editionMode)}
-            >
-              {editionMode ? (
-                <>
-                  <MdList />
-                  <span className="ml-2">{t('infraManagement:goToStandardMode')}</span>
-                </>
-              ) : (
-                <>
-                  <MdEditNote />
-                  <span className="ml-2">{t('infraManagement:goToEditionMode')}</span>
-                </>
-              )}
-            </button>
-          </div>
-        </div>
       </ModalBodySNCF>
     </ModalSNCF>
   );

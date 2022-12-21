@@ -1,45 +1,50 @@
-import './Home.css';
+import './Home.scss';
 
 import Card from 'common/BootstrapSNCF/CardSNCF/CardSNCF';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import React from 'react';
-import cartoPic from 'assets/pictures/carto.png';
-import editorPic from 'assets/pictures/editor.png';
+import mapImg from 'assets/pictures/home/map.svg';
+import editorImg from 'assets/pictures/home/editor.svg';
+import stdcmImg from 'assets/pictures/home/stdcm.svg';
+import timetableImg from 'assets/pictures/home/timetable.svg';
+import customgetImg from 'assets/pictures/home/customget.svg';
+import opendataImg from 'assets/pictures/home/opendata.svg';
 import logo from 'assets/logo_osrd_seul_blanc.svg';
 import osrdLogo from 'assets/pictures/osrd.png';
-import timetablePic from 'assets/pictures/timetable.png';
-import customget from 'assets/pictures/customget.png';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
 export default function Home() {
   const user = useSelector((state) => state.user);
-  const { t } = useTranslation();
+  const { t } = useTranslation('home');
 
   return (
     <>
       <NavBarSNCF appName="OSRD" username={user.username} logo={logo} />
       <main className="mastcontainer mastcontainer-no-mastnav">
-        <div className="mt-3 d-flex align-items-center justify-content-center">
-          <img src={osrdLogo} alt="OSRD logo" width="128px" />
-          <h1>Open-Source Railway Designer</h1>
+        <div className="application-title">
+          <img src={osrdLogo} alt="OSRD logo" />
+          <h1>Open Source Railway Designer</h1>
         </div>
         <div className="cardscontainer">
           <div className="row">
-            <div className="col-sm-6 col-md-3 col-lg-2 mb-2">
-              <Card img={timetablePic} title={t('Home.timetable')} link="/osrd" />
+            <div className="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
+              <Card img={timetableImg} title={t('timetable')} link="/osrd" />
             </div>
-            <div className="col-sm-6 col-md-3 col-lg-2 mb-2">
-              <Card img={cartoPic} title={t('Home.map')} link="/carto" />
+            <div className="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
+              <Card img={mapImg} title={t('map')} link="/carto" />
             </div>
-            <div className="col-sm-6 col-md-3 col-lg-2 mb-2">
-              <Card img={editorPic} title={t('Home.editor')} link="/editor" />
+            <div className="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
+              <Card img={editorImg} title={t('editor')} link="/editor" />
             </div>
-            <div className="col-sm-6 col-md-3 col-lg-2 mb-2">
-              <Card img={timetablePic} title={t('Home.stdcm')} link="/stdcm" />
+            <div className="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
+              <Card img={stdcmImg} title={t('stdcm')} link="/stdcm" />
             </div>
-            <div className="col-sm-6 col-md-3 col-lg-2 mb-2">
-              <Card img={customget} title={t('Home.customget')} link="/customget" />
+            <div className="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
+              <Card img={opendataImg} title={t('opendataimport')} link="/opendata" />
+            </div>
+            <div className="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
+              <Card img={customgetImg} title={t('customget')} link="/customget" />
             </div>
           </div>
         </div>

@@ -1,7 +1,10 @@
+use std::collections::HashMap;
+
 use super::Direction;
 use super::OSRDIdentified;
 
 use super::utils::Identifier;
+use super::utils::NonBlankString;
 use super::OSRDTyped;
 use super::ObjectType;
 use super::Side;
@@ -28,8 +31,16 @@ pub struct Signal {
     #[derivative(Default(value = "400."))]
     pub sight_distance: f64,
     pub linked_detector: Option<String>,
+    pub logical_signals: Option<Vec<LogicalSignal>>,
     #[serde(default)]
     pub extensions: SignalExtensions,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
+pub struct LogicalSignal {
+    pub signaling_system: String,
+    pub next_signaling_systems: Vec<String>,
+    pub settings: HashMap<NonBlankString, NonBlankString>,
 }
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq)]

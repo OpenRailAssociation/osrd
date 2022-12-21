@@ -1,4 +1,4 @@
-FROM rustlang/rust:nightly as chef
+FROM rust:latest as chef
 WORKDIR /app
 RUN cargo install cargo-chef
 
