@@ -99,6 +99,24 @@ export async function getEditorData(
   );
 }
 
+type EditoastEntity<T extends EditorEntity = EditorEntity> = {
+  railjson: T['properties'];
+  geographic: T['geometry'];
+  schematic: T['geometry'];
+};
+
+function editoastToEditorEntity<T extends EditorEntity = EditorEntity>(
+  entity: EditoastEntity,
+  type: T['objType']
+): T {
+  return {
+    type: 'Feature',
+    properties: entity.railjson,
+    objType: type,
+    geometry: entity.geographic,
+  } as T;
+}
+
 /**
  * Returns an entity from editoast:
  */
@@ -107,14 +125,14 @@ export async function getEntity<T extends EditorEntity = EditorEntity>(
   id: string,
   type: EditoastType
 ): Promise<T> {
-  const res = await post<
-    string[],
-    { railjson: T['properties']; geographic: T['geometry']; schematic: T['geometry'] }[]
-  >(`/editoast/infra/${infra}/objects/${type}/`, [id]);
+  const res = await post<string[], EditoastEntity<T>[]>(
+    `/editoast/infra/${infra}/objects/${type}/`,
+    [id]
+  );
 
   if (res.length < 1) throw new Error(`getEntity: No entity found for type ${type} and id ${id}`);
 
-  return { properties: res[0].railjson, objType: type, geometry: res[0].geographic } as T;
+  return editoastToEditorEntity<T>(res[0], type);
 }
 export async function getEntities<T extends EditorEntity = EditorEntity>(
   infra: number | string,
@@ -122,15 +140,15 @@ export async function getEntities<T extends EditorEntity = EditorEntity>(
   type: EditoastType
 ): Promise<Record<string, T>> {
   const uniqIDs = uniq(ids);
-  const res = await post<
-    string[],
-    { railjson: T['properties']; geographic: T['geometry']; schematic: T['geometry'] }[]
-  >(`/editoast/infra/${infra}/objects/${type}/`, uniqIDs);
+  const res = await post<string[], EditoastEntity[]>(
+    `/editoast/infra/${infra}/objects/${type}/`,
+    uniqIDs
+  );
 
   return res.reduce(
     (iter, entry, i) => ({
       ...iter,
-      [uniqIDs[i]]: { properties: entry.railjson, objType: type, geometry: entry.geographic } as T,
+      [uniqIDs[i]]: editoastToEditorEntity<T>(entry, type),
     }),
     {}
   );
