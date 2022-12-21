@@ -9,6 +9,7 @@ from tests.get_timetable import get_timetable
 
 def pathfinding_with_payload(base_url, payload, infra_id, accept_400):
     payload["infra"] = infra_id
+    payload["rolling_stocks"] = []
     r = requests.post(base_url + "pathfinding/", json=payload)
     if r.status_code // 100 != 2:
         if r.status_code // 100 == 4 and accept_400:

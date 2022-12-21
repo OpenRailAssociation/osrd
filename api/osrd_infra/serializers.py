@@ -134,8 +134,7 @@ class PathInputSerializer(Serializer):
     infra = serializers.PrimaryKeyRelatedField(queryset=Infra.objects.all())
     steps = serializers.ListField(min_length=2, child=StepInputSerializer())
     rolling_stocks = serializers.ListField(
-        child=serializers.PrimaryKeyRelatedField(queryset=RollingStock.objects.all()),
-        required=False,
+        child=serializers.PrimaryKeyRelatedField(queryset=RollingStock.objects.all())
     )
 
 

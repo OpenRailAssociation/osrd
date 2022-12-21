@@ -43,6 +43,7 @@ def get_schedule_longest_occupancy(base_url, schedule_id):
 
 def _run_pathfinding(base_url, infra_id, start, stop):
     path_payload = {
+        "rolling_stocks": [],
         "infra": infra_id,
         "steps": [
             {

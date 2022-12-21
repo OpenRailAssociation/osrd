@@ -10,6 +10,7 @@ def get_track_section(base_url, infra_id):
 
 def run_pathfinding(base_url, infra_id):
     path_payload = {
+        "rolling_stocks": [102],
         "infra": infra_id,
         "steps": [
             {

@@ -388,7 +388,7 @@ def make_payload_path(infra: int, path: List[Tuple[str, float]]) -> Dict:
     :param path: List of steps
     :return: Dict
     """
-    path_payload = {"infra": infra, "name": "foo", "steps": [convert_stop(stop) for stop in path]}
+    path_payload = {"rolling_stocks": [102], "infra": infra, "name": "foo", "steps": [convert_stop(stop) for stop in path]}
     path_payload["steps"][-1]["duration"] = 1
     return path_payload
 

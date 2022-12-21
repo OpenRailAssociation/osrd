@@ -1095,6 +1095,10 @@ components:
                   nullable: true
 
     PathQuery:
+      required: 
+        - infra
+        - rolling_stocks
+        - steps
       properties:
         infra:
           type: integer
