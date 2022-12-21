@@ -39,5 +39,8 @@ pub fn edit(
     // Bump infra generated version to the infra version
     infra.bump_generated_version(conn)?;
 
+    // update infra modified medata
+    infra.update_modified_timestamp_to_now(conn)?;
+
     Ok((operation_results, invalid_zone))
 }

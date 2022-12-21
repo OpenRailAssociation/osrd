@@ -28,6 +28,8 @@ class Infra(models.Model):
     version = models.CharField(editable=False, max_length=40, default="1")
     generated_version = models.CharField(editable=False, max_length=40, null=True)
     locked = models.BooleanField(default=False)
+    created = models.DateTimeField(editable=False, auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
