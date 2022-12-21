@@ -121,15 +121,16 @@ export async function getEntities<T extends EditorEntity = EditorEntity>(
   ids: string[],
   type: EditoastType
 ): Promise<Record<string, T>> {
+  const uniqIDs = uniq(ids);
   const res = await post<
     string[],
     { railjson: T['properties']; geographic: T['geometry']; schematic: T['geometry'] }[]
-  >(`/editoast/infra/${infra}/objects/${type}/`, ids);
+  >(`/editoast/infra/${infra}/objects/${type}/`, uniqIDs);
 
   return res.reduce(
     (iter, entry, i) => ({
       ...iter,
-      [ids[i]]: { properties: entry.railjson, objType: type, geometry: entry.geographic } as T,
+      [uniqIDs[i]]: { properties: entry.railjson, objType: type, geometry: entry.geographic } as T,
     }),
     {}
   );
@@ -145,7 +146,7 @@ export async function getMixedEntities(
   for (const type in groupedDefs) {
     const ids = groupedDefs[type].map(({ id }) => id);
     // eslint-disable-next-line no-await-in-loop
-    const entities = await getEntities(infra, uniq(ids), type as EditoastType);
+    const entities = await getEntities(infra, ids, type as EditoastType);
     res = { ...res, ...entities };
   }
 
