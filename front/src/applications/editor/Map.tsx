@@ -150,6 +150,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
                 partialToolState.hovered = {
                   id: feature.properties?.id as string,
                   type: LAYER_TO_EDITOAST_DICT[feature.sourceLayer as LayerType],
+                  renderedEntity: feature,
                 };
               }
             } else {
@@ -197,8 +198,16 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
                 toolState.hovered.id,
                 toolState.hovered.type
               ).then((entity) => {
-                if (activeTool.onClickEntity)
+                if (activeTool.onClickEntity) {
+                  // Those features lack a proper "geometry", and have a "_geometry"
+                  // instead. This fixes it:
+                  entity = {
+                    ...entity,
+                    // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/no-explicit-any
+                    geometry: entity.geometry || (entity as any)._geometry,
+                  };
                   activeTool.onClickEntity(entity, eventWithFeature, extendedContext);
+                }
               });
             }
             if (activeTool.onClickMap) {

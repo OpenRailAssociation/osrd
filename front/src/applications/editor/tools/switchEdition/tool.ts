@@ -7,6 +7,7 @@ import { SwitchEditionState } from './types';
 import { getNewSwitch } from './utils';
 import { SwitchEditionLayers, SwitchEditionLeftPanel, SwitchMessages } from './components';
 import { NEW_ENTITY_ID } from '../../data/utils';
+import { TrackSectionEntity } from "../../../../types";
 
 const SwitchEditionTool: Tool<SwitchEditionState> = {
   id: 'switch-edition',
@@ -83,7 +84,7 @@ const SwitchEditionTool: Tool<SwitchEditionState> = {
   },
   onClickEntity(feature, e, { state }) {
     if (state.portEditionState.type === 'selection') {
-      state.portEditionState.onSelect(feature.properties.id, [e.point.x, e.point.y]);
+      state.portEditionState.onSelect(feature as TrackSectionEntity, [e.point.x, e.point.y]);
     }
   },
 

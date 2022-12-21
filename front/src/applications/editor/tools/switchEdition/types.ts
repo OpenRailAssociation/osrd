@@ -1,5 +1,5 @@
 import { CommonToolState } from '../types';
-import { SwitchEntity, TrackEndpoint } from '../../../../types';
+import { SwitchEntity, TrackEndpoint, TrackSectionEntity } from '../../../../types';
 
 export type SwitchEditionState = CommonToolState & {
   initialEntity: Partial<SwitchEntity>;
@@ -10,7 +10,7 @@ export type SwitchEditionState = CommonToolState & {
     | {
         type: 'selection';
         portId: string;
-        onSelect: (trackId: string, position: [number, number]) => void;
+        onSelect: (track: TrackSectionEntity, position: [number, number]) => void;
         hoveredPoint: TrackEndpoint | null;
       };
 };
