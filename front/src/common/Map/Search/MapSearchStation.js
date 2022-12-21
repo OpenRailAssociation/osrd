@@ -5,10 +5,9 @@ import { updateMapSearchMarker } from 'reducers/map';
 import nextId from 'react-id-generator';
 import { useTranslation } from 'react-i18next';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { get } from 'common/requests';
+import { post } from 'common/requests';
 import { useDebounce } from 'utils/helpers';
-
-const searchURI = '/gaia/osrd/station/'; // '/matgaia/search_station';
+import turfCenter from '@turf/center';
 
 export default function MapSearchStation(props) {
   const { updateExtViewport } = props;
@@ -17,7 +16,10 @@ export default function MapSearchStation(props) {
   const [searchState, setSearch] = useState('');
   const [dontSearch, setDontSearch] = useState(false);
   const [searchResults, setSearchResults] = useState(undefined);
+  const osrdconf = useSelector((state) => state.osrdconf);
+
   const dispatch = useDispatch();
+  const searchURI = `/editoast/search`;
 
   const { t } = useTranslation(['translation', 'map-search']);
 
@@ -33,33 +35,54 @@ export default function MapSearchStation(props) {
   const debouncedSearchTerm = useDebounce(searchState, 300);
 
   useEffect(() => {
+    let trigram = null;
+    let name = null;
     if (!dontSearch && debouncedSearchTerm) {
-      const params = { q: searchState };
-      updateSearch(params);
+      if (searchState.length < 3) {
+        trigram = searchState;
+        name = null;
+      } else if (searchState.length === 3) {
+        trigram = searchState;
+        name = searchState;
+      } else if (searchState.length > 3) {
+        name = searchState;
+        trigram = null;
+      }
     }
+    const payload = {
+      object: 'operationalpoint',
+      query: ['and', ['or', ['search', ['name'], name], ['search', ['trigram'], trigram]],['==', ["infra_id"], osrdconf.infraID]],
+    };
+    updateSearch(payload);
   }, [debouncedSearchTerm]);
 
   const onResultClick = (result) => {
     setSearch(result.name);
 
-    const lonlat =
-      map.mapTrackSources === 'schematic' ? result.coordinates.sch : result.coordinates.geo;
+    const coordinates = map.mapTrackSources === 'schematic' ? result.schematic : result.geographic;
 
-    if (lonlat !== null) {
+    const center = turfCenter(coordinates);
+
+    if (result.lon !== null && result.lat !== null) {
       const newViewport = {
         ...map.viewport,
-        longitude: lonlat[0],
-        latitude: lonlat[1],
+        longitude: center.geometry.coordinates[0],
+        latitude: center.geometry.coordinates[1],
         zoom: 12,
       };
       updateExtViewport(newViewport);
-      dispatch(updateMapSearchMarker({ title: result.name, lonlat }));
+      dispatch(
+        updateMapSearchMarker({
+          title: result.name,
+          lonlat: [center.geometry.coordinates[0], center.geometry.coordinates[1]],
+        })
+      );
     }
   };
 
   const formatSearchResults = () => {
     // sort name, then by mainstation true then false
-    let searchResultsContent = searchResults.results.sort((a, b) => a.name.localeCompare(b.name));
+    let searchResultsContent = searchResults.sort((a, b) => a.name.localeCompare(b.name));
     searchResultsContent = searchResultsContent.sort(
       (a, b) => Number(b.mainstation) - Number(a.mainstation)
     );
@@ -103,7 +126,7 @@ export default function MapSearchStation(props) {
         </span>
       </div>
       <div>
-        {searchResults !== undefined && searchResults.results !== undefined ? (
+        {searchResults !== undefined ? (
           <div className="search-results">{formatSearchResults()}</div>
         ) : (
           <h2 className="text-center mt-3">{t('map-search:noresult')}</h2>
