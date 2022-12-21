@@ -31,7 +31,6 @@ public class ScheduleMetadataExtractor {
             SignalingInfra infra
     ) {
         assert envelope.continuous;
-        var envelopePath = EnvelopeTrainPath.from(trainPath);
 
         // Compute speeds, head and tail positions
         var envelopeWithStops = new EnvelopeStopWrapper(envelope, schedule.stops);
@@ -59,6 +58,7 @@ public class ScheduleMetadataExtractor {
         var events = computeEvents(infra, trainPath, trainLength, envelopeWithStops);
 
         // Compute energy consumed
+        var envelopePath = EnvelopeTrainPath.from(trainPath);
         var energyConsumed = envelope.getEnergyConsumed(envelopePath, schedule.rollingStock);
 
         return new ResultTrain(
