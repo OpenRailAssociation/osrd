@@ -1,4 +1,4 @@
-import React, { FC, PropsWithChildren, useContext, useMemo, useState } from 'react';
+import React, { FC, PropsWithChildren, useContext, useMemo, useRef, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl';
 import { withTranslation } from 'react-i18next';
@@ -37,6 +37,7 @@ import {
   Tool,
 } from './tools/types';
 import { getEntity } from './data/api';
+import mapboxgl from 'mapbox-gl';
 
 interface MapProps<S extends CommonToolState = CommonToolState> {
   t: TFunction;
@@ -64,6 +65,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
   children,
 }) => {
   const dispatch = useDispatch();
+  const map = useRef(null);
   const [mapState, setMapState] = useState<MapState>({
     isLoaded: true,
     isDragging: false,
@@ -109,6 +111,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
       >
         <ReactMapGL
           {...viewport}
+          ref={map}
           key={activeTool.id}
           mapLib={maplibregl}
           style={{ width: '100%', height: '100%' }}
@@ -256,7 +259,9 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
           />
 
           {/* Tool specific layers */}
-          {activeTool.layersComponent && <activeTool.layersComponent />}
+          {activeTool.layersComponent && map.current && (
+            <activeTool.layersComponent map={(map.current as any).getMap() as mapboxgl.Map} />
+          )}
         </ReactMapGL>
       </div>
       {children}
