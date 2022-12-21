@@ -125,7 +125,7 @@ public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelop
             PhysicsPath path,
             PhysicsRollingStock rollingStock
     ) {
-        var cumulativeEnergy = 0;
+        var cumulativeEnergy = 0.0;
         for (var part : parts) {
             cumulativeEnergy += part.getEnergyConsumed(path, rollingStock);
         }

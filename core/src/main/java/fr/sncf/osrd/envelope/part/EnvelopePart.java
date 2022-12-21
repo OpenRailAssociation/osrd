@@ -350,15 +350,15 @@ public final class EnvelopePart implements SearchableEnvelope {
         var mass = rollingStock.getMass();
         var partBeginPos = getBeginPos();
         var partEndPos = getEndPos();
-        var meanGrade = path.getAverageGrade(partBeginPos, partEndPos);
+        var meanGrade = 0.001 * path.getAverageGrade(partBeginPos, partEndPos);
         var altitudeDelta = meanGrade * (partEndPos - partBeginPos);
 
-        var workGravity = - mass * 9.81 * altitudeDelta;
+        var workGravity = -mass * 9.81 * altitudeDelta;
 
-        var kineticEnergyDelta = 0.5 * mass * (speeds[length] * speeds[length] - speeds[0] * speeds[0]);
+        var kineticEnergyDelta = 0.5 * mass * (speeds[length - 1] * speeds[length - 1] - speeds[0] * speeds[0]);
 
         var workDrag = 0;
-        for (var i = 0 ; i < length ; i++) {
+        for (var i = 0; i < length - 1; i++) {
             var speed = speeds[i];
             var pos = positions[i];
             var nextPos = positions[i + 1];
