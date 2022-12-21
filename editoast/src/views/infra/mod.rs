@@ -4,6 +4,7 @@ mod objects;
 mod pathfinding;
 mod railjson;
 mod routes;
+mod search;
 
 use self::edition::edit;
 
