@@ -19,5 +19,8 @@
     "speedlimit-short": "Lim.",
     "time": "Horaire",
     "timetable": "Table horaire",
-    "trackname": "Voie"
+    "trackname": "Voie",
+    "energyconsumed-basic": "Energie consommée avec marche de base",
+    "energyconsumed-eco": "Energie consommée avec marge de régularité",
+    "energydetails": "Energie à la Jante"
 }
