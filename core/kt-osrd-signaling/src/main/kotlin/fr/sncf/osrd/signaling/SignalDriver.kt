@@ -45,19 +45,18 @@ interface SpeedLimitView {
     val indirectSpeedLimits: List<IndirectSpeedLimit>
 }
 
-interface DiagnosisReporter {
-    fun warn()
-    fun err()
-}
-
 data class SigBlock(
     val startsAtBufferStop: Boolean,
     val stopsAtBufferStop: Boolean,
     val signalTypes: List<String>,
     val signalSettings: List<SigSettings>,
-    val signalPositions: List<Distance>,
+    val signalPositions: DistanceList,
     val length: Distance,
 )
+
+interface SignalDiagReporter {
+    fun report(errorType: String)
+}
 
 interface SignalDriver {
     val name: String
@@ -71,7 +70,12 @@ interface SignalDriver {
     ): SigState
 
     /** block is the partial block in front of the signal, as no signal can see backward */
-    fun checkSignal(reporter: DiagnosisReporter, signal: SigSettings, block: SigBlock)
+    fun checkSignal(reporter: SignalDiagReporter, signal: SigSettings, block: SigBlock)
+}
+
+interface BlockDiagReporter {
+    fun reportBlock(errorType: String)
+    fun reportSignal(sigIndex: Int, errorType: String)
 }
 
 interface SignalingSystemDriver {
@@ -80,5 +84,5 @@ interface SignalingSystemDriver {
     val settingsSchema: SigSettingsSchema
     val isBlockDelimiterExpr: String
 
-    fun checkBlock(block: SigBlock)
+    fun checkBlock(reporter: BlockDiagReporter, block: SigBlock)
 }

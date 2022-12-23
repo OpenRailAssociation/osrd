@@ -1,7 +1,6 @@
 package fr.sncf.osrd.signaling.bapr
 
 import fr.sncf.osrd.signaling.*
-import fr.sncf.osrd.signaling.ProtectionStatus.*
 import fr.sncf.osrd.sim_infra.api.SigSettings
 import fr.sncf.osrd.sim_infra.api.SigState
 import fr.sncf.osrd.sim_infra.api.SigStateSchema
@@ -32,6 +31,6 @@ object BAPRtoBAL : SignalDriver {
         }
     }
 
-    override fun checkSignal(reporter: DiagnosisReporter, signal: SigSettings, block: SigBlock) {
+    override fun checkSignal(reporter: SignalDiagReporter, signal: SigSettings, block: SigBlock) {
     }
 }
