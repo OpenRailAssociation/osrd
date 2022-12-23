@@ -3,12 +3,33 @@ package fr.sncf.osrd.sim_infra.impl
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.indexing.*
 
-data class BlockDescriptor(
+class BlockDescriptor(
     val startAtBufferStop: Boolean,
     val stopsAtBufferStop: Boolean,
     val path: StaticIdxList<ZonePath>,
     val signals: StaticIdxList<LogicalSignal>,
-)
+    val signalsPositions: DistanceList,
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as BlockDescriptor
+        if (startAtBufferStop != other.startAtBufferStop) return false
+        if (stopsAtBufferStop != other.stopsAtBufferStop) return false
+        if (path != other.path) return false
+        if (signals != other.signals) return false
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = startAtBufferStop.hashCode()
+        result = 31 * result + stopsAtBufferStop.hashCode()
+        result = 31 * result + path.hashCode()
+        result = 31 * result + signals.hashCode()
+        return result
+    }
+}
 
 class BlockInfraImpl(
     private val blockPool: StaticPool<Block, BlockDescriptor>,
@@ -51,5 +72,9 @@ class BlockInfraImpl(
 
     override fun getBlocksAt(detector: DirDetectorId): StaticIdxList<Block> {
         return blockEntryMap[detector] ?: mutableStaticIdxArrayListOf()
+    }
+
+    override fun getSignalsPositions(block: BlockId): DistanceList {
+        return blockPool[block].signalsPositions
     }
 }

@@ -1,12 +1,14 @@
 package fr.sncf.osrd.signaling.impl;
 
-import fr.sncf.osrd.signaling.MovementAuthorityView
-import fr.sncf.osrd.signaling.SigSystemManager
-import fr.sncf.osrd.signaling.SpeedLimitView
+import fr.sncf.osrd.signaling.*
 import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.sim_infra.api.SignalDriver
 import fr.sncf.osrd.utils.indexing.StaticIdxSpace
 
-object DumbBALSigSystemManager : SigSystemManager {
+class MockSigSystemManager(val sigSystem: String, val settingsSchema: SigSettingsSchema) : SigSystemManager {
+    override fun checkSignalingSystemBlock(reporter: BlockDiagReporter, sigSystem: SignalingSystemId, block: SigBlock) {
+    }
+
     override fun evalSignal(
         driverId: SignalDriverId,
         signal: SigSettings,
@@ -21,7 +23,7 @@ object DumbBALSigSystemManager : SigSystemManager {
         get() = StaticIdxSpace(1u)
 
     override fun findSignalingSystem(sigSystem: String): SignalingSystemId {
-        if (sigSystem != "BAL")
+        if (sigSystem != this.sigSystem)
             throw RuntimeException("Unknown signaling system: $sigSystem") //TODO
         return SignalingSystemId(0u)
     }
@@ -31,7 +33,7 @@ object DumbBALSigSystemManager : SigSystemManager {
     }
 
     override fun getSettingsSchema(sigSystem: SignalingSystemId): SigSettingsSchema {
-        return SigSettingsSchema { flag("Nf") }
+        return settingsSchema
     }
 
     override val drivers: StaticIdxSpace<SignalDriver>
