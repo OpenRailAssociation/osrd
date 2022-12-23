@@ -340,6 +340,30 @@ paths:
                   type: string
                 example: ["freight", "heavy_load"]
 
+  /infra/{id}/voltages/:
+    get:
+      tags:
+        - infra
+      summary: List all voltages
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Infra ID
+          required: true
+      responses:
+        200:
+          description: Voltages list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: number
+                  format: float
+                example: [750.0, 1500.0, 2500.50]
+
   /infra/{id}/objects/{object_type}/:
     post:
       tags:

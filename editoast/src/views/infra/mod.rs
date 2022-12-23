@@ -15,7 +15,7 @@ use crate::schema::operation::{Operation, OperationResult};
 use crate::schema::InfraErrorType;
 use crate::schema::SwitchType;
 use chashmap::CHashMap;
-use diesel::sql_types::{Integer, Text};
+use diesel::sql_types::{Double, Integer, Text};
 use diesel::{sql_query, QueryableByName, RunQueryDsl};
 use errors::{get_paginated_infra_errors, Level};
 use objects::get_objects;
@@ -52,6 +52,12 @@ struct SpeedLimitTags {
     tag: String,
 }
 
+#[derive(QueryableByName, Debug, Clone, Serialize, Deserialize)]
+struct Voltage {
+    #[sql_type = "Double"]
+    voltage: f64,
+}
+
 pub fn routes() -> Vec<Route> {
     routes![
         list,
@@ -63,6 +69,7 @@ pub fn routes() -> Vec<Route> {
         list_errors,
         get_switch_types,
         get_speed_limit_tags,
+        get_voltages,
         get_objects,
         rename,
         lock,
@@ -296,6 +303,26 @@ async fn get_speed_limit_tags(infra: i32, conn: DBConnection) -> ApiResult<Custo
         Status::Ok,
         serde_json::to_value(speed_limits_tags).unwrap(),
     ))
+}
+
+/// Returns the set of voltages for a given infra
+#[get("/<infra>/voltages")]
+async fn get_voltages(infra: i32, conn: DBConnection) -> ApiResult<Custom<JsonValue>> {
+    let voltages: Vec<Voltage> = conn
+        .run(move |conn| {
+            sql_query(
+                "SELECT DISTINCT ((data->'voltage')->>0)::float AS voltage
+                FROM osrd_infra_catenarymodel
+                WHERE infra_id = $1
+                ORDER BY voltage",
+            )
+            .bind::<Integer, _>(infra)
+            .load(conn)
+        })
+        .await?;
+    let voltages: Vec<f64> = voltages.into_iter().map(|el| (el.voltage)).rev().collect();
+
+    Ok(Custom(Status::Ok, serde_json::to_value(voltages).unwrap()))
 }
 
 /// Lock an infra
