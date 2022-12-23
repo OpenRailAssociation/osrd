@@ -5,9 +5,10 @@ import fr.sncf.osrd.sim_infra.impl.BlockInfraBuilder
 import fr.sncf.osrd.sim_infra.impl.blockInfraBuilder
 import fr.sncf.osrd.utils.indexing.IdxMap
 import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
-import fr.sncf.osrd.utils.indexing.StaticIdx
+import mu.KotlinLogging
 
 
+private val logger = KotlinLogging.logger {}
 
 
 internal fun internalBuildBlocks(
@@ -41,9 +42,19 @@ internal fun internalBuildBlocks(
                     block.zonePaths.add(zonePath)
 
                 // iterate over signals which are between the block entry and the block exit
-                for (physicalSignal in rawSignalingInfra.getSignals(zonePath))
-                    for (signal in loadedSignalInfra.getLogicalSignals(physicalSignal))
-                        currentBlocks = updatePartialBlocks(sigModuleManager, currentBlocks, loadedSignalInfra, signal)
+                val signals = rawSignalingInfra.getSignals(zonePath)
+                val signalsPositions = rawSignalingInfra.getSignalPositions(zonePath)
+                for ((physicalSignal, position) in signals.zip(signalsPositions)) {
+                    for (signal in loadedSignalInfra.getLogicalSignals(physicalSignal)) {
+                        currentBlocks =
+                            updatePartialBlocks(sigModuleManager, currentBlocks, loadedSignalInfra, signal, position)
+                    }
+                }
+
+                // Now we have finished processing the zonepath we can add its length
+                for (block in currentBlocks) {
+                    block.currentLength += rawSignalingInfra.getZonePathLength(zonePath)
+                }
             }
 
             // when a route ends at a buffer stop, unterminated blocks are expected,
@@ -58,9 +69,8 @@ internal fun internalBuildBlocks(
                 val lastZonePath = curBlock.zonePaths[curBlock.zonePaths.size - 1]
                 assert(routeExitDet == rawSignalingInfra.getZonePathExit(lastZonePath))
                 if (!routeEndsAtBufferStop)
-                    // TODO: properly log the route
-                    throw RuntimeException("invalid block")
-                block(curBlock.startAtBufferStop, true, curBlock.zonePaths, curBlock.signals)
+                    logger.debug { "unterminated block at end of route ${rawSignalingInfra.getRouteName(route)}" }
+                block(curBlock.startAtBufferStop, true, curBlock.zonePaths, curBlock.signals, curBlock.signalPositions)
             }
         }
     }
@@ -83,9 +93,10 @@ private fun findSignalDelimiters(
             switchesPositions[switchesPositions.size - 1]
 
         for (physicalSignalIndex in 0 until signals.size) {
-            if (signalsPositions[physicalSignalIndex] < cutoffDistance)
-            // TODO: add a warning if the physical signal has logical signals which are delimiters
+            if (signalsPositions[physicalSignalIndex] < cutoffDistance) {
+                // TODO: add a warning if the physical signal has logical signals which are delimiters
                 continue
+            }
             val physicalSignal = signals[physicalSignalIndex]
             for (logicalSignal in rawSignalingInfra.getLogicalSignals(physicalSignal))
                 if (loadedSignalInfra.isBlockDelimiter(logicalSignal))
@@ -103,8 +114,10 @@ private fun makeDetectorEntrySignals(
     for (logicalSignal in loadedSignalInfra.logicalSignals) {
         val delim = signalDelimiters[logicalSignal] ?: continue
         val delimSignals = res.getOrPut(delim) { IdxMap() }
-        // TODO: raise a warning is case of duplicate signals per signaling system / dirdetector pair
-        delimSignals[loadedSignalInfra.getSignalingSystem(logicalSignal)] = logicalSignal
+        val signalingSystem = loadedSignalInfra.getSignalingSystem(logicalSignal)
+        if (delimSignals[signalingSystem] != null)
+            logger.debug { "duplicate signals at detector" }
+        delimSignals[signalingSystem] = logicalSignal
     }
     return res
 }
@@ -112,20 +125,25 @@ private fun makeDetectorEntrySignals(
 class PartialBlock(
     val startAtBufferStop: Boolean,
     val signals: MutableStaticIdxArrayList<LogicalSignal>,
+    val signalPositions: MutableDistanceList,
     val zonePaths: MutableStaticIdxArrayList<ZonePath>,
     var expectedSignalingSystem: SignalingSystemId?,
+    var currentLength: Distance,
 ) {
     constructor(startAtBufferStop: Boolean, expectedSignalingSystem: SignalingSystemId?) : this(
         startAtBufferStop,
         MutableStaticIdxArrayList(),
+        mutableDistanceArrayListOf(),
         MutableStaticIdxArrayList(),
         expectedSignalingSystem,
+        0.meters,
     )
 
     constructor(startAtBufferStop: Boolean) : this(startAtBufferStop, null)
 
-    fun addSignal(signal: LogicalSignalId): PartialBlock {
+    fun addSignal(signal: LogicalSignalId, position: Distance): PartialBlock {
         signals.add(signal)
+        signalPositions.add(position)
         return this
     }
 
@@ -135,8 +153,15 @@ class PartialBlock(
         return loadedSignalInfra.getSignalingSystem(signal) == expectedSignalingSystem
     }
 
-    fun clone() : PartialBlock {
-        return PartialBlock(startAtBufferStop, signals.clone(), zonePaths.clone(), expectedSignalingSystem)
+    fun clone(): PartialBlock {
+        return PartialBlock(
+            startAtBufferStop,
+            signals.clone(),
+            signalPositions.clone(),
+            zonePaths.clone(),
+            expectedSignalingSystem,
+            currentLength
+        )
     }
 }
 
@@ -147,23 +172,27 @@ private fun getInitPartialBlocks(
 ): MutableList<PartialBlock> {
     val initialBlocks = mutableListOf<PartialBlock>()
     if (entrySignals == null) {
-        initialBlocks.add(PartialBlock(
-            true,
-            MutableStaticIdxArrayList(),
-            MutableStaticIdxArrayList(),
-            null
-        ))
+        initialBlocks.add(
+            PartialBlock(
+                true,
+                MutableStaticIdxArrayList(),
+                mutableDistanceArrayListOf(),
+                MutableStaticIdxArrayList(),
+                null,
+                0.meters
+            )
+        )
     } else {
         for (entrySignal in entrySignals.values()) {
             val drivers = loadedSignalInfra.getDrivers(entrySignal)
             if (drivers.size == 0) {
-                initialBlocks.add(PartialBlock(false).addSignal(entrySignal))
+                initialBlocks.add(PartialBlock(false).addSignal(entrySignal, 0.meters))
                 continue
             }
 
             for (driver in drivers) {
                 val inputSigSystem = sigModuleManager.getInputSignalingSystem(driver)
-                initialBlocks.add(PartialBlock(false, inputSigSystem).addSignal(entrySignal))
+                initialBlocks.add(PartialBlock(false, inputSigSystem).addSignal(entrySignal, 0.meters))
             }
         }
     }
@@ -195,15 +224,17 @@ private fun BlockInfraBuilder.updatePartialBlocks(
     sigModuleManager: InfraSigSystemManager,
     currentBlocks: MutableList<PartialBlock>,
     loadedSignalInfra: LoadedSignalInfra,
-    signal: StaticIdx<LogicalSignal>
+    signal: LogicalSignalId,
+    positionInZonePath: Distance,
 ): MutableList<PartialBlock> {
     val nextBlocks = mutableListOf<PartialBlock>()
     // for each currently active block, evaluate the relationship between this signal and this block
     for (curBlock in currentBlocks) {
+        val blockPosition = positionInZonePath + curBlock.currentLength
         when (evalSignalBlockRel(sigModuleManager, loadedSignalInfra, curBlock, signal)) {
             SignalBlockRel.UNRELATED -> nextBlocks.add(curBlock)
             SignalBlockRel.PART_OF -> {
-                curBlock.signals.add(signal)
+                curBlock.addSignal(signal, blockPosition)
                 val drivers = loadedSignalInfra.getDrivers(signal)
                 if (drivers.size == 0) {
                     val newBlock = curBlock.clone()
@@ -218,17 +249,17 @@ private fun BlockInfraBuilder.updatePartialBlocks(
                 }
             }
             SignalBlockRel.END_OF -> {
-                curBlock.signals.add(signal)
-                block(curBlock.startAtBufferStop, false, curBlock.zonePaths, curBlock.signals)
+                curBlock.addSignal(signal, blockPosition)
+                block(curBlock.startAtBufferStop, false, curBlock.zonePaths, curBlock.signals, curBlock.signalPositions)
                 val drivers = loadedSignalInfra.getDrivers(signal)
                 if (drivers.size == 0) {
-                    val newBlock = PartialBlock(false).addSignal(signal)
+                    val newBlock = PartialBlock(false).addSignal(signal, 0.meters)
                     nextBlocks.add(newBlock)
                 } else {
                     for (driver in drivers) {
                         val inputSigSystem = sigModuleManager.getInputSignalingSystem(driver)
                         val newBlock = PartialBlock(false, inputSigSystem)
-                            .addSignal(signal)
+                            .addSignal(signal, 0.meters)
                         nextBlocks.add(newBlock)
                     }
                 }

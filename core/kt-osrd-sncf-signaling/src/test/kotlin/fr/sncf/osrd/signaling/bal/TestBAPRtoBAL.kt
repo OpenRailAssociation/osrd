@@ -1,6 +1,5 @@
 package fr.sncf.osrd.signaling.bal
 
-import fr.sncf.osrd.signaling.SigBlock
 import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.signaling.bapr.BAPR
 import fr.sncf.osrd.signaling.bapr.BAPRtoBAL
@@ -10,12 +9,9 @@ import fr.sncf.osrd.signaling.impl.SignalingSimulatorImpl
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
 import fr.sncf.osrd.utils.indexing.IdxMap
-import fr.sncf.osrd.utils.indexing.StaticIdx
-import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.time.Duration.Companion.milliseconds
 
 class TestBAPRtoBAL {
     @Test
@@ -102,7 +98,7 @@ class TestBAPRtoBAL {
         fullPath.add(blockInfra.getBlocksAt(detectorW.normal).first())
         fullPath.add(blockInfra.getBlocksAt(detectorX.normal).first())
         fullPath.add(blockInfra.getBlocksAt(detectorY.normal).first())
-        val zoneStates = mutableListOf<ZoneStatus>(ZoneStatus.CLEAR,ZoneStatus.CLEAR,ZoneStatus.INCOMPATIBLE)
+        val zoneStates = mutableListOf(ZoneStatus.CLEAR, ZoneStatus.CLEAR, ZoneStatus.INCOMPATIBLE)
         val res = simulator.evaluate(infra, loadedSignalInfra, blockInfra, fullPath, 0, fullPath.size, zoneStates)
         val logicalSignals = listOf(signalm, signalM, signaln, signalN).map{loadedSignalInfra.getLogicalSignals(it).first()}
         val expectedAspects = listOf("VL", "VL", "A", "C")
