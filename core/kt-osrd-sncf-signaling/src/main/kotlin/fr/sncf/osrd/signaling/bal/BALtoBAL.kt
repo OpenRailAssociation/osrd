@@ -50,6 +50,6 @@ object BALtoBAL : SignalDriver {
         }
     }
 
-    override fun checkSignal(reporter: DiagnosisReporter, signal: SigSettings, block: SigBlock) {
+    override fun checkSignal(reporter: SignalDiagReporter, signal: SigSettings, block: SigBlock) {
     }
 }

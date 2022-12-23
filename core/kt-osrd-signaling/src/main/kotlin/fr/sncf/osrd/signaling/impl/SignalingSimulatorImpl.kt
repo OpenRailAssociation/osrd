@@ -4,6 +4,10 @@ import fr.sncf.osrd.signaling.*
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.loadedSignalInfra
 import fr.sncf.osrd.utils.indexing.*
+import mu.KotlinLogging
+
+
+private val logger = KotlinLogging.logger {}
 
 
 fun ZoneStatus.reduce(other: ZoneStatus): ZoneStatus {
@@ -52,9 +56,41 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         }
     }
 
+    override fun buildBlocks(
+        rawInfra: RawSignalingInfra,
+        loadedSignalInfra: LoadedSignalInfra
+    ): BlockInfra {
+        val blockInfra = internalBuildBlocks(sigModuleManager, rawInfra, loadedSignalInfra)
+        for (block in blockInfra.blocks) {
+            val sigSystem = blockInfra.getBlockSignalingSystem(block)
+            val path = blockInfra.getBlockPath(block)
+            val length = Distance(path.map { rawInfra.getZonePathLength(it) }.sumOf { it.millimeters })
+            val startAtBufferStop = blockInfra.blockStartAtBufferStop(block)
+            val stopAtBufferStop = blockInfra.blockStopAtBufferStop(block)
+            val signals = blockInfra.getBlockSignals(block)
+            val signalTypes = signals.map { rawInfra.getSignalingSystemId(it) }
+            val signalSettings = signals.map { loadedSignalInfra.getSettings(it) }
+            val signalsPositions = blockInfra.getSignalsPositions(block)
+            val sigBlock = SigBlock(startAtBufferStop, stopAtBufferStop, signalTypes, signalSettings, signalsPositions, length)
+            val reporter = object : BlockDiagReporter {
+                override fun reportBlock(errorType: String) {
+                    logger.debug {
+                        val entrySignal = rawInfra.getLogicalSignalName(signals[0])
+                        val exitSignal = rawInfra.getLogicalSignalName(signals[signals.size - 1])
+                        "error in block from $entrySignal to $exitSignal: $errorType"
+                    }
+                }
 
-    override fun buildBlocks(rawSignalingInfra: RawSignalingInfra, loadedSignalInfra: LoadedSignalInfra): BlockInfra {
-        return internalBuildBlocks(sigModuleManager, rawSignalingInfra, loadedSignalInfra)
+                override fun reportSignal(sigIndex: Int, errorType: String) {
+                    logger.debug {
+                        val signal = rawInfra.getLogicalSignalName(signals[sigIndex])
+                        "error at signal $signal: $errorType"
+                    }
+                }
+            }
+            sigModuleManager.checkSignalingSystemBlock(reporter, sigSystem, sigBlock)
+        }
+        return blockInfra
     }
 
     override fun evaluate(
@@ -158,7 +194,6 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
                 mav,
                 null // TODO: Handle speed limits
             )
-
 
             res[signal] = state
             lastSignalState = state

@@ -1,16 +1,13 @@
 package fr.sncf.osrd.signaling
 
-import fr.sncf.osrd.signaling.impl.DumbBALSigSystemManager
+import fr.sncf.osrd.signaling.impl.MockSigSystemManager
 import fr.sncf.osrd.signaling.impl.SignalingSimulatorImpl
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.api.SignalDriver
 import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
 import fr.sncf.osrd.sim_infra.impl.blockInfraBuilder
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdxList
-import fr.sncf.osrd.utils.indexing.StaticIdxSpace
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
-import java.lang.RuntimeException
 import kotlin.test.Test
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.milliseconds
@@ -107,15 +104,16 @@ class BlockBuilderTest {
         val infra = builder.build()
         // endregion
 
-        val simulator = SignalingSimulatorImpl(DumbBALSigSystemManager)
+        val simulator = SignalingSimulatorImpl(MockSigSystemManager("BAL", SigSettingsSchema { flag("Nf") }))
         val loadedSignalInfra = simulator.loadSignals(infra)
         val blockInfra = simulator.buildBlocks(infra, loadedSignalInfra)
 
         val testResultBlockInfra = blockInfraBuilder(loadedSignalInfra, infra) {
-            block(true, false, mutableStaticIdxArrayListOf(zonePathUV), infra.getLogicalSignals(signalV))
-            block(false, true, mutableStaticIdxArrayListOf(zonePathVY, zonePathYZ), infra.getLogicalSignals(signalV))
-            block(true, false, mutableStaticIdxArrayListOf(zonePathWX), infra.getLogicalSignals(signalX))
-            block(false, true, mutableStaticIdxArrayListOf(zonePathXY, zonePathYZ), infra.getLogicalSignals(signalX))
+            // TODO: check the distances are correct too
+            block(true, false, mutableStaticIdxArrayListOf(zonePathUV), infra.getLogicalSignals(signalV), mutableDistanceArrayListOf())
+            block(false, true, mutableStaticIdxArrayListOf(zonePathVY, zonePathYZ), infra.getLogicalSignals(signalV), mutableDistanceArrayListOf())
+            block(true, false, mutableStaticIdxArrayListOf(zonePathWX), infra.getLogicalSignals(signalX), mutableDistanceArrayListOf())
+            block(false, true, mutableStaticIdxArrayListOf(zonePathXY, zonePathYZ), infra.getLogicalSignals(signalX), mutableDistanceArrayListOf())
         }
 
         assertTrue(blockInfraEquals(blockInfra, testResultBlockInfra))

@@ -40,8 +40,6 @@ object BALtoBAPR : SignalDriver {
         }
     }
 
-    override fun checkSignal(reporter: DiagnosisReporter, signal: SigSettings, block: SigBlock) {
-        TODO("Not yet implemented")
+    override fun checkSignal(reporter: SignalDiagReporter, signal: SigSettings, block: SigBlock) {
     }
 }
-

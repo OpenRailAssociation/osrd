@@ -1,6 +1,5 @@
 package fr.sncf.osrd.signaling.bal
 
-import fr.sncf.osrd.signaling.SigBlock
 import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.signaling.impl.SigSystemManagerImpl
 import fr.sncf.osrd.signaling.impl.SignalingSimulatorImpl
@@ -10,7 +9,6 @@ import fr.sncf.osrd.sim_infra.api.normal
 import fr.sncf.osrd.sim_infra.api.reverse
 import fr.sncf.osrd.sim_infra.impl.RawInfraBuilder
 import fr.sncf.osrd.utils.indexing.StaticIdx
-import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -118,8 +116,7 @@ class TestBALtoBAL {
         val fullPath = mutableStaticIdxArrayListOf<Block>()
         fullPath.add(blockInfra.getBlocksAt(detectorU.normal).first())
         fullPath.add(blockInfra.getBlocksAt(detectorV.normal).first())
-        //fullPath.add(blockInfra.getBlocksAt(detectorY.normal).first())
-        val zoneStates = mutableListOf<ZoneStatus>(ZoneStatus.CLEAR,ZoneStatus.CLEAR,ZoneStatus.CLEAR )
+        val zoneStates = mutableListOf(ZoneStatus.CLEAR, ZoneStatus.CLEAR, ZoneStatus.CLEAR)
         val res = simulator.evaluate(infra, loadedSignalInfra, blockInfra, fullPath, 0, fullPath.size, zoneStates)
         assertEquals("A", res[loadedSignalInfra.getLogicalSignals(signalV).first()]!!.getEnum("aspect"))
     }

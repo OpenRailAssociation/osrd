@@ -59,4 +59,5 @@ interface BlockInfra {
 
     fun getBlockSignalingSystem(block: BlockId): SignalingSystemId
     fun getBlocksAt(detector: DirDetectorId): StaticIdxList<Block>
+    fun getSignalsPositions(block: BlockId): DistanceList
 }
