@@ -77,4 +77,8 @@ interface RawSignalingInfra : RoutingInfra {
     fun getNextSignalingSystemIds(signal: LogicalSignalId): List<String>
 }
 
+fun RawSignalingInfra.getLogicalSignalName(signal: LogicalSignalId): String? {
+    return getPhysicalSignalName(getPhysicalSignal(signal))
+}
+
 typealias RawInfra = RawSignalingInfra

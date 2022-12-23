@@ -1,10 +1,8 @@
 package fr.sncf.osrd.signaling.impl
 
-import fr.sncf.osrd.signaling.MovementAuthorityView
-import fr.sncf.osrd.signaling.SigSystemManager
-import fr.sncf.osrd.signaling.SignalingSystemDriver
-import fr.sncf.osrd.signaling.SpeedLimitView
+import fr.sncf.osrd.signaling.*
 import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.sim_infra.api.SignalDriver
 import fr.sncf.osrd.utils.indexing.StaticIdxSpace
 import fr.sncf.osrd.utils.indexing.StaticPool
 
@@ -71,5 +69,9 @@ class SigSystemManagerImpl : SigSystemManager {
 
     override fun isBlockDelimiter(sigSystem: SignalingSystemId, settings: SigSettings): Boolean {
         return evalSigSettings(sigSystemPool[sigSystem].isBlockDelimiterExpr, settings)
+    }
+
+    override fun checkSignalingSystemBlock(reporter: BlockDiagReporter, sigSystem: SignalingSystemId, block: SigBlock) {
+        sigSystemPool[sigSystem].checkBlock(reporter, block)
     }
 }

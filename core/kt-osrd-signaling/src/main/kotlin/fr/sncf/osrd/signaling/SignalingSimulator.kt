@@ -22,6 +22,7 @@ enum class ZoneStatus {
 }
 
 interface SigSystemManager : InfraSigSystemManager {
+    fun checkSignalingSystemBlock(reporter: BlockDiagReporter, sigSystem: SignalingSystemId, block: SigBlock)
     fun evalSignal(
         driverId: SignalDriverId,
         signal: SigSettings,
@@ -34,7 +35,10 @@ interface SigSystemManager : InfraSigSystemManager {
 interface SignalingSimulator {
     val sigModuleManager: InfraSigSystemManager
     fun loadSignals(unloadedSignalInfra: RawSignalingInfra): LoadedSignalInfra
-    fun buildBlocks(rawSignalingInfra: RawSignalingInfra, loadedSignalInfra: LoadedSignalInfra): BlockInfra
+    fun buildBlocks(
+        rawSignalingInfra: RawSignalingInfra,
+        loadedSignalInfra: LoadedSignalInfra
+    ): BlockInfra
 
     fun evaluate(
         infra: RawInfra,
