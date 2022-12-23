@@ -15,12 +15,15 @@ use crate::schema::operation::{Operation, OperationResult};
 use crate::schema::InfraErrorType;
 use crate::schema::SwitchType;
 use chashmap::CHashMap;
+use diesel::sql_types::{Integer, Text};
+use diesel::{sql_query, QueryableByName, RunQueryDsl};
 use errors::{get_paginated_infra_errors, Level};
 use objects::get_objects;
 use rocket::http::Status;
 use rocket::response::status::Custom;
 use rocket::serde::json::{json, Error as JsonError, Json, Value as JsonValue};
 use rocket::{routes, Route, State};
+use serde::{Deserialize, Serialize};
 use strum::VariantNames;
 
 use thiserror::Error;
@@ -43,6 +46,12 @@ impl ApiError for ListErrorsErrors {
     }
 }
 
+#[derive(QueryableByName, Debug, Clone, Serialize, Deserialize)]
+struct SpeedLimitTags {
+    #[sql_type = "Text"]
+    tag: String,
+}
+
 pub fn routes() -> Vec<Route> {
     routes![
         list,
@@ -53,6 +62,7 @@ pub fn routes() -> Vec<Route> {
         refresh,
         list_errors,
         get_switch_types,
+        get_speed_limit_tags,
         get_objects,
         rename,
         lock,
@@ -259,6 +269,33 @@ async fn get_switch_types(
         ))
     })
     .await
+}
+
+/// Returns the set of speed limit tags for a given infra
+#[get("/<infra>/speed_limit_tags")]
+async fn get_speed_limit_tags(infra: i32, conn: DBConnection) -> ApiResult<Custom<JsonValue>> {
+    let speed_limits_tags: Vec<SpeedLimitTags> = conn
+        .run(move |conn| {
+            sql_query(
+                "SELECT DISTINCT jsonb_object_keys(data->'speed_limit_by_tag') AS tag
+        FROM osrd_infra_speedsectionmodel
+        WHERE infra_id = $1
+        ORDER BY tag",
+            )
+            .bind::<Integer, _>(infra)
+            .load(conn)
+        })
+        .await?;
+    let speed_limits_tags: Vec<String> = speed_limits_tags
+        .into_iter()
+        .map(|el| (el.tag))
+        .rev()
+        .collect();
+
+    Ok(Custom(
+        Status::Ok,
+        serde_json::to_value(speed_limits_tags).unwrap(),
+    ))
 }
 
 /// Lock an infra
