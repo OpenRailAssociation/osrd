@@ -61,23 +61,21 @@ export default function DriverTrainScheduleModal(props) {
           </div>
         </div>
       </div>
-      <h1 className="text-blue mt-2">
-        {t('drivertrainschedule:energydetails')}
-      </h1>
+      <h1 className="text-blue mt-2">{t('drivertrainschedule:energydetails')}</h1>
       <div className="row">
         <div className="col-4">{t('drivertrainschedule:energyconsumed-basic')}</div>
-          <div className="font-weight-bold text-primary col-8">
-            {Math.ceil(data.base.energy_consumed / (3.6*Math.pow(10,6)))} kWh
-          </div>
+        <div className="font-weight-bold text-primary col-8">
+          {Math.ceil(data.base.energy_consumed / (3.6 * 10 ** 6))} kWh
+        </div>
       </div>
-      {data.eco != null &&
-      <div className="row">
-        <div className="col-4">{t('drivertrainschedule:energyconsumed-eco')}</div>
+      {data.eco != null && (
+        <div className="row">
+          <div className="col-4">{t('drivertrainschedule:energyconsumed-eco')}</div>
           <div className="font-weight-bold text-primary col-8">
-            {Math.ceil(data.eco.energy_consumed / (3.6*Math.pow(10,6)))} kWh
+            {Math.ceil(data.eco.energy_consumed / (3.6 * 10 ** 6))} kWh
           </div>
-      </div>
-      }
+        </div>
+      )}
       <div className="text-right font-italic text-cyan">
         {t('drivertrainschedule:numberoflines')} :
         <span className="font-weight-bold ml-1"> {data.base.stops.length}</span>
@@ -133,7 +131,6 @@ export default function DriverTrainScheduleModal(props) {
           </tbody>
         </table>
       </div>
-
     </div>
   );
 }
