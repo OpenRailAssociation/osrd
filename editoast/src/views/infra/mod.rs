@@ -1,6 +1,7 @@
 mod edition;
 mod errors;
 mod objects;
+mod railjson;
 
 use std::sync::Arc;
 
@@ -19,6 +20,7 @@ use diesel::sql_types::{Double, Integer, Text};
 use diesel::{sql_query, QueryableByName, RunQueryDsl};
 use errors::{get_paginated_infra_errors, Level};
 use objects::get_objects;
+use railjson::{get_railjson, post_railjson};
 use rocket::http::Status;
 use rocket::response::status::Custom;
 use rocket::serde::json::{json, Error as JsonError, Json, Value as JsonValue};
@@ -65,6 +67,8 @@ pub fn routes() -> Vec<Route> {
         edit,
         create,
         delete,
+        get_railjson,
+        post_railjson,
         refresh,
         list_errors,
         get_switch_types,
@@ -293,11 +297,7 @@ async fn get_speed_limit_tags(infra: i32, conn: DBConnection) -> ApiResult<Custo
             .load(conn)
         })
         .await?;
-    let speed_limits_tags: Vec<String> = speed_limits_tags
-        .into_iter()
-        .map(|el| (el.tag))
-        .rev()
-        .collect();
+    let speed_limits_tags: Vec<String> = speed_limits_tags.into_iter().map(|el| (el.tag)).collect();
 
     Ok(Custom(
         Status::Ok,
@@ -320,7 +320,7 @@ async fn get_voltages(infra: i32, conn: DBConnection) -> ApiResult<Custom<JsonVa
             .load(conn)
         })
         .await?;
-    let voltages: Vec<f64> = voltages.into_iter().map(|el| (el.voltage)).rev().collect();
+    let voltages: Vec<f64> = voltages.into_iter().map(|el| (el.voltage)).collect();
 
     Ok(Custom(Status::Ok, serde_json::to_value(voltages).unwrap()))
 }
@@ -351,7 +351,7 @@ async fn unlock(infra: i32, conn: DBConnection) -> ApiResult<Custom<JsonValue>> 
 mod tests {
     use crate::infra::Infra;
     use crate::schema::operation::{Operation, RailjsonObject};
-    use crate::schema::SwitchType;
+    use crate::schema::{Catenary, SpeedSection, SwitchType};
     use crate::views::tests::create_test_client;
     use rocket::http::{ContentType, Status};
     use serde::Deserialize;
@@ -429,6 +429,8 @@ mod tests {
             .body(r#"{"name":"rename_test"}"#)
             .dispatch();
         assert_eq!(put_infra_response.status(), Status::Ok);
+        let delete_infra = client.delete(format!("/infra/{}", infra.id)).dispatch();
+        assert_eq!(delete_infra.status(), Status::NoContent);
     }
 
     #[derive(Deserialize)]
@@ -497,6 +499,71 @@ mod tests {
             serde_json::from_str(body_refresh.unwrap().as_str()).unwrap();
         assert!(refresh.infra_refreshed.contains(&infra.id));
 
+        let delete_infra = client.delete(format!("/infra/{}", infra.id)).dispatch();
+        assert_eq!(delete_infra.status(), Status::NoContent);
+    }
+
+    #[test]
+    fn infra_get_speed_limit_tags() {
+        let client = create_test_client();
+        let create_infra = client
+            .post("/infra")
+            .header(ContentType::JSON)
+            .body(r#"{"name":"get_speed_tags"}"#)
+            .dispatch();
+        assert_eq!(create_infra.status(), Status::Created);
+        let body_infra = create_infra.into_string();
+        let infra: Infra = serde_json::from_str(body_infra.unwrap().as_str()).unwrap();
+        let speed_section = SpeedSection::default();
+        let operation = Operation::Create(Box::new(RailjsonObject::SpeedSection {
+            railjson: speed_section,
+        }));
+        client
+            .post(format!("/infra/{}/", infra.id))
+            .header(ContentType::JSON)
+            .body(serde_json::to_string(&vec![operation]).unwrap())
+            .dispatch();
+        let get_speed_limit_tags = client
+            .get(format!("/infra/{}/speed_limit_tags/", infra.id))
+            .dispatch();
+        assert_eq!(get_speed_limit_tags.status(), Status::Ok);
+        let body_speed_limit_tags = get_speed_limit_tags.into_string();
+        assert!(body_speed_limit_tags.is_some());
+        let delete_infra = client.delete(format!("/infra/{}", infra.id)).dispatch();
+        assert_eq!(delete_infra.status(), Status::NoContent);
+    }
+
+    #[test]
+    fn infra_get_voltages() {
+        let client = create_test_client();
+        let create_infra = client
+            .post("/infra")
+            .header(ContentType::JSON)
+            .body(r#"{"name":"get_voltages"}"#)
+            .dispatch();
+        assert_eq!(create_infra.status(), Status::Created);
+        let body_infra = create_infra.into_string();
+        let infra: Infra = serde_json::from_str(body_infra.unwrap().as_str()).unwrap();
+        let catenaries = Catenary {
+            id: "test".into(),
+            voltage: "0".into(),
+            track_ranges: vec![],
+        };
+        let operation = Operation::Create(Box::new(RailjsonObject::Catenary {
+            railjson: catenaries,
+        }));
+        let create_catenaries = client
+            .post(format!("/infra/{}/", infra.id))
+            .header(ContentType::JSON)
+            .body(serde_json::to_string(&vec![operation]).unwrap())
+            .dispatch();
+        assert_eq!(create_catenaries.status(), Status::Ok);
+        let get_voltages = client
+            .get(format!("/infra/{}/voltages/", infra.id))
+            .dispatch();
+        assert_eq!(get_voltages.status(), Status::Ok);
+        let body_voltages = get_voltages.into_string();
+        assert!(body_voltages.is_some());
         let delete_infra = client.delete(format!("/infra/{}", infra.id)).dispatch();
         assert_eq!(delete_infra.status(), Status::NoContent);
     }

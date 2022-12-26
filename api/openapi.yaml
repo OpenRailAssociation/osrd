@@ -72,7 +72,7 @@ paths:
             schema:
               type: object
               example:
-                version: 2.0.0
+                version: 3.0.1
                 operational_points: []
                 routes: []
                 switch_types: []
@@ -81,10 +81,9 @@ paths:
                 track_sections: []
                 signals: []
                 buffer_stops: []
+                speed_sections: []
+                catenaries: []
                 detectors: []
-                tvd_sections: []
-                script_functions: []
-                aspects: []
         required: true
       responses:
         201:
