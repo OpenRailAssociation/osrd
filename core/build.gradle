@@ -19,7 +19,7 @@ plugins {
     id 'java'
     // must be kept in sync with kotlin_version below
     id 'org.jetbrains.kotlin.jvm' version '1.7.21'
-    id 'com.google.devtools.ksp' version '1.7.21-1.0.8' apply false
+    id 'com.google.devtools.ksp' version '1.7.22-1.0.8' apply false
     id 'application'
     id 'checkstyle'
     id 'com.github.spotbugs' version '5.0.+'
