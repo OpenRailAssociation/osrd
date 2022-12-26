@@ -7,12 +7,14 @@ use crate::{
     infra::{Infra, RAILJSON_VERSION},
 };
 use derivative::Derivative;
+
 use diesel::{
     sql_query,
     sql_types::{Integer, Text},
-    RunQueryDsl,
+    QueryableByName, RunQueryDsl,
 };
 use diesel::{Connection, PgConnection};
+
 use rocket::{http::Status, serde::DeserializeOwned};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -71,7 +73,6 @@ impl RailJson {
             Detector::persist_batch(&self.detectors, infra.id, conn)?;
             OperationalPoint::persist_batch(&self.operational_points, infra.id, conn)?;
             Route::persist_batch(&self.routes, infra.id, conn)?;
-
             Signal::persist_batch(&self.signals, infra.id, conn)?;
             Switch::persist_batch(&self.switches, infra.id, conn)?;
             SpeedSection::persist_batch(&self.speed_sections, infra.id, conn)?;
