@@ -108,7 +108,7 @@ class EnvelopePartTest {
         var length = 50_000;
         var testRollingStock = TestTrains.CONSTANT_POWER_TRAIN;
         var testPath = new FlatPath(length, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, 0.1, RollingStock.Comfort.STANDARD);
+        var testContext = new EnvelopeSimContext(testRollingStock, testPath, 4, RollingStock.Comfort.STANDARD);
         var allowanceValue = new AllowanceValue.Percentage(10);
 
         var marecoAllowance = makeStandardMarecoAllowance(
@@ -138,7 +138,7 @@ class EnvelopePartTest {
                     expectedEnvelopePartEnergy = 0;
                     break;
                 case 3:
-                    assertTrue(envelopePartEnergy < 0);
+                    assertTrue(envelopePartEnergy <= 0);
                     continue;
                 default:
                     expectedEnvelopePartEnergy = 0;
