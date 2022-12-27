@@ -21,7 +21,7 @@ export default function createChart(
     dataSimulation.map(
       (train) =>
         d3.extent(
-          train.routeBeginOccupancy.map((section) =>
+          train.headPosition.map((section) =>
             d3.extent(section, (step: any) => step[keyValues[0]])
           ) as any
         ) as any
@@ -33,7 +33,7 @@ export default function createChart(
       [].concat(
         ...dataSimulation.map((train) =>
           d3.max(
-            train.routeEndOccupancy.map((section) =>
+            train.tailPosition.map((section) =>
               d3.max(section.map((step: any) => step[keyValues[1]]))
             )
           )
@@ -44,7 +44,7 @@ export default function createChart(
       [].concat(
         ...dataSimulation.map((train) =>
           d3.max(
-            train.routeBeginOccupancy.map((section) =>
+            train.headPosition.map((section) =>
               d3.max(section.map((step: any) => step[keyValues[1]]))
             )
           )

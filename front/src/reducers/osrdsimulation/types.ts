@@ -115,8 +115,8 @@ export type SimulationHistory = SimulationSnapshot[];
 export interface PositionValues {
   headPosition: PositionSpeed;
   tailPosition: PositionSpeed;
-  routeEndOccupancy: number;
-  routeBeginOccupancy: number;
+  //routeEndOccupancy: number;
+  //routeBeginOccupancy: number;
   speed: {
     speed: number;
     time: number;
