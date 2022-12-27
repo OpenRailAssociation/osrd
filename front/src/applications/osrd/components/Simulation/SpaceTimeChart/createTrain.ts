@@ -30,8 +30,8 @@ export default function createTrain(
   const dataSimulation = simulationTrains.map((train: Train, trainNumber: number) => {
 
     console.log("Prepare data for Train", train.base)
-    const routeEndOccupancy = formatStepsWithTimeMulti(train.base.route_end_occupancy);
-    const routeBeginOccupancy = formatStepsWithTimeMulti(train.base.route_begin_occupancy);
+    //const routeEndOccupancy = formatStepsWithTimeMulti(train.base.route_end_occupancy);
+    //const routeBeginOccupancy = formatStepsWithTimeMulti(train.base.route_begin_occupancy);
     const dataSimulationTrain: SimulationTrain = {
       id: train.id,
       isStdcm: train.isStdcm,
@@ -39,8 +39,8 @@ export default function createTrain(
       trainNumber,
       headPosition: formatStepsWithTimeMulti(train.base.head_positions),
       tailPosition: formatStepsWithTimeMulti(train.base.tail_positions),
-      routeEndOccupancy,
-      routeBeginOccupancy,
+      //routeEndOccupancy,
+      //routeBeginOccupancy,
       routeAspects: formatRouteAspects(train.base.route_aspects),
       signalAspects: formatSignalAspects(train.base.signal_aspects),
       //areaBlock: //mergeDatasArea<Date | null>(routeEndOccupancy, routeBeginOccupancy, keyValues),
@@ -53,13 +53,13 @@ export default function createTrain(
         ...dataSimulationTrain,
         eco_headPosition: formatStepsWithTimeMulti(train.eco.head_positions),
         eco_tailPosition: formatStepsWithTimeMulti(train.eco.tail_positions),
-        eco_routeEndOccupancy: formatStepsWithTimeMulti(train.eco.route_end_occupancy),
-        eco_routeBeginOccupancy: formatStepsWithTimeMulti(train.eco.route_begin_occupancy),
+        //eco_routeEndOccupancy: formatStepsWithTimeMulti(train.eco.route_end_occupancy),
+        //eco_routeBeginOccupancy: formatStepsWithTimeMulti(train.eco.route_begin_occupancy),
         eco_routeAspects: formatRouteAspects(train.eco.route_aspects),
         eco_signalAspects: formatSignalAspects(train.eco.signal_aspects),
         eco_areaBlock: mergeDatasArea<Date | null>(
-          dataSimulationTrain.eco_routeEndOccupancy,
-          dataSimulationTrain.eco_routeBeginOccupancy,
+          dataSimulationTrain.eco_tailPosition,
+          dataSimulationTrain.eco_headPosition,
           keyValues
         ),
         eco_speed: formatStepsWithTime(train.eco.speeds),
