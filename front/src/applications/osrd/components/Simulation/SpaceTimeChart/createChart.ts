@@ -17,7 +17,8 @@ export default function createChart(
   rotate: boolean
 ): Chart {
   d3select(`#${chartID}`).remove();
-
+  console.log("create chart for spaceTimeChart", dataSimulation);
+  console.log("create chart for spaceTimeChart, keyValues", keyValues);
   const xValues: (number | Date)[] = dataSimulation
     .map((train) =>
       train.routeBeginOccupancy.map((section) =>
