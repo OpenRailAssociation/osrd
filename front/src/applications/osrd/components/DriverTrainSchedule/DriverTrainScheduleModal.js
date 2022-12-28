@@ -2,6 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
+
+import { jouleToKwh } from 'utils/energy';
 import formatStops, {
   massWithOneDecimal,
 } from 'applications/osrd/components/DriverTrainSchedule/DriverTrainScheduleHelpers';
@@ -65,14 +67,14 @@ export default function DriverTrainScheduleModal(props) {
       <div className="row">
         <div className="col-4">{t('drivertrainschedule:energyconsumed-basic')}</div>
         <div className="font-weight-bold text-primary col-8">
-          {Math.ceil(data.base.energy_consumed / (3.6 * 10 ** 6))} kWh
+          {jouleToKwh(data.base.energy_consumed)} kWh
         </div>
       </div>
       {data.eco != null && (
         <div className="row">
           <div className="col-4">{t('drivertrainschedule:energyconsumed-eco')}</div>
           <div className="font-weight-bold text-primary col-8">
-            {Math.ceil(data.eco.energy_consumed / (3.6 * 10 ** 6))} kWh
+            {jouleToKwh(data.eco.energy_consumed)} kWh
           </div>
         </div>
       )}
