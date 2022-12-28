@@ -119,7 +119,7 @@ class EnvelopePartTest {
         for (var i = 0; i < envelopeAllowance.size(); i++) {
             var envelopePart = envelopeAllowance.get(i);
             var envelopePartEnergy = envelopePart
-                .getEnergyConsumed(testContext.path, testContext.rollingStock);
+                    .getEnergyConsumed(testContext.path, testContext.rollingStock);
             double expectedEnvelopePartEnergy;
             switch (i) {
                 case 0:

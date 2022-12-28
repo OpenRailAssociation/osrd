@@ -29,12 +29,15 @@ import java.util.List;
 
 public class AllowanceTests {
 
-    public static EnvelopeSimContext makeSimpleContext(double length, double slope) {
+    private static EnvelopeSimContext makeSimpleContext(double length, double slope) {
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
         var testPath = new FlatPath(length, slope);
         return new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, RollingStock.Comfort.STANDARD);
     }
 
+    /**
+     * test allowance data
+     */
     public static MarecoAllowance makeStandardMarecoAllowance(
             EnvelopeSimContext context, 
             double beginPos, double endPos,
@@ -55,6 +58,9 @@ public class AllowanceTests {
         return new LinearAllowance(context, beginPos, endPos, capacitySpeedLimit, defaultRange);
     }
 
+    /**
+     * build test allowance data
+     */
     public static Envelope makeSimpleAllowanceEnvelope(EnvelopeSimContext context,
                                                         Allowance allowance,
                                                         double speed,

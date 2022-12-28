@@ -20,6 +20,9 @@ public class TestTrains {
         HYPERBOLIC
     }
 
+    private static ArrayList<RollingStock.TractiveEffortPoint> linearEffortCurve;
+    private static ArrayList<RollingStock.TractiveEffortPoint> constantPowerEffortCurve;
+
     private static double getEffort(CurveShape curveShape, double speed, double maxSpeed) {
         if (curveShape == CurveShape.LINEAR) {
             var maxEffort = 450000.0;
@@ -47,8 +50,8 @@ public class TestTrains {
     static {
         double trainMass = 850000; // in kilos
         double maxSpeed = 300 / 3.6;
-        var linearEffortCurve = createEffortSpeedCurve(maxSpeed, CurveShape.LINEAR);
-        var constantPowerEffortCurve = createEffortSpeedCurve(maxSpeed, CurveShape.HYPERBOLIC);
+        linearEffortCurve = createEffortSpeedCurve(maxSpeed, CurveShape.LINEAR);
+        constantPowerEffortCurve = createEffortSpeedCurve(maxSpeed, CurveShape.HYPERBOLIC);
 
         VERY_SHORT_FAST_TRAIN = new RollingStock(
                 "fast train",
