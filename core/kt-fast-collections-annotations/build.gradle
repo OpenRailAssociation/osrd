@@ -7,6 +7,6 @@ repositories {
 }
 
 dependencies {
-    api "org.jetbrains.kotlin:kotlin-reflect:1.7.10"
+    api "org.jetbrains.kotlin:kotlin-reflect:1.8.0"
 }
 
