@@ -14,7 +14,12 @@ import {
   updateTimePositionValues,
 } from 'reducers/osrdsimulation/actions';
 
-import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/osrd/components/Simulation/consts';
+import { datetime2sec, sec2datetime } from 'utils/timeManipulation';
+
+import {
+  LIST_VALUES_NAME_SPACE_TIME,
+  LIST_VALUES_NAME_SPEED_SPACE,
+} from 'applications/osrd/components/Simulation/consts';
 import drawGuideLines from 'applications/osrd/components/Simulation/drawGuideLines';
 import { store } from 'Store';
 
@@ -289,6 +294,7 @@ const enableInteractivity = (
     const { osrdsimulation } = store.getState();
     if (!osrdsimulation.isPlaying) {
       if (keyValues[0] === 'time') {
+        //we're in GET
         // recover coordinate we need
 
         const timePositionLocal = rotate
@@ -296,21 +302,43 @@ const enableInteractivity = (
           : chart.x.invert(pointer(event, event.currentTarget)[0]);
 
         debounceUpdateTimePositionValues(timePositionLocal, null, 15);
+
         const immediatePositionsValuesForPointer = interpolateOnTime(
           dataSimulation,
           keyValues,
           LIST_VALUES_NAME_SPACE_TIME,
           timePositionLocal
         );
+
         updatePointers(chart, keyValues, listValues, immediatePositionsValuesForPointer, rotate);
         // useless: will be called by traceVerticalLine on positionValue useEffect
-        //
       } else {
         // If GEV
         const positionLocal = rotate
           ? chart.y.invert(pointer(event, event.currentTarget)[1])
           : chart.x.invert(pointer(event, event.currentTarget)[0]);
+
         const timePositionLocal = interpolateOnPosition(dataSimulation, keyValues, positionLocal);
+
+        const immediatePositionsValuesForPointer = interpolateOnTime(
+          dataSimulation,
+          keyValues,
+          LIST_VALUES_NAME_SPEED_SPACE,
+          datetime2sec(timePositionLocal)
+        );
+
+         // GEV prepareData func multiply speeds by 3.6. We need to normalize that to make a convenitn pointer update
+        LIST_VALUES_NAME_SPEED_SPACE.forEach((name) => {
+          if (immediatePositionsValuesForPointer[name]) {
+            immediatePositionsValuesForPointer[name].speed /= 3.6;
+            immediatePositionsValuesForPointer[name].time = sec2datetime(
+              immediatePositionsValuesForPointer[name].time
+            );
+          }
+        });
+
+        updatePointers(chart, keyValues, listValues, immediatePositionsValuesForPointer, rotate);
+
         if (timePositionLocal) {
           debounceUpdateTimePositionValues(timePositionLocal, null, 15);
         }

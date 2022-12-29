@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 import { Dispatch } from 'redux';
 
+
 import { sec2time } from 'utils/timeManipulation';
 // import/no-cycle is disabled because this func call will be removed by refacto
 // eslint-disable-next-line
@@ -279,12 +280,12 @@ export const expandAndFormatData = (reference: Array<any>, dataToExpand: Array<a
   });
 
 export const gridX = (x: any, height: number) =>
-  d3.axisBottom(x).ticks(10).tickSize(-height).tickFormat(null);
+  d3.axisBottom(x).ticks(10).tickSize(-height).tickFormat(() => '');
 
 export const gridY = (y: any, width: number) =>
-  d3.axisLeft(y).ticks(10).tickSize(-width).tickFormat(null);
+  d3.axisLeft(y).ticks(10).tickSize(-width).tickFormat(() => '');
 
-// Interpolation of cursor based on space position
+// Time Interpolation of cursor based on space position
 export const interpolateOnPosition = (dataSimulation: any, keyValues: any, positionLocal: any) => {
   const bisect = d3.bisector<any, any>((d) => d[keyValues[0]]).left;
   const index = bisect(dataSimulation.speed, positionLocal, 1);
@@ -298,7 +299,7 @@ export const interpolateOnPosition = (dataSimulation: any, keyValues: any, posit
   return false;
 };
 
-// Interpolation of cursor based on time position
+// Value Interpolation of cursor based on time position
 export const interpolateOnTime = (
   dataSimulation: { [key: string]: any } | undefined,
   keyValues: string[],
@@ -309,14 +310,11 @@ export const interpolateOnTime = (
   const positionInterpolated: Record<string, PositionSpeed> = {};
   listValues.forEach((listValue) => {
     let bisection;
-    // If not array of array
     if (listValue === 'speed' || listValue === 'speeds') {
-      if (
-        dataSimulation?.[listValue] &&
-        dataSimulation?.[listValue][0] &&
-        timePositionLocal >= dataSimulation?.[listValue][0][keyValues[0]]
-      ) {
-        const index = bisect(dataSimulation[listValue], timePositionLocal, 1);
+      const comparator = dataSimulation?.[listValue] || dataSimulation?.[listValue][0]
+      if (comparator) {
+        const timeBisect = d3.bisector<any, any>((d) => d['time']).left;
+        const index = timeBisect(dataSimulation[listValue], timePositionLocal, 1);
         bisection = [dataSimulation[listValue][index - 1], dataSimulation[listValue][index]];
       }
     } else if (dataSimulation?.[listValue]) {
@@ -343,6 +341,5 @@ export const interpolateOnTime = (
       };
     }
   });
-
   return positionInterpolated;
 };

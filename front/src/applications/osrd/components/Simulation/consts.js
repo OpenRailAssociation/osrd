@@ -10,7 +10,7 @@ export const LIST_VALUES_NAME_SPACE_TIME = [
   'eco_headPosition',
   'eco_tailPosition',
 ];
-export const LIST_VALUES_NAME_SPEED_SPACE = ['speed', 'margins_speed', 'eco_speed'];
+export const LIST_VALUES_NAME_SPEED_SPACE = ['speed'];
 export const LIST_VALUES_NAME_SPACE_CURVES_SLOPES = ['slopesCurve'];
 export const KEY_VALUES_FOR_CONSOLIDATED_SIMULATION = ['time', 'position'];
 

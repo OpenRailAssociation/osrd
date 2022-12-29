@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { CgLoadbar } from 'react-icons/cg';
 import { GiResize } from 'react-icons/gi';
 import PropTypes from 'prop-types';
@@ -44,11 +44,14 @@ const CHART_ID = 'SpeedSpaceChart';
   const [chart, setChart] = useState(undefined);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [yPosition, setYPosition] = useState(0);
+  const [keyValues] = useState(['position', 'speed']);
   const ref = useRef();
-  const keyValues = ['position', 'speed'];
 
   // Prepare data
-  const dataSimulation = prepareData(simulation, selectedTrain, keyValues);
+  const dataSimulation = useMemo(
+    () => prepareData(simulation, selectedTrain, keyValues),
+    [simulation, selectedTrain, keyValues]
+  );
 
   // rotation Handle (button on right bottom)
   const toggleRotation = () => {
