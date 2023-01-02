@@ -110,7 +110,7 @@
     "@types/react-transition-group": "^4.4.5",
     "@types/uuid": "^8.3.4",
     "eslint-config-airbnb": "^19.0.4",
-    "eslint-config-prettier": "^8.5.0",
+    "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-only-warn": "^1.0.3",
     "eslint-plugin-prettier": "^4.2.1",
     "mapbox-gl": "npm:empty-npm-package@1.0.0",
