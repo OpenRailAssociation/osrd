@@ -77,7 +77,7 @@ export const initialState: OsrdConfState = {
   geojson: [],
   featureInfoClick: { displayPopup: false },
   gridMarginBefore: 0,
-  gridMarginAfter: 0
+  gridMarginAfter: 0,
 };
 
 const ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE = 7200;
