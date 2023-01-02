@@ -53,7 +53,7 @@ jobs:
         id: cached-cargo-dependencies
         with:
           path: editoast/target/
-          key: osrd-chartos-venv-${{ hashFiles('editoast/Cargo.lock') }}
+          key: osrd-editoast-target-${{ hashFiles('editoast/Cargo.lock') }}
 
       - name: Test
         run: |
@@ -96,7 +96,7 @@ jobs:
         id: cached-cargo-dependencies
         with:
           path: editoast/target/
-          key: osrd-chartos-venv-${{ hashFiles('editoast/Cargo.lock') }}
+          key: osrd-editoast-target-${{ hashFiles('editoast/Cargo.lock') }}
       - name: Format check
         run: |
           cd editoast
