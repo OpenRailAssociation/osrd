@@ -46,6 +46,7 @@ class EffortCurve(BaseModel, extra=Extra.forbid):
 
 class EffortCurveConditions(BaseModel, extra=Extra.forbid):
     comfort: Optional[ComfortType]
+    electrical_profile_level: Optional[str]
 
 
 class ConditionalEffortCurve(BaseModel, extra=Extra.forbid):
@@ -61,7 +62,7 @@ class ModeEffortCurves(BaseModel, extra=Extra.forbid):
     curves: List[ConditionalEffortCurve] = Field(
         description="List of conditional effort curves, sorted by match priority"
     )
-    default_curve: EffortCurve = Field(description="Standard comfort mode")
+    default_curve: EffortCurve = Field(description="Curve used if no condition is met")
     is_electric: bool = Field(description="Whether the mode is electric or not")
 
 
