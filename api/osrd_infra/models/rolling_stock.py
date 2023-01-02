@@ -23,7 +23,7 @@ class RollingStock(models.Model):
         help_text=_("A unique identifier for this rolling stock"),
     )
     effort_curves = models.JSONField(
-        help_text=_("A curve mapping speed (in m/s) to maximum traction (in newtons)"),
+        help_text=_("A group of curves mapping speed (in m/s) to maximum traction (in newtons)"),
         validators=[PydanticValidator(EffortCurves)],
     )
     length = models.FloatField(
