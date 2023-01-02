@@ -139,6 +139,6 @@ export interface OsrdConfState {
   destinationDate?: string;
   destinationTime?: string;
   featureInfoClick: { displayPopup: boolean; feature?: Feature; coordinates?: number[] };
-  gridMarginBefore: number,
-  gridMarginAfter: number
+  gridMarginBefore: number;
+  gridMarginAfter: number;
 }

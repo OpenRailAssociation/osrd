@@ -7,7 +7,7 @@ import { SwitchEditionState } from './types';
 import { getNewSwitch } from './utils';
 import { SwitchEditionLayers, SwitchEditionLeftPanel, SwitchMessages } from './components';
 import { NEW_ENTITY_ID } from '../../data/utils';
-import { TrackSectionEntity } from "../../../../types";
+import { TrackSectionEntity } from '../../../../types';
 
 const SwitchEditionTool: Tool<SwitchEditionState> = {
   id: 'switch-edition',

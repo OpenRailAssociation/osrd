@@ -27,8 +27,7 @@ export const useDebounce = (value, delay) => {
 /**
  * Debounce input fields
  */
- export const useDebouncedFunc = (value, delay, func) => {
-  //const [debouncedValue, setDebouncedValue] = useState(value);
+export const useDebouncedFunc = (value, delay, func) => {
   useEffect(() => {
     const handler = setTimeout(() => {
       func(value);
@@ -37,7 +36,6 @@ export const useDebounce = (value, delay) => {
       clearTimeout(handler);
     };
   }, [value, delay]);
-
 };
 
 /**
