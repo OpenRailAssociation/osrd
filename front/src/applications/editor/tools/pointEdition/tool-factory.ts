@@ -4,7 +4,7 @@ import { Feature, LineString, Point } from 'geojson';
 import { BiReset, AiOutlinePlus } from 'react-icons/all';
 import { IconType } from 'react-icons';
 import nearestPointOnLine from '@turf/nearest-point-on-line';
-import mapboxgl from "mapbox-gl";
+import mapboxgl from 'mapbox-gl';
 
 import { DEFAULT_COMMON_TOOL_STATE, LayerType, Tool } from '../types';
 import { getNearestPoint } from '../../../../utils/mapboxHelper';
@@ -81,7 +81,7 @@ function getPointEditionTool<T extends EditorPoint>({
     ],
 
     // Interactions:
-    onClickMap(_e, { setState, state }) {
+    onClickMap(_e, { setState, state, osrdConf: { infraID } }) {
       const { isHoveringTarget, entity, nearestPoint } = state;
       if (entity.geometry && !isEqual(entity.geometry, NULL_GEOMETRY) && isHoveringTarget) {
         setState({
@@ -98,17 +98,26 @@ function getPointEditionTool<T extends EditorPoint>({
           coordinates: nearestPoint.feature.geometry.coordinates,
         };
         newEntity.properties = newEntity.properties || {};
-        newEntity.properties.position = nearestPoint.position;
         newEntity.properties.track = nearestPoint.trackSectionID;
 
         if (requiresAngle && newEntity.objType === 'Signal') {
           (newEntity as SignalEntity).properties.extensions.sncf.angle_geo = nearestPoint.angle;
         }
 
-        setState({
-          ...state,
-          entity: newEntity,
-          nearestPoint: null,
+        // retrieve the track section to be sure that the computation of the distance will be good
+        // we can't trust maplibre, because the stored gemetry is not necessary the real one
+        getEntity(infraID as string, newEntity.properties.track, 'TrackSection').then((track) => {
+          newEntity.properties.position = nearestPointOnLine(
+            (track as Feature<LineString>).geometry,
+            newEntity.geometry as Point,
+            { units: 'meters' }
+          ).properties?.location;
+
+          setState({
+            ...state,
+            entity: newEntity,
+            nearestPoint: null,
+          });
         });
       }
     },
@@ -146,7 +155,6 @@ function getPointEditionTool<T extends EditorPoint>({
             nearestPoint: {
               angle,
               feature: nearestPoint,
-              position: nearestPoint.properties.location,
               trackSectionID: hoveredTracks[nearestPoint.properties.featureIndex].properties?.id,
             },
           });
