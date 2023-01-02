@@ -10,7 +10,6 @@ export type PointEditionState<E extends EditorEntity> = CommonToolState & {
   isHoveringTarget?: boolean;
   nearestPoint: {
     feature: Feature<Point>;
-    position: number;
     trackSectionID: string;
     angle: number;
   } | null;
