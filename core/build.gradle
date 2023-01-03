@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.spotbugs)
     alias(libs.plugins.shadow)
     id 'jacoco'
+    alias(libs.plugins.versions)
 }
 
 // region DEPENDENCIES
