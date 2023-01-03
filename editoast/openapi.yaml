@@ -1,7 +1,7 @@
 openapi: 3.0.2
 info:
   title: OSRD Editoast
-  description: OSRD Edition service documentation
+  description: OSRD Edition service description
   version: 0.1.0
 
 tags:
