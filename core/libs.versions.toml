@@ -14,12 +14,13 @@
 #  - CC Attribution
 
 [versions]
-kotlin = '1.7.10'
-ksp = '1.7.10-1.0.6'
+kotlin = '1.8.0'
+ksp = '1.8.0-1.0.8'
 kotlinx-coroutines = '1.6.+'
 logback = '1.4.+'
 moshi = '1.14.0'
 junit = '5.9.+'
+mockito = '4.11.+'
 
 [libraries]
 # kotlin stuff
@@ -47,13 +48,13 @@ okhttp = { module = 'com.squareup.okhttp3:okhttp', version = '4.10.0' }  # Apach
 classgraph = { module = 'io.github.classgraph:classgraph', version = '4.8.+' }  # MIT
 jmathplot = { module = 'com.github.yannrichet:JMathPlot', version = '1.0.1' }  # BSD
 slf4j = { module = 'org.slf4j:slf4j-api', version = '2.0.+' }  # MIT
-sentry = { module = 'io.sentry:sentry', version = '6.8.+' }  # MIT
+sentry = { module = 'io.sentry:sentry', version = '6.11.+' }  # MIT
 junit-jupiter-api = { module = 'org.junit.jupiter:junit-jupiter-api', version.ref = 'junit' }  # EPL 2.0
 junit-jupiter-params = { module = 'org.junit.jupiter:junit-jupiter-params', version.ref = 'junit' }  # EPL 2.0
 junit-jupiter-engine = { module = 'org.junit.jupiter:junit-jupiter-engine', version.ref = 'junit' }  # EPL 2.0
 jqwik = { module = 'net.jqwik:jqwik', version = '1.7.+' }  # EPL 2.0
-mockito-inline = { module = 'org.mockito:mockito-inline', version = '4.9.+' }  # MIT
-mockito-junit-jupiter = { module = 'org.mockito:mockito-junit-jupiter', version = '4.9.+' }  # MIT
+mockito-inline = { module = 'org.mockito:mockito-inline', version.ref = 'mockito' }  # MIT
+mockito-junit-jupiter = { module = 'org.mockito:mockito-junit-jupiter', version.ref = 'mockito'  }  # MIT
 junit-platform-launcher = { module = 'org.junit.platform:junit-platform-launcher', version = '1.9.+' }  # EPL 2.0
 jcip-annotations = { module = 'net.jcip:jcip-annotations', version = '1.0' }  # CC Attribution
 spotbugs-annotations = { module = 'com.github.spotbugs:spotbugs-annotations', version = '4.7.+' }  # LGPLv2.1
