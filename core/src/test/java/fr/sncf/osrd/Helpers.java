@@ -46,6 +46,12 @@ public class Helpers {
         return deserializeResource(RJSInfra.adapter, infraPath);
     }
 
+    public static List<RJSElectricalProfile> getExampleElectricalProfiles(
+            String physicalApproximationsPath
+    ) throws IOException, URISyntaxException {
+        return deserializeResource(RJSElectricalProfile.listAdapter, physicalApproximationsPath);
+    }
+
     private static <T> T deserializeResource(
             JsonAdapter<T> adapter,
             String resourcePath
