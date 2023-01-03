@@ -17,6 +17,7 @@ import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.api.tracks.undirected.*;
 import fr.sncf.osrd.infra.implementation.tracks.undirected.*;
+import fr.sncf.osrd.railjson.schema.common.RJSWaypointRef;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
@@ -190,27 +191,27 @@ public class InfraHelpers {
                 List.of(
                         new RJSRoute(
                                 "route_forward",
-                                List.of(new RJSDirectionalTrackRange(EdgeDirection.START_TO_STOP,
-                                        "track", 0, 100)),
-                                List.of()
+                                new RJSWaypointRef<>("bs_start", RJSWaypointRef.RJSWaypointType.BUFFER_STOP),
+                                EdgeDirection.START_TO_STOP,
+                                new RJSWaypointRef<>("bs_end", RJSWaypointRef.RJSWaypointType.BUFFER_STOP)
                         ),
                         new RJSRoute(
                                 "route_backward",
-                                List.of(new RJSDirectionalTrackRange(EdgeDirection.STOP_TO_START,
-                                        "track", 100, 0)),
-                                List.of()
+                                new RJSWaypointRef<>("bs_end", RJSWaypointRef.RJSWaypointType.BUFFER_STOP),
+                                EdgeDirection.STOP_TO_START,
+                                new RJSWaypointRef<>("bs_start", RJSWaypointRef.RJSWaypointType.BUFFER_STOP)
                         ),
                         new RJSRoute(
                                 "route_forward_first_half",
-                                List.of(new RJSDirectionalTrackRange(EdgeDirection.START_TO_STOP,
-                                        "track", 0, 50)),
-                                List.of()
+                                new RJSWaypointRef<>("bs_start", RJSWaypointRef.RJSWaypointType.BUFFER_STOP),
+                                EdgeDirection.START_TO_STOP,
+                                new RJSWaypointRef<>("d1", RJSWaypointRef.RJSWaypointType.DETECTOR)
                         ),
                         new RJSRoute(
                                 "route_forward_second_half",
-                                List.of(new RJSDirectionalTrackRange(EdgeDirection.START_TO_STOP,
-                                        "track", 50, 100)),
-                                List.of()
+                                new RJSWaypointRef<>("d1", RJSWaypointRef.RJSWaypointType.DETECTOR),
+                                EdgeDirection.START_TO_STOP,
+                                new RJSWaypointRef<>("bs_end", RJSWaypointRef.RJSWaypointType.BUFFER_STOP)
                         )
                 ),
                 new ArrayList<>(),
