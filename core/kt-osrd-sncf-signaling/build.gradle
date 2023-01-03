@@ -1,18 +1,17 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm'
+    alias(libs.plugins.kotlin.jvm)
 }
 
 repositories {
     mavenCentral()
 }
 
-def kotlin_version = '1.7.10'
-
 dependencies {
+    // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
     api project(':kt-osrd-signaling')
 
-    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: kotlin_version  // Apache 2.0
-    testImplementation group: 'org.jetbrains.kotlin', name: 'kotlin-test', version: kotlin_version  // Apache 2.0
+    implementation libs.kotlin.stdlib
+    testImplementation libs.kotlin.test
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {

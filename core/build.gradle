@@ -1,35 +1,15 @@
-// this project is licensed under LGPLv3.
-// DO NOT ADD any dependency which isn't compatible with LGPLv3, such as:
-//  - GPLv2, GPLv2+
-//  - GPLv3, GPLv3+
-//  - EPL 1.0
-//
-// The following licenses were checked for compatibility for use as libraries:
-//  - Apache 2.0
-//  - MIT
-//  - BSD licenses
-//  - EPL2.0 (see https://www.eclipse.org/legal/epl-2.0/faq.php#h.hsnsfg4e0htq)
-//  - LGPLv2, LGPLv2+, LGPLv3
-//  - GPLv2 with classpath exception
-//  - CC Attribution
-
 import static org.apache.tools.ant.taskdefs.condition.Os.*
 
 plugins {
     id 'java'
-    // must be kept in sync with kotlin_version below
-    id 'org.jetbrains.kotlin.jvm' version '1.7.21'
-    id 'com.google.devtools.ksp' version '1.7.21-1.0.8' apply false
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.ksp) apply false
     id 'application'
     id 'checkstyle'
-    id 'com.github.spotbugs' version '5.0.+'
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    alias(libs.plugins.spotbugs)
+    alias(libs.plugins.shadow)
     id 'jacoco'
 }
-
-// must be kept in sync across all modules
-def kotlin_version = '1.7.21'
-
 
 // region DEPENDENCIES
 
@@ -38,73 +18,75 @@ repositories {
 }
 
 dependencies {
+    // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
+
     implementation project(':osrd-railjson')
 
     // kotlin
-    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: kotlin_version  // Apache 2.0
-    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: '1.6.+'  // Apache 2.0
-    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-test', version: '1.6.+'  // Apache 2.0
-    testImplementation group: 'org.jetbrains.kotlin', name: 'kotlin-test', version: kotlin_version  // Apache 2.0
+    implementation libs.kotlin.stdlib
+    implementation libs.kotlinx.coroutines.core
+    testImplementation libs.kotlin.test
+    testImplementation libs.kotlinx.coroutines.test
 
     implementation project(':kt-osrd-signaling')
     implementation project(":kt-osrd-sim-interlocking")
     implementation project(":kt-osrd-sim-infra")
 
     // base primitives
-    implementation group: 'com.google.guava', name: 'guava', version: '31.1-jre'  // Apache 2.0
+    implementation libs.guava
 
     // command line parsing
-    implementation group: 'com.beust', name: 'jcommander', version: '1.82'  // Apache 2.0
+    implementation libs.jcommander
 
     // fast primitive collections
-    implementation group: 'com.carrotsearch', name: 'hppc', version: '0.9.1'  // Apache 2.0
+    implementation libs.hppc
 
     // JSON parsing
-    implementation 'com.squareup.moshi:moshi:1.14.0' // Apache 2.0
-    implementation 'com.squareup.moshi:moshi-adapters:1.14.0'  // Apache 2.0
+    implementation libs.moshi
+    implementation libs.moshi.adapters
 
     // HTTP server framework
-    implementation group: 'org.takes', name: 'takes', version: '1.24.+'  // MIT
-    implementation group: 'javax.json', name: 'javax.json-api', version: '1.1.4'  // GPLv2 with classpath exemption
+    implementation libs.takes
+    implementation libs.javax.json.api
 
     // HTTP client
-    implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.10.0' // Apache 2.0
+    implementation libs.okhttp
 
     // ClassGraph (FastClasspathScanner)
-    implementation group: 'io.github.classgraph', name: 'classgraph', version: '4.8.+' // MIT
+    implementation libs.classgraph
 
     // for debug UI
-    implementation 'com.github.yannrichet:JMathPlot:1.0.1' // BSD
+    implementation libs.jmathplot
 
     // the logging API stub
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.+'  // MIT
+    implementation libs.slf4j
 
     // the logging API implementation
-    implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.4.+'  // EPL 1.0 (incompatible) and LGPL 2.1 (compatible)
-    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.4.+'
+    implementation libs.logback.core
+    implementation libs.logback.classic
 
     // Sentry
-    implementation group: 'io.sentry', name: 'sentry', version: '6.8.+'  // MIT
+    implementation libs.sentry
 
     // Use JUnit Jupiter API for testing.
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.+'  // EPL 2.0
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.9.+'  // EPL 2.0
+    testImplementation libs.junit.jupiter.api
+    testImplementation libs.junit.jupiter.params
     // Use JUnit Jupiter Engine for testing.
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.+'  // EPL 2.0
+    testRuntimeOnly libs.junit.jupiter.engine
     // jqwik for property based testing
-    testImplementation 'net.jqwik:jqwik:1.7.+'  // EPL 2.0
+    testImplementation libs.jqwik
     // mockito for mocking
-    testImplementation group: 'org.mockito', name: 'mockito-inline', version: '4.9.+'  // MIT
-    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '4.9.+'  // MIT
+    testImplementation libs.mockito.inline
+    testImplementation libs.mockito.junit.jupiter
 
     // Only needed to run tests in a version of IntelliJ IDEA that bundles older versions
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.9.+'  // EPL 2.0
+    testRuntimeOnly libs.junit.platform.launcher
 
     // for linter annotations
-    compileOnly 'net.jcip:jcip-annotations:1.0'  // CC Attribution
-    compileOnly group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: '4.7.+'  // LGPLv2.1
-    testCompileOnly 'net.jcip:jcip-annotations:1.0'  // CC Attribution
-    testCompileOnly group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: '4.7.+'  // LGPLv2.1
+    compileOnly libs.jcip.annotations
+    compileOnly libs.spotbugs.annotations
+    testCompileOnly libs.jcip.annotations
+    testCompileOnly libs.spotbugs.annotations
 }
 
 // endregion
