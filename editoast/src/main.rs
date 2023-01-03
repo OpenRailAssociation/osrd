@@ -169,6 +169,7 @@ fn import_railjson(
     let railjson: RailJson = serde_json::from_reader(BufReader::new(railjson_file))?;
 
     let infra = railjson.persist(args.infra_name, conn)?;
+    let infra = infra.bump_version(conn)?;
 
     println!("✅ Infra {}[{}] saved!", infra.name.bold(), infra.id);
     // Generate only if the was set
