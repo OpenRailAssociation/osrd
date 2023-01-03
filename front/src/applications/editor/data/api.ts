@@ -1,4 +1,4 @@
-import { groupBy, omit, uniq } from 'lodash';
+import { groupBy, omit, uniq, toPairs } from 'lodash';
 import { v4 as uuid } from 'uuid';
 import { compare } from 'fast-json-patch';
 import { FeatureCollection } from 'geojson';
