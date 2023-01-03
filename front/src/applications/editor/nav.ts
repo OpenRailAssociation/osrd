@@ -1,7 +1,7 @@
 import { Dispatch } from 'redux';
 import { IconType } from 'react-icons/lib/esm/iconBase';
 import { BiTargetLock } from 'react-icons/bi';
-import { BsMap } from 'react-icons/bs';
+import { BsMap, BsFillExclamationOctagonFill } from 'react-icons/bs';
 import { FiLayers, FiZoomIn, FiZoomOut } from 'react-icons/fi';
 import { FaCompass } from 'react-icons/fa';
 
@@ -14,6 +14,7 @@ import {
   EditoastType,
 } from './tools/types';
 import InfraSelectionModal from './components/InfraSelectionModal';
+import InfraErrorsModal from './components/InfraErrors/InfraErrorsModal';
 import LayersModal from './components/LayersModal';
 import { SelectionState } from './tools/selection/types';
 
@@ -139,6 +140,17 @@ const NavButtons: NavButton[][] = [
       async onClick({ openModal }) {
         openModal({
           component: InfraSelectionModal,
+          arguments: {},
+        });
+      },
+    },
+    {
+      id: 'infra-errors',
+      icon: BsFillExclamationOctagonFill,
+      labelTranslationKey: 'Editor.nav.infra-errors',
+      async onClick({ openModal }) {
+        openModal({
+          component: InfraErrorsModal,
           arguments: {},
         });
       },
