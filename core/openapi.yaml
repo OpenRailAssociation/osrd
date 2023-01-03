@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: OSRD Core
-  description: "OSRD backend api description."
+  description: OSRD backend api description
   termsOfService: http://swagger.io/terms/
   license:
     name: GNU GPLv3
