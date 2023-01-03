@@ -1,12 +1,14 @@
 import React from 'react';
 import { Popup } from 'react-map-gl';
 import { useSelector } from 'react-redux';
+
+import { getFeatureInfoClick } from 'reducers/osrdconf/selectors';
 import PopupInfos from 'common/Map/Popup/PopupInfos';
 import PopupInfosCustomContent from 'applications/osrd/components/OSRDConfMap/PopupInfosCustomContent';
 import PopupInfosCustomTitle from 'applications/osrd/components/OSRDConfMap/PopupInfosCustomTitle';
 
 export default function RenderPopup() {
-  const { featureInfoClick } = useSelector((state) => state.osrdconf);
+  const featureInfoClick = useSelector(getFeatureInfoClick);
   if (featureInfoClick.displayPopup) {
     let backgroundColor;
     switch (featureInfoClick.feature.properties.typeVoie) {
@@ -19,11 +21,14 @@ export default function RenderPopup() {
         break;
     }
 
-    featureInfoClick.feature.properties.source = featureInfoClick.feature.source;
-    featureInfoClick.feature.properties.clickLngLat = [
-      featureInfoClick.coordinates[0],
-      featureInfoClick.coordinates[1],
-    ];
+    const properties = {
+      ...featureInfoClick.feature.properties,
+      source: featureInfoClick.feature.source,
+      clickLngLat: [
+        featureInfoClick.coordinates[0],
+        featureInfoClick.coordinates[1],
+      ]
+    }
 
     return (
       <Popup
@@ -33,8 +38,8 @@ export default function RenderPopup() {
         className="mapboxgl-hover-custom-popup"
       >
         <PopupInfos
-          title={<PopupInfosCustomTitle properties={featureInfoClick.feature.properties} />}
-          content={<PopupInfosCustomContent data={featureInfoClick.feature.properties} />}
+          title={<PopupInfosCustomTitle properties={properties} />}
+          content={<PopupInfosCustomContent data={properties} />}
           backgroundColor={backgroundColor}
         />
       </Popup>
