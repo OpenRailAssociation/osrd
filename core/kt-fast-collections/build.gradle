@@ -1,21 +1,20 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm'
-    id 'com.google.devtools.ksp'
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.ksp)
 }
 
 repositories {
     mavenCentral()
 }
 
-def kotlin_version = '1.7.10'
-
 dependencies {
+    // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
     api project(':kt-fast-collections-annotations')
     ksp project(':kt-fast-collections-generator')
 
-    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: kotlin_version  // Apache 2.0
-    api group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: '1.6.+'  // Apache 2.0
-    testImplementation group: 'org.jetbrains.kotlin', name: 'kotlin-test', version: kotlin_version  // Apache 2.0
+    implementation libs.kotlin.stdlib
+    api libs.kotlinx.coroutines.core
+    testImplementation libs.kotlin.test
 }
 
 // to get KSP generated-stuff to be recognised

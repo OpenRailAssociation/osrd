@@ -1,5 +1,5 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm'
+    alias(libs.plugins.kotlin.jvm)
 }
 
 repositories {
@@ -7,7 +7,8 @@ repositories {
 }
 
 dependencies {
+    // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
     api project(":kt-fast-collections-annotations")
-    implementation 'com.google.devtools.ksp:symbol-processing-api:1.7.10-1.0.6'
-    implementation "org.jetbrains.kotlin:kotlin-reflect:1.7.10"
+    implementation libs.ksp.symbol.processing.api
+    implementation libs.kotlin.reflect
 }
