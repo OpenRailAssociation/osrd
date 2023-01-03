@@ -1,27 +1,26 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm'
-    id 'com.google.devtools.ksp'
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.ksp)
 }
 
 repositories {
     mavenCentral()
 }
 
-def kotlin_version = '1.7.10'
-
 dependencies {
+    // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
     api project(":kt-osrd-utils")
     api project(':kt-osrd-sim-infra')
-    api group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core', version: '1.6.+'  // Apache 2.0
+    api libs.kotlinx.coroutines.core
 
-    implementation group: 'io.github.microutils', name: 'kotlin-logging', version: '3.0.4'  // Apache 2.0
-    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: kotlin_version  // Apache 2.0
-    implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-test', version: '1.6.+'  // Apache 2.0
-    testImplementation group: 'org.jetbrains.kotlin', name: 'kotlin-test', version: kotlin_version  // Apache 2.0
+    implementation libs.kotlin.logging
+    implementation libs.kotlin.stdlib
+    implementation libs.kotlinx.coroutines.test
+    testImplementation libs.kotlin.test
 
     // the logging API implementation is only needed during testing, as this is a library
-    testRuntimeOnly group: 'ch.qos.logback', name: 'logback-core', version: '1.4.+'  // EPL 1.0 (incompatible) and LGPL 2.1 (compatible)
-    testRuntimeOnly group: 'ch.qos.logback', name: 'logback-classic', version: '1.4.+'
+    testRuntimeOnly libs.logback.core
+    testRuntimeOnly libs.logback.classic
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {

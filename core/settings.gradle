@@ -8,3 +8,12 @@ include 'kt-osrd-signaling'
 include 'kt-osrd-sim-infra'
 include 'kt-osrd-sim-interlocking'
 include 'osrd-railjson'
+
+
+dependencyResolutionManagement {
+    versionCatalogs {
+        libs {
+            from(files("./libs.versions.toml"))
+        }
+    }
+}
