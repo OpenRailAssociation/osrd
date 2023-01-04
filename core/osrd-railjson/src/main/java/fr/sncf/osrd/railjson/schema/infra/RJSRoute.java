@@ -16,7 +16,7 @@ public class RJSRoute implements Identified {
     @Json(name = "entry_point")
     public RJSWaypointRef<RJSTrainDetector> entryPoint;
 
-    @Json(name = "entry_direction")
+    @Json(name = "entry_point_direction")
     public EdgeDirection entryPointDirection;
 
     @Json(name = "exit_point")
@@ -40,6 +40,8 @@ public class RJSRoute implements Identified {
         this.entryPoint = entryPoint;
         this.exitPoint = exitPoint;
         this.entryPointDirection = entryPointDirection;
+        this.releaseDetectors = new ArrayList<>();
+        this.switchesDirections = new HashMap<>();
     }
 
     @Override
