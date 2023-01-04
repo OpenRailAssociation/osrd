@@ -13,7 +13,6 @@ import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { NotificationsState } from 'common/Notifications';
 import OSRDSimulationConfig from './views/OSDSimulationConfig';
 import OSRDSimulation from './views/OSRDSimulation/OSRDSimulation';
-import AboutOSRD from './About';
 
 import logo from 'assets/logo_osrd_seul_blanc.svg';
 import 'applications/osrd/osrd.scss';
@@ -36,6 +35,11 @@ function HomeOSRD() {
               linkname={t('osrd.nav.simulation')}
               icon="icons-itinerary-train"
             />
+            <MastNavItemSNCF
+              link="/osrd/simulation"
+              linkname="chaussette"
+              icon="icons-itinerary-train"
+            />
           </>
         }
         itemsBottom={
@@ -50,9 +54,7 @@ function HomeOSRD() {
       <NavBarSNCF appName="OSRD" logo={logo} />
       <Routes>
         <Route path="/settings" element={<OSRDSimulationConfig />} />
-        <Route path="/about" element={<AboutOSRD />} />
         <Route path="/simulation" element={<OSRDSimulation />} />
-
         <Route
           path=""
           element={

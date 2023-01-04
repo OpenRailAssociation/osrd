@@ -1,5 +1,3 @@
-import './Home.scss';
-
 import Card from 'common/BootstrapSNCF/CardSNCF/CardSNCF';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import React from 'react';
