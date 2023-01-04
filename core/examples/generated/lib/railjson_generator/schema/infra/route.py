@@ -1,18 +1,17 @@
 from dataclasses import dataclass, field
 from typing import List, Mapping
 
-from railjson_generator.schema.infra.direction import Direction
-from railjson_generator.schema.infra.make_geo_data import make_geo_lines
-from railjson_generator.schema.infra.waypoint import Waypoint
-
 import infra
+
+from railjson_generator.schema.infra.direction import Direction
+from railjson_generator.schema.infra.waypoint import Waypoint
 
 
 @dataclass
 class Route:
     waypoints: List[Waypoint]
-    entry_direction: Direction
-    switches_group: Mapping[str, str] = field(default_factory=dict)
+    entry_point_direction: Direction
+    switches_directions: Mapping[str, str] = field(default_factory=dict)
     label: str = field(default=None)
     path_elements: List["PathElement"] = field(default_factory=list)
 
@@ -32,18 +31,11 @@ class Route:
         return infra.Route(
             id=self.label,
             entry_point=self.entry_point.get_waypoint_ref(),
+            entry_point_direction=infra.Direction[self.entry_point_direction.name],
             exit_point=self.exit_point.get_waypoint_ref(),
             release_detectors=[w.id for w in self.waypoints[1:-1]],
-            path=[element.to_rjs() for element in self.path_elements],
+            switches_directions=self.switches_directions,
         )
-
-    def _make_geo_lines(self):
-        coordinates = []
-        for element in self.path_elements:
-            coordinates.append(element.track_section.get_coordinates_at_offset(element.begin))
-        last_element = self.path_elements[-1]
-        coordinates.append(last_element.track_section.get_coordinates_at_offset(last_element.end))
-        return make_geo_lines(*coordinates)
 
     @property
     def entry_point(self):
