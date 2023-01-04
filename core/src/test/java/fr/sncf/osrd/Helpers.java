@@ -6,6 +6,7 @@ import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
 import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
+import fr.sncf.osrd.railjson.schema.RJSElectricalProfile;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
