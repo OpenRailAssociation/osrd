@@ -22,4 +22,7 @@ RUN apt update -yqq && \
 
 COPY --from=builder /usr/local/cargo/bin/editoast /usr/local/bin/editoast
 
+ARG OSRD_GIT_DESCRIBE
+ENV OSRD_GIT_DESCRIBE=${OSRD_GIT_DESCRIBE}
+
 CMD ["editoast", "runserver"]

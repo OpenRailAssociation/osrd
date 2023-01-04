@@ -37,8 +37,8 @@ class InfraView(
         infra = import_infra(request.data, infra_name)
         return Response({"id": infra.id}, status=status.HTTP_201_CREATED)
 
-    @action(detail=False, methods=["get"])
-    def schema(self, request):
+    @action(url_path='schema', detail=False, methods=["get"])
+    def get_schema(self, request):
         """Returns infra schema"""
         return Response(RailJsonInfra.schema())
 
