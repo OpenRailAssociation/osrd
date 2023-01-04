@@ -108,6 +108,7 @@ class RollingStock(BaseModel, extra=Extra.forbid):
     mass: PositiveFloat = Field(description="The mass of the train, in kg")
     rolling_resistance: RollingResistance = Field(description="The formula to use to compute rolling resistance")
     loading_gauge: LoadingGaugeType
+    metadata: Mapping[str, str] = Field(description="Properties used in the frontend to display the rolling stock")
 
 
 if __name__ == "__main__":
