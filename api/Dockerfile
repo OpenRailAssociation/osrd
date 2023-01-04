@@ -31,6 +31,9 @@ USER service
 
 COPY . /home/service
 
+ARG OSRD_GIT_DESCRIBE
+ENV OSRD_GIT_DESCRIBE=${OSRD_GIT_DESCRIBE}
+
 EXPOSE 8000
 
 CMD ["gunicorn", "config.asgi", \
