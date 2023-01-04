@@ -41,7 +41,9 @@ export default function OSRDSTDCM() {
         setCurrentStdcmRequestStatus={setCurrentStdcmRequestStatus}
         currentStdcmRequestStatus={currentStdcmRequestStatus}
       />
-      <OSRDStdcmResults currentStdcmRequestStatus={currentStdcmRequestStatus} />
+      {currentStdcmRequestStatus === STDCM_REQUEST_STATUS.success && (
+        <OSRDStdcmResults currentStdcmRequestStatus={currentStdcmRequestStatus} />
+      )}
     </>
   );
 }
