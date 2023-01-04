@@ -24,8 +24,7 @@ def create_route_from_path(builder, path):
             waypoint_list.append((waypoint, path_element.direction))
 
     waypoints = [w for w, _ in waypoint_list]
-    entry_direction = waypoint_list[0][1]
-    path[0].begin = waypoints[0].position
+    entry_point_directions = waypoint_list[0][1]
 
     tvd_sections = []
     for waypoint, direction in waypoint_list[:-1]:
@@ -42,14 +41,14 @@ def create_route_from_path(builder, path):
         endpoint_b = Endpoint.BEGIN if direction_b is Direction.START_TO_STOP else Endpoint.END
         link_key = Link.format_link_key(TrackEndpoint(tiv_a, endpoint_a), TrackEndpoint(tiv_b, endpoint_b))
         if link_key not in builder.switches_group_map:
-            continue
+            continue  # skip simple track link
         switch, group = builder.switches_group_map[link_key]
         switches_group[switch.label] = group
 
     builder.infra.add_route(
         waypoints,
-        entry_direction,
-        switches_group=switches_group,
+        entry_point_directions,
+        switches_directions=switches_group,
         path_elements=path,
     )
 
