@@ -35,16 +35,16 @@ export default function LegacyNavBarSNCF(props) {
 
   return (
     <div className={`mastheader${fullscreen ? ' fullscreen' : ''}`}>
-      <div className="mastheader-logo">
+      <div className="mastheader-logo flex-grow-0">
         <Link to="/">
           <img alt={appName} src={logo} width="70" />
         </Link>
       </div>
-      <header role="banner" className="mastheader-title d-none d-xl-block">
-        <h1 className="text-uppercase text-white pt-2 pl-3 mb-0">{appName}</h1>
+      <header role="banner" className="mastheader-title d-flex flex-grow-1">
+        <h1 className="text-uppercase text-white pl-3 mb-0">{appName}</h1>
       </header>
       <ul className="mastheader-toolbar toolbar mb-0">
-        <li className="toolbar-item toolbar-item-spacing">
+        {/* <li className="toolbar-item toolbar-item-spacing">
           <div className="d-flex align-items-center h-100 text-white">
             <span className="mr-2 text-yellow">
               <FaSun />
@@ -61,7 +61,7 @@ export default function LegacyNavBarSNCF(props) {
             </span>
           </div>
         </li>
-        {/* <li className="toolbar-item toolbar-item-spacing separator-gray-500">
+        <li className="toolbar-item toolbar-item-spacing separator-gray-500">
           <button
             type="button"
             className="btn btn-transparent px-0 mr-2"
@@ -108,6 +108,6 @@ export default function LegacyNavBarSNCF(props) {
 }
 
 LegacyNavBarSNCF.propTypes = {
-  appName: PropTypes.string.isRequired,
+  appName: PropTypes.oneOfType([PropTypes.string, PropTypes.object]).isRequired,
   logo: PropTypes.string.isRequired,
 };
