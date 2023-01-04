@@ -3,7 +3,7 @@ from typing import Optional
 
 from railjson_generator.schema.infra.direction import ApplicableDirection
 
-import infra
+from schemas import infra
 
 
 @dataclass
