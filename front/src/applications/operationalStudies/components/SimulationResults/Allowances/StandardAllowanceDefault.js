@@ -9,7 +9,8 @@ import PropTypes from 'prop-types';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import { trainscheduleURI } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import debounce from 'lodash/debounce';
-import { TYPES_UNITS, ALLOWANCE_UNITS_KEYS } from './allowancesConsts';
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import { TYPES_UNITS, ALLOWANCE_UNITS_KEYS } from './consts';
 
 export default function StandardAllowanceDefault(props) {
   const {
@@ -230,14 +231,27 @@ export default function StandardAllowanceDefault(props) {
             </>
           )}
           <div className="col">
-            <InputGroupSNCF
-              id="standardAllowanceTypeSelect"
-              options={allowanceTypes}
-              handleType={handleType}
-              value={value.value}
-              type={value.type}
-              sm
-            />
+            {allowanceTypes.length > 1 ? (
+              <InputGroupSNCF
+                id="standardAllowanceTypeSelect"
+                options={allowanceTypes}
+                handleType={handleType}
+                value={value.value}
+                type={value.type}
+                sm
+              />
+            ) : (
+              <InputSNCF
+                id="standardAllowanceType"
+                label={allowanceTypes[0].label}
+                type="text"
+                handleType={handleType}
+                value={value.value}
+                sm
+                noMargin
+                isFlex
+              />
+            )}
           </div>
         </div>
       </div>
