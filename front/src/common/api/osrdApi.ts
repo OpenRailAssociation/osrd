@@ -434,6 +434,16 @@ export type LightRollingStock = {
   loading_gauge?: 'G1' | 'G2' | 'GA' | 'GB' | 'GB1' | 'GC' | 'FR3.3' | 'FR3.3/GB/G2' | 'GLOTT';
   electric_only?: boolean;
   compatible_voltages?: number[];
+  metadata: {
+    detail?: string;
+    reference?: string;
+    family?: string;
+    type?: string;
+    grouping?: string;
+    series?: string;
+    subseries?: string;
+    unit?: string;
+  }
 };
 export type RollingStock = LightRollingStock & {
   effort_curve?: {
