@@ -11,7 +11,7 @@ from railjson_generator.schema.infra.range_elements import Curve, Slope
 from railjson_generator.schema.infra.signal import Signal
 from railjson_generator.schema.infra.waypoint import BufferStop, Detector, Waypoint
 
-import infra
+from schemas import infra
 
 
 def _track_id():
@@ -129,3 +129,6 @@ class TrackSection:
     @property
     def id(self):
         return self.label
+
+    def __hash__(self) -> int:
+        return hash(self.id)

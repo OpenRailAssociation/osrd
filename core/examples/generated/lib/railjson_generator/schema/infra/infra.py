@@ -11,7 +11,7 @@ from railjson_generator.schema.infra.speed_section import SpeedSection
 from railjson_generator.schema.infra.switch import Switch
 from railjson_generator.schema.infra.track_section import TrackSection
 
-import infra
+from schemas import infra
 
 
 @dataclass
@@ -71,7 +71,7 @@ class Infra:
         parts_per_op = defaultdict(list)
         for track in self.track_sections:
             for op_part in track.operational_points:
-                parts_per_op[op_part.operarational_point.label].append(op_part.to_rjs(track))
+                parts_per_op[op_part.operational_point.label].append(op_part.to_rjs(track))
         ops = []
         for op in self.operational_points:
             new_op = infra.OperationalPoint(
