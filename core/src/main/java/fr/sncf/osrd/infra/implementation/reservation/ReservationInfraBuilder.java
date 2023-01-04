@@ -1,12 +1,8 @@
 package fr.sncf.osrd.infra.implementation.reservation;
 
-import static fr.sncf.osrd.infra.api.Direction.BACKWARD;
 import static fr.sncf.osrd.infra.api.Direction.FORWARD;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.*;
 import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.NetworkBuilder;
 import fr.sncf.osrd.infra.api.Direction;
@@ -27,8 +23,8 @@ import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.infra.RJSRoute;
 import fr.sncf.osrd.reporting.warnings.Warning;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorder;
-import fr.sncf.osrd.utils.graph.GraphHelpers;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ReservationInfraBuilder {
 
@@ -123,7 +119,7 @@ public class ReservationInfraBuilder {
             var detectors = detectorsOnRoute(trackRanges);
             var sections = sectionsOnRoute(detectors);
             var route = new ReservationRouteImpl(detectors, releasePoints(rjsRoute),
-                    rjsRoute.id, trackRanges, isRouteControlled(trackRanges), length, sections);
+                    rjsRoute.id, trackRanges, isRouteControlled(rjsRoute), length, sections);
             validateRoute(route, rjsRoute);
             routes.add(route);
             for (var section : sections)
@@ -154,7 +150,14 @@ public class ReservationInfraBuilder {
 
         var detectorIDs = route.getDetectorPath().stream()
                         .map(x -> x.detector().getID())
-                .toList();
+                .collect(Collectors.toSet());
+        for (var releasePoint : route.getReleasePoints()) {
+            if (!detectorIDs.contains(releasePoint.getID()))
+                diagnosticRecorder.register(new Warning(String.format(
+                    "Release detector for route %s is not part of the route",
+                    rjsRoute.id
+                )));
+        }
         var lastDetector = route.getDetectorPath().get(route.getDetectorPath().size() - 1);
         if (rjsRoute.entryPoint != null) {
             var entryDetector = route.getDetectorPath().get(0).detector();
@@ -204,48 +207,59 @@ public class ReservationInfraBuilder {
     }
 
     /** Returns true if the route is controlled (requires explicit reservation to be used) */
-    private boolean isRouteControlled(ImmutableList<TrackRangeView> trackRanges) {
-        // TODO: eventually, add an optional parameter to RJSRoute
-        return trackRanges.stream()
-                .anyMatch(trackRangeView -> trackRangeView.track.getEdge() instanceof SwitchBranch);
+    private boolean isRouteControlled(RJSRoute rjsRoute) {
+        return !rjsRoute.switchesDirections.isEmpty();
     }
 
     private ImmutableList<TrackRangeView> makeTrackRanges(RJSRoute rjsRoute) {
         var res = new ArrayList<TrackRangeView>();
-        for (var range : rjsRoute.path) {
-            res.add(new TrackRangeView(
-                    range.begin,
-                    range.end,
-                    diTrackInfra.getEdge(range.track, Direction.fromEdgeDir(range.direction))
-            ));
-        }
 
-        // Adds switch branches edges (unspecified in the RJS path)
-        for (int i = 1; i < res.size(); i++) {
-            var prev = res.get(i - 1);
-            var next = res.get(i);
-            var g = diTrackInfra.getTrackGraph();
-            if (g.adjacentEdges(prev.track.getEdge()).contains(next.track.getEdge()))
-                continue;
-            var prevNode = GraphHelpers.nodeFromEdgeEndpoint(
-                    g,
-                    prev.track.getEdge(),
-                    Direction.endEndpoint(prev.track.getDirection())
-            );
-            var nextNode = GraphHelpers.nodeFromEdgeEndpoint(
-                    g,
-                    next.track.getEdge(),
-                    Direction.startEndpoint(next.track.getDirection())
-            );
-            var connecting = g.edgeConnecting(prevNode, nextNode);
-            if (connecting.isEmpty())
-                connecting = g.edgeConnecting(nextNode, prevNode);
-            if (connecting.isEmpty())
-                throw new DiscontinuousRoute(rjsRoute.id, prev.track.getEdge().getID(), next.track.getEdge().getID());
-            var branchEdge = connecting.get();
-            var dir = g.incidentNodes(branchEdge).nodeU().equals(prevNode) ? FORWARD : BACKWARD;
-            res.add(i, new TrackRangeView(0, 0, diTrackInfra.getEdge(branchEdge, dir)));
+        var direction = Direction.fromEdgeDir(rjsRoute.entryPointDirection);
+        var entryDetector = diTrackInfra.getDetectorMap().get(rjsRoute.entryPoint.id.id);
+        assert entryDetector != null : String.format("Couldn't find '%s' detector", rjsRoute.entryPoint.id.id);
+        var exitDetector = diTrackInfra.getDetectorMap().get(rjsRoute.exitPoint.id.id);
+        assert exitDetector != null : String.format("Couldn't find '%s' detector", rjsRoute.exitPoint.id.id);
+        var edge = diTrackInfra.getEdge(entryDetector.getTrackSection(), direction);
+        var position = entryDetector.getOffset();
+        var exitEdge = exitDetector.getTrackSection();
+        var g = diTrackInfra.getDiTrackGraph();
+
+        while (edge.getEdge() != exitEdge) {
+            // Add track range
+            double endPosition = edge.getDirection() == FORWARD ? edge.getEdge().getLength() : 0.;
+            res.add(new TrackRangeView(position, endPosition, edge));
+
+            // Find next track
+            var endpointPair = g.incidentNodes(edge);
+            var neighbors = g.outEdges(endpointPair.target());
+
+            if (neighbors.isEmpty())
+                throw new DiscontinuousRoute(rjsRoute.id);
+
+            var firstNeighbor = neighbors.iterator().next();
+            if (!(firstNeighbor.getEdge() instanceof SwitchBranch)) {
+                assert neighbors.size() == 1;
+                // Simple track link
+                edge = firstNeighbor;
+            } else {
+                // Switch link
+                var aSwitch = ((SwitchBranch) firstNeighbor.getEdge()).getSwitch();
+                var switchGroup = rjsRoute.switchesDirections.get(aSwitch.getID());
+                var switchBranches = aSwitch.getGroups().get(switchGroup);
+                var newEdge = edge;
+                for (var neighbor : neighbors) {
+                    if (switchBranches.contains((SwitchBranch) neighbor.getEdge())) {
+                        edge = neighbor;
+                        break;
+                    }
+                }
+                // We didn't find a next edge
+                if (newEdge == edge)
+                    throw new DiscontinuousRoute(rjsRoute.id);
+            }
+            position = edge.getDirection() == FORWARD ? 0 : edge.getEdge().getLength();
         }
+        res.add(new TrackRangeView(position, exitDetector.getOffset(), edge));
         return ImmutableList.copyOf(res);
     }
 
