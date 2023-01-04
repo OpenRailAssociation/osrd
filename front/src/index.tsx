@@ -5,15 +5,14 @@ import { PersistGate } from 'redux-persist/integration/react';
 import * as Sentry from '@sentry/react';
 import { BrowserTracing } from '@sentry/tracing';
 // Styles
-import 'config/variables.css';
-import 'main/App/App.scss';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import 'styles/styles.scss';
 
 import { SENTRY_CONFIG } from 'config/config';
 import { persistor, store } from 'Store';
 
 // Components
-import App from 'main/App';
+import App from 'main/app';
 import Loader from 'common/Loader';
 import { version } from '../package.json';
 import reportWebVitals from './reportWebVitals';
