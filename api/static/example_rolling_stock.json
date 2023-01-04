@@ -74,5 +74,16 @@
         "is_electric": false
       }
     }
+  },
+  "metadata": {
+    "detail": "",
+    "number": "1",
+    "reference": "",
+    "family": "",
+    "rolling_stock_type": "",
+    "grouping": "",
+    "series": "",
+    "subseries": "",
+    "unit": ""
   }
 }

@@ -1248,6 +1248,18 @@ components:
                 properties:
                   is_electric:
                     type: boolean
+        metadata:
+          type: object
+          example:
+            detail: "BB 7200"
+            family: "LOCOMOTIVES"
+            grouping: "Locomotives électriques courant continu"
+            number: "1"
+            reference: "7200"
+            series: "BB 7200"
+            subseries: "GV"
+            type: "Locomotives électriques"
+            unit: "US"
     TrainSchedule:
       allOf:
         - type: object

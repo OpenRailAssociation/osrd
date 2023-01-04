@@ -62,6 +62,14 @@ class RollingStock(models.Model):
     )
     loading_gauge = models.CharField(max_length=16, choices=[(x.value, x.name) for x in LoadingGaugeType])
     image = models.ImageField(null=True, blank=True)
+    metadata = models.JSONField(
+        help_text=_(
+            "Dictionary of optional properties used in the frontend to display\
+            the rolling stock: detail, number, reference, family, type, grouping,\
+            series, subseries, unit"
+        ),
+        default=dict,
+    )
 
     def __str__(self):
         return self.name
