@@ -1,16 +1,24 @@
 from typing import Dict
+
 from rest_framework import serializers
-from rest_framework.serializers import ModelSerializer, Serializer
-from rest_framework_nested.serializers import NestedHyperlinkedModelSerializer
+from rest_framework.serializers import (
+    HyperlinkedModelSerializer,
+    ModelSerializer,
+    Serializer,
+)
 from rest_framework_gis.fields import GeometryField
+from rest_framework_nested.serializers import NestedHyperlinkedModelSerializer
 
 from osrd_infra.models import (
     Infra,
     PathModel,
+    Project,
     RollingStock,
     RollingStockCompoundImage,
     RollingStockLivery,
     RollingStockSeparatedImage,
+    Scenario,
+    Study,
     Timetable,
     TrainScheduleModel,
 )
@@ -41,15 +49,15 @@ class InfraSerializer(ModelSerializer):
 
 class RollingStockLiverySerializer(NestedHyperlinkedModelSerializer):
     parent_lookup_kwargs = {
-        'rolling_stock_pk': 'rolling_stock__pk',
+        "rolling_stock_pk": "rolling_stock__pk",
     }
 
     class Meta:
         model = RollingStockLivery
         fields = ["name", "url"]
         extra_kwargs = {
-            'url': {
-                'view_name': 'rolling_stock_livery-detail',
+            "url": {
+                "view_name": "rolling_stock_livery-detail",
             }
         }
 
@@ -61,8 +69,8 @@ class RollingStockSerializer(ModelSerializer):
         model = RollingStock
         exclude = ["image"]
         extra_kwargs = {
-            'url': {
-                'view_name': 'rolling_stock-detail',
+            "url": {
+                "view_name": "rolling_stock-detail",
             }
         }
 
@@ -96,25 +104,17 @@ class CreateRollingStockLiverySerializer(Serializer):
         images = validated_data["images"]
         compound_image = validated_data["compound_image"]
 
-        compound_image = RollingStockCompoundImage(
-            image=compound_image.open(mode='rb').read()
-        )
+        compound_image = RollingStockCompoundImage(image=compound_image.open(mode="rb").read())
         compound_image.save()
 
         livery = RollingStockLivery(
-            rolling_stock=rolling_stock,
-            name=validated_data["livery_name"],
-            compound_image=compound_image
+            rolling_stock=rolling_stock, name=validated_data["livery_name"], compound_image=compound_image
         )
         livery.save()
 
         for i in range(len(images)):
             image = images[i]
-            RollingStockSeparatedImage(
-                livery=livery,
-                order=i,
-                image=image.open(mode='rb').read()
-            ).save()
+            RollingStockSeparatedImage(livery=livery, order=i, image=image.open(mode="rb").read()).save()
         return
 
 
@@ -238,3 +238,89 @@ class STDCMInputSerializer(Serializer):
     margin_before = serializers.FloatField(required=False, allow_null=True)
     margin_after = serializers.FloatField(required=False, allow_null=True)
     standard_allowance = serializers.JSONField(required=False, allow_null=True)
+
+
+# STUDY
+
+
+class ScenarioSerializer(NestedHyperlinkedModelSerializer):
+    parent_lookup_kwargs = {
+        "study_pk": "study__pk",
+        "project_pk": "study__project__pk",
+    }
+
+    timetable = serializers.PrimaryKeyRelatedField(many=False, read_only=True)
+    infra = serializers.PrimaryKeyRelatedField(queryset=Infra.objects.all())
+
+    trains_count = serializers.SerializerMethodField("count_trains")
+    infra_name = serializers.SerializerMethodField("get_infra_name")
+
+    def count_trains(self, scenario):
+        return len(scenario.timetable.train_schedules.all())
+
+    def get_infra_name(self, scenario):
+        return scenario.infra.name
+
+    class Meta:
+        model = Scenario
+        fields = (
+            "id",
+            "name",
+            "description",
+            "timetable",
+            "infra",
+            "trains_count",
+            "creation_date",
+            "last_modification",
+            "tags",
+            "infra_name",
+        )
+
+
+class StudySerializer(NestedHyperlinkedModelSerializer):
+
+    scenarios = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    parent_lookup_kwargs = {
+        "project_pk": "project__pk",
+    }
+
+    class Meta:
+        model = Study
+        fields = (
+            "id",
+            "name",
+            "description",
+            "business_code",
+            "service_code",
+            "creation_date",
+            "last_modification",
+            "start_date",
+            "expected_end_date",
+            "actual_end_date",
+            "budget",
+            "tags",
+            "state",
+            "type",
+            "scenarios",
+        )
+
+
+class ProjectSerializer(HyperlinkedModelSerializer):
+
+    studies = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+
+    class Meta:
+        model = Project
+        fields = (
+            "id",
+            "name",
+            "objectives",
+            "description",
+            "funders",
+            "budget",
+            "image",
+            "creation_date",
+            "last_modification",
+            "studies",
+            "tags",
+        )
