@@ -24,14 +24,16 @@ export default function LegacyNavBarSNCF(props) {
     dispatch(logout());
   };
 
-  // const changeLanguage = (lng) => {
-  //   i18n.changeLanguage(lng);
-  // };
+  /*
+  const changeLanguage = (lng) => {
+    i18n.changeLanguage(lng);
+  };
 
   const changeDarkmode = () => {
     dispatch(toggleDarkmode());
     window.location.reload(false);
   };
+  */
 
   return (
     <div className={`mastheader${fullscreen ? ' fullscreen' : ''}`}>
@@ -41,7 +43,7 @@ export default function LegacyNavBarSNCF(props) {
         </Link>
       </div>
       <header role="banner" className="mastheader-title d-flex flex-grow-1">
-        <h1 className="text-uppercase text-white pl-3 mb-0">{appName}</h1>
+        <h1 className="text-white pl-3 mb-0">{appName}</h1>
       </header>
       <ul className="mastheader-toolbar toolbar mb-0">
         {/* <li className="toolbar-item toolbar-item-spacing">
