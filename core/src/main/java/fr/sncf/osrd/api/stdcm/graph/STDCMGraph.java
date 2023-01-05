@@ -3,6 +3,7 @@ package fr.sncf.osrd.api.stdcm.graph;
 import com.google.common.collect.Multimap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.api.stdcm.OccupancyBlock;
+import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
@@ -31,7 +32,7 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
     final AllowanceManager allowanceManager;
     final BacktrackingManager backtrackingManager;
     final String tag;
-    final double standardAllowanceSpeedRatio;
+    final AllowanceValue standardAllowance;
 
     /** Constructor */
     public STDCMGraph(
@@ -55,21 +56,25 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
         this.allowanceManager = new AllowanceManager(this);
         this.backtrackingManager = new BacktrackingManager(this);
         this.tag = tag;
-        this.standardAllowanceSpeedRatio = makeStandardAllowanceSpeedRatio(standardAllowance);
+        this.standardAllowance = standardAllowance;
+
+        assert !(standardAllowance instanceof AllowanceValue.FixedTime)
+                : "Standard allowance cannot be a flat time for STDCM trains";
     }
 
-    /** Returns the speed ratio we need to apply to the envelope to apply the given standard allowance */
-    private static double makeStandardAllowanceSpeedRatio(AllowanceValue allowanceValue) {
-        if (allowanceValue == null)
+    /** Returns the speed ratio we need to apply to the envelope to follow the given standard allowance.
+     * We need to know the envelope and route in case of a "time per distance" allowance. */
+    public double getStandardAllowanceSpeedRatio(
+            Envelope envelope,
+            SignalingRoute route
+    ) {
+        if (standardAllowance == null)
             return 1;
 
-        // For now only percentage value is supported. Flat time duration can't be supported.
-        // Time per distance could eventually be supported as well but the speed factor would be irregular
-        assert allowanceValue instanceof AllowanceValue.Percentage
-                : "Standard allowance can only be a percentage allowance for STDCM trains";
-
-        var percentAllowance = (AllowanceValue.Percentage) allowanceValue;
-        return 1 / (1 + percentAllowance.percentage / 100);
+        var runTime = envelope.getTotalTime();
+        var distance = route.getInfraRoute().getLength();
+        var allowanceRatio = standardAllowance.getAllowanceRatio(runTime, distance);
+        return 1 / (1 + allowanceRatio);
     }
 
     @Override
