@@ -245,11 +245,12 @@ export default function StandardAllowanceDefault(props) {
                 id="standardAllowanceType"
                 label={allowanceTypes[0].label}
                 type="text"
-                handleType={handleType}
+                onChange={(e) => handleType({ type: allowanceTypes[0].id, value: e.target.value })}
                 value={value.value}
                 sm
                 noMargin
                 isFlex
+                unit={allowanceTypes[0].unit}
               />
             )}
           </div>
