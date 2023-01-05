@@ -15,10 +15,10 @@ in the `kwargs`, for now it contains:
 
 ```json
 {
-  "all_infras": {
-    "dummy": dummy infra id (int),
-    "tiny": tiny infra id (int),
-    "small": small infra id (int),
+  "all_scenarios": {
+    "dummy": infra, project, operational study and scenario,
+    "tiny": infra, project, operational study and scenario,
+    "small": infra, project, operational study and scenario
   },
   "url": api url
 }
