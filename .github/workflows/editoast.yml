@@ -58,12 +58,12 @@ jobs:
       - name: Test
         run: |
           cd editoast
-          cargo test --verbose -- --test-threads 2
+          cargo test --verbose -- --test-threads 1
 
       - name: Coverage
         uses: actions-rs/tarpaulin@v0.1
         with:
-          args: "-r ./editoast --skip-clean"
+          args: "-r ./editoast -- --test-threads 1"
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
