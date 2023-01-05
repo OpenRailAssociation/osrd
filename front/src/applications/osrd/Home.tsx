@@ -5,10 +5,10 @@ import { Route, Routes } from 'react-router-dom';
 import { NotificationsState } from 'common/Notifications';
 import OSRDSimulationConfig from './views/OSDSimulationConfig';
 import OSRDSimulation from './views/OSRDSimulation/OSRDSimulation';
-import HomeContent from './views/HomeContent/HomeContent';
-import Project from './views/Project/Project';
-import Study from './views/Study/Study';
-import Scenario from './views/Scenario/Scenario';
+import HomeContent from './views/HomeContent';
+import Project from './views/Project';
+import Study from './views/Study';
+import Scenario from './views/Scenario';
 
 import 'applications/osrd/osrd.scss';
 
