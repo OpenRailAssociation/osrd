@@ -37,12 +37,22 @@ public class StandardAllowanceTests {
         );
     }
 
+    private static void checkAllowanceResult(STDCMAllowanceResults results, AllowanceValue value) {
+        checkAllowanceResult(results, value, Double.NaN);
+    }
+
     /** Compares the run time with and without allowance, checks that the allowance is properly applied */
-    private static void checkAllowanceResult(STDCMAllowanceResults results, AllowanceValue.Percentage value) {
+    private static void checkAllowanceResult(STDCMAllowanceResults results, AllowanceValue value, double tolerance) {
+        if (Double.isNaN(tolerance))
+            tolerance = 2 * timeStep;
+        var baseEnvelope = results.withoutAllowance.envelope();
+        var extraTime = value.getAllowanceTime(baseEnvelope.getTotalTime(), baseEnvelope.getTotalDistance());
+        var baseTime = baseEnvelope.getTotalTime();
+        var actualTime = results.withAllowance.envelope().getTotalTime();
         assertEquals(
-                results.withoutAllowance.envelope().getTotalTime() * (1 + value.percentage / 100),
-                results.withAllowance.envelope().getTotalTime(),
-                2 * timeStep
+                baseTime + extraTime,
+                actualTime,
+                tolerance
         );
     }
 
@@ -325,5 +335,123 @@ public class StandardAllowanceTests {
         assertNotNull(res.withAllowance);
         occupancyTest(res.withAllowance, occupancyGraph, timeStep);
         checkAllowanceResult(res, allowance);
+    }
+
+    /** Test that we can have both an engineering and a standard allowance, with a time per distance allowance */
+    @Test
+    public void testEngineeringWithStandardAllowanceTimePerDistance() {
+        /*
+        a --> b -----> c --> d
+
+        space
+          ^
+        d |############### end
+          |############### /
+          |###############/
+        c |           ___/
+          |       ___/
+        b |   ___/
+          |  /#################
+        a |_/##################_> time
+
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var routes = List.of(
+                infraBuilder.addRoute("a", "b", 1_000, 30),
+                infraBuilder.addRoute("b", "c", 10_000, 30),
+                infraBuilder.addRoute("c", "d", 1_000, 30)
+        );
+        var infra = infraBuilder.build();
+        var occupancyGraph = ImmutableMultimap.of(
+                routes.get(0), new OccupancyBlock(120, POSITIVE_INFINITY, 0, 1_000),
+                routes.get(2), new OccupancyBlock(0, 1000, 0, 1_000)
+        );
+        var allowance = new AllowanceValue.TimePerDistance(60);
+
+        var res = new STDCMPathfindingBuilder()
+                .setInfra(infra)
+                .setUnavailableTimes(occupancyGraph)
+                .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(routes.get(0), 0)))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(routes.get(2), 1_000)))
+                .setStandardAllowance(allowance)
+                .run();
+        occupancyTest(res, occupancyGraph, timeStep);
+
+        var thirdRouteEntryTime = res.departureTime()
+                + res.envelope().interpolateTotalTime(11_000);
+        assertEquals(1000, thirdRouteEntryTime, 2 * timeStep);
+    }
+
+    /** Tests a simple path with no conflict, with a time per distance allowance */
+    @Test
+    public void testSimplePathTimePerDistanceAllowance() {
+        /*
+        a --> b --> c --> d --> e
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var firstRoute = infraBuilder.addRoute("a", "b");
+        infraBuilder.addRoute("b", "c");
+        infraBuilder.addRoute("c", "d");
+        var forthRoute = infraBuilder.addRoute("d", "e");
+        var infra = infraBuilder.build();
+        var allowance = new AllowanceValue.TimePerDistance(15);
+        var res = runWithAndWithoutAllowance(new STDCMPathfindingBuilder()
+                .setInfra(infra)
+                .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(forthRoute, 100)))
+                .setStandardAllowance(allowance)
+        );
+        assertNotNull(res.withoutAllowance);
+        assertNotNull(res.withAllowance);
+
+        // We need a high tolerance because there are several binary searches
+        checkAllowanceResult(res, allowance, 4 * timeStep);
+    }
+
+    /** We shift de departure time a little more at each route, with a time per distance allowance */
+    @Test
+    public void testMaximumShiftWithDelaysTimePerDistance() {
+        /*
+        a --> b --> c --> d --> e
+
+        space
+          ^
+        e |################################ end
+          |################################/__________
+        d |#################### /         /
+          |####################/_________/____________
+        c |############# /    /         /
+          |#############/____/_________/______________
+        b |#####  /    /    /         /
+          |#####/     /    /         /
+        a start______/____/_________/__________________> time
+
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var firstRoute = infraBuilder.addRoute("a", "b");
+        var secondRoute = infraBuilder.addRoute("b", "c");
+        var thirdRoute = infraBuilder.addRoute("c", "d");
+        var forthRoute = infraBuilder.addRoute("d", "e");
+        var infra = infraBuilder.build();
+        var allowance = new AllowanceValue.TimePerDistance(15);
+        var occupancyGraph = ImmutableMultimap.of(
+                firstRoute, new OccupancyBlock(0, 200, 0, 100),
+                secondRoute, new OccupancyBlock(0, 600, 0, 100),
+                thirdRoute, new OccupancyBlock(0, 1200, 0, 100),
+                forthRoute, new OccupancyBlock(0, 2000, 0, 100)
+        );
+        var res = runWithAndWithoutAllowance(new STDCMPathfindingBuilder()
+                .setInfra(infra)
+                .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(forthRoute, 100)))
+                .setUnavailableTimes(occupancyGraph)
+                .setStandardAllowance(allowance)
+        );
+        assertNotNull(res.withoutAllowance);
+        assertNotNull(res.withAllowance);
+        occupancyTest(res.withAllowance, occupancyGraph, timeStep);
+
+        // We need a high tolerance because there are several binary searches
+        checkAllowanceResult(res, allowance, 4 * timeStep);
     }
 }

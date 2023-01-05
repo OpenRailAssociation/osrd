@@ -7,8 +7,10 @@ import fr.sncf.osrd.api.stdcm.STDCMResult;
 import fr.sncf.osrd.api.pathfinding.constraints.ElectrificationConstraints;
 import fr.sncf.osrd.api.pathfinding.constraints.LoadingGaugeConstraints;
 import fr.sncf.osrd.envelope.Envelope;
+import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.PhysicsPath;
 import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance;
+import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
@@ -78,7 +80,10 @@ public class STDCMPathfinding {
         var res = makeResult(
                 path,
                 startTime,
-                graph.standardAllowanceSpeedRatio
+                graph.standardAllowance,
+                rollingStock,
+                timeStep,
+                comfort
         );
         if (res.envelope().getTotalTime() > maxRunTime) {
             // This can happen if the destination is one edge away from being reachable in time,
@@ -174,7 +179,10 @@ public class STDCMPathfinding {
     private static STDCMResult makeResult(
             Pathfinding.Result<STDCMEdge> path,
             double startTime,
-            double standardAllowanceSpeedRatio
+            AllowanceValue standardAllowance,
+            RollingStock rollingStock,
+            double timeStep,
+            RollingStock.Comfort comfort
     ) {
         var ranges = makeEdgeRange(path);
         var routeRanges = ranges.stream()
@@ -185,9 +193,18 @@ public class STDCMPathfinding {
                 .toList();
         var physicsPath = makePhysicsPath(ranges);
         var mergedEnvelopes = STDCMUtils.mergeEnvelopeRanges(ranges);
+        var withAllowance = applyAllowance(
+                mergedEnvelopes,
+                ranges,
+                standardAllowance,
+                physicsPath,
+                rollingStock,
+                timeStep,
+                comfort
+        );
         return new STDCMResult(
                 new Pathfinding.Result<>(routeRanges, routeWaypoints),
-                applyAllowance(mergedEnvelopes, standardAllowanceSpeedRatio),
+                withAllowance,
                 makeTrainPath(ranges),
                 physicsPath,
                 computeDepartureTime(ranges, startTime)
@@ -195,10 +212,58 @@ public class STDCMPathfinding {
     }
 
     /** Applies the allowance to the final envelope */
-    private static Envelope applyAllowance(Envelope envelope, double standardAllowanceSpeedRatio) {
-        if (standardAllowanceSpeedRatio == 1)
+    private static Envelope applyAllowance(
+            Envelope envelope,
+            List<EdgeRange<STDCMEdge>> ranges,
+            AllowanceValue standardAllowance,
+            PhysicsPath physicsPath,
+            RollingStock rollingStock,
+            double timeStep,
+            RollingStock.Comfort comfort
+    ) {
+        if (standardAllowance == null)
             return envelope; // This isn't just an optimization, it avoids float inaccuracies
-        return LinearAllowance.scaleEnvelope(envelope, standardAllowanceSpeedRatio);
+        var allowance = new LinearAllowance(
+                new EnvelopeSimContext(rollingStock, physicsPath, timeStep, comfort),
+                0,
+                envelope.getEndPos(),
+                1,
+                makeAllowanceRanges(standardAllowance, ranges)
+        );
+        return allowance.apply(envelope);
+    }
+
+    /** Creates the list of allowance ranges for the final standard allowance.
+     * Adjacent ranges with identical values are merged to avoid problems later on. */
+    public static List<AllowanceRange> makeAllowanceRanges(
+            AllowanceValue allowance,
+            List<EdgeRange<STDCMEdge>> ranges
+    ) {
+        double prevPosition = 0;
+        var allowanceRanges = new ArrayList<AllowanceRange>();
+        double prevAllowanceRatio = Double.NaN;
+        for (var range : ranges) {
+            if (range.start() == range.end())
+                continue;
+            var currentAllowanceRatio = allowance.getAllowanceRatio(
+                    range.edge().envelope().getTotalTime(),
+                    range.end() - range.start()
+            );
+            var endPosition = prevPosition + range.end() - range.start();
+            if (prevAllowanceRatio == currentAllowanceRatio) {
+                // Merge with the previous range
+                allowanceRanges.set(allowanceRanges.size() - 1, new AllowanceRange(
+                        allowanceRanges.get(allowanceRanges.size() - 1).beginPos,
+                        endPosition,
+                        allowance
+                ));
+            } else {
+                prevAllowanceRatio = currentAllowanceRatio;
+                allowanceRanges.add(new AllowanceRange(prevPosition, endPosition, allowance));
+            }
+            prevPosition = endPosition;
+        }
+        return allowanceRanges;
     }
 
     /** Converts the list of pathfinding edges into a list of TrackRangeView that covers the path exactly */

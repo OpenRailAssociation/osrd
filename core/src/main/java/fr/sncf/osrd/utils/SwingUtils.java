@@ -20,6 +20,7 @@ public class SwingUtils {
 
         SwingUtilities.invokeLater(() -> {
             var frame = new JFrame(windowName);
+            frame.setSize(600, 400); // The values are arbitrary, it just prevents a single pixel window
             frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             frame.setContentPane(panelSupplier.get());
             frame.setVisible(true);
