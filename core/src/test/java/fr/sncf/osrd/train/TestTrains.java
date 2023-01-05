@@ -1,9 +1,11 @@
 package fr.sncf.osrd.train;
 
+import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
+import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
-import java.util.*;
+import java.util.Map;
 
 public class TestTrains {
     public static final RollingStock REALISTIC_FAST_TRAIN;
@@ -15,8 +17,10 @@ public class TestTrains {
 
     public static final RollingStock CONSTANT_POWER_TRAIN;
 
-    /** The tractive effort curve shape. It can be either linear (effort proportional to speed), or hyperbolic (effort
-     * inversely proportional to speed -> constant power) */
+    /**
+     * The tractive effort curve shape. It can be either linear (effort proportional to speed), or hyperbolic (effort
+     * inversely proportional to speed -> constant power)
+     */
     private enum CurveShape {
         LINEAR,
         HYPERBOLIC
@@ -194,5 +198,10 @@ public class TestTrains {
                 ),
                 "thermal"
         );
+    }
+
+    @Test
+    public void testRollingStockParsing() throws Exception {
+        Helpers.getExampleRollingStocks();
     }
 }
