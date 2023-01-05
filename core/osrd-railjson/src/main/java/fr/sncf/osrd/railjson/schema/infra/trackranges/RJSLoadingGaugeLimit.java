@@ -2,7 +2,7 @@ package fr.sncf.osrd.railjson.schema.infra.trackranges;
 
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 
-public class RJSLoadingGaugeLimit extends RJSBiDirectionalTrackRange {
+public class RJSLoadingGaugeLimit extends RJSRange {
 
     public RJSLoadingGaugeType type;
 
