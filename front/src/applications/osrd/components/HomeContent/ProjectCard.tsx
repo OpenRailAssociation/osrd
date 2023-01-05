@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { VscFileSubmodule } from 'react-icons/vsc';
+import { RiCalendarLine, RiFoldersLine } from 'react-icons/ri';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { useNavigate } from 'react-router-dom';
 
@@ -9,6 +9,7 @@ type Props = {
     name: string;
     description: string;
     image: string;
+    lastModified: Date;
     studies: Array<1>;
     tags: Array<1>;
   };
@@ -29,10 +30,18 @@ export default function ProjectCard({ details }: Props) {
         <LazyLoadImage src={details.image} alt="project logo" />
       </div>
       <div className="projects-list-project-card-studies">
-        <span className="mr-1">
-          <VscFileSubmodule />
-        </span>
-        {`${details.studies.length} ${t('studiesNumber')}`}
+        <div>
+          <span className="mr-1">
+            <RiCalendarLine />
+          </span>
+          {details.lastModified.toDateString()}
+        </div>
+        <div>
+          <span className="mr-1">
+            <RiFoldersLine />
+          </span>
+          {`${details.studies.length} ${t('studiesNumber')}`}
+        </div>
       </div>
       <div className="projects-list-project-card-name">{details.name}</div>
       <div className="projects-list-project-card-description">{details.description}</div>

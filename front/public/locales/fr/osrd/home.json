@@ -1,4 +1,10 @@
 {
+  "filterPlaceholder": "Rechercher…",
+  "projectNumber": "projet(s)",
   "projects": "Projets",
+  "sortOptions": {
+    "byName": "Tri par nom",
+    "byRecentDate": "Plus récents"
+  },
   "studiesNumber": "étude(s)"
 }
