@@ -28,7 +28,7 @@ def mock_api_call(payload):
             "stops": [],
             "route_occupancies": {},
             "signal_updates": {},
-            "mechanical_energy_consumed": 20011
+            "mechanical_energy_consumed": 20011,
         }
     ]
     return {
@@ -64,7 +64,7 @@ def mock_api_call(payload):
 class STDCMTestCase(TestCase):
     def setUp(self):
         self.infra = Infra.objects.create()
-        self.timetable = Timetable.objects.create(infra=self.infra)
+        self.timetable = Timetable.objects.create()
         self.track = TrackSectionModel.objects.create(
             infra=self.infra,
             data={

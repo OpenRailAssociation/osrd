@@ -873,6 +873,469 @@ paths:
                         example: No path could be found
         400:
           description: The request body is invalid
+
+  /projects/:
+    post:
+      tags:
+        - projects
+      summary: Create a new project
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectRequest"
+      responses:
+        201:
+          description: The created project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectResult"
+    get:
+      tags:
+        - projects
+      summary: Paginated list of projects
+      parameters:
+        - in: query
+          name: oredering
+          schema:
+            type: string
+            enum:
+              [
+                "name",
+                "-name",
+                "creation_date",
+                "-creation_date",
+                "last_modification",
+                "-last_modification",
+              ]
+        - in: query
+          name: name
+          schema:
+            type: string
+          description: Filter projects by name
+        - in: query
+          name: description
+          schema:
+            type: string
+          description: Filter projects by description
+        - in: query
+          name: tags
+          schema:
+            type: string
+          description: Filter projects by tags
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+          description: Page number
+        - in: query
+          name: page_size
+          schema:
+            type: integer
+            maximum: 10000
+            minimum: 1
+            default: 100
+          description: Number of elements by page
+      responses:
+        200:
+          description: the project list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: number
+                  next: {}
+                  previous: {}
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        schema:
+                          $ref: "#/components/schemas/ProjectResult"
+
+  /projects/{project_id}/:
+    get:
+      tags:
+        - projects
+      summary: Retrieve a project
+      parameters:
+        - in: query
+          name: project_id
+          schema:
+            type: integer
+          description: project id you want to retrieve
+      responses:
+        200:
+          description: The project info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectResult"
+    patch:
+      tags:
+        - projects
+      summary: Update a project
+      parameters:
+        - in: query
+          name: project_id
+          schema:
+            type: integer
+          description: project id you want to update
+      requestBody:
+        description: The fields you want to update
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectRequest"
+      responses:
+        200:
+          description: The project updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectResult"
+    delete:
+      tags:
+        - projects
+      summary: delete a project
+      parameters:
+        - in: query
+          name: project_id
+          schema:
+            type: integer
+          description: project id you want to delete
+
+      responses:
+        204:
+          description: No content
+
+  /projects/{project_id}/studies/:
+    post:
+      tags:
+        - studies
+      summary: Create a new operational study
+      parameters:
+        - in: query
+          name: project_id
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudyRequest"
+      responses:
+        201:
+          description: The created operational study
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudyResult"
+    get:
+      tags:
+        - studies
+      summary: Paginated list of operational studies
+      parameters:
+        - in: query
+          name: project_id
+          schema:
+            type: integer
+        - in: query
+          name: name
+          schema:
+            type: string
+          description: Filter operational studies by name
+        - in: query
+          name: description
+          schema:
+            type: string
+          description: Filter operational studies by description
+        - in: query
+          name: tags
+          schema:
+            type: string
+          description: Filter operational studies by tags
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+          description: Page number
+        - in: query
+          name: page_size
+          schema:
+            type: integer
+            maximum: 10000
+            minimum: 1
+            default: 100
+          description: Number of elements by page
+      responses:
+        200:
+          description: the opertional studies list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: number
+                  next: {}
+                  previous: {}
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        schema:
+                          $ref: "#/components/schemas/StudyResult"
+
+  /projects/{project_id}/studies/{study_id}:
+    get:
+      tags:
+        - studies
+      summary: Retrieve an operational study
+      parameters:
+        - in: query
+          name: project_id
+          schema:
+            type: integer
+          description: project id refered to the operational study
+        - in: query
+          name: study_id
+          schema:
+            type: integer
+          description: study id you want to retrieve
+      responses:
+        200:
+          description: The operational study info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudyResult"
+    patch:
+      tags:
+        - studies
+      summary: update an operational study
+      parameters:
+        - in: query
+          name: project_id
+          schema:
+            type: integer
+          description: project id refered to the study
+        - in: query
+          name: study_id
+          schema:
+            type: integer
+          description: study id you want to retrieve
+      requestBody:
+        description: The fields you want to update
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StudyRequest"
+      responses:
+        200:
+          description: The operational study updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudyResult"
+    delete:
+      tags:
+        - studies
+      summary: delete an operational study
+      parameters:
+        - in: query
+          name: project_id
+          schema:
+            type: integer
+          description: project id refered to the operational study
+        - in: query
+          name: study_id
+          schema:
+            type: integer
+          description: study id you want to delete
+      responses:
+        204:
+          description: No content
+
+  /projects/{project_id}/studies/{study_id}/scenarios/:
+    post:
+      tags:
+        - scenarios
+      summary: Create a new scenario
+      parameters:
+        - in: query
+          name: project_id
+          schema:
+            type: integer
+        - in: query
+          name: study_id
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScenarioRequest"
+      responses:
+        201:
+          description: The created scenario
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScenarioResult"
+    get:
+      tags:
+        - scenarios
+      summary: Paginated list of scenarios
+      parameters:
+        - in: query
+          name: project_id
+          schema:
+            type: integer
+        - in: query
+          name: study_id
+          schema:
+            type: integer
+        - in: query
+          name: name
+          schema:
+            type: string
+          description: Filter scenarios by name
+        - in: query
+          name: description
+          schema:
+            type: string
+          description: Filter scenarios by description
+        - in: query
+          name: tags
+          schema:
+            type: string
+          description: Filter scenarios by tags
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 0
+          description: Page number
+        - in: query
+          name: page_size
+          schema:
+            type: integer
+            maximum: 10000
+            minimum: 1
+            default: 100
+          description: Number of elements by page
+      responses:
+        200:
+          description: list of scenarios
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: number
+                  next: {}
+                  previous: {}
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        schema:
+                          $ref: "#/components/schemas/ScenarioResult"
+
+  /projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}:
+    get:
+      tags:
+        - scenarios
+      summary: Retrieve a scenario
+      parameters:
+        - in: query
+          name: project_id
+          schema:
+            type: integer
+          description: project id refered to the scenario
+        - in: query
+          name: study_id
+          schema:
+            type: integer
+        - in: query
+          name: scenario_id
+          schema:
+            type: integer
+          description: scenario id you want to retrieve
+      responses:
+        200:
+          description: The operational study info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScenarioResult"
+    patch:
+      tags:
+        - scenarios
+      summary: update a scenario
+      parameters:
+        - in: query
+          name: project_id
+          schema:
+            type: integer
+          description: project id refered to the scenario
+        - in: query
+          name: study_id
+          schema:
+            type: integer
+          description: study refered to the scenario
+        - in: query
+          name: scenario_id
+          schema:
+            type: integer
+          description: scenario you want to update
+      requestBody:
+        description: The fields you want to update
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScenarioRequest"
+      responses:
+        200:
+          description: The scenario updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScenarioResult"
+    delete:
+      tags:
+        - scenarios
+      summary: delete a scenario
+      parameters:
+        - in: query
+          name: project_id
+          schema:
+            type: integer
+          description: project id refered to the scenario
+        - in: query
+          name: study_id
+          schema:
+            type: integer
+          description: study id refered to the scenario
+        - in: query
+          name: scenario_id
+          schema:
+            type: integer
+          description: scenario id you want to delete
+      responses:
+        204:
+          description: No content
+
 components:
   schemas:
     Infra:
@@ -1601,3 +2064,208 @@ components:
         percentage:
           type: number
           example: 15.0
+    ProjectRequest:
+      properties:
+        name:
+          type: string
+          maxLength: 128
+        objectives:
+          type: string
+          maxLength: 4096
+        description:
+          type: string
+          maxLength: 1024
+        funders:
+          type: array
+          items:
+            type: string
+          maxLength: 255
+        budget:
+          type: integer
+        image:
+          type: object
+        tags:
+          type: array
+          items:
+            type: string
+            maxLength: 255
+      required:
+        - "name"
+    ProjectResult:
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        objectives:
+          type: string
+        description:
+          type: string
+        funders:
+          type: array
+          items:
+            type: string
+        budget:
+          type: integer
+        image:
+          type: object
+        creation_date:
+          type: string
+          format: date-time
+        last_modification:
+          type: string
+          format: date-time
+        studies:
+          type: array
+          items:
+            type: integer
+        tags:
+          type: array
+          items:
+            type: string
+    StudyRequest:
+      properties:
+        name:
+          type: string
+          maxLength: 128
+        service_code:
+          type: string
+          maxLength: 128
+        business_code:
+          type: string
+          maxLength: 128
+        description:
+          type: string
+          maxLength: 1024
+        budget:
+          type: integer
+        tags:
+          type: array
+          items:
+            type: string
+            maxLength: 255
+        start_date:
+          type: string
+          format: date-time
+        expected_end_date:
+          type: string
+          format: date-time
+        actual_end_date:
+          type: string
+          format: date-time
+        state:
+          type: string
+          enum: ["Started", "InProgress", "Finish"]
+        type:
+          type: string
+          enum:
+            [
+              "TimeTable",
+              "FlowRate",
+              "ParkSizing",
+              "GarageRequirement",
+              "OperationOrSizing",
+              "Operability",
+              "StrategicPlanning",
+              "ChartStability",
+              "Disturbance",
+            ]
+      required:
+        - "name"
+    StudyResult:
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        budget:
+          type: integer
+        service_code:
+          type: string
+        business_code:
+          type: string
+        creation_date:
+          type: string
+          format: date-time
+        last_modification:
+          type: string
+          format: date-time
+        scenarios:
+          type: array
+          items:
+            type: integer
+        start_date_study:
+          type: string
+          format: date-time
+        expected_end_date_study:
+          type: string
+          format: date-time
+        actual_end_date_study:
+          type: string
+          format: date-time
+        state:
+          type: string
+          enum: ["Started", "InProgress", "Finish"]
+        type:
+          type: string
+          enum:
+            [
+              "TimeTable",
+              "FlowRate",
+              "ParkSizing",
+              "GarageRequirement",
+              "OperationOrSizing",
+              "Operability",
+              "StrategicPlanning",
+              "ChartStability",
+              "Disturbance",
+            ]
+    ScenarioRequest:
+      properties:
+        name:
+          type: string
+          maxLength: 128
+        description:
+          type: string
+          maxLength: 1024
+        tags:
+          type: array
+          items:
+            type: string
+            maxLength: 255
+        infra:
+          type: integer
+      required:
+        - "name"
+    ScenarioResult:
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            type: string
+        infra:
+          type: integer
+        creation_date:
+          type: string
+          format: date-time
+        last_modification:
+          type: string
+          format: date-time
+        timetable:
+          type: integer
+        trains_count:
+          type: integer
+        trains_schedules:
+          type: array
+          items:
+            type: string
