@@ -9,6 +9,7 @@ from osrd_infra.models import (
     Timetable,
     TrainScheduleModel,
 )
+from osrd_infra.models.physical_approximations import ElectricalProfilesSet
 from osrd_infra.schemas.rolling_stock import ComfortType
 
 
@@ -31,6 +32,12 @@ GeometryField.to_representation = wrap_to_representation(GeometryField.to_repres
 class InfraSerializer(ModelSerializer):
     class Meta:
         model = Infra
+        fields = "__all__"
+
+
+class ElectricalProfileSetSerializer(ModelSerializer):
+    class Meta:
+        model = ElectricalProfilesSet
         fields = "__all__"
 
 
