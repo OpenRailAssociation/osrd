@@ -1,12 +1,15 @@
+from django.urls import include, path
 from rest_framework_nested import routers
-from django.urls import path, include
 
 from osrd_infra.views import (
     InfraView,
     LightRollingStockView,
     PathfindingView,
+    ProjectView,
     RollingStockLiveryView,
     RollingStockView,
+    ScenarioView,
+    StudyView,
     TimetableView,
     VersionView,
 )
@@ -22,11 +25,20 @@ router.register("timetable", TimetableView, basename="timetable")
 router.register("train_schedule", TrainScheduleView, basename="train_schedule")
 router.register("version", VersionView, basename="version")
 router.register("stdcm", STDCM, basename="stdcm")
+router.register("projects", ProjectView, basename="projects")
+
+project_router = routers.NestedSimpleRouter(router, "projects", lookup="project")
+project_router.register("studies", StudyView, basename="studies")
+study_router = routers.NestedSimpleRouter(project_router, "studies", lookup="study")
+study_router.register("scenarios", ScenarioView, basename="scenarios")
 
 rolling_stock_router = routers.NestedSimpleRouter(router, "rolling_stock", lookup="rolling_stock")
 rolling_stock_router.register("livery", RollingStockLiveryView, basename="rolling_stock_livery")
 
+
 urlpatterns = [
     path("", include(router.urls)),
     path("", include(rolling_stock_router.urls)),
+    path("", include(project_router.urls)),
+    path("", include(study_router.urls)),
 ]

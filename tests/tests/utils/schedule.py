@@ -1,11 +1,6 @@
-from tests.get_timetable import get_timetable
-
-
-def make_payload_schedule(base_url, infra, path, rolling_stock, departure_time=0, timetable=None):
-    if timetable is None:
-        timetable = get_timetable(base_url, infra)
+def make_payload_schedule(base_url, scenario, path, rolling_stock, departure_time=0):
     return {
-        "timetable": timetable,
+        "timetable": scenario.timetable,
         "path": path,
         "schedules": [
             {

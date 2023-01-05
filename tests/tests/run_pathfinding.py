@@ -1,4 +1,5 @@
 import json
+
 import requests
 
 
@@ -16,31 +17,27 @@ def run_pathfinding(base_url, infra_id):
             {
                 "duration": 0,
                 "waypoints": [
-                    {
-                        "track_section": track["id"],
-                        "offset": track["length"] * 0.1
-                    }
-                ]
+                    {"track_section": track["id"], "offset": track["length"] * 0.1}
+                ],
             },
             {
                 "duration": 0,
                 "waypoints": [
-                    {
-                        "track_section": track["id"],
-                        "offset": track["length"] * 0.9
-                    }
-                ]
-            }
-        ]
+                    {"track_section": track["id"], "offset": track["length"] * 0.9}
+                ],
+            },
+        ],
     }
     r = requests.post(base_url + "pathfinding/", json=path_payload)
     if r.status_code // 100 != 2:
-        raise RuntimeError(f"Pathfinding error {r.status_code}: {r.content}, payload={json.dumps(path_payload)}")
+        raise RuntimeError(
+            f"Pathfinding error {r.status_code}: {r.content}, payload={json.dumps(path_payload)}"
+        )
     return r.json()["id"]
 
 
 def run(*args, **kwargs):
     base_url = kwargs["url"]
-    infra_id = kwargs["all_infras"]["dummy"]
+    infra_id = kwargs["all_scenarios"]["dummy"].infra
     run_pathfinding(base_url, infra_id)
     return True, ""

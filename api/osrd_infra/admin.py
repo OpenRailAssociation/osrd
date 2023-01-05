@@ -5,7 +5,10 @@ from osrd_infra.models import (  # misc; timetable
     ElectricalProfileSet,
     Infra,
     PathModel,
+    Project,
     RollingStock,
+    Scenario,
+    Study,
     Timetable,
     TrainScheduleModel,
 )
@@ -26,6 +29,10 @@ admin.site.register(
         # timetable
         Timetable,
         TrainScheduleModel,
+        # study
+        Scenario,
+        Study,
+        Project,
     ]
     + [model for model in MODEL_TO_OBJ]
 )
