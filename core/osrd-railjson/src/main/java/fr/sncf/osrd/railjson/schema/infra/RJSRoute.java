@@ -4,14 +4,14 @@ import com.squareup.moshi.Json;
 import fr.sncf.osrd.railjson.schema.common.Identified;
 import fr.sncf.osrd.railjson.schema.common.RJSWaypointRef;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrainDetector;
-import fr.sncf.osrd.railjson.schema.infra.trackranges.SingleDirectionalRJSTrackRange;
+import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange;
 import java.util.List;
 
 public class RJSRoute implements Identified {
     public String id;
 
     /** List of the track ranges on the route */
-    public List<SingleDirectionalRJSTrackRange> path;
+    public List<RJSDirectionalTrackRange> path;
 
     @Json(name = "release_detectors")
     public List<String> releaseDetectors;
@@ -25,7 +25,7 @@ public class RJSRoute implements Identified {
     /** Routes are described as a list of TVD Sections, Switches in specific positions, and an entry point */
     public RJSRoute(
             String id,
-            List<SingleDirectionalRJSTrackRange> path,
+            List<RJSDirectionalTrackRange> path,
             List<String> releaseDetectors
     ) {
         this.id = id;
