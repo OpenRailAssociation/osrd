@@ -260,6 +260,7 @@ export default function StandardAllowanceDefault(props) {
                 sm
                 noMargin
                 isFlex
+                unit={allowanceTypes[0].unit}
               />
             )}
           </div>
