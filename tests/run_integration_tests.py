@@ -1,13 +1,12 @@
+import importlib
 import json
 import subprocess
-import importlib
 import sys
 import traceback
 from pathlib import Path
-from typing import Tuple, Dict, List
+from typing import Dict, List, Tuple
 
 import requests
-
 
 URL = "http://localhost:8000/"
 EDITOAST_URL = "http://localhost:8090/"
@@ -50,10 +49,7 @@ def _create_schedule(infra_id: int):
     Creates a schedule linked to the given infra
     :param infra_id: infra id
     """
-    timetable_payload = {
-        "name": "foo",
-        "infra": infra_id
-    }
+    timetable_payload = {"name": "foo", "infra": infra_id}
     r = requests.post(URL + "timetable/", json=timetable_payload)
     if r.status_code // 100 != 2:
         err = f"Error creating schedule {r.status_code}: {r.content}, payload={json.dumps(timetable_payload)}"
@@ -124,6 +120,10 @@ def run_all(tests_to_run: List[str]) -> int:
         tests_to_run = tests.keys()
 
     for test_name in tests_to_run:
+        if test_name not in tests:
+            print(f"'{test_name}' doesn't exists")
+            print(f"Possible tests are: [{', '.join(tests.keys())}]")
+            exit(2)
         function = tests[test_name]
         passed, error = run_single_test(function, infra_ids)
         print(f"{test_name}: ", end="")

@@ -2,8 +2,8 @@ import json
 import random
 import time
 from collections import defaultdict
-from dataclasses import dataclass
-from enum import Enum
+from dataclasses import dataclass, field
+from enum import Enum, IntEnum
 from pathlib import Path
 from typing import Dict, Iterable, List, Set, Tuple
 
@@ -31,11 +31,33 @@ class ErrorType(str, Enum):
     STDCM = "STDCM"
 
 
+class Endpoint(IntEnum):
+    BEGIN = 0
+    END = 1
+
+    def opposite(self):
+        return Endpoint.END if self == Endpoint.BEGIN else Endpoint.BEGIN
+
+
+@dataclass(eq=True, frozen=True)
+class TrackEndpoint:
+    track: str
+    endpoint: Endpoint
+
+    @staticmethod
+    def from_dict(obj: Dict) -> "TrackEndpoint":
+        return TrackEndpoint(obj["track"], Endpoint._member_map_[obj["endpoint"]])
+
+
 @dataclass
 class InfraGraph:
     RJSInfra: Dict
-    routes: Dict[str, Dict]
-    routes_per_entry_point: Dict[str, Set[str]]
+    tracks: Dict[str, Dict] = field(default_factory=dict)
+    links: Dict[TrackEndpoint, List[TrackEndpoint]] = field(default_factory=lambda: defaultdict(list))
+
+    def link(self, a: TrackEndpoint, b: TrackEndpoint):
+        self.links[a].append(b)
+        self.links[b].append(a)
 
 
 def make_error(error_type: ErrorType, code: int, error: str, infra_name: str, path_payload: Dict, **kwargs):
@@ -68,12 +90,7 @@ def run_test(infra: InfraGraph, base_url: str, infra_id: int, infra_name: str):
 
 
 def test_new_train(
-        base_url: str,
-        infra_id: int,
-        rolling_stock: int,
-        path_length: float,
-        infra_name: str,
-        path: List[Tuple[str, float]]
+    base_url: str, infra_id: int, rolling_stock: int, path_length: float, infra_name: str, path: List[Tuple[str, float]]
 ):
     """
     Try to run a pathfinding, then create a train using the given path.
@@ -119,13 +136,7 @@ def test_new_train(
     print("test PASSED")
 
 
-def test_stdcm(
-        base_url: str,
-        infra_id: int,
-        rolling_stock: int,
-        infra_name: str,
-        path: List[Tuple[str, float]]
-):
+def test_stdcm(base_url: str, infra_id: int, rolling_stock: int, infra_name: str, path: List[Tuple[str, float]]):
     """
     Try to run an STDCM search on the given path.
     Not finding a path isn't considered as an error, we only look for 500 codes here.
@@ -159,14 +170,18 @@ def make_stdcm_payload(base_url: str, infra_id: int, path: List[Tuple[str, float
         "rolling_stock": rolling_stock,
         "timetable": get_schedule(base_url, infra_id),
         "start_time": 0,
-        "start_points": [{
-            "track_section": start_edge,
-            "offset": start_offset,
-        }],
-        "end_points": [{
-            "track_section": last_edge,
-            "offset": last_offset,
-        }],
+        "start_points": [
+            {
+                "track_section": start_edge,
+                "offset": start_offset,
+            }
+        ],
+        "end_points": [
+            {
+                "track_section": last_edge,
+                "offset": last_offset,
+            }
+        ],
     }
 
 
@@ -232,15 +247,23 @@ def make_graph(base_url: str, infra: int) -> InfraGraph:
     """
     url = base_url + f"infra/{infra}/railjson/"
     r = requests.get(url, timeout=TIMEOUT)
-    routes = dict()
-    routes_per_entry_point = defaultdict(set)
     infra = r.json()
-    for route in infra["routes"]:
-        route_id = route["id"]
-        routes[route_id] = route
-        entry_node = format_route_node(route["entry_point"]["id"], route["path"][0]["direction"])
-        routes_per_entry_point[entry_node].add(route_id)
-    return InfraGraph(infra, routes, dict(routes_per_entry_point))
+    graph = InfraGraph(infra)
+
+    for track in infra["track_sections"]:
+        graph.tracks[track["id"]] = track
+
+    for link in infra["track_section_links"]:
+        graph.link(TrackEndpoint.from_dict(link["src"]), TrackEndpoint.from_dict(link["dst"]))
+
+    for switch in infra["switches"]:
+        assert switch["switch_type"] == "point"
+        base = TrackEndpoint.from_dict(switch["ports"]["base"])
+        left = TrackEndpoint.from_dict(switch["ports"]["left"])
+        right = TrackEndpoint.from_dict(switch["ports"]["right"])
+        graph.link(base, left)
+        graph.link(base, right)
+    return graph
 
 
 def random_set_element(s: Iterable):
@@ -264,20 +287,19 @@ def check_tracks_are_unseen(seen_track_sections: Set[str], route: Dict):
     return True
 
 
-def make_steps_on_route(route: Dict, distance_from_start: [float]) -> Iterable[Tuple[str, float]]:
+def make_steps_on_track(track: Dict, endpoint: Endpoint, number: float) -> List[float]:
     """
     Generates a random list of steps on a route
     :return: Iterable of (edge id, edge offset, offset from the start)
     """
-    for track_range in route["path"]:
-        if random.randint(0, 5) == 0:
-            begin = track_range["begin"]
-            end = track_range["end"]
-            if track_range["direction"] == "STOP_TO_START":
-                begin, end = end, begin
-            offset = begin + random.random() * (end - begin)
-            yield track_range["track"], offset, distance_from_start[0] + abs(offset - begin)
-            distance_from_start[0] += abs(end - begin)
+    res = []
+    while random.random() < number:
+        number -= 1.0
+        res.append(random.random() * track["length"])
+    res.sort()
+    if endpoint == Endpoint.BEGIN:
+        res.reverse()
+    return res
 
 
 def make_path(infra: InfraGraph) -> Tuple[List[Tuple[str, float]], float]:
@@ -288,23 +310,48 @@ def make_path(infra: InfraGraph) -> Tuple[List[Tuple[str, float]], float]:
     """
     res = []
     seen_track_sections = set()
-    route_id = random_set_element(infra.routes.keys())
-    distance_from_start = [0]
-    step_offsets = []
-    while random.randint(0, 15) != 0:
-        route = infra.routes[route_id]
-        if not check_tracks_are_unseen(seen_track_sections, route):
-            break
-        for edge, edge_offset, path_offset in make_steps_on_route(route, distance_from_start):
-            res.append((edge, edge_offset))
-            step_offsets.append(path_offset)
-        exit_point = route["exit_point"]["id"]
-        if exit_point not in infra.routes_per_entry_point:
-            break
-        route_id = random_set_element(infra.routes_per_entry_point[exit_point])
+    track_id = random_set_element(infra.tracks.keys())
+    endpoint = Endpoint(random.randint(0, 1))
+    tmp_path_length = 0
     total_path_length = 0
-    if len(step_offsets) > 1:
-        total_path_length = step_offsets[-1] - step_offsets[0]
+    while random.randint(0, 15) != 0:
+        track = infra.tracks[track_id]
+        if track_id in seen_track_sections:
+            break
+        seen_track_sections.add(track_id)
+
+        chance = 2 if len(res) == 0 else 0.5
+        new_steps = make_steps_on_track(track, endpoint, chance)
+        for track_offset in new_steps:
+            res.append((track_id, track_offset))
+
+        # compute path length
+        if len(new_steps) == 2:
+            # First track (we got two new initial steps)
+            total_path_length = abs(new_steps[1] - new_steps[0])
+            tmp_path_length = new_steps[1]
+            if endpoint == Endpoint.END:
+                tmp_path_length = track["length"] - new_steps[1]
+        elif len(new_steps) == 1:
+            # A new step
+            total_path_length += tmp_path_length
+            if endpoint == Endpoint.END:
+                total_path_length += new_steps[0]
+                tmp_path_length = track["length"] - new_steps[0]
+            else:
+                total_path_length += track["length"] - new_steps[0]
+                tmp_path_length = new_steps[0]
+        else:
+            tmp_path_length += track["length"]
+
+        # Find next track
+        neighbors: List[TrackEndpoint] = infra.links[TrackEndpoint(track_id, endpoint)]
+        if len(neighbors) == 0:
+            break
+        neighbor: TrackEndpoint = random_set_element(neighbors)
+        track_id = neighbor.track
+        endpoint = neighbor.endpoint.opposite()
+
     return res, total_path_length
 
 
@@ -316,7 +363,7 @@ def make_valid_path(infra: InfraGraph) -> Tuple[List[Tuple[str, float]], float]:
     """
     while True:
         path, path_length = make_path(infra)
-        if len(path) > 1:
+        if len(path) > 1 and path_length > 0:
             return path, path_length
 
 
