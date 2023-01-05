@@ -7,7 +7,6 @@ import icon from 'assets/pictures/components/train.svg';
 import RollingStock2Img from 'common/RollingStockSelector/RollingStock2Img';
 import {
   comfort2pictogram,
-  enhanceData,
   RollingStockInfos,
 } from 'common/RollingStockSelector/RollingStockHelpers';
 import { getRollingStockID, getRollingStockComfort } from 'reducers/osrdconf/selectors';
@@ -25,7 +24,7 @@ export default function RollingStockSelector() {
   const getRollingStock = async () => {
     try {
       const rollingStock = await get(`${ROLLINGSTOCK_URL}/${rollingStockID}/`);
-      setRollingStockSelected(enhanceData([rollingStock])[0]);
+      setRollingStockSelected(rollingStock);
     } catch (e) {
       console.log('ERROR', e);
     }
