@@ -9,8 +9,8 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
-from os import getenv
 from importlib.util import find_spec
+from os import getenv
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -58,7 +58,7 @@ SENTRY_REALM = getenv("SENTRY_REALM")
 
 
 if PROXY_PROTO_HEADER is not None:
-    SECURE_PROXY_SSL_HEADER = (PROXY_PROTO_HEADER, 'https')
+    SECURE_PROXY_SSL_HEADER = (PROXY_PROTO_HEADER, "https")
 
 
 RAILJSON_SRID = 4326
@@ -130,9 +130,7 @@ DATABASES = {
         "USER": POSTGRES_USER,
         "PASSWORD": POSTGRES_PASSWORD,
         "HOST": POSTGRES_HOST,
-        "TEST": {
-            "TEMPLATE": "template_postgis"
-        }
+        "TEST": {"TEMPLATE": "template_postgis"},
     },
 }
 
@@ -145,7 +143,7 @@ if REDIS_CACHE_URI is not None:
         "LOCATION": REDIS_CACHE_URI,
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        }
+        },
     }
 else:
     CACHES["default"] = {
@@ -197,7 +195,7 @@ APPEND_SLASH = False
 
 
 if not OSRD_DEV:
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 
 if OSRD_DEV:
