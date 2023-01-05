@@ -27,7 +27,7 @@ export default function genJSON(nb = NB_PROJECTS) {
       image: chooseRandomIMG(),
       studies: studiesIDs,
       tags: faker.lorem.words(Math.round(Math.random() * NB_TAGS_RND)).split(' '),
-      lastModified: faker.date.between(),
+      lastModified: faker.date.past(10),
     });
   }
   return json;

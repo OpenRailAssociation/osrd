@@ -3,6 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { RiCalendarLine, RiFoldersLine } from 'react-icons/ri';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { useNavigate } from 'react-router-dom';
+import dayjs from 'dayjs';
+import 'dayjs/locale/fr';
+
+dayjs.locale('fr');
 
 type Props = {
   details: {
@@ -34,7 +38,7 @@ export default function ProjectCard({ details }: Props) {
           <span className="mr-1">
             <RiCalendarLine />
           </span>
-          {details.lastModified.toDateString()}
+          {dayjs(details.lastModified).format('ddd D MMM YYYY, HH:mm').replace('.', '')}
         </div>
         <div>
           <span className="mr-1">
