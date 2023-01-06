@@ -1,0 +1,92 @@
+.project-details {
+  .project-details-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    .project-details-img {
+      position: relative;
+      height: 5rem;
+      overflow: hidden;
+      border-radius: 4px;
+      img {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--coolgray7);
+        transition: filter .5s;
+        width: 5rem;
+        height: 5rem;
+        object-fit: cover;
+      }
+    }
+    .project-details-name {
+      display: flex;
+      align-items: center;
+      height: 5rem;
+      font-size: 3rem;
+    }
+  }
+  .project-details-body {
+    margin-bottom: 1rem;
+    .project-details-description, .project-details-objectives {  
+      border-radius: 4px;
+      background-color: var(--white);   
+      padding: .5rem;
+      overflow: auto;
+      height: 10rem;
+      h3 {
+        font-size: .9rem;
+        display: inline-block;
+        text-transform: uppercase;
+        margin: 0 .5rem 0 0;
+      }
+    }
+  }
+  .project-details-financials {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    border-radius: 4px;  
+    padding: .5rem;
+    background-color: var(--coolgray11);
+    color: var(--coolgray1);
+    .project-details-financials-infos {
+      h3 {
+        color: var(--coolgray7);
+        margin: 0;
+      }
+      flex-grow: 1;
+    }
+    .project-details-financials-amount {
+      line-height: 2rem;
+      font-size: 2rem;
+      font-weight: bold;
+      background-color: var(--coolgray1);
+      color: var(--coolgray11);
+      border-radius: 4px;  
+      padding: .5rem;
+    }
+  }
+  .project-details-tags {    
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .25rem;
+    padding: .5rem;
+    font-size: .9rem;
+    border-radius: 4px;
+    border: 1px solid var(--coolgray3);
+    .project-details-tags-tag {      
+      color: var(--white);
+      background-color: var(--purple);
+      border-radius: 4px;
+      padding: 0 .25rem;
+      transition: .2s;
+      cursor: pointer;
+      &:hover {
+        opacity: .65;
+      }
+    }
+  }
+}

@@ -79,6 +79,19 @@ top: -3.7rem !important;
 height: 109vh !important;
 }
 
+.navbar-breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: 1.25rem;
+  a {
+    color: var(--coolgray7);
+    &:hover {
+      color: var(--coolgray1);
+    }
+  }
+}
+
 /* media queries won't accept CSS variables... */
 
 /* lg breakpoint 1024 px */
