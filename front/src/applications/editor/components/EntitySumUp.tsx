@@ -52,7 +52,7 @@ async function getAdditionalEntities(
     }
     case 'Switch': {
       const trackIDs = map((entity as SwitchEntity).properties.ports, (port) => port.track);
-      return await getEntities<TrackSectionEntity>(infra, trackIDs, 'TrackSection');
+      return getEntities<TrackSectionEntity>(infra, trackIDs, 'TrackSection');
     }
     default:
       return {};
