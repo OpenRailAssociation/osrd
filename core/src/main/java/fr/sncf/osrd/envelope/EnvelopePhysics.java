@@ -2,6 +2,10 @@ package fr.sncf.osrd.envelope;
 
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.utils.DoubleUtils;
+import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
+import fr.sncf.osrd.envelope_sim.PhysicsPath;
+import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
+import fr.sncf.osrd.infra_state.api.TrainPath;
 
 public class EnvelopePhysics {
     /** Compute the constant acceleration between two space / speed points. */
