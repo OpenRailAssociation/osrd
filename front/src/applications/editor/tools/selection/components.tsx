@@ -23,17 +23,15 @@ export const SelectionMessages: FC = () => {
   return t(`Editor.tools.select-items.help.${state.selectionState.type}-selection`);
 };
 
-const SelectionZone: FC<{ newZone?: Zone }> = ({ newZone }) => {
-  return (
-    <>
-      {newZone ? (
-        <Source type="geojson" data={zoneToFeature(newZone)} key="new-zone">
-          <Layer type="line" paint={{ 'line-color': '#666', 'line-dasharray': [3, 3] }} />
-        </Source>
-      ) : null}
-    </>
-  );
-};
+const SelectionZone: FC<{ newZone?: Zone }> = ({ newZone }) => (
+  <>
+    {newZone ? (
+      <Source type="geojson" data={zoneToFeature(newZone)} key="new-zone">
+        <Layer type="line" paint={{ 'line-color': '#666', 'line-dasharray': [3, 3] }} />
+      </Source>
+    ) : null}
+  </>
+);
 
 export const SelectionLayers: FC = () => {
   const {
