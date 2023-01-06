@@ -3,17 +3,24 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 1rem;
+  padding: 1rem 0 2rem;
 }
 
 .projects-list-project-card {
   position: relative;
   border-radius: 4px;
   margin-bottom: 1rem;
-  cursor: pointer;
   transition: .4s;
   border: 1px solid var(--coolgray3);
-  &:hover {
-    border-color: var(--coolgray9);
+  &:hover, &:focus, &:active {
+    .projects-list-project-card-img {
+      &::after {
+        opacity: 1;
+      }
+      button {
+        opacity: 1 !important;
+      }
+    }
   }
   .projects-list-project-card-img {
     position: relative;
@@ -21,9 +28,34 @@
     overflow: hidden;
     border-radius: 4px 4px 0 0;
     img {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--coolgray7);
+      transition: filter .5s;
       width: 100%;
       height: 100%;
       object-fit: cover;
+    }
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      transition: opacity .5s;
+      opacity: 0;
+      background: linear-gradient(0deg, var(--coolgray15) 0%, rgba(255,255,255,0) 100%);
+    }
+    button {
+      transition: opacity .4s;
+      opacity: 0;
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      z-index: 1;
+      margin: 0 .5rem .5rem 0;
     }
   }
   .projects-list-project-card-studies {
@@ -73,9 +105,14 @@
     font-size: .8rem;
     .projects-list-project-card-tags-tag {
       color: var(--white);
-      background-color: var(--coolgray9);
+      background-color: var(--purple);
       border-radius: 4px;
       padding: 0 .25rem;
+      transition: .2s;
+      cursor: pointer;
+      &:hover {
+        opacity: .65;
+      }
     }
   }
 }

@@ -3,10 +3,13 @@ import { faker } from '@faker-js/faker';
 faker.setLocale('fr');
 
 function chooseRandomIMG() {
+  return `https://placetiger.nethenic.net/?${Math.random()}`;
+  /*
   const x = Math.floor(Math.random() * 400) + 640;
   const y = Math.floor(Math.random() * 400) + 480;
   const list = ['http://placebeard.it', 'http://placekitten.com', 'http://placebear.com'];
   return `${list[Math.floor(Math.random() * 3)]}/${x}/${y}`;
+  */
 }
 
 const NB_PROJECTS = 10;
@@ -22,8 +25,8 @@ export default function genJSON(nb = NB_PROJECTS) {
     }
     json.push({
       id: faker.datatype.uuid(),
-      name: faker.lorem.sentence(),
-      description: faker.lorem.paragraphs(3),
+      name: faker.lorem.words(),
+      description: faker.lorem.paragraphs(1),
       image: chooseRandomIMG(),
       studies: studiesIDs,
       tags: faker.lorem.words(Math.round(Math.random() * NB_TAGS_RND)).split(' '),
