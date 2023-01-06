@@ -44,7 +44,7 @@ export default function RollingStockCardButtons(props) {
 
   useEffect(() => {
     setComfort(rollingStockComfort);
-  }, []);
+  }, [rollingStockComfort]);
 
   return (
     <div className="rollingstock-footer-buttons">
