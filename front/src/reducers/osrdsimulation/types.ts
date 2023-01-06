@@ -52,7 +52,7 @@ interface Stop {
   track_number: number;
 }
 
-export interface RouteAspect<Time = number, Color = number> {
+export interface RouteAspect<Time = number, Color = string> {
   signal_id: string;
   route_id: string;
   time_start: Time;
@@ -108,8 +108,6 @@ export type SimulationHistory = SimulationSnapshot[];
 export interface PositionValues {
   headPosition: PositionSpeed;
   tailPosition: PositionSpeed;
-  //routeEndOccupancy: number;
-  //routeBeginOccupancy: number;
   speed: {
     speed: number;
     time: number;
@@ -123,16 +121,12 @@ export interface SimulationTrain {
   trainNumber: number;
   headPosition: Position<Date | null>[][];
   tailPosition: Position<Date | null>[][];
-  //routeEndOccupancy: Position<Date | null>[][];
-  //routeBeginOccupancy: Position<Date | null>[][];
   routeAspects: RouteAspect<Date | null, string>[];
   signalAspects: SignalAspect<Date | null, string>[];
   areaBlock?: MergedDataPoint<Date | null>[][];
   speed: PositionSpeed<Date | null>[];
   eco_headPosition?: Position<Date | null>[][];
   eco_tailPosition?: Position<Date | null>[][];
-  //eco_routeEndOccupancy?: Position<Date | null>[][];
-  //eco_routeBeginOccupancy?: Position<Date | null>[][];
   eco_routeAspects?: RouteAspect<Date | null, string>[];
   eco_signalAspects?: SignalAspect<Date | null, string>[];
   eco_areaBlock?: MergedDataPoint<Date | null>[][];
