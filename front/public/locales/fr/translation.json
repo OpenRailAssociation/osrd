@@ -36,7 +36,8 @@
       "signals": "Signaux",
       "buffer_stops": "Heurtoirs",
       "detectors": "Détecteurs",
-      "switches": "Aiguillages"
+      "switches": "Aiguillages",
+      "errors": "Erreurs"
     },
     "item-statuses": {
       "selected": "sélectionné",
