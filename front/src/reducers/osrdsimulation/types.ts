@@ -148,16 +148,12 @@ export interface SimulationTrain {
 =======
   headPosition: Position<Date | null>[][];
   tailPosition: Position<Date | null>[][];
-  //routeEndOccupancy: Position<Date | null>[][];
-  //routeBeginOccupancy: Position<Date | null>[][];
   routeAspects: RouteAspect<Date | null, string>[];
   signalAspects: SignalAspect<Date | null, string>[];
   areaBlock?: MergedDataPoint<Date | null>[][];
   speed: PositionSpeed<Date | null>[];
   eco_headPosition?: Position<Date | null>[][];
   eco_tailPosition?: Position<Date | null>[][];
-  //eco_routeEndOccupancy?: Position<Date | null>[][];
-  //eco_routeBeginOccupancy?: Position<Date | null>[][];
   eco_routeAspects?: RouteAspect<Date | null, string>[];
   eco_signalAspects?: SignalAspect<Date | null, string>[];
   eco_areaBlock?: MergedDataPoint<Date | null>[][];
