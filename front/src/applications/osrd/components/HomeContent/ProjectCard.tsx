@@ -5,6 +5,8 @@ import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import 'dayjs/locale/fr';
+import { AiFillFolderOpen } from 'react-icons/ai';
+import nextId from 'react-id-generator';
 
 dayjs.locale('fr');
 
@@ -29,9 +31,13 @@ export default function ProjectCard({ details }: Props) {
   };
 
   return (
-    <div className="projects-list-project-card" role="button" onClick={handleClick} tabIndex={0}>
+    <div className="projects-list-project-card">
       <div className="projects-list-project-card-img">
         <LazyLoadImage src={details.image} alt="project logo" />
+        <button className="btn btn-primary btn-sm" onClick={handleClick} type="button">
+          <span className="mr-2">{t('openProject')}</span>
+          <AiFillFolderOpen />
+        </button>
       </div>
       <div className="projects-list-project-card-studies">
         <div>
@@ -51,7 +57,9 @@ export default function ProjectCard({ details }: Props) {
       <div className="projects-list-project-card-description">{details.description}</div>
       <div className="projects-list-project-card-tags">
         {details.tags.map((tag) => (
-          <div className="projects-list-project-card-tags-tag">{tag}</div>
+          <div className="projects-list-project-card-tags-tag" key={nextId()}>
+            {tag}
+          </div>
         ))}
       </div>
     </div>
