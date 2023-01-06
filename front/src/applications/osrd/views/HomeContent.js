@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
+import osrdLogo from 'assets/pictures/osrd.png';
 import Loader from 'common/Loader';
 
 export default function HomeContent() {
@@ -40,7 +41,11 @@ export default function HomeContent() {
       <NavBarSNCF appName={t('projects')} logo={logo} />
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="p-3">
-          <div className="projects-toolbar pb-3">
+          <div className="application-title d-none">
+            <img src={osrdLogo} alt="OSRD logo" />
+            <h1>Open Source Railway Designer</h1>
+          </div>
+          <div className="projects-toolbar">
             <div className="h1 mb-0">{`${data ? data.length : 0} ${t('projectNumber')}`}</div>
             <div className="flex-grow-1">
               <InputSNCF
