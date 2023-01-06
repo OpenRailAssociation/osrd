@@ -57,7 +57,7 @@ interface Stop {
   track_number: number;
 }
 
-export interface RouteAspect<Time = number, Color = number> {
+export interface RouteAspect<Time = number, Color = string> {
   signal_id: string;
   route_id: string;
   time_start: Time;
@@ -115,8 +115,6 @@ export type SimulationHistory = SimulationSnapshot[];
 export interface PositionValues {
   headPosition: PositionSpeed;
   tailPosition: PositionSpeed;
-  //routeEndOccupancy: number;
-  //routeBeginOccupancy: number;
   speed: {
     speed: number;
     time: number;
