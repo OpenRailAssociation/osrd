@@ -252,7 +252,7 @@ export const SwitchEditionLeftPanel: FC = () => {
         }}
         onSubmit={async (flatSwitch) => {
           const entityToSave = flatSwitchToSwitch(switchType, flatSwitch as FlatSwitchEntity);
-
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const res: any = await dispatch(
             save(
               !isNew

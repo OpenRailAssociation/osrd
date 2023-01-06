@@ -194,6 +194,7 @@ export const TrackEditionLeftPanel: FC = () => {
     <EditorForm
       data={track}
       onSubmit={async (savedEntity) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const res: any = await dispatch(
           save(
             track.properties.id !== NEW_ENTITY_ID

@@ -71,6 +71,7 @@ export const PointEditionLeftPanel: FC = <Entity extends EditorEntity>() => {
     <EditorForm
       data={state.entity as Entity}
       onSubmit={async (savedEntity) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const res: any = await dispatch(
           save(
             state.entity.properties.id !== NEW_ENTITY_ID
@@ -136,6 +137,7 @@ export const PointEditionLeftPanel: FC = <Entity extends EditorEntity>() => {
 };
 
 export const BasePointEditionLayers: FC<{
+  // eslint-disable-next-line react/no-unused-prop-types
   map: mapboxgl.Map;
   mergeEntityWithNearestPoint?: (
     entity: EditorEntity,
