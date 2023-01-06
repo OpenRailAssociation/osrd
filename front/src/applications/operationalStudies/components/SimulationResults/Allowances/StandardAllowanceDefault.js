@@ -10,7 +10,9 @@ import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import { trainscheduleURI } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import debounce from 'lodash/debounce';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { TYPES_UNITS, ALLOWANCE_UNITS_KEYS } from './consts';
+import { TYPES_UNITS } from './consts';
+
+import { ALLOWANCE_UNITS_KEYS } from './consts';
 
 export default function StandardAllowanceDefault(props) {
   const {
@@ -243,14 +245,20 @@ export default function StandardAllowanceDefault(props) {
             ) : (
               <InputSNCF
                 id="standardAllowanceType"
-                label={allowanceTypes[0].label}
+                label={allowanceTypes.length ? allowanceTypes[0].label : 'missing allowance'}
+                onChange={(e) =>
+                  allowanceTypes.length &&
+                  handleType({
+                    type: allowanceTypes[0].id,
+                    value: e.target.value,
+                  })
+                }
+                value={allowanceTypes.length ? value.value : ''}
+                unit={allowanceTypes.length ? allowanceTypes[0].unit : ''}
                 type="text"
-                onChange={(e) => handleType({ type: allowanceTypes[0].id, value: e.target.value })}
-                value={value.value}
                 sm
                 noMargin
                 isFlex
-                unit={allowanceTypes[0].unit}
               />
             )}
           </div>
