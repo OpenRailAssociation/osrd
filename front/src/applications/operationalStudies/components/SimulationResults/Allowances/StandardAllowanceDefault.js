@@ -10,7 +10,7 @@ import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import { trainscheduleURI } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import debounce from 'lodash/debounce';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { TYPES_UNITS } from './consts';
+import { TYPES_UNITS, ALLOWANCE_UNITS_KEYS } from './consts';
 
 import { ALLOWANCE_UNITS_KEYS } from './consts';
 
@@ -245,16 +245,15 @@ export default function StandardAllowanceDefault(props) {
             ) : (
               <InputSNCF
                 id="standardAllowanceType"
-                label={allowanceTypes.length ? allowanceTypes[0].label : 'missing allowance'}
+                label={allowanceTypes[0].label}
                 onChange={(e) =>
-                  allowanceTypes.length &&
                   handleType({
                     type: allowanceTypes[0].id,
                     value: e.target.value,
                   })
                 }
-                value={allowanceTypes.length ? value.value : ''}
-                unit={allowanceTypes.length ? allowanceTypes[0].unit : ''}
+                value={value.value}
+                unit={allowanceTypes[0].unit}
                 type="text"
                 sm
                 noMargin
@@ -289,7 +288,8 @@ export default function StandardAllowanceDefault(props) {
 StandardAllowanceDefault.propTypes = {
   // distributions: PropTypes.array.isRequired,
   distributionsTypes: PropTypes.array.isRequired,
-  getAllowanceTypes: PropTypes.func.isRequired,
+  allowanceTypes: PropTypes.array,
+  getAllowances: PropTypes.func.isRequired,
   setIsUpdating: PropTypes.func.isRequired,
   trainDetail: PropTypes.object.isRequired,
   selectedTrain: PropTypes.number,
@@ -310,4 +310,11 @@ StandardAllowanceDefault.defaultProps = {
   mutateSingleAllowance: undefined,
   title: '',
   selectedTrain: 0,
+  allowanceTypes: [
+    {
+      id: 'time',
+      label: 'time',
+      unit: ALLOWANCE_UNITS_KEYS.time,
+    },
+  ],
 };
