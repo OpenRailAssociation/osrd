@@ -5,6 +5,7 @@ import { withTranslation } from 'react-i18next';
 import { TFunction } from 'i18next';
 import maplibregl from 'maplibre-gl';
 import { isEmpty, isEqual } from 'lodash';
+import mapboxgl from 'mapbox-gl';
 
 import VirtualLayers from 'applications/osrd/views/OSRDSimulation/VirtualLayers';
 import colors from 'common/Map/Consts/colors';
@@ -37,7 +38,6 @@ import {
   Tool,
 } from './tools/types';
 import { getEntity } from './data/api';
-import mapboxgl from 'mapbox-gl';
 
 interface MapProps<S extends CommonToolState = CommonToolState> {
   t: TFunction;
@@ -260,6 +260,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
 
           {/* Tool specific layers */}
           {activeTool.layersComponent && map.current && (
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             <activeTool.layersComponent map={(map.current as any).getMap() as mapboxgl.Map} />
           )}
         </ReactMapGL>

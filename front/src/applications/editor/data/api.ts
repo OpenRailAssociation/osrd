@@ -158,17 +158,15 @@ export async function getMixedEntities(
   defs: { id: string; type: EditoastType }[]
 ): Promise<Record<string, EditorEntity>> {
   const groupedDefs = groupBy(defs, 'type');
-  let res: Record<string, EditorEntity> = {};
 
-  // eslint-disable-next-line guard-for-in
-  for (const type in groupedDefs) {
-    const ids = groupedDefs[type].map(({ id }) => id);
-    // eslint-disable-next-line no-await-in-loop
-    const entities = await getEntities(infra, ids, type as EditoastType);
-    res = { ...res, ...entities };
-  }
+  const entities = await Promise.all(
+    toPairs(groupedDefs).map(([type, values]) => {
+      const ids = values.map(({ id }) => id);
+      return getEntities(infra, ids, type as EditoastType);
+    })
+  );
 
-  return res;
+  return entities.reduce((acc, curr) => ({ ...acc, ...curr }), {} as Record<string, EditorEntity>);
 }
 
 /**
