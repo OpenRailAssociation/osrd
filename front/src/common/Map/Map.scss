@@ -69,9 +69,10 @@
     cursor: pointer;
     i {
       transition: transform 0.6s;
+      margin-left: 1rem;
 
       &.open {
-        transform: rotatex(180deg) translatey(50%);
+        transform: rotate(180deg);
       }
     }
   }

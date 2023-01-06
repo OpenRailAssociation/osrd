@@ -28,7 +28,7 @@ export default function MapSettings(props) {
         <div className="my-1" />
         <MapSettingsBackgroundSwitches />
         <div
-          className="mb-1 mt-3 border-bottom d-flex justify-content-between sub-section-title"
+          className="mb-1 mt-3 border-bottom d-flex align-items-center sub-section-title"
           onClick={() => toogleShowSettings(setShowSettingsSignals)}
           role="button"
           tabIndex={0}
@@ -41,7 +41,7 @@ export default function MapSettings(props) {
         </div>
         {showSettingsSignals && <MapSettingsSignals />}
         <div
-          className="mb-1 mt-3 border-bottom d-flex justify-content-between sub-section-title"
+          className="mb-1 mt-3 border-bottom d-flex align-items-center sub-section-title"
           onClick={() => toogleShowSettings(setShowSettingsLayers)}
           role="button"
           tabIndex={0}
@@ -54,7 +54,7 @@ export default function MapSettings(props) {
         </div>
         {showSettingsLayers && <MapSettingsLayers />}
         <div
-          className="mb-1 mt-3 border-bottom d-flex justify-content-between sub-section-title"
+          className="mb-1 mt-3 border-bottom d-flex align-items-center sub-section-title"
           onClick={() => toogleShowSettings(setShowSettingsSpeedLimits)}
           role="button"
           tabIndex={0}
