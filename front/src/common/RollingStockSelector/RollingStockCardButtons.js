@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
-import { useDispatch } from 'react-redux';
 import { updateRollingStockComfort, updateRollingStockID } from 'reducers/osrdconf';
+import { getRollingStockComfort } from 'reducers/osrdconf/selectors';
 import { comfort2pictogram } from './RollingStockHelpers';
 
 export default function RollingStockCardButtons(props) {
   const { t } = useTranslation(['rollingstock']);
   const { id, curvesComfortList, setOpenedRollingStockCardId } = props;
   const [comfort, setComfort] = useState('STANDARD');
+  const rollingStockComfort = useSelector(getRollingStockComfort);
   const dispatch = useDispatch();
 
   const acLabel = (
@@ -39,6 +41,10 @@ export default function RollingStockCardButtons(props) {
     }
     return options;
   };
+
+  useEffect(() => {
+    setComfort(rollingStockComfort);
+  }, []);
 
   return (
     <div className="rollingstock-footer-buttons">
