@@ -68,6 +68,7 @@ export interface MapState {
     speedlimits: boolean;
     switches: boolean;
     tvds: boolean;
+    errors: boolean;
   };
   mapSearchMarker?: MapSearchMarker;
 }
@@ -114,6 +115,7 @@ export const initialState: MapState = {
     speedlimits: false,
     switches: false,
     tvds: false,
+    errors: false,
   },
   mapSearchMarker: undefined,
 };

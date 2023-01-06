@@ -1,12 +1,13 @@
 import React, { FC, useContext, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { groupBy, mapKeys, mapValues, sum } from 'lodash';
+import { groupBy, mapKeys, mapValues, sum, isString } from 'lodash';
 
 import bufferStopIcon from 'assets/pictures/layersicons/bufferstop.svg';
 import switchesIcon from 'assets/pictures/layersicons/switches.svg';
 import detectorsIcon from 'assets/pictures/layersicons/detectors.svg';
 import trackSectionsIcon from 'assets/pictures/layersicons/layer_adv.svg';
 import signalsIcon from 'assets/pictures/layersicons/layer_signal.svg';
+import { BsFillExclamationOctagonFill } from 'react-icons/bs';
 
 import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 import MapSettingsBackgroundSwitches from 'common/Map/Settings/MapSettingsBackgroundSwitches';
@@ -16,12 +17,16 @@ import { LayerType, ModalProps, EDITOAST_TO_LAYER_DICT, EditoastType } from '../
 import { selectLayers } from '../../../reducers/editor';
 import { EditorEntity } from '../../../types';
 
-const LAYERS: { id: LayerType; icon: string }[] = [
+const LAYERS: { id: LayerType; icon: string | JSX.Element }[] = [
   { id: 'track_sections', icon: trackSectionsIcon },
   { id: 'signals', icon: signalsIcon },
   { id: 'buffer_stops', icon: bufferStopIcon },
   { id: 'detectors', icon: detectorsIcon },
   { id: 'switches', icon: switchesIcon },
+  {
+    id: 'errors',
+    icon: <BsFillExclamationOctagonFill style={{ width: '20px' }} className="mx-2 text-danger" />,
+  },
 ];
 
 const LayersModal: FC<
@@ -79,7 +84,11 @@ const LayersModal: FC<
                   checked={selectedLayers.has(id)}
                   disabled={frozenLayers && frozenLayers.has(id)}
                 />
-                <img className="mx-2" src={icon} alt="" height="20" />
+                {isString(icon) ? (
+                  <img className="mx-2" src={icon} alt="" height="20" />
+                ) : (
+                  <>{icon}</>
+                )}
                 <div className="d-flex flex-column">
                   <div>{t(`Editor.layers.${id}`)}</div>
                   {!!selectionCounts[id] && (

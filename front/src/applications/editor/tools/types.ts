@@ -19,6 +19,7 @@ export const LAYERS = [
   'buffer_stops',
   'detectors',
   'switches',
+  'errors',
 ] as const;
 export const LAYERS_SET: Set<string> = new Set(LAYERS);
 export type LayerType = typeof LAYERS[number];
