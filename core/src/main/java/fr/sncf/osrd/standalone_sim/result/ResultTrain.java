@@ -16,7 +16,7 @@ public class ResultTrain {
     public final Map<String, ResultOccupancyTiming> routeOccupancies;
     @Json(name = "signal_updates")
     public final Collection<SignalUpdate> signalUpdates;
-    @Json(name = "energy_consumed")
+    @Json(name = "mechanical_energy_consumed")
     public final double energyConsumed;
 
     /** Creates the serializable result for a given train */

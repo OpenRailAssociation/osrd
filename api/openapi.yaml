@@ -908,7 +908,7 @@ components:
                 items: { type: number, format: float }
                 minItems: 2
                 maxItems: 2
-        energy_consumed:
+        mechanical_energy_consumed:
           type: { type: number, format: float }
     TrainScheduleResult:
       properties:

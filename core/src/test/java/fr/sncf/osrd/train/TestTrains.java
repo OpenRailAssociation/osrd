@@ -15,6 +15,8 @@ public class TestTrains {
 
     public static final RollingStock CONSTANT_POWER_TRAIN;
 
+    /** The tractive effort curve shape. It can be either linear (effort proportional to speed), or hyperbolic (effort
+     * inversely proportional to speed -> constant power) */
     private enum CurveShape {
         LINEAR,
         HYPERBOLIC

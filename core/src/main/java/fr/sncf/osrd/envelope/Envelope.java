@@ -120,18 +120,6 @@ public final class Envelope implements Iterable<EnvelopePart>, SearchableEnvelop
         return minSpeed;
     }
 
-    /** Returns the cumulative energy consumed at the wheels of the train, given a certain path and rolling stock */
-    public double getEnergyConsumed(
-            PhysicsPath path,
-            PhysicsRollingStock rollingStock
-    ) {
-        var cumulativeEnergy = 0.0;
-        for (var part : parts) {
-            cumulativeEnergy += part.getEnergyConsumed(path, rollingStock);
-        }
-        return cumulativeEnergy;
-    }
-
     // endregion
 
     // region SEARCH

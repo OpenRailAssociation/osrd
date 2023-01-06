@@ -174,4 +174,60 @@ public class EnvelopePhysics {
             interpolatedPosition = minPos;
         return interpolatedPosition;
     }
+
+    /** Returns the cumulative energy consumed of the given envelope at the wheels of the train, given a certain path
+     * and rolling stock */
+    public static double getEnergyConsumed(
+            Envelope envelope,
+            PhysicsPath path,
+            PhysicsRollingStock rollingStock
+    ) {
+        var cumulativeEnergy = 0.0;
+        for (var part : envelope.parts) {
+            cumulativeEnergy += getPartEnergyConsumed(part, path, rollingStock);
+        }
+        return cumulativeEnergy;
+    }
+
+    /** Returns the total mechanical energy consumed on a given envelopePart */
+    public double getPartEnergyConsumed(
+            EnvelopePart part,
+            PhysicsPath path,
+            PhysicsRollingStock rollingStock
+    ) {
+        // The energy consumed by the train corresponds to the kinetic energy delta, subtracting the work by
+        // gravity and drag / friction
+        var positions = part.positions;
+        var speeds = part.speeds;
+        var length = part.positions.length;
+        var mass = rollingStock.getMass();
+        var inertia = rollingStock.getInertia();
+        var partBeginPos = part.getBeginPos();
+        var partEndPos = part.getEndPos();
+        var meanGrade = 0.001 * path.getAverageGrade(partBeginPos, partEndPos);
+        var altitudeDelta = meanGrade * (partEndPos - partBeginPos);
+
+        var workGravity = -mass * 9.81 * altitudeDelta;
+
+        var kineticEnergyDelta = 0.5 * inertia * (speeds[length - 1] * speeds[length - 1] - speeds[0] * speeds[0]);
+
+        var workDrag = 0;
+        for (var i = 0; i < length - 1; i++) {
+            var speed = speeds[i];
+            var nextSpeed = speeds[i + 1];
+            var meanSpeed = (speed + nextSpeed) / 2;
+            var pos = positions[i];
+            var nextPos = positions[i + 1];
+            var positionDelta = nextPos - pos;
+            workDrag -= rollingStock.getRollingResistance(meanSpeed) * positionDelta;
+        }
+
+        var totalEnergyConsumed = kineticEnergyDelta - workGravity - workDrag;
+
+        // If the train is braking the result should be negative
+        if (part.hasAttr(EnvelopeProfile.BRAKING))
+            assert totalEnergyConsumed <= 0;
+
+        return max(0., totalEnergyConsumed);
+    }
 }

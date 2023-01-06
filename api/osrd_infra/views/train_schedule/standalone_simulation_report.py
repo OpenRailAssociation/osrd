@@ -81,7 +81,7 @@ def convert_simulation_results(
         "stops": stops,
         "route_aspects": route_aspects,
         "signal_aspects": build_signal_updates(simulation_result["signal_updates"], departure_time),
-        "energy_consumed": simulation_result["energy_consumed"]
+        "mechanical_energy_consumed": simulation_result["mechanical_energy_consumed"]
     }
 
 

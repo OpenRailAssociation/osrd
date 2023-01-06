@@ -343,45 +343,6 @@ public final class EnvelopePart implements SearchableEnvelope {
         return getTotalTimesMS()[pointIndex];
     }
 
-    /** Returns the total energy consumed at train wheel on this envelopePart */
-    public double getEnergyConsumed(
-            PhysicsPath path,
-            PhysicsRollingStock rollingStock
-    ) {
-        // The energy consumed by the train corresponds to the kinetic energy delta, subtracting the work by
-        // gravity and drag / friction
-        var length = positions.length;
-        var mass = rollingStock.getMass();
-        var inertia = rollingStock.getInertia();
-        var partBeginPos = getBeginPos();
-        var partEndPos = getEndPos();
-        var meanGrade = 0.001 * path.getAverageGrade(partBeginPos, partEndPos);
-        var altitudeDelta = meanGrade * (partEndPos - partBeginPos);
-
-        var workGravity = -mass * 9.81 * altitudeDelta;
-
-        var kineticEnergyDelta = 0.5 * inertia * (speeds[length - 1] * speeds[length - 1] - speeds[0] * speeds[0]);
-
-        var workDrag = 0;
-        for (var i = 0; i < length - 1; i++) {
-            var speed = speeds[i];
-            var nextSpeed = speeds[i + 1];
-            var meanSpeed = (speed + nextSpeed) / 2;
-            var pos = positions[i];
-            var nextPos = positions[i + 1];
-            var positionDelta = nextPos - pos;
-            workDrag -= rollingStock.getRollingResistance(meanSpeed) * positionDelta;
-        }
-
-        var totalEnergyConsumed = kineticEnergyDelta - workGravity - workDrag;
-
-        // If the train is braking the result should be negative
-        if (hasAttr(EnvelopeProfile.BRAKING))
-            assert totalEnergyConsumed <= 0;
-
-        return max(0., totalEnergyConsumed);
-    }
-
     // endregion
 
     // region CLONE

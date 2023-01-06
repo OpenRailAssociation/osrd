@@ -28,7 +28,7 @@ def mock_api_call(payload):
             "stops": [],
             "route_occupancies": {},
             "signal_updates": {},
-            "energy_consumed": 20011
+            "mechanical_energy_consumed": 20011
         }
     ]
     return {

@@ -67,14 +67,14 @@ export default function DriverTrainScheduleModal(props) {
       <div className="row">
         <div className="col-4">{t('drivertrainschedule:energyconsumed-basic')}</div>
         <div className="font-weight-bold text-primary col-8">
-          {jouleToKwh(data.base.energy_consumed)} kWh
+          {jouleToKwh(data.base.mechanical_energy_consumed)} kWh
         </div>
       </div>
       {data.eco != null && (
         <div className="row">
           <div className="col-4">{t('drivertrainschedule:energyconsumed-eco')}</div>
           <div className="font-weight-bold text-primary col-8">
-            {jouleToKwh(data.eco.energy_consumed)} kWh
+            {jouleToKwh(data.eco.mechanical_energy_consumed)} kWh
           </div>
         </div>
       )}
