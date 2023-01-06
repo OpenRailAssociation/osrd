@@ -1,14 +1,8 @@
 import { JSONSchema7 } from 'json-schema';
-import { first, last, omit, omitBy, without } from 'lodash';
+import { omit, omitBy, without } from 'lodash';
 import { Point } from 'geojson';
 
-import {
-  EditorEntity,
-  SwitchEntity,
-  SwitchType,
-  TrackEndpoint,
-  TrackSectionEntity,
-} from '../../../../types';
+import { EditorEntity, SwitchEntity, SwitchType, TrackEndpoint } from '../../../../types';
 import { NEW_ENTITY_ID } from '../../data/utils';
 
 export type Reducer<T> = (value: T) => T;
