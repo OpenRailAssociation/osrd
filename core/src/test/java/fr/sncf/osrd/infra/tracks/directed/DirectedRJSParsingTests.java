@@ -278,6 +278,36 @@ public class DirectedRJSParsingTests {
         ));
     }
 
+    @Test
+    public void getTrackLocationOnTrackViewRangesTest() {
+        final var edge = new TrackSectionImpl(100, "edge");
+        final var edgeF = new DiTrackEdgeImpl(edge, Direction.FORWARD);
+        final var edgeB = new DiTrackEdgeImpl(edge, Direction.BACKWARD);
+
+        var path1 = List.of(
+                new TrackRangeView(0, 100, edgeF)
+        );
+        var loc1 = TrackRangeView.getLocationFromList(path1, 42.);
+        assertEquals(loc1.offset(), 42.);
+        loc1 = TrackRangeView.getLocationFromList(path1, 100.);
+        assertEquals(loc1.offset(), 100.);
+
+        var path2 = List.of(
+                new TrackRangeView(15, 50, edgeF),
+                new TrackRangeView(50, 90, edgeF),
+                new TrackRangeView(90, 100, edgeF)
+        );
+        var loc2 = TrackRangeView.getLocationFromList(path2, 42.);
+        assertEquals(loc2.offset(), 42. + 15.);
+
+        var path3 = List.of(
+                new TrackRangeView(90, 100, edgeB),
+                new TrackRangeView(0, 15, edgeB)
+        );
+        var loc3 = TrackRangeView.getLocationFromList(path3, 20.);
+        assertEquals(loc3.offset(), 5.);
+    }
+
     private record Pair(Detector detector, double position) {}
 
     /** Merges all the detectors and positions on a list of ranges */
