@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/pictures/views/projects.svg';
-import genJSON from 'applications/osrd/components/HomeContent/genJSON';
+import { projectsListJSON } from 'applications/osrd/components/Helpers/genFakeDataForProjects';
 import ProjectCard from 'applications/osrd/components/HomeContent/ProjectCard';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
@@ -12,7 +12,7 @@ import Loader from 'common/Loader';
 
 export default function HomeContent() {
   const { t } = useTranslation('osrd/home');
-  const [data, setData] = useState();
+  const [projectsList, setProjectsList] = useState();
   const [filter, setFilter] = useState('');
   const [sortOption, setSortOption] = useState('byName');
 
@@ -33,12 +33,12 @@ export default function HomeContent() {
   };
 
   useEffect(() => {
-    setData(genJSON());
+    setProjectsList(projectsListJSON());
   }, []);
 
   return (
     <>
-      <NavBarSNCF appName={t('projects')} logo={logo} />
+      <NavBarSNCF appName={<div className="navbar-breadcrumbs">{t('projects')}</div>} logo={logo} />
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="p-3">
           <div className="application-title d-none">
@@ -46,7 +46,9 @@ export default function HomeContent() {
             <h1>Open Source Railway Designer</h1>
           </div>
           <div className="projects-toolbar">
-            <div className="h1 mb-0">{`${data ? data.length : 0} ${t('projectNumber')}`}</div>
+            <div className="h1 mb-0">{`${projectsList ? projectsList.length : 0} ${t(
+              'projectNumber'
+            )}`}</div>
             <div className="flex-grow-1">
               <InputSNCF
                 type="text"
@@ -70,10 +72,10 @@ export default function HomeContent() {
               <span className="ml-2">Créer un projet</span>
             </button>
           </div>
-          {data ? (
+          {projectsList ? (
             <div className="projects-list">
               <div className="row">
-                {data.map((details) => (
+                {projectsList.map((details) => (
                   <div className="col-xl-2 col-lg-3 col-md-4 col-sm-6">
                     <ProjectCard details={details} key={nextId()} />
                   </div>
