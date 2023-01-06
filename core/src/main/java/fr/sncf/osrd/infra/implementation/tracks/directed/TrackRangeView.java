@@ -207,4 +207,17 @@ public class TrackRangeView {
     private boolean isInRange(ElementView<?> element) {
         return element.offset >= 0 && element.offset <= getLength();
     }
+
+    /** Returns the track location given an offset over a list of track ranges.
+     * Throw a runtime exception if the offset is not contains in the track ranges
+     **/
+    public static TrackLocation getLocationFromList(List<TrackRangeView> ranges, double offset) {
+        double iterOffset = offset;
+        for (var range : ranges) {
+            if (range.getLength() >= iterOffset)
+                return range.offsetLocation(iterOffset);
+            iterOffset -= range.getLength();
+        }
+        throw new RuntimeException(String.format("Offset %f is not contained in the track ranges view", offset));
+    }
 }
