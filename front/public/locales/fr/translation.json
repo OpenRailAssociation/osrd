@@ -75,9 +75,18 @@
       },
       "list": {
         "error": "Une erreur est survenue lors du chargement des données",
-        "no-error": "Aucune erreur trouvée pour l'infrastructure"
+        "no-error": "Aucune erreur trouvée",
+        "total-error": "{{total}} erreurs trouvées",
+        "filter-level": "Niveau d'erreur",
+        "filter-type": "Type d'erreur"
       },
-      "error_type": {
+      "error-level": {
+        "all": "Tout",
+        "errors": "Erreurs",
+        "warnings": "Avertissements"
+      },
+      "error-type": {
+        "all": "Tout",
         "invalid_reference": "Référence invalide",
         "out_of_range": "Valeur invalide (hors intervalle)",
         "empty_path": "Chemin vide",
