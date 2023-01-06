@@ -1,6 +1,7 @@
 package fr.sncf.osrd.standalone_sim;
 
 import static java.lang.Math.*;
+import static fr.sncf.osrd.envelope.EnvelopePhysics.getMechanicalEnergyConsumed;
 
 import com.google.common.collect.Sets;
 import fr.sncf.osrd.envelope.Envelope;
@@ -59,7 +60,7 @@ public class ScheduleMetadataExtractor {
 
         // Compute energy consumed
         var envelopePath = EnvelopeTrainPath.from(trainPath);
-        var energyConsumed = envelope.getEnergyConsumed(envelopePath, schedule.rollingStock);
+        var energyConsumed = getMechanicalEnergyConsumed(envelope, envelopePath, schedule.rollingStock);
 
         return new ResultTrain(
                 speeds,

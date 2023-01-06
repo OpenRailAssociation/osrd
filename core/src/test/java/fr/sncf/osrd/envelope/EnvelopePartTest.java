@@ -104,7 +104,7 @@ class EnvelopePartTest {
     }
 
     @Test
-    void testGetEnergyConsumed() {
+    void testGetMechanicalEnergyConsumed() {
         var length = 50_000;
         var testRollingStock = TestTrains.CONSTANT_POWER_TRAIN;
         var testPath = new FlatPath(length, 0);
@@ -119,7 +119,7 @@ class EnvelopePartTest {
         for (var i = 0; i < envelopeAllowance.size(); i++) {
             var envelopePart = envelopeAllowance.get(i);
             var envelopePartEnergy = envelopePart
-                    .getEnergyConsumed(testContext.path, testContext.rollingStock);
+                    .getMechanicalEnergyConsumed(testContext.path, testContext.rollingStock);
             double expectedEnvelopePartEnergy;
             switch (i) {
                 case 0:
