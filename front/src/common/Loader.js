@@ -3,6 +3,12 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import './Loader.scss';
 
+export const Spinner = () => (
+  <div className="spinner-border" role="status">
+    <span className="sr-only">Loading...</span>
+  </div>
+);
+
 export default class Loader extends React.Component {
   static propTypes = {
     msg: PropTypes.string,
@@ -18,14 +24,18 @@ export default class Loader extends React.Component {
     const { msg, position } = this.props;
     return (
       <div className={`loader ${position}`}>
-        <div className="spinner-border" role="status">
-          <span className="sr-only">Loading...</span>
-        </div>
+        <Spinner />
         <div className="text-center mt-2">{msg}</div>
       </div>
     );
   }
 }
+
+export const LoaderFill = () => (
+  <div className={`loader-fill inset-0`}>
+    <Spinner />
+  </div>
+);
 
 /**
  * Same loader but plugged on the state.
