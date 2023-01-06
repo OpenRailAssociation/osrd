@@ -16,7 +16,7 @@ const NB_PROJECTS = 10;
 const NB_STUDIES_RND = 15;
 const NB_TAGS_RND = 6;
 
-export default function genJSON(nb = NB_PROJECTS) {
+export function projectsListJSON(nb = NB_PROJECTS) {
   const json = [];
   for (let index = 0; index < nb; index += 1) {
     const studiesIDs = [];
@@ -33,5 +33,21 @@ export default function genJSON(nb = NB_PROJECTS) {
       lastModified: faker.date.past(10),
     });
   }
+  return json;
+}
+
+export function projectJSON(nbStudies = NB_STUDIES_RND) {
+  const studies = [];
+  const json = {
+    id: faker.datatype.uuid(),
+    name: faker.lorem.words(),
+    image: chooseRandomIMG(),
+    description: faker.lorem.paragraphs(1),
+    objectives: faker.lorem.sentences(3),
+    financials: `${faker.name.fullName()}, ${faker.company.name()}`,
+    tags: faker.lorem.words(Math.round(Math.random() * NB_TAGS_RND)).split(' '),
+    budget: faker.finance.amount(10000, 1000000, 0, '€'),
+    studies,
+  };
   return json;
 }
