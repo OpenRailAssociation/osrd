@@ -194,7 +194,7 @@ public class EnvelopePhysics {
     }
 
     /** Returns the total mechanical energy consumed on a given envelopePart */
-    public double getPartEnergyConsumed(
+    public static double getPartEnergyConsumed(
             EnvelopePart part,
             PhysicsPath path,
             PhysicsRollingStock rollingStock
