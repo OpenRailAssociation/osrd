@@ -2,9 +2,6 @@ package fr.sncf.osrd.envelope;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
-import fr.sncf.osrd.envelope_sim.PhysicsPath;
-import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
-import fr.sncf.osrd.infra_state.api.TrainPath;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
