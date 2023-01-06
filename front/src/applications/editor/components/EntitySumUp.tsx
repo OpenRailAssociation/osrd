@@ -70,7 +70,6 @@ function getSumUpContent(
   let text = '';
   const subtexts: (string | JSX.Element)[] = [];
   const classes = { ...DEFAULT_CLASSES, ...(classesOverride || {}) };
-
   switch (entity.objType) {
     case 'TrackSection': {
       const trackSection = entity as TrackSectionEntity;
