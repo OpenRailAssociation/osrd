@@ -36,7 +36,9 @@ const ModalUnplugged: FC<
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-        <div className="modal-body">{children}</div>
+        <div id={id ? `${id}-modal-body` : 'modal-body'} className="modal-body">
+          {children}
+        </div>
       </div>
     </div>
   </div>
