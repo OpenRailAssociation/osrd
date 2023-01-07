@@ -25,6 +25,7 @@ pub use route::Route;
 use serde::{Deserialize, Serialize};
 pub use signal::{Signal, SignalCache};
 pub use speed_section::SpeedSection;
+use strum_macros::Display;
 use strum_macros::EnumIter;
 pub use switch::{Switch, SwitchCache};
 pub use switch_type::{SwitchPortConnection, SwitchType};
@@ -58,7 +59,9 @@ impl<T: OSRDIdentified + OSRDTyped> OSRDObject for T {
     }
 }
 
-#[derive(Debug, Clone, Copy, Deserialize, Hash, Eq, PartialEq, Serialize, Enum, EnumIter)]
+#[derive(
+    Debug, Clone, Copy, Deserialize, Hash, Eq, PartialEq, Serialize, Enum, EnumIter, Display,
+)]
 #[serde(deny_unknown_fields)]
 pub enum ObjectType {
     TrackSection,
