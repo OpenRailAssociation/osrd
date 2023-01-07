@@ -2,6 +2,7 @@ mod edition;
 mod errors;
 mod objects;
 mod railjson;
+mod routes;
 
 use std::sync::Arc;
 
@@ -42,6 +43,7 @@ pub fn routes() -> Vec<Route> {
     .chain(errors::routes())
     .chain(objects::routes())
     .chain(railjson::routes())
+    .chain(routes::routes())
     .collect()
 }
 

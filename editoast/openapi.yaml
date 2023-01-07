@@ -441,6 +441,50 @@ paths:
                   format: float
                 example: [750.0, 1500.0, 2500.50]
 
+  /infra/{id}/routes/{waypoint_type}/{waypoint_id}/:
+    get:
+      tags:
+        - infra
+      summary: Retrieve all routes that starting and ending by the given waypoint (detector or buffer stop)
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Infra ID
+          required: true
+        - in: path
+          name: waypoint_type
+          schema:
+            type: string
+            enum: [Detector, BufferStop]
+          description:  Type of the waypoint
+          required: true
+        - in: path
+          name: waypoint_id
+          schema:
+            type: string
+          description:  The waypoint id
+          required: true
+      responses:
+        200:
+          description: All routes that starting and ending by the given waypoint
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  starting:
+                    type: array
+                    items:
+                      type: string
+                    example: ["route1", "route2"]
+                  ending:
+                    type: array
+                    items:
+                      type: string
+                    example: ["route3", "route4"]
+
   /infra/{id}/objects/{object_type}/:
     post:
       tags:
