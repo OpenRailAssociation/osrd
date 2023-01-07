@@ -10,6 +10,11 @@ use rocket::serde::json::{Error as JsonError, Json, Value as JsonValue};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+/// Return the endpoints routes of this module
+pub fn routes() -> Vec<rocket::Route> {
+    routes![get_objects]
+}
+
 #[derive(Debug, Error)]
 enum GetObjectsErrors {
     #[error("No object ids provided")]
@@ -57,7 +62,7 @@ struct ObjectQueryable {
 
 /// Return the railjson list of a specific OSRD object
 #[post("/<infra>/objects/<object_type>", data = "<obj_ids>")]
-pub async fn get_objects(
+async fn get_objects(
     infra: i32,
     object_type: ObjectType,
     obj_ids: Result<Json<Vec<String>>, JsonError<'_>>,
