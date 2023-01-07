@@ -1,11 +1,12 @@
 {
+  "createProject": "Créer un projet",
   "filterPlaceholder": "Rechercher…",
   "openProject": "Ouvrir",
-  "projectNumber": "projet(s)",
+  "projectsCount": "projet(s)",
   "projects": "Projets",
   "sortOptions": {
     "byName": "Tri par nom",
     "byRecentDate": "Plus récents"
   },
-  "studiesNumber": "étude(s)"
+  "studiesCount": "étude(s)"
 }

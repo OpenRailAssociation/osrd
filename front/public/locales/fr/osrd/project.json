@@ -1,7 +1,16 @@
 {
+  "budget": "Budget",
+  "createStudy": "Créer une étude",
   "description": "description",
-  "fundedBy": "Ce projet est financé par :",
+  "filterPlaceholder": "Rechercher…",
+  "fundedBy": "Financement",
   "objectives": "objectifs",
+  "openProject": "Ouvrir",
   "projectsList": "Projets",
-  "studies": "Études"
+  "sortOptions": {
+    "byName": "Tri par nom",
+    "byRecentDate": "Plus récents"
+  },
+  "studies": "Études",
+  "studiesCount": "étude(s)"
 }
