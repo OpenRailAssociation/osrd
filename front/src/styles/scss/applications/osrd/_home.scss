@@ -68,6 +68,9 @@
     text-align: right;
     font-size: .7rem;
     color: var(--coolgray11);
+    div {
+      white-space: nowrap;
+    }
   }
   .projects-list-project-card-name {
     color: var(--primary);
