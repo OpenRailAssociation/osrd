@@ -1,45 +1,51 @@
 .project-details {
   .project-details-title {
     display: flex;
-    align-items: center;
+    position: relative;
     gap: 1rem;
     margin-bottom: 1rem;
-    .project-details-img {
+    .project-details-title-img {
+      flex-grow: 1;
       position: relative;
-      height: 5rem;
       overflow: hidden;
       border-radius: 4px;
+      height: 100%;
       img {
         display: flex;
         align-items: center;
         justify-content: center;
         color: var(--coolgray7);
         transition: filter .5s;
-        width: 5rem;
-        height: 5rem;
+        width: 100%;
+        height: 100%;
         object-fit: cover;
       }
+      @media screen and (max-width: 768px) {
+        height: 10rem;
+      }
     }
-    .project-details-name {
-      display: flex;
-      align-items: center;
-      height: 5rem;
-      font-size: 3rem;
-    }
-  }
-  .project-details-body {
-    margin-bottom: 1rem;
-    .project-details-description, .project-details-objectives {  
-      border-radius: 4px;
-      background-color: var(--white);   
-      padding: .5rem;
-      overflow: auto;
-      height: 10rem;
+    .project-details-title-content {
+      .project-details-title-name {
+        font-size: 2rem;
+        font-weight: 500;
+      }
       h3 {
-        font-size: .9rem;
-        display: inline-block;
+        color: var(--coolgray9);
+        font-size: .8rem;
         text-transform: uppercase;
-        margin: 0 .5rem 0 0;
+        border-bottom: 1px solid var(--coolgray5);
+        padding-bottom: .15rem;
+        margin-bottom: .25rem;
+      }
+      .project-details-title-description {
+        overflow: auto;
+        max-height: 10vh;
+        margin-bottom: 1rem;
+        font-size: 1.25rem;
+      }
+      .project-details-title-objectives {
+        overflow: auto;
+        max-height: 20vh;
       }
     }
   }
@@ -49,23 +55,34 @@
     margin-bottom: 1rem;
     border-radius: 4px;  
     padding: .5rem;
-    background-color: var(--coolgray11);
-    color: var(--coolgray1);
+    background-color: var(--coolgray3);
+    color: var(--coolgray13);
     .project-details-financials-infos {
       h3 {
-        color: var(--coolgray7);
+        font-size: .9rem;
+        color: var(--coolgray9);
         margin: 0;
+        text-transform: uppercase;
       }
       flex-grow: 1;
     }
     .project-details-financials-amount {
+      display: flex;
+      align-items: center;
       line-height: 2rem;
-      font-size: 2rem;
+      font-size: 1.5rem;
       font-weight: bold;
       background-color: var(--coolgray1);
       color: var(--coolgray11);
       border-radius: 4px;  
       padding: .5rem;
+      .project-details-financials-amount-text {
+        line-height: 2rem;
+        font-size: .9rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        margin-right: .5rem;
+      }
     }
   }
   .project-details-tags {    
@@ -73,11 +90,8 @@
     align-items: center;
     flex-wrap: wrap;
     gap: .25rem;
-    padding: .5rem;
-    font-size: .9rem;
-    border-radius: 4px;
-    border: 1px solid var(--coolgray3);
-    .project-details-tags-tag {      
+    .project-details-tags-tag {   
+      font-size: .9rem;   
       color: var(--white);
       background-color: var(--purple);
       border-radius: 4px;
@@ -86,6 +100,103 @@
       cursor: pointer;
       &:hover {
         opacity: .65;
+      }
+    }
+  }
+}
+
+.studies-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1rem 0 1rem;
+  margin-top: 2rem;
+}
+
+.studies-list {
+  overflow: auto;
+  max-height: 50vh;
+  .studies-list-card {
+    position: relative;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    transition: .4s;
+    background-color: var(--white);
+    .studies-list-card-name {
+      font-size: 1.5rem;
+      font-weight: 500;
+      padding: 1rem .5rem 0;
+      line-height: 1rem;
+    }
+    .studies-list-card-type {
+      color: var(--primary);
+      font-weight: 500;
+      padding: 0 .5rem;
+    }
+    .studies-list-card-description {
+      font-size: .9rem;
+      padding: 0 .5rem;
+      
+    }
+    .studies-list-card-financials {
+      display: flex;
+      align-items: center;
+      background-color: var(--coolgray1);
+      padding: .5rem;
+      margin: .5rem;
+      border-radius: 4px;
+      .studies-list-card-financials-infos {
+        display: flex;
+        gap: 1rem;
+        .studies-list-card-financials-infos-item {
+          text-transform: uppercase;
+          font-weight: 500;
+          font-size: .9rem;
+          h3 {
+            font-size: .8rem;
+            color: var(--coolgray9);
+            margin: 0;
+            text-transform: uppercase;
+          }
+        }
+      }
+      .studies-list-card-financials-amount {
+        display: flex;
+        align-items: center;
+        margin-left: auto;
+        font-size: 1.25rem;
+        font-weight: bold;
+        line-height: 1rem;
+        background-color: var(--white);
+        color: var(--coolgray11);
+        border-radius: 4px;  
+        padding: .5rem;
+        .studies-list-card-financials-amount-text {
+          font-size: .7rem;
+          font-weight: 500;
+          text-transform: uppercase;
+          margin-right: .5rem;
+        }
+      }
+    }
+    .studies-list-card-tags {    
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: .25rem;
+      padding: .5rem;
+      .studies-list-card-tags-tag {   
+        font-size: .9rem;   
+        color: var(--white);
+        background-color: var(--secondary);
+        border-radius: 4px;
+        padding: 0 .25rem;
+        transition: .2s;
+        cursor: pointer;
+        &:hover {
+          opacity: .65;
+        }
       }
     }
   }

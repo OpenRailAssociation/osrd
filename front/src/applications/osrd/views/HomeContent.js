@@ -47,7 +47,7 @@ export default function HomeContent() {
           </div>
           <div className="projects-toolbar">
             <div className="h1 mb-0">{`${projectsList ? projectsList.length : 0} ${t(
-              'projectNumber'
+              'projectsCount'
             )}`}</div>
             <div className="flex-grow-1">
               <InputSNCF
@@ -69,14 +69,14 @@ export default function HomeContent() {
             />
             <button className="btn btn-primary" type="button">
               <i className="icons-add" />
-              <span className="ml-2">Créer un projet</span>
+              <span className="ml-2">{t('createProject')}</span>
             </button>
           </div>
           {projectsList ? (
             <div className="projects-list">
               <div className="row">
                 {projectsList.map((details) => (
-                  <div className="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+                  <div className="col-lg-3 col-md-4 col-sm-6">
                     <ProjectCard details={details} key={nextId()} />
                   </div>
                 ))}
