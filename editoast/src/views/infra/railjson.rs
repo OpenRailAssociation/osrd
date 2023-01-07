@@ -16,6 +16,11 @@ use rocket::serde::json::{json, Error as JsonError, Json, Value as JsonValue};
 use rocket::State;
 use thiserror::Error;
 
+/// Return the endpoints routes of this module
+pub fn routes() -> Vec<rocket::Route> {
+    routes![get_railjson, post_railjson]
+}
+
 #[derive(QueryableByName)]
 struct RailJsonData {
     #[sql_type = "Text"]

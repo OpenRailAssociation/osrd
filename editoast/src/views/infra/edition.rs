@@ -1,13 +1,50 @@
+use std::sync::Arc;
+
+use chashmap::CHashMap;
 use diesel::PgConnection;
+use rocket::serde::json::{Error as JsonError, Json};
+use rocket::State;
 
 use crate::api_error::{ApiResult, InfraLockedError};
-use crate::chartos::InvalidationZone;
+use crate::chartos::{self, InvalidationZone};
+use crate::client::ChartosConfig;
+use crate::db_connection::DBConnection;
 use crate::generated_data;
 use crate::infra::Infra;
 use crate::infra_cache::InfraCache;
 use crate::schema::operation::{Operation, OperationResult};
 
-pub fn edit(
+/// Return the endpoints routes of this module
+pub fn routes() -> Vec<rocket::Route> {
+    routes![edit]
+}
+
+/// CRUD for edit an infrastructure. Takes a batch of operations.
+#[post("/<infra>", data = "<operations>")]
+async fn edit<'a>(
+    infra: i32,
+    operations: Result<Json<Vec<Operation>>, JsonError<'a>>,
+    infra_caches: &State<Arc<CHashMap<i32, InfraCache>>>,
+    chartos_config: &State<ChartosConfig>,
+    conn: DBConnection,
+) -> ApiResult<Json<Vec<OperationResult>>> {
+    let operations = operations?;
+    let infra_caches = infra_caches.inner().clone();
+
+    let (operation_results, invalid_zone) = conn
+        .run::<_, ApiResult<_>>(move |conn| {
+            let infra = Infra::retrieve_for_update(conn, infra)?;
+            let mut infra_cache = InfraCache::get_or_load_mut(conn, &infra_caches, &infra).unwrap();
+            apply_edit(conn, &infra, &operations, &mut infra_cache)
+        })
+        .await?;
+
+    chartos::invalidate_zone(infra, chartos_config, &invalid_zone).await;
+
+    Ok(Json(operation_results))
+}
+
+fn apply_edit(
     conn: &PgConnection,
     infra: &Infra,
     operations: &[Operation],
