@@ -1,6 +1,6 @@
 use crate::api_error::ApiError;
 use crate::views::pagination::{paginate, PaginationError};
-use diesel::sql_types::{BigInt, Integer, Json, Text};
+use diesel::sql_types::{BigInt, Integer, Json, Nullable, Text};
 use diesel::{PgConnection, RunQueryDsl};
 use serde::Serialize;
 use serde_json::Value;
@@ -11,10 +11,10 @@ struct InfraErrorQueryable {
     pub count: i64,
     #[sql_type = "Json"]
     pub information: Value,
-    #[sql_type = "Json"]
-    pub geographic: Value,
-    #[sql_type = "Json"]
-    pub schematic: Value,
+    #[sql_type = "Nullable<Json>"]
+    pub geographic: Option<Value>,
+    #[sql_type = "Nullable<Json>"]
+    pub schematic: Option<Value>,
 }
 
 #[derive(Default, Debug, PartialEq, Eq, FromFormField)]
@@ -29,8 +29,8 @@ pub enum Level {
 #[serde(deny_unknown_fields)]
 pub struct InfraErrorModel {
     pub information: Value,
-    pub geographic: Value,
-    pub schematic: Value,
+    pub geographic: Option<Value>,
+    pub schematic: Option<Value>,
 }
 
 impl From<InfraErrorQueryable> for InfraErrorModel {
