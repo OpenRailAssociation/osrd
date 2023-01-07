@@ -9,7 +9,7 @@ tags:
     description: Infra
 
 paths:
-  /health:
+  /health/:
     get:
       responses:
         200:
