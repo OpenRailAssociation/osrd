@@ -18,6 +18,12 @@ tags:
     description: Short term DCM
 
 paths:
+  /health/:
+    get:
+      responses:
+        200:
+          description: Check if Editoast is running correctly
+
   /infra/:
     get:
       tags:
@@ -159,7 +165,7 @@ paths:
       tags:
         - pathfinding
       summary: |
-        Create a Path given a list of operational points trigram. 
+        Create a Path given a list of operational points trigram.
         Note: This endpoint is used for a proof of concept and shouldn't be used in production.
       requestBody:
         description: Steps of the path
