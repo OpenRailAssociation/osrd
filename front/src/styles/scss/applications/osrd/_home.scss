@@ -73,7 +73,7 @@
     }
   }
   .projects-list-project-card-name {
-    color: var(--primary);
+    color: var(--purple);
     font-weight: 500;
     font-size: .9rem;
     padding: 0 .5rem;
@@ -81,9 +81,6 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    &::first-letter {
-      text-transform:capitalize;
-    }
   }
   .projects-list-project-card-description {
     padding: 0 .5rem;
@@ -102,6 +99,7 @@
     margin-top: .5rem;
     padding: 0 .5rem .5rem;
     font-size: .8rem;
+    min-height: 1.5rem;
     .projects-list-project-card-tags-tag {
       color: var(--white);
       background-color: var(--purple);
