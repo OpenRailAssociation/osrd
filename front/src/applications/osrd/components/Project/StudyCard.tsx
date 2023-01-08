@@ -6,6 +6,7 @@ import 'dayjs/locale/fr';
 import nextId from 'react-id-generator';
 import { AiFillFolderOpen } from 'react-icons/ai';
 import { RiFoldersLine } from 'react-icons/ri';
+import { FcCalendar } from 'react-icons/fc';
 
 dayjs.locale('fr');
 
@@ -74,12 +75,21 @@ export default function StudyCard({ details }: Props) {
         </div>
       </div>
 
-      <div className="studies-list-card-tags">
-        {details.tags.map((tag) => (
-          <div className="studies-list-card-tags-tag" key={nextId()}>
-            {tag}
-          </div>
-        ))}
+      <div className="studies-list-card-footer">
+        <div className="studies-list-card-tags">
+          {details.tags.map((tag) => (
+            <div className="studies-list-card-tags-tag" key={nextId()}>
+              {tag}
+            </div>
+          ))}
+        </div>
+        <div className="studies-list-card-date">
+          <span className="mr-1">
+            <FcCalendar />
+          </span>
+          <span className="mr-1">{t('modifiedOn')}</span>
+          {dayjs(details.lastModifiedDate).format('D MMM YYYY HH:mm').replace(/\./gi, '')}
+        </div>
       </div>
     </div>
   );

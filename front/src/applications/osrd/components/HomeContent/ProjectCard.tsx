@@ -44,7 +44,7 @@ export default function ProjectCard({ details }: Props) {
           <span className="mr-1">
             <RiCalendarLine />
           </span>
-          {dayjs(details.lastModified).format('ddd D MMM YYYY, HH:mm').replace('.', '')}
+          {dayjs(details.lastModified).format('ddd D MMM YYYY, HH:mm').replace(/\./gi, '')}
         </div>
         <div>
           <span className="mr-1">
