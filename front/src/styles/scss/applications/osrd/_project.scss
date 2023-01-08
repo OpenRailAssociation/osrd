@@ -3,12 +3,12 @@
     display: flex;
     position: relative;
     gap: 1rem;
-    margin-bottom: 1rem;
+    margin-bottom: .5rem;
     .project-details-title-img {
-      flex-grow: 1;
-      position: relative;
+      position: absolute;
       overflow: hidden;
       border-radius: 4px;
+      max-height: 30vh;
       height: 100%;
       img {
         display: flex;
@@ -21,11 +21,13 @@
         object-fit: cover;
       }
       @media screen and (max-width: 768px) {
+        position: relative;
         height: 10rem;
       }
     }
     .project-details-title-content {
       .project-details-title-name {
+        color: var(--purple);
         font-size: 2rem;
         font-weight: 500;
       }
@@ -39,7 +41,7 @@
       }
       .project-details-title-description {
         overflow: auto;
-        max-height: 10vh;
+        max-height: 12vh;
         margin-bottom: 1rem;
         font-size: 1.25rem;
       }
@@ -52,15 +54,16 @@
   .project-details-financials {
     display: flex;
     align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: .5rem;
     border-radius: 4px;  
     padding: .5rem;
-    background-color: var(--coolgray3);
-    color: var(--coolgray13);
+    background-color: var(--purple);
+    color: var(--white);
     .project-details-financials-infos {
       h3 {
         font-size: .9rem;
-        color: var(--coolgray9);
+        font-weight: bold;
+        color: var(--white);
         margin: 0;
         text-transform: uppercase;
       }
@@ -73,15 +76,18 @@
       font-size: 1.5rem;
       font-weight: bold;
       background-color: var(--coolgray1);
-      color: var(--coolgray11);
+      color: var(--purple);
       border-radius: 4px;  
-      padding: .5rem;
+      padding: .25rem .5rem;
       .project-details-financials-amount-text {
-        line-height: 2rem;
-        font-size: .9rem;
+        line-height: 1rem;
+        text-align: right;
+        width: 4rem;
+        font-size: .8rem;
         font-weight: 500;
         text-transform: uppercase;
         margin-right: .5rem;
+        white-space: wrap;
       }
     }
   }
@@ -97,10 +103,6 @@
       border-radius: 4px;
       padding: 0 .25rem;
       transition: .2s;
-      cursor: pointer;
-      &:hover {
-        opacity: .65;
-      }
     }
   }
 }
@@ -123,28 +125,47 @@
     margin-bottom: 1rem;
     transition: .4s;
     background-color: var(--white);
+    border: 2px solid var(--coolgray3);
+    transition: .4s;
+    &:hover, &:focus, &:active {
+      border-color: var(--primary);
+      button {
+        opacity: 1 !important;
+      }
+    }
+    button {
+      transition: opacity .4s;
+      opacity: 0;
+      margin-left: auto;
+    }
     .studies-list-card-name {
+      display: flex;
+      transition: .4s;
       font-size: 1.5rem;
       font-weight: 500;
-      padding: 1rem .5rem 0;
-      line-height: 1rem;
+      padding: .5rem .5rem;
+      background-color: var(--coolgray3);
+      color: var(--secondary);
     }
     .studies-list-card-type {
       color: var(--primary);
       font-weight: 500;
-      padding: 0 .5rem;
+      padding: .25rem .5rem 0;
     }
     .studies-list-card-description {
       font-size: .9rem;
       padding: 0 .5rem;
-      
+      @media screen and (min-width: 1280px) {
+        overflow: auto;
+        height: 5rem;
+      }
     }
     .studies-list-card-financials {
       display: flex;
       align-items: center;
       background-color: var(--coolgray1);
       padding: .5rem;
-      margin: .5rem;
+      margin: .5rem .5rem 0;
       border-radius: 4px;
       .studies-list-card-financials-infos {
         display: flex;
@@ -186,10 +207,12 @@
       flex-wrap: wrap;
       gap: .25rem;
       padding: .5rem;
+      height: 2.25rem;
+      overflow: auto;
       .studies-list-card-tags-tag {   
         font-size: .9rem;   
         color: var(--white);
-        background-color: var(--secondary);
+        background-color: var(--coolgray9);
         border-radius: 4px;
         padding: 0 .25rem;
         transition: .2s;

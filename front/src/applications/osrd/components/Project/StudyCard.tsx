@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import 'dayjs/locale/fr';
 import nextId from 'react-id-generator';
+import { AiFillFolderOpen } from 'react-icons/ai';
+import { RiFoldersLine } from 'react-icons/ri';
 
 dayjs.locale('fr');
 
@@ -38,7 +40,16 @@ export default function StudyCard({ details }: Props) {
 
   return (
     <div className="studies-list-card">
-      <div className="studies-list-card-name">{details.name}</div>
+      <div className="studies-list-card-name">
+        <span className="mr-2">
+          <RiFoldersLine />
+        </span>
+        {details.name}
+        <button className="btn btn-primary btn-sm" onClick={handleClick} type="button">
+          <span className="mr-2">{t('openStudy')}</span>
+          <AiFillFolderOpen />
+        </button>
+      </div>
       <div className="studies-list-card-type">{details.type}</div>
       <div className="studies-list-card-description">{details.description}</div>
 

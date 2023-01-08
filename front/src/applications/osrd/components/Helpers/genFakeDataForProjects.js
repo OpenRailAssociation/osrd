@@ -26,7 +26,7 @@ export function projectsListJSON(nb = NB_PROJECTS) {
     }
     json.push({
       id: faker.datatype.uuid(),
-      name: faker.lorem.words(),
+      name: faker.lorem.sentence().replace('.', ''),
       description: faker.lorem.paragraphs(1),
       image: chooseRandomIMG(),
       studies: studiesIDs,
@@ -40,7 +40,7 @@ export function projectsListJSON(nb = NB_PROJECTS) {
 export function projectJSON() {
   const json = {
     id: faker.datatype.uuid(),
-    name: faker.lorem.words(),
+    name: faker.lorem.sentence().replace('.', ''),
     image: chooseRandomIMG(),
     description: faker.lorem.paragraphs(1),
     objectives: faker.lorem.sentences(10),
@@ -60,7 +60,7 @@ export function studiesListJSON(nb = NB_STUDIES) {
     }
     json.push({
       id: faker.datatype.uuid(),
-      name: faker.lorem.words(),
+      name: faker.lorem.sentence().replace('.', ''),
       description: faker.lorem.paragraphs(1),
       geremiCode: faker.internet.password(10),
       affairCode: faker.internet.password(10),

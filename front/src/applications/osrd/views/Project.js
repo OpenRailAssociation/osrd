@@ -96,7 +96,7 @@ export default function Project() {
                   <div>{projectDetails.financials}</div>
                 </div>
                 <div className="project-details-financials-amount">
-                  <span className="project-details-financials-amount-text">{t('budget')}</span>
+                  <span className="project-details-financials-amount-text">{t('totalBudget')}</span>
                   {new Intl.NumberFormat('fr-FR', {
                     style: 'currency',
                     currency: 'EUR',
@@ -148,7 +148,13 @@ export default function Project() {
 
           <div className="studies-list">
             {studiesList ? (
-              studiesList.map((details) => <StudyCard details={details} key={nextId()} />)
+              <div className="row">
+                {studiesList.map((details) => (
+                  <div className="col-xl-6" key={nextId()}>
+                    <StudyCard details={details} />
+                  </div>
+                ))}
+              </div>
             ) : (
               <span className="mt-5">
                 <Loader position="center" />
