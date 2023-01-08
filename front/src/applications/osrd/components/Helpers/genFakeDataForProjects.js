@@ -3,11 +3,12 @@ import { faker } from '@faker-js/faker';
 faker.setLocale('fr');
 
 function chooseRandomIMG() {
+  // return `https://placebacon.com/400/300?image=${Math.floor(Math.random() * 9)}`;
   return `https://placetiger.nethenic.net/?${Math.random()}`;
   /*
   const x = Math.floor(Math.random() * 400) + 640;
   const y = Math.floor(Math.random() * 400) + 480;
-  const list = ['http://placebeard.it', 'http://placekitten.com', 'http://placebear.com'];
+  const list = ['https://baconmockup.com']; // 'http://placebeard.it', 'http://placekitten.com', 'http://placebear.com'];
   return `${list[Math.floor(Math.random() * 3)]}/${x}/${y}`;
   */
 }
@@ -44,7 +45,7 @@ export function projectJSON() {
     image: chooseRandomIMG(),
     description: faker.lorem.paragraphs(1),
     objectives: faker.lorem.sentences(10),
-    financials: `${faker.name.fullName()}, ${faker.company.name()}`,
+    financials: `${faker.name.fullName()}, ${faker.name.fullName()}, ${faker.company.name()}`,
     tags: faker.lorem.words(Math.round(Math.random() * NB_TAGS)).split(' '),
     budget: faker.finance.amount(10000, 1000000, 0),
   };
@@ -76,5 +77,25 @@ export function studiesListJSON(nb = NB_STUDIES) {
       tags: faker.lorem.words(Math.round(Math.random() * NB_TAGS)).split(' '),
     });
   }
+  return json;
+}
+
+export function studyJSON() {
+  const json = {
+    id: faker.datatype.uuid(),
+    name: faker.lorem.sentence().replace('.', ''),
+    description: faker.lorem.paragraphs(1),
+    geremiCode: faker.internet.password(10),
+    affairCode: faker.internet.password(10),
+    creationDate: faker.date.past(2),
+    startDate: faker.date.past(2),
+    estimatedEndingDate: faker.date.future(),
+    realEndingDate: faker.date.soon(30),
+    lastModifiedDate: faker.date.recent(10),
+    step: faker.lorem.word(),
+    budget: faker.finance.amount(5000, 500000, 0),
+    type: faker.lorem.words(),
+    tags: faker.lorem.words(Math.round(Math.random() * NB_TAGS)).split(' '),
+  };
   return json;
 }

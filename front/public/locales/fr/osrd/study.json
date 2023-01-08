@@ -2,20 +2,17 @@
   "affairCode": "Code affaire",
   "budget": "Budget",
   "createdOn": "Créée le",
-  "createStudy": "Créer une étude",
+  "createScenario": "Créer un scénario",
   "description": "description",
   "filterPlaceholder": "Rechercher…",
-  "fundedBy": "Financement",
   "geremiCode": "Code GEREMI",
   "modifiedOn": "Modifiée le",
-  "objectives": "objectifs",
-  "openStudy": "Ouvrir",
-  "projectsList": "Projets",
+  "openScenario": "Ouvrir",
+  "scenariosList": "Scénarios",
   "sortOptions": {
     "byName": "Tri par nom",
     "byRecentDate": "Plus récents"
   },
-  "studies": "Études",
-  "studiesCount": "étude(s)",
-  "totalBudget": "Budget total"
+  "scenario": "Scénario",
+  "scenariosCount": "scénario(s)"
 }

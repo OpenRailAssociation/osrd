@@ -13,6 +13,7 @@
   transition: .4s;
   border: 1px solid var(--coolgray3);
   &:hover, &:focus, &:active {
+    border-color: var(--purple);
     .projects-list-project-card-img {
       &::after {
         opacity: 1;

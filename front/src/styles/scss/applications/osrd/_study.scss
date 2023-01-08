@@ -1,0 +1,138 @@
+.study-project-details {
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+  .study-project-details-img {
+    overflow: hidden;
+    border-radius: 4px 0 0 4px;
+    height: 4rem;
+    img {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--coolgray7);
+      width: 5rem;
+      height: 4rem;
+      object-fit: cover;
+    }
+  }
+  .study-project-details-name {
+    flex-grow: 1;
+    height: 4rem;
+    font-size: 1.75rem;
+    padding: 0 .5rem;
+    line-height: 4rem;
+    color: var(--white);
+    background-color: var(--purple);
+    border-radius: 0 4px 4px 0;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    @media screen and (max-width: 1024px) {
+      font-size: 1.25rem;
+    }
+  }
+}
+
+.study-details {
+  position: relative;
+  margin-bottom: 1rem;
+  .study-details-name {
+    display: flex;
+    font-size: 2rem;
+    font-weight: 500;
+    padding: 1rem 0 0;
+    color: var(--primary);
+  }
+  .study-details-type {
+    color: var(--secondary);
+    font-size: 1.25rem;
+    font-weight: 500;
+  }
+  .study-details-description {
+    margin-bottom: 1rem;
+  }
+  .study-details-financials {
+    display: flex;
+    align-items: center;
+    background-color: var(--primary);
+    padding: .5rem;
+    margin: .5rem 0;
+    border-radius: 4px;
+    .study-details-financials-infos {
+      display: flex;
+      gap: 1rem;
+      .study-details-financials-infos-item {
+        text-transform: uppercase;
+        font-weight: 500;
+        font-size: .9rem;
+        color: var(--white);
+        h3 {
+          font-size: .7rem;
+          color: var(--white);
+          margin: 0;
+          text-transform: uppercase;
+        }
+      }
+    }
+    .study-details-financials-amount {
+      display: flex;
+      align-items: center;
+      margin-left: auto;
+      font-size: 1.25rem;
+      font-weight: bold;
+      line-height: 1rem;
+      background-color: var(--white);
+      color: var(--primary);
+      border-radius: 4px;  
+      padding: .5rem;
+      .study-details-financials-amount-text {
+        font-size: .7rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        margin-right: .5rem;
+        padding: .25rem 0 0;
+      }
+    }
+  }
+  .study-details-footer {  
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    .study-details-tags {    
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: .25rem;
+      padding: .25rem 0;
+      height: 2.25rem;
+      overflow: auto;
+      .study-details-tags-tag {   
+        font-size: .9rem;   
+        color: var(--white);
+        background-color: var(--primary);
+        border-radius: 4px;
+        padding: 0 .25rem;
+      }
+    }
+    .study-details-date {
+      display: flex;
+      align-items: center;
+      padding: 0 .5rem;
+      font-size: .7rem;
+      text-transform: uppercase;
+      text-align: right;
+      font-weight: 500;
+      color: var(--coolgray9);
+    }
+  }
+}
+
+.scenarios-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1rem 0 1rem;
+  margin-top: 2rem;
+}
