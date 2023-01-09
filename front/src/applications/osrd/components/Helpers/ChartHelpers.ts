@@ -9,6 +9,7 @@ import {
   Position,
   PositionSpeed,
   RouteAspect,
+  ConsolidatedRouteAspect,
   SignalAspect,
   MergedDataPoint,
 } from 'reducers/osrdsimulation/types';
@@ -65,7 +66,7 @@ export const formatStepsWithTimeMulti = (data: Position[][]): Position<Date | nu
     section.map((step) => ({ time: sec2d3datetime(step.time), position: step.position }))
   );
 
-export const formatRouteAspects = (data: RouteAspect[] = []): RouteAspect<Date | null, string>[] =>
+export const formatRouteAspects = (data: RouteAspect[] = []): ConsolidatedRouteAspect[] =>
   data.map((step) => ({
     ...step,
     time_start: sec2d3datetime(step.time_start),
