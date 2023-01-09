@@ -8,6 +8,7 @@ import { updateMustRedraw } from "reducers/osrdsimulation/actions";
 import {
   Position,
   PositionSpeed,
+  RouteAspect,
   ConsolidatedRouteAspect,
   SignalAspect,
   MergedDataPoint,
