@@ -97,6 +97,9 @@ class RollingStock(BaseModel, extra=Extra.forbid):
     version: Literal[RAILJSON_ROLLING_STOCK_VERSION] = Field(default=RAILJSON_ROLLING_STOCK_VERSION)
     name: constr(max_length=255)
     effort_curves: EffortCurves = Field(description="Curves mapping speed (in m/s) to maximum traction (in newtons)")
+    power_class: Optional[str] = Field(
+        description="The power usage class of the train (optional because it is specific to SNCF)"
+    )
     length: PositiveFloat = Field(description="The length of the train, in m")
     max_speed: PositiveFloat = Field(description="Maximum speed in m/s")
     startup_time: confloat(ge=0) = Field(description="The time the train takes before it can start accelerating in s")
