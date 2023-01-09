@@ -26,6 +26,11 @@ class RollingStock(models.Model):
         help_text=_("A group of curves mapping speed (in m/s) to maximum traction (in newtons)"),
         validators=[PydanticValidator(EffortCurves)],
     )
+    power_class = models.CharField(
+        max_length=255,
+        help_text=_("The power usage class of the train (optional because it is specific to SNCF)"),
+        null=True,
+    )
     length = models.FloatField(
         help_text=_("The length of the train, in meters"),
     )
