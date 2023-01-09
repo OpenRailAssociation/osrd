@@ -115,8 +115,10 @@ const InfraErrorsList: React.FC<InfraErrorsListProps> = ({ infraID }) => {
               }
             >
               <option value="all">{t(`Editor.infra-errors.error-type.all`)}</option>
-              {InfraErrorTypeList.map((item) => (
-                <option value={item}>{t(`Editor.infra-errors.error-type.${item}`)}</option>
+              {InfraErrorTypeList.map((item, i) => (
+                <option value={item} key={i}>
+                  {t(`Editor.infra-errors.error-type.${item}`)}
+                </option>
               ))}
             </select>
           </div>
