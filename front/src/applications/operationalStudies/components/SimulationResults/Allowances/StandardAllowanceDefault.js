@@ -207,6 +207,10 @@ export default function StandardAllowanceDefault(props) {
     if (getAllowanceTypes) setAllowanceTypes(getAllowanceTypes(typeKey));
   }, [getAllowanceTypes, typeKey]);
 
+  useEffect(() => {
+    if (allowanceTypes.label === 'time') allowanceTypes.label = t('allowanceTypes.time');
+  }, [allowanceTypes, t]);
+
   return (
     <div className={`${options.immediateMutation ? 'mareco' : 'row w-100 mareco'}`}>
       <div className={`${options.immediateMutation ? 'text-normal' : 'col-md-2 text-normal'}`}>
