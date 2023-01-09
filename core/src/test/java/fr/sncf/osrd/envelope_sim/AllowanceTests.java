@@ -61,10 +61,12 @@ public class AllowanceTests {
     /**
      * build test allowance data
      */
-    public static Envelope makeSimpleAllowanceEnvelope(EnvelopeSimContext context,
-                                                        Allowance allowance,
-                                                        double speed,
-                                                        boolean stop) {
+    public static Envelope makeSimpleAllowanceEnvelope(
+            EnvelopeSimContext context,
+            Allowance allowance,
+            double speed,
+            boolean stop
+    ) {
         var path = context.path;
         double[] stops;
         if (stop)

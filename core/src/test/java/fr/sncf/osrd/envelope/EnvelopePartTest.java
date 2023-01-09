@@ -1,23 +1,14 @@
 package fr.sncf.osrd.envelope;
 
-import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
-import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
+import static fr.sncf.osrd.envelope.EnvelopePhysics.getPartMechanicalEnergyConsumed;
 import static fr.sncf.osrd.envelope_sim.AllowanceTests.*;
-import static fr.sncf.osrd.envelope_sim.MaxSpeedEnvelopeTest.TIME_STEP;
 import static org.junit.jupiter.api.Assertions.*;
 
 import fr.sncf.osrd.envelope.EnvelopeTestUtils.TestAttr;
-import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
-import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
-import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
-import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
-import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.FlatPath;
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceConvergenceException;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
-import fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration;
 import fr.sncf.osrd.train.RollingStock;
 import org.junit.jupiter.api.Test;
 import fr.sncf.osrd.train.TestTrains;
@@ -113,13 +104,20 @@ class EnvelopePartTest {
 
         var marecoAllowance = makeStandardMarecoAllowance(
                 testContext,
-                0, length, 0, allowanceValue);
+                0, 
+                length, 
+                0, 
+                allowanceValue
+            );
         var envelopeAllowance = makeSimpleAllowanceEnvelope(testContext, marecoAllowance, 44.4, false);
 
         for (var i = 0; i < envelopeAllowance.size(); i++) {
             var envelopePart = envelopeAllowance.get(i);
-            var envelopePartEnergy = envelopePart
-                    .getMechanicalEnergyConsumed(testContext.path, testContext.rollingStock);
+            var envelopePartEnergy = getPartMechanicalEnergyConsumed(
+                    envelopePart,
+                    testContext.path, 
+                    testContext.rollingStock
+            );
             double expectedEnvelopePartEnergy;
             switch (i) {
                 case 0:

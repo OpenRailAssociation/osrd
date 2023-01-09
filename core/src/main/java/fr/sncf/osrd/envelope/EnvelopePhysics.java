@@ -7,7 +7,6 @@ import fr.sncf.osrd.utils.DoubleUtils;
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
 import fr.sncf.osrd.envelope_sim.PhysicsPath;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
-import fr.sncf.osrd.infra_state.api.TrainPath;
 
 public class EnvelopePhysics {
     /** Compute the constant acceleration between two space / speed points. */
@@ -189,7 +188,7 @@ public class EnvelopePhysics {
             PhysicsRollingStock rollingStock
     ) {
         var cumulativeEnergy = 0.0;
-        for (var i = 0; i <= envelope.size(); i++) {
+        for (var i = 0; i < envelope.size(); i++) {
             var part = envelope.get(i);
             cumulativeEnergy += getPartMechanicalEnergyConsumed(part, path, rollingStock);
         }
