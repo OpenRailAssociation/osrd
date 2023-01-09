@@ -7,6 +7,7 @@ export type MergedDataPoint<T = number> = {
   value0: number | T;
   value1: number | T;
 };
+export type ConsolidatedMergeDataPoint = MergedDataPoint<Date | null>;
 
 export interface Chart {
   width: number;
@@ -39,9 +40,13 @@ export interface Position<Time = number> {
   time: Time;
   position: number;
 }
+export type ConsolidatedPosition = Position<Date | null>;
+
 export type PositionSpeed<Time = number> = Position<Time> & {
   speed: number;
 };
+export type ConsolidatePositionSpeed = PositionSpeed<Date | null>;
+
 interface Stop {
   id: number;
   name: string;
@@ -62,6 +67,7 @@ export interface RouteAspect<Time = number, Color = number> {
   color: Color;
   blinking: boolean;
 }
+export type ConsolidatedRouteAspect = RouteAspect<Date | null, string>;
 
 export interface SignalAspect<Time = number, Color = number> {
   signal_id: string;
@@ -71,6 +77,7 @@ export interface SignalAspect<Time = number, Color = number> {
   blinking: boolean;
   aspect_label: string;
 }
+export type ConsolidatedSignalAspect = SignalAspect<Date | null, string>;
 
 export interface Regime {
   head_positions: Position[][];
@@ -121,22 +128,22 @@ export interface SimulationTrain {
   isStdcm: boolean;
   name: string;
   trainNumber: number;
-  headPosition: Position<Date | null>[][];
-  tailPosition: Position<Date | null>[][];
-  routeEndOccupancy: Position<Date | null>[][];
-  routeBeginOccupancy: Position<Date | null>[][];
-  routeAspects: RouteAspect<Date | null, string>[];
-  signalAspects: SignalAspect<Date | null, string>[];
-  areaBlock: MergedDataPoint<Date | null>[][];
-  speed: PositionSpeed<Date | null>[];
-  eco_headPosition?: Position<Date | null>[][];
-  eco_tailPosition?: Position<Date | null>[][];
-  eco_routeEndOccupancy?: Position<Date | null>[][];
-  eco_routeBeginOccupancy?: Position<Date | null>[][];
-  eco_routeAspects?: RouteAspect<Date | null, string>[];
-  eco_signalAspects?: SignalAspect<Date | null, string>[];
-  eco_areaBlock?: MergedDataPoint<Date | null>[][];
-  eco_speed?: PositionSpeed<Date | null>[];
+  headPosition: ConsolidatedPosition[][];
+  tailPosition: ConsolidatedPosition[][];
+  routeEndOccupancy: ConsolidatedPosition[][];
+  routeBeginOccupancy: ConsolidatedPosition[][];
+  routeAspects: ConsolidatedRouteAspect[];
+  signalAspects: ConsolidatedSignalAspect[];
+  areaBlock: ConsolidatedMergeDataPoint[][];
+  speed: ConsolidatePositionSpeed[];
+  eco_headPosition?: ConsolidatedPosition[][];
+  eco_tailPosition?: ConsolidatedPosition[][];
+  eco_routeEndOccupancy?: ConsolidatedPosition[][];
+  eco_routeBeginOccupancy?: ConsolidatedPosition[][];
+  eco_routeAspects?: ConsolidatedRouteAspect[];
+  eco_signalAspects?: ConsolidatedSignalAspect[];
+  eco_areaBlock?: ConsolidatedMergeDataPoint[][];
+  eco_speed?: ConsolidatePositionSpeed[];
 }
 
 export interface OsrdSimulationState {
