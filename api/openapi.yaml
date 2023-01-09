@@ -45,6 +45,36 @@ paths:
                     type: array
                     items:
                       $ref: "#/components/schemas/Infra"
+  /version/api/:
+    get:
+      responses:
+        200:
+          description: Return the api service version
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  git_describe:
+                    type: string
+                    nullable: true
+                required:
+                  - git_describe
+  /version/core/:
+    get:
+      responses:
+        200:
+          description: Return the core service version
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  git_describe:
+                    type: string
+                    nullable: true
+                required:
+                  - git_describe
 
   /infra/{id}/:
     get:
