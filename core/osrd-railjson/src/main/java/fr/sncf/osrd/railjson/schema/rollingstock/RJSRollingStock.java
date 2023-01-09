@@ -32,6 +32,10 @@ public class RJSRollingStock implements Identified {
     @Json(name = "effort_curves")
     public RJSEffortCurves effortCurves;
 
+    /** The class of power usage of the train */
+    @Json(name = "power_class")
+    public String powerClass = null;
+
     /** the length of the train, in meters. */
     public double length = Double.NaN;
 
