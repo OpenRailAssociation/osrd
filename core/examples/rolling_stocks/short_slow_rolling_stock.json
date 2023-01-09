@@ -74,5 +74,6 @@
         "is_electric": false
       }
     }
-  }
+  },
+  "power_class": "1"
 }
