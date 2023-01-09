@@ -27,7 +27,7 @@ httptools = { version = "0.5.0", optional = true }
 uvicorn = { version = "0.20.0", optional = true }
 
 # tests
-mock = "^5.0.0"
+mock = "^5.0.1"
 
 [tool.poetry.extras]
 production = ["gunicorn", "sentry-sdk", "uvloop", "httptools", "uvicorn"]
