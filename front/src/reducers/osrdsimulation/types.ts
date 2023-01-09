@@ -130,7 +130,7 @@ export interface SimulationTrain {
   tailPosition: ConsolidatedPosition[][];
   routeAspects: ConsolidatedRouteAspect[];
   signalAspects: ConsolidatedSignalAspect[];
-  areaBlock: ConsolidatedMergeDataPoint[][];
+  areaBlock?: ConsolidatedMergeDataPoint[][];
   speed: ConsolidatePositionSpeed[];
   eco_headPosition?: ConsolidatedPosition[][];
   eco_tailPosition?: ConsolidatedPosition[][];

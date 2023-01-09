@@ -2,9 +2,7 @@ import * as d3 from 'd3';
 
 const drawArea = (chart, classes, dataSimulation, groupID, interpolation, keyValues, rotate) => {
   // Pattern could be a color or a pattern defined in svgDefs with syntax 'url(#idOfPAttern)'
-
-  console.log('draw area', dataSimulation)
-  console.log('draw area keyValues', keyValues)
+  
   const dataDefinition = rotate
     ? d3
         .area()

@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { updateStickyBar } from 'reducers/osrdsimulation/actions';
-import { RouteAspect } from '../../../../reducers/osrdsimulation/types';
+import { ConsolidatedRouteAspect } from 'reducers/osrdsimulation/types';
 
 /**
  *
@@ -11,13 +11,13 @@ import { RouteAspect } from '../../../../reducers/osrdsimulation/types';
  * @returns current Canton occupied by current train, [start, end] in meters
  * @TODO do not work with colors as string as soon as possible
  */
-const getOccupancyBounds = (routeAspects: RouteAspect[] = [], time = 0) => {
-  const relevantAspect = routeAspects.find(
-    (routeAspect) =>
-      routeAspect.time_start < time &&
-      routeAspect.time_end >= time &&
-      routeAspect.color === 'rgba(255, 0, 0, 255)'
-  );
+const getOccupancyBounds = (consolidatedRouteAspect: ConsolidatedRouteAspect[], time: Date) => {
+  const routeAspects = consolidatedRouteAspect || [];
+  const relevantAspect = routeAspects.find((routeAspect) => {
+    const timeStart: Date = routeAspect.time_start || new Date();
+    const timeEnd: Date = routeAspect.time_end || new Date();
+    return timeStart < time && timeEnd >= time && routeAspect.color === 'rgba(255, 0, 0, 255)';
+  });
   return relevantAspect ? [relevantAspect.position_start, relevantAspect.position_end] : [0, 0];
 };
 
@@ -71,7 +71,7 @@ export default function TrainDetails() {
                 <div className="font-weight-bold text-uppercase">
                   {t('trainDetails.routeSizeOccupancy')}
                 </div>
-                {Math.round(occupancyBounds[0] - occupancyBounds[1]) / 1000}
+                {Math.round(occupancyBounds[1] - occupancyBounds[0]) / 1000}
                 km
               </div>
             </>
