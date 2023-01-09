@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { updateStickyBar } from 'reducers/osrdsimulation/actions';
@@ -22,10 +22,20 @@ const getOccupancyBounds = (consolidatedRouteAspect: ConsolidatedRouteAspect[], 
 };
 
 export default function TrainDetails() {
-  const { positionValues, stickyBar, timePosition } = useSelector((state) => state.osrdsimulation);
+  const { positionValues, stickyBar, timePosition, consolidatedSimulation, selectedTrain } =
+    useSelector((state: any) => state.osrdsimulation);
   const dispatch = useDispatch();
 
   const { t } = useTranslation(['simulation']);
+
+  const occupancyBounds = useMemo(
+    () =>
+      getOccupancyBounds(
+        consolidatedSimulation[selectedTrain]?.routeAspects,
+        positionValues?.headPosition?.time
+      ),
+    [consolidatedSimulation, positionValues, selectedTrain]
+  );
 
   return (
     <div className="d-flex">
@@ -41,20 +51,20 @@ export default function TrainDetails() {
             {positionValues.tailPosition && Math.round(positionValues.tailPosition.position) / 1000}
             km
           </div>
-          {positionValues.routeEndOccupancy && positionValues.routeBeginOccupancy && (
+          {occupancyBounds && (
             <>
               <div className="rounded px-1 train-detail small bg-yellow text-black text-nowrap mr-1">
                 <div className="font-weight-bold text-uppercase">
                   {t('trainDetails.routeBeginOccupancy')}
                 </div>
-                {Math.round(positionValues.routeBeginOccupancy.position) / 1000}
+                {Math.round(occupancyBounds[0]) / 1000}
                 km
               </div>
               <div className="rounded px-1 train-detail small bg-red text-white text-nowrap mr-1">
                 <div className="font-weight-bold text-uppercase">
                   {t('trainDetails.routeEndOccupancy')}
                 </div>
-                {Math.round(positionValues.routeEndOccupancy.position) / 1000}
+                {Math.round(occupancyBounds[1]) / 1000}
                 km
               </div>
               <div className="rounded px-1 train-detail small bg-secondary text-white text-nowrap mr-1">
