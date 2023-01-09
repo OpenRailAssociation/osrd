@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { updateStickyBar } from 'reducers/osrdsimulation/actions';
-import { RouteAspect } from '../../../../reducers/osrdsimulation/types';
+import { RouteAspect } from 'reducers/osrdsimulation/types';
 
 /**
  *
