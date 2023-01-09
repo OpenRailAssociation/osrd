@@ -71,7 +71,7 @@ export default function TrainDetails() {
                 <div className="font-weight-bold text-uppercase">
                   {t('trainDetails.routeSizeOccupancy')}
                 </div>
-                {Math.round(occupancyBounds[0] - occupancyBounds[1]) / 1000}
+                {Math.round(occupancyBounds[1] - occupancyBounds[0]) / 1000}
                 km
               </div>
             </>
