@@ -21,6 +21,7 @@ reqwest = { version = "~0.11.13", features = ["json"] }
 rocket = { git = "https://github.com/SergioBenitez/Rocket.git", rev = "162fafa0", features = [
     "json",
 ] }
+rocket_db_pools = { git = "https://github.com/SergioBenitez/Rocket.git", rev="162fafa0", version = "0.1.0-rc.2", features = ["deadpool_redis"] }
 rocket_sync_db_pools = { git = "https://github.com/SergioBenitez/Rocket.git", rev = "162fafa0", features = [
     "diesel_postgres_pool",
 ] }
