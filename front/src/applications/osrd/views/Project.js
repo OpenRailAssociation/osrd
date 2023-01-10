@@ -74,17 +74,23 @@ export default function Project() {
                   <div className="col-lg-8 col-md-8">
                     <div className="project-details-title-content">
                       <div className="project-details-title-name">{projectDetails.name}</div>
-                      <div className="project-details-title-description">
-                        {projectDetails.description}
-                      </div>
-                      <h3>
-                        <span className="mr-2">
-                          <BiTargetLock />
-                        </span>
-                        {t('objectives')}
-                      </h3>
-                      <div className="project-details-title-objectives">
-                        {projectDetails.objectives}
+                      <div className="row">
+                        <div className="col-xl-6">
+                          <div className="project-details-title-description">
+                            {projectDetails.description}
+                          </div>
+                        </div>
+                        <div className="col-xl-6">
+                          <h3>
+                            <span className="mr-2">
+                              <BiTargetLock />
+                            </span>
+                            {t('objectives')}
+                          </h3>
+                          <div className="project-details-title-objectives">
+                            {projectDetails.objectives}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -125,7 +131,8 @@ export default function Project() {
             <div className="flex-grow-1">
               <InputSNCF
                 type="text"
-                name="projects-filter"
+                id="studies-filter"
+                name="studies-filter"
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
                 placeholder={t('filterPlaceholder')}

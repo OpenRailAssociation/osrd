@@ -7,6 +7,7 @@ import nextId from 'react-id-generator';
 import { AiFillFolderOpen } from 'react-icons/ai';
 import { RiFoldersLine } from 'react-icons/ri';
 import { FcCalendar } from 'react-icons/fc';
+import studyLogo from 'assets/pictures/views/study.svg';
 
 dayjs.locale('fr');
 
@@ -43,7 +44,7 @@ export default function StudyCard({ details }: Props) {
     <div className="studies-list-card">
       <div className="studies-list-card-name">
         <span className="mr-2">
-          <RiFoldersLine />
+          <img src={studyLogo} alt="study logo" height="24" />
         </span>
         {details.name}
         <button className="btn btn-primary btn-sm" onClick={handleClick} type="button">
