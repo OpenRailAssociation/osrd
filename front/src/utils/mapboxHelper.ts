@@ -258,16 +258,35 @@ export function getLineGeoJSON(points: Position[]): Feature {
 }
 
 /**
- * Give a list of lines or multilines and a specific position, returns the nearest point to that
+ * Given a list of lines or multilines and a specific position, returns the nearest point to that
  * position on any of those lines.
  */
-export function getNearestPoint(lines: Feature<LineString>[], coord: Coord): NearestPoint {
+export function getNearestPoint(
+  lines: Feature<LineString | MultiLineString>[],
+  coord: Coord
+): NearestPoint {
   const nearestPoints: Feature<Point>[] = lines.map((line) => {
     const point = nearestPointOnLine(line, coord, { units: 'meters' });
-    const angle = getAngle(
-      line.geometry.coordinates[point.properties.index as number],
-      line.geometry.coordinates[(point.properties.index as number) + 1]
-    );
+    let angle = 0;
+    if (line.geometry.type === 'LineString') {
+      angle = getAngle(
+        line.geometry.coordinates[point.properties.index as number],
+        line.geometry.coordinates[(point.properties.index as number) + 1]
+      );
+    }
+    if (line.geometry.type === 'MultiLineString' && line.geometry.coordinates.length > 0) {
+      const linesOrderdByDistance = sortBy(line.geometry.coordinates, (lineA) => {
+        const distA = nearestPointOnLine(
+          { type: 'LineString', coordinates: lineA },
+          point.geometry.coordinates
+        );
+        return distA.properties.dist;
+      });
+      angle = getAngle(
+        linesOrderdByDistance[0][point.properties.index as number],
+        linesOrderdByDistance[0][(point.properties.index as number) + 1]
+      );
+    }
     return {
       ...point,
       properties: {
@@ -282,7 +301,7 @@ export function getNearestPoint(lines: Feature<LineString>[], coord: Coord): Nea
 }
 
 /**
- * Given a Map MouseEvent, findthe nearest feature from the position of the mouse.
+ * Given a Map MouseEvent, find the nearest feature from the position of the mouse.
  * @param e The MouseEvent
  * @param opts Option object where
  *   - layerIds ->  list of layer's id on which we search element
@@ -290,7 +309,7 @@ export function getNearestPoint(lines: Feature<LineString>[], coord: Coord): Nea
  */
 export function getMapMouseEventNearestFeature(
   e: MapLayerMouseEvent,
-  opts?: { layersId?: string[]; tolerance: number; excludeOsm: boolean }
+  opts?: { layersId?: string[]; tolerance?: number; excludeOsm?: boolean }
 ): { feature: MapboxGeoJSONFeature; nearest: number[]; distance: number } | null {
   const layers = opts?.layersId;
   const tolerance = opts?.tolerance || 15;
@@ -311,13 +330,20 @@ export function getMapMouseEventNearestFeature(
   const result = head(
     sortBy(
       features.map((feature) => {
+        // Those features lack a proper "geometry", and have a "_geometry"
+        // instead. This fixes it:
+        feature = {
+          ...feature,
+          // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/no-explicit-any
+          geometry: feature.geometry || (feature as any)._geometry,
+        };
+
         let distance = Infinity;
         let nearestFeaturePoint: Feature<Point> | null = null;
         switch (feature.geometry.type) {
           case 'Point': {
             nearestFeaturePoint = feature as Feature<Point>;
-            // we boost point, otherwise when a point is on line,
-            // it's too easy to find a point of line closest
+            // we boost point, otherwise when a point is on line, it's too hard to find it
             distance = 0.7 * fnDistance(coord, nearestFeaturePoint.geometry.coordinates);
             break;
           }

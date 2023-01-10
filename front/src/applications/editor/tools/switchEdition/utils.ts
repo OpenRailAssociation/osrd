@@ -1,15 +1,12 @@
 import { JSONSchema7 } from 'json-schema';
-import { first, last, omit, omitBy, without } from 'lodash';
+import { omit, omitBy, without } from 'lodash';
 import { Point } from 'geojson';
 
-import {
-  EditorEntity,
-  SwitchEntity,
-  SwitchType,
-  TrackEndpoint,
-  TrackSectionEntity,
-} from '../../../../types';
+import { EditorEntity, SwitchEntity, SwitchType, TrackEndpoint } from '../../../../types';
 import { NEW_ENTITY_ID } from '../../data/utils';
+
+export type Reducer<T> = (value: T) => T;
+export type ValueOrReducer<T> = T | Reducer<T>;
 
 export function getNewSwitch(type: SwitchType): Partial<SwitchEntity> {
   return {
@@ -25,30 +22,6 @@ export function getNewSwitch(type: SwitchType): Partial<SwitchEntity> {
 
 export function isSwitchValid(entity: Partial<SwitchEntity>, type: SwitchType): boolean {
   return type.ports.every((port) => !!entity.properties?.ports[port]);
-}
-
-export function injectGeometry(
-  switchEntity: SwitchEntity,
-  switchType: SwitchType,
-  trackSections: Record<string, TrackSectionEntity>
-): Partial<SwitchEntity> {
-  const port = switchEntity.properties.ports[switchType.ports[0]];
-  if (!port) return omit(switchEntity, 'geometry');
-
-  const track = trackSections[port.track];
-  if (!track || !track.geometry.coordinates.length) return omit(switchEntity, 'geometry');
-
-  const coordinates =
-    port.endpoint === 'BEGIN'
-      ? first(track.geometry.coordinates)
-      : last(track.geometry.coordinates);
-  return {
-    ...switchEntity,
-    geometry: {
-      type: 'Point',
-      coordinates: coordinates as [number, number],
-    },
-  };
 }
 
 /**

@@ -1,24 +1,24 @@
-import React, { FC, useContext, useMemo, useState } from 'react';
+import mapboxgl from 'mapbox-gl';
+import React, { FC, useContext, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Popup } from 'react-map-gl';
 import { useTranslation } from 'react-i18next';
 import { featureCollection } from '@turf/helpers';
-import along from '@turf/along';
-import { Feature, LineString } from 'geojson';
 import { merge, isEqual } from 'lodash';
+import along from '@turf/along';
 
 import GeoJSONs, { EditorSource, SourcesDefinitionsIndex } from 'common/Map/Layers/GeoJSONs';
 import colors from 'common/Map/Consts/colors';
-import EditorZone from 'common/Map/Layers/EditorZone';
 import { save } from 'reducers/editor';
-import { NULL_GEOMETRY, CreateEntityOperation, EditorEntity } from 'types';
+import { NULL_GEOMETRY, CreateEntityOperation, EditorEntity, TrackSectionEntity } from 'types';
 import { SIGNALS_TO_SYMBOLS } from 'common/Map/Consts/SignalsNames';
 import { PointEditionState } from './types';
 import EditorForm from '../../components/EditorForm';
 import { cleanSymbolType, flattenEntity, NEW_ENTITY_ID } from '../../data/utils';
-import { EditorContextType, ExtendedEditorContextType } from '../types';
+import { EditorContextType, ExtendedEditorContextType, OSRDConf } from '../types';
 import EditorContext from '../../context';
 import EntitySumUp from '../../components/EntitySumUp';
+import { getEntity } from '../../data/api';
 
 export const POINT_LAYER_ID = 'pointEditionTool/new-entity';
 
@@ -28,21 +28,57 @@ export const POINT_LAYER_ID = 'pointEditionTool/new-entity';
 export const PointEditionLeftPanel: FC = <Entity extends EditorEntity>() => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const { state, setState, editorState } = useContext(EditorContext) as ExtendedEditorContextType<
+  const osrdConf = useSelector(({ osrdconf }: { osrdconf: OSRDConf }) => osrdconf);
+  const { state, setState } = useContext(EditorContext) as ExtendedEditorContextType<
     PointEditionState<Entity>
   >;
+
+  const [trackState, setTrackState] = useState<
+    | { type: 'idle'; id?: undefined; track?: undefined }
+    | { type: 'isLoading'; id: string; track?: undefined }
+    | { type: 'ready'; id: string; track: TrackSectionEntity }
+  >({ type: 'idle' });
+
+  useEffect(() => {
+    const firstLoading = trackState.type === 'idle';
+    const trackId = state.entity.properties.track as string | undefined;
+
+    if (trackId && trackState.id !== trackId) {
+      setTrackState({ type: 'isLoading', id: trackId });
+      getEntity<TrackSectionEntity>(osrdConf.infraID as string, trackId, 'TrackSection').then(
+        (track) => {
+          setTrackState({ type: 'ready', id: trackId, track });
+
+          if (!firstLoading) {
+            const { position } = state.entity.properties;
+            const point = along(track, position, { units: 'meters' });
+
+            setState({ ...state, entity: { ...state.entity, geometry: point.geometry } });
+          }
+        }
+      );
+    }
+  }, [
+    osrdConf.infraID,
+    setState,
+    state,
+    state.entity.properties.track,
+    trackState.id,
+    trackState.type,
+  ]);
 
   return (
     <EditorForm
       data={state.entity as Entity}
       onSubmit={async (savedEntity) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const res: any = await dispatch(
           save(
             state.entity.properties.id !== NEW_ENTITY_ID
               ? {
                   update: [
                     {
-                      source: editorState.entitiesIndex[state.entity.properties.id],
+                      source: state.initialEntity,
                       target: savedEntity,
                     },
                   ],
@@ -74,12 +110,13 @@ export const PointEditionLeftPanel: FC = <Entity extends EditorEntity>() => {
         const trackId = entity.properties?.track;
         if (
           typeof trackId === 'string' &&
+          trackId === trackState.id &&
+          trackState.type === 'ready' &&
           typeof newPosition === 'number' &&
           typeof oldPosition === 'number' &&
           newPosition !== oldPosition
         ) {
-          const line = editorState.entitiesIndex[trackId];
-          const point = along(line as Feature<LineString>, newPosition, { units: 'meters' });
+          const point = along(trackState.track, newPosition, { units: 'meters' });
           additionalUpdate.geometry = point.geometry;
         }
 
@@ -100,6 +137,8 @@ export const PointEditionLeftPanel: FC = <Entity extends EditorEntity>() => {
 };
 
 export const BasePointEditionLayers: FC<{
+  // eslint-disable-next-line react/no-unused-prop-types
+  map: mapboxgl.Map;
   mergeEntityWithNearestPoint?: (
     entity: EditorEntity,
     nearestPoint: NonNullable<PointEditionState<EditorEntity>['nearestPoint']>
@@ -108,7 +147,8 @@ export const BasePointEditionLayers: FC<{
 }> = ({ mergeEntityWithNearestPoint, interactiveLayerIDRegex }) => {
   const {
     state: { nearestPoint, mousePosition, entity, objType },
-  } = useContext(EditorContext) as EditorContextType<PointEditionState<EditorEntity>>;
+    editorState: { editorLayers },
+  } = useContext(EditorContext) as ExtendedEditorContextType<PointEditionState<EditorEntity>>;
   const { mapStyle } = useSelector((s: { map: { mapStyle: string } }) => s.map) as {
     mapStyle: string;
   };
@@ -166,14 +206,11 @@ export const BasePointEditionLayers: FC<{
 
   return (
     <>
-      {/* Zone display */}
-      <EditorZone />
-
       {/* Editor data layer */}
       <GeoJSONs
         colors={colors[mapStyle]}
         hidden={entity.properties.id !== NEW_ENTITY_ID ? [entity.properties.id] : undefined}
-        selection={[entity.properties.id]}
+        layers={editorLayers}
       />
 
       {/* Edited entity */}
@@ -193,8 +230,9 @@ export const BasePointEditionLayers: FC<{
   );
 };
 
-export const SignalEditionLayers: FC = () => (
+export const SignalEditionLayers: FC<{ map: mapboxgl.Map }> = ({ map }) => (
   <BasePointEditionLayers
+    map={map}
     interactiveLayerIDRegex={/signal-point$/}
     mergeEntityWithNearestPoint={(entity, nearestPoint) => ({
       ...entity,

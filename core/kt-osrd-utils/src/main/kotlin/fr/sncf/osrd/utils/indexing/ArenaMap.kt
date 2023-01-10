@@ -146,7 +146,7 @@ class MutableArenaMapImpl<IndexT, ValueT> : MutableBaseArenaImpl<IndexT>, Mutabl
             return false
         // the kotlin compiler brain farts without this hint
         @Suppress("UNCHECKED_CAST")
-        val castOther = other as ArenaMap<Workaround, *>
+        other as ArenaMap<Workaround, *>
 
         val thisIt = iterator()
         val otherIt = other.iterator()

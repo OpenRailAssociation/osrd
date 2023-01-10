@@ -1,6 +1,6 @@
 package fr.sncf.osrd.railjson.schema.infra.trackranges;
 
-public class RJSCurve extends RJSBiDirectionalTrackRange {
+public class RJSCurve extends RJSRange {
 
     // Radius (m).
     public double radius;

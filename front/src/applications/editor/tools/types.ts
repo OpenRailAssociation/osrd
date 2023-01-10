@@ -3,16 +3,14 @@ import { Dispatch } from 'redux';
 import { ViewState } from 'react-map-gl';
 import { IconType } from 'react-icons/lib/esm/iconBase';
 import { TFunction } from 'i18next';
+import { reduce } from 'lodash';
 
-import { EditorEntity, EditorSchema, SwitchType, Zone, MapLayerMouseEvent } from '../../../types';
+import { Feature } from 'geojson';
+import { EditorEntity, EditorSchema, SwitchType, MapLayerMouseEvent } from '../../../types';
 
 export interface EditorState {
   editorSchema: EditorSchema;
   editorLayers: Set<LayerType>;
-  editorZone: Zone | null;
-  flatEntitiesByTypes: Partial<Record<LayerType, EditorEntity[]>>;
-  entitiesArray: EditorEntity[];
-  entitiesIndex: Record<string, EditorEntity>;
 }
 
 export const LAYERS = [
@@ -22,15 +20,34 @@ export const LAYERS = [
   'detectors',
   'switches',
 ] as const;
+export const LAYERS_SET: Set<string> = new Set(LAYERS);
 export type LayerType = typeof LAYERS[number];
 
-export const OBJTYPE_TO_LAYER_DICT: Record<string, LayerType> = {
+export const EDITOAST_TYPES = [
+  'TrackSection',
+  'Signal',
+  'BufferStop',
+  'Detector',
+  'Switch',
+] as const;
+export const EDITOAST_TYPES_SET: Set<string> = new Set(EDITOAST_TYPES);
+export type EditoastType = typeof EDITOAST_TYPES[number];
+
+export const EDITOAST_TO_LAYER_DICT: Record<EditoastType, LayerType> = {
   TrackSection: 'track_sections',
   Signal: 'signals',
   BufferStop: 'buffer_stops',
   Detector: 'detectors',
   Switch: 'switches',
 };
+export const LAYER_TO_EDITOAST_DICT = reduce(
+  EDITOAST_TO_LAYER_DICT,
+  (iter, value, key) => ({
+    ...iter,
+    [value]: key,
+  }),
+  {}
+) as Record<LayerType, EditoastType>;
 
 export interface MapState {
   mapStyle: string;
@@ -74,7 +91,7 @@ export interface EditorContextType<S = any> {
   // Tool logic:
   activeTool: Tool<S>;
   state: S;
-  setState: (state: S) => void;
+  setState: (state: Partial<S>) => void;
 
   // Switching tool:
   switchTool: <NewToolState extends CommonToolState>(
@@ -103,7 +120,7 @@ export type MakeOptional<Type, Key extends keyof Type> = Omit<Type, Key> & Parti
 
 export interface CommonToolState {
   mousePosition: [number, number] | null;
-  hovered: EditorEntity | null;
+  hovered: { type: EditoastType; id: string; renderedEntity: Feature } | null;
 }
 
 export const DEFAULT_COMMON_TOOL_STATE: CommonToolState = {
@@ -136,7 +153,7 @@ export interface Tool<S> {
   onMount?: (context: ExtendedEditorContextType<S>) => void;
   onUnmount?: (context: ExtendedEditorContextType<S>) => void;
   onClickMap?: (e: MapLayerMouseEvent, context: ExtendedEditorContextType<S>) => void;
-  onClickFeature?: (
+  onClickEntity?: (
     entity: EditorEntity,
     e: MapLayerMouseEvent,
     context: ExtendedEditorContextType<S>
@@ -151,7 +168,7 @@ export interface Tool<S> {
 
   // Display:
   getInteractiveLayers?: (context: ReadOnlyEditorContextType<S>) => string[];
-  layersComponent?: ComponentType;
+  layersComponent?: ComponentType<{ map: mapboxgl.Map }>;
   leftPanelComponent?: ComponentType;
   messagesComponent?: ComponentType;
 }

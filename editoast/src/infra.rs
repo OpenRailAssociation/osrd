@@ -1,9 +1,9 @@
 use crate::api_error::ApiError;
-
 use crate::generated_data;
 use crate::infra_cache::InfraCache;
 use crate::tables::osrd_infra_infra;
 use crate::tables::osrd_infra_infra::dsl::*;
+use chrono::{NaiveDateTime, Utc};
 use diesel::result::Error as DieselError;
 use diesel::sql_types::Text;
 use diesel::ExpressionMethods;
@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Map, Value};
 use thiserror::Error;
 
-pub const RAILJSON_VERSION: &str = "3.0.1";
+pub const RAILJSON_VERSION: &str = "3.1.0";
 
 #[derive(Clone, QueryableByName, Queryable, Debug, Serialize, Deserialize, Identifiable)]
 #[table_name = "osrd_infra_infra"]
@@ -24,6 +24,8 @@ pub struct Infra {
     pub version: String,
     pub generated_version: Option<String>,
     pub locked: bool,
+    pub created: NaiveDateTime,
+    pub modified: NaiveDateTime,
 }
 
 #[derive(Debug, Deserialize)]
@@ -158,13 +160,28 @@ impl Infra {
         }
     }
 
+    pub fn update_modified_timestamp_to_now(
+        &self,
+        conn: &PgConnection,
+    ) -> Result<Self, Box<dyn ApiError>> {
+        match update(osrd_infra_infra.filter(id.eq(self.id)))
+            .set(modified.eq(Utc::now().naive_utc()))
+            .get_result::<Infra>(conn)
+        {
+            Ok(infra) => Ok(infra),
+            Err(DieselError::NotFound) => Err(Box::new(InfraApiError::NotFound(self.id))),
+            Err(err) => Err(Box::new(InfraApiError::DieselError(err))),
+        }
+    }
+
     pub fn create<T: AsRef<str>>(
         infra_name: T,
         conn: &PgConnection,
     ) -> Result<Infra, Box<dyn ApiError>> {
         match sql_query(
-            "INSERT INTO osrd_infra_infra (name, railjson_version, owner, version, generated_version, locked)
-             VALUES ($1, $2, '00000000-0000-0000-0000-000000000000', '0', '0', false)
+            "INSERT INTO osrd_infra_infra (name, railjson_version, owner, version, generated_version, locked, created, modified
+            )
+             VALUES ($1, $2, '00000000-0000-0000-0000-000000000000', '0', '0', false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
              RETURNING *",
         )
         .bind::<Text, _>(infra_name.as_ref())

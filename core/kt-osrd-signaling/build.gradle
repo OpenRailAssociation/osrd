@@ -1,0 +1,31 @@
+plugins {
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.ksp)
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
+    api project(":kt-osrd-utils")
+    api project(':kt-osrd-sim-infra')
+    api project(":osrd-railjson")
+
+    implementation libs.kotlin.logging
+    implementation libs.kotlin.stdlib
+    testImplementation libs.kotlin.test
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        jvmTarget = "17"
+        freeCompilerArgs += [
+                "-opt-in=kotlin.RequiresOptIn",
+                "-opt-in=kotlin.ExperimentalUnsignedTypes",
+                "-opt-in=kotlin.time.ExperimentalTime",
+                "-opt-in=kotlin.contracts.ExperimentalContracts",
+        ]
+    }
+}

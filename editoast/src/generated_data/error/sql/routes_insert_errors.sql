@@ -8,9 +8,7 @@ INSERT INTO osrd_infra_errorlayer (
         information
     )
 SELECT $1 AS infra_id,
-    routes.geographic,
-    routes.schematic,
+    NULL,
+    NULL,
     errors.information
 FROM errors
-    LEFT JOIN osrd_infra_routelayer AS routes ON routes.obj_id = information->>'obj_id'
-    AND routes.infra_id = $1

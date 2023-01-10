@@ -1,7 +1,7 @@
 openapi: 3.0.2
 info:
   title: OSRD Editoast
-  description: OSRD Edition ervice documentation
+  description: OSRD Edition service description
   version: 0.1.0
 
 tags:
@@ -9,11 +9,27 @@ tags:
     description: Infra
 
 paths:
-  /health:
+  /health/:
     get:
       responses:
         200:
           description: Check if Editoast is running correctly
+
+  /version:
+    get:
+      responses:
+        200:
+          description: Return the service version
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  git_describe:
+                    type: string
+                    nullable: true
+                required:
+                  - git_describe
 
   /infra/:
     get:
@@ -140,6 +156,67 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Infra"
+
+  /infra/{id}/railjson/:
+    get:
+      tags:
+        - infra
+      summary: Serialize an infra to railjson
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Infra ID
+          required: true
+        - in: query
+          name: exclude_extensions
+          schema:
+            type: boolean
+            default: false
+          description: Whether the railjson should contain extensions
+      responses:
+        200:
+          description: The infra in railjson format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RailjsonFile"
+
+  /infra/railjson/:
+    post:
+      tags:
+        - infra
+      summary: Import an infra from railjson
+      parameters:
+        - in: query
+          name: name
+          schema:
+            type: string
+          description: Infra name
+          required: true
+        - in: query
+          name: generate_data
+          schema:
+            type: boolean
+            description: whether the layer should be generated or no
+            default: false
+      requestBody:
+        description: Railjson infra
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RailjsonFile"
+        required: true
+      responses:
+        201:
+          description: The imported infra id
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: string }
 
   /infra/{id}/errors/:
     get:
@@ -317,11 +394,58 @@ paths:
         204:
           description: No content
 
+  /infra/{id}/speed_limit_tags/:
+    get:
+      tags:
+        - infra
+      summary: List all speed limit tags
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Infra id
+          required: true
+      responses:
+        200:
+          description: Tags list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                example: ["freight", "heavy_load"]
+
+  /infra/{id}/voltages/:
+    get:
+      tags:
+        - infra
+      summary: List all voltages
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Infra ID
+          required: true
+      responses:
+        200:
+          description: Voltages list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: number
+                  format: float
+                example: [750.0, 1500.0, 2500.50]
+
   /infra/{id}/objects/{object_type}/:
     post:
       tags:
         - infra
-      summary: ""
+      summary: "Retrieve a list of specific objects in railjson format"
       parameters:
         - in: path
           name: id
@@ -379,6 +503,14 @@ components:
           type: string
           nullable: true
           example: "1"
+        created:
+          type: string
+          format: date
+        modified:
+          type: string
+          format: date
+        locked:
+          type: boolean
 
     ObjectType:
       type: string
@@ -395,6 +527,33 @@ components:
         - Route
         - OperationalPoint
         - Catenary
+
+    RailjsonFile:
+      properties:
+        version:
+          type: string
+        operational_points:
+          type: array
+        routes:
+          type: array
+        switch_types:
+          type: array
+        switches:
+          type: array
+        track_section_links:
+          type: array
+        track_sections:
+          type: array
+        signals:
+          type: array
+        buffer_stops:
+          type: array
+        speed_sections:
+          type: array
+        catenaries:
+          type: array
+        detectors:
+          type: array
 
     Operation:
       oneOf:
@@ -522,20 +681,20 @@ components:
       type: object
       description: An infra error or warning
       properties:
-        obj_id:
-          type: string
-          example: 8979e17f-6704-49f6-b63e-98f68ba2d086
-          description: Id of the object linked to the error
-        obj_type:
-          $ref: "#/components/schemas/ObjectType"
-          example: Signal
+        geographic:
+          nullable: true
+          type: object
+          description: Geojson of the geographic geometry of the error
+        schematic:
+          nullable: true
+          type: object
+          description: Geojson of the schematic geometry of the error
         information:
           type: object
-          description: Information about the erorr (check schema documentation for more details)
+          description: Information about the error (check schema documentation for more details)
           example:
             error_type: invalid_reference
             field: track
             is_warning: false
-            reference:
-              id: 61205924-6667-11e3-81ff-01f464e0362d
-              type: TrackSection
+            obj_id: 61205924-6667-11e3-81ff-01f464e0362d
+            obj_type: TrackSection

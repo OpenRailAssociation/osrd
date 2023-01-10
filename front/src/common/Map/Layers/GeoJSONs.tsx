@@ -17,21 +17,19 @@ import {
   SignalContext,
 } from './geoSignalsLayers';
 import { lineNameLayer, lineNumberLayer, trackNameLayer } from './commonLayers';
-import { getSignalsList, getSymbolsList } from '../../../applications/editor/data/utils';
 import { getBufferStopsLayerProps } from './BufferStops';
 import { getDetectorsLayerProps, getDetectorsNameLayerProps } from './Detectors';
 import { getSwitchesLayerProps, getSwitchesNameLayerProps } from './Switches';
-import { EditorState, LayerType } from '../../../applications/editor/tools/types';
-import { SYMBOLS_TO_LAYERS } from '../Consts/SignalsNames';
+import { LayerType, OSRDConf } from '../../../applications/editor/tools/types';
+import { ALL_SIGNAL_LAYERS, SYMBOLS_TO_LAYERS } from '../Consts/SignalsNames';
+import { MAP_TRACK_SOURCE, MAP_URL } from '../const';
 
 const SIGNAL_TYPE_KEY = 'extensions_sncf_installation_type';
 
-const NULL_FEATURE: FeatureCollection = {
-  type: 'FeatureCollection',
-  features: [],
-};
+const POINT_ENTITIES_MIN_ZOOM = 12;
 
 interface LayerContext extends SignalContext {
+  sourceTable?: string;
   symbolsList: string[];
   isEmphasized: boolean;
   showIGNBDORTHO: boolean;
@@ -75,10 +73,19 @@ function adaptFilter(layer: AnyLayer, blackList: string[], whiteList: string[]):
  */
 function getTrackSectionLayers(context: LayerContext, prefix: string): AnyLayer[] {
   return [
-    { ...geoMainLayer(context.colors, context.showIGNBDORTHO), id: `${prefix}geo/track-main` },
-    { ...geoServiceLayer(context.colors), id: `${prefix}geo/track-service` },
+    {
+      ...geoMainLayer(context.colors, context.showIGNBDORTHO),
+      'source-layer': MAP_TRACK_SOURCE,
+      id: `${prefix}geo/track-main`,
+    },
+    {
+      ...geoServiceLayer(context.colors),
+      'source-layer': MAP_TRACK_SOURCE,
+      id: `${prefix}geo/track-service`,
+    },
     {
       ...trackNameLayer(context.colors),
+      'source-layer': MAP_TRACK_SOURCE,
       filter: ['==', 'type_voie', 'VP'],
       layout: {
         ...trackNameLayer(context.colors).layout,
@@ -89,6 +96,7 @@ function getTrackSectionLayers(context: LayerContext, prefix: string): AnyLayer[
     },
     {
       ...trackNameLayer(context.colors),
+      'source-layer': MAP_TRACK_SOURCE,
       filter: ['!=', 'type_voie', 'VP'],
       layout: {
         ...trackNameLayer(context.colors).layout,
@@ -99,13 +107,18 @@ function getTrackSectionLayers(context: LayerContext, prefix: string): AnyLayer[
     },
     {
       ...lineNumberLayer(context.colors),
+      'source-layer': MAP_TRACK_SOURCE,
       layout: {
         ...lineNumberLayer(context.colors).layout,
         'text-field': '{extensions_sncf_line_code}',
       },
       id: `${prefix}geo/track-numbers`,
     },
-    { ...lineNameLayer(context.colors), id: `${prefix}geo/line-names` },
+    {
+      ...lineNameLayer(context.colors),
+      'source-layer': MAP_TRACK_SOURCE,
+      id: `${prefix}geo/line-names`,
+    },
   ];
 }
 function getSignalLayers(context: LayerContext, prefix: string): AnyLayer[] {
@@ -128,18 +141,40 @@ function getSignalLayers(context: LayerContext, prefix: string): AnyLayer[] {
   );
 }
 function getBufferStopsLayers(context: LayerContext, prefix: string): AnyLayer[] {
-  return [{ ...getBufferStopsLayerProps(context), id: `${prefix}geo/buffer-stop-main` }];
+  return [
+    {
+      ...getBufferStopsLayerProps(context),
+      id: `${prefix}geo/buffer-stop-main`,
+      minzoom: POINT_ENTITIES_MIN_ZOOM,
+    },
+  ];
 }
 function getDetectorsLayers(context: LayerContext, prefix: string): AnyLayer[] {
   return [
-    { ...getDetectorsLayerProps(context), id: `${prefix}geo/detector-main` },
-    { ...getDetectorsNameLayerProps(context), id: `${prefix}geo/detector-name` },
+    {
+      ...getDetectorsLayerProps(context),
+      id: `${prefix}geo/detector-main`,
+      minzoom: POINT_ENTITIES_MIN_ZOOM,
+    },
+    {
+      ...getDetectorsNameLayerProps(context),
+      id: `${prefix}geo/detector-name`,
+      minzoom: POINT_ENTITIES_MIN_ZOOM,
+    },
   ];
 }
 function getSwitchesLayers(context: LayerContext, prefix: string): AnyLayer[] {
   return [
-    { ...getSwitchesLayerProps(context), id: `${prefix}geo/switch-main` },
-    { ...getSwitchesNameLayerProps(context), id: `${prefix}geo/switch-name` },
+    {
+      ...getSwitchesLayerProps(context),
+      id: `${prefix}geo/switch-main`,
+      minzoom: POINT_ENTITIES_MIN_ZOOM,
+    },
+    {
+      ...getSwitchesNameLayerProps(context),
+      id: `${prefix}geo/switch-name`,
+      minzoom: POINT_ENTITIES_MIN_ZOOM,
+    },
   ];
 }
 
@@ -176,8 +211,10 @@ const GeoJSONs: FC<{
   hidden?: string[];
   selection?: string[];
   prefix?: string;
+  layers?: Set<LayerType>;
 }> = (props) => {
-  const { colors, hidden, selection, prefix = 'editor/' } = props;
+  const osrdConf = useSelector((state: { osrdconf: OSRDConf }) => state.osrdconf);
+  const { colors, hidden, selection, layers, prefix = 'editor/' } = props;
   const selectedPrefix = `${prefix}selected/`;
   const hiddenColors = useMemo(
     () => transformTheme(colors, (color) => chroma(color).desaturate(50).brighten(1).hex()),
@@ -185,42 +222,19 @@ const GeoJSONs: FC<{
   );
 
   const { mapStyle, showIGNBDORTHO } = useSelector((s: RootState) => s.map);
-  const flatEntitiesByType = useSelector(
-    (state: { editor: EditorState }) => state.editor.flatEntitiesByTypes
-  );
-  const geoJSONs = useMemo<Partial<Record<LayerType, FeatureCollection>>>(
-    () =>
-      mapValues(
-        flatEntitiesByType,
-        (entities) =>
-          ({
-            type: 'FeatureCollection',
-            features: (entities || [])?.map((e) => ({ ...e, type: 'Feature' })),
-          } as FeatureCollection)
-      ),
-    [flatEntitiesByType]
-  );
 
   // SIGNALS:
-  const signalsList = useMemo(
-    () => getSignalsList(flatEntitiesByType.signals || []),
-    [flatEntitiesByType]
-  );
-  const symbolsList = useMemo(
-    () => getSymbolsList(flatEntitiesByType.signals || []),
-    [flatEntitiesByType]
-  );
   const layerContext: LayerContext = useMemo(
     () => ({
       colors,
-      signalsList,
-      symbolsList,
+      signalsList: ALL_SIGNAL_LAYERS,
+      symbolsList: ALL_SIGNAL_LAYERS,
       sourceLayer: 'geo',
       prefix: mapStyle === 'blueprint' ? 'SCHB ' : '',
       isEmphasized: true,
       showIGNBDORTHO,
     }),
-    [colors, mapStyle, signalsList, symbolsList, showIGNBDORTHO]
+    [colors, mapStyle, showIGNBDORTHO]
   );
   const hiddenLayerContext: LayerContext = useMemo(
     () => ({
@@ -231,31 +245,44 @@ const GeoJSONs: FC<{
     [hiddenColors, layerContext]
   );
 
-  const sources: { id: string; data: Feature | FeatureCollection; layers: AnyLayer[] }[] = useMemo(
+  const sources: { id: string; url: string; layers: AnyLayer[] }[] = useMemo(
     () =>
-      SOURCES_DEFINITION.flatMap((source) => [
-        {
-          id: `${prefix}geo/${source.entityType}`,
-          data: geoJSONs[source.entityType] || NULL_FEATURE,
-          layers: source
-            .getLayers(hiddenLayerContext, prefix)
-            .map((layer) => adaptFilter(layer, (hidden || []).concat(selection || []), [])),
-        },
-        {
-          id: `${selectedPrefix}geo/${source.entityType}`,
-          data: geoJSONs[source.entityType] || NULL_FEATURE,
-          layers: source
-            .getLayers(layerContext, selectedPrefix)
-            .map((layer) => adaptFilter(layer, hidden || [], selection || [])),
-        },
-      ]),
-    [geoJSONs, hidden, hiddenLayerContext, layerContext, prefix, selectedPrefix, selection]
+      SOURCES_DEFINITION.flatMap((source) =>
+        !layers || layers.has(source.entityType)
+          ? [
+              {
+                id: `${prefix}geo/${source.entityType}`,
+                url: `${MAP_URL}/layer/${source.entityType}/mvt/geo/?infra=${osrdConf.infraID}`,
+                layers: source
+                  .getLayers({ ...hiddenLayerContext, sourceTable: source.entityType }, prefix)
+                  .map((layer) => adaptFilter(layer, (hidden || []).concat(selection || []), [])),
+              },
+              {
+                id: `${selectedPrefix}geo/${source.entityType}`,
+                url: `${MAP_URL}/layer/${source.entityType}/mvt/geo/?infra=${osrdConf.infraID}`,
+                layers: source
+                  .getLayers({ ...layerContext, sourceTable: source.entityType }, selectedPrefix)
+                  .map((layer) => adaptFilter(layer, hidden || [], selection || [])),
+              },
+            ]
+          : []
+      ),
+    [
+      hidden,
+      hiddenLayerContext,
+      layerContext,
+      layers,
+      osrdConf.infraID,
+      prefix,
+      selectedPrefix,
+      selection,
+    ]
   );
 
   return (
     <>
       {sources.map((source) => (
-        <Source key={source.id} type="geojson" id={source.id} data={source.data}>
+        <Source key={source.id} promoteId="id" type="vector" url={source.url}>
           {source.layers.map((layer) => (
             <Layer key={layer.id} {...layer} />
           ))}

@@ -70,6 +70,7 @@ pub fn create_server(
         .merge(("address", runserver_config.address.clone()))
         .merge(("databases.postgres.url", pg_config.url()))
         .merge(("databases.postgres.pool_size", pg_config.pool_size))
+        .merge(("databases.postgres.timeout",10))
         .merge(("limits.json", 250 * 1024 * 1024)) // Set limits to 250MiB
     ;
 
@@ -168,6 +169,7 @@ fn import_railjson(
     let railjson: RailJson = serde_json::from_reader(BufReader::new(railjson_file))?;
 
     let infra = railjson.persist(args.infra_name, conn)?;
+    let infra = infra.bump_version(conn)?;
 
     println!("✅ Infra {}[{}] saved!", infra.name.bold(), infra.id);
     // Generate only if the was set

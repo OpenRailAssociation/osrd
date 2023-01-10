@@ -1,35 +1,13 @@
-use diesel::PgConnection;
 use std::collections::{HashMap, HashSet};
 
-use diesel::sql_types::{Array, Integer, Json};
-use diesel::{sql_query, RunQueryDsl};
-
-use super::graph::Graph;
-use crate::generated_data::error::ErrGenerator;
+use super::NoContext;
+use crate::generated_data::error::ObjectErrorGenerator;
+use crate::infra_cache::Graph;
 use crate::infra_cache::{InfraCache, ObjectCache};
 use crate::schema::InfraError;
-use diesel::result::Error as DieselError;
-use serde_json::{to_value, Value};
 
-pub const SWITCH_TYPES_ERRORS: [ErrGenerator; 1] = [ErrGenerator::new(1, check_switch_types)];
-
-pub fn insert_errors(
-    infra_errors: Vec<InfraError>,
-    conn: &PgConnection,
-    infra_id: i32,
-) -> Result<(), DieselError> {
-    let errors: Vec<Value> = infra_errors
-        .iter()
-        .map(|error| to_value(error).unwrap())
-        .collect();
-    let count = sql_query(include_str!("sql/switch_types_insert_errors.sql"))
-        .bind::<Integer, _>(infra_id)
-        .bind::<Array<Json>, _>(&errors)
-        .execute(conn)?;
-    assert_eq!(count, infra_errors.len());
-
-    Ok(())
-}
+pub const OBJECT_GENERATORS: [ObjectErrorGenerator<NoContext>; 1] =
+    [ObjectErrorGenerator::new(1, check_switch_types)];
 
 /// Check unknown port name, duplicated group and unused port for switch_type
 pub fn check_switch_types(switch_type: &ObjectCache, _: &InfraCache, _: &Graph) -> Vec<InfraError> {
@@ -79,12 +57,11 @@ pub fn check_switch_types(switch_type: &ObjectCache, _: &InfraCache, _: &Graph) 
 mod tests {
     use std::collections::HashMap;
 
-    use crate::generated_data::error::graph::Graph;
-    use crate::infra_cache;
-    use crate::infra_cache::tests::{create_switch_connection, create_switch_type_cache};
-
     use super::check_switch_types;
     use super::InfraError;
+    use crate::infra_cache;
+    use crate::infra_cache::tests::{create_switch_connection, create_switch_type_cache};
+    use crate::infra_cache::Graph;
 
     #[test]
     fn unknown_port_name() {

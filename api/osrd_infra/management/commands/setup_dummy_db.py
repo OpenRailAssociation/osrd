@@ -9,7 +9,6 @@ from osrd_infra.schemas.infra import (
     ApplicableDirections,
     BufferStop,
     Direction,
-    DirectionalTrackRange,
     Route,
     TrackSection,
 )
@@ -65,11 +64,10 @@ class Command(BaseCommand):
         route = Route(
             id="route.1",
             entry_point=waypoints[0].ref(),
+            entry_point_direction=Direction.START_TO_STOP,
             exit_point=waypoints[1].ref(),
             release_detectors=[],
-            path=[DirectionalTrackRange(track=track_section.id, begin=0, end=1000, direction=Direction.START_TO_STOP)],
-            geo=LineString(coordinates=[(0, 0), (1, 1)]),
-            sch=LineString(coordinates=[(0, 0), (1, 1)]),
+            switches_directions={},
         )
         route.into_model(infra).save()
         print(infra.id)

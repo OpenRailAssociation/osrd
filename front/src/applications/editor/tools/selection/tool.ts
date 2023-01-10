@@ -1,9 +1,9 @@
 import { BiLoader, BiSelection, BsCursor, BsTrash, FaDrawPolygon, FiEdit } from 'react-icons/all';
-import { isEqual } from 'lodash';
+import { PointLike } from 'mapbox-gl';
+import { isEqual, max, min } from 'lodash';
 
-import { DEFAULT_COMMON_TOOL_STATE, Tool } from '../types';
+import { DEFAULT_COMMON_TOOL_STATE, LAYER_TO_EDITOAST_DICT, LayerType, Tool } from '../types';
 import { save } from '../../../../reducers/editor';
-import { selectInZone } from '../../../../utils/mapboxHelper';
 import { SelectionState } from './types';
 import { SelectionLayers, SelectionMessages, SelectionLeftPanel } from './components';
 import ConfirmModal from '../../components/ConfirmModal';
@@ -15,27 +15,26 @@ import {
   SwitchEntity,
   TrackSectionEntity,
 } from '../../../../types';
-import { getSymbolsList } from '../../data/utils';
 import {
   BufferStopEditionTool,
   DetectorEditionTool,
   SignalEditionTool,
 } from '../pointEdition/tools';
 import SwitchEditionTool from '../switchEdition/tool';
+import { getMixedEntities } from '../../data/api';
+import { selectInZone } from '../../../../utils/mapboxHelper';
 
 const SelectionTool: Tool<SelectionState> = {
   id: 'select-items',
   icon: BsCursor,
   labelTranslationKey: 'Editor.tools.select-items.label',
-  isDisabled(context) {
-    return !context.editorState.editorZone;
-  },
   getInitialState() {
     return {
       ...DEFAULT_COMMON_TOOL_STATE,
       selectionState: { type: 'single' },
       selection: [],
       showModal: null,
+      isLoading: false,
     };
   },
   actions: [
@@ -87,63 +86,52 @@ const SelectionTool: Tool<SelectionState> = {
         id: 'mode-edition',
         icon: FiEdit,
         labelTranslationKey: 'Editor.tools.select-items.actions.edit-info',
-        isActive({ state }) {
-          return state.selectionState.type === 'edition';
-        },
         isDisabled({ state }) {
           const types = new Set<string>();
           state.selection.forEach((item) => types.add(item.objType));
           return types.size !== 1;
         },
-        onClick({ setState, state, switchTool }) {
+        onClick({ state, switchTool }) {
           if (state.selection.length === 1) {
             const selectedElement = state.selection[0];
             switch (selectedElement.objType) {
               case 'TrackSection':
                 switchTool(TrackEditionTool, {
+                  initialTrack: selectedElement as TrackSectionEntity,
                   track: selectedElement as TrackSectionEntity,
                   editionState: {
                     type: 'movePoint',
                   },
                 });
-                return;
+                break;
               case 'Signal':
                 switchTool(SignalEditionTool, {
                   initialEntity: selectedElement as SignalEntity,
                   entity: selectedElement as SignalEntity,
                 });
-                return;
+                break;
               case 'BufferStop':
                 switchTool(BufferStopEditionTool, {
                   initialEntity: selectedElement as BufferStopEntity,
                   entity: selectedElement as BufferStopEntity,
                 });
-                return;
+                break;
               case 'Detector':
                 switchTool(DetectorEditionTool, {
                   initialEntity: selectedElement as DetectorEntity,
                   entity: selectedElement as DetectorEntity,
                 });
-                return;
+                break;
               case 'Switch':
                 switchTool(SwitchEditionTool, {
                   initialEntity: selectedElement as SwitchEntity,
                   entity: selectedElement as SwitchEntity,
                 });
-                return;
+                break;
               default:
-                return;
+                break;
             }
           }
-
-          if (state.selectionState.type !== 'edition')
-            setState({
-              ...state,
-              selectionState: {
-                type: 'edition',
-                previousState: state.selectionState,
-              },
-            });
         },
       },
     ],
@@ -188,7 +176,9 @@ const SelectionTool: Tool<SelectionState> = {
   ],
 
   // Interactions:
-  onClickFeature(feature, e, { setState, state, editorState }) {
+  onClickEntity(feature, e, { setState, state }) {
+    if (state.isLoading) return;
+
     if (state.selectionState.type !== 'single') return;
 
     let { selection } = state;
@@ -196,7 +186,7 @@ const SelectionTool: Tool<SelectionState> = {
       (item) => item.properties.id === feature.properties.id
     );
 
-    const current = editorState.entitiesIndex[feature.properties.id];
+    const current = feature;
 
     if (current) {
       if (!isAlreadySelected) {
@@ -219,8 +209,11 @@ const SelectionTool: Tool<SelectionState> = {
       selection,
     });
   },
-  onClickMap(e, { setState, state, editorState }) {
+  onClickMap(e, { setState, state, osrdConf }) {
     const position = e.lngLat;
+    const map = e.target;
+
+    if (state.isLoading) return;
 
     if (state.selectionState.type === 'rectangle') {
       if (state.selectionState.rectangleTopLeft) {
@@ -230,13 +223,36 @@ const SelectionTool: Tool<SelectionState> = {
             selectionState: { ...state.selectionState, rectangleTopLeft: null },
           });
         } else {
-          setState({
-            ...state,
-            selectionState: { ...state.selectionState, rectangleTopLeft: null },
-            selection: selectInZone(editorState.entitiesArray, {
-              type: 'rectangle',
-              points: [state.selectionState.rectangleTopLeft, position.toArray()],
-            }),
+          const selection = map
+            .queryRenderedFeatures([
+              map.project(state.selectionState.rectangleTopLeft),
+              map.project(position.toArray() as [number, number]),
+            ])
+            .filter((f) => !f.layer.id.startsWith('osm'));
+
+          setState({ isLoading: true });
+          getMixedEntities(
+            osrdConf.infraID as string,
+            selection.flatMap((entity) =>
+              entity.properties?.id
+                ? [
+                    {
+                      id: entity.properties.id as string,
+                      type: LAYER_TO_EDITOAST_DICT[entity.sourceLayer as LayerType],
+                    },
+                  ]
+                : []
+            )
+          ).then((entities) => {
+            setState({
+              isLoading: false,
+              selectionState: {
+                ...state.selectionState,
+                type: 'rectangle',
+                rectangleTopLeft: null,
+              },
+              selection: Object.values(entities),
+            });
           });
         }
       } else {
@@ -251,20 +267,44 @@ const SelectionTool: Tool<SelectionState> = {
     } else if (state.selectionState.type === 'polygon') {
       const points = state.selectionState.polygonPoints;
       const lastPoint = points[points.length - 1];
+      const positionPoint = [position.lng, position.lat];
 
-      if (isEqual(lastPoint, position)) {
+      if (isEqual(lastPoint, positionPoint)) {
         if (points.length >= 3) {
-          // TODO remove the layer static variable
-          setState({
-            ...state,
-            selectionState: {
-              ...state.selectionState,
-              polygonPoints: [],
-            },
-            selection: selectInZone(editorState.entitiesArray, {
+          const lngs = points.map((point) => point[0]);
+          const lats = points.map((point) => point[1]);
+          const selection = selectInZone(
+            map
+              .queryRenderedFeatures([
+                map.project([min(lngs) as number, min(lats) as number]),
+                map.project([max(lngs) as number, max(lats) as number]),
+              ] as [PointLike, PointLike])
+              .filter((f) => !f.layer.id.startsWith('osm')),
+            {
               type: 'polygon',
               points,
-            }),
+            }
+          );
+
+          setState({ isLoading: true });
+          getMixedEntities(
+            osrdConf.infraID as string,
+            selection.flatMap((entity) =>
+              entity.properties?.id
+                ? [
+                    {
+                      id: entity.properties.id as string,
+                      type: LAYER_TO_EDITOAST_DICT[entity.sourceLayer as LayerType],
+                    },
+                  ]
+                : []
+            )
+          ).then((entities) => {
+            setState({
+              isLoading: false,
+              selectionState: { ...state.selectionState, type: 'polygon', polygonPoints: [] },
+              selection: Object.values(entities),
+            });
           });
         }
       } else {
@@ -280,18 +320,6 @@ const SelectionTool: Tool<SelectionState> = {
   },
 
   // Layers:
-  getInteractiveLayers({ editorState: { flatEntitiesByTypes } }) {
-    const symbolTypes = getSymbolsList(flatEntitiesByTypes.signals || []);
-    return symbolTypes
-      .map((type) => `editor/geo/signal-${type}`)
-      .concat([
-        'editor/geo/track-main',
-        'editor/geo/buffer-stop-main',
-        'editor/geo/detector-main',
-        'editor/geo/switch-main',
-      ])
-      .flatMap((s) => [s, s.replace(/^editor/, 'editor/selected')]);
-  },
   getCursor({ state }, { isDragging }) {
     if (isDragging) return 'move';
     if (state.selectionState.type === 'single' && state.hovered) return 'pointer';

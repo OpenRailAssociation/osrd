@@ -1,4 +1,4 @@
-import { omit } from 'lodash';
+import { groupBy, omit, uniq, toPairs } from 'lodash';
 import { v4 as uuid } from 'uuid';
 import { compare } from 'fast-json-patch';
 import { FeatureCollection } from 'geojson';
@@ -17,6 +17,7 @@ import {
 } from '../../../types';
 import { zoneToBBox } from '../../../utils/mapboxHelper';
 import { getObjectTypeForLayer } from './utils';
+import { EditoastType } from '../tools/types';
 
 /**
  * Call the API to get an infra
@@ -96,6 +97,76 @@ export async function getEditorData(
     }),
     {}
   );
+}
+
+type EditoastEntity<T extends EditorEntity = EditorEntity> = {
+  railjson: T['properties'];
+  geographic: T['geometry'];
+  schematic: T['geometry'];
+};
+
+function editoastToEditorEntity<T extends EditorEntity = EditorEntity>(
+  entity: EditoastEntity,
+  type: T['objType']
+): T {
+  return {
+    type: 'Feature',
+    properties: entity.railjson,
+    objType: type,
+    geometry: entity.geographic,
+  } as T;
+}
+
+/**
+ * Returns an entity from editoast:
+ */
+export async function getEntity<T extends EditorEntity = EditorEntity>(
+  infra: number | string,
+  id: string,
+  type: EditoastType
+): Promise<T> {
+  const res = await post<string[], EditoastEntity<T>[]>(
+    `/editoast/infra/${infra}/objects/${type}/`,
+    [id]
+  );
+
+  if (res.length < 1) throw new Error(`getEntity: No entity found for type ${type} and id ${id}`);
+
+  return editoastToEditorEntity<T>(res[0], type);
+}
+export async function getEntities<T extends EditorEntity = EditorEntity>(
+  infra: number | string,
+  ids: string[],
+  type: EditoastType
+): Promise<Record<string, T>> {
+  const uniqIDs = uniq(ids);
+  const res = await post<string[], EditoastEntity[]>(
+    `/editoast/infra/${infra}/objects/${type}/`,
+    uniqIDs
+  );
+
+  return res.reduce(
+    (iter, entry, i) => ({
+      ...iter,
+      [uniqIDs[i]]: editoastToEditorEntity<T>(entry, type),
+    }),
+    {}
+  );
+}
+export async function getMixedEntities(
+  infra: number | string,
+  defs: { id: string; type: EditoastType }[]
+): Promise<Record<string, EditorEntity>> {
+  const groupedDefs = groupBy(defs, 'type');
+
+  const entities = await Promise.all(
+    toPairs(groupedDefs).map(([type, values]) => {
+      const ids = values.map(({ id }) => id);
+      return getEntities(infra, ids, type as EditoastType);
+    })
+  );
+
+  return entities.reduce((acc, curr) => ({ ...acc, ...curr }), {} as Record<string, EditorEntity>);
 }
 
 /**

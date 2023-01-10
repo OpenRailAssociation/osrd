@@ -1,13 +1,19 @@
-import React, { FC, PropsWithChildren, useContext, useMemo, useState } from 'react';
+import React, { FC, PropsWithChildren, useContext, useMemo, useRef, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import maplibregl from 'maplibre-gl';
 import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl';
 import { withTranslation } from 'react-i18next';
 import { TFunction } from 'i18next';
+import maplibregl from 'maplibre-gl';
+import { isEmpty, isEqual } from 'lodash';
+import mapboxgl from 'mapbox-gl';
+
 import VirtualLayers from 'applications/osrd/views/OSRDSimulation/VirtualLayers';
 import colors from 'common/Map/Consts/colors';
 import 'common/Map/Map.scss';
+
 /* Main data & layers */
+import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
+import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import TracksOSM from 'common/Map/Layers/TracksOSM';
 import { RootState } from 'reducers';
@@ -25,16 +31,18 @@ import {
   EditorContextType,
   EditorState,
   ExtendedEditorContextType,
+  LAYER_TO_EDITOAST_DICT,
+  LAYERS_SET,
+  LayerType,
   OSRDConf,
   Tool,
 } from './tools/types';
-import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
-import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
+import { getEntity } from './data/api';
 
 interface MapProps<S extends CommonToolState = CommonToolState> {
   t: TFunction;
   toolState: S;
-  setToolState: (newState: S) => void;
+  setToolState: (state: Partial<S>) => void;
   activeTool: Tool<S>;
   mapStyle: string;
   viewport: Viewport;
@@ -57,6 +65,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
   children,
 }) => {
   const dispatch = useDispatch();
+  const map = useRef(null);
   const [mapState, setMapState] = useState<MapState>({
     isLoaded: true,
     isDragging: false,
@@ -79,6 +88,10 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
     }),
     [context, dispatch, editorState, mapStyle, osrdConf, viewport]
   );
+  const interactiveLayerIDs = useMemo(
+    () => (activeTool.getInteractiveLayers ? activeTool.getInteractiveLayers(extendedContext) : []),
+    [activeTool, extendedContext]
+  );
 
   const cursor = useMemo(
     () => (activeTool.getCursor ? activeTool.getCursor(extendedContext, mapState) : 'default'),
@@ -98,16 +111,20 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
       >
         <ReactMapGL
           {...viewport}
+          ref={map}
+          key={activeTool.id}
           mapLib={maplibregl}
           style={{ width: '100%', height: '100%' }}
           mapStyle={osmBlankStyle}
           onMove={(e) => setViewport(e.viewState)}
           onMoveStart={() => setMapState((prev) => ({ ...prev, isDragging: true }))}
           onMoveEnd={() => setMapState((prev) => ({ ...prev, isDragging: false }))}
+          onMouseOut={() => {
+            setToolState({ hovered: null });
+          }}
           onMouseMove={(e) => {
             const nearestResult = getMapMouseEventNearestFeature(e);
             const partialToolState: Partial<CommonToolState> = {
-              hovered: null,
               mousePosition: [e.lngLat.lng, e.lngLat.lat],
             };
             const partialMapState: Partial<MapState> = { isHovering: false };
@@ -115,28 +132,46 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
             // if we hover something
             if (nearestResult) {
               const { feature } = nearestResult;
-              const eventWithFeature = {
-                ...e,
-                preventDefault: e.preventDefault,
-                features: [feature],
-              };
+
               partialMapState.isHovering = true;
               if (activeTool.onHover) {
-                activeTool.onHover(eventWithFeature, extendedContext);
-              } else if (feature && feature.properties) {
-                const entity = feature?.properties?.id
-                  ? editorState.entitiesIndex[feature.properties.id]
-                  : undefined;
-                partialToolState.hovered = entity || null;
-                setToolState({ ...toolState, ...partialToolState });
+                activeTool.onHover(
+                  {
+                    ...e,
+                    // (don't remove this or TypeScript won't be happy)
+                    preventDefault: e.preventDefault,
+                    // Ensure there is a feature, and the good one:
+                    features: [feature],
+                  },
+                  extendedContext
+                );
+              } else if (
+                feature &&
+                LAYERS_SET.has(feature.sourceLayer) &&
+                feature.properties &&
+                feature.properties.id !== toolState.hovered?.id
+              ) {
+                partialToolState.hovered = {
+                  id: feature.properties?.id as string,
+                  type: LAYER_TO_EDITOAST_DICT[feature.sourceLayer as LayerType],
+                  renderedEntity: feature,
+                };
               }
-            } else if (activeTool.onMove) {
+            } else {
+              partialToolState.hovered = null;
+            }
+
+            if (activeTool.onMove && (!nearestResult || !activeTool.onHover)) {
               activeTool.onMove(e, extendedContext);
             }
-            setMapState((prev) => ({ ...prev, ...partialMapState }));
+
+            if (!isEmpty(partialToolState)) setToolState(partialToolState);
+
+            const newMapState = { ...mapState, ...partialMapState };
+            if (!isEqual(mapState, newMapState)) setMapState(newMapState);
           }}
           onLoad={(e) => {
-            // need to call resize, otherwise sometime the canvas doesn't take 100%
+            // need to call resize, otherwise sometimes the canvas doesn't take 100%
             e.target.resize();
             setMapState((prev) => ({ ...prev, isLoaded: false }));
           }}
@@ -150,10 +185,8 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
           touchZoomRotate
           doubleClickZoom={false}
           interactive
-          interactiveLayerIds={
-            activeTool.getInteractiveLayers ? activeTool.getInteractiveLayers(extendedContext) : []
-          }
           cursor={cursor}
+          interactiveLayerIds={interactiveLayerIDs}
           onClick={(e) => {
             const nearestResult = getMapMouseEventNearestFeature(e);
             const eventWithFeature = nearestResult
@@ -163,8 +196,23 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
                   features: [nearestResult.feature],
                 }
               : e;
-            if (toolState.hovered && activeTool.onClickFeature) {
-              activeTool.onClickFeature(toolState.hovered, eventWithFeature, extendedContext);
+            if (toolState.hovered && activeTool.onClickEntity) {
+              getEntity(
+                osrdConf.infraID as string,
+                toolState.hovered.id,
+                toolState.hovered.type
+              ).then((entity) => {
+                if (activeTool.onClickEntity) {
+                  // Those features lack a proper "geometry", and have a "_geometry"
+                  // instead. This fixes it:
+                  entity = {
+                    ...entity,
+                    // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/no-explicit-any
+                    geometry: entity.geometry || (entity as any)._geometry,
+                  };
+                  activeTool.onClickEntity(entity, eventWithFeature, extendedContext);
+                }
+              });
             }
             if (activeTool.onClickMap) {
               activeTool.onClickMap(eventWithFeature, extendedContext);
@@ -211,7 +259,10 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
           />
 
           {/* Tool specific layers */}
-          {activeTool.layersComponent && <activeTool.layersComponent />}
+          {activeTool.layersComponent && map.current && (
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            <activeTool.layersComponent map={(map.current as any).getMap() as mapboxgl.Map} />
+          )}
         </ReactMapGL>
       </div>
       {children}

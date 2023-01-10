@@ -4,7 +4,6 @@ import com.squareup.moshi.Json;
 import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection;
 
 public class RJSApplicableDirectionsTrackRange extends RJSTrackRange {
-    public String track;
     @Json(name = "applicable_directions")
     public ApplicableDirection applicableDirections;
 
@@ -15,14 +14,7 @@ public class RJSApplicableDirectionsTrackRange extends RJSTrackRange {
             double begin,
             double end
     ) {
-        this.track = track;
-        this.begin = begin;
-        this.end = end;
+        super(track, begin, end);
         this.applicableDirections = applicableDirections;
-    }
-
-    @Override
-    public ApplicableDirection getNavigability() {
-        return applicableDirections;
     }
 }

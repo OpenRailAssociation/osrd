@@ -1,14 +1,20 @@
 import { Dispatch } from 'redux';
 import { IconType } from 'react-icons/lib/esm/iconBase';
 import { BiTargetLock } from 'react-icons/bi';
-import { BsMap } from 'react-icons/bs';
+import { BsMap, BsFillExclamationOctagonFill } from 'react-icons/bs';
 import { FiLayers, FiZoomIn, FiZoomOut } from 'react-icons/fi';
 import { FaCompass } from 'react-icons/fa';
 
 import { Viewport } from 'reducers/map';
-import { getZoneViewport } from '../../utils/mapboxHelper';
-import { EditorState, ModalRequest, OBJTYPE_TO_LAYER_DICT, Tool } from './tools/types';
+import {
+  EditorState,
+  ModalRequest,
+  EDITOAST_TO_LAYER_DICT,
+  Tool,
+  EditoastType,
+} from './tools/types';
 import InfraSelectionModal from './components/InfraSelectionModal';
+import InfraErrorsModal from './components/InfraErrors/InfraErrorsModal';
 import LayersModal from './components/LayersModal';
 import { SelectionState } from './tools/selection/types';
 
@@ -77,14 +83,10 @@ const NavButtons: NavButton[][] = [
       id: 'recenter',
       icon: BiTargetLock,
       labelTranslationKey: 'Editor.nav.recenter',
-      onClick({ setViewport, viewport, editorState }) {
-        const newViewport = editorState.editorZone
-          ? getZoneViewport(editorState.editorZone, viewport)
-          : DEFAULT_VIEWPORT;
-
+      onClick({ setViewport, viewport }) {
         setViewport({
           ...viewport,
-          ...newViewport,
+          ...DEFAULT_VIEWPORT,
         });
       },
     },
@@ -123,7 +125,7 @@ const NavButtons: NavButton[][] = [
               (setToolState as unknown as (newState: SelectionState) => void)({
                 ...currentState,
                 selection: currentState.selection.filter((entity) =>
-                  newLayers.has(OBJTYPE_TO_LAYER_DICT[entity.objType])
+                  newLayers.has(EDITOAST_TO_LAYER_DICT[entity.objType as EditoastType])
                 ),
               } as SelectionState);
             }
@@ -138,6 +140,17 @@ const NavButtons: NavButton[][] = [
       async onClick({ openModal }) {
         openModal({
           component: InfraSelectionModal,
+          arguments: {},
+        });
+      },
+    },
+    {
+      id: 'infra-errors',
+      icon: BsFillExclamationOctagonFill,
+      labelTranslationKey: 'Editor.nav.infra-errors',
+      async onClick({ openModal }) {
+        openModal({
+          component: InfraErrorsModal,
           arguments: {},
         });
       },

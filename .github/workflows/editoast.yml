@@ -43,27 +43,29 @@ jobs:
           DOCKER_BUILDKIT: 1
           COMPOSE_DOCKER_CLI_BUILD: 1
 
-      - uses: actions-rs/toolchain@v1
+      - name: Setup rust toolchain
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           override: true
 
-      - name: Load cached venv
+      - name: Load cached target
         uses: actions/cache@v3
         id: cached-cargo-dependencies
         with:
           path: editoast/target/
-          key: osrd-chartos-venv-${{ hashFiles('editoast/Cargo.lock') }}
+          key: osrd-editoast-target-${{ hashFiles('editoast/Cargo.lock') }}
 
-      - name: Test
-        run: |
-          cd editoast
-          cargo test --verbose -- --test-threads 2
+      - name: Run tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --manifest-path editoast/Cargo.toml --verbose -- --test-threads 1
 
       - name: Coverage
         uses: actions-rs/tarpaulin@v0.1
         with:
-          args: "-r ./editoast --skip-clean"
+          args: "-r ./editoast -- --test-threads 1"
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
@@ -82,25 +84,32 @@ jobs:
     name: Check format and run linter
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
         with:
           # run the CI on the actual latest commit of the PR, not the attempted merge
           ref: ${{ github.event.pull_request.head.sha }}
-      - uses: actions-rs/toolchain@v1
+
+      - name: Setup toolchain
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           components: rustfmt, clippy
           override: true
-      - name: Load cached venv
+
+      - name: Load cached target
         uses: actions/cache@v3
         id: cached-cargo-dependencies
         with:
           path: editoast/target/
-          key: osrd-chartos-venv-${{ hashFiles('editoast/Cargo.lock') }}
+          key: osrd-editoast-target-${{ hashFiles('editoast/Cargo.lock') }}
+
       - name: Format check
-        run: |
-          cd editoast
-          cargo fmt --check
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --manifest-path editoast/Cargo.toml --check
+
       - name: Clippy linter
         uses: actions-rs/clippy-check@v1
         with:

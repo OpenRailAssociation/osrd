@@ -45,8 +45,6 @@ public class AllowanceManager {
         if (newPreviousEdge == null)
             return null; // The new edges are invalid, conflicts shouldn't happen here but it can be too slow
         var newPreviousNode = newPreviousEdge.getEdgeEnd(graph);
-        if (newPreviousNode == null)
-            return null;
         return STDCMEdgeBuilder.fromNode(graph, newPreviousNode, oldEdge.route())
                 .findEdgeSameNextOccupancy(oldEdge.timeNextOccupancy());
     }

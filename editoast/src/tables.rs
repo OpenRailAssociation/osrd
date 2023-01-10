@@ -6,6 +6,8 @@ table! {
         version -> Text,
         generated_version -> Nullable<Text>,
         locked -> Bool,
+        created -> Timestamp,
+        modified -> Timestamp,
     }
 }
 
@@ -59,14 +61,6 @@ table! {
 
 table! {
     osrd_infra_bufferstoplayer {
-        id -> Integer,
-        obj_id -> Text,
-        infra_id -> Integer,
-    }
-}
-
-table! {
-    osrd_infra_routelayer {
         id -> Integer,
         obj_id -> Text,
         infra_id -> Integer,

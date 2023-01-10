@@ -12,6 +12,7 @@ import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim_infra.MRSP;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
+import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
 import fr.sncf.osrd.railjson.parser.RJSRollingStockParser;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
@@ -159,10 +160,15 @@ public class STDCMEndpoint implements Take {
         var routes = rawPath.ranges().stream()
                 .map(Pathfinding.EdgeRange::edge)
                 .toList();
-        var startLocation = routes.get(0).getInfraRoute().getTrackRanges().get(0).offsetLocation(0);
-        var lastRoute = routes.get(routes.size() - 1).getInfraRoute();
-        var lastTrack = lastRoute.getTrackRanges().get(lastRoute.getTrackRanges().size() - 1);
-        var path = TrainPathBuilder.from(routes, startLocation, lastTrack.offsetLocation(0));
+
+        var firstRange = rawPath.ranges().get(0);
+        var startLocation = TrackRangeView.getLocationFromList(
+                firstRange.edge().getInfraRoute().getTrackRanges(), firstRange.start());
+        var lastRange = rawPath.ranges().get(rawPath.ranges().size() - 1);
+        var lastLocation = TrackRangeView.getLocationFromList(
+                lastRange.edge().getInfraRoute().getTrackRanges(), lastRange.end());
+
+        var path = TrainPathBuilder.from(routes, startLocation, lastLocation);
         var standaloneResult = StandaloneSim.run(
                 infra,
                 path,

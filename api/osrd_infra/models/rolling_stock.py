@@ -23,8 +23,13 @@ class RollingStock(models.Model):
         help_text=_("A unique identifier for this rolling stock"),
     )
     effort_curves = models.JSONField(
-        help_text=_("A curve mapping speed (in m/s) to maximum traction (in newtons)"),
+        help_text=_("A group of curves mapping speed (in m/s) to maximum traction (in newtons)"),
         validators=[PydanticValidator(EffortCurves)],
+    )
+    power_class = models.CharField(
+        max_length=255,
+        help_text=_("The power usage class of the train (optional because it is specific to SNCF)"),
+        null=True,
     )
     length = models.FloatField(
         help_text=_("The length of the train, in meters"),
@@ -62,6 +67,14 @@ class RollingStock(models.Model):
     )
     loading_gauge = models.CharField(max_length=16, choices=[(x.value, x.name) for x in LoadingGaugeType])
     image = models.ImageField(null=True, blank=True)
+    metadata = models.JSONField(
+        help_text=_(
+            "Dictionary of optional properties used in the frontend to display\
+            the rolling stock: detail, number, reference, family, type, grouping,\
+            series, subseries, unit"
+        ),
+        default=dict,
+    )
 
     def __str__(self):
         return self.name

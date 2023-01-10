@@ -12,9 +12,13 @@ export const MAP_MODES = {
   creation: 'creation',
 };
 
+// [jacomyal]
+// I'm not sure why this object remains here, but I need to refer to this
+// 'track_sections' value elsewhere, which explains the new MAP_TRACK_SOURCE:
+export const MAP_TRACK_SOURCE = 'track_sections';
 export const MAP_TRACK_SOURCES = {
-  schematic: 'track_sections',
-  geographic: 'track_sections',
+  schematic: MAP_TRACK_SOURCE,
+  geographic: MAP_TRACK_SOURCE,
 };
 
 export const ELEMENT_TYPES = {

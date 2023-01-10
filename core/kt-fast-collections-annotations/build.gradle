@@ -1,5 +1,5 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm'
+    alias(libs.plugins.kotlin.jvm)
 }
 
 repositories {
@@ -7,6 +7,7 @@ repositories {
 }
 
 dependencies {
-    api "org.jetbrains.kotlin:kotlin-reflect:1.7.10"
+    // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
+    api libs.kotlin.reflect
 }
 

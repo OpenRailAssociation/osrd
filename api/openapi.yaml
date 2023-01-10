@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: OSRD
-  description: OSRD middleware api documentation
+  description: OSRD middleware api description
   version: 2.0.0
 tags:
   - name: infra
@@ -18,6 +18,12 @@ tags:
     description: Short term DCM
 
 paths:
+  /health/:
+    get:
+      responses:
+        200:
+          description: Check if Editoast is running correctly
+
   /infra/:
     get:
       tags:
@@ -39,6 +45,36 @@ paths:
                     type: array
                     items:
                       $ref: "#/components/schemas/Infra"
+  /version/api/:
+    get:
+      responses:
+        200:
+          description: Return the api service version
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  git_describe:
+                    type: string
+                    nullable: true
+                required:
+                  - git_describe
+  /version/core/:
+    get:
+      responses:
+        200:
+          description: Return the core service version
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  git_describe:
+                    type: string
+                    nullable: true
+                required:
+                  - git_describe
 
   /infra/{id}/:
     get:
@@ -72,7 +108,7 @@ paths:
             schema:
               type: object
               example:
-                version: 2.0.0
+                version: 3.0.1
                 operational_points: []
                 routes: []
                 switch_types: []
@@ -81,10 +117,9 @@ paths:
                 track_sections: []
                 signals: []
                 buffer_stops: []
+                speed_sections: []
+                catenaries: []
                 detectors: []
-                tvd_sections: []
-                script_functions: []
-                aspects: []
         required: true
       responses:
         201:
@@ -160,7 +195,7 @@ paths:
       tags:
         - pathfinding
       summary: |
-        Create a Path given a list of operational points trigram. 
+        Create a Path given a list of operational points trigram.
         Note: This endpoint is used for a proof of concept and shouldn't be used in production.
       requestBody:
         description: Steps of the path
@@ -1153,7 +1188,7 @@ components:
     Comfort:
       description: Train comfort that will be used for the simulation
       type: string
-      enum: [ "AC", "HEATING", "STANDARD"]
+      enum: ["AC", "HEATING", "STANDARD"]
       default: "STANDARD"
     EffortCurve:
       type: object
@@ -1251,6 +1286,18 @@ components:
                 properties:
                   is_electric:
                     type: boolean
+        metadata:
+          type: object
+          example:
+            detail: "BB 7200"
+            family: "LOCOMOTIVES"
+            grouping: "Locomotives électriques courant continu"
+            number: "1"
+            reference: "7200"
+            series: "BB 7200"
+            subseries: "GV"
+            type: "Locomotives électriques"
+            unit: "US"
     TrainSchedule:
       allOf:
         - type: object

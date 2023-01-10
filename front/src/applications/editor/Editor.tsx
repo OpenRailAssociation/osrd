@@ -64,10 +64,13 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
     [osrdConf, setToolAndState]
   );
   const setToolState = useCallback(
-    <S extends CommonToolState>(state?: S) => {
+    <S extends CommonToolState>(state: Partial<S>) => {
       setToolAndState((s) => ({
         ...s,
-        state,
+        state: {
+          ...s.state,
+          ...state,
+        },
       }));
     },
     [setToolAndState]
@@ -75,7 +78,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
   const resetState = useCallback(() => {
     switchTool(TOOLS[0]);
     dispatch(reset());
-  }, []);
+  }, [dispatch, switchTool]);
 
   const { infra } = useParams<{ infra?: string }>();
   const { mapStyle, viewport } = useSelector(
@@ -101,7 +104,7 @@ const EditorUnplugged: FC<{ t: TFunction }> = ({ t }) => {
       setState: setToolState,
       switchTool,
     }),
-    [toolAndState, modal, osrdConf, t]
+    [setToolState, toolAndState, modal, osrdConf, t]
   );
   const extendedContext = useMemo<ExtendedEditorContextType<CommonToolState>>(
     () => ({

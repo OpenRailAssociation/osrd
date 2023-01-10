@@ -14,7 +14,7 @@ from pydantic import (
 from pydantic.fields import ModelField
 
 ALL_OBJECT_TYPES = []
-RAILJSON_INFRA_VERSION = "3.0.1"
+RAILJSON_INFRA_VERSION = "3.1.0"
 
 
 # Traits
@@ -117,24 +117,30 @@ class LoadingGaugeType(str, Enum):
     GLOTT = "GLOTT"
 
 
-class DirectionalTrackRange(BaseModel):
+class TrackRange(BaseModel):
     """
-    A directional track range is a track range with an associated direction.
+    This class is used to define track ranges that are associated with certain classes in the infrastructure.
     """
 
-    track: Identifier = Field(description="Identifier of the track")
-    begin: float = Field(
-        description="Begin offset of the path in meters, its reading and understanding depend on the direction", ge=0
-    )
-    end: float = Field(
-        description="End offset of the path in meters, its reading and understanding depend also on the direction", ge=0
-    )
-    direction: Direction = Field(description="Description of the direction")
+    track: Identifier = Field(description="Identifier of the track section")
+    begin: float = Field(description="Begin offset in meters of the corresponding track section", ge=0)
+    end: float = Field(description="End offset in meters of the corresponding track section", ge=0)
 
     @root_validator(skip_on_failure=True)
     def check_range(cls, v):
         assert v.get("begin") <= v.get("end"), "expected: begin <= end"
         return v
+
+    def length(self) -> float:
+        return abs(self.begin - self.end)
+
+
+class DirectionalTrackRange(TrackRange):
+    """
+    A directional track range is a track range with an associated direction.
+    """
+
+    direction: Direction = Field(description="Description of the direction")
 
     def make(track, begin, end) -> "DirectionalTrackRange":
         """
@@ -162,18 +168,12 @@ class DirectionalTrackRange(BaseModel):
         """
         return self.end if self.direction == Direction.START_TO_STOP else self.begin
 
-    def length(self) -> float:
-        return abs(self.begin - self.end)
 
-
-class ApplicableDirectionsTrackRange(BaseModel):
+class ApplicableDirectionsTrackRange(TrackRange):
     """
     An applicable directions track range is a track range with associated directions.
     """
 
-    track: Identifier = Field(description="Identifier and type of the track")
-    begin: float = Field(description="Begin offset in meters of the corresponding track section", ge=0)
-    end: float = Field(description="End offset in meters of the corresponding track section", ge=0)
     applicable_directions: ApplicableDirections = Field(
         description="Direction where the corresponding object is applied"
     )
@@ -215,11 +215,12 @@ class Route(BaseObjectTrait):
     """
 
     entry_point: Waypoint
+    entry_point_direction: Direction = Field(description="Direction of the route at the entry point")
     exit_point: Waypoint
     release_detectors: List[Identifier] = Field(
         description="Detector allowing the release of resources reserved from the beginning of the route until this one"
     )
-    path: List[DirectionalTrackRange] = Field(description="List of the path corresponding to the routes")
+    switches_directions: Mapping[Identifier, Identifier] = Field(description="Switches position part of the route")
 
 
 class SwitchPortConnection(BaseModel):

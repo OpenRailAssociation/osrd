@@ -68,6 +68,11 @@ public class Pathfinding<NodeT, EdgeT> {
     private AStarHeuristic<EdgeT> estimateRemainingDistance = null;
     /** Function to call to know the cost of the range. */
     private EdgeRangeCost<EdgeT> edgeRangeCost = null;
+    /**
+     * Function to call to know the cost of the path from the departure point to the edge location .
+     * Used in STDCM. Either totalDistanceUntilEdgeLocation or edgeRangeCost must be defined.
+    */
+    private TotalDistanceUntilEdgeLocation<EdgeT> totalDistanceUntilEdgeLocation = null;
 
     /** Constructor */
     public Pathfinding(Graph<NodeT, EdgeT> graph) {
@@ -89,6 +94,12 @@ public class Pathfinding<NodeT, EdgeT> {
     /** Sets the functor used to estimate the cost for a range */
     public Pathfinding<NodeT, EdgeT> setEdgeRangeCost(EdgeRangeCost<EdgeT> f) {
         this.edgeRangeCost = f;
+        return this;
+    }
+
+    /** Sets the functor used to estimate the cost for a range */
+    public Pathfinding<NodeT, EdgeT> setTotalDistanceUntilEdgeLocation(TotalDistanceUntilEdgeLocation<EdgeT> f) {
+        this.totalDistanceUntilEdgeLocation = f;
         return this;
     }
 
@@ -152,8 +163,6 @@ public class Pathfinding<NodeT, EdgeT> {
             if (step == null)
                 return null;
             final var endNode = graph.getEdgeEnd(step.range.edge);
-            if (endNode == null)
-                continue;
             if (!(seen.getOrDefault(step.range, -1) < step.nReachedTargets))
                 continue;
             seen.put(step.range, step.nReachedTargets);
@@ -218,7 +227,7 @@ public class Pathfinding<NodeT, EdgeT> {
         assert edgeToLength != null;
         if (estimateRemainingDistance == null)
             estimateRemainingDistance = (x, y) -> 0.;
-        if (edgeRangeCost == null)
+        if (totalDistanceUntilEdgeLocation == null && edgeRangeCost == null)
             edgeRangeCost = (range) -> range.end - range.start;
     }
 
@@ -292,7 +301,12 @@ public class Pathfinding<NodeT, EdgeT> {
         range = filterRange(range);
         if (range == null)
             return;
-        double totalDistance = prevDistance + edgeRangeCost.apply(range);
+        double totalDistance = 0;
+        if (totalDistanceUntilEdgeLocation != null)
+            totalDistance = totalDistanceUntilEdgeLocation.apply(new EdgeLocation<>(range.edge, range.end));
+        else {
+            totalDistance = prevDistance + edgeRangeCost.apply(range);
+        }
         double distanceLeftEstimation = estimateRemainingDistance.apply(range.edge, range.start);
         queue.add(new Step<>(
                 range,

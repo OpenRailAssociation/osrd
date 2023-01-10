@@ -31,20 +31,25 @@ class InvalidReference(InfraErrorTrait):
     reference: ObjectReference
 
 
+class InvalidGroup(InfraErrorTrait):
+    error_type: Literal["invalid_group"] = Field(default="invalid_group")
+    group: str
+    switch_type: str
+
+
 class OutOfRange(InfraErrorTrait):
     error_type: Literal["out_of_range"] = Field(default="out_of_range")
     position: float
     expected_range: Tuple[float, float]
 
 
-class ObjectOutsideOfPath(InfraErrorTrait):
-    error_type: Literal["object_outside_of_path"] = Field(default="object_outside_of_path")
-    position: float
-    track: str
+class ObjectOutOfPath(InfraErrorTrait):
+    error_type: Literal["object_out_of_path"] = Field(default="object_outside_of_path")
+    reference: ObjectReference
 
 
-class EmptyPath(InfraErrorTrait):
-    error_type: Literal["empty_path"] = Field(default="empty_path")
+class InvalidRoute(InfraErrorTrait):
+    error_type: Literal["invalid_route"] = Field(default="invalid_route")
 
 
 class PathDoesNotMatchEndpoints(InfraErrorTrait):
@@ -98,20 +103,20 @@ class OverlappingTrackLinks(InfraWarningTrait):
 
 InfraError = Annotated[
     Union[
-        InvalidReference,
-        OutOfRange,
-        ObjectOutsideOfPath,
-        EmptyPath,
-        PathDoesNotMatchEndpoints,
-        UnknownPortName,
-        InvalidSwitchPorts,
-        EmptyObject,
-        MissingRoute,
-        UnusedPort,
         DuplicatedGroup,
+        EmptyObject,
+        InvalidGroup,
+        InvalidReference,
+        InvalidRoute,
+        InvalidSwitchPorts,
+        MissingRoute,
         NoBufferStop,
+        ObjectOutOfPath,
+        OutOfRange,
         OverlappingSwitches,
         OverlappingTrackLinks,
+        UnknownPortName,
+        UnusedPort,
     ],
     Field(discriminator="error_type"),
 ]

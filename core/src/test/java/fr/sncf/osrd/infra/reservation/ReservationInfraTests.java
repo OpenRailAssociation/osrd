@@ -6,7 +6,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import fr.sncf.osrd.Helpers;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.reservation.ReservationInfra;
+import fr.sncf.osrd.infra.errors.DiscontinuousRoute;
 import fr.sncf.osrd.infra.implementation.reservation.ReservationInfraBuilder;
+import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import org.junit.jupiter.api.Test;
 
@@ -47,24 +49,24 @@ public class ReservationInfraTests {
     }
 
     @Test
-    public void testInvalidRouteStart() throws Exception {
+    public void testInvalidRouteMissingSwitch() throws Exception {
         var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
         for (var route : rjsInfra.routes)
             if (route.getID().equals("rt.tde.foo_b-switch_foo->buffer_stop_c"))
-                route.path.get(0).begin += 1;
+                route.switchesDirections.remove("il.switch_foo");
         var wr = new DiagnosticRecorderImpl(false);
-        ReservationInfraBuilder.fromRJS(rjsInfra, wr);
-        assertFalse(wr.warnings.isEmpty());
+        assertThrows(DiscontinuousRoute.class, () -> ReservationInfraBuilder.fromRJS(rjsInfra, wr));
+        assertTrue(wr.warnings.isEmpty());
     }
 
     @Test
     public void testInvalidRouteEnd() throws Exception {
         var rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json");
         for (var route : rjsInfra.routes)
-            if (route.getID().equals("rt.buffer_stop_a->tde.foo_a-switch_foo"))
-                route.path.get(route.path.size() - 1).end += 1;
+            if (route.getID().equals("rt.tde.foo_b-switch_foo->buffer_stop_c"))
+                route.entryPointDirection = EdgeDirection.STOP_TO_START;
         var wr = new DiagnosticRecorderImpl(false);
-        ReservationInfraBuilder.fromRJS(rjsInfra, wr);
-        assertFalse(wr.warnings.isEmpty());
+        assertThrows(DiscontinuousRoute.class, () -> ReservationInfraBuilder.fromRJS(rjsInfra, wr));
+        assertTrue(wr.warnings.isEmpty());
     }
 }

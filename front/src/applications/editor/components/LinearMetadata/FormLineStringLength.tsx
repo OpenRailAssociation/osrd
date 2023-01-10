@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { WidgetProps } from '@rjsf/core';
 import { useTranslation } from 'react-i18next';
 

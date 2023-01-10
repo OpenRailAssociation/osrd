@@ -74,5 +74,17 @@
         "is_electric": false
       }
     }
+  },
+  "power_class": "1",
+  "metadata": {
+    "detail": "",
+    "number": "1",
+    "reference": "",
+    "family": "",
+    "rolling_stock_type": "",
+    "grouping": "",
+    "series": "",
+    "subseries": "",
+    "unit": ""
   }
 }

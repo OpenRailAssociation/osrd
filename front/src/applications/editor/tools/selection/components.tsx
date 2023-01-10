@@ -1,6 +1,6 @@
 import React, { FC, useContext } from 'react';
-import { Popup } from 'react-map-gl';
-import { useDispatch, useSelector } from 'react-redux';
+import { Layer, Popup, Source } from 'react-map-gl';
+import { useSelector } from 'react-redux';
 import { groupBy, map } from 'lodash';
 import { IoMdRemoveCircleOutline } from 'react-icons/io';
 import { RiFocus3Line } from 'react-icons/ri';
@@ -11,13 +11,11 @@ import { SelectionState } from './types';
 import { Zone } from '../../../../types';
 import GeoJSONs from '../../../../common/Map/Layers/GeoJSONs';
 import colors from '../../../../common/Map/Consts/colors';
-import EditorZone from '../../../../common/Map/Layers/EditorZone';
-import EditorForm from '../../components/EditorForm';
-import { save } from '../../../../reducers/editor';
 import { EditorContextType, ExtendedEditorContextType } from '../types';
 import EntitySumUp from '../../components/EntitySumUp';
 
 import './styles.scss';
+import { zoneToFeature } from '../../../../utils/mapboxHelper';
 
 export const SelectionMessages: FC = () => {
   const { t, state } = useContext(EditorContext) as EditorContextType<SelectionState>;
@@ -25,8 +23,21 @@ export const SelectionMessages: FC = () => {
   return t(`Editor.tools.select-items.help.${state.selectionState.type}-selection`);
 };
 
+const SelectionZone: FC<{ newZone?: Zone }> = ({ newZone }) => (
+  <>
+    {newZone ? (
+      <Source type="geojson" data={zoneToFeature(newZone)} key="new-zone">
+        <Layer type="line" paint={{ 'line-color': '#666', 'line-dasharray': [3, 3] }} />
+      </Source>
+    ) : null}
+  </>
+);
+
 export const SelectionLayers: FC = () => {
-  const { state } = useContext(EditorContext) as EditorContextType<SelectionState>;
+  const {
+    state,
+    editorState: { editorLayers },
+  } = useContext(EditorContext) as ExtendedEditorContextType<SelectionState>;
   const { mapStyle } = useSelector((s: { map: { mapStyle: string } }) => s.map) as {
     mapStyle: string;
   };
@@ -52,8 +63,12 @@ export const SelectionLayers: FC = () => {
 
   return (
     <>
-      <GeoJSONs colors={colors[mapStyle]} selection={state.selection.map((e) => e.properties.id)} />
-      <EditorZone newZone={selectionZone} />
+      <GeoJSONs
+        colors={colors[mapStyle]}
+        selection={state.selection.map((e) => e.properties.id)}
+        layers={editorLayers}
+      />
+      <SelectionZone newZone={selectionZone} />
       {state.mousePosition && state.selectionState.type === 'single' && state.hovered && (
         <Popup
           className="popup"
@@ -63,10 +78,13 @@ export const SelectionLayers: FC = () => {
           closeButton={false}
         >
           <EntitySumUp
-            entity={state.hovered}
+            key={state.hovered.id}
+            id={state.hovered.id}
+            objType={state.hovered.type}
             status={
-              state.selection.find((item) => item.properties.id === state.hovered?.properties.id) &&
-              'selected'
+              state.selection.find(
+                (item) => item.properties.id === (state.hovered?.id as string)
+              ) && 'selected'
             }
           />
         </Popup>
@@ -76,66 +94,11 @@ export const SelectionLayers: FC = () => {
 };
 
 export const SelectionLeftPanel: FC = () => {
-  const dispatch = useDispatch();
   const { t } = useTranslation();
-  const { state, setState, editorState } = useContext(
+  const { state, setState } = useContext(
     EditorContext
   ) as ExtendedEditorContextType<SelectionState>;
-  const { selection, selectionState } = state;
-
-  if (selectionState.type === 'edition') {
-    const types = new Set<string>();
-    selection.forEach((item) => types.add(item.objType));
-
-    if (selection.length === 1) {
-      return (
-        <EditorForm
-          data={selection[0]}
-          onSubmit={async (savedEntity) => {
-            await dispatch(
-              save({
-                update: [
-                  {
-                    source: editorState.entitiesIndex[savedEntity.properties.id],
-                    target: savedEntity,
-                  },
-                ],
-              })
-            );
-            setState({ ...state, selection: [savedEntity], selectionState: { type: 'single' } });
-          }}
-        >
-          <div className="text-right">
-            <button
-              type="button"
-              className="btn btn-danger mr-2"
-              onClick={() =>
-                setState({
-                  ...state,
-                  selectionState: selectionState.previousState || { type: 'single' },
-                })
-              }
-            >
-              {t('common.cancel')}
-            </button>
-            <button type="submit" className="btn btn-primary">
-              {t('common.confirm')}
-            </button>
-          </div>
-        </EditorForm>
-      );
-    }
-
-    if (types.size === 1) {
-      return (
-        <p className="text-center">{t('Editor.tools.select-items.errors.no-multi-edition')}</p>
-      );
-    }
-
-    return (
-      <p className="text-center">{t('Editor.tools.select-items.errors.no-heterogenous-edition')}</p>
-    );
-  }
+  const { selection } = state;
 
   if (!selection.length)
     return <p className="text-center">{t('Editor.tools.select-items.no-selection')}</p>;

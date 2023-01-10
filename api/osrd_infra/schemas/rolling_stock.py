@@ -46,6 +46,7 @@ class EffortCurve(BaseModel, extra=Extra.forbid):
 
 class EffortCurveConditions(BaseModel, extra=Extra.forbid):
     comfort: Optional[ComfortType]
+    electrical_profile_level: Optional[str]
 
 
 class ConditionalEffortCurve(BaseModel, extra=Extra.forbid):
@@ -61,7 +62,7 @@ class ModeEffortCurves(BaseModel, extra=Extra.forbid):
     curves: List[ConditionalEffortCurve] = Field(
         description="List of conditional effort curves, sorted by match priority"
     )
-    default_curve: EffortCurve = Field(description="Standard comfort mode")
+    default_curve: EffortCurve = Field(description="Curve used if no condition is met")
     is_electric: bool = Field(description="Whether the mode is electric or not")
 
 
@@ -96,6 +97,9 @@ class RollingStock(BaseModel, extra=Extra.forbid):
     version: Literal[RAILJSON_ROLLING_STOCK_VERSION] = Field(default=RAILJSON_ROLLING_STOCK_VERSION)
     name: constr(max_length=255)
     effort_curves: EffortCurves = Field(description="Curves mapping speed (in m/s) to maximum traction (in newtons)")
+    power_class: Optional[str] = Field(
+        description="The power usage class of the train (optional because it is specific to SNCF)"
+    )
     length: PositiveFloat = Field(description="The length of the train, in m")
     max_speed: PositiveFloat = Field(description="Maximum speed in m/s")
     startup_time: confloat(ge=0) = Field(description="The time the train takes before it can start accelerating in s")
@@ -107,6 +111,7 @@ class RollingStock(BaseModel, extra=Extra.forbid):
     mass: PositiveFloat = Field(description="The mass of the train, in kg")
     rolling_resistance: RollingResistance = Field(description="The formula to use to compute rolling resistance")
     loading_gauge: LoadingGaugeType
+    metadata: Mapping[str, str] = Field(description="Properties used in the frontend to display the rolling stock")
 
 
 if __name__ == "__main__":

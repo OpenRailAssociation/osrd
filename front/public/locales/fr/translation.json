@@ -53,7 +53,8 @@
       "recenter": "Recentrer la carte",
       "toggle-layers": "Choisir les types d'éléments à afficher",
       "select-infra": "Choisir l'infrastructure à éditer",
-      "infra-changed": "Vous éditez maintenant l'infra \"{{label}}\" (id \"{{id}}\")."
+      "infra-changed": "Vous éditez maintenant l'infra \"{{label}}\" (id \"{{id}}\").",
+      "infra-errors": "Afficher les erreurs de l'infrastructure courante"
     },
     "layers-modal": {
       "layer-selected-items_one": "Un élément sélectionné",
@@ -67,6 +68,41 @@
       "no-infra-available": "Votre compte n'est lié à aucune infrastructure",
       "technical": "Une erreur technique est survenue : {{msg}}",
       "length-out-of-sync-with-geometry": "La distance renseignée est trop éloignée de celle de la géométrie (Doit être compris entre {{min}} et {{max}})"
+    },
+    "infra-errors": {
+      "modal": {
+        "title": "Liste des erreurs de l'infrastructure {{id}}"
+      },
+      "list": {
+        "error": "Une erreur est survenue lors du chargement des données",
+        "no-error": "Aucune erreur trouvée",
+        "total-error": "{{total}} erreurs trouvées",
+        "filter-level": "Niveau d'erreur",
+        "filter-type": "Type d'erreur"
+      },
+      "error-level": {
+        "all": "Tout",
+        "errors": "Erreurs",
+        "warnings": "Avertissements"
+      },
+      "error-type": {
+        "all": "Tout",
+        "invalid_reference": "Référence invalide",
+        "out_of_range": "Valeur invalide (hors intervalle)",
+        "empty_path": "Chemin vide",
+        "path_does_not_match_endpoints": "path_does_not_match_endpoints",
+        "unknown_port_name": "Nom de port inconnu",
+        "invalid_switch_ports": "invalid_switch_ports",
+        "empty_object": "Object vide",
+        "object_out_of_path": "object_out_of_path",
+        "missing_route": "Route manquante",
+        "unused_port": "Port non utilisé",
+        "duplicated_group": "Duplication de groupe",
+        "no_buffer_stop": "no_buffer_stop",
+        "path_is_not_continuous": "Chemin non continu",
+        "overlapping_switches": "overlapping_switches",
+        "overlapping_track_links": "overlapping_track_links"
+      }
     },
     "tools": {
       "track-edition": {

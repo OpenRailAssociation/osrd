@@ -302,4 +302,43 @@ public class EngineeringAllowanceTests {
 
         assertNull(res);
     }
+
+    /** Test that we return the fastest path even if there are some engineering allowances*/
+    @Test
+    public void testReturnTheFastestPathWithAllowance() {
+        /*
+        a --> b --> c --> d
+
+        space
+          ^
+        d |#####################  /  end
+          |##################### /   /
+        c |#####################/   /
+          |    ________________/   /
+        b |   /                   /
+          |  /################## /
+        a |_/_##################/____> time
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var routes = List.of(
+                infraBuilder.addRoute("a", "b"),
+                infraBuilder.addRoute("b", "c"),
+                infraBuilder.addRoute("c", "d")
+        );
+        var infra = infraBuilder.build();
+        var occupancyGraph = ImmutableMultimap.of(
+                routes.get(0), new OccupancyBlock(300, 3600, 0, 1),
+                routes.get(2), new OccupancyBlock(0, 3600, 0, 1)
+        );
+        var res = new STDCMPathfindingBuilder()
+                .setInfra(infra)
+                .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(routes.get(0), 0)))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(routes.get(2), 100)))
+                .setUnavailableTimes(occupancyGraph)
+                .run();
+
+        assertNotNull(res);
+        STDCMHelpers.occupancyTest(res, occupancyGraph);
+        assertEquals(3600, res.departureTime());
+    }
 }

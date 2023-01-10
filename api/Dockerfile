@@ -10,7 +10,7 @@ RUN apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false
 
 WORKDIR /home/service
 
-RUN pip install --no-cache-dir poetry==1.1.8
+RUN pip install --no-cache-dir poetry==1.1.14
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -30,6 +30,9 @@ RUN poetry config virtualenvs.create false && \
 USER service
 
 COPY . /home/service
+
+ARG OSRD_GIT_DESCRIBE
+ENV OSRD_GIT_DESCRIBE=${OSRD_GIT_DESCRIBE}
 
 EXPOSE 8000
 

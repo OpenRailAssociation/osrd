@@ -1,8 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { MemoStationSelector, formatStation } from 'applications/opendata/components/StationSelector';
+import {
+  MemoStationSelector,
+  formatStation,
+} from 'applications/opendata/components/StationSelector';
 import { setFailure } from 'reducers/main';
 import { useDispatch } from 'react-redux';
 
