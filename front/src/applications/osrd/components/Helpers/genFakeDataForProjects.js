@@ -99,3 +99,21 @@ export function studyJSON() {
   };
   return json;
 }
+
+export function scenariosListJSON(nb = NB_SCENARIOS) {
+  const json = [];
+  for (let index = 0; index < nb; index += 1) {
+    json.push({
+      id: faker.datatype.uuid(),
+      name: faker.lorem.sentence(4).replace('.', ''),
+      description: faker.lorem.paragraphs(1),
+      infra: {
+        id: faker.datatype.uuid(),
+        name: faker.lorem.words(),
+      },
+      creationDate: faker.date.past(2),
+      lastModifiedDate: faker.date.recent(10),
+    });
+  }
+  return json;
+}
