@@ -44,6 +44,36 @@ paths:
                 items:
                   $ref: "#/components/schemas/Layer"
 
+  /layers/layer/{layer_slug}/mvt/{view_slug}/:
+    get:
+      summary: Mvt View Metadata
+      parameters:
+        - required: true
+          schema:
+            title: Layer Slug
+            type: string
+          name: layer_slug
+          in: path
+        - required: true
+          schema:
+            title: View Slug
+            type: string
+          name: view_slug
+          in: path
+        - required: true
+          schema:
+            title: Infra id
+            type: integer
+          name: infra
+          in: query
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ViewMetadata"
+
   /infra/:
     get:
       tags:
@@ -873,6 +903,33 @@ components:
         track_name: track name
         navigability: BOTH
         track_number: 1
+
+    ViewMetadata:
+      properties:
+        type:
+          type: string
+          example: vector
+        name:
+          type: string
+          example: track_sections
+        promotedId:
+          type: object
+          example: { track_sections: "id" }
+        scheme:
+          type: string
+          example: "xyz"
+        tiles:
+          type: array
+          items:
+            type: string
+            example: http://localhost:7070/tile/track_sections/geo/{z}/{x}/{y}/?infra=1
+        attribution:
+          type: string
+        minzoom:
+          type: integer
+        maxzoom:
+          type: integer
+          example: 18
 
     InfraError:
       type: object
