@@ -36,8 +36,4 @@ impl PostgresConfig {
             self.psql_database
         )
     }
-
-    pub fn make_connection(&self) -> PgConnection {
-        PgConnection::establish(&self.url()).expect("Can't connect to database")
-    }
 }
