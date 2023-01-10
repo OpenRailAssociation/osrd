@@ -57,7 +57,7 @@ interface Stop {
   track_number: number;
 }
 
-export interface RouteAspect<Time = number, Color = string> {
+export interface RouteAspect<Time = number, Color = number> {
   signal_id: string;
   route_id: string;
   time_start: Time;
