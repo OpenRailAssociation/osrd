@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
 import nextId from 'react-id-generator';
 import { useSelector, useDispatch } from 'react-redux';
@@ -11,11 +11,13 @@ import { sec2time } from 'utils/timeManipulation';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts';
 import { updateTimetableID } from 'reducers/osrdconf';
+import { ModalContext } from  'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 
 const timetableURL = '/timetable/';
 
 export default function TimetableSelector(props) {
   const { mustUpdateTimetable, setMustUpdateTimetable } = props;
+  const { openModal } = useContext(ModalContext);
   const [selectedTimetable, setSelectedTimetable] = useState(undefined);
   const [isWorking, setIsWorking] = useState(false);
   const [trainList, setTrainList] = useState(undefined);
@@ -112,28 +114,24 @@ export default function TimetableSelector(props) {
   };
 
   return (
-    <>
-      <div className="osrd-config-item mb-2">
-        <div
-          className="osrd-config-item-container osrd-config-item-clickable"
-          role="button"
-          tabIndex="-1"
-          data-toggle="modal"
-          data-target="#timetable-selector-modal"
-        >
-          <div className="d-flex align-items-center">
-            <img width="32px" className="mr-2" src={icon} alt="timetableIcon" />
-            {timeTable()}
-          </div>
+    <div className="osrd-config-item mb-2">
+      <div
+        className="osrd-config-item-container osrd-config-item-clickable"
+        role="button"
+        tabIndex="-1"
+        onClick={() => openModal(<TimetableSelectorModal />)}
+      >
+        <div className="d-flex align-items-center">
+          <img width="32px" className="mr-2" src={icon} alt="timetableIcon" />
+          {timeTable()}
         </div>
-        {timetableID !== undefined && trainList !== undefined && trainList.length > 0 ? (
-          <div className="osrd-config-item-container">
-            <div className="timetable-trainlist">{formatTrainList(trainList)}</div>
-          </div>
-        ) : null}
       </div>
-      <TimetableSelectorModal />
-    </>
+      {timetableID !== undefined && trainList !== undefined && trainList.length > 0 ? (
+        <div className="osrd-config-item-container">
+          <div className="timetable-trainlist">{formatTrainList(trainList)}</div>
+        </div>
+      ) : null}
+    </div>
   );
 }
 
