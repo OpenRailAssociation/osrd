@@ -26,6 +26,7 @@ paths:
 
   /infra/:
     get:
+      deprecated: true
       tags:
         - infra
       summary: List all available infra
@@ -52,7 +53,7 @@ paths:
           description: Return the api service version
           content:
             application/json:
-              schema: 
+              schema:
                 type: object
                 properties:
                   git_describe:
@@ -67,7 +68,7 @@ paths:
           description: Return the core service version
           content:
             application/json:
-              schema: 
+              schema:
                 type: object
                 properties:
                   git_describe:
@@ -78,6 +79,7 @@ paths:
 
   /infra/{id}/:
     get:
+      deprecated: true
       tags:
         - infra
       summary: Retrieve an infra
@@ -98,6 +100,7 @@ paths:
 
   /infra/railjson/:
     post:
+      deprecated: true
       tags:
         - infra
       summary: Import an infra from railjson
@@ -132,6 +135,7 @@ paths:
                   id: { type: string }
   /infra/{id}/railjson/:
     get:
+      deprecated: true
       tags:
         - infra
       summary: Serialize an infra to railjson
@@ -704,6 +708,7 @@ paths:
                   $ref: "#/components/schemas/TrainScheduleResult"
   /infra/{id}/speed_limit_tags/:
     get:
+      deprecated: true
       tags:
         - infra
       summary: List all speed limit tags
@@ -726,6 +731,7 @@ paths:
                 example: ["freight", "heavy_load"]
   /infra/{id}/voltages/:
     get:
+      deprecated: true
       tags:
         - infra
       summary: List all voltages

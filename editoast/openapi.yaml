@@ -22,7 +22,7 @@ paths:
           description: Return the service version
           content:
             application/json:
-              schema: 
+              schema:
                 type: object
                 properties:
                   git_describe:
