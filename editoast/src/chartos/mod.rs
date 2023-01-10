@@ -1,4 +1,5 @@
 mod bounding_box;
+mod layer_cache;
 
 pub use bounding_box::BoundingBox;
 pub use bounding_box::InvalidationZone;
