@@ -99,7 +99,7 @@ const CHART_ID = 'SpeedSpaceChart';
         setResetChart
       )
     );
-  }, [ref, rotate]);
+  }, [ref, rotate, heightOfSpeedSpaceChart]);
 
   // plug event handlers once the chart is ready or recreated
   useEffect(() => {
