@@ -1,5 +1,6 @@
 import produce from 'immer';
 import { Feature } from 'geojson';
+import { without } from 'lodash';
 
 import { ThunkAction, EditorSchema, EditorEntity } from '../types';
 import { setLoading, setSuccess, setFailure } from './main';
@@ -117,7 +118,7 @@ export const initialState: EditorState = {
   // Definition of entities (json schema)
   editorSchema: [],
   // ID of selected layers on which we are working
-  editorLayers: new Set(LAYERS),
+  editorLayers: new Set(without(LAYERS, 'errors')),
 };
 
 //
