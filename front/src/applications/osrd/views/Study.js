@@ -8,8 +8,10 @@ import nextId from 'react-id-generator';
 import dayjs from 'dayjs';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
+import ScenarioCard from 'applications/osrd/components/Study/ScenarioCard';
 import {
   projectJSON,
+  scenariosListJSON,
   studyJSON,
 } from 'applications/osrd/components/Helpers/genFakeDataForProjects';
 
@@ -56,6 +58,7 @@ export default function Study() {
   useEffect(() => {
     setProjectDetails(projectJSON());
     setStudyDetails(studyJSON());
+    setScenariosList(scenariosListJSON());
   }, []);
   return (
     <>
@@ -80,9 +83,23 @@ export default function Study() {
               </div>
 
               <div className="study-details">
-                <div className="study-details-name">{studyDetails.name}</div>
-                <div className="study-details-type">{studyDetails.type}</div>
-                <div className="study-details-description">{studyDetails.description}</div>
+                <div className="row">
+                  <div className="col-xl-8">
+                    <div className="study-details-name">{studyDetails.name}</div>
+                    <div className="study-details-type">{studyDetails.type}</div>
+                    <div className="study-details-description">{studyDetails.description}</div>
+                  </div>
+                  <div className="col-xl-4">
+                    <div className="study-details-dates">
+                      <div className="study-details-dates-date">
+                        <span className="mr-1">{t('modifiedOn')}</span>
+                        {dayjs(studyDetails.lastModifiedDate)
+                          .format('D MMM YYYY HH:mm')
+                          .replace(/\./gi, '')}
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
                 <div className="study-details-financials">
                   <div className="study-details-financials-infos">
@@ -113,43 +130,7 @@ export default function Study() {
                       </div>
                     ))}
                   </div>
-                  <div className="study-details-date">
-                    <span className="mr-1">{t('modifiedOn')}</span>
-                    {dayjs(studyDetails.lastModifiedDate)
-                      .format('D MMM YYYY HH:mm')
-                      .replace(/\./gi, '')}
-                  </div>
                 </div>
-              </div>
-
-              <div className="scenarios-toolbar">
-                <div className="">{`${scenariosList ? scenariosList.length : 0} ${t(
-                  'scenariosCount'
-                )}`}</div>
-                <div className="flex-grow-1">
-                  <InputSNCF
-                    type="text"
-                    name="projects-filter"
-                    value={filter}
-                    onChange={(e) => setFilter(e.target.value)}
-                    placeholder={t('filterPlaceholder')}
-                    whiteBG
-                    noMargin
-                    unit={<i className="icons-search" />}
-                    sm
-                  />
-                </div>
-                <OptionsSNCF
-                  name="projects-sort-filter"
-                  onChange={handleSortOptions}
-                  selectedValue={sortOption}
-                  options={sortOptions}
-                  sm
-                />
-                <button className="btn btn-primary btn-sm" type="button">
-                  <i className="icons-add" />
-                  <span className="ml-2">{t('createScenario')}</span>
-                </button>
               </div>
             </>
           ) : (
@@ -157,6 +138,53 @@ export default function Study() {
               <Loader position="center" />
             </span>
           )}
+
+          <div className="scenarios-toolbar">
+            <div className="">{`${scenariosList ? scenariosList.length : 0} ${t(
+              'scenariosCount'
+            )}`}</div>
+            <div className="flex-grow-1">
+              <InputSNCF
+                type="text"
+                id="scenarios-filter"
+                name="scenarios-filter"
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                placeholder={t('filterPlaceholder')}
+                whiteBG
+                noMargin
+                unit={<i className="icons-search" />}
+                sm
+              />
+            </div>
+            <OptionsSNCF
+              name="projects-sort-filter"
+              onChange={handleSortOptions}
+              selectedValue={sortOption}
+              options={sortOptions}
+              sm
+            />
+            <button className="btn btn-primary btn-sm" type="button">
+              <i className="icons-add" />
+              <span className="ml-2">{t('createScenario')}</span>
+            </button>
+          </div>
+
+          <div className="scenarios-list">
+            {scenariosList ? (
+              <div className="row">
+                {scenariosList.map((details) => (
+                  <div className="col-xl-4 col-lg-6" key={nextId()}>
+                    <ScenarioCard details={details} />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <span className="mt-5">
+                <Loader position="center" />
+              </span>
+            )}
+          </div>
         </div>
       </main>
     </>

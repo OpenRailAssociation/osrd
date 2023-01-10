@@ -52,6 +52,7 @@ export default function HomeContent() {
             <div className="flex-grow-1">
               <InputSNCF
                 type="text"
+                id="projects-filter"
                 name="projects-filter"
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
@@ -76,8 +77,8 @@ export default function HomeContent() {
             <div className="projects-list">
               <div className="row">
                 {projectsList.map((details) => (
-                  <div className="col-lg-3 col-md-4 col-sm-6">
-                    <ProjectCard details={details} key={nextId()} />
+                  <div className="col-lg-3 col-md-4 col-sm-6" key={nextId()}>
+                    <ProjectCard details={details} />
                   </div>
                 ))}
               </div>
