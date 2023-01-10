@@ -11,11 +11,12 @@ import { trainscheduleURI } from 'applications/osrd/components/Simulation/consts
 import debounce from 'lodash/debounce';
 import { TYPES_UNITS } from './consts';
 
+import { ALLOWANCE_UNITS_KEYS } from './consts';
+
 export default function StandardAllowanceDefault(props) {
   const {
     distributionsTypes,
-    allowanceTypes,
-    getAllowances,
+    ggetAllowances,
     setIsUpdating,
     trainDetail,
     mutateSingleAllowance,
@@ -29,12 +30,20 @@ export default function StandardAllowanceDefault(props) {
     changeType,
     typeKey,
     getBaseValue,
+    getAllowanceTypes,
   } = props;
 
   const [value, setValue] = useState({
     type: 'time',
     value: 0,
   });
+  const [allowanceTypes, setAllowanceTypes] = useState([
+    {
+      id: 'time',
+      label: t('allowanceTypes.time'),
+      unit: ALLOWANCE_UNITS_KEYS.time,
+    },
+  ]);
   const [distribution, setDistribution] = useState(distributionsTypes[0]);
 
   const debouncedChangeType = useMemo(
@@ -195,6 +204,10 @@ export default function StandardAllowanceDefault(props) {
     if (getBaseValue) setValue(getBaseValue(typeKey));
   }, [getBaseValue, typeKey]);
 
+  useEffect(() => {
+    if (getAllowanceTypes) setAllowanceTypes(getAllowanceTypes(typeKey));
+  }, [getAllowanceTypes, typeKey]);
+
   return (
     <div className={`${options.immediateMutation ? 'mareco' : 'row w-100 mareco'}`}>
       <div className={`${options.immediateMutation ? 'text-normal' : 'col-md-2 text-normal'}`}>
@@ -255,8 +268,7 @@ export default function StandardAllowanceDefault(props) {
 StandardAllowanceDefault.propTypes = {
   // distributions: PropTypes.array.isRequired,
   distributionsTypes: PropTypes.array.isRequired,
-  allowanceTypes: PropTypes.array.isRequired,
-  getAllowances: PropTypes.func.isRequired,
+  getAllowanceTypes: PropTypes.func.isRequired,
   setIsUpdating: PropTypes.func.isRequired,
   trainDetail: PropTypes.object.isRequired,
   selectedTrain: PropTypes.number,

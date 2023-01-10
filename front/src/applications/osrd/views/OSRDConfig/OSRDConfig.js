@@ -66,24 +66,36 @@ export default function OSRDConfig(props) {
           </div>
           <Itinerary title={t('translation:common.itinerary')} updateExtViewport={setExtViewport} />
           {isStdcm && (
-            <div className="row">
-              <div className="col-xl-6">
-                <div className="osrd-config-item mb-2 osrd-config-item-container">
-                  <StdcmSingleAllowance
-                    title={t('allowances:gridMarginBefore')}
-                    typeKey="gridMarginBefore"
-                  />
+            <>
+              <div className="row">
+                <div className="col-xl-12">
+                  <div className="osrd-config-item mb-2 osrd-config-item-container">
+                    <StdcmSingleAllowance
+                      title={t('allowances:standardAllowance')}
+                      typeKey="standardStdcmAllowance"
+                    />
+                  </div>
                 </div>
               </div>
-              <div className="col-xl-6">
-                <div className="osrd-config-item mb-2 osrd-config-item-container">
-                  <StdcmSingleAllowance
-                    title={t('allowances:gridMarginAfter')}
-                    typeKey="gridMarginAfter"
-                  />
+              <div className="row">
+                <div className="col-xl-6">
+                  <div className="osrd-config-item mb-2 osrd-config-item-container">
+                    <StdcmSingleAllowance
+                      title={t('allowances:gridMarginBefore')}
+                      typeKey="gridMarginBefore"
+                    />
+                  </div>
+                </div>
+                <div className="col-xl-6">
+                  <div className="osrd-config-item mb-2 osrd-config-item-container">
+                    <StdcmSingleAllowance
+                      title={t('allowances:gridMarginAfter')}
+                      typeKey="gridMarginAfter"
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
+            </>
           )}
 
           {isSimulation && (

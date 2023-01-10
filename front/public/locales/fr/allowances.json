@@ -39,6 +39,7 @@
     "percentage": "Pourcentage",
     "time_per_distance": "Distance"
   },
+  "standardAllowance": "Marge de régularité",
   "gridMarginBefore": "Marge grille avant",
   "gridMarginAfter": "Marge grille après",
   "op": "pr",
