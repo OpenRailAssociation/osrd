@@ -1,6 +1,5 @@
 use clap::Args;
 use derivative::Derivative;
-use diesel::{Connection, PgConnection};
 
 #[derive(Args, Debug, Derivative, Clone)]
 #[derivative(Default)]
