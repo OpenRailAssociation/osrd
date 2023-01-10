@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { get, post, deleteRequest } from 'common/requests';
 import { updateTimetableID } from 'reducers/osrdconf';
 import nextId from 'react-id-generator';
-import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { setSuccess, setFailure } from 'reducers/main';
 import icon from 'assets/pictures/components/trains_timetable.svg';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 
 const timetableURL = '/timetable/';
 
@@ -19,6 +19,7 @@ export default function TimetableSelectorModal() {
   const [timetablesList, settimetablesList] = useState(undefined);
   const { infraID, timetableID } = useSelector((state) => state.osrdconf);
   const { t } = useTranslation(['translation', 'osrdconf']);
+  const { closeModal } = useContext(ModalContext);
 
   const getTimetablesList = async () => {
     try {
@@ -74,7 +75,7 @@ export default function TimetableSelectorModal() {
   };
 
   return (
-    <ModalSNCF htmlID="timetable-selector-modal">
+    <div>
       <ModalHeaderSNCF>
         <div className="d-flex align-items-center h1">
           <img className="mr-3" src={icon} alt="timetable icon" width="48px" />
@@ -125,13 +126,13 @@ export default function TimetableSelectorModal() {
             <button
               className="btn btn-secondary flex-fill btn-sm"
               type="button"
-              data-dismiss="modal"
+              onClick={() => closeModal()}
             >
               {t('translation:common.close')}
             </button>
           </div>
         </>
       </ModalBodySNCF>
-    </ModalSNCF>
+    </div>
   );
 }
