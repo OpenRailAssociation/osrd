@@ -132,7 +132,6 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
             // if we hover something
             if (nearestResult) {
               const { feature } = nearestResult;
-              console.log('hover', feature);
               partialMapState.isHovering = true;
               if (activeTool.onHover) {
                 activeTool.onHover(

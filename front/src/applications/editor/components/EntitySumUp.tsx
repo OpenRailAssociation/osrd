@@ -47,7 +47,13 @@ async function getAdditionalEntities(
     case 'BufferStop':
     case 'Detector': {
       const trackId = (entity as SignalEntity).properties.track;
-      if (trackId) return { [trackId]: await getEntity(infra, trackId, 'TrackSection') };
+      if (trackId) {
+        try {
+          return { [trackId]: await getEntity(infra, trackId, 'TrackSection') };
+        } catch (e) {
+          return {};
+        }
+      }
       return {};
     }
     case 'Switch': {
