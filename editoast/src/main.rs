@@ -61,6 +61,7 @@ async fn run() -> Result<(), Box<dyn Error + Send + Sync>> {
         Commands::ImportRailjson(args) => import_railjson(args, pg_config),
     }
 }
+
 /// Create a rocket server given the config
 pub fn create_server(
     runserver_config: &RunserverArgs,
@@ -96,7 +97,8 @@ pub fn create_server(
         .attach(cors::Cors)
         .manage(Arc::<CHashMap<i32, InfraCache>>::default())
         .manage(chartos_config)
-        .manage(MapLayers::parse());
+        .manage(MapLayers::parse())
+        .manage(runserver_config.map_layers_config.clone());
 
     // Mount routes
     for (base, routes) in views::routes() {

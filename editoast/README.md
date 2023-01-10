@@ -38,7 +38,7 @@ cargo test
 Here a list of components to help you in your development:
 
  - [rustfmt](https://github.com/rust-lang/rustfmt): Format the whole code `cargo fmt`
- - [clippy](https://github.com/rust-lang/rust-clippy): Run a powerful linter `cargo clippy`
+ - [clippy](https://github.com/rust-lang/rust-clippy): Run a powerful linter `cargo clippy --all-features -- -D warnings`
  - [tarpaulin](https://github.com/xd009642/tarpaulin): Check code coverage `cargo tarpaulin --skip-clean -o Lcov --output-dir target/tarpaulin/`
 
 To install them simply run:
