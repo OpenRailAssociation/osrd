@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 use serde_yaml::{self};
 
@@ -10,7 +12,6 @@ type JoinExpr = String;
 /// Layer view description
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct View {
-    pub name: String,
     pub on_field: String,
     pub data_expr: String,
     #[serde(default)]
@@ -25,9 +26,8 @@ pub struct View {
 /// Layer description
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct Layer {
-    pub name: String,
     pub table_name: String,
-    pub views: Vec<View>,
+    pub views: HashMap<String, View>,
     #[serde(default)]
     pub id_field: Option<String>,
     #[serde(default)]
@@ -36,7 +36,7 @@ pub struct Layer {
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct MapLayers {
-    pub layers: Vec<Layer>,
+    pub layers: HashMap<String, Layer>,
 }
 
 impl MapLayers {

@@ -31,6 +31,17 @@ pub enum Commands {
     ImportRailjson(ImportRailjsonArgs),
 }
 
+#[derive(Args, Debug, Derivative, Clone)]
+#[derivative(Default)]
+pub struct MapLayersConfig {
+    #[derivative(Default(value = "18"))]
+    #[clap(long, env, default_value_t = 18)]
+    pub max_zoom: u64,
+    #[derivative(Default(value = r#""http://localhost:8090".into()"#))]
+    #[clap(long, env, default_value_t = String::from("http://localhost:8090"))]
+    pub root_url: String,
+}
+
 #[derive(Args, Debug, Derivative)]
 #[derivative(Default)]
 #[clap(about, long_about = "Launch the server")]
@@ -41,6 +52,8 @@ pub struct RunserverArgs {
     #[derivative(Default(value = r#""0.0.0.0".into()"#))]
     #[clap(long, env = "EDITOAST_ADDRESS", default_value_t = String::from("0.0.0.0"))]
     pub address: String,
+    #[clap(flatten)]
+    pub map_layers_config: MapLayersConfig,
 }
 
 #[derive(Args, Debug)]
