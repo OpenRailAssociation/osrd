@@ -217,6 +217,15 @@ pub enum ApplicableDirections {
     Both,
 }
 
+impl From<Direction> for ApplicableDirections {
+    fn from(direction: Direction) -> Self {
+        match direction {
+            Direction::StartToStop => ApplicableDirections::StartToStop,
+            Direction::StopToStart => ApplicableDirections::StopToStart,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Hash)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum Endpoint {
