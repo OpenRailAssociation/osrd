@@ -20,6 +20,7 @@ export const LAYERS = [
   'detectors',
   'switches',
   'errors',
+  'routes',
 ] as const;
 export const LAYERS_SET: Set<string> = new Set(LAYERS);
 export type LayerType = typeof LAYERS[number];
@@ -30,6 +31,7 @@ export const EDITOAST_TYPES = [
   'BufferStop',
   'Detector',
   'Switch',
+  'Route',
 ] as const;
 export const EDITOAST_TYPES_SET: Set<string> = new Set(EDITOAST_TYPES);
 export type EditoastType = typeof EDITOAST_TYPES[number];
@@ -40,6 +42,7 @@ export const EDITOAST_TO_LAYER_DICT: Record<EditoastType, LayerType> = {
   BufferStop: 'buffer_stops',
   Detector: 'detectors',
   Switch: 'switches',
+  Route: 'routes',
 };
 export const LAYER_TO_EDITOAST_DICT = reduce(
   EDITOAST_TO_LAYER_DICT,

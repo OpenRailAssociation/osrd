@@ -210,3 +210,18 @@ export async function editorSave(
 
   return post<EntityOperation[], EditorEntity[]>(`/editoast/infra/${infra}`, payload, {});
 }
+
+/**
+ * Returns all routes starting from or ending to a waypoint:
+ */
+export async function getRoutesFromWaypoint(
+  infra: number | string,
+  type: EditoastType,
+  id: string
+): Promise<{ starting?: string[]; ending?: string[] }> {
+  if (type !== 'BufferStop' && type !== 'Detector')
+    throw new Error(`${type} elements are not valid waypoints.`);
+  return await get<{ starting: string[]; ending: string[] }>(
+    `/editoast/infra/${infra}/routes/${type}/${id}`
+  );
+}
