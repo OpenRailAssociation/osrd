@@ -3,7 +3,9 @@ mod infra;
 mod layers;
 pub mod pagination;
 pub mod params;
+pub mod search;
 
+use crate::DbPool;
 use actix_web::dev::HttpServiceFactory;
 use actix_web::web::{block, Data, Json};
 use actix_web::{get, services};
@@ -12,12 +14,11 @@ use redis::{cmd, Client};
 use serde_json::{json, Value as JsonValue};
 use std::env;
 
-use crate::DbPool;
-
 pub fn routes() -> impl HttpServiceFactory {
     services![
         health,
         version,
+        search::search,
         infra::routes(),
         layers::routes(),
         electrical_profiles::routes(),

@@ -33,6 +33,38 @@ paths:
                 required:
                   - git_describe
 
+  /search:
+    post:
+      summary: Generic search endpoint
+      requestBody:
+        description: Search query
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                object:
+                  type: string
+                  example: "operationalpoint"
+                query:
+                  $ref: "#/components/schemas/SearchQuery"
+                page:
+                  type: integer
+                  default: 1
+                page_size:
+                  type: integer
+                  default: 25
+      responses:
+        200:
+          description: Search results, the structure of the returned objects depend on their type
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
   /layers/info/:
     get:
       tags:
@@ -1163,3 +1195,20 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/TrackRange"
+
+    SearchQuery:
+      type: array
+      minItems: 1
+      nullable: true
+      items:
+        oneOf:
+          - type: boolean
+          - type: number
+          - type: integer
+          - type: string
+          - $ref: "#/components/schemas/SearchQuery"
+      example: ["and",
+                ["or", 
+                    ["search", ["name"], "mich st"], 
+                    ["search", ["trigram"], null]],
+                ["=", ["infra_id"], 2]]
