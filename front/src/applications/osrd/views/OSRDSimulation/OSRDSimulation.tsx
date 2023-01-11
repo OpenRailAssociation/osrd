@@ -40,7 +40,7 @@ import { updateViewport, Viewport } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
 
 export const timetableURI = '/timetable/';
-const CHART_MIN_HEIGHT = 150;
+const CHART_MIN_HEIGHT = '150px';
 const MAP_MIN_HEIGHT = 450;
 
 function getMapMaxHeight(timeTableRef: React.MutableRefObject<HTMLDivElement | null>) {
