@@ -37,7 +37,7 @@ jobs:
             *.cache-to=type=gha,mode=max
 
       - name: Startup the test infrastructure
-        run: "docker-compose up --no-build -d api editoast core chartos"
+        run: "docker-compose up --no-build -d api editoast core chartos wait-healthy"
         env:
           DOCKER_BUILDKIT: 1
           COMPOSE_DOCKER_CLI_BUILD: 1

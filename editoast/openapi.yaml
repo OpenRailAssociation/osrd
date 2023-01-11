@@ -9,11 +9,27 @@ tags:
     description: Infra
 
 paths:
-  /health:
+  /health/:
     get:
       responses:
         200:
           description: Check if Editoast is running correctly
+
+  /version:
+    get:
+      responses:
+        200:
+          description: Return the service version
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  git_describe:
+                    type: string
+                    nullable: true
+                required:
+                  - git_describe
 
   /infra/:
     get:
@@ -425,6 +441,50 @@ paths:
                   format: float
                 example: [750.0, 1500.0, 2500.50]
 
+  /infra/{id}/routes/{waypoint_type}/{waypoint_id}/:
+    get:
+      tags:
+        - infra
+      summary: Retrieve all routes that starting and ending by the given waypoint (detector or buffer stop)
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Infra ID
+          required: true
+        - in: path
+          name: waypoint_type
+          schema:
+            type: string
+            enum: [Detector, BufferStop]
+          description:  Type of the waypoint
+          required: true
+        - in: path
+          name: waypoint_id
+          schema:
+            type: string
+          description:  The waypoint id
+          required: true
+      responses:
+        200:
+          description: All routes that starting and ending by the given waypoint
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  starting:
+                    type: array
+                    items:
+                      type: string
+                    example: ["route1", "route2"]
+                  ending:
+                    type: array
+                    items:
+                      type: string
+                    example: ["route3", "route4"]
+
   /infra/{id}/objects/{object_type}/:
     post:
       tags:
@@ -665,20 +725,20 @@ components:
       type: object
       description: An infra error or warning
       properties:
-        obj_id:
-          type: string
-          example: 8979e17f-6704-49f6-b63e-98f68ba2d086
-          description: Id of the object linked to the error
-        obj_type:
-          $ref: "#/components/schemas/ObjectType"
-          example: Signal
+        geographic:
+          nullable: true
+          type: object
+          description: Geojson of the geographic geometry of the error
+        schematic:
+          nullable: true
+          type: object
+          description: Geojson of the schematic geometry of the error
         information:
           type: object
-          description: Information about the erorr (check schema documentation for more details)
+          description: Information about the error (check schema documentation for more details)
           example:
             error_type: invalid_reference
             field: track
             is_warning: false
-            reference:
-              id: 61205924-6667-11e3-81ff-01f464e0362d
-              type: TrackSection
+            obj_id: 61205924-6667-11e3-81ff-01f464e0362d
+            obj_type: TrackSection

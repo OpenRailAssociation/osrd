@@ -120,7 +120,7 @@ public class STDCMEdgeBuilder {
     /** Creates all edges that can be accessed on the given route, using all the parameters specified. */
     public Collection<STDCMEdge> makeAllEdges() {
         if (envelope == null)
-            envelope = STDCMUtils.simulateRoute(
+            envelope = STDCMSimulations.simulateRoute(
                     route,
                     startSpeed,
                     startOffset,
@@ -168,7 +168,8 @@ public class STDCMEdgeBuilder {
                 prevAddedDelay + delayNeeded,
                 prevNode,
                 route.getInfraRoute().getLength() - envelope.getEndPos(),
-                (int) (actualStartTime / 60)
+                (int) (actualStartTime / 60),
+                graph.getStandardAllowanceSpeedRatio(envelope, route)
         );
         if (res.maximumAddedDelayAfter() < 0)
             res = graph.allowanceManager.tryEngineeringAllowance(res);

@@ -5,8 +5,8 @@ import { IconType } from 'react-icons/lib/esm/iconBase';
 import { TFunction } from 'i18next';
 import { reduce } from 'lodash';
 
-import { EditorEntity, EditorSchema, SwitchType, MapLayerMouseEvent } from '../../../types';
 import { Feature } from 'geojson';
+import { EditorEntity, EditorSchema, SwitchType, MapLayerMouseEvent } from '../../../types';
 
 export interface EditorState {
   editorSchema: EditorSchema;
@@ -19,6 +19,7 @@ export const LAYERS = [
   'buffer_stops',
   'detectors',
   'switches',
+  'errors',
 ] as const;
 export const LAYERS_SET: Set<string> = new Set(LAYERS);
 export type LayerType = typeof LAYERS[number];

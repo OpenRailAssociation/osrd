@@ -1,20 +1,5 @@
 package fr.sncf.osrd.api.stdcm.graph;
 
-import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
-import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
-
-import fr.sncf.osrd.api.stdcm.BacktrackingEnvelopeAttr;
-import fr.sncf.osrd.envelope.Envelope;
-import fr.sncf.osrd.envelope.OverlayEnvelopeBuilder;
-import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;
-import fr.sncf.osrd.envelope.part.EnvelopePartBuilder;
-import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint;
-import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint;
-import fr.sncf.osrd.envelope_sim.EnvelopeProfile;
-import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration;
-import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
-import java.util.List;
-
 /** This class contains all the methods used to backtrack in the graph.
  * We need to backtrack to remove any kind of speed discontinuity, generally because of deceleration spanning over
  * several edges.
@@ -71,7 +56,13 @@ public class BacktrackingManager {
      * The start time and any data related to delays will be updated accordingly.
      * */
     private STDCMEdge rebuildEdgeBackward(STDCMEdge old, double endSpeed) {
-        var newEnvelope = simulateBackwards(old.route(), endSpeed, old.envelopeStartOffset(), old.envelope());
+        var newEnvelope = STDCMSimulations.simulateBackwards(
+                old.route(),
+                endSpeed,
+                old.envelopeStartOffset(),
+                old.envelope(),
+                graph
+        );
         var prevNode = old.previousNode();
         return new STDCMEdgeBuilder(old.route(), graph)
                 .setStartTime(old.timeStart() - old.addedDelay())
@@ -83,37 +74,4 @@ public class BacktrackingManager {
                 .findEdgeSameNextOccupancy(old.timeNextOccupancy());
     }
 
-    /** Simulates a route that already has an envelope, but with a different end speed */
-    private Envelope simulateBackwards(
-            SignalingRoute route,
-            double endSpeed,
-            double start,
-            Envelope oldEnvelope
-    ) {
-        var context = STDCMUtils.makeSimContext(
-                List.of(route),
-                start,
-                graph.rollingStock,
-                graph.comfort,
-                graph.timeStep
-        );
-        var partBuilder = new EnvelopePartBuilder();
-        partBuilder.setAttr(EnvelopeProfile.BRAKING);
-        partBuilder.setAttr(new BacktrackingEnvelopeAttr());
-        var overlayBuilder = new ConstrainedEnvelopePartBuilder(
-                partBuilder,
-                new SpeedConstraint(0, FLOOR),
-                new EnvelopeConstraint(oldEnvelope, CEILING)
-        );
-        EnvelopeDeceleration.decelerate(
-                context,
-                oldEnvelope.getEndPos(),
-                endSpeed,
-                overlayBuilder,
-                -1
-        );
-        var builder = OverlayEnvelopeBuilder.backward(oldEnvelope);
-        builder.addPart(partBuilder.build());
-        return builder.build();
-    }
 }

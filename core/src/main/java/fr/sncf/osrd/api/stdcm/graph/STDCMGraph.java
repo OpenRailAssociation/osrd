@@ -3,6 +3,8 @@ package fr.sncf.osrd.api.stdcm.graph;
 import com.google.common.collect.Multimap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.api.stdcm.OccupancyBlock;
+import fr.sncf.osrd.envelope.Envelope;
+import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.train.RollingStock;
@@ -30,6 +32,7 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
     final AllowanceManager allowanceManager;
     final BacktrackingManager backtrackingManager;
     final String tag;
+    final AllowanceValue standardAllowance;
 
     /** Constructor */
     public STDCMGraph(
@@ -41,17 +44,37 @@ public class STDCMGraph implements Graph<STDCMNode, STDCMEdge> {
             double maxRunTime,
             double minScheduleTimeStart,
             Set<Pathfinding.EdgeLocation<SignalingRoute>> endLocations,
-            String tag
+            String tag,
+            AllowanceValue standardAllowance
     ) {
         this.infra = infra;
         this.rollingStock = rollingStock;
         this.comfort = comfort;
         this.timeStep = timeStep;
         this.endLocations = endLocations;
-        this.delayManager = new DelayManager(minScheduleTimeStart, maxRunTime, unavailableTimes);
+        this.delayManager = new DelayManager(minScheduleTimeStart, maxRunTime, unavailableTimes, this);
         this.allowanceManager = new AllowanceManager(this);
         this.backtrackingManager = new BacktrackingManager(this);
         this.tag = tag;
+        this.standardAllowance = standardAllowance;
+
+        assert !(standardAllowance instanceof AllowanceValue.FixedTime)
+                : "Standard allowance cannot be a flat time for STDCM trains";
+    }
+
+    /** Returns the speed ratio we need to apply to the envelope to follow the given standard allowance.
+     * We need to know the envelope and route in case of a "time per distance" allowance. */
+    public double getStandardAllowanceSpeedRatio(
+            Envelope envelope,
+            SignalingRoute route
+    ) {
+        if (standardAllowance == null)
+            return 1;
+
+        var runTime = envelope.getTotalTime();
+        var distance = route.getInfraRoute().getLength();
+        var allowanceRatio = standardAllowance.getAllowanceRatio(runTime, distance);
+        return 1 / (1 + allowanceRatio);
     }
 
     @Override

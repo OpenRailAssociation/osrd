@@ -13,6 +13,21 @@ paths:
           content:
             application/json:
               schema: {}
+  /version:
+    get:
+      responses:
+        200:
+          description: Return the service version
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  git_describe:
+                    type: string
+                    nullable: true
+                required:
+                  - git_describe
   /info/:
     get:
       summary: Info

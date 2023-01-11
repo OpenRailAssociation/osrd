@@ -9,7 +9,7 @@ import fr.sncf.osrd.api.stdcm.OccupancyBlock;
 import fr.sncf.osrd.api.stdcm.STDCMRequest;
 import fr.sncf.osrd.api.stdcm.STDCMResult;
 import fr.sncf.osrd.api.stdcm.UnavailableSpaceBuilder;
-import fr.sncf.osrd.api.stdcm.graph.STDCMUtils;
+import fr.sncf.osrd.api.stdcm.graph.STDCMSimulations;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra_state.api.TrainPath;
@@ -112,7 +112,7 @@ public class STDCMHelpers {
         double time = 0;
         double speed = 0;
         for (var route : routes) {
-            var envelope = STDCMUtils.simulateRoute(route, speed, 0,
+            var envelope = STDCMSimulations.simulateRoute(route, speed, 0,
                     REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, null);
             assert envelope != null;
             time += envelope.getTotalTime();
@@ -123,6 +123,15 @@ public class STDCMHelpers {
 
     /** Checks that the result don't cross in an occupied section */
     static void occupancyTest(STDCMResult res, ImmutableMultimap<SignalingRoute, OccupancyBlock> occupancyGraph) {
+        occupancyTest(res, occupancyGraph, 0);
+    }
+
+    /** Checks that the result don't cross in an occupied section, with a certain tolerance for float inaccuracies */
+    static void occupancyTest(
+            STDCMResult res,
+            ImmutableMultimap<SignalingRoute, OccupancyBlock> occupancyGraph,
+            double tolerance
+    ) {
         var routes = res.trainPath().routePath();
         for (var index = 0; index < routes.size(); index++) {
             var startRoutePosition = routes.get(index).pathOffset();
@@ -134,7 +143,9 @@ public class STDCMHelpers {
                 var exitTime = res.departureTime() + res.envelope().interpolateTotalTimeClamp(
                         startRoutePosition + occupancy.distanceEnd()
                 );
-                assertTrue(enterTime >= occupancy.timeEnd() || exitTime <= occupancy.timeStart());
+                assertTrue(
+                        enterTime + tolerance >= occupancy.timeEnd() || exitTime - tolerance <= occupancy.timeStart()
+                );
             }
         }
     }

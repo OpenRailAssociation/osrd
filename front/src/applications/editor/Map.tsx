@@ -5,6 +5,7 @@ import { withTranslation } from 'react-i18next';
 import { TFunction } from 'i18next';
 import maplibregl from 'maplibre-gl';
 import { isEmpty, isEqual } from 'lodash';
+import mapboxgl from 'mapbox-gl';
 
 import VirtualLayers from 'applications/osrd/views/OSRDSimulation/VirtualLayers';
 import colors from 'common/Map/Consts/colors';
@@ -37,7 +38,6 @@ import {
   Tool,
 } from './tools/types';
 import { getEntity } from './data/api';
-import mapboxgl from 'mapbox-gl';
 
 interface MapProps<S extends CommonToolState = CommonToolState> {
   t: TFunction;
@@ -132,7 +132,6 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
             // if we hover something
             if (nearestResult) {
               const { feature } = nearestResult;
-
               partialMapState.isHovering = true;
               if (activeTool.onHover) {
                 activeTool.onHover(
@@ -149,6 +148,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
                 feature &&
                 LAYERS_SET.has(feature.sourceLayer) &&
                 feature.properties &&
+                feature.properties.id &&
                 feature.properties.id !== toolState.hovered?.id
               ) {
                 partialToolState.hovered = {
@@ -197,22 +197,24 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
                 }
               : e;
             if (toolState.hovered && activeTool.onClickEntity) {
-              getEntity(
-                osrdConf.infraID as string,
-                toolState.hovered.id,
-                toolState.hovered.type
-              ).then((entity) => {
-                if (activeTool.onClickEntity) {
-                  // Those features lack a proper "geometry", and have a "_geometry"
-                  // instead. This fixes it:
-                  entity = {
-                    ...entity,
-                    // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/no-explicit-any
-                    geometry: entity.geometry || (entity as any)._geometry,
-                  };
-                  activeTool.onClickEntity(entity, eventWithFeature, extendedContext);
-                }
-              });
+              if (toolState.hovered.type) {
+                getEntity(
+                  osrdConf.infraID as string,
+                  toolState.hovered.id,
+                  toolState.hovered.type
+                ).then((entity) => {
+                  if (activeTool.onClickEntity) {
+                    // Those features lack a proper "geometry", and have a "_geometry"
+                    // instead. This fixes it:
+                    entity = {
+                      ...entity,
+                      // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/no-explicit-any
+                      geometry: entity.geometry || (entity as any)._geometry,
+                    };
+                    activeTool.onClickEntity(entity, eventWithFeature, extendedContext);
+                  }
+                });
+              }
             }
             if (activeTool.onClickMap) {
               activeTool.onClickMap(eventWithFeature, extendedContext);
@@ -260,6 +262,7 @@ const MapUnplugged: FC<PropsWithChildren<MapProps>> = ({
 
           {/* Tool specific layers */}
           {activeTool.layersComponent && map.current && (
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             <activeTool.layersComponent map={(map.current as any).getMap() as mapboxgl.Map} />
           )}
         </ReactMapGL>

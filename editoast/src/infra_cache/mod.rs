@@ -1,3 +1,5 @@
+mod graph;
+
 use crate::api_error::ApiError;
 use crate::infra::Infra;
 use crate::schema::operation::{OperationResult, RailjsonObject};
@@ -8,6 +10,8 @@ use diesel::PgConnection;
 use diesel::{sql_query, QueryableByName, RunQueryDsl};
 use enum_map::EnumMap;
 use std::collections::{HashMap, HashSet};
+
+pub use graph::Graph;
 
 /// Contains infra cached data used to generate layers and errors
 #[derive(Debug, Default)]
@@ -41,6 +45,12 @@ pub enum ObjectCache {
     OperationalPoint(OperationalPointCache),
     SwitchType(SwitchType),
     Catenary(Catenary),
+}
+
+impl<T: Cache> From<T> for ObjectCache {
+    fn from(cache: T) -> Self {
+        cache.get_object_cache()
+    }
 }
 
 impl OSRDIdentified for ObjectCache {
@@ -79,7 +89,7 @@ impl OSRDObject for ObjectCache {
     }
 }
 
-impl Cache for ObjectCache {
+impl ObjectCache {
     fn get_track_referenced_id(&self) -> Vec<&String> {
         match self {
             ObjectCache::TrackSection(track) => track.get_track_referenced_id(),
@@ -96,12 +106,6 @@ impl Cache for ObjectCache {
         }
     }
 
-    fn get_object_cache(&self) -> ObjectCache {
-        self.clone()
-    }
-}
-
-impl ObjectCache {
     /// Unwrap a track section from the object cache
     pub fn unwrap_track_section(&self) -> &TrackSectionCache {
         match self {
@@ -527,15 +531,13 @@ pub mod tests {
     };
     use crate::schema::utils::Identifier;
     use crate::schema::{
-        ApplicableDirections, ApplicableDirectionsTrackRange, Catenary, Direction,
-        DirectionalTrackRange, Endpoint, OSRDIdentified, OperationalPoint, OperationalPointPart,
-        Route, SpeedSection, Switch, SwitchPortConnection, SwitchType, TrackEndpoint,
-        TrackSectionLink, Waypoint,
+        ApplicableDirections, ApplicableDirectionsTrackRange, Catenary, Direction, Endpoint,
+        OSRDIdentified, OperationalPoint, OperationalPointPart, Route, SpeedSection, Switch,
+        SwitchPortConnection, SwitchType, TrackEndpoint, TrackSectionLink, Waypoint,
     };
 
     use super::{
-        BufferStopCache, DetectorCache, ObjectCache, OperationalPointCache, SignalCache,
-        TrackSectionCache,
+        BufferStopCache, DetectorCache, OperationalPointCache, SignalCache, TrackSectionCache,
     };
 
     #[test]
@@ -580,20 +582,9 @@ pub mod tests {
     #[test]
     fn load_route() {
         test_infra_transaction(|conn, infra| {
-            let route = create_route(
-                conn,
-                infra.id,
-                Route {
-                    path: vec![Default::default()],
-                    ..Default::default()
-                },
-            );
-
+            let route = create_route(conn, infra.id, Default::default());
             let infra_cache = InfraCache::load(conn, &infra).unwrap();
-
             assert!(infra_cache.routes().contains_key(route.get_id()));
-            let refs = infra_cache.track_sections_refs;
-            assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
         })
     }
 
@@ -699,54 +690,6 @@ pub mod tests {
         })
     }
 
-    impl From<TrackSectionCache> for ObjectCache {
-        fn from(track_section: TrackSectionCache) -> Self {
-            ObjectCache::TrackSection(track_section)
-        }
-    }
-
-    impl From<DetectorCache> for ObjectCache {
-        fn from(detector: DetectorCache) -> Self {
-            ObjectCache::Detector(detector)
-        }
-    }
-
-    impl From<BufferStopCache> for ObjectCache {
-        fn from(buffer_stop: BufferStopCache) -> Self {
-            ObjectCache::BufferStop(buffer_stop)
-        }
-    }
-
-    impl From<SpeedSection> for ObjectCache {
-        fn from(speed_section: SpeedSection) -> Self {
-            ObjectCache::SpeedSection(speed_section)
-        }
-    }
-
-    impl From<SignalCache> for ObjectCache {
-        fn from(signal: SignalCache) -> Self {
-            ObjectCache::Signal(signal)
-        }
-    }
-
-    impl From<SwitchType> for ObjectCache {
-        fn from(switch: SwitchType) -> Self {
-            ObjectCache::SwitchType(switch)
-        }
-    }
-
-    impl From<OperationalPointCache> for ObjectCache {
-        fn from(op: OperationalPointCache) -> Self {
-            ObjectCache::OperationalPoint(op)
-        }
-    }
-
-    impl From<Route> for ObjectCache {
-        fn from(route: Route) -> Self {
-            ObjectCache::Route(route)
-        }
-    }
-
     pub fn create_track_section_cache<T: AsRef<str>>(obj_id: T, length: f64) -> TrackSectionCache {
         TrackSectionCache {
             obj_id: obj_id.as_ref().into(),
@@ -834,25 +777,18 @@ pub mod tests {
     pub fn create_route_cache<T: AsRef<str>>(
         id: T,
         entry_point: Waypoint,
+        entry_point_direction: Direction,
         exit_point: Waypoint,
         release_detectors: Vec<Identifier>,
-        path_list: Vec<(T, f64, f64, Direction)>,
+        switches_directions: HashMap<Identifier, Identifier>,
     ) -> Route {
-        let mut path = vec![];
-        for (obj_id, begin, end, direction) in path_list {
-            path.push(DirectionalTrackRange {
-                track: obj_id.as_ref().into(),
-                begin,
-                end,
-                direction,
-            });
-        }
         Route {
             id: id.as_ref().into(),
             entry_point,
+            entry_point_direction,
             exit_point,
             release_detectors,
-            path,
+            switches_directions,
         }
     }
 
@@ -927,38 +863,29 @@ pub mod tests {
         infra_cache.add(create_buffer_stop_cache("BF2", "C", 480.));
         infra_cache.add(create_buffer_stop_cache("BF3", "D", 480.));
 
-        let r1_path = vec![
-            ("A", 20., 500., Direction::StartToStop),
-            ("B", 0., 250., Direction::StartToStop),
-        ];
         infra_cache.add(create_route_cache(
             "R1",
             Waypoint::new_buffer_stop("BF1"),
+            Direction::StartToStop,
             Waypoint::new_detector("D1"),
             vec![],
-            r1_path,
+            Default::default(),
         ));
-        let r2_path = vec![
-            ("B", 250., 500., Direction::StartToStop),
-            ("C", 0., 480., Direction::StartToStop),
-        ];
         infra_cache.add(create_route_cache(
             "R2",
             Waypoint::new_detector("D1"),
+            Direction::StartToStop,
             Waypoint::new_buffer_stop("BF2"),
             vec![],
-            r2_path,
+            [("switch".into(), "LEFT".into())].into(),
         ));
-        let r3_path = vec![
-            ("B", 250., 500., Direction::StartToStop),
-            ("D", 0., 480., Direction::StartToStop),
-        ];
         infra_cache.add(create_route_cache(
             "R3",
             Waypoint::new_detector("D1"),
+            Direction::StartToStop,
             Waypoint::new_buffer_stop("BF3"),
             vec![],
-            r3_path,
+            [("switch".into(), "RIGHT".into())].into(),
         ));
 
         let link = create_track_link_cache(

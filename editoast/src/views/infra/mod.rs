@@ -2,50 +2,49 @@ mod edition;
 mod errors;
 mod objects;
 mod railjson;
+mod routes;
 
 use std::sync::Arc;
 
 use super::params::List;
-use crate::api_error::{ApiError, ApiResult};
+use crate::api_error::ApiResult;
 use crate::chartos;
 use crate::client::ChartosConfig;
 use crate::db_connection::DBConnection;
 use crate::infra::{Infra, InfraName};
 use crate::infra_cache::{InfraCache, ObjectCache};
-use crate::schema::operation::{Operation, OperationResult};
-use crate::schema::InfraErrorType;
 use crate::schema::SwitchType;
 use chashmap::CHashMap;
 use diesel::sql_types::{Double, Integer, Text};
 use diesel::{sql_query, QueryableByName, RunQueryDsl};
-use errors::{get_paginated_infra_errors, Level};
-use objects::get_objects;
-use railjson::{get_railjson, post_railjson};
 use rocket::http::Status;
 use rocket::response::status::Custom;
 use rocket::serde::json::{json, Error as JsonError, Json, Value as JsonValue};
 use rocket::{routes, Route, State};
 use serde::{Deserialize, Serialize};
-use strum::VariantNames;
 
-use thiserror::Error;
-
-#[derive(Debug, Error)]
-enum ListErrorsErrors {
-    #[error("Wrong Error type provided")]
-    WrongErrorTypeProvided,
-}
-
-impl ApiError for ListErrorsErrors {
-    fn get_status(&self) -> Status {
-        Status::BadRequest
-    }
-
-    fn get_type(&self) -> &'static str {
-        match self {
-            ListErrorsErrors::WrongErrorTypeProvided => "editoast:infra:WrongErrorTypeProvided",
-        }
-    }
+/// Return the endpoints routes of this module
+pub fn routes() -> Vec<Route> {
+    routes![
+        list,
+        get,
+        create,
+        delete,
+        refresh,
+        get_switch_types,
+        get_speed_limit_tags,
+        get_voltages,
+        rename,
+        lock,
+        unlock,
+    ]
+    .into_iter()
+    .chain(edition::routes())
+    .chain(errors::routes())
+    .chain(objects::routes())
+    .chain(railjson::routes())
+    .chain(routes::routes())
+    .collect()
 }
 
 #[derive(QueryableByName, Debug, Clone, Serialize, Deserialize)]
@@ -58,27 +57,6 @@ struct SpeedLimitTags {
 struct Voltage {
     #[sql_type = "Double"]
     voltage: f64,
-}
-
-pub fn routes() -> Vec<Route> {
-    routes![
-        list,
-        get,
-        edit,
-        create,
-        delete,
-        get_railjson,
-        post_railjson,
-        refresh,
-        list_errors,
-        get_switch_types,
-        get_speed_limit_tags,
-        get_voltages,
-        get_objects,
-        rename,
-        lock,
-        unlock
-    ]
 }
 
 /// Refresh infra generated data
@@ -187,75 +165,6 @@ async fn rename(
     .await
 }
 
-/// CRUD for edit an infrastructure. Takes a batch of operations.
-#[post("/<infra>", data = "<operations>")]
-async fn edit<'a>(
-    infra: i32,
-    operations: Result<Json<Vec<Operation>>, JsonError<'a>>,
-    infra_caches: &State<Arc<CHashMap<i32, InfraCache>>>,
-    chartos_config: &State<ChartosConfig>,
-    conn: DBConnection,
-) -> ApiResult<Json<Vec<OperationResult>>> {
-    let operations = operations?;
-    let infra_caches = infra_caches.inner().clone();
-
-    let (operation_results, invalid_zone) = conn
-        .run::<_, ApiResult<_>>(move |conn| {
-            let infra = Infra::retrieve_for_update(conn, infra)?;
-            let mut infra_cache = InfraCache::get_or_load_mut(conn, &infra_caches, &infra).unwrap();
-            edition::edit(conn, &infra, &operations, &mut infra_cache)
-        })
-        .await?;
-
-    chartos::invalidate_zone(infra, chartos_config, &invalid_zone).await;
-
-    Ok(Json(operation_results))
-}
-
-/// Check if the query parameter error_type exist
-fn check_error_type_query(param: &String) -> bool {
-    InfraErrorType::VARIANTS
-        .iter()
-        .any(|x| &x.to_string() == param)
-}
-
-/// Return the list of errors of an infra
-#[get("/<infra>/errors?<page>&<page_size>&<error_type>&<object_id>&<level>")]
-async fn list_errors(
-    infra: i32,
-    page: Option<i64>,
-    page_size: Option<i64>,
-    level: Option<Level>,
-    error_type: Option<String>,
-    object_id: Option<String>,
-    conn: DBConnection,
-) -> ApiResult<Custom<JsonValue>> {
-    if let Some(error_type) = &error_type {
-        if !check_error_type_query(error_type) {
-            return Err(ListErrorsErrors::WrongErrorTypeProvided.into());
-        }
-    }
-    let page = page.unwrap_or_default().max(1);
-    let per_page = page_size.unwrap_or(25).max(10);
-    let level = level.unwrap_or_default();
-    let (infra_errors, count) = conn
-        .run(move |conn| {
-            get_paginated_infra_errors(conn, infra, page, per_page, level, error_type, object_id)
-        })
-        .await?;
-    let previous = if page == 1 { None } else { Some(page - 1) };
-    let max_page = (count as f64 / per_page as f64).ceil() as i64;
-    let next = if page >= max_page {
-        None
-    } else {
-        Some(page + 1)
-    };
-    Ok(Custom(
-        Status::Ok,
-        json!({ "count": count, "previous": previous, "next": next, "results": infra_errors }),
-    ))
-}
-
 /// Return the railjson list of switch types
 #[get("/<infra>/switch_types")]
 async fn get_switch_types(
@@ -355,8 +264,6 @@ mod tests {
     use crate::views::tests::create_test_client;
     use rocket::http::{ContentType, Status};
     use serde::Deserialize;
-
-    use super::check_error_type_query;
 
     #[test]
     fn infra_list() {
@@ -609,35 +516,6 @@ mod tests {
 
         let delete_infra = client.delete(format!("/infra/{}", infra.id)).dispatch();
         assert_eq!(delete_infra.status(), Status::NoContent);
-    }
-
-    #[test]
-    fn check_error_type() {
-        let error_type = "invalid_reference".to_string();
-        assert!(check_error_type_query(&error_type));
-    }
-
-    #[test]
-    fn list_errors_get() {
-        let client = create_test_client();
-        let create_infra = client
-            .post("/infra")
-            .header(ContentType::JSON)
-            .body(r#"{"name":"get_list_errors"}"#)
-            .dispatch();
-        assert_eq!(create_infra.status(), Status::Created);
-        let body_infra = create_infra.into_string();
-        let infra: Infra = serde_json::from_str(body_infra.unwrap().as_str()).unwrap();
-        let error_type = "overlapping_track_links";
-        let level = "warnings";
-
-        let list_errors_query = client
-            .get(format!(
-                "/infra/{}/errors?&error_type={}&level={}",
-                infra.id, error_type, level
-            ))
-            .dispatch();
-        assert_eq!(list_errors_query.status(), Status::Ok);
     }
 
     #[test]

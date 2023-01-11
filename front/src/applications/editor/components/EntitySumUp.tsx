@@ -47,12 +47,18 @@ async function getAdditionalEntities(
     case 'BufferStop':
     case 'Detector': {
       const trackId = (entity as SignalEntity).properties.track;
-      if (trackId) return { [trackId]: await getEntity(infra, trackId, 'TrackSection') };
+      if (trackId) {
+        try {
+          return { [trackId]: await getEntity(infra, trackId, 'TrackSection') };
+        } catch (e) {
+          return {};
+        }
+      }
       return {};
     }
     case 'Switch': {
       const trackIDs = map((entity as SwitchEntity).properties.ports, (port) => port.track);
-      return await getEntities<TrackSectionEntity>(infra, trackIDs, 'TrackSection');
+      return getEntities<TrackSectionEntity>(infra, trackIDs, 'TrackSection');
     }
     default:
       return {};
@@ -70,7 +76,6 @@ function getSumUpContent(
   let text = '';
   const subtexts: (string | JSX.Element)[] = [];
   const classes = { ...DEFAULT_CLASSES, ...(classesOverride || {}) };
-
   switch (entity.objType) {
     case 'TrackSection': {
       const trackSection = entity as TrackSectionEntity;

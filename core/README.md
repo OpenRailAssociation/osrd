@@ -44,7 +44,7 @@ You'll need:
 gradlew.bat processTestResources shadowJar
 
 # Run as service
-java -jar build/libs/osrd-all.jar api --url http://localhost:8000/ -p 8080
+java -jar build/libs/osrd-all.jar api --url http://localhost:8090/ -p 8080
 
 # Check that an infra can be loaded
 java -jar build/libs/osrd-all.jar load-infra --path RAILJSON_INFRA

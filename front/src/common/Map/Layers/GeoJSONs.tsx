@@ -20,6 +20,12 @@ import { lineNameLayer, lineNumberLayer, trackNameLayer } from './commonLayers';
 import { getBufferStopsLayerProps } from './BufferStops';
 import { getDetectorsLayerProps, getDetectorsNameLayerProps } from './Detectors';
 import { getSwitchesLayerProps, getSwitchesNameLayerProps } from './Switches';
+import {
+  getLineErrorsLayerProps,
+  getPointErrorsLayerProps,
+  getLineTextErrorsLayerProps,
+  getPointTextErrorsLayerProps,
+} from './Errors';
 import { LayerType, OSRDConf } from '../../../applications/editor/tools/types';
 import { ALL_SIGNAL_LAYERS, SYMBOLS_TO_LAYERS } from '../Consts/SignalsNames';
 import { MAP_TRACK_SOURCE, MAP_URL } from '../const';
@@ -121,6 +127,7 @@ function getTrackSectionLayers(context: LayerContext, prefix: string): AnyLayer[
     },
   ];
 }
+
 function getSignalLayers(context: LayerContext, prefix: string): AnyLayer[] {
   return [
     { ...getSignalMatLayerProps(context), id: `${prefix}geo/signal-mat` },
@@ -178,6 +185,29 @@ function getSwitchesLayers(context: LayerContext, prefix: string): AnyLayer[] {
   ];
 }
 
+function getErrorsLayers(context: LayerContext, prefix: string): AnyLayer[] {
+  return [
+    {
+      ...getLineErrorsLayerProps(context),
+      id: `${prefix}geo/errors-line`,
+    },
+    {
+      ...getLineTextErrorsLayerProps(context),
+      id: `${prefix}geo/errors-line-label`,
+      minzoom: POINT_ENTITIES_MIN_ZOOM,
+    },
+    {
+      ...getPointErrorsLayerProps(context),
+      id: `${prefix}geo/errors-point`,
+    },
+    {
+      ...getPointTextErrorsLayerProps(context),
+      id: `${prefix}geo/errors-point-label`,
+      minzoom: POINT_ENTITIES_MIN_ZOOM,
+    },
+  ];
+}
+
 const SOURCES_DEFINITION: {
   entityType: LayerType;
   getLayers: (context: LayerContext, prefix: string) => AnyLayer[];
@@ -187,6 +217,7 @@ const SOURCES_DEFINITION: {
   { entityType: 'buffer_stops', getLayers: getBufferStopsLayers },
   { entityType: 'detectors', getLayers: getDetectorsLayers },
   { entityType: 'switches', getLayers: getSwitchesLayers },
+  { entityType: 'errors', getLayers: getErrorsLayers },
 ];
 
 export const SourcesDefinitionsIndex = mapValues(

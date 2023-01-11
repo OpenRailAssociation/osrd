@@ -16,6 +16,11 @@ use rocket::serde::json::{json, Error as JsonError, Json, Value as JsonValue};
 use rocket::State;
 use thiserror::Error;
 
+/// Return the endpoints routes of this module
+pub fn routes() -> Vec<rocket::Route> {
+    routes![get_railjson, post_railjson]
+}
+
 #[derive(QueryableByName)]
 struct RailJsonData {
     #[sql_type = "Text"]
@@ -48,19 +53,15 @@ pub async fn get_railjson(
     exclude_extensions: bool,
     conn: DBConnection,
 ) -> ApiResult<Custom<String>> {
-    if exclude_extensions {
-        let query = include_str!("sql/get_infra_no_ext.sql");
-        let railjson: RailJsonData = conn
-            .run(move |conn| sql_query(query).bind::<Integer, _>(infra).get_result(conn))
-            .await?;
-        Ok(Custom(Status::Ok, railjson.railjson))
+    let query = if exclude_extensions {
+        include_str!("sql/get_infra_no_ext.sql")
     } else {
-        let query = include_str!("sql/get_infra_with_ext.sql");
-        let railjson: RailJsonData = conn
-            .run(move |conn| sql_query(query).bind::<Integer, _>(infra).get_result(conn))
-            .await?;
-        Ok(Custom(Status::Ok, railjson.railjson))
-    }
+        include_str!("sql/get_infra_with_ext.sql")
+    };
+    let railjson: RailJsonData = conn
+        .run(move |conn| sql_query(query).bind::<Integer, _>(infra).get_result(conn))
+        .await?;
+    Ok(Custom(Status::Ok, railjson.railjson))
 }
 
 /// Import an infra

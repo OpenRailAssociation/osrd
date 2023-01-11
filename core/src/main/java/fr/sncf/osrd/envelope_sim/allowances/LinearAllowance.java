@@ -37,25 +37,32 @@ public class LinearAllowance extends AbstractAllowanceWithRanges {
     @Override
     protected Envelope computeCore(Envelope coreBase, double maxSpeed) {
         var ratio = maxSpeed / coreBase.getMaxSpeed();
+        return scaleEnvelope(coreBase, ratio);
+    }
+
+    /** Scale an envelope, new speed = old speed * ratio */
+    public static Envelope scaleEnvelope(Envelope envelope, double ratio) {
         var builder = new EnvelopeBuilder();
-        for (var i = 0; i < coreBase.size(); i++) {
-            var part = coreBase.get(i);
-            var positions = part.clonePositions();
-            var speeds = part.cloneSpeeds();
-            var scaledSpeeds = Arrays.stream(speeds)
-                    .map(x -> x * ratio)
-                    .toArray();
-            var attr = part.getAttr(EnvelopeProfile.class);
-            var attrs = List.<EnvelopeAttr>of();
-            if (attr != null)
-                attrs = List.of(attr);
-            var scaledPart = EnvelopePart.generateTimes(
-                    attrs,
-                    positions,
-                    scaledSpeeds
-            );
-            builder.addPart(scaledPart);
-        }
+        for (var part : envelope)
+            builder.addPart(scalePart(part, ratio));
         return builder.build();
+    }
+
+    /** Scale a single part, new speed = old speed * ratio */
+    private static EnvelopePart scalePart(EnvelopePart part, double ratio) {
+        var positions = part.clonePositions();
+        var speeds = part.cloneSpeeds();
+        var scaledSpeeds = Arrays.stream(speeds)
+                .map(x -> x * ratio)
+                .toArray();
+        var attr = part.getAttr(EnvelopeProfile.class);
+        var attrs = List.<EnvelopeAttr>of();
+        if (attr != null)
+            attrs = List.of(attr);
+        return EnvelopePart.generateTimes(
+                attrs,
+                positions,
+                scaledSpeeds
+        );
     }
 }

@@ -19,7 +19,7 @@ public class EnvelopePhysics {
 
     /** Given a constant acceleration, a last known speed and a position offset, compute the new speed */
     public static double interpolateStepSpeed(double acceleration, double lastSpeed, double positionDelta) {
-        return Math.sqrt(lastSpeed * lastSpeed + 2 * acceleration * positionDelta);
+        return Math.sqrt(Math.max(0, lastSpeed * lastSpeed + 2 * acceleration * positionDelta));
     }
 
     /** Compute the speed at offset positionDelta inside a given step */

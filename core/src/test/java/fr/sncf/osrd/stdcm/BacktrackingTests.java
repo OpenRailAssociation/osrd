@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableMultimap;
 import fr.sncf.osrd.api.stdcm.OccupancyBlock;
-import fr.sncf.osrd.api.stdcm.graph.STDCMUtils;
+import fr.sncf.osrd.api.stdcm.graph.STDCMSimulations;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.utils.graph.Pathfinding;
 import org.junit.jupiter.api.Test;
@@ -24,7 +24,7 @@ public class BacktrackingTests {
          */
         var infraBuilder = new DummyRouteGraphBuilder();
         var route = infraBuilder.addRoute("a", "b", 1000);
-        var firstRouteEnvelope = STDCMUtils.simulateRoute(route, 0, 0,
+        var firstRouteEnvelope = STDCMSimulations.simulateRoute(route, 0, 0,
                 REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, null);
         assert firstRouteEnvelope != null;
         var runTime = firstRouteEnvelope.getTotalTime();
@@ -54,7 +54,7 @@ public class BacktrackingTests {
         infraBuilder.addRoute("b", "c", 10);
         infraBuilder.addRoute("c", "d", 10);
         var lastRoute = infraBuilder.addRoute("d", "e", 10);
-        var firstRouteEnvelope = STDCMUtils.simulateRoute(firstRoute, 0, 0,
+        var firstRouteEnvelope = STDCMSimulations.simulateRoute(firstRoute, 0, 0,
                 REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, null);
         assert firstRouteEnvelope != null;
         var runTime = firstRouteEnvelope.getTotalTime();
@@ -82,7 +82,7 @@ public class BacktrackingTests {
         var infraBuilder = new DummyRouteGraphBuilder();
         var firstRoute = infraBuilder.addRoute("a", "b", 1000);
         var secondRoute = infraBuilder.addRoute("b", "c", 100, 5);
-        var firstRouteEnvelope = STDCMUtils.simulateRoute(firstRoute, 0, 0,
+        var firstRouteEnvelope = STDCMSimulations.simulateRoute(firstRoute, 0, 0,
                 REALISTIC_FAST_TRAIN, RollingStock.Comfort.STANDARD, 2., new double[]{}, null);
         assert firstRouteEnvelope != null;
         var runTime = firstRouteEnvelope.getTotalTime();
