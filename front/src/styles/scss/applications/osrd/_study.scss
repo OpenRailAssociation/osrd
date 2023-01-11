@@ -1,47 +1,52 @@
-.study-project-details {
-  display: flex;
-  align-items: center;
-  border-radius: 4px;
-  .study-project-details-img {
-    overflow: hidden;
-    border-radius: 4px 0 0 4px;
-    height: 4rem;
-    img {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--coolgray7);
-      width: 5rem;
-      height: 4rem;
-      object-fit: cover;
-    }
-  }
-  .study-project-details-name {
-    flex-grow: 1;
-    height: 4rem;
-    font-size: 1.5rem;
-    padding: 0 .5rem;
-    line-height: 4rem;
-    color: var(--white);
-    background-color: var(--purple);
-    border-radius: 0 4px 4px 0;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    @media screen and (max-width: 1024px) {
-      font-size: 1.25rem;
-    }
-  }
-}
-
 .study-details {
   position: relative;
   margin-bottom: 1rem;
+  .study-details-dates {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: .25rem;
+    margin-bottom: .5rem;
+    .study-details-dates-date {
+      text-align: center;
+      flex-grow: 1;
+      padding: 0 .5rem;
+      margin-bottom: .25rem;
+      text-transform: uppercase;
+      font-weight: 500;
+      color: var(--secondary);
+      border-bottom: 2px solid var(--coolgray9);
+      .study-details-dates-date-label {
+        align-items: center;
+        font-size: .7rem;
+        font-weight: normal;
+        text-align: right;
+        margin-right: .5rem;
+      }
+      .study-details-dates-date-value {
+        align-items: center;
+        font-size: .8rem;
+        text-align: left;
+      }
+      &.creation {
+        border-color: var(--coolgray3);
+      }
+      &.start {
+        border-color: var(--green);
+      }
+      &.estimatedend {
+        border-color: var(--yellow);
+      }
+      &.realend {
+        border-color: var(--orange);
+      }
+    }
+    height: calc(100% - 1rem);
+  }
   .study-details-name {
     display: flex;
-    font-size: 1.5rem;
+    font-size: 2rem;
     font-weight: 500;
-    padding: 1rem 0 0;
     color: var(--primary);
   }
   .study-details-type {
@@ -50,31 +55,117 @@
     font-weight: 500;
   }
   .study-details-description {
-    margin-bottom: 1rem;
+    margin-bottom: .5rem;
   }
-  .study-details-dates {
-    margin-top: 1rem;
+  .study-details-state {
+    padding: 5rem 0 1rem;
+    overflow: auto;
+    white-space: nowrap;
+    .study-details-state-step {
+      display: inline-block;
+      position: relative;
+      &:not(:first-child) {
+        margin-left: 3rem;
+        &::before {
+          position: absolute;
+          top: .6rem;
+          right: 1.5rem;
+          display: inline-block;
+          content: ' ';
+          width: 3rem;
+          height: .3rem;
+          background-color: var(--coolgray3);
+        }
+      }
+      .study-details-state-step-number {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        background-color: var(--coolgray3);
+        color: var(--secondary);
+        border-radius: 1rem;
+        width: 1.5rem;
+        height: 1.5rem;
+      }
+      .study-details-state-step-label {
+        position: absolute;
+        white-space: normal;
+        text-align: left;
+        width: 8rem;
+        top: -1.25rem;
+        left: .5rem;
+        font-size: .8rem;
+        transform: rotate(-30deg);
+        transform-origin: left;
+        padding-left: 1.5em;
+        text-indent:-1.5em;
+        color: var(--coolgray7);
+      }
+      &.done {      
+        .study-details-state-step-number {
+          background-color: var(--coolgray11);
+          color: var(--coolgray1);
+        }
+        &:not(:first-child)::before {
+          background-color: var(--coolgray11);
+        }
+        .study-details-state-step-label {
+          font-weight: 500;
+          color: var(--secondary);
+        }
+      }
+    }
+  }
+  .study-details-files {
+    border: 2px solid var(--primary);
     border-radius: 4px;
-    background-color: var(--white);
-    padding: .25rem;
-    .study-details-main-dates-date {
+    margin-bottom: .25rem;
+    .study-details-files-title {
       display: flex;
       align-items: center;
-      padding: 0 .5rem;
-      font-size: .7rem;
-      text-transform: uppercase;
-      text-align: right;
       font-weight: 500;
-      color: var(--coolgray9);
+      padding: .25rem .5rem;
+      color: var(--white);
+      background-color: var(--primary);
     }
-    height: calc(100% - 1rem);
+    .study-details-files-list {
+      display: flex;
+      flex-direction: column;
+      overflow: auto;
+      height: 12rem;
+      a {
+        display: flex;
+        flex-direction: column;
+        padding: .25rem .5rem;
+        transition: .2s;
+        &.url {
+          color: var(--cyan);
+          &:hover {
+            background-color: var(--cyan);
+          }
+        }
+        &:hover {
+          background-color: var(--primary);
+          color: var(--white);
+        }
+        .study-details-files-list-name {
+          display: flex;
+          align-items: center;
+          font-weight: 500;
+        }
+        .study-details-files-list-link {
+          font-size: .8rem;
+          margin-left: 1.5rem;
+        }
+      }
+    }
   }
   .study-details-financials {
     display: flex;
     align-items: center;
     background-color: var(--primary);
     padding: .5rem;
-    margin: .5rem 0 0;
     border-radius: 4px;
     .study-details-financials-infos {
       display: flex;
@@ -153,8 +244,8 @@
     align-items: center;
     color: var(--coolgray1);
     background-color: var(--secondary);
-    padding: .5rem;
-    font-size: 1.25rem;
+    padding: .25rem .5rem;
+    font-size: 1.1rem;
   }
   .scenarios-list-card-description {
     padding: .5rem;
@@ -163,12 +254,23 @@
     overflow: auto;
   }
   .scenarios-list-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    .scenarios-list-card-infra {
+      padding: .25rem .5rem;
+      font-size: .8rem;
+      img {
+        height: 1rem;
+        margin-right: .5rem;
+      }
+    }
     .scenarios-list-card-date {
       color: var(--coolgray9);
-      font-size: .7rem;
+      font-size: .6rem;
       text-transform: uppercase;
       text-align: right;
-      padding: .25rem;
+      padding: .25rem .5rem;
     }
   }
 }
