@@ -13,6 +13,8 @@ import Loader from 'common/Loader';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { BiTargetLock } from 'react-icons/bi';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 function BreadCrumbs(props) {
   const { t } = useTranslation('osrd/project');
@@ -88,7 +90,9 @@ export default function Project() {
                             {t('objectives')}
                           </h3>
                           <div className="project-details-title-objectives">
-                            {projectDetails.objectives}
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                              {projectDetails.objectives}
+                            </ReactMarkdown>
                           </div>
                         </div>
                       </div>
