@@ -238,14 +238,30 @@
   border-radius: 4px;
   background-color: var(--white);
   margin-bottom: 1rem;
-  border: 2px solid var(--secondary);
+  border: 2px solid var(--coolgray3);
+  &:hover, &:focus, &:active {
+    border-color: var(--coolgray11);
+    .scenarios-list-card-name {
+      color: var(--coolgray3);
+      background-color: var(--coolgray11);
+    }
+    button {
+      opacity: 1 !important;
+    }
+  }
+  button {
+    transition: opacity .4s;
+    opacity: 0;
+    margin-left: auto;
+  }
   .scenarios-list-card-name {
     display: flex;
     align-items: center;
-    color: var(--coolgray1);
-    background-color: var(--secondary);
-    padding: .25rem .5rem;
+    color: var(--coolgray11);
+    background-color: var(--coolgray3);
+    padding: .25rem .25rem .25rem .5rem;
     font-size: 1.1rem;
+    transition: .4s;
   }
   .scenarios-list-card-description {
     padding: .5rem;

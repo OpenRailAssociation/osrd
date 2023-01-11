@@ -141,3 +141,16 @@ export function scenariosListJSON(nb = NB_SCENARIOS) {
   }
   return json;
 }
+
+export function scenarioJSON() {
+  const json = {
+    id: faker.datatype.uuid(),
+    name: faker.lorem.sentence(4).replace('.', ''),
+    description: faker.lorem.paragraphs(1),
+    infra_id: faker.datatype.uuid(),
+    infra_name: faker.lorem.words(),
+    creationDate: faker.date.past(2),
+    lastModifiedDate: faker.date.recent(10),
+  };
+  return json;
+}

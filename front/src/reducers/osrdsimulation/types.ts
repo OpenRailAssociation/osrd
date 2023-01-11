@@ -158,7 +158,6 @@ export interface OsrdSimulationState {
     maxSpeed: boolean;
     slopes: boolean;
   };
-  stickyBar: boolean;
   signalBase: typeof SIGNAL_BASE_DEFAULT;
   timePosition: TimeString;
   consolidatedSimulation: SimulationTrain[];

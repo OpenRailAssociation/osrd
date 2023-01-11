@@ -6,7 +6,6 @@ import {
   updateSelectedProjection,
   updateSelectedTrain,
   updateSimulation,
-  updateStickyBar,
 } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -33,7 +32,6 @@ function CustomGET() {
   const [initialHeightOfSpaceTimeChart, setInitialHeightOfSpaceTimeChart] =
     useState(heightOfSpaceTimeChart);
 
-  const { stickyBar } = useSelector((state) => state.osrdsimulation);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
 
@@ -122,27 +120,14 @@ function CustomGET() {
           </div>
         </div>
       )}
-      {stickyBar ? (
-        <div className="osrd-simulation-sticky-bar">
-          <div className="row">
-            <div className="col-lg-4">
-              <TimeButtons />
-            </div>
-            <div className="col-lg-8">{simulation.trains.length > 0 ? <TrainDetails /> : null}</div>
+      <div className="osrd-simulation-sticky-bar">
+        <div className="row">
+          <div className="col-lg-4">
+            <TimeButtons />
           </div>
+          <div className="col-lg-8">{simulation.trains.length > 0 ? <TrainDetails /> : null}</div>
         </div>
-      ) : (
-        <div className="osrd-simulation-sticky-bar-mini">
-          <button
-            className="btn btn-sm btn-only-icon btn-primary ml-auto mr-1"
-            type="button"
-            onClick={() => dispatch(updateStickyBar(true))}
-          >
-            <i className="icons-arrow-prev" />
-          </button>
-          <TimeButtons />
-        </div>
-      )}
+      </div>
       <UploadFileModal />
     </main>
   );
