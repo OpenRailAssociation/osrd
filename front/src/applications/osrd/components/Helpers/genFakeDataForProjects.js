@@ -14,24 +14,19 @@ function chooseRandomIMG() {
 }
 
 function genMarkdown() {
-  return `# Un titre
+  return `## ${faker.lorem.sentence().replace('.', '')}
   
-  A paragraph with *emphasis* and **strong importance**.
+  ${faker.lorem.sentence()}
+  
+  * ${faker.lorem.words()} ${faker.internet.url()}
+  * ${faker.lorem.words()}
+  * ${faker.lorem.word()} **${faker.lorem.word()}** ${faker.lorem.word()}
+  * ${faker.lorem.words()} *${faker.lorem.words()}*
+  
+  > ${faker.lorem.sentence()}
 
-  > A block quote with ~strikethrough~ and a URL: https://reactjs.org.
-  
-  * Lists
-  * [ ] todo
-  * [x] done
-  
-  # Un autre titre
-
-  ## Un sous titre
-
-  A table:
-  
-  | a | b |
-  | - | - |`;
+  ## ${faker.lorem.sentence().replace('.', '')}
+`;
 }
 
 const NB_PROJECTS = 10;
