@@ -253,6 +253,7 @@ function OSRDSimulation() {
                     width: '100%',
                     height: `${heightOfSpaceTimeChart}px`,
                   }}
+                  minHeight={150}
                   disableDragging
                   enableResizing={{
                     bottom: true,
@@ -284,6 +285,7 @@ function OSRDSimulation() {
                     width: '100%',
                     height: `${heightOfSpeedSpaceChart}px`,
                   }}
+                  minHeight={150}
                   disableDragging
                   enableResizing={{
                     bottom: true,
