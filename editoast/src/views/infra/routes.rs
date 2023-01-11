@@ -1,24 +1,34 @@
+use std::sync::Arc;
+
 use crate::api_error::{ApiError, ApiResult};
 use crate::db_connection::DBConnection;
+use crate::infra::Infra;
+use crate::infra_cache::{Graph, InfraCache};
+use crate::schema::ApplicableDirectionsTrackRange;
+use crate::views::params::List;
+use chashmap::CHashMap;
 use diesel::sql_types::{Bool, Integer, Text};
 use diesel::{sql_query, RunQueryDsl};
-use rocket::serde::json::json;
 use rocket::serde::json::Value as JsonValue;
+use rocket::serde::json::{json, Json};
+use rocket::State;
 use rocket::{http::Status, response::status::Custom};
+
+use serde::Serialize;
 use thiserror::Error;
 
 /// Return the endpoints routes of this module
 pub fn routes() -> Vec<rocket::Route> {
-    routes![get_routes_from_waypoint]
+    routes![get_routes_from_waypoint, get_routes_track_ranges]
 }
 
 #[derive(Debug, Error)]
-enum GetRouteFromWaypointErrors {
+enum RouteViewErrors {
     #[error("Wrong waypoint type provided '{0}'. Expected 'Detector' or 'BufferStop'")]
     WrongWaypointType(String),
 }
 
-impl ApiError for GetRouteFromWaypointErrors {
+impl ApiError for RouteViewErrors {
     fn get_status(&self) -> Status {
         Status::BadRequest
     }
@@ -47,7 +57,7 @@ async fn get_routes_from_waypoint(
     conn: DBConnection,
 ) -> ApiResult<Custom<JsonValue>> {
     if waypoint_type != "Detector" && waypoint_type != "BufferStop" {
-        return Err(GetRouteFromWaypointErrors::WrongWaypointType(waypoint_type).into());
+        return Err(RouteViewErrors::WrongWaypointType(waypoint_type).into());
     }
     let routes: Vec<RouteFromWaypointResult> = conn
         .run(move |conn| {
@@ -74,4 +84,48 @@ async fn get_routes_from_waypoint(
         Status::Ok,
         json!({"starting": starting_routes, "ending": ending_routes}),
     ))
+}
+
+#[derive(Debug, Clone, Serialize, PartialEq)]
+#[serde(deny_unknown_fields, tag = "type", content = "track_ranges")]
+enum RouteTrackRangesResult {
+    Computed(Vec<ApplicableDirectionsTrackRange>),
+    NotFound,
+    CantComputePath,
+}
+
+#[get("/<infra>/routes/track_ranges?<routes>")]
+async fn get_routes_track_ranges<'a>(
+    infra: i32,
+    routes: List<'a, String>,
+    infra_caches: &State<Arc<CHashMap<i32, InfraCache>>>,
+    conn: DBConnection,
+) -> ApiResult<Custom<Json<Vec<RouteTrackRangesResult>>>> {
+    let infra_caches = infra_caches.inner().clone();
+    let result = conn
+        .run::<_, ApiResult<_>>(move |conn| {
+            let infra = Infra::retrieve(conn, infra)?;
+            let infra_cache = InfraCache::get_or_load(conn, &infra_caches, &infra)?;
+            let graph = Graph::load(&infra_cache);
+            let routes_cache = infra_cache.routes();
+            Ok(routes
+                .0
+                .iter()
+                .map(|route| {
+                    if let Some(route) = routes_cache.get(route) {
+                        let route = route.unwrap_route();
+                        let route_path = route.compute_track_ranges(&infra_cache, &graph);
+                        if let Some(route_path) = route_path {
+                            RouteTrackRangesResult::Computed(route_path.track_ranges)
+                        } else {
+                            RouteTrackRangesResult::CantComputePath
+                        }
+                    } else {
+                        RouteTrackRangesResult::NotFound
+                    }
+                })
+                .collect::<Vec<_>>())
+        })
+        .await?;
+    Ok(Custom(Status::Ok, result.into()))
 }

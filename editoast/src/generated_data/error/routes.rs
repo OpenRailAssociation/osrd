@@ -2,10 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use crate::generated_data::error::ObjectErrorGenerator;
 use crate::infra_cache::{Graph, InfraCache, ObjectCache};
-use crate::schema::{
-    Direction, Endpoint, InfraError, OSRDIdentified, OSRDObject, ObjectRef, ObjectType,
-    TrackEndpoint, Waypoint,
-};
+use crate::schema::{InfraError, OSRDIdentified, OSRDObject, ObjectRef, ObjectType, Waypoint};
 
 use super::GlobalErrorGenerator;
 
@@ -33,22 +30,6 @@ fn is_waypoint_ref_valid(waypoint: &Waypoint, infra_cache: &InfraCache) -> bool 
         infra_cache.detectors().contains_key(waypoint.get_id())
     } else {
         infra_cache.buffer_stops().contains_key(waypoint.get_id())
-    }
-}
-
-/// Return the track and position of a waypoint
-fn get_waypoint_location<'a>(
-    waypoint: &Waypoint,
-    infra_cache: &'a InfraCache,
-) -> (&'a String, f64) {
-    if waypoint.is_detector() {
-        let detector = infra_cache.detectors().get(waypoint.get_id()).unwrap();
-        let detector = detector.unwrap_detector();
-        (&detector.track, detector.position)
-    } else {
-        let bs = infra_cache.buffer_stops().get(waypoint.get_id()).unwrap();
-        let bs = bs.unwrap_buffer_stop();
-        (&bs.track, bs.position)
     }
 }
 
@@ -154,89 +135,22 @@ fn check_path(
 ) -> (Vec<InfraError>, Context) {
     let route = route.unwrap_route();
 
-    // Check if entry and exit points are the same
-    if route.entry_point == route.exit_point {
-        return (vec![InfraError::new_invalid_path(route)], context);
-    }
-
-    let mut cur_dir = route.entry_point_direction;
-    let (mut cur_track, mut cur_offset) = get_waypoint_location(&route.entry_point, infra_cache);
-    let (exit_track, exit_offset) = get_waypoint_location(&route.exit_point, infra_cache);
-
-    // Save track ranges and used switches
-    let mut track_ranges = HashMap::new();
-    let mut used_switches = HashSet::new();
-
-    // Check path validity
-    loop {
-        if !infra_cache.track_sections().contains_key(cur_track) {
-            return (vec![InfraError::new_invalid_path(route)], context);
-        }
-
-        // Add track range
-        let end_offset = if cur_track == exit_track {
-            exit_offset
-        } else if cur_dir == Direction::StartToStop {
-            f64::INFINITY
-        } else {
-            0.
-        };
-        track_ranges.insert(
-            cur_track,
-            (cur_offset.min(end_offset), cur_offset.max(end_offset)),
-        );
-
-        // Search for the exit_point
-        if cur_track == exit_track {
-            if (cur_dir == Direction::StartToStop && cur_offset > exit_offset)
-                || (cur_dir == Direction::StopToStart && cur_offset < exit_offset)
-            {
-                return (vec![InfraError::new_invalid_path(route)], context);
-            }
-            break;
-        }
-
-        // Search for the next track section
-        let endpoint = create_endpoint_from_track_and_direction(cur_track, cur_dir);
-        // No neighbour found
-        if !graph.has_neighbour(&endpoint) {
-            return (vec![InfraError::new_invalid_path(route)], context);
-        }
-        let switch = graph.get_switch(&endpoint);
-        let next_endpoint = match switch {
-            None => graph.get_neighbour(&endpoint, None),
-            Some(switch) => {
-                let group = route.switches_directions.get(&switch.obj_id.clone().into());
-                if group.is_none() {
-                    // Switch not found in the route
-                    return (vec![InfraError::new_invalid_path(route)], context);
-                }
-                used_switches.insert(&switch.obj_id);
-                graph.get_neighbour(&endpoint, group)
-            }
-        };
-
-        // The switch could contains errors (invalid ref on ports).
-        if next_endpoint.is_none() {
-            return (vec![InfraError::new_invalid_path(route)], context);
-        }
-
-        let next_endpoint = next_endpoint.unwrap();
-        cur_track = &next_endpoint.track;
-        (cur_dir, cur_offset) = match next_endpoint.endpoint {
-            Endpoint::Begin => (Direction::StartToStop, 0.),
-            Endpoint::End => (Direction::StopToStart, f64::INFINITY),
-        };
-    }
+    let route_path = match route.compute_track_ranges(infra_cache, graph) {
+        Some(path) => path,
+        None => return (vec![InfraError::new_invalid_path(route)], context),
+    };
 
     // Add tracks on the route to the context
-    let tracks_on_route = track_ranges.keys().map(|track| (*track).clone());
+    let tracks_on_route = route_path
+        .track_ranges
+        .iter()
+        .map(|track| (*track.track).clone());
     context.tracks_on_routes.extend(tracks_on_route);
 
     // Search for switches out of the path
     let mut res = vec![];
     for switch in route.switches_directions.keys() {
-        if !used_switches.contains(&switch.0) {
+        if !route_path.switches_directions.contains_key(switch) {
             res.push(InfraError::new_object_out_of_path(
                 route,
                 format!("switches_directions.{switch}"),
@@ -246,6 +160,12 @@ fn check_path(
     }
 
     // Search for detectors out of the path
+    let track_ranges: HashMap<_, _> = route_path
+        .track_ranges
+        .iter()
+        .map(|track| (&track.track.0, (track.begin, track.end)))
+        .collect();
+
     for (index, detector) in route.release_detectors.iter().enumerate() {
         let detector = infra_cache.detectors().get::<String>(detector).unwrap();
         let detector = detector.unwrap_detector();
@@ -282,20 +202,6 @@ fn check_missing(
     }
 
     (res, context)
-}
-
-fn create_endpoint_from_track_and_direction<T: AsRef<str>>(
-    track: T,
-    dir: Direction,
-) -> TrackEndpoint {
-    let endpoint = match dir {
-        Direction::StartToStop => Endpoint::End,
-        Direction::StopToStart => Endpoint::Begin,
-    };
-    TrackEndpoint {
-        track: track.as_ref().into(),
-        endpoint,
-    }
 }
 
 #[cfg(test)]
