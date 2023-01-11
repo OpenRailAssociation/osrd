@@ -6,9 +6,14 @@ import { IconType } from 'react-icons';
 import nearestPointOnLine from '@turf/nearest-point-on-line';
 import mapboxgl from 'mapbox-gl';
 
-import { DEFAULT_COMMON_TOOL_STATE, LayerType, Tool } from '../types';
+import { DEFAULT_COMMON_TOOL_STATE, LAYER_TO_EDITOAST_DICT, LayerType, Tool } from '../types';
 import { getNearestPoint } from '../../../../utils/mapboxHelper';
-import { POINT_LAYER_ID, PointEditionLeftPanel, PointEditionMessages } from './components';
+import {
+  getPointEditionLeftPanel,
+  POINT_LAYER_ID,
+  PointEditionLeftPanel,
+  PointEditionMessages,
+} from './components';
 import { PointEditionState } from './types';
 import { NULL_GEOMETRY, BufferStopEntity, DetectorEntity, SignalEntity } from '../../../../types';
 import { getEntity } from '../../data/api';
@@ -219,7 +224,7 @@ function getPointEditionTool<T extends EditorPoint>({
     },
 
     layersComponent,
-    leftPanelComponent: PointEditionLeftPanel,
+    leftPanelComponent: getPointEditionLeftPanel(LAYER_TO_EDITOAST_DICT[layer]),
     messagesComponent: PointEditionMessages,
   };
 }

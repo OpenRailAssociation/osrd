@@ -10,6 +10,7 @@
     "download": "Télécharger",
     "dsc": "Descendant",
     "erase": "Effacer",
+    "edit": "Éditer",
     "error": "Une erreur est survenue",
     "filter": "Filtrer",
     "itinerary": "Itinéraire",
@@ -37,7 +38,8 @@
       "buffer_stops": "Heurtoirs",
       "detectors": "Détecteurs",
       "switches": "Aiguillages",
-      "errors": "Erreurs"
+      "errors": "Erreurs",
+      "routes": "Itinéraires"
     },
     "item-statuses": {
       "selected": "sélectionné",
@@ -48,7 +50,8 @@
       "Signal": "Signal",
       "BufferStop": "Heurtoir",
       "Detector": "Détecteur",
-      "Switch": "Aiguillage"
+      "Switch": "Aiguillage",
+      "Route": "Itinéraire"
     },
     "nav": {
       "recenter": "Recentrer la carte",
@@ -130,7 +133,12 @@
           "stop-dragging-on-line": "Cliquez pour valider le déplacement de l'élément.",
           "stop-dragging-no-line": "L'élément doit être placé sur une section de ligne.",
           "start-dragging": "Cliquez sur l'élément pour commencer à le déplacer."
-        }
+        },
+        "linked-routes": "Itinéraires liés",
+        "no-linked-route": "Aucun itinéraire lié",
+        "routes-starting-from": "Partant de...",
+        "routes-ending-at": "Arrivant à...",
+        "default-routes-error": "Une erreur est survenue lors du chargement des itinéraires liés."
       },
       "switch-edition": {
         "label": "Outil \"Aiguillage\",",
