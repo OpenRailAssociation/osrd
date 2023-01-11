@@ -14,10 +14,9 @@ function createChart(
   heightOfSpeedSpaceChart,
   ref,
   _dispatch,
-  _setResetChart
+  setResetChart
 ) {
   d3.select(`#${CHART_ID}`).remove();
-
   const defineX =
     chart === undefined || resetChart
       ? defineLinear(
@@ -40,8 +39,8 @@ function createChart(
   if (resetChart) {
     dispatch(updateChartXGEV(defineX));
   }
+  */
   setResetChart(false);
-*/
   return defineChart(
     width,
     heightOfSpeedSpaceChart,
