@@ -102,13 +102,14 @@ export default function TimeLine() {
     const yScale = d3.scaleLinear().domain([0, 10]).range([0, dimensions.height]);
     const axisBottomX = d3.axisBottom(xScale).tickFormat(d3.timeFormat('%H:%M'));
     const axisLeftY = d3.axisLeft(yScale).ticks(0);
-    svg.append('g').attr('transform', `translate(0, ${dimensions.height})`).call(axisBottomX);
-    svg.append('g').attr('transform', `translate(${dimensions.margin.left}, 0)`).call(axisLeftY);
     svg
       .append('g')
       .attr('transform', `translate(0,${dimensions.height})`)
       .attr('class', 'grid')
       .call(gridX(xScale, dimensions.height));
+    svg.selectAll('text').attr('class', 'd-none');
+    svg.append('g').attr('transform', `translate(0, ${dimensions.height})`).call(axisBottomX);
+    svg.append('g').attr('transform', `translate(${dimensions.margin.left}, 0)`).call(axisLeftY);
     svg.append('g').attr('clip-path', 'url(#timelineClipPath)');
 
     svg
