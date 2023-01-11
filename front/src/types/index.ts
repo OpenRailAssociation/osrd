@@ -103,6 +103,23 @@ export interface DetectorEntity
   objType: 'Detector';
 }
 
+export interface WayPoint {
+  type: 'BufferStop' | 'Detector';
+  id: string;
+}
+export interface RouteEntity
+  extends EditorEntity<
+    NullGeometry,
+    {
+      start: WayPoint;
+      direction: string;
+      end: WayPoint;
+      steps: { switchID: string; group: string };
+    }
+  > {
+  objType: 'Route';
+}
+
 export const ENDPOINTS = ['BEGIN', 'END'] as const;
 export const ENDPOINTS_SET = new Set(ENDPOINTS);
 export const DEFAULT_ENDPOINT = ENDPOINTS[0];
