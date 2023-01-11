@@ -1,4 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
+import { WebMercatorViewport } from 'viewport-mercator-project';
+import bbox from '@turf/bbox';
+
 import {
   replaceVias,
   updateDestination,
@@ -7,21 +13,14 @@ import {
   updatePathfindingID,
   updateSuggeredVias,
 } from 'reducers/osrdconf';
-import { useDispatch, useSelector } from 'react-redux';
+import Pathfinding from 'common/api/pathfinding';
+import { setFailure } from 'reducers/main';
+import { updateFeatureInfoClick } from 'reducers/map';
 
 import DisplayItinerary from 'applications/osrd/components/Itinerary/DisplayItinerary';
 import ModalSugerredVias from 'applications/osrd/components/Itinerary/ModalSuggeredVias';
 import ModalPathJSONDetail from 'applications/osrd/components/Itinerary/ModalPathJSONDetail';
-import PropTypes from 'prop-types';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
-import { WebMercatorViewport } from 'viewport-mercator-project';
-import bbox from '@turf/bbox';
-import { post } from 'common/requests';
-import { setFailure } from 'reducers/main';
-import { updateFeatureInfoClick } from 'reducers/map';
-import { useTranslation } from 'react-i18next';
-
-const itineraryURI = '/pathfinding/';
 
 function Itinerary(props) {
   const [launchPathfinding, setLaunchPathfinding] = useState(false);
@@ -126,7 +125,7 @@ function Itinerary(props) {
   const postPathFinding = async (zoom, params) => {
     try {
       setPathfindingInProgress(true);
-      const itineraryCreated = await post(itineraryURI, params, {}, true);
+      const itineraryCreated = await Pathfinding.create(params);
       correctWaypointsGPS(itineraryCreated);
       dispatch(updateItinerary(itineraryCreated));
       dispatch(updatePathfindingID(itineraryCreated.id));
