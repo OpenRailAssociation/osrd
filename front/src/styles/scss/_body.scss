@@ -84,11 +84,15 @@ height: 109vh !important;
   align-items: center;
   gap: .5rem;
   font-size: 1.25rem;
+  line-height: 1rem;
   a {
     color: var(--coolgray7);
     &:hover {
       color: var(--coolgray1);
     }
+  }
+  @media screen and (max-width: 1280px) {
+    font-size: 1rem;
   }
 }
 
