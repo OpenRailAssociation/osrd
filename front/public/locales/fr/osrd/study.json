@@ -3,7 +3,15 @@
   "budget": "Budget",
   "createdOn": "Créée le",
   "createScenario": "Créer un scénario",
+  "dates": {
+    "creation": "Création",
+    "start": "Début",
+    "estimatedend": "Fin estimée",
+    "realend": "Fin réelle",
+    "modified": "Modification"
+  },
   "description": "description",
+  "filesAndLinks": "Documents & liens",
   "filterPlaceholder": "Rechercher…",
   "geremiCode": "Code GEREMI",
   "modifiedOn": "Modifié le",

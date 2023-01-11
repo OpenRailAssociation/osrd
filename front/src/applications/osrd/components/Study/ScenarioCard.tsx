@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import 'dayjs/locale/fr';
 import { RiFolderChartLine } from 'react-icons/ri';
+import infraLogo from 'assets/pictures/components/tracks.svg';
 
 dayjs.locale('fr');
 
@@ -14,6 +15,7 @@ type Props = {
     description: string;
     creationDate: Date;
     lastModifiedDate: Date;
+    infra_name: string;
   };
 };
 
@@ -36,6 +38,10 @@ export default function StudyCard({ details }: Props) {
       </div>
       <div className="scenarios-list-card-description">{details.description}</div>
       <div className="scenarios-list-card-footer">
+        <div className="scenarios-list-card-infra">
+          <img src={infraLogo} alt="infra logo" />
+          {details.infra_name}
+        </div>
         <div className="scenarios-list-card-date">
           <span className="mr-1">{t('modifiedOn')}</span>
           {dayjs(details.lastModifiedDate).format('D MMM YYYY HH:mm').replace(/\./gi, '')}

@@ -9,6 +9,7 @@ import dayjs from 'dayjs';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import ScenarioCard from 'applications/osrd/components/Study/ScenarioCard';
+import { VscLink, VscFile, VscFiles } from 'react-icons/vsc';
 import {
   projectJSON,
   scenariosListJSON,
@@ -27,6 +28,29 @@ function BreadCrumbs(props) {
       <Link to="/osrd/project">{projectName}</Link>
       <i className="icons-arrow-next icons-size-x75 text-muted" />
       {studyName}
+    </div>
+  );
+}
+
+function DateBox(props) {
+  const { t } = useTranslation('osrd/study');
+  const { date, css, translation } = props;
+  return (
+    <div className={`study-details-dates-date ${css}`}>
+      <span className="study-details-dates-date-label">{t(`dates.${translation}`)}</span>
+      <span className="study-details-dates-date-value">
+        {dayjs(date).format('D MMM YYYY HH:mm').replace(/\./gi, '')}
+      </span>
+    </div>
+  );
+}
+
+function StateStep(props) {
+  const { number, label, done } = props;
+  return (
+    <div className={`study-details-state-step ${done ? 'done' : null}`}>
+      <span className="study-details-state-step-number">{number}</span>
+      <span className="study-details-state-step-label">{label}</span>
     </div>
   );
 }
@@ -74,65 +98,102 @@ export default function Study() {
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="p-3">
           {projectDetails && studyDetails ? (
-            <>
-              <div className="study-project-details">
-                <div className="study-project-details-img">
-                  <img src={projectDetails.image} alt="project logo" />
+            <div className="study-details">
+              <div className="study-details-dates">
+                <DateBox date={studyDetails.creationDate} css="creation" translation="creation" />
+                <DateBox date={studyDetails.startDate} css="start" translation="start" />
+                <DateBox
+                  date={studyDetails.estimatedEndingDate}
+                  css="estimatedend"
+                  translation="estimatedend"
+                />
+                <DateBox date={studyDetails.realEndingDate} css="realend" translation="realend" />
+                <DateBox
+                  date={studyDetails.lastModifiedDate}
+                  css="modified"
+                  translation="modified"
+                />
+              </div>
+              <div className="row">
+                <div className="col-xl-9 col-lg-8 col-md-7">
+                  <div className="study-details-name">{studyDetails.name}</div>
+                  <div className="study-details-type">{studyDetails.type}</div>
+                  <div className="study-details-description">{studyDetails.description}</div>
+                  <div className="study-details-state">
+                    <StateStep number={1} label="Réception et analyse des besoins" done />
+                    <StateStep number={2} label="Méthodologie pour l'étude" done />
+                    <StateStep number={3} label="Devis" done />
+                    <StateStep number={4} label="Cahier des hypothèses" done />
+                    <StateStep number={5} label="Lancement de l'étude" />
+                    <StateStep number={6} label="Contractualisation" />
+                  </div>
                 </div>
-                <div className="study-project-details-name">{projectDetails.name}</div>
+                <div className="col-xl-3 col-lg-4 col-md-5">
+                  <div className="study-details-files">
+                    <div className="study-details-files-title">
+                      <span className="mr-2">
+                        <VscFiles />
+                      </span>
+                      {t('filesAndLinks')}
+                      <span className="ml-auto">{studyDetails.files.length}</span>
+                    </div>
+                    <div className="study-details-files-list">
+                      {studyDetails.files.map((file) => {
+                        const isUrl = Math.random() > 0.5;
+                        return (
+                          <a
+                            href={file.url}
+                            key={nextId()}
+                            target="_blank"
+                            rel="noreferrer"
+                            className={isUrl ? 'url' : 'file'}
+                          >
+                            <span className="study-details-files-list-name">
+                              <span className="mr-1">{isUrl ? <VscLink /> : <VscFile />}</span>
+                              {file.name}
+                            </span>
+                            <span className="study-details-files-list-link">
+                              {isUrl ? file.url : file.filename}
+                            </span>
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div className="study-details">
-                <div className="row">
-                  <div className="col-xl-8">
-                    <div className="study-details-name">{studyDetails.name}</div>
-                    <div className="study-details-type">{studyDetails.type}</div>
-                    <div className="study-details-description">{studyDetails.description}</div>
+              <div className="study-details-financials">
+                <div className="study-details-financials-infos">
+                  <div className="study-details-financials-infos-item">
+                    <h3>{t('geremiCode')}</h3>
+                    <div>{studyDetails.geremiCode}</div>
                   </div>
-                  <div className="col-xl-4">
-                    <div className="study-details-dates">
-                      <div className="study-details-dates-date">
-                        <span className="mr-1">{t('modifiedOn')}</span>
-                        {dayjs(studyDetails.lastModifiedDate)
-                          .format('D MMM YYYY HH:mm')
-                          .replace(/\./gi, '')}
-                      </div>
-                    </div>
+                  <div className="study-details-financials-infos-item">
+                    <h3>{t('affairCode')}</h3>
+                    <div>{studyDetails.affairCode}</div>
                   </div>
                 </div>
-
-                <div className="study-details-financials">
-                  <div className="study-details-financials-infos">
-                    <div className="study-details-financials-infos-item">
-                      <h3>{t('geremiCode')}</h3>
-                      <div>{studyDetails.geremiCode}</div>
-                    </div>
-                    <div className="study-details-financials-infos-item">
-                      <h3>{t('affairCode')}</h3>
-                      <div>{studyDetails.affairCode}</div>
-                    </div>
-                  </div>
-                  <div className="study-details-financials-amount">
-                    <span className="study-details-financials-amount-text">{t('budget')}</span>
-                    {new Intl.NumberFormat('fr-FR', {
-                      style: 'currency',
-                      currency: 'EUR',
-                      maximumSignificantDigits: 2,
-                    }).format(studyDetails.budget)}
-                  </div>
-                </div>
-
-                <div className="study-details-footer">
-                  <div className="study-details-tags">
-                    {studyDetails.tags.map((tag) => (
-                      <div className="study-details-tags-tag" key={nextId()}>
-                        {tag}
-                      </div>
-                    ))}
-                  </div>
+                <div className="study-details-financials-amount">
+                  <span className="study-details-financials-amount-text">{t('budget')}</span>
+                  {new Intl.NumberFormat('fr-FR', {
+                    style: 'currency',
+                    currency: 'EUR',
+                    maximumSignificantDigits: 2,
+                  }).format(studyDetails.budget)}
                 </div>
               </div>
-            </>
+
+              <div className="study-details-footer">
+                <div className="study-details-tags">
+                  {studyDetails.tags.map((tag) => (
+                    <div className="study-details-tags-tag" key={nextId()}>
+                      {tag}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           ) : (
             <span className="mt-5">
               <Loader position="center" />

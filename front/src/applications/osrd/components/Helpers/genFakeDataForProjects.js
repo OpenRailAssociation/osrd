@@ -17,6 +17,7 @@ const NB_PROJECTS = 10;
 const NB_STUDIES = 15;
 const NB_SCENARIOS = 6;
 const NB_TAGS = 6;
+const NB_FILES = 20;
 
 export function projectsListJSON(nb = NB_PROJECTS) {
   const json = [];
@@ -81,6 +82,14 @@ export function studiesListJSON(nb = NB_STUDIES) {
 }
 
 export function studyJSON() {
+  const files = [];
+  for (let i = 0; i < Math.round(Math.random() * NB_FILES); i += 1) {
+    files.push({
+      name: faker.lorem.words(),
+      filename: faker.system.commonFileName('pdf'),
+      url: faker.internet.url(),
+    });
+  }
   const json = {
     id: faker.datatype.uuid(),
     name: faker.lorem.sentence().replace('.', ''),
@@ -95,6 +104,7 @@ export function studyJSON() {
     step: faker.lorem.word(),
     budget: faker.finance.amount(5000, 500000, 0),
     type: faker.lorem.words(),
+    files: files.sort((a, b) => a.name > b.name),
     tags: faker.lorem.words(Math.round(Math.random() * NB_TAGS)).split(' '),
   };
   return json;
@@ -107,10 +117,8 @@ export function scenariosListJSON(nb = NB_SCENARIOS) {
       id: faker.datatype.uuid(),
       name: faker.lorem.sentence(4).replace('.', ''),
       description: faker.lorem.paragraphs(1),
-      infra: {
-        id: faker.datatype.uuid(),
-        name: faker.lorem.words(),
-      },
+      infra_id: faker.datatype.uuid(),
+      infra_name: faker.lorem.words(),
       creationDate: faker.date.past(2),
       lastModifiedDate: faker.date.recent(10),
     });
