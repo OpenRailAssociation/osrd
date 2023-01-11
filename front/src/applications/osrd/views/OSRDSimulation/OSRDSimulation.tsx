@@ -40,6 +40,7 @@ import { updateViewport, Viewport } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
 
 export const timetableURI = '/timetable/';
+const CHART_MIN_HEIGHT = 150;
 const MAP_MIN_HEIGHT = 450;
 
 function getMapMaxHeight(timeTableRef: React.MutableRefObject<HTMLDivElement | null>) {
@@ -253,7 +254,7 @@ function OSRDSimulation() {
                     width: '100%',
                     height: `${heightOfSpaceTimeChart}px`,
                   }}
-                  minHeight={150}
+                  minHeight={CHART_MIN_HEIGHT}
                   disableDragging
                   enableResizing={{
                     bottom: true,
@@ -285,7 +286,7 @@ function OSRDSimulation() {
                     width: '100%',
                     height: `${heightOfSpeedSpaceChart}px`,
                   }}
-                  minHeight={150}
+                  minHeight={CHART_MIN_HEIGHT}
                   disableDragging
                   enableResizing={{
                     bottom: true,
