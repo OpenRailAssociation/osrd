@@ -95,7 +95,6 @@ function Origin(props: OriginProps) {
       // className="custom-control-input"
       checked={isByOrigin}
       onChange={() => dispatch(updateStdcmMode(STDCM_MODES.byOrigin))}
-      disabled
     />
   );
 
