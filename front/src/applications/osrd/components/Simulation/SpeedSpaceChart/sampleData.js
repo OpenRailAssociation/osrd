@@ -133,7 +133,6 @@ const ORSD_GEV_SAMPLE_DATA = {
     maxSpeed: true,
     slopes: false,
   },
-  stickyBar: true,
   signalBase: 'BAL3',
   timePosition: '1900-01-01T08:30:44.897Z',
   consolidatedSimulation: [

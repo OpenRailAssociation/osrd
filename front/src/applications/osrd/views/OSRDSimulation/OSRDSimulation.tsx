@@ -11,17 +11,14 @@ import {
   updateSelectedProjection,
   updateSelectedTrain,
   updateSimulation,
-  updateStickyBar,
 } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
 import Allowances from 'applications/osrd/components/Simulation/Allowances/withOSRDData';
 
-import ButtonFullscreen from 'common/ButtonFullscreen';
 import CenterLoader from 'common/CenterLoader/CenterLoader';
 import ContextMenu from 'applications/osrd/components/Simulation/ContextMenu';
 import Map from 'applications/osrd/views/OSRDSimulation/Map';
-import OSRDSignalSwitch from 'applications/osrd/components/Simulation/SignalSwitch/withOSRDData';
 import { Rnd } from 'react-rnd';
 import SpaceCurvesSlopes from 'applications/osrd/views/OSRDSimulation/SpaceCurvesSlopes';
 import SpaceTimeChart from 'applications/osrd/views/OSRDSimulation/SpaceTimeChart';
@@ -53,7 +50,6 @@ function getMapMaxHeight(timeTableRef: React.MutableRefObject<HTMLDivElement | n
 function OSRDSimulation() {
   const { t } = useTranslation(['translation', 'simulation', 'allowances']);
   const timeTableRef = useRef<HTMLDivElement | null>(null);
-  const { fullscreen } = useSelector((state: RootState) => state.main);
   const [extViewport, setExtViewport] = useState<Viewport | undefined>(undefined);
   const [isEmpty, setIsEmpty] = useState(true);
   const [displayTrainList, setDisplayTrainList] = useState(false);
@@ -87,7 +83,6 @@ function OSRDSimulation() {
     (state: RootState) => state.osrdsimulation.departureArrivalTimes
   );
   const selectedTrain = useSelector((state: RootState) => state.osrdsimulation.selectedTrain);
-  const stickyBar = useSelector((state: RootState) => state.osrdsimulation.stickyBar);
   const displaySimulation = useSelector(
     (state: RootState) => state.osrdsimulation.displaySimulation
   );
@@ -201,18 +196,13 @@ function OSRDSimulation() {
 
   const mapMaxHeight = getMapMaxHeight(timeTableRef);
   return (
-    <main className={`mastcontainer ${fullscreen ? ' fullscreen' : ''}`}>
+    <>
       {!displaySimulation ? (
         <div className="pt-5 mt-5">{waitingLoader}</div>
       ) : (
-        <div className="m-0 p-3">
+        <div className="simulation-results">
           <div className="mb-2">
             <TimeLine />
-          </div>
-          <div className="mb-2 osrd-simulation-container">
-            <div className="ml-auto d-flex align-items-left">
-              <OSRDSignalSwitch />
-            </div>
           </div>
           {displayTrainList ? (
             <div className="osrd-simulation-container mb-2">
@@ -395,31 +385,17 @@ function OSRDSimulation() {
               </div>
             </div>
           </div>
-          {stickyBar ? (
-            <div className="osrd-simulation-sticky-bar">
-              <div className="row">
-                <div className="col-lg-4">
-                  <TimeButtons />
-                </div>
-                <div className="col-lg-8">{displaySimulation ? <TrainDetails /> : null}</div>
+          <div className="osrd-simulation-sticky-bar">
+            <div className="row">
+              <div className="col-lg-4">
+                <TimeButtons />
               </div>
+              <div className="col-lg-8">{displaySimulation ? <TrainDetails /> : null}</div>
             </div>
-          ) : (
-            <div className="osrd-simulation-sticky-bar-mini">
-              <button
-                className="btn btn-sm btn-only-icon btn-primary ml-auto mr-1"
-                type="button"
-                onClick={() => dispatch(updateStickyBar(true))}
-              >
-                <i className="icons-arrow-prev" />
-              </button>
-              <TimeButtons />
-            </div>
-          )}
-          <ButtonFullscreen />
+          </div>
         </div>
       )}
-    </main>
+    </>
   );
 }
 

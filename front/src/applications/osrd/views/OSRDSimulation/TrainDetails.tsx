@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { updateStickyBar } from 'reducers/osrdsimulation/actions';
 import { ConsolidatedRouteAspect } from 'reducers/osrdsimulation/types';
 
 /**
@@ -11,22 +10,24 @@ import { ConsolidatedRouteAspect } from 'reducers/osrdsimulation/types';
  * @returns current Canton occupied by current train, [start, end] in meters
  * @TODO do not work with colors as string as soon as possible
  */
-const getOccupancyBounds = (routeAspects: ConsolidatedRouteAspect[], time:Date) => {
+const getOccupancyBounds = (routeAspects: ConsolidatedRouteAspect[], time: Date) => {
   const relevantAspect = routeAspects.find((routeAspect) => {
     const relevantTime = time || new Date();
     const relevantStartTime = routeAspect.time_start || new Date();
     const relevantEndTime = routeAspect.time_end || new Date();
-    return relevantStartTime < relevantTime &&
+    return (
+      relevantStartTime < relevantTime &&
       relevantEndTime >= relevantTime &&
-      routeAspect.color === 'rgba(255, 0, 0, 255)';
+      routeAspect.color === 'rgba(255, 0, 0, 255)'
+    );
   });
   return relevantAspect ? [relevantAspect.position_start, relevantAspect.position_end] : [0, 0];
 };
 
 export default function TrainDetails() {
-  const { positionValues, stickyBar, timePosition, consolidatedSimulation, selectedTrain } =
-    useSelector((state: any) => state.osrdsimulation);
-  const dispatch = useDispatch();
+  const { positionValues, timePosition, consolidatedSimulation, selectedTrain } = useSelector(
+    (state: any) => state.osrdsimulation
+  );
 
   const { t } = useTranslation(['simulation']);
 
@@ -41,7 +42,7 @@ export default function TrainDetails() {
 
   return (
     <div className="d-flex">
-      {positionValues.headPosition && timePosition && stickyBar && (
+      {positionValues.headPosition && timePosition && (
         <>
           <div className="rounded px-1 train-detail small bg-blue text-white text-nowrap mr-1">
             <div className="font-weight-bold text-uppercase">{t('trainDetails.headPosition')}</div>
@@ -85,13 +86,6 @@ export default function TrainDetails() {
           </div>
         </>
       )}
-      <button
-        className="btn btn-sm btn-only-icon btn-primary ml-auto"
-        type="button"
-        onClick={() => dispatch(updateStickyBar(false))}
-      >
-        <i className="icons-arrow-next" />
-      </button>
     </div>
   );
 }

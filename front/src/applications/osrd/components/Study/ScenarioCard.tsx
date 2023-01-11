@@ -5,6 +5,7 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/fr';
 import { RiFolderChartLine } from 'react-icons/ri';
 import infraLogo from 'assets/pictures/components/tracks.svg';
+import { AiFillFolderOpen } from 'react-icons/ai';
 
 dayjs.locale('fr');
 
@@ -35,6 +36,10 @@ export default function StudyCard({ details }: Props) {
           <RiFolderChartLine />
         </span>
         {details.name}
+        <button className="btn btn-sm" type="button" onClick={handleClick}>
+          <span className="mr-2">{t('openScenario')}</span>
+          <AiFillFolderOpen />
+        </button>
       </div>
       <div className="scenarios-list-card-description">{details.description}</div>
       <div className="scenarios-list-card-footer">

@@ -15,7 +15,6 @@ export const UPDATE_SELECTED_TRAIN = 'osrdsimu/UPDATE_SELECTED_TRAIN';
 export const UPDATE_SIMULATION = 'osrdsimu/UPDATE_SIMULATION';
 export const UPDATE_SPEEDSPACE_SETTINGS = 'osrdsimu/UPDATE_SPEEDSPACE_SETTINGS';
 export const UPDATE_SIGNAL_BASE = 'osrdsimu/UPDATE_SIGNAL_BASE';
-export const UPDATE_STICKYBAR = 'osrdsimu/UPDATE_STICKYBAR';
 export const UPDATE_TIME_POSITION = 'osrdsimu/UPDATE_TIME_POSITION';
 export const UPDATE_TIME_POSITION_VALUES = 'osrdsimu/UPDATE_TIME_POSITION_VALUES';
 export const UPDATE_CONSOLIDATED_SIMULATION = 'osrdsimu/UPDATE_CONSOLIDATED_SIMULATION';
@@ -122,14 +121,6 @@ export function updateSpeedSpaceSettings(
     dispatch({
       type: UPDATE_SPEEDSPACE_SETTINGS,
       speedSpaceSettings,
-    });
-  };
-}
-export function updateStickyBar(stickyBar: OsrdSimulationState['stickyBar']) {
-  return (dispatch: Dispatch) => {
-    dispatch({
-      type: UPDATE_STICKYBAR,
-      stickyBar,
     });
   };
 }
