@@ -56,7 +56,9 @@ jobs:
         with:
           context: "${{ inputs.context }}"
           file: "${{ inputs.context }}/${{ inputs.dockerfile }}"
-          build-args: "${{ inputs.build_args }}"
+          build-args: |
+            OSRD_GIT_DESCRIBE=${{ github.sha }}
+            ${{ inputs.build_args }}
           push: true
           tags: |
             ${{ inputs.image_name }}
