@@ -13,6 +13,27 @@ function chooseRandomIMG() {
   */
 }
 
+function genMarkdown() {
+  return `# Un titre
+  
+  A paragraph with *emphasis* and **strong importance**.
+
+  > A block quote with ~strikethrough~ and a URL: https://reactjs.org.
+  
+  * Lists
+  * [ ] todo
+  * [x] done
+  
+  # Un autre titre
+
+  ## Un sous titre
+
+  A table:
+  
+  | a | b |
+  | - | - |`;
+}
+
 const NB_PROJECTS = 10;
 const NB_STUDIES = 15;
 const NB_SCENARIOS = 6;
@@ -45,7 +66,7 @@ export function projectJSON() {
     name: faker.lorem.sentence().replace('.', ''),
     image: chooseRandomIMG(),
     description: faker.lorem.paragraphs(1),
-    objectives: faker.lorem.sentences(10),
+    objectives: genMarkdown(),
     financials: `${faker.name.fullName()}, ${faker.name.fullName()}, ${faker.company.name()}`,
     tags: faker.lorem.words(Math.round(Math.random() * NB_TAGS)).split(' '),
     budget: faker.finance.amount(10000, 1000000, 0),
