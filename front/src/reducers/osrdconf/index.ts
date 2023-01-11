@@ -1,5 +1,6 @@
 import produce from 'immer';
 import { AnyAction, Dispatch } from 'redux';
+import { omit } from 'lodash';
 
 import {
   DEFAULT_MODE,
@@ -471,7 +472,10 @@ export function updateFeatureInfoClickOSRD(featureInfoClick: OsrdConfState['feat
   return (dispatch: Dispatch) => {
     dispatch({
       type: UPDATE_FEATURE_INFO_CLICK_OSRD,
-      featureInfoClick,
+      featureInfoClick: {
+        ...featureInfoClick,
+        feature: omit(featureInfoClick.feature, ['_vectorTileFeature']),
+      },
     });
   };
 }
