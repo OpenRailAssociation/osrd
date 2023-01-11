@@ -1,0 +1,22 @@
+operationalpoint:
+  table: osrd_search_operationalpoint
+  # TODO: allow table: name: ..., as: ... to allow aliases
+  columns:
+    obj_id: string
+    infra_id: integer
+    name: string
+    uic: integer
+    trigram: string
+  result:
+    joins: |
+      INNER JOIN osrd_infra_operationalpointmodel AS opm ON opm.id = osrd_search_operationalpoint.id
+      INNER JOIN osrd_infra_operationalpointlayer AS opl ON opm.obj_id = opl.obj_id AND opm.infra_id = opl.infra_id
+    columns:
+      obj_id: opm.obj_id
+      infra_id: opm.infra_id
+      uic: opm.data#>>'{extensions,identifier,uic}'
+      name: opm.data#>>'{extensions,identifier,name}'
+      trigram: opm.data#>>'{extensions,sncf,trigram}'
+      ch: opm.data#>>'{extensions,sncf,ch}'
+      geographic: ST_AsGeoJSON(ST_Transform(opl.geographic, 4326))::json
+      schematic: ST_AsGeoJSON(ST_Transform(opl.schematic, 4326))::json
