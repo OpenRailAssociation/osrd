@@ -1,17 +1,16 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { updateStickyBar } from 'reducers/osrdsimulation/actions';
 
 export default function TrainDetails() {
-  const { positionValues, stickyBar, timePosition } = useSelector((state) => state.osrdsimulation);
+  const { positionValues, timePosition } = useSelector((state) => state.osrdsimulation);
   const dispatch = useDispatch();
 
   const { t } = useTranslation(['simulation']);
 
   return (
     <div className="d-flex">
-      {positionValues.headPosition && timePosition && stickyBar && (
+      {positionValues.headPosition && timePosition && (
         <>
           <div className="rounded px-1 train-detail small bg-blue text-white text-nowrap mr-1">
             <div className="font-weight-bold text-uppercase">{t('trainDetails.headPosition')}</div>
@@ -25,13 +24,6 @@ export default function TrainDetails() {
           </div>
         </>
       )}
-      <button
-        className="btn btn-sm btn-only-icon btn-primary ml-auto"
-        type="button"
-        onClick={() => dispatch(updateStickyBar(false))}
-      >
-        <i className="icons-arrow-next" />
-      </button>
     </div>
   );
 }
