@@ -104,7 +104,7 @@ export interface PointOnMap {
 
 export interface SuggestedPointOnMap {
   track: string;
-  position: number;
+  position: string;
   geo: Point;
   sch: Point;
   id: any;
