@@ -9,6 +9,7 @@ import PopupInfosCustomTitle from 'applications/operationalStudies/components/Ma
 
 export default function RenderPopup() {
   const featureInfoClick = useSelector(getFeatureInfoClick);
+
   if (featureInfoClick.displayPopup) {
     let backgroundColor;
     switch (featureInfoClick.feature.properties.typeVoie) {
@@ -24,11 +25,8 @@ export default function RenderPopup() {
     const properties = {
       ...featureInfoClick.feature.properties,
       source: featureInfoClick.feature.source,
-      clickLngLat: [
-        featureInfoClick.coordinates[0],
-        featureInfoClick.coordinates[1],
-      ]
-    }
+      clickLngLat: [featureInfoClick.coordinates[0], featureInfoClick.coordinates[1]],
+    };
 
     return (
       <Popup
