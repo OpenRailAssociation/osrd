@@ -15,10 +15,17 @@ export default function MapSearch(props) {
   );
 
   const { active, toggleMapSearch } = props;
+
   const { t } = useTranslation(['translation', 'map-search']);
+
   return (
     <div className={`map-modal${active ? ' active' : ''}`}>
-      <div className="h2">{t('translation:common.search')}</div>
+      <div className="d-flex justify-content-between align-items-start">
+        <div className="h2">{t('translation:common.search')}</div>
+        <button type="button" className="close" onClick={toggleMapSearch}>
+          ×
+        </button>
+      </div>
 
       <div className="actionbar">
         <nav role="navigation" className="position-relative mt-2">
@@ -78,12 +85,6 @@ export default function MapSearch(props) {
         <div className="tab-pane fade" id="tab3" role="tabpanel" aria-labelledby="titletab3">
           <MapSearchSignal updateExtViewport={updateViewportChange} />
         </div>
-      </div>
-
-      <div className="mt-2 d-flex flex-row-reverse w-100">
-        <button className="btn btn-secondary btn-sm" type="button" onClick={toggleMapSearch}>
-          {t('common.close')}
-        </button>
       </div>
     </div>
   );
