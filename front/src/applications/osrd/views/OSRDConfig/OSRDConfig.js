@@ -67,16 +67,7 @@ export default function OSRDConfig(props) {
           <Itinerary title={t('translation:common.itinerary')} updateExtViewport={setExtViewport} />
           {isStdcm && (
             <>
-              <div className="row">
-                <div className="col-xl-12">
-                  <div className="osrd-config-item mb-2 osrd-config-item-container">
-                    <StdcmSingleAllowance
-                      title={t('allowances:standardAllowance')}
-                      typeKey="standardStdcmAllowance"
-                    />
-                  </div>
-                </div>
-              </div>
+
               <div className="row">
                 <div className="col-xl-6">
                   <div className="osrd-config-item mb-2 osrd-config-item-container">
@@ -91,6 +82,16 @@ export default function OSRDConfig(props) {
                     <StdcmSingleAllowance
                       title={t('allowances:gridMarginAfter')}
                       typeKey="gridMarginAfter"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="row">
+                <div className="col-xl-12">
+                  <div className="osrd-config-item mb-2 osrd-config-item-container">
+                    <StdcmSingleAllowance
+                      title={t('allowances:standardAllowance')}
+                      typeKey="standardStdcmAllowance"
                     />
                   </div>
                 </div>

@@ -17,7 +17,7 @@ function withOSRDStdcmParams<T>(Component: ComponentType<T>) {
     const gridMarginBefore = useSelector((state: any) => state.osrdconf.gridMarginBefore);
     const gridMarginAfter = useSelector((state: any) => state.osrdconf.gridMarginAfter);
     const stdcmStandardAllowance = useSelector(
-      (state: any) => state.osrdconf.stdcmStandardAllowance
+      (state: any) => state.osrdconf.standardStdcmAllowance
     );
 
     const allowanceTypes = [
