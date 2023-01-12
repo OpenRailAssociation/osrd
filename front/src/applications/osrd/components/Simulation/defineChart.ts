@@ -54,7 +54,7 @@ const defineChart = (
     .attr('transform', `translate(0,${height})`)
     .attr('class', 'grid')
     .call(gridX(x, height));
-  xAxisGrid.selectAll('text').attr('class', 'd-none');
+  xAxisGrid.selectAll('text').remove();
   const originalScaleX = x; // We need to keep a ref on that to not double translation
 
   // Add Y axis
@@ -72,7 +72,7 @@ const defineChart = (
       : d3.axisLeft(y);
   const yAxis = svg.append('g').call(axisLeftY);
   const yAxisGrid = svg.append('g').attr('class', 'grid').call(gridY(y, width));
-  yAxisGrid.selectAll('text').attr('class', 'd-none');
+  yAxisGrid.selectAll('text').remove();
   const originalScaleY = y; // We need to keep a ref on that to not double translation
 
   // Create clip path to hide everything out of this area
