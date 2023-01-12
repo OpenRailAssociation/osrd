@@ -3,7 +3,7 @@ from railjson_generator import (
     SimulationBuilder,
     ApplicableDirection,
     Location,
-    PhysicalApproximations,
+    ExternalGeneratedInputs,
 )
 from railjson_generator.schema.infra.catenary import Catenary
 from railjson_generator.schema.infra.direction import Direction
@@ -631,30 +631,30 @@ sim.save(OUTPUT_DIR / "simulation.json")
 # Electrical profiles
 # ================================
 
-phys_approx = PhysicalApproximations()
+external_inputs = ExternalGeneratedInputs()
 
-ep_a = phys_approx.add_electrical_profile(value="A", power_class="1")
+ep_a = external_inputs.add_electrical_profile(value="A", power_class="1")
 ep_a.add_track_range(ta0, 0, ta0.length)
 ep_a.add_track_range(ta6, 0, 1000)
 ep_a.add_track_range(ta6, ta6.length-1000, ta6.length)
 
-ep_a1 = phys_approx.add_electrical_profile(value="A1", power_class="1")
+ep_a1 = external_inputs.add_electrical_profile(value="A1", power_class="1")
 ep_a1.add_track_range(ta6, 1000, 2000)
 ep_a1.add_track_range(ta6, ta6.length-2000, ta6.length-1000)
 
-ep_b = phys_approx.add_electrical_profile(value="B", power_class="1")
+ep_b = external_inputs.add_electrical_profile(value="B", power_class="1")
 ep_b.add_track_range(ta6, 2000, 3000)
 ep_b.add_track_range(ta6, ta6.length-3000, ta6.length-2000)
 
-ep_b1 = phys_approx.add_electrical_profile(value="B2", power_class="1")
+ep_b1 = external_inputs.add_electrical_profile(value="B2", power_class="1")
 ep_b1.add_track_range(ta6, 3000, 4000)
 ep_b1.add_track_range(ta6, ta6.length-4000, ta6.length-3000)
 
-ep_c = phys_approx.add_electrical_profile(value="C", power_class="1")
+ep_c = external_inputs.add_electrical_profile(value="C", power_class="1")
 ep_c.add_track_range(ta6, 4000, ta6.length-4000)
 
-ep_25000 = phys_approx.add_electrical_profile(value="25000", power_class="1")
+ep_25000 = external_inputs.add_electrical_profile(value="25000", power_class="1")
 for track_section in set(builder.infra.track_sections) - {td1, ta0, ta6}:
     ep_25000.add_track_range(track_section, 0, track_section.length)
 
-phys_approx.save(OUTPUT_DIR / "physical_approximations.json")
+external_inputs.save(OUTPUT_DIR / "external_generated_inputs.json")

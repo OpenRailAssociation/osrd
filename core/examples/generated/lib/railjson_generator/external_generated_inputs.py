@@ -4,7 +4,7 @@ from typing import List
 import json
 from railjson_generator.schema.infra.range_elements import TrackRange
 
-from schemas import physical_approximations
+from schemas import external_generated_inputs
 
 
 @dataclass
@@ -17,7 +17,7 @@ class ElectricalProfile:
         self.track_ranges.append(TrackRange(track=track, begin=begin, end=end))
 
     def to_rjs(self):
-        return physical_approximations.ElectricalProfile(
+        return external_generated_inputs.ElectricalProfile(
             value=self.value,
             power_class=self.power_class,
             track_ranges=[track_range.to_rjs() for track_range in self.track_ranges],
@@ -25,7 +25,7 @@ class ElectricalProfile:
 
 
 @dataclass
-class PhysicalApproximations:
+class ExternalGeneratedInputs:
     electrical_profiles: List[ElectricalProfile] = field(default_factory=list)
 
     def add_electrical_profile(self, *args, **kwargs) -> ElectricalProfile:
@@ -37,6 +37,6 @@ class PhysicalApproximations:
             f.write(self.to_rjs().json(indent=2))
 
     def to_rjs(self):
-        return physical_approximations.ElectricalProfilesList(
+        return external_generated_inputs.ElectricalProfilesList(
             __root__=[profile.to_rjs() for profile in self.electrical_profiles]
         )
