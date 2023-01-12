@@ -30,6 +30,7 @@ Please don't build any serious projects with OSRD unless you are prepared to be 
 ## Getting Started
 
 You'll need:
+ - Constance
  - Docker
  - Docker Compose
 
