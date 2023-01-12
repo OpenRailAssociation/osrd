@@ -458,26 +458,27 @@ dependencies = [
 
 [[package]]
 name = "diesel"
-version = "1.4.8"
+version = "2.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b28135ecf6b7d446b43e27e225622a038cc4e2930a1022f51cdb97ada19b8e4d"
+checksum = "68c186a7418a2aac330bb76cde82f16c36b03a66fb91db32d20214311f9f6545"
 dependencies = [
  "bitflags",
  "byteorder",
  "chrono",
  "diesel_derives",
+ "itoa",
  "pq-sys",
  "r2d2",
  "serde_json",
- "uuid",
 ]
 
 [[package]]
 name = "diesel_derives"
-version = "1.4.1"
+version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "45f5098f628d02a7a0f68ddba586fb61e80edec3bdc1be3b921f4ceec60858d3"
+checksum = "143b758c91dbc3fe1fdcb0dba5bd13276c6a66422f2ef5795b58488248a310aa"
 dependencies = [
+ "proc-macro-error",
  "proc-macro2",
  "quote",
  "syn",
@@ -509,7 +510,7 @@ dependencies = [
  "json-patch",
  "rand 0.8.5",
  "reqwest",
- "rocket",
+ "rocket 0.5.0-rc.2 (git+https://github.com/SergioBenitez/Rocket.git?rev=162fafa0)",
  "rocket_cors",
  "rocket_sync_db_pools",
  "serde",
@@ -1661,8 +1662,45 @@ dependencies = [
  "pin-project-lite",
  "rand 0.8.5",
  "ref-cast",
- "rocket_codegen",
- "rocket_http",
+ "rocket_codegen 0.5.0-rc.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rocket_http 0.5.0-rc.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde",
+ "state",
+ "tempfile",
+ "time 0.3.17",
+ "tokio",
+ "tokio-stream",
+ "tokio-util",
+ "ubyte",
+ "version_check",
+ "yansi",
+]
+
+[[package]]
+name = "rocket"
+version = "0.5.0-rc.2"
+source = "git+https://github.com/SergioBenitez/Rocket.git?rev=162fafa0#162fafa0f1b5d9045bf342356671859f0f21c4cc"
+dependencies = [
+ "async-stream",
+ "async-trait",
+ "atomic",
+ "atty",
+ "binascii",
+ "bytes",
+ "either",
+ "figment",
+ "futures",
+ "indexmap",
+ "log",
+ "memchr",
+ "multer",
+ "num_cpus",
+ "parking_lot 0.12.1",
+ "pin-project-lite",
+ "rand 0.8.5",
+ "ref-cast",
+ "rocket_codegen 0.5.0-rc.2 (git+https://github.com/SergioBenitez/Rocket.git?rev=162fafa0)",
+ "rocket_http 0.5.0-rc.2 (git+https://github.com/SergioBenitez/Rocket.git?rev=162fafa0)",
  "serde",
  "serde_json",
  "state",
@@ -1687,7 +1725,22 @@ dependencies = [
  "indexmap",
  "proc-macro2",
  "quote",
- "rocket_http",
+ "rocket_http 0.5.0-rc.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "syn",
+ "unicode-xid",
+]
+
+[[package]]
+name = "rocket_codegen"
+version = "0.5.0-rc.2"
+source = "git+https://github.com/SergioBenitez/Rocket.git?rev=162fafa0#162fafa0f1b5d9045bf342356671859f0f21c4cc"
+dependencies = [
+ "devise",
+ "glob",
+ "indexmap",
+ "proc-macro2",
+ "quote",
+ "rocket_http 0.5.0-rc.2 (git+https://github.com/SergioBenitez/Rocket.git?rev=162fafa0)",
  "syn",
  "unicode-xid",
 ]
@@ -1700,7 +1753,7 @@ dependencies = [
  "http",
  "log",
  "regex",
- "rocket",
+ "rocket 0.5.0-rc.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde",
  "serde_derive",
  "unicase",
@@ -1736,24 +1789,49 @@ dependencies = [
 ]
 
 [[package]]
+name = "rocket_http"
+version = "0.5.0-rc.2"
+source = "git+https://github.com/SergioBenitez/Rocket.git?rev=162fafa0#162fafa0f1b5d9045bf342356671859f0f21c4cc"
+dependencies = [
+ "cookie",
+ "either",
+ "futures",
+ "http",
+ "hyper",
+ "indexmap",
+ "log",
+ "memchr",
+ "pear",
+ "percent-encoding",
+ "pin-project-lite",
+ "ref-cast",
+ "serde",
+ "smallvec 1.10.0",
+ "stable-pattern",
+ "state",
+ "time 0.3.17",
+ "tokio",
+ "uncased",
+]
+
+[[package]]
 name = "rocket_sync_db_pools"
 version = "0.1.0-rc.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5fa48b6ab25013e9812f1b0c592741900b3a2a83c0936292e0565c0ac842f558"
+source = "git+https://github.com/SergioBenitez/Rocket.git?rev=162fafa0#162fafa0f1b5d9045bf342356671859f0f21c4cc"
 dependencies = [
  "diesel",
  "r2d2",
- "rocket",
+ "rocket 0.5.0-rc.2 (git+https://github.com/SergioBenitez/Rocket.git?rev=162fafa0)",
  "rocket_sync_db_pools_codegen",
  "serde",
  "tokio",
+ "version_check",
 ]
 
 [[package]]
 name = "rocket_sync_db_pools_codegen"
 version = "0.1.0-rc.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "280ef2d232923e69cb93da156972eb5476a7cce5ba44843f6608f46a4abf7aab"
+source = "git+https://github.com/SergioBenitez/Rocket.git?rev=162fafa0#162fafa0f1b5d9045bf342356671859f0f21c4cc"
 dependencies = [
  "devise",
  "quote",
@@ -2382,12 +2460,6 @@ dependencies = [
  "idna",
  "percent-encoding",
 ]
-
-[[package]]
-name = "uuid"
-version = "0.8.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc5cf98d8186244414c848017f0e2676b3fcb46807f6668a97dfe67359a3c4b7"
 
 [[package]]
 name = "valuable"

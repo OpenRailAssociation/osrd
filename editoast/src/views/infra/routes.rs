@@ -32,9 +32,9 @@ impl ApiError for GetRouteFromWaypointErrors {
 
 #[derive(QueryableByName)]
 struct RouteFromWaypointResult {
-    #[sql_type = "Text"]
+    #[diesel(sql_type = Text)]
     route_id: String,
-    #[sql_type = "Bool"]
+    #[diesel(sql_type = Bool)]
     is_entry_point: bool,
 }
 

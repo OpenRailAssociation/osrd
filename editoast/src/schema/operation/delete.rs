@@ -17,7 +17,7 @@ pub struct DeleteOperation {
 }
 
 impl DeleteOperation {
-    pub fn apply(&self, infra_id: i32, conn: &PgConnection) -> Result<(), Box<dyn ApiError>> {
+    pub fn apply(&self, infra_id: i32, conn: &mut PgConnection) -> Result<(), Box<dyn ApiError>> {
         match sql_query(format!(
             "DELETE FROM {} WHERE obj_id = $1 AND infra_id = $2",
             self.obj_type.get_table()
@@ -67,7 +67,7 @@ mod tests {
 
     #[derive(QueryableByName)]
     struct Count {
-        #[sql_type = "BigInt"]
+        #[diesel(sql_type = BigInt)]
         nb: i64,
     }
 
