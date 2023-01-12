@@ -229,8 +229,7 @@ public class EnvelopePhysics {
         var totalEnergyConsumed = kineticEnergyDelta - workGravity - workDrag;
 
         // If the train is braking the result should be negative
-        if (part.hasAttr(EnvelopeProfile.BRAKING))
-            assert totalEnergyConsumed <= 0;
+        assert !part.hasAttr(EnvelopeProfile.BRAKING) || totalEnergyConsumed <= 0;
 
         return max(0., totalEnergyConsumed);
     }

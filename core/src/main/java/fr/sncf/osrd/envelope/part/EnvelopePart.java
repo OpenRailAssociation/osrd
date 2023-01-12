@@ -1,8 +1,6 @@
 package fr.sncf.osrd.envelope.part;
 
 import static fr.sncf.osrd.envelope.EnvelopePhysics.intersectStepWithSpeed;
-import static java.lang.Math.abs;
-import static java.lang.Math.max;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.envelope.EnvelopeAttr;
@@ -487,7 +485,7 @@ public final class EnvelopePart implements SearchableEnvelope {
     /** Check if a is in the interval [b, c] or [c, b]*/
     private static boolean isBetween(double a, double b, double c) {
         var min = Math.min(b, c);
-        var max = max(b, c);
+        var max = Math.max(b, c);
         return min <= a && a <= max;
     }
 

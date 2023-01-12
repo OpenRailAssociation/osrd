@@ -60,7 +60,8 @@ public class ScheduleMetadataExtractor {
 
         // Compute energy consumed
         var envelopePath = EnvelopeTrainPath.from(trainPath);
-        var energyConsumed = getMechanicalEnergyConsumed(envelope, envelopePath, schedule.rollingStock);
+        var mechanicalEnergyConsumed =
+                getMechanicalEnergyConsumed(envelope, envelopePath, schedule.rollingStock);
 
         return new ResultTrain(
                 speeds,
@@ -68,7 +69,7 @@ public class ScheduleMetadataExtractor {
                 stops,
                 makeRouteOccupancy(infra, envelopeWithStops, trainPath, trainLength, events),
                 makeSignalUpdates(envelopeWithStops, trainPath, events),
-                energyConsumed
+                mechanicalEnergyConsumed
         );
     }
 

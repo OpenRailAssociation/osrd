@@ -17,7 +17,7 @@ public class ResultTrain {
     @Json(name = "signal_updates")
     public final Collection<SignalUpdate> signalUpdates;
     @Json(name = "mechanical_energy_consumed")
-    public final double energyConsumed;
+    public final double mechanicalEnergyConsumed;
 
     /** Creates the serializable result for a given train */
     public ResultTrain(
@@ -26,13 +26,13 @@ public class ResultTrain {
             List<ResultStops> stops, Map<String,
             ResultOccupancyTiming> routeOccupancies,
             Collection<SignalUpdate> signalUpdates,
-            double energyConsumed
+            double mechanicalEnergyConsumed
     ) {
         this.speeds = speeds;
         this.headPositions = headPositions;
         this.stops = stops;
         this.routeOccupancies = routeOccupancies;
         this.signalUpdates = signalUpdates;
-        this.energyConsumed = energyConsumed;
+        this.mechanicalEnergyConsumed = mechanicalEnergyConsumed;
     }
 }
