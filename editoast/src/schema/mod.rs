@@ -191,6 +191,19 @@ impl OSRDObject for Waypoint {
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 #[derivative(Default)]
+pub struct DirectionalTrackRange {
+    #[derivative(Default(value = r#""InvalidRef".into()"#))]
+    pub track: Identifier,
+    pub begin: f64,
+    #[derivative(Default(value = "100."))]
+    pub end: f64,
+    #[derivative(Default(value = "Direction::StartToStop"))]
+    pub direction: Direction,
+}
+
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+#[derivative(Default)]
 pub struct ApplicableDirectionsTrackRange {
     #[derivative(Default(value = r#""InvalidRef".into()"#))]
     pub track: Identifier,
@@ -200,7 +213,7 @@ pub struct ApplicableDirectionsTrackRange {
     pub applicable_directions: ApplicableDirections,
 }
 
-#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Hash)]
 #[serde(deny_unknown_fields, rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Direction {
     StartToStop,
@@ -215,15 +228,6 @@ pub enum ApplicableDirections {
     StopToStart,
     #[derivative(Default)]
     Both,
-}
-
-impl From<Direction> for ApplicableDirections {
-    fn from(direction: Direction) -> Self {
-        match direction {
-            Direction::StartToStop => ApplicableDirections::StartToStop,
-            Direction::StopToStart => ApplicableDirections::StopToStart,
-        }
-    }
 }
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq, Hash)]
@@ -241,6 +245,20 @@ pub struct TrackEndpoint {
     pub endpoint: Endpoint,
     #[derivative(Default(value = r#""InvalidRef".into()"#))]
     pub track: Identifier,
+}
+
+impl TrackEndpoint {
+    /// Create a `TrackEndpoint` from a track id and a direction.
+    pub fn from_track_and_direction<T: AsRef<str>>(track: T, dir: Direction) -> TrackEndpoint {
+        let endpoint = match dir {
+            Direction::StartToStop => Endpoint::End,
+            Direction::StopToStart => Endpoint::Begin,
+        };
+        TrackEndpoint {
+            track: track.as_ref().into(),
+            endpoint,
+        }
+    }
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq)]

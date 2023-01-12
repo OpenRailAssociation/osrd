@@ -39,7 +39,7 @@ paths:
           description: Successful Response
           content:
             application/json:
-              schema: 
+              schema:
                 type: array
                 items:
                   $ref: "#/components/schemas/Layer"
@@ -472,13 +472,13 @@ paths:
           schema:
             type: string
             enum: [Detector, BufferStop]
-          description:  Type of the waypoint
+          description: Type of the waypoint
           required: true
         - in: path
           name: waypoint_id
           schema:
             type: string
-          description:  The waypoint id
+          description: The waypoint id
           required: true
       responses:
         200:
@@ -530,9 +530,73 @@ paths:
                   discriminator:
                     propertyName: type
                   oneOf:
-                    - $ref: "#/components/schemas/ComputeTrackRangesNotFoundError"
-                    - $ref: "#/components/schemas/ComputeTrackRangesCantComputePathError"
-                    - $ref: "#/components/schemas/TrackRanges"
+                    - $ref: "#/components/schemas/RouteTrackRangesNotFoundError"
+                    - $ref: "#/components/schemas/RouteTrackRangesCantComputePathError"
+                    - $ref: "#/components/schemas/RouteTrackRangesComputed"
+
+  /infra/{id}/pathfinding/:
+    post:
+      tags:
+        - infra
+        - pathfinding
+      summary: Compute paths given starting and ending track location. Return shortest paths.
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Infra ID
+          required: true
+        - in: query
+          name: number
+          schema:
+            type: number
+            format: integer
+            minimum: 1
+            maximum: 5
+            default: 5
+          description: Maximum number of paths to return
+      requestBody:
+        description: Starting and ending track location
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                starting:
+                  allOf:
+                    - $ref: "#/components/schemas/TrackLocation"
+                    - type: object
+                      properties:
+                        direction:
+                          $ref: "#/components/schemas/Direction"
+                ending:
+                  $ref: "#/components/schemas/TrackLocation"
+      responses:
+        200:
+          description: Paths, containing track ranges, detectors and switches with their directions. If no path is found, an empty list is returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    track_ranges:
+                      type: array
+                      minItems: 1
+                      items:
+                        $ref: "#/components/schemas/DirectionalTrackRange"
+                    detectors:
+                      type: array
+                      items:
+                        type: string
+                        example: "detector1"
+                    switches_directions:
+                      type: object
+                      example: { "switch1": "left", "switch2": "right" }
+                      additionalProperties:
+                        type: string
 
   /infra/{id}/objects/{object_type}/:
     post:
@@ -832,39 +896,59 @@ components:
             obj_id: 61205924-6667-11e3-81ff-01f464e0362d
             obj_type: TrackSection
 
-    TrackRanges:
+    TrackLocation:
       type: object
-      description: Track ranges
+      description: A track location (track section and offset)
+      properties:
+        track:
+          type: string
+          description: The track section ID
+          example: 61205924-6667-11e3-81ff-01f464e0362d
+        offset:
+          type: number
+          format: float
+          description: The offset on the track section
+          example: 42.
+
+    Direction:
+      type: string
+      enum: [START_TO_STOP, STOP_TO_START]
+
+    DirectionalTrackRange:
+      type: object
+      description: Track range
+      properties:
+        track:
+          type: string
+          example: 01234567-89ab-cdef-0123-456789abcdef
+        begin:
+          type: number
+          format: float
+        end:
+          type: number
+          format: float
+          example: 100.
+        direction:
+          $ref: "#/components/schemas/Direction"
+
+    RouteTrackRangesComputed:
+      type: object
+      description: Route track ranges successfully computed
       properties:
         type: { type: string, enum: ["Computed"] }
         track_ranges:
           type: array
           items:
-            type: object
-            properties:
-              track:
-                type: string
-                example: 01234567-89ab-cdef-0123-456789abcdef
-              begin:
-                type: number
-                format: float
-              end:
-                type: number
-                format: float
-                example: 100.
-              applicable_directions:
-                type: string
-                enum: [START_TO_STOP, STOP_TO_START]
-                
-    ComputeTrackRangesNotFoundError:
+            $ref: "#/components/schemas/DirectionalTrackRange"
+
+    RouteTrackRangesNotFoundError:
       type: object
       description: Error when the route id couldn't be found
       properties:
         type: { type: string, enum: ["NotFound"] }
 
-    ComputeTrackRangesCantComputePathError:
+    RouteTrackRangesCantComputePathError:
       type: object
       description: Error when the route path couldn't be computed
       properties:
         type: { type: string, enum: ["CantComputePath"] }
-
