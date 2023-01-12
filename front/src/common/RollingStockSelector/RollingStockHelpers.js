@@ -15,7 +15,7 @@ export function checkUnit(data) {
   if (data.unit && data.unit !== 'US') {
     return <span className={`rollingstock-infos-unit ${data.unit}`}>{data.unit}</span>;
   }
-  if (data.detail.search(/UM3/i) !== -1) {
+  if (data.detail?.search(/UM3/i) !== -1) {
     return <span className="rollingstock-infos-unit UM3">UM3</span>;
   }
   if (data.detail.search(/UM|MUX/i) !== -1) {

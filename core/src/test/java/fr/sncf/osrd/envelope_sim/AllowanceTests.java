@@ -35,7 +35,10 @@ public class AllowanceTests {
         return new EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, RollingStock.Comfort.STANDARD);
     }
 
-    private static MarecoAllowance makeStandardMarecoAllowance(
+    /**
+     * test allowance data
+     */
+    public static MarecoAllowance makeStandardMarecoAllowance(
             EnvelopeSimContext context, 
             double beginPos, double endPos,
             double capacitySpeedLimit,
@@ -55,10 +58,15 @@ public class AllowanceTests {
         return new LinearAllowance(context, beginPos, endPos, capacitySpeedLimit, defaultRange);
     }
 
-    private static Envelope makeSimpleAllowanceEnvelope(EnvelopeSimContext context,
-                                                        Allowance allowance,
-                                                        double speed,
-                                                        boolean stop) {
+    /**
+     * build test allowance data
+     */
+    public static Envelope makeSimpleAllowanceEnvelope(
+            EnvelopeSimContext context,
+            Allowance allowance,
+            double speed,
+            boolean stop
+    ) {
         var path = context.path;
         double[] stops;
         if (stop)
