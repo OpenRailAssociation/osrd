@@ -105,7 +105,14 @@ public class STDCMEndpoint implements Take {
                     request.gridMarginBeforeSTDCM
             );
             double minRunTime = getMinRunTime(
-                    infra, rollingStock, comfort, startLocations, endLocations, request.timeStep);
+                    infra,
+                    rollingStock,
+                    comfort,
+                    startLocations,
+                    endLocations,
+                    request.timeStep,
+                    standardAllowance
+            );
 
             // Run the STDCM pathfinding
             var res = STDCMPathfinding.findPath(
@@ -156,7 +163,8 @@ public class STDCMEndpoint implements Take {
             RollingStock.Comfort comfort,
             Set<EdgeLocation<SignalingRoute>> startLocations,
             Set<EdgeLocation<SignalingRoute>> endLocations,
-            double timeStep
+            double timeStep,
+            AllowanceValue standardAllowance
     ) {
         var remainingDistanceEstimator = new RemainingDistanceEstimator(endLocations);
         var rawPath = new Pathfinding<>(new GraphAdapter<>(infra.getSignalingRouteGraph()))
@@ -191,7 +199,10 @@ public class STDCMEndpoint implements Take {
                 timeStep
         );
         var headPositions = standaloneResult.baseSimulations.get(0).headPositions;
-        return headPositions.get(headPositions.size() - 1).time;
+        var time = headPositions.get(headPositions.size() - 1).time;
+        if (standardAllowance != null)
+            time += standardAllowance.getAllowanceTime(time, path.length()); // Add allowance time to the shortest time
+        return time;
     }
 
     /** Generate a train schedule matching the envelope and rolling stock, with one stop at the end */
