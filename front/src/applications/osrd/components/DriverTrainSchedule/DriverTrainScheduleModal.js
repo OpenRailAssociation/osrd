@@ -2,6 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
+
+import { jouleToKwh } from 'utils/physics';
 import formatStops, {
   massWithOneDecimal,
 } from 'applications/osrd/components/DriverTrainSchedule/DriverTrainScheduleHelpers';
@@ -61,6 +63,21 @@ export default function DriverTrainScheduleModal(props) {
           </div>
         </div>
       </div>
+      <h1 className="text-blue mt-2">{t('drivertrainschedule:energydetails')}</h1>
+      <div className="row">
+        <div className="col-4">{t('drivertrainschedule:energyconsumed-basic')}</div>
+        <div className="font-weight-bold text-primary col-8">
+          {jouleToKwh(data.base.mechanical_energy_consumed, true)} kWh
+        </div>
+      </div>
+      {data.eco != null && (
+        <div className="row">
+          <div className="col-4">{t('drivertrainschedule:energyconsumed-eco')}</div>
+          <div className="font-weight-bold text-primary col-8">
+            {jouleToKwh(data.eco.mechanical_energy_consumed, true)} kWh
+          </div>
+        </div>
+      )}
       <div className="text-right font-italic text-cyan">
         {t('drivertrainschedule:numberoflines')} :
         <span className="font-weight-bold ml-1"> {data.base.stops.length}</span>

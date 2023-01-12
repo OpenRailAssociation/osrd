@@ -1,11 +1,17 @@
 package fr.sncf.osrd.envelope;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static fr.sncf.osrd.envelope.EnvelopePhysics.getPartMechanicalEnergyConsumed;
+import static fr.sncf.osrd.envelope_sim.AllowanceTests.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import fr.sncf.osrd.envelope.EnvelopeTestUtils.TestAttr;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
+import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
+import fr.sncf.osrd.envelope_sim.FlatPath;
+import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
+import fr.sncf.osrd.train.RollingStock;
 import org.junit.jupiter.api.Test;
+import fr.sncf.osrd.train.TestTrains;
 import java.util.List;
 
 class EnvelopePartTest {
@@ -86,5 +92,60 @@ class EnvelopePartTest {
         assertEquals(ep1.hashCode(), ep2.hashCode());
         assertNotEquals(ep1, ep3);
         assertNotEquals(ep1.hashCode(), ep3.hashCode());
+    }
+
+    @Test
+    void testGetMechanicalEnergyConsumed() {
+        var length = 50_000;
+        var testRollingStock = TestTrains.CONSTANT_POWER_TRAIN;
+        var testPath = new FlatPath(length, 0);
+        var testContext = new EnvelopeSimContext(testRollingStock, testPath, 4, RollingStock.Comfort.STANDARD);
+        var allowanceValue = new AllowanceValue.Percentage(10);
+
+        var marecoAllowance = makeStandardMarecoAllowance(
+                testContext,
+                0, 
+                length, 
+                0, 
+                allowanceValue
+            );
+        var envelopeAllowance = makeSimpleAllowanceEnvelope(testContext, marecoAllowance, 44.4, false);
+
+        for (var i = 0; i < envelopeAllowance.size(); i++) {
+            var envelopePart = envelopeAllowance.get(i);
+            var envelopePartEnergy = getPartMechanicalEnergyConsumed(
+                    envelopePart,
+                    testContext.path, 
+                    testContext.rollingStock
+            );
+            double expectedEnvelopePartEnergy;
+            switch (i) {
+                case 0:
+                    expectedEnvelopePartEnergy = testRollingStock.getMaxEffort(
+                            1,
+                            null,
+                            RollingStock.Comfort.STANDARD
+                    ) * envelopePart.getTotalTimeMS() / 1000;
+                    break;
+                case 1:
+                    assertEquals(envelopePart.getMinSpeed(), envelopePart.getMaxSpeed());
+                    expectedEnvelopePartEnergy = testRollingStock
+                            .getRollingResistance(envelopePart.getBeginSpeed()) * envelopePart.getTotalDistance();
+                    break;
+                case 2:
+                    expectedEnvelopePartEnergy = 0;
+                    break;
+                case 3:
+                    assertTrue(envelopePartEnergy <= 0);
+                    continue;
+                default:
+                    expectedEnvelopePartEnergy = 0;
+            }
+            assertEquals(
+                    expectedEnvelopePartEnergy,
+                    envelopePartEnergy,
+                    0.1 * expectedEnvelopePartEnergy + 1000
+            );
+        }
     }
 }
