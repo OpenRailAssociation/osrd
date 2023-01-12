@@ -48,9 +48,9 @@ public class Helpers {
     }
 
     public static List<RJSElectricalProfile> getExampleElectricalProfiles(
-            String physicalApproximationsPath
+            String externalGeneratedInputsPath
     ) throws IOException, URISyntaxException {
-        return deserializeResource(RJSElectricalProfile.listAdapter, physicalApproximationsPath);
+        return deserializeResource(RJSElectricalProfile.listAdapter, externalGeneratedInputsPath);
     }
 
     private static <T> T deserializeResource(
