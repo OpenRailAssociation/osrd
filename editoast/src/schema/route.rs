@@ -1,25 +1,13 @@
-use std::collections::HashMap;
-
-use super::ApplicableDirectionsTrackRange;
-use super::Direction;
-use super::Endpoint;
-use super::OSRDIdentified;
-
-use super::utils::Identifier;
-use super::OSRDTyped;
-use super::ObjectType;
-use super::TrackEndpoint;
-use super::Waypoint;
-
-use crate::infra_cache::Cache;
-use crate::infra_cache::Graph;
-use crate::infra_cache::InfraCache;
-use crate::infra_cache::ObjectCache;
-
 use derivative::Derivative;
-
 use editoast_derive::Model;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+
+use super::{
+    Direction, DirectionalTrackRange, Endpoint, Identifier, OSRDIdentified, OSRDTyped, ObjectType,
+    TrackEndpoint, Waypoint,
+};
+use crate::infra_cache::{Cache, Graph, InfraCache, ObjectCache};
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq, Eq, Model)]
 #[serde(deny_unknown_fields)]
@@ -61,7 +49,7 @@ impl Cache for Route {
 
 #[derive(Debug, Clone)]
 pub struct RoutePath {
-    pub track_ranges: Vec<ApplicableDirectionsTrackRange>,
+    pub track_ranges: Vec<DirectionalTrackRange>,
     pub switches_directions: HashMap<Identifier, Identifier>,
 }
 
@@ -79,20 +67,6 @@ impl Route {
             let bs = infra_cache.buffer_stops().get(waypoint.get_id())?;
             let bs = bs.unwrap_buffer_stop();
             Some((&bs.track, bs.position))
-        }
-    }
-
-    fn create_endpoint_from_track_and_direction<T: AsRef<str>>(
-        track: T,
-        dir: Direction,
-    ) -> TrackEndpoint {
-        let endpoint = match dir {
-            Direction::StartToStop => Endpoint::End,
-            Direction::StopToStart => Endpoint::Begin,
-        };
-        TrackEndpoint {
-            track: track.as_ref().into(),
-            endpoint,
         }
     }
 
@@ -135,11 +109,11 @@ impl Route {
             } else {
                 0.
             };
-            track_ranges.push(ApplicableDirectionsTrackRange {
+            track_ranges.push(DirectionalTrackRange {
                 track: cur_track_id.clone().into(),
                 begin: cur_offset.min(end_offset),
                 end: cur_offset.max(end_offset),
-                applicable_directions: cur_dir.into(),
+                direction: cur_dir,
             });
 
             // Search for the exit_point
@@ -153,7 +127,7 @@ impl Route {
             }
 
             // Search for the next track section
-            let endpoint = Self::create_endpoint_from_track_and_direction(cur_track_id, cur_dir);
+            let endpoint = TrackEndpoint::from_track_and_direction(cur_track_id, cur_dir);
             // No neighbour found
             if !graph.has_neighbour(&endpoint) {
                 return None;

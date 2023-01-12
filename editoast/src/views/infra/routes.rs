@@ -4,7 +4,7 @@ use crate::api_error::{ApiError, ApiResult};
 use crate::db_connection::DBConnection;
 use crate::infra::Infra;
 use crate::infra_cache::{Graph, InfraCache};
-use crate::schema::ApplicableDirectionsTrackRange;
+use crate::schema::DirectionalTrackRange;
 use crate::views::params::List;
 use chashmap::CHashMap;
 use diesel::sql_types::{Bool, Integer, Text};
@@ -89,7 +89,7 @@ async fn get_routes_from_waypoint(
 #[derive(Debug, Clone, Serialize, PartialEq)]
 #[serde(deny_unknown_fields, tag = "type", content = "track_ranges")]
 enum RouteTrackRangesResult {
-    Computed(Vec<ApplicableDirectionsTrackRange>),
+    Computed(Vec<DirectionalTrackRange>),
     NotFound,
     CantComputePath,
 }
