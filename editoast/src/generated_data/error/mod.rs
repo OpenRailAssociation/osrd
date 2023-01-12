@@ -159,7 +159,7 @@ fn get_insert_errors_query(obj_type: ObjectType) -> &'static str {
 
 /// Insert a heterogeneous list of infra errors in DB with a minimum number of queries
 fn insert_errors(
-    conn: &PgConnection,
+    conn: &mut PgConnection,
     infra_id: i32,
     errors: Vec<InfraError>,
 ) -> Result<(), DieselError> {
@@ -188,7 +188,7 @@ impl GeneratedData for ErrorLayer {
     }
 
     fn generate(
-        conn: &PgConnection,
+        conn: &mut PgConnection,
         infra_id: i32,
         infra_cache: &InfraCache,
     ) -> Result<(), DieselError> {
@@ -273,7 +273,7 @@ impl GeneratedData for ErrorLayer {
     }
 
     fn update(
-        conn: &PgConnection,
+        conn: &mut PgConnection,
         infra: i32,
         _operations: &[crate::schema::operation::OperationResult],
         infra_cache: &InfraCache,
