@@ -45,7 +45,7 @@ async fn edit<'a>(
 }
 
 fn apply_edit(
-    conn: &PgConnection,
+    conn: &mut PgConnection,
     infra: &Infra,
     operations: &[Operation],
     infra_cache: &mut InfraCache,

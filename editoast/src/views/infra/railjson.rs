@@ -23,7 +23,7 @@ pub fn routes() -> Vec<rocket::Route> {
 
 #[derive(QueryableByName)]
 struct RailJsonData {
-    #[sql_type = "Text"]
+    #[diesel(sql_type = Text)]
     railjson: String,
 }
 
