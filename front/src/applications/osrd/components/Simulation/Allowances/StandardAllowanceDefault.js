@@ -39,9 +39,9 @@ export default function StandardAllowanceDefault(props) {
   });
   const [allowanceTypes, setAllowanceTypes] = useState([
     {
-      id: 'time',
-      label: t('allowanceTypes.time'),
-      unit: ALLOWANCE_UNITS_KEYS.time,
+      id: 'percentage',
+      label: t('allowanceTypes.percentage'),
+      unit: ALLOWANCE_UNITS_KEYS.percentage,
     },
   ]);
   const [distribution, setDistribution] = useState(distributionsTypes[0]);

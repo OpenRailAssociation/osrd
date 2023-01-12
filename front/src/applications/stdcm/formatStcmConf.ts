@@ -110,12 +110,11 @@ export default function formatStdcmConf(
     const standardAllowanceType: string =
       (osrdconf.standardStdcmAllowance?.type as string) || 'time';
     const standardAllowanceValue: number = osrdconf.standardStdcmAllowance?.value || 0;
-    const standardAllowance: { [index: string]: any } = {
-   };
+    const standardAllowance: { [index: string]: any } = {};
     const typeUnitTanslationIndex: { [index: string]: any } = TYPES_UNITS;
     const correspondantTypesForApi: string = typeUnitTanslationIndex[standardAllowanceType];
     standardAllowance[correspondantTypesForApi] = standardAllowanceValue;
-    standardAllowance.value_type = standardAllowanceType
+    standardAllowance.value_type = standardAllowanceType;
 
     const osrdConfStdcm = {
       infra: osrdconf.infraID,
@@ -143,6 +142,8 @@ export default function formatStdcmConf(
       margin_after: osrdconf.gridMarginAfter,
       standard_allowance: standardAllowance,
     };
+
+    if (standardAllowance.value > 0) osrdConfStdcm.standard_allowance = standardAllowance;
     return osrdConfStdcm;
   }
   return false;

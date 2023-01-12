@@ -37,7 +37,7 @@
   "allowanceTypes": {
     "time": "Temps",
     "percentage": "Pourcentage",
-    "time_per_distance": "Distance"
+    "time_per_distance": "Temps/Distance"
   },
   "standardAllowance": "Marge de régularité",
   "gridMarginBefore": "Marge grille avant",
