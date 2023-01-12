@@ -80,13 +80,13 @@ impl ApiError for ListErrorsErrors {
 
 #[derive(QueryableByName, Debug, Clone)]
 struct InfraErrorQueryable {
-    #[sql_type = "BigInt"]
+    #[diesel(sql_type = BigInt)]
     pub count: i64,
-    #[sql_type = "Json"]
+    #[diesel(sql_type = Json)]
     pub information: Value,
-    #[sql_type = "Nullable<Json>"]
+    #[diesel(sql_type = Nullable<Json>)]
     pub geographic: Option<Value>,
-    #[sql_type = "Nullable<Json>"]
+    #[diesel(sql_type = Nullable<Json>)]
     pub schematic: Option<Value>,
 }
 
@@ -117,7 +117,7 @@ impl From<InfraErrorQueryable> for InfraErrorModel {
 }
 
 fn get_paginated_infra_errors(
-    conn: &PgConnection,
+    conn: &mut PgConnection,
     infra: i32,
     page: i64,
     per_page: i64,

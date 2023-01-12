@@ -49,13 +49,13 @@ pub fn routes() -> Vec<Route> {
 
 #[derive(QueryableByName, Debug, Clone, Serialize, Deserialize)]
 struct SpeedLimitTags {
-    #[sql_type = "Text"]
+    #[diesel(sql_type = Text)]
     tag: String,
 }
 
 #[derive(QueryableByName, Debug, Clone, Serialize, Deserialize)]
 struct Voltage {
-    #[sql_type = "Double"]
+    #[diesel(sql_type = Double)]
     voltage: f64,
 }
 

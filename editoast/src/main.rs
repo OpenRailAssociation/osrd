@@ -90,7 +90,7 @@ pub fn create_server(
 
     let mut rocket = rocket::custom(config)
         .attach(DBConnection::fairing())
-        .attach(cors)
+        .manage(cors)
         .manage(Arc::<CHashMap<i32, InfraCache>>::default())
         .manage(chartos_config);
 
@@ -122,18 +122,18 @@ async fn generate(
     pg_config: PostgresConfig,
     chartos_config: ChartosConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
+    let mut conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
 
     let mut infras = vec![];
     if args.infra_ids.is_empty() {
         // Retrieve all available infra
-        for infra in Infra::list(&conn) {
+        for infra in Infra::list(&mut conn) {
             infras.push(infra);
         }
     } else {
         // Retrieve given infras
         for id in args.infra_ids {
-            infras.push(Infra::retrieve(&conn, id as i32)?);
+            infras.push(Infra::retrieve(&mut conn, id as i32)?);
         }
     };
 
@@ -144,8 +144,8 @@ async fn generate(
             infra.name.bold(),
             infra.id
         );
-        let infra_cache = InfraCache::load(&conn, &infra)?;
-        if infra.refresh(&conn, args.force, &infra_cache)? {
+        let infra_cache = InfraCache::load(&mut conn, &infra)?;
+        if infra.refresh(&mut conn, args.force, &infra_cache)? {
             chartos::invalidate_all(infra.id, &chartos_config).await;
             println!("✅ Infra {}[{}] generated!", infra.name.bold(), infra.id);
         } else {
@@ -164,7 +164,7 @@ fn import_railjson(
     pg_config: PostgresConfig,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
     let railjson_file = File::open(args.railjson_path)?;
-    let conn = &PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
+    let conn = &mut PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
 
     let railjson: RailJson = serde_json::from_reader(BufReader::new(railjson_file))?;
 
@@ -189,23 +189,23 @@ fn import_railjson(
 /// Run the clear subcommand
 /// This command clear all generated data for the given infra
 fn clear(args: ClearArgs, pg_config: PostgresConfig) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
+    let mut conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
     let mut infras = vec![];
     if args.infra_ids.is_empty() {
         // Retrieve all available infra
-        for infra in Infra::list(&conn) {
+        for infra in Infra::list(&mut conn) {
             infras.push(infra);
         }
     } else {
         // Retrieve given infras
         for id in args.infra_ids {
-            infras.push(Infra::retrieve(&conn, id as i32)?);
+            infras.push(Infra::retrieve(&mut conn, id as i32)?);
         }
     };
 
     for infra in infras {
         println!("🍞 Infra {}[{}] is clearing:", infra.name.bold(), infra.id);
-        infra.clear(&conn)?;
+        infra.clear(&mut conn)?;
         println!("✅ Infra {}[{}] cleared!", infra.name.bold(), infra.id);
     }
     Ok(())
@@ -225,10 +225,10 @@ mod tests {
     use std::io::Write;
     use tempfile::NamedTempFile;
 
-    pub fn test_transaction(fn_test: fn(&PgConnection)) {
-        let conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
-        conn.test_transaction::<_, Error, _>(|| {
-            fn_test(&conn);
+    pub fn test_transaction(fn_test: fn(&mut PgConnection)) {
+        let mut conn = PgConnection::establish(&PostgresConfig::default().url()).unwrap();
+        conn.test_transaction::<_, Error, _>(|conn| {
+            fn_test(conn);
             Ok(())
         });
     }
@@ -276,10 +276,11 @@ mod tests {
         assert!(result.is_ok());
 
         // CLEANUP
-        let conn = PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
+        let mut conn =
+            PgConnection::establish(&pg_config.url()).expect("Error while connecting DB");
         sql_query("DELETE FROM osrd_infra_infra WHERE name = $1")
             .bind::<Text, _>(infra_name)
-            .execute(&conn)
+            .execute(&mut conn)
             .unwrap();
     }
 
