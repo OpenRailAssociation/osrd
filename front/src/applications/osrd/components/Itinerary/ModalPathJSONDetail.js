@@ -9,22 +9,11 @@ import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import { get } from 'common/requests';
 import { setFailure } from 'reducers/main';
 
-function LoaderPathfindingInProgress() {
-  return (
-    <div className="loaderPathfindingInProgress">
-      <div className="spinner-border" role="status">
-        <span className="sr-only">Loading...</span>
-      </div>
-    </div>
-  );
-}
-
 export default function ModalPathJSONDetail(props) {
   const dispatch = useDispatch();
   const { pathfindingID } = useSelector((state) => state.osrdconf);
   const [pathJSONDetail, setPathJSONDetail] = useState(undefined);
   const textareaRef = useRef(null);
-  const { pathfindingInProgress } = props;
   const { t } = useTranslation('osrdconf');
 
   const getPathJSON = async (zoom, params) => {
@@ -65,7 +54,6 @@ export default function ModalPathJSONDetail(props) {
         </button>
       </ModalHeaderSNCF>
       <ModalBodySNCF>
-        {pathfindingInProgress && <LoaderPathfindingInProgress />}
         <div className="form-control-container" style={{ maxHeight: '50vh' }}>
           <textarea
             className="form-control stretchy"
@@ -84,6 +72,4 @@ export default function ModalPathJSONDetail(props) {
   );
 }
 
-ModalPathJSONDetail.propTypes = {
-  pathfindingInProgress: PropTypes.bool.isRequired,
-};
+ModalPathJSONDetail.propTypes = {};

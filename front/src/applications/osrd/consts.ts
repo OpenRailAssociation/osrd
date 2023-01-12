@@ -1,6 +1,6 @@
 import { SwitchType } from 'types';
 import { ValueOf } from 'utils/types';
-import { Position, Feature, Point } from 'geojson';
+import { Position, Feature, Point, GeoJSON } from 'geojson';
 
 export const BLOCKTYPES = [
   {
@@ -99,13 +99,14 @@ export interface PointOnMap {
   source: string;
   clickLngLat: Position;
   duration?: number;
+  track?: number;
 }
 
 export interface SuggestedPointOnMap {
   track: string;
   position: number;
-  geo: Feature<Point>;
-  sch: Feature<Point>;
+  geo: Point;
+  sch: Point;
   id: any;
   name: any;
   suggestion: boolean;
@@ -130,7 +131,7 @@ export interface OsrdConfState {
   vias: PointOnMap[];
   suggeredVias: SuggestedPointOnMap[];
   trainCompo: undefined;
-  geojson: any[];
+  geojson: GeoJSON[];
   originDate?: string;
   originTime?: string;
   originUpperBoundDate?: string;

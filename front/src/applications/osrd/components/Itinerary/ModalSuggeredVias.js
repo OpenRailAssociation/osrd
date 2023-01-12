@@ -1,13 +1,18 @@
 import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import nextId from 'react-id-generator';
-import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { FaLongArrowAltUp, FaLongArrowAltDown, FaTrash, FaMinus } from 'react-icons/fa';
+
+import { adjustPointOnTrack } from 'utils/pathfinding';
+
+import { replaceVias } from 'reducers/osrdconf';
+
 import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
-import { FaLongArrowAltUp, FaLongArrowAltDown, FaTrash, FaMinus } from 'react-icons/fa';
 
 function LoaderPathfindingInProgress() {
   return (
@@ -20,17 +25,23 @@ function LoaderPathfindingInProgress() {
 }
 
 export default function ModalSugerredVias(props) {
+  const dispatch = useDispatch();
   const { suggeredVias, vias } = useSelector((state) => state.osrdconf);
-  const {
-    convertPathfindingVias,
-    inverseOD,
-    removeAllVias,
-    removeViaFromPath,
-    pathfindingInProgress,
-  } = props;
+  const { inverseOD, removeAllVias, removeViaFromPath, pathfindingInProgress } = props;
   const { t } = useTranslation('osrdconf');
   const nbVias = suggeredVias.length - 1;
   const selectedViasTracks = vias.map((via) => via.position);
+
+  const convertPathfindingVias = (steps, idxToAdd) => {
+    const newVias = steps.slice(1, -1).flatMap((step, idx) => {
+      if (!step.suggestion || idxToAdd === idx) {
+        return [adjustPointOnTrack(step, step, map, step.position)];
+      }
+      return [];
+    });
+
+    dispatch(replaceVias(newVias));
+  };
 
   const formatVia = (via, idx, idxTrueVia) => (
     <div
