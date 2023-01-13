@@ -7,7 +7,7 @@ import { NotificationsState } from 'common/Notifications';
 import logo from 'assets/pictures/home/stdcm.svg';
 import { useTranslation } from 'react-i18next';
 import OSRDSTDCM from './views/OSRDSTDCM';
-import 'applications/osrd/osrd.scss';
+import 'applications/operationalStudies/operationalStudies.scss';
 
 export default function HomeStdcm() {
   const { t } = useTranslation(['home', 'translation']);

@@ -14,7 +14,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
   trainscheduleURI,
-} from 'applications/osrd/components/Simulation/consts';
+} from 'applications/operationalStudies/components/Simulation/consts';
 
 // Generic components
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
@@ -22,12 +22,12 @@ import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import PropTypes from 'prop-types';
 import ReactModal from 'react-modal';
 // OSRD helpers
-import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/createTrain';
+import createTrain from 'applications/operationalStudies/components/Simulation/SpaceTimeChart/createTrain';
 import formatStdcmConf from 'applications/stdcm/formatStcmConf';
 // Static Data and Assets
 import rabbit from 'assets/pictures/KLCW_nc_standard.png';
 import { setFailure } from 'reducers/main';
-import { STDCM_REQUEST_STATUS } from 'applications/osrd/consts';
+import { STDCM_REQUEST_STATUS } from 'applications/operationalStudies/consts';
 import { updateItinerary } from 'reducers/osrdconf';
 import { useTranslation } from 'react-i18next';
 

@@ -6,7 +6,7 @@ import {
   DEFAULT_STDCM_MODE,
   OsrdConfState,
   PointOnMap,
-} from 'applications/osrd/consts';
+} from 'applications/operationalStudies/consts';
 import { formatIsoDate } from 'utils/date';
 import { sec2time, time2sec } from 'utils/timeManipulation';
 
