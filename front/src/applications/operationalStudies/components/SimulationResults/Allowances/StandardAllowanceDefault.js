@@ -12,8 +12,6 @@ import debounce from 'lodash/debounce';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { TYPES_UNITS, ALLOWANCE_UNITS_KEYS } from './consts';
 
-import { ALLOWANCE_UNITS_KEYS } from './consts';
-
 export default function StandardAllowanceDefault(props) {
   const {
     distributionsTypes,
