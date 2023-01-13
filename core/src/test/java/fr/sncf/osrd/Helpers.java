@@ -6,6 +6,7 @@ import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
 import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
+import fr.sncf.osrd.railjson.schema.RJSElectricalProfile;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
@@ -44,6 +45,12 @@ public class Helpers {
 
     public static RJSInfra getExampleInfra(String infraPath) throws IOException, URISyntaxException {
         return deserializeResource(RJSInfra.adapter, infraPath);
+    }
+
+    public static List<RJSElectricalProfile> getExampleElectricalProfiles(
+            String externalGeneratedInputsPath
+    ) throws IOException, URISyntaxException {
+        return deserializeResource(RJSElectricalProfile.listAdapter, externalGeneratedInputsPath);
     }
 
     private static <T> T deserializeResource(

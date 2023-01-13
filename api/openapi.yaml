@@ -1021,7 +1021,7 @@ components:
         type: object
         properties:
           track_section:
-            type: integer
+            type: string
           geo_coordinate:
             type: array
             items: { type: number, format: float }

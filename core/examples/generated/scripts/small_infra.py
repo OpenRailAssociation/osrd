@@ -3,6 +3,7 @@ from railjson_generator import (
     SimulationBuilder,
     ApplicableDirection,
     Location,
+    ExternalGeneratedInputs,
 )
 from railjson_generator.schema.infra.catenary import Catenary
 from railjson_generator.schema.infra.direction import Direction
@@ -571,10 +572,7 @@ speed_2.add_track_range(th1, 3500, 4400, ApplicableDirection.BOTH)
 # ================================
 #  Catenaries
 # ================================
-electrified_tracks = builder.infra.track_sections.copy()
-for track in electrified_tracks:
-    if track.label == "TD1":
-        electrified_tracks.remove(track)
+electrified_tracks = set(builder.infra.track_sections.copy()) - {td1}
 builder.infra.catenaries.append(Catenary("catenary_25k", "25000", electrified_tracks))
 builder.infra.catenaries.append(Catenary("catenary_1500", "1500", electrified_tracks))
 
@@ -627,3 +625,36 @@ sim = builder.build()
 
 # Save railjson
 sim.save(OUTPUT_DIR / "simulation.json")
+
+
+# ================================
+# Electrical profiles
+# ================================
+
+external_inputs = ExternalGeneratedInputs()
+
+ep_a = external_inputs.add_electrical_profile(value="A", power_class="1")
+ep_a.add_track_range(ta0, 0, ta0.length)
+ep_a.add_track_range(ta6, 0, 1000)
+ep_a.add_track_range(ta6, ta6.length-1000, ta6.length)
+
+ep_a1 = external_inputs.add_electrical_profile(value="A1", power_class="1")
+ep_a1.add_track_range(ta6, 1000, 2000)
+ep_a1.add_track_range(ta6, ta6.length-2000, ta6.length-1000)
+
+ep_b = external_inputs.add_electrical_profile(value="B", power_class="1")
+ep_b.add_track_range(ta6, 2000, 3000)
+ep_b.add_track_range(ta6, ta6.length-3000, ta6.length-2000)
+
+ep_b1 = external_inputs.add_electrical_profile(value="B2", power_class="1")
+ep_b1.add_track_range(ta6, 3000, 4000)
+ep_b1.add_track_range(ta6, ta6.length-4000, ta6.length-3000)
+
+ep_c = external_inputs.add_electrical_profile(value="C", power_class="1")
+ep_c.add_track_range(ta6, 4000, ta6.length-4000)
+
+ep_25000 = external_inputs.add_electrical_profile(value="25000", power_class="1")
+for track_section in set(builder.infra.track_sections) - {td1, ta0, ta6}:
+    ep_25000.add_track_range(track_section, 0, track_section.length)
+
+external_inputs.save(OUTPUT_DIR / "external_generated_inputs.json")

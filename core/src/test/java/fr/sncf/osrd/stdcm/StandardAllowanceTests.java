@@ -382,6 +382,32 @@ public class StandardAllowanceTests {
         assertEquals(1000, thirdRouteEntryTime, 2 * timeStep);
     }
 
+    /** Tests a simple path with no conflict, with a time per distance allowance and very low value */
+    @Test
+    public void testSimplePathTimePerDistanceAllowanceLowValue() {
+        /*
+        a --> b --> c --> d --> e
+         */
+        var infraBuilder = new DummyRouteGraphBuilder();
+        var firstRoute = infraBuilder.addRoute("a", "b");
+        infraBuilder.addRoute("b", "c");
+        infraBuilder.addRoute("c", "d");
+        var forthRoute = infraBuilder.addRoute("d", "e");
+        var infra = infraBuilder.build();
+        var allowance = new AllowanceValue.TimePerDistance(1);
+        var res = runWithAndWithoutAllowance(new STDCMPathfindingBuilder()
+                .setInfra(infra)
+                .setStartLocations(Set.of(new Pathfinding.EdgeLocation<>(firstRoute, 0)))
+                .setEndLocations(Set.of(new Pathfinding.EdgeLocation<>(forthRoute, 100)))
+                .setStandardAllowance(allowance)
+        );
+        assertNotNull(res.withoutAllowance);
+        assertNotNull(res.withAllowance);
+
+        // We need a high tolerance because there are several binary searches
+        checkAllowanceResult(res, allowance, 4 * timeStep);
+    }
+
     /** Tests a simple path with no conflict, with a time per distance allowance */
     @Test
     public void testSimplePathTimePerDistanceAllowance() {

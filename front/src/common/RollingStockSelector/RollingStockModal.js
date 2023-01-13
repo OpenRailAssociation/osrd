@@ -16,7 +16,6 @@ import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import { getRollingStockID } from 'reducers/osrdconf/selectors';
 import RollingStockEmpty from './RollingStockEmpty';
 import RollingStockCard from './RollingStockCard';
-import { enhanceData } from './RollingStockHelpers';
 
 const ROLLING_STOCK_URL = '/light_rolling_stock/';
 
@@ -97,8 +96,7 @@ function RollingStockModal(props) {
     if (rollingStock === undefined) {
       try {
         const data = await get(ROLLING_STOCK_URL, { page_size: 1000 });
-        const mergedData = enhanceData(data.results);
-        setRollingStock(mergedData);
+        setRollingStock(data.results);
       } catch (e) {
         dispatch(
           setFailure({
