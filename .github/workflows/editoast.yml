@@ -37,8 +37,8 @@ jobs:
             *.cache-from=type=gha
             *.cache-to=type=gha,mode=max
 
-      - name: Startup the postgres, api and chartos
-        run: "docker-compose up --no-build -d postgres api chartos"
+      - name: Startup the postgres, redis, api and chartos
+        run: "docker-compose up --no-build -d postgres redis api chartos"
         env:
           DOCKER_BUILDKIT: 1
           COMPOSE_DOCKER_CLI_BUILD: 1
