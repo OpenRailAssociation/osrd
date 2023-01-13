@@ -1,18 +1,22 @@
 import { RootState } from 'reducers';
+import { makeSubSelector } from 'utils/selectors';
+import { MapState } from '.';
 
-export const getRef = (state: RootState) => state.map.ref;
-export const getUrl = (state: RootState) => state.map.url;
-export const getMapStyle = (state: RootState) => state.map.mapStyle;
-export const getMapTrackSources = (state: RootState) => state.map.mapTrackSources;
-export const getShowIGNBDORTHO = (state: RootState) => state.map.showIGNBDORTHO;
-export const getShowIGNSCAN25 = (state: RootState) => state.map.showIGNSCAN25;
-export const getShowIGNCadastre = (state: RootState) => state.map.showIGNCadastre;
-export const getShowOSM = (state: RootState) => state.map.showOSM;
-export const getShowOSMtracksections = (state: RootState) => state.map.showOSMtracksections;
-export const getViewport = (state: RootState) => state.map.viewport;
-export const getFeatureInfoHoverID = (state: RootState) => state.map.featureInfoHoverID;
-export const getFeatureInfoClickID = (state: RootState) => state.map.featureInfoClickID;
-export const getFeatureSource = (state: RootState) => state.map.featureSource;
-export const getSignalsSettings = (state: RootState) => state.map.signalsSettings;
-export const getLayersSettings = (state: RootState) => state.map.layersSettings;
-export const getMapSearchMarker = (state: RootState) => state.map.mapSearchMarker;
+export const getMap = (state: RootState) => state.map;
+
+export const getRef = makeSubSelector<MapState>(getMap, 'ref');
+export const getUrl = makeSubSelector<MapState>(getMap, 'url');
+export const getMapStyle = makeSubSelector<MapState>(getMap, 'mapStyle');
+export const getMapTrackSources = makeSubSelector<MapState>(getMap, 'mapTrackSources');
+export const getShowIGNBDORTHO = makeSubSelector<MapState>(getMap, 'showIGNBDORTHO');
+export const getShowIGNSCAN25 = makeSubSelector<MapState>(getMap, 'showIGNSCAN25');
+export const getShowIGNCadastre = makeSubSelector<MapState>(getMap, 'showIGNCadastre');
+export const getShowOSM = makeSubSelector<MapState>(getMap, 'showOSM');
+export const getShowOSMtracksections = makeSubSelector<MapState>(getMap, 'showOSMtracksections');
+export const getViewport = makeSubSelector<MapState>(getMap, 'viewport');
+export const getFeatureInfoHoverID = makeSubSelector<MapState>(getMap, 'featureInfoHoverID');
+export const getFeatureInfoClickID = makeSubSelector<MapState>(getMap, 'featureInfoClickID');
+export const getFeatureSource = makeSubSelector<MapState>(getMap, 'featureSource');
+export const getSignalsSettings = makeSubSelector<MapState>(getMap, 'signalsSettings');
+export const getLayersSettings = makeSubSelector<MapState>(getMap, 'layersSettings');
+export const getMapSearchMarker = makeSubSelector<MapState>(getMap, 'mapSearchMarker');
