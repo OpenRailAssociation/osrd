@@ -11,7 +11,7 @@ import osrdLogo from 'assets/pictures/osrd.png';
 import Loader from 'common/Loader';
 
 export default function HomeContent() {
-  const { t } = useTranslation('osrd/home');
+  const { t } = useTranslation('operationalStudies/home');
   const [projectsList, setProjectsList] = useState();
   const [filter, setFilter] = useState('');
   const [sortOption, setSortOption] = useState('byName');

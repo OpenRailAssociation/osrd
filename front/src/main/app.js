@@ -1,4 +1,4 @@
-import { Suspense, useEffect } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Route, Routes, unstable_HistoryRouter as HistoryRouter } from 'react-router-dom';
 
@@ -12,12 +12,12 @@ import HomeCarto from 'applications/carto/Home';
 import HomeCustomGET from 'applications/customget/Home';
 import HomeEditor from 'applications/editor/Home';
 import HomeOpenData from 'applications/opendata/Home';
-import HomeOSRD from 'applications/osrd/Home';
+import HomeOperationalStudies from 'applications/operationalStudies/Home';
 import HomeStdcm from 'applications/stdcm/Home';
 import { ModalProvider, ModalSNCF } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import Loader from 'common/Loader';
 import history from 'main/history';
-import Home from 'main/Home';
+import Home from 'main/home';
 
 export default function App() {
   const user = useSelector((state) => state.user);
@@ -59,7 +59,7 @@ export default function App() {
           <ModalSNCF />
           <HistoryRouter history={history}>
             <Routes>
-              <Route path="/osrd/*" element={<HomeOSRD />} />
+              <Route path="/operational-studies/*" element={<HomeOperationalStudies />} />
               <Route path="/carto/*" element={<HomeCarto />} />
               <Route path="/editor/*" element={<HomeEditor />} />
               <Route path="/stdcm/*" element={<HomeStdcm />} />
