@@ -4,7 +4,7 @@ import React from 'react';
 import mapImg from 'assets/pictures/home/map.svg';
 import editorImg from 'assets/pictures/home/editor.svg';
 import stdcmImg from 'assets/pictures/home/stdcm.svg';
-import osrdImg from 'assets/pictures/home/osrd.svg';
+import operationalStudiesImg from 'assets/pictures/home/operationalStudies.svg';
 import customgetImg from 'assets/pictures/home/customget.svg';
 import opendataImg from 'assets/pictures/home/opendata.svg';
 import logo from 'assets/logo_osrd_seul_blanc.svg';
@@ -27,7 +27,7 @@ export default function Home() {
         <div className="cardscontainer">
           <div className="row">
             <div className="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
-              <Card img={osrdImg} title={t('exploitationstudies')} link="/osrd" />
+              <Card img={operationalStudiesImg} title={t('operationalStudies')} link="/osrd" />
             </div>
             <div className="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
               <Card img={mapImg} title={t('map')} link="/carto" />

@@ -1,16 +1,16 @@
 import { AnyAction } from 'redux';
 import produce from 'immer';
 
-import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/createTrain';
+import createTrain from 'applications/operationalStudies/components/Simulation/SpaceTimeChart/createTrain';
 import {
   LIST_VALUES_NAME_SPACE_TIME,
   SIGNAL_BASE_DEFAULT,
   KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
-} from 'applications/osrd/components/Simulation/consts';
+} from 'applications/operationalStudies/components/Simulation/consts';
 import {
   interpolateOnTime,
   offsetSeconds,
-} from 'applications/osrd/components/Helpers/ChartHelpers';
+} from 'applications/operationalStudies/components/Helpers/ChartHelpers';
 import undoableSimulation, { REDO_SIMULATION, UNDO_SIMULATION } from './simulation';
 
 import { SimulationSnapshot, Train, OsrdSimulationState } from './types';

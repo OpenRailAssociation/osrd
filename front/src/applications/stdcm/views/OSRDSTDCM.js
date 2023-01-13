@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import { useDispatch } from 'react-redux';
-import { MODES, STDCM_REQUEST_STATUS } from '../../osrd/consts';
+import { MODES, STDCM_REQUEST_STATUS } from 'applications/operationalStudies/consts';
 import OSRDStdcmConfig from './OSRDCStdcmConfig';
 import OSRDStdcmResults from './OSRDStdcmResults';
 import StdcmRequestModal from './StdcmRequestModal';

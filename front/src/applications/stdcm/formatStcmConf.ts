@@ -1,8 +1,8 @@
 import { Dispatch } from 'redux';
 import { TFunction } from 'i18next';
 
-import { STDCM_MODES, OsrdConfState } from 'applications/osrd/consts';
-import { TYPES_UNITS } from 'applications/osrd/components/Simulation/Allowances/consts';
+import { TYPES_UNITS } from 'applications/operationalStudies/components/Simulation/Allowances/consts';
+import { STDCM_MODES, OsrdConfState } from 'applications/operationalStudies/consts';
 import { time2sec } from 'utils/timeManipulation';
 import { makeEnumBooleans } from 'utils/constants';
 

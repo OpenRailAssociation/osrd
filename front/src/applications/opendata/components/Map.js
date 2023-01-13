@@ -8,7 +8,7 @@ import turfNearestPointOnLine from '@turf/nearest-point-on-line';
 
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
-import VirtualLayers from 'applications/osrd/views/OSRDSimulation/VirtualLayers';
+import VirtualLayers from 'applications/operationalStudies/views/OSRDSimulation/VirtualLayers';
 import SnappedMarker from 'common/Map/Layers/SnappedMarker';
 /* Objects & various */
 import TracksGeographic from 'common/Map/Layers/TracksGeographic';
