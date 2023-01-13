@@ -1,4 +1,4 @@
-import { SNCFCOLORSONLY } from 'applications/osrd/consts';
+import { SNCFCOLORSONLY } from 'applications/operationalStudies/consts';
 
 const randomColor = () => {
   const colors = Object.values(SNCFCOLORSONLY);

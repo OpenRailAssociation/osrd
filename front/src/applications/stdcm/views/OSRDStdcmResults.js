@@ -1,17 +1,17 @@
-import 'applications/osrd/views/OSRDSimulation/OSRDSimulation.scss';
-import 'applications/osrd/views/OSRDConfig/OSRDConfig.scss';
+import 'applications/operationalStudies/views/OSRDSimulation/OSRDSimulation.scss';
+import 'applications/operationalStudies/views/OSRDConfig/OSRDConfig.scss';
 
-import { KEY_VALUES_FOR_CONSOLIDATED_SIMULATION } from 'applications/osrd/components/Simulation/consts';
+import { KEY_VALUES_FOR_CONSOLIDATED_SIMULATION } from 'applications/operationalStudies/components/Simulation/consts';
 
 import React, { useEffect } from 'react';
 import { updateConsolidatedSimulation, updateMustRedraw } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
-import SpaceTimeChart from 'applications/osrd/views/OSRDSimulation/SpaceTimeChart';
-import SpeedSpaceChart from 'applications/osrd/components/Simulation/SpeedSpaceChart/withOSRDData';
-import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/createTrain';
+import SpaceTimeChart from 'applications/operationalStudies/views/OSRDSimulation/SpaceTimeChart';
+import SpeedSpaceChart from 'applications/operationalStudies/components/Simulation/SpeedSpaceChart/withOSRDData';
+import createTrain from 'applications/operationalStudies/components/Simulation/SpaceTimeChart/createTrain';
 
-import { STDCM_REQUEST_STATUS } from 'applications/osrd/consts';
+import { STDCM_REQUEST_STATUS } from 'applications/operationalStudies/consts';
 import { useTranslation } from 'react-i18next';
 
 export default function OSRDStcdmResults(props) {

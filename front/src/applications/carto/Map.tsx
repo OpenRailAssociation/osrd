@@ -11,7 +11,7 @@ import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
-import VirtualLayers from 'applications/osrd/views/OSRDSimulation/VirtualLayers';
+import VirtualLayers from 'applications/operationalStudies/views/OSRDSimulation/VirtualLayers';
 import BufferStops from 'common/Map/Layers/BufferStops';
 /* Settings & Buttons */
 import MapButtons from 'common/Map/Buttons/MapButtons';

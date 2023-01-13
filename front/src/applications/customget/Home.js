@@ -1,4 +1,4 @@
-import 'applications/osrd/osrd.scss';
+import 'applications/operationalStudies/operationalStudies.scss';
 
 import { Route, Routes } from 'react-router-dom';
 

@@ -1,4 +1,4 @@
-import { OsrdConfState } from 'applications/osrd/consts';
+import { OsrdConfState } from 'applications/operationalStudies/consts';
 import { createStoreWithoutMiddleware } from 'Store';
 import {
   initialState,

@@ -1,6 +1,6 @@
 import React from 'react';
 import { ComponentStory, ComponentMeta } from '@storybook/react';
-import SpeedSpaceChart from 'applications/osrd/components/Simulation/SpeedSpaceChart/SpeedSpaceChart';
+import SpeedSpaceChart from 'applications/operationalStudies/components/Simulation/SpeedSpaceChart/SpeedSpaceChart';
 
 export default {
     /* 👇 The title prop is optional.
