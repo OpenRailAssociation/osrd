@@ -11,11 +11,23 @@ use std::env;
 use crate::db_connection::DBConnection;
 
 pub fn routes() -> HashMap<&'static str, Vec<Route>> {
-    HashMap::from([("/", routes![health, version]), ("/infra", infra::routes())])
+    HashMap::from([
+        ("/", routes![health, version, opt::all_options]),
+        ("/infra", infra::routes()),
+    ])
+}
+
+#[allow(clippy::let_unit_value)]
+mod opt {
+    /// Catches all OPTION requests in order to get the CORS related Fairing triggered.
+    #[options("/<_..>")]
+    pub fn all_options() {
+        /* Intentionally left empty */
+    }
 }
 
 #[get("/health")]
-pub async fn health(conn: DBConnection) -> &'static str {
+async fn health(conn: DBConnection) -> &'static str {
     // Check DB connection
     conn.run(|conn| sql_query("SELECT 1").execute(conn).unwrap())
         .await;
@@ -23,7 +35,7 @@ pub async fn health(conn: DBConnection) -> &'static str {
 }
 
 #[get("/version")]
-pub fn version() -> JsonValue {
+fn version() -> JsonValue {
     let mut res = HashMap::new();
     let describe = env::var("OSRD_GIT_DESCRIBE").ok();
     res.insert("git_describe", describe);
