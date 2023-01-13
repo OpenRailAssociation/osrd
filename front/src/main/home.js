@@ -27,7 +27,11 @@ export default function Home() {
         <div className="cardscontainer">
           <div className="row">
             <div className="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
-              <Card img={operationalStudiesImg} title={t('operationalStudies')} link="/osrd" />
+              <Card
+                img={operationalStudiesImg}
+                title={t('operationalStudies')}
+                link="/operational-studies"
+              />
             </div>
             <div className="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
               <Card img={mapImg} title={t('map')} link="/carto" />

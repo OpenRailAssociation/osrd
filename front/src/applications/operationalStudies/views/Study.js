@@ -19,13 +19,13 @@ import {
 dayjs.locale('fr');
 
 function BreadCrumbs(props) {
-  const { t } = useTranslation('osrd/project');
+  const { t } = useTranslation('operationalStudies/project');
   const { projectName, studyName } = props;
   return (
     <div className="navbar-breadcrumbs">
       <Link to="/osrd">{t('projectsList')}</Link>
       <i className="icons-arrow-next icons-size-x75 text-muted" />
-      <Link to="/osrd/project">{projectName}</Link>
+      <Link to="/operational-studies/project">{projectName}</Link>
       <i className="icons-arrow-next icons-size-x75 text-muted" />
       {studyName}
     </div>
@@ -33,7 +33,7 @@ function BreadCrumbs(props) {
 }
 
 function DateBox(props) {
-  const { t } = useTranslation('osrd/study');
+  const { t } = useTranslation('operationalStudies/study');
   const { date, css, translation } = props;
   return (
     <div className={`study-details-dates-date ${css}`}>
@@ -56,7 +56,7 @@ function StateStep(props) {
 }
 
 export default function Study() {
-  const { t } = useTranslation('osrd/study');
+  const { t } = useTranslation('operationalStudies/study');
   const [projectDetails, setProjectDetails] = useState();
   const [studyDetails, setStudyDetails] = useState();
   const [scenariosList, setScenariosList] = useState();

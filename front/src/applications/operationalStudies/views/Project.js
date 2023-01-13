@@ -17,11 +17,11 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 function BreadCrumbs(props) {
-  const { t } = useTranslation('osrd/project');
+  const { t } = useTranslation('operationalStudies/project');
   const { name } = props;
   return (
     <div className="navbar-breadcrumbs">
-      <Link to="/osrd">{t('projectsList')}</Link>
+      <Link to="/operational-studies">{t('projectsList')}</Link>
       <i className="icons-arrow-next icons-size-x75 text-muted" />
       {name}
     </div>
@@ -29,7 +29,7 @@ function BreadCrumbs(props) {
 }
 
 export default function Project() {
-  const { t } = useTranslation('osrd/project');
+  const { t } = useTranslation('operationalStudies/project');
   const [projectDetails, setProjectDetails] = useState();
   const [studiesList, setStudiesList] = useState();
   const [filter, setFilter] = useState('');

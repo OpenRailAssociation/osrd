@@ -21,12 +21,12 @@ type Props = {
 };
 
 export default function StudyCard({ details }: Props) {
-  const { t } = useTranslation('osrd/study');
+  const { t } = useTranslation('operationalStudies/study');
   const navigate = useNavigate();
 
   const handleClick = () => {
     console.log('redirect to scenario');
-    navigate('/osrd/scenario');
+    navigate('/operational-studies/scenario');
   };
 
   return (
