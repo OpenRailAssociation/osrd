@@ -173,9 +173,9 @@ dependencies = [
 
 [[package]]
 name = "clap_lex"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0d4198f73e42b4936b35b5bb248d81d2b595ecb170da0bac7655c54eedfa8da8"
+checksum = "783fe232adfca04f90f56201b26d79682d4cd2625e0bc7290b95123afe558ade"
 dependencies = [
  "os_str_bytes",
 ]
@@ -341,7 +341,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6a62ebf187bc30bfc1a14bed4073912b988551d111208fe800b27c32df282481"
 dependencies = [
  "deadpool",
- "redis",
+ "redis 0.21.7",
 ]
 
 [[package]]
@@ -439,6 +439,7 @@ dependencies = [
  "enum-map",
  "json-patch",
  "rand 0.8.5",
+ "redis 0.22.2",
  "reqwest",
  "rocket",
  "rocket_db_pools",
@@ -1422,6 +1423,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "redis"
+version = "0.22.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5c1aada340fba5deba625c84d109d0a83cc3565452d38083417992a702c2428d"
+dependencies = [
+ "combine",
+ "itoa",
+ "native-tls",
+ "percent-encoding",
+ "ryu",
+ "sha1_smol",
+ "url",
+]
+
+[[package]]
 name = "redox_syscall"
 version = "0.2.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1776,6 +1792,12 @@ dependencies = [
  "ryu",
  "serde",
 ]
+
+[[package]]
+name = "sha1_smol"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ae1a47186c03a32177042e55dbc5fd5aee900b8e0069a8d70fba96a9375cd012"
 
 [[package]]
 name = "sharded-slab"
