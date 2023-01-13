@@ -1,11 +1,13 @@
 package fr.sncf.osrd.standalone_sim;
 
 import static java.lang.Math.*;
+import static fr.sncf.osrd.envelope.EnvelopePhysics.getMechanicalEnergyConsumed;
 
 import com.google.common.collect.Sets;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.EnvelopeStopWrapper;
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate;
+import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
 import fr.sncf.osrd.infra.api.reservation.ReservationRoute;
 import fr.sncf.osrd.infra.api.signaling.Signal;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
@@ -56,12 +58,18 @@ public class ScheduleMetadataExtractor {
         // Compute events
         var events = computeEvents(infra, trainPath, trainLength, envelopeWithStops);
 
+        // Compute energy consumed
+        var envelopePath = EnvelopeTrainPath.from(trainPath);
+        var mechanicalEnergyConsumed =
+                getMechanicalEnergyConsumed(envelope, envelopePath, schedule.rollingStock);
+
         return new ResultTrain(
                 speeds,
                 headPositions,
                 stops,
                 makeRouteOccupancy(infra, envelopeWithStops, trainPath, trainLength, events),
-                makeSignalUpdates(envelopeWithStops, trainPath, events)
+                makeSignalUpdates(envelopeWithStops, trainPath, events),
+                mechanicalEnergyConsumed
         );
     }
 

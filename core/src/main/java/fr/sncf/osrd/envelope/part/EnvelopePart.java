@@ -267,6 +267,10 @@ public final class EnvelopePart implements SearchableEnvelope {
         return getEndPos(stepCount() - 1);
     }
 
+    public double getTotalDistance() {
+        return Math.abs(this.getEndPos() - this.getBeginPos());
+    }
+
     public double getBeginSpeed(int stepIndex) {
         return speeds[stepIndex];
     }

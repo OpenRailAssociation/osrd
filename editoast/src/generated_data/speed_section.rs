@@ -14,7 +14,11 @@ impl GeneratedData for SpeedSectionLayer {
         "osrd_infra_speedsectionlayer"
     }
 
-    fn generate(conn: &PgConnection, infra: i32, _infra_cache: &InfraCache) -> Result<(), Error> {
+    fn generate(
+        conn: &mut PgConnection,
+        infra: i32,
+        _infra_cache: &InfraCache,
+    ) -> Result<(), Error> {
         sql_query(include_str!("sql/generate_speed_section_layer.sql"))
             .bind::<Integer, _>(infra)
             .execute(conn)?;
@@ -22,7 +26,7 @@ impl GeneratedData for SpeedSectionLayer {
     }
 
     fn update(
-        conn: &PgConnection,
+        conn: &mut PgConnection,
         infra: i32,
         operations: &[crate::schema::operation::OperationResult],
         infra_cache: &crate::infra_cache::InfraCache,

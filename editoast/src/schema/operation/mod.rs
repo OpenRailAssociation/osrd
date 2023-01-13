@@ -98,7 +98,7 @@ impl Operation {
     pub fn apply(
         &self,
         infra_id: i32,
-        conn: &PgConnection,
+        conn: &mut PgConnection,
     ) -> Result<OperationResult, Box<dyn ApiError>> {
         match self {
             Operation::Delete(deletion) => {

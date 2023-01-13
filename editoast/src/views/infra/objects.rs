@@ -49,14 +49,14 @@ fn has_unique_ids(obj_ids: &Vec<String>) -> bool {
 
 #[derive(QueryableByName, Debug, Clone, Serialize, Deserialize)]
 struct ObjectQueryable {
-    #[sql_type = "Text"]
+    #[diesel(sql_type = Text)]
     #[serde(skip_serializing)]
     obj_id: String,
-    #[sql_type = "Jsonb"]
+    #[diesel(sql_type = Jsonb)]
     railjson: JsonValue,
-    #[sql_type = "Nullable<Jsonb>"]
+    #[diesel(sql_type = Nullable<Jsonb>)]
     geographic: Option<JsonValue>,
-    #[sql_type = "Nullable<Jsonb>"]
+    #[diesel(sql_type = Nullable<Jsonb>)]
     schematic: Option<JsonValue>,
 }
 

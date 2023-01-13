@@ -21,7 +21,7 @@ impl UpdateOperation {
     pub fn apply(
         &self,
         infra_id: i32,
-        conn: &PgConnection,
+        conn: &mut PgConnection,
     ) -> Result<RailjsonObject, Box<dyn ApiError>> {
         // Load object
 
@@ -57,7 +57,7 @@ impl UpdateOperation {
 
 #[derive(QueryableByName)]
 struct DataObject {
-    #[sql_type = "Jsonb"]
+    #[diesel(sql_type = Jsonb)]
     data: Value,
 }
 
@@ -130,13 +130,13 @@ mod tests {
 
     #[derive(QueryableByName)]
     struct Value {
-        #[sql_type = "Double"]
+        #[diesel(sql_type = Double)]
         val: f64,
     }
 
     #[derive(QueryableByName)]
     struct Label {
-        #[sql_type = "Text"]
+        #[diesel(sql_type = Text)]
         label: String,
     }
 

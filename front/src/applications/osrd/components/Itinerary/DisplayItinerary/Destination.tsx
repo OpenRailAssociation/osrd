@@ -78,6 +78,7 @@ function Destination(props: DestinationProps) {
                     name="stdcmMode"
                     checked={isByDestination}
                     onChange={() => dispatch(updateStdcmMode(STDCM_MODES.byDestination))}
+                    disabled
                   />
 
                   <div className="d-flex">

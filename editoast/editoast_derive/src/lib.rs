@@ -29,7 +29,7 @@ pub fn model_fn(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
             pub fn persist_batch(
                 values: &[Self],
                 infrastructure_id: i32,
-                conn: &diesel::PgConnection,
+                conn: &mut diesel::PgConnection,
             ) -> Result<(), Box<dyn crate::api_error::ApiError>> {
                 use #table::dsl::*;
                 use crate::diesel::RunQueryDsl;

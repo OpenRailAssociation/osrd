@@ -35,9 +35,10 @@ use diesel::sql_types::Integer;
 /// This trait define how a generated data table should be handled
 pub trait GeneratedData {
     fn table_name() -> &'static str;
-    fn generate(conn: &PgConnection, infra: i32, infra_cache: &InfraCache) -> Result<(), Error>;
+    fn generate(conn: &mut PgConnection, infra: i32, infra_cache: &InfraCache)
+        -> Result<(), Error>;
 
-    fn clear(conn: &PgConnection, infra: i32) -> Result<(), Error> {
+    fn clear(conn: &mut PgConnection, infra: i32) -> Result<(), Error> {
         sql_query(format!(
             "DELETE FROM {} WHERE infra_id = $1",
             Self::table_name()
@@ -47,14 +48,14 @@ pub trait GeneratedData {
         Ok(())
     }
 
-    fn refresh(conn: &PgConnection, infra: i32, infra_cache: &InfraCache) -> Result<(), Error> {
+    fn refresh(conn: &mut PgConnection, infra: i32, infra_cache: &InfraCache) -> Result<(), Error> {
         Self::clear(conn, infra)?;
         Self::generate(conn, infra, infra_cache)
     }
 
     /// Search and update all objects that needs to be refreshed given a list of operation.
     fn update(
-        conn: &PgConnection,
+        conn: &mut PgConnection,
         infra: i32,
         operations: &[OperationResult],
         infra_cache: &InfraCache,
@@ -63,7 +64,7 @@ pub trait GeneratedData {
 
 /// Refresh all the generated data of a given infra
 pub fn refresh_all(
-    conn: &PgConnection,
+    conn: &mut PgConnection,
     infra: i32,
     infra_cache: &InfraCache,
 ) -> Result<(), Box<dyn ApiError>> {
@@ -82,7 +83,7 @@ pub fn refresh_all(
 }
 
 /// Clear all the generated data of a given infra
-pub fn clear_all(conn: &PgConnection, infra: i32) -> Result<(), Box<dyn ApiError>> {
+pub fn clear_all(conn: &mut PgConnection, infra: i32) -> Result<(), Box<dyn ApiError>> {
     TrackSectionLayer::clear(conn, infra)?;
     SpeedSectionLayer::clear(conn, infra)?;
     SignalLayer::clear(conn, infra)?;
@@ -99,7 +100,7 @@ pub fn clear_all(conn: &PgConnection, infra: i32) -> Result<(), Box<dyn ApiError
 
 /// Clear all the generated data of a given infra
 pub fn update_all(
-    conn: &PgConnection,
+    conn: &mut PgConnection,
     infra: i32,
     operations: &[OperationResult],
     infra_cache: &InfraCache,
@@ -127,21 +128,21 @@ pub mod tests {
 
     #[test]
     fn refresh_all_test() {
-        test_infra_transaction(|conn: &PgConnection, infra: Infra| {
+        test_infra_transaction(|conn: &mut PgConnection, infra: Infra| {
             assert!(refresh_all(conn, infra.id, &Default::default()).is_ok());
         })
     }
 
     #[test]
     fn update_all_test() {
-        test_infra_transaction(|conn: &PgConnection, infra: Infra| {
+        test_infra_transaction(|conn: &mut PgConnection, infra: Infra| {
             assert!(update_all(conn, infra.id, &[], &Default::default()).is_ok());
         })
     }
 
     #[test]
     fn clear_all_test() {
-        test_infra_transaction(|conn: &PgConnection, infra: Infra| {
+        test_infra_transaction(|conn: &mut PgConnection, infra: Infra| {
             assert!(clear_all(conn, infra.id).is_ok());
         })
     }

@@ -949,6 +949,8 @@ components:
                 items: { type: number, format: float }
                 minItems: 2
                 maxItems: 2
+        mechanical_energy_consumed:
+          type: { type: number, format: float }
     TrainScheduleResult:
       properties:
         id:
@@ -1019,7 +1021,7 @@ components:
         type: object
         properties:
           track_section:
-            type: integer
+            type: string
           geo_coordinate:
             type: array
             items: { type: number, format: float }
