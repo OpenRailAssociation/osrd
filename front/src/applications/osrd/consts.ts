@@ -141,4 +141,5 @@ export interface OsrdConfState {
   featureInfoClick: { displayPopup: boolean; feature?: Feature; coordinates?: number[] };
   gridMarginBefore: number;
   gridMarginAfter: number;
+  standardStdcmAllowance: any; // We wait for auto generated types
 }
