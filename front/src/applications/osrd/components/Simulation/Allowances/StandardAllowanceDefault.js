@@ -16,7 +16,7 @@ import { ALLOWANCE_UNITS_KEYS } from './consts';
 export default function StandardAllowanceDefault(props) {
   const {
     distributionsTypes,
-    ggetAllowances,
+    getAllowances,
     setIsUpdating,
     trainDetail,
     mutateSingleAllowance,
