@@ -24,7 +24,6 @@ rocket = { git = "https://github.com/SergioBenitez/Rocket.git", rev = "162fafa0"
 rocket_sync_db_pools = { git = "https://github.com/SergioBenitez/Rocket.git", rev = "162fafa0", features = [
     "diesel_postgres_pool",
 ] }
-rocket_cors = { git = "https://github.com/lawliet89/rocket_cors.git", rev = "54fae070" }
 serde = "~1.0.147"
 serde_derive = "~1.0.147"
 serde_json = "~1.0.89"
