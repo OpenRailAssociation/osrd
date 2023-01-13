@@ -6,6 +6,7 @@ extern crate diesel;
 mod api_error;
 mod chartos;
 mod client;
+mod cors;
 mod db_connection;
 mod generated_data;
 mod infra;
@@ -26,7 +27,6 @@ use diesel::{Connection, PgConnection};
 use infra::Infra;
 use infra_cache::InfraCache;
 use rocket::{Build, Config, Rocket};
-use rocket_cors::CorsOptions;
 use std::error::Error;
 use std::fs::File;
 use std::io::BufReader;
@@ -85,12 +85,9 @@ pub fn create_server(
         exit(1);
     }
 
-    // Setup CORS
-    let cors = CorsOptions::default().to_cors().unwrap();
-
     let mut rocket = rocket::custom(config)
         .attach(DBConnection::fairing())
-        .manage(cors)
+        .attach(cors::Cors)
         .manage(Arc::<CHashMap<i32, InfraCache>>::default())
         .manage(chartos_config);
 
