@@ -22,12 +22,12 @@ type Props = {
 };
 
 export default function ProjectCard({ details }: Props) {
-  const { t } = useTranslation('osrd/home');
+  const { t } = useTranslation('operationalStudies/home');
   const navigate = useNavigate();
 
   const handleClick = () => {
     console.log('redirect to project');
-    navigate('/osrd/project');
+    navigate('/operational-studies/project');
   };
 
   return (

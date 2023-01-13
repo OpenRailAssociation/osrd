@@ -5,7 +5,6 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/fr';
 import nextId from 'react-id-generator';
 import { AiFillFolderOpen } from 'react-icons/ai';
-import { RiFoldersLine } from 'react-icons/ri';
 import { FcCalendar } from 'react-icons/fc';
 import studyLogo from 'assets/pictures/views/study.svg';
 
@@ -32,12 +31,12 @@ type Props = {
 };
 
 export default function StudyCard({ details }: Props) {
-  const { t } = useTranslation('osrd/project');
+  const { t } = useTranslation('operationalStudies/project');
   const navigate = useNavigate();
 
   const handleClick = () => {
     console.log('redirect to study');
-    navigate('/osrd/study');
+    navigate('/operational-studies/study');
   };
 
   return (
