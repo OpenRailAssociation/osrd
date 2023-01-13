@@ -83,7 +83,7 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
   const mapItinerary = (zoom = true) => {
     dispatch(updateItinerary(undefined));
 
-    if (origin !== undefined && destination !== undefined && rollingStockID !== undefined) {
+    if (origin && destination && rollingStockID) {
       const params: PathQuery = {
         infra: infraID,
         steps: [
@@ -91,7 +91,7 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
             duration: 0,
             waypoints: [
               {
-                track_section: Number(origin.id),
+                track_section: origin.id,
                 geo_coordinate: origin.clickLngLat,
               },
             ],
@@ -100,7 +100,7 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
             duration: Math.round(via.duration || 0),
             waypoints: [
               {
-                track_section: via.track || Number(via.id),
+                track_section: via.track || via.id,
                 geo_coordinate: via.clickLngLat,
               },
             ],
@@ -109,7 +109,7 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
             duration: 1,
             waypoints: [
               {
-                track_section: Number(destination.id),
+                track_section: destination.id,
                 geo_coordinate: destination.clickLngLat,
               },
             ],

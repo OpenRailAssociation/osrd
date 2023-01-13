@@ -99,7 +99,7 @@ export interface PointOnMap {
   source: string;
   clickLngLat: Position;
   duration?: number;
-  track?: number;
+  track?: string;
 }
 
 export interface SuggestedPointOnMap {
