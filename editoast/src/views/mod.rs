@@ -1,14 +1,15 @@
 mod infra;
 use rocket::serde::json::Value as JsonValue;
+use rocket_db_pools::deadpool_redis;
 pub mod pagination;
 pub mod params;
 
+use crate::db_connection::{DBConnection, RedisPool};
+use deadpool_redis::redis::cmd;
 use diesel::{sql_query, RunQueryDsl};
 use rocket::{routes, Route};
 use std::collections::HashMap;
 use std::env;
-
-use crate::db_connection::DBConnection;
 
 pub fn routes() -> HashMap<&'static str, Vec<Route>> {
     HashMap::from([
@@ -27,9 +28,11 @@ mod opt {
 }
 
 #[get("/health")]
-async fn health(conn: DBConnection) -> &'static str {
-    // Check DB connection
+async fn health(conn: DBConnection, pool: &RedisPool) -> &'static str {
     conn.run(|conn| sql_query("SELECT 1").execute(conn).unwrap())
+        .await;
+    let _ = cmd("PING")
+        .query_async::<_, ()>(&mut pool.get().await.unwrap())
         .await;
     "ok"
 }
@@ -57,7 +60,12 @@ mod tests {
             pool_size: 1,
             ..Default::default()
         };
-        let rocket = create_server(&Default::default(), &pg_config, Default::default());
+        let rocket = create_server(
+            &Default::default(),
+            &pg_config,
+            Default::default(),
+            &Default::default(),
+        );
         Client::tracked(rocket).expect("valid rocket instance")
     }
 
