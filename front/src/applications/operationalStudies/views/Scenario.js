@@ -3,6 +3,8 @@ import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/pictures/home/operationalStudies.svg';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import Timetable from 'applications/operationalStudies/components/Scenario/Timetable';
+import InfraSelector from 'common/InfraSelector/InfraSelector';
 import OSRDSimulation from './OSRDSimulation/OSRDSimulation';
 import { projectJSON, scenarioJSON, studyJSON } from '../components/Helpers/genFakeDataForProjects';
 
@@ -50,14 +52,17 @@ export default function Scenario() {
             <div className="scenario-details">
               <div className="scenario-details-name">{scenarioDetails.name}</div>
               <div className="scenario-details-description">{scenarioDetails.description}</div>
+              <InfraSelector />
             </div>
           )}
           <div className="row">
             <div className="col-lg-4">
-
+              <div className="scenario-timetable">
+                <Timetable />
+              </div>
             </div>
             <div className="col-lg-8">
-              {/* <OSRDSimulation /> */}
+              <OSRDSimulation />
             </div>
           </div>
         </div>
