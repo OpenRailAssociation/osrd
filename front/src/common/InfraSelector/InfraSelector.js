@@ -18,7 +18,7 @@ export default function InfraSelector(props) {
   const [selectedInfra, setSelectedInfra] = useState(undefined);
   const infraID = useSelector(getInfraID);
 
-  const { t } = useTranslation(['infraMnagement']);
+  const { t } = useTranslation(['infraManagement']);
 
   const getInfra = async (id) => {
     try {
