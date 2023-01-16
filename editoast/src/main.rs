@@ -15,6 +15,7 @@ mod schema;
 mod tables;
 mod views;
 
+use chartos::MapLayers;
 use chashmap::CHashMap;
 use clap::Parser;
 use client::{
@@ -94,7 +95,8 @@ pub fn create_server(
         .attach(RedisPool::init())
         .attach(cors::Cors)
         .manage(Arc::<CHashMap<i32, InfraCache>>::default())
-        .manage(chartos_config);
+        .manage(chartos_config)
+        .manage(MapLayers::parse());
 
     // Mount routes
     for (base, routes) in views::routes() {
