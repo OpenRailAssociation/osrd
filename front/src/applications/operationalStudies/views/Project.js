@@ -13,6 +13,7 @@ import Loader from 'common/Loader';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { BiTargetLock } from 'react-icons/bi';
+import { FaPlus } from 'react-icons/fa';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -129,9 +130,9 @@ export default function Project() {
           )}
 
           <div className="studies-toolbar">
-            <div className="h1 mb-0">{`${studiesList ? studiesList.length : 0} ${t(
-              'studiesCount'
-            )}`}</div>
+            <div className="h1 mb-0">
+              {t('studiesCount', { count: studiesList ? studiesList.length : 0 })}
+            </div>
             <div className="flex-grow-1">
               <InputSNCF
                 type="text"
@@ -152,7 +153,7 @@ export default function Project() {
               options={sortOptions}
             />
             <button className="btn btn-primary" type="button">
-              <i className="icons-add" />
+              <FaPlus />
               <span className="ml-2">{t('createStudy')}</span>
             </button>
           </div>

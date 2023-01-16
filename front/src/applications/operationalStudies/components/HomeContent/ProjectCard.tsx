@@ -50,7 +50,7 @@ export default function ProjectCard({ details }: Props) {
           <span className="mr-1">
             <RiFoldersLine />
           </span>
-          {`${details.studies.length} ${t('studiesCount')}`}
+          {t('studiesCount', { count: details.studies.length })}
         </div>
       </div>
       <div className="projects-list-project-card-name">{details.name}</div>

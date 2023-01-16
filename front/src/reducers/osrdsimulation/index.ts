@@ -37,6 +37,7 @@ import {
 
 export const makeDepartureArrivalTimes = (simulation: SimulationSnapshot, dragOffset: number) =>
   simulation.trains.map((train: Train) => ({
+    id: train.id,
     labels: train.labels,
     name: train.name,
     departure: offsetSeconds(train.base.stops[0].time + dragOffset),

@@ -9,6 +9,7 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import osrdLogo from 'assets/pictures/osrd.png';
 import Loader from 'common/Loader';
+import { FaPlus } from 'react-icons/fa';
 
 export default function HomeContent() {
   const { t } = useTranslation('operationalStudies/home');
@@ -46,9 +47,9 @@ export default function HomeContent() {
             <h1>Open Source Railway Designer</h1>
           </div>
           <div className="projects-toolbar">
-            <div className="h1 mb-0">{`${projectsList ? projectsList.length : 0} ${t(
-              'projectsCount'
-            )}`}</div>
+            <div className="h1 mb-0">
+              {t('projectsCount', { count: projectsList ? projectsList.length : 0 })}
+            </div>
             <div className="flex-grow-1">
               <InputSNCF
                 type="text"
@@ -69,7 +70,7 @@ export default function HomeContent() {
               options={sortOptions}
             />
             <button className="btn btn-primary" type="button">
-              <i className="icons-add" />
+              <FaPlus />
               <span className="ml-2">{t('createProject')}</span>
             </button>
           </div>
