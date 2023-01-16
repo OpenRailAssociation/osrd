@@ -1,6 +1,7 @@
 package fr.sncf.osrd.envelope_sim;
 
 import com.google.common.collect.ImmutableRangeMap;
+import com.google.common.collect.RangeMap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Arrays;
 
@@ -97,7 +98,7 @@ public class EnvelopePath implements PhysicsPath {
     }
 
     @Override
-    public String getCatenaryProfile(double position) {
-        return catenaryProfiles.get(position);
+    public RangeMap<Double, String> getCatenaryProfileMap() {
+        return catenaryProfiles;
     }
 }

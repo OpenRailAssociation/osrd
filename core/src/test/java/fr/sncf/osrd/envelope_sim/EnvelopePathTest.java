@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.google.common.collect.ImmutableRangeMap;
 import com.google.common.collect.Range;
+import com.google.common.collect.TreeRangeMap;
 import org.junit.jupiter.api.Test;
 
 public class EnvelopePathTest {
@@ -35,8 +36,9 @@ public class EnvelopePathTest {
     void getCatenaryProfile() {
         var path = new EnvelopePath(10, new double[] { 0, 10 }, new double[] { 0 },
                 ImmutableRangeMap.of(Range.closed(3., 7.), "1500"));
-        assertNull(path.getCatenaryProfile(1));
-        assertNull(path.getCatenaryProfile(8));
-        assertEquals("1500", path.getCatenaryProfile(4));
+        var profileMap = path.getCatenaryProfileMap();
+        assertNull(profileMap.get(1.));
+        assertNull(profileMap.get(8.));
+        assertEquals("1500", profileMap.get(4.));
     }
 }

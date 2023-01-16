@@ -1,6 +1,10 @@
 package fr.sncf.osrd.train;
 
+import com.google.common.collect.ImmutableRangeMap;
+import com.google.common.collect.Range;
+import com.google.common.collect.TreeRangeMap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.envelope_sim.PhysicsPath;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock.GammaType;
@@ -20,18 +24,26 @@ public class RollingStock implements PhysicsRollingStock {
     public final double B; // in newtons / (m/s)
     public final double C; // in newtons / (m/s^2)
 
-    /** the kind of deceleration input of the train. It can be:
+    /**
+     * the kind of deceleration input of the train. It can be:
      * a constant value
-     * the maximum possible deceleration value */
+     * the maximum possible deceleration value
+     */
     public final GammaType gammaType;
 
-    /** the deceleration of the train, in m/s^2 */
+    /**
+     * the deceleration of the train, in m/s^2
+     */
     public final double gamma;
 
-    /** the length of the train, in meters. */
+    /**
+     * the length of the train, in meters.
+     */
     public final double length;
 
-    /** The max speed of the train, in meters per seconds. */
+    /**
+     * The max speed of the train, in meters per seconds.
+     */
     public final double maxSpeed;
 
     /**
@@ -40,16 +52,24 @@ public class RollingStock implements PhysicsRollingStock {
      */
     public final double startUpTime;
 
-    /** The acceleration to apply during the startup state. */
+    /**
+     * The acceleration to apply during the startup state.
+     */
     public final double startUpAcceleration;
 
-    /** The maximum acceleration when the train is in its regular operating mode. */
+    /**
+     * The maximum acceleration when the train is in its regular operating mode.
+     */
     public final double comfortAcceleration;
 
-    /** The mass of the train, in kilograms. */
+    /**
+     * The mass of the train, in kilograms.
+     */
     public final double mass;
 
-    /** Defined as mass * inertiaCoefficient */
+    /**
+     * Defined as mass * inertiaCoefficient
+     */
     public final double inertia;
 
     /**
@@ -66,7 +86,7 @@ public class RollingStock implements PhysicsRollingStock {
      * Associates a speed to a force.
      * https://en.wikipedia.org/wiki/Tractive_force#Tractive_effort_curves
      */
-    private final Map<String, ModeEffortCurves> modes;
+    protected final Map<String, ModeEffortCurves> modes;
 
     private final String defaultMode;
 
@@ -123,49 +143,14 @@ public class RollingStock implements PhysicsRollingStock {
         return gammaType;
     }
 
-    public static final class TractiveEffortPoint {
-        public final double speed;
-        public final double maxEffort;
-
-        public TractiveEffortPoint(double speed, double maxEffort) {
-            this.speed = speed;
-            this.maxEffort = maxEffort;
-        }
+    public record ModeEffortCurves(boolean isElectric, TractiveEffortPoint[] defaultCurve,
+                                   ConditionalEffortCurve[] curves) {
     }
 
-    public static class ModeEffortCurves {
-        public final boolean isElectric;
-        public final TractiveEffortPoint[] defaultCurve;
-        public final ConditionalEffortCurve[] curves;
-
-        /** Mode effort curves constructor */
-        public ModeEffortCurves(
-                boolean isElectric,
-                TractiveEffortPoint[] defaultCurve,
-                ConditionalEffortCurve[] curves
-        ) {
-            this.isElectric = isElectric;
-            this.defaultCurve = defaultCurve;
-            this.curves = curves;
-        }
+    public record ConditionalEffortCurve(EffortCurveConditions cond, TractiveEffortPoint[] curve) {
     }
 
-    public static class ConditionalEffortCurve {
-        public final EffortCurveConditions cond;
-        public final TractiveEffortPoint[] curve;
-
-        public ConditionalEffortCurve(EffortCurveConditions cond, TractiveEffortPoint[] curve) {
-            this.cond = cond;
-            this.curve = curve;
-        }
-    }
-
-    public static class EffortCurveConditions {
-        public final Comfort comfort;
-
-        public EffortCurveConditions(Comfort comfort) {
-            this.comfort = comfort;
-        }
+    public record EffortCurveConditions(Comfort comfort) {
 
         public boolean match(Comfort comfort) {
             // If comfort condition is null then it matches every thing
@@ -179,12 +164,16 @@ public class RollingStock implements PhysicsRollingStock {
         AC,
     }
 
-    /** Returns Gamma */
+    /**
+     * Returns Gamma
+     */
     public double getDeceleration() {
-        return - gamma;
+        return -gamma;
     }
 
-    /** Given a profile and a comfort lookup for the best tractive effort curve */
+    /**
+     * Given a profile and a comfort lookup for the best tractive effort curve
+     */
     private TractiveEffortPoint[] getTractiveEffortCurve(String profile, Comfort comfort) {
         // Get mode effort curves
         var mode = modes.get(defaultMode);
@@ -201,30 +190,40 @@ public class RollingStock implements PhysicsRollingStock {
     }
 
     /**
+     * Returns the tractive effort curves for the train along the given path.
+     *
+     * @param path The path to get the curves for
+     * @param comfort The comfort level to get the curves for
+     */
+
+    public ImmutableRangeMap<Double, TractiveEffortPoint[]> mapTractiveEffortCurves(PhysicsPath path, Comfort comfort) {
+        TreeRangeMap<Double, TractiveEffortPoint[]> res = TreeRangeMap.create();
+        res.put(Range.all(), getTractiveEffortCurve(defaultMode, comfort));
+        for (var catenaryProfileEntry : path.getCatenaryProfileMap().asMapOfRanges().entrySet()) {
+            var catenaryProfile = catenaryProfileEntry.getValue();
+            var curve = getTractiveEffortCurve(catenaryProfile, comfort);
+            res.put(catenaryProfileEntry.getKey(), curve);
+        }
+        return ImmutableRangeMap.copyOf(res);
+    }
+
+    /**
      * Returns the max tractive effort at a given speed.
+     *
      * @param speed the speed to compute the max tractive effort for
      * @return the max tractive effort
      */
     public double getMaxEffort(double speed, String profile, Comfort comfort) {
-        final var tractiveEffortCurve = getTractiveEffortCurve(profile, comfort);
-        double previousEffort = 0.0;
-        double previousSpeed = 0.0;
-        for (var dataPoint : tractiveEffortCurve) {
-            if (previousSpeed <= Math.abs(speed) && Math.abs(speed) < dataPoint.speed) {
-                var coeff = (previousEffort - dataPoint.maxEffort) / (previousSpeed - dataPoint.speed);
-                return previousEffort + coeff * (Math.abs(speed) - previousSpeed);
-            }
-            previousEffort = dataPoint.maxEffort;
-            previousSpeed = dataPoint.speed;
-        }
-        return previousEffort;
+        return PhysicsRollingStock.getMaxEffort(speed, getTractiveEffortCurve(profile, comfort));
     }
 
     public Set<String> getModeNames() {
         return modes.keySet();
     }
 
-    /** Return whether this rolling stock support only electric profiles modes */
+    /**
+     * Return whether this rolling stock support only electric profiles modes
+     */
     public boolean isElectricOnly() {
         for (var mode : modes.values()) {
             if (!mode.isElectric)
@@ -233,7 +232,9 @@ public class RollingStock implements PhysicsRollingStock {
         return true;
     }
 
-    /** Creates a new rolling stock (a physical train inventory item). */
+    /**
+     * Creates a new rolling stock (a physical train inventory item).
+     */
     public RollingStock(
             String id,
             double length,

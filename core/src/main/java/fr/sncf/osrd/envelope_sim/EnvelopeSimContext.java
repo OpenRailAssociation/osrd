@@ -1,5 +1,6 @@
 package fr.sncf.osrd.envelope_sim;
 
+import com.google.common.collect.RangeMap;
 import fr.sncf.osrd.train.RollingStock;
 import fr.sncf.osrd.train.RollingStock.Comfort;
 
@@ -7,7 +8,7 @@ public class EnvelopeSimContext {
     public final PhysicsRollingStock rollingStock;
     public final PhysicsPath path;
     public final double timeStep;
-    public final Comfort comfort;
+    public final RangeMap<Double, PhysicsRollingStock.TractiveEffortPoint[]> tractiveEffortCurveMap;
 
     /** Creates a context suitable to run simulations on envelopes */
     public EnvelopeSimContext(
@@ -19,6 +20,6 @@ public class EnvelopeSimContext {
         this.rollingStock = rollingStock;
         this.path = path;
         this.timeStep = timeStep;
-        this.comfort = comfort;
+        this.tractiveEffortCurveMap = rollingStock.mapTractiveEffortCurves(path, comfort);
     }
 }
