@@ -1143,22 +1143,26 @@ components:
               name: { type: string }
               suggestion: { type: boolean }
               duration: { type: number, format: float }
-              track:
-                type: object
-                properties:
-                  id: { type: string }
-                  type: { enum: ["TrackSection"] }
+              track: { type: string }
               position: { type: number, format: float }
               sch:
-                type: array
-                items: { type: number, format: float }
-                minItems: 2
-                maxItems: 2
+                type: object
+                properties:
+                  coordinates:
+                    type: array
+                    items: { type: number, format: float }
+                    minItems: 2
+                    maxItems: 2
+                  type: { type: string }
               geo:
-                type: array
-                items: { type: number, format: float }
-                minItems: 2
-                maxItems: 2
+                type: object
+                properties:
+                  coordinates:
+                    type: array
+                    items: { type: number, format: float }
+                    minItems: 2
+                    maxItems: 2
+                  type: { type: string }
     RollingStock:
       allOf:
         - $ref: "#/components/schemas/LightRollingStock"
