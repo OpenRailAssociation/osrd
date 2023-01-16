@@ -115,3 +115,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: --all-features --manifest-path=editoast/Cargo.toml -- -D warnings
+      - name: Documentation check
+        run: cargo doc --manifest-path editoast/Cargo.toml
+        env:
+          RUSTDOCFLAGS: "-D warnings" # Set warnings as errors
