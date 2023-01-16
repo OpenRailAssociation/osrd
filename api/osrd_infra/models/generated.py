@@ -117,7 +117,7 @@ class CatenaryLayer(models.Model):
 
 class LPVPanelLayer(models.Model):
     infra = models.ForeignKey("Infra", on_delete=models.CASCADE)
-    obj = models.ForeignKey("SpeedSectionModel", on_delete=models.CASCADE)
+    obj_id = models.CharField(max_length=255)
     geographic = models.PointField(srid=settings.MAPBOX_SRID)
     schematic = models.PointField(srid=settings.MAPBOX_SRID)
     data = models.JSONField(validators=[PydanticValidator(Panel)])
