@@ -9,6 +9,9 @@ import { RootState } from 'reducers';
  * @returns
  */
 export const makeSubSelector =
-  <ReducerState>(rootSelector: (state: RootState) => ReducerState, key: keyof ReducerState) =>
+  <ReducerState, Key extends keyof ReducerState>(
+    rootSelector: (state: RootState) => ReducerState,
+    key: Key
+  ) =>
   (state: RootState) =>
-    rootSelector(state)[key];
+    rootSelector(state)[key] as ReducerState[Key];
