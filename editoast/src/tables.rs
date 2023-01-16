@@ -83,6 +83,15 @@ table! {
     }
 }
 
+table! {
+    osrd_infra_lpvpanellayer {
+        id -> Integer,
+        obj_id -> Text,
+        infra_id -> Integer,
+        data -> Json,
+    }
+}
+
 // Models
 
 table! {

@@ -1,11 +1,16 @@
-use crate::infra_cache::InfraCache;
-use crate::schema::ObjectType;
-
-use super::utils::InvolvedObjects;
-use super::GeneratedData;
+use diesel::delete;
+use diesel::query_dsl::methods::FilterDsl;
 use diesel::result::Error;
 use diesel::sql_types::{Array, Integer, Text};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
+use std::iter::Iterator;
+
+use super::utils::InvolvedObjects;
+use super::GeneratedData;
+use crate::diesel::ExpressionMethods;
+use crate::infra_cache::InfraCache;
+use crate::schema::ObjectType;
+use crate::tables::osrd_infra_tracksectionlayer::dsl;
 
 pub struct TrackSectionLayer;
 
@@ -36,12 +41,11 @@ impl GeneratedData for TrackSectionLayer {
 
         // Delete elements
         if !involved_objects.deleted.is_empty() {
-            sql_query(format!(
-                "DELETE FROM {} WHERE infra_id = $1 AND obj_id = ANY($2)",
-                Self::table_name()
-            ))
-            .bind::<Integer, _>(infra)
-            .bind::<Array<Text>, _>(involved_objects.deleted.into_iter().collect::<Vec<_>>())
+            delete(
+                dsl::osrd_infra_tracksectionlayer
+                    .filter(dsl::infra_id.eq(infra))
+                    .filter(dsl::obj_id.eq_any(involved_objects.deleted)),
+            )
             .execute(conn)?;
         }
 
