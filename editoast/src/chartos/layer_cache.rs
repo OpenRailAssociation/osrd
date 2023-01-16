@@ -24,7 +24,7 @@ struct NwSeCoordinates {
 #[allow(dead_code)]
 /// Computes coordinates in a cartesian system
 ///
-/// Bounding box documentation: https://wiki.openstreetmap.org/wiki/Bounding_Box
+/// Bounding box documentation: <https://wiki.openstreetmap.org/wiki/Bounding_Box>
 ///
 /// # Arguments
 ///
