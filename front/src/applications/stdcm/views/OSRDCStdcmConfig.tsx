@@ -7,10 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { updateViewport } from 'reducers/map';
 import { STDCM_REQUEST_STATUS, MODES } from 'applications/osrd/consts';
-import { makeEnumBooleans } from 'utils/constants';
 
-import AddTrainLabels from 'applications/osrd/views/OSRDConfig/AddTrainLabels';
-import AddTrainSchedule from 'applications/osrd/views/OSRDConfig/AddTrainSchedule';
 import InfraSelector from 'common/InfraSelector/InfraSelector';
 import Itinerary from 'applications/osrd/views/OSRDConfig/Itinerary';
 import Map from 'applications/osrd/views/OSRDConfig/Map';
@@ -26,17 +23,14 @@ type OSRDStdcmConfigProps = {
 
 export default function OSRDConfig({ setCurrentStdcmRequestStatus }: OSRDStdcmConfigProps) {
   const { fullscreen, darkmode } = useSelector((state: any) => state.main);
-  const mode = useSelector((state: any) => state.osrdconf.mode);
 
   const dispatch = useDispatch();
   const { t } = useTranslation(['translation', 'osrdconf', 'allowances']);
   const [extViewport, setExtViewport] = useState({});
   const [mustUpdateTimetable, setMustUpdateTimetable] = useState(true);
 
-  const { isSimulation, isStdcm } = makeEnumBooleans(MODES, mode);
-
   if (darkmode) {
-    import('./OSRDConfigDarkMode.scss');
+    import('../styles/OSRDConfigDarkMode.scss');
   }
 
   useEffect(() => {
