@@ -16,6 +16,8 @@
     "byRecentDate": "Plus récents"
   },
   "studies": "Études",
-  "studiesCount": "étude(s)",
+  "studiesCount_zero": "Aucune étude",
+  "studiesCount_one": "1 étude",
+  "studiesCount_other": "{{count}} études",
   "totalBudget": "Budget total"
 }

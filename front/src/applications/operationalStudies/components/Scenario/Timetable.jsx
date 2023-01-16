@@ -1,104 +1,64 @@
-import React, { useEffect, useState } from 'react';
-import { sec2time } from 'utils/timeManipulation';
+import React, { useState } from 'react';
 import { updateMustRedraw, updateSelectedTrain } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+import { FaPlus } from 'react-icons/fa';
 
-import { IoMdEye } from 'react-icons/io';
-import DriverTrainSchedule from 'applications/operationalStudies/views/OSRDSimulation/DriverTrainSchedule';
 import { changeTrain } from 'applications/operationalStudies/components/TrainList/TrainListHelpers';
 import nextId from 'react-id-generator';
-import { useTranslation } from 'react-i18next';
+import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import TimetableTrainCard from './TimetableTrainCard';
 
 export default function Timetable() {
-  const { selectedProjection, selectedTrain, departureArrivalTimes } = useSelector(
-    (state) => state.osrdsimulation
-  );
-  const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
+  const selectedProjection = useSelector((state) => state.osrdsimulation.selectedProjection);
+  const departureArrivalTimes = useSelector((state) => state.osrdsimulation.departureArrivalTimes);
+  const selectedTrain = useSelector((state) => state.osrdsimulation.selectedTrain);
+  const [filter, setFilter] = useState('');
   const dispatch = useDispatch();
-  const [formattedList, setFormattedList] = useState(null);
-  const [trainNameClickedIDX, setTrainNameClickedIDX] = useState(undefined);
-  const [typeOfInputFocused, setTypeOfInputFocused] = useState(undefined);
-  const [dataDisplayModal, setDataDisplayModal] = useState(undefined);
+  const { t } = useTranslation('operationalStudies/scenario');
 
-  const { t } = useTranslation(['simulation']);
-
-  const changeSelectedTrain = (idx, typeOfInputToFocus) => {
+  const changeSelectedTrain = (idx) => {
     dispatch(updateSelectedTrain(idx));
-    setTrainNameClickedIDX(idx);
-    setTypeOfInputFocused(typeOfInputToFocus);
     dispatch(updateMustRedraw(true));
   };
 
-  const formatTrainsList = () =>
-    departureArrivalTimes.map((train, idx) => (
-      <tr className={selectedTrain === idx ? 'table-cell-selected' : null} key={nextId()}>
-        <td>
-          <div className="cell-inner">{train.id === selectedProjection.id && '🎢'}</div>
-        </td>
-        <td className="td-button"><div className="cell-inner">{train.name}</div></td>
-        <td><div className="cell-inner">{sec2time(train.departure)}</div></td>
-        <td>
-          <div className="cell-inner">{sec2time(train.arrival)}</div>
-        </td>
-        <td>
-          <div className="cell-inner">{train.labels && train.labels.join(' / ')}</div>
-        </td>
-        <td>
-          <div className="cell-inner">{train.speed_limit_composition}</div>
-        </td>
-        <td>
-          <div className="cell-inner">
-            <button
-              type="button"
-              className="btn btn-only-icon btn-transparent btn-color-gray px-0"
-              data-toggle="modal"
-              data-target="#driverTrainScheduleModal"
-              onClick={() => setDataDisplayModal(simulation.trains[idx])}
-            >
-              <IoMdEye />
-            </button>
-          </div>
-        </td>
-      </tr>
-    ));
-
-  useEffect(() => {
-    setFormattedList(formatTrainsList());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTrain, departureArrivalTimes, trainNameClickedIDX, typeOfInputFocused]);
-
   return (
-    <>
-      <div className="table-wrapper simulation-trainlist">
-        <div className="table-scroller dragscroll">
-          <table className="table table-hover">
-            <thead className="thead thead-light">
-              <tr>
-                <th scope="col" colSpan="2">
-                  <div className="cell-inner">{t('simulation:name')}</div>
-                </th>
-                <th scope="col">
-                  <div className="cell-inner">{t('simulation:start')}</div>
-                </th>
-                <th scope="col">
-                  <div className="cell-inner">{t('simulation:stop')}</div>
-                </th>
-                <th scope="col">
-                  <div className="cell-inner">{t('simulation:labels')}</div>
-                </th>
-                <th scope="col">
-                  <div className="cell-inner">{t('simulation:speedLimitComposition')}</div>
-                </th>
-                <th scope="col">
-                  <span className="sr-only">Actions</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>{formattedList}</tbody>
-          </table>
+    <div className="scenario-timetable">
+      <div className="scenario-timetable-toolbar">
+        <div className="">
+          {t('trainCount', { count: departureArrivalTimes ? departureArrivalTimes.length : 0 })}
         </div>
+        <div className="flex-grow-1">
+          <InputSNCF
+            type="text"
+            id="scenarios-filter"
+            name="scenarios-filter"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            placeholder={t('filterPlaceholder')}
+            whiteBG
+            noMargin
+            unit={<i className="icons-search" />}
+            sm
+          />
+        </div>
+        <button className="btn btn-primary btn-sm" type="button">
+          <FaPlus />
+        </button>
       </div>
-      <DriverTrainSchedule data={dataDisplayModal} />
-    </>
+      <div className="scenario-timetable-trains">
+        {departureArrivalTimes
+          ? departureArrivalTimes.map((train, idx) => (
+              <TimetableTrainCard
+                train={train}
+                key={nextId()}
+                selectedTrain={selectedTrain}
+                selectedProjection={selectedProjection}
+                idx={idx}
+              />
+            ))
+          : null}
+      </div>
+    </div>
   );
 }

@@ -1,0 +1,6 @@
+{
+  "filterPlaceholder": "Filtre, étiquettes",
+  "trainCount_zero": "Aucun train",
+  "trainCount_one": "1 train",
+  "trainCount_other": "{{count}} trains"
+}

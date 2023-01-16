@@ -10,6 +10,7 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import ScenarioCard from 'applications/operationalStudies/components/Study/ScenarioCard';
 import { VscLink, VscFile, VscFiles } from 'react-icons/vsc';
+import { FaPlus } from 'react-icons/fa';
 import {
   projectJSON,
   scenariosListJSON,
@@ -201,9 +202,9 @@ export default function Study() {
           )}
 
           <div className="scenarios-toolbar">
-            <div className="">{`${scenariosList ? scenariosList.length : 0} ${t(
-              'scenariosCount'
-            )}`}</div>
+            <div className="">
+              {t('scenariosCount', { count: scenariosList ? scenariosList.length : 0 })}
+            </div>
             <div className="flex-grow-1">
               <InputSNCF
                 type="text"
@@ -226,7 +227,7 @@ export default function Study() {
               sm
             />
             <button className="btn btn-primary btn-sm" type="button">
-              <i className="icons-add" />
+              <FaPlus />
               <span className="ml-2">{t('createScenario')}</span>
             </button>
           </div>
