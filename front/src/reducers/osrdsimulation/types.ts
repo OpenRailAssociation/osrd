@@ -115,8 +115,6 @@ export type SimulationHistory = SimulationSnapshot[];
 export interface PositionValues {
   headPosition: PositionSpeed;
   tailPosition: PositionSpeed;
-  routeEndOccupancy: number;
-  routeBeginOccupancy: number;
   speed: {
     speed: number;
     time: number;
@@ -130,16 +128,12 @@ export interface SimulationTrain {
   trainNumber: number;
   headPosition: ConsolidatedPosition[][];
   tailPosition: ConsolidatedPosition[][];
-  routeEndOccupancy: ConsolidatedPosition[][];
-  routeBeginOccupancy: ConsolidatedPosition[][];
   routeAspects: ConsolidatedRouteAspect[];
   signalAspects: ConsolidatedSignalAspect[];
-  areaBlock: ConsolidatedMergeDataPoint[][];
+  areaBlock?: ConsolidatedMergeDataPoint[][];
   speed: ConsolidatePositionSpeed[];
   eco_headPosition?: ConsolidatedPosition[][];
   eco_tailPosition?: ConsolidatedPosition[][];
-  eco_routeEndOccupancy?: ConsolidatedPosition[][];
-  eco_routeBeginOccupancy?: ConsolidatedPosition[][];
   eco_routeAspects?: ConsolidatedRouteAspect[];
   eco_signalAspects?: ConsolidatedSignalAspect[];
   eco_areaBlock?: ConsolidatedMergeDataPoint[][];
