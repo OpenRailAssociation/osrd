@@ -419,13 +419,16 @@ export type Path = {
     name?: string;
     suggestion?: boolean;
     duration?: number;
-    track?: {
-      id?: string;
-      type?: 'TrackSection';
-    };
+    track?: string;
     position?: number;
-    sch?: number[];
-    geo?: number[];
+    sch?: {
+      coordinates?: number[];
+      type?: string;
+    };
+    geo?: {
+      coordinates?: number[];
+      type?: string;
+    };
   }[];
 };
 export type Waypoint = {
