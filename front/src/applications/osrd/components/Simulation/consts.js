@@ -1,8 +1,6 @@
 export const LIST_VALUES_NAME_SPACE_TIME = [
   'headPosition',
   'tailPosition',
-  'routeEndOccupancy',
-  'routeBeginOccupancy',
   'speed',
   'margins_speed',
   'eco_speed',
