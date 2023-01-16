@@ -52,6 +52,11 @@ export default function OSRDConfig({ setCurrentStdcmRequestStatus }: OSRDStdcmCo
 
   const commonItinerary: string = t('translation:common.itinerary');
 
+  const itineraryProps = {
+    title: commonItinerary,
+    updateExtViewport: setExtViewport,
+  };
+
   return (
     <main className={`osrd-config-mastcontainer mastcontainer${fullscreen ? ' fullscreen' : ''}`}>
       <div className="row m-0 px-1 py-3 h-100">
@@ -69,7 +74,7 @@ export default function OSRDConfig({ setCurrentStdcmRequestStatus }: OSRDStdcmCo
               />
             </div>
           </div>
-          <Itinerary title="{commonItinerary}" updateExtViewport={setExtViewport} />
+          <Itinerary {...itineraryProps} />
 
           <div className="row">
             <div className="col-xl-6">
