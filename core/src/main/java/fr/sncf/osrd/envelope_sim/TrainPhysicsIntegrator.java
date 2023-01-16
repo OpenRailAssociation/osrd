@@ -1,8 +1,7 @@
 package fr.sncf.osrd.envelope_sim;
 
+import com.google.common.collect.RangeMap;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
-import fr.sncf.osrd.train.RollingStock;
-import fr.sncf.osrd.train.RollingStock.Comfort;
 
 /**
  * An utility class to help simulate the train, using numerical integration.
@@ -21,20 +20,20 @@ public final class TrainPhysicsIntegrator {
     private final Action action;
     private final double directionSign;
 
-    private final RollingStock.Comfort comfort;
+    private final RangeMap<Double, PhysicsRollingStock.TractiveEffortPoint[]> tractiveEffortCurveMap;
 
     private TrainPhysicsIntegrator(
             PhysicsRollingStock rollingStock,
             PhysicsPath path,
             Action action,
             double directionSign,
-            RollingStock.Comfort comfort
+            RangeMap<Double, PhysicsRollingStock.TractiveEffortPoint[]> tractiveEffortCurveMap
     ) {
         this.rollingStock = rollingStock;
         this.path = path;
         this.action = action;
         this.directionSign = directionSign;
-        this.comfort = comfort;
+        this.tractiveEffortCurveMap = tractiveEffortCurveMap;
     }
 
     /** Simulates train movement */
@@ -45,29 +44,23 @@ public final class TrainPhysicsIntegrator {
             Action action,
             double directionSign
     ) {
-        return step(
-                context.rollingStock, context.path, context.timeStep,
-                initialLocation, initialSpeed, action, directionSign, context.comfort
-        );
+        var integrator = new TrainPhysicsIntegrator(context.rollingStock, context.path, action, directionSign,
+                context.tractiveEffortCurveMap);
+        return integrator.step(context.timeStep, initialLocation, initialSpeed, directionSign);
     }
 
     /** Simulates train movement */
-    private static IntegrationStep step(
-            PhysicsRollingStock rollingStock,
-            PhysicsPath path,
+    private IntegrationStep step(
             double timeStep,
             double initialLocation,
             double initialSpeed,
-            Action action,
-            double directionSign,
-            Comfort comfort
+            double directionSign
     ) {
-        var integrator = new TrainPhysicsIntegrator(rollingStock, path, action, directionSign, comfort);
         var halfStep = timeStep / 2;
-        var step1 = integrator.step(halfStep, initialLocation, initialSpeed);
-        var step2 = integrator.step(halfStep, initialLocation + step1.positionDelta, step1.endSpeed);
-        var step3 = integrator.step(timeStep, initialLocation + step2.positionDelta, step2.endSpeed);
-        var step4 = integrator.step(timeStep, initialLocation + step3.positionDelta, step3.endSpeed);
+        var step1 = step(halfStep, initialLocation, initialSpeed);
+        var step2 = step(halfStep, initialLocation + step1.positionDelta, step1.endSpeed);
+        var step3 = step(timeStep, initialLocation + step2.positionDelta, step2.endSpeed);
+        var step4 = step(timeStep, initialLocation + step3.positionDelta, step3.endSpeed);
 
         var meanAcceleration = (
                 step1.acceleration
@@ -78,12 +71,13 @@ public final class TrainPhysicsIntegrator {
         return newtonStep(timeStep, initialSpeed, meanAcceleration, directionSign);
     }
 
-    private IntegrationStep step(double timeStep, double position, double speed) {
 
+    private IntegrationStep step(double timeStep, double position, double speed) {
         double tractionForce = 0;
         double brakingForce = 0;
-        var profile = path.getCatenaryProfile(position);
-        double maxTractionForce = rollingStock.getMaxEffort(speed, profile, comfort);
+        var tractiveEffortCurve = tractiveEffortCurveMap.get(position);
+        assert tractiveEffortCurve != null;
+        double maxTractionForce = PhysicsRollingStock.getMaxEffort(speed, tractiveEffortCurve);
         double rollingResistance = rollingStock.getRollingResistance(speed);
         double weightForce = getWeightForce(rollingStock, path, position);
 

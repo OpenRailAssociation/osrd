@@ -1,10 +1,12 @@
 package fr.sncf.osrd.train;
 
 import fr.sncf.osrd.Helpers;
+import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 public class TestTrains {
@@ -25,9 +27,6 @@ public class TestTrains {
         LINEAR,
         HYPERBOLIC
     }
-
-    private static ArrayList<RollingStock.TractiveEffortPoint> linearEffortCurve;
-    private static ArrayList<RollingStock.TractiveEffortPoint> constantPowerEffortCurve;
 
     private static double getEffort(CurveShape curveShape, double speed, double maxSpeed) {
         if (curveShape == CurveShape.LINEAR) {
@@ -53,11 +52,46 @@ public class TestTrains {
         return newEffortCurve;
     }
 
+    private static Map<String, RollingStock.ModeEffortCurves> createModeEffortCurves(
+            double maxSpeed,
+            CurveShape curveShape,
+            Map<String, RollingStock.EffortCurveConditions[]> effortCurveConditions
+    ) {
+        Map<String, RollingStock.ModeEffortCurves> res = new HashMap<>();
+        for (var entry : effortCurveConditions.entrySet()) {
+            var mode = entry.getKey();
+            var conditions = entry.getValue();
+            var isElectric = !mode.equals("thermal");
+            var conditionalEffortSpeedCurves = new ArrayList<>();
+            for (var condition : conditions) {
+                var speed = maxSpeed;
+                switch (condition.comfort()) {
+                    case HEATING -> speed *= 0.9;
+                    case AC -> speed *= .8;
+                    default -> {
+                    }
+                }
+                var effortSpeedCurve = createEffortSpeedCurve(speed, curveShape);
+                conditionalEffortSpeedCurves.add(new RollingStock.ConditionalEffortCurve(
+                        condition,
+                        effortSpeedCurve.toArray(new RollingStock.TractiveEffortPoint[0])
+                ));
+            }
+
+            res.put(mode, new RollingStock.ModeEffortCurves(isElectric,
+                    createEffortSpeedCurve(maxSpeed, curveShape).toArray(
+                            new PhysicsRollingStock.TractiveEffortPoint[0]),
+                    conditionalEffortSpeedCurves.toArray(new RollingStock.ConditionalEffortCurve[0])));
+        }
+        return res;
+    }
+
     static {
         double trainMass = 850000; // in kilos
         double maxSpeed = 300 / 3.6;
-        linearEffortCurve = createEffortSpeedCurve(maxSpeed, CurveShape.LINEAR);
-        constantPowerEffortCurve = createEffortSpeedCurve(maxSpeed, CurveShape.HYPERBOLIC);
+
+        var linearModeEffortCurves = createModeEffortCurves(maxSpeed, CurveShape.LINEAR,
+                Map.of("thermal", new RollingStock.EffortCurveConditions[0]));
 
         VERY_SHORT_FAST_TRAIN = new RollingStock(
                 "fast train",
@@ -71,11 +105,7 @@ public class TestTrains {
                 0.5,
                 RJSRollingStock.GammaType.CONST,
                 RJSLoadingGaugeType.G1,
-                Map.of("thermal", new RollingStock.ModeEffortCurves(
-                        false,
-                        linearEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
-                        new RollingStock.ConditionalEffortCurve[0])
-                ),
+                linearModeEffortCurves,
                 "thermal"
         );
 
@@ -91,11 +121,7 @@ public class TestTrains {
                 0.5,
                 RJSRollingStock.GammaType.CONST,
                 RJSLoadingGaugeType.G1,
-                Map.of("thermal", new RollingStock.ModeEffortCurves(
-                        false,
-                        linearEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
-                        new RollingStock.ConditionalEffortCurve[0])
-                ),
+                linearModeEffortCurves,
                 "thermal"
         );
 
@@ -111,11 +137,17 @@ public class TestTrains {
                 0.5,
                 RJSRollingStock.GammaType.CONST,
                 RJSLoadingGaugeType.G1,
-                Map.of("thermal", new RollingStock.ModeEffortCurves(
-                        false,
-                        linearEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
-                        new RollingStock.ConditionalEffortCurve[0])
-                ),
+                createModeEffortCurves(maxSpeed, CurveShape.LINEAR,
+                        Map.of("thermal", new RollingStock.EffortCurveConditions[]{
+                                new RollingStock.EffortCurveConditions(RollingStock.Comfort.AC),
+                                new RollingStock.EffortCurveConditions(RollingStock.Comfort.HEATING)
+                        }, "25000", new RollingStock.EffortCurveConditions[]{
+                                new RollingStock.EffortCurveConditions(RollingStock.Comfort.AC),
+                                new RollingStock.EffortCurveConditions(RollingStock.Comfort.HEATING)
+                        }, "1500", new RollingStock.EffortCurveConditions[]{
+                                new RollingStock.EffortCurveConditions(RollingStock.Comfort.AC),
+                                new RollingStock.EffortCurveConditions(RollingStock.Comfort.HEATING)
+                        })),
                 "thermal"
         );
 
@@ -131,11 +163,7 @@ public class TestTrains {
                 0.95,
                 RJSRollingStock.GammaType.MAX,
                 RJSLoadingGaugeType.G1,
-                Map.of("thermal", new RollingStock.ModeEffortCurves(
-                        false,
-                        linearEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
-                        new RollingStock.ConditionalEffortCurve[0])
-                ),
+                linearModeEffortCurves,
                 "thermal"
         );
 
@@ -151,11 +179,7 @@ public class TestTrains {
                 0.5,
                 RJSRollingStock.GammaType.CONST,
                 RJSLoadingGaugeType.GC,
-                Map.of("thermal", new RollingStock.ModeEffortCurves(
-                        false,
-                        linearEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
-                        new RollingStock.ConditionalEffortCurve[0])
-                ),
+                linearModeEffortCurves,
                 "thermal"
         );
 
@@ -171,11 +195,8 @@ public class TestTrains {
                 0.5,
                 RJSRollingStock.GammaType.CONST,
                 RJSLoadingGaugeType.G1,
-                Map.of("25000", new RollingStock.ModeEffortCurves(
-                        true,
-                        linearEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
-                        new RollingStock.ConditionalEffortCurve[0])
-                ),
+                createModeEffortCurves(maxSpeed, CurveShape.LINEAR,
+                        Map.of("25000", new RollingStock.EffortCurveConditions[0])),
                 "25000"
         );
 
@@ -191,11 +212,8 @@ public class TestTrains {
                 0.5,
                 RJSRollingStock.GammaType.CONST,
                 RJSLoadingGaugeType.G1,
-                Map.of("thermal", new RollingStock.ModeEffortCurves(
-                        false,
-                        constantPowerEffortCurve.toArray(new RollingStock.TractiveEffortPoint[0]),
-                        new RollingStock.ConditionalEffortCurve[0])
-                ),
+                createModeEffortCurves(maxSpeed, CurveShape.HYPERBOLIC,
+                        Map.of("thermal", new RollingStock.EffortCurveConditions[0])),
                 "thermal"
         );
     }
