@@ -93,6 +93,16 @@ export default function OSRDConfig({ setCurrentStdcmRequestStatus }: OSRDStdcmCo
                 />
               </div>
             </div>
+            <div className="row">
+              <div className="col-xl-12">
+                <div className="osrd-config-item mb-2 osrd-config-item-container">
+                  <StdcmSingleAllowance
+                    title={t('allowances:standardAllowance')}
+                    typeKey="standardStdcmAllowance"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="osrd-config-stdcm-apply">
