@@ -7,7 +7,6 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { updateViewport } from 'reducers/map';
 import { STDCM_REQUEST_STATUS, MODES } from 'applications/osrd/consts';
-
 import InfraSelector from 'common/InfraSelector/InfraSelector';
 import Itinerary from 'applications/osrd/views/OSRDConfig/Itinerary';
 import Map from 'applications/osrd/views/OSRDConfig/Map';
