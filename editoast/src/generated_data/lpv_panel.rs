@@ -53,7 +53,6 @@ impl GeneratedData for LPVPanelLayer {
             )
             .execute(conn)?;
         }
-        dbg!("cleaned");
 
         // Insert involved elements
         if !involved_objects.updated.is_empty() {
@@ -62,7 +61,6 @@ impl GeneratedData for LPVPanelLayer {
                 .bind::<Array<Text>, _>(involved_objects.updated.into_iter().collect::<Vec<_>>())
                 .execute(conn)?;
         }
-        dbg!("LPV Ok");
         Ok(())
     }
 }
