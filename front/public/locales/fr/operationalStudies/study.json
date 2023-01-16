@@ -22,5 +22,7 @@
     "byRecentDate": "Plus récents"
   },
   "scenario": "Scénario",
-  "scenariosCount": "scénario(s)"
+  "scenariosCount_zero": "Aucun scénario",
+  "scenariosCount_one": "1 scénario",
+  "scenariosCount_other": "{{count}} scénarios"
 }

@@ -4,7 +4,7 @@ import logo from 'assets/pictures/home/operationalStudies.svg';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import Timetable from 'applications/operationalStudies/components/Scenario/Timetable';
-import InfraSelector from 'common/InfraSelector/InfraSelector';
+import infraLogo from 'assets/pictures/components/tracks.svg';
 import OSRDSimulation from './OSRDSimulation/OSRDSimulation';
 import { projectJSON, scenarioJSON, studyJSON } from '../components/Helpers/genFakeDataForProjects';
 
@@ -47,22 +47,27 @@ export default function Scenario() {
         logo={logo}
       />
       <main className="mastcontainer mastcontainer-no-mastnav">
-        <div className="p-3">
-          {scenarioDetails && (
-            <div className="scenario-details">
-              <div className="scenario-details-name">{scenarioDetails.name}</div>
-              <div className="scenario-details-description">{scenarioDetails.description}</div>
-              <InfraSelector />
-            </div>
-          )}
+        <div className="scenario">
           <div className="row">
             <div className="col-lg-4">
-              <div className="scenario-timetable">
+              <div className="scenario-sidemenu">
+                {scenarioDetails && (
+                  <div className="scenario-details">
+                    <div className="scenario-details-name">{scenarioDetails.name}</div>
+                    <div className="scenario-details-infra-name">
+                      <img src={infraLogo} alt="Infra logo" className="mr-2" />
+                      {scenarioDetails.infra_name}
+                    </div>
+                    <div className="scenario-details-description">{scenarioDetails.description}</div>
+                  </div>
+                )}
                 <Timetable />
               </div>
             </div>
             <div className="col-lg-8">
-              <OSRDSimulation />
+              <div className="scenario-results">
+                <OSRDSimulation />
+              </div>
             </div>
           </div>
         </div>
