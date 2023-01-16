@@ -31,6 +31,17 @@ paths:
                 required:
                   - git_describe
 
+  /layers/info/:
+    get:
+      summary: Get layers descriptions
+      responses:
+        200:
+          description: Successful Response
+          content:
+            application/json:
+              schema: 
+                type: array
+
   /infra/:
     get:
       tags:

@@ -1,4 +1,5 @@
 mod infra;
+mod layers;
 use rocket::serde::json::Value as JsonValue;
 use rocket_db_pools::deadpool_redis;
 pub mod pagination;
@@ -15,6 +16,7 @@ pub fn routes() -> HashMap<&'static str, Vec<Route>> {
     HashMap::from([
         ("/", routes![health, version, opt::all_options]),
         ("/infra", infra::routes()),
+        ("/layers", layers::routes()),
     ])
 }
 
