@@ -16,13 +16,48 @@ export default function MapSettingsSignals() {
     lights: lightsIcon,
   };
 
-  const setSignalsList = (setting) => {
-    dispatch(
-      updateSignalsSettings({
-        ...signalsSettings,
-        [setting]: !signalsSettings[setting],
-      })
+  const switchAllSettings = (settingSwitch, stateOfSettings) => {
+    const allSettings = {};
+
+    CONSTS_SETTINGS.map(
+      // eslint-disable-next-line no-return-assign
+      (settingKey) => (allSettings[settingKey] = !stateOfSettings[settingSwitch])
     );
+
+    return allSettings;
+  };
+
+  const checkedSettings = (settingSwitch, stateOfSettings) => {
+    const filteredSettingKeys = Object.keys(stateOfSettings).filter(
+      (key) => key !== settingSwitch && key !== 'all'
+    );
+    const settingValues = filteredSettingKeys.map((settingKey) => stateOfSettings[settingKey]);
+    return settingValues.every((settingValue) => settingValue === !stateOfSettings[settingSwitch]);
+  };
+
+  const setSignalsList = (setting) => {
+    if (setting === 'all') {
+      const settingsSwiched = switchAllSettings(setting, signalsSettings);
+      dispatch(
+        updateSignalsSettings({
+          ...settingsSwiched,
+        })
+      );
+    } else if (checkedSettings(setting, signalsSettings)) {
+      const settingsSwiched = switchAllSettings(setting, signalsSettings);
+      dispatch(
+        updateSignalsSettings({
+          ...settingsSwiched,
+        })
+      );
+    } else {
+      dispatch(
+        updateSignalsSettings({
+          ...signalsSettings,
+          [setting]: !signalsSettings[setting],
+        })
+      );
+    }
   };
 
   return (
