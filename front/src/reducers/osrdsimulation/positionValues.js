@@ -29,8 +29,6 @@ export default function reducer(inputState, action, rootState) {
           action.timePosition
         );
         draft.headPosition = positionsValues.headPosition;
-        draft.routeEndOccupancy = positionsValues.routeEndOccupancy;
-        draft.routeBeginOccupancy = positionsValues.routeBeginOccupancy;
         draft.speed = positionsValues.speed;
         break;
       }

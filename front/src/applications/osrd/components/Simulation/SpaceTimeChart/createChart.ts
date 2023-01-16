@@ -20,7 +20,7 @@ export default function createChart(
 
   const xValues: (number | Date)[] = dataSimulation
     .map((train) =>
-      train.routeBeginOccupancy.map((section) =>
+      train.headPosition.map((section) =>
         section.map((position) => (keyValues[0] === 'time' ? position.time : position.position))
       )
     )
@@ -31,7 +31,7 @@ export default function createChart(
       [].concat(
         ...dataSimulation.map((train) =>
           d3.max(
-            train.routeEndOccupancy.map((section) =>
+            train.tailPosition.map((section) =>
               d3.max(section.map((step: any) => step[keyValues[1]]))
             )
           )
@@ -42,7 +42,7 @@ export default function createChart(
       [].concat(
         ...dataSimulation.map((train) =>
           d3.max(
-            train.routeBeginOccupancy.map((section) =>
+            train.headPosition.map((section) =>
               d3.max(section.map((step: any) => step[keyValues[1]]))
             )
           )
@@ -51,7 +51,10 @@ export default function createChart(
     ),
   ] as any);
 
+
+
   const defineX = chart === undefined || reset ? defineTime(d3.extent(xValues)) : chart.x;
+
   const defineY =
     chart === undefined || reset ? defineLinear(dataSimulationLinearMax, 0.05) : chart.y;
 
