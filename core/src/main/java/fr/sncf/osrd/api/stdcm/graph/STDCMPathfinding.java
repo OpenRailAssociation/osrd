@@ -74,7 +74,8 @@ public class STDCMPathfinding {
                 rollingStock,
                 timeStep,
                 comfort,
-                maxRunTime
+                maxRunTime,
+                unavailableTimes
         );
     }
 
