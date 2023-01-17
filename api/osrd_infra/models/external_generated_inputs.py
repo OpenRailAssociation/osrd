@@ -1,7 +1,7 @@
 from django.contrib.gis.db import models
 from osrd_infra.utils import PydanticValidator
 
-from osrd_infra.schemas.physical_approximations import ElectricalProfilesList
+from osrd_infra.schemas.external_generated_inputs import ElectricalProfilesList
 
 
 class ElectricalProfilesSet(models.Model):

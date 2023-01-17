@@ -48,6 +48,7 @@ export const UPDATE_ITINERARY = 'osrdconf/UPDATE_ITINERARY';
 export const UPDATE_FEATURE_INFO_CLICK_OSRD = 'osrdconf/UPDATE_FEATURE_INFO_CLICK_OSRD';
 export const UPDATE_GRID_MARGIN_BEFORE = 'osrdconf/UPDATE_GRID_MARGIN_BEFORE';
 export const UPDATE_GRID_MARGIN_AFTER = 'osrdconf/UPDATE_GRID_MARGIN_AFTER';
+export const UPDATE_STANDARD_STDCM_ALLOWANCE = 'osrdconf/UPDATE_STANDARD_STDCM_ALLOWANCE';
 
 // Reducer
 export const initialState: OsrdConfState = {
@@ -79,6 +80,7 @@ export const initialState: OsrdConfState = {
   featureInfoClick: { displayPopup: false },
   gridMarginBefore: 0,
   gridMarginAfter: 0,
+  standardStdcmAllowance: undefined
 };
 
 const ORIGIN_TIME_BOUND_DEFAULT_DIFFERENCE = 7200;
@@ -222,6 +224,9 @@ export default function reducer(inputState: OsrdConfState | undefined, action: A
         break;
       case UPDATE_GRID_MARGIN_AFTER:
         draft.gridMarginAfter = action.gridMarginAfter;
+        break;
+      case UPDATE_STANDARD_STDCM_ALLOWANCE:
+        draft.standardStdcmAllowance = action.standardStdcmAllowance;
         break;
     }
   });
@@ -492,6 +497,16 @@ export function updateGridMarginAfter(gridMarginAfter: OsrdConfState['gridMargin
     dispatch({
       type: UPDATE_GRID_MARGIN_AFTER,
       gridMarginAfter,
+    });
+  };
+}
+export function updateStdcmStandardAllowance(
+  standardStdcmAllowance: OsrdConfState['standardStdcmAllowance']
+) {
+  return (dispatch: Dispatch) => {
+    dispatch({
+      type: UPDATE_STANDARD_STDCM_ALLOWANCE,
+      standardStdcmAllowance,
     });
   };
 }

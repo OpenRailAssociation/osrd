@@ -1,7 +1,9 @@
 mod bounding_box;
+mod layer_cache;
+mod map_layers;
 
-pub use bounding_box::BoundingBox;
-pub use bounding_box::InvalidationZone;
+pub use bounding_box::{BoundingBox, InvalidationZone};
+pub use map_layers::MapLayers;
 
 use reqwest::Client;
 use serde_json::json;

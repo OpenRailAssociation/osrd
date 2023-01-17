@@ -65,8 +65,6 @@ export const initialState: OsrdSimulationState = {
       position: 0,
       speed: 0,
     },
-    routeEndOccupancy: 0,
-    routeBeginOccupancy: 0,
     speed: {
       speed: 0,
       time: 0,

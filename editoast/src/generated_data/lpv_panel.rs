@@ -1,11 +1,16 @@
-use crate::infra_cache::InfraCache;
-use crate::schema::ObjectType;
-
-use super::utils::InvolvedObjects;
-use super::GeneratedData;
+use diesel::delete;
+use diesel::query_dsl::methods::FilterDsl;
 use diesel::result::Error;
 use diesel::sql_types::{Array, Integer, Text};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
+use std::iter::Iterator;
+
+use super::utils::InvolvedObjects;
+use super::GeneratedData;
+use crate::diesel::ExpressionMethods;
+use crate::infra_cache::InfraCache;
+use crate::schema::ObjectType;
+use crate::tables::osrd_infra_lpvpanellayer::dsl;
 
 pub struct LPVPanelLayer;
 
@@ -41,13 +46,11 @@ impl GeneratedData for LPVPanelLayer {
                 .deleted
                 .iter()
                 .chain(involved_objects.updated.iter());
-
-            sql_query(format!(
-                "DELETE FROM {} WHERE infra_id = $1 AND obj_id = ANY($2)",
-                Self::table_name()
-            ))
-            .bind::<Integer, _>(infra)
-            .bind::<Array<Text>, _>(objs.into_iter().collect::<Vec<_>>())
+            delete(
+                dsl::osrd_infra_lpvpanellayer
+                    .filter(dsl::infra_id.eq(infra))
+                    .filter(dsl::obj_id.eq_any(objs)),
+            )
             .execute(conn)?;
         }
 

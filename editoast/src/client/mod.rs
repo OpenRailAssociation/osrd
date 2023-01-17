@@ -1,5 +1,6 @@
 mod chartos_config;
 mod postgres_config;
+mod redis_config;
 
 use std::path::PathBuf;
 
@@ -7,14 +8,17 @@ pub use chartos_config::ChartosConfig;
 use clap::{Args, Parser, Subcommand};
 use derivative::Derivative;
 pub use postgres_config::PostgresConfig;
+pub use redis_config::RedisConfig;
 
 #[derive(Parser, Debug)]
 #[clap(author, version)]
 pub struct Client {
     #[clap(flatten)]
+    pub chartos_config: ChartosConfig,
+    #[clap(flatten)]
     pub postgres_config: PostgresConfig,
     #[clap(flatten)]
-    pub chartos_config: ChartosConfig,
+    pub redis_config: RedisConfig,
     #[clap(subcommand)]
     pub command: Commands,
 }
