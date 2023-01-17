@@ -164,7 +164,7 @@ public class RJSRollingStockParser {
             if (maxEffort < 0)
                 throw new InvalidRollingStockField(fieldKey, "negative max effort");
             tractiveEffortCurve[i] = new RollingStock.TractiveEffortPoint(speed, maxEffort);
-            assert i == 0 || tractiveEffortCurve[i - 1].speed < speed;
+            assert i == 0 || tractiveEffortCurve[i - 1].speed() < speed;
         }
         return tractiveEffortCurve;
     }

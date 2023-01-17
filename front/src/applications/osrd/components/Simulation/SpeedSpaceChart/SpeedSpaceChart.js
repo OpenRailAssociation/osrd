@@ -63,14 +63,14 @@ const CHART_ID = 'SpeedSpaceChart';
     setRotate(!rotate);
   };
 
+  // Reset Chart Handle (first button on right bottom)
   const resetChartToggle = () => {
     d3.select(`#${CHART_ID}`).remove();
-
     setRotate(false);
     setChart(
       createChart(
         CHART_ID,
-        dispatch,
+        chart,
         resetChart,
         dataSimulation,
         false,
@@ -99,7 +99,7 @@ const CHART_ID = 'SpeedSpaceChart';
         setResetChart
       )
     );
-  }, [ref, rotate]);
+  }, [ref, rotate, heightOfSpeedSpaceChart]);
 
   // plug event handlers once the chart is ready or recreated
   useEffect(() => {
@@ -194,6 +194,9 @@ const CHART_ID = 'SpeedSpaceChart';
     window.addEventListener('resize', timeOutResize);
   }, []);
 
+  // reset chart
+  useEffect(() => resetChartToggle(), [resetChart]);
+
   return (
     <div
       id={`container-${CHART_ID}`}
@@ -216,7 +219,7 @@ const CHART_ID = 'SpeedSpaceChart';
       <button
         type="button"
         className="btn-rounded btn-rounded-white box-shadow btn-rotate mr-5"
-        onClick={resetChartToggle}
+        onClick={() => setResetChart(true)}
       >
         <GiResize />
       </button>

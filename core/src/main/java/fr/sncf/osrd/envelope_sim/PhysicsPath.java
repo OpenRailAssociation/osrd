@@ -1,5 +1,7 @@
 package fr.sncf.osrd.envelope_sim;
 
+import com.google.common.collect.RangeMap;
+
 public interface PhysicsPath {
     /** The length of the path, in meters */
     double getLength();
@@ -17,5 +19,5 @@ public interface PhysicsPath {
     double findHighGradePosition(double position, double endPos, double length, double gradeThreshold);
 
     /** The catenary profile on a given position of the path */
-    String getCatenaryProfile(double position);
+    RangeMap<Double, String> getCatenaryProfileMap();
 }

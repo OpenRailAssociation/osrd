@@ -1,5 +1,6 @@
 package fr.sncf.osrd.envelope_sim;
 
+import com.google.common.collect.RangeMap;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.train.RollingStock.Comfort;
 
@@ -28,12 +29,31 @@ public interface PhysicsRollingStock {
     /** The second derivative of the resistance to movement at a given speed, in kg/m */
     double getRollingResistanceSecDeriv(double speed);
 
-    /** The maximum traction effort which can be deployed at a given speed, in newtons, track profile and comfort */
-    double getMaxEffort(double speed, String profile, Comfort comfort);
+    /** The effort curves to use depending on the position on the path */
+    RangeMap<Double, TractiveEffortPoint[]> mapTractiveEffortCurves(PhysicsPath path, Comfort comfort);
+
+    /** Get the effort the train can apply at a given speed, in newtons */
+    static double getMaxEffort(double speed, TractiveEffortPoint[] tractiveEffortCurve) {
+        double previousEffort = 0.0;
+        double previousSpeed = 0.0;
+        for (var dataPoint : tractiveEffortCurve) {
+            if (previousSpeed <= Math.abs(speed) && Math.abs(speed) < dataPoint.speed()) {
+                var coeff = (previousEffort - dataPoint.maxEffort()) / (previousSpeed - dataPoint.speed());
+                return previousEffort + coeff * (Math.abs(speed) - previousSpeed);
+            }
+            previousEffort = dataPoint.maxEffort();
+            previousSpeed = dataPoint.speed();
+        }
+        return previousEffort;
+    }
 
     /** The maximum constant deceleration, in m/s^2 */
     double getDeceleration();
 
     /** The maximum braking force which can be applied at a given speed, in newtons */
     double getMaxBrakingForce(double speed);
+
+    /** The maximum acceleration, in m/s^2, which can be applied at a given speed, in m/s */
+    record TractiveEffortPoint(double speed, double maxEffort) {
+    }
 }
