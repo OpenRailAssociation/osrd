@@ -19,8 +19,7 @@ export default function MapSettingsSignals() {
   const switchAllSettings = (settingSwitch, stateOfSettings) => {
     const allSettings = {};
 
-    CONSTS_SETTINGS.map(
-      // eslint-disable-next-line no-return-assign
+    CONSTS_SETTINGS.forEach(
       (settingKey) => (allSettings[settingKey] = !stateOfSettings[settingSwitch])
     );
 
@@ -36,28 +35,19 @@ export default function MapSettingsSignals() {
   };
 
   const setSignalsList = (setting) => {
+    let newSettings;
+
     if (setting === 'all') {
-      const settingsSwiched = switchAllSettings(setting, signalsSettings);
-      dispatch(
-        updateSignalsSettings({
-          ...settingsSwiched,
-        })
-      );
+      newSettings = switchAllSettings(setting, signalsSettings);
     } else if (checkedSettings(setting, signalsSettings)) {
-      const settingsSwiched = switchAllSettings(setting, signalsSettings);
-      dispatch(
-        updateSignalsSettings({
-          ...settingsSwiched,
-        })
-      );
+      newSettings = switchAllSettings(setting, signalsSettings);
     } else {
-      dispatch(
-        updateSignalsSettings({
-          ...signalsSettings,
-          [setting]: !signalsSettings[setting],
-        })
-      );
+      newSettings = {
+        ...signalsSettings,
+        [setting]: !signalsSettings[setting],
+      };
     }
+    dispatch(updateSignalsSettings(newSettings));
   };
 
   return (
