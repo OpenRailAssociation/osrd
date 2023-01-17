@@ -41,6 +41,8 @@ paths:
             application/json:
               schema: 
                 type: array
+                items:
+                  $ref: "#/components/schemas/Layer"
 
   /infra/:
     get:
@@ -629,6 +631,46 @@ components:
           format: date
         locked:
           type: boolean
+
+    Layer:
+      properties:
+        name:
+          type: string
+        table_name:
+          type: string
+        views:
+          type: array
+          items:
+            $ref: "#/components/schemas/MapLayerView"
+        id_field:
+          type: string
+        attribution:
+          type: string
+
+    MapLayerView:
+      properties:
+        name:
+          type: string
+        on_field:
+          type: string
+        data_expr:
+          type: array
+          items:
+            type: string
+        exclude_fields:
+          type: array
+          items:
+            type: string
+        joins:
+          type: array
+          items:
+            type: string
+        cache_duration:
+          type: integer
+        where:
+          type: array
+          items:
+            type: string
 
     ObjectType:
       type: string
