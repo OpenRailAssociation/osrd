@@ -1,13 +1,11 @@
 package fr.sncf.osrd.api.stdcm.graph;
 
+import com.google.common.collect.Multimap;
+import fr.sncf.osrd.api.stdcm.OccupancyBlock;
 import fr.sncf.osrd.api.stdcm.STDCMResult;
-import fr.sncf.osrd.envelope.Envelope;
-import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
-import fr.sncf.osrd.envelope_sim.PhysicsPath;
-import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance;
-import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceRange;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.envelope_sim_infra.EnvelopeTrainPath;
+import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra.implementation.tracks.directed.TrackRangeView;
 import fr.sncf.osrd.infra_state.api.TrainPath;
 import fr.sncf.osrd.infra_state.implementation.TrainPathBuilder;
@@ -30,7 +28,8 @@ public class STDCMPostProcessing {
             RollingStock rollingStock,
             double timeStep,
             RollingStock.Comfort comfort,
-            double maxRunTime
+            double maxRunTime,
+            Multimap<SignalingRoute, OccupancyBlock> unavailableTimes
     ) {
         var ranges = makeEdgeRange(path);
         var routeRanges = ranges.stream()
@@ -41,21 +40,24 @@ public class STDCMPostProcessing {
                 .toList();
         var physicsPath = EnvelopeTrainPath.from(makeTrackRanges(ranges));
         var mergedEnvelopes = STDCMUtils.mergeEnvelopeRanges(ranges);
-        var withAllowance = applyAllowance(
+        var departureTime = computeDepartureTime(ranges, startTime);
+        var withAllowance = STDCMStandardAllowance.applyAllowance(
                 mergedEnvelopes,
                 ranges,
                 standardAllowance,
                 physicsPath,
                 rollingStock,
                 timeStep,
-                comfort
+                comfort,
+                unavailableTimes,
+                departureTime
         );
         var res = new STDCMResult(
                 new Pathfinding.Result<>(routeRanges, routeWaypoints),
                 withAllowance,
                 makeTrainPath(ranges),
                 physicsPath,
-                computeDepartureTime(ranges, startTime)
+                departureTime
         );
         if (res.envelope().getTotalTime() > maxRunTime) {
             // This can happen if the destination is one edge away from being reachable in time,
@@ -103,61 +105,6 @@ public class STDCMPostProcessing {
             trackRanges.addAll(infraRoute.getTrackRanges(routeRange.start(), routeRange.end()));
         }
         return trackRanges;
-    }
-
-    /** Applies the allowance to the final envelope */
-    private static Envelope applyAllowance(
-            Envelope envelope,
-            List<Pathfinding.EdgeRange<STDCMEdge>> ranges,
-            AllowanceValue standardAllowance,
-            PhysicsPath physicsPath,
-            RollingStock rollingStock,
-            double timeStep,
-            RollingStock.Comfort comfort
-    ) {
-        if (standardAllowance == null)
-            return envelope; // This isn't just an optimization, it avoids float inaccuracies
-        var allowance = new LinearAllowance(
-                new EnvelopeSimContext(rollingStock, physicsPath, timeStep, comfort),
-                0,
-                envelope.getEndPos(),
-                1,
-                makeAllowanceRanges(standardAllowance, ranges)
-        );
-        return allowance.apply(envelope);
-    }
-
-    /** Creates the list of allowance ranges for the final standard allowance.
-     * Adjacent ranges with identical values are merged to avoid extra binary search and an accumulation of errors. */
-    private static List<AllowanceRange> makeAllowanceRanges(
-            AllowanceValue allowance,
-            List<Pathfinding.EdgeRange<STDCMEdge>> ranges
-    ) {
-        double prevPosition = 0;
-        var allowanceRanges = new ArrayList<AllowanceRange>();
-        double prevAllowanceRatio = Double.NaN;
-        for (var range : ranges) {
-            if (range.start() == range.end())
-                continue;
-            var currentAllowanceRatio = allowance.getAllowanceRatio(
-                    range.edge().envelope().getTotalTime(),
-                    range.end() - range.start()
-            );
-            var endPosition = prevPosition + range.end() - range.start();
-            if (prevAllowanceRatio == currentAllowanceRatio) {
-                // Merge with the previous range
-                allowanceRanges.set(allowanceRanges.size() - 1, new AllowanceRange(
-                        allowanceRanges.get(allowanceRanges.size() - 1).beginPos,
-                        endPosition,
-                        allowance
-                ));
-            } else {
-                prevAllowanceRatio = currentAllowanceRatio;
-                allowanceRanges.add(new AllowanceRange(prevPosition, endPosition, allowance));
-            }
-            prevPosition = endPosition;
-        }
-        return allowanceRanges;
     }
 
     /** Creates a TrainPath instance from the list of pathfinding edges */
