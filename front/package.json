@@ -118,6 +118,7 @@
     "eslint-plugin-prettier": "^4.2.1",
     "mapbox-gl": "npm:empty-npm-package@1.0.0",
     "prettier": "^2.7.1",
+    "react-inject-env": "^2.1.0",
     "typescript": "~4.4.2",
     "web-vitals": "^2.1.0"
   },
@@ -128,6 +129,7 @@
   "scripts": {
     "compile": "tsc -b",
     "start": "react-scripts start",
+    "start-osrd-dev": "sh -ac '. ./.env.osrd.dev; react-scripts start'",
     "build": "react-scripts --max_old_space_size=4096 build",
     "test": "react-scripts test",
     "test-coverage": "react-scripts test --watchAll=false --coverage --coverageDirectory=test",

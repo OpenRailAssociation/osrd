@@ -1,21 +1,22 @@
-import 'i18n';
-
-import { unstable_HistoryRouter as HistoryRouter, Route, Routes } from 'react-router-dom';
-import React, { Suspense, useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { Route, Routes, unstable_HistoryRouter as HistoryRouter } from 'react-router-dom';
 
-import Home from 'main/Home';
-import HomeCarto from 'applications/carto/Home';
-import HomeEditor from 'applications/editor/Home';
-import HomeOSRD from 'applications/osrd/Home';
-import HomeStdcm from 'applications/stdcm/Home';
-import HomeOpenData from 'applications/opendata/Home';
-import HomeCustomGET from 'applications/customget/Home';
-import Loader from 'common/Loader';
-import { attemptLoginOnLaunch } from 'reducers/user';
+import { env } from 'env';
+import 'i18n';
 import { bootstrapOSRDConf } from 'reducers/osrdconf';
 import { getInfraID } from 'reducers/osrdconf/selectors';
-import history from '../history';
+import { attemptLoginOnLaunch } from 'reducers/user';
+
+import HomeCarto from 'applications/carto/Home';
+import HomeCustomGET from 'applications/customget/Home';
+import HomeEditor from 'applications/editor/Home';
+import HomeOpenData from 'applications/opendata/Home';
+import HomeOSRD from 'applications/osrd/Home';
+import HomeStdcm from 'applications/stdcm/Home';
+import Loader from 'common/Loader';
+import history from 'main/history';
+import Home from 'main/Home';
 
 export default function App() {
   const user = useSelector((state) => state.user);
@@ -25,9 +26,10 @@ export default function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (process.env.REACT_APP_LOCAL_BACKEND) {
-      console.log('*** USING LOCAL BACKEND ***');
+    if (env.REACT_APP_LOCAL_BACKEND === 'true') {
+      console.info('*** USING LOCAL BACKEND ***');
     } else {
+      console.info('*** USING OSRD.DEV BACKEND ***');
       dispatch(attemptLoginOnLaunch());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -50,7 +52,7 @@ export default function App() {
 
   return (
     <Suspense fallback={<Loader />}>
-      {(user.isLogged || process.env.REACT_APP_LOCAL_BACKEND) && (
+      {(user.isLogged || env.REACT_APP_LOCAL_BACKEND) && (
         <HistoryRouter history={history}>
           <Routes>
             <Route path="/osrd/*" element={<HomeOSRD />} />
@@ -63,7 +65,7 @@ export default function App() {
           </Routes>
         </HistoryRouter>
       )}
-      {!user.isLogged && !process.env.REACT_APP_LOCAL_BACKEND && <Loader />}
+      {!user.isLogged && !env.REACT_APP_LOCAL_BACKEND && <Loader />}
     </Suspense>
   );
 }

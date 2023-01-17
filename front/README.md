@@ -48,21 +48,18 @@
 
 ### Module editor
 
-# Create-react-app
-
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
-
-## Available Scripts
-
-In the project directory, you can run:
+# Running the app
 
 ### `yarn start`
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Runs the app in a local development environment. <br />
+This requires the other services (api, core, postgres…) to be running in your local environment as well.
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+See [Main Readme](../README.md) if you need more information to run the docker.
+
+### `yarn start-osrd-dev`
+
+Runs the app in a local environment, using osrd.dev.dgexsol backend services.
 
 ### `yarn test`
 
