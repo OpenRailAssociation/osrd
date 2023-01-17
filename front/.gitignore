@@ -22,7 +22,6 @@
 .env.development.local
 .env.test.local
 .env.production.local
-.env
 .cache
 
 npm-debug.log*
