@@ -5,7 +5,7 @@ COPY --chown=gradle:gradle . .
 
 # Remove broken symlink (to prevent kaniko from crashing)
 RUN gradle shadowJar --no-daemon && \
-  rm /root/.kotlin/daemon/kotlin-daemon.*
+  rm  -rf /root/.kotlin/daemon/kotlin-daemon.* /tmp/hsperfdata_root/ /tmp/kotlin-daemon.*
 
 FROM amazoncorretto:17
 
