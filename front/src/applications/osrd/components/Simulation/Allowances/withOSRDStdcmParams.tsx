@@ -62,9 +62,9 @@ function withOSRDStdcmParams<T>(Component: ComponentType<T>) {
 
     const changeType = (type: any, typeKey: string) => {
       if (typeKey === 'gridMarginBefore') {
-        dispatch(updateGridMarginBefore(type.value));
+        dispatch(updateGridMarginBefore(type.value || 0));
       } else if (typeKey === 'gridMarginAfter') {
-        dispatch(updateGridMarginAfter(type.value));
+        dispatch(updateGridMarginAfter(type.value || 0));
       } else if (typeKey === 'standardStdcmAllowance') {
         dispatch(updateStdcmStandardAllowance(type));
       }
