@@ -1,6 +1,6 @@
+import React from 'react';
 import Card from 'common/BootstrapSNCF/CardSNCF/CardSNCF';
 import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
-import React from 'react';
 import mapImg from 'assets/pictures/home/map.svg';
 import editorImg from 'assets/pictures/home/editor.svg';
 import stdcmImg from 'assets/pictures/home/stdcm.svg';

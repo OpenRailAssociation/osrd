@@ -197,7 +197,7 @@ function OSRDSimulation() {
   const mapMaxHeight = getMapMaxHeight(timeTableRef);
   return (
     <>
-      {!displaySimulation || true ? (
+      {!displaySimulation ? (
         <div className="pt-5 mt-5">{waitingLoader}</div>
       ) : (
         <div className="simulation-results">
