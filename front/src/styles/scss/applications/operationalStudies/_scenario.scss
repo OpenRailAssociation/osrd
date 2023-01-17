@@ -27,14 +27,16 @@
       }
     }
     .scenario-timetable {
-      height: calc(var(--content-height) - 8rem);
       .scenario-timetable-toolbar {
         display: flex;
         align-items: center;
         gap: 0.5rem;
         margin-bottom: 0.5rem;
+        height: 2rem;
       }
       .scenario-timetable-trains {
+        overflow: auto;
+        height: calc(var(--content-height) - 10.5rem);
         .scenario-timetable-train {
           display: flex;
           background-color: var(--white);
@@ -51,6 +53,9 @@
               flex-grow: 1;
               padding: 0 0.25rem;
               background-color: var(--coolgray3);
+              .selected {
+                color: red !important;
+              }
               transition: .2s;
               .scenario-timetable-train-name {
                 display: flex;
