@@ -19,9 +19,9 @@ export default function MapSettingsSignals() {
   const switchAllSettings = (settingSwitch, stateOfSettings) => {
     const allSettings = {};
 
-    CONSTS_SETTINGS.forEach(
-      (settingKey) => (allSettings[settingKey] = !stateOfSettings[settingSwitch])
-    );
+    CONSTS_SETTINGS.forEach((settingKey) => {
+      allSettings[settingKey] = !stateOfSettings[settingSwitch];
+    });
 
     return allSettings;
   };
@@ -37,9 +37,7 @@ export default function MapSettingsSignals() {
   const setSignalsList = (setting) => {
     let newSettings;
 
-    if (setting === 'all') {
-      newSettings = switchAllSettings(setting, signalsSettings);
-    } else if (checkedSettings(setting, signalsSettings)) {
+    if (setting === 'all' || checkedSettings(setting, signalsSettings)) {
       newSettings = switchAllSettings(setting, signalsSettings);
     } else {
       newSettings = {
