@@ -2,6 +2,8 @@ import { SwitchType } from 'types';
 import { ValueOf } from 'utils/types';
 import { Position, Feature, Point, GeoJSON } from 'geojson';
 
+import { Path } from 'common/api/osrdApi';
+
 export const BLOCKTYPES = [
   {
     key: 'BAL',
@@ -102,17 +104,6 @@ export interface PointOnMap {
   track?: string;
 }
 
-export interface SuggestedPointOnMap {
-  track: string;
-  position: string;
-  geo: Point;
-  sch: Point;
-  id: any;
-  name: any;
-  suggestion: boolean;
-  duration: number;
-}
-
 export interface OsrdConfState {
   rollingStockComfort: any;
   name: string;
@@ -129,7 +120,7 @@ export interface OsrdConfState {
   originSpeed: number;
   destination?: PointOnMap;
   vias: PointOnMap[];
-  suggeredVias: SuggestedPointOnMap[];
+  suggeredVias: Path['steps'];
   trainCompo: undefined;
   geojson: GeoJSON[];
   originDate?: string;

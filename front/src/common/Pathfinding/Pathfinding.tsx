@@ -6,12 +6,12 @@ import bbox from '@turf/bbox';
 import { useTranslation } from 'react-i18next';
 import { last } from 'lodash';
 
+import { ArrayElement } from 'utils/types';
+import { Path, PathQuery } from 'common/api/osrdApi';
 import { adjustPointOnTrack } from 'utils/pathfinding';
-import { SuggestedPointOnMap } from 'applications/osrd/consts';
-import { PathQuery } from 'common/api/osrdApi';
 import PathfindingApi from 'common/api/pathfinding';
 
-import { RootState } from 'reducers';
+import { getMapTrackSources } from 'reducers/map/selectors';
 import { setFailure } from 'reducers/main';
 
 import {
@@ -60,23 +60,23 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
   const rollingStockID = useSelector(getRollingStockID);
   const pathfindingID = useSelector(getPathfindingID);
   const geojson = useSelector(getGeojson);
-  const map = useSelector((state: RootState) => state.map);
+  const mapTrackSources = useSelector(getMapTrackSources);
 
   // Way to ensure marker position on track
-  const correctWaypointsGPS = ({ steps }: any) => {
+  const correctWaypointsGPS = ({ steps = [] }: Path) => {
     setLaunchPathfinding(false);
-    dispatch(updateOrigin(adjustPointOnTrack(origin, steps[0], map)));
+    dispatch(updateOrigin(adjustPointOnTrack(origin, steps[0], mapTrackSources)));
     if (vias.length > 0 || steps.length > 2) {
-      const newVias = steps.slice(1, -1).flatMap((step: SuggestedPointOnMap) => {
+      const newVias = steps.slice(1, -1).flatMap((step: ArrayElement<Path['steps']>) => {
         if (!step.suggestion) {
-          return [adjustPointOnTrack(step, step, map, step.position)];
+          return [adjustPointOnTrack(step, step, mapTrackSources, step.position)];
         }
         return [];
       });
       dispatch(replaceVias(newVias));
       dispatch(updateSuggeredVias(steps));
     }
-    dispatch(updateDestination(adjustPointOnTrack(destination, last(steps), map)));
+    dispatch(updateDestination(adjustPointOnTrack(destination, last(steps), mapTrackSources)));
     setLaunchPathfinding(true);
   };
 
@@ -128,7 +128,7 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
       correctWaypointsGPS(itineraryCreated);
       dispatch(updateItinerary(itineraryCreated));
       dispatch(updatePathfindingID(itineraryCreated.id));
-      if (zoom) zoomToFeature(bbox(itineraryCreated[map.mapTrackSources]));
+      if (zoom) zoomToFeature(bbox(itineraryCreated[mapTrackSources]));
       setPathfindingInProgress(false);
     } catch (e: any) {
       dispatch(
@@ -142,7 +142,7 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
   };
 
   useEffect(() => {
-    const index = Number(map?.mapTrackSources);
+    const index = Number(mapTrackSources);
     if (!pathfindingID || !geojson?.[index]) {
       mapItinerary();
     } else {
@@ -155,7 +155,7 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
     if (launchPathfinding) {
       mapItinerary();
     }
-  }, [origin, destination, map.mapTrackSources, rollingStockID]);
+  }, [origin, destination, mapTrackSources, rollingStockID]);
 
   useEffect(() => {
     if (launchPathfinding) {

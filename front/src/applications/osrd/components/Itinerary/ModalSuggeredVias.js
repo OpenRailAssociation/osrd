@@ -8,6 +8,8 @@ import { FaLongArrowAltUp, FaLongArrowAltDown, FaTrash, FaMinus } from 'react-ic
 import { adjustPointOnTrack } from 'utils/pathfinding';
 
 import { replaceVias } from 'reducers/osrdconf';
+import { getMapTrackSources } from 'reducers/map/selectors';
+import { getSuggeredVias, getVias } from 'reducers/osrdconf/selectors';
 
 import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
@@ -26,7 +28,10 @@ function LoaderPathfindingInProgress() {
 
 export default function ModalSugerredVias(props) {
   const dispatch = useDispatch();
-  const { suggeredVias, vias } = useSelector((state) => state.osrdconf);
+  const suggeredVias = useSelector(getSuggeredVias);
+  const vias = useSelector(getVias);
+  const mapTrackSources = useSelector(getMapTrackSources);
+
   const { inverseOD, removeAllVias, removeViaFromPath, pathfindingInProgress } = props;
   const { t } = useTranslation('osrdconf');
   const nbVias = suggeredVias.length - 1;
@@ -35,7 +40,7 @@ export default function ModalSugerredVias(props) {
   const convertPathfindingVias = (steps, idxToAdd) => {
     const newVias = steps.slice(1, -1).flatMap((step, idx) => {
       if (!step.suggestion || idxToAdd === idx) {
-        return [adjustPointOnTrack(step, step, map, step.position)];
+        return [adjustPointOnTrack(step, step, mapTrackSources, step.position)];
       }
       return [];
     });
