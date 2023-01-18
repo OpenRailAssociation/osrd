@@ -58,7 +58,9 @@ export default function Scenario() {
                       <img src={infraLogo} alt="Infra logo" className="mr-2" />
                       {scenarioDetails.infra_name}
                     </div>
-                    <div className="scenario-details-description">{scenarioDetails.description}</div>
+                    <div className="scenario-details-description">
+                      {scenarioDetails.description}
+                    </div>
                   </div>
                 )}
                 <Timetable />
