@@ -14,9 +14,9 @@ import HomeEditor from 'applications/editor/Home';
 import HomeOpenData from 'applications/opendata/Home';
 import HomeOSRD from 'applications/osrd/Home';
 import HomeStdcm from 'applications/stdcm/Home';
+import { ModalProvider, ModalSNCF } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import Loader from 'common/Loader';
 import history from 'main/history';
-import { ModalProvider, ModalSNCF } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import Home from 'main/Home';
 
 export default function App() {
@@ -25,9 +25,10 @@ export default function App() {
 
   const { darkmode } = useSelector((state) => state.main);
   const dispatch = useDispatch();
+  const isLocalBackend = env.REACT_APP_LOCAL_BACKEND.trim().toLowerCase() === 'true';
 
   useEffect(() => {
-    if (env.REACT_APP_LOCAL_BACKEND === 'true') {
+    if (isLocalBackend) {
       console.info('*** USING LOCAL BACKEND ***');
     } else {
       console.info('*** USING OSRD.DEV BACKEND ***');
@@ -53,9 +54,9 @@ export default function App() {
 
   return (
     <Suspense fallback={<Loader />}>
-      {(user.isLogged || env.REACT_APP_LOCAL_BACKEND) && (
+      {(user.isLogged || isLocalBackend) && (
         <ModalProvider>
-          <ModalSNCF/>
+          <ModalSNCF />
           <HistoryRouter history={history}>
             <Routes>
               <Route path="/osrd/*" element={<HomeOSRD />} />
@@ -69,7 +70,7 @@ export default function App() {
           </HistoryRouter>
         </ModalProvider>
       )}
-      {!user.isLogged && !env.REACT_APP_LOCAL_BACKEND && <Loader />}
+      {!user.isLogged && !isLocalBackend && <Loader />}
     </Suspense>
   );
 }
