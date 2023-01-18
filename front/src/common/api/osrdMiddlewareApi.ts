@@ -1,8 +1,17 @@
 import { emptySplitApi as api } from './emptyApi';
 const injectedRtkApi = api.injectEndpoints({
   endpoints: (build) => ({
+    getHealth: build.query<GetHealthApiResponse, GetHealthApiArg>({
+      query: () => ({ url: `/health/` }),
+    }),
     getInfra: build.query<GetInfraApiResponse, GetInfraApiArg>({
       query: () => ({ url: `/infra/` }),
+    }),
+    getVersionApi: build.query<GetVersionApiApiResponse, GetVersionApiApiArg>({
+      query: () => ({ url: `/version/api/` }),
+    }),
+    getVersionCore: build.query<GetVersionCoreApiResponse, GetVersionCoreApiArg>({
+      query: () => ({ url: `/version/core/` }),
     }),
     getInfraById: build.query<GetInfraByIdApiResponse, GetInfraByIdApiArg>({
       query: (queryArg) => ({ url: `/infra/${queryArg.id}/` }),
@@ -18,6 +27,13 @@ const injectedRtkApi = api.injectEndpoints({
     }),
     postPathfinding: build.mutation<PostPathfindingApiResponse, PostPathfindingApiArg>({
       query: (queryArg) => ({ url: `/pathfinding/`, method: 'POST', body: queryArg.pathQuery }),
+    }),
+    postPathfindingOp: build.mutation<PostPathfindingOpApiResponse, PostPathfindingOpApiArg>({
+      query: (queryArg) => ({
+        url: `/pathfinding/op/`,
+        method: 'POST',
+        body: queryArg.pathOpQuery,
+      }),
     }),
     getPathfindingById: build.query<GetPathfindingByIdApiResponse, GetPathfindingByIdApiArg>({
       query: (queryArg) => ({ url: `/pathfinding/${queryArg.id}/` }),
@@ -147,6 +163,8 @@ const injectedRtkApi = api.injectEndpoints({
   overrideExisting: false,
 });
 export { injectedRtkApi as osrdMiddlewareApi };
+export type GetHealthApiResponse = unknown;
+export type GetHealthApiArg = void;
 export type GetInfraApiResponse = /** status 200 The infra list */ {
   count?: number;
   next?: any;
@@ -154,6 +172,14 @@ export type GetInfraApiResponse = /** status 200 The infra list */ {
   results?: Infra[];
 };
 export type GetInfraApiArg = void;
+export type GetVersionApiApiResponse = /** status 200 Return the api service version */ {
+  git_describe: string | null;
+};
+export type GetVersionApiApiArg = void;
+export type GetVersionCoreApiResponse = /** status 200 Return the core service version */ {
+  git_describe: string | null;
+};
+export type GetVersionCoreApiArg = void;
 export type GetInfraByIdApiResponse = /** status 200 The infra information */ Infra;
 export type GetInfraByIdApiArg = {
   /** Infra ID */
@@ -177,6 +203,11 @@ export type PostPathfindingApiResponse = /** status 201 The path */ Path[];
 export type PostPathfindingApiArg = {
   /** Steps of the path */
   pathQuery: PathQuery;
+};
+export type PostPathfindingOpApiResponse = /** status 201 The path */ Path[];
+export type PostPathfindingOpApiArg = {
+  /** Steps of the path */
+  pathOpQuery: PathOpQuery;
 };
 export type GetPathfindingByIdApiResponse = /** status 200 The path */ Path[];
 export type GetPathfindingByIdApiArg = {
@@ -388,17 +419,20 @@ export type Path = {
     name?: string;
     suggestion?: boolean;
     duration?: number;
-    track?: {
-      id?: string;
-      type?: 'TrackSection';
-    };
+    track?: string;
     position?: number;
-    sch?: number[];
-    geo?: number[];
+    sch?: {
+      coordinates?: number[];
+      type?: string;
+    };
+    geo?: {
+      coordinates?: number[];
+      type?: string;
+    };
   }[];
 };
 export type Waypoint = {
-  track_section?: number;
+  track_section?: string;
   geo_coordinate?: number[];
 }[];
 export type PathQuery = {
@@ -409,7 +443,16 @@ export type PathQuery = {
     waypoints?: Waypoint;
   }[];
 };
+export type PathOpQuery = {
+  infra?: number;
+  rolling_stocks?: number[];
+  steps?: {
+    duration?: number;
+    op_trigram?: string;
+  }[];
+};
 export type LightRollingStock = {
+  id?: number;
   version?: string;
   name?: string;
   length?: number;
@@ -422,7 +465,6 @@ export type LightRollingStock = {
     value?: number;
   };
   inertia_coefficient?: number;
-  power_class?: number;
   features?: string[];
   mass?: number;
   rolling_resistance?: {
@@ -432,13 +474,37 @@ export type LightRollingStock = {
     type?: 'davis';
   };
   loading_gauge?: 'G1' | 'G2' | 'GA' | 'GB' | 'GB1' | 'GC' | 'FR3.3' | 'FR3.3/GB/G2' | 'GLOTT';
-  electric_only?: boolean;
-  compatible_voltages?: number[];
+  effort_curves?: {
+    default_mode?: string;
+    modes?: {
+      [key: string]: {
+        is_electric?: boolean;
+      };
+    };
+  };
+  metadata?: object;
+};
+export type Comfort = 'AC' | 'HEATING' | 'STANDARD';
+export type EffortCurve = {
+  speeds?: number[];
+  max_efforts?: number[];
+};
+export type ConditionalEffortCurve = {
+  cond?: {
+    comfort?: Comfort;
+  } | null;
+  curve?: EffortCurve;
 };
 export type RollingStock = LightRollingStock & {
-  effort_curve?: {
-    speeds?: number[];
-    max_efforts?: number[];
+  effort_curves?: {
+    default_mode?: string;
+    modes?: {
+      [key: string]: {
+        curves?: ConditionalEffortCurve[];
+        default_curve?: EffortCurve;
+        is_electric?: boolean;
+      };
+    };
   };
 };
 export type AllowanceTimePerDistanceValue = {
@@ -498,6 +564,7 @@ export type StandaloneSimulationParameters = {
     labels?: string[];
     allowances?: Allowance[];
     speed_limit_composition?: string;
+    comfort?: Comfort;
   }[];
 };
 export type WritableTrainSchedule = {
@@ -563,6 +630,7 @@ export type TrainScheduleResultData = {
     geo_position?: number[];
     schema_position?: number[];
   }[];
+  mechanical_energy_consumed?: any;
 };
 export type TrainScheduleResult = {
   id?: number;
@@ -591,6 +659,7 @@ export type TrainScheduleResult = {
 export type StdcmRequest = {
   infra?: number;
   rolling_stock?: number;
+  comfort?: Comfort;
   timetable?: number;
   start_time?: number;
   end_time?: number;
@@ -599,4 +668,7 @@ export type StdcmRequest = {
   maximum_departure_delay?: number;
   maximum_relative_run_time?: number;
   speed_limit_composition?: string;
+  margin_before?: number;
+  margin_after?: number;
+  standard_allowance?: AllowanceValue;
 };
