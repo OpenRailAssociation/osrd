@@ -92,7 +92,7 @@
     "@storybook/addon-actions": "^6.5.13",
     "@storybook/addon-essentials": "^6.5.13",
     "@storybook/addon-interactions": "^6.5.13",
-    "@storybook/addon-links": "^6.5.13",
+    "@storybook/addon-links": "^6.5.15",
     "@storybook/builder-webpack4": "^6.5.13",
     "@storybook/manager-webpack4": "^6.5.13",
     "@storybook/node-logger": "^6.5.13",
