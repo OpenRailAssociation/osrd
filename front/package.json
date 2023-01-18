@@ -108,7 +108,7 @@
     "@types/jest": "^27.0.1",
     "@types/lodash": "^4.14.186",
     "@types/node": "^16.7.13",
-    "@types/react": "^17.0.20",
+    "@types/react": "^18.0.26",
     "@types/react-dom": "^17.0.9",
     "@types/react-transition-group": "^4.4.5",
     "@types/uuid": "^8.3.4",
