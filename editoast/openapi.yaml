@@ -530,36 +530,9 @@ paths:
                   discriminator:
                     propertyName: type
                   oneOf:
-                    - type: object
-                      description: Error when the route id couldn't be found
-                      properties:
-                        type: { type: string, enum: ["NotFound"] }
-                    - type: object
-                      description: Error when the route path couldn't be computed
-                      properties:
-                        type: { type: string, enum: ["CantComputePath"] }
-                    - type: object
-                      description: Track ranges
-                      properties:
-                        type: { type: string, enum: ["Computed"] }
-                        track_ranges:
-                          type: array
-                          items:
-                            type: object
-                            properties:
-                              track:
-                                type: string
-                                example: 01234567-89ab-cdef-0123-456789abcdef
-                              begin:
-                                type: number
-                                format: float
-                              end:
-                                type: number
-                                format: float
-                                example: 100.
-                              applicable_directions:
-                                type: string
-                                enum: [START_TO_STOP, STOP_TO_START]
+                    - $ref: "#/components/schemas/ComputeTrackRangesErrors/NotFound"
+                    - $ref: "#/components/schemas/ComputeTrackRangesErrors/CantComputePath"
+                    - $ref: "#/components/schemas/ComputeTrackRangesErrors/Computed"
 
   /infra/{id}/objects/{object_type}/:
     post:
@@ -858,3 +831,38 @@ components:
             is_warning: false
             obj_id: 61205924-6667-11e3-81ff-01f464e0362d
             obj_type: TrackSection
+
+    ComputeTrackRangesErrors:
+      NotFound:
+        type: object
+        description: Error when the route id couldn't be found
+        properties:
+          type: { type: string, enum: ["NotFound"] }
+      CantComputePath:
+        type: object
+        description: Error when the route path couldn't be computed
+        properties:
+          type: { type: string, enum: ["CantComputePath"] }
+      Computed:
+        type: object
+        description: Track ranges
+        properties:
+          type: { type: string, enum: ["Computed"] }
+          track_ranges:
+            type: array
+            items:
+              type: object
+              properties:
+                track:
+                  type: string
+                  example: 01234567-89ab-cdef-0123-456789abcdef
+                begin:
+                  type: number
+                  format: float
+                end:
+                  type: number
+                  format: float
+                  example: 100.
+                applicable_directions:
+                  type: string
+                  enum: [START_TO_STOP, STOP_TO_START]
