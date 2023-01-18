@@ -108,6 +108,7 @@ class RollingStockImage(models.Model):
         abstract = True
         verbose_name_plural = "rolling stock images"
 
+
 class RollingStockCompoundImage(RollingStockImage):
     class Meta:
         db_table = "osrd_infra_rollingstockimage"

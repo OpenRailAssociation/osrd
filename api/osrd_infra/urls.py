@@ -4,6 +4,7 @@ from osrd_infra.views import (
     InfraView,
     LightRollingStockView,
     PathfindingView,
+    RollingStockLiveryView,
     RollingStockView,
     TimetableView,
     VersionView,
@@ -15,6 +16,7 @@ router = DefaultRouter(trailing_slash=True)
 router.register("infra", InfraView, basename="infra")
 router.register("rolling_stock", RollingStockView, basename="rolling_stock")
 router.register("light_rolling_stock", LightRollingStockView, basename="light_rolling_stock")
+router.register("rolling_stock_livery", RollingStockLiveryView, basename="rolling_stock_livery")
 router.register("pathfinding", PathfindingView, basename="pathfinding")
 router.register("timetable", TimetableView, basename="timetable")
 router.register("train_schedule", TrainScheduleView, basename="train_schedule")
