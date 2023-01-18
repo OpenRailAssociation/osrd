@@ -7,17 +7,17 @@ const withOSRDStdcmMissingInfo = <T extends {}>(Component: ComponentType<T>) => 
   return (hocProps: T) => {
     const { t } = useTranslation('missingInfo');
 
-    const missingInfoList: string[] = [
-      t('missingInfra'),
-      t('missingTimeTable'),
-      t('missingRollingStock'),
-      t('missingSpeedLimitByTag'),
-    ];
-
     const infra = useSelector((state: any) => state.osrdconf.infraID);
     const timeTable = useSelector((state: any) => state.osrdconf.timetableID);
     const rollingStock = useSelector((state: any) => state.osrdconf.rollingStockID);
     const speedLimitByTag = useSelector((state: any) => state.osrdconf.speedLimitByTag);
+
+    const missingInfoList: string[] = [
+      !infra ? t('missingInfra') : '',
+      !timeTable ? t('missingTimeTable') : '',
+      !rollingStock ? t('missingRollingStock') : '',
+      !speedLimitByTag ? t('missingSpeedLimitByTag') : '',
+    ];
 
     const [isCorrect, setIsCorrect] = useState<boolean>(false);
 

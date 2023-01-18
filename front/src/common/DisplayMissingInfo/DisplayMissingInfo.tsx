@@ -12,9 +12,9 @@ const DisplayMissingInfo = (props: Props) => {
   return (
     <div className="form-error mb-2">
       <ul>
-        {missingInfoList.map((missingInfo: string) => (
-          <li>{missingInfo}</li>
-        ))}
+        {missingInfoList.map((missingInfo: string) =>
+          missingInfo.length ? <li>{missingInfo}</li> : null
+        )}
       </ul>
     </div>
   );
