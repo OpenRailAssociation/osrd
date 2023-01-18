@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
-import { updateMustRedraw, updateSelectedTrain } from 'reducers/osrdsimulation/actions';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { FaPlus } from 'react-icons/fa';
 
-import { changeTrain } from 'applications/operationalStudies/components/TrainList/TrainListHelpers';
 import nextId from 'react-id-generator';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import TimetableTrainCard from './TimetableTrainCard';
 
-function addSpeedIndicator(trainList) {
+function trainsDurations(trainList) {
   const durationList = trainList.map((train) => ({
     id: train.id,
     duration: train.arrival > train.departure ? train.arrival - train.departure : (train.arrival + 86400) - train.departure,
@@ -25,15 +23,9 @@ export default function Timetable() {
   const departureArrivalTimes = useSelector((state) => state.osrdsimulation.departureArrivalTimes);
   const selectedTrain = useSelector((state) => state.osrdsimulation.selectedTrain);
   const [filter, setFilter] = useState('');
-  const dispatch = useDispatch();
   const { t } = useTranslation('operationalStudies/scenario');
 
-  const trainList = addSpeedIndicator(departureArrivalTimes);
-
-  const changeSelectedTrain = (idx) => {
-    dispatch(updateSelectedTrain(idx));
-    dispatch(updateMustRedraw(true));
-  };
+  const trainList = trainsDurations(departureArrivalTimes);
 
   return (
     <div className="scenario-timetable">

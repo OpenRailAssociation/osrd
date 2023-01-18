@@ -1,7 +1,7 @@
 import {
   changeTrain,
   getTrainDetailsForAPI,
-} from 'applications/operationalStudies/components/TrainList/TrainListHelpers';
+} from 'applications/operationalStudies/components/Simulation/simulationHelpers';
 import { deleteRequest, get, post } from 'common/requests';
 import { setFailure } from 'reducers/main';
 
