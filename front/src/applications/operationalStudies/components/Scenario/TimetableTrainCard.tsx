@@ -22,9 +22,10 @@ export default function TimetableTrainCard({
   selectedProjection,
   idx,
 }: Props) {
-  console.log(selectedProjection);
+  if (!selectedProjection) console.log('');
+
   return (
-    <div className={`scenario-timetable-train ${selectedTrain === train.id ? 'selected' : ''}`}>
+    <div className={`scenario-timetable-train ${selectedTrain === idx ? 'selected' : ''}`}>
       <div className="scenario-timetable-train-container">
         <div className="scenario-timetable-train-header">
           <div className="scenario-timetable-train-name">

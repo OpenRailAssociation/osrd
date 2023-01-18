@@ -41,10 +41,10 @@
           display: flex;
           background-color: var(--white);
           margin-bottom: 0.5rem;
-          transition: .2s;
           cursor: pointer;
           .scenario-timetable-train-container {
             border: 1px solid var(--coolgray3);
+            transition: .2s;
             border-radius: 4px;
             flex-grow: 1;
             .scenario-timetable-train-header {
@@ -53,9 +53,6 @@
               flex-grow: 1;
               padding: 0 0.25rem;
               background-color: var(--coolgray3);
-              .selected {
-                color: red !important;
-              }
               transition: .2s;
               .scenario-timetable-train-name {
                 display: flex;
@@ -66,7 +63,7 @@
                   color: var(--secondary);
                   background-color: var(--coolgray1);
                   font-size: .8rem;
-                  margin: 0.25rem 0.25rem 0.25rem 0;
+                  margin: 0.25rem 0.5rem 0.25rem 0;
                   padding: 0 0.25rem;
                   min-width: 2rem;
                   text-align: center;
@@ -136,6 +133,11 @@
                 background-color: var(--red);
                 color: var(--white);
               }       
+            }
+          }
+          &.selected {
+            .scenario-timetable-train-header {
+              background-color: var(--teal);
             }
           }
           &:hover {
