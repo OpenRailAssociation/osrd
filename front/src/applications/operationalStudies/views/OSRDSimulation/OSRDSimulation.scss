@@ -105,19 +105,6 @@ select.sm {
     }
   }
 
-  .btn-selected-train {
-    cursor: pointer;
-    border-radius: 4px;
-    transition: .2s;
-    background-color: var(--primary);
-    color: white;
-    padding: .5rem 1rem;
-  }
-  .simulation-trainlist {
-    max-height: 17rem;
-    overflow: auto;
-  }
-
   .table-drivertrainschedule th, thead {
     position: sticky;
     top: 0;

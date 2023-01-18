@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import PropTypes from 'prop-types';
-import { changeTrain } from 'applications/operationalStudies/components/TrainList/TrainListHelpers';
+import { changeTrain } from 'applications/operationalStudies/components/Simulation/simulationHelpers';
 import { updateMustRedraw } from 'reducers/osrdsimulation/actions';
 import { useTranslation } from 'react-i18next';
 
