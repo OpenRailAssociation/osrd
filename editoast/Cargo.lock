@@ -341,7 +341,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6a62ebf187bc30bfc1a14bed4073912b988551d111208fe800b27c32df282481"
 dependencies = [
  "deadpool",
- "redis",
+ "redis 0.21.7",
 ]
 
 [[package]]
@@ -440,7 +440,7 @@ dependencies = [
  "json-patch",
  "pathfinding",
  "rand 0.8.5",
- "redis",
+ "redis 0.22.2",
  "reqwest",
  "rocket",
  "rocket_db_pools",
@@ -1455,14 +1455,27 @@ dependencies = [
  "combine",
  "futures-util",
  "itoa",
- "native-tls",
  "percent-encoding",
  "pin-project-lite",
  "ryu",
- "sha1",
  "tokio",
- "tokio-native-tls",
  "tokio-util",
+ "url",
+]
+
+[[package]]
+name = "redis"
+version = "0.22.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5c1aada340fba5deba625c84d109d0a83cc3565452d38083417992a702c2428d"
+dependencies = [
+ "combine",
+ "itoa",
+ "native-tls",
+ "percent-encoding",
+ "ryu",
+ "sha1_smol",
+ "tokio-native-tls",
  "url",
 ]
 
@@ -1839,15 +1852,6 @@ dependencies = [
  "ryu",
  "serde",
  "unsafe-libyaml",
-]
-
-[[package]]
-name = "sha1"
-version = "0.6.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c1da05c97445caa12d05e848c4a4fcbbea29e748ac28f7e80e9b010392063770"
-dependencies = [
- "sha1_smol",
 ]
 
 [[package]]

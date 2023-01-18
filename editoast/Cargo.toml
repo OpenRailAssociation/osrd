@@ -22,7 +22,7 @@ reqwest = { version = "~0.11.13", features = ["json"] }
 rocket = { git = "https://github.com/SergioBenitez/Rocket.git", rev = "162fafa0", features = [
     "json",
 ] }
-redis = { version = "0.21.7", features = ["tokio-native-tls-comp"] }
+redis = { version = "0.22.2", features = ["tokio-native-tls-comp"] }
 rocket_db_pools = { git = "https://github.com/SergioBenitez/Rocket.git", rev = "162fafa0", version = "0.1.0-rc.2", features = [
     "deadpool_redis",
 ] }
