@@ -111,7 +111,7 @@
     "@types/react": "^17.0.20",
     "@types/react-dom": "^17.0.9",
     "@types/react-transition-group": "^4.4.5",
-    "@types/uuid": "^8.3.4",
+    "@types/uuid": "^9.0.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-only-warn": "^1.0.3",
