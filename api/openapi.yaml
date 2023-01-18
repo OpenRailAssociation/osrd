@@ -344,6 +344,54 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RollingStock"
+  /rolling_stock/{id}/livery/:
+    get:
+      tags:
+        - rolling_stock
+        - livery
+      summary: Retrieve the compound image of a rolling stock livery
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Rolling Stock ID
+          required: true
+        - in: query
+          name: livery_id
+          schema:
+            type: integer
+          description: Rolling Stock Livery ID
+          required: true
+        - responses:
+          200:
+            description: The livery compound image
+            content:
+              'image/png':
+                schema:
+                  type: string
+                  format: binary        
+  /rolling_stock_livery/:
+    post:
+      tags:
+        - rolling_stock
+        - livery
+      summary: Create a rolling stock livery
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                rolling_stock_id:
+                  type: number
+                images:
+                  type: array
+                    items:
+                      type: file
+        required: true
   /light_rolling_stock/:
     get:
       tags:
@@ -1352,6 +1400,15 @@ components:
             subseries: "GV"
             type: "Locomotives électriques"
             unit: "US"
+        liveries:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+              name:
+                type: string
     TrainSchedule:
       allOf:
         - type: object
