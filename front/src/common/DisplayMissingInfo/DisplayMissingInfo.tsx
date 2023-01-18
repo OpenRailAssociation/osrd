@@ -6,8 +6,7 @@ interface Props {
 }
 
 const DisplayMissingInfo = (props: Props) => {
-  const { array, isCorrect } = props;
-  console.log('isCorrect: ', isCorrect);
+  const { array } = props;
 
   return (
     <div className="form-error mb-3">
