@@ -9,6 +9,17 @@ import nextId from 'react-id-generator';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import TimetableTrainCard from './TimetableTrainCard';
 
+function addSpeedIndicator(trainList) {
+  const durationList = trainList.map((train) => ({
+    id: train.id,
+    duration: train.arrival > train.departure ? train.arrival - train.departure : (train.arrival + 86400) - train.departure,
+  }));
+  const min = Math.min(...durationList.map((train) => train.duration));
+  const max = Math.max(...durationList.map((train) => train.duration));
+  // console.log(durationList.map((train) => train.duration), min, max);
+  return durationList;
+}
+
 export default function Timetable() {
   const selectedProjection = useSelector((state) => state.osrdsimulation.selectedProjection);
   const departureArrivalTimes = useSelector((state) => state.osrdsimulation.departureArrivalTimes);
@@ -16,6 +27,8 @@ export default function Timetable() {
   const [filter, setFilter] = useState('');
   const dispatch = useDispatch();
   const { t } = useTranslation('operationalStudies/scenario');
+
+  const trainList = addSpeedIndicator(departureArrivalTimes);
 
   const changeSelectedTrain = (idx) => {
     dispatch(updateSelectedTrain(idx));
