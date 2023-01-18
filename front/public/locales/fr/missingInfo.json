@@ -1,0 +1,6 @@
+{
+  "missingInfra": "vous devez sélectionner une infra",
+  "missingTimeTable": "vous devez sélectionner une grille horaire",
+  "missingRollingStock": "vous devez sélectionner un matériel roulant",
+  "missingSpeedLimitByTag": "vous devez sélectionner un indice de composition"
+}
