@@ -16,6 +16,7 @@ import HomeOSRD from 'applications/osrd/Home';
 import HomeStdcm from 'applications/stdcm/Home';
 import Loader from 'common/Loader';
 import history from 'main/history';
+import { ModalProvider, ModalSNCF } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import Home from 'main/Home';
 
 export default function App() {
@@ -53,17 +54,20 @@ export default function App() {
   return (
     <Suspense fallback={<Loader />}>
       {(user.isLogged || env.REACT_APP_LOCAL_BACKEND) && (
-        <HistoryRouter history={history}>
-          <Routes>
-            <Route path="/osrd/*" element={<HomeOSRD />} />
-            <Route path="/carto/*" element={<HomeCarto />} />
-            <Route path="/editor/*" element={<HomeEditor />} />
-            <Route path="/stdcm/*" element={<HomeStdcm />} />
-            <Route path="/opendata/*" element={<HomeOpenData />} />
-            <Route path="/customget/*" element={<HomeCustomGET />} />
-            <Route path="/*" element={<Home />} />
-          </Routes>
-        </HistoryRouter>
+        <ModalProvider>
+          <ModalSNCF/>
+          <HistoryRouter history={history}>
+            <Routes>
+              <Route path="/osrd/*" element={<HomeOSRD />} />
+              <Route path="/carto/*" element={<HomeCarto />} />
+              <Route path="/editor/*" element={<HomeEditor />} />
+              <Route path="/stdcm/*" element={<HomeStdcm />} />
+              <Route path="/opendata/*" element={<HomeOpenData />} />
+              <Route path="/customget/*" element={<HomeCustomGET />} />
+              <Route path="/*" element={<Home />} />
+            </Routes>
+          </HistoryRouter>
+        </ModalProvider>
       )}
       {!user.isLogged && !env.REACT_APP_LOCAL_BACKEND && <Loader />}
     </Suspense>

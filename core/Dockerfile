@@ -2,7 +2,10 @@ FROM gradle:7.5-jdk17 AS build
 
 WORKDIR /home/gradle/src
 COPY --chown=gradle:gradle . .
-RUN gradle shadowJar --no-daemon
+
+# Remove broken symlink (to prevent kaniko from crashing)
+RUN gradle shadowJar --no-daemon && \
+  rm  -rf /root/.kotlin/daemon/kotlin-daemon.* /tmp/hsperfdata_root/ /tmp/kotlin-daemon.*
 
 FROM amazoncorretto:17
 
