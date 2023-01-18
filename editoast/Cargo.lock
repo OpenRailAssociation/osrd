@@ -905,15 +905,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "itertools"
-version = "0.10.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b0fd2260e829bddf4cb6ea802289de2f86d6a7a690192fbe91b3f46e0f2c8473"
-dependencies = [
- "either",
-]
-
-[[package]]
 name = "itoa"
 version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1236,14 +1227,13 @@ dependencies = [
 
 [[package]]
 name = "pathfinding"
-version = "4.2.0"
+version = "4.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c66505cf9c582f34ae89f6433c16ccc05f88803a36adff59c812188021edee78"
+checksum = "7c4eef7dd95d1ad58de5954f7368116d2663ccc01e0e03e50b724fef7eb2161c"
 dependencies = [
  "fixedbitset",
  "indexmap",
  "integer-sqrt",
- "itertools",
  "num-traits",
  "rustc-hash",
  "thiserror",
