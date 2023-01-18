@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 interface Props {
   missingInfoList: string[];
@@ -17,6 +18,16 @@ const DisplayMissingInfo = (props: Props) => {
       </ul>
     </div>
   );
+};
+
+DisplayMissingInfo.propTypes = {
+  missingInfoList: PropTypes.array.isRequired,
+  isCorrect: PropTypes.bool.isRequired,
+};
+
+DisplayMissingInfo.defaultProps = {
+  missingInfoList: [''],
+  isCorrect: false,
 };
 
 export default DisplayMissingInfo;
