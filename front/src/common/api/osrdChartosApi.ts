@@ -4,6 +4,9 @@ const injectedRtkApi = api.injectEndpoints({
     healthHealthGet: build.query<HealthHealthGetApiResponse, HealthHealthGetApiArg>({
       query: () => ({ url: `/health/` }),
     }),
+    getVersion: build.query<GetVersionApiResponse, GetVersionApiArg>({
+      query: () => ({ url: `/version` }),
+    }),
     infoInfoGet: build.query<InfoInfoGetApiResponse, InfoInfoGetApiArg>({
       query: () => ({ url: `/info/` }),
     }),
@@ -61,6 +64,10 @@ const injectedRtkApi = api.injectEndpoints({
 export { injectedRtkApi as osrdChartosApi };
 export type HealthHealthGetApiResponse = /** status 200 Successful Response */ any;
 export type HealthHealthGetApiArg = void;
+export type GetVersionApiResponse = /** status 200 Return the service version */ {
+  git_describe: string | null;
+};
+export type GetVersionApiArg = void;
 export type InfoInfoGetApiResponse = /** status 200 Successful Response */ any;
 export type InfoInfoGetApiArg = void;
 export type MvtViewMetadataLayerLayerSlugMvtViewSlugGetApiResponse =
