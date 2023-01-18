@@ -1,4 +1,4 @@
-import { emptySplitApi as api } from './emptyApi';
+import { baseApi as api } from './emptyApi';
 const injectedRtkApi = api.injectEndpoints({
   endpoints: (build) => ({
     getHealth: build.query<GetHealthApiResponse, GetHealthApiArg>({

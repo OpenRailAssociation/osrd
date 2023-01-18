@@ -1,4 +1,4 @@
-import { emptySplitApi as api } from './emptyApi';
+import { baseEditoastApi as api } from './emptyApi';
 const injectedRtkApi = api.injectEndpoints({
   endpoints: (build) => ({
     getHealth: build.query<GetHealthApiResponse, GetHealthApiArg>({
@@ -259,14 +259,14 @@ export type GetInfraByIdRoutesAndWaypointTypeWaypointIdApiArg = {
 export type GetInfraByIdRoutesTrackRangesApiResponse =
   /** status 200 Foreach route, the track ranges through which it passes or an error */ (
     | ({
-        type: 'NotFound';
-      } & NotFound)
+        type: 'ComputeTrackRangesNotFoundError';
+      } & ComputeTrackRangesNotFoundError)
     | ({
-        type: 'CantComputePath';
-      } & CantComputePath)
+        type: 'ComputeTrackRangesCantComputePathError';
+      } & ComputeTrackRangesCantComputePathError)
     | ({
-        type: 'Computed';
-      } & Computed)
+        type: 'TrackRanges';
+      } & TrackRanges)
   )[];
 export type GetInfraByIdRoutesTrackRangesApiArg = {
   /** Infra ID */
@@ -388,13 +388,13 @@ export type InfraError = {
   schematic?: object | null;
   information?: object;
 };
-export type NotFound = {
+export type ComputeTrackRangesNotFoundError = {
   type?: 'NotFound';
 };
-export type CantComputePath = {
+export type ComputeTrackRangesCantComputePathError = {
   type?: 'CantComputePath';
 };
-export type Computed = {
+export type TrackRanges = {
   type?: 'Computed';
   track_ranges?: {
     track?: string;

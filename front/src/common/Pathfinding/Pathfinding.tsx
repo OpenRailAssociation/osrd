@@ -7,9 +7,8 @@ import { useTranslation } from 'react-i18next';
 import { last } from 'lodash';
 
 import { ArrayElement } from 'utils/types';
-import { Path, PathQuery } from 'common/api/osrdApi';
+import { Path, PathQuery, osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import { adjustPointOnTrack } from 'utils/pathfinding';
-import PathfindingApi from 'common/api/pathfinding';
 
 import { getMapTrackSources } from 'reducers/map/selectors';
 import { setFailure } from 'reducers/main';

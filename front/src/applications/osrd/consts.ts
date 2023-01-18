@@ -2,7 +2,7 @@ import { SwitchType } from 'types';
 import { ValueOf } from 'utils/types';
 import { Position, Feature, Point, GeoJSON } from 'geojson';
 
-import { Path } from 'common/api/osrdApi';
+import { Path } from 'common/api/osrdMiddlewareApi';
 
 export const BLOCKTYPES = [
   {
