@@ -26,7 +26,6 @@ import SpeedSpaceChart from 'applications/operationalStudies/components/Simulati
 import TimeButtons from 'applications/operationalStudies/views/OSRDSimulation/TimeButtons';
 import TimeLine from 'applications/operationalStudies/components/TimeLine/TimeLine';
 import TrainDetails from 'applications/operationalStudies/views/OSRDSimulation/TrainDetails';
-import TrainList from 'applications/operationalStudies/views/OSRDSimulation/TrainList';
 
 import { trainscheduleURI } from 'applications/operationalStudies/components/Simulation/consts';
 import { get } from 'common/requests';
@@ -35,6 +34,7 @@ import { RootState } from 'reducers';
 import { setFailure } from 'reducers/main';
 import { updateViewport, Viewport } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
+import DriverTrainSchedule from 'applications/operationalStudies/components/Simulation/DriverTrainSchedule/DriverTrainSchedule';
 
 export const timetableURI = '/timetable/';
 const CHART_MIN_HEIGHT = '150px';
@@ -52,7 +52,6 @@ function OSRDSimulation() {
   const timeTableRef = useRef<HTMLDivElement | null>(null);
   const [extViewport, setExtViewport] = useState<Viewport | undefined>(undefined);
   const [isEmpty, setIsEmpty] = useState(true);
-  const [displayTrainList, setDisplayTrainList] = useState(false);
   const [displayAllowances, setDisplayAllowances] = useState(false);
 
   const [heightOfSpaceTimeChart, setHeightOfSpaceTimeChart] = useState(400);
@@ -73,6 +72,8 @@ function OSRDSimulation() {
 
   const { timetableID } = useSelector((state: RootState) => state.osrdconf);
 
+  const simulation = useSelector((state: RootState) => state.osrdsimulation.simulation.present);
+  const selectedTrain = useSelector((state: RootState) => state.osrdsimulation.selectedTrain);
   const allowancesSettings = useSelector(
     (state: RootState) => state.osrdsimulation.allowancesSettings
   );
@@ -82,7 +83,6 @@ function OSRDSimulation() {
   const departureArrivalTimes = useSelector(
     (state: RootState) => state.osrdsimulation.departureArrivalTimes
   );
-  const selectedTrain = useSelector((state: RootState) => state.osrdsimulation.selectedTrain);
   const displaySimulation = useSelector(
     (state: RootState) => state.osrdsimulation.displaySimulation
   );
@@ -141,11 +141,6 @@ function OSRDSimulation() {
     }
   };
 
-  const toggleTrainList = () => {
-    setDisplayTrainList(!displayTrainList);
-    setTimeout(() => dispatch(updateMustRedraw(true)), 200);
-  };
-
   const toggleAllowancesDisplay = () => {
     setDisplayAllowances(!displayAllowances);
   };
@@ -201,36 +196,12 @@ function OSRDSimulation() {
         <div className="pt-5 mt-5">{waitingLoader}</div>
       ) : (
         <div className="simulation-results">
+          {/* SIMULATION : TIMELIN */}
           <div className="mb-2">
             <TimeLine />
           </div>
-          {displayTrainList ? (
-            <div className="osrd-simulation-container mb-2">
-              <div className="flex-fill">
-                <TrainList toggleTrainList={toggleTrainList} />
-              </div>
-            </div>
-          ) : (
-            <div
-              role="button"
-              tabIndex={-1}
-              className="btn-selected-train d-flex align-items-center mb-2"
-              onClick={toggleTrainList}
-            >
-              <div className="mr-2">
-                {t('simulation:train')}
-                <span className="ml-2">{departureArrivalTimes[selectedTrain].name}</span>
-              </div>
-              <div className="small mr-1">
-                {sec2time(departureArrivalTimes[selectedTrain].departure)}
-              </div>
-              <div className="small">{sec2time(departureArrivalTimes[selectedTrain].arrival)}</div>
-              <div className="ml-auto d-flex align-items-center">
-                {t('simulation:trainList')}
-                <i className="ml-2 icons-arrow-down" />
-              </div>
-            </div>
-          )}
+
+          {/* SIMULATION : SPACE TIME CHART */}
           <div className="osrd-simulation-container d-flex mb-2">
             <div
               className="spacetimechart-container"
@@ -263,6 +234,8 @@ function OSRDSimulation() {
               <ContextMenu getTimetable={getTimetable} />
             </div>
           </div>
+
+          {/* TRAIN : SPACE SPEED CHART */}
           <div className="osrd-simulation-container d-flex mb-2">
             <div
               className="speedspacechart-container"
@@ -294,6 +267,8 @@ function OSRDSimulation() {
               )}
             </div>
           </div>
+
+          {/* TRAIN : CURVES & SLOPES */}
           <div className="osrd-simulation-container d-flex mb-2">
             <div
               className="spacecurvesslopes-container"
@@ -331,6 +306,11 @@ function OSRDSimulation() {
             </div>
           </div>
 
+          {/* TRAIN : DRIVER TRAIN SCHEDULE */}
+          <div className="osrd-simulation-container mb-2">
+            <DriverTrainSchedule data={simulation.trains[selectedTrain]} />
+          </div>
+
           {displayAllowances ? (
             <div className="mb-2">
               <Allowances toggleAllowancesDisplay={toggleAllowancesDisplay} />
@@ -346,6 +326,8 @@ function OSRDSimulation() {
               <i className="icons-arrow-down ml-auto" />
             </div>
           )}
+
+          {/* SIMULATION : MAP */}
           <div className="row" ref={timeTableRef}>
             <div className="col-12">
               <div className="osrd-simulation-container mb-2">

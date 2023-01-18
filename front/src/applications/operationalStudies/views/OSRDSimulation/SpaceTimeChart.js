@@ -22,7 +22,7 @@ import ChartModal from 'applications/operationalStudies/components/Simulation/Ch
 import { GiResize } from 'react-icons/gi';
 import { LIST_VALUES_NAME_SPACE_TIME } from 'applications/operationalStudies/components/Simulation/consts';
 import PropTypes from 'prop-types';
-import { changeTrain } from 'applications/operationalStudies/components/TrainList/TrainListHelpers';
+import { changeTrain } from 'applications/operationalStudies/components/Simulation/simulationHelpers';
 import createChart from 'applications/operationalStudies/components/Simulation/SpaceTimeChart/createChart';
 import createTrain from 'applications/operationalStudies/components/Simulation/SpaceTimeChart/createTrain';
 import drawTrain from 'applications/operationalStudies/components/Simulation/SpaceTimeChart/drawTrain';

@@ -4,9 +4,7 @@ import { useTranslation } from 'react-i18next';
 import nextId from 'react-id-generator';
 
 import { jouleToKwh } from 'utils/physics';
-import formatStops, {
-  massWithOneDecimal,
-} from 'applications/operationalStudies/components/DriverTrainSchedule/DriverTrainScheduleHelpers';
+import formatStops, { massWithOneDecimal } from './DriverTrainScheduleHelpers';
 
 function originStop(stop) {
   return (
@@ -16,7 +14,7 @@ function originStop(stop) {
   );
 }
 
-export default function DriverTrainScheduleModal(props) {
+export default function DriverTrainScheduleContent(props) {
   const { data, rollingStockSelected } = props;
   const { t } = useTranslation(['drivertrainschedule']);
   return (
@@ -137,7 +135,7 @@ export default function DriverTrainScheduleModal(props) {
   );
 }
 
-DriverTrainScheduleModal.propTypes = {
+DriverTrainScheduleContent.propTypes = {
   data: PropTypes.object.isRequired,
   rollingStockSelected: PropTypes.object.isRequired,
 };

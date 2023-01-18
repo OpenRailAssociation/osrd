@@ -1,6 +1,8 @@
 import React from 'react';
 import { FaTrash, FaPencilAlt } from 'react-icons/fa';
 import { sec2time } from 'utils/timeManipulation';
+import { updateMustRedraw, updateSelectedTrain } from 'reducers/osrdsimulation/actions';
+import { useDispatch } from 'react-redux';
 
 type Props = {
   train: {
@@ -22,11 +24,22 @@ export default function TimetableTrainCard({
   selectedProjection,
   idx,
 }: Props) {
+  const dispatch = useDispatch();
   if (!selectedProjection) console.log('');
+
+  const changeSelectedTrain = () => {
+    dispatch(updateSelectedTrain(idx));
+    dispatch(updateMustRedraw(true));
+  };
 
   return (
     <div className={`scenario-timetable-train ${selectedTrain === idx ? 'selected' : ''}`}>
-      <div className="scenario-timetable-train-container">
+      <div
+        className="scenario-timetable-train-container"
+        role="button"
+        tabIndex={0}
+        onClick={changeSelectedTrain}
+      >
         <div className="scenario-timetable-train-header">
           <div className="scenario-timetable-train-name">
             <div className="scenario-timetable-train-idx">{idx + 1}</div>
