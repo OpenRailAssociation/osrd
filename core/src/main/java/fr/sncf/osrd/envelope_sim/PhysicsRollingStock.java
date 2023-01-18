@@ -4,6 +4,7 @@ import com.google.common.collect.RangeMap;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.train.RollingStock.Comfort;
 
+
 public interface PhysicsRollingStock {
     /** The mass of the train, in kilograms */
     double getMass();
@@ -31,17 +32,33 @@ public interface PhysicsRollingStock {
 
     /** Get the effort the train can apply at a given speed, in newtons */
     static double getMaxEffort(double speed, TractiveEffortPoint[] tractiveEffortCurve) {
-        double previousEffort = 0.0;
-        double previousSpeed = 0.0;
-        for (var dataPoint : tractiveEffortCurve) {
-            if (previousSpeed <= Math.abs(speed) && Math.abs(speed) < dataPoint.speed()) {
-                var coeff = (previousEffort - dataPoint.maxEffort()) / (previousSpeed - dataPoint.speed());
-                return previousEffort + coeff * (Math.abs(speed) - previousSpeed);
+        int index = 0;
+        int left = 0;
+        int right = tractiveEffortCurve.length - 1;
+        while (left <= right) {
+            // this line is to calculate the mean of the two values
+            int mid = (left + right) >>> 1;
+            if (Math.abs(tractiveEffortCurve[mid].speed - Math.abs(speed)) < 0.000001) {
+                index = mid;
+                break;
+            } else if (tractiveEffortCurve[mid].speed < Math.abs(speed)) {
+                left = mid + 1;
+                index = left;
+            } else {
+                right = mid - 1;
             }
-            previousEffort = dataPoint.maxEffort();
-            previousSpeed = dataPoint.speed();
         }
-        return previousEffort;
+        if (index == 0) {
+            return tractiveEffortCurve[0].maxEffort();
+        }
+        if (index == tractiveEffortCurve.length) {
+            return tractiveEffortCurve[index - 1].maxEffort();
+        }
+        TractiveEffortPoint previousPoint = tractiveEffortCurve[index - 1];
+        TractiveEffortPoint nextPoint = tractiveEffortCurve[index];
+        double coeff =
+                (previousPoint.maxEffort() - nextPoint.maxEffort()) / (previousPoint.speed() - nextPoint.speed());
+        return previousPoint.maxEffort() + coeff * (Math.abs(speed) - previousPoint.speed());
     }
 
     /** The maximum constant deceleration, in m/s^2 */
