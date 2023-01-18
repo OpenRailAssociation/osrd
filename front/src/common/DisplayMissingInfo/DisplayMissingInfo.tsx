@@ -1,18 +1,18 @@
 import React from 'react';
 
 interface Props {
-  array: string[];
+  missingInfoList: string[];
   isCorrect: boolean;
 }
 
 const DisplayMissingInfo = (props: Props) => {
-  const { array } = props;
+  const { missingInfoList } = props;
 
   return (
-    <div className="form-error mb-3">
+    <div className="form-error mb-2">
       <ul>
-        {array.map((elem: string) => (
-          <li>{elem}</li>
+        {missingInfoList.map((missingInfo: string) => (
+          <li>{missingInfo}</li>
         ))}
       </ul>
     </div>

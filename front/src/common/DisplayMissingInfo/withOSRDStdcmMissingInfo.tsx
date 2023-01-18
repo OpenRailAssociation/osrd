@@ -7,7 +7,7 @@ const withOSRDStdcmMissingInfo = <T extends {}>(Component: ComponentType<T>) => 
   return (hocProps: T) => {
     const { t } = useTranslation('missingInfo');
 
-    const array: string[] = [
+    const missingInfoList: string[] = [
       t('missingInfra'),
       t('missingTimeTable'),
       t('missingRollingStock'),
@@ -25,7 +25,11 @@ const withOSRDStdcmMissingInfo = <T extends {}>(Component: ComponentType<T>) => 
       if (infra && timeTable && rollingStock && speedLimitByTag) setIsCorrect(true);
     }, [infra, timeTable, rollingStock, speedLimitByTag]);
 
-    return !isCorrect && <Component {...(hocProps as T)} array={array} isCorrect={isCorrect} />;
+    return (
+      !isCorrect && (
+        <Component {...(hocProps as T)} missingInfoList={missingInfoList} isCorrect={isCorrect} />
+      )
+    );
   };
 };
 
