@@ -199,7 +199,7 @@ export type GetInfraByIdRailjsonApiArg = {
   /** Whether the railjson should contain extensions */
   excludeExtensions?: boolean;
 };
-export type PostPathfindingApiResponse = /** status 201 The path */ Path[];
+export type PostPathfindingApiResponse = /** status 201 The path */ Path;
 export type PostPathfindingApiArg = {
   /** Steps of the path */
   pathQuery: PathQuery;

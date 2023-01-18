@@ -191,9 +191,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Path"
+                $ref: "#/components/schemas/Path"
   /pathfinding/op/:
     post:
       tags:
