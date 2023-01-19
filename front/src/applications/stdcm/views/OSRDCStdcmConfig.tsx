@@ -21,7 +21,7 @@ type OSRDStdcmConfigProps = {
 };
 
 export default function OSRDConfig({ setCurrentStdcmRequestStatus }: OSRDStdcmConfigProps) {
-  const { fullscreen, darkmode } = useSelector((state: any) => state.main);
+  const { darkmode } = useSelector((state: any) => state.main);
 
   const dispatch = useDispatch();
   const { t } = useTranslation(['translation', 'osrdconf', 'allowances']);
@@ -51,9 +51,13 @@ export default function OSRDConfig({ setCurrentStdcmRequestStatus }: OSRDStdcmCo
   };
 
   return (
-    <main className={`osrd-config-mastcontainer mastcontainer${fullscreen ? ' fullscreen' : ''}`}>
+    <main
+      className="osrd-config-mastcontainer mastcontainer"
+      style={{ paddingLeft: '0', paddingBottom: '0' }}
+    >
+      {/* use class from new workflow in future */}
       <div className="row m-0 px-1 py-3 h-100">
-        <div className="col-sm-6">
+        <div className="col-md-7 col-lg-6">
           <div className="row">
             <div className="col-xl-6">
               <InfraSelector />
@@ -111,7 +115,7 @@ export default function OSRDConfig({ setCurrentStdcmRequestStatus }: OSRDStdcmCo
             </button>
           </div>
         </div>
-        <div className="col-sm-6">
+        <div className="col-md-5 col-lg-6">
           <div className="osrd-config-item osrd-config-item-map mb-2">
             <div className="osrd-config-item-container h-100 osrd-config-item-container-map">
               <Map />
