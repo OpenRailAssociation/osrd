@@ -20,6 +20,7 @@ import { post } from 'common/requests';
 import { setFailure } from 'reducers/main';
 import { updateFeatureInfoClick } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
+import { getInfraID } from 'reducers/osrdconf/selectors';
 
 const itineraryURI = '/pathfinding/';
 
@@ -32,6 +33,7 @@ function Itinerary(props) {
   const map = useSelector((state) => state.map);
   const osrdconf = useSelector((state) => state.osrdconf);
   const { t } = useTranslation(['osrdconf']);
+  const infra = useSelector(getInfraID);
 
   const zoomToFeature = (boundingBox, id = undefined, source = undefined) => {
     const [minLng, minLat, maxLng, maxLat] = boundingBox;
@@ -242,6 +244,10 @@ function Itinerary(props) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [osrdconf.vias]);
+
+  useEffect(() => {
+    setPathfindingInProgress(false);
+  }, [infra]);
 
   return (
     <>
