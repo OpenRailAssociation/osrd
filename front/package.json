@@ -7,7 +7,7 @@
     "@nivo/line": "^0.80.0",
     "@nivo/tooltip": "^0.80.0",
     "@nivo/annotations": "^0.80.0",
-    "@redux-devtools/extension": "^3.2.3",
+    "@redux-devtools/extension": "^3.2.5",
     "@reduxjs/toolkit": "^1.9.0",
     "@rjsf/core": "^4.2.3",
     "@rtk-query/codegen-openapi": "^1.0.0",
