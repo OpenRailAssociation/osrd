@@ -1,17 +1,17 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useReducer } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Position } from 'geojson';
 import bbox from '@turf/bbox';
 import { useTranslation } from 'react-i18next';
-import { last } from 'lodash';
+import { last, isEmpty, isEqual } from 'lodash';
 
 import { ArrayElement } from 'utils/types';
 import { Path, PathQuery, osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import { adjustPointOnTrack } from 'utils/pathfinding';
+import { PointOnMap } from 'applications/osrd/consts';
 
 import { getMapTrackSources } from 'reducers/map/selectors';
-import { setFailure } from 'reducers/main';
 
 import {
   replaceVias,
@@ -43,6 +43,112 @@ function LoaderPathfindingInProgress() {
   );
 }
 
+interface PathfindingState {
+  running: boolean;
+  done: boolean;
+  error: string;
+  missingParam: boolean;
+  mustBeLaunched: boolean;
+  mustBeLaunchedManually: boolean;
+}
+
+export const initialState: PathfindingState = {
+  running: false,
+  done: false,
+  error: '',
+  missingParam: false,
+  mustBeLaunched: false,
+  mustBeLaunchedManually: false,
+};
+
+interface Action {
+  type: string;
+  message?: string;
+  params?: {
+    origin?: Partial<PointOnMap>;
+    destination?: Partial<PointOnMap>;
+    rollingStockID?: number;
+    vias?: Partial<PointOnMap>[];
+  };
+}
+
+export function reducer(state: PathfindingState, action: Action): PathfindingState {
+  switch (action.type) {
+    case 'PATHFINDING_STARTED': {
+      return {
+        ...state,
+        running: true,
+        done: false,
+        mustBeLaunched: false,
+      };
+    }
+    case 'PATHFINDING_FINISHED': {
+      return {
+        ...state,
+        running: false,
+        done: true,
+        error: '',
+        mustBeLaunched: false,
+      };
+    }
+    case 'PATHFINDING_ERROR': {
+      return {
+        ...state,
+        running: false,
+        done: true,
+        error: action.message || '',
+        mustBeLaunched: false,
+      };
+    }
+    case 'PATHFINDING_PARAM_CHANGED': {
+      if (!action.params || state.running) {
+        return state;
+      }
+      const { origin, destination, rollingStockID } = action.params;
+      if (!origin || !destination || !Number.isInteger(rollingStockID)) {
+        return {
+          ...state,
+          running: false,
+          missingParam: true,
+        };
+      }
+      return {
+        ...state,
+        mustBeLaunched: true,
+      };
+    }
+    case 'VIAS_CHANGED': {
+      if (!action.params || isEmpty(action.params.vias)) {
+        return state;
+      }
+      return {
+        ...state,
+        mustBeLaunchedManually: true,
+      };
+    }
+    default:
+      throw new Error('Pathfinding action doesn’t exist');
+  }
+}
+
+function init({
+  pathfindingID,
+  geojson,
+  mapTrackSources,
+}: {
+  pathfindingID?: number;
+  geojson?: Path;
+  mapTrackSources: 'geographic' | 'schematic';
+}): PathfindingState {
+  if (!pathfindingID || !geojson?.[mapTrackSources]) {
+    return {
+      ...initialState,
+      mustBeLaunched: true,
+    };
+  }
+  return initialState;
+}
+
 interface PathfindingProps {
   zoomToFeature: (lngLat: Position, id?: undefined, source?: undefined) => void;
 }
@@ -50,20 +156,23 @@ interface PathfindingProps {
 function Pathfinding({ zoomToFeature }: PathfindingProps) {
   const { t } = useTranslation(['osrdconf']);
   const dispatch = useDispatch();
-  const [launchPathfinding, setLaunchPathfinding] = useState(false);
-  const [pathfindingInProgress, setPathfindingInProgress] = useState(false);
-  const infraID = useSelector(getInfraID);
-  const origin = useSelector(getOrigin);
-  const destination = useSelector(getDestination);
-  const vias = useSelector(getVias);
-  const rollingStockID = useSelector(getRollingStockID);
-  const pathfindingID = useSelector(getPathfindingID);
-  const geojson = useSelector(getGeojson);
-  const mapTrackSources = useSelector(getMapTrackSources);
-
+  const infraID = useSelector(getInfraID, isEqual);
+  const origin = useSelector(getOrigin, isEqual);
+  const destination = useSelector(getDestination, isEqual);
+  const vias = useSelector(getVias, isEqual);
+  const rollingStockID = useSelector(getRollingStockID, isEqual);
+  const pathfindingID = useSelector(getPathfindingID, isEqual);
+  const geojson = useSelector(getGeojson, isEqual);
+  const mapTrackSources = useSelector(getMapTrackSources, isEqual);
+  const initializerArgs = {
+    pathfindingID,
+    geojson,
+    mapTrackSources,
+  };
+  const [pathfindingState, pathfindingDispatch] = useReducer(reducer, initializerArgs, init);
+  const [postPathfinding] = osrdMiddlewareApi.usePostPathfindingMutation();
   // Way to ensure marker position on track
   const correctWaypointsGPS = ({ steps = [] }: Path) => {
-    setLaunchPathfinding(false);
     dispatch(updateOrigin(adjustPointOnTrack(origin, steps[0], mapTrackSources)));
     if (vias.length > 0 || steps.length > 2) {
       const newVias = steps.slice(1, -1).flatMap((step: ArrayElement<Path['steps']>) => {
@@ -76,14 +185,12 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
       dispatch(updateSuggeredVias(steps));
     }
     dispatch(updateDestination(adjustPointOnTrack(destination, last(steps), mapTrackSources)));
-    setLaunchPathfinding(true);
   };
 
-  const mapItinerary = (zoom = true) => {
+  const generatePathfindingParams = (): PathQuery => {
     dispatch(updateItinerary(undefined));
-
     if (origin && destination && rollingStockID) {
-      const params: PathQuery = {
+      return {
         infra: infraID,
         steps: [
           {
@@ -116,58 +223,63 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
         ],
         rolling_stocks: [rollingStockID],
       };
-      createPathFinding(zoom, params);
     }
+    return {};
   };
 
-  const createPathFinding = async (zoom: boolean, params: PathQuery) => {
-    try {
-      setPathfindingInProgress(true);
-      const itineraryCreated = await PathfindingApi.create(params);
-      correctWaypointsGPS(itineraryCreated);
-      dispatch(updateItinerary(itineraryCreated));
-      dispatch(updatePathfindingID(itineraryCreated.id));
-      if (zoom) zoomToFeature(bbox(itineraryCreated[mapTrackSources]));
-      setPathfindingInProgress(false);
-    } catch (e: any) {
-      dispatch(
-        setFailure({
-          name: t('errorMessages.unableToRetrievePathfinding'),
-          message: `${e.message} : ${e.response && e.response.data.detail}`,
-        })
-      );
-      console.log('ERROR', e);
+  const startPathFinding = async (zoom = true) => {
+    if (!pathfindingState.running) {
+      try {
+        pathfindingDispatch({ type: 'PATHFINDING_STARTED' });
+        const params = generatePathfindingParams();
+        const itineraryCreated = await postPathfinding({ pathQuery: params }).unwrap();
+        correctWaypointsGPS(itineraryCreated);
+        dispatch(updateItinerary(itineraryCreated));
+        dispatch(updatePathfindingID(itineraryCreated.id));
+        if (zoom) zoomToFeature(bbox(itineraryCreated[mapTrackSources]));
+        pathfindingDispatch({ type: 'PATHFINDING_FINISHED' });
+      } catch (e: any) {
+        pathfindingDispatch({ type: 'PATHFINDING_ERROR', message: e.data.message });
+      }
     }
   };
 
   useEffect(() => {
-    const index = Number(mapTrackSources);
-    if (!pathfindingID || !geojson?.[index]) {
-      mapItinerary();
-    } else {
-      zoomToFeature(bbox(geojson[index]));
+    if (geojson?.[mapTrackSources]) {
+      zoomToFeature(bbox(geojson[mapTrackSources]));
     }
-    setLaunchPathfinding(true);
   }, []);
 
   useEffect(() => {
-    if (launchPathfinding) {
-      mapItinerary();
-    }
-  }, [origin, destination, mapTrackSources, rollingStockID]);
+    pathfindingDispatch({
+      type: 'VIAS_CHANGED',
+      params: {
+        vias,
+      },
+    });
+  }, [vias]);
 
   useEffect(() => {
-    if (launchPathfinding) {
-      mapItinerary(false);
-    }
-  }, [vias]);
+    startPathFinding();
+  }, [pathfindingState.mustBeLaunched]);
+
+  useEffect(() => {
+    pathfindingDispatch({
+      type: 'PATHFINDING_PARAM_CHANGED',
+      params: {
+        origin,
+        destination,
+        rollingStockID,
+      },
+    });
+  }, [origin, destination, rollingStockID]);
   return (
     <div>
-      {pathfindingInProgress && (
-        <div className="osrd-config-centered-item">
-          <DotsLoader /> {`${t('pathFindingInProgress')}`}
-        </div>
-      )}
+      {/* {pathFindingState === 'PATHFINDING_STATE.RUNNING' && ( */}
+      <div className="osrd-config-centered-item">
+        <DotsLoader /> {`${t('pathFindingInProgress')}`}
+      </div>
+      {/* )} */}
     </div>
   );
 }
