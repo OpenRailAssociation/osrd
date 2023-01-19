@@ -27,9 +27,9 @@ export default function DisplayItinerary(props: DisplayItineraryProps) {
         'osrd-config-anchor': !origin && !destination && vias.length < 1,
       })}
     >
-      <Origin zoomToFeaturePoint={zoomToFeaturePoint} />
-      <Vias zoomToFeaturePoint={zoomToFeaturePoint} />
-      <Destination zoomToFeaturePoint={zoomToFeaturePoint} />
+      <Origin data-testid="itinerary-origin" zoomToFeaturePoint={zoomToFeaturePoint} />
+      <Vias data-testid="itinerary-vias" zoomToFeaturePoint={zoomToFeaturePoint} />
+      <Destination data-testid="itinerary-destination" zoomToFeaturePoint={zoomToFeaturePoint} />
     </div>
   );
 }

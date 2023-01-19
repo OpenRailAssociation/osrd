@@ -38,10 +38,10 @@ export default function InfraSelectorModalBodyStandard(props) {
           unit={<i className="icons-search" />}
         />
       </div>
-      <div className="text-center small text-muted">
+      <div className="text-center small text-muted infras-count">
         {infrasList ? `${infrasList.length} ${t('infraManagement:infrasFound')}` : null}
       </div>
-      <div className="infraslist">
+      <div className="infraslist" data-testid="infraslist">
         {infrasList.map((infra) => (
           <button
             type="button"
