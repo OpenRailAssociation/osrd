@@ -7,7 +7,13 @@ const randomColor = () => {
   return colors[idx];
 };
 
-const convertStops = (steps) => {
+const convertStops = (points) => {
+  const steps = [];
+  points.forEach((section) =>
+    section.forEach((step) => {
+      steps.push(step);
+    })
+  );
   let beforeStepName;
   let beforeStepTime;
   const newStepList = [];
@@ -33,7 +39,6 @@ const convertStops = (steps) => {
     beforeStepTime = step.time;
     beforeStepName = step.label;
   });
-  console.log(newStepList);
   return newStepList;
 };
 
@@ -49,39 +54,26 @@ const convertData = (trains) => {
     curves: [],
     speeds: [],
     base: {
-      head_positions: [
-        train.space_time_curves.actual
-          ? train.space_time_curves.actual.map((step) => ({
-              time: step.time,
-              position: step.position,
-            }))
-          : train.space_time_curves[0].points.map((step) => ({
-              time: step.time,
-              position: step.position,
-            })),
-      ],
-      tail_positions: [
-        train.space_time_curves.time_table
-          ? train.space_time_curves.time_table.map((step) => ({
-              time: step.time,
-              position: step.position,
-            }))
-          : train.space_time_curves[1].points.map((step) => ({
-              time: step.time,
-              position: step.position,
-            })),
-      ],
-      stops: convertStops(
-        train.space_time_curves.time_table
-          ? train.space_time_curves.time_table
-          : train.space_time_curves[0].points
+      head_positions: train.space_time_curves[0].points.map((section) =>
+        section.map((step) => ({
+          time: step.time,
+          position: step.position,
+        }))
       ),
+      tail_positions: train.space_time_curves[1].points.map((section) =>
+        section.map((step) => ({
+          time: step.time,
+          position: step.position,
+        }))
+      ),
+      stops: convertStops(train.space_time_curves[0].points),
       route_begin_occupancy: [],
       route_end_occupancy: [],
       route_aspects: [],
       signals: [],
     },
   }));
+  console.log(newData);
   return newData;
 };
 
