@@ -6,6 +6,7 @@
     "@nivo/core": "^0.80.0",
     "@nivo/line": "^0.80.0",
     "@nivo/tooltip": "^0.80.0",
+    "@nivo/annotations": "^0.80.0",
     "@redux-devtools/extension": "^3.2.3",
     "@reduxjs/toolkit": "^1.9.0",
     "@rjsf/core": "^4.2.3",
@@ -34,6 +35,7 @@
     "@turf/nearest-point": "^6.3.0",
     "@turf/nearest-point-on-line": "^6.3.0",
     "@turf/transform-translate": "^6.5.0",
+    "are-we-there-yet": "^4.0.0",
     "axios": "^0.27.2",
     "babel-loader": "8.1.0",
     "chroma-js": "^2.4.2",
@@ -124,7 +126,8 @@
   },
   "resolutions": {
     "react-error-overlay": "6.0.9",
-    "@types/react": "17.0.30"
+    "@types/react": "17.0.30",
+    "@nivo/line": "0.80.0"
   },
   "scripts": {
     "compile": "tsc -b",
