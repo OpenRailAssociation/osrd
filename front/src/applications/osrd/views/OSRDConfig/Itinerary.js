@@ -246,8 +246,8 @@ function Itinerary(props) {
   return (
     <>
       <div className="osrd-config-item mb-2">
-        <div className="osrd-config-item-container">
-          <DisplayItinerary zoomToFeaturePoint={zoomToFeaturePoint} />
+        <div className="osrd-config-item-container" data-testid="itinerary">
+          <DisplayItinerary data-testid="display-itinerary" zoomToFeaturePoint={zoomToFeaturePoint} />
           {pathfindingInProgress && (
             <div className="osrd-config-centered-item">
               <DotsLoader /> {`${t('pathFindingInProgress')}`}

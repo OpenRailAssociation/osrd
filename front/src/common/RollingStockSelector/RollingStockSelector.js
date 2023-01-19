@@ -54,6 +54,7 @@ export default function RollingStockSelector() {
           className="osrd-config-item-container osrd-config-item-clickable"
           data-toggle="modal"
           data-target="#rollingStockModal"
+          data-testid="rollingstock-selector"
           onClick={scroll2ref}
           role="button"
           tabIndex={0}
