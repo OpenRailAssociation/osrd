@@ -119,6 +119,7 @@ export default function TimetableSelector(props) {
         className="osrd-config-item-container osrd-config-item-clickable"
         role="button"
         tabIndex="-1"
+        data-testid="timetableSelector"
         onClick={() => openModal(<TimetableSelectorModal />)}
       >
         <div className="d-flex align-items-center">

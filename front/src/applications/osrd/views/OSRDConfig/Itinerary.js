@@ -3,12 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import { WebMercatorViewport } from 'viewport-mercator-project';
 
-import {
-  replaceVias,
-  updateDestination,
-  updateOrigin,
-  updateSuggeredVias,
-} from 'reducers/osrdconf';
+import { replaceVias, updateDestination, updateOrigin } from 'reducers/osrdconf';
 import { updateFeatureInfoClick } from 'reducers/map';
 
 import DisplayItinerary from 'applications/osrd/components/Itinerary/DisplayItinerary';

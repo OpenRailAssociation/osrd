@@ -33,3 +33,6 @@ yarn-error.log*
 
 # sonarqube
 .scannerwork
+/test-results/
+/playwright-report/
+/playwright/.cache/

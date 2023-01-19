@@ -87,7 +87,7 @@ export default function AddTrainSchedule(props) {
   }, [osrdconf]);
 
   return (
-    <div className="osrd-config-item">
+    <div className="osrd-config-item" data-testid="add-train-schedules">
       <div className="osrd-config-item-container d-flex align-items-end mb-2">
         <span className="mr-2 flex-grow-1">
           <InputSNCF

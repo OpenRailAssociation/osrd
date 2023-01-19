@@ -49,12 +49,13 @@ export default function InfraSelector(props) {
       <div className="osrd-config-item mb-2">
         <div
           className="osrd-config-item-container osrd-config-item-clickable"
+          data-testid="infra-selector"
           role="button"
           tabIndex="-1"
           data-toggle="modal"
           data-target={`#${modalID}`}
         >
-          <div className="infraselector-button">
+          <div className="infraselector-button" data-testid="infraselector-button">
             <img width="32px" className="mr-2" src={icon} alt="infraIcon" />
             {selectedInfra !== undefined ? (
               <>
