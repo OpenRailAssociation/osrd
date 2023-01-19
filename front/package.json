@@ -121,7 +121,7 @@
     "mapbox-gl": "npm:empty-npm-package@1.0.0",
     "prettier": "^2.7.1",
     "react-inject-env": "^2.1.0",
-    "typescript": "~4.4.2",
+    "typescript": "~4.9.4",
     "web-vitals": "^2.1.0"
   },
   "resolutions": {
