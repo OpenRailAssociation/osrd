@@ -58,6 +58,7 @@ export default function SpeedLimitByTagSelector() {
           selectedValue={speedLimitByTag}
           sm
           withSearch
+          data-testid="speed-limit-by-tag-selector"
         />
       </div>
     </div>

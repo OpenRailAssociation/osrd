@@ -91,6 +91,7 @@
     "web-vitals": "^2.1.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.29.2",
     "@storybook/addon-actions": "^6.5.15",
     "@storybook/addon-essentials": "^6.5.15",
     "@storybook/addon-interactions": "^6.5.15",

@@ -22,7 +22,7 @@ export default function AddTrainLabels() {
   };
 
   return (
-    <div className="osrd-config-item">
+    <div className="osrd-config-item" data-testid="add-train-labels">
       <div className="osrd-config-item-container mb-2">
         <ChipsSNCF
           addLabel={addLabel}

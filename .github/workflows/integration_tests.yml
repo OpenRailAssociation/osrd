@@ -15,6 +15,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          # run the CI on the actual latest commit of the PR, not the attempted merge
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -23,7 +26,19 @@ jobs:
           cache: pip
       - run: pip install geojson-pydantic requests
 
-      - name: Set up Docker Buildx
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Install dependencies
+        run: yarn
+        working-directory: front
+
+      - name: Install Playwright Browsers
+        run: yarn --cwd front playwright install --with-deps
+
+      - name: Set up Docker Build
         uses: docker/setup-buildx-action@v2
 
       - name: Build the containers
@@ -31,16 +46,25 @@ jobs:
         with:
           load: true
           files: "docker-compose.yml"
-          targets: "api,editoast,core,chartos"
+          targets: "api,editoast,core,chartos,front"
           set: |
             *.cache-from=type=gha
             *.cache-to=type=gha,mode=max
 
       - name: Startup the test infrastructure
-        run: "docker-compose up --no-build -d api editoast core chartos wait-healthy"
+        run: "docker-compose up --no-build -d api editoast core chartos front wait-healthy"
         env:
           DOCKER_BUILDKIT: 1
           COMPOSE_DOCKER_CLI_BUILD: 1
 
       - name: Run tests
         run: "python3 tests/run_integration_tests.py"
+
+      - name: Run Playwright tests
+        run: yarn --cwd front playwright test
+
+      - name: Store tests artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: playwright-report
+          path: front/playwright-report/
