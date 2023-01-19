@@ -1,7 +1,6 @@
 import { SwitchType } from 'types';
 import { ValueOf } from 'utils/types';
-import { Position, Feature, Point, GeoJSON } from 'geojson';
-
+import { Position, Feature } from 'geojson';
 import { Path } from 'common/api/osrdMiddlewareApi';
 
 export const BLOCKTYPES = [
@@ -122,7 +121,7 @@ export interface OsrdConfState {
   vias: PointOnMap[];
   suggeredVias: Path['steps'];
   trainCompo: undefined;
-  geojson: GeoJSON[];
+  geojson?: Path;
   originDate?: string;
   originTime?: string;
   originUpperBoundDate?: string;
