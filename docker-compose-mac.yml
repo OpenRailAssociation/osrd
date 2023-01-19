@@ -121,7 +121,7 @@ services:
     container_name: osrd-editoast
     depends_on:
       postgres: {condition: service_healthy}
-      chartos: {condition: service_healthy}
+      redis: {condition: service_healthy}
     build:
       context: editoast
       dockerfile: Dockerfile
@@ -130,7 +130,7 @@ services:
     environment:
       ROCKET_PROFILE: debug
       PSQL_HOST: "postgres"
-      CHARTOS_URL: http://chartos/
+      REDIS_URL: "redis://redis"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8090/health"]
       start_period: 4s

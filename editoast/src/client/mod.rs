@@ -1,20 +1,15 @@
-mod chartos_config;
 mod postgres_config;
 mod redis_config;
 
-use std::path::PathBuf;
-
-pub use chartos_config::ChartosConfig;
 use clap::{Args, Parser, Subcommand};
 use derivative::Derivative;
 pub use postgres_config::PostgresConfig;
 pub use redis_config::RedisConfig;
+use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
 #[clap(author, version)]
 pub struct Client {
-    #[clap(flatten)]
-    pub chartos_config: ChartosConfig,
     #[clap(flatten)]
     pub postgres_config: PostgresConfig,
     #[clap(flatten)]
@@ -37,6 +32,10 @@ pub struct MapLayersConfig {
     #[derivative(Default(value = "18"))]
     #[clap(long, env, default_value_t = 18)]
     pub max_zoom: u64,
+    /// Number maximum of tiles before we consider invalidating full Redis cache is required
+    #[derivative(Default(value = "250_000"))]
+    #[clap(long, env, default_value_t = 250_000)]
+    pub max_tiles: u64,
     #[derivative(Default(value = r#""http://localhost:8090".into()"#))]
     #[clap(long, env, default_value_t = String::from("http://localhost:8090"))]
     pub root_url: String,
