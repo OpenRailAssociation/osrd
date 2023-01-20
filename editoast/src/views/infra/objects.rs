@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::api_error::ApiError;
 use crate::{api_error::ApiResult, db_connection::DBConnection, schema::ObjectType};
-use diesel::sql_types::{Array, Integer, Jsonb, Nullable, Text};
+use diesel::sql_types::{Array, BigInt, Jsonb, Nullable, Text};
 use diesel::{sql_query, QueryableByName, RunQueryDsl};
 use rocket::http::Status;
 use rocket::response::status::Custom;
@@ -63,7 +63,7 @@ struct ObjectQueryable {
 /// Return the railjson list of a specific OSRD object
 #[post("/<infra>/objects/<object_type>", data = "<obj_ids>")]
 async fn get_objects(
-    infra: i32,
+    infra: i64,
     object_type: ObjectType,
     obj_ids: Result<Json<Vec<String>>, JsonError<'_>>,
     conn: DBConnection,
@@ -103,7 +103,7 @@ async fn get_objects(
     let objects: Vec<ObjectQueryable> = conn
         .run(move |conn| {
             sql_query(query)
-                .bind::<Integer, _>(infra)
+                .bind::<BigInt, _>(infra)
                 .bind::<Array<Text>, _>(obj_ids_dup)
                 .load(conn)
         })

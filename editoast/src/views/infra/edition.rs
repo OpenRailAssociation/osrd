@@ -22,9 +22,9 @@ pub fn routes() -> Vec<rocket::Route> {
 /// CRUD for edit an infrastructure. Takes a batch of operations.
 #[post("/<infra>", data = "<operations>")]
 async fn edit<'a>(
-    infra: i32,
+    infra: i64,
     operations: Result<Json<Vec<Operation>>, JsonError<'a>>,
-    infra_caches: &State<Arc<CHashMap<i32, InfraCache>>>,
+    infra_caches: &State<Arc<CHashMap<i64, InfraCache>>>,
     chartos_config: &State<ChartosConfig>,
     conn: DBConnection,
 ) -> ApiResult<Json<Vec<OperationResult>>> {

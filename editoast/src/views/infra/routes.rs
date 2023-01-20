@@ -7,7 +7,7 @@ use crate::infra_cache::{Graph, InfraCache};
 use crate::schema::DirectionalTrackRange;
 use crate::views::params::List;
 use chashmap::CHashMap;
-use diesel::sql_types::{Bool, Integer, Text};
+use diesel::sql_types::{BigInt, Bool, Text};
 use diesel::{sql_query, RunQueryDsl};
 use rocket::serde::json::Value as JsonValue;
 use rocket::serde::json::{json, Json};
@@ -51,7 +51,7 @@ struct RouteFromWaypointResult {
 /// Return the railjson list of a specific OSRD object
 #[get("/<infra>/routes/<waypoint_type>/<waypoint>")]
 async fn get_routes_from_waypoint(
-    infra: i32,
+    infra: i64,
     waypoint_type: String,
     waypoint: String,
     conn: DBConnection,
@@ -62,7 +62,7 @@ async fn get_routes_from_waypoint(
     let routes: Vec<RouteFromWaypointResult> = conn
         .run(move |conn| {
             sql_query(include_str!("sql/get_routes_from_waypoint.sql"))
-                .bind::<Integer, _>(infra)
+                .bind::<BigInt, _>(infra)
                 .bind::<Text, _>(waypoint)
                 .bind::<Text, _>(waypoint_type)
                 .load(conn)
@@ -96,9 +96,9 @@ enum RouteTrackRangesResult {
 
 #[get("/<infra>/routes/track_ranges?<routes>")]
 async fn get_routes_track_ranges<'a>(
-    infra: i32,
+    infra: i64,
     routes: List<'a, String>,
-    infra_caches: &State<Arc<CHashMap<i32, InfraCache>>>,
+    infra_caches: &State<Arc<CHashMap<i64, InfraCache>>>,
     conn: DBConnection,
 ) -> ApiResult<Custom<Json<Vec<RouteTrackRangesResult>>>> {
     let infra_caches = infra_caches.inner().clone();

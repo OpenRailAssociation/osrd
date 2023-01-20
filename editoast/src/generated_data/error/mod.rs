@@ -11,7 +11,7 @@ pub mod track_section_links;
 use std::collections::HashMap;
 
 use diesel::result::Error as DieselError;
-use diesel::sql_types::{Array, Integer, Json};
+use diesel::sql_types::{Array, BigInt, Json};
 use diesel::{sql_query, PgConnection, RunQueryDsl};
 use serde_json::to_value;
 
@@ -160,7 +160,7 @@ fn get_insert_errors_query(obj_type: ObjectType) -> &'static str {
 /// Insert a heterogeneous list of infra errors in DB with a minimum number of queries
 fn insert_errors(
     conn: &mut PgConnection,
-    infra_id: i32,
+    infra_id: i64,
     errors: Vec<InfraError>,
 ) -> Result<(), DieselError> {
     let mut errors_by_type: HashMap<_, Vec<_>> = Default::default();
@@ -172,7 +172,7 @@ fn insert_errors(
     }
     for (obj_type, errors) in errors_by_type {
         let count = sql_query(get_insert_errors_query(obj_type))
-            .bind::<Integer, _>(infra_id)
+            .bind::<BigInt, _>(infra_id)
             .bind::<Array<Json>, _>(&errors)
             .execute(conn)?;
         debug_assert_eq!(count, errors.len());
@@ -189,7 +189,7 @@ impl GeneratedData for ErrorLayer {
 
     fn generate(
         conn: &mut PgConnection,
-        infra_id: i32,
+        infra_id: i64,
         infra_cache: &InfraCache,
     ) -> Result<(), DieselError> {
         // Create a graph for topological errors
@@ -274,7 +274,7 @@ impl GeneratedData for ErrorLayer {
 
     fn update(
         conn: &mut PgConnection,
-        infra: i32,
+        infra: i64,
         _operations: &[crate::schema::operation::OperationResult],
         infra_cache: &InfraCache,
     ) -> Result<(), DieselError> {

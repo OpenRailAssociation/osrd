@@ -95,7 +95,7 @@ pub fn create_server(
         .attach(DBConnection::fairing())
         .attach(RedisPool::init())
         .attach(cors::Cors)
-        .manage(Arc::<CHashMap<i32, InfraCache>>::default())
+        .manage(Arc::<CHashMap<i64, InfraCache>>::default())
         .manage(chartos_config)
         .manage(MapLayers::parse())
         .manage(runserver_config.map_layers_config.clone());
@@ -140,7 +140,7 @@ async fn generate(
     } else {
         // Retrieve given infras
         for id in args.infra_ids {
-            infras.push(Infra::retrieve(&mut conn, id as i32)?);
+            infras.push(Infra::retrieve(&mut conn, id as i64)?);
         }
     };
 
@@ -206,7 +206,7 @@ fn clear(args: ClearArgs, pg_config: PostgresConfig) -> Result<(), Box<dyn Error
     } else {
         // Retrieve given infras
         for id in args.infra_ids {
-            infras.push(Infra::retrieve(&mut conn, id as i32)?);
+            infras.push(Infra::retrieve(&mut conn, id as i64)?);
         }
     };
 

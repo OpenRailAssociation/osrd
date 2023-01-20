@@ -60,7 +60,7 @@ pub struct RunserverArgs {
 #[clap(about, long_about = "Refresh infra generated data")]
 pub struct GenerateArgs {
     /// List of infra ids
-    pub infra_ids: Vec<u32>,
+    pub infra_ids: Vec<u64>,
     #[clap(short, long)]
     /// Force the refresh of an infra (even if the generated version is up to date)
     pub force: bool,
@@ -70,7 +70,7 @@ pub struct GenerateArgs {
 #[clap(about, long_about = "Clear infra generated data")]
 pub struct ClearArgs {
     /// List of infra ids
-    pub infra_ids: Vec<u32>,
+    pub infra_ids: Vec<u64>,
 }
 
 #[derive(Args, Debug)]
