@@ -4,7 +4,7 @@ volumes:
   redis_data:
 services:
   postgres:
-    image: postgis/postgis:13-3.2-alpine
+    image: postgis/postgis:15-3.3-alpine
     container_name: osrd-postgres
     user: postgres
     restart: unless-stopped
