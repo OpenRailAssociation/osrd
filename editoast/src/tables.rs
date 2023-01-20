@@ -1,6 +1,6 @@
 table! {
     osrd_infra_infra {
-        id -> Integer,
+        id -> BigInt,
         name -> Text,
         railjson_version -> Text,
         version -> Text,
@@ -13,81 +13,81 @@ table! {
 
 table! {
     osrd_infra_tracksectionlayer {
-        id -> Integer,
+        id -> BigInt,
         obj_id -> Text,
-        infra_id -> Integer,
+        infra_id -> BigInt,
     }
 }
 
 table! {
     osrd_infra_signallayer {
-        id -> Integer,
+        id -> BigInt,
         obj_id -> Text,
-        infra_id -> Integer,
+        infra_id -> BigInt,
     }
 }
 
 table! {
     osrd_infra_speedsectionlayer {
-        id -> Integer,
+        id -> BigInt,
         obj_id -> Text,
-        infra_id -> Integer,
+        infra_id -> BigInt,
     }
 }
 
 table! {
     osrd_infra_tracksectionlinklayer {
-        id -> Integer,
+        id -> BigInt,
         obj_id -> Text,
-        infra_id -> Integer,
+        infra_id -> BigInt,
     }
 }
 
 table! {
     osrd_infra_switchlayer {
-        id -> Integer,
+        id -> BigInt,
         obj_id -> Text,
-        infra_id -> Integer,
+        infra_id -> BigInt,
     }
 }
 
 table! {
     osrd_infra_detectorlayer {
-        id -> Integer,
+        id -> BigInt,
         obj_id -> Text,
-        infra_id -> Integer,
+        infra_id -> BigInt,
     }
 }
 
 table! {
     osrd_infra_bufferstoplayer {
-        id -> Integer,
+        id -> BigInt,
         obj_id -> Text,
-        infra_id -> Integer,
+        infra_id -> BigInt,
     }
 }
 
 table! {
     osrd_infra_operationalpointlayer {
-        id -> Integer,
+        id -> BigInt,
         obj_id -> Text,
-        infra_id -> Integer,
+        infra_id -> BigInt,
     }
 }
 
 table! {
     osrd_infra_catenarylayer {
-        id -> Integer,
+        id -> BigInt,
         obj_id -> Text,
-        infra_id -> Integer,
+        infra_id -> BigInt,
     }
 }
 
 table! {
     osrd_infra_lpvpanellayer {
-        id -> Integer,
+        id -> BigInt,
         obj_id -> Text,
-        infra_id -> Integer,
+        infra_id -> BigInt,
         data -> Json,
     }
 }
@@ -96,99 +96,99 @@ table! {
 
 table! {
     osrd_infra_tracksectionmodel(id) {
-        id -> Integer,
+        id -> BigInt,
         obj_id -> Text,
         data -> Json,
-        infra_id -> Integer,
+        infra_id -> BigInt,
     }
 }
 
 table! {
     osrd_infra_signalmodel(id) {
-        id -> Integer,
+        id -> BigInt,
         obj_id -> Text,
         data -> Json,
-        infra_id -> Integer,
+        infra_id -> BigInt,
     }
 }
 
 table! {
     osrd_infra_speedsectionmodel(id) {
-        id -> Integer,
+        id -> BigInt,
         obj_id -> Text,
         data -> Json,
-        infra_id -> Integer,
+        infra_id -> BigInt,
     }
 }
 
 table! {
     osrd_infra_tracksectionlinkmodel(id) {
-        id -> Integer,
+        id -> BigInt,
         obj_id -> Text,
         data -> Json,
-        infra_id -> Integer,
+        infra_id -> BigInt,
     }
 }
 
 table! {
     osrd_infra_switchmodel(id) {
-        id -> Integer,
+        id -> BigInt,
         obj_id -> Text,
         data -> Json,
-        infra_id -> Integer,
+        infra_id -> BigInt,
     }
 }
 
 table! {
     osrd_infra_switchtypemodel(id) {
-        id -> Integer,
+        id -> BigInt,
         obj_id -> Text,
         data -> Json,
-        infra_id -> Integer,
+        infra_id -> BigInt,
     }
 }
 
 table! {
     osrd_infra_detectormodel(id) {
-        id -> Integer,
+        id -> BigInt,
         obj_id -> Text,
         data -> Json,
-        infra_id -> Integer,
+        infra_id -> BigInt,
     }
 }
 
 diesel::table! {
     osrd_infra_bufferstopmodel(id) {
-        id -> Integer,
+        id -> BigInt,
         obj_id -> Text,
         data -> Jsonb,
-        infra_id -> Integer,
+        infra_id -> BigInt,
     }
 }
 
 table! {
     osrd_infra_routemodel(id) {
-        id -> Integer,
+        id -> BigInt,
         obj_id -> Text,
         data -> Json,
-        infra_id -> Integer,
+        infra_id -> BigInt,
     }
 }
 
 table! {
     osrd_infra_operationalpointmodel(id) {
-        id -> Integer,
+        id -> BigInt,
         obj_id -> Text,
         data -> Json,
-        infra_id -> Integer,
+        infra_id -> BigInt,
     }
 }
 
 table! {
     osrd_infra_catenarymodel(id) {
-        id -> Integer,
+        id -> BigInt,
         obj_id -> Text,
         data -> Json,
-        infra_id -> Integer,
+        infra_id -> BigInt,
     }
 }

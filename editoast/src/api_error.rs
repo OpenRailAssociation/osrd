@@ -99,7 +99,7 @@ impl<'f> From<JsonError<'f>> for EditoastError {
 }
 
 pub struct InfraLockedError {
-    pub infra_id: i32,
+    pub infra_id: i64,
 }
 
 impl From<InfraLockedError> for EditoastError {

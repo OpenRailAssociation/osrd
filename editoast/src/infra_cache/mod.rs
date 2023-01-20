@@ -5,7 +5,7 @@ use crate::infra::Infra;
 use crate::schema::operation::{OperationResult, RailjsonObject};
 use crate::schema::*;
 use chashmap::{CHashMap, ReadGuard, WriteGuard};
-use diesel::sql_types::{Double, Integer, Text};
+use diesel::sql_types::{BigInt, Double, Text};
 use diesel::PgConnection;
 use diesel::{sql_query, QueryableByName, RunQueryDsl};
 use enum_map::EnumMap;
@@ -341,14 +341,14 @@ impl InfraCache {
         sql_query(
             "SELECT obj_id, (data->>'length')::float as length, data->>'geo' as geo, data->>'sch' as sch FROM osrd_infra_tracksectionmodel WHERE infra_id = $1",
         )
-        .bind::<Integer, _>(infra_id)
+        .bind::<BigInt, _>(infra_id)
         .load::<TrackQueryable>(conn)?
         .into_iter().for_each(|track| infra_cache.add::<TrackSectionCache>(track.into()));
 
         // Load signal tracks references
         sql_query(
             "SELECT obj_id, data->>'track' AS track, (data->>'position')::float AS position FROM osrd_infra_signalmodel WHERE infra_id = $1")
-        .bind::<Integer, _>(infra_id)
+        .bind::<BigInt, _>(infra_id)
         .load::<SignalCache>(conn)?.into_iter().for_each(|signal|
             infra_cache.add(signal)
         );
@@ -366,7 +366,7 @@ impl InfraCache {
         // Load operational points tracks references
         sql_query(
             "SELECT obj_id, data->>'parts' AS parts FROM osrd_infra_operationalpointmodel WHERE infra_id = $1")
-        .bind::<Integer, _>(infra_id)
+        .bind::<BigInt, _>(infra_id)
         .load::<OperationalPointQueryable>(conn)?.into_iter().for_each(|op|
             infra_cache.add::<OperationalPointCache>(op.into())
         );
@@ -379,7 +379,7 @@ impl InfraCache {
         // Load switch tracks references
         sql_query(
             "SELECT obj_id, data->>'switch_type' AS switch_type, data->>'ports' AS ports FROM osrd_infra_switchmodel WHERE infra_id = $1")
-        .bind::<Integer, _>(infra_id)
+        .bind::<BigInt, _>(infra_id)
         .load::<SwitchQueryable>(conn)?.into_iter().for_each(|switch| {
             infra_cache.add::<SwitchCache>(switch.into());
         });
@@ -392,7 +392,7 @@ impl InfraCache {
         // Load detector tracks references
         sql_query(
             "SELECT obj_id, data->>'track' AS track, (data->>'position')::float AS position FROM osrd_infra_detectormodel WHERE infra_id = $1")
-        .bind::<Integer, _>(infra_id)
+        .bind::<BigInt, _>(infra_id)
         .load::<DetectorCache>(conn)?.into_iter().for_each(|detector|
             infra_cache.add(detector)
         );
@@ -400,7 +400,7 @@ impl InfraCache {
         // Load buffer stop tracks references
         sql_query(
             "SELECT obj_id, data->>'track' AS track, (data->>'position')::float AS position FROM osrd_infra_bufferstopmodel WHERE infra_id = $1")
-        .bind::<Integer, _>(infra_id)
+        .bind::<BigInt, _>(infra_id)
         .load::<BufferStopCache>(conn)?.into_iter().for_each(|buffer_stop|
             infra_cache.add(buffer_stop)
         );
@@ -417,9 +417,9 @@ impl InfraCache {
     /// If the infra is not found in the database, it returns `None`
     pub fn get_or_load<'a>(
         conn: &mut PgConnection,
-        infra_caches: &'a CHashMap<i32, InfraCache>,
+        infra_caches: &'a CHashMap<i64, InfraCache>,
         infra: &Infra,
-    ) -> Result<ReadGuard<'a, i32, InfraCache>, Box<dyn ApiError>> {
+    ) -> Result<ReadGuard<'a, i64, InfraCache>, Box<dyn ApiError>> {
         // Cache hit
         if let Some(infra_cache) = infra_caches.get(&infra.id) {
             return Ok(infra_cache);
@@ -433,9 +433,9 @@ impl InfraCache {
     /// If the infra is not found in the database, it returns `None`
     pub fn get_or_load_mut<'a>(
         conn: &mut PgConnection,
-        infra_caches: &'a CHashMap<i32, InfraCache>,
+        infra_caches: &'a CHashMap<i64, InfraCache>,
         infra: &Infra,
-    ) -> Result<WriteGuard<'a, i32, InfraCache>, Box<dyn ApiError>> {
+    ) -> Result<WriteGuard<'a, i64, InfraCache>, Box<dyn ApiError>> {
         // Cache hit
         if let Some(infra_cache) = infra_caches.get_mut(&infra.id) {
             return Ok(infra_cache);

@@ -10,7 +10,7 @@ use derivative::Derivative;
 
 use diesel::{
     sql_query,
-    sql_types::{Integer, Text},
+    sql_types::{BigInt, Text},
     QueryableByName, RunQueryDsl,
 };
 use diesel::{Connection, PgConnection};
@@ -100,13 +100,13 @@ impl<T: DeserializeOwned> From<ObjectQueryable> for MyParsedObject<T> {
 
 pub fn find_objects<T: DeserializeOwned + OSRDTyped>(
     conn: &mut PgConnection,
-    infrastructre_id: i32,
+    infrastructre_id: i64,
 ) -> Vec<T> {
     sql_query(format!(
         "SELECT data::text FROM {} WHERE infra_id = $1",
         T::get_type().get_table()
     ))
-    .bind::<Integer, _>(infrastructre_id)
+    .bind::<BigInt, _>(infrastructre_id)
     .load::<ObjectQueryable>(conn)
     .expect("Error loading objects")
     .into_iter()

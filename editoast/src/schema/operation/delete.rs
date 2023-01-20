@@ -3,7 +3,7 @@ use crate::api_error::ApiError;
 
 use crate::schema::ObjectRef;
 use crate::schema::ObjectType;
-use diesel::sql_types::{Integer, Text};
+use diesel::sql_types::{BigInt, Text};
 use diesel::RunQueryDsl;
 use diesel::{sql_query, PgConnection};
 use serde::{Deserialize, Serialize};
@@ -17,13 +17,13 @@ pub struct DeleteOperation {
 }
 
 impl DeleteOperation {
-    pub fn apply(&self, infra_id: i32, conn: &mut PgConnection) -> Result<(), Box<dyn ApiError>> {
+    pub fn apply(&self, infra_id: i64, conn: &mut PgConnection) -> Result<(), Box<dyn ApiError>> {
         match sql_query(format!(
             "DELETE FROM {} WHERE obj_id = $1 AND infra_id = $2",
             self.obj_type.get_table()
         ))
         .bind::<Text, _>(&self.obj_id)
-        .bind::<Integer, _>(&infra_id)
+        .bind::<BigInt, _>(&infra_id)
         .execute(conn)
         {
             Ok(1) => Ok(()),
