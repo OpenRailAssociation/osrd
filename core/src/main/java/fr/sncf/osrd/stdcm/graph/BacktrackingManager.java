@@ -1,4 +1,4 @@
-package fr.sncf.osrd.api.stdcm.graph;
+package fr.sncf.osrd.stdcm.graph;
 
 /** This class contains all the methods used to backtrack in the graph.
  * We need to backtrack to remove any kind of speed discontinuity, generally because of deceleration spanning over

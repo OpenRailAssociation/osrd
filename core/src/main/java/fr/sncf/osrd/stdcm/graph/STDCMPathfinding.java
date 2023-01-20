@@ -1,9 +1,9 @@
-package fr.sncf.osrd.api.stdcm.graph;
+package fr.sncf.osrd.stdcm.graph;
 
 import com.google.common.collect.Multimap;
 import fr.sncf.osrd.api.pathfinding.RemainingDistanceEstimator;
-import fr.sncf.osrd.api.stdcm.OccupancyBlock;
-import fr.sncf.osrd.api.stdcm.STDCMResult;
+import fr.sncf.osrd.stdcm.OccupancyBlock;
+import fr.sncf.osrd.stdcm.STDCMResult;
 import fr.sncf.osrd.api.pathfinding.constraints.ElectrificationConstraints;
 import fr.sncf.osrd.api.pathfinding.constraints.LoadingGaugeConstraints;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
