@@ -3,7 +3,7 @@ import { ComponentMeta, ComponentStory } from '@storybook/react';
 import DisplayMissingInfo from '../common/DisplayMissingInfo/DisplayMissingInfo';
 
 export default {
-  title: 'DisplayMissingInfo',
+  title: 'Warning/DisplayMissingInfo',
   component: DisplayMissingInfo,
 } as ComponentMeta<typeof DisplayMissingInfo>;
 
