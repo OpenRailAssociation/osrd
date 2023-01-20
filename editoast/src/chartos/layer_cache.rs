@@ -2,18 +2,14 @@ use core::f64::consts::PI;
 
 use super::BoundingBox;
 
-// File containing dead_code until https://github.com/DGEXSolutions/osrd/issues/1795 is done
-
-#[allow(dead_code)]
-/// Coordinates and level of zoom in a cartesian coordinates system
+/// Web mercator coordinates
 pub struct Tile {
-    x: u64,
-    y: u64,
-    z: u64,
+    pub x: u64,
+    pub y: u64,
+    pub z: u64,
 }
 
-#[allow(dead_code)]
-/// North-West and South-East coordinates in a cartesian coordinates system
+/// North-West and South-East web mercator coordinates
 struct NwSeCoordinates {
     nw_x: u64,
     nw_y: u64,
@@ -21,8 +17,7 @@ struct NwSeCoordinates {
     se_y: u64,
 }
 
-#[allow(dead_code)]
-/// Computes coordinates in a cartesian system
+/// Computes web mercator coordinates
 ///
 /// Bounding box documentation: <https://wiki.openstreetmap.org/wiki/Bounding_Box>
 ///
@@ -39,8 +34,7 @@ fn xy_from_latitude_longitude(latitude: f64, longitude: f64, zoom: u64) -> (u64,
     )
 }
 
-#[allow(dead_code)]
-/// Gets North-West and South-East cartesian coordinates from a bounding box and zoom value
+/// Gets North-West and South-East web mercator coordinates from a bounding box and zoom value
 ///
 /// Panics if the bbox is invalid
 fn get_nw_se_coordinates(zoom: u64, bbox: &BoundingBox) -> NwSeCoordinates {
@@ -55,7 +49,6 @@ fn get_nw_se_coordinates(zoom: u64, bbox: &BoundingBox) -> NwSeCoordinates {
     }
 }
 
-#[allow(dead_code)]
 /// Gets tiles for a bounding box and a zoom value
 pub fn get_tiles_to_invalidate(max_zoom: u64, bbox: &BoundingBox) -> Vec<Tile> {
     let mut affected_tiles: Vec<Tile> = Vec::new();
@@ -75,7 +68,6 @@ pub fn get_tiles_to_invalidate(max_zoom: u64, bbox: &BoundingBox) -> Vec<Tile> {
     affected_tiles
 }
 
-#[allow(dead_code)]
 /// Counts tiles for a bounding box and a zoom value
 pub fn count_tiles(max_zoom: u64, bbox: &BoundingBox) -> u64 {
     let mut count: u64 = 0;
@@ -92,13 +84,32 @@ pub fn count_tiles(max_zoom: u64, bbox: &BoundingBox) -> u64 {
     count
 }
 
+pub fn get_layer_cache_prefix(layer_name: &str, infra_id: i64) -> String {
+    // TODO rename chartis -> editoast once https://github.com/DGEXSolutions/osrd/issues/2893 is done
+    format!("chartis.layer.{layer_name}.infra_{infra_id}")
+}
+
+pub fn get_view_cache_prefix(layer_name: &str, infra_id: i64, view_name: &str) -> String {
+    format!(
+        "{layer_prefix}.{view_name}",
+        layer_prefix = get_layer_cache_prefix(layer_name, infra_id),
+    )
+}
+
+pub fn get_cache_tile_key(view_prefix: &str, tile: &Tile) -> String {
+    format!("{view_prefix}.tile/{}/{}/{}", tile.z, tile.x, tile.y)
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;
 
     use crate::chartos::BoundingBox;
 
-    use super::{count_tiles, get_tiles_to_invalidate};
+    use super::{
+        count_tiles, get_cache_tile_key, get_layer_cache_prefix, get_tiles_to_invalidate,
+        get_view_cache_prefix, Tile,
+    };
 
     const CAMPUS_SNCF_BBOX: BoundingBox = BoundingBox((2.3535, 48.921), (2.3568, 48.922));
 
@@ -145,5 +156,32 @@ mod tests {
     #[test]
     fn test_count_tiles() {
         assert_eq!(count_tiles(18, &CAMPUS_SNCF_BBOX), 3);
+    }
+
+    #[test]
+    fn test_get_layer_cache_prefix() {
+        assert_eq!(
+            get_layer_cache_prefix("track_sections", 1),
+            "chartis.layer.track_sections.infra_1"
+        );
+    }
+
+    #[test]
+    fn test_get_view_cache_prefix() {
+        assert_eq!(
+            get_view_cache_prefix("track_sections", 1, "geo"),
+            "chartis.layer.track_sections.infra_1.geo"
+        );
+    }
+
+    #[test]
+    fn test_get_cache_tile_key() {
+        assert_eq!(
+            get_cache_tile_key(
+                "chartis.layer.track_sections.infra_1",
+                &Tile { x: 1, y: 2, z: 3 }
+            ),
+            "chartis.layer.track_sections.infra_1.tile/3/1/2"
+        );
     }
 }
