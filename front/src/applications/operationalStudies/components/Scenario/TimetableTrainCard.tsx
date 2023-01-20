@@ -1,21 +1,22 @@
 import React from 'react';
 import { FaTrash, FaPencilAlt } from 'react-icons/fa';
 import { sec2time } from 'utils/timeManipulation';
-import { updateMustRedraw, updateSelectedTrain } from 'reducers/osrdsimulation/actions';
-import { useDispatch } from 'react-redux';
 
+type trainType = {
+  id: number;
+  name: string;
+  departure: number;
+  arrival: number;
+  labels: Array<1>;
+  speed_limit_composition: string;
+};
 type Props = {
-  train: {
-    id: number;
-    name: string;
-    departure: number;
-    arrival: number;
-    labels: Array<1>;
-    speed_limit_composition: string;
-  };
+  train: trainType;
   selectedTrain: number;
   selectedProjection: number;
   idx: number;
+  changeSelectedTrain: (idx: number) => void;
+  deleteTrain: (train: trainType) => void;
 };
 
 export default function TimetableTrainCard({
@@ -23,14 +24,10 @@ export default function TimetableTrainCard({
   selectedTrain,
   selectedProjection,
   idx,
+  changeSelectedTrain,
+  deleteTrain,
 }: Props) {
-  const dispatch = useDispatch();
   if (!selectedProjection) console.log('');
-
-  const changeSelectedTrain = () => {
-    dispatch(updateSelectedTrain(idx));
-    dispatch(updateMustRedraw(true));
-  };
 
   return (
     <div className={`scenario-timetable-train ${selectedTrain === idx ? 'selected' : ''}`}>
@@ -38,7 +35,7 @@ export default function TimetableTrainCard({
         className="scenario-timetable-train-container"
         role="button"
         tabIndex={0}
-        onClick={changeSelectedTrain}
+        onClick={() => changeSelectedTrain(idx)}
       >
         <div className="scenario-timetable-train-header">
           <div className="scenario-timetable-train-name">
@@ -64,7 +61,11 @@ export default function TimetableTrainCard({
         <button className="scenario-timetable-train-buttons-update" type="button">
           <FaPencilAlt />
         </button>
-        <button className="scenario-timetable-train-buttons-delete" type="button">
+        <button
+          className="scenario-timetable-train-buttons-delete"
+          type="button"
+          onClick={() => deleteTrain(train)}
+        >
           <FaTrash />
         </button>
       </div>
