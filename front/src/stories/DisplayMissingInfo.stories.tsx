@@ -11,9 +11,8 @@ const Template: ComponentStory<typeof DisplayMissingInfo> = (args) => (
   <DisplayMissingInfo {...args} />
 );
 
-export const Primary = Template.bind({});
-Primary.args = {
-  primary: true,
+export const ActiveDisplayMissingInfo = Template.bind({});
+ActiveDisplayMissingInfo.args = {
   title: 'missing informations',
   missingInfoList: [
     'first info is missing',

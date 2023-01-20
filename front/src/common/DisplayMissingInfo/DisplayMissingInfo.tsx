@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
 interface Props {
-  primary?: boolean;
   title: string;
   missingInfoList: string[];
   isCorrect: boolean;
