@@ -1,7 +1,8 @@
-package fr.sncf.osrd.api.stdcm;
+package fr.sncf.osrd.stdcm;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import fr.sncf.osrd.api.stdcm.STDCMRequest;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.train.RollingStock;

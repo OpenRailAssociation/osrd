@@ -1,7 +1,7 @@
-package fr.sncf.osrd.api.stdcm.graph;
+package fr.sncf.osrd.stdcm.graph;
 
 import com.google.common.collect.Multimap;
-import fr.sncf.osrd.api.stdcm.OccupancyBlock;
+import fr.sncf.osrd.stdcm.OccupancyBlock;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.PhysicsPath;

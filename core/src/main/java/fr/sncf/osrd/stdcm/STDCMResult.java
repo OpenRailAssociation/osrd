@@ -1,4 +1,4 @@
-package fr.sncf.osrd.api.stdcm;
+package fr.sncf.osrd.stdcm;
 
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.PhysicsPath;
