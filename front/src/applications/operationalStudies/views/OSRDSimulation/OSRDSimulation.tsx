@@ -6,10 +6,8 @@ import {
   persistentUndoSimulation,
 } from 'reducers/osrdsimulation/simulation';
 import {
-  updateAllowancesSettings,
   updateMustRedraw,
   updateSelectedProjection,
-  updateSelectedTrain,
   updateSimulation,
 } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
@@ -26,17 +24,13 @@ import SpeedSpaceChart from 'applications/operationalStudies/components/Simulati
 import TimeButtons from 'applications/operationalStudies/views/OSRDSimulation/TimeButtons';
 import TimeLine from 'applications/operationalStudies/components/TimeLine/TimeLine';
 import TrainDetails from 'applications/operationalStudies/views/OSRDSimulation/TrainDetails';
+import getTimetable from 'applications/operationalStudies/components/Scenario/getTimetable';
 
-import { trainscheduleURI } from 'applications/operationalStudies/components/Simulation/consts';
-import { get } from 'common/requests';
-import { sec2time } from 'utils/timeManipulation';
 import { RootState } from 'reducers';
-import { setFailure } from 'reducers/main';
 import { updateViewport, Viewport } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
 import DriverTrainSchedule from 'applications/operationalStudies/components/Simulation/DriverTrainSchedule/DriverTrainSchedule';
 
-export const timetableURI = '/timetable/';
 const CHART_MIN_HEIGHT = '150px';
 const MAP_MIN_HEIGHT = 450;
 
@@ -51,7 +45,6 @@ function OSRDSimulation() {
   const { t } = useTranslation(['translation', 'simulation', 'allowances']);
   const timeTableRef = useRef<HTMLDivElement | null>(null);
   const [extViewport, setExtViewport] = useState<Viewport | undefined>(undefined);
-  const [isEmpty, setIsEmpty] = useState(true);
   const [displayAllowances, setDisplayAllowances] = useState(false);
 
   const [heightOfSpaceTimeChart, setHeightOfSpaceTimeChart] = useState(400);
@@ -74,72 +67,14 @@ function OSRDSimulation() {
 
   const simulation = useSelector((state: RootState) => state.osrdsimulation.simulation.present);
   const selectedTrain = useSelector((state: RootState) => state.osrdsimulation.selectedTrain);
-  const allowancesSettings = useSelector(
-    (state: RootState) => state.osrdsimulation.allowancesSettings
-  );
   const selectedProjection = useSelector(
     (state: RootState) => state.osrdsimulation.selectedProjection
-  );
-  const departureArrivalTimes = useSelector(
-    (state: RootState) => state.osrdsimulation.departureArrivalTimes
   );
   const displaySimulation = useSelector(
     (state: RootState) => state.osrdsimulation.displaySimulation
   );
   // const simulation = useSelector((state: RootState) => state.osrdsimulation.simulation.present);
   const dispatch = useDispatch();
-
-  /**
-   * Recover the time table for all the trains
-   */
-  const getTimetable = async () => {
-    try {
-      if (displaySimulation) {
-        dispatch(updateSelectedTrain(0));
-      }
-      const timetable = await get(`${timetableURI}${timetableID}/`);
-      if (timetable.train_schedules.length > 0) {
-        setIsEmpty(false);
-      }
-      const trainSchedulesIDs = timetable.train_schedules.map((train: any) => train.id);
-      const tempSelectedProjection = await get(`${trainscheduleURI}${trainSchedulesIDs[0]}/`);
-      if (!selectedProjection) {
-        dispatch(updateSelectedProjection(tempSelectedProjection));
-      }
-      try {
-        const simulationLocal = await get(`${trainscheduleURI}results/`, {
-          train_ids: trainSchedulesIDs.join(','),
-          path: tempSelectedProjection.path,
-        });
-        simulationLocal.sort((a: any, b: any) => a.base.stops[0].time > b.base.stops[0].time);
-        dispatch(updateSimulation({ trains: simulationLocal }));
-
-        // Create margins settings for each train if not set
-        const newAllowancesSettings = { ...allowancesSettings };
-        simulationLocal.forEach((train: any) => {
-          if (!newAllowancesSettings[train.id]) {
-            newAllowancesSettings[train.id] = {
-              base: true,
-              baseBlocks: true,
-              eco: true,
-              ecoBlocks: false,
-            };
-          }
-        });
-        dispatch(updateAllowancesSettings(newAllowancesSettings));
-      } catch (e) {
-        dispatch(
-          setFailure({
-            name: t('simulation:errorMessages.unableToRetrieveTrainSchedule'),
-            message: `${(e as Error).message} `,
-          })
-        );
-        console.log('ERROR', e);
-      }
-    } catch (e) {
-      console.log('ERROR', e);
-    }
-  };
 
   const toggleAllowancesDisplay = () => {
     setDisplayAllowances(!displayAllowances);
@@ -183,11 +118,12 @@ function OSRDSimulation() {
     }
   }, [extViewport]);
 
-  const waitingLoader = isEmpty ? (
-    <h1 className="text-center">{t('simulation:noData')}</h1>
-  ) : (
-    <CenterLoader message={t('simulation:waiting')} />
-  );
+  const waitingLoader =
+    (!simulation || simulation.trains.length === 0) && timetableID ? (
+      <h1 className="text-center">{t('simulation:noData')}</h1>
+    ) : (
+      <CenterLoader message={t('simulation:waiting')} />
+    );
 
   const mapMaxHeight = getMapMaxHeight(timeTableRef);
   return (
@@ -196,7 +132,19 @@ function OSRDSimulation() {
         <div className="pt-5 mt-5">{waitingLoader}</div>
       ) : (
         <div className="simulation-results">
-          {/* SIMULATION : TIMELIN */}
+          {/* SIMULATION : STICKY BAR */}
+          <div className="osrd-simulation-sticky-bar">
+            <div className="row">
+              <div className="col-lg-4">
+                <TimeButtons />
+              </div>
+              <div className="col-lg-8">
+                <TrainDetails />
+              </div>
+            </div>
+          </div>
+
+          {/* SIMULATION : TIMELINE */}
           <div className="mb-2">
             <TimeLine />
           </div>
@@ -365,14 +313,6 @@ function OSRDSimulation() {
                   <Map setExtViewport={setExtViewport} />
                 </div>
               </div>
-            </div>
-          </div>
-          <div className="osrd-simulation-sticky-bar">
-            <div className="row">
-              <div className="col-lg-4">
-                <TimeButtons />
-              </div>
-              <div className="col-lg-8">{displaySimulation ? <TrainDetails /> : null}</div>
             </div>
           </div>
         </div>

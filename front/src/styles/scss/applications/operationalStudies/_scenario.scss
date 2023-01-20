@@ -44,7 +44,7 @@
           cursor: pointer;
           .scenario-timetable-train-container {
             border: 1px solid var(--coolgray3);
-            transition: .2s;
+            transition: background-color .2s;
             border-radius: 4px;
             flex-grow: 1;
             .scenario-timetable-train-header {
@@ -53,7 +53,7 @@
               flex-grow: 1;
               padding: 0 0.25rem;
               background-color: var(--coolgray3);
-              transition: .2s;
+              transition: background-color .2s;
               .scenario-timetable-train-name {
                 display: flex;
                 align-items: center;
