@@ -1,9 +1,9 @@
-package fr.sncf.osrd.api.stdcm.graph;
+package fr.sncf.osrd.stdcm.graph;
 
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.CEILING;
 import static fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType.FLOOR;
 
-import fr.sncf.osrd.api.stdcm.BacktrackingEnvelopeAttr;
+import fr.sncf.osrd.stdcm.BacktrackingEnvelopeAttr;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope.OverlayEnvelopeBuilder;
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder;

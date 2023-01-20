@@ -1,4 +1,4 @@
-package fr.sncf.osrd.api.stdcm;
+package fr.sncf.osrd.stdcm;
 
 /** The given element is unavailable from timeStart until timeEnd,
  * in the space between distanceStart and distanceEnd.

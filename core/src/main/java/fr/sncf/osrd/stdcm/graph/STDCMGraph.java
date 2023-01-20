@@ -1,8 +1,8 @@
-package fr.sncf.osrd.api.stdcm.graph;
+package fr.sncf.osrd.stdcm.graph;
 
 import com.google.common.collect.Multimap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import fr.sncf.osrd.api.stdcm.OccupancyBlock;
+import fr.sncf.osrd.stdcm.OccupancyBlock;
 import fr.sncf.osrd.envelope.Envelope;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;

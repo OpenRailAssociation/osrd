@@ -4,7 +4,6 @@ import static java.lang.Double.POSITIVE_INFINITY;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.google.common.collect.*;
-import fr.sncf.osrd.api.stdcm.OccupancyBlock;
 import fr.sncf.osrd.infra.api.Direction;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.utils.graph.Pathfinding;
