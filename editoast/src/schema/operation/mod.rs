@@ -97,7 +97,7 @@ impl From<SerdeError> for Box<dyn ApiError> {
 impl Operation {
     pub fn apply(
         &self,
-        infra_id: i32,
+        infra_id: i64,
         conn: &mut PgConnection,
     ) -> Result<OperationResult, Box<dyn ApiError>> {
         match self {

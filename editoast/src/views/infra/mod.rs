@@ -16,7 +16,7 @@ use crate::infra::{Infra, InfraName};
 use crate::infra_cache::{InfraCache, ObjectCache};
 use crate::schema::SwitchType;
 use chashmap::CHashMap;
-use diesel::sql_types::{Double, Integer, Text};
+use diesel::sql_types::{BigInt, Double, Text};
 use diesel::{sql_query, QueryableByName, RunQueryDsl};
 use rocket::http::Status;
 use rocket::response::status::Custom;
@@ -65,10 +65,10 @@ struct Voltage {
 #[post("/refresh?<infras>&<force>")]
 async fn refresh<'a>(
     conn: DBConnection,
-    infras: List<'a, i32>,
+    infras: List<'a, i64>,
     force: bool,
     chartos_config: &State<ChartosConfig>,
-    infra_caches: &State<Arc<CHashMap<i32, InfraCache>>>,
+    infra_caches: &State<Arc<CHashMap<i64, InfraCache>>>,
 ) -> ApiResult<JsonValue> {
     let infra_caches = infra_caches.inner().clone();
     let refreshed_infra = conn
@@ -117,7 +117,7 @@ async fn list(conn: DBConnection) -> ApiResult<Json<Vec<Infra>>> {
 
 /// Return a specific infra
 #[get("/<infra>")]
-async fn get(conn: DBConnection, infra: i32) -> ApiResult<Custom<Json<Infra>>> {
+async fn get(conn: DBConnection, infra: i64) -> ApiResult<Custom<Json<Infra>>> {
     conn.run(move |conn| Ok(Custom(Status::Ok, Json(Infra::retrieve(conn, infra)?))))
         .await
 }
@@ -139,9 +139,9 @@ async fn create(
 /// Delete an infra
 #[delete("/<infra>")]
 async fn delete(
-    infra: i32,
+    infra: i64,
     conn: DBConnection,
-    infra_caches: &State<Arc<CHashMap<i32, InfraCache>>>,
+    infra_caches: &State<Arc<CHashMap<i64, InfraCache>>>,
 ) -> ApiResult<Custom<()>> {
     let infra_caches = infra_caches.inner().clone();
     conn.run(move |conn| {
@@ -155,7 +155,7 @@ async fn delete(
 /// Update an infra name
 #[put("/<infra>", data = "<new_name>")]
 async fn rename(
-    infra: i32,
+    infra: i64,
     new_name: Result<Json<InfraName>, JsonError<'_>>,
     conn: DBConnection,
 ) -> ApiResult<Custom<Json<Infra>>> {
@@ -170,9 +170,9 @@ async fn rename(
 /// Return the railjson list of switch types
 #[get("/<infra>/switch_types")]
 async fn get_switch_types(
-    infra: i32,
+    infra: i64,
     conn: DBConnection,
-    infra_caches: &State<Arc<CHashMap<i32, InfraCache>>>,
+    infra_caches: &State<Arc<CHashMap<i64, InfraCache>>>,
 ) -> ApiResult<Custom<Json<Vec<SwitchType>>>> {
     let infra_caches = infra_caches.inner().clone();
     conn.run(move |conn| {
@@ -195,7 +195,7 @@ async fn get_switch_types(
 
 /// Returns the set of speed limit tags for a given infra
 #[get("/<infra>/speed_limit_tags")]
-async fn get_speed_limit_tags(infra: i32, conn: DBConnection) -> ApiResult<Custom<JsonValue>> {
+async fn get_speed_limit_tags(infra: i64, conn: DBConnection) -> ApiResult<Custom<JsonValue>> {
     let speed_limits_tags: Vec<SpeedLimitTags> = conn
         .run(move |conn| {
             sql_query(
@@ -204,7 +204,7 @@ async fn get_speed_limit_tags(infra: i32, conn: DBConnection) -> ApiResult<Custo
         WHERE infra_id = $1
         ORDER BY tag",
             )
-            .bind::<Integer, _>(infra)
+            .bind::<BigInt, _>(infra)
             .load(conn)
         })
         .await?;
@@ -218,7 +218,7 @@ async fn get_speed_limit_tags(infra: i32, conn: DBConnection) -> ApiResult<Custo
 
 /// Returns the set of voltages for a given infra
 #[get("/<infra>/voltages")]
-async fn get_voltages(infra: i32, conn: DBConnection) -> ApiResult<Custom<JsonValue>> {
+async fn get_voltages(infra: i64, conn: DBConnection) -> ApiResult<Custom<JsonValue>> {
     let voltages: Vec<Voltage> = conn
         .run(move |conn| {
             sql_query(
@@ -227,7 +227,7 @@ async fn get_voltages(infra: i32, conn: DBConnection) -> ApiResult<Custom<JsonVa
                 WHERE infra_id = $1
                 ORDER BY voltage",
             )
-            .bind::<Integer, _>(infra)
+            .bind::<BigInt, _>(infra)
             .load(conn)
         })
         .await?;
@@ -238,7 +238,7 @@ async fn get_voltages(infra: i32, conn: DBConnection) -> ApiResult<Custom<JsonVa
 
 /// Lock an infra
 #[post("/<infra>/lock")]
-async fn lock(infra: i32, conn: DBConnection) -> ApiResult<Custom<JsonValue>> {
+async fn lock(infra: i64, conn: DBConnection) -> ApiResult<Custom<JsonValue>> {
     conn.run(move |conn| {
         let infra = Infra::retrieve_for_update(conn, infra)?;
         infra.set_locked(true, conn)?;
@@ -249,7 +249,7 @@ async fn lock(infra: i32, conn: DBConnection) -> ApiResult<Custom<JsonValue>> {
 
 /// Unlock an infra
 #[post("/<infra>/unlock")]
-async fn unlock(infra: i32, conn: DBConnection) -> ApiResult<Custom<JsonValue>> {
+async fn unlock(infra: i64, conn: DBConnection) -> ApiResult<Custom<JsonValue>> {
     conn.run(move |conn| {
         let infra = Infra::retrieve_for_update(conn, infra)?;
         infra.set_locked(false, conn)?;
@@ -344,7 +344,7 @@ mod tests {
 
     #[derive(Deserialize)]
     struct InfraRefreshedResponse {
-        infra_refreshed: Vec<i32>,
+        infra_refreshed: Vec<i64>,
     }
 
     #[test]

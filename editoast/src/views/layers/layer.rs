@@ -61,7 +61,7 @@ impl LayersError {
 pub async fn layer_view(
     layer_slug: &str,
     view_slug: &str,
-    infra: i32,
+    infra: i64,
     map_layers: &State<MapLayers>,
     map_layers_config: &State<MapLayersConfig>,
 ) -> ApiResult<JsonValue> {

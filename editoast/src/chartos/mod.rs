@@ -28,7 +28,7 @@ const LAYERS: [&str; 12] = [
 /// Invalidate a zone for all chartos layers
 /// If the zone is invalide nothing is done
 pub async fn invalidate_zone(
-    infra_id: i32,
+    infra_id: i64,
     chartos_config: &ChartosConfig,
     zone: &InvalidationZone,
 ) {
@@ -42,7 +42,7 @@ pub async fn invalidate_zone(
 }
 
 /// Invalidate all chartos layers
-pub async fn invalidate_all(infra_id: i32, chartos_config: &ChartosConfig) {
+pub async fn invalidate_all(infra_id: i64, chartos_config: &ChartosConfig) {
     for layer in LAYERS {
         invalidate_layer(infra_id, layer, chartos_config).await;
     }
@@ -51,7 +51,7 @@ pub async fn invalidate_all(infra_id: i32, chartos_config: &ChartosConfig) {
 /// Invalidate a zone of chartos layer
 /// Panic if the request failed
 async fn invalidate_layer_zone(
-    infra_id: i32,
+    infra_id: i64,
     layer: &str,
     zone: &InvalidationZone,
     chartos_config: &ChartosConfig,
@@ -84,7 +84,7 @@ async fn invalidate_layer_zone(
 
 /// Invalidate a whole chartos layer
 /// Panic if the request failed
-async fn invalidate_layer(infra_id: i32, layer: &str, chartos_config: &ChartosConfig) {
+async fn invalidate_layer(infra_id: i64, layer: &str, chartos_config: &ChartosConfig) {
     let resp = Client::new()
         .post(format!(
             "{}layer/{}/invalidate/?infra={}",

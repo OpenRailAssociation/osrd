@@ -18,7 +18,7 @@ pub const RAILJSON_VERSION: &str = "3.1.0";
 #[derive(Clone, QueryableByName, Queryable, Debug, Serialize, Deserialize, Identifiable)]
 #[diesel(table_name = osrd_infra_infra)]
 pub struct Infra {
-    pub id: i32,
+    pub id: i64,
     pub name: String,
     pub railjson_version: String,
     pub version: String,
@@ -38,7 +38,7 @@ pub struct InfraName {
 pub enum InfraApiError {
     /// Couldn't found the infra with the given id
     #[error("Infra '{0}', could not be found")]
-    NotFound(i32),
+    NotFound(i64),
     #[error("An internal diesel error occurred: '{}'", .0.to_string())]
     DieselError(DieselError),
 }
@@ -71,7 +71,7 @@ impl ApiError for InfraApiError {
 }
 
 impl Infra {
-    pub fn retrieve(conn: &mut PgConnection, infra_id: i32) -> Result<Infra, Box<dyn ApiError>> {
+    pub fn retrieve(conn: &mut PgConnection, infra_id: i64) -> Result<Infra, Box<dyn ApiError>> {
         match dsl::osrd_infra_infra.find(infra_id).first(conn) {
             Ok(infra) => Ok(infra),
             Err(DieselError::NotFound) => Err(Box::new(InfraApiError::NotFound(infra_id))),
@@ -81,7 +81,7 @@ impl Infra {
 
     pub fn retrieve_for_update(
         conn: &mut PgConnection,
-        infra_id: i32,
+        infra_id: i64,
     ) -> Result<Infra, Box<dyn ApiError>> {
         match dsl::osrd_infra_infra
             .for_update()
@@ -96,7 +96,7 @@ impl Infra {
 
     pub fn rename(
         conn: &mut PgConnection,
-        infra_id: i32,
+        infra_id: i64,
         new_name: String,
     ) -> Result<Infra, Box<dyn ApiError>> {
         match update(dsl::osrd_infra_infra.filter(dsl::id.eq(infra_id)))
@@ -200,7 +200,7 @@ impl Infra {
         }
     }
 
-    pub fn delete(infra_id: i32, conn: &mut PgConnection) -> Result<(), Box<dyn ApiError>> {
+    pub fn delete(infra_id: i64, conn: &mut PgConnection) -> Result<(), Box<dyn ApiError>> {
         match delete(dsl::osrd_infra_infra.filter(dsl::id.eq(infra_id))).execute(conn) {
             Ok(1) => Ok(()),
             Ok(_) => Err(Box::new(InfraApiError::NotFound(infra_id))),

@@ -89,10 +89,10 @@ struct PathfindingOutput {
 /// This endpoint search path between starting and ending track locations
 #[post("/<infra>/pathfinding?<number>", data = "<input>")]
 async fn pathfinding_view<'a>(
-    infra: i32,
+    infra: i64,
     number: Option<u8>,
     input: Result<Json<PathfindingInput>, JsonError<'a>>,
-    infra_caches: &State<Arc<CHashMap<i32, InfraCache>>>,
+    infra_caches: &State<Arc<CHashMap<i64, InfraCache>>>,
     conn: DBConnection,
 ) -> ApiResult<Custom<Json<Vec<PathfindingOutput>>>> {
     // Parse and check input
