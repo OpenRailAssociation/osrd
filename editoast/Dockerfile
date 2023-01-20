@@ -13,7 +13,7 @@ RUN cargo chef cook --release --recipe-path recipe.json
 COPY . .
 RUN cargo install --locked --path .
 
-FROM debian:buster-slim as runner
+FROM debian:bullseye-slim as runner
 
 RUN apt update -yqq && \
     apt install -yqq --no-install-recommends libpq-dev curl ca-certificates && \
