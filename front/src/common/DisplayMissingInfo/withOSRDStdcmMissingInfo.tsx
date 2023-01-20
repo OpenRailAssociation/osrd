@@ -1,6 +1,5 @@
 import React, { ComponentType, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CgNametag } from 'react-icons/cg';
 import { useSelector } from 'react-redux';
 import {
   getInfraID,
@@ -19,6 +18,8 @@ const withOSRDStdcmMissingInfo = <T extends {}>(Component: ComponentType<T>) => 
     const rollingStock = useSelector(getRollingStockID);
     const speedLimitByTag = useSelector(getSpeedLimitByTag);
 
+    const title = t('missingInfoTitle');
+
     const missingInfoList: string[] = [
       !infra ? t('missingInfra') : '',
       !timeTable ? t('missingTimeTable') : '',
@@ -34,7 +35,12 @@ const withOSRDStdcmMissingInfo = <T extends {}>(Component: ComponentType<T>) => 
 
     return (
       !isCorrect && (
-        <Component {...(hocProps as T)} missingInfoList={missingInfoList} isCorrect={isCorrect} />
+        <Component
+          {...(hocProps as T)}
+          title={title}
+          missingInfoList={missingInfoList}
+          isCorrect={isCorrect}
+        />
       )
     );
   };

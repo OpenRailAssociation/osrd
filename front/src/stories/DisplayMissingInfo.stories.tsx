@@ -1,0 +1,25 @@
+import React from 'react';
+import { ComponentMeta, ComponentStory } from '@storybook/react';
+import DisplayMissingInfo from '../common/DisplayMissingInfo/DisplayMissingInfo';
+
+export default {
+  title: 'DisplayMissingInfo',
+  component: DisplayMissingInfo,
+} as ComponentMeta<typeof DisplayMissingInfo>;
+
+const Template: ComponentStory<typeof DisplayMissingInfo> = (args) => (
+  <DisplayMissingInfo {...args} />
+);
+
+export const Primary = Template.bind({});
+Primary.args = {
+  primary: true,
+  title: 'missing informations',
+  missingInfoList: [
+    'first info is missing',
+    'second info is missing',
+    'third info is missing',
+    'fourth info is missing',
+  ],
+  isCorrect: true,
+};
