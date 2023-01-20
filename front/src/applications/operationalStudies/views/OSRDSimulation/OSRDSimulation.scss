@@ -21,9 +21,10 @@ select.sm {
     width: 100%;
     background: var(--primary);
     z-index: 2;
-    bottom: 0;
+    top: 0;
     left: 0;
-    padding: .5rem 1rem .3rem;
+    padding: 0.5rem 0.5rem .3rem;
+    margin-bottom: 0.5rem;
     .train-detail {
       min-width: 4.5rem;
       max-height: 2rem;
