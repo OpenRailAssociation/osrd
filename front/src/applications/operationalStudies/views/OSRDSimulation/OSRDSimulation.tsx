@@ -25,6 +25,7 @@ import TimeButtons from 'applications/operationalStudies/views/OSRDSimulation/Ti
 import TimeLine from 'applications/operationalStudies/components/TimeLine/TimeLine';
 import TrainDetails from 'applications/operationalStudies/views/OSRDSimulation/TrainDetails';
 import getTimetable from 'applications/operationalStudies/components/Scenario/getTimetable';
+import { simulationIsUpdating } from 'applications/operationalStudies/components/Scenario/helpers';
 
 import { RootState } from 'reducers';
 import { updateViewport, Viewport } from 'reducers/map';
@@ -63,8 +64,7 @@ function OSRDSimulation() {
   const [initialHeightOfSpaceCurvesSlopesChart, setInitialHeightOfSpaceCurvesSlopesChart] =
     useState(heightOfSpaceCurvesSlopesChart);
 
-  const { timetableID } = useSelector((state: RootState) => state.osrdconf);
-
+  const isUpdating = useSelector((state: RootState) => state.osrdsimulation.isUpdating);
   const simulation = useSelector((state: RootState) => state.osrdsimulation.simulation.present);
   const selectedTrain = useSelector((state: RootState) => state.osrdsimulation.selectedTrain);
   const selectedProjection = useSelector(
@@ -92,8 +92,6 @@ function OSRDSimulation() {
   useEffect(() => {
     // Setup the listener to undi /redo
     window.addEventListener('keydown', handleKey);
-
-    getTimetable();
     return function cleanup() {
       window.removeEventListener('keydown', handleKey);
       dispatch(updateSelectedProjection(undefined));
@@ -102,7 +100,7 @@ function OSRDSimulation() {
   }, []);
 
   useEffect(() => {
-    getTimetable();
+    getTimetable(simulationIsUpdating);
     return function cleanup() {
       dispatch(updateSimulation({ trains: [] }));
     };
@@ -119,7 +117,7 @@ function OSRDSimulation() {
   }, [extViewport]);
 
   const waitingLoader =
-    (!simulation || simulation.trains.length === 0) && timetableID ? (
+    (!simulation || simulation.trains.length === 0) && !isUpdating ? (
       <h1 className="text-center">{t('simulation:noData')}</h1>
     ) : (
       <CenterLoader message={t('simulation:waiting')} />
@@ -128,7 +126,7 @@ function OSRDSimulation() {
   const mapMaxHeight = getMapMaxHeight(timeTableRef);
   return (
     <>
-      {!displaySimulation ? (
+      {!displaySimulation || isUpdating ? (
         <div className="pt-5 mt-5">{waitingLoader}</div>
       ) : (
         <div className="simulation-results">
