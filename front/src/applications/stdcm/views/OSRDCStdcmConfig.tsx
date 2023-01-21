@@ -12,7 +12,7 @@ import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelect
 import SpeedLimitByTagSelector from 'applications/operationalStudies/components/ManageTrainSchedule/SpeedLimitByTagSelector';
 import TimetableSelector from 'applications/operationalStudies/components/ManageTrainSchedule/TimetableSelector';
 
-import StdcmSingleAllowance from 'applications/operationalStudies/components/Simulation/Allowances/withOSRDStdcmParams';
+import StdcmSingleAllowance from 'applications/operationalStudies/components/SimulationResults/Allowances/withOSRDStdcmParams';
 
 type OSRDStdcmConfigProps = {
   setCurrentStdcmRequestStatus: (status: string) => void;

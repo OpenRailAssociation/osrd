@@ -1,12 +1,12 @@
 import {
   changeTrain,
   getTrainDetailsForAPI,
-} from 'applications/operationalStudies/components/Simulation/simulationHelpers';
+} from 'applications/operationalStudies/components/SimulationResults/simulationResultsHelpers';
 import { deleteRequest, get, post } from 'common/requests';
 import { setFailure } from 'reducers/main';
 
 import trainNameWithNum from 'applications/operationalStudies/components/ManageTrainSchedule/AddTrainSchedule/trainNameHelper';
-import { trainscheduleURI } from 'applications/operationalStudies/components/Simulation/consts';
+import { trainscheduleURI } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 
 export const UPDATE_SIMULATION = 'osrdsimu/UPDATE_SIMULATION';
 export const UNDO_SIMULATION = 'osrdsimu/UNDO_SIMULATION';
