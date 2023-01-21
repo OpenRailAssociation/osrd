@@ -7,13 +7,16 @@ import nextId from 'react-id-generator';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useDebounce } from 'utils/helpers';
 import { trainscheduleURI } from 'applications/operationalStudies/components/Simulation/consts';
-import { updateMustRedraw, updateSelectedTrain } from 'reducers/osrdsimulation/actions';
-import { deleteRequest } from 'common/requests';
+import {
+  updateMustRedraw,
+  updateSelectedProjection,
+  updateSelectedTrain,
+} from 'reducers/osrdsimulation/actions';
+import { deleteRequest, get, post } from 'common/requests';
 import { setFailure, setSuccess } from 'reducers/main';
-import Loader from 'common/Loader';
 import getTimetable from './getTimetable';
 import TimetableTrainCard from './TimetableTrainCard';
-import { simulationIsUpdating } from './helpers';
+import trainNameWithNum from '../AddTrainSchedule/trainNameHelper';
 
 function trainsDurations(trainList) {
   const durationList = trainList.map((train) => ({
@@ -30,7 +33,6 @@ function trainsDurations(trainList) {
 }
 
 export default function Timetable() {
-  const isUpdating = useSelector((state) => state.osrdsimulation.isUpdating);
   const selectedProjection = useSelector((state) => state.osrdsimulation.selectedProjection);
   const departureArrivalTimes = useSelector((state) => state.osrdsimulation.departureArrivalTimes);
   const selectedTrain = useSelector((state) => state.osrdsimulation.selectedTrain);
@@ -50,7 +52,7 @@ export default function Timetable() {
   const deleteTrain = async (train) => {
     try {
       await deleteRequest(`${trainscheduleURI}${train.id}/`);
-      getTimetable(simulationIsUpdating);
+      getTimetable();
       dispatch(
         setSuccess({
           title: t('timetable:trainDeleted', { name: train.name }),
@@ -63,6 +65,67 @@ export default function Timetable() {
         setFailure({
           name: e.name,
           message: e.message,
+        })
+      );
+    }
+  };
+
+  const duplicateTrain = async (train) => {
+    // Static for now, will be dynamic when UI will be ready
+    const trainName = `${train.name} (${t('copy')})`;
+    const trainDelta = 5;
+    const trainCount = 1;
+    const trainStep = 5;
+    //
+
+    const trainDetail = await get(`${trainscheduleURI}${train.id}/`);
+    const params = {
+      timetable: trainDetail.timetable,
+      path: trainDetail.path,
+      schedules: [],
+    };
+    let actualTrainCount = 1;
+    for (let nb = 1; nb <= trainCount; nb += 1) {
+      const newTrainDelta = 60 * trainDelta * nb;
+      const newOriginTime = train.departure + newTrainDelta;
+      const newTrainName = trainNameWithNum(trainName, actualTrainCount, trainCount);
+      params.schedules.push({
+        departure_time: newOriginTime,
+        initial_speed: trainDetail.initial_speed,
+        labels: trainDetail.labels,
+        rolling_stock: trainDetail.rolling_stock,
+        train_name: newTrainName,
+        allowances: trainDetail.allowances,
+        speed_limit_composition: trainDetail.speed_limit_composition,
+      });
+      actualTrainCount += trainStep;
+    }
+    try {
+      await post(`${trainscheduleURI}standalone_simulation/`, params);
+      getTimetable();
+      dispatch(
+        setSuccess({
+          title: t('osrdconf:trainAdded'),
+          text: `${trainName}`,
+        })
+      );
+    } catch (e) {
+      console.log('ERROR', e);
+      dispatch(
+        setFailure({
+          name: e.name,
+          message: e.message,
+        })
+      );
+    }
+  };
+
+  const selectPathProjection = async (train) => {
+    if (train) {
+      dispatch(
+        updateSelectedProjection({
+          id: train.id,
+          path: train.path,
         })
       );
     }
@@ -100,7 +163,7 @@ export default function Timetable() {
         </button>
       </div>
       <div className="scenario-timetable-trains">
-        {trainsList && !isUpdating
+        {trainsList
           ? trainsList.map((train, idx) => (
               <TimetableTrainCard
                 train={train}
@@ -110,10 +173,11 @@ export default function Timetable() {
                 idx={idx}
                 changeSelectedTrain={changeSelectedTrain}
                 deleteTrain={deleteTrain}
+                duplicateTrain={duplicateTrain}
+                selectPathProjection={selectPathProjection}
               />
             ))
           : null}
-        {isUpdating && <Loader />}
       </div>
     </div>
   );
