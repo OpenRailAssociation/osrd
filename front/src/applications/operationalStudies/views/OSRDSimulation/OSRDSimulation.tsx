@@ -14,7 +14,6 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import Allowances from 'applications/operationalStudies/components/Simulation/Allowances/withOSRDData';
 
-import CenterLoader from 'common/CenterLoader/CenterLoader';
 import ContextMenu from 'applications/operationalStudies/components/Simulation/ContextMenu';
 import Map from 'applications/operationalStudies/views/OSRDSimulation/Map';
 import { Rnd } from 'react-rnd';
@@ -25,7 +24,6 @@ import TimeButtons from 'applications/operationalStudies/views/OSRDSimulation/Ti
 import TimeLine from 'applications/operationalStudies/components/TimeLine/TimeLine';
 import TrainDetails from 'applications/operationalStudies/views/OSRDSimulation/TrainDetails';
 import getTimetable from 'applications/operationalStudies/components/Scenario/getTimetable';
-import { simulationIsUpdating } from 'applications/operationalStudies/components/Scenario/helpers';
 
 import { RootState } from 'reducers';
 import { updateViewport, Viewport } from 'reducers/map';
@@ -100,7 +98,7 @@ function OSRDSimulation() {
   }, []);
 
   useEffect(() => {
-    getTimetable(simulationIsUpdating);
+    getTimetable();
     return function cleanup() {
       dispatch(updateSimulation({ trains: [] }));
     };
@@ -119,9 +117,7 @@ function OSRDSimulation() {
   const waitingLoader =
     (!simulation || simulation.trains.length === 0) && !isUpdating ? (
       <h1 className="text-center">{t('simulation:noData')}</h1>
-    ) : (
-      <CenterLoader message={t('simulation:waiting')} />
-    );
+    ) : null;
 
   const mapMaxHeight = getMapMaxHeight(timeTableRef);
   return (
@@ -177,7 +173,7 @@ function OSRDSimulation() {
                   <SpaceTimeChart heightOfSpaceTimeChart={heightOfSpaceTimeChart} />
                 </Rnd>
               )}
-              <ContextMenu getTimetable={getTimetable} />
+              <ContextMenu />
             </div>
           </div>
 

@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import Timetable from 'applications/operationalStudies/components/Scenario/Timetable';
 import infraLogo from 'assets/pictures/components/tracks.svg';
+import ScenarioLoader from 'applications/operationalStudies/components/Scenario/ScenarioLoader';
+import { useSelector } from 'react-redux';
 import OSRDSimulation from './OSRDSimulation/OSRDSimulation';
 import { projectJSON, scenarioJSON, studyJSON } from '../components/Helpers/genFakeDataForProjects';
 
@@ -25,6 +27,8 @@ function BreadCrumbs(props) {
 }
 
 export default function Scenario() {
+  const { t } = useTranslation('operationalStudies/scenario');
+  const isUpdating = useSelector((state) => state.osrdsimulation.isUpdating);
   const [projectDetails, setProjectDetails] = useState();
   const [studyDetails, setStudyDetails] = useState();
   const [scenarioDetails, setScenarioDetails] = useState();
@@ -48,6 +52,7 @@ export default function Scenario() {
       />
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="scenario">
+          {isUpdating && <ScenarioLoader msg={t('isUpdating')} />}
           <div className="row">
             <div className="col-lg-4">
               <div className="scenario-sidemenu">

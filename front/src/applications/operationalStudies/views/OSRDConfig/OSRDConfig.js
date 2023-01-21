@@ -1,40 +1,25 @@
 import 'applications/operationalStudies/views/OSRDConfig/OSRDConfig.scss';
 
 import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { updateViewport } from 'reducers/map';
-import { STDCM_REQUEST_STATUS, MODES } from 'applications/operationalStudies/consts';
-import { makeEnumBooleans } from 'utils/constants';
 
 import AddTrainLabels from 'applications/operationalStudies/views/OSRDConfig/AddTrainLabels';
 import AddTrainSchedule from 'applications/operationalStudies/views/OSRDConfig/AddTrainSchedule';
-import InfraSelector from 'common/InfraSelector/InfraSelector';
 import Itinerary from 'applications/operationalStudies/views/OSRDConfig/Itinerary';
 import Map from 'applications/operationalStudies/views/OSRDConfig/Map';
 import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelector';
 import SpeedLimitByTagSelector from 'applications/operationalStudies/views/OSRDConfig/SpeedLimitByTagSelector';
-import TimetableSelector from 'applications/operationalStudies/views/OSRDConfig/TimetableSelector';
 
-import StdcmSingleAllowance from 'applications/operationalStudies/components/Simulation/Allowances/withOSRDStdcmParams';
-
-export default function OSRDConfig(props) {
-  const { fullscreen, darkmode } = useSelector((state) => state.main);
-  const mode = useSelector((state) => state.osrdconf.mode);
+export default function ManageTrainSchedule() {
+  const { fullscreen } = useSelector((state) => state.main);
 
   const dispatch = useDispatch();
   const { t } = useTranslation(['translation', 'osrdconf', 'allowances']);
   const [extViewport, setExtViewport] = useState(undefined);
   const [mustUpdateTimetable, setMustUpdateTimetable] = useState(true);
-  const { setCurrentStdcmRequestStatus } = props;
-
-  const { isSimulation, isStdcm } = makeEnumBooleans(MODES, mode);
-
-  if (darkmode) {
-    import('./OSRDConfigDarkMode.scss');
-  }
 
   useEffect(() => {
     if (extViewport !== undefined) {
@@ -53,75 +38,16 @@ export default function OSRDConfig(props) {
         <div className="col-sm-6">
           <div className="row">
             <div className="col-xl-6">
-              <InfraSelector />
               <RollingStockSelector />
               <SpeedLimitByTagSelector />
             </div>
-            <div className="col-xl-6">
-              <TimetableSelector
-                mustUpdateTimetable={mustUpdateTimetable}
-                setMustUpdateTimetable={setMustUpdateTimetable}
-              />
-            </div>
           </div>
           <Itinerary title={t('translation:common.itinerary')} updateExtViewport={setExtViewport} />
-          {isStdcm && (
-            <>
-
-              <div className="row">
-                <div className="col-xl-6">
-                  <div className="osrd-config-item mb-2 osrd-config-item-container">
-                    <StdcmSingleAllowance
-                      title={t('allowances:gridMarginBefore')}
-                      typeKey="gridMarginBefore"
-                    />
-                  </div>
-                </div>
-                <div className="col-xl-6">
-                  <div className="osrd-config-item mb-2 osrd-config-item-container">
-                    <StdcmSingleAllowance
-                      title={t('allowances:gridMarginAfter')}
-                      typeKey="gridMarginAfter"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="row">
-                <div className="col-xl-12">
-                  <div className="osrd-config-item mb-2 osrd-config-item-container">
-                    <StdcmSingleAllowance
-                      title={t('allowances:standardAllowance')}
-                      typeKey="standardStdcmAllowance"
-                    />
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-
-          {isSimulation && (
-            <>
-              <AddTrainLabels />
-              <AddTrainSchedule
-                mustUpdateTimetable={mustUpdateTimetable}
-                setMustUpdateTimetable={setMustUpdateTimetable}
-              />
-            </>
-          )}
-          {isStdcm && (
-            <div className="osrd-config-stdcm-apply">
-              <button
-                className="btn btn-sm  btn-primary "
-                type="button"
-                onClick={() => setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.pending)}
-              >
-                {t('osrdconf:apply')}
-                <span className="sr-only" aria-hidden="true">
-                  {t('osrdconf:apply')}
-                </span>
-              </button>
-            </div>
-          )}
+          <AddTrainLabels />
+          <AddTrainSchedule
+            mustUpdateTimetable={mustUpdateTimetable}
+            setMustUpdateTimetable={setMustUpdateTimetable}
+          />
         </div>
         <div className="col-sm-6">
           <div className="osrd-config-item osrd-config-item-map mb-2">
@@ -134,10 +60,3 @@ export default function OSRDConfig(props) {
     </main>
   );
 }
-
-OSRDConfig.propTypes = {
-  setCurrentStdcmRequestStatus: PropTypes.func,
-};
-OSRDConfig.defaultProps = {
-  setCurrentStdcmRequestStatus: () => {},
-};

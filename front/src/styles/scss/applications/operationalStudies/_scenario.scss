@@ -3,6 +3,21 @@
   --content-height: calc(100vh - var(--navbar-height) - 2rem);
   position: relative;
   padding: 1rem;
+  .scenario-loader {
+    position: absolute;
+    color: var(--coolgray9);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.5);
+    z-index: 3;
+    .scenario-loader-msg {
+      font-weight: 500;
+      font-size: 2rem;
+      text-align: center;
+    }
+  }
   .scenario-sidemenu {
     .scenario-details {
       display: flex;
@@ -38,11 +53,52 @@
         overflow: auto;
         height: calc(var(--content-height) - 10.5rem);
         .scenario-timetable-train {
-          display: flex;
-          background-color: var(--white);
           margin-bottom: 0.5rem;
-          cursor: pointer;
+          .scenario-timetable-train-buttons {
+            border-radius: 4px 4px 0 0;
+            background-color: var(--coolgray1);
+            display: none;
+            justify-content: flex-end;
+            align-items: center;
+            button {
+              border-radius: 4px 4px 0 0;
+              background-color: transparent;
+              border: none;
+              padding: 0.25rem 1rem;
+              transition: 0.2s;
+              height: 100%;
+            }
+            .scenario-timetable-train-buttons-selectprojection {
+              color: var(--cyan);
+              &:hover {
+                background-color: var(--cyan);
+                color: var(--white);
+              }
+            }
+            .scenario-timetable-train-buttons-duplicate {
+              color: var(--primary);       
+              &:hover {
+                background-color: var(--primary);
+                color: var(--white);
+              }       
+            }
+            .scenario-timetable-train-buttons-update {
+              color: var(--orange);
+              &:hover {
+                background-color: var(--orange);
+                color: var(--white);
+              }
+            }
+            .scenario-timetable-train-buttons-delete {
+              color: var(--red);       
+              &:hover {
+                background-color: var(--red);
+                color: var(--white);
+              }       
+            }
+          }
           .scenario-timetable-train-container {
+            cursor: pointer;
             border: 1px solid var(--coolgray3);
             transition: background-color .2s;
             border-radius: 4px;
@@ -110,31 +166,6 @@
               }
             }
           }
-          .scenario-timetable-train-buttons {
-            display: none;
-            button {
-              border: none;
-              background-color: var(--coolgray3);
-              padding: 0 1rem;
-              transition: 0.2s;
-              height: 100%;
-            }
-            .scenario-timetable-train-buttons-update {
-              color: var(--orange);
-              &:hover {
-                background-color: var(--orange);
-                color: var(--white);
-              }
-            }
-            .scenario-timetable-train-buttons-delete {
-              border-radius: 0 4px 4px 0;
-              color: var(--red);       
-              &:hover {
-                background-color: var(--red);
-                color: var(--white);
-              }       
-            }
-          }
           &.selected {
             .scenario-timetable-train-header {
               background-color: var(--teal);
@@ -143,14 +174,13 @@
           &:hover {
             .scenario-timetable-train-container {
               border-color: var(--secondary);
-              border-radius: 4px 0 0 4px;
               .scenario-timetable-train-header {
                 background-color: var(--secondary);
                 color: var(--white);
               }
             }
             .scenario-timetable-train-buttons {
-              display: inline-block;
+              display: flex;
             }
           }
         }
