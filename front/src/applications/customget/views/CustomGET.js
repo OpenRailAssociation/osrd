@@ -81,53 +81,57 @@ function CustomGET() {
               </div>
             </div>
           </div>
-          <div className="osrd-simulation-container d-flex mb-2">
-            <div
-              className="spacetimechart-container"
-              style={{ height: `${heightOfSpaceTimeChart}px` }}
-            >
-              {simulation.trains.length > 0 && (
-                <Rnd
-                  default={{
-                    x: 0,
-                    y: 0,
-                    width: '100%',
-                    height: `${heightOfSpaceTimeChart}px`,
-                  }}
-                  disableDragging
-                  enableResizing={{
-                    top: false,
-                    right: false,
-                    bottom: true,
-                    left: false,
-                    topRight: false,
-                    bottomRight: false,
-                    bottomLeft: false,
-                    topLeft: false,
-                  }}
-                  onResizeStart={() => setInitialHeightOfSpaceTimeChart(heightOfSpaceTimeChart)}
-                  onResize={(e, dir, refToElement, delta) => {
-                    setHeightOfSpaceTimeChart(initialHeightOfSpaceTimeChart + delta.height);
-                  }}
-                  onResizeStop={() => {
-                    dispatch(updateMustRedraw(true));
-                  }}
+          <div className="scenario-results">
+            <div className="simulation-results">
+              <div className="osrd-simulation-container d-flex mb-2">
+                <div
+                  className="spacetimechart-container"
+                  style={{ height: `${heightOfSpaceTimeChart}px` }}
                 >
-                  <SpaceTimeChart heightOfSpaceTimeChart={heightOfSpaceTimeChart} />
-                </Rnd>
-              )}
+                  {simulation.trains.length > 0 && (
+                    <Rnd
+                      default={{
+                        x: 0,
+                        y: 0,
+                        width: '100%',
+                        height: `${heightOfSpaceTimeChart}px`,
+                      }}
+                      disableDragging
+                      enableResizing={{
+                        top: false,
+                        right: false,
+                        bottom: true,
+                        left: false,
+                        topRight: false,
+                        bottomRight: false,
+                        bottomLeft: false,
+                        topLeft: false,
+                      }}
+                      onResizeStart={() => setInitialHeightOfSpaceTimeChart(heightOfSpaceTimeChart)}
+                      onResize={(e, dir, refToElement, delta) => {
+                        setHeightOfSpaceTimeChart(initialHeightOfSpaceTimeChart + delta.height);
+                      }}
+                      onResizeStop={() => {
+                        dispatch(updateMustRedraw(true));
+                      }}
+                    >
+                      <SpaceTimeChart heightOfSpaceTimeChart={heightOfSpaceTimeChart} />
+                    </Rnd>
+                  )}
+                </div>
+              </div>
+              <div className="osrd-simulation-sticky-bar">
+                <div className="row">
+                  <div className="col-lg-4">
+                    <TimeButtons />
+                  </div>
+                  <div className="col-lg-8">{simulation.trains.length > 0 ? <TrainDetails /> : null}</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       )}
-      <div className="osrd-simulation-sticky-bar">
-        <div className="row">
-          <div className="col-lg-4">
-            <TimeButtons />
-          </div>
-          <div className="col-lg-8">{simulation.trains.length > 0 ? <TrainDetails /> : null}</div>
-        </div>
-      </div>
       <UploadFileModal />
     </main>
   );

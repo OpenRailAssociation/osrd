@@ -8,8 +8,6 @@ import Project from './views/Project';
 import Study from './views/Study';
 import Scenario from './views/Scenario';
 
-import 'applications/operationalStudies/operationalStudies.scss';
-
 function HomeOSRD() {
   return (
     <>
