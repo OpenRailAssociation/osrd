@@ -27,7 +27,11 @@
     "unableToRetrieveTimetable": "Récupération grille horaire impossible",
     "unableToRetrieveTimetableList": "Récupération liste de grilles horaires impossible"
   },
-  "pathFindingInProgress": "Récupération du chemin en cours",
+  "pathfinding": "Recherche de chemin",
+  "pathfindingInProgress": "Recherche du chemin en cours",
+  "pathfindingError": "Erreur dans la recherche du chemin",
+  "pathfindingDone": "Recherche terminée",
+  "pathfindingMissingParams": "Éléments manquants pour la recherche : ",
   "gare": "Gare, poste",
   "inverseOD": "Inverser origine/destination",
   "launchSimulation": "Démarrer",

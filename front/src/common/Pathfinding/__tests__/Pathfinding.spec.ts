@@ -116,7 +116,10 @@ describe('reducer', () => {
       });
     });
     test('all three are there', () => {
-      const state = initialState;
+      const state = {
+        ...initialState,
+        missingParam: true,
+      };
       const action = {
         type: 'PATHFINDING_PARAM_CHANGED',
         params: {
@@ -128,6 +131,7 @@ describe('reducer', () => {
       expect(reducer(state, action)).toEqual({
         ...initialState,
         mustBeLaunched: true,
+        missingParam: false,
       });
     });
     test('must not start if already running', () => {

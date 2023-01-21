@@ -5,10 +5,12 @@ import { Position } from 'geojson';
 import bbox from '@turf/bbox';
 import { useTranslation } from 'react-i18next';
 import { last, isEmpty, isEqual } from 'lodash';
+import { BiCheckCircle, BiXCircle, BiErrorCircle } from 'react-icons/bi';
 
 import { ArrayElement } from 'utils/types';
 import { Path, PathQuery, osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import { adjustPointOnTrack } from 'utils/pathfinding';
+import { conditionalStringConcat } from 'utils/strings';
 import { PointOnMap } from 'applications/osrd/consts';
 
 import { getMapTrackSources } from 'reducers/map/selectors';
@@ -32,6 +34,8 @@ import {
 } from 'reducers/osrdconf/selectors';
 
 import DotsLoader from 'common/DotsLoader/DotsLoader';
+
+import './pathfinding.scss';
 
 function LoaderPathfindingInProgress() {
   return (
@@ -115,6 +119,7 @@ export function reducer(state: PathfindingState, action: Action): PathfindingSta
       return {
         ...state,
         mustBeLaunched: true,
+        missingParam: false,
       };
     }
     case 'VIAS_CHANGED': {
@@ -273,13 +278,53 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
       },
     });
   }, [origin, destination, rollingStockID]);
+
+  const pathDetailsToggleButton = (
+    <button
+      type="button"
+      data-toggle="modal"
+      data-target="#modalPathJSONDetail"
+      className="btn btn-link"
+    >
+      <small className="ml-1">{pathfindingID}</small>
+    </button>
+  );
+
   return (
-    <div>
-      {/* {pathFindingState === 'PATHFINDING_STATE.RUNNING' && ( */}
-      <div className="osrd-config-centered-item">
-        <DotsLoader /> {`${t('pathFindingInProgress')}`}
+    <div className="pathfinding-main-container">
+      <h2>{t('pathfinding')}</h2>
+      {pathfindingState.done && !pathfindingState.error && (
+        <div className="pathfinding-done">
+          <BiCheckCircle />
+          {t('pathfindingDone')}
+          {pathDetailsToggleButton}
+        </div>
+      )}
+      {pathfindingState.error && (
+        <div className="pathfinding-error">
+          <BiXCircle />
+          {t('pathfindingError')}
+          {pathfindingState.error}
+        </div>
+      )}
+      {pathfindingState.missingParam && (
+        <div className="missing-params">
+          <BiErrorCircle />
+          {t('pathfindingMissingParams')}
+          {conditionalStringConcat([
+            [!origin, t('origin')],
+            [!destination, t('destination')],
+            [!rollingStockID, t('rollingstock')],
+          ])}
+        </div>
+      )}
+      <div>
+        {pathfindingState.running && (
+          <div className="osrd-config-centered-item">
+            <DotsLoader /> {t('pathfindingInProgress')}
+          </div>
+        )}
       </div>
-      {/* )} */}
     </div>
   );
 }

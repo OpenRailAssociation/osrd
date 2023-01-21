@@ -1,0 +1,22 @@
+.pathfinding-main-container {
+  .pathfinding-subsection {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .pathfinding-done {
+    @extend .pathfinding-subsection;
+    color: green;
+  }
+
+  .pathfinding-error {
+    @extend .pathfinding-subsection;
+    color: red;
+  }
+
+  .missing-params {
+    @extend .pathfinding-subsection;
+    color: rgb(255, 196, 0);
+  }
+}

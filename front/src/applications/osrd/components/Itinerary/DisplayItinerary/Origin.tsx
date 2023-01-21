@@ -49,7 +49,6 @@ function Origin(props: OriginProps) {
   const originLinkedBounds = useSelector(getOriginLinkedBounds);
   const originUpperBoundDate = useSelector(getOriginUpperBoundDate);
   const originUpperBoundTime = useSelector(getOriginUpperBoundTime);
-  const pathfindingID = useSelector(getPathfindingID);
   const dispatch = useDispatch();
   const { t } = useTranslation(['osrdconf']);
 
@@ -62,14 +61,6 @@ function Origin(props: OriginProps) {
         <RiMapPin2Fill />
       </span>
       <span>{t('osrdconf:origin')}</span>
-      <button
-        type="button"
-        data-toggle="modal"
-        data-target="#modalPathJSONDetail"
-        className="btn btn-link"
-      >
-        <small className="ml-1">{pathfindingID}</small>
-      </button>
     </h2>
   );
 
