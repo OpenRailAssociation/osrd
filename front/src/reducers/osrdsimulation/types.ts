@@ -147,6 +147,7 @@ export interface OsrdSimulationState {
   contextMenu: any;
   hoverPosition: any;
   isPlaying: boolean;
+  isUpdating: boolean;
   allowancesSettings?: AllowancesSettings;
   mustRedraw: boolean;
   positionValues: PositionValues;

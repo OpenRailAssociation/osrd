@@ -17,11 +17,12 @@ import i18n from 'i18next';
  * Recover the time table for all the trains
  */
 
-export default async function getTimetable() {
+export default async function getTimetable(setIsWorking = () => {}) {
   const { timetableID } = store.getState().osrdconf;
   const { selectedProjection, allowancesSettings, displaySimulation } =
     store.getState().osrdsimulation;
   try {
+    setIsWorking(true);
     if (displaySimulation) {
       store.dispatch(updateSelectedTrain(0));
     }
@@ -52,6 +53,7 @@ export default async function getTimetable() {
         }
       });
       store.dispatch(updateAllowancesSettings(newAllowancesSettings));
+      setIsWorking(false);
     } catch (e) {
       store.dispatch(
         setFailure({
@@ -59,9 +61,11 @@ export default async function getTimetable() {
           message: `${e.message} `,
         })
       );
+      setIsWorking(false);
       console.log('ERROR', e);
     }
   } catch (e) {
+    setIsWorking(false);
     console.log('ERROR', e);
   }
 }

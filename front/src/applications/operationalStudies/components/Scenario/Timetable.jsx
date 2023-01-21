@@ -10,8 +10,10 @@ import { trainscheduleURI } from 'applications/operationalStudies/components/Sim
 import { updateMustRedraw, updateSelectedTrain } from 'reducers/osrdsimulation/actions';
 import { deleteRequest } from 'common/requests';
 import { setFailure, setSuccess } from 'reducers/main';
+import Loader from 'common/Loader';
 import getTimetable from './getTimetable';
 import TimetableTrainCard from './TimetableTrainCard';
+import { simulationIsUpdating } from './helpers';
 
 function trainsDurations(trainList) {
   const durationList = trainList.map((train) => ({
@@ -28,6 +30,7 @@ function trainsDurations(trainList) {
 }
 
 export default function Timetable() {
+  const isUpdating = useSelector((state) => state.osrdsimulation.isUpdating);
   const selectedProjection = useSelector((state) => state.osrdsimulation.selectedProjection);
   const departureArrivalTimes = useSelector((state) => state.osrdsimulation.departureArrivalTimes);
   const selectedTrain = useSelector((state) => state.osrdsimulation.selectedTrain);
@@ -46,8 +49,8 @@ export default function Timetable() {
 
   const deleteTrain = async (train) => {
     try {
-      deleteRequest(`${trainscheduleURI}${train.id}/`);
-      getTimetable();
+      await deleteRequest(`${trainscheduleURI}${train.id}/`);
+      getTimetable(simulationIsUpdating);
       dispatch(
         setSuccess({
           title: t('timetable:trainDeleted', { name: train.name }),
@@ -97,7 +100,7 @@ export default function Timetable() {
         </button>
       </div>
       <div className="scenario-timetable-trains">
-        {trainsList
+        {trainsList && !isUpdating
           ? trainsList.map((train, idx) => (
               <TimetableTrainCard
                 train={train}
@@ -110,6 +113,7 @@ export default function Timetable() {
               />
             ))
           : null}
+        {isUpdating && <Loader />}
       </div>
     </div>
   );
