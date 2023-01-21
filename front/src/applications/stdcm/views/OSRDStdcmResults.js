@@ -1,14 +1,12 @@
-import 'applications/operationalStudies/views/OSRDSimulation/OSRDSimulation.scss';
-
-import { KEY_VALUES_FOR_CONSOLIDATED_SIMULATION } from 'applications/operationalStudies/components/Simulation/consts';
+import { KEY_VALUES_FOR_CONSOLIDATED_SIMULATION } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 
 import React, { useEffect } from 'react';
 import { updateConsolidatedSimulation, updateMustRedraw } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
-import SpaceTimeChart from 'applications/operationalStudies/views/OSRDSimulation/SpaceTimeChart';
-import SpeedSpaceChart from 'applications/operationalStudies/components/Simulation/SpeedSpaceChart/withOSRDData';
-import createTrain from 'applications/operationalStudies/components/Simulation/SpaceTimeChart/createTrain';
+import SpaceTimeChart from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart';
+import SpeedSpaceChart from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/withOSRDData';
+import createTrain from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/createTrain';
 
 import { STDCM_REQUEST_STATUS } from 'applications/operationalStudies/consts';
 import { useTranslation } from 'react-i18next';

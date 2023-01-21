@@ -1,0 +1,509 @@
+svg text {
+  font-family: Avenir,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+}
+
+select.sm {
+  min-height: auto;
+  padding: .2rem 1.25rem;
+}
+
+.toast {
+  z-index: 3;
+}
+
+.simulation-results {
+  position: relative;
+  padding-bottom: 3rem;
+
+  .osrd-simulation-sticky-bar {
+    position: sticky;
+    border-radius: 4px;
+    width: 100%;
+    background: var(--primary);
+    z-index: 2;
+    top: 0;
+    left: 0;
+    padding: 0.5rem 0.5rem .3rem;
+    margin-bottom: 0.5rem;
+    .train-detail {
+      min-width: 4.5rem;
+      max-height: 2rem;
+      padding: .1rem;
+      line-height: .8rem;
+    }
+  }
+
+  .osrd-simulation-container {
+    position: relative;
+    background-color: white;
+    padding: 1rem;
+    border-radius: 4px;
+  }
+
+  .osrd-simulation-map {
+    position: relative;
+    width: 100%;
+    height: 50vh;
+    .btn-map-container {
+      top: 1.5rem;
+      right: 1.5rem;
+    }
+    .map-modal {
+      top: .5rem;
+      max-height: 40vh;
+    }
+    .map-resizer {
+      min-width: calc(100% - 2rem);
+      .handle-tab-resize {
+        width: 100%;
+        text-align: center;
+        position: absolute;
+        bottom: -1.25rem;
+        font-size: 2rem;
+        transition: .2s;
+        color: var(--coolgray3);
+        &:hover {
+          color: var(--coolgray9);
+        }
+      }
+    }
+  }
+
+  .spacetimechart-container {
+    display: block;
+    position: relative;
+    width: 100%;
+    transition: .2s;
+    .dropdown .dropdown-menu:not(.dropdown-menu-right)::before {
+      border-right-color: #d7d7d7;
+      left: -0.625rem;
+      top: 0;
+    }
+    .dropdown .dropdown-menu:not(.dropdown-menu-right)::after {
+      border-right-color: #fff;
+      left: -0.525rem;
+      top: 0;
+    }
+    .get-context-menu {
+      .dropdown-menu {
+        padding: 1rem;
+      }
+      input.form-control {
+        min-width: 7rem;
+      }
+    }
+    .handle-tab-resize {
+      width: 100%;
+      text-align: center;
+      position: absolute;
+      bottom: -1.25rem;
+      font-size: 2rem;
+      transition: .2s;
+      color: var(--coolgray3);
+      &:hover {
+        color: var(--coolgray9);
+      }
+    }
+  }
+
+  .table-drivertrainschedule th, thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  .grid .tick {
+    opacity: .2;
+    line {
+      stroke: #333;
+      stroke-dasharray: 2,2;
+    }
+  }
+
+  .chartTrain {
+    cursor: move;
+  }
+
+  .guideLines {
+    stroke: var(--primary);
+    stroke-width: 0.5;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .curve-label {
+    fill: #777;
+    font-size: .70rem;
+    font-weight: bold;
+    &.selected {
+      fill: var(--primary);
+    }
+  }
+
+  /* Chart Modal */
+  .osrd-simulation-chart-modal {
+    display: flex;
+    position: absolute;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, .75);
+    .chart-modal-box {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      position: relative;
+      border-radius: 4px;
+      padding: 1em;
+      .chart-modal-type-title {
+        text-align: center;
+        flex-basis: 100%;
+        font-size: 1.5rem;
+      }
+      .chart-modal-input {
+        display: flex;
+        align-items: center;
+        .chart-modal-type-label {
+          color: #4d4f53;
+          font-weight: bold;
+          font-size: 3rem;
+          margin-right: 1rem;
+        }
+        input {
+          border: none;
+          border-bottom: 4px solid #d7d7d7;
+          color: #333;
+          background: none;
+          font-size: 2rem;
+          font-weight: bold;
+          padding-right: 1.5rem;
+          width: 8rem;
+          text-align: right;
+          &:focus {
+            outline: none;
+          }
+        }
+        .chart-modal-type-unit {
+          content: "s";
+          color: #747678;
+          font-weight: bold;
+          font-size: 2rem;
+          margin-left: -1rem;
+        }
+      }
+    }
+  }
+  
+
+  /* SPACETIME */
+  .spacetime-chart {
+    position: relative;
+    .btn-rotate {
+      position: absolute;
+      right: 2rem;
+      bottom: 2.5rem;
+    }
+    .area {
+      fill: url(#hatchPatternGray);
+      &.selected {
+        fill: rgba(48, 51, 131, 0.2);
+        &.eco {
+          fill: rgba(130, 190, 0, 0.2);
+        }
+      }
+    }
+    rect {
+      stroke-width: inherit;
+      stroke: inherit;
+    }
+    .start-block {
+      stroke: var(--coolgray5);
+      stroke-width: 2;
+      &.selected {
+        stroke: var(--yellow);
+      }
+      &.pointer {
+        fill: var(--yellow);
+      }
+    }
+    .end-block {
+      stroke: var(--coolgray9);
+      stroke-width: 2;
+      &.selected {
+        stroke: var(--red);
+      }
+      &.pointer {
+        fill: var(--red);
+      }
+    }
+    .tail {
+      stroke: var(--coolgray3);
+      &.selected {
+        stroke: var(--cyan);
+      }
+      &.pointer {
+        fill: var(--cyan);
+      }
+    }
+    .head {
+      stroke: var(--coolgray7);
+      &.selected {
+        stroke: var(--blue);
+        &.allowances {
+          stroke: var(--orange);
+        }
+        &.eco {
+          stroke: var(--green);
+        }
+      }
+      &.pointer {
+        fill: var(--blue);
+        &.allowances {
+          fill: var(--orange);
+        }
+        &.eco {
+          fill: var(--green);
+        }
+      }
+    }
+  }
+  .axis-unit {
+    font-size: 1rem;
+    font-weight: bold;
+    fill: var(--coolgray7);
+  }
+
+  .route-aspect {
+    opacity: 0.5;
+    &.selected {
+      opacity: 1;
+      &.eco {
+        opacity: 1;
+      }
+    }
+  }
+
+  /* ALLOWANCES */
+  .mareco {
+    z-index: 2;
+  }
+  .allowance-line {
+    padding: .25rem;
+    border-radius: 4px;
+    transition: .2s;
+    &:hover {
+      background-color: var(--coolgray1);
+    }
+  }
+  .allowances-updating-loader {
+    position: absolute;
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.75);
+    width: calc(100% - 2rem);
+    height: 100%;
+    z-index: 3;
+    top: 0;
+    font-size: 4rem;
+  }
+
+  /* SPEEDSPACE */
+  .speedspacechart-container {
+    display: block;
+    position: relative;
+    width: 100%;
+    transition: .2s;
+    .showSettingsButton {
+      position: absolute;
+      border: none;
+      background: none;
+      cursor: pointer;
+      height: 100%;
+      color: var(--coolgray7)
+    }
+    .speedspace-chart {
+      display: flex;
+      background-color: white;
+      border-radius: 4px;
+      position: relative;
+      .showSettings {
+        overflow: hidden;
+        transition: .3s;
+      }
+      .btn-rotate {
+        position: absolute;
+        right: 2rem;
+        bottom: 2.5rem;
+      }
+      .area {
+        &.speed {
+          fill: rgba(48, 51, 131, 0.2);
+        }
+        &.slopes {
+          fill: var(--cyan);
+        }
+      }
+      .speed {
+        stroke: var(--blue);
+        stroke-width: 1;
+        &.pointer {
+          fill: var(--blue);
+          &.allowances {
+            fill: var(--orange);
+          }
+          &.eco {
+            fill: var(--green);
+          }
+        }
+        &.allowances {
+          stroke: var(--orange);
+        }
+        &.eco {
+          stroke: var(--green);
+        }
+        &.vmax {
+          stroke-width: 2;
+          stroke: var(--purple);
+        }
+        &.slopes {
+          stroke-width: 2;
+          stroke: var(--orange);
+        }
+        &.slopesHistogram {
+          stroke-width: 1;
+          stroke: var(--cyan);
+        }
+      }
+    }
+    .handle-tab-resize {
+      width: 100%;
+      text-align: center;
+      position: absolute;
+      bottom: -1.25rem;
+      font-size: 2rem;
+      transition: .2s;
+      color: var(--coolgray3);
+      &:hover {
+        color: var(--coolgray9);
+      }
+    }
+  }
+
+  /* Curves & Slopes */
+  .spacecurvesslopes-container {
+    display: block;
+    position: relative;
+    width: 100%;
+    transition: .2s;
+    .spacecurvesslopes-chart {
+      background-color: white;
+      border-radius: 4px;
+      position: relative;
+      .area {
+        &.speed {
+          fill: rgba(48, 51, 131, 0.2);
+        }
+        &.slopes {
+          fill: var(--cyan);
+        }
+      }
+      .speed {
+        stroke: var(--blue);
+        stroke-width: 1;
+        &.slopes {
+          stroke-width: 2;
+          stroke: var(--orange);
+        }
+        &.slopesHistogram {
+          stroke-width: 1;
+          stroke: var(--cyan);
+        }
+      }
+    }
+    .handle-tab-resize {
+      width: 100%;
+      text-align: center;
+      position: absolute;
+      bottom: -1.25rem;
+      font-size: 2rem;
+      transition: .2s;
+      color: var(--coolgray3);
+      &:hover {
+        color: var(--coolgray9);
+      }
+    }
+  }
+
+  /* OPERATIONAL POINTS */
+  .op-line {
+    stroke: var(--coolgray7);
+    stroke-width: 1;
+    stroke-dasharray: 4, 4;
+  }
+  .op-text {
+    fill: var(--coolgray11);
+    font-size: .65rem;
+  }
+
+  /* TABLE OVERRIDE */
+  .table-cell-selected {
+    //color: var(--blue);
+    font-weight: bold;
+  }
+  .table-shrink {
+    .cell-inner {
+      padding: 0;
+    }
+  }
+  .table td.td-button {
+    padding: 0;
+    .cell-inner-button {
+      padding: .5rem 1.25rem;
+      cursor: pointer;
+    }
+  }
+
+  /* TIMELINE */
+  .timeline {
+    background-color: white;
+    padding: 1rem;
+    border-radius: 4px;
+    .tick {
+      color: var(--coolgray11);
+    }
+    .domain {
+      opacity: .5;
+      stroke: var(--coolgray11);
+    }
+    .grid .tick line {
+      stroke: var(--coolgray11);
+    }
+    .timeline-train {
+      stroke: var(--coolgray9);
+      &.selected {
+        stroke: var(--primary);
+      }
+    }
+  }
+
+  #rectZoomTimeLine {
+    cursor: move;
+    transition: .2s;
+    stroke: var(--coolgray5);
+    &:hover {
+      stroke: var(--green);
+      fill: rgba(#82be00, 0.05);
+    }
+  }
+  .timeline-cursor {
+    line {
+      stroke: var(--coolgray9);
+      stroke-width: 2;
+      stroke-dasharray: 2, 1;
+    }
+    path {
+      stroke: var(--coolgray9);
+      fill: var(--coolgray9);
+    }
+  }
+}

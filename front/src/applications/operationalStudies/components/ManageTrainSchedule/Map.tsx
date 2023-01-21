@@ -13,7 +13,7 @@ import { updateViewport, Viewport } from 'reducers/map';
 
 /* Main data & layers */
 import Background from 'common/Map/Layers/Background';
-import VirtualLayers from 'applications/operationalStudies/views/OSRDSimulation/VirtualLayers';
+import VirtualLayers from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap/VirtualLayers';
 /* Settings & Buttons */
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import Catenaries from 'common/Map/Layers/Catenaries';
