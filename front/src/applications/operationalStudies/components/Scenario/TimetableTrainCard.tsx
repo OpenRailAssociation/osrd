@@ -1,5 +1,8 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { FaTrash, FaPencilAlt } from 'react-icons/fa';
+import { GiPathDistance } from 'react-icons/gi';
+import { MdContentCopy } from 'react-icons/md';
 import { sec2time } from 'utils/timeManipulation';
 
 type trainType = {
@@ -10,13 +13,19 @@ type trainType = {
   labels: Array<1>;
   speed_limit_composition: string;
 };
+type selectedProjectionType = {
+  id: number;
+  path: number;
+};
 type Props = {
   train: trainType;
   selectedTrain: number;
-  selectedProjection: number;
+  selectedProjection: selectedProjectionType;
   idx: number;
   changeSelectedTrain: (idx: number) => void;
   deleteTrain: (train: trainType) => void;
+  selectPathProjection: (train: trainType) => void;
+  duplicateTrain: (train: trainType) => void;
 };
 
 export default function TimetableTrainCard({
@@ -26,11 +35,44 @@ export default function TimetableTrainCard({
   idx,
   changeSelectedTrain,
   deleteTrain,
+  selectPathProjection,
+  duplicateTrain,
 }: Props) {
+  const { t } = useTranslation(['simulation']);
   if (!selectedProjection) console.log('');
 
   return (
     <div className={`scenario-timetable-train ${selectedTrain === idx ? 'selected' : ''}`}>
+      <div className="scenario-timetable-train-buttons">
+        <button
+          className="scenario-timetable-train-buttons-selectprojection"
+          type="button"
+          title={t('simulation:choosePath')}
+          onClick={() => selectPathProjection(train)}
+        >
+          <GiPathDistance />
+        </button>
+        <button
+          className="scenario-timetable-train-buttons-duplicate"
+          type="button"
+          title={t('simulation:duplicate')}
+          onClick={() => duplicateTrain(train)}
+        >
+          <MdContentCopy />
+        </button>
+        <button className="scenario-timetable-train-buttons-update" type="button">
+          <FaPencilAlt />
+        </button>
+        <button
+          className="scenario-timetable-train-buttons-delete"
+          type="button"
+          onClick={() => deleteTrain(train)}
+          title={t('simulation:delete')}
+        >
+          <FaTrash />
+        </button>
+      </div>
+
       <div
         className="scenario-timetable-train-container"
         role="button"
@@ -40,6 +82,11 @@ export default function TimetableTrainCard({
         <div className="scenario-timetable-train-header">
           <div className="scenario-timetable-train-name">
             <div className="scenario-timetable-train-idx">{idx + 1}</div>
+            {selectedProjection.id === train.id && (
+              <span className="mr-1">
+                <GiPathDistance />
+              </span>
+            )}
             {train.name}
           </div>
           <div className="scenario-timetable-train-departure">{sec2time(train.departure)}</div>
@@ -56,18 +103,6 @@ export default function TimetableTrainCard({
             <div className="scenario-timetable-train-tags-tag">{tag}</div>
           ))}
         </div>
-      </div>
-      <div className="scenario-timetable-train-buttons">
-        <button className="scenario-timetable-train-buttons-update" type="button">
-          <FaPencilAlt />
-        </button>
-        <button
-          className="scenario-timetable-train-buttons-delete"
-          type="button"
-          onClick={() => deleteTrain(train)}
-        >
-          <FaTrash />
-        </button>
       </div>
     </div>
   );

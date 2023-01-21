@@ -1,5 +1,7 @@
 {
+  "copy": "copie",
   "filterPlaceholder": "Filtre, étiquettes",
+  "isUpdating": "Mise à jour...",
   "timetable": {
     "trainDeleted": "Le train {{name}} a bien été supprimé."
   },
