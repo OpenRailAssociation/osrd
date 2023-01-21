@@ -1,4 +1,4 @@
-import { mergeDatasArea } from '../../SimulationResults/ChartHelpers/ChartHelpers';
+import { mergeDatasArea } from '../ChartHelpers';
 
 describe('mergeDatasArea', () => {
   test('avoid crash', () => {

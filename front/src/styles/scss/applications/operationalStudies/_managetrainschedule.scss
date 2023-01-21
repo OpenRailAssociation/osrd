@@ -234,3 +234,44 @@
   text-align: right;
   margin-bottom: 0.5rem;
 }
+
+.origin-name-and-time-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  .toggle-button-container {
+    position: relative;
+    align-self: stretch;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    
+    button {
+      outline: none;
+    }
+
+    &:before {
+      content: "";
+      position: absolute;
+      top: 25%;
+      left: 40%;
+      height: 7px;
+      width: 5px;
+      border-right: 2px solid gray;
+      border-top: 2px solid gray;
+    }
+
+    &:after {
+      content: "";
+      position: absolute;
+      bottom: 25%;
+      left: 40%;
+      height: 7px;
+      width: 5px;
+      border-right: 2px solid gray;
+      border-bottom: 2px solid gray;
+    }
+  }
+}

@@ -167,10 +167,38 @@ z-index: 1051 !important;
 }
 
 .custom-control {
-padding-left: 1.625rem !important;
-.custom-control-label {
-  &::before, &::after {
-    left: -1.625rem;
+  padding-left: 1.625rem !important;
+  .custom-control-label {
+    &::before, &::after {
+      left: -1.625rem;
+    }
   }
 }
+
+@media (min-width: 576px) {
+  .modal-dialog.modal-lg,
+  .modal-dialog.modal-xl {
+    max-width: calc(100vw - 3rem) !important;
+  }
+}
+@media (min-width: 1024px) {
+  .modal-dialog.modal-lg,
+  .modal-dialog.modal-xl {
+    max-width: 800px !important;
+  }
+}
+@media (min-width: 1280px) {
+  .modal-dialog.modal-xl {
+    max-width: 1140px !important;
+  }
+}
+
+.maplibregl-map {
+  font-family: Avenir, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  .maplibregl-marker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
