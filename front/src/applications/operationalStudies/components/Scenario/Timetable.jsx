@@ -14,9 +14,9 @@ import {
 } from 'reducers/osrdsimulation/actions';
 import { deleteRequest, get, post } from 'common/requests';
 import { setFailure, setSuccess } from 'reducers/main';
+import trainNameWithNum from 'applications/operationalStudies/components/ManageTrainSchedule/AddTrainSchedule/trainNameHelper';
 import getTimetable from './getTimetable';
 import TimetableTrainCard from './TimetableTrainCard';
-import trainNameWithNum from '../AddTrainSchedule/trainNameHelper';
 
 function trainsDurations(trainList) {
   const durationList = trainList.map((train) => ({

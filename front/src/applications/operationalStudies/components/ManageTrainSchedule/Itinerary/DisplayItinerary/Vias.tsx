@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 
 import { getVias } from 'reducers/osrdconf/selectors';
 
-import DisplayVias from 'applications/operationalStudies/components/Itinerary/DisplayVias';
+import DisplayVias from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/DisplayVias';
 import { RootState } from 'reducers';
 
 interface ViasProps {

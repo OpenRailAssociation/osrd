@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import InfraSelector from 'common/InfraSelector/InfraSelector';
 import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelector';
-import TimetableSelector from 'applications/operationalStudies/views/OSRDConfig/TimetableSelector';
+import TimetableSelector from 'applications/operationalStudies/components/ManageTrainSchedule/TimetableSelector';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { getInfraID, getRollingStockID, getTimetableID } from 'reducers/osrdconf/selectors';

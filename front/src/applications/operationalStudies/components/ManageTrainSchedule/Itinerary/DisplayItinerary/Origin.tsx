@@ -30,7 +30,7 @@ import {
 import { makeEnumBooleans } from 'utils/constants';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { MODES, STDCM_MODES } from '../../../consts';
+import { MODES, STDCM_MODES } from 'applications/operationalStudies/consts';
 
 import './display-itinerary.scss';
 

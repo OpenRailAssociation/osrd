@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { RiMapPin2Fill, RiMapPin3Fill, RiMapPin5Fill } from 'react-icons/ri';
 import { useTranslation } from 'react-i18next';
-import setPointIti from 'applications/operationalStudies/components/OSRDConfMap/setPointIti';
+import setPointIti from 'applications/operationalStudies/components/ManageTrainSchedule/ManageTrainScheduleMap/setPointIti';
 
 export default function PopupInfosCustomContent(props) {
   const { t } = useTranslation(['osrdconf']);
