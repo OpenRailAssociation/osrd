@@ -9,7 +9,7 @@ import TimetableSelectorModal from 'applications/operationalStudies/components/T
 import icon from 'assets/pictures/components/trains_timetable.svg';
 import { sec2time } from 'utils/timeManipulation';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
-import { trainscheduleURI } from 'applications/operationalStudies/components/Simulation/consts';
+import { trainscheduleURI } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import { updateTimetableID } from 'reducers/osrdconf';
 import { ModalContext } from  'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 

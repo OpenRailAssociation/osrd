@@ -8,7 +8,7 @@ import {
 import {
   trainscheduleURI,
   timetableURI,
-} from 'applications/operationalStudies/components/Simulation/consts';
+} from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import { get } from 'common/requests';
 import { setFailure } from 'reducers/main';
 import { store } from 'Store';

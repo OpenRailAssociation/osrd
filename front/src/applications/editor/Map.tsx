@@ -7,7 +7,7 @@ import maplibregl from 'maplibre-gl';
 import { isEmpty, isEqual } from 'lodash';
 import mapboxgl from 'mapbox-gl';
 
-import VirtualLayers from 'applications/operationalStudies/views/OSRDSimulation/VirtualLayers';
+import VirtualLayers from 'applications/operationalStudies/components/SimulationResults/SimulationResultsMap/VirtualLayers';
 import colors from 'common/Map/Consts/colors';
 import 'common/Map/Map.scss';
 

@@ -9,7 +9,7 @@ import { getRollingStockID, getInfraID, getTimetableID } from 'reducers/osrdconf
 import generatePathfindingPayload from 'applications/opendata/components/generatePathfindingPayload';
 import generateTrainSchedulesPayload from 'applications/opendata/components/generateTrainSchedulesPayload';
 import { post } from 'common/requests';
-import { scheduleURL } from 'applications/operationalStudies/components/Simulation/consts';
+import { scheduleURL } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import { initialViewport, initialStatus, itineraryURI } from 'applications/opendata/consts';
 import OpenDataImportModalFooter from './OpenDataImportModalFooter';
 import { refactorUniquePaths } from '../components/OpenDataHelpers';

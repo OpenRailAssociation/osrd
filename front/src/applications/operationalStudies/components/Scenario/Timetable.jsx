@@ -6,7 +6,7 @@ import { FaPlus } from 'react-icons/fa';
 import nextId from 'react-id-generator';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { useDebounce } from 'utils/helpers';
-import { trainscheduleURI } from 'applications/operationalStudies/components/Simulation/consts';
+import { trainscheduleURI } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import {
   updateMustRedraw,
   updateSelectedProjection,

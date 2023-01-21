@@ -7,7 +7,7 @@ import Timetable from 'applications/operationalStudies/components/Scenario/Timet
 import infraLogo from 'assets/pictures/components/tracks.svg';
 import ScenarioLoader from 'applications/operationalStudies/components/Scenario/ScenarioLoader';
 import { useSelector } from 'react-redux';
-import OSRDSimulation from './OSRDSimulation/OSRDSimulation';
+import SimulationResults from './SimulationResults';
 import { projectJSON, scenarioJSON, studyJSON } from '../components/Helpers/genFakeDataForProjects';
 
 function BreadCrumbs(props) {
@@ -73,7 +73,7 @@ export default function Scenario() {
             </div>
             <div className="col-lg-8">
               <div className="scenario-results">
-                <OSRDSimulation />
+                <SimulationResults />
               </div>
             </div>
           </div>
