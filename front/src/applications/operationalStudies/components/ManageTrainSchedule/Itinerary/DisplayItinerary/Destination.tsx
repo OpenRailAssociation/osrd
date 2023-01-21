@@ -21,7 +21,7 @@ import { makeEnumBooleans } from 'utils/constants';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { store } from 'Store';
-import { MODES, STDCM_MODES } from '../../../consts';
+import { MODES, STDCM_MODES } from 'applications/operationalStudies/consts';
 
 interface DestinationProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string, source?: string) => void;

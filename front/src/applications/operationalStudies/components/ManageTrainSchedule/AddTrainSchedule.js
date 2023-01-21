@@ -10,8 +10,8 @@ import DotsLoader from 'common/DotsLoader/DotsLoader';
 import { time2sec, sec2time } from 'utils/timeManipulation';
 import debounce from 'lodash/debounce';
 
-import formatConf from 'applications/operationalStudies/components/AddTrainSchedule/formatConf';
-import trainNameWithNum from 'applications/operationalStudies/components/AddTrainSchedule/trainNameHelper';
+import formatConf from 'applications/operationalStudies/components/ManageTrainSchedule/AddTrainSchedule/formatConf';
+import trainNameWithNum from 'applications/operationalStudies/components/ManageTrainSchedule/AddTrainSchedule/trainNameHelper';
 import { scheduleURL } from 'applications/operationalStudies/components/Simulation/consts';
 
 export default function AddTrainSchedule(props) {

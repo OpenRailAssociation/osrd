@@ -4,8 +4,8 @@ import { useSelector } from 'react-redux';
 
 import { getFeatureInfoClick } from 'reducers/osrdconf/selectors';
 import PopupInfos from 'common/Map/Popup/PopupInfos';
-import PopupInfosCustomContent from 'applications/operationalStudies/components/OSRDConfMap/PopupInfosCustomContent';
-import PopupInfosCustomTitle from 'applications/operationalStudies/components/OSRDConfMap/PopupInfosCustomTitle';
+import PopupInfosCustomContent from 'applications/operationalStudies/components/ManageTrainSchedule/ManageTrainScheduleMap/PopupInfosCustomContent';
+import PopupInfosCustomTitle from 'applications/operationalStudies/components/ManageTrainSchedule/ManageTrainScheduleMap/PopupInfosCustomTitle';
 
 export default function RenderPopup() {
   const featureInfoClick = useSelector(getFeatureInfoClick);

@@ -1,5 +1,4 @@
 import 'applications/operationalStudies/views/OSRDSimulation/OSRDSimulation.scss';
-import 'applications/operationalStudies/views/OSRDConfig/OSRDConfig.scss';
 
 import { KEY_VALUES_FOR_CONSOLIDATED_SIMULATION } from 'applications/operationalStudies/components/Simulation/consts';
 

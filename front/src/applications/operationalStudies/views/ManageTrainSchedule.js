@@ -1,17 +1,15 @@
-import 'applications/operationalStudies/views/OSRDConfig/OSRDConfig.scss';
-
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { updateViewport } from 'reducers/map';
 
-import AddTrainLabels from 'applications/operationalStudies/views/OSRDConfig/AddTrainLabels';
-import AddTrainSchedule from 'applications/operationalStudies/views/OSRDConfig/AddTrainSchedule';
-import Itinerary from 'applications/operationalStudies/views/OSRDConfig/Itinerary';
-import Map from 'applications/operationalStudies/views/OSRDConfig/Map';
+import AddTrainLabels from 'applications/operationalStudies/components/ManageTrainSchedule/AddTrainLabels';
+import AddTrainSchedule from 'applications/operationalStudies/components/ManageTrainSchedule/AddTrainSchedule';
+import Itinerary from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary';
+import Map from 'applications/operationalStudies/components/ManageTrainSchedule/Map';
 import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelector';
-import SpeedLimitByTagSelector from 'applications/operationalStudies/views/OSRDConfig/SpeedLimitByTagSelector';
+import SpeedLimitByTagSelector from 'applications/operationalStudies/components/ManageTrainSchedule/SpeedLimitByTagSelector';
 
 export default function ManageTrainSchedule() {
   const { fullscreen } = useSelector((state) => state.main);
