@@ -21,10 +21,10 @@ import Hillshade from 'common/Map/Layers/Hillshade';
 import OSM from 'common/Map/Layers/OSM';
 import OperationalPoints from 'common/Map/Layers/OperationalPoints';
 import Platforms from 'common/Map/Layers/Platforms';
-import RenderItinerary from 'applications/operationalStudies/components/OSRDConfMap/RenderItinerary';
-import RenderItineraryMarkers from 'applications/operationalStudies/components/OSRDConfMap/RenderItineraryMarkers';
+import RenderItinerary from 'applications/operationalStudies/components/ManageTrainSchedule/ManageTrainScheduleMap/RenderItinerary';
+import RenderItineraryMarkers from 'applications/operationalStudies/components/ManageTrainSchedule/ManageTrainScheduleMap/RenderItineraryMarkers';
 /* Interactions */
-import RenderPopup from 'applications/operationalStudies/components/OSRDConfMap/RenderPopup';
+import RenderPopup from 'applications/operationalStudies/components/ManageTrainSchedule/ManageTrainScheduleMap/RenderPopup';
 import Routes from 'common/Map/Layers/Routes';
 import SearchMarker from 'common/Map/Layers/SearchMarker';
 import Signals from 'common/Map/Layers/Signals';

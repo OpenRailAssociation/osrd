@@ -1,18 +1,16 @@
-import 'applications/operationalStudies/views/OSRDConfig/OSRDConfig.scss';
-
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { updateViewport } from 'reducers/map';
-import { STDCM_REQUEST_STATUS, MODES } from 'applications/operationalStudies/consts';
+import { STDCM_REQUEST_STATUS } from 'applications/operationalStudies/consts';
 import InfraSelector from 'common/InfraSelector/InfraSelector';
-import Itinerary from 'applications/operationalStudies/views/OSRDConfig/Itinerary';
-import Map from 'applications/operationalStudies/views/OSRDConfig/Map';
+import Itinerary from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary';
+import Map from 'applications/operationalStudies/components/ManageTrainSchedule/Map';
 import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelector';
-import SpeedLimitByTagSelector from 'applications/operationalStudies/views/OSRDConfig/SpeedLimitByTagSelector';
-import TimetableSelector from 'applications/operationalStudies/views/OSRDConfig/TimetableSelector';
+import SpeedLimitByTagSelector from 'applications/operationalStudies/components/ManageTrainSchedule/SpeedLimitByTagSelector';
+import TimetableSelector from 'applications/operationalStudies/components/ManageTrainSchedule/TimetableSelector';
 
 import StdcmSingleAllowance from 'applications/operationalStudies/components/Simulation/Allowances/withOSRDStdcmParams';
 
