@@ -1,5 +1,3 @@
-import 'applications/operationalStudies/operationalStudies.scss';
-
 import { Route, Routes } from 'react-router-dom';
 
 import MastNavItemSNCF from 'common/BootstrapSNCF/MastNavItemSNCF';

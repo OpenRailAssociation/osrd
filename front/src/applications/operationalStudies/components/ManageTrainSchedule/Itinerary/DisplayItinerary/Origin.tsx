@@ -32,8 +32,6 @@ import { makeEnumBooleans } from 'utils/constants';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { MODES, STDCM_MODES } from 'applications/operationalStudies/consts';
 
-import './display-itinerary.scss';
-
 interface OriginProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string, source?: string) => void;
 }
