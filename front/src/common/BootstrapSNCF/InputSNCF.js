@@ -173,7 +173,7 @@ class InputSNCF extends React.Component {
     return (
       <>
         {label && (
-          <label className="font-weight-medium mb-2" htmlFor={id}>
+          <label className="font-weight-medium mb-1 small" htmlFor={id}>
             {label}
           </label>
         )}

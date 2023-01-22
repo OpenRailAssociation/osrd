@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { FaPlus } from 'react-icons/fa';
+import PropTypes from 'prop-types';
 
 import nextId from 'react-id-generator';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
@@ -18,7 +19,7 @@ import trainNameWithNum from 'applications/operationalStudies/components/ManageT
 import getTimetable from './getTimetable';
 import TimetableTrainCard from './TimetableTrainCard';
 
-function trainsDurations(trainList) {
+/* function trainsDurations(trainList) {
   const durationList = trainList.map((train) => ({
     id: train.id,
     duration:
@@ -30,9 +31,10 @@ function trainsDurations(trainList) {
   const max = Math.max(...durationList.map((train) => train.duration));
   // console.log(durationList.map((train) => train.duration), min, max);
   return durationList;
-}
+} */
 
-export default function Timetable() {
+export default function Timetable(props) {
+  const { setDisplayTrainScheduleManagement } = props;
   const selectedProjection = useSelector((state) => state.osrdsimulation.selectedProjection);
   const departureArrivalTimes = useSelector((state) => state.osrdsimulation.departureArrivalTimes);
   const selectedTrain = useSelector((state) => state.osrdsimulation.selectedTrain);
@@ -42,7 +44,6 @@ export default function Timetable() {
   const { t } = useTranslation('operationalStudies/scenario');
 
   const debouncedTerm = useDebounce(filter, 500);
-  // const trainList = trainsDurations(departureArrivalTimes);
 
   const changeSelectedTrain = (idx) => {
     dispatch(updateSelectedTrain(idx));
@@ -158,7 +159,11 @@ export default function Timetable() {
             sm
           />
         </div>
-        <button className="btn btn-primary btn-sm" type="button">
+        <button
+          className="btn btn-primary btn-sm"
+          type="button"
+          onClick={() => setDisplayTrainScheduleManagement(true)}
+        >
           <FaPlus />
         </button>
       </div>
@@ -182,3 +187,7 @@ export default function Timetable() {
     </div>
   );
 }
+
+Timetable.propTypes = {
+  setDisplayTrainScheduleManagement: PropTypes.func.isRequired,
+};

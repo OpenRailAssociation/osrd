@@ -21,7 +21,6 @@ const drawTrains = (trains, selectedTrain, xScale, svg, height) => {
     svg
       .append('line')
       .attr('class', selectedTrain === idx ? 'timeline-train selected' : 'timeline-train')
-      .style('stroke-width', 2)
       .attr('x1', xScale(sec2datetime(startTime)))
       .attr('y1', y1)
       .attr('x2', xScale(sec2datetime(endTime)))
@@ -102,11 +101,8 @@ export default function TimeLine() {
       .domain([sec2datetime(dataRange[0]), sec2datetime(dataRange[1])])
       .range([dimensions.margin.left, dimensions.width - dimensions.margin.right])
       .nice();
-    const yScale = d3.scaleLinear().domain([0, 10]).range([0, dimensions.height]);
     const axisBottomX = d3.axisBottom(xScale).tickFormat(d3.timeFormat('%H:%M'));
-    const axisLeftY = d3.axisLeft(yScale).ticks(0);
     svg.append('g').attr('transform', `translate(0, ${dimensions.height})`).call(axisBottomX);
-    svg.append('g').attr('transform', `translate(${dimensions.margin.left}, 0)`).call(axisLeftY);
     svg
       .append('g')
       .attr('transform', `translate(0,${dimensions.height})`)
@@ -156,9 +152,6 @@ export default function TimeLine() {
       .attr('y', 1)
       .attr('width', xScale(chartRect[1]) - xScale(chartRect[0]))
       .attr('height', dimensions.height - 1)
-      .attr('stroke', '#777')
-      .attr('stroke-width', 2)
-      .attr('fill', 'rgba(0, 0, 0, 0.05)')
       .call(drag);
 
     setSvg(svg);
@@ -177,10 +170,8 @@ export default function TimeLine() {
   }, [timePosition]);
 
   return (
-    <div className="timeline-container flex-grow-1 w-100">
-      <div className="timeline w-100">
-        <div ref={ref} />
-      </div>
+    <div className="timeline">
+      <div ref={ref} />
     </div>
   );
 }
