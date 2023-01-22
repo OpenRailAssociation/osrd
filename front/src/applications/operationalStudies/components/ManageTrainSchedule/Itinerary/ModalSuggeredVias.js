@@ -1,13 +1,13 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import nextId from 'react-id-generator';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import { FaLongArrowAltUp, FaLongArrowAltDown, FaTrash, FaMinus } from 'react-icons/fa';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 
 function LoaderPathfindingInProgress() {
   return (
@@ -31,6 +31,7 @@ export default function ModalSugerredVias(props) {
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
   const nbVias = suggeredVias.length - 1;
   const selectedViasTracks = vias.map((via) => via.position);
+  const { closeModal } = useContext(ModalContext);
 
   const formatVia = (via, idx, idxTrueVia) => (
     <div
@@ -62,10 +63,10 @@ export default function ModalSugerredVias(props) {
 
   let idxTrueVia = 0;
   return (
-    <ModalSNCF htmlID="suggeredViasModal">
+    <>
       <ModalHeaderSNCF>
         <h1>{`${t('manageVias')} ${vias.length > 0 ? `(${vias.length})` : ''}`}</h1>
-        <button className="btn btn-only-icon close" type="button" data-dismiss="modal">
+        <button className="btn btn-only-icon close" type="button" onClick={() => closeModal()}>
           <i className="icons-close" />
         </button>
       </ModalHeaderSNCF>
@@ -102,7 +103,7 @@ export default function ModalSugerredVias(props) {
           </div>
         </div>
       </ModalFooterSNCF>
-    </ModalSNCF>
+    </>
   );
 }
 

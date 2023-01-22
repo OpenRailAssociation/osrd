@@ -203,23 +203,6 @@
   }
 }
 
-.timetable-trainlist {
-  max-height: 10rem;
-  font-size: 0.9rem;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-left: 1rem;
-  .timetable-trainlist-train {
-    transition: 0.2s;
-    &:hover {
-      background-color: #f2f2f2;
-    }
-  }
-  button {
-    background-color: transparent;
-    border: none;
-  }
-}
 .osrd-config-timetableselector {
   .osrd-config-timetableselector-item {
     border-radius: 4px;

@@ -1,31 +1,20 @@
-import React, { useEffect, useState, useRef } from 'react';
-import PropTypes from 'prop-types';
+import React, { useEffect, useState, useRef, useContext } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import { get } from 'common/requests';
 import { setFailure } from 'reducers/main';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 
-function LoaderPathfindingInProgress() {
-  return (
-    <div className="loaderPathfindingInProgress">
-      <div className="spinner-border" role="status">
-        <span className="sr-only">Loading...</span>
-      </div>
-    </div>
-  );
-}
-
-export default function ModalPathJSONDetail(props) {
+export default function ModalPathJSONDetail() {
   const dispatch = useDispatch();
   const { pathfindingID } = useSelector((state) => state.osrdconf);
   const [pathJSONDetail, setPathJSONDetail] = useState(undefined);
   const textareaRef = useRef(null);
-  const { pathfindingInProgress } = props;
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
+  const { closeModal } = useContext(ModalContext);
 
   const getPathJSON = async (zoom, params) => {
     try {
@@ -54,18 +43,18 @@ export default function ModalPathJSONDetail(props) {
     if (pathfindingID) {
       getPathJSON();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathfindingID]);
 
   return (
-    <ModalSNCF htmlID="modalPathJSONDetail" size="xl">
+    <>
       <ModalHeaderSNCF>
         <h1>{`PathFinding n°${pathfindingID}`}</h1>
-        <button className="btn btn-only-icon close" type="button" data-dismiss="modal">
+        <button className="btn btn-only-icon close" type="button" onClick={() => closeModal()}>
           <i className="icons-close" />
         </button>
       </ModalHeaderSNCF>
       <ModalBodySNCF>
-        {pathfindingInProgress && <LoaderPathfindingInProgress />}
         <div className="form-control-container" style={{ maxHeight: '50vh' }}>
           <textarea
             className="form-control stretchy"
@@ -80,10 +69,6 @@ export default function ModalPathJSONDetail(props) {
           Copy to clipboard
         </button>
       </ModalFooterSNCF>
-    </ModalSNCF>
+    </>
   );
 }
-
-ModalPathJSONDetail.propTypes = {
-  pathfindingInProgress: PropTypes.bool.isRequired,
-};

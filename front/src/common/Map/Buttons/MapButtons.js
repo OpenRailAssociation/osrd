@@ -12,7 +12,6 @@ import ButtonFullscreen from 'common/ButtonFullscreen';
 import MapSearch from 'common/Map/Search/MapSearch';
 import MapSettings from 'common/Map/Settings/MapSettings';
 import MapKey from 'common/Map/MapKey';
-import InfraSelector from 'common/InfraSelector/InfraSelector';
 import ButtonMapInfras from './ButtonMapInfras';
 
 export default function MapButtons(props) {
@@ -29,12 +28,11 @@ export default function MapButtons(props) {
         <ButtonMapKey toggleMapKey={() => setShowMapKey(!showMapKey)} />
         <ButtonResetViewport updateLocalViewport={resetPitchBearing} />
         <ButtonFullscreen />
-        <ButtonMapInfras modalID="infra-selector-modal-map" />
+        <ButtonMapInfras />
       </div>
       <MapSearch active={showSearch} toggleMapSearch={() => setShowSearch(!showSearch)} />
       <MapSettings active={showSettings} toggleMapSettings={() => setShowSettings(!showSettings)} />
       <MapKey active={showMapKey} toggleMapKey={() => setShowMapKey(!showMapKey)} />
-      <InfraSelector modalOnly modalID="infra-selector-modal-map" />
     </>
   );
 }
