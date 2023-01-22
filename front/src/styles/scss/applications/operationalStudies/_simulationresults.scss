@@ -465,45 +465,48 @@ select.sm {
 
   /* TIMELINE */
   .timeline {
-    background-color: white;
-    padding: 1rem;
+    background-color: var(--coolgray13);
+    padding: 0.5rem;
     border-radius: 4px;
+    margin-bottom: 0.5rem;
     .tick {
-      color: var(--coolgray11);
+      color: var(--coolgray3);
     }
     .domain {
       opacity: .5;
-      stroke: var(--coolgray11);
+      stroke: var(--coolgray3);
     }
     .grid .tick line {
-      stroke: var(--coolgray11);
+      stroke: var(--coolgray3);
     }
     .timeline-train {
-      stroke: var(--coolgray9);
+      stroke: var(--coolgray5);
       &.selected {
-        stroke: var(--primary);
+        stroke-width: 2;
+        stroke: var(--teal);
+      }
+    }
+    #rectZoomTimeLine {
+      cursor: move;
+      transition: .2s;
+      stroke: var(--coolgray5);
+      fill: rgba(255, 255, 255, 0.05);
+      &:hover {
+        stroke: var(--green);
+        fill: rgba(#82be00, 0.05);
+      }
+    }
+    .timeline-cursor {
+      line {
+        stroke: var(--coolgray3);
+        stroke-width: 2;
+        stroke-dasharray: 2, 1;
+      }
+      path {
+        stroke: var(--coolgray3);
+        fill: var(--coolgray3);
       }
     }
   }
 
-  #rectZoomTimeLine {
-    cursor: move;
-    transition: .2s;
-    stroke: var(--coolgray5);
-    &:hover {
-      stroke: var(--green);
-      fill: rgba(#82be00, 0.05);
-    }
-  }
-  .timeline-cursor {
-    line {
-      stroke: var(--coolgray9);
-      stroke-width: 2;
-      stroke-dasharray: 2, 1;
-    }
-    path {
-      stroke: var(--coolgray9);
-      fill: var(--coolgray9);
-    }
-  }
 }

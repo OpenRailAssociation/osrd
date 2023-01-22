@@ -36,7 +36,7 @@ export default function Scenario() {
   const [projectDetails, setProjectDetails] = useState();
   const [studyDetails, setStudyDetails] = useState();
   const [scenarioDetails, setScenarioDetails] = useState();
-  const [displayTrainScheduleManagement, setDisplayTrainScheduleManagement] = useState(true);
+  const [displayTrainScheduleManagement, setDisplayTrainScheduleManagement] = useState(false);
 
   useEffect(() => {
     setProjectDetails(projectJSON());
@@ -74,13 +74,15 @@ export default function Scenario() {
                     </div>
                   </div>
                 )}
-                <Timetable />
+                <Timetable setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement} />
               </div>
             </div>
             <div className="col-lg-8">
               {displayTrainScheduleManagement && (
                 <div className="scenario-managetrainschedule">
-                  <ManageTrainSchedule />
+                  <ManageTrainSchedule
+                    setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+                  />
                 </div>
               )}
               <div className="scenario-results">
