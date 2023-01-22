@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { updateRollingStockComfort, updateRollingStockID } from 'reducers/osrdconf';
 import { getRollingStockComfort } from 'reducers/osrdconf/selectors';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { comfort2pictogram } from './RollingStockHelpers';
 
 export default function RollingStockCardButtons(props) {
@@ -12,6 +13,7 @@ export default function RollingStockCardButtons(props) {
   const { id, curvesComfortList, setOpenedRollingStockCardId } = props;
   const [comfort, setComfort] = useState('STANDARD');
   const rollingStockComfort = useSelector(getRollingStockComfort);
+  const { closeModal } = useContext(ModalContext);
   const dispatch = useDispatch();
 
   const acLabel = (
@@ -29,6 +31,7 @@ export default function RollingStockCardButtons(props) {
     setOpenedRollingStockCardId(undefined);
     dispatch(updateRollingStockComfort(comfort));
     dispatch(updateRollingStockID(id));
+    closeModal();
   };
 
   const setOptions = () => {
@@ -57,12 +60,7 @@ export default function RollingStockCardButtons(props) {
           sm
         />
       ) : null}
-      <button
-        type="button"
-        className="ml-2 btn btn-primary btn-sm"
-        onClick={selectRollingStock}
-        data-dismiss="modal"
-      >
+      <button type="button" className="ml-2 btn btn-primary btn-sm" onClick={selectRollingStock}>
         {t('selectRollingStock')}
       </button>
     </div>

@@ -11,7 +11,6 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import DisplayItinerary from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/DisplayItinerary';
 import ModalSugerredVias from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/ModalSuggeredVias';
-import ModalPathJSONDetail from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/ModalPathJSONDetail';
 import PropTypes from 'prop-types';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import { WebMercatorViewport } from 'viewport-mercator-project';
@@ -218,6 +217,16 @@ function Itinerary(props) {
     setLaunchPathfinding(true);
   };
 
+  const viaModalContent = (
+    <ModalSugerredVias
+      convertPathfindingVias={convertPathfindingVias}
+      inverseOD={inverseOD}
+      removeAllVias={removeAllVias}
+      pathfindingInProgress={pathfindingInProgress}
+      removeViaFromPath={removeViaFromPath}
+    />
+  );
+
   useEffect(() => {
     if (
       osrdconf?.pathfindingID === undefined ||
@@ -250,29 +259,20 @@ function Itinerary(props) {
   }, [infra]);
 
   return (
-    <>
-      <div className="osrd-config-item mb-2">
-        <div className="osrd-config-item-container" data-testid="itinerary">
-          <DisplayItinerary
-            data-testid="display-itinerary"
-            zoomToFeaturePoint={zoomToFeaturePoint}
-          />
-          {pathfindingInProgress && (
-            <div className="osrd-config-centered-item">
-              <DotsLoader /> {`${t('pathFindingInProgress')}`}
-            </div>
-          )}
-        </div>
+    <div className="osrd-config-item mb-2">
+      <div className="osrd-config-item-container" data-testid="itinerary">
+        <DisplayItinerary
+          data-testid="display-itinerary"
+          zoomToFeaturePoint={zoomToFeaturePoint}
+          viaModalContent={viaModalContent}
+        />
+        {pathfindingInProgress && (
+          <div className="osrd-config-centered-item">
+            <DotsLoader /> {`${t('pathFindingInProgress')}`}
+          </div>
+        )}
       </div>
-      <ModalSugerredVias
-        convertPathfindingVias={convertPathfindingVias}
-        inverseOD={inverseOD}
-        removeAllVias={removeAllVias}
-        pathfindingInProgress={pathfindingInProgress}
-        removeViaFromPath={removeViaFromPath}
-      />
-      <ModalPathJSONDetail pathfindingInProgress={pathfindingInProgress} />
-    </>
+    </div>
   );
 }
 

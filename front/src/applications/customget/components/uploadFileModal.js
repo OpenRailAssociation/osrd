@@ -1,18 +1,19 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { updateSimulation } from 'reducers/osrdsimulation/actions';
-import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import { useTranslation } from 'react-i18next';
 
 import convertData from 'applications/customget/components/convertData';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 
 function UploadFileModal() {
   const { t } = useTranslation(['customget', 'translation']);
   const [selectedFile, setSelectedFile] = useState();
   const [isValid, setIsValid] = useState('');
   const dispatch = useDispatch();
+  const { closeModal } = useContext(ModalContext);
 
   const validateFile = async (fileToValidate) => {
     if (fileToValidate.type !== 'application/json') {
@@ -38,6 +39,7 @@ function UploadFileModal() {
   };
 
   const handleSubmit = async () => {
+    closeModal();
     if (selectedFile) {
       dispatch(
         updateSimulation({
@@ -48,7 +50,7 @@ function UploadFileModal() {
   };
 
   return (
-    <ModalSNCF htmlID="add-file-modal">
+    <>
       <ModalBodySNCF>
         <>
           <div className="h1 modal-title text-center mb-4">
@@ -65,7 +67,7 @@ function UploadFileModal() {
               <button
                 type="button"
                 className="btn btn-block btn-sm btn-secondary"
-                data-dismiss="modal"
+                onClick={() => closeModal()}
               >
                 {t('translation:common:cancel')}
               </button>
@@ -75,7 +77,6 @@ function UploadFileModal() {
                 type="button"
                 className={`btn btn-block btn-sm btn-primary ${isValid !== true ? 'disabled' : ''}`}
                 onClick={handleSubmit}
-                data-dismiss="modal"
               >
                 {t('translation:common:download')}
               </button>
@@ -83,7 +84,7 @@ function UploadFileModal() {
           </div>
         </div>
       </ModalFooterSNCF>
-    </ModalSNCF>
+    </>
   );
 }
 

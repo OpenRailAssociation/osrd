@@ -1,11 +1,9 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 
-import PropTypes from 'prop-types';
-
 const ModalContext = createContext({
   isModalOpen: false,
   modalContent: null,
-  openModal: (content) => {},
+  openModal: (content, size, optionalClasses = '') => {},
   closeModal: () => {},
   size: undefined,
   optionalClasses: '',
@@ -18,7 +16,7 @@ function ModalProvider({ children }) {
   const [optionalClasses, setOptionalClasses] = useState('');
   const [isVisible, setIsVisible] = useState(false);
 
-  const openModal = (content, size = undefined, optionalClasses = '') => {
+  const openModal = (content, size, optionalClasses = '') => {
     setModalContent(content);
     setIsModalOpen(true);
     setSize(size);
@@ -48,7 +46,7 @@ function ModalProvider({ children }) {
   );
 }
 
-function ModalSNCF(props) {
+function ModalSNCF() {
   const { isModalOpen, modalContent, closeModal, size, optionalClasses, isVisible } =
     useContext(ModalContext);
 
@@ -86,16 +84,5 @@ function ModalSNCF(props) {
     </div>
   );
 }
-
-// Props for ModalSNCF
-ModalSNCF.propTypes = {
-  size: PropTypes.string,
-  optionalClasses: PropTypes.string,
-};
-
-ModalSNCF.defaultProps = {
-  size: undefined,
-  optionalClasses: '',
-};
 
 export { ModalProvider, ModalContext, ModalSNCF };

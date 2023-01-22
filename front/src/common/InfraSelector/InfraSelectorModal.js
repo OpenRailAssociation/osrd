@@ -1,7 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
+import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import icon from 'assets/pictures/components/tracks.svg';
@@ -10,18 +8,19 @@ import { get } from 'common/requests';
 import { useDebounce } from 'utils/helpers';
 import Loader from 'common/Loader';
 import { MdEditNote, MdList } from 'react-icons/md';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import InfraSelectorModalBodyEdition from './InfraSelectorModalBodyEdition';
 import InfraSelectorModalBodyStandard from './InfraSelectorModalBodyStandard';
 import { INFRA_URL } from './Consts';
 
-export default function InfraSelectorModal(props) {
-  const { modalID } = props;
+export default function InfraSelectorModal() {
   const [infrasList, setInfrasList] = useState([]);
   const { t } = useTranslation(['translation', 'infraManagement']);
   const [filter, setFilter] = useState('');
   const [filteredInfrasList, setFilteredInfrasList] = useState([]);
   const [editionMode, setEditionMode] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
+  const { closeModal } = useContext(ModalContext);
 
   const debouncedFilter = useDebounce(filter, 250);
 
@@ -61,7 +60,7 @@ export default function InfraSelectorModal(props) {
   }, []);
 
   return (
-    <ModalSNCF htmlID={modalID} size={editionMode ? 'lg' : 'md'}>
+    <>
       <ModalHeaderSNCF>
         <div className="d-flex align-items-center h1 w-100">
           <img src={editionMode ? iconEdition : icon} alt="infra schema" width="32px" />
@@ -90,7 +89,7 @@ export default function InfraSelectorModal(props) {
             </button>
           </div>
         </div>
-        <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+        <button type="button" className="close" aria-label="Close" onClick={() => closeModal()}>
           <span aria-hidden="true">&times;</span>
         </button>
       </ModalHeaderSNCF>
@@ -115,10 +114,6 @@ export default function InfraSelectorModal(props) {
           />
         )}
       </ModalBodySNCF>
-    </ModalSNCF>
+    </>
   );
 }
-
-InfraSelectorModal.propTypes = {
-  modalID: PropTypes.string.isRequired,
-};
