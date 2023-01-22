@@ -7,8 +7,9 @@ import Timetable from 'applications/operationalStudies/components/Scenario/Timet
 import infraLogo from 'assets/pictures/components/tracks.svg';
 import ScenarioLoader from 'applications/operationalStudies/components/Scenario/ScenarioLoader';
 import { useSelector, useDispatch } from 'react-redux';
-import { MODES } from 'applications/operationalStudies/consts';
+import { MODES, MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import { updateMode } from 'reducers/osrdconf';
+import TimetableManageTrainSchedule from 'applications/operationalStudies/components/Scenario/TimetableManageTrainSchedule';
 import SimulationResults from './SimulationResults';
 import { projectJSON, scenarioJSON, studyJSON } from '../components/Helpers/genFakeDataForProjects';
 import ManageTrainSchedule from './ManageTrainSchedule';
@@ -36,7 +37,9 @@ export default function Scenario() {
   const [projectDetails, setProjectDetails] = useState();
   const [studyDetails, setStudyDetails] = useState();
   const [scenarioDetails, setScenarioDetails] = useState();
-  const [displayTrainScheduleManagement, setDisplayTrainScheduleManagement] = useState(false);
+  const [displayTrainScheduleManagement, setDisplayTrainScheduleManagement] = useState(
+    MANAGE_TRAIN_SCHEDULE_TYPES.none
+  );
 
   useEffect(() => {
     setProjectDetails(projectJSON());
@@ -74,13 +77,20 @@ export default function Scenario() {
                     </div>
                   </div>
                 )}
+                {displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.none && (
+                  <TimetableManageTrainSchedule
+                    displayTrainScheduleManagement={displayTrainScheduleManagement}
+                    setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
+                  />
+                )}
                 <Timetable setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement} />
               </div>
             </div>
             <div className="col-lg-8">
-              {displayTrainScheduleManagement && (
+              {displayTrainScheduleManagement !== MANAGE_TRAIN_SCHEDULE_TYPES.none && (
                 <div className="scenario-managetrainschedule">
                   <ManageTrainSchedule
+                    displayTrainScheduleManagement={displayTrainScheduleManagement}
                     setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement}
                   />
                 </div>

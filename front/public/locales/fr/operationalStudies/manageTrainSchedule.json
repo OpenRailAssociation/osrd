@@ -1,9 +1,10 @@
 {
-  "addTrainSchedule": "Ajouter",
+  "addTrainSchedule": "Ajouter un ou plusieurs trains",
   "apply": "Appliquer",
   "blocktype": "Type de block",
   "BoundsAreLinked": "Les deux bornes sont liées",
   "BoundsAreNotLinked": "Les deux bornes ne sont pas liées",
+  "cancelAddTrainSchedule": "Annuler",
   "cancelRequest": "Annuler la requête",
   "chooseOnMap": "Choisir sur la carte",
   "composition": "Composition",
