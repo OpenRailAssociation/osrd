@@ -32,7 +32,7 @@ function Itinerary(props) {
   const dispatch = useDispatch();
   const map = useSelector((state) => state.map);
   const osrdconf = useSelector((state) => state.osrdconf);
-  const { t } = useTranslation(['osrdconf']);
+  const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const infra = useSelector(getInfraID);
 
   const zoomToFeature = (boundingBox, id = undefined, source = undefined) => {
@@ -253,7 +253,10 @@ function Itinerary(props) {
     <>
       <div className="osrd-config-item mb-2">
         <div className="osrd-config-item-container" data-testid="itinerary">
-          <DisplayItinerary data-testid="display-itinerary" zoomToFeaturePoint={zoomToFeaturePoint} />
+          <DisplayItinerary
+            data-testid="display-itinerary"
+            zoomToFeaturePoint={zoomToFeaturePoint}
+          />
           {pathfindingInProgress && (
             <div className="osrd-config-centered-item">
               <DotsLoader /> {`${t('pathFindingInProgress')}`}

@@ -22,7 +22,11 @@ export default function OSRDConfig({ setCurrentStdcmRequestStatus }: OSRDStdcmCo
   const { darkmode } = useSelector((state: any) => state.main);
 
   const dispatch = useDispatch();
-  const { t } = useTranslation(['translation', 'osrdconf', 'allowances']);
+  const { t } = useTranslation([
+    'translation',
+    'operationalStudies/manageTrainSchedule',
+    'allowances',
+  ]);
   const [extViewport, setExtViewport] = useState({});
   const [mustUpdateTimetable, setMustUpdateTimetable] = useState(true);
 
@@ -106,9 +110,9 @@ export default function OSRDConfig({ setCurrentStdcmRequestStatus }: OSRDStdcmCo
               type="button"
               onClick={() => setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.pending)}
             >
-              {t('osrdconf:apply')}
+              {t('operationalStudies/manageTrainSchedule:apply')}
               <span className="sr-only" aria-hidden="true">
-                {t('osrdconf:apply')}
+                {t('operationalStudies/manageTrainSchedule:apply')}
               </span>
             </button>
           </div>

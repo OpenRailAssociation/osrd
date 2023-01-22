@@ -35,7 +35,7 @@ function Destination(props: DestinationProps) {
   const destinationDate = useSelector(getDestinationDate);
   const destinationTime = useSelector(getDestinationTime);
   const dispatch = useDispatch();
-  const { t } = useTranslation(['osrdconf']);
+  const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 
   const { isByOrigin, isByDestination } = makeEnumBooleans(STDCM_MODES, stdcmMode);
   const { isStdcm } = makeEnumBooleans(MODES, mode);
@@ -45,7 +45,7 @@ function Destination(props: DestinationProps) {
       <span className="mr-1 h2 text-warning">
         <RiMapPin5Fill />
       </span>
-      <span>{t('osrdconf:destination')}</span>
+      <span>{t('destination')}</span>
     </h2>
   );
 
@@ -120,7 +120,7 @@ function Destination(props: DestinationProps) {
             </div>
           </>
         ) : (
-          <small className="ml-4">{t('osrdconf:noplacechosen')}</small>
+          <small className="ml-4">{t('noplacechosen')}</small>
         )}
       </div>
     </>

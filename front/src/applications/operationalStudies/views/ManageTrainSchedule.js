@@ -13,7 +13,11 @@ import SpeedLimitByTagSelector from 'applications/operationalStudies/components/
 
 export default function ManageTrainSchedule() {
   const dispatch = useDispatch();
-  const { t } = useTranslation(['translation', 'osrdconf', 'allowances']);
+  const { t } = useTranslation([
+    'translation',
+    'operationalStudies/manageTrainSchedule',
+    'allowances',
+  ]);
   const [extViewport, setExtViewport] = useState(undefined);
   const [mustUpdateTimetable, setMustUpdateTimetable] = useState(true);
 
@@ -30,9 +34,7 @@ export default function ManageTrainSchedule() {
 
   return (
     <>
-      <div className="manage-train-schedule-title">
-        1. Choisissez un matériel
-      </div>
+      <div className="manage-train-schedule-title">1. Choisissez un matériel</div>
       <div className="row no-gutters">
         <div className="col-xl-6 pr-xl-2">
           <RollingStockSelector />
@@ -41,9 +43,7 @@ export default function ManageTrainSchedule() {
           <SpeedLimitByTagSelector />
         </div>
       </div>
-      <div className="manage-train-schedule-title">
-        2. Déterminez l'itinéraire
-      </div>
+      <div className="manage-train-schedule-title">2. Déterminez l'itinéraire</div>
       <div className="row no-gutters">
         <div className="col-xl-6 pr-xl-2">
           <Itinerary title={t('translation:common.itinerary')} updateExtViewport={setExtViewport} />
@@ -56,9 +56,7 @@ export default function ManageTrainSchedule() {
           </div>
         </div>
       </div>
-      <div className="manage-train-schedule-title">
-        3. Ajustez et validez
-      </div>
+      <div className="manage-train-schedule-title">3. Ajustez et validez</div>
       <AddTrainLabels />
       <AddTrainSchedule
         mustUpdateTimetable={mustUpdateTimetable}
