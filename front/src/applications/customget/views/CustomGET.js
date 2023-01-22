@@ -125,7 +125,9 @@ function CustomGET() {
                   <div className="col-lg-4">
                     <TimeButtons />
                   </div>
-                  <div className="col-lg-8">{simulation.trains.length > 0 ? <TrainDetails /> : null}</div>
+                  <div className="col-lg-8">
+                    {simulation.trains.length > 0 ? <TrainDetails /> : null}
+                  </div>
                 </div>
               </div>
             </div>

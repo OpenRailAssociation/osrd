@@ -30,7 +30,7 @@ export default function Home() {
               <Card
                 img={operationalStudiesImg}
                 title={t('operationalStudies')}
-                link="/operational-studies"
+                link="/operational-studies/scenario"
               />
             </div>
             <div className="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">

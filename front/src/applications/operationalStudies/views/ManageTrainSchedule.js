@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 import { updateViewport } from 'reducers/map';
 
@@ -12,8 +12,6 @@ import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelect
 import SpeedLimitByTagSelector from 'applications/operationalStudies/components/ManageTrainSchedule/SpeedLimitByTagSelector';
 
 export default function ManageTrainSchedule() {
-  const { fullscreen } = useSelector((state) => state.main);
-
   const dispatch = useDispatch();
   const { t } = useTranslation(['translation', 'osrdconf', 'allowances']);
   const [extViewport, setExtViewport] = useState(undefined);
@@ -31,30 +29,41 @@ export default function ManageTrainSchedule() {
   }, [extViewport]);
 
   return (
-    <main className={`osrd-config-mastcontainer mastcontainer${fullscreen ? ' fullscreen' : ''}`}>
-      <div className="row m-0 px-1 py-3 h-100">
-        <div className="col-sm-6">
-          <div className="row">
-            <div className="col-xl-6">
-              <RollingStockSelector />
-              <SpeedLimitByTagSelector />
-            </div>
-          </div>
-          <Itinerary title={t('translation:common.itinerary')} updateExtViewport={setExtViewport} />
-          <AddTrainLabels />
-          <AddTrainSchedule
-            mustUpdateTimetable={mustUpdateTimetable}
-            setMustUpdateTimetable={setMustUpdateTimetable}
-          />
+    <>
+      <div className="manage-train-schedule-title">
+        1. Choisissez un matériel
+      </div>
+      <div className="row no-gutters">
+        <div className="col-xl-6 pr-xl-2">
+          <RollingStockSelector />
         </div>
-        <div className="col-sm-6">
-          <div className="osrd-config-item osrd-config-item-map mb-2">
-            <div className="osrd-config-item-container h-100 osrd-config-item-container-map">
+        <div className="col-xl-6">
+          <SpeedLimitByTagSelector />
+        </div>
+      </div>
+      <div className="manage-train-schedule-title">
+        2. Déterminez l'itinéraire
+      </div>
+      <div className="row no-gutters">
+        <div className="col-xl-6 pr-xl-2">
+          <Itinerary title={t('translation:common.itinerary')} updateExtViewport={setExtViewport} />
+        </div>
+        <div className="col-xl-6">
+          <div className="osrd-config-item mb-2">
+            <div className="osrd-config-item-container osrd-config-item-container-map">
               <Map />
             </div>
           </div>
         </div>
       </div>
-    </main>
+      <div className="manage-train-schedule-title">
+        3. Ajustez et validez
+      </div>
+      <AddTrainLabels />
+      <AddTrainSchedule
+        mustUpdateTimetable={mustUpdateTimetable}
+        setMustUpdateTimetable={setMustUpdateTimetable}
+      />
+    </>
   );
 }
