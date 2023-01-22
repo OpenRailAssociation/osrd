@@ -9,10 +9,12 @@ import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
 import { time2sec, sec2time } from 'utils/timeManipulation';
 import debounce from 'lodash/debounce';
+import { FaPlus } from 'react-icons/fa';
 
 import formatConf from 'applications/operationalStudies/components/ManageTrainSchedule/AddTrainSchedule/formatConf';
 import trainNameWithNum from 'applications/operationalStudies/components/ManageTrainSchedule/AddTrainSchedule/trainNameHelper';
 import { scheduleURL } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
+import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import getTimetable from '../Scenario/getTimetable';
 
 export default function AddTrainSchedule(props) {
@@ -70,7 +72,7 @@ export default function AddTrainSchedule(props) {
         );
       }
       getTimetable();
-      setDisplayTrainScheduleManagement(false);
+      setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
     }
   };
 
@@ -139,19 +141,22 @@ export default function AddTrainSchedule(props) {
       </div>
       <div className="d-flex justify-content-end">
         <button
-          className="btn btn-sm btn-secondary"
+          className="btn btn-secondary mr-2"
           type="button"
-          onClick={() => setDisplayTrainScheduleManagement(false)}
+          onClick={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none)}
         >
-          {t('cancel')}
+          {t('cancelAddTrainSchedule')}
         </button>
         {isWorking ? (
-          <button className="btn btn-sm btn-primary disabled" type="button">
+          <button className="btn btn-primary disabled" type="button">
             <DotsLoader />
           </button>
         ) : (
-          <button className="btn btn-sm btn-primary" type="button" onClick={submitConf}>
-            {t('operationalStudies/manageTrainSchedule:addTrainSchedule')}
+          <button className="btn btn-primary" type="button" onClick={submitConf}>
+            <span className="mr-2">
+              <FaPlus />
+            </span>
+            {t('addTrainSchedule')}
           </button>
         )}
       </div>

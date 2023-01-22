@@ -62,6 +62,12 @@ export const SNCFCOLORSONLY = {
 
 export const DUMMYCONST = null;
 
+export const MANAGE_TRAIN_SCHEDULE_TYPES = Object.freeze({
+  none: 'NONE',
+  add: 'ADD',
+  update: 'UPDATE',
+});
+
 export const MODES = Object.freeze({
   simulation: 'SIMULATION',
   stdcm: 'STDCM',
