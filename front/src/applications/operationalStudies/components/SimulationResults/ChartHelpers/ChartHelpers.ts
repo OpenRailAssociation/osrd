@@ -280,10 +280,18 @@ export const expandAndFormatData = (reference: Array<any>, dataToExpand: Array<a
   });
 
 export const gridX = (x: any, height: number) =>
-  d3.axisBottom(x).ticks(10).tickSize(-height).tickFormat(() => '');
+  d3
+    .axisBottom(x)
+    .ticks(10)
+    .tickSize(-height)
+    .tickFormat(() => '');
 
 export const gridY = (y: any, width: number) =>
-  d3.axisLeft(y).ticks(10).tickSize(-width).tickFormat(() => '');
+  d3
+    .axisLeft(y)
+    .ticks(10)
+    .tickSize(-width)
+    .tickFormat(() => '');
 
 // Interpolation of cursor based on space position
 export const interpolateOnPosition = (dataSimulation: any, keyValues: any, positionLocal: any) => {

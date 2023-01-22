@@ -34,7 +34,7 @@ export default function Home() {
               />
             </div>
             <div className="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
-              <Card img={mapImg} title={t('map')} link="/carto" />
+              <Card img={mapImg} title={t('map')} link="/map" />
             </div>
             <div className="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
               <Card img={editorImg} title={t('editor')} link="/editor" />
