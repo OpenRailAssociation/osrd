@@ -12,7 +12,7 @@ import debounce from 'lodash/debounce';
 
 import formatConf from 'applications/operationalStudies/components/ManageTrainSchedule/AddTrainSchedule/formatConf';
 import trainNameWithNum from 'applications/operationalStudies/components/ManageTrainSchedule/AddTrainSchedule/trainNameHelper';
-import { scheduleURL } from 'applications/operationalStudies/components/Simulation/consts';
+import { scheduleURL } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 
 export default function AddTrainSchedule(props) {
   const { setMustUpdateTimetable } = props;
