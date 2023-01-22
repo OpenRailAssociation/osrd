@@ -8,9 +8,9 @@ import { bootstrapOSRDConf } from 'reducers/osrdconf';
 import { getInfraID } from 'reducers/osrdconf/selectors';
 import { attemptLoginOnLaunch } from 'reducers/user';
 
-import HomeCarto from 'applications/carto/Home';
 import HomeCustomGET from 'applications/customget/Home';
 import HomeEditor from 'applications/editor/Home';
+import HomeMap from 'applications/referenceMap/Home';
 import HomeOpenData from 'applications/opendata/Home';
 import HomeOperationalStudies from 'applications/operationalStudies/Home';
 import HomeStdcm from 'applications/stdcm/Home';
@@ -60,7 +60,7 @@ export default function App() {
           <HistoryRouter history={history}>
             <Routes>
               <Route path="/operational-studies/*" element={<HomeOperationalStudies />} />
-              <Route path="/carto/*" element={<HomeCarto />} />
+              <Route path="/map/*" element={<HomeMap />} />
               <Route path="/editor/*" element={<HomeEditor />} />
               <Route path="/stdcm/*" element={<HomeStdcm />} />
               <Route path="/opendata/*" element={<HomeOpenData />} />
