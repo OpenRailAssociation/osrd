@@ -24,7 +24,7 @@ async function getInfrasList(): Promise<InfrasList> {
 const InfraSelectorModal: FC<ModalProps> = ({ submit, cancel }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { t } = useTranslation(['translation', 'osrdconf']);
+  const { t } = useTranslation(['translation', 'operationalStudies/manageTrainSchedule']);
   const [infras, setInfras] = useState<InfrasList | null>(null);
 
   useEffect(() => {
@@ -42,7 +42,7 @@ const InfraSelectorModal: FC<ModalProps> = ({ submit, cancel }) => {
   }, [dispatch, t]);
 
   return (
-    <Modal onClose={cancel} title={t('osrdconf:infrachoose')}>
+    <Modal onClose={cancel} title={t('operationalStudies/manageTrainSchedule:infrachoose')}>
       <div className="mb-3 osrd-config-infraselector">
         {infras?.map((infra) => (
           <div

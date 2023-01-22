@@ -14,7 +14,7 @@ import { useTranslation } from 'react-i18next';
 export default function OSRDStcdmResults(props) {
   const selectedTrain = useSelector((state) => state.osrdsimulation.selectedTrain);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
-  const { t } = useTranslation(['translation', 'osrdconf']);
+  const { t } = useTranslation(['translation', 'operationalStudies/manageTrainSchedule']);
   const { currentStdcmRequestStatus } = props;
   const dispatch = useDispatch();
 
@@ -41,10 +41,10 @@ export default function OSRDStcdmResults(props) {
       <main className="osrd-config-mastcontainer mastcontainer" style={{ height: '115vh' }}>
         <div className="osrd-simulation-container mb-2 mx-3">
           <h1 className="text-center text-info">
-            <b>{t('osrdconf:stdcmResults')}</b>
+            <b>{t('operationalStudies/manageTrainSchedule:stdcmResults')}</b>
           </h1>
           <div className="osrd-config-item mb-2">
-            <h2>{t('osrdconf:spaceSpeedGraphic')}</h2>
+            <h2>{t('operationalStudies/manageTrainSchedule:spaceSpeedGraphic')}</h2>
             <div className="speedspacechart-container" style={{ height: '450px' }}>
               <SpeedSpaceChart heightOfSpeedSpaceChart={450} showSettings={false} />
             </div>
@@ -59,8 +59,10 @@ export default function OSRDStcdmResults(props) {
     stdcmResultsSection = (
       <main className="osrd-config-mastcontainer mastcontainer">
         <div className="osrd-simulation-container">
-          <h1 className="text-center text-info">{t('osrdconf:stdcmResults')}</h1>
-          <p>{t('osrdconf:stdcmNoResults')}</p>
+          <h1 className="text-center text-info">
+            {t('operationalStudies/manageTrainSchedule:stdcmResults')}
+          </h1>
+          <p>{t('operationalStudies/manageTrainSchedule:stdcmNoResults')}</p>
         </div>
       </main>
     );
@@ -69,10 +71,10 @@ export default function OSRDStcdmResults(props) {
       <main className="osrd-config-mastcontainer mastcontainer">
         <div className="osrd-simulation-container mx-3">
           <h1 className="text-center text-info">
-            <b>{t('osrdconf:stdcmResults')}</b>
+            <b>{t('operationalStudies/manageTrainSchedule:stdcmResults')}</b>
           </h1>
           <div className="osrd-config-item mb-2">
-            <h2>{t('osrdconf:spaceSpeedGraphic')}</h2>
+            <h2>{t('operationalStudies/manageTrainSchedule:spaceSpeedGraphic')}</h2>
             <div className="speedspacechart-container" style={{ height: '450px' }}>
               {simulation.trains.length > 0 && <SpaceTimeChart heightOfSpaceTimeChart={450} />}
             </div>

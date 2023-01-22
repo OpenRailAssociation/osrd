@@ -34,7 +34,7 @@ import { useTranslation } from 'react-i18next';
 const timetableURI = '/timetable/';
 
 export default function StdcmRequestModal(props) {
-  const { t } = useTranslation(['translation', 'osrdconf']);
+  const { t } = useTranslation(['translation', 'operationalStudies/manageTrainSchedule']);
   const osrdconf = useSelector((state) => state.osrdconf);
 
   const { allowancesSettings } = useSelector((state) => state.osrdsimulation);
@@ -138,7 +138,7 @@ export default function StdcmRequestModal(props) {
 
           dispatch(
             setFailure({
-              name: t('osrdconf:errorMessages.stdcmError'),
+              name: t('operationalStudies/manageTrainSchedule:errorMessages.stdcmError'),
               message: e?.response?.data?.message, // axios error, def is ok
             })
           );
@@ -177,7 +177,7 @@ export default function StdcmRequestModal(props) {
       <div className="modal-dialog" role="document">
         <div className="modal-content">
           <ModalHeaderSNCF>
-            <h1>{t('osrdconf:stdcmComputation')}</h1>
+            <h1>{t('operationalStudies/manageTrainSchedule:stdcmComputation')}</h1>
             <button className="btn btn-only-icon close" type="button" onClick={cancelStdcmRequest}>
               <i className="icons-close" />
             </button>
@@ -189,8 +189,12 @@ export default function StdcmRequestModal(props) {
                   <div className="">
                     <img src={rabbit} alt="runnning stdcm" width="50%" />
                   </div>
-                  <div className="p-1 text-info">{t('osrdconf:searchingItinerary')}</div>
-                  <div className="p-1 text-info">{t('osrdconf:pleaseWait')}</div>
+                  <div className="p-1 text-info">
+                    {t('operationalStudies/manageTrainSchedule:searchingItinerary')}
+                  </div>
+                  <div className="p-1 text-info">
+                    {t('operationalStudies/manageTrainSchedule:pleaseWait')}
+                  </div>
                   <div className="p-1">
                     <div className="spinner-border" role="status">
                       <span className="sr-only">Loading...</span>
@@ -205,9 +209,9 @@ export default function StdcmRequestModal(props) {
                   type="button"
                   onClick={cancelStdcmRequest}
                 >
-                  {t('osrdconf:cancelRequest')}
+                  {t('operationalStudies/manageTrainSchedule:cancelRequest')}
                   <span className="sr-only" aria-hidden="true">
-                    {t('osrdconf:cancelRequest')}
+                    {t('operationalStudies/manageTrainSchedule:cancelRequest')}
                   </span>
                 </button>
               </div>

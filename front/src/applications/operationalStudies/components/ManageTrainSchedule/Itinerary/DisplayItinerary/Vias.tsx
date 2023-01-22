@@ -17,7 +17,7 @@ interface ViasProps {
 function Vias(props: ViasProps) {
   const { zoomToFeaturePoint } = props;
   const vias = useSelector(getVias);
-  const { t } = useTranslation(['osrdconf']);
+  const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const osrdconf = useSelector((state: RootState) => state.osrdconf);
 
   const viasTitle = (
@@ -25,7 +25,7 @@ function Vias(props: ViasProps) {
       <span className="mr-1 h2 text-info">
         <RiMapPin3Fill />
       </span>
-      <span>{t('osrdconf:vias')}</span>
+      <span>{t('vias')}</span>
       <button
         className={`btn btn-info btn-only-icon btn-sm ml-1 ${osrdconf.geojson ? '' : 'disabled'}`}
         type="button"
@@ -43,7 +43,7 @@ function Vias(props: ViasProps) {
         {vias.length > 0 ? (
           <DisplayVias zoomToFeaturePoint={zoomToFeaturePoint} />
         ) : (
-          <small className="ml-4">{t('osrdconf:noplacechosen')}</small>
+          <small className="ml-4">{t('noplacechosen')}</small>
         )}
       </div>
     </>

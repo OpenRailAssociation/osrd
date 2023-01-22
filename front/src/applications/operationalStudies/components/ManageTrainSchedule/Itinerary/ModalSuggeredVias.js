@@ -28,7 +28,7 @@ export default function ModalSugerredVias(props) {
     removeViaFromPath,
     pathfindingInProgress,
   } = props;
-  const { t } = useTranslation('osrdconf');
+  const { t } = useTranslation('operationalStudies/manageTrainSchedule');
   const nbVias = suggeredVias.length - 1;
   const selectedViasTracks = vias.map((via) => via.position);
 

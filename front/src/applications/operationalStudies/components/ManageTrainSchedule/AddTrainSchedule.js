@@ -22,7 +22,7 @@ export default function AddTrainSchedule(props) {
   const [trainStep, setTrainStep] = useState(2);
   const [trainDelta, setTrainDelta] = useState(60);
   const osrdconf = useSelector((state) => state.osrdconf);
-  const { t } = useTranslation(['translation', 'osrdconf']);
+  const { t } = useTranslation(['translation', 'operationalStudies/manageTrainSchedule']);
   const dispatch = useDispatch();
 
   const submitConf = async () => {
@@ -54,7 +54,7 @@ export default function AddTrainSchedule(props) {
         );
         dispatch(
           setSuccess({
-            title: t('osrdconf:trainAdded'),
+            title: t('operationalStudies/manageTrainSchedule:trainAdded'),
             text: `${osrdconf.name}: ${sec2time(originTime)}`,
           })
         );
@@ -64,7 +64,7 @@ export default function AddTrainSchedule(props) {
         dispatch(
           setFailure({
             name: e.name,
-            message: t(`osrdconf:errorMessages.${e.message}`),
+            message: t(`operationalStudies/manageTrainSchedule:errorMessages.${e.message}`),
           })
         );
       }
@@ -92,7 +92,7 @@ export default function AddTrainSchedule(props) {
         <span className="mr-2 flex-grow-1">
           <InputSNCF
             type="text"
-            label={t('osrdconf:trainScheduleName')}
+            label={t('operationalStudies/manageTrainSchedule:trainScheduleName')}
             id="osrdconf-name"
             onChange={(e) => handleNameChange(e.target.value)}
             value={name}
@@ -103,7 +103,7 @@ export default function AddTrainSchedule(props) {
         <span className="mr-2">
           <InputSNCF
             type="number"
-            label={t('osrdconf:trainScheduleStep')}
+            label={t('operationalStudies/manageTrainSchedule:trainScheduleStep')}
             id="osrdconf-traincount"
             onChange={(e) => setTrainStep(parseInt(e.target.value, 10))}
             value={trainStep}
@@ -114,7 +114,7 @@ export default function AddTrainSchedule(props) {
         <span className="mr-2">
           <InputSNCF
             type="number"
-            label={t('osrdconf:trainScheduleCount')}
+            label={t('operationalStudies/manageTrainSchedule:trainScheduleCount')}
             id="osrdconf-traincount"
             onChange={(e) => setTrainCount(e.target.value)}
             value={trainCount}
@@ -125,7 +125,7 @@ export default function AddTrainSchedule(props) {
         <span className="mr-2">
           <InputSNCF
             type="number"
-            label={t('osrdconf:trainScheduleDelta')}
+            label={t('operationalStudies/manageTrainSchedule:trainScheduleDelta')}
             id="osrdconf-delta"
             onChange={(e) => setTrainDelta(e.target.value)}
             value={trainDelta}
@@ -140,7 +140,7 @@ export default function AddTrainSchedule(props) {
           </button>
         ) : (
           <button className="btn btn-sm btn-primary" type="button" onClick={submitConf}>
-            {t('osrdconf:addTrainSchedule')}
+            {t('operationalStudies/manageTrainSchedule:addTrainSchedule')}
           </button>
         )}
       </div>

@@ -18,7 +18,7 @@ export default function TimetableSelectorModal() {
   const [newNameTimetable, setNewNameTimetable] = useState(null);
   const [timetablesList, settimetablesList] = useState(undefined);
   const { infraID, timetableID } = useSelector((state) => state.osrdconf);
-  const { t } = useTranslation(['translation', 'osrdconf']);
+  const { t } = useTranslation(['translation', 'operationalStudies/manageTrainSchedule']);
   const { closeModal } = useContext(ModalContext);
 
   const getTimetablesList = async () => {
@@ -28,7 +28,9 @@ export default function TimetableSelectorModal() {
     } catch (e) {
       dispatch(
         setFailure({
-          name: t('osrdconf:errorMessages.unableToRetrieveTimetableList'),
+          name: t(
+            'operationalStudies/manageTrainSchedule:errorMessages.unableToRetrieveTimetableList'
+          ),
           message: e.message,
         })
       );
@@ -47,7 +49,7 @@ export default function TimetableSelectorModal() {
       getTimetablesList();
       dispatch(
         setSuccess({
-          title: t('osrdconf:timetabledelete'),
+          title: t('operationalStudies/manageTrainSchedule:timetabledelete'),
           text: `${timetable.name} ID ${timetable.id}`,
         })
       );
@@ -79,7 +81,7 @@ export default function TimetableSelectorModal() {
       <ModalHeaderSNCF>
         <div className="d-flex align-items-center h1">
           <img className="mr-3" src={icon} alt="timetable icon" width="48px" />
-          {t('osrdconf:timetablechoose')}
+          {t('operationalStudies/manageTrainSchedule:timetablechoose')}
         </div>
       </ModalHeaderSNCF>
       <ModalBodySNCF>
