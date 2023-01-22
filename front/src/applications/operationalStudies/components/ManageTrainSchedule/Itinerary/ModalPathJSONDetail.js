@@ -25,7 +25,7 @@ export default function ModalPathJSONDetail(props) {
   const [pathJSONDetail, setPathJSONDetail] = useState(undefined);
   const textareaRef = useRef(null);
   const { pathfindingInProgress } = props;
-  const { t } = useTranslation('osrdconf');
+  const { t } = useTranslation('operationalStudies/manageTrainSchedule');
 
   const getPathJSON = async (zoom, params) => {
     try {

@@ -5,7 +5,7 @@ import { updateLabels } from 'reducers/osrdconf';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF/ChipsSNCF';
 
 export default function AddTrainLabels() {
-  const { t } = useTranslation(['osrdconf']);
+  const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const { labels } = useSelector((state) => state.osrdconf);
   const dispatch = useDispatch();
 

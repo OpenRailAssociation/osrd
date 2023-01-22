@@ -14,7 +14,7 @@ export default function ContextMenu() {
     (state) => state.osrdsimulation
   );
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
-  const { t } = useTranslation(['translation', 'simulation', 'osrdconf', 'allowances']);
+  const { t } = useTranslation(['translation', 'simulation', 'allowances']);
   const dispatch = useDispatch();
 
   const closeContextMenu = () => {

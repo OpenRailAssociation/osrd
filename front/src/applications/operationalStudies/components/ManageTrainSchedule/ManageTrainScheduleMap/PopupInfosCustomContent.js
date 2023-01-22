@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import setPointIti from 'applications/operationalStudies/components/ManageTrainSchedule/ManageTrainScheduleMap/setPointIti';
 
 export default function PopupInfosCustomContent(props) {
-  const { t } = useTranslation(['osrdconf']);
+  const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const { data } = props;
   return (
     <>

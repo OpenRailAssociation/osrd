@@ -14,7 +14,7 @@ export default function SpeedLimitByTagSelector() {
   const speedLimitByTag = useSelector(getSpeedLimitByTag);
   const [speedLimitsTags, setSpeedLimitsTags] = useState(undefined);
   const [oldInfraID, setOldInfraID] = useState(infraID);
-  const { t } = useTranslation(['osrdconf']);
+  const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 
   const getTagsListController = new AbortController();
 

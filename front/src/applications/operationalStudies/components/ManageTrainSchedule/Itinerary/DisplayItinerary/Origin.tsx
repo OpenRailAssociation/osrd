@@ -49,7 +49,7 @@ function Origin(props: OriginProps) {
   const originUpperBoundTime = useSelector(getOriginUpperBoundTime);
   const pathfindingID = useSelector(getPathfindingID);
   const dispatch = useDispatch();
-  const { t } = useTranslation(['osrdconf']);
+  const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
 
   const { isByOrigin, isByDestination } = makeEnumBooleans(STDCM_MODES, stdcmMode);
   const { isSimulation, isStdcm } = makeEnumBooleans(MODES, mode);
@@ -59,7 +59,7 @@ function Origin(props: OriginProps) {
       <span className="mr-1 h2 text-success">
         <RiMapPin2Fill />
       </span>
-      <span>{t('osrdconf:origin')}</span>
+      <span>{t('origin')}</span>
       <button
         type="button"
         data-toggle="modal"
@@ -104,7 +104,7 @@ function Origin(props: OriginProps) {
         onClick={() => {
           dispatch(toggleOriginLinkedBounds());
         }}
-        title={t(originLinkedBounds ? 'osrdconf:BoundsAreLinked' : 'osrdconf:BoundsAreNotLinked')}
+        title={t(originLinkedBounds ? 'BoundsAreLinked' : 'BoundsAreNotLinked')}
       >
         {originLinkedBounds ? <BiLink /> : <BiUnlink />}
         <span className="sr-only" aria-hidden="true">
@@ -204,7 +204,7 @@ function Origin(props: OriginProps) {
             </div>
           </>
         ) : (
-          <small className="ml-4">{t('osrdconf:noplacechosen')}</small>
+          <small className="ml-4">{t('noplacechosen')}</small>
         )}
       </div>
     </>
