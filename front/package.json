@@ -142,7 +142,6 @@
     "build": "react-scripts --max_old_space_size=4096 build",
     "test": "react-scripts test",
     "test-coverage": "react-scripts test --watchAll=false --coverage --coverageDirectory=test",
-    "eject": "react-scripts eject",
     "lint-ts": "eslint --ext .ts,.tsx src",
     "generate-types": "npx @rtk-query/codegen-openapi src/config/openapi-chartos-config.ts && npx @rtk-query/codegen-openapi src/config/openapi-middleware-config.ts && npx @rtk-query/codegen-openapi src/config/openapi-editoast-config.ts",
     "storybook": "start-storybook -p 6006 -s public",
