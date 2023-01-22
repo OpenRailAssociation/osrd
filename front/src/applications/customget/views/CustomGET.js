@@ -9,8 +9,6 @@ import {
 } from 'reducers/osrdsimulation/actions';
 import { useDispatch, useSelector } from 'react-redux';
 
-import UploadFileModal from 'applications/customget/components/uploadFileModal';
-
 import { Rnd } from 'react-rnd';
 import SpaceTimeChart from 'applications/customget/views/SpaceTimeChart';
 import TimeTable from 'applications/customget/views/TimeTable';
@@ -134,7 +132,6 @@ function CustomGET() {
           </div>
         </div>
       )}
-      <UploadFileModal />
     </main>
   );
 }

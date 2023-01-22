@@ -12,10 +12,11 @@ import Destination from './Destination';
 
 interface DisplayItineraryProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string, source?: string) => void;
+  viaModalContent: string;
 }
 
 export default function DisplayItinerary(props: DisplayItineraryProps) {
-  const { zoomToFeaturePoint } = props;
+  const { zoomToFeaturePoint, viaModalContent } = props;
 
   const origin = useSelector(getOrigin);
   const destination = useSelector(getDestination);
@@ -28,7 +29,11 @@ export default function DisplayItinerary(props: DisplayItineraryProps) {
       })}
     >
       <Origin data-testid="itinerary-origin" zoomToFeaturePoint={zoomToFeaturePoint} />
-      <Vias data-testid="itinerary-vias" zoomToFeaturePoint={zoomToFeaturePoint} />
+      <Vias
+        data-testid="itinerary-vias"
+        zoomToFeaturePoint={zoomToFeaturePoint}
+        viaModalContent={viaModalContent}
+      />
       <Destination data-testid="itinerary-destination" zoomToFeaturePoint={zoomToFeaturePoint} />
     </div>
   );

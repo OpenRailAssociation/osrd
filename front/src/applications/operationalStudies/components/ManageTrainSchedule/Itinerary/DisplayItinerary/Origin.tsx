@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Position } from 'geojson';
 import { RiMapPin2Fill } from 'react-icons/ri';
@@ -31,6 +31,8 @@ import { makeEnumBooleans } from 'utils/constants';
 
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { MODES, STDCM_MODES } from 'applications/operationalStudies/consts';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import ModalPathJSONDetail from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/ModalPathJSONDetail';
 
 interface OriginProps {
   zoomToFeaturePoint: (lngLat?: Position, id?: string, source?: string) => void;
@@ -50,9 +52,14 @@ function Origin(props: OriginProps) {
   const pathfindingID = useSelector(getPathfindingID);
   const dispatch = useDispatch();
   const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
+  const { openModal } = useContext(ModalContext);
 
   const { isByOrigin, isByDestination } = makeEnumBooleans(STDCM_MODES, stdcmMode);
   const { isSimulation, isStdcm } = makeEnumBooleans(MODES, mode);
+
+  const openModalWrapperBecauseTypescriptSucks = () => {
+    openModal(<ModalPathJSONDetail />, 'lg');
+  };
 
   const originTitle = (
     <h2 className="d-flex align-items-center mb-0 pl-4">
@@ -62,8 +69,7 @@ function Origin(props: OriginProps) {
       <span>{t('origin')}</span>
       <button
         type="button"
-        data-toggle="modal"
-        data-target="#modalPathJSONDetail"
+        onClick={openModalWrapperBecauseTypescriptSucks}
         className="btn btn-link"
       >
         <small className="ml-1">{pathfindingID}</small>

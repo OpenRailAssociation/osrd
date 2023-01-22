@@ -70,6 +70,7 @@ export default function TimetableSelectorModal() {
     try {
       const result = await post(timetableURL, params, {});
       dispatch(updateTimetableID(result.id));
+      closeModal();
     } catch (e) {
       console.log('ERROR', e);
     }
@@ -77,7 +78,7 @@ export default function TimetableSelectorModal() {
   };
 
   return (
-    <div>
+    <>
       <ModalHeaderSNCF>
         <div className="d-flex align-items-center h1">
           <img className="mr-3" src={icon} alt="timetable icon" width="48px" />
@@ -104,8 +105,10 @@ export default function TimetableSelectorModal() {
                     <div
                       role="button"
                       tabIndex="-1"
-                      onClick={() => dispatch(updateTimetableID(timetable.id))}
-                      data-dismiss="modal"
+                      onClick={() => {
+                        dispatch(updateTimetableID(timetable.id));
+                        closeModal();
+                      }}
                       className="flex-grow-1 osrd-config-timetableselector-item"
                     >
                       <div className="d-flex align-items-center">
@@ -135,6 +138,6 @@ export default function TimetableSelectorModal() {
           </div>
         </>
       </ModalBodySNCF>
-    </div>
+    </>
   );
 }

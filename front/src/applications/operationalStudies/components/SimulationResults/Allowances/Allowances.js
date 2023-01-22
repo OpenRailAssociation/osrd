@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { updateAllowancesSettings } from 'reducers/osrdsimulation/actions';
 import { useSelector } from 'react-redux';
 
@@ -8,12 +8,12 @@ import { FaTrash } from 'react-icons/fa';
 import InputGroupSNCF from 'common/BootstrapSNCF/InputGroupSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
-import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import OPModal from 'applications/operationalStudies/components/SimulationResults/Allowances/OPModal';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import StandardAllowanceDefault from 'applications/operationalStudies/components/SimulationResults/Allowances/StandardAllowanceDefault';
 import nextId from 'react-id-generator';
 import { useTranslation } from 'react-i18next';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { TYPES_UNITS, ALLOWANCE_UNITS_KEYS } from './allowancesConsts';
 
 function EmptyLine(props) {
@@ -28,6 +28,7 @@ function EmptyLine(props) {
     marecoEndPosition,
     defaultDistributionId,
   } = props;
+  const { openModal } = useContext(ModalContext);
 
   const { selectedTrain } = useSelector((state) => state.osrdsimulation);
   const simulation = useSelector((state) => state.osrdsimulation.simulation.present);
@@ -110,98 +111,101 @@ function EmptyLine(props) {
   };
 
   return (
-    <>
-      <div className="row">
-        <div className="col-md-3 d-flex align-items-center">
-          <span className="mr-1">{t('from')}</span>
-          <InputSNCF
-            id="input-allowances-begin_position"
-            type="number"
-            onChange={(e) => setValues({ ...values, begin_position: parseInt(e.target.value, 10) })}
-            value={values.begin_position}
-            placeholder={t('begin_position')}
-            unit="m"
-            isInvalid={values.begin_position >= values.end_position}
-            noMargin
-            sm
-          />
-          <button
-            type="button"
-            className="ml-1 btn-sm btn-primary text-uppercase"
-            data-toggle="modal"
-            data-target={`#op-input-modal-${allowanceType}`}
-            onClick={() => setFromTo('begin_position')}
-          >
-            <small>{t('op')}</small>
-          </button>
-        </div>
-        <div className="col-md-3 d-flex align-items-center">
-          <span className="mr-1">{t('to')}</span>
-          <InputSNCF
-            id="input-allowances-end_position"
-            type="number"
-            onChange={(e) => setValues({ ...values, end_position: parseInt(e.target.value, 10) })}
-            value={values.end_position}
-            placeholder={t('end_position')}
-            unit="m"
-            isInvalid={values.begin_position >= values.end_position}
-            noMargin
-            sm
-          />
-          <button
-            type="button"
-            className="ml-1 btn-sm btn-primary text-uppercase"
-            data-toggle="modal"
-            data-target={`#op-input-modal-${allowanceType}`}
-            onClick={() => setFromTo('end_position')}
-          >
-            <small>{t('op')}</small>
-          </button>
-        </div>
-        <div className="col-md-2">
-          <SelectSNCF
-            id="distributionTypeSelector"
-            options={distributionsTypes}
-            selectedValue={{
-              id: defaultDistributionId,
-              label: t(`distributions.${defaultDistributionId?.toLowerCase()}`),
-            }}
-            labelKey="label"
-            onChange={handleDistribution}
-            sm
-          />
-        </div>
-        <div className="col-md-3">
-          <InputGroupSNCF
-            id="allowanceTypesSelect"
-            options={allowanceTypes}
-            handleType={handleType}
-            value={
-              values.value[TYPES_UNITS[values.value.value_type]] === ''
-                ? ''
-                : parseInt(values.value[TYPES_UNITS[values.value.value_type]], 10)
-            }
-            sm
-          />
-        </div>
-        <div className="col-md-1">
-          <button
-            type="button"
-            onClick={() => addAllowance(values)}
-            className={`btn btn-success btn-block btn-sm ${
-              values.begin_position >= values.end_position || values.value === 0 ? 'disabled' : null
-            }`}
-          >
-            <i className="icons-add" />
-          </button>
-        </div>
+    <div className="row">
+      <div className="col-lg-6 col-xl-3 d-flex align-items-center mb-lg-2">
+        <span className="mr-1">{t('from')}</span>
+        <InputSNCF
+          id="input-allowances-begin_position"
+          type="number"
+          onChange={(e) => setValues({ ...values, begin_position: parseInt(e.target.value, 10) })}
+          value={values.begin_position}
+          placeholder={t('begin_position')}
+          unit="m"
+          isInvalid={values.begin_position >= values.end_position}
+          noMargin
+          sm
+        />
+        <button
+          type="button"
+          className="ml-1 btn-sm btn-primary text-uppercase"
+          onClick={() => {
+            setFromTo('begin_position');
+            openModal(
+              <ModalBodySNCF>
+                <OPModal fromTo={fromTo} setValues={setValues} values={values} />
+              </ModalBodySNCF>
+            );
+          }}
+        >
+          <small>{t('op')}</small>
+        </button>
       </div>
-      <ModalSNCF htmlID={`op-input-modal-${allowanceType}`}>
-        <ModalBodySNCF>
-          <OPModal fromTo={fromTo} setValues={setValues} values={values} />
-        </ModalBodySNCF>
-      </ModalSNCF>
-    </>
+      <div className="col-lg-6 col-xl-3 d-flex align-items-center mb-lg-2">
+        <span className="mr-1">{t('to')}</span>
+        <InputSNCF
+          id="input-allowances-end_position"
+          type="number"
+          onChange={(e) => setValues({ ...values, end_position: parseInt(e.target.value, 10) })}
+          value={values.end_position}
+          placeholder={t('end_position')}
+          unit="m"
+          isInvalid={values.begin_position >= values.end_position}
+          noMargin
+          sm
+        />
+        <button
+          type="button"
+          className="ml-1 btn-sm btn-primary text-uppercase"
+          onClick={() => {
+            setFromTo('end_position');
+            openModal(
+              <ModalBodySNCF>
+                <OPModal fromTo={fromTo} setValues={setValues} values={values} />
+              </ModalBodySNCF>
+            );
+          }}
+        >
+          <small>{t('op')}</small>
+        </button>
+      </div>
+      <div className="col-lg-4 col-xl-2">
+        <SelectSNCF
+          id="distributionTypeSelector"
+          options={distributionsTypes}
+          selectedValue={{
+            id: defaultDistributionId,
+            label: t(`distributions.${defaultDistributionId?.toLowerCase()}`),
+          }}
+          labelKey="label"
+          onChange={handleDistribution}
+          sm
+        />
+      </div>
+      <div className="col-lg-6 col-xl-3">
+        <InputGroupSNCF
+          id="allowanceTypesSelect"
+          options={allowanceTypes}
+          handleType={handleType}
+          value={
+            values.value[TYPES_UNITS[values.value.value_type]] === ''
+              ? ''
+              : parseInt(values.value[TYPES_UNITS[values.value.value_type]], 10)
+          }
+          sm
+        />
+      </div>
+      <div className="col-lg-2 col-xl-1">
+        <button
+          type="button"
+          onClick={() => addAllowance(values)}
+          className={`btn btn-success btn-block btn-sm ${
+            values.begin_position >= values.end_position || values.value === 0 ? 'disabled' : null
+          }`}
+        >
+          <i className="icons-add" />
+        </button>
+      </div>
+    </div>
   );
 }
 

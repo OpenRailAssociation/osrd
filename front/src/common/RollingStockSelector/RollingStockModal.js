@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
 import Loader from 'common/Loader';
 import nextId from 'react-id-generator';
@@ -11,9 +11,9 @@ import { BsLightningFill } from 'react-icons/bs';
 import { MdLocalGasStation } from 'react-icons/md';
 import './RollingStock.scss';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import { getRollingStockID } from 'reducers/osrdconf/selectors';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import RollingStockEmpty from './RollingStockEmpty';
 import RollingStockCard from './RollingStockCard';
 
@@ -34,6 +34,7 @@ function RollingStockModal(props) {
   });
   const [isFiltering, setIsFiltering] = useState(false);
   const [openedRollingStockCardId, setOpenedRollingStockCardId] = useState();
+  const { closeModal } = useContext(ModalContext);
 
   if (darkmode) {
     import('./RollingStockDarkMode.scss');
@@ -137,80 +138,78 @@ function RollingStockModal(props) {
   }, [filters, rollingStock]);
 
   return (
-    <ModalSNCF htmlID="rollingStockModal" size="lg">
-      <ModalBodySNCF>
-        <div className="rollingstock-search p-2">
-          <div className="rollingstock-search-filters">
-            <button type="button" className="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-            <div className="row no-gutters">
-              <div className="col-md-4 mb-3">
-                <InputSNCF
-                  id="searchfilter"
-                  type="text"
-                  onChange={searchMateriel}
-                  placeholder={t('translation:common.search')}
-                  noMargin
-                  unit={<i className="icons-search" />}
-                  sm
+    <ModalBodySNCF>
+      <div className="rollingstock-search p-2">
+        <div className="rollingstock-search-filters">
+          <button type="button" className="close" aria-label="Close" onClick={() => closeModal()}>
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <div className="row no-gutters">
+            <div className="col-md-4 mb-3">
+              <InputSNCF
+                id="searchfilter"
+                type="text"
+                onChange={searchMateriel}
+                placeholder={t('translation:common.search')}
+                noMargin
+                unit={<i className="icons-search" />}
+                sm
+              />
+            </div>
+            <div className="col-md-5 ml-2 mb-3 d-flex align-items-center">
+              <div className="mr-4">
+                <CheckboxRadioSNCF
+                  onChange={toggleFilter}
+                  name="elec"
+                  id="elec"
+                  label={
+                    <span className="text-nowrap">
+                      <span className="text-primary mr-1">
+                        <BsLightningFill />
+                      </span>
+                      {t('rollingstock:electric')}
+                    </span>
+                  }
+                  type="checkbox"
+                  checked={filters.elec}
                 />
               </div>
-              <div className="col-md-5 ml-2 mb-3 d-flex align-items-center">
-                <div className="mr-4">
-                  <CheckboxRadioSNCF
-                    onChange={toggleFilter}
-                    name="elec"
-                    id="elec"
-                    label={
-                      <span className="text-nowrap">
-                        <span className="text-primary mr-1">
-                          <BsLightningFill />
-                        </span>
-                        {t('rollingstock:electric')}
+              <div>
+                <CheckboxRadioSNCF
+                  onChange={toggleFilter}
+                  name="thermal"
+                  id="thermal"
+                  label={
+                    <span className="text-nowrap">
+                      <span className="text-pink mr-1">
+                        <MdLocalGasStation />
                       </span>
-                    }
-                    type="checkbox"
-                    checked={filters.elec}
-                  />
-                </div>
-                <div>
-                  <CheckboxRadioSNCF
-                    onChange={toggleFilter}
-                    name="thermal"
-                    id="thermal"
-                    label={
-                      <span className="text-nowrap">
-                        <span className="text-pink mr-1">
-                          <MdLocalGasStation />
-                        </span>
-                        {t('rollingstock:thermal')}
-                      </span>
-                    }
-                    type="checkbox"
-                    checked={filters.thermal}
-                  />
-                </div>
-              </div>
-              <div className="col-md-2 mt-1 ml-auto">
-                <small className="">
-                  {filteredRollingStockList !== undefined && filteredRollingStockList.length > 0
-                    ? `${filteredRollingStockList.length} ${t('rollingstock:resultsFound')}`
-                    : t('rollingstock:noResultFound')}
-                </small>
+                      {t('rollingstock:thermal')}
+                    </span>
+                  }
+                  type="checkbox"
+                  checked={filters.thermal}
+                />
               </div>
             </div>
-          </div>
-          <div className="rollingstock-search-list">
-            {filteredRollingStockList !== undefined && !isFiltering ? (
-              listOfRollingStock()
-            ) : (
-              <Loader msg={t('rollingstock:waitingLoader')} />
-            )}
+            <div className="col-md-2 mt-1 ml-auto">
+              <small className="">
+                {filteredRollingStockList !== undefined && filteredRollingStockList.length > 0
+                  ? `${filteredRollingStockList.length} ${t('rollingstock:resultsFound')}`
+                  : t('rollingstock:noResultFound')}
+              </small>
+            </div>
           </div>
         </div>
-      </ModalBodySNCF>
-    </ModalSNCF>
+        <div className="rollingstock-search-list">
+          {filteredRollingStockList !== undefined && !isFiltering ? (
+            listOfRollingStock()
+          ) : (
+            <Loader msg={t('rollingstock:waitingLoader')} />
+          )}
+        </div>
+      </div>
+    </ModalBodySNCF>
   );
 }
 

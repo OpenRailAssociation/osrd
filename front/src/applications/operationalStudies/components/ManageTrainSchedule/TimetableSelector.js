@@ -1,17 +1,14 @@
 import React, { useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
-import nextId from 'react-id-generator';
 import { useSelector, useDispatch } from 'react-redux';
 import { setFailure } from 'reducers/main';
 import { useTranslation } from 'react-i18next';
-import { get, deleteRequest } from 'common/requests';
+import { get } from 'common/requests';
 import TimetableSelectorModal from 'applications/operationalStudies/components/TimetableSelector/TimetableSelectorModal';
 import icon from 'assets/pictures/components/trains_timetable.svg';
-import { sec2time } from 'utils/timeManipulation';
 import DotsLoader from 'common/DotsLoader/DotsLoader';
-import { trainscheduleURI } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import { updateTimetableID } from 'reducers/osrdconf';
-import { ModalContext } from  'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 
 const timetableURL = '/timetable/';
 
@@ -20,7 +17,6 @@ export default function TimetableSelector(props) {
   const { openModal } = useContext(ModalContext);
   const [selectedTimetable, setSelectedTimetable] = useState(undefined);
   const [isWorking, setIsWorking] = useState(false);
-  const [trainList, setTrainList] = useState(undefined);
   const timetableID = useSelector((state) => state.osrdconf.timetableID);
   const dispatch = useDispatch();
   const { t } = useTranslation();
@@ -31,7 +27,6 @@ export default function TimetableSelector(props) {
       const timetableQuery = await get(`${timetableURL}${id}/`, {});
       timetableQuery.train_schedules.sort((a, b) => a.departure_time > b.departure_time);
       setSelectedTimetable(timetableQuery);
-      setTrainList(timetableQuery.train_schedules);
       setIsWorking(false);
     } catch (e) {
       dispatch(updateTimetableID(undefined));
@@ -45,31 +40,6 @@ export default function TimetableSelector(props) {
       setIsWorking(false);
     }
   };
-
-  const deleteTrainSchedule = async (id) => {
-    await deleteRequest(`${trainscheduleURI}${id}/`);
-    getTimetable(timetableID);
-  };
-
-  const formatTrainList = () =>
-    trainList.map((train, idx) => (
-      <div key={nextId()} className="row align-items-center timetable-trainlist-train">
-        <div className="col-7">
-          <span className="small text-primary mr-1">{idx + 1}</span>
-          {train.train_name}
-        </div>
-        <div className="col-3">{sec2time(train.departure_time)}</div>
-        <div className="col-2">
-          <button
-            type="button"
-            className="btn btn-sm btn-only-icon btn-white"
-            onClick={() => deleteTrainSchedule(train.id)}
-          >
-            <i className="icons-close" />
-          </button>
-        </div>
-      </div>
-    ));
 
   useEffect(() => {
     if (timetableID !== undefined && mustUpdateTimetable) {
@@ -127,11 +97,6 @@ export default function TimetableSelector(props) {
           {timeTable()}
         </div>
       </div>
-      {timetableID !== undefined && trainList !== undefined && trainList.length > 0 ? (
-        <div className="osrd-config-item-container">
-          <div className="timetable-trainlist">{formatTrainList(trainList)}</div>
-        </div>
-      ) : null}
     </div>
   );
 }
