@@ -55,9 +55,9 @@ export default function App() {
   return (
     <Suspense fallback={<Loader />}>
       {(user.isLogged || isLocalBackend) && (
-        <ModalProvider>
-          <ModalSNCF />
-          <HistoryRouter history={history}>
+        <HistoryRouter history={history}>
+          <ModalProvider>
+            <ModalSNCF />
             <Routes>
               <Route path="/operational-studies/*" element={<HomeOperationalStudies />} />
               <Route path="/map/*" element={<HomeMap />} />
@@ -67,8 +67,8 @@ export default function App() {
               <Route path="/customget/*" element={<HomeCustomGET />} />
               <Route path="/*" element={<Home />} />
             </Routes>
-          </HistoryRouter>
-        </ModalProvider>
+          </ModalProvider>
+        </HistoryRouter>
       )}
       {!user.isLogged && !isLocalBackend && <Loader />}
     </Suspense>
