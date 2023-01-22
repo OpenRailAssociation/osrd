@@ -10,6 +10,7 @@
     left: 0;
     width: 100%;
     height: 100%;
+    backdrop-filter: blur(4px);
     background-color: rgba(255, 255, 255, 0.5);
     z-index: 3;
     .scenario-loader-msg {
@@ -53,18 +54,17 @@
         overflow: auto;
         height: calc(var(--content-height) - 10.5rem);
         .scenario-timetable-train {
+          position: relative;
+          display: flex;
           margin-bottom: 0.5rem;
           .scenario-timetable-train-buttons {
-            border-radius: 4px 4px 0 0;
-            background-color: var(--coolgray1);
             display: none;
-            justify-content: flex-end;
-            align-items: center;
+            background-color: var(--coolgray3);
+            border-radius: 0 4px 4px 0;
             button {
-              border-radius: 4px 4px 0 0;
               background-color: transparent;
               border: none;
-              padding: 0.25rem 1rem;
+              padding: 0.25rem 0.5rem;
               transition: 0.2s;
               height: 100%;
             }
@@ -90,6 +90,7 @@
               }
             }
             .scenario-timetable-train-buttons-delete {
+              border-radius: 0 4px 4px 0;
               color: var(--red);       
               &:hover {
                 background-color: var(--red);
@@ -118,10 +119,10 @@
                   border-radius: 4px;
                   color: var(--secondary);
                   background-color: var(--coolgray1);
-                  font-size: .8rem;
+                  font-size: .6rem;
                   margin: 0.25rem 0.5rem 0.25rem 0;
-                  padding: 0 0.25rem;
-                  min-width: 2rem;
+                  padding: 0.25rem;
+                  min-width: 1.5rem;
                   text-align: center;
                 }
                 font-weight: bold;
@@ -173,6 +174,7 @@
           }
           &:hover {
             .scenario-timetable-train-container {
+              border-radius: 4px 0 0 4px;
               border-color: var(--secondary);
               .scenario-timetable-train-header {
                 background-color: var(--secondary);
@@ -186,6 +188,16 @@
         }
       }
     }
+  }
+  .scenario-managetrainschedule {
+    position: absolute;
+    top: 0;
+    left: 0;
+    backdrop-filter: blur(8px);
+    background-color: var(--coolgray1);
+    z-index: 3;
+    height: 100%;
+    width: 100%;
   }
   .scenario-results {
     position: relative;

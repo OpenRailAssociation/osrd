@@ -1,3 +1,11 @@
+.manage-train-schedule-title {
+  font-weight: 500;
+  font-size: 1.5rem;
+  text-transform: uppercase;
+  color: var(--coolgray5);
+  margin-top: 0.5rem;
+}
+
 .osrd-config-mastcontainer {
   min-height: 80vh;
 }
@@ -40,7 +48,7 @@
 
 .osrd-config-item-container-map {
   border-radius: 0 0 4px 4px;
-  height: 100%;
+  height: 40vh;
   .btn-map-container {
     top: 1.5rem;
     right: 1.5rem;
@@ -97,10 +105,6 @@
     position: absolute;
     font-size: 0.7rem;
   }
-}
-
-.osrd-config-item-map {
-  height: calc(90vh - 3rem);
 }
 
 .osrd-config-place {

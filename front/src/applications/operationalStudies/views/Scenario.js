@@ -6,9 +6,12 @@ import { Link } from 'react-router-dom';
 import Timetable from 'applications/operationalStudies/components/Scenario/Timetable';
 import infraLogo from 'assets/pictures/components/tracks.svg';
 import ScenarioLoader from 'applications/operationalStudies/components/Scenario/ScenarioLoader';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { MODES } from 'applications/operationalStudies/consts';
+import { updateMode } from 'reducers/osrdconf';
 import SimulationResults from './SimulationResults';
 import { projectJSON, scenarioJSON, studyJSON } from '../components/Helpers/genFakeDataForProjects';
+import ManageTrainSchedule from './ManageTrainSchedule';
 
 function BreadCrumbs(props) {
   const { t } = useTranslation('operationalStudies/project');
@@ -27,16 +30,19 @@ function BreadCrumbs(props) {
 }
 
 export default function Scenario() {
+  const dispatch = useDispatch();
   const { t } = useTranslation('operationalStudies/scenario');
   const isUpdating = useSelector((state) => state.osrdsimulation.isUpdating);
   const [projectDetails, setProjectDetails] = useState();
   const [studyDetails, setStudyDetails] = useState();
   const [scenarioDetails, setScenarioDetails] = useState();
+  const [displayTrainScheduleManagement, setDisplayTrainScheduleManagement] = useState(true);
 
   useEffect(() => {
     setProjectDetails(projectJSON());
     setStudyDetails(studyJSON());
     setScenarioDetails(scenarioJSON());
+    dispatch(updateMode(MODES.simulation));
   }, []);
   return (
     <>
@@ -72,6 +78,11 @@ export default function Scenario() {
               </div>
             </div>
             <div className="col-lg-8">
+              {displayTrainScheduleManagement && (
+                <div className="scenario-managetrainschedule">
+                  <ManageTrainSchedule />
+                </div>
+              )}
               <div className="scenario-results">
                 <SimulationResults />
               </div>
