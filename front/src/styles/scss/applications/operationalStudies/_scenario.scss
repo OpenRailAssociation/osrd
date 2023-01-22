@@ -2,7 +2,11 @@
   --navbar-height: 4.0625rem;
   --content-height: calc(100vh - var(--navbar-height) - 2rem);
   position: relative;
-  padding: 1rem;
+  padding: 0.5rem 1rem;
+  @keyframes fadein {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
   .scenario-loader {
     position: absolute;
     color: var(--coolgray9);
@@ -19,7 +23,30 @@
       text-align: center;
     }
   }
+  .scenario-timetable-managetrainschedule {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    z-index: 3;
+    background-color: #d7d7d7aa;
+    border-radius: 4px;
+    animation: fadein 1s;
+    .scenario-timetable-managetrainschedule-header {
+      height: 8rem;
+      font-size: 2rem;
+      font-weight: 500;
+      backdrop-filter: blur(4px);
+      padding: 0.5rem;
+    }
+    .scenario-timetable-managetrainschedule-body {
+    }
+  }
   .scenario-sidemenu {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
     .scenario-details {
       display: flex;
       flex-direction: column;
@@ -193,13 +220,15 @@
     position: absolute;
     top: 0;
     left: 0;
-    backdrop-filter: blur(8px);
     background-color: var(--coolgray1);
     z-index: 3;
     height: 100%;
     width: 100%;
+    padding-left: 0.5rem;
+    animation: fadein 1s;
   }
   .scenario-results {
+    margin-top: 0.5rem;
     position: relative;
     overflow: auto;
     width: 100%;

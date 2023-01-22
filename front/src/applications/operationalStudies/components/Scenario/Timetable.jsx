@@ -16,6 +16,7 @@ import {
 import { deleteRequest, get, post } from 'common/requests';
 import { setFailure, setSuccess } from 'reducers/main';
 import trainNameWithNum from 'applications/operationalStudies/components/ManageTrainSchedule/AddTrainSchedule/trainNameHelper';
+import { MANAGE_TRAIN_SCHEDULE_TYPES } from 'applications/operationalStudies/consts';
 import getTimetable from './getTimetable';
 import TimetableTrainCard from './TimetableTrainCard';
 
@@ -162,7 +163,7 @@ export default function Timetable(props) {
         <button
           className="btn btn-primary btn-sm"
           type="button"
-          onClick={() => setDisplayTrainScheduleManagement(true)}
+          onClick={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.add)}
         >
           <FaPlus />
         </button>
