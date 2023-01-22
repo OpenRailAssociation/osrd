@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
+import PropTypes from 'prop-types';
 
 import { updateViewport } from 'reducers/map';
 
@@ -11,15 +12,11 @@ import Map from 'applications/operationalStudies/components/ManageTrainSchedule/
 import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelector';
 import SpeedLimitByTagSelector from 'applications/operationalStudies/components/ManageTrainSchedule/SpeedLimitByTagSelector';
 
-export default function ManageTrainSchedule() {
+export default function ManageTrainSchedule(props) {
+  const { setDisplayTrainScheduleManagement } = props;
   const dispatch = useDispatch();
-  const { t } = useTranslation([
-    'translation',
-    'operationalStudies/manageTrainSchedule',
-    'allowances',
-  ]);
+  const { t } = useTranslation(['translation', 'operationalStudies/manageTrainSchedule']);
   const [extViewport, setExtViewport] = useState(undefined);
-  const [mustUpdateTimetable, setMustUpdateTimetable] = useState(true);
 
   useEffect(() => {
     if (extViewport !== undefined) {
@@ -34,7 +31,9 @@ export default function ManageTrainSchedule() {
 
   return (
     <>
-      <div className="manage-train-schedule-title">1. Choisissez un matériel</div>
+      <div className="manage-train-schedule-title">
+        1.&nbsp;{t('operationalStudies/manageTrainSchedule:indications.chooseRollingStock')}
+      </div>
       <div className="row no-gutters">
         <div className="col-xl-6 pr-xl-2">
           <RollingStockSelector />
@@ -43,7 +42,9 @@ export default function ManageTrainSchedule() {
           <SpeedLimitByTagSelector />
         </div>
       </div>
-      <div className="manage-train-schedule-title">2. Déterminez l'itinéraire</div>
+      <div className="manage-train-schedule-title">
+        2.&nbsp;{t('operationalStudies/manageTrainSchedule:indications.choosePath')}
+      </div>
       <div className="row no-gutters">
         <div className="col-xl-6 pr-xl-2">
           <Itinerary title={t('translation:common.itinerary')} updateExtViewport={setExtViewport} />
@@ -56,12 +57,15 @@ export default function ManageTrainSchedule() {
           </div>
         </div>
       </div>
-      <div className="manage-train-schedule-title">3. Ajustez et validez</div>
+      <div className="manage-train-schedule-title">
+        3.&nbsp;{t('operationalStudies/manageTrainSchedule:indications.configValidate')}
+      </div>
       <AddTrainLabels />
-      <AddTrainSchedule
-        mustUpdateTimetable={mustUpdateTimetable}
-        setMustUpdateTimetable={setMustUpdateTimetable}
-      />
+      <AddTrainSchedule setDisplayTrainScheduleManagement={setDisplayTrainScheduleManagement} />
     </>
   );
 }
+
+ManageTrainSchedule.propTypes = {
+  setDisplayTrainScheduleManagement: PropTypes.func.isRequired,
+};

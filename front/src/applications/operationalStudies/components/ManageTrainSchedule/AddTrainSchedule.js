@@ -13,16 +13,17 @@ import debounce from 'lodash/debounce';
 import formatConf from 'applications/operationalStudies/components/ManageTrainSchedule/AddTrainSchedule/formatConf';
 import trainNameWithNum from 'applications/operationalStudies/components/ManageTrainSchedule/AddTrainSchedule/trainNameHelper';
 import { scheduleURL } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
+import getTimetable from '../Scenario/getTimetable';
 
 export default function AddTrainSchedule(props) {
-  const { setMustUpdateTimetable } = props;
+  const { setDisplayTrainScheduleManagement } = props;
   const [name, setName] = useState(undefined);
   const [isWorking, setIsWorking] = useState(false);
   const [trainCount, setTrainCount] = useState(1);
   const [trainStep, setTrainStep] = useState(2);
-  const [trainDelta, setTrainDelta] = useState(60);
+  const [trainDelta, setTrainDelta] = useState(15);
   const osrdconf = useSelector((state) => state.osrdconf);
-  const { t } = useTranslation(['translation', 'operationalStudies/manageTrainSchedule']);
+  const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const dispatch = useDispatch();
 
   const submitConf = async () => {
@@ -54,7 +55,7 @@ export default function AddTrainSchedule(props) {
         );
         dispatch(
           setSuccess({
-            title: t('operationalStudies/manageTrainSchedule:trainAdded'),
+            title: t('trainAdded'),
             text: `${osrdconf.name}: ${sec2time(originTime)}`,
           })
         );
@@ -64,11 +65,12 @@ export default function AddTrainSchedule(props) {
         dispatch(
           setFailure({
             name: e.name,
-            message: t(`operationalStudies/manageTrainSchedule:errorMessages.${e.message}`),
+            message: t(`errorMessages.${e.message}`),
           })
         );
       }
-      setMustUpdateTimetable(true);
+      getTimetable();
+      setDisplayTrainScheduleManagement(false);
     }
   };
 
@@ -92,7 +94,7 @@ export default function AddTrainSchedule(props) {
         <span className="mr-2 flex-grow-1">
           <InputSNCF
             type="text"
-            label={t('operationalStudies/manageTrainSchedule:trainScheduleName')}
+            label={t('trainScheduleName')}
             id="osrdconf-name"
             onChange={(e) => handleNameChange(e.target.value)}
             value={name}
@@ -103,7 +105,7 @@ export default function AddTrainSchedule(props) {
         <span className="mr-2">
           <InputSNCF
             type="number"
-            label={t('operationalStudies/manageTrainSchedule:trainScheduleStep')}
+            label={t('trainScheduleStep')}
             id="osrdconf-traincount"
             onChange={(e) => setTrainStep(parseInt(e.target.value, 10))}
             value={trainStep}
@@ -114,7 +116,7 @@ export default function AddTrainSchedule(props) {
         <span className="mr-2">
           <InputSNCF
             type="number"
-            label={t('operationalStudies/manageTrainSchedule:trainScheduleCount')}
+            label={t('trainScheduleCount')}
             id="osrdconf-traincount"
             onChange={(e) => setTrainCount(e.target.value)}
             value={trainCount}
@@ -125,7 +127,7 @@ export default function AddTrainSchedule(props) {
         <span className="mr-2">
           <InputSNCF
             type="number"
-            label={t('operationalStudies/manageTrainSchedule:trainScheduleDelta')}
+            label={t('trainScheduleDelta')}
             id="osrdconf-delta"
             onChange={(e) => setTrainDelta(e.target.value)}
             value={trainDelta}
@@ -134,6 +136,15 @@ export default function AddTrainSchedule(props) {
             sm
           />
         </span>
+      </div>
+      <div className="d-flex justify-content-end">
+        <button
+          className="btn btn-sm btn-secondary"
+          type="button"
+          onClick={() => setDisplayTrainScheduleManagement(false)}
+        >
+          {t('cancel')}
+        </button>
         {isWorking ? (
           <button className="btn btn-sm btn-primary disabled" type="button">
             <DotsLoader />
@@ -149,5 +160,5 @@ export default function AddTrainSchedule(props) {
 }
 
 AddTrainSchedule.propTypes = {
-  setMustUpdateTimetable: PropTypes.func.isRequired,
+  setDisplayTrainScheduleManagement: PropTypes.func.isRequired,
 };

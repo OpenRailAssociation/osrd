@@ -33,7 +33,7 @@ export default function ChipsSNCF(props) {
   return (
     <>
       {title ? (
-        <label className="font-weight-medium mb-2" htmlFor={chipsID}>
+        <label className="font-weight-medium mb-1 small" htmlFor={chipsID}>
           {title}
         </label>
       ) : null}
