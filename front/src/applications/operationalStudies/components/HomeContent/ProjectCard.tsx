@@ -8,8 +8,6 @@ import 'dayjs/locale/fr';
 import { AiFillFolderOpen } from 'react-icons/ai';
 import nextId from 'react-id-generator';
 
-dayjs.locale('fr');
-
 type Props = {
   details: {
     name: string;
