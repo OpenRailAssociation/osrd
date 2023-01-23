@@ -9,10 +9,8 @@ import { updateFeatureInfoClick } from 'reducers/map';
 import DisplayItinerary from 'applications/osrd/components/Itinerary/DisplayItinerary';
 import ModalSugerredVias from 'applications/osrd/components/Itinerary/ModalSuggeredVias';
 import ModalPathJSONDetail from 'applications/osrd/components/Itinerary/ModalPathJSONDetail';
-import Pathfinding from 'common/Pathfinding';
 
 function Itinerary(props) {
-  const [launchPathfinding, setLaunchPathfinding] = useState(false);
   const { vias } = useSelector((state) => state.osrdconf);
   const { updateExtViewport } = props;
   const dispatch = useDispatch();
@@ -73,20 +71,18 @@ function Itinerary(props) {
         const newVias = Array.from(osrdconf.vias);
         dispatch(replaceVias(newVias.reverse()));
       }
-      setLaunchPathfinding(true);
     }
   };
 
   const removeAllVias = () => {
     dispatch(replaceVias([]));
-    setLaunchPathfinding(true);
   };
 
   return (
     <>
       <div className="osrd-config-item mb-2">
         <div className="osrd-config-item-container">
-          <DisplayItinerary zoomToFeaturePoint={zoomToFeaturePoint} />
+          <DisplayItinerary zoomToFeaturePoint={zoomToFeaturePoint} zoomToFeature={zoomToFeature} />
         </div>
       </div>
       <ModalSugerredVias
@@ -94,7 +90,6 @@ function Itinerary(props) {
         removeAllVias={removeAllVias}
         removeViaFromPath={removeViaFromPath}
       />
-      <Pathfinding zoomToFeature={zoomToFeature} />
       <ModalPathJSONDetail />
     </>
   );

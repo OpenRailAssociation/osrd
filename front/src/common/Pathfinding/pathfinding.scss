@@ -19,4 +19,17 @@
     @extend .pathfinding-subsection;
     color: rgb(255, 196, 0);
   }
+
+  .loader-pathfinding-in-progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    min-width: 100%;
+    min-height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0,0,0,0.1);
+    z-index: 99999;
+  }
 }

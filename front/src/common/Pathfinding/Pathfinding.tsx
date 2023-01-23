@@ -37,16 +37,6 @@ import DotsLoader from 'common/DotsLoader/DotsLoader';
 
 import './pathfinding.scss';
 
-function LoaderPathfindingInProgress() {
-  return (
-    <div className="loaderPathfindingInProgress">
-      <div className="spinner-border" role="status">
-        <span className="sr-only">Loading...</span>
-      </div>
-    </div>
-  );
-}
-
 interface PathfindingState {
   running: boolean;
   done: boolean;
@@ -290,6 +280,15 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
     </button>
   );
 
+  const loaderPathfindingInProgress = (
+    <div className="loader-pathfinding-in-progress">
+      <div className="spinner-border" role="status">
+        <span className="sr-only">Loading...</span>
+      </div>
+      {t('pathfindingInProgress')}
+    </div>
+  );
+
   return (
     <div className="pathfinding-main-container">
       <h2>{t('pathfinding')}</h2>
@@ -318,13 +317,7 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
           ])}
         </div>
       )}
-      <div>
-        {pathfindingState.running && (
-          <div className="osrd-config-centered-item">
-            <DotsLoader /> {t('pathfindingInProgress')}
-          </div>
-        )}
-      </div>
+      {pathfindingState.running && loaderPathfindingInProgress}
     </div>
   );
 }
