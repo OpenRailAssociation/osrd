@@ -67,7 +67,7 @@ function UploadFileModal() {
               <button
                 type="button"
                 className="btn btn-block btn-sm btn-secondary"
-                onClick={() => closeModal()}
+                onClick={closeModal}
               >
                 {t('translation:common:cancel')}
               </button>

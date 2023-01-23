@@ -32,7 +32,6 @@ export default function StudyCard({ details }: Props) {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    console.log('redirect to study');
     navigate('/operational-studies/study');
   };
 

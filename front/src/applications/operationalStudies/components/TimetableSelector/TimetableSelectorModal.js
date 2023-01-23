@@ -131,7 +131,7 @@ export default function TimetableSelectorModal() {
             <button
               className="btn btn-secondary flex-fill btn-sm"
               type="button"
-              onClick={() => closeModal()}
+              onClick={closeModal}
             >
               {t('translation:common.close')}
             </button>
