@@ -13,6 +13,7 @@ type trainType = {
   arrival: number;
   labels: Array<1>;
   speed_limit_composition: string;
+  isFiltered: boolean;
 };
 type selectedProjectionType = {
   id: number;
@@ -20,7 +21,7 @@ type selectedProjectionType = {
 };
 type Props = {
   train: trainType;
-  selectedTrain: number;
+  selectedTrain: boolean;
   selectedProjection: selectedProjectionType;
   idx: number;
   changeSelectedTrain: (idx: number) => void;
@@ -41,8 +42,8 @@ export default function TimetableTrainCard({
 }: Props) {
   const { t } = useTranslation(['simulation']);
 
-  return (
-    <div className={`scenario-timetable-train ${selectedTrain === idx ? 'selected' : ''}`}>
+  return !train.isFiltered ? (
+    <div className={`scenario-timetable-train ${selectedTrain ? 'selected' : ''}`}>
       <div
         className="scenario-timetable-train-container"
         role="button"
@@ -107,5 +108,5 @@ export default function TimetableTrainCard({
         </button>
       </div>
     </div>
-  );
+  ) : null;
 }
