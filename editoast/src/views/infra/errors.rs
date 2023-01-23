@@ -2,7 +2,7 @@ use crate::api_error::{ApiError, ApiResult};
 use crate::db_connection::DBConnection;
 use crate::schema::InfraErrorType;
 use crate::views::pagination::{paginate, PaginationError};
-use diesel::sql_types::{BigInt, Integer, Json, Nullable, Text};
+use diesel::sql_types::{BigInt, Json, Nullable, Text};
 use diesel::{PgConnection, RunQueryDsl};
 use rocket::http::Status;
 use rocket::response::status::Custom;
@@ -19,7 +19,7 @@ pub fn routes() -> Vec<rocket::Route> {
 /// Return the list of errors of an infra
 #[get("/<infra>/errors?<page>&<page_size>&<error_type>&<object_id>&<level>")]
 async fn list_errors(
-    infra: i32,
+    infra: i64,
     page: Option<i64>,
     page_size: Option<i64>,
     level: Option<Level>,
@@ -118,7 +118,7 @@ impl From<InfraErrorQueryable> for InfraErrorModel {
 
 fn get_paginated_infra_errors(
     conn: &mut PgConnection,
-    infra: i32,
+    infra: i64,
     page: i64,
     per_page: i64,
     level: Level,
@@ -141,7 +141,7 @@ fn get_paginated_infra_errors(
     }
 
     let infra_errors = paginate(query, page, per_page)
-        .bind::<Integer, _>(infra)
+        .bind::<BigInt, _>(infra)
         .bind::<Text, _>(&error_type.unwrap_or_default())
         .bind::<Text, _>(&object_id.unwrap_or_default())
         .load::<InfraErrorQueryable>(conn)?;

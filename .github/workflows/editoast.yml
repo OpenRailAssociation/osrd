@@ -32,13 +32,13 @@ jobs:
         with:
           load: true
           files: "docker-compose.yml"
-          targets: "api,chartos"
+          targets: "api"
           set: |
             *.cache-from=type=gha
             *.cache-to=type=gha,mode=max
 
-      - name: Startup the postgres, redis, api and chartos
-        run: "docker-compose up --no-build -d postgres redis api chartos"
+      - name: Startup the postgres, redis and api
+        run: "docker-compose up --no-build -d postgres redis api"
         env:
           DOCKER_BUILDKIT: 1
           COMPOSE_DOCKER_CLI_BUILD: 1

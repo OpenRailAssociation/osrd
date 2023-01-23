@@ -5,11 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-import fr.sncf.osrd.api.stdcm.OccupancyBlock;
 import fr.sncf.osrd.api.stdcm.STDCMRequest;
-import fr.sncf.osrd.api.stdcm.STDCMResult;
-import fr.sncf.osrd.api.stdcm.UnavailableSpaceBuilder;
-import fr.sncf.osrd.api.stdcm.graph.STDCMSimulations;
+import fr.sncf.osrd.stdcm.graph.STDCMSimulations;
 import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.api.signaling.SignalingRoute;
 import fr.sncf.osrd.infra_state.api.TrainPath;

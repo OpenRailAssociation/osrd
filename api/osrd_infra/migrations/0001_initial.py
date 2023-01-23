@@ -24,18 +24,21 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Infra",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("name", models.CharField(max_length=128)),
-                ("railjson_version", models.CharField(default="2.3.1", editable=False, max_length=16)),
+                ("railjson_version", models.CharField(default="3.1.0", editable=False, max_length=16)),
                 ("owner", models.UUIDField(default="00000000-0000-0000-0000-000000000000", editable=False)),
                 ("version", models.CharField(default="1", editable=False, max_length=40)),
                 ("generated_version", models.CharField(editable=False, max_length=40, null=True)),
+                ("locked", models.BooleanField(default=False)),
+                ("created", models.DateTimeField(auto_now_add=True)),
+                ("modified", models.DateTimeField(auto_now=True)),
             ],
         ),
         migrations.CreateModel(
             name="PathModel",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("owner", models.UUIDField(default="00000000-0000-0000-0000-000000000000", editable=False)),
                 ("created", models.DateTimeField(auto_now_add=True)),
                 (
@@ -62,8 +65,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="RollingStock",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("version", models.CharField(default="2.1", editable=False, max_length=16)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("version", models.CharField(default="3.0", editable=False, max_length=16)),
                 (
                     "name",
                     models.CharField(
@@ -71,10 +74,17 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "effort_curve",
+                    "effort_curves",
                     models.JSONField(
-                        help_text="A curve mapping speed (in m/s) to maximum traction (in newtons)",
-                        validators=[osrd_infra.utils.PydanticValidator(osrd_infra.schemas.rolling_stock.EffortCurve)],
+                        help_text="A group of curves mapping speed (in m/s) to maximum traction (in newtons)",
+                        validators=[osrd_infra.utils.PydanticValidator(osrd_infra.schemas.rolling_stock.EffortCurves)],
+                    ),
+                ),
+                (
+                    "metadata",
+                    models.JSONField(
+                        default=dict,
+                        help_text="Dictionary of optional properties used in the frontend to display            the rolling stock: detail, number, reference, family, type, grouping,            series, subseries, unit",
                     ),
                 ),
                 ("length", models.FloatField(help_text="The length of the train, in meters")),
@@ -101,7 +111,14 @@ class Migration(migrations.Migration):
                         help_text="The inertia coefficient. It will be multiplied with the mass of the train to get its effective mass"
                     ),
                 ),
-                ("power_class", models.PositiveIntegerField()),
+                (
+                    "power_class",
+                    models.CharField(
+                        help_text="The power usage class of the train (optional because it is specific to SNCF)",
+                        max_length=255,
+                        null=True,
+                    ),
+                ),
                 (
                     "features",
                     django.contrib.postgres.fields.ArrayField(
@@ -144,16 +161,25 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Timetable",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("name", models.CharField(max_length=128)),
             ],
         ),
         migrations.CreateModel(
             name="TrainScheduleModel",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("train_name", models.CharField(max_length=128)),
                 ("departure_time", models.FloatField()),
+                (
+                    "comfort",
+                    models.CharField(
+                        choices=[("STANDARD", "STANDARD"), ("AC", "AC"), ("HEATING", "HEATING")],
+                        default=osrd_infra.schemas.rolling_stock.ComfortType["STANDARD"],
+                        max_length=8,
+                    ),
+                ),
+                ("speed_limit_composition", models.CharField(max_length=128, null=True)),
                 ("initial_speed", models.FloatField()),
                 (
                     "labels",
@@ -221,27 +247,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="ErrorLayer",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                (
-                    "obj_type",
-                    models.CharField(
-                        choices=[
-                            ("OperationalPoint", "OperationalPoint"),
-                            ("Route", "Route"),
-                            ("SwitchType", "SwitchType"),
-                            ("Switch", "Switch"),
-                            ("TrackSectionLink", "TrackSectionLink"),
-                            ("SpeedSection", "SpeedSection"),
-                            ("Catenary", "Catenary"),
-                            ("TrackSection", "TrackSection"),
-                            ("Signal", "Signal"),
-                            ("BufferStop", "BufferStop"),
-                            ("Detector", "Detector"),
-                        ],
-                        max_length=32,
-                    ),
-                ),
-                ("obj_id", models.CharField(max_length=255)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("geographic", django.contrib.gis.db.models.fields.GeometryField(null=True, srid=3857)),
                 ("schematic", django.contrib.gis.db.models.fields.GeometryField(null=True, srid=3857)),
                 (
@@ -258,7 +264,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="TrackSectionModel",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("obj_id", models.CharField(max_length=255)),
                 (
                     "data",
@@ -274,7 +280,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="TrackSectionLinkModel",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("obj_id", models.CharField(max_length=255)),
                 (
                     "data",
@@ -290,7 +296,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="TrackSectionLinkLayer",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("obj_id", models.CharField(max_length=255)),
                 ("geographic", django.contrib.gis.db.models.fields.PointField(srid=3857)),
                 ("schematic", django.contrib.gis.db.models.fields.PointField(srid=3857)),
@@ -302,7 +308,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="TrackSectionLayer",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("obj_id", models.CharField(max_length=255)),
                 ("geographic", django.contrib.gis.db.models.fields.LineStringField(srid=3857)),
                 ("schematic", django.contrib.gis.db.models.fields.LineStringField(srid=3857)),
@@ -314,7 +320,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="SwitchTypeModel",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("obj_id", models.CharField(max_length=255)),
                 (
                     "data",
@@ -330,7 +336,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="SwitchModel",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("obj_id", models.CharField(max_length=255)),
                 (
                     "data",
@@ -344,7 +350,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="SwitchLayer",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("obj_id", models.CharField(max_length=255)),
                 ("geographic", django.contrib.gis.db.models.fields.PointField(srid=3857)),
                 ("schematic", django.contrib.gis.db.models.fields.PointField(srid=3857)),
@@ -356,7 +362,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="SpeedSectionModel",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("obj_id", models.CharField(max_length=255)),
                 (
                     "data",
@@ -372,7 +378,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="SpeedSectionLayer",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("obj_id", models.CharField(max_length=255)),
                 ("geographic", django.contrib.gis.db.models.fields.MultiLineStringField(srid=3857)),
                 ("schematic", django.contrib.gis.db.models.fields.MultiLineStringField(srid=3857)),
@@ -384,7 +390,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="SignalModel",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("obj_id", models.CharField(max_length=255)),
                 (
                     "data",
@@ -398,7 +404,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="SignalLayer",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("obj_id", models.CharField(max_length=255)),
                 ("geographic", django.contrib.gis.db.models.fields.PointField(srid=3857)),
                 ("schematic", django.contrib.gis.db.models.fields.PointField(srid=3857)),
@@ -410,7 +416,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="RouteModel",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("obj_id", models.CharField(max_length=255)),
                 (
                     "data",
@@ -422,21 +428,9 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name="RouteLayer",
-            fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("obj_id", models.CharField(max_length=255)),
-                ("geographic", django.contrib.gis.db.models.fields.MultiLineStringField(srid=3857)),
-                ("schematic", django.contrib.gis.db.models.fields.MultiLineStringField(srid=3857)),
-            ],
-            options={
-                "verbose_name_plural": "generated route layer",
-            },
-        ),
-        migrations.CreateModel(
             name="OperationalPointModel",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("obj_id", models.CharField(max_length=255)),
                 (
                     "data",
@@ -452,7 +446,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="OperationalPointLayer",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("obj_id", models.CharField(max_length=255)),
                 ("geographic", django.contrib.gis.db.models.fields.MultiPointField(srid=3857)),
                 ("schematic", django.contrib.gis.db.models.fields.MultiPointField(srid=3857)),
@@ -464,7 +458,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="DetectorModel",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("obj_id", models.CharField(max_length=255)),
                 (
                     "data",
@@ -480,7 +474,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="DetectorLayer",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("obj_id", models.CharField(max_length=255)),
                 ("geographic", django.contrib.gis.db.models.fields.PointField(srid=3857)),
                 ("schematic", django.contrib.gis.db.models.fields.PointField(srid=3857)),
@@ -492,7 +486,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="CatenaryModel",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("obj_id", models.CharField(max_length=255)),
                 (
                     "data",
@@ -508,7 +502,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="CatenaryLayer",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("obj_id", models.CharField(max_length=255)),
                 ("geographic", django.contrib.gis.db.models.fields.MultiLineStringField(srid=3857)),
                 ("schematic", django.contrib.gis.db.models.fields.MultiLineStringField(srid=3857)),
@@ -520,7 +514,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="BufferStopModel",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("obj_id", models.CharField(max_length=255)),
                 (
                     "data",
@@ -536,7 +530,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="BufferStopLayer",
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("obj_id", models.CharField(max_length=255)),
                 ("geographic", django.contrib.gis.db.models.fields.PointField(srid=3857)),
                 ("schematic", django.contrib.gis.db.models.fields.PointField(srid=3857)),
@@ -545,9 +539,42 @@ class Migration(migrations.Migration):
                 "verbose_name_plural": "generated buffer stop layer",
             },
         ),
+        migrations.CreateModel(
+            name="LPVPanelLayer",
+            fields=[
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("obj_id", models.CharField(max_length=255)),
+                ("geographic", django.contrib.gis.db.models.fields.PointField(srid=3857)),
+                ("schematic", django.contrib.gis.db.models.fields.PointField(srid=3857)),
+                (
+                    "data",
+                    models.JSONField(validators=[osrd_infra.utils.PydanticValidator(osrd_infra.schemas.infra.Panel)]),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="ElectricalProfilesSet",
+            fields=[
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.CharField(max_length=128)),
+                (
+                    "data",
+                    models.JSONField(
+                        validators=[
+                            osrd_infra.utils.PydanticValidator(
+                                osrd_infra.schemas.external_generated_inputs.ElectricalProfilesList
+                            )
+                        ]
+                    ),
+                ),
+            ],
+            options={
+                "verbose_name_plural": "Electrical profiles sets",
+            },
+        ),
     ]
 
-    infra_foreign_models = ["pathmodel", "timetable", "errorlayer"]
+    infra_foreign_models = ["pathmodel", "timetable", "errorlayer", "lpvpanellayer"]
     infra_obj_models = [
         "bufferstopmodel",
         "bufferstoplayer",
@@ -558,7 +585,6 @@ class Migration(migrations.Migration):
         "operationalpointmodel",
         "operationalpointlayer",
         "routemodel",
-        "routelayer",
         "signallayer",
         "signalmodel",
         "speedsectionlayer",

@@ -3,7 +3,7 @@ use crate::api_error::ApiError;
 
 use crate::schema::operation::RailjsonObject;
 use crate::schema::{OSRDIdentified, ObjectType};
-use diesel::sql_types::{Integer, Json, Jsonb, Text};
+use diesel::sql_types::{BigInt, Json, Jsonb, Text};
 use diesel::{sql_query, PgConnection, QueryableByName, RunQueryDsl};
 use json_patch::Patch;
 use serde::{Deserialize, Serialize};
@@ -20,7 +20,7 @@ pub struct UpdateOperation {
 impl UpdateOperation {
     pub fn apply(
         &self,
-        infra_id: i32,
+        infra_id: i64,
         conn: &mut PgConnection,
     ) -> Result<RailjsonObject, Box<dyn ApiError>> {
         // Load object
@@ -29,7 +29,7 @@ impl UpdateOperation {
             "SELECT data FROM {} WHERE infra_id = $1 AND obj_id = $2",
             self.obj_type.get_table()
         ))
-        .bind::<Integer, _>(infra_id)
+        .bind::<BigInt, _>(infra_id)
         .bind::<Text, _>(&self.obj_id)
         .get_result(conn)?;
 
@@ -42,7 +42,7 @@ impl UpdateOperation {
             self.obj_type.get_table()
         ))
         .bind::<Json, _>(obj.data)
-        .bind::<Integer, _>(infra_id)
+        .bind::<BigInt, _>(infra_id)
         .bind::<Text, _>(&self.obj_id)
         .execute(conn)
         {

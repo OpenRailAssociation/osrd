@@ -7,7 +7,7 @@ COPY --chown=gradle:gradle . .
 RUN gradle shadowJar --no-daemon && \
   rm  -rf /root/.kotlin/daemon/kotlin-daemon.* /tmp/hsperfdata_root/ /tmp/kotlin-daemon.*
 
-FROM amazoncorretto:17
+FROM amazoncorretto:19
 
 COPY --from=build /home/gradle/src/build/libs/osrd-all.jar /app/osrd_core.jar
 

@@ -7,7 +7,7 @@ use crate::infra::RAILJSON_VERSION;
 use crate::infra_cache::InfraCache;
 use crate::schema::RailJson;
 use chashmap::CHashMap;
-use diesel::sql_types::Integer;
+use diesel::sql_types::BigInt;
 use diesel::sql_types::Text;
 use diesel::{sql_query, RunQueryDsl};
 use rocket::http::Status;
@@ -49,7 +49,7 @@ impl ApiError for ListErrorsRailjson {
 /// Serialize an infra
 #[get("/<infra>/railjson?<exclude_extensions>")]
 pub async fn get_railjson(
-    infra: i32,
+    infra: i64,
     exclude_extensions: bool,
     conn: DBConnection,
 ) -> ApiResult<Custom<String>> {
@@ -59,7 +59,7 @@ pub async fn get_railjson(
         include_str!("sql/get_infra_with_ext.sql")
     };
     let railjson: RailJsonData = conn
-        .run(move |conn| sql_query(query).bind::<Integer, _>(infra).get_result(conn))
+        .run(move |conn| sql_query(query).bind::<BigInt, _>(infra).get_result(conn))
         .await?;
     Ok(Custom(Status::Ok, railjson.railjson))
 }
@@ -71,7 +71,7 @@ pub async fn post_railjson(
     generate_data: bool,
     data: Result<Json<RailJson>, JsonError<'_>>,
     conn: DBConnection,
-    infra_caches: &State<Arc<CHashMap<i32, InfraCache>>>,
+    infra_caches: &State<Arc<CHashMap<i64, InfraCache>>>,
 ) -> ApiResult<Custom<JsonValue>> {
     let infra_caches = infra_caches.inner().clone();
     let railjson = data?.0;

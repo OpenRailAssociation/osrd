@@ -62,12 +62,7 @@ mod tests {
             pool_size: 1,
             ..Default::default()
         };
-        let rocket = create_server(
-            &Default::default(),
-            &pg_config,
-            Default::default(),
-            &Default::default(),
-        );
+        let rocket = create_server(&Default::default(), &pg_config, &Default::default());
         Client::tracked(rocket).expect("valid rocket instance")
     }
 

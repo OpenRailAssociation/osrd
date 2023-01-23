@@ -1,12 +1,11 @@
 package fr.sncf.osrd.stdcm;
 
-import static fr.sncf.osrd.api.stdcm.UnavailableSpaceBuilder.computeUnavailableSpace;
+import static fr.sncf.osrd.stdcm.UnavailableSpaceBuilder.computeUnavailableSpace;
 import static fr.sncf.osrd.train.TestTrains.REALISTIC_FAST_TRAIN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import fr.sncf.osrd.Helpers;
-import fr.sncf.osrd.api.stdcm.OccupancyBlock;
 import fr.sncf.osrd.api.stdcm.STDCMRequest;
 import org.junit.jupiter.api.Test;
 import java.util.Set;
