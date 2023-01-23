@@ -17,8 +17,6 @@ import {
   studyJSON,
 } from 'applications/operationalStudies/components/Helpers/genFakeDataForProjects';
 
-dayjs.locale('fr');
-
 function BreadCrumbs(props) {
   const { t } = useTranslation('operationalStudies/project');
   const { projectName, studyName } = props;
