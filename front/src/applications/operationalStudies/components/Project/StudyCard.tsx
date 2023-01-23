@@ -7,6 +7,7 @@ import nextId from 'react-id-generator';
 import { AiFillFolderOpen } from 'react-icons/ai';
 import { FcCalendar } from 'react-icons/fc';
 import studyLogo from 'assets/pictures/views/study.svg';
+import budgetFormat from '../Helpers/numberFormatting';
 
 type Props = {
   details: {
@@ -65,11 +66,7 @@ export default function StudyCard({ details }: Props) {
         </div>
         <div className="studies-list-card-financials-amount">
           <span className="studies-list-card-financials-amount-text">{t('budget')}</span>
-          {new Intl.NumberFormat('fr-FR', {
-            style: 'currency',
-            currency: 'EUR',
-            maximumSignificantDigits: 2,
-          }).format(details.budget)}
+          {budgetFormat(details.budget)}
         </div>
       </div>
 
