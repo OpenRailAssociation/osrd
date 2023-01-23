@@ -158,11 +158,13 @@ export default function Timetable(props) {
             noMargin
             unit={<i className="icons-search" />}
             sm
+            data-testid="scenarios-filter"
           />
         </div>
         <button
           className="btn btn-primary btn-sm"
           type="button"
+          data-testid="scenarios-filter-button"
           onClick={() => setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.add)}
         >
           <FaPlus />
