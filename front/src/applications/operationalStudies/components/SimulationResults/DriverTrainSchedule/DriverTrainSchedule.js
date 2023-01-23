@@ -13,14 +13,8 @@ export default function DriverTrainSchedule(props) {
   const getRollingStock = async () => {
     try {
       const trainScheduleDetails = await get(`${TRAINSCHEDULE_URL}/${data.id}/`);
-      try {
-        const rollingStock = await get(
-          `${ROLLINGSTOCK_URL}/${trainScheduleDetails.rolling_stock}/`
-        );
-        setRollingStockSelected(rollingStock);
-      } catch (e) {
-        console.log('ERROR', e);
-      }
+      const rollingStock = await get(`${ROLLINGSTOCK_URL}/${trainScheduleDetails.rolling_stock}/`);
+      setRollingStockSelected(rollingStock);
     } catch (e) {
       console.log('ERROR', e);
     }

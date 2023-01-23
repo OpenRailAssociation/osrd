@@ -62,7 +62,7 @@ export default function Timetable(props) {
         })
       );
     } catch (e) {
-      console.log('ERROR', e);
+      console.error(e);
       dispatch(
         setFailure({
           name: e.name,
@@ -112,7 +112,7 @@ export default function Timetable(props) {
         })
       );
     } catch (e) {
-      console.log('ERROR', e);
+      console.error(e);
       dispatch(
         setFailure({
           name: e.name,
