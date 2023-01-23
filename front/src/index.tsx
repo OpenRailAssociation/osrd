@@ -17,9 +17,6 @@ import Loader from 'common/Loader';
 import { version } from '../package.json';
 import reportWebVitals from './reportWebVitals';
 
-// Must be required and not imported to be included in production build (strange bug ?)
-require('@sncf/bootstrap-sncf.metier.reseau');
-
 if (SENTRY_CONFIG.react_sentry_dsn) {
   Sentry.init({
     dsn: SENTRY_CONFIG.react_sentry_dsn,
