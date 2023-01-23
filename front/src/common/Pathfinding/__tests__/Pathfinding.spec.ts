@@ -27,6 +27,21 @@ describe('reducer', () => {
       mustBeLaunched: false,
     });
   });
+  test('pathfinding got started, previously in error', () => {
+    const state = {
+      ...initialState,
+      error: 'true',
+      mustBeLaunched: true,
+    };
+    const action = { type: 'PATHFINDING_STARTED' };
+    expect(reducer(state, action)).toEqual({
+      ...initialState,
+      running: true,
+      error: '',
+      done: false,
+      mustBeLaunched: false,
+    });
+  });
   test('pathfinding finished', () => {
     const state = {
       ...initialState,
@@ -67,7 +82,7 @@ describe('reducer', () => {
     expect(reducer(state, action)).toEqual({
       ...initialState,
       error: 'error message auietsrn',
-      done: true,
+      done: false,
       running: false,
       mustBeLaunched: false,
     });
@@ -98,6 +113,43 @@ describe('reducer', () => {
       };
       expect(reducer(state, action)).toEqual({
         ...initialState,
+        missingParam: true,
+      });
+    });
+    test('rollingStock missing, previously done', () => {
+      const state = {
+        ...initialState,
+        done: true,
+      };
+      const action = {
+        type: 'PATHFINDING_PARAM_CHANGED',
+        params: {
+          origin: { id: '1234' },
+          destination: { id: '5678' },
+        },
+      };
+      expect(reducer(state, action)).toEqual({
+        ...initialState,
+        error: '',
+        done: false,
+        missingParam: true,
+      });
+    });
+    test('rollingStock missing, previously in error', () => {
+      const state = {
+        ...initialState,
+        error: 'error',
+      };
+      const action = {
+        type: 'PATHFINDING_PARAM_CHANGED',
+        params: {
+          origin: { id: '1234' },
+          destination: { id: '5678' },
+        },
+      };
+      expect(reducer(state, action)).toEqual({
+        ...initialState,
+        error: '',
         missingParam: true,
       });
     });

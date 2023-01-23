@@ -73,6 +73,7 @@ export function reducer(state: PathfindingState, action: Action): PathfindingSta
         ...state,
         running: true,
         done: false,
+        error: '',
         mustBeLaunched: false,
       };
     }
@@ -89,7 +90,7 @@ export function reducer(state: PathfindingState, action: Action): PathfindingSta
       return {
         ...state,
         running: false,
-        done: true,
+        done: false,
         error: action.message || '',
         mustBeLaunched: false,
       };
@@ -103,6 +104,8 @@ export function reducer(state: PathfindingState, action: Action): PathfindingSta
         return {
           ...state,
           running: false,
+          error: '',
+          done: false,
           missingParam: true,
         };
       }
