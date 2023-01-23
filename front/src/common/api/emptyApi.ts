@@ -12,10 +12,6 @@ export const baseApi = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: `${MAIN_API.proxy}/`, prepareHeaders }),
   endpoints: () => ({}),
 });
-export const baseChartosApi = createApi({
-  baseQuery: fetchBaseQuery({ baseUrl: `${MAIN_API.proxy_chartis}/`, prepareHeaders }),
-  endpoints: () => ({}),
-});
 export const baseEditoastApi = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: `${MAIN_API.proxy_editoast}/`, prepareHeaders }),
   endpoints: () => ({}),

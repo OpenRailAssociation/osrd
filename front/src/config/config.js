@@ -2,7 +2,6 @@ import { env } from 'env';
 
 export const MAIN_API = {
   proxy: env.REACT_APP_API_URL,
-  proxy_chartis: env.REACT_APP_CHARTIS_URL,
   proxy_editoast: env.REACT_APP_EDITOAST_URL,
   version: '0.0.1',
   editor: {

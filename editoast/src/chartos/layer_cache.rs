@@ -85,8 +85,7 @@ pub fn count_tiles(max_zoom: u64, bbox: &BoundingBox) -> u64 {
 }
 
 pub fn get_layer_cache_prefix(layer_name: &str, infra_id: i64) -> String {
-    // TODO rename chartis -> editoast once https://github.com/DGEXSolutions/osrd/issues/2893 is done
-    format!("chartis.layer.{layer_name}.infra_{infra_id}")
+    format!("editoast.layer.{layer_name}.infra_{infra_id}")
 }
 
 pub fn get_view_cache_prefix(layer_name: &str, infra_id: i64, view_name: &str) -> String {
@@ -162,7 +161,7 @@ mod tests {
     fn test_get_layer_cache_prefix() {
         assert_eq!(
             get_layer_cache_prefix("track_sections", 1),
-            "chartis.layer.track_sections.infra_1"
+            "editoast.layer.track_sections.infra_1"
         );
     }
 
@@ -170,7 +169,7 @@ mod tests {
     fn test_get_view_cache_prefix() {
         assert_eq!(
             get_view_cache_prefix("track_sections", 1, "geo"),
-            "chartis.layer.track_sections.infra_1.geo"
+            "editoast.layer.track_sections.infra_1.geo"
         );
     }
 
@@ -178,10 +177,10 @@ mod tests {
     fn test_get_cache_tile_key() {
         assert_eq!(
             get_cache_tile_key(
-                "chartis.layer.track_sections.infra_1",
+                "editoast.layer.track_sections.infra_1",
                 &Tile { x: 1, y: 2, z: 3 }
             ),
-            "chartis.layer.track_sections.infra_1.tile/3/1/2"
+            "editoast.layer.track_sections.infra_1.tile/3/1/2"
         );
     }
 }

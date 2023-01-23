@@ -432,7 +432,9 @@ dependencies = [
  "editoast_derive",
  "enum-map",
  "json-patch",
+ "mvt",
  "pathfinding",
+ "pointy",
  "rand 0.8.5",
  "redis",
  "rocket",
@@ -1026,6 +1028,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "mvt"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "137403895b2731e6d750405e0ce012a5d5cdf6c15229eb656362cf236a0dac8c"
+dependencies = [
+ "log",
+ "pointy",
+ "protobuf",
+]
+
+[[package]]
 name = "native-tls"
 version = "0.2.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1261,6 +1274,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6ac9a59f73473f1b8d852421e59e64809f025994837ef743615c6d0c5b305160"
 
 [[package]]
+name = "pointy"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a4d08aa04435c90720e887d62fdad481413cfb73dfcdc3852e6daaf147c22616"
+
+[[package]]
 name = "ppv-lite86"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1320,6 +1339,12 @@ dependencies = [
  "version_check",
  "yansi",
 ]
+
+[[package]]
+name = "protobuf"
+version = "2.17.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cb14183cc7f213ee2410067e1ceeadba2a7478a59432ff0747a335202798b1e2"
 
 [[package]]
 name = "quote"

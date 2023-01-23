@@ -1,14 +1,18 @@
 use crate::api_error::ApiResult;
-use crate::chartos::{Layer, MapLayers};
+use crate::chartos::{get, get_cache_tile_key, get_view_cache_prefix, set, Layer, MapLayers, Tile};
 use crate::client::MapLayersConfig;
+use crate::db_connection::{DBConnection, RedisPool};
+use diesel::sql_types::Integer;
+use diesel::{sql_query, RunQueryDsl};
 use rocket::serde::json::{json, Value as JsonValue};
-
 use rocket::State;
 
 use rocket::http::Status;
 use thiserror::Error;
 
 use crate::api_error::ApiError;
+
+use super::mvt_utils::{create_and_fill_mvt_tile, get_geo_json_sql_query, GeoJsonAndData};
 
 #[derive(Debug, Error)]
 enum LayersError {
@@ -75,7 +79,7 @@ pub async fn layer_view(
     }
 
     let tiles_url_pattern = format!(
-        "{root_url}/tile/{layer_slug}/{view_slug}/{{z}}/{{x}}/{{y}}/?infra={infra}",
+        "{root_url}/layers/tile/{layer_slug}/{view_slug}/{{z}}/{{x}}/{{y}}/?infra={infra}",
         root_url = map_layers_config.root_url
     );
 
@@ -89,6 +93,65 @@ pub async fn layer_view(
         "minzoom": 0,
         "maxzoom": map_layers_config.max_zoom,
     }))
+}
+
+/// Gets mvt tile from the cache if possible, otherwise gets data fro the data base and caches it in redis
+#[get(
+    "/tile/<layer_slug>/<view_slug>/<z>/<x>/<y>?<infra>",
+    format = "application/octet-stream"
+)]
+#[allow(clippy::too_many_arguments)]
+pub async fn cache_and_get_mvt_tile<'a>(
+    layer_slug: &str,
+    view_slug: &str,
+    z: u64,
+    x: u64,
+    y: u64,
+    infra: i64,
+    map_layers: &State<MapLayers>,
+    conn: DBConnection,
+    pool: &RedisPool,
+) -> ApiResult<Vec<u8>> {
+    let layer = match map_layers.layers.get(layer_slug) {
+        Some(layer) => layer,
+        None => return Err(LayersError::new_layer_not_found(layer_slug, map_layers).into()),
+    };
+    let view = match layer.views.get(view_slug) {
+        Some(view) => view,
+        None => return Err(LayersError::new_view_not_found(view_slug, layer).into()),
+    };
+    let cache_key = get_cache_tile_key(
+        &get_view_cache_prefix(layer_slug, infra, view_slug),
+        &Tile { x, y, z },
+    );
+    let cached_value = get::<Vec<u8>>(pool, &cache_key).await;
+
+    if let Some(value) = cached_value {
+        return Ok(value);
+    }
+
+    let geo_json_query = get_geo_json_sql_query(&layer.table_name, view);
+    let records = conn
+        .run::<_, ApiResult<_>>(move |conn| {
+            match sql_query(geo_json_query)
+                .bind::<Integer, _>(z as i32)
+                .bind::<Integer, _>(x as i32)
+                .bind::<Integer, _>(y as i32)
+                .bind::<Integer, _>(infra as i32)
+                .get_results::<GeoJsonAndData>(conn)
+            {
+                Ok(results) => Ok(results),
+                Err(err) => Err(err.into()),
+            }
+        })
+        .await?;
+    let mvt_bytes: Vec<u8> = create_and_fill_mvt_tile(z, x, y, layer_slug, records)
+        .to_bytes()
+        .unwrap();
+    set(pool, &cache_key, mvt_bytes.clone())
+        .await
+        .unwrap_or_else(|_| panic!("Fail to set value in redis with key {cache_key}"));
+    Ok(mvt_bytes)
 }
 
 #[cfg(test)]
@@ -126,7 +189,7 @@ mod tests {
                     "track_sections": "id"
                 },
                 "scheme": "xyz",
-                "tiles": ["http://localhost:8090/tile/track_sections/geo/{z}/{x}/{y}/?infra=2"],
+                "tiles": ["http://localhost:8090/layers/tile/track_sections/geo/{z}/{x}/{y}/?infra=2"],
                 "attribution": "",
                 "minzoom": 0,
                 "maxzoom": 18
