@@ -12,6 +12,7 @@ type Props = {
 export default function TimetableManageTrainSchedule({ setDisplayTrainScheduleManagement }: Props) {
   const { t } = useTranslation('operationalStudies/manageTrainSchedule');
   const [mustUpdateTimetable, setMustUpdateTimetable] = useState(false);
+
   return (
     <div className="scenario-timetable-managetrainschedule">
       <div className="scenario-timetable-managetrainschedule-header">
