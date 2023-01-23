@@ -16,6 +16,7 @@ import {
   scenariosListJSON,
   studyJSON,
 } from 'applications/operationalStudies/components/Helpers/genFakeDataForProjects';
+import budgetFormat from 'applications/operationalStudies/components/Helpers/numberFormatting';
 
 function BreadCrumbs(props) {
   const { t } = useTranslation('operationalStudies/project');
@@ -175,11 +176,7 @@ export default function Study() {
                 </div>
                 <div className="study-details-financials-amount">
                   <span className="study-details-financials-amount-text">{t('budget')}</span>
-                  {new Intl.NumberFormat('fr-FR', {
-                    style: 'currency',
-                    currency: 'EUR',
-                    maximumSignificantDigits: 2,
-                  }).format(studyDetails.budget)}
+                  {budgetFormat(studyDetails.budget)}
                 </div>
               </div>
 

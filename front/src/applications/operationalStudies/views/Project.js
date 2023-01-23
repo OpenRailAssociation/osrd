@@ -16,6 +16,7 @@ import { BiTargetLock } from 'react-icons/bi';
 import { FaPlus } from 'react-icons/fa';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import budgetFormat from '../components/Helpers/numberFormatting';
 
 function BreadCrumbs(props) {
   const { t } = useTranslation('operationalStudies/project');
@@ -108,11 +109,7 @@ export default function Project() {
                 </div>
                 <div className="project-details-financials-amount">
                   <span className="project-details-financials-amount-text">{t('totalBudget')}</span>
-                  {new Intl.NumberFormat('fr-FR', {
-                    style: 'currency',
-                    currency: 'EUR',
-                    maximumSignificantDigits: 2,
-                  }).format(projectDetails.budget)}
+                  {budgetFormat(projectDetails.budget)}
                 </div>
               </div>
               <div className="project-details-tags">
