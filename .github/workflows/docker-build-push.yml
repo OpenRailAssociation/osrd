@@ -51,7 +51,6 @@ jobs:
         NGINX_CONFIG=nginx-dev.conf
         REACT_APP_LOCAL_BACKEND=True
         REACT_APP_API_URL=http://localhost:8000
-        REACT_APP_CHARTIS_URL=http://localhost:7000
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
