@@ -4,6 +4,7 @@ import { FaTrash, FaPencilAlt } from 'react-icons/fa';
 import { GiPathDistance } from 'react-icons/gi';
 import { MdContentCopy } from 'react-icons/md';
 import { sec2time } from 'utils/timeManipulation';
+import nextId from 'react-id-generator';
 
 type trainType = {
   id: number;
@@ -70,7 +71,9 @@ export default function TimetableTrainCard({
         </div>
         <div className="scenario-timetable-train-tags">
           {train.labels.map((tag) => (
-            <div className="scenario-timetable-train-tags-tag">{tag}</div>
+            <div className="scenario-timetable-train-tags-tag" key={nextId()}>
+              {tag}
+            </div>
           ))}
         </div>
       </div>

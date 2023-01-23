@@ -62,6 +62,8 @@ export default function AddTrainSchedule(props) {
           })
         );
         setIsWorking(false);
+        getTimetable();
+        setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
       } catch (e) {
         setIsWorking(false);
         dispatch(
@@ -71,8 +73,6 @@ export default function AddTrainSchedule(props) {
           })
         );
       }
-      getTimetable();
-      setDisplayTrainScheduleManagement(MANAGE_TRAIN_SCHEDULE_TYPES.none);
     }
   };
 

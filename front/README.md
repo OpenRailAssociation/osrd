@@ -44,6 +44,8 @@ OSRD's front is organized in 5 main `applications/`.
 
 All applications are contained in a single folder, have a `home` JS/TS file and views & components organized in folders.
 
+**The components propose the main JS/TS file and eventually another folder with same name containing some minors subcomponents linked to.**
+
 - [customget/](#isolated-space-time-chart-for-research-needs-customget)
   * components/
   * views/
@@ -83,13 +85,14 @@ The operational studies application enables capacity studies to be carried out o
   * SimulationResults.tsx
   * Study.js
 
-The workflow is as follows:
+The functional workflow works as follows:
 - create a project `applications/operationalStudies/views/HomeContent.js`
 - create a study in this project `applications/operationalStudies/views/Project.js`
 - choose an infrastructure to create a scenario in the study `applications/operationalStudies/views/Study.js`
 
 Once in a scenario `applications/operationalStudies/views/Scenario.js` you have to add trains in the timetable `applications/operationalStudies/views/ManageTrainSchedule.jsx`.
 To do so:
+- choose an infrastructure & timetable *DEPRECATED: will be removed soon*
 - choose a rolling stock `common/rollingStockSelector` and a composition code
 - define a path on the map with crossing points (the path takes into account the restrictions of the material and the infrastructure)
 - determine possible margins

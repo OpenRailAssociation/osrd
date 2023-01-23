@@ -119,7 +119,7 @@ export default function OSRDConfig({ setCurrentStdcmRequestStatus }: OSRDStdcmCo
         </div>
         <div className="col-md-5 col-lg-6">
           <div className="osrd-config-item mb-2">
-            <div className="osrd-config-item-container h-100 osrd-config-item-container-map">
+            <div className="osrd-config-item-container osrd-config-item-container-map">
               <Map />
             </div>
           </div>
