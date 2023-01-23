@@ -135,7 +135,12 @@ export default function Timetable(props) {
 
   useEffect(() => {
     if (debouncedTerm !== '' && departureArrivalTimes) {
-      setTrainsList(departureArrivalTimes.filter((train) => train.name.includes(debouncedTerm)));
+      setTrainsList(
+        departureArrivalTimes.map((train) => ({
+          ...train,
+          isFiltered: !train.name.includes(debouncedTerm),
+        }))
+      );
     } else {
       setTrainsList(departureArrivalTimes);
     }
@@ -176,7 +181,7 @@ export default function Timetable(props) {
               <TimetableTrainCard
                 train={train}
                 key={nextId()}
-                selectedTrain={selectedTrain}
+                selectedTrain={selectedTrain === idx}
                 selectedProjection={selectedProjection}
                 idx={idx}
                 changeSelectedTrain={changeSelectedTrain}
