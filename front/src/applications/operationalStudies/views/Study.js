@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Loader from 'common/Loader';
 import nextId from 'react-id-generator';
-import dayjs from 'dayjs';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import ScenarioCard from 'applications/operationalStudies/components/Study/ScenarioCard';
@@ -16,7 +15,10 @@ import {
   scenariosListJSON,
   studyJSON,
 } from 'applications/operationalStudies/components/Helpers/genFakeDataForProjects';
-import budgetFormat from 'applications/operationalStudies/components/Helpers/numberFormatting';
+import {
+  budgetFormat,
+  dateTimeFrenchFormatting,
+} from '../components/Helpers/numberAndDateFormatting';
 
 function BreadCrumbs(props) {
   const { t } = useTranslation('operationalStudies/project');
@@ -38,9 +40,7 @@ function DateBox(props) {
   return (
     <div className={`study-details-dates-date ${css}`}>
       <span className="study-details-dates-date-label">{t(`dates.${translation}`)}</span>
-      <span className="study-details-dates-date-value">
-        {dayjs(date).format('D MMM YYYY HH:mm').replace(/\./gi, '')}
-      </span>
+      <span className="study-details-dates-date-value">{dateTimeFrenchFormatting(date)}</span>
     </div>
   );
 }

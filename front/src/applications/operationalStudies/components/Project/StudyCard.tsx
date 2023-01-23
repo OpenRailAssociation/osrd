@@ -1,13 +1,11 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import dayjs from 'dayjs';
-import 'dayjs/locale/fr';
 import nextId from 'react-id-generator';
 import { AiFillFolderOpen } from 'react-icons/ai';
 import { FcCalendar } from 'react-icons/fc';
 import studyLogo from 'assets/pictures/views/study.svg';
-import budgetFormat from '../Helpers/numberFormatting';
+import { budgetFormat, dateTimeFrenchFormatting } from '../Helpers/numberAndDateFormatting';
 
 type Props = {
   details: {
@@ -83,7 +81,7 @@ export default function StudyCard({ details }: Props) {
             <FcCalendar />
           </span>
           <span className="mr-1">{t('modifiedOn')}</span>
-          {dayjs(details.lastModifiedDate).format('D MMM YYYY HH:mm').replace(/\./gi, '')}
+          {dateTimeFrenchFormatting(details.lastModifiedDate)}
         </div>
       </div>
     </div>
