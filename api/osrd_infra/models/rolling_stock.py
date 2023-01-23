@@ -119,7 +119,6 @@ class RollingStockCompoundImage(RollingStockImage):
 class RollingStockLivery(models.Model):
     name = models.CharField(max_length=255, help_text=_("Name of the livery"), default="default")
     rolling_stock = models.ForeignKey(RollingStock, related_name='liveries', on_delete=models.CASCADE)
-    # OneToOne relationship
     compound_image = models.OneToOneField(RollingStockCompoundImage, null=True, on_delete=models.CASCADE)
 
     class Meta:
@@ -131,7 +130,6 @@ class RollingStockLivery(models.Model):
 
 
 class RollingStockSeparatedImage(RollingStockImage):
-    # ManyToOne relationship
     livery = models.ForeignKey(RollingStockLivery, on_delete=models.CASCADE)
     order = models.IntegerField(help_text=_("Position of this image in its livery"), default=0)
 
