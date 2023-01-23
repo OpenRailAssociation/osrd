@@ -302,8 +302,7 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
       {pathfindingState.error && (
         <div className="pathfinding-error">
           <BiXCircle />
-          {t('pathfindingError')}
-          {pathfindingState.error}
+          {t('pathfindingError')} {pathfindingState.error}
         </div>
       )}
       {pathfindingState.missingParam && (
