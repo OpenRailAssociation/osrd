@@ -2,7 +2,7 @@ import django
 from django.db import migrations, models
 
 
-def run_sql_complexe_add_foreign_key(table_name: str, field_name: str, model_name: str, link_model: str, link_table: str, nullable: bool):
+def run_sql_complexe_add_foreign_key(table_name: str, field_name: str, model_name: str, link_model: str, link_table: str, nullable: bool = False):
     return migrations.RunSQL(
         sql=[(f"""ALTER TABLE osrd_infra_{table_name}
                 ADD {field_name}_id INTEGER {"NULL" if nullable else ""},
