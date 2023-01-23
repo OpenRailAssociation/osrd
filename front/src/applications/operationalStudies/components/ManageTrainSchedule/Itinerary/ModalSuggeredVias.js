@@ -66,7 +66,7 @@ export default function ModalSugerredVias(props) {
     <>
       <ModalHeaderSNCF>
         <h1>{`${t('manageVias')} ${vias.length > 0 ? `(${vias.length})` : ''}`}</h1>
-        <button className="btn btn-only-icon close" type="button" onClick={() => closeModal()}>
+        <button className="btn btn-only-icon close" type="button" onClick={closeModal}>
           <i className="icons-close" />
         </button>
       </ModalHeaderSNCF>
