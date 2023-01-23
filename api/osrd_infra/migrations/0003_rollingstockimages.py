@@ -9,7 +9,7 @@ from osrd_infra.migrations import run_sql_complexe_add_foreign_key
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("osrd_infra", "0001_initial"),
+        ("osrd_infra", "0002_add_electrical_profiles_to_schedules"),
     ]
 
     operations = [

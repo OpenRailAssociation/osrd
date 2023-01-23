@@ -1,6 +1,7 @@
 from typing import Dict
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer, Serializer
+from rest_framework_nested.serializers import NestedHyperlinkedModelSerializer
 from rest_framework_gis.fields import GeometryField
 
 from osrd_infra.models import (
@@ -38,16 +39,19 @@ class InfraSerializer(ModelSerializer):
         fields = "__all__"
 
 
-class RollingStockSerializer(ModelSerializer):
-    class Meta:
-        model = RollingStock
-        exclude = ["image"]
+class RollingStockLiverySerializer(NestedHyperlinkedModelSerializer):
+    parent_lookup_kwargs = {
+        'rolling_stock_pk': 'rolling_stock__pk',
+    }
 
-
-class RollingStockLiverySerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = RollingStockLivery
-        fields = ["url", "name"]
+        fields = ["name", "url"]
+        extra_kwargs = {
+            'url': {
+                'view_name': 'rolling_stock_livery-detail',
+            }
+        }
 
 
 class RollingStockSerializer(ModelSerializer):
@@ -56,6 +60,11 @@ class RollingStockSerializer(ModelSerializer):
     class Meta:
         model = RollingStock
         exclude = ["image"]
+        extra_kwargs = {
+            'url': {
+                'view_name': 'rolling_stock-detail',
+            }
+        }
 
 
 class LightRollingStockSerializer(ModelSerializer):
@@ -84,16 +93,14 @@ class CreateRollingStockLiverySerializer(Serializer):
 
     def create(self, validated_data):
         rolling_stock = RollingStock.objects.get(pk=validated_data["rolling_stock_id"])
-        images=validated_data["images"]
-        compound_image=validated_data["compound_image"]
+        images = validated_data["images"]
+        compound_image = validated_data["compound_image"]
 
-        # create compound_image
         compound_image = RollingStockCompoundImage(
             image=compound_image.open(mode='rb').read()
         )
         compound_image.save()
 
-        # create livery
         livery = RollingStockLivery(
             rolling_stock=rolling_stock,
             name=validated_data["livery_name"],
@@ -101,7 +108,6 @@ class CreateRollingStockLiverySerializer(Serializer):
         )
         livery.save()
 
-        # create separated_images
         for i in range(len(images)):
             image = images[i]
             RollingStockSeparatedImage(
