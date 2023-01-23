@@ -145,23 +145,6 @@ layers:
         joins:
           - inner join osrd_infra_bufferstopmodel buffer_stop on buffer_stop.obj_id = layer.obj_id and buffer_stop.infra_id = layer.infra_id
 
-  routes:
-    table_name: osrd_infra_routelayer
-    id_field: id
-    views:
-      geo:
-        on_field: geographic
-        cache_duration: 3600
-        data_expr: route.data
-        joins:
-          - inner join osrd_infra_routemodel route on route.obj_id = layer.obj_id and route.infra_id = layer.infra_id
-      sch:
-        on_field: schematic
-        cache_duration: 3600
-        data_expr: route.data
-        joins:
-          - inner join osrd_infra_routemodel route on route.obj_id = layer.obj_id and route.infra_id = layer.infra_id
-
   operational_points:
     table_name: osrd_infra_operationalpointlayer
     id_field: id

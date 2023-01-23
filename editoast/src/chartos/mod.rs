@@ -7,14 +7,14 @@ use std::collections::HashMap;
 
 use crate::db_connection::RedisPool;
 pub use bounding_box::{BoundingBox, InvalidationZone};
-pub use map_layers::{Layer, MapLayers};
+pub use map_layers::{Layer, MapLayers, View};
 use redis::RedisError;
 
-use self::layer_cache::{
+pub use self::layer_cache::{
     count_tiles, get_cache_tile_key, get_layer_cache_prefix, get_tiles_to_invalidate,
     get_view_cache_prefix, Tile,
 };
-use self::redis_utils::{delete, keys};
+pub use self::redis_utils::{delete, get, keys, set};
 
 /// Invalidates layer cache for a specific infra and view if provided
 ///

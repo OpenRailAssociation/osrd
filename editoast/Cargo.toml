@@ -38,3 +38,5 @@ enum-map = "2.4.2"
 tempfile = "3.3.0"
 editoast_derive = { path = "./editoast_derive" }
 serde_yaml = "0.9.17"
+mvt = "0.7.0"
+pointy = "0.2.1"
