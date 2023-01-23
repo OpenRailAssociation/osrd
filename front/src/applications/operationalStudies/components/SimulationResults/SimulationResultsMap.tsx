@@ -61,6 +61,7 @@ import IGN_BD_ORTHO from 'common/Map/Layers/IGN_BD_ORTHO';
 import IGN_SCAN25 from 'common/Map/Layers/IGN_SCAN25';
 import IGN_CADASTRE from 'common/Map/Layers/IGN_CADASTRE';
 import { MapLayerMouseEvent } from '../../../../types';
+import RenderBlockState from './SimulationResultsMap/RenderBlockState';
 
 const PATHFINDING_URI = '/pathfinding/';
 
@@ -505,6 +506,14 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
         )}
 
         {geojsonPath && selectedTrainHoverPosition && (
+          <RenderBlockState
+            point={selectedTrainHoverPosition}
+            geojsonPath={geojsonPath}
+            layerOrder={LAYER_GROUPS_ORDER[LAYERS.BLOCKSTATE.GROUP]}
+          />
+        )}
+
+        {geojsonPath && selectedTrainHoverPosition && (
           <TrainHoverPosition
             point={selectedTrainHoverPosition}
             isSelectedTrain
@@ -512,6 +521,7 @@ const Map: FC<MapProps> = ({ setExtViewport }) => {
             layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRAIN.GROUP]}
           />
         )}
+
         {geojsonPath &&
           otherTrainsHoverPosition.map((pt) => (
             <TrainHoverPosition

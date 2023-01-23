@@ -5,6 +5,7 @@ export const LAYER_GROUPS = Object.freeze({
   INFRA: Symbol('INFRA'),
   SIGNALS: Symbol('SIGNALS'),
   DYN_SIGNALS: Symbol('DYN_SIGNALS'),
+  BLOCKSTATE: Symbol('BLOCKSTATE'),
   TRAIN: Symbol('TRAIN'),
 });
 
@@ -15,7 +16,8 @@ export const LAYER_GROUPS_ORDER = Object.freeze({
   [LAYER_GROUPS.INFRA]: 3,
   [LAYER_GROUPS.SIGNALS]: 4,
   [LAYER_GROUPS.DYN_SIGNALS]: 5,
-  [LAYER_GROUPS.TRAIN]: 6,
+  [LAYER_GROUPS.BLOCKSTATE]: 6,
+  [LAYER_GROUPS.TRAIN]: 7,
 });
 
 /**
@@ -47,5 +49,7 @@ export const LAYERS = Object.freeze({
   // 5
   SIGNALS: { GROUP: LAYER_GROUPS.DYN_SIGNALS },
   // 6
+  BLOCKSTATE: { GROUP: LAYER_GROUPS.BLOCKSTATE },
+  // 7
   TRAIN: { GROUP: LAYER_GROUPS.TRAIN },
 });
