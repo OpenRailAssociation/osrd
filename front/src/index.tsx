@@ -15,6 +15,7 @@ import { persistor, store } from 'Store';
 import App from 'main/app';
 import Loader from 'common/Loader';
 import dayjs from 'dayjs';
+import 'dayjs/locale/fr';
 import { version } from '../package.json';
 import reportWebVitals from './reportWebVitals';
 
