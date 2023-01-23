@@ -1,37 +1,31 @@
 import React, { ComponentType, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import {
-  getInfraID,
-  getRollingStockID,
-  getSpeedLimitByTag,
-  getTimetableID,
-} from 'reducers/osrdconf/selectors';
+import { getDestination, getOrigin, getRollingStockID } from 'reducers/osrdconf/selectors';
 import DisplayMissingInfo from './DisplayMissingInfo';
 
 const withOSRDStdcmMissingInfo = <T extends {}>(Component: ComponentType<T>) => {
   return (hocProps: T) => {
     const { t } = useTranslation('missingInfo');
 
-    const infra = useSelector(getInfraID);
-    const timeTable = useSelector(getTimetableID);
+    const origin = useSelector(getOrigin);
+    const destination = useSelector(getDestination);
     const rollingStock = useSelector(getRollingStockID);
-    const speedLimitByTag = useSelector(getSpeedLimitByTag);
 
     const title = t('missingInfoTitle');
 
-    const missingInfoList: string[] = [
-      !infra ? t('missingInfra') : '',
-      !timeTable ? t('missingTimeTable') : '',
-      !rollingStock ? t('missingRollingStock') : '',
-      !speedLimitByTag ? t('missingSpeedLimitByTag') : '',
-    ];
+    const missingInfoList: string[] = [!rollingStock ? t('missingRollingStock') : ''];
 
+    const [isShowing, setIsShowing] = useState<boolean>(false);
     const [isCorrect, setIsCorrect] = useState<boolean>(false);
 
     useEffect(() => {
-      if (infra && timeTable && rollingStock && speedLimitByTag) setIsCorrect(true);
-    }, [infra, timeTable, rollingStock, speedLimitByTag]);
+      if (origin && destination) setIsShowing(true);
+    }, [origin, destination]);
+
+    useEffect(() => {
+      if (rollingStock) setIsCorrect(true);
+    }, [rollingStock]);
 
     return (
       !isCorrect && (
@@ -39,6 +33,7 @@ const withOSRDStdcmMissingInfo = <T extends {}>(Component: ComponentType<T>) => 
           {...(hocProps as T)}
           title={title}
           missingInfoList={missingInfoList}
+          isShowing={isShowing}
           isCorrect={isCorrect}
         />
       )
