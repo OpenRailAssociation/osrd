@@ -63,10 +63,10 @@ export default async function getTimetable() {
         })
       );
       store.dispatch(updateIsUpdating(false));
-      console.log('ERROR', e);
+      console.error(e);
     }
   } catch (e) {
     store.dispatch(updateIsUpdating(false));
-    console.log('ERROR', e);
+    console.error(e);
   }
 }

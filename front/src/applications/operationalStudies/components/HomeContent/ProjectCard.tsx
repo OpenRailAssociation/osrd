@@ -23,7 +23,6 @@ export default function ProjectCard({ details }: Props) {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    console.log('redirect to project');
     navigate('/operational-studies/project');
   };
 
