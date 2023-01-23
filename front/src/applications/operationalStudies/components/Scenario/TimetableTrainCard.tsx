@@ -40,7 +40,6 @@ export default function TimetableTrainCard({
   duplicateTrain,
 }: Props) {
   const { t } = useTranslation(['simulation']);
-  if (!selectedProjection) console.log('');
 
   return (
     <div className={`scenario-timetable-train ${selectedTrain === idx ? 'selected' : ''}`}>

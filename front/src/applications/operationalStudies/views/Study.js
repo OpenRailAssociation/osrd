@@ -76,7 +76,6 @@ export default function Study() {
 
   const handleSortOptions = (e) => {
     setSortOption(e.target.value);
-    console.log(e);
   };
 
   useEffect(() => {
