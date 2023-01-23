@@ -57,6 +57,7 @@ services:
   api:
     image: osrd/api
     container_name: osrd-api
+    platform: linux/amd64
     depends_on:
       postgres: {condition: service_healthy}
     restart: unless-stopped
