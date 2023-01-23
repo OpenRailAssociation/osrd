@@ -16,7 +16,7 @@ import { BiTargetLock } from 'react-icons/bi';
 import { FaPlus } from 'react-icons/fa';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import budgetFormat from '../components/Helpers/numberFormatting';
+import { budgetFormat } from '../components/Helpers/numberAndDateFormatting';
 
 function BreadCrumbs(props) {
   const { t } = useTranslation('operationalStudies/project');
@@ -50,7 +50,6 @@ export default function Project() {
 
   const handleSortOptions = (e) => {
     setSortOption(e.target.value);
-    console.log(e);
   };
 
   useEffect(() => {

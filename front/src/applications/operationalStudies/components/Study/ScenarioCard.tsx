@@ -1,11 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import dayjs from 'dayjs';
-import 'dayjs/locale/fr';
 import { RiFolderChartLine } from 'react-icons/ri';
 import infraLogo from 'assets/pictures/components/tracks.svg';
 import { AiFillFolderOpen } from 'react-icons/ai';
+import { dateTimeFrenchFormatting } from '../Helpers/numberAndDateFormatting';
 
 type Props = {
   details: {
@@ -47,7 +46,7 @@ export default function StudyCard({ details }: Props) {
         </div>
         <div className="scenarios-list-card-date">
           <span className="mr-1">{t('modifiedOn')}</span>
-          {dayjs(details.lastModifiedDate).format('D MMM YYYY HH:mm').replace(/\./gi, '')}
+          {dateTimeFrenchFormatting(details.lastModifiedDate)}
         </div>
       </div>
     </div>
