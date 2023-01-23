@@ -182,12 +182,7 @@ export default function formatStops(stop, idx, data) {
         </div>
       </td>
       <td>
-        <div
-          className="text-center"
-          data-toggle="tooltip"
-          data-placement="top"
-          title={`${stop.line_name}`}
-        >
+        <div className="text-center" title={`${stop.line_name}`}>
           <small>{stop.track_name}</small>
         </div>
       </td>
