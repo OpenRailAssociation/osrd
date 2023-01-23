@@ -31,6 +31,7 @@ export default function Home() {
                 img={operationalStudiesImg}
                 title={t('operationalStudies')}
                 link="/operational-studies/scenario"
+                data-testid="operationalStudies"
               />
             </div>
             <div className="col-6 col-sm-4 col-md-3 col-lg-2 mb-2">
