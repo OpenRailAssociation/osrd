@@ -8,8 +8,6 @@ import { AiFillFolderOpen } from 'react-icons/ai';
 import { FcCalendar } from 'react-icons/fc';
 import studyLogo from 'assets/pictures/views/study.svg';
 
-dayjs.locale('fr');
-
 type Props = {
   details: {
     id: string;

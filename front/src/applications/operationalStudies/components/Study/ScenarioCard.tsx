@@ -7,8 +7,6 @@ import { RiFolderChartLine } from 'react-icons/ri';
 import infraLogo from 'assets/pictures/components/tracks.svg';
 import { AiFillFolderOpen } from 'react-icons/ai';
 
-dayjs.locale('fr');
-
 type Props = {
   details: {
     id: string;

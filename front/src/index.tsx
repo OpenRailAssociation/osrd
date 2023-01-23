@@ -14,8 +14,11 @@ import { persistor, store } from 'Store';
 // Components
 import App from 'main/app';
 import Loader from 'common/Loader';
+import dayjs from 'dayjs';
 import { version } from '../package.json';
 import reportWebVitals from './reportWebVitals';
+
+dayjs.locale('fr');
 
 if (SENTRY_CONFIG.react_sentry_dsn) {
   Sentry.init({
