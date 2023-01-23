@@ -9,8 +9,27 @@
 - enjoy
 
 To connect to online backend, you can use `yarn start-osrd-dev` instead `yarn start`.
+## Commands list
+### `yarn start`
 
-For more informations, [see below](#running-the-app).
+Runs the app in a local development environment.
+
+This requires the other services (api, core, postgres…) to be running in your local environment as well.
+
+See [Main Readme](../README.md) if you need more information to run the docker.
+
+### `yarn start-osrd-dev`
+
+Runs the app in a local environment, using osrd.dev.dgexsol backend services.
+
+### `yarn test`
+
+Launches the test runner in the interactive watch mode.
+
+### `yarn build`
+
+Builds the app for production to the `build` folder.
+
 
 ## Design rules
 OSRD's front is based upon [SNCF Bootstrap](https://designmetier-bootstrap.sncf.fr/). It aims to follow SNCF's design system guidelines, although the style has deviated quite a bit due to components requiring a specific design.
@@ -174,24 +193,3 @@ All common code (and shared components) supposed to be in `common/`.
 
 ### Module editor
 
-# Running the app
-
-### `yarn start`
-
-Runs the app in a local development environment. <br />
-This requires the other services (api, core, postgres…) to be running in your local environment as well.
-
-See [Main Readme](../README.md) if you need more information to run the docker.
-
-### `yarn start-osrd-dev`
-
-Runs the app in a local environment, using osrd.dev.dgexsol backend services.
-
-### `yarn test`
-
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `yarn build`
-
-Builds the app for production to the `build` folder.<br />

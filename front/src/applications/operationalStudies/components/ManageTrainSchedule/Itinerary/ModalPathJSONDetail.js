@@ -50,7 +50,7 @@ export default function ModalPathJSONDetail() {
     <>
       <ModalHeaderSNCF>
         <h1>{`PathFinding n°${pathfindingID}`}</h1>
-        <button className="btn btn-only-icon close" type="button" onClick={() => closeModal()}>
+        <button className="btn btn-only-icon close" type="button" onClick={closeModal}>
           <i className="icons-close" />
         </button>
       </ModalHeaderSNCF>

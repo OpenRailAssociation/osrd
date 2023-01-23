@@ -141,7 +141,7 @@ function RollingStockModal(props) {
     <ModalBodySNCF>
       <div className="rollingstock-search p-2">
         <div className="rollingstock-search-filters">
-          <button type="button" className="close" aria-label="Close" onClick={() => closeModal()}>
+          <button type="button" className="close" aria-label="Close" onClick={closeModal}>
             <span aria-hidden="true">&times;</span>
           </button>
           <div className="row no-gutters">

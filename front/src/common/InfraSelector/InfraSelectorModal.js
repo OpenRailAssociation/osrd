@@ -89,7 +89,7 @@ export default function InfraSelectorModal() {
             </button>
           </div>
         </div>
-        <button type="button" className="close" aria-label="Close" onClick={() => closeModal()}>
+        <button type="button" className="close" aria-label="Close" onClick={closeModal}>
           <span aria-hidden="true">&times;</span>
         </button>
       </ModalHeaderSNCF>

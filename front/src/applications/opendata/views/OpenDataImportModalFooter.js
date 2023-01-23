@@ -37,11 +37,7 @@ export default function OpenDataImportModalFooter(props) {
             </button>
           </div>
         ) : null}
-        <button
-          onClick={() => closeModal()}
-          type="button"
-          className="btn btn-sm btn-secondary btn-block"
-        >
+        <button onClick={closeModal} type="button" className="btn btn-sm btn-secondary btn-block">
           {t('translation:common.close')}
         </button>
       </div>
