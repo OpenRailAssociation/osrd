@@ -16,7 +16,7 @@ import { BiTargetLock } from 'react-icons/bi';
 import { FaPlus } from 'react-icons/fa';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { budgetFormat } from '../components/Helpers/numberAndDateFormatting';
+import { budgetFormat } from 'utils/numbers';
 
 function BreadCrumbs(props) {
   const { t } = useTranslation('operationalStudies/project');

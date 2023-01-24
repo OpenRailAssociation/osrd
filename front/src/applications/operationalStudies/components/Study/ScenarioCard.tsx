@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { RiFolderChartLine } from 'react-icons/ri';
 import infraLogo from 'assets/pictures/components/tracks.svg';
 import { AiFillFolderOpen } from 'react-icons/ai';
-import { dateTimeFrenchFormatting } from '../Helpers/numberAndDateFormatting';
+import { dateTimeFrenchFormatting } from 'utils/date';
 
 type Props = {
   details: {

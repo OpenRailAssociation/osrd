@@ -5,7 +5,7 @@ import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { useNavigate } from 'react-router-dom';
 import { AiFillFolderOpen } from 'react-icons/ai';
 import nextId from 'react-id-generator';
-import { dateTimeFrenchFormatting } from '../Helpers/numberAndDateFormatting';
+import { dateTimeFrenchFormatting } from 'utils/date';
 
 type Props = {
   details: {

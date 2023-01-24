@@ -59,10 +59,10 @@
   "track": "Voie",
   "trainAdded": "Train ajouté",
   "trainLabels": "Étiquettes",
-  "trainScheduleCount": "Nombre",
-  "trainScheduleDelta": "Délai",
+  "trainScheduleCount": "Quantité",
+  "trainScheduleDelta": "Intervalle",
   "trainScheduleName": "Nom",
-  "trainScheduleStep": "Pas",
+  "trainScheduleStep": "Pas d'incrément",
   "via": "Étape",
   "vias": "Points de passage, arrêts"
 }
