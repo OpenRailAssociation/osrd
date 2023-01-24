@@ -1,17 +1,19 @@
 package fr.sncf.osrd.envelope;
 
 import static fr.sncf.osrd.envelope.EnvelopePhysics.getPartMechanicalEnergyConsumed;
-import static fr.sncf.osrd.envelope_sim.AllowanceTests.*;
+import static fr.sncf.osrd.envelope_sim.AllowanceTests.makeSimpleAllowanceEnvelope;
+import static fr.sncf.osrd.envelope_sim.AllowanceTests.makeStandardMarecoAllowance;
 import static org.junit.jupiter.api.Assertions.*;
 
 import fr.sncf.osrd.envelope.EnvelopeTestUtils.TestAttr;
 import fr.sncf.osrd.envelope.part.EnvelopePart;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.FlatPath;
+import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
 import fr.sncf.osrd.envelope_sim.allowances.utils.AllowanceValue;
 import fr.sncf.osrd.train.RollingStock;
-import org.junit.jupiter.api.Test;
 import fr.sncf.osrd.train.TestTrains;
+import org.junit.jupiter.api.Test;
 import java.util.List;
 
 class EnvelopePartTest {
@@ -19,8 +21,8 @@ class EnvelopePartTest {
     void toStringTest() {
         var part = EnvelopePart.generateTimes(
                 List.of(TestAttr.A),
-                new double[] {1.5, 5},
-                new double[] {3, 4}
+                new double[]{1.5, 5},
+                new double[]{3, 4}
         );
         assertEquals("EnvelopePart { TestAttr=A }", part.toString());
     }
@@ -29,8 +31,8 @@ class EnvelopePartTest {
     void getAttrTest() {
         var part = EnvelopePart.generateTimes(
                 List.of(TestAttr.A),
-                new double[] {1.5, 5},
-                new double[] {3, 4}
+                new double[]{1.5, 5},
+                new double[]{3, 4}
         );
         assertEquals(TestAttr.A, part.getAttr(TestAttr.class));
     }
@@ -38,8 +40,8 @@ class EnvelopePartTest {
     @Test
     void interpolateSpeedTest() {
         var ep = EnvelopePart.generateTimes(
-                new double[] {1.5, 5},
-                new double[] {3, 4}
+                new double[]{1.5, 5},
+                new double[]{3, 4}
         );
         var interpolatedSpeed = ep.interpolateSpeed(2.75);
         // the delta here is pretty high, as we allow both approximate and exact methods
@@ -49,8 +51,8 @@ class EnvelopePartTest {
     @Test
     void findStep() {
         var ep = EnvelopePart.generateTimes(
-                new double[] {1.5, 3, 5},
-                new double[] {3, 4, 4}
+                new double[]{1.5, 3, 5},
+                new double[]{3, 4, 4}
         );
 
         assertEquals(0, ep.findLeft(1.5));
@@ -65,9 +67,9 @@ class EnvelopePartTest {
         assertEquals(1, ep.findLeft(5));
         assertEquals(1, ep.findRight(5));
 
-        assertEquals(-1,  ep.findLeft(1));
-        assertEquals(-4,  ep.findLeft(5.1));
-        assertEquals(-1,  ep.findRight(1));
+        assertEquals(-1, ep.findLeft(1));
+        assertEquals(-4, ep.findLeft(5.1));
+        assertEquals(-1, ep.findRight(1));
         assertEquals(-4, ep.findRight(5.1));
     }
 
@@ -75,18 +77,18 @@ class EnvelopePartTest {
     void testEquals() {
         var ep1 = EnvelopePart.generateTimes(
                 List.of(TestAttr.A),
-                new double[] {1.5, 3, 5},
-                new double[] {3, 4, 4}
+                new double[]{1.5, 3, 5},
+                new double[]{3, 4, 4}
         );
         var ep2 = EnvelopePart.generateTimes(
                 List.of(TestAttr.A),
-                new double[] {1.5, 3, 5},
-                new double[] {3, 4, 4}
+                new double[]{1.5, 3, 5},
+                new double[]{3, 4, 4}
         );
         var ep3 = EnvelopePart.generateTimes(
                 List.of(TestAttr.B),
-                new double[] {1.5, 3, 5},
-                new double[] {3, 4, 4}
+                new double[]{1.5, 3, 5},
+                new double[]{3, 4, 4}
         );
         assertEquals(ep1, ep2);
         assertEquals(ep1.hashCode(), ep2.hashCode());
@@ -99,33 +101,31 @@ class EnvelopePartTest {
         var length = 50_000;
         var testRollingStock = TestTrains.CONSTANT_POWER_TRAIN;
         var testPath = new FlatPath(length, 0);
-        var testContext = new EnvelopeSimContext(testRollingStock, testPath, 4, RollingStock.Comfort.STANDARD);
+        var testContext = EnvelopeSimContext.build(testRollingStock, testPath, 4, RollingStock.Comfort.STANDARD);
         var allowanceValue = new AllowanceValue.Percentage(10);
 
         var marecoAllowance = makeStandardMarecoAllowance(
                 testContext,
-                0, 
-                length, 
-                0, 
+                0,
+                length,
+                0,
                 allowanceValue
-            );
+        );
         var envelopeAllowance = makeSimpleAllowanceEnvelope(testContext, marecoAllowance, 44.4, false);
 
         for (var i = 0; i < envelopeAllowance.size(); i++) {
             var envelopePart = envelopeAllowance.get(i);
             var envelopePartEnergy = getPartMechanicalEnergyConsumed(
                     envelopePart,
-                    testContext.path, 
+                    testContext.path,
                     testContext.rollingStock
             );
             double expectedEnvelopePartEnergy;
             switch (i) {
                 case 0:
-                    expectedEnvelopePartEnergy = testRollingStock.getMaxEffort(
-                            1,
-                            null,
-                            RollingStock.Comfort.STANDARD
-                    ) * envelopePart.getTotalTimeMS() / 1000;
+                    expectedEnvelopePartEnergy =
+                            testRollingStock.getMaxEffort(null, null, RollingStock.Comfort.STANDARD, 1)
+                            * envelopePart.getTotalTimeMS() / 1000;
                     break;
                 case 1:
                     assertEquals(envelopePart.getMinSpeed(), envelopePart.getMaxSpeed());

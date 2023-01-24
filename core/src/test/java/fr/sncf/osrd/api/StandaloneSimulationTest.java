@@ -1,13 +1,17 @@
 package fr.sncf.osrd.api;
 
+import static fr.sncf.osrd.Helpers.getExampleRollingStock;
 import static fr.sncf.osrd.Helpers.getExampleRollingStocks;
 import static fr.sncf.osrd.utils.takes.TakesUtils.readBodyResponse;
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.google.common.collect.Iterables;
 import fr.sncf.osrd.api.StandaloneSimulationEndpoint.StandaloneSimulationRequest;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidSchedule;
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection;
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSComfortType;
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.railjson.schema.schedule.*;
 import fr.sncf.osrd.standalone_sim.result.ResultPosition;
 import fr.sncf.osrd.standalone_sim.result.ResultSpeed;
@@ -16,10 +20,10 @@ import org.junit.jupiter.api.Test;
 import org.takes.rq.RqFake;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Set;
+import java.util.List;
 
 
-class StandaloneSimulationTest extends ApiTest {
+public class StandaloneSimulationTest extends ApiTest {
 
     private static RJSTrainPath tinyInfraTrainPath() {
         var trainPath = new RJSTrainPath();
@@ -28,6 +32,7 @@ class StandaloneSimulationTest extends ApiTest {
                 new RJSTrainPath.RJSDirectionalTrackRange("ne.micro.foo_b", 100, 175, EdgeDirection.START_TO_STOP));
         trainPath.routePath.add(new RJSTrainPath.RJSRoutePath(
                 "rt.buffer_stop_b->tde.foo_b-switch_foo", tracksRoute1, "BAL3"));
+
         var tracksRoute2 = new ArrayList<RJSTrainPath.RJSDirectionalTrackRange>();
         tracksRoute2.add(new RJSTrainPath.RJSDirectionalTrackRange(
                 "ne.micro.foo_b", 175, 200, EdgeDirection.START_TO_STOP));
@@ -43,7 +48,31 @@ class StandaloneSimulationTest extends ApiTest {
         return trainPath;
     }
 
-    public static StandaloneSimResult runStandaloneSimulation(StandaloneSimulationRequest request) throws
+    /** Returns a small train path on small infra */
+    public static RJSTrainPath smallInfraTrainPath() {
+        var trainPath = new RJSTrainPath();
+        var trackRanges1 = new ArrayList<RJSTrainPath.RJSDirectionalTrackRange>();
+        trackRanges1.add(new RJSTrainPath.RJSDirectionalTrackRange("TA0", 1820, 2000, EdgeDirection.START_TO_STOP));
+        trackRanges1.add(new RJSTrainPath.RJSDirectionalTrackRange("TA6", 0, 1800, EdgeDirection.START_TO_STOP));
+        trainPath.routePath.add(new RJSTrainPath.RJSRoutePath("rt.DA2->DA6_1", trackRanges1, "BAL3"));
+
+        for (int i = 1; i < 5; i++) {
+            var trackRanges2 = new ArrayList<RJSTrainPath.RJSDirectionalTrackRange>();
+            trackRanges2.add(new RJSTrainPath.RJSDirectionalTrackRange("TA6", 200 + 1600 * i, 200 + 1600 * (i + 1),
+                    EdgeDirection.START_TO_STOP));
+            trainPath.routePath.add(
+                    new RJSTrainPath.RJSRoutePath("rt.DA6_" + i + "->DA6_" + (i + 1), trackRanges2, "BAL3"));
+        }
+
+        var trackRanges3 = new ArrayList<RJSTrainPath.RJSDirectionalTrackRange>();
+        trackRanges3.add(new RJSTrainPath.RJSDirectionalTrackRange("TA6", 8200, 9820, EdgeDirection.START_TO_STOP));
+        trainPath.routePath.add(new RJSTrainPath.RJSRoutePath("rt.DA6_5->DA5", trackRanges3, "BAL3"));
+
+        return trainPath;
+    }
+
+    /**  */
+    public StandaloneSimResult runStandaloneSimulation(StandaloneSimulationRequest request) throws
             InvalidRollingStock,
             InvalidSchedule,
             IOException {
@@ -51,9 +80,10 @@ class StandaloneSimulationTest extends ApiTest {
         var requestBody = StandaloneSimulationEndpoint.adapterRequest.toJson(request);
 
         // process it
-        var rawResponse = readBodyResponse(new StandaloneSimulationEndpoint(infraHandlerMock)
-                .act(new RqFake("POST", "/standalone_simulation", requestBody))
-        );
+        var rawResponse =
+                readBodyResponse(new StandaloneSimulationEndpoint(infraHandlerMock, electricalProfileSetManagerMock)
+                        .act(new RqFake("POST", "/standalone_simulation", requestBody))
+                );
 
         // parse the response
         var response = StandaloneSimResult.adapter.fromJson(rawResponse);
@@ -70,7 +100,7 @@ class StandaloneSimulationTest extends ApiTest {
         var trainSchedules = new ArrayList<RJSStandaloneTrainSchedule>();
         trainSchedules.add(new RJSStandaloneTrainSchedule("Test.", "fast_rolling_stock", 0,
                 new RJSAllowance[0],
-                new RJSTrainStop[] { RJSTrainStop.lastStop(0.1) }, null));
+                new RJSTrainStop[]{RJSTrainStop.lastStop(0.1)}, null));
         var query = new StandaloneSimulationRequest(
                 "tiny_infra/infra.json",
                 "1",
@@ -109,7 +139,7 @@ class StandaloneSimulationTest extends ApiTest {
             var trainID = String.format("Test.%d", i);
             trainSchedules.add(new RJSStandaloneTrainSchedule(trainID, "fast_rolling_stock", 0,
                     new RJSAllowance[0],
-                    new RJSTrainStop[]{ RJSTrainStop.lastStop(0.1) }, null));
+                    new RJSTrainStop[]{RJSTrainStop.lastStop(0.1)}, null));
         }
 
         var query = new StandaloneSimulationRequest(
@@ -132,12 +162,12 @@ class StandaloneSimulationTest extends ApiTest {
         final var rjsTrainPath = tinyInfraTrainPath();
 
         // build the simulation request
-        var noStops = new RJSTrainStop[] {
+        var noStops = new RJSTrainStop[]{
                 new RJSTrainStop(2000., 0),
                 new RJSTrainStop(5000., 1),
                 RJSTrainStop.lastStop(0.1)
         };
-        var stops = new RJSTrainStop[] {
+        var stops = new RJSTrainStop[]{
                 new RJSTrainStop(2000., 0),
                 new RJSTrainStop(5000., 121),
                 RJSTrainStop.lastStop(0.1)
@@ -173,10 +203,10 @@ class StandaloneSimulationTest extends ApiTest {
         final var rjsTrainPath = tinyInfraTrainPath();
 
         // build the simulation request
-        var stops = new RJSTrainStop[] { RJSTrainStop.lastStop(0.1) };
-        var allowance = new RJSAllowance[] { new RJSAllowance.StandardAllowance(
+        var stops = new RJSTrainStop[]{RJSTrainStop.lastStop(0.1)};
+        var allowance = new RJSAllowance[]{new RJSAllowance.StandardAllowance(
                 RJSAllowanceDistribution.MARECO, new RJSAllowanceValue.Percent(5)
-            )
+        )
         };
         var trains = new ArrayList<RJSStandaloneTrainSchedule>();
         trains.add(new RJSStandaloneTrainSchedule("no_allowance", "fast_rolling_stock",
@@ -211,13 +241,13 @@ class StandaloneSimulationTest extends ApiTest {
         final var rjsTrainPath = tinyInfraTrainPath();
 
         // build the simulation request
-        var stops = new RJSTrainStop[] { RJSTrainStop.lastStop(0.1) };
+        var stops = new RJSTrainStop[]{RJSTrainStop.lastStop(0.1)};
         var rangeEndPos = 5000;
-        var allowance = new RJSAllowance[] {
+        var allowance = new RJSAllowance[]{
                 new RJSAllowance.StandardAllowance(
                         RJSAllowanceDistribution.MARECO,
                         new RJSAllowanceValue.TimePerDistance(4.5),
-                        new RJSAllowanceRange[] {
+                        new RJSAllowanceRange[]{
                                 new RJSAllowanceRange(
                                         0,
                                         rangeEndPos,
@@ -261,8 +291,8 @@ class StandaloneSimulationTest extends ApiTest {
         final var rjsTrainPath = tinyInfraTrainPath();
 
         // build the simulation request
-        var stops = new RJSTrainStop[] { RJSTrainStop.lastStop(0.1) };
-        var allowance = new RJSAllowance[] { new RJSAllowance.EngineeringAllowance(
+        var stops = new RJSTrainStop[]{RJSTrainStop.lastStop(0.1)};
+        var allowance = new RJSAllowance[]{new RJSAllowance.EngineeringAllowance(
                 RJSAllowanceDistribution.MARECO, 0, 1000, new RJSAllowanceValue.Time(30), 0.01
         )
         };
@@ -297,8 +327,8 @@ class StandaloneSimulationTest extends ApiTest {
         final var rjsTrainPath = tinyInfraTrainPath();
 
         // build the simulation request
-        var stops = new RJSTrainStop[] { RJSTrainStop.lastStop(0.1) };
-        var allowance = new RJSAllowance[] { new RJSAllowance.StandardAllowance(
+        var stops = new RJSTrainStop[]{RJSTrainStop.lastStop(0.1)};
+        var allowance = new RJSAllowance[]{new RJSAllowance.StandardAllowance(
                 RJSAllowanceDistribution.LINEAR, new RJSAllowanceValue.Percent(5)
         )
         };
@@ -334,14 +364,14 @@ class StandaloneSimulationTest extends ApiTest {
         final var rjsTrainPath = tinyInfraTrainPath();
 
         // build the simulation request
-        var stops = new RJSTrainStop[] { RJSTrainStop.lastStop(0.1) };
+        var stops = new RJSTrainStop[]{RJSTrainStop.lastStop(0.1)};
         // TODO : build a method to get the path length in @{RJSTrainPath} and use it here and in the final asserts
         var rangeEndPos = 5000;
-        var allowance = new RJSAllowance[] {
+        var allowance = new RJSAllowance[]{
                 new RJSAllowance.StandardAllowance(
                         RJSAllowanceDistribution.LINEAR,
                         new RJSAllowanceValue.TimePerDistance(4.5),
-                        new RJSAllowanceRange[] {
+                        new RJSAllowanceRange[]{
                                 new RJSAllowanceRange(
                                         0,
                                         rangeEndPos,
@@ -377,5 +407,112 @@ class StandaloneSimulationTest extends ApiTest {
                 linearTime,
                 noAllowanceTime * 0.01);
         assertNull(simResult.ecoSimulations.get(0));
+    }
+
+    @Test
+    public void withElectricalProfilesAndComfort() throws IOException {
+        final var rjsTrainPath = smallInfraTrainPath();
+
+        // Duplicate fast rolling stock but with many power classes
+        var rollingStocks = new ArrayList<RJSRollingStock>();
+        var trainSchedules = new ArrayList<RJSStandaloneTrainSchedule>();
+        for (int i = 1; i <= 5; i++) {
+            var rollingStock = getExampleRollingStock("fast_rolling_stock.json");
+            rollingStock.name += i;
+            rollingStock.powerClass = String.valueOf(i);
+            rollingStocks.add(rollingStock);
+
+            var trainSchedule = new RJSStandaloneTrainSchedule("Test." + i, rollingStock.name,
+                    0, new RJSAllowance[0], new RJSTrainStop[]{RJSTrainStop.lastStop(0.1)}, null);
+            trainSchedules.add(trainSchedule);
+        }
+        var trainSchedule = new RJSStandaloneTrainSchedule("Test.1+AC", "fast_rolling_stock1",
+                0, new RJSAllowance[0], new RJSTrainStop[]{RJSTrainStop.lastStop(0.1)}, null);
+        trainSchedule.comfort = RJSComfortType.AC;
+        trainSchedules.add(trainSchedule);
+
+        // build the simulation request
+        var query = new StandaloneSimulationRequest(
+                "small_infra/infra.json",
+                "small_infra/external_generated_inputs.json",
+                "1",
+                2,
+                rollingStocks,
+                trainSchedules,
+                rjsTrainPath
+        );
+
+        // parse back the simulation result
+        var simResult = runStandaloneSimulation(query);
+        var result1Standard = Iterables.getLast(simResult.baseSimulations.get(0).headPositions).time;
+        var result1Ac = Iterables.getLast(simResult.baseSimulations.get(5).headPositions).time;
+
+        assertTrue(result1Standard < result1Ac,
+                "AC should be slower than standard, but was " + result1Standard + " vs " + result1Ac);
+
+        for (int i = 1; i < 5; i++) {
+            var resultA = Iterables.getLast(simResult.baseSimulations.get(i - 1).headPositions).time;
+            var resultB = Iterables.getLast(simResult.baseSimulations.get(i).headPositions).time;
+            assertTrue(resultA < resultB,
+                    "Power class " + i + " should be faster than " + (i + 1)
+                            + ", but was " + resultA + " vs " + resultB);
+        }
+    }
+
+    @Test
+    public void testModesAndProfilesInResult() throws IOException {
+        final var rjsTrainPath = smallInfraTrainPath();
+
+        // Duplicate fast rolling stock but with many power classes
+        var rollingStock = getExampleRollingStock("fast_rolling_stock.json");
+        rollingStock.powerClass = "5";
+
+        var trainSchedule = new RJSStandaloneTrainSchedule("Test", rollingStock.name,
+                0, new RJSAllowance[0], new RJSTrainStop[]{RJSTrainStop.lastStop(0.1)}, null);
+        trainSchedule.comfort = RJSComfortType.AC;
+
+        // build the simulation request
+        var query = new StandaloneSimulationRequest(
+                "small_infra/infra.json",
+                "small_infra/external_generated_inputs.json",
+                "1",
+                2,
+                List.of(rollingStock),
+                List.of(trainSchedule),
+                rjsTrainPath
+        );
+
+        // parse back the simulation result
+        var simResult = runStandaloneSimulation(query);
+        var modesAndProfiles = simResult.modesAndProfiles.get(0);
+        System.out.println(modesAndProfiles);
+
+        assertNotNull(modesAndProfiles);
+        var modeAndProfile0 = modesAndProfiles.get(0);
+        assertEquals(0.0, modeAndProfile0.start);
+        assertEquals("1500", modeAndProfile0.seenMode);
+        assertEquals("O", modeAndProfile0.seenProfile);
+        assertEquals("thermal", modeAndProfile0.usedMode);
+        assertNull(modeAndProfile0.usedProfile);
+
+        assertEquals("25000", modesAndProfiles.get(1).usedProfile);
+
+        var previousStart = modeAndProfile0.start;
+        var profiles = new String[]{"25000", "22500", "20000", "22500", "25000"};
+        var profileIndex = 0;
+        for (var modeAndProfile: modesAndProfiles.subList(1, modesAndProfiles.size())) {
+            assertTrue(previousStart < modeAndProfile.start);
+            previousStart = modeAndProfile.start;
+            assertNull(modeAndProfile.seenMode);
+            assertNull(modeAndProfile.seenProfile);
+            assertEquals("25000", modeAndProfile.usedMode);
+            assertNotNull(modeAndProfile.usedProfile);
+            if (!modeAndProfile.usedProfile.equals(profiles[profileIndex])) {
+                profileIndex++;
+            }
+            assertEquals(profiles[profileIndex], modeAndProfile.usedProfile);
+        }
+
+        assertEquals(4, profileIndex);
     }
 }

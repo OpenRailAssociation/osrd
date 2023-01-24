@@ -46,7 +46,7 @@ public class STDCMSimulations {
             offsetFirstRoute = 0;
         }
         var envelopePath = EnvelopeTrainPath.from(tracks);
-        return new EnvelopeSimContext(rollingStock, envelopePath, timeStep, comfort);
+        return EnvelopeSimContext.build(rollingStock, envelopePath, timeStep, comfort);
     }
 
     /** Returns an envelope matching the given route. The envelope time starts when the train enters the route.

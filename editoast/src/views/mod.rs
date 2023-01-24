@@ -1,3 +1,4 @@
+mod electrical_profiles;
 mod infra;
 mod layers;
 use rocket::serde::json::Value as JsonValue;
@@ -17,6 +18,7 @@ pub fn routes() -> HashMap<&'static str, Vec<Route>> {
         ("/", routes![health, version, opt::all_options]),
         ("/infra", infra::routes()),
         ("/layers", layers::routes()),
+        ("/electrical_profile_set", electrical_profiles::routes()),
     ])
 }
 

@@ -6,7 +6,7 @@ import fr.sncf.osrd.infra.api.signaling.SignalingInfra;
 import fr.sncf.osrd.infra.implementation.signaling.SignalingInfraBuilder;
 import fr.sncf.osrd.infra.implementation.signaling.modules.bal3.BAL3;
 import fr.sncf.osrd.railjson.parser.exceptions.InvalidRollingStock;
-import fr.sncf.osrd.railjson.schema.RJSElectricalProfile;
+import fr.sncf.osrd.railjson.schema.external_generated_inputs.RJSElectricalProfileSet;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingStock;
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
@@ -43,14 +43,18 @@ public class Helpers {
         return parseRollingStockDir(getResourcePath("rolling_stocks/"));
     }
 
+    public static RJSRollingStock getExampleRollingStock(String fileName) throws IOException, InvalidRollingStock {
+        return MoshiUtils.deserialize(RJSRollingStock.adapter, getResourcePath("rolling_stocks/" + fileName));
+    }
+
     public static RJSInfra getExampleInfra(String infraPath) throws IOException, URISyntaxException {
         return deserializeResource(RJSInfra.adapter, infraPath);
     }
 
-    public static List<RJSElectricalProfile> getExampleElectricalProfiles(
+    public static RJSElectricalProfileSet getExampleElectricalProfiles(
             String externalGeneratedInputsPath
     ) throws IOException, URISyntaxException {
-        return deserializeResource(RJSElectricalProfile.listAdapter, externalGeneratedInputsPath);
+        return deserializeResource(RJSElectricalProfileSet.adapter, externalGeneratedInputsPath);
     }
 
     private static <T> T deserializeResource(

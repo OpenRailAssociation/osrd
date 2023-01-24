@@ -106,7 +106,8 @@ public class TestTrains {
                 RJSRollingStock.GammaType.CONST,
                 RJSLoadingGaugeType.G1,
                 linearModeEffortCurves,
-                "thermal"
+                "thermal",
+                "1"
         );
 
         VERY_LONG_FAST_TRAIN = new RollingStock(
@@ -122,7 +123,8 @@ public class TestTrains {
                 RJSRollingStock.GammaType.CONST,
                 RJSLoadingGaugeType.G1,
                 linearModeEffortCurves,
-                "thermal"
+                "thermal",
+                "1"
         );
 
         REALISTIC_FAST_TRAIN = new RollingStock(
@@ -139,16 +141,21 @@ public class TestTrains {
                 RJSLoadingGaugeType.G1,
                 createModeEffortCurves(maxSpeed, CurveShape.LINEAR,
                         Map.of("thermal", new RollingStock.EffortCurveConditions[]{
-                                new RollingStock.EffortCurveConditions(RollingStock.Comfort.AC),
-                                new RollingStock.EffortCurveConditions(RollingStock.Comfort.HEATING)
+                                new RollingStock.EffortCurveConditions(RollingStock.Comfort.AC, null),
+                                new RollingStock.EffortCurveConditions(RollingStock.Comfort.HEATING, null)
                         }, "25000", new RollingStock.EffortCurveConditions[]{
-                                new RollingStock.EffortCurveConditions(RollingStock.Comfort.AC),
-                                new RollingStock.EffortCurveConditions(RollingStock.Comfort.HEATING)
+                                new RollingStock.EffortCurveConditions(RollingStock.Comfort.AC, "25000"),
+                                new RollingStock.EffortCurveConditions(RollingStock.Comfort.HEATING, "25000"),
+                                new RollingStock.EffortCurveConditions(RollingStock.Comfort.STANDARD, "25000"),
+                                new RollingStock.EffortCurveConditions(RollingStock.Comfort.AC, "22500"),
+                                new RollingStock.EffortCurveConditions(RollingStock.Comfort.HEATING, "22500"),
+                                new RollingStock.EffortCurveConditions(RollingStock.Comfort.STANDARD, "22500")
                         }, "1500", new RollingStock.EffortCurveConditions[]{
-                                new RollingStock.EffortCurveConditions(RollingStock.Comfort.AC),
-                                new RollingStock.EffortCurveConditions(RollingStock.Comfort.HEATING)
+                                new RollingStock.EffortCurveConditions(RollingStock.Comfort.AC, "O"),
+                                new RollingStock.EffortCurveConditions(RollingStock.Comfort.HEATING, "O")
                         })),
-                "thermal"
+                "thermal",
+                "1"
         );
 
         REALISTIC_FAST_TRAIN_MAX_DEC_TYPE = new RollingStock(
@@ -164,7 +171,8 @@ public class TestTrains {
                 RJSRollingStock.GammaType.MAX,
                 RJSLoadingGaugeType.G1,
                 linearModeEffortCurves,
-                "thermal"
+                "thermal",
+                "1"
         );
 
         FAST_TRAIN_LARGE_GAUGE = new RollingStock(
@@ -180,7 +188,8 @@ public class TestTrains {
                 RJSRollingStock.GammaType.CONST,
                 RJSLoadingGaugeType.GC,
                 linearModeEffortCurves,
-                "thermal"
+                "thermal",
+                "1"
         );
 
         FAST_ELECTRIC_TRAIN = new RollingStock(
@@ -197,7 +206,8 @@ public class TestTrains {
                 RJSLoadingGaugeType.G1,
                 createModeEffortCurves(maxSpeed, CurveShape.LINEAR,
                         Map.of("25000", new RollingStock.EffortCurveConditions[0])),
-                "25000"
+                "25000",
+                "1"
         );
 
         CONSTANT_POWER_TRAIN = new RollingStock(
@@ -214,7 +224,8 @@ public class TestTrains {
                 RJSLoadingGaugeType.G1,
                 createModeEffortCurves(maxSpeed, CurveShape.HYPERBOLIC,
                         Map.of("thermal", new RollingStock.EffortCurveConditions[0])),
-                "thermal"
+                "thermal",
+                "1"
         );
     }
 

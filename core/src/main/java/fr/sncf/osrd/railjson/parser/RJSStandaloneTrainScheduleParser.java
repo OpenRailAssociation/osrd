@@ -88,17 +88,18 @@ public class RJSStandaloneTrainScheduleParser {
         } else {
             throw new RuntimeException("unknown allowance type");
         }
+        var context = EnvelopeSimContext.build(rollingStock, envelopePath, timeStep, comfort);
         // parse allowance distribution
         return switch (allowanceDistribution) {
             case MARECO -> new MarecoAllowance(
-                    new EnvelopeSimContext(rollingStock, envelopePath, timeStep, comfort),
+                    context,
                     beginPos,
                     endPos,
                     getPositiveDoubleOrDefault(rjsAllowance.capacitySpeedLimit, 30 / 3.6),
                     ranges
             );
             case LINEAR -> new LinearAllowance(
-                    new EnvelopeSimContext(rollingStock, envelopePath, timeStep, comfort),
+                    context,
                     beginPos,
                     endPos,
                     getPositiveDoubleOrDefault(rjsAllowance.capacitySpeedLimit, 30 / 3.6),
