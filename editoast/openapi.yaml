@@ -7,6 +7,8 @@ info:
 tags:
   - name: infra
     description: Infra
+  - name: electrical_profiles
+    description: Electrical profiles
 
 paths:
   /health/:
@@ -675,6 +677,75 @@ paths:
                       type: object
                       description: object's schematic in geojson format
 
+  /electrical_profile_set/:
+    get:
+      tags:
+        - electrical_profiles
+      summary: Retrieve the list of ids and names of electrical profile sets available
+      responses:
+        200:
+          description: The list of ids and names of electrical profile sets available
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                      example: "France 2023"
+
+  /electrical_profile_set/{id}/:
+    get:
+      tags:
+        - electrical_profiles
+      summary: Retrieve the set of electrical profiles with the given id
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Electrical profile set ID
+          required: true
+      responses:
+        200:
+          description: The list of electrical profiles in the set
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ElectricalProfile"
+
+  /electrical_profile_set/level_order/{id}/:
+    get:
+      tags:
+        - electrical_profiles
+      summary: Retrieve the order of strength of the electrical profiles in the set with the given id
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: Electrical profile set ID
+          required: true
+      responses:
+        200:
+          description: A dictionary mapping catenary modes to a list of electrical profiles ordered by decreasing strength
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: 
+                  type: array
+                  items:
+                    type: string
+                example:
+                  "1500": ["A", "B", "C"]
+                  "25000": ["25000", "22500", "20000"]
 components:
   schemas:
     Infra:
@@ -971,9 +1042,24 @@ components:
       type: string
       enum: [START_TO_STOP, STOP_TO_START]
 
-    DirectionalTrackRange:
+    TrackRange:
       type: object
       description: Track range
+      properties:
+        track:
+          type: string
+          example: 01234567-89ab-cdef-0123-456789abcdef
+        begin:
+          type: number
+          format: float
+        end:
+          type: number
+          format: float
+          example: 100.
+
+    DirectionalTrackRange:
+      type: object
+      description: Track range associated with a direction
       properties:
         track:
           type: string
@@ -1009,3 +1095,17 @@ components:
       description: Error when the route path couldn't be computed
       properties:
         type: { type: string, enum: ["CantComputePath"] }
+
+    ElectricalProfile:
+      type: object
+      properties:
+        value:
+          type: string
+          example: "A"
+        power_class:
+          type: string
+          example: "1"
+        track_ranges:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrackRange"

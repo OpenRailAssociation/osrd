@@ -30,6 +30,7 @@ def create_simulation_report(train_schedule: TrainScheduleModel, projection_path
         "curves": train_path.curves,
         "base": base,
         "speed_limit_composition": train_schedule.speed_limit_composition,
+        "modes_and_profiles": train_schedule.modes_and_profiles,
     }
 
     # Check if train schedule has margins

@@ -1,6 +1,7 @@
 mod buffer_stop;
 mod catenary;
 mod detector;
+pub mod electrical_profiles;
 mod errors;
 pub mod operation;
 mod operational_point;
@@ -186,6 +187,17 @@ impl OSRDObject for Waypoint {
             Waypoint::Detector { .. } => ObjectType::Detector,
         }
     }
+}
+
+#[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+#[derivative(Default)]
+pub struct TrackRange {
+    #[derivative(Default(value = r#""InvalidRef".into()"#))]
+    pub track: Identifier,
+    pub begin: f64,
+    #[derivative(Default(value = "100."))]
+    pub end: f64,
 }
 
 #[derive(Debug, Derivative, Clone, Deserialize, Serialize, PartialEq)]
