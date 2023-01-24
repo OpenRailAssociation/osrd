@@ -20,7 +20,6 @@ import { setFailure } from 'reducers/main';
 import { updateFeatureInfoClick } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
 import { getInfraID } from 'reducers/osrdconf/selectors';
-import DisplayMissingInfo from 'common/DisplayMissingInfo/withOSRDStdcmMissingInfo';
 
 const itineraryURI = '/pathfinding/';
 
@@ -262,7 +261,6 @@ function Itinerary(props) {
   return (
     <div className="osrd-config-item mb-2">
       <div className="osrd-config-item-container" data-testid="itinerary">
-        <DisplayMissingInfo />
         <DisplayItinerary
           data-testid="display-itinerary"
           zoomToFeaturePoint={zoomToFeaturePoint}
