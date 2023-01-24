@@ -20,7 +20,7 @@ import { setFailure } from 'reducers/main';
 import { updateFeatureInfoClick } from 'reducers/map';
 import { useTranslation } from 'react-i18next';
 import { getInfraID } from 'reducers/osrdconf/selectors';
-import DisplayMissingInfo from 'common/DisplayMissingInfo/DisplayMissingInfo';
+import DisplayMissingInfo from 'common/DisplayMissingInfo/withOSRDStdcmMissingInfo';
 
 const itineraryURI = '/pathfinding/';
 
