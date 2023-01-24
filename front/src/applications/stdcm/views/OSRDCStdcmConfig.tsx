@@ -1,20 +1,18 @@
-import 'applications/osrd/views/OSRDConfig/OSRDConfig.scss';
-
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { updateViewport } from 'reducers/map';
-import { STDCM_REQUEST_STATUS, MODES } from 'applications/osrd/consts';
+import { STDCM_REQUEST_STATUS } from 'applications/operationalStudies/consts';
 import InfraSelector from 'common/InfraSelector/InfraSelector';
-import Itinerary from 'applications/osrd/views/OSRDConfig/Itinerary';
-import Map from 'applications/osrd/views/OSRDConfig/Map';
+import Itinerary from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary';
+import Map from 'applications/operationalStudies/components/ManageTrainSchedule/Map';
 import RollingStockSelector from 'common/RollingStockSelector/RollingStockSelector';
-import SpeedLimitByTagSelector from 'applications/osrd/views/OSRDConfig/SpeedLimitByTagSelector';
-import TimetableSelector from 'applications/osrd/views/OSRDConfig/TimetableSelector';
+import SpeedLimitByTagSelector from 'applications/operationalStudies/components/ManageTrainSchedule/SpeedLimitByTagSelector';
+import TimetableSelector from 'applications/operationalStudies/components/ManageTrainSchedule/TimetableSelector';
 
-import StdcmSingleAllowance from 'applications/osrd/components/Simulation/Allowances/withOSRDStdcmParams';
+import StdcmSingleAllowance from 'applications/operationalStudies/components/SimulationResults/Allowances/withOSRDStdcmParams';
 
 type OSRDStdcmConfigProps = {
   setCurrentStdcmRequestStatus: (status: string) => void;
@@ -24,7 +22,11 @@ export default function OSRDConfig({ setCurrentStdcmRequestStatus }: OSRDStdcmCo
   const { darkmode } = useSelector((state: any) => state.main);
 
   const dispatch = useDispatch();
-  const { t } = useTranslation(['translation', 'osrdconf', 'allowances']);
+  const { t } = useTranslation([
+    'translation',
+    'operationalStudies/manageTrainSchedule',
+    'allowances',
+  ]);
   const [extViewport, setExtViewport] = useState({});
   const [mustUpdateTimetable, setMustUpdateTimetable] = useState(true);
 
@@ -108,16 +110,16 @@ export default function OSRDConfig({ setCurrentStdcmRequestStatus }: OSRDStdcmCo
               type="button"
               onClick={() => setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.pending)}
             >
-              {t('osrdconf:apply')}
+              {t('operationalStudies/manageTrainSchedule:apply')}
               <span className="sr-only" aria-hidden="true">
-                {t('osrdconf:apply')}
+                {t('operationalStudies/manageTrainSchedule:apply')}
               </span>
             </button>
           </div>
         </div>
         <div className="col-md-5 col-lg-6">
-          <div className="osrd-config-item osrd-config-item-map mb-2">
-            <div className="osrd-config-item-container h-100 osrd-config-item-container-map">
+          <div className="osrd-config-item mb-2">
+            <div className="osrd-config-item-container osrd-config-item-container-map">
               <Map />
             </div>
           </div>

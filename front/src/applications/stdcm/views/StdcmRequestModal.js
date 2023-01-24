@@ -14,7 +14,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   KEY_VALUES_FOR_CONSOLIDATED_SIMULATION,
   trainscheduleURI,
-} from 'applications/osrd/components/Simulation/consts';
+} from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 
 // Generic components
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
@@ -22,19 +22,19 @@ import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import PropTypes from 'prop-types';
 import ReactModal from 'react-modal';
 // OSRD helpers
-import createTrain from 'applications/osrd/components/Simulation/SpaceTimeChart/createTrain';
+import createTrain from 'applications/operationalStudies/components/SimulationResults/SpaceTimeChart/createTrain';
 import formatStdcmConf from 'applications/stdcm/formatStcmConf';
 // Static Data and Assets
 import rabbit from 'assets/pictures/KLCW_nc_standard.png';
 import { setFailure } from 'reducers/main';
-import { STDCM_REQUEST_STATUS } from 'applications/osrd/consts';
+import { STDCM_REQUEST_STATUS } from 'applications/operationalStudies/consts';
 import { updateItinerary } from 'reducers/osrdconf';
 import { useTranslation } from 'react-i18next';
 
 const timetableURI = '/timetable/';
 
 export default function StdcmRequestModal(props) {
-  const { t } = useTranslation(['translation', 'osrdconf']);
+  const { t } = useTranslation(['translation', 'operationalStudies/manageTrainSchedule']);
   const osrdconf = useSelector((state) => state.osrdconf);
 
   const { allowancesSettings } = useSelector((state) => state.osrdsimulation);
@@ -138,7 +138,7 @@ export default function StdcmRequestModal(props) {
 
           dispatch(
             setFailure({
-              name: t('osrdconf:errorMessages.stdcmError'),
+              name: t('operationalStudies/manageTrainSchedule:errorMessages.stdcmError'),
               message: e?.response?.data?.message, // axios error, def is ok
             })
           );
@@ -177,7 +177,7 @@ export default function StdcmRequestModal(props) {
       <div className="modal-dialog" role="document">
         <div className="modal-content">
           <ModalHeaderSNCF>
-            <h1>{t('osrdconf:stdcmComputation')}</h1>
+            <h1>{t('operationalStudies/manageTrainSchedule:stdcmComputation')}</h1>
             <button className="btn btn-only-icon close" type="button" onClick={cancelStdcmRequest}>
               <i className="icons-close" />
             </button>
@@ -189,8 +189,12 @@ export default function StdcmRequestModal(props) {
                   <div className="">
                     <img src={rabbit} alt="runnning stdcm" width="50%" />
                   </div>
-                  <div className="p-1 text-info">{t('osrdconf:searchingItinerary')}</div>
-                  <div className="p-1 text-info">{t('osrdconf:pleaseWait')}</div>
+                  <div className="p-1 text-info">
+                    {t('operationalStudies/manageTrainSchedule:searchingItinerary')}
+                  </div>
+                  <div className="p-1 text-info">
+                    {t('operationalStudies/manageTrainSchedule:pleaseWait')}
+                  </div>
                   <div className="p-1">
                     <div className="spinner-border" role="status">
                       <span className="sr-only">Loading...</span>
@@ -205,9 +209,9 @@ export default function StdcmRequestModal(props) {
                   type="button"
                   onClick={cancelStdcmRequest}
                 >
-                  {t('osrdconf:cancelRequest')}
+                  {t('operationalStudies/manageTrainSchedule:cancelRequest')}
                   <span className="sr-only" aria-hidden="true">
-                    {t('osrdconf:cancelRequest')}
+                    {t('operationalStudies/manageTrainSchedule:cancelRequest')}
                   </span>
                 </button>
               </div>

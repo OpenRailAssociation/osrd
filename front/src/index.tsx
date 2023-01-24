@@ -5,21 +5,21 @@ import { PersistGate } from 'redux-persist/integration/react';
 import * as Sentry from '@sentry/react';
 import { BrowserTracing } from '@sentry/tracing';
 // Styles
-import 'config/variables.css';
-import 'main/App/App.scss';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import 'styles/styles.scss';
 
 import { SENTRY_CONFIG } from 'config/config';
 import { persistor, store } from 'Store';
 
 // Components
-import App from 'main/App';
+import App from 'main/app';
 import Loader from 'common/Loader';
+import dayjs from 'dayjs';
+import 'dayjs/locale/fr';
 import { version } from '../package.json';
 import reportWebVitals from './reportWebVitals';
 
-// Must be required and not imported to be included in production build (strange bug ?)
-require('@sncf/bootstrap-sncf.metier.reseau');
+dayjs.locale('fr');
 
 if (SENTRY_CONFIG.react_sentry_dsn) {
   Sentry.init({

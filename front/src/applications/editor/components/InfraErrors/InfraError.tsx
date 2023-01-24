@@ -1,7 +1,7 @@
 import React, { PropsWithChildren } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BsFillExclamationCircleFill, BsFillExclamationTriangleFill } from 'react-icons/bs';
-
+import DropdownSNCF, { DROPDOWN_STYLE_TYPES } from 'common/BootstrapSNCF/DropdownSNCF';
 import { InfraError } from './types';
 
 /**
@@ -54,6 +54,12 @@ const InfraErrorComponent: React.FC<PropsWithChildren<{ error: InfraError; index
       </div>
       {children && (
         <div className="management-item-action">
+          <DropdownSNCF
+            titleContent={<i className="icons-options icons-size-1x75" />}
+            items={[children]}
+            type={DROPDOWN_STYLE_TYPES.transparent}
+          />
+          {/*
           <div className="btn-group dropdown">
             <button
               type="button"
@@ -70,6 +76,7 @@ const InfraErrorComponent: React.FC<PropsWithChildren<{ error: InfraError; index
               {children}
             </div>
           </div>
+          */}
         </div>
       )}
     </div>

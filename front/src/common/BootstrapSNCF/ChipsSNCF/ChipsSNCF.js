@@ -8,7 +8,7 @@ export default function ChipsSNCF(props) {
   const [chipInputValue, setChipInputValue] = useState('');
 
   const chip = (label, idx) => (
-    <div role="list">
+    <div role="list" key={nextId()}>
       <div className="chips-group" role="listitem">
         <span className="chips chips-label pr-1">{label}</span>
         <button
@@ -33,7 +33,7 @@ export default function ChipsSNCF(props) {
   return (
     <>
       {title ? (
-        <label className="font-weight-medium mb-2" htmlFor={chipsID}>
+        <label className="font-weight-medium mb-1 small" htmlFor={chipsID}>
           {title}
         </label>
       ) : null}

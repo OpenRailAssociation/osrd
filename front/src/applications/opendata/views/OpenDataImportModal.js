@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import ModalSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import Map from 'applications/opendata/components/Map';
 import { useTranslation } from 'react-i18next';
@@ -9,7 +8,7 @@ import { getRollingStockID, getInfraID, getTimetableID } from 'reducers/osrdconf
 import generatePathfindingPayload from 'applications/opendata/components/generatePathfindingPayload';
 import generateTrainSchedulesPayload from 'applications/opendata/components/generateTrainSchedulesPayload';
 import { post } from 'common/requests';
-import { scheduleURL } from 'applications/osrd/components/Simulation/consts';
+import { scheduleURL } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import { initialViewport, initialStatus, itineraryURI } from 'applications/opendata/consts';
 import OpenDataImportModalFooter from './OpenDataImportModalFooter';
 import { refactorUniquePaths } from '../components/OpenDataHelpers';
@@ -243,7 +242,7 @@ export default function OpenDataImportModal(props) {
   }, [infraID, rollingStockID, timetableID]);
 
   return (
-    <ModalSNCF htmlID="OpenDataImportModal">
+    <>
       {pathsDictionnary && trainsWithPathRef.length > 0 ? (
         <ModalBodySNCF>
           {!infraID || !timetableID || !rollingStockID ? null : (
@@ -312,7 +311,7 @@ export default function OpenDataImportModal(props) {
         ''
       )}
       <OpenDataImportModalFooter status={status} />
-    </ModalSNCF>
+    </>
   );
 }
 

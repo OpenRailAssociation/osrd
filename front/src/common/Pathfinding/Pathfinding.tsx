@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useReducer } from 'react';
+import React, { useEffect, useReducer, useContext } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Position } from 'geojson';
 import bbox from '@turf/bbox';
@@ -11,7 +11,8 @@ import { ArrayElement } from 'utils/types';
 import { Path, PathQuery, osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import { adjustPointOnTrack } from 'utils/pathfinding';
 import { conditionalStringConcat } from 'utils/strings';
-import { PointOnMap } from 'applications/osrd/consts';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import { PointOnMap } from 'applications/operationalStudies/consts';
 
 import { getMapTrackSources } from 'reducers/map/selectors';
 
@@ -33,8 +34,7 @@ import {
   getGeojson,
 } from 'reducers/osrdconf/selectors';
 
-import DotsLoader from 'common/DotsLoader/DotsLoader';
-
+import ModalPathJSONDetail from 'applications/operationalStudies/components/ManageTrainSchedule/Itinerary/ModalPathJSONDetail';
 import './pathfinding.scss';
 
 interface PathfindingState {
@@ -153,6 +153,7 @@ interface PathfindingProps {
 
 function Pathfinding({ zoomToFeature }: PathfindingProps) {
   const { t } = useTranslation(['osrdconf']);
+  const { openModal } = useContext(ModalContext);
   const dispatch = useDispatch();
   const infraID = useSelector(getInfraID, isEqual);
   const origin = useSelector(getOrigin, isEqual);
@@ -169,6 +170,11 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
   };
   const [pathfindingState, pathfindingDispatch] = useReducer(reducer, initializerArgs, init);
   const [postPathfinding] = osrdMiddlewareApi.usePostPathfindingMutation();
+
+  const openModalWrapperBecauseTypescriptSucks = () => {
+    openModal(<ModalPathJSONDetail />, 'lg');
+  };
+
   // Way to ensure marker position on track
   const correctWaypointsGPS = ({ steps = [] }: Path) => {
     dispatch(updateOrigin(adjustPointOnTrack(origin, steps[0], mapTrackSources)));
@@ -273,12 +279,7 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
   }, [origin, destination, rollingStockID]);
 
   const pathDetailsToggleButton = (
-    <button
-      type="button"
-      data-toggle="modal"
-      data-target="#modalPathJSONDetail"
-      className="btn btn-link"
-    >
+    <button type="button" onClick={openModalWrapperBecauseTypescriptSucks} className="btn btn-link">
       <small className="ml-1">{pathfindingID}</small>
     </button>
   );

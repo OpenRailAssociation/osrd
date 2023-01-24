@@ -1,9 +1,10 @@
-import React, { FC, useEffect, useState } from 'react';
+import React, { FC, useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { datetime2string } from 'utils/timeManipulation';
 import { useNavigate } from 'react-router';
 
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { ModalProps } from '../tools/types';
 import Modal from './Modal';
 import { get } from '../../../common/requests';
@@ -24,8 +25,9 @@ async function getInfrasList(): Promise<InfrasList> {
 const InfraSelectorModal: FC<ModalProps> = ({ submit, cancel }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { t } = useTranslation(['translation', 'osrdconf']);
+  const { t } = useTranslation(['translation', 'operationalStudies/manageTrainSchedule']);
   const [infras, setInfras] = useState<InfrasList | null>(null);
+  const { closeModal } = useContext(ModalContext);
 
   useEffect(() => {
     getInfrasList()
@@ -42,7 +44,7 @@ const InfraSelectorModal: FC<ModalProps> = ({ submit, cancel }) => {
   }, [dispatch, t]);
 
   return (
-    <Modal onClose={cancel} title={t('osrdconf:infrachoose')}>
+    <Modal onClose={cancel} title={t('operationalStudies/manageTrainSchedule:infrachoose')}>
       <div className="mb-3 osrd-config-infraselector">
         {infras?.map((infra) => (
           <div
@@ -57,9 +59,9 @@ const InfraSelectorModal: FC<ModalProps> = ({ submit, cancel }) => {
               );
               navigate(`/editor/${infra.id}`);
               submit({});
+              closeModal();
             }}
             key={infra.id}
-            data-dismiss="modal"
             className="osrd-config-infraselector-item mb-2"
           >
             <div className="d-flex align-items-center">
