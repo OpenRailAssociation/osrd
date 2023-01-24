@@ -16,7 +16,7 @@ export default function DriverTrainSchedule(props) {
       const rollingStock = await get(`${ROLLINGSTOCK_URL}/${trainScheduleDetails.rolling_stock}/`);
       setRollingStockSelected(rollingStock);
     } catch (e) {
-      console.log('ERROR', e);
+      console.error(e);
     }
   };
 

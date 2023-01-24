@@ -15,10 +15,8 @@ import {
   scenariosListJSON,
   studyJSON,
 } from 'applications/operationalStudies/components/Helpers/genFakeDataForProjects';
-import {
-  budgetFormat,
-  dateTimeFrenchFormatting,
-} from '../components/Helpers/numberAndDateFormatting';
+import { budgetFormat } from 'utils/numbers';
+import { dateTimeFrenchFormatting } from 'utils/date';
 
 function BreadCrumbs(props) {
   const { t } = useTranslation('operationalStudies/project');
