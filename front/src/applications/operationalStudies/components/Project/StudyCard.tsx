@@ -5,7 +5,8 @@ import nextId from 'react-id-generator';
 import { AiFillFolderOpen } from 'react-icons/ai';
 import { FcCalendar } from 'react-icons/fc';
 import studyLogo from 'assets/pictures/views/study.svg';
-import { budgetFormat, dateTimeFrenchFormatting } from '../Helpers/numberAndDateFormatting';
+import { budgetFormat } from 'utils/numbers';
+import { dateTimeFrenchFormatting } from 'utils/date';
 
 type Props = {
   details: {
