@@ -165,7 +165,7 @@ public class TrackRangeView {
     }
 
     /** Converts a RangeMap based on the original track so that the positions refer to the range */
-    private <T> ImmutableRangeMap<Double, T> convertMap(RangeMap<Double, T> map) {
+    public <T> ImmutableRangeMap<Double, T> convertMap(RangeMap<Double, T> map) {
         if (getLength() == 0)
             return ImmutableRangeMap.of();
         var builder = ImmutableRangeMap.<Double, T>builder();

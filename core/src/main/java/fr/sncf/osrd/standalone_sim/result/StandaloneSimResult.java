@@ -1,9 +1,11 @@
 package fr.sncf.osrd.standalone_sim.result;
 
+import com.google.common.collect.RangeMap;
 import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import fr.sncf.osrd.envelope_sim.PhysicsPath;
 import fr.sncf.osrd.reporting.warnings.Warning;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,4 +24,6 @@ public class StandaloneSimResult {
     @Json(name = "speed_limits")
     public List<List<ResultEnvelopePoint>> speedLimits = new ArrayList<>();
     public List<Warning> warnings = new ArrayList<>();
+    @Json(name = "modes_and_profiles")
+    public List<List<ResultModeAndProfilePoint>> modesAndProfiles = new ArrayList<>();
 }

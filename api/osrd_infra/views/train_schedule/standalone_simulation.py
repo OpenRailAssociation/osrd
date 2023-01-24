@@ -5,6 +5,7 @@ from django.conf import settings
 from rest_framework.exceptions import APIException
 
 from osrd_infra.models import TrackSectionModel, TrainScheduleModel
+from osrd_infra.models.infra import Infra
 from osrd_infra.utils import make_exception_from_error
 
 
@@ -53,8 +54,11 @@ def create_backend_request_payload(train_schedules: List[TrainScheduleModel]):
             }
         )
 
+    electrical_profile_set = train_schedules[0].timetable.electrical_profile_set
+
     return {
         "infra": train_schedules[0].timetable.infra.pk,
+        "electrical_profile_set": electrical_profile_set.pk if electrical_profile_set else None,
         "expected_version": train_schedules[0].timetable.infra.version,
         "rolling_stocks": [rs.to_schema().dict() for rs in rolling_stocks],
         "trains_path": {"route_paths": path_payload["route_paths"]},
@@ -77,7 +81,7 @@ def run_simulation(request_payload):
     return response.json()
 
 
-def process_simulation_response(infra, train_schedules, response_payload):
+def process_simulation_response(infra: Infra, train_schedules: List[TrainScheduleModel], response_payload):
     """
     This function process the payload returned by the backend and fill schedules
     """
@@ -86,6 +90,8 @@ def process_simulation_response(infra, train_schedules, response_payload):
     speed_limits = response_payload["speed_limits"]
     assert len(train_schedules) == len(speed_limits)
     eco_simulations = response_payload["eco_simulations"]
+    modes_and_profiles = response_payload["modes_and_profiles"]
+    assert len(modes_and_profiles) == 0 or len(train_schedules) == len(modes_and_profiles)
 
     stops = train_schedules[0].path.payload["path_waypoints"]
     ops_tracks = TrackSectionModel.objects.filter(infra=infra, obj_id__in=[stop["track"] for stop in stops])
@@ -107,6 +113,8 @@ def process_simulation_response(infra, train_schedules, response_payload):
 
         train_schedule.base_simulation = base_simulations[i]
         train_schedule.mrsp = speed_limits[i]
+        if len(modes_and_profiles) > 0:
+            train_schedule.modes_and_profiles = modes_and_profiles[i]
 
         # Skip if no eco simulation is available
         if not eco_simulations[i]:

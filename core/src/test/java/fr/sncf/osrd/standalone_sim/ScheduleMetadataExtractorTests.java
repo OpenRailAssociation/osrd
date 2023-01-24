@@ -48,7 +48,7 @@ public class ScheduleMetadataExtractorTests {
                 new TrackLocation(fooA, 0)
         );
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testContext = new EnvelopeSimContext(
+        var testContext = EnvelopeSimContext.build(
                 testRollingStock, EnvelopeTrainPath.from(path), TIME_STEP, RollingStock.Comfort.STANDARD);
         var envelope = makeSimpleMaxEffortEnvelope(
                 testContext,
@@ -73,7 +73,7 @@ public class ScheduleMetadataExtractorTests {
                 new TrackLocation(fooA, 100)
         );
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testContext = new EnvelopeSimContext(
+        var testContext = EnvelopeSimContext.build(
                 testRollingStock, EnvelopeTrainPath.from(path), TIME_STEP, Comfort.STANDARD);
         var envelope = makeSimpleMaxEffortEnvelope(
                 testContext,
@@ -99,7 +99,7 @@ public class ScheduleMetadataExtractorTests {
                 new TrackLocation(fooA, 100)
         );
         var testRollingStock = TestTrains.VERY_LONG_FAST_TRAIN;
-        var testContext = new EnvelopeSimContext(
+        var testContext = EnvelopeSimContext.build(
                 testRollingStock, EnvelopeTrainPath.from(path), TIME_STEP, Comfort.STANDARD);
         var envelope = makeSimpleMaxEffortEnvelope(
                 testContext,
@@ -124,7 +124,7 @@ public class ScheduleMetadataExtractorTests {
                 new TrackLocation(infra.getTrackSection("track.9"), 0)
         );
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testContext = new EnvelopeSimContext(
+        var testContext = EnvelopeSimContext.build(
                 testRollingStock, EnvelopeTrainPath.from(path), TIME_STEP, Comfort.STANDARD);
         var envelope = makeSimpleMaxEffortEnvelope(
                 testContext,
@@ -145,7 +145,7 @@ public class ScheduleMetadataExtractorTests {
                 new TrackLocation(infra.getTrackSection("track.0"), 10)
         );
         var testRollingStock = TestTrains.REALISTIC_FAST_TRAIN;
-        var testContext = new EnvelopeSimContext(
+        var testContext = EnvelopeSimContext.build(
                 testRollingStock, EnvelopeTrainPath.from(path), TIME_STEP, Comfort.STANDARD);
         var envelope = makeSimpleMaxEffortEnvelope(
                 testContext,
