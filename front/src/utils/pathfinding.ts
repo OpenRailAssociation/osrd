@@ -1,7 +1,7 @@
 /* eslint-disable import/prefer-default-export */
 import { Path } from 'common/api/osrdMiddlewareApi';
 import { ArrayElement } from 'utils/types';
-import { PointOnMap } from 'applications/osrd/consts';
+import { PointOnMap } from 'applications/operationalStudies/consts';
 import { MapState } from 'reducers/map';
 
 export function adjustPointOnTrack(

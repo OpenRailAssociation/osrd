@@ -152,7 +152,7 @@ interface PathfindingProps {
 }
 
 function Pathfinding({ zoomToFeature }: PathfindingProps) {
-  const { t } = useTranslation(['osrdconf']);
+  const { t } = useTranslation(['operationalStudies/manageTrainSchedule']);
   const { openModal } = useContext(ModalContext);
   const dispatch = useDispatch();
   const infraID = useSelector(getInfraID, isEqual);
