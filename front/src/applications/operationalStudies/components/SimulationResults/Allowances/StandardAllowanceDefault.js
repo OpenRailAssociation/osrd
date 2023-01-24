@@ -10,7 +10,7 @@ import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';
 import { trainscheduleURI } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import debounce from 'lodash/debounce';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
-import { TYPES_UNITS, ALLOWANCE_UNITS_KEYS } from './consts';
+import { TYPES_UNITS, ALLOWANCE_UNITS_KEYS } from './allowancesConsts';
 
 export default function StandardAllowanceDefault(props) {
   const {
