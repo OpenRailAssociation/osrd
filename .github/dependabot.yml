@@ -26,7 +26,7 @@ updates:
       interval: "daily"
     commit-message:
       prefix: "front:"
-    open-pull-requests-limit: 100
+    open-pull-requests-limit: 0
     labels:
       - "dependencies"
       - "area:front"
