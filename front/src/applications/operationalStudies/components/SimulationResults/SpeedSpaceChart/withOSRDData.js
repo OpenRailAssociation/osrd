@@ -51,6 +51,6 @@ const withOSRDData = (Component) =>
     );
   };
 
-const OSRDSpeedSpaceChart = withOSRDData(SpeedSpaceChart);
+export const OSRDSpeedSpaceChart = withOSRDData(SpeedSpaceChart);
 
 export default OSRDSpeedSpaceChart;

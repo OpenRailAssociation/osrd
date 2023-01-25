@@ -53,7 +53,8 @@ export default function TimetableTrainCard({
         <div className="scenario-timetable-train-header">
           <div className="scenario-timetable-train-name">
             <div className="scenario-timetable-train-idx">{idx + 1}</div>
-            {selectedProjection.id === train.id && (
+
+            {selectedProjection?.id === train?.id && (
               <span className="mr-1">
                 <GiPathDistance />
               </span>
