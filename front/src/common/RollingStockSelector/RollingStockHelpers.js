@@ -4,40 +4,40 @@ import { IoIosSnow } from 'react-icons/io';
 import { ImFire } from 'react-icons/im';
 
 export function checkUnit({ unit, detail }) {
-  let unit_to_display = unit && unit !== 'US' ? unit : null;
-  if (!!detail && detail !== "") {
-    if (detail.search(/UM3/i) !== -1) {
-      unit_to_display = 'UM3'
-    }
-    else if (detail.search(/UM|MUX/i) !== -1) {
-      unit_to_display = 'UM2'
-    }
+  if (unit && unit !== 'US') {
+    return <span className={`rollingstock-infos-unit ${unit}`}>{unit}</span>;
   }
-  return unit_to_display
-    ? <span className={`rollingstock-infos-unit ${unit_to_display}`}>{unit_to_display}</span>
-    : null;
+  if (detail?.search(/UM3/i) !== -1) {
+    return <span className="rollingstock-infos-unit UM3">UM3</span>;
+  }
+  if (detail?.search(/UM|MUX/i) !== -1) {
+    return <span className="rollingstock-infos-unit UM2">UM2</span>;
+  }
+  return null;
 }
 
 export function RollingStockInfos({ data, showSeries, showMiddle, showEnd }) {
-  var { metadata } = data;
+  const { metadata } = data;
   return (
     <div className="rollingstock-infos">
-      {showSeries ?
+      {showSeries ? (
         <span className="rollingstock-infos-begin">
-          <span className="rollingstock-infos-series">{ metadata.series ? metadata.series : metadata?.reference}</span>
+          <span className="rollingstock-infos-series">
+            {metadata.series ? metadata.series : metadata?.reference}
+          </span>
           {checkUnit(metadata)}
           <span className="rollingstock-infos-subseries">
-            {metadata.series && metadata.series !== metadata.subseries ? metadata?.subseries : metadata?.detail}
+            {metadata.series && metadata.series !== metadata.subseries
+              ? metadata?.subseries
+              : metadata?.detail}
           </span>
         </span>
-        : null
-      }
-      {showMiddle && metadata.series ?
+      ) : null}
+      {showMiddle && metadata.series ? (
         <span className="rollingstock-infos-middle">
           {`${metadata?.family} / ${metadata?.type} / ${metadata?.grouping}`}
         </span>
-        : null
-      }
+      ) : null}
       {showEnd ? <span className="rollingstock-infos-end">{data.name}</span> : null}
     </div>
   );
