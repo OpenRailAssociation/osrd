@@ -3,18 +3,18 @@ import React, { useEffect, useRef, useState } from 'react';
 import { CgLoadbar } from 'react-icons/cg';
 import { GiResize } from 'react-icons/gi';
 import PropTypes from 'prop-types';
+
+import ORSD_GEV_SAMPLE_DATA from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/sampleData';
 import enableInteractivity, {
   traceVerticalLine,
 } from 'applications/operationalStudies/components/SimulationResults/ChartHelpers/enableInteractivity';
 import { LIST_VALUES_NAME_SPEED_SPACE } from 'applications/operationalStudies/components/SimulationResults/simulationResultsConsts';
 import prepareData from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/prepareData';
+import SpeedSpaceSettings from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceSettings/SpeedSpaceSettings';
 import {
   createChart,
   drawTrain,
 } from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceChart/d3Helpers';
-import SpeedSpaceSettings from 'applications/operationalStudies/components/SimulationResults/SpeedSpaceSettings/SpeedSpaceSettings';
-import ORSD_GEV_SAMPLE_DATA from './sampleData';
-
 const CHART_ID = 'SpeedSpaceChart';
 /**
  * A chart to see the evolution of speed of one train on its journey
@@ -176,6 +176,7 @@ const CHART_ID = 'SpeedSpaceChart';
         createChart(
           CHART_ID,
           chart,
+          CHART_ID,
           resetChart,
           dataSimulation,
           rotate,

@@ -1,0 +1,1936 @@
+:root {
+  --border-radius: .4375rem;
+  --breakpoint-lg: 1024px;
+}
+
+:root {
+  --coolgray15: #202020;
+  --coolgray13: #333333;
+  --coolgray11: #4d4f53;
+  --coolgray9: #747678;
+  --coolgray7: #a0a0a0;
+  --coolgray5: #b9b9b9;
+  --coolgray3: #d7d7d7;
+  --coolgray1: #f2f2f2;
+}
+
+body {
+  min-height: unset !important;
+}
+
+.mastcontainer-map {
+  height: 100vh;
+}
+
+.no-mastnav .actionbar {
+  width: 100%;
+}
+.no-mastnav .mastcontainer {
+  padding-left: 0;
+}
+
+.loader {
+  text-align: center;
+}
+
+.loader,
+.login-form {
+  margin-top: 50vh;
+  transform: translateY(-50%);
+}
+.loader.center,
+.login-form.center {
+  margin: inherit;
+  transform: inherit;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-form .logo {
+  max-height: 18rem;
+}
+
+.version {
+  position: absolute;
+  right: 0;
+  font-size: 0.7rem;
+}
+
+/* Make cool transitions for fullscreen mode */
+.mastheader, .mastnav, .mastcontainer, .actionbar, .table-filters, .sideBar-container {
+  transition: 0.4s ease-in-out;
+}
+
+.mastnav.fullscreen {
+  left: -7rem !important;
+}
+
+.mastheader.fullscreen {
+  top: -5rem !important;
+}
+
+.actionbar.fullscreen {
+  top: 0 !important;
+  width: 100% !important;
+}
+
+.mastcontainer.fullscreen {
+  padding-top: 4.5rem;
+  padding-left: 0 !important;
+}
+
+.table-filters.fullscreen {
+  top: 5rem !important;
+}
+
+.sideBar-container.fullscreen {
+  left: -6.5rem !important;
+  top: -3.7rem !important;
+  height: 109vh !important;
+}
+
+.navbar-breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.25rem;
+  line-height: 1rem;
+}
+.navbar-breadcrumbs a {
+  color: var(--coolgray7);
+}
+.navbar-breadcrumbs a:hover {
+  color: var(--coolgray1);
+}
+@media screen and (max-width: 1280px) {
+  .navbar-breadcrumbs {
+    font-size: 1rem;
+  }
+}
+
+/* media queries won't accept CSS variables... */
+/* lg breakpoint 1024 px */
+@media screen and (max-width: 1023px) {
+  .btn-fullscreen {
+    bottom: 6rem;
+  }
+  .btn-resetviewport {
+    bottom: 9rem;
+  }
+}
+@media screen and (max-width: 1023.98px) {
+  .sideBar-container {
+    padding-left: 0;
+    bottom: 0;
+    max-width: 100vw;
+    width: 100vw;
+    top: 30%;
+  }
+  .sideBar-content {
+    max-width: 100vw;
+  }
+  .sideBar-container.fullscreen {
+    left: 0 !important;
+    top: 30% !important;
+  }
+}
+@media screen and (min-width: 1280px) {
+  .sideBar-container {
+    margin-top: 9rem;
+  }
+  .sideBar-container.fullscreen {
+    top: -4.15rem;
+  }
+}
+.tab-content > .tab-pane {
+  display: none;
+}
+
+.tab-content > .active {
+  display: block;
+}
+
+.creation-sidebar.fullscreen {
+  left: -6.25rem !important;
+  top: -4.5rem !important;
+  transition-delay: 0.2s;
+}
+
+@media screen and (max-width: 1023.98px) {
+  .creation-sidebar {
+    padding-left: 0.5rem !important;
+    padding-top: 17.8rem !important;
+    transition-delay: 0.11s;
+  }
+  .creation-sidebar.fullscreen {
+    transition-delay: 0.25s;
+    top: -4.25rem !important;
+    left: 0 !important;
+  }
+}
+.sentry-error-embed-wrapper {
+  margin-top: 7.5% !important;
+  z-index: 1051 !important;
+}
+
+.custom-control {
+  padding-left: 1.625rem !important;
+}
+.custom-control .custom-control-label::before, .custom-control .custom-control-label::after {
+  left: -1.625rem;
+}
+
+@media (min-width: 576px) {
+  .modal-dialog.modal-lg,
+  .modal-dialog.modal-xl {
+    max-width: calc(100vw - 3rem) !important;
+  }
+}
+@media (min-width: 1024px) {
+  .modal-dialog.modal-lg,
+  .modal-dialog.modal-xl {
+    max-width: 800px !important;
+  }
+}
+@media (min-width: 1280px) {
+  .modal-dialog.modal-xl {
+    max-width: 1140px !important;
+  }
+}
+.maplibregl-map {
+  font-family: Avenir, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+.maplibregl-map .maplibregl-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mastcontainer-no-mastnav {
+  padding-left: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.cardscontainer {
+  margin: 2rem;
+}
+
+.card {
+  cursor: pointer;
+  transition: 0.2s ease-in-out;
+}
+
+.card:hover {
+  opacity: 0.5;
+}
+
+.disabled-link {
+  pointer-events: none;
+}
+
+.application-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 0 0;
+}
+.application-title h1 {
+  padding-top: 2rem;
+  font-size: 3rem;
+  color: var(--coolgray9);
+}
+.application-title img {
+  width: 8rem;
+}
+@media screen and (max-width: 1024px) {
+  .application-title h1 {
+    font-size: 1.5rem;
+  }
+  .application-title img {
+    width: 4rem;
+  }
+}
+
+.modal-header .close {
+  padding-top: 1.8rem !important;
+}
+
+.projects-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1rem 0 2rem;
+}
+
+.projects-list-project-card {
+  position: relative;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  transition: 0.4s;
+  border: 1px solid var(--coolgray3);
+}
+.projects-list-project-card:hover, .projects-list-project-card:focus, .projects-list-project-card:active {
+  border-color: var(--purple);
+}
+.projects-list-project-card:hover .projects-list-project-card-img::after, .projects-list-project-card:focus .projects-list-project-card-img::after, .projects-list-project-card:active .projects-list-project-card-img::after {
+  opacity: 1;
+}
+.projects-list-project-card:hover .projects-list-project-card-img button, .projects-list-project-card:focus .projects-list-project-card-img button, .projects-list-project-card:active .projects-list-project-card-img button {
+  opacity: 1 !important;
+}
+.projects-list-project-card .projects-list-project-card-img {
+  position: relative;
+  height: 10rem;
+  overflow: hidden;
+  border-radius: 4px 4px 0 0;
+}
+.projects-list-project-card .projects-list-project-card-img img {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--coolgray7);
+  transition: filter 0.5s;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.projects-list-project-card .projects-list-project-card-img::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transition: opacity 0.5s;
+  opacity: 0;
+  background: linear-gradient(0deg, var(--coolgray15) 0%, rgba(255, 255, 255, 0) 100%);
+}
+.projects-list-project-card .projects-list-project-card-img button {
+  transition: opacity 0.4s;
+  opacity: 0;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  z-index: 1;
+  margin: 0 0.5rem 0.5rem 0;
+}
+.projects-list-project-card .projects-list-project-card-studies {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-style: italic;
+  background-color: var(--coolgray3);
+  padding: 0.25rem 0.5rem;
+  text-align: right;
+  font-size: 0.7rem;
+  color: var(--coolgray11);
+}
+.projects-list-project-card .projects-list-project-card-studies div {
+  white-space: nowrap;
+}
+.projects-list-project-card .projects-list-project-card-name {
+  color: var(--purple);
+  font-weight: 500;
+  font-size: 0.9rem;
+  padding: 0 0.5rem;
+  margin: 0.5rem 0 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.projects-list-project-card .projects-list-project-card-description {
+  padding: 0 0.5rem;
+  height: 5rem;
+  overflow: auto;
+  font-size: 0.9rem;
+}
+.projects-list-project-card .projects-list-project-card-description::first-letter {
+  text-transform: capitalize;
+}
+.projects-list-project-card .projects-list-project-card-tags {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+  padding: 0 0.5rem 0.5rem;
+  font-size: 0.8rem;
+  min-height: 1.5rem;
+}
+.projects-list-project-card .projects-list-project-card-tags .projects-list-project-card-tags-tag {
+  color: var(--white);
+  background-color: var(--purple);
+  border-radius: 4px;
+  padding: 0 0.25rem;
+  transition: 0.2s;
+  cursor: pointer;
+}
+.projects-list-project-card .projects-list-project-card-tags .projects-list-project-card-tags-tag:hover {
+  opacity: 0.65;
+}
+
+.project-details .project-details-title {
+  display: flex;
+  position: relative;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+.project-details .project-details-title .project-details-title-img {
+  position: absolute;
+  overflow: hidden;
+  border-radius: 4px;
+  max-height: 30vh;
+  height: 100%;
+}
+.project-details .project-details-title .project-details-title-img img {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--coolgray7);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+@media screen and (max-width: 768px) {
+  .project-details .project-details-title .project-details-title-img {
+    position: relative;
+    height: 10rem;
+  }
+}
+.project-details .project-details-title .project-details-title-content .project-details-title-name {
+  color: var(--purple);
+  font-size: 2rem;
+  font-weight: 500;
+}
+.project-details .project-details-title .project-details-title-content h3 {
+  color: var(--coolgray9);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--coolgray5);
+  padding-bottom: 0.15rem;
+  margin-bottom: 0.25rem;
+}
+.project-details .project-details-title .project-details-title-content .project-details-title-description {
+  overflow: auto;
+  max-height: 20vh;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+}
+.project-details .project-details-title .project-details-title-content .project-details-title-objectives {
+  overflow: auto;
+  max-height: 20vh;
+}
+.project-details .project-details-financials {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  border-radius: 4px;
+  padding: 0.5rem;
+  background-color: var(--purple);
+  color: var(--white);
+}
+.project-details .project-details-financials .project-details-financials-infos {
+  flex-grow: 1;
+}
+.project-details .project-details-financials .project-details-financials-infos h3 {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: var(--white);
+  margin: 0;
+  text-transform: uppercase;
+}
+.project-details .project-details-financials .project-details-financials-amount {
+  display: flex;
+  align-items: center;
+  line-height: 2rem;
+  font-size: 1.5rem;
+  font-weight: bold;
+  background-color: var(--coolgray1);
+  color: var(--purple);
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+}
+.project-details .project-details-financials .project-details-financials-amount .project-details-financials-amount-text {
+  line-height: 1rem;
+  text-align: right;
+  width: 4rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  margin-right: 0.5rem;
+  white-space: wrap;
+}
+.project-details .project-details-tags {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+.project-details .project-details-tags .project-details-tags-tag {
+  font-size: 0.9rem;
+  color: var(--white);
+  background-color: var(--purple);
+  border-radius: 4px;
+  padding: 0 0.25rem;
+  transition: 0.2s;
+}
+
+.studies-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1rem 0 1rem;
+  margin-top: 2rem;
+}
+
+.studies-list {
+  overflow: auto;
+  max-height: 50vh;
+}
+.studies-list .studies-list-card {
+  position: relative;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  transition: 0.4s;
+  background-color: var(--white);
+  border: 2px solid var(--coolgray3);
+  transition: 0.4s;
+}
+.studies-list .studies-list-card:hover, .studies-list .studies-list-card:focus, .studies-list .studies-list-card:active {
+  border-color: var(--primary);
+}
+.studies-list .studies-list-card:hover button, .studies-list .studies-list-card:focus button, .studies-list .studies-list-card:active button {
+  opacity: 1 !important;
+}
+.studies-list .studies-list-card button {
+  transition: opacity 0.4s;
+  opacity: 0;
+  margin-left: auto;
+}
+.studies-list .studies-list-card .studies-list-card-name {
+  display: flex;
+  transition: 0.4s;
+  font-size: 1.25rem;
+  font-weight: 500;
+  padding: 0.5rem 0.5rem 0.5rem;
+  background-color: var(--coolgray3);
+  color: var(--secondary);
+}
+.studies-list .studies-list-card .studies-list-card-type {
+  color: var(--primary);
+  font-weight: 500;
+  padding: 0.25rem 0.5rem 0;
+}
+.studies-list .studies-list-card .studies-list-card-description {
+  font-size: 0.9rem;
+  padding: 0 0.5rem;
+}
+@media screen and (min-width: 1280px) {
+  .studies-list .studies-list-card .studies-list-card-description {
+    overflow: auto;
+    height: 5rem;
+  }
+}
+.studies-list .studies-list-card .studies-list-card-financials {
+  display: flex;
+  align-items: center;
+  background-color: var(--coolgray1);
+  padding: 0.5rem;
+  margin: 0.5rem 0.5rem 0;
+  border-radius: 4px;
+}
+.studies-list .studies-list-card .studies-list-card-financials .studies-list-card-financials-infos {
+  display: flex;
+  gap: 1rem;
+}
+.studies-list .studies-list-card .studies-list-card-financials .studies-list-card-financials-infos .studies-list-card-financials-infos-item {
+  text-transform: uppercase;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+.studies-list .studies-list-card .studies-list-card-financials .studies-list-card-financials-infos .studies-list-card-financials-infos-item h3 {
+  font-size: 0.7rem;
+  color: var(--coolgray9);
+  margin: 0;
+  text-transform: uppercase;
+}
+.studies-list .studies-list-card .studies-list-card-financials .studies-list-card-financials-amount {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  font-size: 1.25rem;
+  font-weight: bold;
+  line-height: 1rem;
+  background-color: var(--white);
+  color: var(--coolgray11);
+  border-radius: 4px;
+  padding: 0.5rem;
+}
+.studies-list .studies-list-card .studies-list-card-financials .studies-list-card-financials-amount .studies-list-card-financials-amount-text {
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  margin-right: 0.5rem;
+  padding: 0.25rem 0 0;
+}
+.studies-list .studies-list-card .studies-list-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.studies-list .studies-list-card .studies-list-card-footer .studies-list-card-tags {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  height: 2.25rem;
+  overflow: auto;
+}
+.studies-list .studies-list-card .studies-list-card-footer .studies-list-card-tags .studies-list-card-tags-tag {
+  font-size: 0.9rem;
+  color: var(--white);
+  background-color: var(--primary);
+  border-radius: 4px;
+  padding: 0 0.25rem;
+  transition: 0.2s;
+  cursor: pointer;
+}
+.studies-list .studies-list-card .studies-list-card-footer .studies-list-card-tags .studies-list-card-tags-tag:hover {
+  opacity: 0.65;
+}
+.studies-list .studies-list-card .studies-list-card-footer .studies-list-card-date {
+  display: flex;
+  align-items: center;
+  padding: 0 0.5rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  text-align: right;
+  font-weight: 500;
+  color: var(--coolgray9);
+}
+
+.study-details {
+  position: relative;
+  margin-bottom: 1rem;
+}
+.study-details .study-details-dates {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+  height: calc(100% - 1rem);
+}
+.study-details .study-details-dates .study-details-dates-date {
+  text-align: center;
+  flex-grow: 1;
+  padding: 0 0.5rem;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--secondary);
+  border-bottom: 2px solid var(--coolgray9);
+}
+.study-details .study-details-dates .study-details-dates-date .study-details-dates-date-label {
+  align-items: center;
+  font-size: 0.7rem;
+  font-weight: normal;
+  text-align: right;
+  margin-right: 0.5rem;
+}
+.study-details .study-details-dates .study-details-dates-date .study-details-dates-date-value {
+  align-items: center;
+  font-size: 0.8rem;
+  text-align: left;
+}
+.study-details .study-details-dates .study-details-dates-date.creation {
+  border-color: var(--coolgray3);
+}
+.study-details .study-details-dates .study-details-dates-date.start {
+  border-color: var(--green);
+}
+.study-details .study-details-dates .study-details-dates-date.estimatedend {
+  border-color: var(--yellow);
+}
+.study-details .study-details-dates .study-details-dates-date.realend {
+  border-color: var(--orange);
+}
+.study-details .study-details-name {
+  display: flex;
+  font-size: 2rem;
+  font-weight: 500;
+  color: var(--primary);
+}
+.study-details .study-details-type {
+  color: var(--secondary);
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+.study-details .study-details-description {
+  margin-bottom: 0.5rem;
+}
+.study-details .study-details-state {
+  padding: 5rem 0 1rem;
+  overflow: auto;
+  white-space: nowrap;
+}
+.study-details .study-details-state .study-details-state-step {
+  display: inline-block;
+  position: relative;
+}
+.study-details .study-details-state .study-details-state-step:not(:first-child) {
+  margin-left: 3rem;
+}
+.study-details .study-details-state .study-details-state-step:not(:first-child)::before {
+  position: absolute;
+  top: 0.6rem;
+  right: 1.5rem;
+  display: inline-block;
+  content: " ";
+  width: 3rem;
+  height: 0.3rem;
+  background-color: var(--coolgray3);
+}
+.study-details .study-details-state .study-details-state-step .study-details-state-step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  background-color: var(--coolgray3);
+  color: var(--secondary);
+  border-radius: 1rem;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+.study-details .study-details-state .study-details-state-step .study-details-state-step-label {
+  position: absolute;
+  white-space: normal;
+  text-align: left;
+  width: 8rem;
+  top: -1.25rem;
+  left: 0.5rem;
+  font-size: 0.8rem;
+  transform: rotate(-30deg);
+  transform-origin: left;
+  padding-left: 1.5em;
+  text-indent: -1.5em;
+  color: var(--coolgray7);
+}
+.study-details .study-details-state .study-details-state-step.done .study-details-state-step-number {
+  background-color: var(--coolgray11);
+  color: var(--coolgray1);
+}
+.study-details .study-details-state .study-details-state-step.done:not(:first-child)::before {
+  background-color: var(--coolgray11);
+}
+.study-details .study-details-state .study-details-state-step.done .study-details-state-step-label {
+  font-weight: 500;
+  color: var(--secondary);
+}
+.study-details .study-details-files {
+  border: 2px solid var(--primary);
+  border-radius: 4px;
+  margin-bottom: 0.25rem;
+}
+.study-details .study-details-files .study-details-files-title {
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  color: var(--white);
+  background-color: var(--primary);
+}
+.study-details .study-details-files .study-details-files-list {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  height: 12rem;
+}
+.study-details .study-details-files .study-details-files-list a {
+  display: flex;
+  flex-direction: column;
+  padding: 0.25rem 0.5rem;
+  transition: 0.2s;
+}
+.study-details .study-details-files .study-details-files-list a.url {
+  color: var(--cyan);
+}
+.study-details .study-details-files .study-details-files-list a.url:hover {
+  background-color: var(--cyan);
+}
+.study-details .study-details-files .study-details-files-list a:hover {
+  background-color: var(--primary);
+  color: var(--white);
+}
+.study-details .study-details-files .study-details-files-list a .study-details-files-list-name {
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+}
+.study-details .study-details-files .study-details-files-list a .study-details-files-list-link {
+  font-size: 0.8rem;
+  margin-left: 1.5rem;
+}
+.study-details .study-details-financials {
+  display: flex;
+  align-items: center;
+  background-color: var(--primary);
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+.study-details .study-details-financials .study-details-financials-infos {
+  display: flex;
+  gap: 1rem;
+}
+.study-details .study-details-financials .study-details-financials-infos .study-details-financials-infos-item {
+  text-transform: uppercase;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--white);
+}
+.study-details .study-details-financials .study-details-financials-infos .study-details-financials-infos-item h3 {
+  font-size: 0.7rem;
+  color: var(--white);
+  margin: 0;
+  text-transform: uppercase;
+}
+.study-details .study-details-financials .study-details-financials-amount {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  font-size: 1.25rem;
+  font-weight: bold;
+  line-height: 1rem;
+  background-color: var(--white);
+  color: var(--primary);
+  border-radius: 4px;
+  padding: 0.5rem;
+}
+.study-details .study-details-financials .study-details-financials-amount .study-details-financials-amount-text {
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  margin-right: 0.5rem;
+  padding: 0.25rem 0 0;
+}
+.study-details .study-details-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.study-details .study-details-footer .study-details-tags {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.25rem 0;
+  overflow: auto;
+}
+.study-details .study-details-footer .study-details-tags .study-details-tags-tag {
+  font-size: 0.9rem;
+  color: var(--white);
+  background-color: var(--primary);
+  border-radius: 4px;
+  padding: 0 0.25rem;
+}
+
+.scenarios-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1rem 0 1rem;
+  margin-top: 2rem;
+}
+
+.scenarios-list-card {
+  border-radius: 4px;
+  background-color: var(--white);
+  margin-bottom: 1rem;
+  border: 2px solid var(--coolgray3);
+}
+.scenarios-list-card:hover, .scenarios-list-card:focus, .scenarios-list-card:active {
+  border-color: var(--coolgray11);
+}
+.scenarios-list-card:hover .scenarios-list-card-name, .scenarios-list-card:focus .scenarios-list-card-name, .scenarios-list-card:active .scenarios-list-card-name {
+  color: var(--coolgray3);
+  background-color: var(--coolgray11);
+}
+.scenarios-list-card:hover button, .scenarios-list-card:focus button, .scenarios-list-card:active button {
+  opacity: 1 !important;
+}
+.scenarios-list-card button {
+  transition: opacity 0.4s;
+  opacity: 0;
+  margin-left: auto;
+}
+.scenarios-list-card .scenarios-list-card-name {
+  display: flex;
+  align-items: center;
+  color: var(--coolgray11);
+  background-color: var(--coolgray3);
+  padding: 0.25rem 0.25rem 0.25rem 0.5rem;
+  font-size: 1.1rem;
+  transition: 0.4s;
+}
+.scenarios-list-card .scenarios-list-card-description {
+  padding: 0.5rem;
+  font-size: 0.9rem;
+  height: 6rem;
+  overflow: auto;
+}
+.scenarios-list-card .scenarios-list-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.scenarios-list-card .scenarios-list-card-footer .scenarios-list-card-infra {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+}
+.scenarios-list-card .scenarios-list-card-footer .scenarios-list-card-infra img {
+  height: 1rem;
+  margin-right: 0.5rem;
+}
+.scenarios-list-card .scenarios-list-card-footer .scenarios-list-card-date {
+  color: var(--coolgray9);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  text-align: right;
+  padding: 0.25rem 0.5rem;
+}
+
+.scenario {
+  --navbar-height: 4.0625rem;
+  --content-height: calc(100vh - var(--navbar-height) - 2rem);
+  position: relative;
+  padding: 0.5rem 1rem;
+}
+@keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.scenario .scenario-loader {
+  position: absolute;
+  color: var(--coolgray9);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(4px);
+  background-color: rgba(255, 255, 255, 0.5);
+  z-index: 3;
+}
+.scenario .scenario-loader .scenario-loader-msg {
+  font-weight: 500;
+  font-size: 2rem;
+  text-align: center;
+}
+.scenario .scenario-timetable-managetrainschedule {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  z-index: 3;
+  background-color: rgba(215, 215, 215, 0.6666666667);
+  border-radius: 4px;
+  animation: fadein 1s;
+}
+.scenario .scenario-timetable-managetrainschedule .scenario-timetable-managetrainschedule-header {
+  height: 8rem;
+  font-size: 2rem;
+  font-weight: 500;
+  backdrop-filter: blur(4px);
+  padding: 0.5rem;
+}
+.scenario .scenario-timetable-managetrainschedule .scenario-timetable-managetrainschedule-body {
+  padding: 0.5rem;
+}
+.scenario .scenario-sidemenu {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+.scenario .scenario-sidemenu .scenario-details {
+  display: flex;
+  flex-direction: column;
+  height: 8rem;
+}
+.scenario .scenario-sidemenu .scenario-details .scenario-details-name {
+  color: var(--secondary);
+  font-weight: 500;
+  font-size: 1.5rem;
+}
+.scenario .scenario-sidemenu .scenario-details .scenario-details-infra-name {
+  display: flex;
+  align-items: center;
+}
+.scenario .scenario-sidemenu .scenario-details .scenario-details-infra-name img {
+  height: 1rem;
+}
+.scenario .scenario-sidemenu .scenario-details .scenario-details-description {
+  overflow: auto;
+  height: 4rem;
+  font-size: 0.9rem;
+}
+.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  height: 2rem;
+}
+.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains {
+  overflow: auto;
+  height: calc(var(--content-height) - 10.5rem);
+}
+.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train {
+  position: relative;
+  display: flex;
+  margin-bottom: 0.5rem;
+}
+.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-buttons {
+  display: none;
+  background-color: var(--coolgray3);
+  border-radius: 0 4px 4px 0;
+}
+.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-buttons button {
+  background-color: transparent;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  transition: 0.2s;
+  height: 100%;
+}
+.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-buttons .scenario-timetable-train-buttons-selectprojection {
+  color: var(--cyan);
+}
+.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-buttons .scenario-timetable-train-buttons-selectprojection:hover {
+  background-color: var(--cyan);
+  color: var(--white);
+}
+.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-buttons .scenario-timetable-train-buttons-duplicate {
+  color: var(--primary);
+}
+.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-buttons .scenario-timetable-train-buttons-duplicate:hover {
+  background-color: var(--primary);
+  color: var(--white);
+}
+.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-buttons .scenario-timetable-train-buttons-update {
+  color: var(--orange);
+}
+.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-buttons .scenario-timetable-train-buttons-update:hover {
+  background-color: var(--orange);
+  color: var(--white);
+}
+.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-buttons .scenario-timetable-train-buttons-delete {
+  border-radius: 0 4px 4px 0;
+  color: var(--red);
+}
+.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-buttons .scenario-timetable-train-buttons-delete:hover {
+  background-color: var(--red);
+  color: var(--white);
+}
+.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-container {
+  cursor: pointer;
+  border: 1px solid var(--coolgray3);
+  transition: border-color 0.2s;
+  border-radius: 4px;
+  flex-grow: 1;
+}
+.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-container .scenario-timetable-train-header {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  padding: 0 0.25rem;
+  background-color: var(--coolgray3);
+  transition: background-color 0.2s;
+}
+.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-container .scenario-timetable-train-header .scenario-timetable-train-name {
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  font-size: 1.25rem;
+  width: 50%;
+}
+.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-container .scenario-timetable-train-header .scenario-timetable-train-name .scenario-timetable-train-idx {
+  display: inline-block;
+  border-radius: 4px;
+  color: var(--secondary);
+  background-color: var(--coolgray1);
+  font-size: 0.6rem;
+  margin: 0.25rem 0.5rem 0.25rem 0;
+  padding: 0.25rem;
+  min-width: 1.5rem;
+  text-align: center;
+}
+.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-container .scenario-timetable-train-header .scenario-timetable-train-departure, .scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-container .scenario-timetable-train-header .scenario-timetable-train-arrival {
+  width: 25%;
+  text-align: right;
+  font-weight: 500;
+}
+.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-container.with-details .scenario-timetable-train-body {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.25rem;
+}
+.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-container.with-details .scenario-timetable-train-body .scenario-timetable-train-duration {
+  text-align: right;
+  font-size: 0.8rem;
+}
+.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-container.with-details .scenario-timetable-train-tags {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0 0.25rem;
+  overflow: auto;
+}
+.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-container.with-details .scenario-timetable-train-tags .scenario-timetable-train-tags-tag {
+  font-size: 0.9rem;
+  background-color: var(--teal);
+  border-radius: 4px;
+  padding: 0 0.25rem;
+  margin-bottom: 0.25rem;
+}
+.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-container:not(.with-details) .scenario-timetable-train-body, .scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train .scenario-timetable-train-container:not(.with-details) .scenario-timetable-train-tags {
+  display: none;
+}
+.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train.selected .scenario-timetable-train-header {
+  background-color: var(--teal);
+}
+.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train:hover .scenario-timetable-train-container {
+  border-radius: 4px 0 0 4px;
+  border-color: var(--secondary);
+}
+.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train:hover .scenario-timetable-train-container .scenario-timetable-train-header {
+  background-color: var(--secondary);
+  color: var(--white);
+}
+.scenario .scenario-sidemenu .scenario-timetable .scenario-timetable-trains .scenario-timetable-train:hover .scenario-timetable-train-buttons {
+  display: flex;
+}
+.scenario .scenario-managetrainschedule {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: var(--coolgray1);
+  z-index: 3;
+  height: 100%;
+  width: 100%;
+  padding-left: 0.5rem;
+  animation: fadein 1s;
+}
+.scenario .scenario-results {
+  margin-top: 0.5rem;
+  position: relative;
+  overflow: auto;
+  width: 100%;
+  height: var(--content-height);
+}
+
+.manage-train-schedule-title {
+  font-weight: 500;
+  font-size: 1rem;
+  text-transform: uppercase;
+  color: var(--coolgray9);
+  margin-top: 0.5rem;
+}
+
+.osrd-config-mastcontainer {
+  min-height: 80vh;
+}
+
+.osrd-config-item {
+  position: relative;
+  margin: 0;
+}
+.osrd-config-item.mini {
+  margin: -0.5rem 0 -0.5rem 2rem;
+}
+
+.osrd-config-item-title {
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #747678;
+  font-size: 1rem;
+  text-align: right;
+}
+.osrd-config-item-title.mini {
+  font-size: 1rem;
+}
+
+.osrd-config-item-container {
+  background-color: white;
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+.osrd-config-item-container.osrd-config-item-clickable {
+  cursor: pointer;
+  transition: 0.2s;
+}
+.osrd-config-item-container.osrd-config-item-clickable:hover {
+  background-color: #d7d7d7;
+}
+
+.osrd-config-centered-item {
+  text-align: center;
+}
+
+.osrd-config-item-container-map {
+  border-radius: 0 0 4px 4px;
+  height: 40vh;
+}
+.osrd-config-item-container-map .btn-map-container {
+  top: 1.5rem;
+  right: 1.5rem;
+}
+.osrd-config-item-container-map .map-modal {
+  top: 0.5rem;
+  min-width: calc(100% - 6rem);
+}
+.osrd-config-item-container-map .options-btn {
+  padding: 0.2rem 0.8rem 0.2rem;
+  font-size: 0.8rem;
+}
+.osrd-config-item-container-map .mapboxgl-popup {
+  z-index: 1;
+}
+.osrd-config-item-container-map .map-settings-btn {
+  position: absolute;
+  z-index: 1;
+  right: 2rem;
+  top: 2rem;
+}
+.osrd-config-item-container-map .map-settings-btn i {
+  font-size: 1.5rem;
+}
+.osrd-config-item-container-map .btn-resetviewport {
+  z-index: 1;
+  right: 2rem;
+  top: 5rem;
+  bottom: inherit;
+}
+.osrd-config-item-container-map .map-settings {
+  top: 1rem;
+  right: 1rem;
+  max-width: inherit;
+  position: absolute;
+  z-index: 0;
+  min-height: 5rem;
+  opacity: 0;
+  padding: 1rem;
+  background-color: #fff;
+  width: calc(100% - 4rem);
+  transition: 0.4s;
+  margin: 1rem;
+  border-radius: 4px;
+  border: 1px solid #d7d7d7;
+}
+.osrd-config-item-container-map .map-settings.active {
+  z-index: 1;
+  opacity: 1;
+}
+.osrd-config-item-container-map .osrd-conf-map-via-number {
+  font-weight: bold;
+  color: white;
+  position: absolute;
+  font-size: 0.7rem;
+}
+
+.osrd-config-place {
+  position: relative;
+}
+.osrd-config-place i {
+  z-index: 1;
+}
+.osrd-config-place .hover {
+  transition: 0.2s;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.osrd-config-place .hover:hover {
+  background-color: #f2f2f2;
+}
+.osrd-config-place .btn,
+.osrd-config-place .btn:hover {
+  border: none;
+  background-color: transparent;
+}
+.osrd-config-place.osrd-config-place-via {
+  margin-bottom: 0.5rem;
+}
+.osrd-config-place:not(.osrd-config-place-via):last-child::after {
+  position: absolute;
+  margin-bottom: -2rem;
+  z-index: 0;
+  display: block;
+  width: 1rem;
+  height: 2.5rem;
+  content: "";
+  background-color: #fff;
+}
+
+.osrd-config-speed {
+  width: 7rem;
+}
+
+.osrd-config-time {
+  width: 8rem;
+}
+
+.osrd-config-stoptime {
+  width: 7rem;
+}
+
+.osrd-config-anchor {
+  display: block;
+  position: relative;
+  max-height: 29rem;
+  overflow-y: auto;
+  width: 100%;
+  background-image: linear-gradient(0deg, #d7d7d7 50%, transparent 50%);
+  background-repeat: repeat-y;
+  background-position: top left;
+  background-size: 1rem 0.25rem;
+}
+.osrd-config-anchor::before {
+  position: absolute;
+  z-index: 1;
+  display: block;
+  width: 1rem;
+  height: 2.8rem;
+  content: "";
+  background-color: #fff;
+}
+
+.select-osrd-sm select {
+  min-height: 1.875rem;
+  padding: 0.40625rem 1.25rem;
+  line-height: 0.9rem;
+  font-size: 0.9rem;
+}
+
+/* itinerary */
+.suggered-vias {
+  max-height: 30vh;
+  overflow-y: auto;
+}
+.suggered-vias .loaderPathfindingInProgress {
+  position: absolute;
+  text-align: center;
+  padding-top: 30%;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  bottom: 0;
+  border-radius: 0 0 4px 4px;
+  background-color: rgba(242, 242, 242, 0.75);
+}
+.suggered-vias .suggerred-via-clickable {
+  transition: 0.2s;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.suggered-vias .suggerred-via-clickable:hover {
+  background-color: var(--coolgray1);
+}
+
+.osrd-config-timetableselector .osrd-config-timetableselector-item {
+  border-radius: 4px;
+  padding: 0.25rem;
+  background-color: var(--coolgray1);
+  cursor: pointer;
+  transition: 0.2s;
+  margin-bottom: 0.25rem;
+}
+.osrd-config-timetableselector .osrd-config-timetableselector-item:hover {
+  background-color: var(--coolgray3);
+}
+
+.osrd-config-stdcm-apply {
+  text-align: right;
+  margin-bottom: 0.5rem;
+}
+
+.origin-name-and-time-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.origin-name-and-time-container .toggle-button-container {
+  position: relative;
+  align-self: stretch;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.origin-name-and-time-container .toggle-button-container button {
+  outline: none;
+}
+.origin-name-and-time-container .toggle-button-container:before {
+  content: "";
+  position: absolute;
+  top: 25%;
+  left: 40%;
+  height: 7px;
+  width: 5px;
+  border-right: 2px solid gray;
+  border-top: 2px solid gray;
+}
+.origin-name-and-time-container .toggle-button-container:after {
+  content: "";
+  position: absolute;
+  bottom: 25%;
+  left: 40%;
+  height: 7px;
+  width: 5px;
+  border-right: 2px solid gray;
+  border-bottom: 2px solid gray;
+}
+
+svg text {
+  font-family: Avenir, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+select.sm {
+  min-height: auto;
+  padding: 0.2rem 1.25rem;
+}
+
+.toast {
+  z-index: 3;
+}
+
+.simulation-results {
+  position: relative;
+  padding-bottom: 3rem;
+  /* Chart Modal */
+  /* SPACETIME */
+  /* ALLOWANCES */
+  /* SPEEDSPACE */
+  /* Curves & Slopes */
+  /* OPERATIONAL POINTS */
+  /* TABLE OVERRIDE */
+  /* TIMELINE */
+}
+.simulation-results .osrd-simulation-sticky-bar {
+  position: sticky;
+  border-radius: 4px;
+  width: 100%;
+  background: var(--primary);
+  z-index: 2;
+  top: 0;
+  left: 0;
+  padding: 0.5rem 0.5rem 0.3rem;
+  margin-bottom: 0.5rem;
+}
+.simulation-results .osrd-simulation-sticky-bar .train-detail {
+  min-width: 4.5rem;
+  max-height: 2rem;
+  padding: 0.1rem;
+  line-height: 0.8rem;
+}
+.simulation-results .osrd-simulation-container {
+  position: relative;
+  background-color: white;
+  padding: 1rem;
+  border-radius: 4px;
+}
+.simulation-results .osrd-simulation-map {
+  position: relative;
+  width: 100%;
+  height: 50vh;
+}
+.simulation-results .osrd-simulation-map .btn-map-container {
+  top: 1.5rem;
+  right: 1.5rem;
+}
+.simulation-results .osrd-simulation-map .map-modal {
+  top: 0.5rem;
+  max-height: 40vh;
+}
+.simulation-results .osrd-simulation-map .map-resizer {
+  min-width: calc(100% - 2rem);
+}
+.simulation-results .osrd-simulation-map .map-resizer .handle-tab-resize {
+  width: 100%;
+  text-align: center;
+  position: absolute;
+  bottom: -1.25rem;
+  font-size: 2rem;
+  transition: 0.2s;
+  color: var(--coolgray3);
+}
+.simulation-results .osrd-simulation-map .map-resizer .handle-tab-resize:hover {
+  color: var(--coolgray9);
+}
+.simulation-results .spacetimechart-container {
+  display: block;
+  position: relative;
+  width: 100%;
+  transition: 0.2s;
+}
+.simulation-results .spacetimechart-container .dropdown .dropdown-menu:not(.dropdown-menu-right)::before {
+  border-right-color: #d7d7d7;
+  left: -0.625rem;
+  top: 0;
+}
+.simulation-results .spacetimechart-container .dropdown .dropdown-menu:not(.dropdown-menu-right)::after {
+  border-right-color: #fff;
+  left: -0.525rem;
+  top: 0;
+}
+.simulation-results .spacetimechart-container .get-context-menu .dropdown-menu {
+  padding: 1rem;
+}
+.simulation-results .spacetimechart-container .get-context-menu input.form-control {
+  min-width: 7rem;
+}
+.simulation-results .spacetimechart-container .handle-tab-resize {
+  width: 100%;
+  text-align: center;
+  position: absolute;
+  bottom: -1.25rem;
+  font-size: 2rem;
+  transition: 0.2s;
+  color: var(--coolgray3);
+}
+.simulation-results .spacetimechart-container .handle-tab-resize:hover {
+  color: var(--coolgray9);
+}
+.simulation-results .table-drivertrainschedule th, .simulation-results thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.simulation-results .grid .tick {
+  opacity: 0.2;
+}
+.simulation-results .grid .tick line {
+  stroke: #333;
+  stroke-dasharray: 2, 2;
+}
+.simulation-results .chartTrain {
+  cursor: move;
+}
+.simulation-results .guideLines {
+  stroke: var(--primary);
+  stroke-width: 0.5;
+  opacity: 0.5;
+  pointer-events: none;
+}
+.simulation-results .curve-label {
+  fill: #777;
+  font-size: 0.7rem;
+  font-weight: bold;
+}
+.simulation-results .curve-label.selected {
+  fill: var(--primary);
+}
+.simulation-results .osrd-simulation-chart-modal {
+  display: flex;
+  position: absolute;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.75);
+}
+.simulation-results .osrd-simulation-chart-modal .chart-modal-box {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  position: relative;
+  border-radius: 4px;
+  padding: 1em;
+}
+.simulation-results .osrd-simulation-chart-modal .chart-modal-box .chart-modal-type-title {
+  text-align: center;
+  flex-basis: 100%;
+  font-size: 1.5rem;
+}
+.simulation-results .osrd-simulation-chart-modal .chart-modal-box .chart-modal-input {
+  display: flex;
+  align-items: center;
+}
+.simulation-results .osrd-simulation-chart-modal .chart-modal-box .chart-modal-input .chart-modal-type-label {
+  color: #4d4f53;
+  font-weight: bold;
+  font-size: 3rem;
+  margin-right: 1rem;
+}
+.simulation-results .osrd-simulation-chart-modal .chart-modal-box .chart-modal-input input {
+  border: none;
+  border-bottom: 4px solid #d7d7d7;
+  color: #333;
+  background: none;
+  font-size: 2rem;
+  font-weight: bold;
+  padding-right: 1.5rem;
+  width: 8rem;
+  text-align: right;
+}
+.simulation-results .osrd-simulation-chart-modal .chart-modal-box .chart-modal-input input:focus {
+  outline: none;
+}
+.simulation-results .osrd-simulation-chart-modal .chart-modal-box .chart-modal-input .chart-modal-type-unit {
+  content: "s";
+  color: #747678;
+  font-weight: bold;
+  font-size: 2rem;
+  margin-left: -1rem;
+}
+.simulation-results .spacetime-chart {
+  position: relative;
+}
+.simulation-results .spacetime-chart .btn-rotate {
+  position: absolute;
+  right: 2rem;
+  bottom: 2.5rem;
+}
+.simulation-results .spacetime-chart .area {
+  fill: url(#hatchPatternGray);
+}
+.simulation-results .spacetime-chart .area.selected {
+  fill: rgba(48, 51, 131, 0.2);
+}
+.simulation-results .spacetime-chart .area.selected.eco {
+  fill: rgba(130, 190, 0, 0.2);
+}
+.simulation-results .spacetime-chart rect {
+  stroke-width: inherit;
+  stroke: inherit;
+}
+.simulation-results .spacetime-chart .start-block {
+  stroke: var(--coolgray5);
+  stroke-width: 2;
+}
+.simulation-results .spacetime-chart .start-block.selected {
+  stroke: var(--yellow);
+}
+.simulation-results .spacetime-chart .start-block.pointer {
+  fill: var(--yellow);
+}
+.simulation-results .spacetime-chart .end-block {
+  stroke: var(--coolgray9);
+  stroke-width: 2;
+}
+.simulation-results .spacetime-chart .end-block.selected {
+  stroke: var(--red);
+}
+.simulation-results .spacetime-chart .end-block.pointer {
+  fill: var(--red);
+}
+.simulation-results .spacetime-chart .tail {
+  stroke: var(--coolgray3);
+}
+.simulation-results .spacetime-chart .tail.selected {
+  stroke: var(--cyan);
+}
+.simulation-results .spacetime-chart .tail.pointer {
+  fill: var(--cyan);
+}
+.simulation-results .spacetime-chart .head {
+  stroke: var(--coolgray7);
+}
+.simulation-results .spacetime-chart .head.selected {
+  stroke: var(--blue);
+}
+.simulation-results .spacetime-chart .head.selected.allowances {
+  stroke: var(--orange);
+}
+.simulation-results .spacetime-chart .head.selected.eco {
+  stroke: var(--green);
+}
+.simulation-results .spacetime-chart .head.pointer {
+  fill: var(--blue);
+}
+.simulation-results .spacetime-chart .head.pointer.allowances {
+  fill: var(--orange);
+}
+.simulation-results .spacetime-chart .head.pointer.eco {
+  fill: var(--green);
+}
+.simulation-results .axis-unit {
+  font-size: 1rem;
+  font-weight: bold;
+  fill: var(--coolgray7);
+}
+.simulation-results .route-aspect {
+  opacity: 0.5;
+}
+.simulation-results .route-aspect.selected {
+  opacity: 1;
+}
+.simulation-results .route-aspect.selected.eco {
+  opacity: 1;
+}
+.simulation-results .mareco {
+  z-index: 2;
+}
+.simulation-results .allowance-line {
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: 0.2s;
+}
+.simulation-results .allowance-line:hover {
+  background-color: var(--coolgray1);
+}
+.simulation-results .allowances-updating-loader {
+  position: absolute;
+  text-align: center;
+  background-color: rgba(255, 255, 255, 0.75);
+  width: calc(100% - 2rem);
+  height: 100%;
+  z-index: 3;
+  top: 0;
+  font-size: 4rem;
+}
+.simulation-results .speedspacechart-container {
+  display: block;
+  position: relative;
+  width: 100%;
+  transition: 0.2s;
+}
+.simulation-results .speedspacechart-container .showSettingsButton {
+  position: absolute;
+  border: none;
+  background: none;
+  cursor: pointer;
+  height: 100%;
+  color: var(--coolgray7);
+}
+.simulation-results .speedspacechart-container .speedspace-chart {
+  display: flex;
+  background-color: white;
+  border-radius: 4px;
+  position: relative;
+}
+.simulation-results .speedspacechart-container .speedspace-chart .showSettings {
+  overflow: hidden;
+  transition: 0.3s;
+}
+.simulation-results .speedspacechart-container .speedspace-chart .btn-rotate {
+  position: absolute;
+  right: 2rem;
+  bottom: 2.5rem;
+}
+.simulation-results .speedspacechart-container .speedspace-chart .area.speed {
+  fill: rgba(48, 51, 131, 0.2);
+}
+.simulation-results .speedspacechart-container .speedspace-chart .area.slopes {
+  fill: var(--cyan);
+}
+.simulation-results .speedspacechart-container .speedspace-chart .speed {
+  stroke: var(--blue);
+  stroke-width: 1;
+}
+.simulation-results .speedspacechart-container .speedspace-chart .speed.pointer {
+  fill: var(--blue);
+}
+.simulation-results .speedspacechart-container .speedspace-chart .speed.pointer.allowances {
+  fill: var(--orange);
+}
+.simulation-results .speedspacechart-container .speedspace-chart .speed.pointer.eco {
+  fill: var(--green);
+}
+.simulation-results .speedspacechart-container .speedspace-chart .speed.allowances {
+  stroke: var(--orange);
+}
+.simulation-results .speedspacechart-container .speedspace-chart .speed.eco {
+  stroke: var(--green);
+}
+.simulation-results .speedspacechart-container .speedspace-chart .speed.vmax {
+  stroke-width: 2;
+  stroke: var(--purple);
+}
+.simulation-results .speedspacechart-container .speedspace-chart .speed.slopes {
+  stroke-width: 2;
+  stroke: var(--orange);
+}
+.simulation-results .speedspacechart-container .speedspace-chart .speed.slopesHistogram {
+  stroke-width: 1;
+  stroke: var(--cyan);
+}
+.simulation-results .speedspacechart-container .handle-tab-resize {
+  width: 100%;
+  text-align: center;
+  position: absolute;
+  bottom: -1.25rem;
+  font-size: 2rem;
+  transition: 0.2s;
+  color: var(--coolgray3);
+}
+.simulation-results .speedspacechart-container .handle-tab-resize:hover {
+  color: var(--coolgray9);
+}
+.simulation-results .spacecurvesslopes-container {
+  display: block;
+  position: relative;
+  width: 100%;
+  transition: 0.2s;
+}
+.simulation-results .spacecurvesslopes-container .spacecurvesslopes-chart {
+  background-color: white;
+  border-radius: 4px;
+  position: relative;
+}
+.simulation-results .spacecurvesslopes-container .spacecurvesslopes-chart .area.speed {
+  fill: rgba(48, 51, 131, 0.2);
+}
+.simulation-results .spacecurvesslopes-container .spacecurvesslopes-chart .area.slopes {
+  fill: var(--cyan);
+}
+.simulation-results .spacecurvesslopes-container .spacecurvesslopes-chart .speed {
+  stroke: var(--blue);
+  stroke-width: 1;
+}
+.simulation-results .spacecurvesslopes-container .spacecurvesslopes-chart .speed.slopes {
+  stroke-width: 2;
+  stroke: var(--orange);
+}
+.simulation-results .spacecurvesslopes-container .spacecurvesslopes-chart .speed.slopesHistogram {
+  stroke-width: 1;
+  stroke: var(--cyan);
+}
+.simulation-results .spacecurvesslopes-container .handle-tab-resize {
+  width: 100%;
+  text-align: center;
+  position: absolute;
+  bottom: -1.25rem;
+  font-size: 2rem;
+  transition: 0.2s;
+  color: var(--coolgray3);
+}
+.simulation-results .spacecurvesslopes-container .handle-tab-resize:hover {
+  color: var(--coolgray9);
+}
+.simulation-results .op-line {
+  stroke: var(--coolgray7);
+  stroke-width: 1;
+  stroke-dasharray: 4, 4;
+}
+.simulation-results .op-text {
+  fill: var(--coolgray11);
+  font-size: 0.65rem;
+}
+.simulation-results .table-cell-selected {
+  font-weight: bold;
+}
+.simulation-results .table-shrink .cell-inner {
+  padding: 0;
+}
+.simulation-results .table td.td-button {
+  padding: 0;
+}
+.simulation-results .table td.td-button .cell-inner-button {
+  padding: 0.5rem 1.25rem;
+  cursor: pointer;
+}
+.simulation-results .timeline {
+  background-color: var(--coolgray13);
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+.simulation-results .timeline .tick {
+  color: var(--coolgray3);
+}
+.simulation-results .timeline .domain {
+  opacity: 0.5;
+  stroke: var(--coolgray3);
+}
+.simulation-results .timeline .grid .tick line {
+  stroke: var(--coolgray3);
+}
+.simulation-results .timeline .timeline-train {
+  stroke: var(--coolgray5);
+}
+.simulation-results .timeline .timeline-train.selected {
+  stroke-width: 2;
+  stroke: var(--teal);
+}
+.simulation-results .timeline #rectZoomTimeLine {
+  cursor: move;
+  transition: 0.2s;
+  stroke: var(--coolgray5);
+  fill: rgba(255, 255, 255, 0.05);
+}
+.simulation-results .timeline #rectZoomTimeLine:hover {
+  stroke: var(--green);
+  fill: rgba(130, 190, 0, 0.05);
+}
+.simulation-results .timeline .timeline-cursor line {
+  stroke: var(--coolgray3);
+  stroke-width: 2;
+  stroke-dasharray: 2, 1;
+}
+.simulation-results .timeline .timeline-cursor path {
+  stroke: var(--coolgray3);
+  fill: var(--coolgray3);
+}
+
+.container-drivertrainschedule {
+  max-height: 30rem;
+}
+
+.modal-drivertrainschedule {
+  height: 50%;
+}
+
+.simulation-drivertrainschedule {
+  max-height: 15rem;
+  overflow: auto;
+}
+
+.table-drivertrainschedule, .table-drivertrainschedule th, .table-drivertrainschedule td {
+  border: none !important;
+  padding-right: 10px;
+}
+.table-drivertrainschedule .drivertrainschedule-pk, .table-drivertrainschedule th .drivertrainschedule-pk, .table-drivertrainschedule td .drivertrainschedule-pk {
+  text-align: right;
+  width: 2rem;
+}
+.table-drivertrainschedule .stoptime-container .box, .table-drivertrainschedule th .stoptime-container .box, .table-drivertrainschedule td .stoptime-container .box {
+  width: 100%;
+  display: table;
+}
+.table-drivertrainschedule .stoptime-container .box .box-row, .table-drivertrainschedule th .stoptime-container .box .box-row, .table-drivertrainschedule td .stoptime-container .box .box-row {
+  display: table-row;
+}
+.table-drivertrainschedule .stoptime-container .box .box-cell, .table-drivertrainschedule th .stoptime-container .box .box-cell, .table-drivertrainschedule td .stoptime-container .box .box-cell {
+  display: table-cell;
+  width: 33.3333333333%;
+  text-align: left;
+  position: relative;
+}
+.table-drivertrainschedule .stoptime-container .box .box-cell .box-cell::after, .table-drivertrainschedule th .stoptime-container .box .box-cell .box-cell::after, .table-drivertrainschedule td .stoptime-container .box .box-cell .box-cell::after {
+  content: "+";
+  position: absolute;
+}
+.table-drivertrainschedule .drivertrainschedule-stop, .table-drivertrainschedule th .drivertrainschedule-stop, .table-drivertrainschedule td .drivertrainschedule-stop {
+  font-weight: bold;
+}
+.table-drivertrainschedule .drivertrainschedule-stop small, .table-drivertrainschedule th .drivertrainschedule-stop small, .table-drivertrainschedule td .drivertrainschedule-stop small {
+  font-weight: bold;
+}
+
+.table-drivertrainschedule th, thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+/*# sourceMappingURL=main.css.map */
