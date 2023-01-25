@@ -405,8 +405,14 @@ export type Path = {
   id?: number;
   owner?: string;
   created?: string;
-  geographic?: object;
-  schematic?: object;
+  geographic?: {
+    coordinates?: number[][];
+    type?: string;
+  };
+  schematic?: {
+    coordinates?: number[][];
+    type?: string;
+  };
   slopes?: {
     gradient?: number;
     position?: number;
