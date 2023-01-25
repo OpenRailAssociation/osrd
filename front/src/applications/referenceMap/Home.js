@@ -6,7 +6,7 @@ import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import logo from 'assets/pictures/home/map.svg';
 import Map from './Map';
 
-export default function HomeCartoLegacy() {
+export default function HomeReferenceMap() {
   const { t } = useTranslation('home');
   return (
     <>

@@ -51,7 +51,7 @@ function Map() {
   const dispatch = useDispatch();
   const updateViewportChange = useCallback(
     (value) => {
-      dispatch(updateViewport(value, '/carto'));
+      dispatch(updateViewport(value, '/map'));
     },
     [dispatch]
   );
