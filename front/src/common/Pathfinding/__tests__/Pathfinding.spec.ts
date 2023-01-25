@@ -80,6 +80,7 @@ describe('reducer', () => {
       ...initialState,
       running: true,
       mustBeLaunched: true,
+      mustBeLaunchedManually: true,
     };
     const action = { type: 'PATHFINDING_FINISHED' };
     expect(reducer(state, action)).toEqual({
@@ -87,6 +88,7 @@ describe('reducer', () => {
       done: true,
       running: false,
       mustBeLaunched: false,
+      mustBeLaunchedManually: false,
     });
   });
   test('pathfinding request finished, but user cancelled before it ended', () => {
@@ -201,6 +203,25 @@ describe('reducer', () => {
         missingParam: true,
       });
     });
+    test('rollingStock missing, previously in launch manually state', () => {
+      const state = {
+        ...initialState,
+        mustBeLaunchedManually: true,
+      };
+      const action = {
+        type: 'PATHFINDING_PARAM_CHANGED',
+        params: {
+          origin: { id: '1234' },
+          destination: { id: '5678' },
+        },
+      };
+      expect(reducer(state, action)).toEqual({
+        ...initialState,
+        error: '',
+        missingParam: true,
+        mustBeLaunchedManually: false,
+      });
+    });
     test('rollingStock missing', () => {
       const state = initialState;
       const action = {
@@ -219,6 +240,7 @@ describe('reducer', () => {
       const state = {
         ...initialState,
         missingParam: true,
+        mustBeLaunchedManually: true,
       };
       const action = {
         type: 'PATHFINDING_PARAM_CHANGED',
@@ -232,6 +254,7 @@ describe('reducer', () => {
         ...initialState,
         mustBeLaunched: true,
         missingParam: false,
+        mustBeLaunchedManually: false,
       });
     });
     test('must not start if already running', () => {
@@ -279,6 +302,19 @@ describe('reducer', () => {
         },
       };
       expect(reducer(state, action)).toEqual(initialState);
+    });
+  });
+  test('start manually', () => {
+    const state = initialState;
+    const action = {
+      type: 'START_MANUALLY',
+    };
+    expect(reducer(state, action)).toEqual({
+      ...state,
+      running: false,
+      done: false,
+      mustBeLaunched: true,
+      mustBeLaunchedManually: false,
     });
   });
 });

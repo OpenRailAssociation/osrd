@@ -101,6 +101,7 @@ export function reducer(state: PathfindingState, action: Action): PathfindingSta
           done: false,
           error: '',
           mustBeLaunched: false,
+          mustBeLaunchedManually: false,
         };
       }
       return {
@@ -109,6 +110,7 @@ export function reducer(state: PathfindingState, action: Action): PathfindingSta
         done: true,
         error: '',
         mustBeLaunched: false,
+        mustBeLaunchedManually: false,
       };
     }
     case 'PATHFINDING_ERROR': {
@@ -132,12 +134,14 @@ export function reducer(state: PathfindingState, action: Action): PathfindingSta
           error: '',
           done: false,
           missingParam: true,
+          mustBeLaunchedManually: false,
         };
       }
       return {
         ...state,
         mustBeLaunched: true,
         missingParam: false,
+        mustBeLaunchedManually: false,
       };
     }
     case 'VIAS_CHANGED': {
@@ -147,6 +151,15 @@ export function reducer(state: PathfindingState, action: Action): PathfindingSta
       return {
         ...state,
         mustBeLaunchedManually: true,
+      };
+    }
+    case 'START_MANUALLY': {
+      return {
+        ...state,
+        running: false,
+        done: false,
+        mustBeLaunched: true,
+        mustBeLaunchedManually: false,
       };
     }
     default:
@@ -287,6 +300,7 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
   }, []);
 
   useEffect(() => {
+    console.log('vias changed');
     pathfindingDispatch({
       type: 'VIAS_CHANGED',
       params: {
@@ -343,6 +357,7 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
     </div>
   );
 
+  console.log(pathfindingState.mustBeLaunchedManually);
   return (
     <div className="pathfinding-main-container">
       {pathfindingState.done && !pathfindingState.error && (
@@ -372,6 +387,16 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
         </div>
       )}
       {pathfindingState.running && loaderPathfindingInProgress}
+      <button
+        className="btn btn-sm btn-primary"
+        type="button"
+        disabled={!pathfindingState.mustBeLaunchedManually}
+        onClick={() => {
+          pathfindingDispatch({ type: 'START_MANUALLY' });
+        }}
+      >
+        {t('restartPathfinding')}
+      </button>
     </div>
   );
 }

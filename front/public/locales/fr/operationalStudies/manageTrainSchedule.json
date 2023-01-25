@@ -37,6 +37,7 @@
   "No path could be found after loading Gauge constraints": "Aucun chemin trouvé avec ce gabarit de matériel",
   "No path could be found after loading Electrification constraints": "Aucun chemin trouvé un matériel avec ce type d’électrification",
   "cancelPathfinding": "Annuler",
+  "restartPathfinding": "Relancer la recherche",
   "gare": "Gare, poste",
   "inverseOD": "Inverser origine/destination",
   "indications": {
