@@ -9,7 +9,14 @@
 
   .pathfinding-done {
     @extend .pathfinding-subsection;
-    color: green;
+    
+    .title {
+      color: green;
+    }
+
+    .details {
+      font-weight: 400;
+    }
   }
 
   .pathfinding-error {

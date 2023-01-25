@@ -6,3 +6,10 @@ export function conditionalStringConcat(elements: [any, string][], separator = '
   }
   return elements.reduce<string[]>((acc, el) => [...acc, ...elementString(el)], []).join(separator);
 }
+
+export function formatKmValue(value?: number, digits = 0) {
+  if (!value) {
+    return '';
+  }
+  return `${value.toFixed(digits)} km`;
+}

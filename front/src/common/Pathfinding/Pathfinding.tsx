@@ -8,9 +8,11 @@ import { last, isEmpty, isEqual } from 'lodash';
 import { BiCheckCircle, BiXCircle, BiErrorCircle } from 'react-icons/bi';
 
 import { ArrayElement } from 'utils/types';
-import { Path, PathQuery, osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import { adjustPointOnTrack } from 'utils/pathfinding';
-import { conditionalStringConcat } from 'utils/strings';
+import { conditionalStringConcat, formatKmValue } from 'utils/strings';
+import { lengthFromLineCoordinates } from 'utils/geometry';
+
+import { Path, PathQuery, osrdMiddlewareApi } from 'common/api/osrdMiddlewareApi';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { PointOnMap } from 'applications/operationalStudies/consts';
 
@@ -309,8 +311,12 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
   }, [origin, destination, rollingStockID]);
 
   const pathDetailsToggleButton = (
-    <button type="button" onClick={openModalWrapperBecauseTypescriptSucks} className="btn btn-link">
-      <small className="ml-1">{pathfindingID}</small>
+    <button
+      type="button"
+      onClick={openModalWrapperBecauseTypescriptSucks}
+      className="btn btn-link details"
+    >
+      {formatKmValue(lengthFromLineCoordinates(geojson?.geographic?.coordinates))}
     </button>
   );
 
@@ -341,8 +347,10 @@ function Pathfinding({ zoomToFeature }: PathfindingProps) {
     <div className="pathfinding-main-container">
       {pathfindingState.done && !pathfindingState.error && (
         <div className="pathfinding-done">
-          <BiCheckCircle />
-          {t('pathfindingDone')}
+          <div className="title">
+            <BiCheckCircle />
+            {t('pathfindingDone')}
+          </div>
           {pathDetailsToggleButton}
         </div>
       )}
